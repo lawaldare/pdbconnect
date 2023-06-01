@@ -1,0 +1,23 @@
+{
+  "version": "1.1.1",
+  "name": "@visual-framework/vf-font-plex-sans",
+  "description": "vf-font-plex-sans component",
+  "homepage": "https://stable.visual-framework.dev/",
+  "author": "VF",
+  "license": "Apache 2.0",
+  "style": "vf-font-plex-sans.css",
+  "sass": "index.scss",
+  "test": "echo \"Error: no test specified\" && exit 1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repo": "https://github.com/visual-framework/vf-core/tree/master/components/blocks/vf-font-plex-sans",
+  "bugs": {
+    "url": "https://github.com/visual-framework/vf-core/issues/new"
+  },
+  "keywords": [
+    "fractal",
+    "component"
+  ],
+  "gitHead": "c800ee20dbc7f9d5e2545c0aeee3ac8be16d68b2"
+}

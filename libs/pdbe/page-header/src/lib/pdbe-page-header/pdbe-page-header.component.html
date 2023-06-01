@@ -1,0 +1,16 @@
+<header>
+  <pdbc-vf-ebi-header></pdbc-vf-ebi-header>
+  <pdbc-pdbe-hero-banner
+    [heading]="heading"
+    [subheading]="subheading"
+    [url]="url"
+    [searchBeta]="searchBeta"
+    [searchButtonText]="searchButtonText"
+    [searchPlaceholder]="searchPlaceholder"
+    [searchSuggestions]="searchSuggestions"
+    (searchKeyword)="searchHandler($event)"
+    (selectedIndex)="selectSuggestion($event)"
+    (searchCleared)="searchClearedFn($event)"
+  ></pdbc-pdbe-hero-banner>
+  <pdbc-vf-nav [menuItems]="menuItems"></pdbc-vf-nav>
+</header>

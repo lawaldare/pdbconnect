@@ -1,0 +1,23 @@
+{
+  "version": "1.1.1",
+  "name": "@visual-framework/vf-font-plex-mono",
+  "description": "vf-font-plex-mono component",
+  "homepage": "https://stable.visual-framework.dev/",
+  "author": "VF",
+  "license": "Apache 2.0",
+  "style": "vf-font-plex-mono.css",
+  "sass": "index.scss",
+  "test": "echo \"Error: no test specified\" && exit 1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repo": "https://github.com/visual-framework/vf-corecomponents/blocks/vf-font-plex-mono",
+  "bugs": {
+    "url": "https://github.com/visual-framework/vf-core/issues/new"
+  },
+  "keywords": [
+    "fractal",
+    "component"
+  ],
+  "gitHead": "c800ee20dbc7f9d5e2545c0aeee3ac8be16d68b2"
+}

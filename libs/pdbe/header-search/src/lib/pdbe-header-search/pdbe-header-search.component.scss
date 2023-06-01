@@ -1,0 +1,56 @@
+@import '@visual-framework/vf-sass-config/index.scss';
+@import '@visual-framework/vf-utility-classes/vf-utility-classes.scss';
+
+@import '@visual-framework/vf-sidebar/vf-sidebar.scss';
+@import '@visual-framework/vf-text/vf-text.scss';
+
+@import '@visual-framework/vf-form__helper/vf-form__helper.scss';
+@import '@visual-framework/vf-form__input/vf-form__input.scss';
+@import '@visual-framework/vf-form__legend/vf-form__legend.scss';
+@import '@visual-framework/vf-form__fieldset/vf-form__fieldset.scss';
+@import '@visual-framework/vf-form__select/vf-form__select.scss';
+@import '@visual-framework/vf-form__checkbox/vf-form__checkbox.scss';
+@import '@visual-framework/vf-form__radio/vf-form__radio.scss';
+@import '@visual-framework/vf-form__textarea/vf-form__textarea.scss';
+@import '@visual-framework/vf-form__item/vf-form__item.scss';
+@import '@visual-framework/vf-form__label/vf-form__label.scss';
+
+@import '@visual-framework/vf-search/vf-search.scss';
+@import '@visual-framework/vf-button/vf-button.scss';
+@import '@visual-framework/vf-link/vf-link.scss';
+@import '@visual-framework/vf-list/vf-list.scss';
+
+.vf-form--search__results-list {
+  width: calc(100% - 8px);
+}
+
+.search-query-container {
+  min-width: 15rem;
+  width: 20rem;
+}
+
+#beta {
+  width: 54px;
+  position: absolute;
+  top: 26%;
+  right: 15px;
+  font-size: 15px;
+  background-color: #707372;
+  color: white;
+  text-align: center;
+  padding-top: 3px;
+  padding-bottom: 2px;
+  border-radius: 5px;
+}
+
+.search-clear-icon {
+  position: absolute;
+  right: 80px;
+  top: 26%;
+  cursor: pointer;
+}
+
+.vf-form--search__results-list {
+  margin-top: 0;
+  z-index: 1988;
+}

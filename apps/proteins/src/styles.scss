@@ -1,1 +1,16 @@
-/* You can add global styles to this file, and also import other style files */
+@import '@visual-framework/vf-sass-config/index.scss';
+
+// Include the relevant IBM Plex typefaces
+// @import '@visual-framework/vf-font-plex-mono/vf-font-plex-mono.scss';
+// @import '@visual-framework/vf-font-plex-sans/vf-font-plex-sans.scss';
+
+.vf-navigation--on-this-page.vf-u-fullbleed {
+  z-index: 1000 !important;
+}
+
+.vf-body {
+  display: block;
+  margin: 0 auto;
+  max-width: 80em;
+  padding: 0 1em;
+}

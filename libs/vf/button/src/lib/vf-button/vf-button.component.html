@@ -1,0 +1,12 @@
+<button
+  class="vf-button"
+  [ngClass]="{
+    'vf-button--primary': type !== 'secondary' && type !== 'tertiary' && !disabled,
+    'vf-button--secondary': type === 'secondary' && !disabled,
+    'vf-button--tertiary': type === 'tertiary' || disabled,
+    'vf-button--sm': small
+  }"
+  [disabled]="disabled"
+>
+  {{ label }}
+</button>

@@ -1,0 +1,7 @@
+<nav class="vf-navigation vf-navigation--on-this-page | vf-u-fullbleed | vf-cluster">
+  <ul class="vf-navigation__list | vf-list | vf-cluster__inner" data-vf-js-navigation-on-this-page-container="false">
+    <li *ngFor="let item of menuItems; let i = index" class="vf-navigation__item">
+      <a href="{{ item.url }}" class="vf-navigation__link" attr.aria-selected="{{ i === selectedIndex ? 'true' : 'false' }}">{{ item.label }}</a>
+    </li>
+  </ul>
+</nav>

@@ -1,0 +1,26 @@
+<article class="vf-stack vf-stack--lg vf-u-margin__bottom--1200" style="clear: both">
+  <div class="vf-stack vf-u-padding--200">
+    <section class="vf-hero vf-hero--800 | vf-u-fullbleed">
+      <div class="vf-hero__content | vf-box">
+        <h1 class="vf-hero__heading">
+          <a class="vf-hero__heading_link" href="{{ url }}">
+            <img *ngIf="logo; else headingBlock" src="{{ logo }}" alt="Page Logo" style="max-height: 40px" />
+            <ng-template #headingBlock>{{ heading }}</ng-template>
+          </a>
+        </h1>
+
+        <p class="vf-hero__subheading" style="margin-bottom: 20px">{{ subheading }}</p>
+
+        <pdbc-pdbe-header-search
+          [beta]="searchBeta"
+          [buttonText]="searchButtonText"
+          [placeholder]="searchPlaceholder"
+          [suggestions]="searchSuggestions"
+          (searchKeyword)="searchHandler($event)"
+          (selectedIndex)="selectSuggestion($event)"
+          (searchCleared)="searchClearedFn($event)"
+        ></pdbc-pdbe-header-search>
+      </div>
+    </section>
+  </div>
+</article>

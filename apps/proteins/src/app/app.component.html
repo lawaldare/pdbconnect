@@ -1,1 +1,27 @@
-<pdbc-nx-welcome></pdbc-nx-welcome>
+<!-- Header Section -->
+<pdbc-pdbe-page-header
+  [heading]="'Protein Data Bank in Europe - Knowledge Base'"
+  [subheading]="'Aggregated Views of Proteins'"
+  [url]="'https://www.ebi.ac.uk/pdbe/pdbe-kb'"
+  [menuItems]="[
+    { label: 'Summary', url: 'Javascript:void(0)' },
+    { label: 'Structure', url: 'Javascript:void(0)' },
+    { label: 'Ligands', url: 'Javascript:void(0)' },
+    { label: 'Interactions', url: 'Javascript:void(0)' },
+    { label: 'Similarity', url: 'Javascript:void(0)' },
+    { label: 'Publication', url: 'Javascript:void(0)' }
+  ]"
+  [searchBeta]="true"
+  [searchButtonText]="'Search'"
+  [searchPlaceholder]="'Search for protein'"
+  [searchSuggestions]="suggestions"
+  (searchKeyword)="searchKeywordFn($event)"
+  (selectedIndex)="selectedIndexFn($event)"
+  (searchCleared)="searchClearedFn()"
+></pdbc-pdbe-page-header>
+
+<!-- Summary Section -->
+<pdbc-summary></pdbc-summary>
+
+<!-- Footer Section -->
+<pdbc-vf-ebi-footer></pdbc-vf-ebi-footer>
