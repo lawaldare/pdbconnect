@@ -48,4 +48,4 @@ Monorepo for PDBe front-end applications and component library
 
 - [Guidelines to add new project / library component](./docs/guidelines.md)
 - [Creating a new library component](./docs/creating-library-component.md)
-- [Creatinf a new project](./docs/creating-app.md)
+- [Creating a new project](./docs/creating-app.md)

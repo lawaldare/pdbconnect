@@ -1,6 +1,6 @@
 ### Guidelines to add new project or a library component
 
-##### 1. Clone repository and setup the development environment using the "Getting Started guide"
+##### 1. Clone repository and setup the development environment using the [Getting Started guide](../README.md)
 
 ##### 2. Create a new feature branch to save the code in the repository as you develop the component (Naming – To Be Discussed)
 - `git checkout -b <new-branch-name>`
@@ -9,7 +9,7 @@
 
 ##### 4. Follow - 
 - [Creating a new library component](./creating-library-component.md) guide to generate a new libray component
-- [Creating a new peoject](./creating-app.md) guide to generate a new project
+- [Creating a new project](./creating-app.md) guide to generate a new project
 
 ### Reference resources
 ##### Angular
