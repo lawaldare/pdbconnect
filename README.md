@@ -13,7 +13,7 @@ Monorepo for PDBe front-end applications and component library
 - Git (https://git-scm.com/)
 - Typescript (~4.7.2) [ `npm install -g typescript` ]
 - Angular CLI (^16.0.2) [ `npm install -g @angular/cli` ]
-- NRWL CLI (15.9.3) [`npm install -g @nrwl/cli`]
+- Nx [ `npm install -g nx@latest` ]
 - NRWL Schematic (8.12.11) [ `npm install -g @nrwl/schematics` ]
 
 ##### 2. Clone Repository
@@ -39,7 +39,7 @@ Monorepo for PDBe front-end applications and component library
 
 ##### 6. Run App to view the pages. All the Apps are stored in the 'apps' folder
 
-- `npx nx serve <APP-NAME>` (Example: `nx serve proteins`)
+- `npx nx serve <APP-NAME>` (Example: `npx nx serve proteins`)
 
 ##### 7. Run Nx Graph to see a diagram of the dependencies of the projects
 
