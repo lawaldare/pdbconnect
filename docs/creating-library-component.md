@@ -23,10 +23,10 @@ Refer table to replace parameter values mentioned in the commands below
 `npx nx g @nrwl/angular:library spl-button --standalone --directory pdbe --routing false --style=scss --importPath=@pdbe-lib/spl-button`
 
 ##### 2. Generate Storybook documentation
-- `nx g @nrwl/angular:stories <DIRECTORY>-<COMPONENT-NAME> --generateCypressSpecs false`
+- `npx nx g @nrwl/angular:stories <DIRECTORY>-<COMPONENT-NAME> --generateCypressSpecs false`
 
 - Example – Create Storybook documentation for the spl-button component
-`nx g @nrwl/angular:stories pdbe-spl-button --generateCypressSpecs false`
+`npx nx g @nrwl/angular:stories pdbe-spl-button --generateCypressSpecs false`
 
 ##### 3. Types of component files generated after following the steps - 1 and 2
 - \*.component.html – HTML template file
@@ -42,10 +42,10 @@ Refer table to replace parameter values mentioned in the commands below
 - Example - `PDBe Components/Special Button`
 
 ##### 5. Run Storybook to view your component in the browser
-- `nx storybook lib-docs`
+- `npx nx storybook lib-docs`
 
 ##### 6. Start the unit testing server
-- `nx run <DIRECTORY>-<COMPONENT-NAME>:test --watch`
+- `npx nx run <DIRECTORY>-<COMPONENT-NAME>:test --watch`
 
 ##### 7. Command to delete a component, if needed!
 - `npx nx generate @nrwl/workspace:remove <DIRECTORY>-<COMPONENT-NAME>`

@@ -11,19 +11,19 @@
 `npx nx g @nrwl/angular:app entries --standalone --routing`
 
 ##### 2. Run thr project app locally
-- `nx serve <PROJECT-NAME>` (Example - `nx serve entries`)
+- `npx nx serve <PROJECT-NAME>` (Example - `nx serve entries`)
 
 ##### 2. Command to add a component to the project app
-- `nx generate @nrwl/angular:component <DIRECTORY/<COMPONENT-NAME> --standalone --project=<PROJECT-NAME> --style=scss`
+- `npx nx generate @nrwl/angular:component <DIRECTORY/<COMPONENT-NAME> --standalone --project=<PROJECT-NAME> --style=scss`
 
 - Example – Add Summary component to entries project
-- `nx generate @nrwl/angular:component pages/summary --standalone --project=entries --style=scss`
+- `npx nx generate @nrwl/angular:component pages/summary --standalone --project=entries --style=scss`
 
 ##### 3. Command to add a service to the project app
-- `nx generate @nrwl/angular:service <DIRECTORY/<SERVICE-NAME> --project=<PROJECT-NAME>`
+- `npx nx generate @nrwl/angular:service <DIRECTORY/<SERVICE-NAME> --project=<PROJECT-NAME>`
 
 - Example – Add test service to entries project
-- `nx generate @nrwl/angular:service services/test --project=entries`
+- `npx nx generate @nrwl/angular:service services/test --project=entries`
 
 ##### 4. Command to delete a project, if needed!
 - `npx nx generate @nrwl/workspace:remove --projectName=<PROJECT-NAME>`
