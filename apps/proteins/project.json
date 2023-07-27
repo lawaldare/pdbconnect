@@ -17,7 +17,8 @@
         "tsConfig": "apps/proteins/tsconfig.app.json",
         "assets": ["apps/proteins/src/favicon.ico", "apps/proteins/src/assets"],
         "styles": ["apps/proteins/src/styles.scss"],
-        "scripts": []
+        "scripts": [],
+        "baseHref": "$APP_BASE_HREF"
       },
       "configurations": {
         "production": {
@@ -29,8 +30,8 @@
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "2kb",
-              "maximumError": "4kb"
+              "maximumWarning": "200kb",
+              "maximumError": "250kb"
             }
           ],
           "outputHashing": "all"
@@ -90,6 +91,10 @@
       "options": {
         "buildTarget": "proteins:build"
       }
+    },
+    "docker-build": {
+      "dependsOn": ["build"],
+      "command": "docker build -f apps/proteins/Dockerfile . -t proteins"
     }
   }
 }
