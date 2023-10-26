@@ -10,9 +10,6 @@ const actionArgs = {
   hostname: {
     control: { type: 'text' },
     description: 'Hostname of APIs',
-    table: {
-      defaultValue: { summary: 'EMBL-EBI' },
-    },
   },
   apiKeyValue: {
     control: { type: 'text' },
