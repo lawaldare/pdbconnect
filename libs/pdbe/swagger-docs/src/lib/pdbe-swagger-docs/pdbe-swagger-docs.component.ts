@@ -12,7 +12,6 @@ import { SwaggerUIStandalonePreset } from 'swagger-ui-dist';
 })
 export class PdbeSwaggerDocsComponent {
   @Input() jsonUrl: string = '';
-  @Input() apiUrl?: string = window.location.hostname;
   @Input() apiKeyValue?: string = undefined;
 
 
@@ -43,15 +42,19 @@ export class PdbeSwaggerDocsComponent {
       ],
       layout: "BaseLayout",
       requestInterceptor: (req: any) => { // type should be Request but with url not as readonly
-        if ('method' in req && this.apiKeyValue) {
-          const [_, urlParams] = req.url.split('?');
+        if ('method' in req) {
+          const [urlPath, urlParams] = req.url.split('?');
+          const apiUrl = urlPath;
+
           const queryParams = new URLSearchParams(urlParams);
-          queryParams.set('key', this.apiKeyValue);
+          let newParams = undefined;
+          if (this.apiKeyValue) {
+            queryParams.set('key', this.apiKeyValue);
 
-          const newParams = queryParams.toString();
-
-          req.url = newParams ? `${this.apiUrl}?${newParams}` : this.apiUrl;
-          req.url =`${this.apiUrl}?${newParams}`;
+            newParams = queryParams.toString();
+          }
+          
+          req.url = newParams ? `${apiUrl}?${newParams}` : apiUrl;
         }
         return req;
       },

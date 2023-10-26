@@ -5,15 +5,11 @@ import { PdbeSwaggerDocsComponent } from './pdbe-swagger-docs.component';
 const actionArgs = {
   jsonUrl: {
     control: { type: 'text' },
-    description: 'OpenAPI Json file URL',
-  },
-  apiUrl: {
-    control: { type: 'text' },
-    description: 'Hostname of APIs',
+    description: 'OpenAPI Json file URL.',
   },
   apiKeyValue: {
     control: { type: 'text' },
-    description: 'API key',
+    description: 'API key. Added as a GET request parameter when set.',
   }
 }
 
@@ -28,7 +24,7 @@ export const Primary = {
     props: args,
   }),
   args: {
-    jsonUrl: 'https://wwwdev.ebi.ac.uk/pdbe/aggregated-api/openapi.json'
+    jsonUrl: 'https://wwwdev.ebi.ac.uk/pdbe/aggregated-api/openapi.json',
   },
   argTypes: actionArgs,
   name: 'Default',
