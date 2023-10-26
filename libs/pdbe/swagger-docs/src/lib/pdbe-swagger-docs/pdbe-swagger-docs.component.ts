@@ -11,15 +11,12 @@ import { SwaggerUIStandalonePreset } from 'swagger-ui-dist';
   styleUrls: ['./pdbe-swagger-docs.component.scss'],
 })
 export class PdbeSwaggerDocsComponent {
-  @Input() openApiURL: string = '';
-  @Input() hostname: string = '';
-  @Input() apiKeyValue: string = '';
+  @Input() jsonUrl: string = '';
+  @Input() apiUrl?: string = window.location.hostname;
+  @Input() apiKeyValue?: string = undefined;
 
 
   ngOnInit(): void {
-    // const hostname = this.openApiURL.split("/").slice(0, -1).join("/");
-    // const apiKeyValue: string = 'AIzaSyCeurAJz7ZGjPQUtEaerUkBZ3TaBkXrY94';
-
     function HideInfoUrlPlugin() {
       return {
         components: {
@@ -29,7 +26,7 @@ export class PdbeSwaggerDocsComponent {
     }
 
     const ui = SwaggerUIBundle({
-      url: this.openApiURL,
+      url: this.jsonUrl,
       dom_id: '#swagger-ui',
       deepLinking: true,
       presets: [
@@ -46,16 +43,15 @@ export class PdbeSwaggerDocsComponent {
       ],
       layout: "BaseLayout",
       requestInterceptor: (req: any) => { // type should be Request but with url not as readonly
-        if ('method' in req) {
-          const [urlPath, urlParams] = req.url.split('?');
-          const apiUrl = urlPath.replace(this.hostname, `${ this.hostname }/api`);
+        if ('method' in req && this.apiKeyValue) {
+          const [_, urlParams] = req.url.split('?');
           const queryParams = new URLSearchParams(urlParams);
           queryParams.set('key', this.apiKeyValue);
 
           const newParams = queryParams.toString();
 
-          // req.url = newParams ? `${apiUrl}?${newParams}` : apiUrl;
-          req.url =`${apiUrl}?${newParams}`;
+          req.url = newParams ? `${this.apiUrl}?${newParams}` : this.apiUrl;
+          req.url =`${this.apiUrl}?${newParams}`;
         }
         return req;
       },

@@ -3,11 +3,11 @@ import { PdbeSwaggerDocsComponent } from './pdbe-swagger-docs.component';
 
 
 const actionArgs = {
-  openApiURL: {
+  jsonUrl: {
     control: { type: 'text' },
     description: 'OpenAPI Json file URL',
   },
-  hostname: {
+  apiUrl: {
     control: { type: 'text' },
     description: 'Hostname of APIs',
   },
@@ -28,9 +28,7 @@ export const Primary = {
     props: args,
   }),
   args: {
-    openApiURL: 'https://wwwdev.ebi.ac.uk/pdbe/aggregated-api/openapi.json',
-    hostname: 'https://wwwdev.ebi.ac.uk/pdbe/aggregated-api/',
-    apiKeyValue: 'AIzaSyCeurAJz7ZGjPQUtEaerUkBZ3TaBkXrY94',
+    jsonUrl: 'https://wwwdev.ebi.ac.uk/pdbe/aggregated-api/openapi.json'
   },
   argTypes: actionArgs,
   name: 'Default',
