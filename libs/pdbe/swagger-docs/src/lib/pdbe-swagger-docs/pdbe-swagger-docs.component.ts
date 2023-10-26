@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SwaggerUIBundle } from 'swagger-ui-dist';
 import { SwaggerUIStandalonePreset } from 'swagger-ui-dist';
@@ -10,8 +10,8 @@ import { SwaggerUIStandalonePreset } from 'swagger-ui-dist';
   templateUrl: './pdbe-swagger-docs.component.html',
   styleUrls: ['./pdbe-swagger-docs.component.scss'],
 })
-export class PdbeSwaggerDocsComponent {
-  @Input() jsonUrl: string = '';
+export class PdbeSwaggerDocsComponent implements OnInit {
+  @Input() jsonUrl = '';
   @Input() apiKeyValue?: string = undefined;
 
 
@@ -24,7 +24,7 @@ export class PdbeSwaggerDocsComponent {
       }
     }
 
-    const ui = SwaggerUIBundle({
+    SwaggerUIBundle({
       url: this.jsonUrl,
       dom_id: '#swagger-ui',
       deepLinking: true,
@@ -41,7 +41,7 @@ export class PdbeSwaggerDocsComponent {
         HideInfoUrlPlugin
       ],
       layout: "BaseLayout",
-      requestInterceptor: (req: any) => { // type should be Request but with url not as readonly
+      requestInterceptor: (req) => { // type should be Request but with url not as readonly
         if ('method' in req) {
           const [urlPath, urlParams] = req.url.split('?');
           const apiUrl = urlPath;
