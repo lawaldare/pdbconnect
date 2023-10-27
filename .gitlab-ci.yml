@@ -117,3 +117,5 @@ pages:
     paths:
       - public
     expire_in: never
+  dependencies:
+    - build
