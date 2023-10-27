@@ -1,7 +1,6 @@
 import { Meta } from '@storybook/angular';
 import { PdbeSwaggerDocsComponent } from './pdbe-swagger-docs.component';
 
-
 const actionArgs = {
   jsonUrl: {
     control: { type: 'text' },
@@ -10,8 +9,8 @@ const actionArgs = {
   apiKeyValue: {
     control: { type: 'text' },
     description: 'API key. Added as a GET request parameter when set.',
-  }
-}
+  },
+};
 
 export default {
   title: 'PDBe Components/Swagger Docs',

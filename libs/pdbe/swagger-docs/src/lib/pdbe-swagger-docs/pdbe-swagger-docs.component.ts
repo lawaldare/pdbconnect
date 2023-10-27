@@ -14,33 +14,28 @@ export class PdbeSwaggerDocsComponent implements OnInit {
   @Input() jsonUrl = '';
   @Input() apiKeyValue?: string = undefined;
 
-
   ngOnInit(): void {
     function HideInfoUrlPlugin() {
       return {
         components: {
-          InfoUrl: function() { return null }
-        }
-      }
+          InfoUrl: function () {
+            return null;
+          },
+        },
+      };
     }
 
     SwaggerUIBundle({
       url: this.jsonUrl,
       dom_id: '#swagger-ui',
       deepLinking: true,
-      presets: [
-        SwaggerUIBundle['presets'].apis,
-        SwaggerUIStandalonePreset,
-      ],
+      presets: [SwaggerUIBundle['presets'].apis, SwaggerUIStandalonePreset],
       syntaxHighlight: {
         activate: true,
-        theme: "nord"
+        theme: 'nord',
       },
-      plugins: [
-        SwaggerUIBundle['plugins'].DownloadUrl,
-        HideInfoUrlPlugin
-      ],
-      layout: "BaseLayout",
+      plugins: [SwaggerUIBundle['plugins'].DownloadUrl, HideInfoUrlPlugin],
+      layout: 'BaseLayout',
       requestInterceptor: (req) => {
         if ('method' in req) {
           const [urlPath, urlParams] = req.url.split('?');
@@ -53,7 +48,7 @@ export class PdbeSwaggerDocsComponent implements OnInit {
 
             newParams = queryParams.toString();
           }
-          
+
           req.url = newParams ? `${apiUrl}?${newParams}` : apiUrl;
         }
         return req;
