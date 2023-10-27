@@ -41,7 +41,7 @@ export class PdbeSwaggerDocsComponent implements OnInit {
         HideInfoUrlPlugin
       ],
       layout: "BaseLayout",
-      requestInterceptor: (req) => { // type should be Request but with url not as readonly
+      requestInterceptor: (req) => {
         if ('method' in req) {
           const [urlPath, urlParams] = req.url.split('?');
           const apiUrl = urlPath;
