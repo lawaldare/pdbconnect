@@ -106,3 +106,14 @@ triggers:
     strategy: depend
   variables:
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+
+pages:
+  stage: deploy
+  needs:
+    - build
+  script:
+    - cp -r dist/* public/
+  artifacts:
+    paths:
+      - public
+    expire_in: never
