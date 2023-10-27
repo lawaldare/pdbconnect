@@ -2,11 +2,13 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SwaggerUIBundle } from 'swagger-ui-dist';
 import { SwaggerUIStandalonePreset } from 'swagger-ui-dist';
+import { PdbePageHeaderComponent } from '@pdbe-lib/page-header';
+import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 
 @Component({
   selector: 'pdbc-pdbe-swagger-docs',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PdbePageHeaderComponent, VfEbiFooterComponent],
   templateUrl: './pdbe-swagger-docs.component.html',
   styleUrls: ['./pdbe-swagger-docs.component.scss'],
 })
