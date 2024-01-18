@@ -1,0 +1,58 @@
+.pdbe-header-logo-menu {
+    width: 100%;
+    height: 88px;
+}
+.pdbe-header-logo-menu-container {
+    display: flex;
+    padding: 22px 34px;
+    justify-content: space-between;
+    align-items: center;
+    align-self: stretch;
+}
+.pdbe-header-logo-menu-container > img {
+    justify-content: center;
+    align-items: center;
+}
+.pdbe-header-logo-menu-urls {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+.pdbe-header-menu-link {
+    color: white;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    font-family: IBM Plex Sans;
+    font-size: 19px;
+    font-style: normal;
+    font-weight: 300;
+    line-height: 26.6px;
+    text-decoration: none;
+}
+.pdbe-header-menu-link:hover {
+    font-weight: 400;
+    text-decoration: underline;
+}
+.pdbe-header-menu-link:active {
+    font-weight: 500;
+}
+.pdbe-header-logo-img {
+    width: 141.43px;
+    height: 44px;
+}
+.pdbe-kb-header-logo-img {
+    width: 233.36px;
+    height: 44px;
+}
+@media screen and (max-width: 1024px) {
+    .pdbe-header-logo-menu-container {
+        padding: 16px 34px;
+    }
+}
+@media screen and (max-width: 768px) {
+    .pdbe-header-logo-menu-container {
+        padding: 25px 34px 19px 34px;
+    }
+}

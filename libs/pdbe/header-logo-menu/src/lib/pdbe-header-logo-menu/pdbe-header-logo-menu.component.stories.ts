@@ -11,9 +11,6 @@ const actionArgs = {
     description: 'Type of rendered logo',
     options: ['PDBe', 'PDBe-KB'],
   },
-  // urlNames: {
-  //   description: 'List of menu URLs names',
-  // },
   urls: {
     description: 'List of menu URLs',
   },
@@ -21,17 +18,6 @@ const actionArgs = {
     control: { type: 'color' },
     description: 'Color of menu highlight for small screens',
   },
-  // suggestions: {
-  //   description: 'Suggestions/result list',
-  // },
-  // searchKeyword: {
-  //   description: 'Event emitter to get Search Keyword',
-  //   action: 'searchKeyword',
-  // },
-  // selectedIndex: {
-  //   description: 'Event emitter to get selected suggestion index',
-  //   action: 'selectedIndex',
-  // },
 };
 
 export default {

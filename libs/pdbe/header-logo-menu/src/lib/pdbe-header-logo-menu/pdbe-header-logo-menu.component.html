@@ -1,1 +1,11 @@
-<p>pdbe-header-logo-menu works!</p>
+<div class="pdbe-header-logo-menu" [ngStyle]="{'background-color': backgroundColor}">
+    <div class="pdbe-header-logo-menu-container vf-color--green--800">
+        <img [ngClass]="getHeaderLogoClass()" src="{{ headerLogoSrc }}" alt="">
+        <div class="pdbe-header-logo-menu-urls">
+            <div *ngFor="let url of urls;">
+                <a class="pdbe-header-menu-link" href="{{ url.path }}" target="_blank">{{ url.name }}</a>
+            </div>
+            <div class="pdbe-header-logo-menu-icon"></div>
+        </div>
+    </div>
+</div>
