@@ -39,7 +39,23 @@ export const Story1 = {
     menuHighlightColor: "#0a5032"
   },
   argTypes: actionArgs,
-  name: 'Default',
+  name: 'PDBe',
+};
+
+export const Story3 = {
+  render: (args: PdbeHeaderLogoMenuComponent) => ({
+    props: args,
+  }),
+  args: {
+    backgroundColor: "#085F5C",
+    logoType: "PDBe-KB",
+    urls: [{"name": "Services", "path": "https://www.ebi.ac.uk/pdbe/pdbe-services"},
+    {"name": "Documentation", "path": "https://www.ebi.ac.uk/pdbe/documentation"},
+    {"name": "Training", "path":"https://www.ebi.ac.uk/pdbe/pdbe-training" }],
+    menuHighlightColor: "#086C68"
+  },
+  argTypes: actionArgs,
+  name: 'PDBe-KB',
 };
 
 
