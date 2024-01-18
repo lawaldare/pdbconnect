@@ -16,6 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@pdbc/lib-docs": ["libs/lib-docs/src/index.ts"],
+      "@pdbe-lib/button": ["libs/pdbe/button/src/index.ts"],
       "@pdbe-lib/header-logo-menu": ["libs/pdbe/header-logo-menu/src/index.ts"],
       "@pdbe-lib/header-search": ["libs/pdbe/header-search/src/index.ts"],
       "@pdbe-lib/hero-banner": ["libs/pdbe/hero-banner/src/index.ts"],

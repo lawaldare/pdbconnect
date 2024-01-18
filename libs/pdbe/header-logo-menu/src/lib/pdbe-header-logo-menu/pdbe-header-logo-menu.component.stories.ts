@@ -16,7 +16,7 @@ const actionArgs = {
   },
   menuHighlightColor: {
     control: { type: 'color' },
-    description: 'Color of menu highlight for small screens',
+    description: 'Color of menu links highlight for mobile view',
   },
 };
 
