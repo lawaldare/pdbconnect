@@ -14,6 +14,7 @@ export class PdbeHeaderLogoMenuComponent {
   @Input() urls: {"name": string, "path": string}[] = [];
   @Input() menuHighlightColor = "";
   headerLogoSrc = "";
+  collapsedMenu = true;
 
   ngOnInit() {
     if (this.logoType === "PDBe") {
@@ -30,6 +31,23 @@ export class PdbeHeaderLogoMenuComponent {
       return "pdbe-kb-header-logo-img";
     }
     return "";
+  }
+
+  getCollapsedClass(isCollapsedDefault: boolean) {
+    if (isCollapsedDefault && this.collapsedMenu) {
+      return "collapsed"
+    }
+    else if (isCollapsedDefault && !this.collapsedMenu) {
+      return "expanded";
+    }
+    else if (!isCollapsedDefault && this.collapsedMenu) {
+      return "expanded";
+    }
+    return "collapsed";
+  }
+
+  invertCollapseState() {
+    this.collapsedMenu = !this.collapsedMenu;
   }
 
 }

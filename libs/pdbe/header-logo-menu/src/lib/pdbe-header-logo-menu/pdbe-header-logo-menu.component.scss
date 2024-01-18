@@ -1,7 +1,13 @@
+@import "/styles/pdb_connect.scss";
+
+// Logo menu is always at least 88px but stretches if mobile
 .pdbe-header-logo-menu {
     width: 100%;
-    height: 88px;
+    min-height: 88px;
+    container-type: inline-size;
 }
+
+// Disposition of logo menu and it's child elements (logo and links)
 .pdbe-header-logo-menu-container {
     display: flex;
     padding: 22px 34px;
@@ -14,30 +20,56 @@
     align-items: center;
 }
 .pdbe-header-logo-menu-urls {
-    display: flex;
     align-items: center;
     gap: 24px;
 }
+
+/**
+Logic for controlling menu mobile vs non mobile display
+Two pdbeHeaderLogoLinks menus are rendered by ng-container/ng-template on .html
+
+1 - pdbe-header-logo-menu-container > pdbe-header-logo-menu-urls
+    inside pdbe-header-logo-menu-container div
+    and is ALWAYS rendered on width above 540px no matter it's state
+
+2 - pdbe-header-logo-menu-container + .pdbe-header-logo-menu-urls
+    after pdbe-header-logo-menu-container div
+    which is only rendered on width below 540px depending on state
+    (see media queries below)
+*/
+.pdbe-header-logo-menu-container > .pdbe-header-logo-menu-urls.collapsed {
+    display: flex;
+}
+.pdbe-header-logo-menu-container > .pdbe-header-logo-menu-urls.expanded {
+    display: flex;
+}
+.pdbe-header-logo-menu-container + .pdbe-header-logo-menu-urls.collapsed {
+    display: none;
+}
+.pdbe-header-logo-menu-container + .pdbe-header-logo-menu-urls.expanded {
+    display: none;
+}
+
+// This is a pdbe-header-logo-menu-urls MOBILE ONLY class (conditionally added by angular)
+// See: https://stackoverflow.com/a/22560108 for touch devices CSS
+.hoverable-mobile-menu:hover, .hoverable-mobile-menu:active {
+    background-color: var(--bg-color);
+    cursor: pointer;
+}
+.hoverable-mobile-menu:hover > a {
+    font-weight: 400;
+    text-decoration: underline;
+}
+
+// Generic menu link styles
 .pdbe-header-menu-link {
-    color: white;
     display: inline-flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
-    font-family: IBM Plex Sans;
-    font-size: 19px;
-    font-style: normal;
-    font-weight: 300;
-    line-height: 26.6px;
-    text-decoration: none;
 }
-.pdbe-header-menu-link:hover {
-    font-weight: 400;
-    text-decoration: underline;
-}
-.pdbe-header-menu-link:active {
-    font-weight: 500;
-}
+
+// Biggest logo image size resolutions
 .pdbe-header-logo-img {
     width: 141.43px;
     height: 44px;
@@ -46,13 +78,65 @@
     width: 233.36px;
     height: 44px;
 }
-@media screen and (max-width: 1024px) {
-    .pdbe-header-logo-menu-container {
-        padding: 16px 34px;
-    }
+
+.pdbe-header-logo-menu-icons > .icon {
+    cursor: pointer;
 }
-@media screen and (max-width: 768px) {
-    .pdbe-header-logo-menu-container {
-        padding: 25px 34px 19px 34px;
+
+// Contains logic for icon conditional display
+.icon.expanded {
+    display: none;
+}
+.icon.collapsed {
+    display: none;
+}
+
+/**
+Media queries for responsive design
+*/
+
+@media screen and (max-width: 540px) {
+
+// See: https://stackoverflow.com/questions/12251750/can-media-queries-resize-based-on-a-div-element-instead-of-the-screen
+// @container (max-width: 540px) { // For storybook proper display
+
+
+    // Contains logic for icon conditional display ON MOBILE
+    .icon.expanded {
+        display: block;
+    }
+    .icon.collapsed {
+        display: none;
+    }
+
+    // Logic for controlling menu mobile vs non mobile display
+    // For more details check comments above
+    .pdbe-header-logo-menu-container > .pdbe-header-logo-menu-urls.collapsed {
+        display: none;
+    }
+    .pdbe-header-logo-menu-container > .pdbe-header-logo-menu-urls.expanded {
+        display: none;
+    }
+    .pdbe-header-logo-menu-container + .pdbe-header-logo-menu-urls.collapsed {
+        display: none;
+    }
+    .pdbe-header-logo-menu-container + .pdbe-header-logo-menu-urls.expanded {
+        display: flex;
+    }
+
+    // Vertical (column) disposition of menu links ON MOBILE
+    .pdbe-header-logo-menu-urls {
+        padding: 16px 24px 32px 24px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        align-self: stretch;
+    }
+    .pdbe-header-logo-menu-urls > div {
+        display: flex;
+        padding: 16px 0px 16px 8px;
+        align-items: flex-start;
+        gap: 10px;
+        align-self: stretch;
     }
 }
