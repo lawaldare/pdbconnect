@@ -1,3 +1,36 @@
+<div class="search-top-container" [ngStyle]="{'background-color': backgroundColor}">
+  <div class="search-bar-btn-container">
+      <input
+      #searchBox
+      autocomplete="off"
+      placeholder="{{ placeholder }}"
+      id="searchitem"
+      class="vf-form__input pdbeAutoCompleteSearchBox"
+      required=""
+      spellcheck="false"
+      data-ms-editor="true"
+      (keyup)="search(searchBox.value)"
+      (keyup.enter)="openSearch(searchBox.value)"
+    />
+    <pdbc-pdbe-button *ngIf="pdbeSearchButtonStyle"
+      [backgroundColor]="pdbeSearchButtonStyle.backgroundColor"
+      [fontColor]="pdbeSearchButtonStyle.fontColor"
+      [borderColor]="pdbeSearchButtonStyle.borderColor"
+      [shadowColor]="pdbeSearchButtonStyle.shadowColor"
+      [label]="pdbeSearchButtonStyle.label"
+      [paddingSize]="pdbeSearchButtonStyle.paddingSize"
+      [mobileIconName]="pdbeSearchButtonStyle.mobileIconName"
+    >
+    </pdbc-pdbe-button>
+  </div>
+  <div class="search-examples-adv-container">
+    <div class="search-examples-container" *ngIf="examples && examples.length > 0">
+      <span class="paragraph-3" style="color: white;">Examples:</span>
+
+    </div>
+  </div>
+</div>
+
 <section>
   <form id="ebi_search" class="vf-form vf-form--search vf-form--search--responsive | vf-sidebar vf-sidebar--end">
     <div class="vf-sidebar__inner">
@@ -25,7 +58,17 @@
           <li class="vf-list__item" role="option" *ngFor="let suggestion of suggestions; let i = index" (click)="selectSuggestion(i)">{{ suggestion }}</li>
         </ul>
       </div>
-      <button type="submit" class="vf-search__button | vf-button vf-button--primary">
+      <pdbc-pdbe-button *ngIf="pdbeSearchButtonStyle"
+        [backgroundColor]="pdbeSearchButtonStyle.backgroundColor"
+        [fontColor]="pdbeSearchButtonStyle.fontColor"
+        [borderColor]="pdbeSearchButtonStyle.borderColor"
+        [shadowColor]="pdbeSearchButtonStyle.shadowColor"
+        [label]="pdbeSearchButtonStyle.label"
+        [paddingSize]="pdbeSearchButtonStyle.paddingSize"
+        [mobileIconName]="pdbeSearchButtonStyle.mobileIconName"
+      >
+      </pdbc-pdbe-button>
+      <!-- <button type="submit" class="vf-search__button | vf-button vf-button--primary">
         <span class="vf-button__text">{{ buttonText }}</span>
 
         <svg
@@ -50,7 +93,7 @@
             ></path>
           </g>
         </svg>
-      </button>
+      </button> -->
     </div>
   </form>
   <p class="vf-text-body--5 vf-u-margin__bottom--0">

@@ -50,7 +50,7 @@ export const Story1 = {
     borderColor: "#C66717",
     shadowColor: "#B65417",
     label: "Primary",
-    paddingSize: "small",
+    paddingSize: "Small",
     mobileIconName: "none"
   },
   argTypes: actionArgs,
@@ -67,7 +67,7 @@ export const Story2 = {
     borderColor: "#0A5032",
     shadowColor: "#0A5032",
     label: "Secondary",
-    paddingSize: "small",
+    paddingSize: "Small",
     mobileIconName: "none"
   },
   argTypes: actionArgs,
@@ -84,7 +84,7 @@ export const Story3 = {
     borderColor: "#217976",
     shadowColor: "#0F5C5A",
     label: "Secondary",
-    paddingSize: "small",
+    paddingSize: "Small",
     mobileIconName: "none"
   },
   argTypes: actionArgs,
@@ -101,7 +101,7 @@ export const Story4 = {
     borderColor: "#0A5032",
     shadowColor: "#0A5032",
     label: "Search",
-    paddingSize: "big",
+    paddingSize: "Big",
     mobileIconName: "search"
   },
   argTypes: actionArgs,
@@ -118,7 +118,7 @@ export const Story5 = {
     borderColor: "#217976",
     shadowColor: "#0F5C5A",
     label: "Search",
-    paddingSize: "big",
+    paddingSize: "Big",
     mobileIconName: "search"
   },
   argTypes: actionArgs,

@@ -57,7 +57,7 @@ Two pdbeHeaderLogoLinks menus are rendered by ng-container/ng-template on .html
     cursor: pointer;
 }
 .hoverable-mobile-menu:hover > a {
-    font-weight: 400;
+    // font-weight: 400;
     text-decoration: underline;
 }
 

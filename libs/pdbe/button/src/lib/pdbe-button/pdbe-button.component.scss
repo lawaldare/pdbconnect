@@ -2,10 +2,24 @@
 @import '@visual-framework/vf-button/vf-button.scss';
 @import "/styles/icons.scss";
 
+// Default button layout overriding some of vf-button properties
 .pdbe-button {
-    // border-width: 1px;
-    border-style: solid;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-family: IBM Plex Sans;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 27.2px; 
+    padding-top: 8px;
+    padding-bottom: 8px;
+    margin: 0;
+    border-width: 2px;
+    border-radius: 2px;
 }
+
+// Small and big padding possibilities
 .pdbe-btn-small-pad {
     padding-left: 16px;
     padding-right: 16px;
@@ -14,18 +28,39 @@
     padding-left: 48px;
     padding-right: 48px;
 }
+
+// Btn label display is on and icon display is off as default
 .btn-label {
     display: inherit;
 }
 .icon {
     display: none;
 }
+
 @media screen and (max-width: 540px) {
+    // Switch btn label display to off and icon display to on in mobile
     .btn-label {
         display: none;
     }
     .icon {
         display: block;
+    }
+
+    // Button layout and shadow fixes for mobile
+    .pdbe-button {
+        display: flex;
+        height: 44px;
+        justify-content: center;
+        align-items: center;
+        border-width: 2px;
+        box-shadow: 4px 4px;
+        border-radius: 2px;
+    }
+    .pdbe-button:focus, .pdbe-button:hover {
+        box-shadow: 2px 2px;
+    }
+    .pdbe-button:active {
+        transform: translate(4px, 4px) translateZ(1px);
     }
     .pdbe-btn-big-pad.pdbe-btn-mobile-small-pad {
         padding-left: 16px;

@@ -3,20 +3,24 @@ import { CommonModule } from '@angular/common';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
+import { PdbeSecondaryButtonStyle, PdbeKbSecondaryButtonStyle, PdbeButtonComponent } from '@pdbe-lib/button';
+
 interface Example {
   label: string;
   url: string;
 }
 
+
 @Component({
   selector: 'pdbc-pdbe-header-search',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PdbeButtonComponent],
   templateUrl: './pdbe-header-search.component.html',
   styleUrls: ['./pdbe-header-search.component.scss'],
 })
 export class PdbeHeaderSearchComponent implements OnInit {
   // Input Parameters
+  @Input() backgroundColor = '';
   @Input() beta = true;
   @Input() buttonText = 'Search';
   @Input() examples?: Example[];
@@ -24,6 +28,9 @@ export class PdbeHeaderSearchComponent implements OnInit {
   @Input() panelOpen = false;
   @Input() placeholder = 'Search for protein, gene or organism';
   @Input() suggestions?: string[];
+
+  @Input() searchButtonType = '';
+  pdbeSearchButtonStyle?: PdbeSecondaryButtonStyle | PdbeKbSecondaryButtonStyle;
 
   // Output Emitters
   @Output() searchKeyword: EventEmitter<string> = new EventEmitter();
@@ -37,6 +44,19 @@ export class PdbeHeaderSearchComponent implements OnInit {
   constructor(public changeDetectorRef: ChangeDetectorRef, private el: ElementRef) {}
 
   ngOnInit() {
+    // Here we set the pdb search button parameters according if it's PDBe or PDBe-KB search
+    // Classes that contain these values can be found on the pdbe-button component model files
+    if (this.searchButtonType === "PDBe") {
+      this.pdbeSearchButtonStyle = new PdbeSecondaryButtonStyle();
+      this.pdbeSearchButtonStyle!.label = "Search";
+      this.pdbeSearchButtonStyle!.paddingSize = "Big";
+      this.pdbeSearchButtonStyle!.mobileIconName = "search";
+    } else if (this.searchButtonType === "PDBe-KB") {
+      this.pdbeSearchButtonStyle = new PdbeKbSecondaryButtonStyle();
+      this.pdbeSearchButtonStyle.label = "Search";
+      this.pdbeSearchButtonStyle.paddingSize = "Big";
+      this.pdbeSearchButtonStyle.mobileIconName = "search";
+    }
     this.searchTermStream
       .pipe(
         debounceTime(300), // wait for 300ms pause in events
