@@ -1,0 +1,18 @@
+@import "/styles/typography.scss";
+
+:root {
+    --chip-bg-color: black;
+    --hover-bg-color: white;
+}
+.pdbe-chips {
+    display: inline-flex;
+    padding: 0px 10px;
+    align-items: flex-start;
+    text-decoration: none;
+    border-radius: 7px;
+    background-color: var(--chip-bg-color);
+}
+.pdbe-chips:hover {
+    background-color: var(--hover-bg-color);
+    cursor: pointer;
+}
