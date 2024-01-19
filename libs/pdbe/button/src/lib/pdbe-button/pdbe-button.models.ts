@@ -7,7 +7,7 @@ export type PdbeButtonStyle = {
     paddingSize: "Small" | "Big",
     mobileIconName: "none" | "search"
 }
-export class PdbePrimaryButtonStyle {
+export class PdbePrimaryButtonStyleDatum {
     backgroundColor = "#C66717";
     fontColor = "#FFFFFF";
     borderColor = "#C66717";
@@ -16,7 +16,7 @@ export class PdbePrimaryButtonStyle {
     paddingSize = "Small";
     mobileIconName = "none";
 }
-export class PdbeSecondaryButtonStyle {
+export class PdbeSecondaryButtonStyleDatum {
     backgroundColor = "#FFFFFF";
     fontColor = "#0A5032";
     borderColor = "#0A5032";
@@ -25,7 +25,7 @@ export class PdbeSecondaryButtonStyle {
     paddingSize = "Small";
     mobileIconName = "none";
 }
-export class PdbeKbSecondaryButtonStyle {
+export class PdbeKbSecondaryButtonStyleDatum {
     backgroundColor = "#FFFFFF";
     fontColor = "#217976";
     borderColor = "#217976";

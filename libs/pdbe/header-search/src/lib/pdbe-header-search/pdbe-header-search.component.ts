@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
-import { PdbeSecondaryButtonStyle, PdbeKbSecondaryButtonStyle, PdbeButtonComponent } from '@pdbe-lib/button';
+import { PdbeSecondaryButtonStyleDatum, PdbeKbSecondaryButtonStyleDatum, PdbeButtonComponent } from '@pdbe-lib/button';
+import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
+import { PdbeChipsStyleDatum, PdbeKbChipsStyleDatum, PdbeChipsComponent } from '@pdbe-lib/chips';
 
 interface Example {
   label: string;
@@ -14,14 +16,14 @@ interface Example {
 @Component({
   selector: 'pdbc-pdbe-header-search',
   standalone: true,
-  imports: [CommonModule, PdbeButtonComponent],
+  imports: [CommonModule, PdbeButtonComponent, PdbeLinkButtonComponent, PdbeChipsComponent],
   templateUrl: './pdbe-header-search.component.html',
   styleUrls: ['./pdbe-header-search.component.scss'],
 })
 export class PdbeHeaderSearchComponent implements OnInit {
   // Input Parameters
   @Input() backgroundColor = '';
-  @Input() beta = true;
+  @Input() hasAdvancedSearch = true;
   @Input() buttonText = 'Search';
   @Input() examples?: Example[];
   @Input() loadingText = 'Loading';
@@ -29,8 +31,9 @@ export class PdbeHeaderSearchComponent implements OnInit {
   @Input() placeholder = 'Search for protein, gene or organism';
   @Input() suggestions?: string[];
 
-  @Input() searchButtonType = '';
-  pdbeSearchButtonStyle?: PdbeSecondaryButtonStyle | PdbeKbSecondaryButtonStyle;
+  @Input() searchButtonChipsType = '';
+  searchButtonStyle?: PdbeSecondaryButtonStyleDatum | PdbeKbSecondaryButtonStyleDatum;
+  searchChipsStyle?: PdbeChipsStyleDatum | PdbeKbChipsStyleDatum;
 
   // Output Emitters
   @Output() searchKeyword: EventEmitter<string> = new EventEmitter();
@@ -46,16 +49,18 @@ export class PdbeHeaderSearchComponent implements OnInit {
   ngOnInit() {
     // Here we set the pdb search button parameters according if it's PDBe or PDBe-KB search
     // Classes that contain these values can be found on the pdbe-button component model files
-    if (this.searchButtonType === "PDBe") {
-      this.pdbeSearchButtonStyle = new PdbeSecondaryButtonStyle();
-      this.pdbeSearchButtonStyle!.label = "Search";
-      this.pdbeSearchButtonStyle!.paddingSize = "Big";
-      this.pdbeSearchButtonStyle!.mobileIconName = "search";
-    } else if (this.searchButtonType === "PDBe-KB") {
-      this.pdbeSearchButtonStyle = new PdbeKbSecondaryButtonStyle();
-      this.pdbeSearchButtonStyle.label = "Search";
-      this.pdbeSearchButtonStyle.paddingSize = "Big";
-      this.pdbeSearchButtonStyle.mobileIconName = "search";
+    if (this.searchButtonChipsType === "PDBe") {
+      this.searchButtonStyle = new PdbeSecondaryButtonStyleDatum();
+      this.searchButtonStyle!.label = "Search";
+      this.searchButtonStyle!.paddingSize = "Big";
+      this.searchButtonStyle!.mobileIconName = "search";
+      this.searchChipsStyle = new PdbeChipsStyleDatum();
+    } else if (this.searchButtonChipsType === "PDBe-KB") {
+      this.searchButtonStyle = new PdbeKbSecondaryButtonStyleDatum();
+      this.searchButtonStyle.label = "Search";
+      this.searchButtonStyle.paddingSize = "Big";
+      this.searchButtonStyle.mobileIconName = "search";
+      this.searchChipsStyle = new PdbeKbChipsStyleDatum();
     }
     this.searchTermStream
       .pipe(

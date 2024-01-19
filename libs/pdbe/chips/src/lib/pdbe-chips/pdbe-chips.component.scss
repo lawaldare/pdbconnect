@@ -16,3 +16,9 @@
     background-color: var(--hover-bg-color);
     cursor: pointer;
 }
+
+@media screen and (max-width: 540px) {
+    .pdbe-chips {
+        font-size: 14px;
+    }
+}
