@@ -1,0 +1,33 @@
+{
+  "name": "pdb-entry-pages-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/pdb-entry-pages-e2e/src",
+  "projectType": "application",
+  "targets": {
+    "e2e": {
+      "executor": "@nx/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/pdb-entry-pages-e2e/cypress.config.ts",
+        "devServerTarget": "pdb-entry-pages:serve:development",
+        "testingType": "e2e"
+      },
+      "configurations": {
+        "production": {
+          "devServerTarget": "pdb-entry-pages:serve:production"
+        },
+        "ci": {
+          "devServerTarget": "pdb-entry-pages:serve-static"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/pdb-entry-pages-e2e/**/*.{js,ts}"]
+      }
+    }
+  },
+  "tags": [],
+  "implicitDependencies": ["pdb-entry-pages"]
+}
