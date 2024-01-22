@@ -24,6 +24,11 @@ export default {
   title: 'PDBe Components/Header Logo Menu',
   component: PdbeHeaderLogoMenuComponent,
   tags: ['autodocs'],
+  parameters: {
+    viewport: {
+      defaultViewport: 'size_1440',
+    },
+  },
 } as Meta<PdbeHeaderLogoMenuComponent>;
 
 export const Story1 = {

@@ -56,9 +56,10 @@ Two pdbeHeaderLogoLinks menus are rendered by ng-container/ng-template on .html
     background-color: var(--bg-color);
     cursor: pointer;
 }
-.hoverable-mobile-menu:hover > a {
+.hoverable-mobile-menu:hover > pdbc-pdbe-link-button {
     // font-weight: 400;
     text-decoration: underline;
+    color: white;
 }
 
 // Generic menu link styles

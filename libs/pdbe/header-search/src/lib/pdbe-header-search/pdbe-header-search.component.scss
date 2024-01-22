@@ -91,25 +91,27 @@
 .search-advanced-container {
   display: flex;
   flex-direction: column;
-  flex-grow: 0.121631464;
-  flex-basis: 12.2%;
   align-items: center;
+  min-width: 150.81px;
+  // flex-grow: 0.121631464;
+  // flex-basis: 12.2%;
   // margin-right: auto;
 }
 
+// Old solution for fixing Advanced button placement
 // @container and (max-width: 1024px) {
-@media screen and (max-width: 1024px) {
-  .search-advanced-container {
-    margin-right: 1.5vw;
-  }
-}
+// @media screen and (max-width: 1024px) {
+//   .search-advanced-container {
+//     margin-right: 1.5vw;
+//   }
+// }
 
 // @container (max-width: 990px) {
-@media screen and (max-width: 990px) {
-  .search-advanced-container {
-    margin-right: 2vw;
-  }
-}
+// @media screen and (max-width: 990px) {
+//   .search-advanced-container {
+//     margin-right: 2vw;
+//   }
+// }
 // @media screen and (max-width: 768px) {
 //   .search-query {
 //     width: auto;
@@ -139,6 +141,10 @@
     flex-wrap: wrap;
     flex-basis: 100%;
     margin-top: 12px;
+  }
+
+  .search-example-chips {
+    flex-wrap: nowrap;
   }
 }
 

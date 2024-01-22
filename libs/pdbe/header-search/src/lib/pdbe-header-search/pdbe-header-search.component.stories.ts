@@ -50,6 +50,11 @@ export default {
   title: 'PDBe Components/Header Search',
   component: PdbeHeaderSearchComponent,
   tags: ['autodocs'],
+  parameters: {
+    viewport: {
+      defaultViewport: 'size_1440',
+    },
+  },
 } as Meta<PdbeHeaderSearchComponent>;
 
 export const Story1 = {

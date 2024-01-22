@@ -23,6 +23,7 @@
       "@pdbe-lib/hero-banner": ["libs/pdbe/hero-banner/src/index.ts"],
       "@pdbe-lib/link-button": ["libs/pdbe/link-button/src/index.ts"],
       "@pdbe-lib/page-header": ["libs/pdbe/page-header/src/index.ts"],
+      "@pdbe-lib/search-autocomplete": ["libs/pdbe/search-autocomplete/src/index.ts"],
       "@vf-lib/button": ["libs/vf/button/src/index.ts"],
       "@vf-lib/ebi-footer": ["libs/vf/ebi-footer/src/index.ts"],
       "@vf-lib/ebi-header": ["libs/vf/ebi-header/src/index.ts"],

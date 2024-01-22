@@ -1,10 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
+
 @Component({
   selector: 'pdbc-pdbe-header-logo-menu',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PdbeLinkButtonComponent],
   templateUrl: './pdbe-header-logo-menu.component.html',
   styleUrls: ['./pdbe-header-logo-menu.component.scss'],
 })

@@ -2,6 +2,7 @@ import '!style-loader!css-loader!sass-loader!./scss-loader.scss';
 
 import { INITIAL_VIEWPORTS, MINIMAL_VIEWPORTS } from '@storybook/addon-viewport';
 
+// https://storybook.js.org/docs/essentials/viewport
 const customViewports = {
   size_1440: {
     name: 'Size 1440px',
@@ -52,6 +53,6 @@ export const parameters = {
       ...INITIAL_VIEWPORTS,
       ...MINIMAL_VIEWPORTS,
     },
-    defaultViewport: 'size_1440',
-  }
+    // defaultViewport: 'size_1440',
+  },
 };
