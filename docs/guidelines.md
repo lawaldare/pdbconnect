@@ -11,6 +11,8 @@
 - [Creating a new library component](./creating-library-component.md) guide to generate a new libray component
 - [Creating a new project](./creating-app.md) guide to generate a new project
 
+##### 5. Before adding new CSS styles to a library component check if these styles are or will be shared between multiple library components. If so add them to the pdbe/styles component and import them in the library components. There are appropriate SCSS files for icons and typography for example.
+
 ### Reference resources
 ##### Angular
 - [https://angular.io/docs](https://angular.io/docs)

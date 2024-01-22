@@ -45,6 +45,22 @@ Monorepo for PDBe front-end applications and component library
 
 - `npx nx graph`
 
+##### 8. For checking linter errors
+
+- `npx nx affected -t lint --parallel=3`
+
+##### 9. For formatting errors
+
+- `npx nx format:check`
+
+##### 10. For automatic fix of linter errors
+
+- `npx nx affected -t lint -- --fix`
+
+##### 11. For running unit tests for all components and apps
+
+- `npx nx run-many --all --target=test`
+
 ## Contribution guideline
 
 - [Guidelines to add new project / library component](./docs/guidelines.md)
