@@ -11,11 +11,11 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./pdbe-button.component.scss'],
 })
 export class PdbeButtonComponent {
-  @Input() backgroundColor = "";
-  @Input() fontColor = "";
-  @Input() borderColor = "";
-  @Input() shadowColor = "";
-  @Input() label = "";
-  @Input() paddingSize = "";
-  @Input() mobileIconName = "";
+  @Input() backgroundColor = '';
+  @Input() fontColor = '';
+  @Input() borderColor = '';
+  @Input() shadowColor = '';
+  @Input() label = '';
+  @Input() paddingSize = '';
+  @Input() mobileIconName = '';
 }

@@ -12,7 +12,6 @@ interface Example {
   url: string;
 }
 
-
 @Component({
   selector: 'pdbc-pdbe-header-search',
   standalone: true,
@@ -49,17 +48,17 @@ export class PdbeHeaderSearchComponent implements OnInit {
   ngOnInit() {
     // Here we set the pdb search button parameters according if it's PDBe or PDBe-KB search
     // Classes that contain these values can be found on the pdbe-button component model files
-    if (this.searchButtonChipsType === "PDBe") {
+    if (this.searchButtonChipsType === 'PDBe') {
       this.searchButtonStyle = new PdbeSecondaryButtonStyleDatum();
-      this.searchButtonStyle!.label = "Search";
-      this.searchButtonStyle!.paddingSize = "Big";
-      this.searchButtonStyle!.mobileIconName = "search";
+      this.searchButtonStyle!.label = 'Search';
+      this.searchButtonStyle!.paddingSize = 'Big';
+      this.searchButtonStyle!.mobileIconName = 'search';
       this.searchChipsStyle = new PdbeChipsStyleDatum();
-    } else if (this.searchButtonChipsType === "PDBe-KB") {
+    } else if (this.searchButtonChipsType === 'PDBe-KB') {
       this.searchButtonStyle = new PdbeKbSecondaryButtonStyleDatum();
-      this.searchButtonStyle.label = "Search";
-      this.searchButtonStyle.paddingSize = "Big";
-      this.searchButtonStyle.mobileIconName = "search";
+      this.searchButtonStyle.label = 'Search';
+      this.searchButtonStyle.paddingSize = 'Big';
+      this.searchButtonStyle.mobileIconName = 'search';
       this.searchChipsStyle = new PdbeKbChipsStyleDatum();
     }
     this.searchTermStream

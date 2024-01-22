@@ -9,9 +9,9 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./pdbe-link-button.component.scss'],
 })
 export class PdbeLinkButtonComponent {
-  @Input() label = "";
+  @Input() label = '';
   @Input() url?: string;
-  @Input() fontStyle = "";
+  @Input() fontStyle = '';
   @Input() toEmitOnClick?: string;
   @Output() linkButtonEvent = new EventEmitter<string>();
 

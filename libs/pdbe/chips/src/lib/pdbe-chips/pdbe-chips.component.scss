@@ -1,24 +1,24 @@
-@import "libs/pdbe/styles/src/lib/pdbe-styles/typography.scss";
+@import 'libs/pdbe/styles/src/lib/pdbe-styles/typography.scss';
 
 :root {
-    --chip-bg-color: black;
-    --hover-bg-color: white;
+  --chip-bg-color: black;
+  --hover-bg-color: white;
 }
 .pdbe-chips {
-    display: inline-flex;
-    padding: 0px 10px;
-    align-items: flex-start;
-    text-decoration: none;
-    border-radius: 7px;
-    background-color: var(--chip-bg-color);
+  display: inline-flex;
+  padding: 0px 10px;
+  align-items: flex-start;
+  text-decoration: none;
+  border-radius: 7px;
+  background-color: var(--chip-bg-color);
 }
 .pdbe-chips:hover {
-    background-color: var(--hover-bg-color);
-    cursor: pointer;
+  background-color: var(--hover-bg-color);
+  cursor: pointer;
 }
 
 @media screen and (max-width: 540px) {
-    .pdbe-chips {
-        font-size: 14px;
-    }
+  .pdbe-chips {
+    font-size: 14px;
+  }
 }

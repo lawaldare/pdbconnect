@@ -9,9 +9,9 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./pdbe-chips.component.scss'],
 })
 export class PdbeChipsComponent {
-  @Input() label = "";
-  @Input() url = "";
-  @Input() backgroundColor = "";
-  @Input() highlightColor = "";
-  @Input() fontColor = "";
+  @Input() label = '';
+  @Input() url = '';
+  @Input() backgroundColor = '';
+  @Input() highlightColor = '';
+  @Input() fontColor = '';
 }

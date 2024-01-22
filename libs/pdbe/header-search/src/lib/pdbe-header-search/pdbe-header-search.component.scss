@@ -20,7 +20,7 @@
 @import '@visual-framework/vf-link/vf-link.scss';
 @import '@visual-framework/vf-list/vf-list.scss';
 
-@import "libs/pdbe/styles/src/lib/pdbe-styles/typography.scss";
+@import 'libs/pdbe/styles/src/lib/pdbe-styles/typography.scss';
 
 .flexbox-row {
   display: flex;
@@ -74,13 +74,13 @@
 }
 
 #searchitem {
-  border-radius: 2px;/* Paragraphs/P2 */
-    font-family: IBM Plex Sans !important;
-    font-size: 19px !important;
-    font-style: normal !important;
-    font-weight: 400 !important;
-    line-height: 26.6px !important; /* 170% */
-    text-overflow: ellipsis;
+  border-radius: 2px; /* Paragraphs/P2 */
+  font-family: IBM Plex Sans !important;
+  font-size: 19px !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  line-height: 26.6px !important; /* 170% */
+  text-overflow: ellipsis;
 }
 
 .search-examples-container {
@@ -117,7 +117,7 @@
 //     width: auto;
 //     flex: 0.7624;
 //   }
-  
+
 // }
 
 // @container (max-width: 540px) {
@@ -156,7 +156,6 @@
   min-width: 15rem;
   width: 20rem;
 }
-
 
 #beta {
   width: 54px;

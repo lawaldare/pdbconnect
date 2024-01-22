@@ -36,28 +36,28 @@ describe('PdbeHeaderSearchComponent', () => {
 
   it('should display PDBe chips according to examples property', () => {
     component.searchChipsStyle = new PdbeChipsStyleDatum();
-    component.searchButtonChipsType === "PDBe";
+    component.searchButtonChipsType === 'PDBe';
     component.examples = [
-      {'label':'AAA', 'url': 'https://www.ebi.ac.uk/1'},
-      {'label':'BBB', 'url': 'https://www.ebi.ac.uk/2'},
-      {'label':'CCC', 'url': 'https://www.ebi.ac.uk/3'},
-    ]
+      { label: 'AAA', url: 'https://www.ebi.ac.uk/1' },
+      { label: 'BBB', url: 'https://www.ebi.ac.uk/2' },
+      { label: 'CCC', url: 'https://www.ebi.ac.uk/3' },
+    ];
     fixture.detectChanges();
 
     const anchorEles = fixture.nativeElement.querySelectorAll('pdbc-pdbe-chips > a');
     expect(anchorEles.length).toEqual(3);
 
     expect(anchorEles[0]).toBeTruthy();
-    expect(anchorEles[0].innerHTML).toEqual(" AAA ");
-    expect(anchorEles[0].href).toEqual("https://www.ebi.ac.uk/1");
+    expect(anchorEles[0].innerHTML).toEqual(' AAA ');
+    expect(anchorEles[0].href).toEqual('https://www.ebi.ac.uk/1');
 
     expect(anchorEles[1]).toBeTruthy();
-    expect(anchorEles[1].innerHTML).toEqual(" BBB ");
-    expect(anchorEles[1].href).toEqual("https://www.ebi.ac.uk/2");
+    expect(anchorEles[1].innerHTML).toEqual(' BBB ');
+    expect(anchorEles[1].href).toEqual('https://www.ebi.ac.uk/2');
 
     expect(anchorEles[2]).toBeTruthy();
-    expect(anchorEles[2].innerHTML).toEqual(" CCC ");
-    expect(anchorEles[2].href).toEqual("https://www.ebi.ac.uk/3");
+    expect(anchorEles[2].innerHTML).toEqual(' CCC ');
+    expect(anchorEles[2].href).toEqual('https://www.ebi.ac.uk/3');
   });
 
   // it('should toggle showClearIcon property depending on input text', fakeAsync(() => {

@@ -25,7 +25,7 @@ export default {
   title: 'PDBe Components/PDBe Link Button',
   component: PdbeLinkButtonComponent,
   tags: ['autodocs'],
-  parameters: {backgrounds: { default: 'dark' }},
+  parameters: { backgrounds: { default: 'dark' } },
 } as Meta<PdbeLinkButtonComponent>;
 
 export const Story1 = {
@@ -37,7 +37,7 @@ export const Story1 = {
     fontStyle: 'Paragraph 2 (19px)',
   },
   argTypes: actionArgs,
-  name: 'Paragraph 2 Link Button'
+  name: 'Paragraph 2 Link Button',
 };
 
 export const Story2 = {
@@ -46,10 +46,10 @@ export const Story2 = {
   }),
   args: {
     label: 'Link btn lbl',
-    fontStyle: 'Paragraph 3 (16px)'
+    fontStyle: 'Paragraph 3 (16px)',
   },
   argTypes: actionArgs,
-  name: 'Paragraph 3 Link Button'
+  name: 'Paragraph 3 Link Button',
 };
 
 export const Story3 = {
@@ -59,8 +59,8 @@ export const Story3 = {
   args: {
     label: 'Go to PDBe',
     fontStyle: 'Paragraph 2 (19px)',
-    url: 'https://www.ebi.ac.uk/pdbe/'
+    url: 'https://www.ebi.ac.uk/pdbe/',
   },
   argTypes: actionArgs,
-  name: 'Send to PDBe Paragraph 2 Link Button'
+  name: 'Send to PDBe Paragraph 2 Link Button',
 };
