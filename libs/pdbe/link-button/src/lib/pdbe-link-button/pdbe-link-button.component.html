@@ -1,0 +1,8 @@
+<a
+  class="pdbe-link-button"
+  [ngClass]="fontStyle === 'Paragraph 2 (19px)' ? 'paragraph-2' : 'paragraph-3'"
+  [attr.href]="url && url.length > 0 ? url : null"
+  [attr.target]="url && url.length > 0 ? '_blank' : null"
+  (click)="toEmitOnClick && toEmitOnClick.length > 0 ? clickedLinkButton() : null"
+  >{{ label }}</a
+>
