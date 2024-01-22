@@ -49,13 +49,17 @@ Monorepo for PDBe front-end applications and component library
 
 - `npx nx affected -t lint --parallel=3`
 
-##### 9. For formatting errors
+##### 9. For checking formatting errors
 
 - `npx nx format:check`
 
 ##### 10. For automatic fix of linter errors
 
 - `npx nx affected -t lint -- --fix`
+
+##### 10. For automatic fix of format errors
+
+- `npx nx format:write`
 
 ##### 11. For running unit tests for all components and apps
 

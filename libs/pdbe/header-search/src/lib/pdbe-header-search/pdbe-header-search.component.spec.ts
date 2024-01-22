@@ -48,15 +48,15 @@ describe('PdbeHeaderSearchComponent', () => {
     expect(anchorEles.length).toEqual(3);
 
     expect(anchorEles[0]).toBeTruthy();
-    expect(anchorEles[0].innerHTML).toEqual(' AAA ');
+    expect(anchorEles[0].innerHTML).toContain('AAA');
     expect(anchorEles[0].href).toEqual('https://www.ebi.ac.uk/1');
 
     expect(anchorEles[1]).toBeTruthy();
-    expect(anchorEles[1].innerHTML).toEqual(' BBB ');
+    expect(anchorEles[1].innerHTML).toContain('BBB');
     expect(anchorEles[1].href).toEqual('https://www.ebi.ac.uk/2');
 
     expect(anchorEles[2]).toBeTruthy();
-    expect(anchorEles[2].innerHTML).toEqual(' CCC ');
+    expect(anchorEles[2].innerHTML).toContain('CCC');
     expect(anchorEles[2].href).toEqual('https://www.ebi.ac.uk/3');
   });
 
