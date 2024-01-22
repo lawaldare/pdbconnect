@@ -10,16 +10,6 @@
         </h1>
 
         <p class="vf-hero__subheading" style="margin-bottom: 20px">{{ subheading }}</p>
-
-        <pdbc-pdbe-header-search
-          [beta]="searchBeta"
-          [buttonText]="searchButtonText"
-          [placeholder]="searchPlaceholder"
-          [suggestions]="searchSuggestions"
-          (searchKeyword)="searchHandler($event)"
-          (selectedIndex)="selectSuggestion($event)"
-          (searchCleared)="searchClearedFn($event)"
-        ></pdbc-pdbe-header-search>
       </div>
     </section>
   </div>

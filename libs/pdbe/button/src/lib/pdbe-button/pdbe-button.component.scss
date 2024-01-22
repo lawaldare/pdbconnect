@@ -1,6 +1,8 @@
 @import '@visual-framework/vf-sass-config/index.scss';
 @import '@visual-framework/vf-button/vf-button.scss';
-@import "/styles/icons.scss";
+
+@import "libs/pdbe/styles/src/lib/pdbe-styles/icons.scss";
+
 
 // Default button layout overriding some of vf-button properties
 .pdbe-button {

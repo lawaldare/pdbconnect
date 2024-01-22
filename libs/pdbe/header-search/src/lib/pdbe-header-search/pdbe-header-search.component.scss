@@ -20,7 +20,7 @@
 @import '@visual-framework/vf-link/vf-link.scss';
 @import '@visual-framework/vf-list/vf-list.scss';
 
-@import "/styles/typography.scss";
+@import "libs/pdbe/styles/src/lib/pdbe-styles/typography.scss";
 
 .flexbox-row {
   display: flex;

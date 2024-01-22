@@ -32,7 +32,7 @@
       <div class="search-example-chips flexbox-row">
         <span class="search-example-title paragraph-3 flexbox-column-no-flex" style="color: white;">Examples:</span>
         <div class="flexbox-column-no-flex" *ngFor="let example of examples">
-          <pdbc-pdbe-chips
+          <pdbc-pdbe-chips *ngIf="searchChipsStyle"
             [label]="example.label"
             [url]="example.url"
             [backgroundColor]="searchChipsStyle.backgroundColor"
