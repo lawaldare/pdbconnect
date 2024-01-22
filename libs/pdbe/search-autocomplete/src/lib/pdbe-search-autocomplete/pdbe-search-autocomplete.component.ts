@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SolrAutocompleteService } from './solr-autocomplete-service';
+// import { SolrAutocompleteService } from './solr-autocomplete-service';
 
 /**
  * TODO:
@@ -20,6 +20,6 @@ import { SolrAutocompleteService } from './solr-autocomplete-service';
   imports: [CommonModule],
   templateUrl: './pdbe-search-autocomplete.component.html',
   styleUrls: ['./pdbe-search-autocomplete.component.scss'],
-  providers: [SolrAutocompleteService]
+  providers: []
 })
 export class PdbeSearchAutocompleteComponent {}

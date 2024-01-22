@@ -3,7 +3,7 @@
   [ngClass]="{
     'pdbe-btn-small-pad': paddingSize === 'Small',
     'pdbe-btn-big-pad': paddingSize === 'Big',
-    'pdbe-btn-mobile-small-pad': mobileIconName != 'none'
+    'pdbe-btn-mobile-small-pad': mobileIconName !== 'none'
     }"
   [ngStyle]="{
     'background-color': backgroundColor,
@@ -14,6 +14,6 @@
     '--vf-button__color__border--default-visited': shadowColor,
   }"
 >
-  <span [ngClass]="mobileIconName != 'none' ? 'btn-label' : ''">{{ label }}</span>
-  <i class="icon icon-common" [ngClass]="mobileIconName != 'none' ? 'icon-'+mobileIconName : ''" ></i>
+  <span [ngClass]="mobileIconName !== 'none' ? 'btn-label' : ''">{{ label }}</span>
+  <i class="icon icon-common" [ngClass]="mobileIconName !== 'none' ? 'icon-'+mobileIconName : ''" ></i>
 </button>
