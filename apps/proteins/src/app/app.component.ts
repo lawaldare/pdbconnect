@@ -1,11 +1,8 @@
 import { Component } from '@angular/core';
-import { NxWelcomeComponent } from './nx-welcome.component';
-
-//App Components
-import { SummaryComponent } from '../app/pages/summary/summary.component';
 
 //Lib Components
-import { PdbePageHeaderComponent } from '@pdbe-lib/page-header';
+import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
+import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 
 //App Services
@@ -14,7 +11,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   standalone: true,
-  imports: [NxWelcomeComponent, PdbePageHeaderComponent, VfEbiFooterComponent, SummaryComponent],
+  imports: [PdbeHeaderLogoMenuComponent, PdbeHeaderSearchComponent, VfEbiFooterComponent],
   selector: 'pdbc-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
