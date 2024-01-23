@@ -1,7 +1,7 @@
 const path = require('path');
 
 const config = {
-  staticDirs: [{ from: '../assets/images/', to: '/assets/images' }],
+  staticDirs: [{ from: '../../../shared_assets/images/', to: '/assets/images' }],
   stories: ['../../vf/**/src/lib/**/*.stories.@(js|jsx|ts|tsx|mdx)', '../../pdbe/**/src/lib/**/*.stories.@(js|jsx|ts|tsx|mdx)'],
   addons: [
     {

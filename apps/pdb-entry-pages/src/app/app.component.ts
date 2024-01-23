@@ -1,10 +1,14 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { NxWelcomeComponent } from './nx-welcome.component';
+
+import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
+import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
+import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
+
 
 @Component({
   standalone: true,
-  imports: [NxWelcomeComponent, RouterModule],
+  imports: [PdbeHeaderLogoMenuComponent, PdbeHeaderSearchComponent, VfEbiFooterComponent, RouterModule],
   selector: 'pdbc-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
