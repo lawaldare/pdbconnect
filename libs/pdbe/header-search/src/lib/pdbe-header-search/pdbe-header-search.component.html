@@ -1,60 +1,51 @@
-<section>
-  <form id="ebi_search" class="vf-form vf-form--search vf-form--search--responsive | vf-sidebar vf-sidebar--end">
-    <div class="vf-sidebar__inner">
-      <div class="vf-form__item search-query-container">
-        <label class="vf-form__label vf-u-sr-only | vf-search__label" for="searchitem">Search</label>
-        <input
-          #searchBox
-          autocomplete="off"
-          placeholder="{{ placeholder }}"
-          id="searchitem"
-          class="search-query vf-form__input pdbeAutoCompleteSearchBox"
-          required=""
-          spellcheck="false"
-          data-ms-editor="true"
-          (keyup)="search(searchBox.value)"
-          (keyup.enter)="openSearch(searchBox.value)"
-        />
-        <span *ngIf="beta" id="beta" class="cl-beta">BETA</span>
-        <span class="search-clear-icon" title="Clear search" (click)="clearSearch()" *ngIf="showClearIcon">
-          <svg style="width: 20px; height: 20px" viewBox="0 0 24 24">
-            <path fill="#000" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-          </svg>
-        </span>
-        <ul *ngIf="suggestions && suggestions.length > 0" class="vf-list | vf-form--search__results-list | vf-stack vf-stack--custom" aria-labelledby="searchitem">
-          <li class="vf-list__item" role="option" *ngFor="let suggestion of suggestions; let i = index" (click)="selectSuggestion(i)">{{ suggestion }}</li>
-        </ul>
-      </div>
-      <button type="submit" class="vf-search__button | vf-button vf-button--primary">
-        <span class="vf-button__text">{{ buttonText }}</span>
-
-        <svg
-          class="vf-icon vf-icon--search-btn | vf-button__icon"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          version="1.1"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-          xmlns:svgjs="http://svgjs.com/svgjs"
-          viewBox="0 0 140 140"
-          width="140"
-          height="140"
-        >
-          <g transform="matrix(5.833333333333333,0,0,5.833333333333333,0,0)">
-            <path
-              d="M23.414,20.591l-4.645-4.645a10.256,10.256,0,1,0-2.828,2.829l4.645,4.644a2.025,2.025,0,0,0,2.828,0A2,2,0,0,0,23.414,20.591ZM10.25,3.005A7.25,7.25,0,1,1,3,10.255,7.258,7.258,0,0,1,10.25,3.005Z"
-              fill="#FFFFFF"
-              stroke="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="0"
-            ></path>
-          </g>
-        </svg>
-      </button>
+<div class="search-top-container" [ngStyle]="{ 'background-color': backgroundColor }">
+  <div class="search-bar-btn-container flexbox-row">
+    <div class="flexbox-column-1">
+      <input
+        #searchBox
+        autocomplete="off"
+        placeholder="{{ placeholder }}"
+        id="searchitem"
+        class="paragraph-2-enforce vf-form__input pdbeAutoCompleteSearchBox"
+        required=""
+        spellcheck="false"
+        data-ms-editor="true"
+        (keyup)="search(searchBox.value)"
+        (keyup.enter)="openSearch(searchBox.value)"
+      />
     </div>
-  </form>
-  <p class="vf-text-body--5 vf-u-margin__bottom--0">
-    Example searches: <a class="vf-link" href="Javascript:void(0)">hemoglobin</a>&nbsp;&nbsp;
-    <a class="vf-link" href="Javascript:void(0)">BRCA1_HUMAN</a>
-  </p>
-</section>
+    <div class="flexbox-column-2">
+      <pdbc-pdbe-button
+        *ngIf="searchButtonStyle"
+        [backgroundColor]="searchButtonStyle.backgroundColor"
+        [fontColor]="searchButtonStyle.fontColor"
+        [borderColor]="searchButtonStyle.borderColor"
+        [shadowColor]="searchButtonStyle.shadowColor"
+        [label]="searchButtonStyle.label"
+        [paddingSize]="searchButtonStyle.paddingSize"
+        [mobileIconName]="searchButtonStyle.mobileIconName"
+      >
+      </pdbc-pdbe-button>
+    </div>
+  </div>
+  <div class="search-examples-container flexbox-row" *ngIf="examples && examples.length > 0">
+    <div class="flexbox-column-1">
+      <div class="search-example-chips flexbox-row">
+        <span class="search-example-title paragraph-3 flexbox-column-no-flex" style="color: white">Examples:</span>
+        <div class="flexbox-column-no-flex" *ngFor="let example of examples">
+          <pdbc-pdbe-chips
+            *ngIf="searchChipsStyle"
+            [label]="example.label"
+            [url]="example.url"
+            [backgroundColor]="searchChipsStyle.backgroundColor"
+            [highlightColor]="searchChipsStyle.highlightColor"
+            [fontColor]="'white'"
+          ></pdbc-pdbe-chips>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="hasAdvancedSearch" class="search-advanced-container flexbox-column-2">
+      <pdbc-pdbe-link-button [label]="'Advanced search'" [fontStyle]="'Paragraph 3 (16px)'"></pdbc-pdbe-link-button>
+    </div>
+  </div>
+</div>

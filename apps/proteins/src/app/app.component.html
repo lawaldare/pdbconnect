@@ -1,27 +1,27 @@
 <!-- Header Section -->
-<pdbc-pdbe-page-header
-  [heading]="'Protein Data Bank in Europe - Knowledge Base'"
-  [subheading]="'Aggregated Views of Proteins'"
-  [url]="'https://www.ebi.ac.uk/pdbe/pdbe-kb'"
-  [menuItems]="[
-    { label: 'Summary', url: 'Javascript:void(0)' },
-    { label: 'Structure', url: 'Javascript:void(0)' },
-    { label: 'Ligands', url: 'Javascript:void(0)' },
-    { label: 'Interactions', url: 'Javascript:void(0)' },
-    { label: 'Similarity', url: 'Javascript:void(0)' },
-    { label: 'Publication', url: 'Javascript:void(0)' }
+<pdbc-pdbe-header-logo-menu
+  [backgroundColor]="'#085F5C'"
+  [logoType]="'PDBe-KB'"
+  [urls]="[
+    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
+    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
+    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' }
   ]"
-  [searchBeta]="true"
-  [searchButtonText]="'Search'"
-  [searchPlaceholder]="'Search for protein'"
-  [searchSuggestions]="suggestions"
-  (searchKeyword)="searchKeywordFn($event)"
-  (selectedIndex)="selectedIndexFn($event)"
-  (searchCleared)="searchClearedFn()"
-></pdbc-pdbe-page-header>
+  [menuHighlightColor]="'#086C68'"
+></pdbc-pdbe-header-logo-menu>
 
-<!-- Summary Section -->
-<pdbc-summary></pdbc-summary>
+<pdbc-pdbe-header-search
+  [backgroundColor]="'rgba(8, 95, 92, 0.79)'"
+  [hasAdvancedSearch]="false"
+  [buttonText]="'Search'"
+  [examples]="[
+    { label: 'Q14676', url: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/Q14676' },
+    { label: '2etx', url: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/2etx' }
+  ]"
+  [placeholder]="'Search in PDBe and PDBe-KB'"
+  [suggestions]="[]"
+  [searchButtonChipsType]="'PDBe-KB'"
+></pdbc-pdbe-header-search>
 
 <!-- Footer Section -->
 <pdbc-vf-ebi-footer></pdbc-vf-ebi-footer>
