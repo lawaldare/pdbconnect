@@ -84,7 +84,7 @@ storybook_publish:
 storybook_publish_deploy:
   stage: deploy
   variables:
-    UPSTREAM_REF: $CI_COMMIT_REF_NAME
+    UPSTREAM_REF: main
     IMAGE_PATHS: $CI_REGISTRY_IMAGE/pdbconnect-storybook
     IMAGE_NAMES: pdbconnect-storybook
     APP_NAME: pdbconnect-storybook
