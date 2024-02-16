@@ -26,12 +26,12 @@ Monorepo for PDBe front-end applications and component library
 
 ##### 4. Install recommended VS Code extensions
 
-+ After opening the project in VS Code you will get a recommendation notification on the bottom right corner of the editor. On clicking `Install` all the recommended extensions will be install.
+- After opening the project in VS Code you will get a recommendation notification on the bottom right corner of the editor. On clicking `Install` all the recommended extensions will be install.
 
-+ For any reasons, if the notification doesn't show up we can manually open up Recommended Extensions settings
-    + Open the command palette `CMD + Shift + p`
-    + Type Show Recommended Extensions
-    + Install all the extensions from the search result list
+- For any reasons, if the notification doesn't show up we can manually open up Recommended Extensions settings
+  - Open the command palette `CMD + Shift + p`
+  - Type Show Recommended Extensions
+  - Install all the extensions from the search result list
 
 ##### 5. Run Storybook to view the Component library with documentation
 
@@ -44,6 +44,26 @@ Monorepo for PDBe front-end applications and component library
 ##### 7. Run Nx Graph to see a diagram of the dependencies of the projects
 
 - `npx nx graph`
+
+##### 8. For checking linter errors
+
+- `npx nx affected -t lint --parallel=3`
+
+##### 9. For checking formatting errors
+
+- `npx nx format:check`
+
+##### 10. For automatic fix of linter errors
+
+- `npx nx affected -t lint -- --fix`
+
+##### 10. For automatic fix of format errors
+
+- `npx nx format:write`
+
+##### 11. For running unit tests for all components and apps
+
+- `npx nx run-many --all --target=test`
 
 ## Contribution guideline
 

@@ -1,24 +1,152 @@
 @import '@visual-framework/vf-sass-config/index.scss';
-@import '@visual-framework/vf-utility-classes/vf-utility-classes.scss';
+// @import '@visual-framework/vf-utility-classes/vf-utility-classes.scss';
 
-@import '@visual-framework/vf-sidebar/vf-sidebar.scss';
-@import '@visual-framework/vf-text/vf-text.scss';
+// @import '@visual-framework/vf-sidebar/vf-sidebar.scss';
+// @import '@visual-framework/vf-text/vf-text.scss';
 
-@import '@visual-framework/vf-form__helper/vf-form__helper.scss';
+// @import '@visual-framework/vf-form__helper/vf-form__helper.scss';
 @import '@visual-framework/vf-form__input/vf-form__input.scss';
-@import '@visual-framework/vf-form__legend/vf-form__legend.scss';
-@import '@visual-framework/vf-form__fieldset/vf-form__fieldset.scss';
-@import '@visual-framework/vf-form__select/vf-form__select.scss';
-@import '@visual-framework/vf-form__checkbox/vf-form__checkbox.scss';
-@import '@visual-framework/vf-form__radio/vf-form__radio.scss';
-@import '@visual-framework/vf-form__textarea/vf-form__textarea.scss';
-@import '@visual-framework/vf-form__item/vf-form__item.scss';
-@import '@visual-framework/vf-form__label/vf-form__label.scss';
+// @import '@visual-framework/vf-form__legend/vf-form__legend.scss';
+// @import '@visual-framework/vf-form__fieldset/vf-form__fieldset.scss';
+// @import '@visual-framework/vf-form__select/vf-form__select.scss';
+// @import '@visual-framework/vf-form__checkbox/vf-form__checkbox.scss';
+// @import '@visual-framework/vf-form__radio/vf-form__radio.scss';
+// @import '@visual-framework/vf-form__textarea/vf-form__textarea.scss';
+// @import '@visual-framework/vf-form__item/vf-form__item.scss';
+// @import '@visual-framework/vf-form__label/vf-form__label.scss';
 
-@import '@visual-framework/vf-search/vf-search.scss';
-@import '@visual-framework/vf-button/vf-button.scss';
-@import '@visual-framework/vf-link/vf-link.scss';
-@import '@visual-framework/vf-list/vf-list.scss';
+// @import '@visual-framework/vf-search/vf-search.scss';
+// @import '@visual-framework/vf-button/vf-button.scss';
+// @import '@visual-framework/vf-link/vf-link.scss';
+// @import '@visual-framework/vf-list/vf-list.scss';
+
+@import 'libs/pdbe/styles/src/lib/pdbe-styles/typography.scss';
+
+.flexbox-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  // width: 100%;
+  width: fit-content;
+}
+
+// .flexbox-column {
+//   display: flex;
+//   flex-direction: column;
+//   flex-basis: 100%;
+//   flex: 1;
+// }
+
+.flexbox-column-noflex {
+  display: flex;
+  flex-direction: column;
+}
+
+.flexbox-column-1 {
+  display: flex;
+  flex-direction: column;
+  flex: 100;
+}
+
+.flexbox-column-2 {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 0.121631464;
+  flex-basis: 12.2%;
+  align-items: center;
+}
+
+.search-top-container {
+  padding-top: 20px;
+  padding-left: 34px;
+  padding-right: 34px;
+  padding-bottom: 20px;
+  container-type: inline-size;
+}
+
+.search-bar-btn-container {
+  width: 100%;
+  gap: 12px;
+}
+
+.search-example-chips {
+  gap: 8px;
+}
+
+#searchitem {
+  border-radius: 2px; /* Paragraphs/P2 */
+  font-family: IBM Plex Sans !important;
+  font-size: 19px !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  line-height: 26.6px !important; /* 170% */
+  text-overflow: ellipsis;
+}
+
+.search-examples-container {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.search-advanced-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 150.81px;
+  // flex-grow: 0.121631464;
+  // flex-basis: 12.2%;
+  // margin-right: auto;
+}
+
+// Old solution for fixing Advanced button placement
+// @container and (max-width: 1024px) {
+// @media screen and (max-width: 1024px) {
+//   .search-advanced-container {
+//     margin-right: 1.5vw;
+//   }
+// }
+
+// @container (max-width: 990px) {
+// @media screen and (max-width: 990px) {
+//   .search-advanced-container {
+//     margin-right: 2vw;
+//   }
+// }
+// @media screen and (max-width: 768px) {
+//   .search-query {
+//     width: auto;
+//     flex: 0.7624;
+//   }
+
+// }
+
+// @container (max-width: 540px) {
+@media screen and (max-width: 540px) {
+  .search-top-container {
+    padding-top: 20px;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-bottom: 20px;
+  }
+
+  .search-example-title {
+    font-size: 14px;
+  }
+
+  .search-advanced-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    flex: 1;
+    flex-wrap: wrap;
+    flex-basis: 100%;
+    margin-top: 12px;
+  }
+
+  .search-example-chips {
+    flex-wrap: nowrap;
+  }
+}
 
 .vf-form--search__results-list {
   width: calc(100% - 8px);
