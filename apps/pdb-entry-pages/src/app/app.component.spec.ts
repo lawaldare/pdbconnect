@@ -1,20 +1,24 @@
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-import { AutocompleteService } from './services/autocomplete.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent, HttpClientTestingModule],
-      providers: [AutocompleteService],
+      imports: [AppComponent, RouterTestingModule],
     }).compileComponents();
   });
 
-  it('should create main page', () => {
+  it('should create page', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled).toBeTruthy();
+  });
+
+  it(`should have as title 'pdb-entry-pages'`, () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    expect(app.title).toEqual('pdb-entry-pages');
   });
 });
