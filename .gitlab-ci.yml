@@ -28,18 +28,24 @@ format-check:
   extends: .distributed
   script:
     - npx nx format:check --base=$NX_BASE --head=$NX_HEAD
+  tags:
+    - pdbe-shell
 
 lint:
   stage: test
   extends: .distributed
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t lint --parallel=3
+  tags:
+    - pdbe-shell
 
 test:
   stage: test
   extends: .distributed
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t test --parallel=3 --configuration=ci
+  tags:
+    - pdbe-shell
 
 build:
   stage: build
@@ -58,6 +64,8 @@ build:
       - dist/
       - dynamic-gitlab-ci.yml
     expire_in: 1 week
+  tags:
+    - pdbe-shell
 
 storybook_build:
   stage: build
@@ -69,6 +77,8 @@ storybook_build:
     paths:
       - dist/
     expire_in: 1 week
+  tags:
+    - pdbe-shell
 
 storybook_publish:
   stage: publish
@@ -76,8 +86,8 @@ storybook_publish:
     - storybook_build
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build --pull --cache-from $CI_REGISTRY_IMAGE --build-arg APP_BASE_HREF=$STORYBOOK_BASE_HREF --tag $CI_REGISTRY_IMAGE/pdbconnect-storybook --file libs/lib-docs/Dockerfile .
-    - docker push $CI_REGISTRY_IMAGE/pdbconnect-storybook
+    - docker build --pull --cache-from $CI_REGISTRY_IMAGE --build-arg APP_BASE_HREF=$STORYBOOK_BASE_HREF --tag $CI_REGISTRY_IMAGE/connect-storybook --file libs/lib-docs/Dockerfile .
+    - docker push $CI_REGISTRY_IMAGE/connect-storybook
   tags:
     - pdbe-shell
 
@@ -85,9 +95,9 @@ storybook_publish_deploy:
   stage: deploy
   variables:
     UPSTREAM_REF: main
-    IMAGE_PATHS: $CI_REGISTRY_IMAGE/pdbconnect-storybook
-    IMAGE_NAMES: pdbconnect-storybook
-    APP_NAME: pdbconnect-storybook
+    IMAGE_PATHS: $CI_REGISTRY_IMAGE/connect-storybook
+    IMAGE_NAMES: connect-storybook
+    APP_NAME: connect-storybook
   trigger:
     project: pdbe/backend/k8s-deploy-configs
     branch: main

@@ -3,9 +3,7 @@ $vf-font-plex-mono-prefix: '..' !default;
   font-family: 'IBM Plex Mono';
   font-style: normal;
   font-weight: 400;
-  src: local('IBM Plex Mono'),
-    local('IBMPlexMono'),
-    url('#{$vf-font-plex-mono-prefix}/IBM-Plex-Mono/fonts/complete/woff/IBMPlexMono-Regular.woff') format('woff');
+  src: local('IBM Plex Mono'), local('IBMPlexMono'), url('#{$vf-font-plex-mono-prefix}/IBM-Plex-Mono/fonts/complete/woff/IBMPlexMono-Regular.woff') format('woff');
 }
 
 // @import 'cyrillic';

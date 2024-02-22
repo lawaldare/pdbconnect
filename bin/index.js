@@ -33,10 +33,10 @@ trigger_deploy:${serviceName}:
     inherit:
       variables: false
     variables:
-      UPSTREAM_REF: main
+      UPSTREAM_REF: $CI_COMMIT_REF_NAME
       IMAGE_PATHS: $CI_REGISTRY_IMAGE/${serviceName}
-      IMAGE_NAMES: ${serviceName}-pages
-      APP_NAME: ${serviceName}-pages
+      IMAGE_NAMES: connect-${serviceName}
+      APP_NAME: connect-${serviceName}
     trigger:
       project: pdbe/backend/k8s-deploy-configs
       branch: main

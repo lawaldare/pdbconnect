@@ -1,22 +1,22 @@
 {
-  "name": "pdb-entry-pages-e2e",
+  "name": "entry-e2e",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/pdb-entry-pages-e2e/src",
+  "sourceRoot": "apps/entry-e2e/src",
   "projectType": "application",
   "targets": {
     "e2e": {
       "executor": "@nx/cypress:cypress",
       "options": {
-        "cypressConfig": "apps/pdb-entry-pages-e2e/cypress.config.ts",
-        "devServerTarget": "pdb-entry-pages:serve:development",
+        "cypressConfig": "apps/entry-e2e/cypress.config.ts",
+        "devServerTarget": "entry:serve:development",
         "testingType": "e2e"
       },
       "configurations": {
         "production": {
-          "devServerTarget": "pdb-entry-pages:serve:production"
+          "devServerTarget": "entry:serve:production"
         },
         "ci": {
-          "devServerTarget": "pdb-entry-pages:serve-static"
+          "devServerTarget": "entry:serve-static"
         }
       }
     },
@@ -24,10 +24,10 @@
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/pdb-entry-pages-e2e/**/*.{js,ts}"]
+        "lintFilePatterns": ["apps/entry-e2e/**/*.{js,ts}"]
       }
     }
   },
   "tags": [],
-  "implicitDependencies": ["pdb-entry-pages"]
+  "implicitDependencies": ["entry"]
 }

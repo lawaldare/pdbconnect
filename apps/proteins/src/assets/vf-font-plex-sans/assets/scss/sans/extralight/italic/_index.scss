@@ -3,8 +3,7 @@ $vf-font-plex-sans-prefix: '..' !default;
   font-family: 'IBM Plex Sans';
   font-style: italic;
   font-weight: 200;
-  src: local('IBM Plex Sans ExtraLight Italic'),
-    local('IBMPlexSans-ExtraLightItalic'),
+  src: local('IBM Plex Sans ExtraLight Italic'), local('IBMPlexSans-ExtraLightItalic'),
     url('#{$vf-font-plex-sans-prefix}/IBM-Plex-Sans/fonts/complete/woff/IBMPlexSans-ExtraLightItalic.woff') format('woff');
 }
 

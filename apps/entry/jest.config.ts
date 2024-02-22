@@ -1,9 +1,9 @@
 /* eslint-disable */
 export default {
-  displayName: 'pdb-entry-pages',
+  displayName: 'entry',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
-  coverageDirectory: '../../coverage/apps/pdb-entry-pages',
+  coverageDirectory: '../../coverage/apps/entry',
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
       'jest-preset-angular',
