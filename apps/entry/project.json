@@ -1,22 +1,22 @@
 {
-  "name": "pdb-entry-pages",
+  "name": "entry",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "pdbc",
-  "sourceRoot": "apps/pdb-entry-pages/src",
+  "sourceRoot": "apps/entry/src",
   "tags": [],
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:browser",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/apps/pdb-entry-pages",
-        "index": "apps/pdb-entry-pages/src/index.html",
-        "main": "apps/pdb-entry-pages/src/main.ts",
+        "outputPath": "dist/apps/entry",
+        "index": "apps/entry/src/index.html",
+        "main": "apps/entry/src/main.ts",
         "polyfills": ["zone.js"],
-        "tsConfig": "apps/pdb-entry-pages/tsconfig.app.json",
-        "assets": ["apps/pdb-entry-pages/src/favicon.ico", "apps/pdb-entry-pages/src/assets"],
-        "styles": ["apps/pdb-entry-pages/src/styles.scss"],
+        "tsConfig": "apps/entry/tsconfig.app.json",
+        "assets": ["apps/entry/src/favicon.ico", "apps/entry/src/assets"],
+        "styles": ["apps/entry/src/styles.scss"],
         "scripts": []
       },
       "configurations": {
@@ -50,10 +50,10 @@
       "executor": "@angular-devkit/build-angular:dev-server",
       "configurations": {
         "production": {
-          "browserTarget": "pdb-entry-pages:build:production"
+          "browserTarget": "entry:build:production"
         },
         "development": {
-          "browserTarget": "pdb-entry-pages:build:development"
+          "browserTarget": "entry:build:development"
         }
       },
       "defaultConfiguration": "development"
@@ -61,21 +61,21 @@
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
-        "browserTarget": "pdb-entry-pages:build"
+        "browserTarget": "entry:build"
       }
     },
     "lint": {
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/pdb-entry-pages/**/*.ts", "apps/pdb-entry-pages/**/*.html"]
+        "lintFilePatterns": ["apps/entry/**/*.ts", "apps/entry/**/*.html"]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/pdb-entry-pages/jest.config.ts",
+        "jestConfig": "apps/entry/jest.config.ts",
         "passWithNoTests": true
       },
       "configurations": {
@@ -88,7 +88,7 @@
     "serve-static": {
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "pdb-entry-pages:build"
+        "buildTarget": "entry:build"
       }
     }
   }

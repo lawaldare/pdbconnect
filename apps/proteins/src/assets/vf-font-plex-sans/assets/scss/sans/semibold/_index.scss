@@ -3,8 +3,7 @@ $vf-font-plex-sans-prefix: '..' !default;
   font-family: 'IBM Plex Sans';
   font-style: normal;
   font-weight: 600;
-  src: local('IBM Plex Sans SemiBold'),
-    local('IBMPlexSans-SemiBold'),
+  src: local('IBM Plex Sans SemiBold'), local('IBMPlexSans-SemiBold'),
     url('#{$vf-font-plex-sans-prefix}/IBM-Plex-Sans/fonts/complete/woff/IBMPlexSans-SemiBold.woff') format('woff');
 }
 
