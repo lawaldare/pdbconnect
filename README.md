@@ -65,6 +65,11 @@ Monorepo for PDBe front-end applications and component library
 
 - `npx nx run-many --all --target=test`
 
+##### 12. Build Storybook and host it local in case you find error on wwwint but not locally
+
+- `npx nx storybook lib-docs:build-storybook`
+- `npx http-server dist/storybook/lib-docs/`
+
 ## Contribution guideline
 
 - [Guidelines to add new project / library component](./docs/guidelines.md)
