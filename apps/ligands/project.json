@@ -1,22 +1,22 @@
 {
-  "name": "entry",
+  "name": "ligands",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "pdbc",
-  "sourceRoot": "apps/entry/src",
+  "sourceRoot": "apps/ligands/src",
   "tags": [],
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:browser",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/apps/entry",
-        "index": "apps/entry/src/index.html",
-        "main": "apps/entry/src/main.ts",
+        "outputPath": "dist/apps/ligands",
+        "index": "apps/ligands/src/index.html",
+        "main": "apps/ligands/src/main.ts",
         "polyfills": ["zone.js"],
-        "tsConfig": "apps/entry/tsconfig.app.json",
-        "assets": ["apps/entry/src/favicon.ico", "apps/entry/src/assets"],
-        "styles": ["apps/entry/src/styles.scss"],
+        "tsConfig": "apps/ligands/tsconfig.app.json",
+        "assets": ["apps/ligands/src/favicon.ico", "apps/ligands/src/assets"],
+        "styles": ["apps/ligands/src/styles.scss"],
         "scripts": [],
         "baseHref": "$APP_BASE_HREF"
       },
@@ -51,10 +51,10 @@
       "executor": "@angular-devkit/build-angular:dev-server",
       "configurations": {
         "production": {
-          "browserTarget": "entry:build:production"
+          "browserTarget": "ligands:build:production"
         },
         "development": {
-          "browserTarget": "entry:build:development"
+          "browserTarget": "ligands:build:development"
         }
       },
       "defaultConfiguration": "development"
@@ -62,21 +62,21 @@
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
-        "browserTarget": "entry:build"
+        "browserTarget": "ligands:build"
       }
     },
     "lint": {
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/entry/**/*.ts", "apps/entry/**/*.html"]
+        "lintFilePatterns": ["apps/ligands/**/*.ts", "apps/ligands/**/*.html"]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/entry/jest.config.ts",
+        "jestConfig": "apps/ligands/jest.config.ts",
         "passWithNoTests": true
       },
       "configurations": {
@@ -89,8 +89,12 @@
     "serve-static": {
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "entry:build"
+        "buildTarget": "ligands:build"
       }
+    },
+    "docker-build": {
+      "dependsOn": ["build"],
+      "command": "docker build -f apps/ligands/Dockerfile . -t pdb-ligand-pages"
     }
   }
 }
