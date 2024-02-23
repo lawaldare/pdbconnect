@@ -15,7 +15,15 @@
         "main": "apps/entry/src/main.ts",
         "polyfills": ["zone.js"],
         "tsConfig": "apps/entry/tsconfig.app.json",
-        "assets": ["apps/entry/src/favicon.ico", "apps/entry/src/assets"],
+        "assets": [
+          "apps/entry/src/favicon.ico",
+          "apps/entry/src/assets",
+          {
+            "glob": "**/*",
+            "input": "shared_assets/",
+            "output": "./assets/"
+          }
+        ],
         "styles": ["apps/entry/src/styles.scss"],
         "scripts": [],
         "baseHref": "$APP_BASE_HREF"

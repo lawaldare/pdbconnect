@@ -9,27 +9,37 @@
 - Example – Creating a new project called - entries
   `npx nx g @nrwl/angular:app entries --standalone --routing`
 
-**NOTE**: Do not suffix -pages to any app name. It would be added for deployment purposes.
+##### 2. (Optional) Modify project.json to add shared resources
 
-##### 2. Run the project app locally
+- This step is required in order for library static resources
+  to work properly (e.g logo images)
+
+- Add the following configuration:
+
+- `{"glob": "**/*", "input": "shared_assets/", "output": "./assets/"}`
+
+- to the "assets" attribute (targets -> build -> assets) in
+  your created app project.json file
+
+##### 3. Run the project app locally
 
 - `npx nx serve <PROJECT-NAME>` (Example - `nx serve entries`)
 
-##### 2. Command to add a component to the project app
+##### 4. Command to add a component to the project app
 
 - `npx nx generate @nrwl/angular:component <DIRECTORY/<COMPONENT-NAME> --standalone --project=<PROJECT-NAME> --style=scss`
 
 - Example – Add Summary component to entries project
 - `npx nx generate @nrwl/angular:component pages/summary --standalone --project=entries --style=scss`
 
-##### 3. Command to add a service to the project app
+##### 5. Command to add a service to the project app
 
 - `npx nx generate @nrwl/angular:service <DIRECTORY/<SERVICE-NAME> --project=<PROJECT-NAME>`
 
 - Example – Add test service to entries project
 - `npx nx generate @nrwl/angular:service services/test --project=entries`
 
-##### 4. Command to delete a project, if needed!
+##### 6. Command to delete a project, if needed!
 
 - `npx nx generate @nrwl/workspace:remove --projectName=<PROJECT-NAME>`
 - Example - `npx nx generate @nrwl/workspace:remove --projectName=entries`

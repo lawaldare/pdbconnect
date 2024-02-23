@@ -15,7 +15,15 @@
         "main": "apps/proteins/src/main.ts",
         "polyfills": ["zone.js"],
         "tsConfig": "apps/proteins/tsconfig.app.json",
-        "assets": ["apps/proteins/src/favicon.ico", "apps/proteins/src/assets"],
+        "assets": [
+          "apps/proteins/src/favicon.ico",
+          "apps/proteins/src/assets",
+          {
+            "glob": "**/*",
+            "input": "shared_assets/",
+            "output": "./assets/"
+          }
+        ],
         "styles": ["apps/proteins/src/styles.scss"],
         "scripts": [],
         "baseHref": "$APP_BASE_HREF"
