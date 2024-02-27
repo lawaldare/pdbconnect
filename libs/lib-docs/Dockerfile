@@ -15,5 +15,8 @@ ENV APP_BASE_HREF=$APP_BASE_HREF
 RUN echo "indexFileName=\"\$(ls /usr/share/nginx/html/index.html)\" && \
           envsubst '\$APP_BASE_HREF' < \${indexFileName} > /tmp/index.tmp && \
           mv /tmp/index.tmp \${indexFileName} && \
+          ASSETS_PATH=$(echo $APP_BASE_HREF | awk '{print substr($0, 2, length($0)-2)}') && \
+          echo \"ASSETS_PATH=\$ASSETS_PATH\" && \
+          sed -i \"s|assets/images|\$ASSETS_PATH/assets/images|g\" /usr/share/nginx/html/*.js && \
           nginx -g 'daemon off;'" > /tmp/run.sh
 ENTRYPOINT [ "sh", "/tmp/run.sh" ]
