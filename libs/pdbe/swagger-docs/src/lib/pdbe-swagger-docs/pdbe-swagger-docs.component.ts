@@ -2,13 +2,11 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SwaggerUIBundle } from 'swagger-ui-dist';
 import { SwaggerUIStandalonePreset } from 'swagger-ui-dist';
-import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
-import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 
 @Component({
   selector: 'pdbc-pdbe-swagger-docs',
   standalone: true,
-  imports: [CommonModule, PdbeHeaderLogoMenuComponent, VfEbiFooterComponent],
+  imports: [CommonModule],
   templateUrl: './pdbe-swagger-docs.component.html',
   styleUrls: ['./pdbe-swagger-docs.component.scss'],
 })
@@ -36,6 +34,8 @@ export class PdbeSwaggerDocsComponent implements OnInit {
         activate: true,
         theme: 'nord',
       },
+      displayRequestDuration: true,
+      defaultModelsExpandDepth: -1,
       plugins: [SwaggerUIBundle['plugins'].DownloadUrl, HideInfoUrlPlugin],
       layout: 'BaseLayout',
       requestInterceptor: (req) => {

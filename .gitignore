@@ -43,3 +43,6 @@ Thumbs.db
 # Cache
 .npm/
 .nx/
+
+# Config files
+app.config.json

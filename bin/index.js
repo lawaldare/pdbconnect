@@ -21,8 +21,8 @@ publish:${serviceName}:
         job: build
     script:
       - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-      - docker build --pull --cache-from $CI_REGISTRY_IMAGE --build-arg APP_BASE_HREF=\$${serviceName.toUpperCase()}_BASE_HREF --tag $CI_REGISTRY_IMAGE/${serviceName} --file apps/${serviceName}/Dockerfile .
-      - docker push $CI_REGISTRY_IMAGE/${serviceName}
+      - docker build --pull --cache-from $CI_REGISTRY_IMAGE --build-arg APP_BASE_HREF=\$${serviceName.toUpperCase()}_BASE_HREF --tag $CI_REGISTRY_IMAGE/connect-${serviceName} --file apps/${serviceName}/Dockerfile .
+      - docker push $CI_REGISTRY_IMAGE/connect-${serviceName}
     tags:
       - pdbe-shell
 `;
@@ -34,7 +34,7 @@ trigger_deploy:${serviceName}:
       variables: false
     variables:
       UPSTREAM_REF: $CI_COMMIT_REF_NAME
-      IMAGE_PATHS: $CI_REGISTRY_IMAGE/${serviceName}
+      IMAGE_PATHS: $CI_REGISTRY_IMAGE/connect-${serviceName}
       IMAGE_NAMES: connect-${serviceName}
       APP_NAME: connect-${serviceName}
     trigger:
