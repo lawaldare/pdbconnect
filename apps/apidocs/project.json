@@ -1,0 +1,108 @@
+{
+  "name": "apidocs",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "pdbc",
+  "sourceRoot": "apps/apidocs/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:webpack-browser",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/apidocs",
+        "index": "apps/apidocs/src/index.html",
+        "main": "apps/apidocs/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/apidocs/tsconfig.app.json",
+        "assets": [
+          "apps/apidocs/src/favicon.ico",
+          "apps/apidocs/src/assets",
+          "apps/apidocs/src/app.config.json",
+          {
+            "glob": "**/*",
+            "input": "shared_assets/",
+            "output": "./assets/"
+          }
+        ],
+        "styles": ["apps/apidocs/src/styles.scss"],
+        "scripts": [],
+        "customWebpackConfig": {
+          "path": "apps/apidocs/webpack.config.js"
+        },
+        "baseHref": "$APP_BASE_HREF"
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "2mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "200kb",
+              "maximumError": "250kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@nx/angular:webpack-dev-server",
+      "configurations": {
+        "production": {
+          "browserTarget": "apidocs:build:production"
+        },
+        "development": {
+          "browserTarget": "apidocs:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "browserTarget": "apidocs:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/apidocs/**/*.ts", "apps/apidocs/**/*.html"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/apidocs/jest.config.ts",
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "codeCoverage": true
+        }
+      }
+    },
+    "serve-static": {
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "apidocs:build"
+      }
+    }
+  }
+}
