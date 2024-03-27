@@ -41,7 +41,7 @@ export class PdbeSwaggerDocsComponent implements OnInit {
       requestInterceptor: (req) => {
         if ('method' in req) {
           const [urlPath, urlParams] = req.url.split('?');
-          const apiUrl = urlPath;
+          const apiUrl = urlParams ? `${urlPath}?${urlParams}` : urlPath;
 
           const queryParams = new URLSearchParams(urlParams);
           let newParams = undefined;
