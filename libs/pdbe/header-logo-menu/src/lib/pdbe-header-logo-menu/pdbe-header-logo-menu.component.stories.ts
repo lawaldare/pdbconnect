@@ -49,7 +49,7 @@ export const Story1 = {
   name: 'PDBe',
 };
 
-export const Story3 = {
+export const Story2 = {
   render: (args: PdbeHeaderLogoMenuComponent) => ({
     props: args,
   }),

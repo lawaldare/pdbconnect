@@ -4,5 +4,15 @@
   [attr.href]="url && url.length > 0 ? url : null"
   [attr.target]="url && url.length > 0 ? '_blank' : null"
   (click)="toEmitOnClick && toEmitOnClick.length > 0 ? clickedLinkButton() : null"
-  >{{ label }}</a
->
+  [ngStyle]="{
+    '--link-btn-color': fontColor,
+    '--link-btn-hover': hoverColor,
+    '--link-btn-visited': visitedColor,
+    '--link-btn-has-focus': focusBorderColor ? '1px' : '0px',
+    '--link-btn-focus': focusBorderColor,
+    '--link-btn-active-weight': activeFontWeight,
+    '--link-btn-white-space': whiteSpace
+  }"
+  >{{ label }}
+  <i class="icon icon-common icon-link-btn" [ngClass]="mobileIconName !== 'none' ? 'icon-' + mobileIconName : ''"></i>
+</a>

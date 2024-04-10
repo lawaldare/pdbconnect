@@ -1,0 +1,96 @@
+<div id="main-container-outer">
+  <div id="main-container" *ngIf="entryId">
+    <div id="main-left-container">
+      <pdbc-pdbe-nav-menu
+        [highlightColor]="'#D0DEBB'"
+        [navSections]="[
+          { sectionName: 'Summary', subsections: [] },
+          { sectionName: 'Function and Biology', subsections: [] },
+          { sectionName: 'Family and Domains', subsections: [] },
+          { sectionName: 'Macromolecules', subsections: [] },
+          { sectionName: 'Ligands and Environments', subsections: [] },
+          { sectionName: 'Assemblies', subsections: [] },
+          { sectionName: 'Experiments and Validation', subsections: [] },
+          { sectionName: 'Citations', subsections: [] }
+        ]"
+        [isFirstActivated]="true"
+      ></pdbc-pdbe-nav-menu>
+    </div>
+    <div id="main-right-container">
+      <div id="main-fixed-top-white-bg"></div>
+      <div id="main-right-sticky">
+        <span id="main-title">{{ entryId }}</span>
+        <span id="main-subtitle">Nucleoplasmic pre-60S intermediate of the Nog2 containing pre-rotation state from a Spb1 D52A suppressor 3 strain</span>
+        <div id="main-btn-bar">
+          <pdbc-pdbe-button
+            [backgroundColor]="'#C66717'"
+            [fontSize]="'16px'"
+            [fontColor]="'#FFFFFF'"
+            [borderColor]="'#C66717'"
+            [shadowColor]="'#B65417'"
+            [label]="'View 3D structure'"
+            [paddingSize]="'Small'"
+            [mobileIconName]="'none'"
+          ></pdbc-pdbe-button>
+          <div class="main-btn-bar-break-column"></div>
+          <pdbc-pdbe-dropdown
+            #viewDropdown
+            class="hide-mobile"
+            [elementId]="'view-btn'"
+            (dropdownClicked)="closeOtherDropdowns($event)"
+            [dropdownText]="'Download as'"
+            [options]="[
+              { name: 'Archive mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs.cif', downloadable: true },
+              { name: 'Updated mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_updated.cif', downloadable: true },
+              { name: 'PDB file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1cbs.ent', downloadable: true },
+              { name: 'FASTA (entry)', url: 'https://www.ebi.ac.uk/pdbe/entry/pdb/1cbs/fasta', downloadable: true },
+              { name: 'Full report (PDF)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_full_validation.pdf', downloadable: true },
+              { name: 'Experimental restraints (text)', url: '', downloadable: true },
+              { name: 'Validation data (XML)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_validation.xml', downloadable: true },
+              { name: 'Assembly 1 (mmCIF; gz)', url: 'https://www.ebi.ac.uk/pdbe/static/entry/download/1cbs-assembly1.cif.gz', downloadable: true },
+              { name: 'SIFTS XML file with residue-level mappings', url: 'https://www.ebi.ac.uk/pdbe/files/sifts/1cbs.xml.gz', downloadable: true },
+              { name: 'PDB header', url: 'https://www.ebi.ac.uk/pdbe/static/entry/download/1cbs.header', downloadable: true },
+              {
+                name: 'PDB file (gz)',
+                url: 'https://ftp.ebi.ac.uk/pub/databases/rcsb/pdb-remediated/data/structures/divided/pdb/cb/pdb1cbs.ent.gz',
+                downloadable: true
+              },
+              { name: 'PDBML', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs.xml', downloadable: true },
+              { name: 'PDBML (ATOM lines)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs-extatom.xml', downloadable: true },
+              { name: 'PDBML (no atoms)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs-noatom.xml', downloadable: true },
+              { name: 'Assembly composition XML', url: 'https://www.ebi.ac.uk/pdbe/static/entry/download/1cbs-assembly.xml', downloadable: true },
+              { name: 'Assembly 1 (atom only; mmCIF)', url: 'https://www.ebi.ac.uk/pdbe/static/entry/download/1cbs-assembly-1_atom_site.cif.gz', downloadable: true },
+              { name: 'Summary report (PDF)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_validation.pdf', downloadable: true },
+              { name: 'Percentile plot (PNG)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_multipercentile_validation.png', downloadable: true },
+              { name: 'Percentile plot (SVG)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_multipercentile_validation.svg', downloadable: true }
+            ]"
+            [optionsWidth]="'296px'"
+            [optionsMaxHeight]="'334px'"
+          ></pdbc-pdbe-dropdown>
+          <pdbc-pdbe-dropdown
+            #dwlDropdown
+            class="hide-mobile"
+            [elementId]="'dwl-btn'"
+            (dropdownClicked)="closeOtherDropdowns($event)"
+            [dropdownText]="'View as'"
+            [options]="[
+              { name: 'Archive mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs.cif', downloadable: false },
+              { name: 'Updated mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs_updated.cif', downloadable: false },
+              { name: 'PDB file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/pdb1cbs.ent', downloadable: false },
+              { name: 'PDB header', url: 'https://www.ebi.ac.uk/pdbe/static/entry/1cbs.header', downloadable: false },
+              { name: 'Assembly composition XML', url: 'https://www.ebi.ac.uk/pdbe/static/entry/1cbs-assembly.xml', downloadable: false },
+              { name: 'FASTA (entry)', url: 'https://www.ebi.ac.uk/pdbe/entry/pdb/1cbs/fasta', downloadable: false },
+              { name: 'Summary report (PDF)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs_validation.pdf', downloadable: false },
+              { name: 'Full report (PDF)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs_full_validation.pdf', downloadable: false },
+              { name: 'Percentile plot (PNG)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs_multipercentile_validation.png', downloadable: false },
+              { name: 'Percentile plot (SVG)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs_multipercentile_validation.svg', downloadable: false }
+            ]"
+            [optionsWidth]="'197px'"
+            [optionsMaxHeight]="'390px'"
+          ></pdbc-pdbe-dropdown>
+        </div>
+      </div>
+      <pdbc-summary></pdbc-summary>
+    </div>
+  </div>
+</div>

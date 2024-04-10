@@ -1,10 +1,20 @@
 @import 'libs/pdbe/styles/src/lib/pdbe-styles/icons.scss';
 @import 'libs/pdbe/styles/src/lib/pdbe-styles/typography.scss';
 
-// Logo menu is always at least 88px but stretches if mobile
+// top most container is 100% width with horizontally centered content
+.pdbe-header-logo-menu-top {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  background-color: rgb(5, 102, 67);
+}
+
+// 2nd container menu has maximum width of 1440px
+// is always at least 88px in height but stretches if mobile
 .pdbe-header-logo-menu {
   width: 100%;
   min-height: 88px;
+  max-width: 1440px;
   container-type: inline-size;
 }
 

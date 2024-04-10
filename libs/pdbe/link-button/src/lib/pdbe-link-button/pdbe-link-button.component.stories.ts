@@ -19,6 +19,32 @@ const actionArgs = {
     control: { type: 'text' },
     description: '(Output) string to send to parent component on click',
   },
+  fontColor: {
+    control: { type: 'color' },
+    description: 'Link Button font color',
+  },
+  hoverColor: {
+    control: { type: 'color' },
+    description: 'Link Button (on hover) font color',
+  },
+  visitedColor: {
+    control: { type: 'color' },
+    description: 'Link Button (on visited) font color',
+  },
+  focusBorderColor: {
+    control: { type: 'color' },
+    description: 'Link Button (on focus) border color',
+  },
+  activeFontWeight: {
+    control: { type: 'radio' },
+    description: 'Link Button (on active) font weight',
+    options: [400, 500, 600],
+  },
+  mobileIconName: {
+    control: { type: 'radio' },
+    description: 'Link Button icon',
+    options: ['none', 'link'],
+  },
 };
 
 export default {
@@ -35,6 +61,10 @@ export const Story1 = {
   args: {
     label: 'Link btn lbl',
     fontStyle: 'Paragraph 2 (19px)',
+    fontColor: '#ffffff',
+    hoverColor: '#ffffff',
+    visitedColor: '#ffffff',
+    activeFontWeight: 600,
   },
   argTypes: actionArgs,
   name: 'Paragraph 2 Link Button',
@@ -47,6 +77,10 @@ export const Story2 = {
   args: {
     label: 'Link btn lbl',
     fontStyle: 'Paragraph 3 (16px)',
+    fontColor: '#ffffff',
+    hoverColor: '#ffffff',
+    visitedColor: '#ffffff',
+    activeFontWeight: 600,
   },
   argTypes: actionArgs,
   name: 'Paragraph 3 Link Button',
@@ -60,7 +94,33 @@ export const Story3 = {
     label: 'Go to PDBe',
     fontStyle: 'Paragraph 2 (19px)',
     url: 'https://www.ebi.ac.uk/pdbe/',
+    fontColor: '#ffffff',
+    hoverColor: '#ffffff',
+    visitedColor: '#ffffff',
+    activeFontWeight: 600,
   },
   argTypes: actionArgs,
-  name: 'Send to PDBe Paragraph 2 Link Button',
+  name: 'Send to PDBe Link Button',
+};
+
+export const Story4 = {
+  render: (args: PdbeLinkButtonComponent) => ({
+    props: args,
+  }),
+  args: {
+    label: 'Go to PDBe',
+    fontStyle: 'Paragraph 2 (19px)',
+    url: 'https://www.ebi.ac.uk/pdbe/',
+    fontColor: '#3B6FB6',
+    hoverColor: '#193F90',
+    visitedColor: '#563D82',
+    focusBorderColor: '#3B6FB6',
+    activeFontWeight: 300,
+    mobileIconName: 'link',
+  },
+  parameters: {
+    backgrounds: { default: 'light' },
+  },
+  argTypes: actionArgs,
+  name: 'Send to PDBe blue Link Button with icon',
 };

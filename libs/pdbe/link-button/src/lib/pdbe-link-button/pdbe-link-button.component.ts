@@ -13,6 +13,13 @@ export class PdbeLinkButtonComponent {
   @Input() url?: string;
   @Input() fontStyle = '';
   @Input() toEmitOnClick?: string;
+  @Input() fontColor = '';
+  @Input() hoverColor = '';
+  @Input() visitedColor = '';
+  @Input() focusBorderColor = '';
+  @Input() activeFontWeight = 400;
+  @Input() mobileIconName = '';
+  @Input() whiteSpace = 'nowrap';
   @Output() linkButtonEvent = new EventEmitter<string>();
 
   // Communicate with parent using:
