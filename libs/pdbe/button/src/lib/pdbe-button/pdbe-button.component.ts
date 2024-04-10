@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 })
 export class PdbeButtonComponent {
   @Input() backgroundColor = '';
+  @Input() fontSize = '18px';
   @Input() fontColor = '';
   @Input() borderColor = '';
   @Input() shadowColor = '';

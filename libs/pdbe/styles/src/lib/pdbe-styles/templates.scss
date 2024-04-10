@@ -1,0 +1,26 @@
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  align-self: stretch;
+  font-family: IBM Plex Sans;
+  font-size: 16px;
+  font-style: normal;
+  color: #1a1c1a;
+  line-height: 27.2px; /* 170% */
+}
+
+.info-row-title {
+  font-weight: 500;
+  width: 179px;
+  min-height: 28px;
+}
+
+.info-row-content {
+  font-weight: 400;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1 0 0;
+  min-height: 28px;
+}

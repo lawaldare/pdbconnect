@@ -1,0 +1,7 @@
+# pdbe-nav-menu
+
+This library was generated with [Nx](https://nx.dev).
+
+## Running unit tests
+
+Run `nx test pdbe-nav-menu` to execute the unit tests.

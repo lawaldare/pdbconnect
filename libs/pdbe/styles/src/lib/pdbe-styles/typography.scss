@@ -1,3 +1,59 @@
+/* Heading 1 */
+.heading-1 {
+  font-family: 'IBM Plex Sans';
+  font-size: 42px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 63px; /* 150% */
+}
+h1 {
+  margin: 0;
+  margin-block: 0;
+  margin-inline: 0;
+}
+
+/* Heading 2 */
+.heading-2 {
+  font-family: 'IBM Plex Sans';
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 39px; /* 130% */
+}
+h2 {
+  margin: 0;
+  margin-block: 0;
+  margin-inline: 0;
+}
+
+/* Heading 3 */
+.heading-3 {
+  font-family: 'IBM Plex Sans';
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 31.2px; /* 130% */
+}
+h3 {
+  margin: 0;
+  margin-block: 0;
+  margin-inline: 0;
+}
+
+/* Heading 4 */
+.heading-4 {
+  font-family: 'IBM Plex Sans';
+  font-size: 21px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 27.3px; /* 130% */
+}
+h4 {
+  margin: 0;
+  margin-block: 0;
+  margin-inline: 0;
+}
+
 /* Paragraphs/P2 */
 .paragraph-2 {
   font-family: IBM Plex Sans;
@@ -14,5 +70,28 @@
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
+  // font-weight: 300;
   line-height: 27.2px; /* 170% */
+  // letter-spacing: 0.141px;
+}
+
+/* Paragraphs/P4 */
+.paragraph-4 {
+  font-family: 'IBM Plex Sans';
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22.4px; /* 160% */
+}
+
+.default-text-color {
+  color: #1a1c1a;
+}
+
+.pdbe-bold {
+  font-weight: 600;
+}
+
+.pdbe-semi-bold {
+  font-weight: 500;
 }
