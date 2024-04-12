@@ -6,7 +6,6 @@
   display: flex;
   width: 100%;
   justify-content: center;
-  background-color: rgb(5, 102, 67);
 }
 
 // 2nd container menu has maximum width of 1440px
@@ -26,6 +25,7 @@
   align-items: center;
   align-self: stretch;
 }
+
 .pdbe-header-logo-menu-container > img {
   justify-content: center;
   align-items: center;
@@ -33,6 +33,17 @@
 .pdbe-header-logo-menu-urls {
   align-items: center;
   gap: 24px;
+}
+
+#header-title {
+  color: white;
+  font-weight: 600;
+}
+
+.header-logo-img-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /**

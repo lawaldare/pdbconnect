@@ -15,6 +15,7 @@ export class PdbeHeaderLogoMenuComponent {
   @Input() logoType = '';
   @Input() urls: { name: string; path: string }[] = [];
   @Input() menuHighlightColor = '';
+  @Input() headerTitle = '';
   headerLogoSrc = '';
   collapsedMenu = true;
 
