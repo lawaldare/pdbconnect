@@ -18,6 +18,10 @@ const actionArgs = {
     control: { type: 'color' },
     description: 'Color of menu links highlight for mobile view',
   },
+  headerTitle: {
+    control: { type: 'text' },
+    descriptipon: 'Optional title for the header',
+  },
 };
 
 export default {
@@ -44,6 +48,7 @@ export const Story1 = {
       { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
     ],
     menuHighlightColor: '#0a5032',
+    headerTitle: '',
   },
   argTypes: actionArgs,
   name: 'PDBe',
@@ -62,7 +67,27 @@ export const Story2 = {
       { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
     ],
     menuHighlightColor: '#086C68',
+    headerTitle: '',
   },
   argTypes: actionArgs,
   name: 'PDBe-KB',
+};
+
+export const Story3 = {
+  render: (args: PdbeHeaderLogoMenuComponent) => ({
+    props: args,
+  }),
+  args: {
+    backgroundColor: '#085F5C',
+    logoType: 'PDBe-KB',
+    urls: [
+      { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
+      { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
+      { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
+    ],
+    menuHighlightColor: '#086C68',
+    headerTitle: 'Ligands',
+  },
+  argTypes: actionArgs,
+  name: 'PDBe-KB Ligands',
 };

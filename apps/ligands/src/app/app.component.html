@@ -1,12 +1,25 @@
 <pdbc-pdbe-header-logo-menu
-  [backgroundColor]="'#056643'"
-  [logoType]="'PDBe'"
+  [backgroundColor]="'#085F5C'"
+  [logoType]="'PDBe-KB'"
   [urls]="[
     { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
     { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
     { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' }
   ]"
-  [menuHighlightColor]="'#0a5032'"
+  [menuHighlightColor]="'#086C68'"
+  [headerTitle]="'Ligands'"
 ></pdbc-pdbe-header-logo-menu>
+<pdbc-pdbe-header-search
+  [backgroundColor]="'rgba(8, 95, 92, 0.79)'"
+  [hasAdvancedSearch]="false"
+  [buttonText]="'Search'"
+  [examples]="[
+    { label: 'STI', url: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/Q14676' },
+    { label: 'IMATINIB', url: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/2etx' }
+  ]"
+  [placeholder]="'Search in PDBe and PDBe-KB'"
+  [suggestions]="[]"
+  [searchButtonChipsType]="'PDBe-KB'"
+></pdbc-pdbe-header-search>
 <router-outlet></router-outlet>
 <pdbc-vf-ebi-footer></pdbc-vf-ebi-footer>
