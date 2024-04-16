@@ -39,7 +39,7 @@ Monorepo for PDBe front-end applications and component library
 
 ##### 6. Run App to view the pages. All the Apps are stored in the 'apps' folder
 
-- `npx nx serve <APP-NAME>` (Example: `npx nx serve proteins`)
+- `npx nx serve <APP-NAME>` (Example: `npx nx serve connect`)
 
 ##### 7. Run Nx Graph to see a diagram of the dependencies of the projects
 
