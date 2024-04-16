@@ -1,8 +1,10 @@
+<!-- when linking to external links we use href and target -->
 <a
+  *ngIf="externalLink && url"
   class="pdbe-link-button"
   [ngClass]="fontStyle === 'Paragraph 2 (19px)' ? 'paragraph-2' : 'paragraph-3'"
-  [attr.href]="url && url.length > 0 ? url : null"
-  [attr.target]="url && url.length > 0 ? '_blank' : null"
+  [attr.href]="url.length > 0 ? url : null"
+  [attr.target]="url.length > 0 ? '_blank' : null"
   (click)="toEmitOnClick && toEmitOnClick.length > 0 ? clickedLinkButton() : null"
   [ngStyle]="{
     '--link-btn-color': fontColor,
@@ -13,6 +15,52 @@
     '--link-btn-active-weight': activeFontWeight,
     '--link-btn-white-space': whiteSpace
   }"
-  >{{ label }}
-  <i class="icon icon-common icon-link-btn" [ngClass]="mobileIconName !== 'none' ? 'icon-' + mobileIconName : ''"></i>
+>
+  <ng-container *ngTemplateOutlet="linkBtnTemplate"></ng-container>
 </a>
+
+<!-- when using anchor scrolling we use routerLink and fragment -->
+<a
+  *ngIf="!externalLink && url"
+  class="pdbe-link-button"
+  [ngClass]="fontStyle === 'Paragraph 2 (19px)' ? 'paragraph-2' : 'paragraph-3'"
+  routerLink="."
+  [fragment]="url"
+  (click)="toEmitOnClick && toEmitOnClick.length > 0 ? clickedLinkButton() : null"
+  [ngStyle]="{
+    '--link-btn-color': fontColor,
+    '--link-btn-hover': hoverColor,
+    '--link-btn-visited': visitedColor,
+    '--link-btn-has-focus': focusBorderColor ? '1px' : '0px',
+    '--link-btn-focus': focusBorderColor,
+    '--link-btn-active-weight': activeFontWeight,
+    '--link-btn-white-space': whiteSpace
+  }"
+>
+  <ng-container *ngTemplateOutlet="linkBtnTemplate"></ng-container>
+</a>
+
+<!-- when using this as a button only component -->
+<a
+  *ngIf="!url"
+  class="pdbe-link-button"
+  [ngClass]="fontStyle === 'Paragraph 2 (19px)' ? 'paragraph-2' : 'paragraph-3'"
+  (click)="toEmitOnClick && toEmitOnClick.length > 0 ? clickedLinkButton() : null"
+  [ngStyle]="{
+    '--link-btn-color': fontColor,
+    '--link-btn-hover': hoverColor,
+    '--link-btn-visited': visitedColor,
+    '--link-btn-has-focus': focusBorderColor ? '1px' : '0px',
+    '--link-btn-focus': focusBorderColor,
+    '--link-btn-active-weight': activeFontWeight,
+    '--link-btn-white-space': whiteSpace
+  }"
+>
+  <ng-container *ngTemplateOutlet="linkBtnTemplate"></ng-container>
+</a>
+
+<!-- common template for content inside link as suggested in https://github.com/angular/angular/issues/24567 -->
+<ng-template #linkBtnTemplate>
+  {{ label }}
+  <i class="icon icon-common icon-link-btn" [ngClass]="mobileIconName !== 'none' ? 'icon-' + mobileIconName : ''"></i>
+</ng-template>

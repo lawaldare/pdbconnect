@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed, tick, fakeAsync } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 import { PdbeChipsStyleDatum } from '@pdbe-lib/chips';
 
@@ -10,7 +11,7 @@ describe('PdbeHeaderSearchComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PdbeHeaderSearchComponent],
+      imports: [PdbeHeaderSearchComponent, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PdbeHeaderSearchComponent);

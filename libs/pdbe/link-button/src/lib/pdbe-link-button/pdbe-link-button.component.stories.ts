@@ -10,6 +10,10 @@ const actionArgs = {
     control: { type: 'text' },
     description: 'Link Button url (optional)',
   },
+  externalLink: {
+    control: { type: 'boolean' },
+    description: 'Whether link is internal (routerLink) or external (href)',
+  },
   fontStyle: {
     control: { type: 'select' },
     description: 'Font style of Link Button',
@@ -59,38 +63,7 @@ export const Story1 = {
     props: args,
   }),
   args: {
-    label: 'Link btn lbl',
-    fontStyle: 'Paragraph 2 (19px)',
-    fontColor: '#ffffff',
-    hoverColor: '#ffffff',
-    visitedColor: '#ffffff',
-    activeFontWeight: 600,
-  },
-  argTypes: actionArgs,
-  name: 'Paragraph 2 Link Button',
-};
-
-export const Story2 = {
-  render: (args: PdbeLinkButtonComponent) => ({
-    props: args,
-  }),
-  args: {
-    label: 'Link btn lbl',
-    fontStyle: 'Paragraph 3 (16px)',
-    fontColor: '#ffffff',
-    hoverColor: '#ffffff',
-    visitedColor: '#ffffff',
-    activeFontWeight: 600,
-  },
-  argTypes: actionArgs,
-  name: 'Paragraph 3 Link Button',
-};
-
-export const Story3 = {
-  render: (args: PdbeLinkButtonComponent) => ({
-    props: args,
-  }),
-  args: {
+    externalLink: true,
     label: 'Go to PDBe',
     fontStyle: 'Paragraph 2 (19px)',
     url: 'https://www.ebi.ac.uk/pdbe/',
@@ -103,11 +76,46 @@ export const Story3 = {
   name: 'Send to PDBe Link Button',
 };
 
+export const Story2 = {
+  render: (args: PdbeLinkButtonComponent) => ({
+    props: args,
+  }),
+  args: {
+    externalLink: false,
+    label: 'Link btn lbl',
+    fontStyle: 'Paragraph 2 (19px)',
+    fontColor: '#ffffff',
+    hoverColor: '#ffffff',
+    visitedColor: '#ffffff',
+    activeFontWeight: 600,
+  },
+  argTypes: actionArgs,
+  name: 'Paragraph 2 Link Button',
+};
+
+export const Story3 = {
+  render: (args: PdbeLinkButtonComponent) => ({
+    props: args,
+  }),
+  args: {
+    externalLink: false,
+    label: 'Link btn lbl',
+    fontStyle: 'Paragraph 3 (16px)',
+    fontColor: '#ffffff',
+    hoverColor: '#ffffff',
+    visitedColor: '#ffffff',
+    activeFontWeight: 600,
+  },
+  argTypes: actionArgs,
+  name: 'Paragraph 3 Link Button',
+};
+
 export const Story4 = {
   render: (args: PdbeLinkButtonComponent) => ({
     props: args,
   }),
   args: {
+    externalLink: true,
     label: 'Go to PDBe',
     fontStyle: 'Paragraph 2 (19px)',
     url: 'https://www.ebi.ac.uk/pdbe/',

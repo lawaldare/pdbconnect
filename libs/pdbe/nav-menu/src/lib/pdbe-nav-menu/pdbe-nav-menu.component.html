@@ -8,7 +8,8 @@
     <a
       rel="noopener"
       class="nav-atag paragraph-3 default-text-color"
-      [href]="'#' + sectionNameToId(navSection.sectionName)"
+      routerLink="."
+      [fragment]="sectionNameToId(navSection.sectionName)"
       [ngStyle]="{ '--nav-menu-highlight-color': highlightColor }"
       [ngClass]="navSection.subsections !== undefined ? 'bordered-element' : ''"
     >
@@ -21,7 +22,7 @@
       [ngClass]="j + 1 < navSection.subsections.length ? 'bordered-element' : ''"
       [ngStyle]="{ '--nav-menu-highlight-color': highlightColor }"
     >
-      <a rel="noopener" class="nav-atag paragraph-3 default-text-color" [href]="'#' + sectionNameToId(subNavSection.sectionName)">
+      <a rel="noopener" class="nav-atag paragraph-3 default-text-color" routerLink="." [fragment]="sectionNameToId(subNavSection.sectionName)">
         {{ subNavSection.sectionName }}
       </a>
     </div>
