@@ -1,14 +1,16 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'pdbc-pdbe-link-button',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './pdbe-link-button.component.html',
   styleUrls: ['./pdbe-link-button.component.scss'],
 })
 export class PdbeLinkButtonComponent {
+  @Input() externalLink = true;
   @Input() label = '';
   @Input() url?: string;
   @Input() fontStyle = '';
