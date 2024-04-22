@@ -1,0 +1,47 @@
+<div id="Properties" class="properties-container">
+  <span id="properties-title" class="heading-2"> Physicochemical properties </span>
+  <div class="property-box">
+    <div class="property-box-end">
+      <div class="property-sub-box">
+        <span class="heading-3"> Molecular properties</span>
+        <div *ngFor="let molProperty of molProperties" class="info-container">
+          <pdbc-name-value [name]="molProperty.name" [value]="molProperty.value"></pdbc-name-value>
+        </div>
+      </div>
+      <div class="conf-box">
+        <span class="heading-3"> Conformational properties</span>
+        <div *ngFor="let confProperty of confProperties" class="info-container">
+          <pdbc-name-value [name]="confProperty.name" [value]="confProperty.value"></pdbc-name-value>
+        </div>
+      </div>
+    </div>
+    <div class="property-box-end">
+      <div class="property-sub-box">
+        <span class="heading-3"> Ring properties</span>
+        <div *ngFor="let ringProperty of ringProperties" class="info-container">
+          <pdbc-name-value [name]="ringProperty.name" [value]="ringProperty.value"></pdbc-name-value>
+        </div>
+      </div>
+    </div>
+    <div class="property-box-end">
+      <div class="property-sub-box">
+        <span class="heading-3"> Surface properties</span>
+        <div *ngFor="let surfProperty of surfProperties" class="info-container">
+          <pdbc-name-value [name]="surfProperty.name" [value]="surfProperty.value"></pdbc-name-value>
+        </div>
+      </div>
+      <div id="fun-box" class="property-sub-box">
+        <span class="heading-3"> Functional Group properties</span>
+        <div *ngFor="let funProperty of funProperties" class="info-container">
+          <pdbc-name-value [name]="funProperty.name" [value]="funProperty.value"></pdbc-name-value>
+        </div>
+      </div>
+      <div class="property-sub-box">
+        <span class="heading-3"> Stereochemical properties</span>
+        <div *ngFor="let stereoProperty of stereoProperties" class="info-container">
+          <pdbc-name-value [name]="stereoProperty.name" [value]="stereoProperty.value"></pdbc-name-value>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
