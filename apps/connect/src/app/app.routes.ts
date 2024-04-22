@@ -4,7 +4,7 @@ import { LigandsMainPageComponent } from './projects/ligands/pages/main/main.com
 import { ProteinsMainPageComponent } from './projects/proteins/pages/main/main.component';
 
 export const appRoutes: Route[] = [
-  { path: 'pdbe/:entryId', component: EntryMainPageComponent, title: 'PDBe Entry Pages' },
-  { path: 'proteins/:entryId', component: ProteinsMainPageComponent, title: 'PDBe Proteins Pages' },
-  { path: 'ligands/:entryId', component: LigandsMainPageComponent, title: 'PDBe Ligand Pages' },
+  { path: 'pdbe/entry/pdb/:entryId', component: EntryMainPageComponent, title: 'PDBe Entry Pages' },
+  { path: 'pdbe/pdbe-kb/proteins/:entryId', component: ProteinsMainPageComponent, title: 'PDBe Proteins Pages' },
+  { path: 'pdbe/pdbe-kb/ligands/:ligandId', component: LigandsMainPageComponent, title: 'PDBe Ligand Pages' },
 ];
