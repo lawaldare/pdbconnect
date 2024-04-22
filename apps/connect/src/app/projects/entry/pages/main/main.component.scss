@@ -52,15 +52,21 @@
   width: 100%;
   background: #ffffff;
   position: sticky;
-  top: 13px;
+  // top: 13px;
+  display: flex;
+  padding: 12px 0px 32px 0px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
 }
+
 #main-btn-bar {
   display: flex;
   padding: 12px 0px 12px 12px;
   // align-items: center;
   align-items: baseline;
   gap: 20px;
-  align-self: stretch;
+  // align-self: stretch;
   border-radius: 2px;
   background: var(--Neutral-100, #f3f3f3);
   margin-bottom: 32px;

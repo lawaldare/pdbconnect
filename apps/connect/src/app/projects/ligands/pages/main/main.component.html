@@ -22,26 +22,15 @@
   [searchButtonChipsType]="'PDBe-KB'"
 ></pdbc-pdbe-header-search>
 <div id="main-container-outer">
-  <div id="main-container" *ngIf="entryId">
+  <div id="main-container" *ngIf="ligandId && ligandData">
     <div id="main-left-container">
-      <pdbc-pdbe-nav-menu
-        [highlightColor]="'#B6D0CF'"
-        [navSections]="[
-          { sectionName: 'Description', subsections: [] },
-          { sectionName: 'Physicochemical properties', subsections: [] },
-          { sectionName: 'Structures', subsections: [] },
-          { sectionName: 'Interaction statistics', subsections: [] },
-          { sectionName: 'Related ligands', subsections: [{ sectionName: 'Same scaffolds' }, { sectionName: 'Similar ligands' }, { sectionName: 'Stereoisomers' }] },
-          { sectionName: 'Ligand-specific databases', subsections: [] }
-        ]"
-        [isFirstActivated]="true"
-      ></pdbc-pdbe-nav-menu>
+      <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" [isFirstActivated]="true"></pdbc-pdbe-nav-menu>
     </div>
     <div id="main-right-container">
       <div id="main-fixed-top-white-bg"></div>
       <div id="main-right-sticky">
-        <span id="main-title">{{ entryId }}</span>
-        <span id="main-subtitle">4-(4-METHYL-PIPERAZIN-1-YLMETHYL)-N-[4-METHYL-3-(4-PYRIDIN-3-YL-PYRIMIDIN-2-YLAMINO)-PHENYL]-BENZAMIDE</span>
+        <span id="main-title">{{ ligandId }}</span>
+        <span id="main-subtitle">{{ ligandData.description.name }} </span>
         <div id="main-btn-bar">
           <pdbc-pdbe-button
             [backgroundColor]="'#056643'"
@@ -54,40 +43,28 @@
           ></pdbc-pdbe-button>
           <div class="main-btn-bar-break-column"></div>
           <pdbc-pdbe-dropdown
-            #viewDropdown
+            #dDropdown
             class="hide-mobile"
-            [elementId]="'view-btn'"
-            (dropdownClicked)="closeOtherDropdowns($event)"
+            [elementId]="'dwl-btn'"
             [dropdownText]="'Download as'"
-            [options]="[
-              { name: 'Archive mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs.cif', downloadable: true },
-              { name: 'Updated mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_updated.cif', downloadable: true },
-              { name: 'PDB file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1cbs.ent', downloadable: true },
-              { name: 'FASTA (entry)', url: 'https://www.ebi.ac.uk/pdbe/entry/pdb/1cbs/fasta', downloadable: true },
-              { name: 'Full report (PDF)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_full_validation.pdf', downloadable: true },
-              { name: 'Experimental restraints (text)', url: '', downloadable: true },
-              { name: 'Validation data (XML)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_validation.xml', downloadable: true },
-              { name: 'Assembly 1 (mmCIF; gz)', url: 'https://www.ebi.ac.uk/pdbe/static/entry/download/1cbs-assembly1.cif.gz', downloadable: true },
-              { name: 'SIFTS XML file with residue-level mappings', url: 'https://www.ebi.ac.uk/pdbe/files/sifts/1cbs.xml.gz', downloadable: true },
-              { name: 'PDB header', url: 'https://www.ebi.ac.uk/pdbe/static/entry/download/1cbs.header', downloadable: true },
-              {
-                name: 'PDB file (gz)',
-                url: 'https://ftp.ebi.ac.uk/pub/databases/rcsb/pdb-remediated/data/structures/divided/pdb/cb/pdb1cbs.ent.gz',
-                downloadable: true
-              },
-              { name: 'PDBML', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs.xml', downloadable: true },
-              { name: 'PDBML (ATOM lines)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs-extatom.xml', downloadable: true },
-              { name: 'PDBML (no atoms)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs-noatom.xml', downloadable: true },
-              { name: 'Assembly composition XML', url: 'https://www.ebi.ac.uk/pdbe/static/entry/download/1cbs-assembly.xml', downloadable: true },
-              { name: 'Assembly 1 (atom only; mmCIF)', url: 'https://www.ebi.ac.uk/pdbe/static/entry/download/1cbs-assembly-1_atom_site.cif.gz', downloadable: true },
-              { name: 'Summary report (PDF)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_validation.pdf', downloadable: true },
-              { name: 'Percentile plot (PNG)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_multipercentile_validation.png', downloadable: true },
-              { name: 'Percentile plot (SVG)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_multipercentile_validation.svg', downloadable: true }
-            ]"
+            [options]="downloadOptions"
             [optionsWidth]="'296px'"
             [optionsMaxHeight]="'334px'"
           ></pdbc-pdbe-dropdown>
         </div>
+      </div>
+      <div id="description-continer">
+        <pdbc-description
+          [name]="ligandData.description.name"
+          [synonyms]="ligandData.description.synonyms"
+          [formula]="ligandData.description.formula"
+          [inchi]="ligandData.description.inchi"
+          [inchikey]="ligandData.description.inchikey"
+          [smiles]="ligandData.description.smiles"
+        ></pdbc-description>
+      </div>
+      <div id="property-container">
+        <pdbc-properties [properties]="ligandData.description.properties"></pdbc-properties>
       </div>
     </div>
   </div>
