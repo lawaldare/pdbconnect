@@ -55,12 +55,19 @@
 #main-btn-bar {
   display: flex;
   padding: 12px 0px 12px 12px;
-  align-items: center;
+  // align-items: center;
+  align-items: baseline;
   gap: 20px;
   align-self: stretch;
   border-radius: 2px;
   background: var(--Neutral-100, #f3f3f3);
   margin-bottom: 32px;
+  max-height: 80px;
+  min-height: 56px;
+}
+#main-btn-bar.expanded {
+  padding: 12px 0px 0px 12px;
+  max-height: 68px;
 }
 .main-btn-bar-break-column {
   display: none;
@@ -68,6 +75,7 @@
 #main-btn-bar > pdbc-pdbe-dropdown {
   margin-top: 6px;
   margin-bottom: 6px;
+  width: 154px;
 }
 // TODO: Add height, width, font-size as angular attributes
 #main-btn-bar > pdbc-pdbe-button > button {
@@ -84,6 +92,13 @@
   #main-left-container {
     margin-right: 20px;
   }
+  #main-btn-bar {
+    max-height: 80px;
+  }
+  #main-btn-bar.expanded {
+    padding: 12px 0px 0px 12px;
+    max-height: 68px;
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -95,9 +110,15 @@
     margin-right: 20px;
   }
   #main-btn-bar {
-    align-content: center;
+    align-content: baseline;
     flex-wrap: wrap;
     gap: 12px;
+    row-gap: 12px;
+    max-height: 136px;
+  }
+  #main-btn-bar.expanded {
+    padding: 12px 0px 0px 12px;
+    max-height: 138.38px;
   }
   #main-btn-bar > pdbc-pdbe-dropdown {
     margin-right: 4px;
@@ -124,6 +145,13 @@
     font-weight: 500;
     line-height: 39px; /* 130% */
   }
+  #main-btn-bar {
+    max-height: 80px;
+  }
+  #main-btn-bar.expanded {
+    padding: 12px 0px 0px 12px;
+    max-height: 68px;
+  }
   #main-subtitle {
     font-family: 'IBM Plex Sans';
     font-size: 21px;
@@ -148,5 +176,12 @@
   }
   #main-left-container {
     display: none;
+  }
+  #main-btn-bar {
+    max-height: 80px;
+  }
+  #main-btn-bar.expanded {
+    padding: 12px 0px 0px 12px;
+    max-height: 68px;
   }
 }

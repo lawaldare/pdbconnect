@@ -19,6 +19,14 @@ a.pdbe-link-button {
   user-select: none; /* Standard */
   white-space: var(--link-btn-white-space);
 }
+
+.icon-link {
+  z-index: -1;
+}
+.icon-link:before {
+  position: relative;
+}
+
 .icon-link-btn:before {
   // Inherits variables from anchor parent (see above)
   background-color: var(--link-btn-color); // set color of icon as value of variable

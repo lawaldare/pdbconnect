@@ -1,12 +1,27 @@
+/*
+* TODO: Move this to readme guidelines
+*
+* Icons are coded as mask-images so their color can be changed for CSS selectors such as visited
+* See: https://hacks.mozilla.org/2010/03/privacy-related-changes-coming-to-css-vistited/ on how strict these are
+* This means that icons won't work with other absolute positioned elements (which should be avoided anyway)
+* See: https://github.com/orgs/community/discussions/67845
+* For creating div elements with absolute-like positioning use flexbox as in:
+* https://stackoverflow.com/questions/18027751/overlay-divs-without-absolute-position
+*
+* More links used here: https://stackoverflow.com/questions/62640346/how-to-apply-a-mask-image-only-on-an-elements-background-and-not-on-its-childre
+*/
+
 .icon-bars {
   width: 32px;
   height: 32px;
   position: relative;
   z-index: 0;
+  // z-index: -1;
 }
 .icon-bars:before {
   content: '';
   position: absolute;
+  // position: relative;
   z-index: -1;
   top: 0;
   left: 0;
@@ -25,10 +40,12 @@
   height: 24px;
   position: relative;
   z-index: 0;
+  // z-index: -1;
 }
 .icon-close:before {
   content: '';
   position: absolute;
+  // position: relative;
   z-index: -1;
   top: 0;
   left: 0;
@@ -47,10 +64,12 @@
   height: 16px;
   position: relative;
   z-index: 0;
+  // z-index: -1;
 }
 .icon-search:before {
   content: '';
   position: absolute;
+  // position: relative;
   z-index: -1;
   top: 0;
   left: 0;
@@ -72,10 +91,12 @@
   height: 16px;
   position: relative;
   z-index: 0;
+  // z-index: -1;
 }
 .icon-link:before {
   content: '';
   position: absolute;
+  // position: relative;
   z-index: -1;
   top: 0;
   left: 0;
@@ -94,10 +115,12 @@
   height: 16px;
   position: relative;
   z-index: 0;
+  // z-index: -1;
 }
 .icon-arrow-down:before {
   content: '';
   position: absolute;
+  // position: relative;
   z-index: -1;
   top: 0;
   left: 0;

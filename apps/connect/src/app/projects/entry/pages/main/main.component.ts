@@ -19,6 +19,8 @@ import { AggregatedApiService, EntryData } from '../../services/aggregated-api.s
 export class EntryMainPageComponent implements OnInit {
   entryId: string | undefined; // Currently displayed entry id
   entryData: EntryData | undefined; // Entry pages data
+
+  expandedDropdowns = false;
   @ViewChild('vDropdown') viewDropdown!: PdbeDropdownComponent; // To access dropdown class instance
   @ViewChild('vDropdown', { read: ElementRef }) viewDropdownContainer!: ElementRef; // To access dropdown HTML element
   @ViewChild('dDropdown') downloadDropdown!: PdbeDropdownComponent; // To access dropdown class instance
@@ -105,8 +107,15 @@ export class EntryMainPageComponent implements OnInit {
     const hasClickedView = this.viewDropdownContainer.nativeElement.contains(event.target);
     const hasClickedDownload = this.downloadDropdownContainer.nativeElement.contains(event.target);
     if (!hasClickedView && !hasClickedDownload) {
+      // if click outside dropdowns
       this.downloadDropdown.closeDropdown();
       this.viewDropdown.closeDropdown();
+      this.expandedDropdowns = false;
+    } else if (this.downloadDropdown.expandedStatus || this.viewDropdown.expandedStatus) {
+      // if click inside any of the dropdowns
+      this.expandedDropdowns = true;
+    } else {
+      this.expandedDropdowns = false;
     }
   }
 
