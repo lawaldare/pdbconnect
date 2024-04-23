@@ -24,8 +24,6 @@
 ##### 3. (Optional) Add a configuration service and JSON if needed
 
 - This step is required if you need to add a configuration like an API URL that should be used in the app which can be different for different environments.
-- Add a configuration service to the project's src folder
-  (refer. `apps/apidocs/src/app/config.service.ts`)
 - Add an application config which is a DI token to the project's src folder
   (refer. `apps/apidocs/src/app/app.config.ts`)
 - Add a configuration JSON file to the project's src folder
@@ -36,7 +34,7 @@
 
   ```json
   {
-    "openApiJsonUrl": "https://www.ebi.ac.uk/pdbe/aggregated-api/openapi.  json"
+    "openApiJsonUrl": "https://www.ebi.ac.uk/pdbe/aggregated-api/openapi.json"
   }
   ```
 

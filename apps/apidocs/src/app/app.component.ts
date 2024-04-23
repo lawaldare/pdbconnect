@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 import { PdbeSwaggerDocsComponent } from '@pdbe-lib/swagger-docs';
-import { ConfigService } from './config.service';
+import { ConfigService } from '@pdbe-lib/shared-services';
 
 @Component({
   standalone: true,

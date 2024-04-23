@@ -1,18 +1,18 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AggregatedApiService } from './aggregated-api.service';
+import { EntryApiService } from './entry-api.service';
 import { HttpClientModule } from '@angular/common/http';
 
-describe('AggregatedApiService', () => {
-  let service: AggregatedApiService;
+describe('EntryApiService', () => {
+  let service: EntryApiService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientModule],
-      providers: [AggregatedApiService],
+      providers: [EntryApiService],
     }).compileComponents();
 
-    service = TestBed.inject(AggregatedApiService);
+    service = TestBed.inject(EntryApiService);
   });
 
   it('should be created', () => {
