@@ -36,7 +36,7 @@
       <div id="main-right-sticky">
         <span id="main-title">{{ entryId }}</span>
         <span id="main-subtitle">{{ entryData.title }}</span>
-        <div id="main-btn-bar">
+        <div id="main-btn-bar" [ngClass]="expandedDropdowns ? 'expanded' : ''">
           <pdbc-pdbe-button
             [backgroundColor]="'#C66717'"
             [fontSize]="'16px'"

@@ -17,10 +17,10 @@ Refer table to replace parameter values mentioned in the commands below
 
 ##### 1. Generate component files
 
-- `npx nx g @nrwl/angular:library <COMPONENT-NAME> --standalone --directory <DIRECTORY> --routing false --style=scss --importPath=<LIB-PATH>/<COMPNENT-NAME>`
+- `npx nx g @nrwl/angular:library <COMPONENT-NAME> --standalone --directory <DIRECTORY> --projectNameAndRootFormat derived --routing false --style=scss --importPath=<LIB-PATH>/<COMPONENT-NAME>`
 
 - Example – Adding a special button component to PDBe library –
-`npx nx g @nrwl/angular:library spl-button --standalone --directory pdbe --routing false --style=scss --importPath=@pdbe-lib/spl-button`
+`npx nx g @nrwl/angular:library spl-button --standalone --directory pdbe --projectNameAndRootFormat derived --routing false --style=scss --importPath=@pdbe-lib/spl-button`
 
 ##### 2. Generate Storybook documentation
 - `npx nx g @nrwl/angular:stories <DIRECTORY>-<COMPONENT-NAME> --generateCypressSpecs false`
