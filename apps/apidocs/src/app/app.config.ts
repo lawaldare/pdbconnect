@@ -1,5 +1,5 @@
 import { APP_INITIALIZER, ApplicationConfig } from '@angular/core';
-import { ConfigService } from './config.service';
+import { ConfigService } from '@pdbe-lib/shared-services';
 import { provideHttpClient } from '@angular/common/http';
 
 export function initConfig(appConfig: ConfigService) {

@@ -7,7 +7,7 @@ import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { PdbeButtonComponent } from '@pdbe-lib/button';
 import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
-import { AggregatedApiService, EntryData } from '../../services/aggregated-api.service';
+import { EntryApiService, EntryData } from '../../services/entry-api.service';
 
 @Component({
   selector: 'pdbc-main',
@@ -76,7 +76,7 @@ export class EntryMainPageComponent implements OnInit {
     { name: 'Percentile plot (SVG)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs_multipercentile_validation.svg', downloadable: false },
   ];
 
-  constructor(private route: ActivatedRoute, private router: Router, private aggregatedApiService: AggregatedApiService) {
+  constructor(private route: ActivatedRoute, private router: Router, private entryApiService: EntryApiService) {
     /**
      * Entry id is taken from route parameters in URL
      * we also make sure this id is always lowercase
@@ -93,8 +93,8 @@ export class EntryMainPageComponent implements OnInit {
     /**
      * Entry pages data is retrieved from the API service and post processed for simplicity (see EntryData model)
      */
-    this.aggregatedApiService.fetchEntryPagesData(this.entryId!).subscribe((data) => {
-      this.entryData = this.aggregatedApiService.processEntryPagesData(this.entryId!, data);
+    this.entryApiService.fetchEntryPagesData(this.entryId!).subscribe((data) => {
+      this.entryData = this.entryApiService.processEntryPagesData(this.entryId!, data);
     });
   }
 
