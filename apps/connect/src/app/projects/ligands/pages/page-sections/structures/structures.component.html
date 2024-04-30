@@ -1,0 +1,73 @@
+<div class="structure-container">
+  <span id="structure-title" class="heading-2"> Structures </span>
+  <mat-tab-group>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <span class="heading-4"> 125 Proteins (525 PDB structures)</span>
+      </ng-template>
+      <div class="controller">
+        <div class="filters">
+          <span id="filter_head" class="paragraph-3">Show only</span>
+          <div class="role">
+            <mat-checkbox [(ngModel)]="cofactor" (change)="applyFilter()" class="paragraph-3">Cofactor-like</mat-checkbox>
+            <mat-checkbox [(ngModel)]="reactant" (change)="applyFilter()" class="paragraph-3">Reactant-like</mat-checkbox>
+            <mat-checkbox [(ngModel)]="drug" (change)="applyFilter()" class="paragraph-3">Drug-like</mat-checkbox>
+            <mat-checkbox [(ngModel)]="unannotated" (change)="applyFilter()" class="paragraph-3">Unannotated</mat-checkbox>
+            <form class="search">
+              <input type="search" (search)="applyFilter()" [(ngModel)]="searchText" placeholder="Search the table" class="form_input" name="search" />
+              <img src="{{ searchLogo }}" />
+            </form>
+          </div>
+        </div>
+      </div>
+      <div>
+        <table mat-table [dataSource]="dataSource" matSort>
+          <!-- Position Column -->
+          <ng-container matColumnDef="name">
+            <th class="heading-5" mat-header-cell *matHeaderCellDef>Protein name</th>
+            <td id="name" mat-cell *matCellDef="let item">{{ item.name }}</td>
+          </ng-container>
+
+          <!-- Name Column -->
+          <ng-container matColumnDef="id">
+            <th class="heading-5" mat-header-cell *matHeaderCellDef>PDBe-KB Proteins</th>
+            <td class="table_row" mat-cell *matCellDef="let item">{{ item.id }}</td>
+          </ng-container>
+
+          <!-- Weight Column -->
+          <ng-container matColumnDef="ec_number">
+            <th class="heading-5" mat-header-cell *matHeaderCellDef>EC number</th>
+            <td class="table_row" mat-cell *matCellDef="let item">{{ item.ec_number }}</td>
+          </ng-container>
+
+          <!-- Symbol Column -->
+          <ng-container matColumnDef="annotation">
+            <th class="heading-5" mat-header-cell *matHeaderCellDef>Ligand annotation</th>
+            <td class="table_row" mat-cell *matCellDef="let item">{{ item.annotation }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="count">
+            <th class="heading-5" mat-header-cell *matHeaderCellDef mat-sort-header disableClear>Total structures</th>
+            <td class="table_row" mat-cell *matCellDef="let item">{{ item.count }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="rep_structure">
+            <th class="heading-5" mat-header-cell *matHeaderCellDef>Representative PDB structure</th>
+            <td class="table_row" mat-cell *matCellDef="let item">{{ item.rep_structure }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; let odd = odd; columns: displayedColumns" [ngClass]="{ odd_row: odd }"></tr>
+        </table>
+        <div class="paginator-container">
+          <mat-paginator [pageSizeOptions]="[4, 8, 23]" showFirstLastButtons aria-label="Select page of proteins"> </mat-paginator>
+        </div>
+      </div>
+    </mat-tab>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <span class="heading-4"> 20 Nucleic Acids (50 PDB structures) </span>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+</div>
