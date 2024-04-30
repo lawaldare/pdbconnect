@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, map } from 'rxjs';
-import { PDBLigandDescription, PhysChemProperties } from '../data-models/description.model';
+import { PDBLigandDescription, PhysChemProperties, FunctionalAnnotation } from '../data-models/description.model';
 import { PDBLigandFile } from '../data-models/download.model';
 
 export type LigandData = {
@@ -17,6 +17,7 @@ export type descriptionData = {
   inchikey: string;
   smiles: string;
   properties: PhysChemProperties;
+  annotations: FunctionalAnnotation[];
 };
 
 export interface downloadData {
@@ -56,6 +57,7 @@ export class AggregatedApiService {
   processDescriptionData(ligandId: string, data: PDBLigandDescription): descriptionData {
     const ligandSummary = data[ligandId][0];
     const ligandProperties = ligandSummary['phys_chem_properties'];
+    const ligandAnnotations = ligandSummary['functional_annotations'];
 
     let synonyms;
 
@@ -76,6 +78,7 @@ export class AggregatedApiService {
       inchikey: ligandSummary.inchi_key,
       smiles: ligandSummary.smiles,
       properties: ligandProperties,
+      annotations: ligandAnnotations,
     };
   }
 
