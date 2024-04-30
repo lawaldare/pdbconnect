@@ -1,0 +1,50 @@
+@use '@angular/material' as mat;
+
+$my-palette: (
+  50: #e0f7f7,
+  100: #b2ebec,
+  200: #80dee0,
+  300: #4ed0d5,
+  400: #29c6cd,
+  500: #00bcc8,
+  600: #00acb6,
+  700: #04969d,
+  800: #068285,
+  900: #085f5c,
+  contrast: (
+    50: black,
+    100: black,
+    200: black,
+    300: white,
+    400: white,
+    500: white,
+    600: white,
+    700: white,
+    800: rgba(white, 0.87),
+    900: rgba(white, 0.87),
+  ),
+);
+$my-primary: mat.define-palette($my-palette, 900);
+$my-accent: mat.define-palette($my-palette, 900);
+
+// The "warn" palette is optional and defaults to red if not specified.
+$my-warn: mat.define-palette(mat.$red-palette);
+
+$my-typography: mat.define-typography-config(
+  $font-family: 'IBM Plex Sans',
+  $body-2: mat.define-typography-level(16px, 27.2px, 400),
+);
+
+$my-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $my-primary,
+      accent: $my-accent,
+      warn: $my-warn,
+    ),
+    typography: $my-typography,
+  )
+);
+
+@include mat.tabs-theme($my-theme);
+@include mat.checkbox-theme($my-theme);
