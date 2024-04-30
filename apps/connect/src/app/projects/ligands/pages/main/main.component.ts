@@ -1,13 +1,15 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
+import { Component, ElementRef, ViewChild, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DescriptionComponent } from '../page-sections/description/description.component';
 import { PropertiesComponent } from '../page-sections/properties/properties.component';
+import { StructuresComponent } from '../page-sections/structures/structures.component';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { PdbeButtonComponent } from '@pdbe-lib/button';
 import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
+import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { AggregatedApiService, LigandData } from '../../services/aggregated-api.service';
 import { downloadOption } from '../../data-models/download.model';
 @Component({
@@ -20,8 +22,10 @@ import { downloadOption } from '../../data-models/download.model';
     PdbeNavMenuComponent,
     PdbeButtonComponent,
     PdbeDropdownComponent,
+    PdbeChipsComponent,
     DescriptionComponent,
     PropertiesComponent,
+    StructuresComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -32,6 +36,7 @@ export class LigandsMainPageComponent implements OnInit {
   downloadOptions: downloadOption[] = [];
 
   @ViewChild('dDropdown') dDropdown!: PdbeDropdownComponent;
+  @ViewChild('dDropdown', { read: ElementRef }) downloadDropdownContainer!: ElementRef; // To access dropdown HTML element
   // Data for sticky navigation menu
   navSections = [
     { sectionName: 'Description', subsections: [] },
@@ -60,5 +65,17 @@ export class LigandsMainPageComponent implements OnInit {
         { name: 'Model CML', url: this.ligandData.download.modelCML, downloadable: true },
       ];
     });
+  }
+
+  /**
+   * Function to close dropdowns when page is clicked elsewhere
+   * @param event
+   */
+  @HostListener('document:click', ['$event'])
+  clickOutsideDropdowns(event: Event) {
+    const hasClickedDownload = this.downloadDropdownContainer.nativeElement.contains(event.target);
+    if (!hasClickedDownload) {
+      this.dDropdown.closeDropdown();
+    }
   }
 }

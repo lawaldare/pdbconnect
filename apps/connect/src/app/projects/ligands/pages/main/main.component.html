@@ -29,8 +29,19 @@
     <div id="main-right-container">
       <div id="main-fixed-top-white-bg"></div>
       <div id="main-right-sticky">
-        <span id="main-title">{{ ligandId }}</span>
-        <span id="main-subtitle">{{ ligandData.description.name }} </span>
+        <div class="title">
+          <span id="main-title">{{ ligandId }}</span>
+          <span class="heading-3">{{ ligandData.description.name }} </span>
+        </div>
+        <div *ngFor="let annotation of ligandData.description.annotations" id="annotation">
+          <pdbc-pdbe-chips
+            [label]="annotation.name | titlecase"
+            [url]="annotation.url"
+            [backgroundColor]="'#F9CF3B'"
+            [highlightColor]="'#F9CF3B'"
+            [fontColor]="'#1A1C1A'"
+          ></pdbc-pdbe-chips>
+        </div>
         <div id="main-btn-bar">
           <pdbc-pdbe-button
             [backgroundColor]="'#056643'"
@@ -53,7 +64,7 @@
           ></pdbc-pdbe-dropdown>
         </div>
       </div>
-      <div id="description-continer">
+      <div id="description-container">
         <pdbc-description
           [name]="ligandData.description.name"
           [synonyms]="ligandData.description.synonyms"
@@ -65,6 +76,9 @@
       </div>
       <div id="property-container">
         <pdbc-properties [properties]="ligandData.description.properties"></pdbc-properties>
+      </div>
+      <div id="structure-container">
+        <pdbc-structures></pdbc-structures>
       </div>
     </div>
   </div>

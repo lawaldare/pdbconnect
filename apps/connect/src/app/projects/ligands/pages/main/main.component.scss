@@ -1,3 +1,22 @@
+#structure-container {
+  display: flex;
+  width: 100%;
+  padding-bottom: 40px;
+  align-items: flex-start;
+  gap: 17px;
+}
+.title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+}
+#annotation {
+  display: flex;
+  padding: 4px 10px;
+  align-items: flex-start;
+  gap: 10px;
+}
 #property-container {
   width: 100%;
 }
@@ -9,15 +28,7 @@
   font-weight: 700;
   line-height: 63px; /* 150% */
 }
-#main-subtitle {
-  display: block;
-  font-family: 'IBM Plex Sans';
-  font-size: 24px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 31.2px; /* 130% */
-  margin-bottom: 16px;
-}
+
 #main-container-outer {
   width: 100%;
   display: flex;
@@ -52,9 +63,13 @@
   width: 100%;
 }
 #main-right-sticky {
+  display: flex;
+  padding: 12px 0px 32px 0px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
   background: #ffffff;
   position: sticky;
-  top: 13px;
   width: 100%;
 }
 .main-right-container-first {
