@@ -305,6 +305,37 @@ export class EntryApiService {
       if (data.PDBRedoQualityScores['base-pairs']) PDBRedoQualityScores['basepairs'] = this.processPDBRedoQualityScores(data.PDBRedoQualityScores, 'basepairs');
     }
 
+    let qualityScores = undefined;
+    if (data.ValidationSummaryQualityScores) {
+      qualityScores = {
+        // "geometry": data.ValidationSummaryQualityScores![pdbId].geometry_quality / 100.0,
+        // "modelfit": data.ValidationSummaryQualityScores![pdbId].data_quality / 100.0
+        "geometry": Math.floor( (data.ValidationSummaryQualityScores![pdbId].geometry_quality / 100.0) / 0.2),
+        "modelfit": Math.floor( (data.ValidationSummaryQualityScores![pdbId].data_quality / 100.0) / 0.2)
+      };
+    }
+    console.log("qualityScores")
+        console.log(qualityScores)
+    // const PDBRedoQualityScores = [this.processPDBRedoQualityScores(data.PDBRedoQualityScores, "geometry"), this.processPDBRedoQualityScores(data.PDBRedoQualityScores, "modelfit")];
+    
+    let PDBRedoQualityScores: {
+      geometry: number | undefined
+      modelfit: number | undefined
+      basepairs?: number | undefined
+    } | undefined;
+
+    if (data.PDBRedoQualityScores) {
+      PDBRedoQualityScores = {
+        "geometry": this.processPDBRedoQualityScores(data.PDBRedoQualityScores, "geometry"),
+        "modelfit": this.processPDBRedoQualityScores(data.PDBRedoQualityScores, "modelfit")
+      };
+  
+      if (data.PDBRedoQualityScores['base-pairs'])
+        PDBRedoQualityScores["basepairs"] = this.processPDBRedoQualityScores(data.PDBRedoQualityScores, "basepairs");
+    }
+    console.log("PDBRedoQualityScores")
+        console.log(PDBRedoQualityScores)
+    
     return {
       title: title,
       organism_scientific_names: organism_scientific_names,
