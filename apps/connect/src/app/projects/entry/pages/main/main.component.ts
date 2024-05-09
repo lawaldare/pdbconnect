@@ -66,19 +66,11 @@ export class EntryMainPageComponent implements OnInit {
     bgColor: { r: 255, g: 255, b: 255 },
   };
 
+  // configuration to initialize molstar
+  // docs in: https://github.com/molstar/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin#plugin-parameters-options
   molstarConfigs = {
-    // moleculeId: '1cbs',
-    // subscribeEvents: true,
-    // bgColor:  {r: 255, g: 255, b: 255},
-    // hideStructure: ['water'],
-    // lighting: 'plastic',
-    // landscape: true,
     moleculeId: '',
     hideControls: true,
-    // loadMaps: true,
-    // validationAnnotation: true,
-    // domainAnnotation: true,
-    // expanded: false,
     landscape: true,
     hideExpandIcon: true,
     subscribeEvents: false,

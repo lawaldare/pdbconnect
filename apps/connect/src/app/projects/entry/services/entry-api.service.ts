@@ -313,6 +313,7 @@ export class EntryApiService {
       };
     }
 
+    // process data from pdb redo to a 0-4 integer to plot
     let PDBRedoQualityScores:
       | {
           geometry: number | undefined;
