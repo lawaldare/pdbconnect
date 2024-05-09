@@ -66,6 +66,25 @@ export class EntryMainPageComponent implements OnInit {
     bgColor: { r: 255, g: 255, b: 255 },
   };
 
+  molstarConfigs = {
+    // moleculeId: '1cbs',
+    // subscribeEvents: true,
+    // bgColor:  {r: 255, g: 255, b: 255},
+    // hideStructure: ['water'],
+    // lighting: 'plastic',
+    // landscape: true,
+    moleculeId: "",
+    hideControls: true, 
+    // loadMaps: true,
+    // validationAnnotation: true,
+    // domainAnnotation: true,
+    // expanded: false,
+    landscape: true,
+    hideExpandIcon: true,
+    subscribeEvents: false,
+    bgColor: {r:255, g:255, b:255}
+  };
+
   constructor(private route: ActivatedRoute, private router: Router, private entryApiService: EntryApiService) {
     /**
      * Entry id is taken from route parameters in URL
