@@ -308,27 +308,28 @@ export class EntryApiService {
     let qualityScores = undefined;
     if (data.ValidationSummaryQualityScores) {
       qualityScores = {
-        "geometry": Math.floor( (data.ValidationSummaryQualityScores![pdbId].geometry_quality / 100.0) / 0.2),
-        "modelfit": Math.floor( (data.ValidationSummaryQualityScores![pdbId].data_quality / 100.0) / 0.2)
+        geometry: Math.floor(data.ValidationSummaryQualityScores![pdbId].geometry_quality / 100.0 / 0.2),
+        modelfit: Math.floor(data.ValidationSummaryQualityScores![pdbId].data_quality / 100.0 / 0.2),
       };
     }
-    
-    let PDBRedoQualityScores: {
-      geometry: number | undefined
-      modelfit: number | undefined
-      basepairs?: number | undefined
-    } | undefined;
+
+    let PDBRedoQualityScores:
+      | {
+          geometry: number | undefined;
+          modelfit: number | undefined;
+          basepairs?: number | undefined;
+        }
+      | undefined;
 
     if (data.PDBRedoQualityScores) {
       PDBRedoQualityScores = {
-        "geometry": this.processPDBRedoQualityScores(data.PDBRedoQualityScores, "geometry"),
-        "modelfit": this.processPDBRedoQualityScores(data.PDBRedoQualityScores, "modelfit")
+        geometry: this.processPDBRedoQualityScores(data.PDBRedoQualityScores, 'geometry'),
+        modelfit: this.processPDBRedoQualityScores(data.PDBRedoQualityScores, 'modelfit'),
       };
-  
-      if (data.PDBRedoQualityScores['base-pairs'])
-        PDBRedoQualityScores["basepairs"] = this.processPDBRedoQualityScores(data.PDBRedoQualityScores, "basepairs");
+
+      if (data.PDBRedoQualityScores['base-pairs']) PDBRedoQualityScores['basepairs'] = this.processPDBRedoQualityScores(data.PDBRedoQualityScores, 'basepairs');
     }
-    
+
     return {
       title: title,
       organism_scientific_names: organism_scientific_names,

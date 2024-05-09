@@ -73,8 +73,8 @@ export class EntryMainPageComponent implements OnInit {
     // hideStructure: ['water'],
     // lighting: 'plastic',
     // landscape: true,
-    moleculeId: "",
-    hideControls: true, 
+    moleculeId: '',
+    hideControls: true,
     // loadMaps: true,
     // validationAnnotation: true,
     // domainAnnotation: true,
@@ -82,7 +82,7 @@ export class EntryMainPageComponent implements OnInit {
     landscape: true,
     hideExpandIcon: true,
     subscribeEvents: false,
-    bgColor: {r:255, g:255, b:255}
+    bgColor: { r: 255, g: 255, b: 255 },
   };
 
   constructor(private route: ActivatedRoute, private router: Router, private entryApiService: EntryApiService) {
