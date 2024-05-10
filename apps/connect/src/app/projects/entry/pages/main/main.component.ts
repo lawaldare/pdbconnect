@@ -6,13 +6,27 @@ import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { PdbeButtonComponent } from '@pdbe-lib/button';
+import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
 import { EntryApiService, EntryData } from '../../services/entry-api.service';
+import { StrucQualityGradientsComponent } from '../../components/struc-quality-gradients/struc-quality-gradients.component';
+import { PdbeMolstarForAppsComponent } from '@pdbe-lib/molstar-for-apps';
 
 @Component({
   selector: 'pdbc-main',
   standalone: true,
-  imports: [CommonModule, PdbeHeaderLogoMenuComponent, PdbeHeaderSearchComponent, SummaryComponent, PdbeNavMenuComponent, PdbeButtonComponent, PdbeDropdownComponent],
+  imports: [
+    CommonModule,
+    PdbeMolstarForAppsComponent,
+    PdbeHeaderLogoMenuComponent,
+    PdbeHeaderSearchComponent,
+    SummaryComponent,
+    StrucQualityGradientsComponent,
+    PdbeLinkButtonComponent,
+    PdbeNavMenuComponent,
+    PdbeButtonComponent,
+    PdbeDropdownComponent,
+  ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
 })
@@ -37,44 +51,20 @@ export class EntryMainPageComponent implements OnInit {
     { sectionName: 'Citations', subsections: [] },
   ];
   // Data for download dropdown control
-  downloadOptions = [
-    { name: 'Archive mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs.cif', downloadable: true },
-    { name: 'Updated mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_updated.cif', downloadable: true },
-    { name: 'PDB file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1cbs.ent', downloadable: true },
-    { name: 'FASTA (entry)', url: 'https://www.ebi.ac.uk/pdbe/entry/pdb/1cbs/fasta', downloadable: true },
-    { name: 'Full report (PDF)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_full_validation.pdf', downloadable: true },
-    { name: 'Experimental restraints (text)', url: '', downloadable: true },
-    { name: 'Validation data (XML)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_validation.xml', downloadable: true },
-    { name: 'Assembly 1 (mmCIF; gz)', url: 'https://www.ebi.ac.uk/pdbe/static/entry/download/1cbs-assembly1.cif.gz', downloadable: true },
-    { name: 'SIFTS XML file with residue-level mappings', url: 'https://www.ebi.ac.uk/pdbe/files/sifts/1cbs.xml.gz', downloadable: true },
-    { name: 'PDB header', url: 'https://www.ebi.ac.uk/pdbe/static/entry/download/1cbs.header', downloadable: true },
-    {
-      name: 'PDB file (gz)',
-      url: 'https://ftp.ebi.ac.uk/pub/databases/rcsb/pdb-remediated/data/structures/divided/pdb/cb/pdb1cbs.ent.gz',
-      downloadable: true,
-    },
-    { name: 'PDBML', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs.xml', downloadable: true },
-    { name: 'PDBML (ATOM lines)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs-extatom.xml', downloadable: true },
-    { name: 'PDBML (no atoms)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs-noatom.xml', downloadable: true },
-    { name: 'Assembly composition XML', url: 'https://www.ebi.ac.uk/pdbe/static/entry/download/1cbs-assembly.xml', downloadable: true },
-    { name: 'Assembly 1 (atom only; mmCIF)', url: 'https://www.ebi.ac.uk/pdbe/static/entry/download/1cbs-assembly-1_atom_site.cif.gz', downloadable: true },
-    { name: 'Summary report (PDF)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_validation.pdf', downloadable: true },
-    { name: 'Percentile plot (PNG)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_multipercentile_validation.png', downloadable: true },
-    { name: 'Percentile plot (SVG)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_multipercentile_validation.svg', downloadable: true },
-  ];
+  downloadOptions: { name: string; url: string; downloadable: boolean }[] = [];
   // Data for view dropdown control
-  viewOptions = [
-    { name: 'Archive mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs.cif', downloadable: false },
-    { name: 'Updated mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs_updated.cif', downloadable: false },
-    { name: 'PDB file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/pdb1cbs.ent', downloadable: false },
-    { name: 'PDB header', url: 'https://www.ebi.ac.uk/pdbe/static/entry/1cbs.header', downloadable: false },
-    { name: 'Assembly composition XML', url: 'https://www.ebi.ac.uk/pdbe/static/entry/1cbs-assembly.xml', downloadable: false },
-    { name: 'FASTA (entry)', url: 'https://www.ebi.ac.uk/pdbe/entry/pdb/1cbs/fasta', downloadable: false },
-    { name: 'Summary report (PDF)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs_validation.pdf', downloadable: false },
-    { name: 'Full report (PDF)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs_full_validation.pdf', downloadable: false },
-    { name: 'Percentile plot (PNG)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs_multipercentile_validation.png', downloadable: false },
-    { name: 'Percentile plot (SVG)', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs_multipercentile_validation.svg', downloadable: false },
-  ];
+  viewOptions: { name: string; url: string; downloadable: boolean }[] = [];
+
+  // configuration to initialize molstar
+  // docs in: https://github.com/molstar/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin#plugin-parameters-options
+  molstarConfigs = {
+    moleculeId: '',
+    hideControls: true,
+    landscape: true,
+    hideExpandIcon: true,
+    subscribeEvents: false,
+    bgColor: { r: 255, g: 255, b: 255 },
+  };
 
   constructor(private route: ActivatedRoute, private router: Router, private entryApiService: EntryApiService) {
     /**
@@ -86,6 +76,7 @@ export class EntryMainPageComponent implements OnInit {
       if (params['entryId'] !== this.entryId) {
         this.router.navigate(['', this.entryId]);
       }
+      this.molstarConfigs.moleculeId = this.entryId!;
     });
   }
 
@@ -95,6 +86,9 @@ export class EntryMainPageComponent implements OnInit {
      */
     this.entryApiService.fetchEntryPagesData(this.entryId!).subscribe((data) => {
       this.entryData = this.entryApiService.processEntryPagesData(this.entryId!, data);
+
+      this.downloadOptions = this.entryData.fileURLs.downloads;
+      this.viewOptions = this.entryData.fileURLs.views;
     });
   }
 
