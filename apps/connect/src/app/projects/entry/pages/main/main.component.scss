@@ -40,7 +40,30 @@
   flex-direction: column;
   align-items: flex-start;
   align-self: stretch;
+  margin-bottom: 40px;
 }
+#main-summary-holder {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 20px;
+}
+#main-molstar-qsummary {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+#main-molstar {
+  width: 346px;
+}
+#main-qsummary {
+  display: flex;
+  flex-direction: column;
+  width: 348px;
+}
+
 #main-fixed-top-white-bg {
   background: #ffffff;
   position: sticky;
@@ -52,7 +75,9 @@
   width: 100%;
   background: #ffffff;
   position: sticky;
-  top: 13px;
+  padding-top: 13px;
+  top: 0px;
+  z-index: 2;
 }
 #main-btn-bar {
   display: flex;
@@ -94,12 +119,25 @@
   #main-left-container {
     margin-right: 20px;
   }
+  #main-right-container {
+    margin-bottom: 40px;
+  }
   #main-btn-bar {
     max-height: 80px;
   }
   #main-btn-bar.expanded {
     padding: 12px 0px 0px 12px;
     max-height: 68px;
+  }
+  #main-summary-holder {
+    flex-direction: column;
+  }
+  #main-molstar-qsummary {
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+    row-gap: 16px;
   }
 }
 
@@ -110,6 +148,9 @@
   }
   #main-left-container {
     margin-right: 20px;
+  }
+  #main-right-container {
+    margin-bottom: 40px;
   }
   #main-btn-bar {
     align-content: baseline;
@@ -130,6 +171,12 @@
     flex-basis: 100%;
     width: 0;
   }
+  #main-molstar-qsummary {
+    flex-direction: column;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 16px;
+  }
 }
 
 @media screen and (max-width: 540px) {
@@ -139,6 +186,9 @@
   }
   #main-left-container {
     display: none;
+  }
+  #main-right-container {
+    margin-bottom: 24px;
   }
   #main-title {
     font-family: 'IBM Plex Sans';
@@ -170,6 +220,13 @@
   #main-btn-bar {
     margin-bottom: 16px;
   }
+  #main-molstar {
+    width: 346px;
+  }
+  #main-qsummary {
+    width: 100%;
+    max-width: 348px;
+  }
 }
 
 @media screen and (max-width: 375px) {
@@ -185,5 +242,12 @@
   #main-btn-bar.expanded {
     padding: 12px 0px 0px 12px;
     max-height: 68px;
+  }
+  #main-molstar {
+    width: 317px;
+  }
+  #main-qsummary {
+    width: 100%;
+    max-width: 317px;
   }
 }

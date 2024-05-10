@@ -1,5 +1,5 @@
 <div>
-  <div class="dropdown-holder" (click)="expandedStatus = !expandedStatus; clicked()">
+  <div class="dropdown-holder" [ngStyle]="{ '--dropdown-width': dropdownWidth }" (click)="expandedStatus = !expandedStatus; clicked()">
     <span class="paragraph-3 dropdown-text">{{ dropdownText }}</span>
     <i class="icon icon-common icon-arrow-down" [ngClass]="expandedStatus ? 'open' : ''"></i>
   </div>

@@ -2,8 +2,10 @@
 @import 'libs/pdbe/styles/src/lib/pdbe-styles/icons.scss';
 
 .dropdown-holder {
+  --dropdown-width: 154px;
   display: flex;
-  width: 154px;
+  width: var(--dropdown-width);
+  // width: 154px;
   padding: 8px 12px;
   justify-content: space-between;
   align-items: center;
