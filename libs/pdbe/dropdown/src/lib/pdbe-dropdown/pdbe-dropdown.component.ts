@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 })
 export class PdbeDropdownComponent {
   @Input() dropdownText = '';
+  @Input() dropdownWidth = '154px';
   @Input() options: { name: string; url: string; downloadable: boolean }[] = [];
   @Input() optionsWidth = '197px';
   @Input() optionsMaxHeight = '392px';

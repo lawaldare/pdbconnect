@@ -6,6 +6,10 @@ const actionArgs = {
     control: { type: 'text' },
     description: 'Menu hover highlight color',
   },
+  dropdownWidth: {
+    control: { type: 'text' },
+    description: 'Menu dropdown width',
+  },
   options: {
     control: { type: 'text' },
     description: 'List of URL objects to list in dropdown',
@@ -33,6 +37,7 @@ export const Story1 = {
   }),
   args: {
     dropdownText: 'View file as',
+    dropdownWidth: '154px',
     options: [
       { name: 'Archive mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs.cif', downloadable: false },
       { name: 'Updated mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/1cbs_updated.cif', downloadable: false },
@@ -57,7 +62,8 @@ export const Story2 = {
     props: args,
   }),
   args: {
-    dropdownText: 'Download as',
+    dropdownText: 'Download files',
+    dropdownWidth: '166px',
     options: [
       { name: 'Archive mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs.cif', downloadable: true },
       { name: 'Updated mmCIF file', url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/1cbs_updated.cif', downloadable: true },

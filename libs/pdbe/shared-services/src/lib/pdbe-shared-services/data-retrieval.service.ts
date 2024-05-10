@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin, map } from 'rxjs';
+import { Observable, catchError, forkJoin, map, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -8,9 +8,17 @@ import { Observable, forkJoin, map } from 'rxjs';
 export class DataRetrievalService {
   constructor(private http: HttpClient) {}
 
-  fetchUntypedData(dataRequestObjects: Array<{ name: string; url: string }>) {
+  fetchUntypedData(dataRequestObjects: Array<{ name: string; url: string }>, logWarnOrError: 'log' | 'warn' | 'error' = 'error') {
     const endpointNames = dataRequestObjects.map((dataRequestObj) => dataRequestObj.name);
-    const toForkJoin: Observable<any>[] = dataRequestObjects.map((dataRequestObj) => this.http.get<any>(dataRequestObj.url));
+    const toForkJoin: Observable<any>[] = dataRequestObjects.map((dataRequestObj) =>
+      this.http.get<any>(dataRequestObj.url).pipe(
+        catchError((error) => {
+          console[logWarnOrError](logWarnOrError.toUpperCase() + ': API request unsuccessful');
+          console[logWarnOrError](error);
+          return of(undefined);
+        })
+      )
+    );
 
     return forkJoin(toForkJoin).pipe(
       map((data) => {

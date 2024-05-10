@@ -3,6 +3,7 @@ export { AppConfig, ConfigService } from './lib/pdbe-shared-services/config.serv
 export { DataRetrievalService } from './lib/pdbe-shared-services/data-retrieval.service';
 export { PDBEntrySummary } from './lib/pdbe-shared-services/data-models/api/entry/summary.model';
 export { PDBEntryEntities } from './lib/pdbe-shared-services/data-models/api/entry/molecules.model';
+export { PDBEntryFiles, PDBEntryURL, PDBEntryFileKey } from './lib/pdbe-shared-services/data-models/api/entry/files.model';
 export { NonNMRExperimentDetail, PDBEntryExperiment } from './lib/pdbe-shared-services/data-models/api/entry/experiment.model';
 export { PDBEntryCitations } from './lib/pdbe-shared-services/data-models/api/entry/publication.model';
 export { ValidationSummaryQualityScores } from './lib/pdbe-shared-services/data-models/api/validation/summary-quality-scores';
