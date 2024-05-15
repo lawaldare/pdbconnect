@@ -5,7 +5,7 @@ import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'pdbc-related-ligands',
