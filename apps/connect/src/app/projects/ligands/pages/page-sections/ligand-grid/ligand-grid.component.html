@@ -1,0 +1,43 @@
+<div class="ligand-container">
+  <div class="ligand-image">
+    <pdb-ligand-env #ligandImg></pdb-ligand-env>
+  </div>
+  <div class="ligand-description">
+    <div class="description-header">
+      <pdbc-pdbe-link-button
+        [externalLink]="true"
+        [label]="ligand.chem_comp_id"
+        [url]="this.ligandUrl"
+        [fontStyle]="'heading-5'"
+        [fontColor]="'#3B6FB6'"
+        [hoverColor]="'#193F90'"
+        [visitedColor]="'#563D82'"
+        [focusBorderColor]="'#3B6FB6'"
+        [activeFontWeight]="300"
+        [whiteSpace]="'normal'"
+        [mobileIconName]="'link'"
+      ></pdbc-pdbe-link-button>
+      <span class="paragraph-4"> {{ ligand.similarity_score * 100 | number }}% similar</span>
+    </div>
+    <div class="description-content">
+      <div class="content-tag">
+        <span class="paragraph-4"> Bound in</span>
+      </div>
+      <div class="content">
+        <pdbc-pdbe-link-button
+          [externalLink]="true"
+          [label]="boundEntryLabel"
+          [url]=""
+          [fontStyle]="'paragrpah-6'"
+          [fontColor]="'#3B6FB6'"
+          [hoverColor]="'#193F90'"
+          [visitedColor]="'#563D82'"
+          [focusBorderColor]="'#3B6FB6'"
+          [activeFontWeight]="100"
+          [whiteSpace]="'normal'"
+          [mobileIconName]="'link'"
+        ></pdbc-pdbe-link-button>
+      </div>
+    </div>
+  </div>
+</div>

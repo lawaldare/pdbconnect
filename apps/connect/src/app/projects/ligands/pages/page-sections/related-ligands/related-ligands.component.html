@@ -1,0 +1,39 @@
+@if(relatedLigand$ | async; as relatedLigand) {
+<div class="related-ligands-container">
+  <div class="header">
+    <span class="heading-2"> Related ligands</span>
+  </div>
+  @if(relatedLigand.same_scaffold.length > 0){
+  <div class="scaffold-container">
+    <div class="scaffold-header">
+      <span class="heading-3">Same scaffold - {{ relatedLigand.same_scaffold.length }}</span>
+    </div>
+    <div class="gallery-container">
+      <form class="search-container">
+        <input type="search" placeholder="Search for scaffold by name, code or PDB ID" class="form_input" name="search" />
+        <img src="{{ searchLogo }}" />
+      </form>
+      <div class="grid-container"></div>
+    </div>
+  </div>
+  } @if(relatedLigand.similar_ligands.length){
+  <div class="scaffold-container">
+    <div class="scaffold-header">
+      <span class="heading-3">Similar ligands - {{ relatedLigand.similar_ligands.length }}</span>
+    </div>
+    <div class="gallery-container">
+      <form class="search-container">
+        <input type="search" placeholder="Search for ligand by name, code or PDB ID" class="form_input" name="search" />
+        <img src="{{ searchLogo }}" />
+      </form>
+      <div class="grid-container">
+        @for (similarLigand of relatedLigand.similar_ligands; track similarLigand) {
+        <pdbc-ligand-grid [ligand]="similarLigand"></pdbc-ligand-grid>
+        }
+      </div>
+      <mat-paginator [pageSizeOptions]="[6, 12, 18]" showFirstLastButtons aria-label="Select page of ligands"> </mat-paginator>
+    </div>
+  </div>
+  }
+</div>
+}

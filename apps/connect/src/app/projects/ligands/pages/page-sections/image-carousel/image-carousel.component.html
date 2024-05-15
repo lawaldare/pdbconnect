@@ -1,0 +1,23 @@
+<div class="carousel-container">
+  <div class="carousel-header">
+    <span class="heading-4">Overall view, scaffold, and fragments</span>
+    <img id="helper_icon" src="{{ helpLogoSrc }}" />
+  </div>
+  <div class="gallery-container">
+    <div class="gallery">
+      <button class="control" (click)="onPreviousClick()">
+        <img src="{{ arrowSrc }}" class="arrow" />
+      </button>
+      <div class="image-container">
+        <pdb-ligand-env #ligandEnv></pdb-ligand-env>
+      </div>
+      <button class="control" (click)="onNextClick()">
+        <img src="{{ arrowSrc }}" class="arrow right" />
+      </button>
+    </div>
+    <div class="depiction-description">
+      <span class="paragraph-2"> {{ this.structureDescription }}</span>
+    </div>
+    <div #slide class="slide-container"></div>
+  </div>
+</div>

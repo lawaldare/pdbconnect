@@ -15,9 +15,8 @@ const actionArgs = {
     description: 'Whether link is internal (routerLink) or external (href)',
   },
   fontStyle: {
-    control: { type: 'select' },
+    control: { type: 'text' },
     description: 'Font style of Link Button',
-    options: ['Paragraph 2 (19px)', 'Paragraph 3 (16px)'],
   },
   toEmitOnClick: {
     control: { type: 'text' },
@@ -65,7 +64,7 @@ export const Story1 = {
   args: {
     externalLink: true,
     label: 'Go to PDBe',
-    fontStyle: 'Paragraph 2 (19px)',
+    fontStyle: 'paragraph-2',
     url: 'https://www.ebi.ac.uk/pdbe/',
     fontColor: '#ffffff',
     hoverColor: '#ffffff',
@@ -83,7 +82,7 @@ export const Story2 = {
   args: {
     externalLink: false,
     label: 'Link btn lbl',
-    fontStyle: 'Paragraph 2 (19px)',
+    fontStyle: 'paragraph-2',
     fontColor: '#ffffff',
     hoverColor: '#ffffff',
     visitedColor: '#ffffff',
@@ -100,7 +99,7 @@ export const Story3 = {
   args: {
     externalLink: false,
     label: 'Link btn lbl',
-    fontStyle: 'Paragraph 3 (16px)',
+    fontStyle: 'paragraph-3',
     fontColor: '#ffffff',
     hoverColor: '#ffffff',
     visitedColor: '#ffffff',
@@ -117,7 +116,7 @@ export const Story4 = {
   args: {
     externalLink: true,
     label: 'Go to PDBe',
-    fontStyle: 'Paragraph 2 (19px)',
+    fontStyle: 'paragraph-2',
     url: 'https://www.ebi.ac.uk/pdbe/',
     fontColor: '#3B6FB6',
     hoverColor: '#193F90',

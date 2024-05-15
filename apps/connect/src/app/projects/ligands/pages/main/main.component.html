@@ -22,7 +22,8 @@
   [searchButtonChipsType]="'PDBe-KB'"
 ></pdbc-pdbe-header-search>
 <div id="main-container-outer">
-  <div id="main-container" *ngIf="ligandId && ligandData">
+  @if(ligandId && description){
+  <div id="main-container">
     <div id="main-left-container">
       <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" [isFirstActivated]="true"></pdbc-pdbe-nav-menu>
     </div>
@@ -31,9 +32,9 @@
       <div id="main-right-sticky">
         <div class="title">
           <span id="main-title">{{ ligandId }}</span>
-          <span class="heading-3">{{ ligandData.description.name }} </span>
+          <span class="heading-3">{{ description.name }} </span>
         </div>
-        <div *ngFor="let annotation of ligandData.description.annotations" id="annotation">
+        <div *ngFor="let annotation of description.annotations" id="annotation">
           <pdbc-pdbe-chips
             [label]="annotation.name | titlecase"
             [url]="annotation.url"
@@ -66,20 +67,29 @@
       </div>
       <div id="description-container">
         <pdbc-description
-          [name]="ligandData.description.name"
-          [synonyms]="ligandData.description.synonyms"
-          [formula]="ligandData.description.formula"
-          [inchi]="ligandData.description.inchi"
-          [inchikey]="ligandData.description.inchikey"
-          [smiles]="ligandData.description.smiles"
+          [name]="description.name"
+          [synonyms]="description.synonyms"
+          [formula]="description.formula"
+          [inchi]="description.inchi"
+          [inchikey]="description.inchikey"
+          [smiles]="description.smiles"
         ></pdbc-description>
+        <pdbc-image-carousel [ligandId]="ligandId"></pdbc-image-carousel>
       </div>
       <div id="property-container">
-        <pdbc-properties [properties]="ligandData.description.properties"></pdbc-properties>
+        <pdbc-properties [properties]="description.properties"></pdbc-properties>
       </div>
       <div id="structure-container">
         <pdbc-structures></pdbc-structures>
       </div>
+      <div id="interaction-container">
+        <pdbc-interaction></pdbc-interaction>
+      </div>
+      <div id="related-ligands-container">
+        <pdbc-related-ligands [ligandId]="ligandId"></pdbc-related-ligands>
+      </div>
     </div>
   </div>
+
+  }
 </div>

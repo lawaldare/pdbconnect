@@ -1,0 +1,45 @@
+.interaction-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  align-self: stretch;
+}
+
+.interaction-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  align-self: stretch;
+}
+
+.view-container {
+  display: flex;
+  width: 100%;
+  padding-bottom: 40px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.heatmap-container {
+  display: flex;
+  width: 70%;
+}
+
+.ligandEnv-container {
+  display: flex;
+  flex-direction: column;
+  width: 30%;
+  gap: 17px;
+}
+
+.ligandEnv-content {
+  height: 380px;
+  border: 1px solid var(--Neutral-200, #e4e4e4);
+}
+
+#helper_icon {
+  width: 18px;
+  height: 18px;
+  padding-left: 5px;
+}

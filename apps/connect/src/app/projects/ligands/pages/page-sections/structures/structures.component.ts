@@ -22,12 +22,15 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   reactant = false;
   drug = false;
   unannotated = false;
-  searchLogo = '';
+  searchLogo = '/assets/images/Search.svg';
   searchText = '';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
+  /**
+   * Function to apply both check box and search filter
+   */
   applyFilter() {
     const filterValues: { annotation?: string[]; search?: string } = {};
     const filterSet = new Set<string>();
@@ -46,7 +49,7 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   }
 
   ngOnInit() {
-    this.searchLogo = '/assets/images/Search.svg';
+    // Defining custom filter
     this.dataSource.filterPredicate = (data: Structure, filter: string): boolean => {
       const filterValues = JSON.parse(filter);
       let annotationMatch = false;

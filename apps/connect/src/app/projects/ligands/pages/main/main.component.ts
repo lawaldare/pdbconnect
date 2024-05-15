@@ -2,16 +2,20 @@ import { Component, ElementRef, ViewChild, HostListener, OnInit } from '@angular
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DescriptionComponent } from '../page-sections/description/description.component';
+import { ImageCarouselComponent } from '../page-sections/image-carousel/image-carousel.component';
 import { PropertiesComponent } from '../page-sections/properties/properties.component';
 import { StructuresComponent } from '../page-sections/structures/structures.component';
+import { InteractionComponent } from '../page-sections/interaction/interaction.component';
+import { RelatedLigandsComponent } from '../page-sections/related-ligands/related-ligands.component';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { PdbeButtonComponent } from '@pdbe-lib/button';
 import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
-import { AggregatedApiService, LigandData } from '../../services/aggregated-api.service';
+import { AggregatedApiService, descriptionData } from '../../services/aggregated-api.service';
 import { downloadOption } from '../../data-models/download.model';
+
 @Component({
   selector: 'pdbc-main',
   standalone: true,
@@ -24,15 +28,18 @@ import { downloadOption } from '../../data-models/download.model';
     PdbeDropdownComponent,
     PdbeChipsComponent,
     DescriptionComponent,
+    ImageCarouselComponent,
     PropertiesComponent,
     StructuresComponent,
+    InteractionComponent,
+    RelatedLigandsComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
 })
 export class LigandsMainPageComponent implements OnInit {
   ligandId: string | undefined;
-  ligandData: LigandData | undefined;
+  description?: descriptionData;
   downloadOptions: downloadOption[] = [];
 
   @ViewChild('dDropdown') dDropdown!: PdbeDropdownComponent;
@@ -53,18 +60,38 @@ export class LigandsMainPageComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.aggregatedApiService.fetchLigandPagesData(this.ligandId!).subscribe((data) => {
-      this.ligandData = this.aggregatedApiService.processLigandPagesData(this.ligandId!, data);
+  /**
+   * Function to fetch and process data from Summary API
+   * @param ligandId
+   */
+  getDescription(ligandId: string) {
+    this.aggregatedApiService.fetchDescription(ligandId).subscribe((data) => {
+      this.description = this.aggregatedApiService.processDescriptionData(ligandId, data);
+    });
+  }
 
+  /**
+   * Function to fetch and process downloadable files of ligand
+   * @param ligandId
+   */
+  getDownloads(ligandId: string) {
+    this.aggregatedApiService.fetchDownload(ligandId).subscribe((data) => {
+      const download = this.aggregatedApiService.processDownloadData(ligandId, data);
       // Data for download dropdown control
       this.downloadOptions = [
-        { name: 'CIF file', url: this.ligandData.download.cif, downloadable: true },
-        { name: 'Ideal SDF', url: this.ligandData.download.idealSDF, downloadable: true },
-        { name: 'Model SDF', url: this.ligandData.download.modelSDF, downloadable: true },
-        { name: 'Model CML', url: this.ligandData.download.modelCML, downloadable: true },
+        { name: 'CIF file', url: download.cif, downloadable: true },
+        { name: 'Ideal SDF', url: download.idealSDF, downloadable: true },
+        { name: 'Model SDF', url: download.modelSDF, downloadable: true },
+        { name: 'Model CML', url: download.modelCML, downloadable: true },
       ];
     });
+  }
+
+  ngOnInit(): void {
+    if (this.ligandId) {
+      this.getDescription(this.ligandId);
+      this.getDownloads(this.ligandId);
+    }
   }
 
   /**

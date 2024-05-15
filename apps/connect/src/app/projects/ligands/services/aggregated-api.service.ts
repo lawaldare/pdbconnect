@@ -1,13 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, forkJoin, map } from 'rxjs';
+import { Observable } from 'rxjs';
 import { PDBLigandDescription, PhysChemProperties, FunctionalAnnotation } from '../data-models/description.model';
 import { PDBLigandFile } from '../data-models/download.model';
-
-export type LigandData = {
-  description: descriptionData;
-  download: downloadData;
-};
+import { PDBSubstructures, Substructure, Depiction } from '../data-models/structure.model';
+import { PDBRelatedLigands, BoundEntries, RelatedLigand } from '../data-models/related-ligands.model';
+import { shareReplay, map } from 'rxjs';
 
 export type descriptionData = {
   name: string;
@@ -27,31 +25,49 @@ export interface downloadData {
   modelCML: string;
 }
 
-type APIModels = {
-  descriptionData: PDBLigandDescription;
-  ligandFile: PDBLigandFile;
-};
-
 @Injectable({
   providedIn: 'root',
 })
 export class AggregatedApiService {
-  private url = 'https://www.ebi.ac.uk/pdbe/aggregated-api'; // URL to web api
+  private api_url = 'https://www.ebi.ac.uk/pdbe/aggregated-api'; // URL to web api
+  private static_url = 'https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2'; //URL to static ligand files
 
   constructor(private http: HttpClient) {}
 
-  fetchLigandPagesData(ligandId: string): Observable<APIModels> {
-    const descriptionUrl = `${this.url}/compound/summary/${ligandId}`;
-    const downloadUrl = `${this.url}/pdb/compound/files/${ligandId}`;
+  fetchDescription(ligandId: string): Observable<PDBLigandDescription> {
+    const descriptionUrl = `${this.api_url}/compound/summary/${ligandId}`;
+    return this.http.get<PDBLigandDescription>(descriptionUrl);
+  }
 
-    return forkJoin([this.http.get<PDBLigandDescription>(descriptionUrl), this.http.get<PDBLigandFile>(downloadUrl)]).pipe(
-      map(([descriptionData, ligandFile]) => {
-        return {
-          descriptionData: descriptionData,
-          ligandFile: ligandFile,
-        };
+  fetchDownload(ligandId: string): Observable<PDBLigandFile> {
+    const downloadUrl = `${this.api_url}/pdb/compound/files/${ligandId}`;
+    return this.http.get<PDBLigandFile>(downloadUrl);
+  }
+
+  fetchSubstructures(ligandId: string): Observable<PDBSubstructures> {
+    const substructureUrl = `${this.api_url}/compound/substructures/${ligandId}`;
+    return this.http.get<PDBSubstructures>(substructureUrl);
+  }
+
+  fetchDepiction(ligandId: string): Observable<Depiction> {
+    const depictionUrl = `${this.static_url}/${ligandId}/annotation`;
+    return this.http.get<Depiction>(depictionUrl).pipe(shareReplay(1));
+  }
+
+  fetchRelatedLigands(ligandId: string): Observable<RelatedLigand> {
+    const relatedLigandUrl = `${this.api_url}/compound/similarity/${ligandId}`;
+    const relatedLigand = this.http.get<PDBRelatedLigands>(relatedLigandUrl).pipe(
+      shareReplay(1),
+      map((relatedLigands: PDBRelatedLigands) => {
+        return relatedLigands[ligandId][0];
       })
     );
+    return relatedLigand;
+  }
+
+  fetchBoundEntries(ligandId: string): Observable<BoundEntries> {
+    const boundEntryURL = `${this.api_url}/pdb/compound/in_pdb/${ligandId}`;
+    return this.http.get<BoundEntries>(boundEntryURL);
   }
 
   processDescriptionData(ligandId: string, data: PDBLigandDescription): descriptionData {
@@ -107,13 +123,8 @@ export class AggregatedApiService {
     };
   }
 
-  processLigandPagesData(ligandId: string, data: APIModels): LigandData {
-    const description = this.processDescriptionData(ligandId, data.descriptionData);
-    const download = this.processDownloadData(ligandId, data.ligandFile);
-
-    return {
-      description: description,
-      download: download,
-    };
+  processSubstructures(ligandId: string, data: PDBSubstructures): Substructure {
+    const ligandSubstructures = data[ligandId][0];
+    return ligandSubstructures;
   }
 }
