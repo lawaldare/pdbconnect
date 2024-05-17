@@ -1,12 +1,12 @@
-@if(relatedLigand$ | async; as relatedLigand) {
+<!-- @if(relatedLigand$ | async; as relatedLigand) { -->
 <div class="related-ligands-container">
   <div class="header">
     <span class="heading-2"> Related ligands</span>
   </div>
-  @if(relatedLigand.same_scaffold.length > 0){
+  @if(sameScaffolds.length > 0){
   <div class="scaffold-container">
     <div class="scaffold-header">
-      <span class="heading-3">Same scaffold - {{ relatedLigand.same_scaffold.length }}</span>
+      <span class="heading-3">Same scaffold - {{ sameScaffolds.length }}</span>
     </div>
     <div class="gallery-container">
       <form class="search-container">
@@ -16,10 +16,10 @@
       <div class="grid-container"></div>
     </div>
   </div>
-  } @if(relatedLigand.similar_ligands.length){
+  } @if(similarLigands.length){
   <div class="scaffold-container">
     <div class="scaffold-header">
-      <span class="heading-3">Similar ligands - {{ relatedLigand.similar_ligands.length }}</span>
+      <span class="heading-3">Similar ligands - {{ similarLigands.length }}</span>
     </div>
     <div class="gallery-container">
       <form class="search-container">
@@ -27,13 +27,21 @@
         <img src="{{ searchLogo }}" />
       </form>
       <div class="grid-container">
-        @for (similarLigand of relatedLigand.similar_ligands; track similarLigand) {
+        @for (similarLigand of similarLigandsPage; track similarLigand) {
         <pdbc-ligand-grid [ligand]="similarLigand"></pdbc-ligand-grid>
         }
       </div>
-      <mat-paginator [pageSizeOptions]="[6, 12, 18]" showFirstLastButtons aria-label="Select page of ligands"> </mat-paginator>
+      <mat-paginator
+        [length]="100"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="handlePageEvent($event)"
+        showFirstLastButtons
+        aria-label="Select page of ligands"
+      >
+      </mat-paginator>
     </div>
   </div>
   }
 </div>
-}
+<!-- } -->

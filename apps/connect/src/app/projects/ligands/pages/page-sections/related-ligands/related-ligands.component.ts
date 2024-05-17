@@ -1,11 +1,10 @@
 import { Component, OnInit, Input, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RelatedLigand } from '../../../data-models/related-ligands.model';
+import { RelatedLigand, SimilarLigand, SameScaffold } from '../../../data-models/related-ligands.model';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'pdbc-related-ligands',
@@ -17,7 +16,12 @@ import { Observable } from 'rxjs';
 export class RelatedLigandsComponent implements OnInit {
   @Input() ligandId?: string;
   searchLogo = '/assets/images/Search.svg';
-  relatedLigand$?: Observable<RelatedLigand>;
+  similarLigands: SimilarLigand[] = [];
+  similarLigandsPage: SimilarLigand[] = [];
+  sameScaffolds: SameScaffold[] = [];
+  pageIndex = 0;
+  pageSize = 6;
+  pageSizeOptions = [6, 12, 18];
 
   dataSource = new MatTableDataSource<RelatedLigand>();
 
@@ -30,9 +34,18 @@ export class RelatedLigandsComponent implements OnInit {
   //   });
   // }
 
+  handlePageEvent(event: PageEvent) {
+    this.pageIndex = event.pageIndex + 1;
+    this.pageSize = event.pageSize;
+    this.similarLigandsPage = this.similarLigands.slice(this.pageIndex, this.pageSize);
+  }
+
   ngOnInit() {
     if (this.ligandId) {
-      this.relatedLigand$ = this.aggregatedApiService.fetchRelatedLigands(this.ligandId);
+      this.aggregatedApiService.fetchRelatedLigands(this.ligandId).subscribe((relatedLigand: RelatedLigand) => {
+        this.similarLigands = relatedLigand['similar_ligands'];
+        this.sameScaffolds = relatedLigand['same_scaffold'];
+      });
     }
   }
 }
