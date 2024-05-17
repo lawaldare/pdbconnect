@@ -63,21 +63,13 @@
   flex-direction: column;
   width: 348px;
 }
-
-#main-fixed-top-white-bg {
-  background: #ffffff;
-  position: sticky;
-  top: 0px;
-  height: 13px;
-  width: 100%;
-}
 #main-right-sticky {
   width: 100%;
   background: #ffffff;
   position: sticky;
   padding-top: 13px;
   top: 0px;
-  z-index: 2;
+  z-index: 3;
 }
 #main-btn-bar {
   display: flex;

@@ -4,10 +4,11 @@
 #molstar-app {
   width: 100%;
   height: 100%;
+  position: relative;
 }
-
-#molstar-app > .msp-plugin {
-  position: relative !important;
-  height: inherit !important;
-  width: inherit !important;
+.app-standard {
+  z-index: 2;
+}
+.app-expanded {
+  z-index: 1000;
 }

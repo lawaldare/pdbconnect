@@ -18,8 +18,10 @@ export class PdbeMolstarForAppsComponent implements OnInit {
   @Input() displayConfigs?: Partial<InitParams>;
   @Input() molstarWidth?: string;
   @Input() molstarHeight?: string;
+  @Input() disableScreenshot = false;
 
   pdbeMolstar?: PDBeMolstarPluginType;
+  expandedView = false;
 
   ngOnInit() {
     this.loadScript();
@@ -52,15 +54,51 @@ export class PdbeMolstarForAppsComponent implements OnInit {
       //   bgColor: {r:255, g:255, b:255}
       // };
       this.pdbeMolstar.render(ele, this.displayConfigs!);
-      this.pdbeMolstar.events.loadComplete.subscribe(function (_) {
-        (<HTMLInputElement>document.getElementsByClassName('msp-plugin')[0]).style.height = 'inherit';
-        (<HTMLInputElement>document.getElementsByClassName('msp-plugin')[0]).style.width = 'inherit';
-        (<HTMLInputElement>document.getElementsByClassName('msp-plugin')[0]).style.position = 'relative';
+      // const that = this;
+      this.pdbeMolstar.events.loadComplete.subscribe((_ev) => {
+        const mspPluginEle = <HTMLInputElement>document.getElementsByClassName('msp-plugin')[0];
+
+        mspPluginEle.style.height = 'inherit';
+        mspPluginEle.style.width = 'inherit';
+        mspPluginEle.style.position = 'relative';
+
         ele.style.visibility = 'visible';
+        if (this.disableScreenshot) {
+          const screenshotBtn = <HTMLInputElement>document.querySelector('button[title="Screenshot / State Snapshot"]');
+          screenshotBtn.style.display = 'none';
+        }
+
+        /**
+         * MutationObserver needed in order to override dynamic CSS styling of external webcomponent
+         */
+        const mspPluginContent = <HTMLInputElement>document.getElementsByClassName('msp-plugin-content')[0];
+        const observer = new MutationObserver((mutationsList) => {
+          for (const mutation of mutationsList) {
+            const isExpanded = (<HTMLElement>mutation.target).classList.contains('msp-layout-expanded');
+            if (isExpanded) {
+              mspPluginContent.style.width = '100%';
+              mspPluginContent.style.display = 'flex';
+              mspPluginContent.style.justifyContent = 'center';
+              mspPluginContent.style.height = '100vh';
+              mspPluginContent.style.top = '-25vh';
+            } else {
+              mspPluginContent.style.width = '';
+              mspPluginContent.style.display = '';
+              mspPluginContent.style.justifyContent = '';
+              mspPluginContent.style.height = '';
+              mspPluginContent.style.top = '';
+            }
+            this.expandedView = isExpanded;
+          }
+        });
+        observer.observe(mspPluginContent as Node, { attributes: true, attributeFilter: ['style', 'class'] });
       });
     }
   }
 
+  /**
+   * Molstar dynamically injected OnInit
+   */
   public loadScript() {
     const body = <HTMLDivElement>document.body;
     const script = document.createElement('script');

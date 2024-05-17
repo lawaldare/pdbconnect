@@ -1,5 +1,5 @@
 @if (this.displayConfigs && this.molstarWidth && this.molstarHeight) {
 <div id="molstar-container" [ngStyle]="{ width: molstarWidth, height: molstarHeight }">
-  <div id="molstar-app"></div>
+  <div id="molstar-app" [ngClass]="expandedView ? 'app-expanded' : 'app-standard'"></div>
 </div>
 }

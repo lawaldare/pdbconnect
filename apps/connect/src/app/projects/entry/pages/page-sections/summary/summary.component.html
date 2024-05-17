@@ -1,5 +1,6 @@
-<div id="Summary" class="summary-container">
+<div class="summary-container">
   <div class="summary-info">
+    <div id="summary-section"></div>
     <span id="summary-title">Summary</span>
     <div class="summary-info-rows">
       <div class="info-row">
@@ -30,20 +31,20 @@
       <div class="info-row">
         <span class="info-row-title">Experiment type</span>
         <span class="info-row-content">
-          <span class="info-row-content-line">
+          <span class="info-row-content-line" style="white-space: nowrap; display: flex; gap: 12px">
             {{ experimentType }}
             <pdbc-pdbe-link-button
               class="hideMobile"
               [externalLink]="false"
               [label]="'go to Experiments info'"
-              [url]="'Experiments_and_Validation'"
+              [url]="'exp-validation-section'"
               [fontStyle]="'Paragraph 3 (16px)'"
               [fontColor]="'#3B6FB6'"
               [hoverColor]="'#193F90'"
               [visitedColor]="'#563D82'"
               [focusBorderColor]="'#3B6FB6'"
               [activeFontWeight]="300"
-              [whiteSpace]="'normal'"
+              [whiteSpace]="'nowrap'"
             ></pdbc-pdbe-link-button>
           </span>
           <span *ngIf="resolutionValue" class="info-row-content-line">{{ resolutionValue }}Å resolution</span>
@@ -51,7 +52,7 @@
             class="showMobile"
             [externalLink]="false"
             [label]="'go to Experiments info'"
-            [url]="'Experiments_and_Validation'"
+            [url]="'exp-validation-section'"
             [fontStyle]="'Paragraph 3 (16px)'"
             [fontColor]="'#3B6FB6'"
             [hoverColor]="'#193F90'"
@@ -74,7 +75,7 @@
             <pdbc-pdbe-link-button
               [externalLink]="false"
               [label]="'go to Citations'"
-              [url]="'Citations'"
+              [url]="'citations-section'"
               [fontStyle]="'Paragraph 3 (16px)'"
               [fontColor]="'#3B6FB6'"
               [hoverColor]="'#193F90'"
