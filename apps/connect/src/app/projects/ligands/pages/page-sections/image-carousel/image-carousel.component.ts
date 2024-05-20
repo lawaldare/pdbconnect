@@ -18,7 +18,7 @@ export class ImageCarouselComponent implements OnInit, AfterViewInit {
   currentSlide = 0;
   substructureNames: string[] = [];
   substructureAtoms: Array<string[]> = [];
-  slides = [0, 1, 2];
+  slides = [0, 1];
   structureDescription = '';
 
   @ViewChild('ligandEnv', { read: ElementRef }) ligandEnvContainer!: ElementRef;
@@ -41,6 +41,11 @@ export class ImageCarouselComponent implements OnInit, AfterViewInit {
       }
       this.substructureNames.push('Murcko scaffold');
       this.substructureAtoms.push(Object.values(substructure['scaffold'])[0]);
+
+      //Add third slide if there are substructures
+      if (this.substructureNames.length > 0) {
+        this.slides.push(2);
+      }
     });
   }
 
@@ -172,6 +177,7 @@ export class ImageCarouselComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     if (this.ligandId) {
       this.getSubstructures(this.ligandId);
+      console.log(this.slides);
     }
   }
 }
