@@ -43,7 +43,7 @@
             [fontColor]="'#1A1C1A'"
           ></pdbc-pdbe-chips>
         </div>
-        <div id="main-btn-bar">
+        <div id="main-btn-bar" [ngClass]="expandedDropdowns ? 'expanded' : ''">
           <pdbc-pdbe-button
             [backgroundColor]="'#056643'"
             [fontColor]="'#FFFFFF'"

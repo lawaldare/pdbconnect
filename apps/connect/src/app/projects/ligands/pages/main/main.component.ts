@@ -41,6 +41,7 @@ export class LigandsMainPageComponent implements OnInit {
   ligandId: string | undefined;
   description?: descriptionData;
   downloadOptions: downloadOption[] = [];
+  expandedDropdowns = false;
 
   @ViewChild('dDropdown') dDropdown!: PdbeDropdownComponent;
   @ViewChild('dDropdown', { read: ElementRef }) downloadDropdownContainer!: ElementRef; // To access dropdown HTML element
@@ -103,6 +104,12 @@ export class LigandsMainPageComponent implements OnInit {
     const hasClickedDownload = this.downloadDropdownContainer.nativeElement.contains(event.target);
     if (!hasClickedDownload) {
       this.dDropdown.closeDropdown();
+      this.expandedDropdowns = false;
+    } else if (this.dDropdown.expandedStatus) {
+      // if click inside any of the dropdowns
+      this.expandedDropdowns = true;
+    } else {
+      this.expandedDropdowns = false;
     }
   }
 }
