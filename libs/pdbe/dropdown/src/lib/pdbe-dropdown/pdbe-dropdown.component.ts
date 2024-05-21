@@ -18,6 +18,7 @@ export class PdbeDropdownComponent {
   @Input() elementId = 'default';
   expandedStatus = false;
   @Output() dropdownClicked: EventEmitter<string> = new EventEmitter();
+  //TODO: Add service to control click switching here
 
   closeDropdown() {
     this.expandedStatus = false;
