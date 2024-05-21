@@ -67,17 +67,6 @@ export class EntryMainPageComponent implements OnInit {
     bgColor: { r: 255, g: 255, b: 255 },
   };
 
-  // configuration to initialize molstar
-  // docs in: https://github.com/molstar/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin#plugin-parameters-options
-  molstarConfigs = {
-    moleculeId: '',
-    hideControls: true,
-    landscape: true,
-    hideExpandIcon: true,
-    subscribeEvents: false,
-    bgColor: { r: 255, g: 255, b: 255 },
-  };
-
   constructor(private route: ActivatedRoute, private router: Router, private entryApiService: EntryApiService) {
     /**
      * Entry id is taken from route parameters in URL

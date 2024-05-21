@@ -388,32 +388,6 @@ export class EntryApiService {
       if (data.PDBRedoQualityScores['base-pairs']) PDBRedoQualityScores['basepairs'] = this.processPDBRedoQualityScores(data.PDBRedoQualityScores, 'basepairs');
     }
 
-    let qualityScores = undefined;
-    if (data.ValidationSummaryQualityScores) {
-      qualityScores = {
-        geometry: Math.floor(data.ValidationSummaryQualityScores![pdbId].geometry_quality / 100.0 / 0.2),
-        modelfit: Math.floor(data.ValidationSummaryQualityScores![pdbId].data_quality / 100.0 / 0.2),
-      };
-    }
-
-    // process data from pdb redo to a 0-4 integer to plot
-    let PDBRedoQualityScores:
-      | {
-          geometry: number | undefined;
-          modelfit: number | undefined;
-          basepairs?: number | undefined;
-        }
-      | undefined;
-
-    if (data.PDBRedoQualityScores) {
-      PDBRedoQualityScores = {
-        geometry: this.processPDBRedoQualityScores(data.PDBRedoQualityScores, 'geometry'),
-        modelfit: this.processPDBRedoQualityScores(data.PDBRedoQualityScores, 'modelfit'),
-      };
-
-      if (data.PDBRedoQualityScores['base-pairs']) PDBRedoQualityScores['basepairs'] = this.processPDBRedoQualityScores(data.PDBRedoQualityScores, 'basepairs');
-    }
-
     return {
       title: title,
       organismScientificNames: organismScientificNames,
