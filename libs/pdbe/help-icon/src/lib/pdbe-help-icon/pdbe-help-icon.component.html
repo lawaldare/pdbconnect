@@ -1,0 +1,17 @@
+<span class="help-icon-container"
+  ><i
+    class="icon icon-common icon-help-qmark help-icon"
+    (mouseenter)="mouseenterTooltip()"
+    (mouseleave)="mouseoutTooltip()"
+    (click)="clickTooltip()"
+    [ngStyle]="{ 'margin-left': marginLeft }"
+  ></i>
+  <div class="help-icon-tooltip" [ngClass]="expandedStatus ? 'open' : 'closed'" [ngStyle]="{ 'z-index': clickedStatus ? '4' : '5' }">
+    <div class="help-icon-tooltip-inner">
+      @if (tooltipTitle) {
+      <span class="help-icon-title"> {{ tooltipTitle }}</span>
+      }
+      {{ tooltipContent }}
+    </div>
+  </div>
+</span>

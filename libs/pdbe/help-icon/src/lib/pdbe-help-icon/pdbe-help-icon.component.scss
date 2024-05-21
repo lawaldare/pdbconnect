@@ -1,0 +1,38 @@
+@import 'libs/pdbe/styles/src/lib/pdbe-styles/typography.scss';
+@import 'libs/pdbe/styles/src/lib/pdbe-styles/icons.scss';
+.help-icon-container {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+}
+.help-icon {
+  cursor: pointer;
+}
+.help-icon-tooltip {
+  position: relative;
+  left: 20px;
+  box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.3), 0px 6px 20px 0px rgba(0, 0, 0, 0.3);
+}
+.help-icon-tooltip-inner {
+  display: flex;
+  width: 314px;
+  padding: 22px 24px 24px 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  background-color: white;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22.4px; /* 160% */
+  box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.3), 0px 6px 20px 0px rgba(0, 0, 0, 0.3);
+}
+.help-icon-title {
+  font-weight: 500;
+}
+.help-icon-tooltip.open {
+  display: block;
+}
+.help-icon-tooltip.closed {
+  display: none;
+}
