@@ -28,6 +28,6 @@ export class PdbeLinkButtonComponent {
   // https://angular.io/guide/inputs-outputs#sending-data-to-a-parent-component
   clickedLinkButton() {
     // console.log("clicked!")
-    this.linkButtonEvent.emit(this.toEmitOnClick!);
+    this.linkButtonEvent.emit(this.toEmitOnClick);
   }
 }

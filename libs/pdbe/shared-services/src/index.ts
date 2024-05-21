@@ -4,6 +4,9 @@ export { DataRetrievalService } from './lib/pdbe-shared-services/data-retrieval.
 export { PDBEntrySummary } from './lib/pdbe-shared-services/data-models/api/entry/summary.model';
 export { PDBEntryEntities } from './lib/pdbe-shared-services/data-models/api/entry/molecules.model';
 export { PDBEntryFiles, PDBEntryURL, PDBEntryFileKey } from './lib/pdbe-shared-services/data-models/api/entry/files.model';
-export { NonNMRExperimentDetail, PDBEntryExperiment } from './lib/pdbe-shared-services/data-models/api/entry/experiment.model';
+export { NonNMRExperimentDetail, NonNMRorEMExperimentDetail, PDBEntryExperiment } from './lib/pdbe-shared-services/data-models/api/entry/experiment.model';
 export { PDBEntryCitations } from './lib/pdbe-shared-services/data-models/api/entry/publication.model';
 export { ValidationSummaryQualityScores } from './lib/pdbe-shared-services/data-models/api/validation/summary-quality-scores';
+export { PDBComplexRoot } from './lib/pdbe-shared-services/data-models/aggregated-api/complex/complex';
+export { PDBCompoundSummary } from './lib/pdbe-shared-services/data-models/aggregated-api/compound/summary';
+export { PDBEntryModifiedAAorNA } from './lib/pdbe-shared-services/data-models/api/entry/modified-residues.model';

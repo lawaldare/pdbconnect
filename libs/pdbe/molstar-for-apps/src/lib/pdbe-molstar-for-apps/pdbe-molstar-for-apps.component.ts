@@ -1,6 +1,5 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, Input, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { PDBeMolstarPlugin as PDBeMolstarPluginType } from 'pdbe-molstar/lib/index';
 import { InitParams } from 'pdbe-molstar/lib/spec';
 
@@ -14,47 +13,64 @@ declare let PDBeMolstarPlugin: any;
   styleUrl: './pdbe-molstar-for-apps.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class PdbeMolstarForAppsComponent implements OnInit {
+export class PdbeMolstarForAppsComponent implements OnInit, OnChanges {
   @Input() displayConfigs?: Partial<InitParams>;
   @Input() molstarWidth?: string;
   @Input() molstarHeight?: string;
-  @Input() disableScreenshot = false;
+  @Input() showControls = false;
+  @Input() showSeqPanel = false;
+  @Input() hideCanvasControls: string[] = [];
+
+  @Output() loadedEvent = new EventEmitter<boolean>();
+  @Output() expandedEvent = new EventEmitter<boolean>();
 
   pdbeMolstar?: PDBeMolstarPluginType;
   expandedView = false;
 
   ngOnInit() {
+    this.loadedEvent.emit(false);
     this.loadScript();
   }
 
-  // TODO: Allow instance variable to be accessed by parent component
+  ngOnChanges(changes: SimpleChanges): void {
+    // obs: probably showControls, showSeqPanel, hideCanvasControls AND displayConfigs
+    // do not work well together due to async events
+    if (changes['showControls'] && this.pdbeMolstar) {
+      // toggling between hidden and shown states
+      this.pdbeMolstar.canvas.toggleControls(this.showControls);
+    }
+    if (changes['showSeqPanel'] && this.pdbeMolstar) {
+      const topState = this.showSeqPanel ? 'full' : 'hidden';
+      this.pdbeMolstar.plugin.layout.state.regionState.top = topState;
+    }
+    if (changes['hideCanvasControls'] && this.pdbeMolstar) {
+      this.buttonsShowHide();
+    }
+    if (changes['displayConfigs'] && changes['displayConfigs'].previousValue && changes['displayConfigs'].currentValue) {
+      (async () => {
+        // molstar is refreshed
+        await this.pdbeMolstar!.visual.update(this.displayConfigs!, true);
+
+        // // toggling between hidden and shown states
+        // const showControls = !this.displayConfigs!.hideControls;
+        // // PluginCommands.Layout.Update(this.pdbeMolstar!.plugin, { state: { showControls: showControls } });
+        // this.pdbeMolstar!.canvas.toggleControls(showControls);
+
+        // // msp-layout-hide-top
+        // const topState = this.displayConfigs!.sequencePanel ? 'full' : 'hidden';
+        // this.pdbeMolstar!.plugin.layout.state.regionState.top = topState;
+      })();
+    }
+  }
 
   initMolstar() {
+    this.loadedEvent.emit(false);
     const ele = <HTMLInputElement>document.getElementById('molstar-app');
     ele.style.visibility = 'hidden';
     const definedVariables = this.displayConfigs && this.molstarWidth && this.molstarHeight;
     if (ele && definedVariables) {
       this.pdbeMolstar = new PDBeMolstarPlugin() as PDBeMolstarPluginType;
-      // const initParams = {
-      //   // moleculeId: '1cbs',
-      //   // subscribeEvents: true,
-      //   // bgColor:  {r: 255, g: 255, b: 255},
-      //   // hideStructure: ['water'],
-      //   // lighting: 'plastic',
-      //   // landscape: true,
-      //   moleculeId: "1cbs",
-      //   hideControls: true,
-      //   // loadMaps: true,
-      //   // validationAnnotation: true,
-      //   // domainAnnotation: true,
-      //   // expanded: false,
-      //   landscape: true,
-      //   hideExpandIcon: true,
-      //   subscribeEvents: false,
-      //   bgColor: {r:255, g:255, b:255}
-      // };
       this.pdbeMolstar.render(ele, this.displayConfigs!);
-      // const that = this;
       this.pdbeMolstar.events.loadComplete.subscribe((_ev) => {
         const mspPluginEle = <HTMLInputElement>document.getElementsByClassName('msp-plugin')[0];
 
@@ -63,10 +79,8 @@ export class PdbeMolstarForAppsComponent implements OnInit {
         mspPluginEle.style.position = 'relative';
 
         ele.style.visibility = 'visible';
-        if (this.disableScreenshot) {
-          const screenshotBtn = <HTMLInputElement>document.querySelector('button[title="Screenshot / State Snapshot"]');
-          screenshotBtn.style.display = 'none';
-        }
+        this.buttonsShowHide();
+        this.loadedEvent.emit(true);
 
         /**
          * MutationObserver needed in order to override dynamic CSS styling of external webcomponent
@@ -75,6 +89,7 @@ export class PdbeMolstarForAppsComponent implements OnInit {
         const observer = new MutationObserver((mutationsList) => {
           for (const mutation of mutationsList) {
             const isExpanded = (<HTMLElement>mutation.target).classList.contains('msp-layout-expanded');
+            if (this.expandedView === isExpanded) continue;
             if (isExpanded) {
               mspPluginContent.style.width = '100%';
               mspPluginContent.style.display = 'flex';
@@ -89,10 +104,34 @@ export class PdbeMolstarForAppsComponent implements OnInit {
               mspPluginContent.style.top = '';
             }
             this.expandedView = isExpanded;
+            this.expandedEvent.emit(isExpanded);
           }
         });
         observer.observe(mspPluginContent as Node, { attributes: true, attributeFilter: ['style', 'class'] });
       });
+    }
+  }
+
+  /**
+   * Manual button hide so no need to refresh Molstar
+   * and context is kept
+   */
+  buttonsShowHide() {
+    const btnToContent = {
+      animation: 'Select Animation',
+      screenshot: 'Screenshot / State Snapshot',
+      controlToggle: 'Toggle Controls Panel',
+      selection: 'Toggle Selection Mode',
+      controlInfo: 'Settings / Controls Info',
+    };
+    for (const [currentBtn, contentKey] of Object.entries(btnToContent)) {
+      const currentBtnEle = <HTMLInputElement>document.querySelector(`button[title="${contentKey}"]`);
+      if (!currentBtnEle) continue;
+      if (this.hideCanvasControls.includes(currentBtn)) {
+        currentBtnEle.style.display = 'none';
+      } else {
+        currentBtnEle.style.display = '';
+      }
     }
   }
 

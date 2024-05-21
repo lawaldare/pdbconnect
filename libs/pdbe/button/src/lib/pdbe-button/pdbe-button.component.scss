@@ -18,6 +18,8 @@
   margin: 0;
   border-width: 2px;
   border-radius: 2px;
+  --pdbe-button-width: auto;
+  width: var(--pdbe-button-width);
 }
 
 // Small and big padding possibilities

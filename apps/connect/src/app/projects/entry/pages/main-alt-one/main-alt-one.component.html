@@ -1,0 +1,203 @@
+<pdbc-pdbe-header-logo-menu
+  [backgroundColor]="'#056643'"
+  [logoType]="'PDBe'"
+  [urls]="[
+    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
+    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
+    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' }
+  ]"
+  [menuHighlightColor]="'#0a5032'"
+></pdbc-pdbe-header-logo-menu>
+<pdbc-pdbe-header-search
+  [backgroundColor]="'#007B53'"
+  [hasAdvancedSearch]="true"
+  [buttonText]="'Search'"
+  [examples]="[
+    {
+      label: 'Haemoglobin',
+      url: 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22text%22:%5B%7B%22value%22:%22hemoglobin%22, %22condition1%22:%22AND%22, %22condition2%22:%22Contains%22%7D%5D, %22resultState%22:%7B%22tabIndex%22:0, %22paginationIndex%22:1, %22perPage%22:%2210%22, %22sortBy%22:%22Sort%20by%22%7D%7D'
+    },
+    {
+      label: 'BRCA1_HUMAN',
+      url: 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22text%22:%5B%7B%22value%22:%22BRCA1_HUMAN%22, %22condition1%22:%22AND%22, %22condition2%22:%22Contains%22%7D%5D, %22resultState%22:%7B%22tabIndex%22:0, %22paginationIndex%22:1, %22perPage%22:%2210%22, %22sortBy%22:%22Sort%20by%22%7D%7D'
+    }
+  ]"
+  [placeholder]="'Search in PDBe and PDBe-KB'"
+  [suggestions]="[]"
+  [searchButtonChipsType]="'PDBe'"
+></pdbc-pdbe-header-search>
+<div id="main-container-outer">
+  @if (entryId && entryData) {
+  <div id="main-container">
+    <div id="main-left-container">
+      <pdbc-pdbe-nav-menu [highlightColor]="'#D0DEBB'" [navSections]="navSections" [verticalStickyElementId]="'main-right-sticky'"></pdbc-pdbe-nav-menu>
+    </div>
+    <div id="main-right-container">
+      <div id="main-right-sticky">
+        <span id="main-title">{{ entryId }}</span>
+        <div id="main-btn-bar" class="hide-mobile" [ngClass]="expandedDropdowns ? 'expanded' : ''">
+          <div class="main-btn-bar-break-column"></div>
+          <pdbc-pdbe-dropdown
+            #vDropdown
+            class="hide-mobile"
+            [elementId]="'view-btn'"
+            (dropdownClicked)="closeOtherDropdowns($event)"
+            [dropdownText]="'Download files'"
+            [options]="downloadOptions"
+            [dropdownWidth]="'166px'"
+            [optionsWidth]="'296px'"
+            [optionsMaxHeight]="'334px'"
+          ></pdbc-pdbe-dropdown>
+          <pdbc-pdbe-dropdown
+            #dDropdown
+            class="hide-mobile"
+            [elementId]="'dwl-btn'"
+            (dropdownClicked)="closeOtherDropdowns($event)"
+            [dropdownText]="'View files'"
+            [options]="viewOptions"
+            [optionsWidth]="'197px'"
+            [optionsMaxHeight]="'390px'"
+          ></pdbc-pdbe-dropdown>
+        </div>
+      </div>
+      <div id="main-summary-holder">
+        <pdbc-summary-alt-one
+          [entryId]="entryId"
+          [entryTitle]="entryData.title"
+          [complexName]="entryData.complexName"
+          [complexId]="entryData.complexId"
+          [sourceOrganisms]="entryData.organismScientificNames"
+          [experimentType]="entryData.experimentalMethod"
+          [resolutionValue]="entryData.resolutionValue"
+          [releasedData]="entryData.releasedData"
+          [publicationTitle]="entryData.publicationTitle"
+          [publicationOrEntryAuthors]="entryData.publicationOrEntryAuthors"
+          [publicationJournal]="entryData.publicationJournal"
+          [publicationVolume]="entryData.publicationVolume"
+          [publicationPage]="entryData.publicationPage"
+          [publicationYear]="entryData.publicationYear"
+          [publicationPMID]="entryData.publicationPMID"
+          [publicationDOI]="entryData.publicationDOI"
+          [polymericEntitiesList]="entryData.polymericEntitiesList"
+          [smallMoleculesList]="entryData.smallMoleculesList"
+        ></pdbc-summary-alt-one>
+        <div id="main-molstar-qsummary">
+          @if (molstarConfigs.moleculeId) {
+          <div id="main-molstar">
+            <lib-pdbe-molstar-for-apps
+              [displayConfigs]="molstarConfigs"
+              [molstarWidth]="'100%'"
+              [molstarHeight]="'265px'"
+              (loadedEvent)="toggleAnnotationButton($event)"
+              (expandedEvent)="setMolstarAnnotationView($event)"
+              [showControls]="molstarShowControls"
+              [showSeqPanel]="molstarShowSeqPanel"
+              [hideCanvasControls]="molstarHideCanvasControls"
+            ></lib-pdbe-molstar-for-apps>
+            <div style="margin-top: 16px; margin-bottom: 16px">
+              @if (molstarLoaded) {
+              <pdbc-pdbe-button
+                [backgroundColor]="'#C66717'"
+                [fontSize]="'16px'"
+                [fontColor]="'#FFFFFF'"
+                [borderColor]="'#C66717'"
+                [shadowColor]="'#B65417'"
+                [label]="'View annotated 3D'"
+                [paddingSize]="'Small'"
+                [mobileIconName]="'none'"
+                [buttonWidth]="'100%'"
+                (click)="triggerAnnotatatedView()"
+              ></pdbc-pdbe-button>
+              }
+            </div>
+          </div>
+          }
+          <div id="main-qsummary">
+            <div class="main-exp-info-row">
+              <span class="main-exp-info-row-title">Experiment type</span>
+              <span class="main-exp-info-row-content">
+                <span class="main-exp-info-row-content-line" style="white-space: nowrap; display: flex; gap: 12px">
+                  {{ entryData.experimentalMethod }}
+                </span>
+              </span>
+            </div>
+            @if (entryData.resolutionValue) {
+            <div class="main-exp-info-row">
+              <span class="main-exp-info-row-title">Resolution</span>
+              <span class="main-exp-info-row-content">
+                <span class="main-exp-info-row-content-line">{{ entryData.resolutionValue }} Å</span>
+              </span>
+            </div>
+            } @if (entryData.rWorkValue) {
+            <div class="main-exp-info-row">
+              <span class="main-exp-info-row-title">Rwork</span>
+              <span class="main-exp-info-row-content">
+                <span class="main-exp-info-row-content-line">{{ entryData.rWorkValue }}</span>
+              </span>
+            </div>
+            } @if (entryData.rFreeValue) {
+            <div class="main-exp-info-row">
+              <span class="main-exp-info-row-title">Rfree</span>
+              <span class="main-exp-info-row-content">
+                <span class="main-exp-info-row-content-line">{{ entryData.rFreeValue }}</span>
+              </span>
+            </div>
+            }
+            <div class="main-exp-info-row" style="margin-bottom: 16px">
+              <pdbc-pdbe-link-button
+                class="showMobile"
+                [externalLink]="false"
+                [label]="'go to Experiments info'"
+                [url]="'exp-validation-section'"
+                [fontStyle]="'paragraph-3'"
+                [fontColor]="'#3B6FB6'"
+                [hoverColor]="'#193F90'"
+                [visitedColor]="'#563D82'"
+                [focusBorderColor]="'#3B6FB6'"
+                [activeFontWeight]="300"
+                [whiteSpace]="'normal'"
+              ></pdbc-pdbe-link-button>
+            </div>
+            <div style="max-width: 374px">
+              @if (entryData.qualityScores.pdbredo) {
+              <div class="paragraph-3" style="font-weight: 500">PDB model quality summary</div>
+              <pdbc-struc-quality-gradients [componentType]="'GeometryFit_RdToBl'" [renderGradients]="entryData.qualityScores.pdb"></pdbc-struc-quality-gradients>
+              }
+              <div style="height: 16px"></div>
+              <div>
+                @if (entryData.qualityScores.pdbredo) {
+                <div class="paragraph-3" style="font-weight: 500">PDB-REDO summary</div>
+                <div class="paragraph-4" style="font-size: 13px">
+                  The
+                  <pdbc-pdbe-link-button
+                    [externalLink]="true"
+                    [label]="'PDB-REDO databank'"
+                    [url]="'https://pdb-redo.eu/db/' + entryId"
+                    [fontColor]="'#3B6FB6'"
+                    [hoverColor]="'#193F90'"
+                    [visitedColor]="'#563D82'"
+                    [focusBorderColor]="'#3B6FB6'"
+                    [activeFontWeight]="300"
+                    [whiteSpace]="'normal'"
+                  ></pdbc-pdbe-link-button>
+                  contains optimised versions of existing PDB entries with electron density maps, a description of model changes, and a wealth of model validation
+                  data. PDB-REDO is an external service. It is not a part of PDBe.
+                </div>
+                <br />
+                <div class="paragraph-4" style="font-size: 13px">
+                  The sliders show the change in model quality between the archive PDB entry and the PDB-REDO entry.
+                </div>
+                <pdbc-struc-quality-gradients
+                  [componentType]="'GeometryFit_RdToGr'"
+                  [renderGradients]="entryData.qualityScores.pdbredo"
+                ></pdbc-struc-quality-gradients>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+</div>
