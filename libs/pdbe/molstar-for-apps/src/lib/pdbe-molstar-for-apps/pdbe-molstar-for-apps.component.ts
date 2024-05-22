@@ -95,7 +95,7 @@ export class PdbeMolstarForAppsComponent implements OnInit, OnChanges {
               mspPluginContent.style.display = 'flex';
               mspPluginContent.style.justifyContent = 'center';
               mspPluginContent.style.height = '100vh';
-              mspPluginContent.style.top = '-25vh';
+              mspPluginContent.style.top = '-29vh';
             } else {
               mspPluginContent.style.width = '';
               mspPluginContent.style.display = '';
