@@ -64,13 +64,17 @@ export class EntryMainAltOnePageComponent implements OnInit {
     hideControls: true,
     // hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
     landscape: true,
+    // landscape: false,
     subscribeEvents: false,
+    // subscribeEvents: true,
 
     pdbeUrl: 'https://www.ebi.ac.uk/pdbe/',
     loadMaps: true,
     validationAnnotation: true,
     symmetryAnnotation: true,
     domainAnnotation: true,
+    assemblyId: 'preferred', //'deposited'
+
     sequencePanel: false,
     loadingOverlay: true,
     pdbeLink: false,
@@ -126,18 +130,6 @@ export class EntryMainAltOnePageComponent implements OnInit {
       this.expandedDropdowns = true;
     } else {
       this.expandedDropdowns = false;
-    }
-  }
-
-  /**
-   * Function to close other dropdowns when a given dropdown is clicked
-   * @param dropdownId identifier of clicked dropdown
-   */
-  closeOtherDropdowns(dropdownId: string) {
-    if (dropdownId === 'view-btn') {
-      this.downloadDropdown.closeDropdown();
-    } else {
-      this.viewDropdown.closeDropdown();
     }
   }
 

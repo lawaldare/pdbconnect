@@ -113,16 +113,4 @@ export class EntryMainPageComponent implements OnInit {
       this.expandedDropdowns = false;
     }
   }
-
-  /**
-   * Function to close other dropdowns when a given dropdown is clicked
-   * @param dropdownId identifier of clicked dropdown
-   */
-  closeOtherDropdowns(dropdownId: string) {
-    if (dropdownId === 'view-btn') {
-      this.downloadDropdown.closeDropdown();
-    } else {
-      this.viewDropdown.closeDropdown();
-    }
-  }
 }

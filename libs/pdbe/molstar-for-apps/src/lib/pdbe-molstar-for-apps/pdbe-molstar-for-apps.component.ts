@@ -82,6 +82,11 @@ export class PdbeMolstarForAppsComponent implements OnInit, OnChanges {
         this.buttonsShowHide();
         this.loadedEvent.emit(true);
 
+        console.log('this.pdbeMolstar?.plugin.components.structureTools');
+        console.log(this.pdbeMolstar?.plugin);
+        console.log(this.pdbeMolstar?.plugin.spec.components.structureTools);
+        console.log(this.pdbeMolstar?.plugin.spec.components.structureTools());
+
         /**
          * MutationObserver needed in order to override dynamic CSS styling of external webcomponent
          */
@@ -91,11 +96,20 @@ export class PdbeMolstarForAppsComponent implements OnInit, OnChanges {
             const isExpanded = (<HTMLElement>mutation.target).classList.contains('msp-layout-expanded');
             if (this.expandedView === isExpanded) continue;
             if (isExpanded) {
-              mspPluginContent.style.width = '100%';
+              // mspPluginContent.style.width = '100%';
+              mspPluginContent.style.width = '95%';
               mspPluginContent.style.display = 'flex';
               mspPluginContent.style.justifyContent = 'center';
-              mspPluginContent.style.height = '100vh';
-              mspPluginContent.style.top = '-29vh';
+              // mspPluginContent.style.height = '88vh';
+              mspPluginContent.style.height = '90%';
+              // mspPluginContent.style.top = '-22vh';
+              mspPluginContent.style.margin = 'auto';
+
+              // width: 95%;
+              // max-height: 90vh;
+              // margin-left: auto;
+              // margin-right: auto;
+              // margin-top: -5vh;
             } else {
               mspPluginContent.style.width = '';
               mspPluginContent.style.display = '';
@@ -133,6 +147,11 @@ export class PdbeMolstarForAppsComponent implements OnInit, OnChanges {
         currentBtnEle.style.display = '';
       }
     }
+  }
+
+  triggerCollapse() {
+    const currentBtnEle = <HTMLInputElement>document.querySelector('button[title="Toggle Expanded Viewport"]');
+    currentBtnEle.click();
   }
 
   /**

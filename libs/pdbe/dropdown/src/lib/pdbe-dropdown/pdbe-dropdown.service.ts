@@ -4,7 +4,7 @@ import { Observable, Subject } from 'rxjs';
 @Injectable({
   providedIn: 'root',
 })
-export class HelpIconService {
+export class DropdownService {
   components: string[] = [];
 
   registerComponent() {
@@ -20,13 +20,13 @@ export class HelpIconService {
     }
   }
 
-  private currentHelpIcon: Subject<string> = new Subject();
+  private currentDropdown: Subject<string> = new Subject();
 
-  public getCurrentHelpIconValue(): Observable<string> {
-    return this.currentHelpIcon.asObservable();
+  public getCurrentDropdownValue(): Observable<string> {
+    return this.currentDropdown.asObservable();
   }
 
-  public setCurrentHelpIconValue(value: string): void {
-    this.currentHelpIcon.next(value);
+  public setCurrentDropdownValue(value: string): void {
+    this.currentDropdown.next(value);
   }
 }

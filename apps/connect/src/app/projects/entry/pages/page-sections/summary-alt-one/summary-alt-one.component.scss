@@ -13,6 +13,9 @@
 }
 .info-row-title {
   line-height: normal;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 .info-row-content {
   max-width: 534px;

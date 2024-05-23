@@ -1,4 +1,8 @@
-@if (this.displayConfigs && this.molstarWidth && this.molstarHeight) {
+@if (this.displayConfigs && this.molstarWidth && this.molstarHeight) { @if (expandedView) {
+<div id="molstar-overlay-bg" (click)="triggerCollapse()">
+  <span class="jkit-lightbox-closer">Close</span>
+</div>
+}
 <div id="molstar-container" [ngStyle]="{ width: molstarWidth, height: molstarHeight }">
   <div id="molstar-app" [ngClass]="expandedView ? 'app-expanded' : 'app-standard'"></div>
 </div>

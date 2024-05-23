@@ -22,16 +22,19 @@
 }
 #main-container {
   display: flex;
-  margin-top: 12px;
-  margin-left: 34px;
-  margin-right: 32px;
-  margin-bottom: 35px;
-  width: 100%;
-  max-width: 1440px;
-  container-type: inline-size;
+  //   margin-top: 12px;
+  //   margin-left: 34px;
+  //   margin-right: 32px;
+  //   margin-bottom: 35px;
+  //   width: 100%;
+  //   max-width: 1440px;
+  //   container-type: inline-size;
 }
 #main-left-container {
+  margin-top: 12px; // moved from main-container
   margin-right: 28px;
+  margin-left: 34px; // moved from main-container
+  margin-bottom: 35px; // moved from main-container
 }
 
 #main-right-container {
@@ -40,7 +43,10 @@
   flex-direction: column;
   align-items: flex-start;
   align-self: stretch;
-  margin-bottom: 40px;
+  margin-top: 12px; // moved from main-container
+  //   margin-bottom: 40px;
+  margin-right: 32px; // moved from main-container
+  margin-bottom: 75px; // moved from main-container
 }
 #main-summary-holder {
   display: flex;
@@ -100,7 +106,7 @@
 }
 #main-btn-bar {
   display: flex;
-  padding: 12px 0px 12px 12px;
+  padding: 6px 0px 6px 12px;
   // align-items: center;
   align-items: baseline;
   gap: 20px;
@@ -112,8 +118,10 @@
   min-height: 56px;
 }
 #main-btn-bar.expanded {
-  padding: 12px 0px 0px 12px;
-  max-height: 68px;
+  //   padding: 12px 0px 0px 12px;
+  padding: 6px 0px 6px 12px;
+  //   max-height: 68px;
+  max-height: 54px;
 }
 .main-btn-bar-break-column {
   display: none;
@@ -131,22 +139,27 @@
   box-sizing: border-box;
 }
 @media screen and (max-width: 1024px) {
-  #main-container {
-    margin-right: 34px;
-    margin-bottom: 21px;
-  }
+  //   #main-container {
+  //     // margin-right: 34px;
+  //     // margin-bottom: 21px;
+  //   }
   #main-left-container {
     margin-right: 20px;
+    margin-bottom: 21px; // moved from main-container
   }
   #main-right-container {
-    margin-bottom: 40px;
+    // margin-bottom: 40px;
+    margin-bottom: 61px; // moved from main-container
+    margin-right: 34px; // moved from main-container
   }
   #main-btn-bar {
     max-height: 80px;
   }
   #main-btn-bar.expanded {
-    padding: 12px 0px 0px 12px;
-    max-height: 68px;
+    // padding: 12px 0px 0px 12px;
+    padding: 6px 0px 6px 12px;
+    // max-height: 68px;
+    max-height: 54px;
   }
   #main-summary-holder {
     flex-direction: column;
@@ -161,26 +174,32 @@
 }
 
 @media screen and (max-width: 768px) {
-  #main-container {
-    margin-right: 32px;
-    margin-bottom: 86px;
-  }
+  //   #main-container {
+  //     // margin-right: 32px;
+  //     // margin-bottom: 86px;
+  //   }
   #main-left-container {
     margin-right: 20px;
+    margin-bottom: 86px; // moved from main-container
   }
   #main-right-container {
-    margin-bottom: 40px;
+    // margin-bottom: 40px;
+    margin-bottom: 126px; // moved from main-container
+    margin-right: 32px; // moved from main-container
   }
   #main-btn-bar {
     align-content: baseline;
     flex-wrap: wrap;
     gap: 12px;
-    row-gap: 12px;
+    row-gap: 0px;
     max-height: 136px;
   }
   #main-btn-bar.expanded {
-    padding: 12px 0px 0px 12px;
-    max-height: 138.38px;
+    // padding: 12px 0px 0px 12px;
+    padding: 6px 0px 6px 12px;
+    // max-height: 138.38px;
+    // max-height: 68px;
+    max-height: 54px;
   }
   #main-btn-bar > pdbc-pdbe-dropdown {
     margin-right: 4px;
@@ -199,15 +218,18 @@
 }
 
 @media screen and (max-width: 540px) {
-  #main-container {
-    margin-right: 24px;
-    margin-bottom: 150px;
-  }
+  //   #main-container {
+  //     // margin-right: 24px;
+  //     // margin-bottom: 150px;
+  //   }
   #main-left-container {
     display: none;
+    margin-bottom: 150px; // moved from main-container
   }
   #main-right-container {
-    margin-bottom: 24px;
+    // margin-bottom: 24px;
+    margin-bottom: 174px; // moved from main-container
+    margin-right: 24px; // moved from main-container
   }
   #main-title {
     font-family: 'IBM Plex Sans';
@@ -220,8 +242,10 @@
     max-height: 80px;
   }
   #main-btn-bar.expanded {
-    padding: 12px 0px 0px 12px;
-    max-height: 68px;
+    // padding: 12px 0px 0px 12px;
+    padding: 6px 0px 6px 12px;
+    // max-height: 68px;
+    max-height: 54px;
   }
   #main-subtitle {
     font-family: 'IBM Plex Sans';
@@ -249,18 +273,24 @@
 }
 
 @media screen and (max-width: 375px) {
-  #main-container {
-    margin-bottom: 162px;
-  }
+  //   #main-container {
+  //     // margin-bottom: 162px;
+  //   }
   #main-left-container {
     display: none;
+    margin-bottom: 162px; // moved from main-container
+  }
+  #main-right-container {
+    margin-bottom: 162px; // moved from main-container
   }
   #main-btn-bar {
     max-height: 80px;
   }
   #main-btn-bar.expanded {
-    padding: 12px 0px 0px 12px;
-    max-height: 68px;
+    // padding: 12px 0px 0px 12px;
+    padding: 6px 0px 6px 12px;
+    // max-height: 68px;
+    max-height: 54px;
   }
   #main-molstar {
     width: 317px;

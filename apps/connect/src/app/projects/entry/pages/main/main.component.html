@@ -51,8 +51,6 @@
           <pdbc-pdbe-dropdown
             #vDropdown
             class="hide-mobile"
-            [elementId]="'view-btn'"
-            (dropdownClicked)="closeOtherDropdowns($event)"
             [dropdownText]="'Download files'"
             [options]="downloadOptions"
             [dropdownWidth]="'166px'"
@@ -62,8 +60,6 @@
           <pdbc-pdbe-dropdown
             #dDropdown
             class="hide-mobile"
-            [elementId]="'dwl-btn'"
-            (dropdownClicked)="closeOtherDropdowns($event)"
             [dropdownText]="'View files'"
             [options]="viewOptions"
             [optionsWidth]="'197px'"
