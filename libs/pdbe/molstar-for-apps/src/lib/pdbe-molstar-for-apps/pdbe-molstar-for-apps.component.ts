@@ -50,15 +50,6 @@ export class PdbeMolstarForAppsComponent implements OnInit, OnChanges {
       (async () => {
         // molstar is refreshed
         await this.pdbeMolstar!.visual.update(this.displayConfigs!, true);
-
-        // // toggling between hidden and shown states
-        // const showControls = !this.displayConfigs!.hideControls;
-        // // PluginCommands.Layout.Update(this.pdbeMolstar!.plugin, { state: { showControls: showControls } });
-        // this.pdbeMolstar!.canvas.toggleControls(showControls);
-
-        // // msp-layout-hide-top
-        // const topState = this.displayConfigs!.sequencePanel ? 'full' : 'hidden';
-        // this.pdbeMolstar!.plugin.layout.state.regionState.top = topState;
       })();
     }
   }
@@ -82,11 +73,6 @@ export class PdbeMolstarForAppsComponent implements OnInit, OnChanges {
         this.buttonsShowHide();
         this.loadedEvent.emit(true);
 
-        console.log('this.pdbeMolstar?.plugin.components.structureTools');
-        console.log(this.pdbeMolstar?.plugin);
-        console.log(this.pdbeMolstar?.plugin.spec.components.structureTools);
-        console.log(this.pdbeMolstar?.plugin.spec.components.structureTools());
-
         /**
          * MutationObserver needed in order to override dynamic CSS styling of external webcomponent
          */
@@ -96,20 +82,11 @@ export class PdbeMolstarForAppsComponent implements OnInit, OnChanges {
             const isExpanded = (<HTMLElement>mutation.target).classList.contains('msp-layout-expanded');
             if (this.expandedView === isExpanded) continue;
             if (isExpanded) {
-              // mspPluginContent.style.width = '100%';
               mspPluginContent.style.width = '95%';
               mspPluginContent.style.display = 'flex';
               mspPluginContent.style.justifyContent = 'center';
-              // mspPluginContent.style.height = '88vh';
               mspPluginContent.style.height = '90%';
-              // mspPluginContent.style.top = '-22vh';
               mspPluginContent.style.margin = 'auto';
-
-              // width: 95%;
-              // max-height: 90vh;
-              // margin-left: auto;
-              // margin-right: auto;
-              // margin-top: -5vh;
             } else {
               mspPluginContent.style.width = '';
               mspPluginContent.style.display = '';
