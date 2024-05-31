@@ -14,8 +14,8 @@
   [hasAdvancedSearch]="false"
   [buttonText]="'Search'"
   [examples]="[
-    { label: 'STI', url: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/Q14676' },
-    { label: 'IMATINIB', url: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/2etx' }
+    { label: 'STI', url: 'pdbe/pdbe-kb/ligands/STI' },
+    { label: 'IMATINIB', url: 'pdbe/pdbe-kb/ligands/STI' }
   ]"
   [placeholder]="'Search in PDBe and PDBe-KB'"
   [suggestions]="[]"
@@ -83,7 +83,7 @@
         <pdbc-structures></pdbc-structures>
       </div>
       <div id="interaction-container">
-        <pdbc-interaction></pdbc-interaction>
+        <pdbc-interaction [ligandId]="ligandId" [contactTypes]="['TOTAL']"></pdbc-interaction>
       </div>
       <div id="related-ligands-container">
         <pdbc-related-ligands [ligandId]="ligandId"></pdbc-related-ligands>
