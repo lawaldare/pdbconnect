@@ -68,3 +68,11 @@
 input:focus {
   outline: none;
 }
+
+.paginator-container {
+  display: flex;
+  padding: 16px 2px;
+  justify-content: flex-end;
+  align-items: center;
+  align-self: stretch;
+}
