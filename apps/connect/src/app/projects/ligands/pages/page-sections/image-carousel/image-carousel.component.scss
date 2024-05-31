@@ -36,10 +36,10 @@
 .image-container {
   display: flex;
   width: 250px;
-  height: 230px;
+  height: 250px;
   padding: 0px 10px 0px 9px;
-  justify-content: center;
-  align-items: center;
+  justify-content: space-between;
+  // align-items: center;
   border: 1px solid #707372;
   background: #fff;
 }
