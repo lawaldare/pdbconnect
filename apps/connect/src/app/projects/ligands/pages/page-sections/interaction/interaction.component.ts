@@ -1,8 +1,9 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild, Renderer2, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, Input, CUSTOM_ELEMENTS_SCHEMA, ViewChild, Renderer2, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction } from '../../../data-models/structure.model';
+import { IntxDataUrl, PDBIntxData } from '../../../data-models/interaction.model';
 
 @Component({
   selector: 'pdbc-interaction',
@@ -13,20 +14,40 @@ import { Depiction } from '../../../data-models/structure.model';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class InteractionComponent implements AfterViewInit {
+  @Input() ligandId!: string;
+  @Input() contactTypes: string[] = ['TOTAL'];
+  intxUrl = '';
   helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   @ViewChild('ligandEnv', { read: ElementRef }) ligandEnvContainer!: ElementRef;
+  @ViewChild('ligHeatMap', { read: ElementRef }) ligandHeatMapContainer!: ElementRef;
   constructor(private aggregatedApiService: AggregatedApiService, private renderer: Renderer2) {}
 
-  renderAtomIntx(contactTypes: string) {
+  renderHeatMap(interaction: PDBIntxData) {
+    const ligandHeatmap = this.ligandHeatMapContainer.nativeElement;
+    this.renderer.setAttribute(ligandHeatmap, 'pdbeapi', 'false');
+    this.renderer.setAttribute(ligandHeatmap, 'accession', this.ligandId);
+    ligandHeatmap.setDataAndRender(interaction);
+  }
+
+  renderAtomIntx() {
     const ligandEnv = this.ligandEnvContainer.nativeElement;
-    this.aggregatedApiService.fetchDepiction('STI').subscribe((depiction: Depiction) => {
+    this.aggregatedApiService.fetchDepiction(this.ligandId).subscribe((depiction: Depiction) => {
       this.renderer.setProperty(ligandEnv, 'depiction', depiction);
-      this.renderer.setProperty(ligandEnv, 'atomWeights', contactTypes);
+      this.aggregatedApiService.fetchIntxData(this.ligandId).subscribe((intxDataUrl: IntxDataUrl) => {
+        const interaction = intxDataUrl.interactions;
+        this.intxUrl = intxDataUrl.IntxUrl;
+        this.renderer.setProperty(ligandEnv, 'interaction', interaction[this.ligandId]);
+        this.renderer.setProperty(ligandEnv, 'atomWeights', this.contactTypes);
+        this.renderer.setProperty(ligandEnv, 'zoom', true);
+        this.renderHeatMap(interaction);
+      });
     });
   }
 
   ngAfterViewInit() {
-    this.renderAtomIntx('total');
+    if (this.ligandId) {
+      this.renderAtomIntx();
+    }
   }
 }

@@ -9,28 +9,42 @@
 .interaction-header {
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: 20px;
   align-self: stretch;
 }
 
 .view-container {
   display: flex;
+  flex-direction: column;
   width: 100%;
   padding-bottom: 40px;
+}
+
+.heatmap-description {
+  display: flex;
+  flex-direction: column;
+  width: 70%;
+  gap: 16px;
+}
+
+.intx-component-container {
+  display: flex;
+  padding-top: 16px;
+  width: 100%;
   justify-content: space-between;
-  align-items: flex-start;
 }
 
 .heatmap-container {
   display: flex;
   width: 70%;
+  height: auto;
 }
 
 .ligandEnv-container {
   display: flex;
+  align-items: stretch;
   flex-direction: column;
-  width: 30%;
-  gap: 17px;
+  width: 20%;
 }
 
 .ligandEnv-content {
