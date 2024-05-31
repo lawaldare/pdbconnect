@@ -22,10 +22,20 @@
         <img src="{{ searchLogo }}" />
       </form>
       <div class="grid-container">
-        @for (sameScaffold of sameScaffoldGrid; track sameScaffold) {
+        @for (sameScaffold of sameScaffoldPage; track sameScaffold) {
         <pdbc-ligand-grid [ligand]="sameScaffold"></pdbc-ligand-grid>
         }
       </div>
+      <mat-paginator
+        class="paginator-container"
+        [length]="sameScaffoldpageLength"
+        [pageSize]="sameScaffoldpageSize"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="handlePageEvent($event, 'same')"
+        showFirstLastButtons
+        aria-label="Select page of ligands"
+      >
+      </mat-paginator>
     </div>
   </div>
   } @if(similarLigands.length){
