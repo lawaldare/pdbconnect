@@ -19,6 +19,7 @@
 .info-row-content {
   font-weight: 400;
   display: flex;
+  word-break: break-all; /* Allows breaking at any character */
   flex-direction: column;
   align-items: flex-start;
   flex: 1 0 0;
