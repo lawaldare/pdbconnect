@@ -5,6 +5,7 @@ import { PDBLigandDescription, PhysChemProperties, FunctionalAnnotation } from '
 import { PDBLigandFile } from '../data-models/download.model';
 import { PDBSubstructures, Substructure, Depiction } from '../data-models/structure.model';
 import { PDBRelatedLigands, BoundEntries, RelatedLigand } from '../data-models/related-ligands.model';
+import { PDBIntxData, IntxDataUrl } from '../data-models/interaction.model';
 import { shareReplay, map } from 'rxjs';
 
 export type descriptionData = {
@@ -29,7 +30,7 @@ export interface downloadData {
   providedIn: 'root',
 })
 export class AggregatedApiService {
-  private api_url = 'https://www.ebi.ac.uk/pdbe/aggregated-api'; // URL to web api
+  private api_url = 'https://wwwdev.ebi.ac.uk/pdbe/aggregated-api'; // URL to web api
   private static_url = 'https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2'; //URL to static ligand files
 
   constructor(private http: HttpClient) {}
@@ -65,9 +66,26 @@ export class AggregatedApiService {
     return relatedLigand;
   }
 
-  fetchBoundEntries(ligandId: string): Observable<BoundEntries> {
+  fetchBoundEntries(ligandId: string): Observable<string[]> {
     const boundEntryURL = `${this.api_url}/pdb/compound/in_pdb/${ligandId}`;
-    return this.http.get<BoundEntries>(boundEntryURL);
+    const boundEntries = this.http.get<BoundEntries>(boundEntryURL).pipe(
+      shareReplay(1),
+      map((boundEntries: BoundEntries) => {
+        return boundEntries[ligandId];
+      })
+    );
+    return boundEntries;
+  }
+
+  fetchIntxData(ligandId: string): Observable<IntxDataUrl> {
+    const IntxUrl = `${this.api_url}/compound/interaction/${ligandId}`;
+    return this.http.get<PDBIntxData>(IntxUrl).pipe(
+      map((interactions: PDBIntxData) => ({
+        IntxUrl: IntxUrl,
+        interactions: interactions,
+      })),
+      shareReplay(1)
+    );
   }
 
   processDescriptionData(ligandId: string, data: PDBLigandDescription): descriptionData {
