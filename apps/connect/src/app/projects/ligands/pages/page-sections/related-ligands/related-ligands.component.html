@@ -1,4 +1,5 @@
 <!-- @if(relatedLigand$ | async; as relatedLigand) { -->
+@if(ligandId){
 <div class="related-ligands-container">
   <div class="header">
     <span class="heading-2"> Related ligands</span>
@@ -10,10 +11,21 @@
     </div>
     <div class="gallery-container">
       <form class="search-container">
-        <input type="search" placeholder="Search for scaffold by name, code or PDB ID" class="form_input" name="search" />
+        <input
+          type="search"
+          (search)="applyFilter('same')"
+          [(ngModel)]="sameScaffoldSearchText"
+          placeholder="Search for ligand by name, code or PDB ID"
+          class="form_input"
+          name="search"
+        />
         <img src="{{ searchLogo }}" />
       </form>
-      <div class="grid-container"></div>
+      <div class="grid-container">
+        @for (sameScaffold of sameScaffoldGrid; track sameScaffold) {
+        <pdbc-ligand-grid [ligand]="sameScaffold"></pdbc-ligand-grid>
+        }
+      </div>
     </div>
   </div>
   } @if(similarLigands.length){
@@ -23,7 +35,14 @@
     </div>
     <div class="gallery-container">
       <form class="search-container">
-        <input type="search" placeholder="Search for ligand by name, code or PDB ID" class="form_input" name="search" />
+        <input
+          type="search"
+          (search)="applyFilter('similar')"
+          [(ngModel)]="similarLigandSearchText"
+          placeholder="Search for ligand by name, code or PDB ID"
+          class="form_input"
+          name="search"
+        />
         <img src="{{ searchLogo }}" />
       </form>
       <div class="grid-container">
@@ -32,10 +51,11 @@
         }
       </div>
       <mat-paginator
-        [length]="100"
-        [pageSize]="pageSize"
+        class="paginator-container"
+        [length]="similarLigandpageLength"
+        [pageSize]="similarLigandpageSize"
         [pageSizeOptions]="pageSizeOptions"
-        (page)="handlePageEvent($event)"
+        (page)="handlePageEvent($event, 'similar')"
         showFirstLastButtons
         aria-label="Select page of ligands"
       >
@@ -44,4 +64,7 @@
   </div>
   }
 </div>
+
+}
+
 <!-- } -->
