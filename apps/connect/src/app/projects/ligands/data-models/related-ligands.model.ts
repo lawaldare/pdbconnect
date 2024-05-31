@@ -1,6 +1,7 @@
 export interface SameScaffold {
   chem_comp_id: string;
   name: string;
+  similarity_score: number;
   substructure_match: string[];
 }
 
@@ -9,6 +10,14 @@ export interface SimilarLigand {
   name: string;
   similarity_score: number;
   substructure_match: string[];
+}
+
+export interface LigandGrid {
+  chem_comp_id: string;
+  name: string;
+  similarity_score: number;
+  substructure_match: string[];
+  bound_entries: string[];
 }
 
 export interface StereoIsomer {
