@@ -15,14 +15,14 @@ var Config;
     (e.ligandHeatmapMouseoverEvent = 'PDB.ligHeatmap.mouseover'),
     (e.ligandHeatmapMouseoutEvent = 'PDB.ligHeatmap.mouseout'),
     (e.aaTypes = new Map([
-      ['hydrophobic', ['A', 'I', 'L', 'M', 'F', 'W', 'V']],
-      ['positive', ['K', 'R', 'O']],
-      ['negative', ['E', 'D']],
-      ['polar', ['N', 'Q', 'S', 'T']],
-      ['cystein', ['C', 'U']],
+      ['hydrophobic', new Array('A', 'I', 'L', 'M', 'F', 'W', 'V')],
+      ['positive', Array('K', 'R', 'O')],
+      ['negative', Array('E', 'D')],
+      ['polar', Array('N', 'Q', 'S', 'T')],
+      ['cystein', Array('C', 'U')],
       ['glycine', Array('G')],
       ['proline', Array('P')],
-      ['aromatic', ['H', 'Y']],
+      ['aromatic', Array('H', 'Y')],
     ])),
     (e.aaAbreviations = new Map([
       ['ALA', 'A'],
@@ -49,14 +49,14 @@ var Config;
     (e.backboneAtoms = ['N', 'CA', 'C', 'O']),
     (e.interactionsClasses = new Map([
       ['covalent', new Array('covalent')],
-      ['electrostatic', ['ionic', 'hbond', 'weak_hbond', 'polar', 'weak_polar', 'xbond', 'carbonyl']],
-      ['amide', ['AMIDEAMIDE', 'AMIDERING']],
+      ['electrostatic', new Array('ionic', 'hbond', 'weak_hbond', 'polar', 'weak_polar', 'xbond', 'carbonyl')],
+      ['amide', new Array('AMIDEAMIDE', 'AMIDERING')],
       ['vdw', new Array('vdw')],
       ['hydrophobic', new Array('hydrophobic')],
-      ['aromatic', ['aromatic', 'FF', 'OF', 'EE', 'FT', 'OT', 'ET', 'FE', 'OE', 'EF']],
-      ['atom-pi', ['CARBONPI', 'CATIONPI', 'DONORPI', 'HALOGENPI', 'METSULPHURPI']],
+      ['aromatic', new Array('aromatic', 'FF', 'OF', 'EE', 'FT', 'OT', 'ET', 'FE', 'OE', 'EF')],
+      ['atom-pi', new Array('CARBONPI', 'CATIONPI', 'DONORPI', 'HALOGENPI', 'METSULPHURPI')],
       ['metal', new Array('metal_complex')],
-      ['clashes', ['clash', 'vdw_clash']],
+      ['clashes', new Array('clash', 'vdw_clash')],
     ]));
   e.UIParameters = class {
     constructor() {
@@ -84,7 +84,7 @@ class Depiction {
       (this.ccdId = n.ccd_id),
       (this.resolution = new Vector2D(n.resolution.x, n.resolution.y)),
       (this.atoms = n.atoms.map((e) => new Atom(e))),
-      (this.bonds = []);
+      (this.bonds = new Array());
     let i = new Set();
     n.bonds.forEach((e) => {
       let t = this.atoms.find((t) => t.name == e.bgn),
@@ -169,13 +169,18 @@ class Depiction {
         .data(n)
         .enter()
         .append('circle')
+        .attr('class', (e) => `${e.name}_Circles weightCircles`)
         .attr('cx', (e) => e.position.x)
         .attr('cy', (e) => e.position.y)
         .attr('r', (e) => a.radiusScale(e.value))
         .attr('fill', (e) => a.colorScale(e.value))
         .attr('fill-opacity', '0.5')
-        .on('mouseenter', (e, t, n) => this.atomMouseEnterEventHandler(e, n[t], !1))
-        .on('mouseleave', (e, t, n) => this.atomMouseLeaveEventHandler(n[t], !1));
+        .on('mouseenter', (e, t, n) => {
+          this.atomMouseEnterEventHandler(e, n[t], !1);
+        })
+        .on('mouseleave', (e, t, n) => {
+          this.atomMouseLeaveEventHandler(!1);
+        });
   }
   appendBondVisuals() {
     this.structure
@@ -214,7 +219,7 @@ class Depiction {
       });
   }
   getCenter(e) {
-    let t = [];
+    let t = new Array();
     e.forEach((e) => {
       let n = this.atoms.find((t) => t.name === e).position;
       t.push(n);
@@ -238,14 +243,14 @@ class Depiction {
   highlightAtom(e) {
     d3.select(e).style('stroke', '#FBBD1D').style('stroke-width', 5);
   }
-  removeHighlight(e) {
-    d3.select(e).style('stroke', null);
+  removeHighlights() {
+    d3.selectAll('.weightCircles').style('stroke', null);
   }
   atomMouseEnterEventHandler(e, t, n) {
     this.highlightAtom(t), this.fireExternalAtomEvent(e, n, Config.LigandShowAtomEvent);
   }
-  atomMouseLeaveEventHandler(e, t) {
-    this.removeHighlight(e), this.fireExternalNullEvent(t, Config.LigandHideAtomEvent);
+  atomMouseLeaveEventHandler(e) {
+    this.removeHighlights(), this.fireExternalNullEvent(e, Config.LigandHideAtomEvent);
   }
   fireExternalAtomEvent(e, t, n) {
     const i = new CustomEvent(n, { bubbles: !0, detail: { tooltip: e.toTooltip(), external: t } });
@@ -368,7 +373,7 @@ class Visualization {
       i ||
         ((this.visualsMapper = new VisualsMapper(this.environment)),
         (this.rProvider = ResidueProvider.getInstance(this.environment)),
-        (this.bindingSites = []),
+        (this.bindingSites = new Array()),
         (this.fullScreen = !1),
         (this.nodeDragged = !1),
         void 0 === t && (t = new Config.UIParameters()),
@@ -386,7 +391,9 @@ class Visualization {
     return d3
       .zoom()
       .scaleExtent([0.1, 10])
-      .on('zoom', () => this.canvas.attr('transform', d3.event.transform));
+      .on('zoom', () => {
+        this.canvas.attr('transform', d3.event.transform);
+      });
   }
   molstarClickEventHandler(e) {
     var t;
@@ -401,11 +408,13 @@ class Visualization {
   ligHeatmapMouseoverEventHandler(e) {
     if (void 0 === this.depiction) return;
     const t = e.detail.name,
-      n = this.depiction.atoms.filter((e) => e.value > 0 && e.name === t);
-    n.length > 0 ? this.depiction.atomMouseEnterEventHandler(n[0], e.currentTarget, !0) : this.depiction.atomMouseLeaveEventHandler(e.currentTarget, !1);
+      n = this.depiction.atoms.filter((e) => e.value > 0 && e.name === t),
+      i = d3.select(`.${t}_Circles`).nodes(),
+      s = i[i.length - 1];
+    n.length > 0 ? this.depiction.atomMouseEnterEventHandler(n[0], s, !0) : this.depiction.atomMouseLeaveEventHandler(!1);
   }
   ligHeatmapMouseoutEventHandler(e) {
-    void 0 !== this.depiction && this.depiction.atomMouseLeaveEventHandler(e.currentTarget, !0);
+    void 0 !== this.depiction && this.depiction.atomMouseLeaveEventHandler(!0);
   }
   molstarMouseoutEventHandler() {
     var e, t, n;
@@ -472,7 +481,7 @@ class Visualization {
   }
   initLigandWeights(e) {
     return __awaiter(this, void 0, void 0, function* () {
-      const t = `https://raw.githubusercontent.com/roshkjr/Learning-sources/main/${e}_atom_residue_intx.json`;
+      const t = Resources.interactionAPI(e, Model.Environment.Development);
       return d3.json(t).then((t) => (this.ligandIntxData = t[e]));
     });
   }
@@ -488,7 +497,7 @@ class Visualization {
     this.depiction && this.depiction.draw(e);
   }
   toggleZoom(e) {
-    this.zoomHandler = e ? this.getZoomHandler() : void 0;
+    (this.zoomHandler = e ? this.getZoomHandler() : void 0), this.zoomHandler(this.svg, d3.zoomIdentity);
   }
   addLigandHighlight(e, t) {
     this.depiction && this.depiction.highlightSubgraph(e, t);
@@ -555,27 +564,26 @@ class Visualization {
         i = d3.max(this.nodes.data().map((e) => e.y));
       this.computeBoundingBox(e, n, t, i);
     } else if (void 0 !== this.depiction) {
-      let e = d3.min(this.depiction.atoms.map((e) => e.position.x)),
-        t = d3.min(this.depiction.atoms.map((e) => e.position.y)),
-        n = d3.max(this.depiction.atoms.map((e) => e.position.x)),
-        i = d3.max(this.depiction.atoms.map((e) => e.position.y));
+      let e = d3.min(this.depiction.atoms.map((e) => (0 == e.labels.length ? e.position.x : e.position.x - 50))),
+        t = d3.min(this.depiction.atoms.map((e) => (0 == e.labels.length ? e.position.y : e.position.y - 50))),
+        n = d3.max(this.depiction.atoms.map((e) => (0 == e.labels.length ? e.position.x : e.position.x + 50))),
+        i = d3.max(this.depiction.atoms.map((e) => (0 == e.labels.length ? e.position.y : e.position.y + 50)));
       this.computeBoundingBox(e, n, t, i);
     }
   }
   computeBoundingBox(e, t, n, i) {
     var s;
-    let o = Math.max(t - e, this.parent.offsetWidth),
-      r = Math.max(i - n, this.parent.offsetHeight),
-      a = this.parent.offsetWidth / o,
-      l = this.parent.offsetHeight / r,
-      d = 0.85 * Math.min(a, l),
-      c = o * d,
-      h = r * d,
-      p = -e * d + (this.parent.offsetWidth - c) / 2,
-      u = -n * d + (this.parent.offsetHeight - h) / 2;
-    this.canvas.attr('transform', `translate(${p}, ${u}) scale(${d})`);
-    let m = d3.zoomIdentity.translate(p, u).scale(d);
-    null === (s = this.zoomHandler) || void 0 === s || s.transform(this.svg, m);
+    let o,
+      r = t - e,
+      a = i - n;
+    o = r / a > this.parent.offsetWidth / this.parent.offsetHeight ? this.parent.offsetWidth / r : this.parent.offsetHeight / a;
+    let l = r * (o *= 0.85),
+      d = a * o,
+      c = -e * o + (this.parent.offsetWidth - l) / 2,
+      h = -n * o + (this.parent.offsetHeight - d) / 2;
+    this.canvas.attr('transform', `translate(${c}, ${h}) scale(${o})`);
+    let p = d3.zoomIdentity.translate(c, h).scale(o);
+    null === (s = this.zoomHandler) || void 0 === s || s.transform(this.svg, p);
   }
   resize() {
     this.svg.attr('width', this.parent.offsetWidth).attr('height', this.parent.offsetHeight),
@@ -1002,7 +1010,7 @@ class Visualization {
       return this.source.residue.isLigand && this.target.residue.isLigand && this.interactions.get(t.AtomAtom).includes('covalent');
     }
     toTooltip() {
-      let e = [];
+      let e = new Array();
       for (let t of this.interactions.values()) e = e.concat(t);
       return `<ul>${e.reduce((e, t) => `${e}, ${t}`)}</ul>`;
     }
@@ -1015,7 +1023,7 @@ class Visualization {
   e.ResidueResidueLink = l;
   class d extends a {
     constructor(e, t, n, o, r, a, l) {
-      super(e, t), (this.interaction = []), this.interaction.push(new s(n, o, i.parse(r.replace('-', '_')), a, l));
+      super(e, t), (this.interaction = new Array()), this.interaction.push(new s(n, o, i.parse(r.replace('-', '_')), a, l));
     }
     addInteraction(e, t, n, o, r) {
       this.interaction.push(new s(e, t, i.parse(n.replace('-', '_')), o, r));
@@ -1054,7 +1062,7 @@ class Visualization {
   e.LigandResidueLink = d;
   e.BindingSite = class {
     constructor() {
-      (this.residues = []), (this.interactionNodes = []), (this.links = []);
+      (this.residues = new Array()), (this.interactionNodes = new Array()), (this.links = new Array());
     }
     fromBoundMolecule(e, t) {
       (this.pdbId = e),
@@ -1102,7 +1110,7 @@ class Visualization {
         (this.bmId = `${t.ligand.chem_comp_id}_${t.ligand.chain_id}_${t.ligand.author_residue_number}`),
         (this.tmpResidueSet = new ObjectSet()),
         (this.tmpNodesSet = new ObjectSet());
-      let i = [],
+      let i = new Array(),
         s = new o(t.ligand, !0);
       return (
         this.tmpResidueSet.tryAdd(s),
@@ -1124,7 +1132,7 @@ class Visualization {
       );
     }
     filterOutAromaticAtomAtomInteractions(e) {
-      let n = [];
+      let n = new Array();
       return (
         e.forEach((i) => {
           let s = i.interaction.map((e) => e.interactionType).every((e) => e === t.AtomAtom);
@@ -1152,18 +1160,15 @@ class Visualization {
     constructor(e, t) {
       (this.data = e), (this.contactTypes = t), (this.filteredData = this.getFilteredData());
     }
-    getAtomResidueObj(e) {
-      return { atom: e[0], AA: e[1], count: e[2] };
-    }
     getFilteredData() {
-      const e = [],
+      const e = new Array(),
         t = Object.keys(this.data);
-      if (this.contactTypes.includes('TOTAL')) for (const n of t) e.push(...this.data[n].map(this.getAtomResidueObj));
-      else for (const n of this.contactTypes) t.includes(n) && e.push(...this.data[n].map(this.getAtomResidueObj));
+      if (this.contactTypes.includes('TOTAL')) for (const n of t) e.push(...this.data[n]);
+      else for (const n of this.contactTypes) t.includes(n) && e.push(...this.data[n]);
       return e;
     }
     getAtomIntxPropensity() {
-      const e = [];
+      const e = new Array();
       this.filteredData.reduce(function (t, n) {
         return t[n.atom] || ((t[n.atom] = { atom: n.atom, count: 0 }), e.push(t[n.atom])), (t[n.atom].count += n.count), t;
       }, {});
@@ -1208,7 +1213,7 @@ class ObjectSet extends Set {
 }
 class ResidueProvider {
   constructor(e) {
-    (this.environment = e), (this.mapping = new Map(Config.aaAbreviations)), (this.downloadPromises = []);
+    (this.environment = e), (this.mapping = new Map(Config.aaAbreviations)), (this.downloadPromises = new Array());
   }
   static getInstance(e = Model.Environment.Production) {
     return ResidueProvider.instance || (ResidueProvider.instance = new ResidueProvider(e)), ResidueProvider.instance;
@@ -1236,6 +1241,7 @@ class ResidueProvider {
     (e.compoundSummaryURL = 'api/pdb/compound/summary'),
     (e.componentLibraryURL = 'pdb-component-library/data/ligand-env'),
     (e.staticFilesURL = 'static/files/pdbechem_v2'),
+    (e.interactionURL = 'aggregated-api/compound/interaction'),
     (e.glycanSymbolsAPI = function (t) {
       let n = '';
       switch (t) {
@@ -1337,6 +1343,20 @@ class ResidueProvider {
           break;
         default:
           i = `${e.productionAPI}/${e.compoundSummaryURL}/${t}`;
+      }
+      return i;
+    }),
+    (e.interactionAPI = function (t, n) {
+      let i = '';
+      switch (n) {
+        case Model.Environment.Development:
+          i = `${e.devAPI}/${e.interactionURL}/${t}`;
+          break;
+        case Model.Environment.Internal:
+          i = `${e.intAPI}/${e.interactionURL}/${t}`;
+          break;
+        default:
+          i = `${e.productionAPI}/${e.interactionURL}/${t}`;
       }
       return i;
     });
@@ -3080,7 +3100,7 @@ class VisualsMapper {
           e && this.display && ((this.highlightColor = e), this.display.addLigandHighlight(this.substructureHighlight, this.highlightColor));
         }
         set zoom(e) {
-          void 0 !== this.display && this.display.toggleZoom(e);
+          this.display && this.display.toggleZoom(e);
         }
         set atomNames(e) {
           this.display.toggleDepiction(e);
