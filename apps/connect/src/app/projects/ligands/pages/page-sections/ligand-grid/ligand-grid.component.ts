@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, CUSTOM_ELEMENTS_SCHEMA, Renderer2, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SimilarLigand, BoundEntries } from '../../../data-models/related-ligands.model';
+import { LigandGrid } from '../../../data-models/related-ligands.model';
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction } from '../../../data-models/structure.model';
@@ -14,12 +14,7 @@ import { Depiction } from '../../../data-models/structure.model';
   styleUrl: './ligand-grid.component.scss',
 })
 export class LigandGridComponent implements OnInit, AfterViewInit {
-  @Input() ligand: SimilarLigand = {
-    chem_comp_id: '',
-    name: '',
-    similarity_score: 0,
-    substructure_match: [],
-  };
+  @Input() ligand!: LigandGrid;
   ligandUrl = '';
   boundEntryLabel = '';
   boundProteinLabel = '';
@@ -36,15 +31,17 @@ export class LigandGridComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.ligandUrl = `/pdbe/pdbe-kb/ligands/${this.ligand.chem_comp_id}`;
-    this.aggregatedApiService.fetchBoundEntries(this.ligand.chem_comp_id).subscribe((boundEntries: BoundEntries) => {
-      const numBoundEntries = boundEntries[this.ligand.chem_comp_id].length;
+    if (this.ligand) {
+      this.ligandUrl = `/pdbe/pdbe-kb/ligands/${this.ligand.chem_comp_id}`;
+      const numBoundEntries = this.ligand.bound_entries.length;
       const boundEntryLabelSuffix = numBoundEntries <= 1 ? 'PDB Entry' : 'PDB Entries';
       this.boundEntryLabel = `${numBoundEntries} ${boundEntryLabelSuffix}`;
-    });
+    }
   }
 
   ngAfterViewInit() {
-    this.renderLigandImg(this.ligand.chem_comp_id);
+    if (this.ligand) {
+      this.renderLigandImg(this.ligand.chem_comp_id);
+    }
   }
 }
