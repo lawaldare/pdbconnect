@@ -2,6 +2,7 @@ import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Structure } from '../../../data-models/structure.model';
+import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -11,7 +12,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 @Component({
   selector: 'pdbc-structures',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatTableModule, MatPaginatorModule, MatTabsModule, MatSortModule, MatCheckboxModule],
+  imports: [CommonModule, FormsModule, PdbeLinkButtonComponent, MatTableModule, MatPaginatorModule, MatTabsModule, MatSortModule, MatCheckboxModule],
   templateUrl: './structures.component.html',
   styleUrls: ['./structures.component.scss'],
 })

@@ -31,7 +31,21 @@
           <!-- Name Column -->
           <ng-container matColumnDef="id">
             <th class="heading-5" mat-header-cell *matHeaderCellDef>PDBe-KB Proteins</th>
-            <td class="table_row" mat-cell *matCellDef="let item">{{ item.id }}</td>
+            <td class="table_row" mat-cell *matCellDef="let item">
+              <pdbc-pdbe-link-button
+                [externalLink]="true"
+                [label]="item.id"
+                [url]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + item.id"
+                [fontStyle]="'heading-5'"
+                [fontColor]="'#3B6FB6'"
+                [hoverColor]="'#193F90'"
+                [visitedColor]="'#563D82'"
+                [focusBorderColor]="'#3B6FB6'"
+                [activeFontWeight]="300"
+                [whiteSpace]="'normal'"
+                [mobileIconName]="'link'"
+              ></pdbc-pdbe-link-button>
+            </td>
           </ng-container>
 
           <!-- Weight Column -->
@@ -53,7 +67,21 @@
 
           <ng-container matColumnDef="rep_structure">
             <th class="heading-5" mat-header-cell *matHeaderCellDef>Representative PDB structure</th>
-            <td class="table_row" mat-cell *matCellDef="let item">{{ item.rep_structure }}</td>
+            <td class="table_row" mat-cell *matCellDef="let item">
+              <pdbc-pdbe-link-button
+                [externalLink]="true"
+                [label]="item.rep_structure"
+                [url]="'pdbe/entry/pdb/' + item.rep_structure"
+                [fontStyle]="'heading-5'"
+                [fontColor]="'#3B6FB6'"
+                [hoverColor]="'#193F90'"
+                [visitedColor]="'#563D82'"
+                [focusBorderColor]="'#3B6FB6'"
+                [activeFontWeight]="300"
+                [whiteSpace]="'normal'"
+                [mobileIconName]="'link'"
+              ></pdbc-pdbe-link-button>
+            </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
