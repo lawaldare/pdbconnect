@@ -46,6 +46,7 @@ export class RelatedLigandsComponent implements OnInit {
             return x.chem_comp_id == this.similarLigandSearchText || Array.from(x.bound_entries).includes(this.similarLigandSearchText);
           });
           this.similarLigandpageLength = this.filtSimilarLigandsGrid.length;
+          this.similarLigandpageIndex = 0;
         } else {
           this.filtSimilarLigandsGrid = this.similarLigandsGrid;
           this.similarLigandpageLength = this.filtSimilarLigandsGrid.length;
@@ -61,6 +62,7 @@ export class RelatedLigandsComponent implements OnInit {
             return x.chem_comp_id == this.sameScaffoldSearchText || Array.from(x.bound_entries).includes(this.sameScaffoldSearchText);
           });
           this.sameScaffoldpageLength = this.filtSameScaffoldGrid.length;
+          this.sameScaffoldpageIndex = 0;
         } else {
           this.filtSameScaffoldGrid = this.sameScaffoldGrid;
           this.sameScaffoldpageLength = this.filtSameScaffoldGrid.length;
