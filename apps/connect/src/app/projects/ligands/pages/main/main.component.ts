@@ -47,12 +47,14 @@ export class LigandsMainPageComponent implements OnInit {
   @ViewChild('dDropdown', { read: ElementRef }) downloadDropdownContainer!: ElementRef; // To access dropdown HTML element
   // Data for sticky navigation menu
   navSections = [
-    { sectionName: 'Description', subsections: [] },
-    { sectionName: 'Physicochemical properties', subsections: [] },
-    { sectionName: 'Structures', subsections: [] },
-    { sectionName: 'Interaction statistics', subsections: [] },
-    { sectionName: 'Related ligands', subsections: [{ sectionName: 'Same scaffolds' }, { sectionName: 'Similar ligands' }, { sectionName: 'Stereoisomers' }] },
-    { sectionName: 'Ligand-specific databases', subsections: [] },
+    { sectionId: 'description-section', sectionName: 'Description', isSubSection: false },
+    { sectionId: 'properties-section', sectionName: 'Physicochemical properties', isSubSection: false },
+    { sectionId: 'structures-section', sectionName: 'Structures', isSubSection: false },
+    { sectionId: 'interaction-section', sectionName: 'Interaction statistics', isSubSection: false },
+    { sectionId: 'related-ligand-section', sectionName: 'Related ligands', isSubSection: false },
+    { sectionId: 'scaffold-section', sectionName: 'Same scaffold', isSubSection: true },
+    { sectionId: 'similar-ligand-section', sectionName: 'Similar ligands', isSubSection: true },
+    { sectionId: 'databases-section', sectionName: 'Ligand-specific databases', isSubSection: false },
   ];
 
   constructor(private route: ActivatedRoute, private aggregatedApiService: AggregatedApiService) {

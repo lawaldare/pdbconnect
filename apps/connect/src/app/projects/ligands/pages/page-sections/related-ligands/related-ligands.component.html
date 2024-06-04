@@ -1,11 +1,10 @@
-<!-- @if(relatedLigand$ | async; as relatedLigand) { -->
 @if(ligandId){
-<div class="related-ligands-container">
+<div id="related-ligand-section" class="related-ligands-container">
   <div class="header">
     <span class="heading-2"> Related ligands</span>
   </div>
   @if(sameScaffolds.length > 0){
-  <div class="scaffold-container">
+  <div id="scaffold-section" class="scaffold-container">
     <div class="scaffold-header">
       <span class="heading-3">Same scaffold - {{ sameScaffolds.length }}</span>
     </div>
@@ -39,7 +38,7 @@
     </div>
   </div>
   } @if(similarLigands.length){
-  <div class="scaffold-container">
+  <div id="similar-ligand-section" class="scaffold-container">
     <div class="scaffold-header">
       <span class="heading-3">Similar ligands - {{ similarLigands.length }}</span>
     </div>
