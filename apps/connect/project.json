@@ -25,7 +25,8 @@
           }
         ],
         "styles": ["apps/connect/src/styles.scss"],
-        "scripts": []
+        "scripts": [],
+        "baseHref": "$APP_BASE_HREF"
       },
       "configurations": {
         "production": {
