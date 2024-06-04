@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InteractionComponent } from './interaction.component';
+import { HttpClientModule } from '@angular/common/http';
 
 describe('InteractionComponent', () => {
   let component: InteractionComponent;
@@ -7,7 +8,7 @@ describe('InteractionComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InteractionComponent],
+      imports: [InteractionComponent, HttpClientModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InteractionComponent);

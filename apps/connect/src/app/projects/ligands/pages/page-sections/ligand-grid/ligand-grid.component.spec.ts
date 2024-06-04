@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LigandGridComponent } from './ligand-grid.component';
+import { HttpClientModule } from '@angular/common/http';
 
 describe('LigandGridComponent', () => {
   let component: LigandGridComponent;
@@ -7,7 +8,7 @@ describe('LigandGridComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LigandGridComponent],
+      imports: [LigandGridComponent, HttpClientModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LigandGridComponent);
