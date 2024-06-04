@@ -18,8 +18,7 @@
   <div class="pdbe-header-logo-menu-urls" [ngClass]="getCollapsedClass(true)">
     <div *ngFor="let url of urls" [ngClass]="{ 'hoverable-mobile-menu': node }" [ngStyle]="{ '--bg-color': menuHighlightColor }">
       <!-- <a class="pdbe-header-menu-link paragraph-2 paragraph-2-menu-link" href="{{ url.path }}" target="_blank">{{ url.name }}</a> -->
-      <pdbc-pdbe-link-button [externalLink]="true" [label]="url.name" [url]="url.path" [fontStyle]="'Paragraph 2 (19px)'" [fontColor]="'#FFFFFF'">
-      </pdbc-pdbe-link-button>
+      <pdbc-pdbe-link-button [externalLink]="true" [label]="url.name" [url]="url.path" [fontStyle]="'paragraph-2'" [fontColor]="'#FFFFFF'"> </pdbc-pdbe-link-button>
     </div>
   </div>
 </ng-template>

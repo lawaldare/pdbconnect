@@ -19,4 +19,5 @@ export class PdbeButtonComponent {
   @Input() label = '';
   @Input() paddingSize = '';
   @Input() mobileIconName = '';
+  @Input() buttonWidth = 'auto';
 }

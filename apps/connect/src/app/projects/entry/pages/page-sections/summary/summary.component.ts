@@ -2,16 +2,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 
-/**
- * TODO
- *
- * Create new service to get from Aggregated API
- * Change data here to be dynamic according to entry
- * Create local gallery component
- * Create local quality gradient component
- * Add new data to screen
- */
-
 @Component({
   selector: 'pdbc-summary',
   standalone: true,

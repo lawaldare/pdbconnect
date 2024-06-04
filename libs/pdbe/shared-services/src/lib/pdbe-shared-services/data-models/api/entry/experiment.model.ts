@@ -614,6 +614,8 @@ export type AnyExperimentDetail = Array<NMRExperimentDetail | XrayExperimentDeta
 
 export type NonNMRExperimentDetail = Array<XrayExperimentDetail | ECExperimentDetail | EMExperimentDetail>;
 
+export type NonNMRorEMExperimentDetail = Array<XrayExperimentDetail | ECExperimentDetail>;
+
 export interface PDBEntryExperiment {
   [key: string]: AnyExperimentDetail;
 }

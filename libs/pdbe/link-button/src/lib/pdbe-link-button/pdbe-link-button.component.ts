@@ -27,7 +27,6 @@ export class PdbeLinkButtonComponent {
   // Communicate with parent using:
   // https://angular.io/guide/inputs-outputs#sending-data-to-a-parent-component
   clickedLinkButton() {
-    // console.log("clicked!")
     this.linkButtonEvent.emit(this.toEmitOnClick);
   }
 }

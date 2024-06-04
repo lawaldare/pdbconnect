@@ -21,6 +21,7 @@
       "@pdbe-lib/dropdown": ["libs/pdbe/dropdown/src/index.ts"],
       "@pdbe-lib/header-logo-menu": ["libs/pdbe/header-logo-menu/src/index.ts"],
       "@pdbe-lib/header-search": ["libs/pdbe/header-search/src/index.ts"],
+      "@pdbe-lib/help-icon": ["libs/pdbe/help-icon/src/index.ts"],
       "@pdbe-lib/hero-banner": ["libs/pdbe/hero-banner/src/index.ts"],
       "@pdbe-lib/link-button": ["libs/pdbe/link-button/src/index.ts"],
       "@pdbe-lib/molstar-for-apps": ["libs/pdbe/molstar-for-apps/src/index.ts"],

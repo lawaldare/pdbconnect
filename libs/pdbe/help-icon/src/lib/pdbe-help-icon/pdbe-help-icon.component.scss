@@ -1,0 +1,91 @@
+@import 'libs/pdbe/styles/src/lib/pdbe-styles/typography.scss';
+@import 'libs/pdbe/styles/src/lib/pdbe-styles/icons.scss';
+.help-icon-container {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+}
+.help-icon {
+  cursor: pointer;
+}
+.help-icon-tooltip {
+  margin-left: 8px; // matches below triangle icon
+  position: relative;
+  left: 20px;
+  box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.3), 0px 6px 20px 0px rgba(0, 0, 0, 0.3);
+}
+.svg-triangle {
+  position: absolute;
+  left: -8px; // matches above margin
+  top: 1px;
+  width: 12px;
+  height: 12px;
+}
+.help-icon-tooltip-inner {
+  display: flex;
+  // width: 314px;
+  width: 16vw;
+  min-width: 150px;
+  padding: 22px 24px 24px 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  background-color: white;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22.4px; /* 160% */
+  box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.3), 0px 6px 20px 0px rgba(0, 0, 0, 0.3);
+}
+.help-icon-title {
+  font-weight: 500;
+}
+.help-icon-tooltip.open {
+  display: block;
+}
+.help-icon-tooltip.closed {
+  display: none;
+}
+
+/*
+* Responsive design for tooltips
+*/
+@media screen and (max-width: 800px) {
+  .help-icon-tooltip.left {
+    left: 0vw;
+    top: 31px;
+    margin-left: 0px;
+  }
+
+  .help-icon-tooltip.right {
+    left: 0;
+    top: 31px;
+    margin-left: 0px;
+    transform: translateX(-90%);
+  }
+
+  .svg-triangle.left {
+    position: absolute;
+    top: -11px;
+    height: 13px;
+    float: right;
+    width: 100%;
+    left: 0px;
+  }
+
+  .svg-triangle.right {
+    position: absolute;
+    top: -11px;
+    height: 13px;
+    float: right;
+    width: 100%;
+    left: 0px;
+    transform: scaleX(-1);
+  }
+
+  .svg-polygon {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: rotate(90deg);
+  }
+}

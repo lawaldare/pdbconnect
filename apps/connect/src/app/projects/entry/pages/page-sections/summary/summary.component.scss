@@ -7,6 +7,12 @@
 }
 .summary-info-rows {
   margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.info-row-title {
+  line-height: normal;
 }
 .info-row-content {
   max-width: 534px;
@@ -17,6 +23,7 @@
 .showMobile {
   display: none;
 }
+
 @media screen and (max-width: 1024px) {
   // .summary-container {
   //     margin-right: 34px;

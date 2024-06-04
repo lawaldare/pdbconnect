@@ -1,0 +1,37 @@
+<span class="help-icon-container"
+  ><i
+    class="icon icon-common icon-help-qmark help-icon"
+    (mouseenter)="mouseenterTooltip()"
+    (mouseleave)="mouseoutTooltip()"
+    (click)="clickTooltip()"
+    [ngStyle]="{ 'margin-left': marginLeft, top: marginTop }"
+  ></i>
+  <div
+    class="help-icon-tooltip"
+    [ngClass]="{
+      open: expandedStatus,
+      closed: !expandedStatus,
+      right: checkTooltipPositionWidth(),
+      left: !checkTooltipPositionWidth()
+    }"
+    [ngStyle]="{ 'z-index': clickedStatus ? '4' : '5' }"
+  >
+    <div class="help-icon-tooltip-inner">
+      <svg
+        class="svg-triangle"
+        [ngClass]="{
+          right: checkTooltipPositionWidth(),
+          left: !checkTooltipPositionWidth()
+        }"
+      >
+        <polygon class="svg-polygon" points="0,7 14,2 14,12" style="fill: white"></polygon>
+      </svg>
+      @if (tooltipTitle) {
+      <span class="help-icon-title">
+        {{ tooltipTitle }}
+      </span>
+      }
+      {{ tooltipContent }}
+    </div>
+  </div>
+</span>

@@ -1,0 +1,302 @@
+#main-title {
+  display: block;
+  font-family: 'IBM Plex Sans';
+  font-size: 42px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 63px; /* 150% */
+}
+#main-subtitle {
+  display: block;
+  font-family: 'IBM Plex Sans';
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 31.2px; /* 130% */
+  margin-bottom: 16px;
+}
+#main-container-outer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+#main-container {
+  display: flex;
+  //   margin-top: 12px;
+  //   margin-left: 34px;
+  //   margin-right: 32px;
+  //   margin-bottom: 35px;
+  //   width: 100%;
+  //   max-width: 1440px;
+  //   container-type: inline-size;
+}
+#main-left-container {
+  margin-top: 12px; // moved from main-container
+  margin-right: 28px;
+  margin-left: 34px; // moved from main-container
+  margin-bottom: 35px; // moved from main-container
+}
+
+#main-right-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  margin-top: 12px; // moved from main-container
+  //   margin-bottom: 40px;
+  margin-right: 32px; // moved from main-container
+  margin-bottom: 75px; // moved from main-container
+}
+#main-summary-holder {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 20px;
+}
+#main-molstar-qsummary {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+#main-molstar {
+  width: 372px;
+}
+#main-qsummary {
+  display: flex;
+  flex-direction: column;
+  width: 374px;
+  flex-grow: 1;
+}
+.main-exp-info-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  align-self: stretch;
+  font-family: IBM Plex Sans;
+  font-size: 16px;
+  font-style: normal;
+  color: #1a1c1a;
+  line-height: 27.2px;
+}
+.main-exp-info-row-title {
+  font-weight: 500;
+  width: 122px;
+  min-height: 28px;
+}
+.main-exp-info-row-content {
+  font-weight: 400;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1 0 0;
+  min-height: 28px;
+}
+.main-exp-info-row-content-line {
+}
+#main-right-sticky {
+  width: 100%;
+  background: #ffffff;
+  position: sticky;
+  padding-top: 13px;
+  top: 0px;
+  z-index: 5;
+}
+#main-btn-bar {
+  display: flex;
+  padding: 6px 0px 6px 12px;
+  // align-items: center;
+  align-items: baseline;
+  gap: 20px;
+  align-self: stretch;
+  border-radius: 2px;
+  background: var(--Neutral-100, #f3f3f3);
+  margin-bottom: 20px;
+  max-height: 80px;
+  min-height: 56px;
+}
+#main-btn-bar.expanded {
+  //   padding: 12px 0px 0px 12px;
+  padding: 6px 0px 6px 12px;
+  //   max-height: 68px;
+  max-height: 54px;
+}
+.main-btn-bar-break-column {
+  display: none;
+}
+#main-btn-bar > pdbc-pdbe-dropdown {
+  margin-top: 6px;
+  margin-bottom: 6px;
+  width: 154px;
+}
+// TODO: Add height, width, font-size as angular attributes
+#main-btn-bar > pdbc-pdbe-button > button {
+  height: 56px;
+  width: 176px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+@media screen and (max-width: 1024px) {
+  //   #main-container {
+  //     // margin-right: 34px;
+  //     // margin-bottom: 21px;
+  //   }
+  #main-left-container {
+    margin-right: 20px;
+    margin-bottom: 21px; // moved from main-container
+  }
+  #main-right-container {
+    // margin-bottom: 40px;
+    margin-bottom: 61px; // moved from main-container
+    margin-right: 34px; // moved from main-container
+  }
+  #main-btn-bar {
+    max-height: 80px;
+  }
+  #main-btn-bar.expanded {
+    // padding: 12px 0px 0px 12px;
+    padding: 6px 0px 6px 12px;
+    // max-height: 68px;
+    max-height: 54px;
+  }
+  #main-summary-holder {
+    flex-direction: column;
+  }
+  #main-molstar-qsummary {
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+    row-gap: 16px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  //   #main-container {
+  //     // margin-right: 32px;
+  //     // margin-bottom: 86px;
+  //   }
+  #main-left-container {
+    margin-right: 20px;
+    margin-bottom: 86px; // moved from main-container
+  }
+  #main-right-container {
+    // margin-bottom: 40px;
+    margin-bottom: 126px; // moved from main-container
+    margin-right: 32px; // moved from main-container
+  }
+  #main-btn-bar {
+    align-content: baseline;
+    flex-wrap: wrap;
+    gap: 12px;
+    row-gap: 0px;
+    max-height: 136px;
+  }
+  #main-btn-bar.expanded {
+    // padding: 12px 0px 0px 12px;
+    padding: 6px 0px 6px 12px;
+    // max-height: 138.38px;
+    // max-height: 68px;
+    max-height: 54px;
+  }
+  #main-btn-bar > pdbc-pdbe-dropdown {
+    margin-right: 4px;
+  }
+  .main-btn-bar-break-column {
+    display: block;
+    flex-basis: 100%;
+    width: 0;
+  }
+  #main-molstar-qsummary {
+    flex-direction: column;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 16px;
+  }
+}
+
+@media screen and (max-width: 540px) {
+  //   #main-container {
+  //     // margin-right: 24px;
+  //     // margin-bottom: 150px;
+  //   }
+  #main-left-container {
+    display: none;
+    margin-bottom: 150px; // moved from main-container
+  }
+  #main-right-container {
+    // margin-bottom: 24px;
+    margin-bottom: 174px; // moved from main-container
+    margin-right: 24px; // moved from main-container
+  }
+  #main-title {
+    font-family: 'IBM Plex Sans';
+    font-size: 30px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 39px; /* 130% */
+  }
+  #main-btn-bar {
+    max-height: 80px;
+  }
+  #main-btn-bar.expanded {
+    // padding: 12px 0px 0px 12px;
+    padding: 6px 0px 6px 12px;
+    // max-height: 68px;
+    max-height: 54px;
+  }
+  #main-subtitle {
+    font-family: 'IBM Plex Sans';
+    font-size: 21px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 27.3px; /* 130% */
+  }
+  .hide-mobile {
+    display: none !important;
+  }
+  #main-right-sticky {
+    position: initial;
+  }
+  #main-btn-bar {
+    margin-bottom: 16px;
+  }
+  #main-molstar {
+    width: 346px;
+  }
+  #main-qsummary {
+    width: 100%;
+    max-width: 348px;
+  }
+}
+
+@media screen and (max-width: 375px) {
+  //   #main-container {
+  //     // margin-bottom: 162px;
+  //   }
+  #main-left-container {
+    display: none;
+    margin-bottom: 162px; // moved from main-container
+  }
+  #main-right-container {
+    margin-bottom: 162px; // moved from main-container
+  }
+  #main-btn-bar {
+    max-height: 80px;
+  }
+  #main-btn-bar.expanded {
+    // padding: 12px 0px 0px 12px;
+    padding: 6px 0px 6px 12px;
+    // max-height: 68px;
+    max-height: 54px;
+  }
+  #main-molstar {
+    width: 317px;
+  }
+  #main-qsummary {
+    width: 100%;
+    max-width: 317px;
+  }
+}

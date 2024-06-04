@@ -27,12 +27,12 @@
   [searchButtonChipsType]="'PDBe'"
 ></pdbc-pdbe-header-search>
 <div id="main-container-outer">
-  <div id="main-container" *ngIf="entryId && entryData">
+  @if (entryId && entryData) {
+  <div id="main-container">
     <div id="main-left-container">
-      <pdbc-pdbe-nav-menu [highlightColor]="'#D0DEBB'" [navSections]="navSections" [isFirstActivated]="true"></pdbc-pdbe-nav-menu>
+      <pdbc-pdbe-nav-menu [highlightColor]="'#D0DEBB'" [navSections]="navSections" [verticalStickyElementId]="'main-right-sticky'"></pdbc-pdbe-nav-menu>
     </div>
     <div id="main-right-container">
-      <div id="main-fixed-top-white-bg"></div>
       <div id="main-right-sticky">
         <span id="main-title">{{ entryId }}</span>
         <span id="main-subtitle">{{ entryData.title }}</span>
@@ -51,8 +51,6 @@
           <pdbc-pdbe-dropdown
             #vDropdown
             class="hide-mobile"
-            [elementId]="'view-btn'"
-            (dropdownClicked)="closeOtherDropdowns($event)"
             [dropdownText]="'Download files'"
             [options]="downloadOptions"
             [dropdownWidth]="'166px'"
@@ -62,8 +60,6 @@
           <pdbc-pdbe-dropdown
             #dDropdown
             class="hide-mobile"
-            [elementId]="'dwl-btn'"
-            (dropdownClicked)="closeOtherDropdowns($event)"
             [dropdownText]="'View files'"
             [options]="viewOptions"
             [optionsWidth]="'197px'"
@@ -74,8 +70,8 @@
       <div id="main-summary-holder">
         <pdbc-summary
           [entryId]="entryId"
-          [sourceOrganisms]="entryData.organism_scientific_names"
-          [experimentType]="entryData.experimental_method"
+          [sourceOrganisms]="entryData.organismScientificNames"
+          [experimentType]="entryData.experimentalMethod"
           [resolutionValue]="entryData.resolutionValue"
           [releasedData]="entryData.releasedData"
           [publicationTitle]="entryData.publicationTitle"
@@ -85,7 +81,6 @@
           [publicationPage]="entryData.publicationPage"
           [publicationYear]="entryData.publicationYear"
           [publicationPMID]="entryData.publicationPMID"
-          [emdbEntries]="entryData.emdbEntries"
         ></pdbc-summary>
         <div id="main-molstar-qsummary">
           @if (molstarConfigs.moleculeId) {
@@ -104,7 +99,7 @@
               [externalLink]="true"
               [label]="'PDB-REDO'"
               [url]="'https://pdb-redo.eu/db/' + entryId"
-              [fontStyle]="'Paragraph 3 (16px)'"
+              [fontStyle]="'paragraph-3'"
               [fontColor]="'#3B6FB6'"
               [hoverColor]="'#193F90'"
               [visitedColor]="'#563D82'"
@@ -124,4 +119,5 @@
       </div>
     </div>
   </div>
+  }
 </div>

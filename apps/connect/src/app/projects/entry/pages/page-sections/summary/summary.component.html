@@ -1,5 +1,6 @@
-<div id="Summary" class="summary-container">
+<div class="summary-container">
   <div class="summary-info">
+    <div id="summary-section"></div>
     <span id="summary-title">Summary</span>
     <div class="summary-info-rows">
       <div class="info-row">
@@ -15,7 +16,7 @@
                 sourceOrganism +
                 '%22,%22condition1%22:%22AND%22,%22condition2%22:%22Contains%22%7D%5D,%22resultState%22:%7B%22tabIndex%22:0,%22paginationIndex%22:1,%22perPage%22:%2210%22,%22sortBy%22:%22Sort%20by%22%7D%7D'
               "
-              [fontStyle]="'Paragraph 3 (16px)'"
+              [fontStyle]="'paragraph-3'"
               [fontColor]="'#3B6FB6'"
               [hoverColor]="'#193F90'"
               [visitedColor]="'#563D82'"
@@ -30,20 +31,20 @@
       <div class="info-row">
         <span class="info-row-title">Experiment type</span>
         <span class="info-row-content">
-          <span class="info-row-content-line">
+          <span class="info-row-content-line" style="white-space: nowrap; display: flex; gap: 12px">
             {{ experimentType }}
             <pdbc-pdbe-link-button
               class="hideMobile"
               [externalLink]="false"
               [label]="'go to Experiments info'"
-              [url]="'Experiments_and_Validation'"
-              [fontStyle]="'Paragraph 3 (16px)'"
+              [url]="'exp-validation-section'"
+              [fontStyle]="'paragraph-3'"
               [fontColor]="'#3B6FB6'"
               [hoverColor]="'#193F90'"
               [visitedColor]="'#563D82'"
               [focusBorderColor]="'#3B6FB6'"
               [activeFontWeight]="300"
-              [whiteSpace]="'normal'"
+              [whiteSpace]="'nowrap'"
             ></pdbc-pdbe-link-button>
           </span>
           <span *ngIf="resolutionValue" class="info-row-content-line">{{ resolutionValue }}Å resolution</span>
@@ -51,8 +52,8 @@
             class="showMobile"
             [externalLink]="false"
             [label]="'go to Experiments info'"
-            [url]="'Experiments_and_Validation'"
-            [fontStyle]="'Paragraph 3 (16px)'"
+            [url]="'exp-validation-section'"
+            [fontStyle]="'paragraph-3'"
             [fontColor]="'#3B6FB6'"
             [hoverColor]="'#193F90'"
             [visitedColor]="'#563D82'"
@@ -74,8 +75,8 @@
             <pdbc-pdbe-link-button
               [externalLink]="false"
               [label]="'go to Citations'"
-              [url]="'Citations'"
-              [fontStyle]="'Paragraph 3 (16px)'"
+              [url]="'citations-section'"
+              [fontStyle]="'paragraph-3'"
               [fontColor]="'#3B6FB6'"
               [hoverColor]="'#193F90'"
               [visitedColor]="'#563D82'"
@@ -95,7 +96,7 @@
                   publicationOrEntryAuthor +
                   '%22,%22condition1%22:%22AND%22,%22condition2%22:%22Contains%22%7D%5D,%22resultState%22:%7B%22tabIndex%22:0,%22paginationIndex%22:1,%22perPage%22:%2210%22,%22sortBy%22:%22Sort%20by%22%7D%7D'
                 "
-                [fontStyle]="'Paragraph 3 (16px)'"
+                [fontStyle]="'paragraph-3'"
                 [fontColor]="'#3B6FB6'"
                 [hoverColor]="'#193F90'"
                 [visitedColor]="'#563D82'"
@@ -120,7 +121,7 @@
             [externalLink]="true"
             [label]="publicationPMID"
             [url]="'https://europepmc.org/article/MED/' + publicationPMID"
-            [fontStyle]="'Paragraph 3 (16px)'"
+            [fontStyle]="'paragraph-3'"
             [fontColor]="'#3B6FB6'"
             [hoverColor]="'#193F90'"
             [visitedColor]="'#563D82'"
@@ -138,7 +139,7 @@
             [externalLink]="true"
             [label]="pdbEntryDOI"
             [url]="'https://doi.org/' + pdbEntryDOI"
-            [fontStyle]="'Paragraph 3 (16px)'"
+            [fontStyle]="'paragraph-3'"
             [fontColor]="'#3B6FB6'"
             [hoverColor]="'#193F90'"
             [visitedColor]="'#563D82'"
@@ -157,7 +158,7 @@
               [externalLink]="true"
               [label]="emdbEntry"
               [url]="'https://www.ebi.ac.uk/emdb/' + emdbEntry"
-              [fontStyle]="'Paragraph 3 (16px)'"
+              [fontStyle]="'paragraph-3'"
               [fontColor]="'#3B6FB6'"
               [hoverColor]="'#193F90'"
               [visitedColor]="'#563D82'"

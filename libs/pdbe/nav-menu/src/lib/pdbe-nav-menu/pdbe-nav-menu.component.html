@@ -1,30 +1,24 @@
-<div class="nav-menu" *ngIf="navSections.length > 0">
+@if (navSections.length > 0) {
+<div class="nav-menu">
+  @for (navSection of navSections; track navSection.sectionId; let i = $index) {
   <div
-    [id]="sectionNameToId(navSection.sectionName) + '_to_activate'"
-    class="nav-section"
-    *ngFor="let navSection of navSections; index as i"
-    [ngClass]="i === 0 && isFirstActivated ? 'isactive' : ''"
+    [id]="navSection.sectionId + '_to_activate'"
+    [ngClass]="[
+      navSection.isSubSection ? 'nav-subsection' : 'nav-section',
+      navSection.sectionId === currentlyActive || navSection.sectionId === clickedActive ? 'isactive' : ''
+    ]"
   >
     <a
       rel="noopener"
       class="nav-atag paragraph-3 default-text-color"
       routerLink="."
-      [fragment]="sectionNameToId(navSection.sectionName)"
+      [fragment]="navSection.sectionId"
       [ngStyle]="{ '--nav-menu-highlight-color': highlightColor }"
-      [ngClass]="navSection.subsections !== undefined ? 'bordered-element' : ''"
+      (click)="clickedScrollTo(navSection.sectionId)"
     >
       {{ navSection.sectionName }}
     </a>
-    <div
-      [id]="sectionNameToId(subNavSection.sectionName) + '_to_activate'"
-      class="nav-subsection"
-      *ngFor="let subNavSection of navSection.subsections; index as j"
-      [ngClass]="j + 1 < navSection.subsections.length ? 'bordered-element' : ''"
-      [ngStyle]="{ '--nav-menu-highlight-color': highlightColor }"
-    >
-      <a rel="noopener" class="nav-atag paragraph-3 default-text-color" routerLink="." [fragment]="sectionNameToId(subNavSection.sectionName)">
-        {{ subNavSection.sectionName }}
-      </a>
-    </div>
   </div>
+  }
 </div>
+}
