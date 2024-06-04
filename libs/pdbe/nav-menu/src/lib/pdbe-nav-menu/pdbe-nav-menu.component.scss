@@ -58,20 +58,18 @@
   min-width: 201px; // from 1024px design
   max-width: 250px; // from 1440px design
   min-height: 28px;
+  border-bottom: 1px solid var(--Neutral-300, #d0d0ce);
 }
 
-.nav-subsection:hover {
+.nav-subsection > .nav-atag:hover {
   cursor: pointer;
   background-color: var(--nav-menu-highlight-color);
 }
-.nav-subsection:focus {
+.nav-subsection > .nav-atag:focus {
   background-color: var(--nav-menu-highlight-color);
-}
-.nav-subsection.isactive {
-  background-color: var(--nav-menu-highlight-color);
-  font-weight: 500;
 }
 .nav-subsection.isactive > .nav-atag {
+  background-color: var(--nav-menu-highlight-color);
   font-weight: 500;
 }
 
@@ -87,17 +85,6 @@
   padding-right: 4px; // pads from design
   padding-bottom: 3px; // pads from design
   text-decoration: none;
-}
-.nav-subsection > .nav-atag:hover {
-  cursor: pointer;
-  background-color: var(--nav-menu-highlight-color);
-}
-.nav-subsection > .nav-atag:focus {
-  background-color: var(--nav-menu-highlight-color);
-}
-
-.bordered-element {
-  border-bottom: 1px solid var(--Neutral-300, #d0d0ce);
 }
 
 // Between 768px and 1024px, width scales proportionally according to below

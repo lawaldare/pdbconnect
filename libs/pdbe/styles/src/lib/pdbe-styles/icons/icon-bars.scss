@@ -1,0 +1,24 @@
+.icon-bars {
+  width: 32px;
+  height: 32px;
+  position: relative;
+  z-index: 0;
+  // z-index: -1;
+}
+.icon-bars:before {
+  content: '';
+  position: absolute;
+  // position: relative;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  right: 0;
+  --icon-bars-color: #ffffff;
+  //  url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 10.6667V8H28V10.6667H4ZM4 17.3333H28V14.6667H4V17.3333ZM4 24H28V21.3333H4V24Z" fill="white"/></svg>');
+  mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" xml:space="preserve"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 10.6667V8H28V10.6667H4ZM4 17.3333H28V14.6667H4V17.3333ZM4 24H28V21.3333H4V24Z"/></svg>');
+  width: 32px;
+  height: 32px;
+  mask-size: auto 32px;
+  mask-repeat: no-repeat;
+  background-color: var(--icon-bars-color);
+}

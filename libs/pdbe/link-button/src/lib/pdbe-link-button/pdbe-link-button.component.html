@@ -2,7 +2,7 @@
 <a
   *ngIf="externalLink && url"
   class="pdbe-link-button"
-  [ngClass]="fontStyle === 'Paragraph 2 (19px)' ? 'paragraph-2' : 'paragraph-3'"
+  [ngClass]="fontStyle"
   [attr.href]="url.length > 0 ? url : null"
   [attr.target]="url.length > 0 ? '_blank' : null"
   (click)="toEmitOnClick && toEmitOnClick.length > 0 ? clickedLinkButton() : null"
@@ -20,17 +20,18 @@
 </a>
 
 <!-- when using anchor scrolling we use routerLink and fragment -->
+<!-- visited color does not apply here -->
 <a
   *ngIf="!externalLink && url"
   class="pdbe-link-button"
-  [ngClass]="fontStyle === 'Paragraph 2 (19px)' ? 'paragraph-2' : 'paragraph-3'"
+  [ngClass]="fontStyle"
   routerLink="."
   [fragment]="url"
   (click)="toEmitOnClick && toEmitOnClick.length > 0 ? clickedLinkButton() : null"
   [ngStyle]="{
     '--link-btn-color': fontColor,
     '--link-btn-hover': hoverColor,
-    '--link-btn-visited': visitedColor,
+    '--link-btn-visited': fontColor,
     '--link-btn-has-focus': focusBorderColor ? '1px' : '0px',
     '--link-btn-focus': focusBorderColor,
     '--link-btn-active-weight': activeFontWeight,
@@ -44,12 +45,12 @@
 <a
   *ngIf="!url"
   class="pdbe-link-button"
-  [ngClass]="fontStyle === 'Paragraph 2 (19px)' ? 'paragraph-2' : 'paragraph-3'"
+  [ngClass]="fontStyle"
   (click)="toEmitOnClick && toEmitOnClick.length > 0 ? clickedLinkButton() : null"
   [ngStyle]="{
     '--link-btn-color': fontColor,
     '--link-btn-hover': hoverColor,
-    '--link-btn-visited': visitedColor,
+    '--link-btn-visited': fontColor,
     '--link-btn-has-focus': focusBorderColor ? '1px' : '0px',
     '--link-btn-focus': focusBorderColor,
     '--link-btn-active-weight': activeFontWeight,

@@ -27,14 +27,17 @@
       <pdbc-pdbe-nav-menu
         [highlightColor]="'#B6D0CF'"
         [navSections]="[
-          { sectionName: 'Description', subsections: [] },
-          { sectionName: 'Physicochemical properties', subsections: [] },
-          { sectionName: 'Structures', subsections: [] },
-          { sectionName: 'Interaction statistics', subsections: [] },
-          { sectionName: 'Related ligands', subsections: [{ sectionName: 'Same scaffolds' }, { sectionName: 'Similar ligands' }, { sectionName: 'Stereoisomers' }] },
-          { sectionName: 'Ligand-specific databases', subsections: [] }
+          { sectionId: 'description-section', isSubSection: false, sectionName: 'Description' },
+          { sectionId: 'physicochemical-section', isSubSection: false, sectionName: 'Physicochemical properties' },
+          { sectionId: 'structures-section', isSubSection: false, sectionName: 'Structures' },
+          { sectionId: 'interactions-section', isSubSection: false, sectionName: 'Interaction statistics' },
+          { sectionId: 'related-ligs-section', isSubSection: false, sectionName: 'Related ligands' },
+          { sectionId: 'related-scaffolds-section', isSubSection: true, sectionName: 'Same scaffolds' },
+          { sectionId: 'similar-ligs-section', isSubSection: true, sectionName: 'Similar ligands' },
+          { sectionId: 'stereoisomers-ligs-section', isSubSection: true, sectionName: 'Stereoisomers' },
+          { sectionId: 'ligs-dbs-section', isSubSection: false, sectionName: 'Ligand-specific databases' }
         ]"
-        [isFirstActivated]="true"
+        [verticalStickyElementId]="'main-right-sticky'"
       ></pdbc-pdbe-nav-menu>
     </div>
     <div id="main-right-container">

@@ -11,6 +11,7 @@ import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
 import { EntryApiService, EntryData } from '../../services/entry-api.service';
 import { StrucQualityGradientsComponent } from '../../components/struc-quality-gradients/struc-quality-gradients.component';
 import { PdbeMolstarForAppsComponent } from '@pdbe-lib/molstar-for-apps';
+import { InitParams } from 'pdbe-molstar/lib/spec';
 
 @Component({
   selector: 'pdbc-main',
@@ -41,14 +42,14 @@ export class EntryMainPageComponent implements OnInit {
   @ViewChild('dDropdown', { read: ElementRef }) downloadDropdownContainer!: ElementRef; // To access dropdown HTML element
   // Data for sticky navigation menu
   navSections = [
-    { sectionName: 'Summary', subsections: [] },
-    { sectionName: 'Function and Biology', subsections: [] },
-    { sectionName: 'Family and Domains', subsections: [] },
-    { sectionName: 'Macromolecules', subsections: [] },
-    { sectionName: 'Ligands and Environments', subsections: [] },
-    { sectionName: 'Assemblies', subsections: [] },
-    { sectionName: 'Experiments and Validation', subsections: [] },
-    { sectionName: 'Citations', subsections: [] },
+    { sectionId: 'summary-section', isSubSection: false, sectionName: 'Summary' },
+    { sectionId: 'function-biology-section', isSubSection: false, sectionName: 'Function and Biology' },
+    { sectionId: 'family-domains-section', isSubSection: false, sectionName: 'Family and Domains' },
+    { sectionId: 'macromolecules-section', isSubSection: false, sectionName: 'Macromolecules' },
+    { sectionId: 'ligands-envs-section', isSubSection: false, sectionName: 'Ligands and Environments' },
+    { sectionId: 'assemblies-section', isSubSection: false, sectionName: 'Assemblies' },
+    { sectionId: 'exp-validation-section', isSubSection: false, sectionName: 'Experiments and Validation' },
+    { sectionId: 'citations-section', isSubSection: false, sectionName: 'Citations' },
   ];
   // Data for download dropdown control
   downloadOptions: { name: string; url: string; downloadable: boolean }[] = [];
@@ -57,11 +58,11 @@ export class EntryMainPageComponent implements OnInit {
 
   // configuration to initialize molstar
   // docs in: https://github.com/molstar/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin#plugin-parameters-options
-  molstarConfigs = {
+  molstarConfigs: Partial<InitParams> = {
     moleculeId: '',
     hideControls: true,
+    hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
     landscape: true,
-    hideExpandIcon: true,
     subscribeEvents: false,
     bgColor: { r: 255, g: 255, b: 255 },
   };
@@ -110,18 +111,6 @@ export class EntryMainPageComponent implements OnInit {
       this.expandedDropdowns = true;
     } else {
       this.expandedDropdowns = false;
-    }
-  }
-
-  /**
-   * Function to close other dropdowns when a given dropdown is clicked
-   * @param dropdownId identifier of clicked dropdown
-   */
-  closeOtherDropdowns(dropdownId: string) {
-    if (dropdownId === 'view-btn') {
-      this.downloadDropdown.closeDropdown();
-    } else {
-      this.viewDropdown.closeDropdown();
     }
   }
 }

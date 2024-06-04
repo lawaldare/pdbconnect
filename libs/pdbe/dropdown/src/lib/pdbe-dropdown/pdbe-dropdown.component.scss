@@ -25,7 +25,7 @@
   --dropdown-opts-maxheight: 392px;
   // position: absolute;
   position: relative;
-  z-index: 3;
+  z-index: 5;
   margin-top: 4px;
   // top: 2px;
   // right: 0;
@@ -47,7 +47,7 @@ i.open {
   // top: 2px;
   display: block;
   width: 100%;
-  z-index: 4;
+  z-index: 5;
   background-color: #ffffff;
 }
 .dropdown-option {
