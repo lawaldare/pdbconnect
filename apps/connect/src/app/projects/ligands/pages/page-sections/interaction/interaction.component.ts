@@ -15,7 +15,6 @@ import { IntxDataUrl, PDBIntxData } from '../../../data-models/interaction.model
 })
 export class InteractionComponent implements AfterViewInit {
   @Input() ligandId!: string;
-  @Input() contactTypes: string[] = ['TOTAL'];
   intxUrl = '';
   helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
@@ -28,6 +27,7 @@ export class InteractionComponent implements AfterViewInit {
     this.renderer.setAttribute(ligandHeatmap, 'pdbeapi', 'false');
     this.renderer.setAttribute(ligandHeatmap, 'accession', this.ligandId);
     ligandHeatmap.setDataAndRender(interaction);
+    ligandHeatmap.registerLigandEnv('ligand-int-env');
   }
 
   renderAtomIntx() {
@@ -38,8 +38,8 @@ export class InteractionComponent implements AfterViewInit {
         const interaction = intxDataUrl.interactions;
         this.intxUrl = intxDataUrl.IntxUrl;
         this.renderer.setProperty(ligandEnv, 'interaction', interaction[this.ligandId]);
-        this.renderer.setProperty(ligandEnv, 'atomWeights', this.contactTypes);
-        this.renderer.setProperty(ligandEnv, 'zoom', true);
+        this.renderer.setProperty(ligandEnv, 'contactType', '["TOTAL"]');
+        // this.renderer.setProperty(ligandEnv, 'zoom', true);
         this.renderHeatMap(interaction);
       });
     });
