@@ -24,7 +24,7 @@
             "output": "./assets/"
           }
         ],
-        "styles": ["apps/connect/src/styles.scss"],
+        "styles": ["@angular/material/prebuilt-themes/indigo-pink.css", "apps/connect/src/styles.scss"],
         "scripts": [],
         "baseHref": "$APP_BASE_HREF"
       },
@@ -39,8 +39,8 @@
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "1mb"
+              "maximumWarning": "1mb",
+              "maximumError": "2mb"
             },
             {
               "type": "anyComponentStyle",

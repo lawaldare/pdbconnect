@@ -2,8 +2,19 @@
 @import 'libs/pdbe/styles/src/lib/pdbe-styles/icons.scss';
 @import 'libs/pdbe/styles/src/lib/pdbe-styles/typography.scss';
 @import 'libs/pdbe/styles/src/lib/pdbe-styles/templates.scss';
+@import 'libs/pdbe/styles/src/lib/pdbe-styles/am_custom_theme.scss';
+@import 'libs/pdbe/styles/src/lib/pdbe-styles/am_custom_style.scss';
 
 body {
   margin: 0;
   overflow-x: hidden;
+}
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
 }

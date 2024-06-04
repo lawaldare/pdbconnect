@@ -1,0 +1,68 @@
+.description-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.description-graphics {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 38px;
+}
+#description-title {
+  color: #000;
+}
+
+.info-row {
+  color: var(--Neutral-900, #1a1c1a);
+  font-family: 'IBM Plex Sans';
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 27.2px; /* 170% */
+}
+
+.description-info-rows {
+  margin-top: 16px;
+}
+.info-row-content {
+  max-width: 534px;
+}
+
+#formula-box {
+  display: flex;
+  padding: 4px 12px;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--Neutral-100, #f3f3f3);
+}
+
+@media screen and (max-width: 1024px) {
+  .info-row-content {
+    max-width: 522px;
+  }
+}
+@media screen and (max-width: 768px) {
+  .info-row-content {
+    max-width: 324px;
+  }
+}
+@media screen and (max-width: 540px) {
+  .info-row-content {
+    max-width: 347px;
+  }
+  .info-row-title {
+    width: 120px;
+  }
+}
+@media screen and (max-width: 375px) {
+  .info-row-content {
+    max-width: 222px;
+  }
+  .info-row-title {
+    width: 90px;
+  }
+}

@@ -1,0 +1,59 @@
+.interaction-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  align-self: stretch;
+}
+
+.interaction-header {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  align-self: stretch;
+}
+
+.view-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding-bottom: 40px;
+}
+
+.heatmap-description {
+  display: flex;
+  flex-direction: column;
+  width: 70%;
+  gap: 16px;
+}
+
+.intx-component-container {
+  display: flex;
+  padding-top: 16px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.heatmap-container {
+  display: flex;
+  width: 70%;
+  height: auto;
+}
+
+.ligandEnv-container {
+  display: flex;
+  align-items: stretch;
+  flex-direction: column;
+  width: 20%;
+}
+
+.ligandEnv-content {
+  height: 380px;
+  border: 1px solid var(--Neutral-200, #e4e4e4);
+}
+
+#helper_icon {
+  width: 18px;
+  height: 18px;
+  padding-left: 5px;
+}
