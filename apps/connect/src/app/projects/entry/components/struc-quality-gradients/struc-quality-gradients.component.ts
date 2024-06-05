@@ -19,7 +19,7 @@ export class StrucQualityGradientsComponent {
   gradientWidth = 174;
 
   // TODO: Work on automatic image svg design for this
-  // TODO: Wrap up responsive design for this component
+  // TODO: Wrap up responsive design for this component if needed at all
   calcTranslate(idx: number) {
     // take integer (0,1,2,3,4), multiply by 20% of total width, take out border width
     return idx * (this.gradientWidth / 5) - 2;
