@@ -18,7 +18,9 @@
         [whiteSpace]="'normal'"
         [mobileIconName]="'link'"
       ></pdbc-pdbe-link-button>
+      @if(ligand.similarity_score){
       <span class="paragraph-4"> {{ ligand.similarity_score * 100 | number }}% similar</span>
+      }
     </div>
     <div class="description-content">
       <div class="content-tag">

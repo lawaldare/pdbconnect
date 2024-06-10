@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { StructuresComponent } from './structures.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientModule } from '@angular/common/http';
 
 describe('StructuresComponent', () => {
   let component: StructuresComponent;
@@ -8,7 +9,7 @@ describe('StructuresComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [StructuresComponent, NoopAnimationsModule],
+      imports: [StructuresComponent, HttpClientModule, NoopAnimationsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(StructuresComponent);

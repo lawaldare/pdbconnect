@@ -25,7 +25,7 @@
   @if(ligandId && description){
   <div id="main-container">
     <div id="main-left-container">
-      <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" [verticalStickyElementId]="'main-right-sticky'"></pdbc-pdbe-nav-menu>
+      <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections"></pdbc-pdbe-nav-menu>
     </div>
     <div id="main-right-container">
       <div id="main-fixed-top-white-bg"></div>
@@ -80,7 +80,7 @@
         <pdbc-properties [properties]="description.properties"></pdbc-properties>
       </div>
       <div id="structure-container">
-        <pdbc-structures></pdbc-structures>
+        <pdbc-structures [ligandId]="ligandId"></pdbc-structures>
       </div>
       <div id="interaction-container">
         <pdbc-interaction [ligandId]="ligandId"></pdbc-interaction>
