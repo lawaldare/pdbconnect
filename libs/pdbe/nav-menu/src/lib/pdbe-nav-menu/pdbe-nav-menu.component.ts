@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ActivatedRoute } from '@angular/router'; // <-- do not forget to import
+import { delay } from 'rxjs';
 
 @Component({
   selector: 'pdbc-pdbe-nav-menu',
@@ -21,6 +22,7 @@ export class PdbeNavMenuComponent implements OnInit {
 
   // sectionId of navSection that current active on nav component (bold and with background)
   currentlyActive?: string;
+  previouslyActive?: string;
 
   // sectionId of navSection that current active on nav component (bold and with background)
   clickedActive?: string;
@@ -29,7 +31,7 @@ export class PdbeNavMenuComponent implements OnInit {
 
   ngOnInit() {
     // if page route contains anchor navigation, trigger scrolling to it
-    this.route.fragment.subscribe((fragment) => {
+    this.route.fragment.pipe(delay(1000)).subscribe((fragment) => {
       if (fragment) this.clickedScrollTo(fragment);
     });
 
@@ -78,60 +80,103 @@ export class PdbeNavMenuComponent implements OnInit {
     }
 
     // Only completely visible elements return true:
-    const isVisible = elemTop >= minVisible && elemBottom <= window.innerHeight;
+    // const isVisible = elemTop >= minVisible && elemBottom <= window.innerHeight;
+    const isTopVisible = elemTop >= minVisible && elemTop <= window.innerHeight;
+    // const isBottomVisible = elemBottom >= minVisible && elemBottom <= window.innerHeight;
     const isinScroll = elemTop >= 0 && elemBottom <= window.innerHeight;
+
+    let overlapRank = undefined;
+    const y0 = minVisible;
+    const y1 = window.innerHeight;
+
+    const o0 = elemTop;
+    const o1 = elemBottom;
+    if (y0 >= o0 && y1 <= o1) {
+      overlapRank = 1;
+    } else if (y0 <= o0 && y1 >= o1) {
+      overlapRank = 2;
+    } else if (y0 > o0 || y1 < o1) {
+      overlapRank = 3;
+    }
 
     // Partially visible elements return true:
     //isVisible = elemTop < window.innerHeight && elemBottom >= 0;
 
-    return { visible: isVisible, withinScroll: isinScroll };
+    return { isTopVisible: isTopVisible, overlapRank: overlapRank, withinScroll: isinScroll };
   }
 
   /**
-   * Function for creating scrolling tracker of sections in page
+   * Initializes a scroll observer to track which sections are currently in view.
+   * This observer updates the currently active section based on scroll position.
    */
   createScrollObserver() {
-    // const thisAngularElement = this;
+    // Array to hold all section IDs from navSections
     const allSectionIds = [];
 
-    // first we get all section ids of navSections and nested navSubSections
+    // Extract all section IDs from navSections and nested navSubSections
     for (const navSection of this.navSections) {
       const eleAndChildIds = [navSection.sectionId];
       allSectionIds.push(...eleAndChildIds);
     }
 
+    /**
+     * Callback function to check which sections are in view during scrolling.
+     *
+     * @param {Event} _e - The scroll event.
+     */
     const checkScrolledIntoView = (_e: Event) => {
-      // if we are scrolling by click, do nothing
+      // If scrolling was initiated by a click, do nothing
       if (this.clickedActive) return;
 
+      // Arrays to keep track of currently visible sections
       const activeList = [];
+      let idsRanks = [];
 
-      // for each element to monitor, check if it is within view
+      // Get list of section IDs to monitor
       const elementIdList = this.navSections.map((navSection) => navSection.sectionId);
+
+      // Check visibility for each section element
       for (const eachSectionId of elementIdList) {
         const sectionElement = document.getElementById(eachSectionId);
 
-        if (!sectionElement) continue; // if element exists on page
+        // Skip if the element does not exist in the DOM
+        if (!sectionElement) continue;
 
-        const sectionElementVisibility = this.isScrolledIntoView(sectionElement).visible;
-        if (sectionElementVisibility) activeList.push(eachSectionId);
+        // Check if the section element is in view
+        const visibilityCheckObj = this.isScrolledIntoView(sectionElement);
+        const sectionElementTopVisibility = visibilityCheckObj.isTopVisible;
+        if (visibilityCheckObj.overlapRank) {
+          idsRanks.push({
+            id: eachSectionId,
+            rank: visibilityCheckObj.overlapRank,
+          });
+        }
+        if (sectionElementTopVisibility) activeList.push(eachSectionId);
       }
 
-      // if no active elements, just keep state as it is
+      idsRanks = idsRanks.sort((a, b) => a.rank - b.rank);
+
+      // If no sections are currently in view, maintain the current state
       if (activeList.length === 0) return;
 
-      // for detecting scroll direction: https://stackoverflow.com/a/31223774
+      // Determine scroll direction to update active section (https://stackoverflow.com/a/31223774)
       let lastScrollTop = 0;
       const st = window.pageYOffset || document.documentElement.scrollTop; // Credits: "https://github.com/qeremy/so/blob/master/so.dom.js#L426"
       if (st > lastScrollTop) {
-        // downscroll code
+        // Scrolling down: set the first visible section as active
         this.currentlyActive = activeList[0];
       } else if (st < lastScrollTop) {
-        // upscroll code
+        // Scrolling up: set the last visible section as active
         this.currentlyActive = activeList[activeList.length - 1];
-      } // else was horizontal scroll
-      lastScrollTop = st <= 0 ? 0 : st; // For Mobile or negative scrolling
+      }
+      // Update the last known scroll position (prevent negative values e.g Mobile)
+      lastScrollTop = st <= 0 ? 0 : st;
+
+      // Update previously active section
+      this.previouslyActive = this.currentlyActive + '';
     };
+
+    // Attach scroll event listener to the document
     document.addEventListener('scroll', checkScrolledIntoView, false);
   }
 
@@ -152,7 +197,8 @@ export class PdbeNavMenuComponent implements OnInit {
   scrollTo(elementId: string) {
     this.currentlyActive = elementId;
     const element = document.getElementById(elementId);
-    element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    this.smoothScroll(element!, 500);
 
     // unfocus document element before scrolling
     (<HTMLElement>document.activeElement)?.blur();
@@ -167,5 +213,73 @@ export class PdbeNavMenuComponent implements OnInit {
       }, 100);
     };
     document.addEventListener('scroll', onScrollEnd);
+  }
+
+  /**
+   * Smoothly scrolls the window to a target element over a specified duration.
+   *
+   * @param {HTMLElement} target - The target element to scroll to.
+   * @param {number} duration - The duration of the scroll animation in milliseconds.
+   */
+  smoothScroll(target: HTMLElement, duration: number) {
+    // Initialize extraHeight to account for any sticky element that may overlap the target element
+    let extraHeight = 0;
+
+    // Check if there is a vertical sticky element by its ID
+    if (this.verticalStickyElementId) {
+      const stickyElement = document.getElementById(this.verticalStickyElementId);
+      // If the sticky element exists, get its height
+      if (stickyElement) {
+        extraHeight = stickyElement.getBoundingClientRect().height;
+      }
+    }
+    // Calculate the target scroll position, adjusting for sticky element height and a small offset
+    const targetPosition = target.getBoundingClientRect().top + window.scrollY - extraHeight - 10;
+
+    // Get the current scroll position
+    const startPosition = window.scrollY;
+
+    // Calculate the distance to scroll
+    const distance = targetPosition - startPosition;
+
+    // Initialize startTime to null; it will be set during the first animation frame
+    let startTime: number | null = null;
+
+    /**
+     * Performs the animation for smooth scrolling.
+     *
+     * @param {number} currentTime - The current timestamp provided by requestAnimationFrame.
+     */
+    function animation(currentTime: number) {
+      // Set the start time on the first call
+      if (startTime === null) startTime = currentTime;
+      // Calculate the time elapsed since the start of the animation
+      const timeElapsed = currentTime - startTime;
+      // Compute the current scroll position using the easing function
+      const run = ease(timeElapsed, startPosition, distance, duration);
+      // Scroll the window to the calculated position
+      window.scrollTo(0, run);
+      // Continue the animation until the duration has elapsed
+      if (timeElapsed < duration) requestAnimationFrame(animation);
+    }
+
+    /**
+     * Easing function to create a smooth scroll effect.
+     *
+     * @param {number} t - The current time (or position) of the tween.
+     * @param {number} b - The beginning value of the property.
+     * @param {number} c - The change between the beginning and destination value of the property.
+     * @param {number} d - The total duration of the tween.
+     * @returns {number} - The calculated value at the current time.
+     */
+    function ease(t: number, b: number, c: number, d: number) {
+      t /= d / 2;
+      if (t < 1) return (c / 2) * t * t + b;
+      t--;
+      return (-c / 2) * (t * (t - 2) - 1) + b;
+    }
+
+    // Start the animation
+    requestAnimationFrame(animation);
   }
 }

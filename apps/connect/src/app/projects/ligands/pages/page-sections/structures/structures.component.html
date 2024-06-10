@@ -3,7 +3,7 @@
   <mat-tab-group>
     <mat-tab>
       <ng-template mat-tab-label>
-        <span class="heading-4"> 125 Proteins (525 PDB structures)</span>
+        <span class="heading-4"> {{ this.structureData.length }} PDB structures</span>
       </ng-template>
       <div class="controller">
         <div class="filters">
@@ -66,7 +66,7 @@
           </ng-container>
 
           <ng-container matColumnDef="rep_structure">
-            <th class="heading-5" mat-header-cell *matHeaderCellDef>Representative PDB structure</th>
+            <th class="heading-5" mat-header-cell *matHeaderCellDef>PDB structure</th>
             <td class="table_row" mat-cell *matCellDef="let item">
               <pdbc-pdbe-link-button
                 [externalLink]="true"
@@ -88,7 +88,8 @@
           <tr mat-row *matRowDef="let row; let odd = odd; columns: displayedColumns" [ngClass]="{ odd_row: odd }"></tr>
         </table>
         <div class="paginator-container">
-          <mat-paginator [pageSizeOptions]="[4, 8, 23]" showFirstLastButtons aria-label="Select page of proteins"> </mat-paginator>
+          <mat-paginator [length]="this.structureData.length" [pageSize]="6" [pageSizeOptions]="[4, 8, 23]" showFirstLastButtons aria-label="Select page of proteins">
+          </mat-paginator>
         </div>
       </div>
     </mat-tab>

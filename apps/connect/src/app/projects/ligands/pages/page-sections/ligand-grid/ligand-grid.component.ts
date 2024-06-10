@@ -32,7 +32,7 @@ export class LigandGridComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     if (this.ligand) {
-      this.ligandUrl = `/pdbe/pdbe-kb/ligands/${this.ligand.chem_comp_id}`;
+      this.ligandUrl = `ligands/${this.ligand.chem_comp_id}`;
       const numBoundEntries = this.ligand.bound_entries.length;
       const boundEntryLabelSuffix = numBoundEntries <= 1 ? 'PDB Entry' : 'PDB Entries';
       this.boundEntryLabel = `${numBoundEntries} ${boundEntryLabelSuffix}`;

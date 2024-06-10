@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Structure } from '../../../data-models/structure.model';
@@ -8,6 +8,8 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { AggregatedApiService } from '../../../services/aggregated-api.service';
+import { of, catchError } from 'rxjs';
 
 @Component({
   selector: 'pdbc-structures',
@@ -17,8 +19,10 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
   styleUrls: ['./structures.component.scss'],
 })
 export class StructuresComponent implements AfterViewInit, OnInit {
+  @Input() ligandId?: string;
   displayedColumns: string[] = ['name', 'id', 'ec_number', 'annotation', 'count', 'rep_structure'];
-  dataSource = new MatTableDataSource<Structure>(structureData);
+  structureData: Structure[] = [];
+  dataSource = new MatTableDataSource<Structure>(this.structureData);
   cofactor = false;
   reactant = false;
   drug = false;
@@ -28,6 +32,7 @@ export class StructuresComponent implements AfterViewInit, OnInit {
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+  constructor(private aggregatedApiService: AggregatedApiService) {}
 
   /**
    * Function to apply both check box and search filter
@@ -50,6 +55,22 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   }
 
   ngOnInit() {
+    if (this.ligandId) {
+      this.aggregatedApiService
+        .fetchBoundEntries(this.ligandId)
+        .pipe(catchError((error) => of(error)))
+        .subscribe((boundEntries: string[]) => {
+          this.structureData = boundEntries.map((entry) => ({
+            name: '',
+            id: '',
+            ec_number: '',
+            annotation: '',
+            count: 1,
+            rep_structure: entry,
+          }));
+          this.dataSource.data = this.structureData;
+        });
+    }
     // Defining custom filter
     this.dataSource.filterPredicate = (data: Structure, filter: string): boolean => {
       const filterValues = JSON.parse(filter);
@@ -70,77 +91,77 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   }
 }
 
-const structureData: Structure[] = [
-  {
-    name: 'Glycerol-3-phosphate dehydrogenase',
-    id: 'P90551',
-    ec_number: '1.1.1.8',
-    annotation: 'Cofactor like',
-    count: 4,
-    rep_structure: '1evz',
-  },
-  {
-    name: 'Quinate dehydrogenase',
-    id: 'Q9X5C9',
-    ec_number: '1.1.1.24',
-    annotation: 'Cofactor like',
-    count: 3,
-    rep_structure: '3jyp',
-  },
-  {
-    name: 'Glucose-6-phosphate dehydrogenase',
-    id: 'P11411',
-    ec_number: '1.1.1.363',
-    annotation: 'Cofactor like',
-    count: 1,
-    rep_structure: '1e77',
-  },
-  {
-    name: 'NAD(P)H-dependent D-xylose reductase',
-    id: 'O74237',
-    ec_number: '1.1.1.307',
-    annotation: 'Cofactor like',
-    count: 5,
-    rep_structure: '1jez',
-  },
-  {
-    name: '4-trimethylaminobuteralde',
-    id: 'P49189',
-    ec_number: '1.2.1.47',
-    annotation: 'Reactant like',
-    count: 5,
-    rep_structure: '6vwf',
-  },
-  {
-    name: '4-trimethylaminobuteralde',
-    id: 'P49189',
-    ec_number: '1.2.1.47',
-    annotation: 'Reactant like',
-    count: 5,
-    rep_structure: '6vwf',
-  },
-  {
-    name: '4-trimethylaminobuteralde',
-    id: 'P49189',
-    ec_number: '1.2.1.47',
-    annotation: 'Drug like',
-    count: 5,
-    rep_structure: '6vwf',
-  },
-  {
-    name: '4-trimethylaminobuteralde',
-    id: 'P49189',
-    ec_number: '1.2.1.47',
-    annotation: 'Unannotated',
-    count: 5,
-    rep_structure: '6vwf',
-  },
-  {
-    name: '4-trimethylaminobuteralde',
-    id: 'P49189',
-    ec_number: '1.2.1.47',
-    annotation: 'Reactant like',
-    count: 5,
-    rep_structure: '6vwf',
-  },
-];
+// const structureData: Structure[] = [
+//   {
+//     name: 'Glycerol-3-phosphate dehydrogenase',
+//     id: 'P90551',
+//     ec_number: '1.1.1.8',
+//     annotation: 'Cofactor like',
+//     count: 4,
+//     rep_structure: '1evz',
+//   },
+//   {
+//     name: 'Quinate dehydrogenase',
+//     id: 'Q9X5C9',
+//     ec_number: '1.1.1.24',
+//     annotation: 'Cofactor like',
+//     count: 3,
+//     rep_structure: '3jyp',
+//   },
+//   {
+//     name: 'Glucose-6-phosphate dehydrogenase',
+//     id: 'P11411',
+//     ec_number: '1.1.1.363',
+//     annotation: 'Cofactor like',
+//     count: 1,
+//     rep_structure: '1e77',
+//   },
+//   {
+//     name: 'NAD(P)H-dependent D-xylose reductase',
+//     id: 'O74237',
+//     ec_number: '1.1.1.307',
+//     annotation: 'Cofactor like',
+//     count: 5,
+//     rep_structure: '1jez',
+//   },
+//   {
+//     name: '4-trimethylaminobuteralde',
+//     id: 'P49189',
+//     ec_number: '1.2.1.47',
+//     annotation: 'Reactant like',
+//     count: 5,
+//     rep_structure: '6vwf',
+//   },
+//   {
+//     name: '4-trimethylaminobuteralde',
+//     id: 'P49189',
+//     ec_number: '1.2.1.47',
+//     annotation: 'Reactant like',
+//     count: 5,
+//     rep_structure: '6vwf',
+//   },
+//   {
+//     name: '4-trimethylaminobuteralde',
+//     id: 'P49189',
+//     ec_number: '1.2.1.47',
+//     annotation: 'Drug like',
+//     count: 5,
+//     rep_structure: '6vwf',
+//   },
+//   {
+//     name: '4-trimethylaminobuteralde',
+//     id: 'P49189',
+//     ec_number: '1.2.1.47',
+//     annotation: 'Unannotated',
+//     count: 5,
+//     rep_structure: '6vwf',
+//   },
+//   {
+//     name: '4-trimethylaminobuteralde',
+//     id: 'P49189',
+//     ec_number: '1.2.1.47',
+//     annotation: 'Reactant like',
+//     count: 5,
+//     rep_structure: '6vwf',
+//   },
+// ];
