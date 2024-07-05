@@ -53,19 +53,21 @@
 </section>
 @if(pageData.sectionTwo.citedThePublication.Articles.length){
 <h3>Articles citing the PDB entry</h3>
-<pdbe-citation-publication [publicationInfo]="pageData.sectionTwo.citedThePublication.Articles"></pdbe-citation-publication>
+<pdbe-citation-publication [publicationInfo]="pageData.sectionTwo.citedThePublication.Articles" [entryId]="entryId" headerText="cited"></pdbe-citation-publication>
 } @if(pageData.sectionTwo.citedThePublication.Reviews.length){
 <h3>Reviews citing the publications</h3>
-
-<pdbe-citation-publication [publicationInfo]="pageData.sectionTwo.citedThePublication.Reviews"></pdbe-citation-publication>
+<pdbe-citation-publication [publicationInfo]="pageData.sectionTwo.citedThePublication.Reviews" [entryId]="entryId" headerText="cited"></pdbe-citation-publication>
 
 } @if(pageData.sectionTwo.metionedButNotCited.Articles.length){
 <h3>Articles - {{ this.entryId }} mentioned but not cited</h3>
-
-<pdbe-citation-publication [publicationInfo]="pageData.sectionTwo.metionedButNotCited.Articles"></pdbe-citation-publication>
+<pdbe-citation-publication
+  [publicationInfo]="pageData.sectionTwo.metionedButNotCited.Articles"
+  [entryId]="entryId"
+  headerText="mentioned"
+></pdbe-citation-publication>
 
 } @if(pageData.sectionTwo.metionedButNotCited.Reviews.length){
 <h3>Reviews - {{ this.entryId }} mentioned but not cited</h3>
-<pdbe-citation-publication [publicationInfo]="pageData.sectionTwo.metionedButNotCited.Reviews"></pdbe-citation-publication>
+<pdbe-citation-publication [publicationInfo]="pageData.sectionTwo.metionedButNotCited.Reviews" [entryId]="entryId" headerText="mentioned"></pdbe-citation-publication>
 
 } }

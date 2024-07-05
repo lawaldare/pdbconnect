@@ -12,6 +12,8 @@ import { Article } from '../../models/article.model';
 })
 export class CitationPublicationComponent {
   @Input() publicationInfo!: Article[];
+  @Input() entryId!: string;
+  @Input() headerText!: string;
 
   public showFirstThree = true;
 

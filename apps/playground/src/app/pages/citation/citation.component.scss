@@ -17,15 +17,6 @@ h2 {
 
   &__right {
     width: calc(100% - 179px);
-    a,
-    &__link {
-      color: #3b6fb6;
-      font-size: 16px;
-      font-weight: 400;
-      line-height: 27.2px;
-      text-decoration: none;
-    }
-
     &__authors {
       &__title {
         font-size: 16px;
@@ -77,4 +68,12 @@ h3 {
   font-weight: 500;
   line-height: 27.3px;
   margin-bottom: 12px;
+}
+
+a {
+  color: #3b6fb6;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 27.2px;
+  text-decoration: none;
 }
