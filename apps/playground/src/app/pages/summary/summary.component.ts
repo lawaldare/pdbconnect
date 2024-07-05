@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-summary',
+  selector: 'pdbe-connect-playground-app-summary',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './summary.component.html',

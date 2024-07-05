@@ -7,7 +7,7 @@ import { CoreModule } from '@pdbc/core';
 @Component({
   standalone: true,
   imports: [VfEbiHeaderComponent, VfEbiFooterComponent, RouterModule, CoreModule],
-  selector: 'app-root',
+  selector: 'pdbe-connect-playground',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
