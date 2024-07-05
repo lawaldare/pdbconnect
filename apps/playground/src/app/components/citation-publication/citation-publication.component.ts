@@ -14,10 +14,4 @@ export class CitationPublicationComponent {
   @Input() publicationInfo!: Article[];
   @Input() entryId!: string;
   @Input() headerText!: string;
-
-  public showFirstThree = true;
-
-  public showAllArticles() {
-    this.showFirstThree = false;
-  }
 }

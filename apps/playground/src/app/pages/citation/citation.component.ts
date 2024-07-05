@@ -14,7 +14,7 @@ import { CitationPublicationComponent } from '../../components/citation-publicat
 })
 export class CitationComponent {
   private playgroundService = inject(PlaygroundService);
-  public entryId = '3d12'; //'7v08', '3d12'
+  public entryId = '3d12'; //'7v08', '3d12', '5tj5
   public relatedEntries!: string[];
 
   public pageData$ = combineLatest([
@@ -23,11 +23,11 @@ export class CitationComponent {
   ]).pipe(
     map((data) => ({ sectionOne: data[0], sectionTwo: data[1] })),
     tap((data) => {
-      this.setRelatedEntries(data.sectionOne.associated_entries);
+      this.setRelatedEntries(data.sectionOne.associated_entries ?? null);
     })
   );
 
   private setRelatedEntries(entries: string): void {
-    this.relatedEntries = entries.split(',').map((entry) => entry.trim());
+    this.relatedEntries = entries?.split(',').map((entry) => entry.trim()) ?? null;
   }
 }
