@@ -1,0 +1,24 @@
+.content {
+  display: flex;
+  width: 100%;
+}
+
+nav {
+  width: 15%;
+  padding-right: 20px;
+}
+
+main {
+  width: 85%;
+}
+
+mat-list-item {
+  font-size: 18px;
+  line-height: 35px;
+  cursor: pointer !important;
+  display: inline-block;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid black;
+  }
+}

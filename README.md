@@ -70,6 +70,49 @@ Monorepo for PDBe front-end applications and component library
 - `npx nx storybook lib-docs:build-storybook`
 - `npx http-server dist/storybook/lib-docs/`
 
+## Deploying the Playground App
+
+We use Netlify to deploy the playground app. To deploy the playground app, you need to have the Netlify CLI installed.
+
+### Install Netlify CLI
+```bash
+npm install netlify-cli -g
+```
+
+
+### Access to the Netlify account
+A Netlify account is already created for the project. You need to have access to the account to deploy the playground app. Get the personal access token from the account owner and prefix the token with `NETLIFY_AUTH_TOKEN=` and export it as an environment variable. This will enaable you to have access to the Netlify account through out the deployment process.
+
+
+### Build the playground app
+```bash
+npx nx build playground
+```
+
+This will create a `dist/apps/playground` folder. Keep a note of the path to the browser directory inside the `dist/apps/playground` folder. This is the path to the playground app that you will deploy.
+
+### Now create a site for your playground app
+```bash
+netlify sites:create --filter playground
+```
+
+1. When prompted to select the team, choose **EMBL-EBI PDBe**
+2. When prompted to select the site name, choose a name that is not already taken. For example, `connect-playground-<your-name>`
+
+Once this successfully creates the site, you will get a message with site details. Keep the site ID and URL for later use.
+
+### Deploy the playground app
+```bash
+netlify deploy --filter playground --dir <build dir> --site <site ID>
+```
+
+Use the build directory path from the previous step as the `--dir` argument. Use the site ID from the previous step as the `--site` argument.
+
+Once this successfully stages the deployment, you will get a message with the deployment details. You can use the Website draft URL to see your deployment.
+
+You can use the draft URL to see the deployment. Once you are happy with the deployment, you can publish the deployment by adding `--prod` flag to the previous deploy command.
+
+
 ## Contribution guideline
 
 - [Guidelines to add new project / library component](./docs/guidelines.md)
