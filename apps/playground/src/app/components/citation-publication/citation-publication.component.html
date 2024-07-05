@@ -1,0 +1,18 @@
+@if(showFirstThree){
+<ol class="articles">
+  @for(article of publicationInfo.slice(0,3); track article.pubmed_id){
+  <pdbe-citation-article [article]="article"></pdbe-citation-article>
+  } @if(publicationInfo.length > 3){
+  <div class="see-all" (click)="showAllArticles()">
+    <p>See all {{ publicationInfo.length }} papers</p>
+    <img src="assets/icons/arrow-down.svg" class="icon" />
+  </div>
+  }
+</ol>
+} @else {
+<ol class="articles articles__all-articles" [class.more]="!showFirstThree">
+  @for(article of publicationInfo; track article.pubmed_id){
+  <pdbe-citation-article [article]="article"></pdbe-citation-article>
+  }
+</ol>
+}
