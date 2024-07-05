@@ -45,3 +45,19 @@ body {
 p {
   margin: 0;
 }
+
+a {
+  color: #3b6fb6;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 27.2px;
+  text-decoration: none;
+
+  &:visited {
+    color: #563d82;
+  }
+
+  &:hover {
+    color: #193f90;
+  }
+}

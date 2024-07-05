@@ -4,14 +4,12 @@
   <div class="row">
     <div class="row__left">Primary publication</div>
     <div class="row__right">
-      <a class="row__right__link" [href]="'https://europepmc.org/article/MED/' + pageData.sectionOne.pubmed_id" target="_blank">{{ pageData.sectionOne.title }} </a>
+      <a [href]="'https://europepmc.org/article/MED/' + pageData.sectionOne.pubmed_id" target="_blank">{{ pageData.sectionOne.title }} </a>
       <div class="row__right__authors">
         <span class="row__right__authors__title">Authors:</span>
         @for(author of pageData.sectionOne.author_list; track author.full_name){
         <span>
-          <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:' + author.full_name" target="_blank" class="row__right__link">{{
-            author.full_name
-          }}</a> </span
+          <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a> </span
         >, }
       </div>
       <div class="row__right__pmid">
@@ -22,7 +20,7 @@
           ({{ pageData.sectionOne.journal_info.year }})
         </span>
         <span class="row__right__authors__title">PMID:</span>
-        <a class="row__right__link" [href]="'https://europepmc.org/article/MED/' + pageData.sectionOne.pubmed_id" target="_blank"
+        <a [href]="'https://europepmc.org/article/MED/' + pageData.sectionOne.pubmed_id" target="_blank"
           >{{ pageData.sectionOne.pubmed_id }}
           <img src="assets/icons/open-new-tab.svg" class="icon" />
         </a>

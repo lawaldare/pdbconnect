@@ -4,7 +4,7 @@
     >View all in Europe PMC <img src="assets/icons/open-new-tab.svg" class="icon"
   /></a>
 </h4>
-<ol class="articles">
+<ol>
   @for(article of publicationInfo.slice(0,5); track article.pubmed_id){
   <pdbe-citation-article [article]="article"></pdbe-citation-article>
   }
