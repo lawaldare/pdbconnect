@@ -26,6 +26,13 @@
     <!-- UI icons -->
     <link rel="stylesheet" href="https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css" />
 
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pdbe-molstar@3.2.0/build/pdbe-molstar.css" />
+  </head>
+
+  <body>
+    <pdbe-connect-playground></pdbe-connect-playground>
+
     <!-- Web component polyfill (only loads what it needs) -->
     <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs/webcomponents-lite.js" charset="utf-8"></script>
     <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js" charset="utf-8"></script>
@@ -33,9 +40,8 @@
     <!--PDBe interactions component-->
     <script type="module" src="./assets/pdb-ligand-env-component-2.0.0-min.js"></script>
     <script type="module" src="./assets/lig-int-heatmap-v0.4.js"></script>
-  </head>
 
-  <body>
-    <pdbe-connect-playground></pdbe-connect-playground>
+    <!-- JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pdbe-molstar@3.2.0/build/pdbe-molstar-plugin.js"></script>
   </body>
 </html>
