@@ -17,8 +17,5 @@ mat-list-item {
   line-height: 35px;
   cursor: pointer !important;
   display: inline-block;
-
-  &:not(:last-child) {
-    border-bottom: 1px solid black;
-  }
+  border-bottom: 1px solid black;
 }

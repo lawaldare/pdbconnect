@@ -70,6 +70,12 @@ Monorepo for PDBe front-end applications and component library
 - `npx nx storybook lib-docs:build-storybook`
 - `npx http-server dist/storybook/lib-docs/`
 
+## Using the Playground App
+
+Simply create a page component in the `pages` folder to showcase whatever you want to do. Add its `route` in the `app.routes.ts`, then put its link the `app.component.html` file as sidebar menu.
+
+Add any `child` or `reusable` components in the `components` folder, while `services` and `models` in their respective folders.
+
 ## Deploying the Playground App
 
 We use Netlify to deploy the playground app. To deploy the playground app, you need to have the Netlify CLI installed.
