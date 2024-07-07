@@ -33,7 +33,6 @@ export class PdbeMolstarForAppsComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log('displayConfigs', this.displayConfigs);
     // obs: probably showControls, showSeqPanel, hideCanvasControls AND displayConfigs
     // do not work well together due to async events
     if (changes['showControls'] && this.pdbeMolstar) {
