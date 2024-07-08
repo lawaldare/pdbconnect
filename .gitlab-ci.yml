@@ -154,7 +154,7 @@ playground_build_and_publish:
   extends: .distributed
   script:
     - npx nx build playground
-    - npm install -g netlify-cli
+    - npm install netlify-cli
     - netlify deploy --filter playground --site $NETLIFY_PLAYGROUND_SITE_ID --dir dist/apps/playground/browser --prod
   tags:
     - pdbe-shell
