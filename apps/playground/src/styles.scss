@@ -53,11 +53,24 @@ a {
   line-height: 27.2px;
   text-decoration: none;
 
+  &:focus {
+    border: 1px solid #193f90;
+  }
+
   &:visited {
     color: #563d82;
+    i {
+      color: #563d82;
+    }
   }
 
   &:hover {
     color: #193f90;
+    text-decoration: underline;
   }
+}
+
+.icon-link:before {
+  position: unset;
+  z-index: unset;
 }

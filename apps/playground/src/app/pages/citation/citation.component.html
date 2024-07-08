@@ -22,7 +22,7 @@
         <span class="row__right__authors__title">PMID:</span>
         <a [href]="'https://europepmc.org/article/MED/' + pageData.sectionOne.pubmed_id" target="_blank"
           >{{ pageData.sectionOne.pubmed_id }}
-          <img src="assets/icons/open-new-tab.svg" class="icon" />
+          <i class="icon icon-link icon-common"></i>
         </a>
       </div>
     </div>
@@ -35,9 +35,11 @@
     <div class="row__right">
       @for(entry of relatedEntries; track entry){
       <span class="row__right__entry">
-        <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + entry" target="_blank" class="row__right__link">{{ entry }}</a>
-        <img src="assets/icons/open-new-tab.svg" class="icon"
-      /></span>
+        <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + entry" target="_blank" class="row__right__link"
+          >{{ entry }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </span>
       }
     </div>
   </div>
