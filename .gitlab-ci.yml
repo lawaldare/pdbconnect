@@ -155,7 +155,7 @@ playground_build_and_publish:
   script:
     - npx nx build playground
     - npm install netlify-cli
-    - node_modules/.bin/netlify deploy --filter playground --site $NETLIFY_PLAYGROUND_SITE_ID --dir dist/apps/playground/browser --prod
+    - NODE_OPTIONS="--max-old-space-size=4096" node_modules/.bin/netlify deploy --filter playground --site $NETLIFY_PLAYGROUND_SITE_ID --dir dist/apps/playground/browser --prod
   tags:
     - pdbe-shell
   only:
