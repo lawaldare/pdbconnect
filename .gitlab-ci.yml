@@ -129,3 +129,16 @@ pages:
     expire_in: never
   dependencies:
     - build
+
+playground_build_and_publish:
+  stage: build
+  image: node:18
+  extends: .distributed
+  script:
+    - npx nx build playground
+    - netlify deploy --filter playground --site $NETLIFY_PLAYGROUND_SITE_ID --dir dist/apps/playground/browser --prod
+  tags:
+    - pdbe-shell
+  only:
+    refs:
+      - playground
