@@ -20,5 +20,5 @@ export class OthersComponent {
   };
 
   public height = '265px';
-  public width = '300px';
+  public width = '100%';
 }
