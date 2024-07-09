@@ -76,7 +76,11 @@ Simply create a page component in the `pages` folder to showcase whatever you wa
 
 Add any `child` or `reusable` components in the `components` folder, while `services` and `models` in their respective folders.
 
-## Deploying the Playground App
+## Deployment using CI/CD
+
+We already configured GitLab CI/CD to deploy the `playground` branch to Netlify for the playground app. The deployment is triggered automatically when a commit is pushed to the `playground` branch. The deployment is available on https://connect-playground-demo.netlify.app/.
+
+## Deploying to your own site
 
 We use Netlify to deploy the playground app. To deploy the playground app, you need to have the Netlify CLI installed.
 
