@@ -66,6 +66,9 @@ build:
     expire_in: 1 week
   tags:
     - pdbe-shell
+  except:
+    refs:
+      - playground
 
 storybook_build:
   stage: build
@@ -79,6 +82,9 @@ storybook_build:
     expire_in: 1 week
   tags:
     - pdbe-shell
+  except:
+    refs:
+      - playground
 
 storybook_publish:
   stage: publish
@@ -90,6 +96,9 @@ storybook_publish:
     - docker push $CI_REGISTRY_IMAGE/connect-storybook:$CI_COMMIT_SHORT_SHA
   tags:
     - pdbe-shell
+  except:
+    refs:
+      - playground
 
 storybook_publish_deploy:
   stage: deploy
@@ -104,6 +113,9 @@ storybook_publish_deploy:
     strategy: depend
   needs:
     - storybook_publish
+  except:
+    refs:
+      - playground
 
 triggers:
   stage: trigger
@@ -116,6 +128,9 @@ triggers:
     strategy: depend
   variables:
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+  except:
+    refs:
+      - playground
 
 pages:
   stage: deploy
@@ -129,3 +144,20 @@ pages:
     expire_in: never
   dependencies:
     - build
+  except:
+    refs:
+      - playground
+
+playground_build_and_publish:
+  stage: build
+  image: node:18
+  extends: .distributed
+  script:
+    - npx nx build playground
+    - npm install netlify-cli
+    - node_modules/.bin/netlify deploy --filter playground --site $NETLIFY_PLAYGROUND_SITE_ID --dir dist/apps/playground/browser --prod
+  tags:
+    - pdbe-docker
+  only:
+    refs:
+      - playground

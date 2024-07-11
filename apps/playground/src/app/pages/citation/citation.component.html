@@ -1,0 +1,75 @@
+@if(pageData$ | async; as pageData){
+<h2>Citations</h2>
+<section>
+  <div class="row">
+    <div class="row__left">Primary publication</div>
+    <div class="row__right">
+      <a [href]="'https://europepmc.org/article/MED/' + pageData.sectionOne.pubmed_id" target="_blank">{{ pageData.sectionOne.title }} </a>
+      <div class="row__right__authors">
+        <span class="row__right__authors__title">Authors:</span>
+        @for(author of pageData.sectionOne.author_list; track author.full_name){
+        <span>
+          <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a> </span
+        >, }
+      </div>
+      <div class="row__right__pmid">
+        <span class="row__right__pmid__info">
+          <i>{{ pageData.sectionOne.journal_info.pdb_abbreviation }}</i>
+          {{ pageData.sectionOne.journal_info.volume }}
+          {{ pageData.sectionOne.journal_info.pages }}
+          ({{ pageData.sectionOne.journal_info.year }})
+        </span>
+        <span class="row__right__authors__title">PMID:</span>
+        <a [href]="'https://europepmc.org/article/MED/' + pageData.sectionOne.pubmed_id" target="_blank"
+          >{{ pageData.sectionOne.pubmed_id }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+<section>
+  @if(relatedEntries){
+  <div class="row">
+    <div class="row__left">Related entries</div>
+    <div class="row__right">
+      @for(entry of relatedEntries; track entry){
+      <span class="row__right__entry">
+        <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + entry" target="_blank" class="row__right__link"
+          >{{ entry }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </span>
+      }
+    </div>
+  </div>
+  }
+</section>
+<section class="mb-24">
+  <div class="row">
+    <div class="row__left">Abstract</div>
+    <div class="row__right">
+      <p class="row__right__text" [innerHTML]="pageData.sectionOne.abstract.unassigned"></p>
+    </div>
+  </div>
+</section>
+@if(pageData.sectionTwo.citedThePublication.Articles.length){
+<h3>Articles citing the PDB entry</h3>
+<pdbe-citation-publication [publicationInfo]="pageData.sectionTwo.citedThePublication.Articles" [entryId]="entryId" headerText="cited"></pdbe-citation-publication>
+} @if(pageData.sectionTwo.citedThePublication.Reviews.length){
+<h3>Reviews citing the publications</h3>
+<pdbe-citation-publication [publicationInfo]="pageData.sectionTwo.citedThePublication.Reviews" [entryId]="entryId" headerText="cited"></pdbe-citation-publication>
+
+} @if(pageData.sectionTwo.metionedButNotCited.Articles.length){
+<h3>Articles - {{ this.entryId }} mentioned but not cited</h3>
+<pdbe-citation-publication
+  [publicationInfo]="pageData.sectionTwo.metionedButNotCited.Articles"
+  [entryId]="entryId"
+  headerText="mentioned"
+></pdbe-citation-publication>
+
+} @if(pageData.sectionTwo.metionedButNotCited.Reviews.length){
+<h3>Reviews - {{ this.entryId }} mentioned but not cited</h3>
+<pdbe-citation-publication [publicationInfo]="pageData.sectionTwo.metionedButNotCited.Reviews" [entryId]="entryId" headerText="mentioned"></pdbe-citation-publication>
+
+} }
