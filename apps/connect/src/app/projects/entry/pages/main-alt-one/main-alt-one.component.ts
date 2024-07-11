@@ -35,6 +35,17 @@ export class EntryMainAltOnePageComponent implements OnInit {
   entryId: string | undefined; // Currently displayed entry id
   entryData: EntryDataAltOne | undefined; // Entry pages data
 
+  public headerLogoMenuConfig = {
+    backgroundColor: '#056643',
+    logoType: 'PDBe',
+    urls: [
+      { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
+      { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
+      { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
+    ],
+    menuHighlightColor: '#0a5032',
+  };
+
   expandedDropdowns = false;
   @ViewChild('vDropdown') viewDropdown!: PdbeDropdownComponent; // To access dropdown class instance
   @ViewChild('vDropdown', { read: ElementRef }) viewDropdownContainer!: ElementRef; // To access dropdown HTML element
