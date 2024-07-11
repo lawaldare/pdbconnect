@@ -1,8 +1,8 @@
 /* stylelint-disable */
 :root {
-  --vf-color--green: #18974c;
+  --vf-color--green: rgb(5 102 67);
   --vf-color--green--darkest: #0a5032;
-  --vf-color--green--dark: #007b53;
+  --vf-color--green--dark: #0a5032;
   --vf-color--green--light: #6cc24a;
   --vf-color--green--lightest: #d0debb;
   --vf-color--grey: #707372;
@@ -161,24 +161,24 @@ a.vf-button:focus {
   text-decoration: none;
 }
 
-.vf-button--primary {
-  --vf-button-border-color: var(--vf-color--blue);
-  --vf-button-background-color: var(--vf-color--blue);
-  --vf-button-shadow-border-color: var(--vf-color--blue--dark);
-  --vf-button-shadow-background-color: var(--vf-color--blue--dark);
-  --vf-button-border-color--visited: var(--vf-color--blue--light);
+.vf-button--primary-solid {
+  --vf-button-border-color: var(--vf-color--green);
+  --vf-button-background-color: var(--vf-color--green);
+  --vf-button-shadow-border-color: var(--vf-color--green--dark);
+  --vf-button-shadow-background-color: var(--vf-color--green--dark);
+  --vf-button-border-color--visited: var(--vf-color--green--light);
 }
 
-.vf-button--secondary {
+.vf-button--primary-light {
   --vf-button-background-color: #ffffff;
-  --vf-button-border-color: var(--vf-color--blue);
-  --vf-button-text-color: var(--vf-color--blue);
-  --vf-button-shadow-border-color: var(--vf-color--blue--dark);
-  --vf-button-shadow-background-color: var(--vf-color--blue--dark);
+  --vf-button-border-color: var(--vf-color--green);
+  --vf-button-text-color: var(--vf-color--green);
+  --vf-button-shadow-border-color: var(--vf-color--green--dark);
+  --vf-button-shadow-background-color: var(--vf-color--green--dark);
 }
-.vf-button--secondary:focus,
-.vf-button--secondary:hover {
-  --vf-button-border-color: var(--vf-color--blue);
+.vf-button--primary-light:focus,
+.vf-button--primary-light:hover {
+  --vf-button-border-color: var(--vf-color--green);
 }
 
 .vf-button--tertiary {
@@ -189,7 +189,7 @@ a.vf-button:focus {
   --vf-button-border-color--visited: var(--vf-color--grey--light);
 }
 
-.vf-button--link {
+.vf-button--text {
   --vf-button-border-color: transparent;
   --vf-button-background-color: transparent;
   --vf-button-shadow-border-color: transparent;
@@ -204,9 +204,9 @@ a.vf-button:focus {
   box-shadow: none;
   padding: 8px;
 }
-.vf-button--link:hover,
-.vf-button--link:focus,
-.vf-button--link:active {
+.vf-button--text:hover,
+.vf-button--text:focus,
+.vf-button--text:active {
   -webkit-box-shadow: none;
   box-shadow: none;
   -webkit-transform: none;
