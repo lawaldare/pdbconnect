@@ -43,6 +43,18 @@ export class LigandsMainPageComponent implements OnInit {
   downloadOptions: downloadOption[] = [];
   expandedDropdowns = false;
 
+  public headerLogoMenuConfig = {
+    backgroundColor: '#085F5C',
+    logoType: 'PDBe-KB',
+    urls: [
+      { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
+      { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
+      { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
+    ],
+    menuHighlightColor: '#086C68',
+    headerTitle: 'Ligands',
+  };
+
   @ViewChild('dDropdown') dDropdown!: PdbeDropdownComponent;
   @ViewChild('dDropdown', { read: ElementRef }) downloadDropdownContainer!: ElementRef; // To access dropdown HTML element
   // Data for sticky navigation menu

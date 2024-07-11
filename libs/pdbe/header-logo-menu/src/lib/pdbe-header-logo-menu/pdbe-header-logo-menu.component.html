@@ -1,9 +1,9 @@
-<div class="pdbe-header-logo-menu-top" [ngStyle]="{ 'background-color': backgroundColor }">
-  <div class="pdbe-header-logo-menu" [ngStyle]="{ 'background-color': backgroundColor }">
+<div class="pdbe-header-logo-menu-top" [ngStyle]="{ 'background-color': headerConfig.backgroundColor }">
+  <div class="pdbe-header-logo-menu" [ngStyle]="{ 'background-color': headerConfig.backgroundColor }">
     <div class="pdbe-header-logo-menu-container">
       <div class="header-logo-img-title">
-        <img [ngClass]="getHeaderLogoClass()" src="{{ headerLogoSrc }}" alt="" />
-        <span id="header-title" class="heading-1"> {{ headerTitle }}</span>
+        <img [ngClass]="getHeaderLogoClass" src="{{ headerLogoSrc }}" alt="" />
+        <span id="header-title" class="heading-1"> {{ headerConfig.headerTitle }}</span>
       </div>
       <div class="pdbe-header-logo-menu-icons">
         <i class="icon icon-common icon-bars" [ngClass]="getCollapsedClass(false)" (click)="invertCollapseState()" style="width: 32px; height: 32px"></i>
@@ -16,7 +16,7 @@
 </div>
 <ng-template #pdbeHeaderLogoLinks let-node="forMobile">
   <div class="pdbe-header-logo-menu-urls" [ngClass]="getCollapsedClass(true)">
-    <div *ngFor="let url of urls" [ngClass]="{ 'hoverable-mobile-menu': node }" [ngStyle]="{ '--bg-color': menuHighlightColor }">
+    <div *ngFor="let url of headerConfig.urls" [ngClass]="{ 'hoverable-mobile-menu': node }" [ngStyle]="{ '--bg-color': headerConfig.menuHighlightColor }">
       <!-- <a class="pdbe-header-menu-link paragraph-2 paragraph-2-menu-link" href="{{ url.path }}" target="_blank">{{ url.name }}</a> -->
       <pdbc-pdbe-link-button [externalLink]="true" [label]="url.name" [url]="url.path" [fontStyle]="'paragraph-2'" [fontColor]="'#FFFFFF'"> </pdbc-pdbe-link-button>
     </div>
