@@ -9,8 +9,10 @@ import { CommonModule } from '@angular/common';
   styleUrl: './buttons-playground.component.scss',
 })
 export class ButtonsPlaygroundComponent {
-  PrimaryLight = '<button class="vf-button vf-button--primary-light">PrimaryLight</button>';
-  PrimarySolid = '<button class="vf-button vf-button--primary-solid">PrimaryLight</button>';
-  PrimarySolidSmall = '<button class="vf-button vf-button--primary-solid vf-button--sm">PrimaryLight</button>';
-  ButtonText = '<button class="vf-button vf-button--text">ButtonLink</button>';
+  PrimarySolid = '<button class="vf-button vf-button--primary">PrimaryLight</button>';
+  PrimarySolidSmall = '<button class="vf-button vf-button--primary vf-button--sm">PrimaryLight</button>';
+  SearchPDBE = '<button class="vf-button vf-button--search-pdbe">PDBe Search</button>';
+  SearchPDBEKB = '<button class="vf-button vf-button--search-pdbe-kb">PDBe-KB Search</button>';
+  SecondaryPDBE = '<button class="vf-button vf-button--secondary-pdbe">PDBe Search</button>';
+  SecondaryPDBEKB = '<button class="vf-button vf-button--secondary-pdbe-kb">PDBe-KB Search</button>';
 }
