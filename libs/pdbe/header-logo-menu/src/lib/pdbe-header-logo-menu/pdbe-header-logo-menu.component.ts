@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
@@ -14,7 +14,7 @@ import { HeaderLogoMenuConfig, PDBE_HEADER_LOGO_SRC, PDBE_KB_HEADER_LOGO_SRC } f
 export class PdbeHeaderLogoMenuComponent implements OnInit {
   @Input() headerConfig!: HeaderLogoMenuConfig;
   public headerLogoSrc = '';
-  collapsedMenu = true;
+  public isMobile = signal(false);
 
   ngOnInit() {
     this.headerLogoSrc = this.headerConfig.logoType === 'PDBE' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
@@ -24,18 +24,22 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
     return this.headerConfig.logoType === 'PDBE' ? 'pdbe-header-logo-img' : 'pdbe-kb-header-logo-img';
   }
 
-  getCollapsedClass(isCollapsedDefault: boolean) {
-    if (isCollapsedDefault && this.collapsedMenu) {
-      return 'collapsed';
-    } else if (isCollapsedDefault && !this.collapsedMenu) {
-      return 'expanded';
-    } else if (!isCollapsedDefault && this.collapsedMenu) {
-      return 'expanded';
-    }
-    return 'collapsed';
+  public showMobileMenu(): void {
+    this.isMobile.update((value) => !value);
   }
 
-  invertCollapseState() {
-    this.collapsedMenu = !this.collapsedMenu;
-  }
+  // getCollapsedClass(isCollapsedDefault: boolean) {
+  //   if (isCollapsedDefault && this.collapsedMenu) {
+  //     return 'collapsed';
+  //   } else if (isCollapsedDefault && !this.collapsedMenu) {
+  //     return 'expanded';
+  //   } else if (!isCollapsedDefault && this.collapsedMenu) {
+  //     return 'expanded';
+  //   }
+  //   return 'collapsed';
+  // }
+
+  // invertCollapseState() {
+  //   this.collapsedMenu = !this.collapsedMenu;
+  // }
 }

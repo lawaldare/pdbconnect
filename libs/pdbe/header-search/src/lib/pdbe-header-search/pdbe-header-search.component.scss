@@ -20,6 +20,18 @@
   flex: 100;
 }
 
+.input-box {
+  flex: 100;
+  position: relative;
+
+  .icon {
+    position: absolute;
+    right: 15px;
+    top: 16px;
+    cursor: pointer;
+  }
+}
+
 .flexbox-column-2 {
   display: flex;
   flex-direction: column;

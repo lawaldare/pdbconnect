@@ -43,7 +43,7 @@ export class LigandsMainPageComponent implements OnInit {
   downloadOptions: downloadOption[] = [];
   expandedDropdowns = false;
 
-  public headerLogoMenuConfig = {
+  public readonly headerLogoMenuConfig = {
     backgroundColor: '#085F5C',
     logoType: 'PDBe-KB',
     urls: [

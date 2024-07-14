@@ -1,35 +1,38 @@
 <div class="search-top-container-marginbox" [ngStyle]="{ 'background-color': backgroundColor }">
   <div class="search-top-container" [ngStyle]="{ 'background-color': backgroundColor }">
-    <div class="search-bar-btn-container flexbox-row">
-      <div class="flexbox-column-1">
+    <form class="search-bar-btn-container flexbox-row" [formGroup]="form" (ngSubmit)="onSubmit(form)">
+      <div class="input-box">
         <input
           #searchBox
           autocomplete="off"
           placeholder="{{ placeholder }}"
           id="searchitem"
           class="paragraph-2-enforce vf-form__input pdbeAutoCompleteSearchBox"
-          required=""
+          formControlName="searchTerm"
           spellcheck="false"
           data-ms-editor="true"
           (keyup)="search(searchBox.value)"
           (keyup.enter)="openSearch(searchBox.value)"
         />
+        @if(showClearIcon()){
+        <i class="icon icon-common icon-times"></i>
+        }
       </div>
       <div class="flexbox-column-2">
         <!-- <pdbc-pdbe-button
-          *ngIf="searchButtonStyle"
-          [backgroundColor]="searchButtonStyle.backgroundColor"
-          [fontColor]="searchButtonStyle.fontColor"
-          [borderColor]="searchButtonStyle.borderColor"
-          [shadowColor]="searchButtonStyle.shadowColor"
-          [label]="searchButtonStyle.label"
-          [paddingSize]="searchButtonStyle.paddingSize"
-          [mobileIconName]="searchButtonStyle.mobileIconName"
-        >
-        </pdbc-pdbe-button> -->
-        <button class="vf-button vf-button--search-pdbe-kb">Search</button>
+            *ngIf="searchButtonStyle"
+            [backgroundColor]="searchButtonStyle.backgroundColor"
+            [fontColor]="searchButtonStyle.fontColor"
+            [borderColor]="searchButtonStyle.borderColor"
+            [shadowColor]="searchButtonStyle.shadowColor"
+            [label]="searchButtonStyle.label"
+            [paddingSize]="searchButtonStyle.paddingSize"
+            [mobileIconName]="searchButtonStyle.mobileIconName"
+          >
+          </pdbc-pdbe-button> -->
+        <button class="vf-button vf-button--search-{{ buttonTheme }}">Search</button>
       </div>
-    </div>
+    </form>
     <div class="search-examples-container flexbox-row" *ngIf="examples && examples.length > 0">
       <div class="flexbox-column-1">
         <div class="search-example-chips flexbox-row">
