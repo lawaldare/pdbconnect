@@ -15,6 +15,7 @@ import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { AggregatedApiService, descriptionData } from '../../services/aggregated-api.service';
 import { downloadOption } from '../../data-models/download.model';
+import { ThemeType } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-main',
@@ -46,13 +47,17 @@ export class LigandsMainPageComponent implements OnInit {
   public readonly headerLogoMenuConfig = {
     backgroundColor: '#085F5C',
     logoType: 'PDBe-KB',
-    urls: [
-      { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
-      { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
-      { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
-    ],
-    menuHighlightColor: '#086C68',
     headerTitle: 'Ligands',
+  };
+
+  public readonly headerSearchConfig = {
+    examples: [
+      { label: 'STI', url: '/ligands/STI' },
+      { label: 'IMATINIB', url: '/ligands/IMATINIB' },
+      { label: 'NAG', url: '/ligands/nag' },
+    ],
+    backgroundColor: 'rgba(8, 95, 92, 0.79)',
+    type: ThemeType.PDBEKB,
   };
 
   @ViewChild('dDropdown') dDropdown!: PdbeDropdownComponent;

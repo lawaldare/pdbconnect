@@ -16,6 +16,12 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   public headerLogoSrc = '';
   public isMobile = signal(false);
 
+  public readonly links = [
+    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
+    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
+    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
+  ];
+
   ngOnInit() {
     this.headerLogoSrc = this.headerConfig.logoType === 'PDBE' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
   }
@@ -27,19 +33,4 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   public showMobileMenu(): void {
     this.isMobile.update((value) => !value);
   }
-
-  // getCollapsedClass(isCollapsedDefault: boolean) {
-  //   if (isCollapsedDefault && this.collapsedMenu) {
-  //     return 'collapsed';
-  //   } else if (isCollapsedDefault && !this.collapsedMenu) {
-  //     return 'expanded';
-  //   } else if (!isCollapsedDefault && this.collapsedMenu) {
-  //     return 'expanded';
-  //   }
-  //   return 'collapsed';
-  // }
-
-  // invertCollapseState() {
-  //   this.collapsedMenu = !this.collapsedMenu;
-  // }
 }

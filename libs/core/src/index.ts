@@ -2,3 +2,5 @@ export * from './lib/core.module';
 export * from './lib/material.module';
 export * from './lib/constants/header-logo-src';
 export * from './lib/models/header-logo-menu.model';
+export * from './lib/models/header-search.model';
+export * from './lib/enums/theme.enum';

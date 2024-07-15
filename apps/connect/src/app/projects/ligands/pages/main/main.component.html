@@ -1,16 +1,5 @@
 <pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig"></pdbc-pdbe-header-logo-menu>
-<pdbc-pdbe-header-search
-  [backgroundColor]="'rgba(8, 95, 92, 0.79)'"
-  [hasAdvancedSearch]="false"
-  [buttonText]="'Search'"
-  [examples]="[
-    { label: 'STI', url: 'ligands/STI' },
-    { label: 'IMATINIB', url: 'ligands/STI' }
-  ]"
-  [placeholder]="'Search in PDBe and PDBe-KB'"
-  [suggestions]="[]"
-  [searchButtonChipsType]="'PDBe-KB'"
-></pdbc-pdbe-header-search>
+<pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig"></pdbc-pdbe-header-search>
 <div id="main-container-outer">
   @if(ligandId && description){
   <div id="main-container">

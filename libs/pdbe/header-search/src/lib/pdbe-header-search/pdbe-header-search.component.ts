@@ -7,6 +7,8 @@ import { PdbeSecondaryButtonStyleDatum, PdbeKbSecondaryButtonStyleDatum, PdbeBut
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { PdbeChipsStyleDatum, PdbeKbChipsStyleDatum, PdbeChipsComponent } from '@pdbe-lib/chips';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { HeaderSearchConfig, ThemeType } from '@pdbc/core';
+import { RouterModule } from '@angular/router';
 
 interface Example {
   label: string;
@@ -16,7 +18,7 @@ interface Example {
 @Component({
   selector: 'pdbc-pdbe-header-search',
   standalone: true,
-  imports: [CommonModule, PdbeButtonComponent, PdbeLinkButtonComponent, PdbeChipsComponent, ReactiveFormsModule],
+  imports: [CommonModule, PdbeButtonComponent, PdbeLinkButtonComponent, PdbeChipsComponent, ReactiveFormsModule, RouterModule],
   templateUrl: './pdbe-header-search.component.html',
   styleUrls: ['./pdbe-header-search.component.scss'],
 })
@@ -30,8 +32,9 @@ export class PdbeHeaderSearchComponent implements OnInit {
   @Input() panelOpen = false;
   @Input() placeholder = 'Search for protein, gene or organism';
   @Input() suggestions?: string[];
-
   @Input() searchButtonChipsType = '';
+
+  @Input() headerSearchConfig!: HeaderSearchConfig;
   searchButtonStyle?: PdbeSecondaryButtonStyleDatum | PdbeKbSecondaryButtonStyleDatum;
   searchChipsStyle?: PdbeChipsStyleDatum | PdbeKbChipsStyleDatum;
 
@@ -45,6 +48,7 @@ export class PdbeHeaderSearchComponent implements OnInit {
   searchTermStream = new Subject<string>();
 
   public buttonTheme!: string;
+  public chipBg!: string;
 
   public form = this.fb.group({
     searchTerm: '',
@@ -68,7 +72,8 @@ export class PdbeHeaderSearchComponent implements OnInit {
     //   this.searchButtonStyle.mobileIconName = 'search';
     //   this.searchChipsStyle = new PdbeKbChipsStyleDatum();
     // }
-    this.buttonTheme = this.searchButtonChipsType === 'PDBe' ? 'pdbe' : 'pdbe-kb';
+    this.buttonTheme = this.headerSearchConfig.type === ThemeType.PDBE ? 'pdbe' : 'pdbe-kb';
+    this.chipBg = this.headerSearchConfig.type === ThemeType.PDBE ? 'pdbe-chip-bg' : 'pdbe-kb-chip-bg';
     this.searchTermStream
       .pipe(
         debounceTime(300), // wait for 300ms pause in events
@@ -100,11 +105,12 @@ export class PdbeHeaderSearchComponent implements OnInit {
       .pipe(
         debounceTime(300), // wait for 300ms pause in events
         distinctUntilChanged(),
-        filter(Boolean),
         tap((value) => {
+          console.log(value);
           const result = value ? true : false;
           this.showClearIcon.set(result);
-        })
+        }),
+        filter(Boolean)
       )
       .subscribe((value) => {
         console.log(value);
