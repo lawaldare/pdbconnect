@@ -133,10 +133,10 @@ export class EntryMainAltOnePageComponent implements OnInit {
     const hasClickedDownload = this.downloadDropdownContainer.nativeElement.contains(event.target);
     if (!hasClickedView && !hasClickedDownload) {
       // if click outside dropdowns
-      this.downloadDropdown.closeDropdown();
-      this.viewDropdown.closeDropdown();
+      this.downloadDropdown.expandedStatus.set(false);
+      this.viewDropdown.expandedStatus.set(false);
       this.expandedDropdowns = false;
-    } else if (this.downloadDropdown.expandedStatus || this.viewDropdown.expandedStatus) {
+    } else if (this.downloadDropdown.expandedStatus() || this.viewDropdown.expandedStatus()) {
       // if click inside any of the dropdowns
       this.expandedDropdowns = true;
     } else {

@@ -1,18 +1,31 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DescriptionData } from '../../../services/aggregated-api.service';
+import { MaterialModule, TruncateTextDirective } from '@pdbc/core';
+import { ClipboardModule, Clipboard } from '@angular/cdk/clipboard';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'pdbc-description',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TruncateTextDirective, MaterialModule, ClipboardModule],
   templateUrl: './description.component.html',
   styleUrls: ['./description.component.scss'],
 })
 export class DescriptionComponent {
-  @Input() name = '';
-  @Input() synonyms = '';
-  @Input() formula = '';
-  @Input() inchi = '';
-  @Input() inchikey = '';
-  @Input() smiles = '';
+  @Input() description!: DescriptionData;
+
+  private clipboard = inject(Clipboard);
+  private _snackBar = inject(MatSnackBar);
+
+  public copy(value: string): void {
+    const result = this.clipboard.copy(value);
+    if (result) {
+      this.openSnackBar('Copied to clipboard successfully', 'Dismiss');
+    }
+  }
+
+  private openSnackBar(message: string, action: string) {
+    this._snackBar.open(message, action);
+  }
 }

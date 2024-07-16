@@ -168,11 +168,11 @@ a.vf-button:focus {
 }
 
 .vf-button--primary {
-  --vf-button-border-color: var(--vf-color--orange);
-  --vf-button-background-color: var(--vf-color--orange);
-  --vf-button-shadow-border-color: var(--vf-color--orange--dark);
-  --vf-button-shadow-background-color: var(--vf-color--orange--dark);
-  --vf-button-border-color--visited: var(--vf-color--orange--light);
+  --vf-button-border-color: #056643;
+  --vf-button-background-color: #056643;
+  --vf-button-shadow-border-color: #0a5032;
+  --vf-button-shadow-background-color: #0a5032;
+  --vf-button-border-color--visited: #0a5032;
   font-size: 16px;
 }
 

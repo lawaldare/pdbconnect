@@ -1,11 +1,32 @@
 <pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig"></pdbc-pdbe-header-logo-menu>
 <pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig"></pdbc-pdbe-header-search>
-<div id="main-container-outer">
-  @if(ligandId && description){
-  <div id="main-container">
-    <div id="main-left-container">
-      <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections"></pdbc-pdbe-nav-menu>
+
+<main>
+  <div class="container">
+    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections"></pdbc-pdbe-nav-menu>
+    @if(description){
+    <div>
+      <section class="hero">
+        <h2 class="id">{{ ligandId }}</h2>
+        <h4 class="name">{{ description.name }}</h4>
+        @for(annotation of description.annotations; track annotation.name){
+        <pdbc-pdbe-chips [label]="annotation.name | titlecase" [url]="annotation.url" backgroundColor="#F9CF3B" fontColor="#1A1C1A"></pdbc-pdbe-chips>
+        }
+        <div class="action-buttons" [ngClass]="expandedDropdowns() ? 'expanded' : ''">
+          <button class="vf-button vf-button--primary vf-button--sm">View 3D</button>
+          <div class="drop-down">
+            <pdbc-pdbe-dropdown #dDropdown dropdownText="Download as" [options]="downloadOptions" elementId="dare"></pdbc-pdbe-dropdown>
+          </div>
+        </div>
+      </section>
+      <section class="description">
+        <pdbc-description [description]="description"></pdbc-description>
+        <pdbc-image-carousel [ligandId]="ligandId"></pdbc-image-carousel>
+      </section>
     </div>
+    }
+
+    <!-- @if(ligandId && description){
     <div id="main-right-container">
       <div id="main-fixed-top-white-bg"></div>
       <div id="main-right-sticky">
@@ -23,15 +44,6 @@
           ></pdbc-pdbe-chips>
         </div>
         <div id="main-btn-bar" [ngClass]="expandedDropdowns ? 'expanded' : ''">
-          <!-- <pdbc-pdbe-button
-            [backgroundColor]="'#056643'"
-            [fontColor]="'#FFFFFF'"
-            [borderColor]="'#056643'"
-            [shadowColor]="'#0A5032'"
-            [label]="'View 3D'"
-            [paddingSize]="'Small'"
-            [mobileIconName]="'none'"
-          ></pdbc-pdbe-button> -->
           <button class="vf-button vf-button--primary vf-button--sm">View 3D</button>
           <div class="main-btn-bar-break-column"></div>
           <pdbc-pdbe-dropdown
@@ -69,7 +81,6 @@
         <pdbc-related-ligands [ligandId]="ligandId"></pdbc-related-ligands>
       </div>
     </div>
+    } -->
   </div>
-
-  }
-</div>
+</main>

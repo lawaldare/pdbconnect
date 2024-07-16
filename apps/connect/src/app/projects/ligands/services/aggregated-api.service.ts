@@ -8,7 +8,7 @@ import { PDBRelatedLigands, BoundEntries, RelatedLigand } from '../data-models/r
 import { PDBIntxData, IntxDataUrl } from '../data-models/interaction.model';
 import { shareReplay, map } from 'rxjs';
 
-export type descriptionData = {
+export interface DescriptionData {
   name: string;
   synonyms: string;
   formula: string;
@@ -17,7 +17,7 @@ export type descriptionData = {
   smiles: string;
   properties: PhysChemProperties;
   annotations: FunctionalAnnotation[];
-};
+}
 
 export interface downloadData {
   cif: string;
@@ -88,7 +88,7 @@ export class AggregatedApiService {
     );
   }
 
-  processDescriptionData(ligandId: string, data: PDBLigandDescription): descriptionData {
+  processDescriptionData(ligandId: string, data: PDBLigandDescription): DescriptionData {
     const ligandSummary = data[ligandId][0];
     const ligandProperties = ligandSummary['phys_chem_properties'];
     const ligandAnnotations = ligandSummary['functional_annotations'];
