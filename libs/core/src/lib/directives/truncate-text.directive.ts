@@ -1,10 +1,10 @@
-import { Directive, ElementRef, Renderer2, Input, OnInit } from '@angular/core';
+import { Directive, ElementRef, Renderer2, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 
 @Directive({
   selector: '[libTruncateText]',
   standalone: true,
 })
-export class TruncateTextDirective implements OnInit {
+export class TruncateTextDirective implements OnInit, OnChanges {
   @Input() truncateText = '';
   @Input() limit = 60;
   private truncated = true;
@@ -14,13 +14,23 @@ export class TruncateTextDirective implements OnInit {
   constructor(private el: ElementRef, private renderer: Renderer2) {}
 
   ngOnInit() {
+    this.init();
+  }
+
+  ngOnChanges(): void {
+    this.init();
+  }
+
+  private init(): void {
     this.fullText = this.truncateText;
     this.truncatedText = this.truncateText.length > this.limit ? this.truncateText.substring(0, this.limit) + '...' : this.truncateText;
     this.renderer.setProperty(this.el.nativeElement, 'innerText', this.truncatedText);
-    this.addShowMore();
+    if (this.truncateText.trim().length > this.limit) {
+      this.addShowMore();
+    }
   }
 
-  private addShowMore() {
+  private addShowMore(): void {
     const showMore = this.renderer.createElement('a');
     const text = this.renderer.createText('Show more');
     this.renderer.appendChild(showMore, text);
@@ -30,7 +40,7 @@ export class TruncateTextDirective implements OnInit {
     this.renderer.appendChild(this.el.nativeElement, showMore);
   }
 
-  private toggleText(event: Event) {
+  private toggleText(event: Event): void {
     event.preventDefault();
     this.truncated = !this.truncated;
     const displayText = this.truncated ? this.truncatedText : this.fullText;
@@ -39,7 +49,7 @@ export class TruncateTextDirective implements OnInit {
     this.addShowMoreWithText(showMoreText);
   }
 
-  private addShowMoreWithText(text: string) {
+  private addShowMoreWithText(text: string): void {
     const showMore = this.renderer.createElement('a');
     const showMoreText = this.renderer.createText(text);
     this.renderer.appendChild(showMore, showMoreText);

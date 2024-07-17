@@ -41,7 +41,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   styleUrls: ['./main.component.scss'],
 })
 export class LigandsMainPageComponent implements OnInit {
-  public ligandId: string | undefined;
+  public ligandId!: string;
   public description!: DescriptionData;
   public downloadOptions: downloadOption[] = [];
   public expandedDropdowns = signal(false);
@@ -99,7 +99,6 @@ export class LigandsMainPageComponent implements OnInit {
       )
       .subscribe((data) => {
         this.description = data.processDescriptionData;
-        console.log(this.description);
         this.downloadOptions = [
           { name: 'CIF file', url: data.processDownloadData.cif, downloadable: true },
           { name: 'Ideal SDF', url: data.processDownloadData.idealSDF, downloadable: true },

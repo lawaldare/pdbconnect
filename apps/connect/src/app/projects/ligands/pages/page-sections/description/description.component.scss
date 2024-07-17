@@ -3,6 +3,10 @@
   font-family: 'IBM Plex Sans';
   line-height: 27.2px;
 
+  @media screen and (max-width: 767px) {
+    width: 100%;
+  }
+
   .title {
     font-size: 30px;
     font-weight: 500;
