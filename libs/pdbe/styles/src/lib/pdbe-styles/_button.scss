@@ -230,8 +230,23 @@ a.vf-button:focus {
   --vf-button-border-color: var(--vf-color--green--light);
 }
 
+.vf-button--link {
+  color: var(--Blue-600, #3b6fb6);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 27.2px;
+  margin: 0;
+  border: none;
+  padding: 0;
+
+  &:focus,
+  &:active,
+  &:hover {
+    box-shadow: none;
+  }
+}
+
 .vf-button--sm {
-  font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
   font-size: 16px;
   font-weight: 700;
   line-height: 1;

@@ -1,46 +1,52 @@
-<div id="properties-section" class="properties-container">
-  <span id="properties-title" class="heading-2"> Physicochemical properties </span>
-  <div class="property-box">
+<div id="properties-section">
+  <header>
+    <h3>Physicochemical properties</h3>
+    <button class="vf-button vf-button--link">
+      Download physiochemical properties
+      <i class="icon icon-common icon-download"></i>
+    </button>
+  </header>
+  <div class="property-boxes">
     <div class="property-box-end">
       <div class="property-sub-box">
         <span class="heading-3"> Molecular properties</span>
-        <div *ngFor="let molProperty of molProperties" class="info-container">
-          <pdbc-name-value [name]="molProperty.name" [value]="molProperty.value"></pdbc-name-value>
-        </div>
+        @for(molProperty of molProperties; track molProperty.name){
+        <pdbc-name-value [data]="molProperty"></pdbc-name-value>
+        }
       </div>
-      <div class="conf-box">
+      <div class="property-sub-box">
         <span class="heading-3"> Conformational properties</span>
-        <div *ngFor="let confProperty of confProperties" class="info-container">
-          <pdbc-name-value [name]="confProperty.name" [value]="confProperty.value"></pdbc-name-value>
-        </div>
+        @for(confProperty of confProperties; track confProperty.name){
+        <pdbc-name-value [data]="confProperty"></pdbc-name-value>
+        }
       </div>
     </div>
     <div class="property-box-end">
       <div class="property-sub-box">
         <span class="heading-3"> Ring properties</span>
-        <div *ngFor="let ringProperty of ringProperties" class="info-container">
-          <pdbc-name-value [name]="ringProperty.name" [value]="ringProperty.value"></pdbc-name-value>
-        </div>
+        @for(ringProperty of ringProperties; track ringProperty.name){
+        <pdbc-name-value [data]="ringProperty"></pdbc-name-value>
+        }
       </div>
     </div>
     <div class="property-box-end">
       <div class="property-sub-box">
         <span class="heading-3"> Surface properties</span>
-        <div *ngFor="let surfProperty of surfProperties" class="info-container">
-          <pdbc-name-value [name]="surfProperty.name" [value]="surfProperty.value"></pdbc-name-value>
-        </div>
+        @for(surfProperty of surfProperties; track surfProperty.name){
+        <pdbc-name-value [data]="surfProperty"></pdbc-name-value>
+        }
       </div>
-      <div id="fun-box" class="property-sub-box">
+      <div class="property-sub-box">
         <span class="heading-3"> Functional Group properties</span>
-        <div *ngFor="let funProperty of funProperties" class="info-container">
-          <pdbc-name-value [name]="funProperty.name" [value]="funProperty.value"></pdbc-name-value>
-        </div>
+        @for(funProperty of funProperties; track funProperty.name){
+        <pdbc-name-value [data]="funProperty"></pdbc-name-value>
+        }
       </div>
       <div class="property-sub-box">
         <span class="heading-3"> Stereochemical properties</span>
-        <div *ngFor="let stereoProperty of stereoProperties" class="info-container">
-          <pdbc-name-value [name]="stereoProperty.name" [value]="stereoProperty.value"></pdbc-name-value>
-        </div>
+        @for(stereoProperty of stereoProperties; track stereoProperty.name){
+        <pdbc-name-value [data]="stereoProperty"></pdbc-name-value>
+        }
       </div>
     </div>
   </div>

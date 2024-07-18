@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, OnInit, Input } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit, Input, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Structure } from '../../../data-models/structure.model';
@@ -9,7 +9,9 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
-import { of, catchError } from 'rxjs';
+import { of, catchError, switchMap, map } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'pdbc-structures',
@@ -19,7 +21,7 @@ import { of, catchError } from 'rxjs';
   styleUrls: ['./structures.component.scss'],
 })
 export class StructuresComponent implements AfterViewInit, OnInit {
-  @Input() ligandId?: string;
+  @Input() ligandId!: string;
   displayedColumns: string[] = ['name', 'id', 'ec_number', 'annotation', 'count', 'rep_structure'];
   structureData: Structure[] = [];
   dataSource = new MatTableDataSource<Structure>(this.structureData);
@@ -32,7 +34,9 @@ export class StructuresComponent implements AfterViewInit, OnInit {
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
-  constructor(private aggregatedApiService: AggregatedApiService) {}
+  private readonly aggregatedApiService = inject(AggregatedApiService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
   /**
    * Function to apply both check box and search filter
@@ -55,12 +59,14 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   }
 
   ngOnInit() {
-    if (this.ligandId) {
-      this.aggregatedApiService
-        .fetchBoundEntries(this.ligandId)
-        .pipe(catchError((error) => of(error)))
-        .subscribe((boundEntries: string[]) => {
-          this.structureData = boundEntries.map((entry) => ({
+    this.route.params
+      .pipe(
+        switchMap((params) => {
+          const ligandId = params['ligandId'].toUpperCase();
+          return this.aggregatedApiService.fetchBoundEntries(ligandId);
+        }),
+        map((boundaries) => {
+          return boundaries.map((entry) => ({
             name: '',
             id: '',
             ec_number: '',
@@ -68,9 +74,29 @@ export class StructuresComponent implements AfterViewInit, OnInit {
             count: 1,
             rep_structure: entry,
           }));
-          this.dataSource.data = this.structureData;
-        });
-    }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((data) => {
+        this.dataSource.data = data;
+      });
+    // if (this.ligandId) {
+    //   this.aggregatedApiService
+    //     .fetchBoundEntries(this.ligandId)
+    //     .pipe(catchError((error) => of(error)))
+    //     .subscribe((boundEntries: string[]) => {
+    //       console.log(boundEntries);
+    //       this.structureData = boundEntries.map((entry) => ({
+    //         name: '',
+    //         id: '',
+    //         ec_number: '',
+    //         annotation: '',
+    //         count: 1,
+    //         rep_structure: entry,
+    //       }));
+    //       this.dataSource.data = this.structureData;
+    //     });
+    // }
     // Defining custom filter
     this.dataSource.filterPredicate = (data: Structure, filter: string): boolean => {
       const filterValues = JSON.parse(filter);

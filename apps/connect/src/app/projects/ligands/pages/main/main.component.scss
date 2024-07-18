@@ -272,10 +272,16 @@ main {
     .description {
       display: flex;
       justify-content: space-between;
+      padding-bottom: 40px;
 
       @media screen and (max-width: 768px) {
         flex-direction: column;
       }
+    }
+
+    .property,
+    .structure {
+      padding-bottom: 40px;
     }
   }
 }

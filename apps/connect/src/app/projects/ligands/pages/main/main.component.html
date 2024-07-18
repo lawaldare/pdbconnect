@@ -4,8 +4,8 @@
 <main>
   <div class="container">
     <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections"></pdbc-pdbe-nav-menu>
-    @if(description){
     <div>
+      @if(description){
       <section class="hero">
         <h2 class="id">{{ ligandId }}</h2>
         <h4 class="name">{{ description.name }}</h4>
@@ -23,8 +23,14 @@
         <pdbc-description [description]="description"></pdbc-description>
         <pdbc-image-carousel #imageCarouselRef></pdbc-image-carousel>
       </section>
+      <section class="property">
+        <pdbc-properties [properties]="description.properties"></pdbc-properties>
+      </section>
+      }
+      <section class="structure">
+        <pdbc-structures></pdbc-structures>
+      </section>
     </div>
-    }
 
     <!-- @if(ligandId && description){
     <div id="main-right-container">

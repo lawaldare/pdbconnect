@@ -1,13 +1,22 @@
-.properties-container {
-  display: flex;
-  padding-bottom: 40px;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
-  align-self: stretch;
+#properties-section {
+  font-family: 'IBM Plex Sans';
+  line-height: 27.2px;
 }
 
-.property-box {
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+h3 {
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 39px;
+}
+
+.property-boxes {
   display: flex;
   width: 100%;
   gap: 48px;
@@ -17,33 +26,16 @@
 .property-box-end {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 20px;
-  flex: 1 0 0;
+  flex: 1;
 }
 
-#stereo-box {
-  align-self: stretch;
+.heading-3 {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 31.2px;
 }
 
-#surf-box {
-  align-self: stretch;
-}
-
-.info-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-}
-
-.conf-box {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  align-self: stretch;
-}
 .property-sub-box {
   display: flex;
   flex-direction: column;
