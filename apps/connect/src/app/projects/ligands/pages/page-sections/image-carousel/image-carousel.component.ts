@@ -79,7 +79,7 @@ export class ImageCarouselComponent implements AfterViewInit {
   }
 
   private generateSlideNumbers(): void {
-    for (let index = 0; index <= this.substructureNames().length + 1; index++) {
+    for (let index = 0; index <= this.substructureNames().length - 1; index++) {
       this.slides.update((numbers) => [...numbers, index]);
     }
   }
@@ -88,31 +88,41 @@ export class ImageCarouselComponent implements AfterViewInit {
    * Controls the previous click on the image carousel
    * Updates the slides and renders the substructures
    */
-  onPreviousClick() {
-    const previous = this.currentSlide - 1;
-    this.currentSlide = previous < 0 ? this.substructureNames().length + 1 : previous;
-    if (!this.slides().includes(this.currentSlide)) {
-      this.slides()[2] = this.slides()[1];
-      this.slides()[1] = this.slides()[0];
-      this.slides()[0] = this.currentSlide;
-    }
+  // onPreviousClick() {
+  //   const previous = this.currentSlide - 1;
+  //   this.currentSlide = previous < 0 ? this.substructureNames().length + 1 : previous;
+  //   if (!this.slides().includes(this.currentSlide)) {
+  //     this.slides()[2] = this.slides()[1];
+  //     this.slides()[1] = this.slides()[0];
+  //     this.slides()[0] = this.currentSlide;
+  //   }
 
-    this.renderSubstructure();
+  //   this.renderSubstructure();
+  // }
+
+  onPreviousClick() {
+    this.currentSlide = (this.currentSlide - 1 + this.slides().length) % this.slides().length;
+    this.renderSubstructure(); // <--- Highlighted change
   }
 
   /**
    * Controls the next click on the image carousel
    * Updates the slides and renders the substructures
    */
+  // onNextClick() {
+  //   const next = this.currentSlide + 1;
+  //   this.currentSlide = next === this.substructureNames().length + 2 ? 0 : next;
+  //   if (!this.slides().includes(this.currentSlide)) {
+  //     this.slides()[0] = this.slides()[1];
+  //     this.slides()[1] = this.slides()[2];
+  //     this.slides()[2] = this.currentSlide;
+  //   }
+  //   this.renderSubstructure();
+  // }
+
   onNextClick() {
-    const next = this.currentSlide + 1;
-    this.currentSlide = next === this.substructureNames().length + 2 ? 0 : next;
-    if (!this.slides().includes(this.currentSlide)) {
-      this.slides()[0] = this.slides()[1];
-      this.slides()[1] = this.slides()[2];
-      this.slides()[2] = this.currentSlide;
-    }
-    this.renderSubstructure();
+    this.currentSlide = (this.currentSlide + 1) % this.slides().length;
+    this.renderSubstructure(); // <--- Highlighted change
   }
 
   /**
@@ -158,20 +168,57 @@ export class ImageCarouselComponent implements AfterViewInit {
    * Highlight substructures
    * Sets depiction description
    */
+  // private renderSubstructure() {
+  //   const slideContainer = this.slideContainer.nativeElement;
+  //   this.setDepictionProperty(this.ligandEv, this.currentSlide);
+  //   const slideElements = slideContainer.children;
+  //   for (let i = 0; i < slideElements.length; i++) {
+  //     if (this.slides()[i] == this.currentSlide) {
+  //       this.renderer.addClass(slideElements[i], 'active');
+  //     } else {
+  //       this.renderer.removeClass(slideElements[i], 'active');
+  //     }
+
+  //     const ligandEl = slideElements[i].firstElementChild;
+  //     this.setDepictionProperty(ligandEl, this.slides()[i]);
+  //   }
+  //   this.setDepictionDescription();
+  // }
   private renderSubstructure() {
     const slideContainer = this.slideContainer.nativeElement;
-    this.setDepictionProperty(this.ligandEv, this.currentSlide);
     const slideElements = slideContainer.children;
-    for (let i = 0; i < slideElements.length; i++) {
-      if (this.slides()[i] == this.currentSlide) {
-        this.renderer.addClass(slideElements[i], 'active');
+    const totalSlides = slideElements.length;
+    this.setDepictionProperty(this.ligandEv, this.currentSlide);
+    for (let i = 0; i < totalSlides; i++) {
+      const slideIndex = (this.currentSlide + i) % totalSlides;
+      // this.renderer.addClass(slideElements[slideIndex], 'active');
+      if (i < 3) {
+        this.renderer.setStyle(slideElements[slideIndex], 'display', 'flex');
+        if (this.slides()[i] === this.currentSlide) {
+          this.renderer.addClass(slideElements[i], 'active');
+        } else {
+          this.renderer.removeClass(slideElements[i], 'active');
+        }
+        this.setDepictionProperty(slideElements[slideIndex].firstElementChild, slideIndex);
       } else {
-        this.renderer.removeClass(slideElements[i], 'active');
+        this.renderer.setStyle(slideElements[slideIndex], 'display', 'none');
       }
 
-      const ligandEl = slideElements[i].firstElementChild;
-      this.setDepictionProperty(ligandEl, this.slides()[i]);
+      // if (this.slides()[i + 1] === this.currentSlide) {
+      //   this.renderer.addClass(slideElements[i], 'active');
+      // } else {
+      //   this.renderer.removeClass(slideElements[i], 'active');
+      // }
     }
+
+    console.log(this.currentSlide);
+
+    // if (this.currentSlide) {
+    //   this.renderer.addClass(slideElements[this.currentSlide], 'active');
+    // } else {
+    //   this.renderer.removeChild(slideElements[this.currentSlide], 'active');
+    // }
+
     this.setDepictionDescription();
   }
 
@@ -190,16 +237,29 @@ export class ImageCarouselComponent implements AfterViewInit {
       .subscribe((depiction: Depiction) => {
         this.createLigandEnvironment(imageContainer, depiction, true);
         if (this.substructureNames().length > 0) {
-          for (const slide of this.slides()) {
+          // for (const slide of this.slides()) {
+          //   const div = this.renderer.createElement('div');
+          //   this.renderer.appendChild(slideContainer, div);
+          //   this.renderer.addClass(div, 'slide');
+          //   if (slide === 0) {
+          //     this.renderer.addClass(div, 'active');
+          //   }
+          //   this.divsRendered.push(div);
+          //   this.createLigandEnvironment(div, depiction);
+          //   // this.setDepictionProperty(slideEl, slide);
+          // }
+          for (let i = 0; i < this.slides().length; i++) {
             const div = this.renderer.createElement('div');
             this.renderer.appendChild(slideContainer, div);
             this.renderer.addClass(div, 'slide');
-            if (slide === 0) {
-              this.renderer.addClass(div, 'active');
+            if (i === 0) this.renderer.addClass(div, 'active');
+            if (i < 3) {
+              this.renderer.setStyle(div, 'display', 'flex'); // <--- Highlighted change
+            } else {
+              this.renderer.setStyle(div, 'display', 'none'); // <--- Highlighted change
             }
             this.divsRendered.push(div);
             this.createLigandEnvironment(div, depiction);
-            // this.setDepictionProperty(slideEl, slide);
           }
         }
         this.setDepictionDescription();
