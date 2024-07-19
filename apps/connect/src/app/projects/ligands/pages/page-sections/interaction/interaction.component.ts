@@ -23,6 +23,9 @@ export class InteractionComponent implements AfterViewInit {
 
   @ViewChild('ligandEnv', { read: ElementRef }) ligandEnvContainer!: ElementRef;
   @ViewChild('ligHeatMap', { read: ElementRef }) ligandHeatMapContainer!: ElementRef;
+  @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
+
+  private ligandEv!: any;
 
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly route = inject(ActivatedRoute);
@@ -38,23 +41,27 @@ export class InteractionComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    const ligandEnv = this.ligandEnvContainer.nativeElement;
+    // const ligandEnv = this.ligandEnvContainer.nativeElement;
+    const imageContainer = this.imageContainer.nativeElement;
+
     this.route.params
       .pipe(
         switchMap((params) => {
+          this.resetRenderer();
           this.ligandId = params['ligandId'].toUpperCase();
           return this.aggregatedApiService.fetchDepiction(this.ligandId);
         }),
         mergeMap((depiction: Depiction) => {
-          this.renderer.setProperty(ligandEnv, 'depiction', depiction);
+          this.createLigandEnvironment(imageContainer, depiction);
+          // this.renderer.setProperty(ligandEnv, 'depiction', depiction);
           return this.aggregatedApiService.fetchIntxData(this.ligandId);
         }),
         map((intxDataUrl: IntxDataUrl) => {
           const interaction = intxDataUrl.interactions;
           this.intxUrl = intxDataUrl.IntxUrl;
-          if (interaction[this.ligandId]) {
-            this.renderer.setProperty(ligandEnv, 'interaction', interaction[this.ligandId]);
-            this.renderer.setProperty(ligandEnv, 'contactType', '["TOTAL"]');
+          if (interaction?.[this.ligandId]) {
+            this.renderer.setProperty(this.ligandEv, 'interaction', interaction[this.ligandId]);
+            this.renderer.setProperty(this.ligandEv, 'contactType', '["TOTAL"]');
             this.renderHeatMap(interaction);
           }
           return EMPTY;
@@ -66,5 +73,20 @@ export class InteractionComponent implements AfterViewInit {
 
   public downloadInteraction(): void {
     window.open(this.intxUrl);
+  }
+
+  private createLigandEnvironment(container: ElementRef, prop: Depiction): void {
+    const ligand = this.renderer.createElement('pdb-ligand-env');
+    this.renderer.appendChild(container, ligand);
+    this.renderer.setProperty(ligand, 'depiction', prop);
+    this.ligandEv = ligand;
+  }
+
+  private resetRenderer(): void {
+    const imageContainer = this.imageContainer.nativeElement;
+
+    if (this.ligandEv) {
+      this.renderer.removeChild(imageContainer, this.ligandEv);
+    }
   }
 }

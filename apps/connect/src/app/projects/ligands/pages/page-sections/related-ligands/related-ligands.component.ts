@@ -1,16 +1,17 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold } from '../../../data-models/related-ligands.model';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { forkJoin, of, catchError } from 'rxjs';
+import { forkJoin, of, catchError, switchMap, tap, mergeMap, map } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'pdbc-related-ligands',
   standalone: true,
-  imports: [CommonModule, FormsModule, LigandGridComponent, MatPaginator],
+  imports: [CommonModule, FormsModule, LigandGridComponent, MatPaginator, ReactiveFormsModule],
   templateUrl: './related-ligands.component.html',
   styleUrl: './related-ligands.component.scss',
 })
@@ -36,7 +37,11 @@ export class RelatedLigandsComponent implements OnInit {
   sameScaffoldSearchText = '';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  constructor(private aggregatedApiService: AggregatedApiService) {}
+  private readonly aggregatedApiService = inject(AggregatedApiService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  public sameScaffoldTerm = new FormControl('');
+  public sameLigandsTerm = new FormControl('');
 
   applyFilter(filterOn: string) {
     switch (filterOn) {
@@ -97,45 +102,102 @@ export class RelatedLigandsComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.ligandId) {
-      this.aggregatedApiService.fetchRelatedLigands(this.ligandId).subscribe((relatedLigand: RelatedLigand) => {
-        this.similarLigands = relatedLigand['similar_ligands'];
-        this.sameScaffolds = relatedLigand['same_scaffold'];
+    this.route.params
+      .pipe(
+        tap((params) => (this.ligandId = params['ligandId'].toUpperCase())),
+        switchMap((params) => {
+          const ligandId = params['ligandId'].toUpperCase();
+          return this.aggregatedApiService.fetchRelatedLigands(ligandId);
+        }),
+        tap((relatedLigand: RelatedLigand) => console.log(relatedLigand)),
+        mergeMap((relatedLigand: RelatedLigand) => {
+          this.similarLigands = relatedLigand['similar_ligands'];
+          this.sameScaffolds = relatedLigand['same_scaffold'];
 
-        const similarLigandBoundEntries = this.similarLigands.map((similarLigand) =>
-          this.aggregatedApiService.fetchBoundEntries(similarLigand.chem_comp_id).pipe(catchError((error) => of(error)))
-        );
+          const similarLigandBoundEntries = this.similarLigands.map((similarLigand) => this.aggregatedApiService.fetchBoundEntries(similarLigand.chem_comp_id));
 
-        const sameScaffoldBoundEntries = this.sameScaffolds.map((sameScaffold) =>
-          this.aggregatedApiService.fetchBoundEntries(sameScaffold.chem_comp_id).pipe(catchError((error) => of(error)))
-        );
+          const sameScaffoldBoundEntries = this.sameScaffolds.map((sameScaffold) => this.aggregatedApiService.fetchBoundEntries(sameScaffold.chem_comp_id));
 
-        forkJoin(similarLigandBoundEntries).subscribe((boundEntriesArray: string[][]) => {
+          return forkJoin(similarLigandBoundEntries).pipe(
+            mergeMap((similarLigandBoundEntriesArray) => {
+              return forkJoin(sameScaffoldBoundEntries).pipe(
+                mergeMap((sameScaffoldBoundEntriesArray) => {
+                  return of({
+                    similarLigandBoundEntriesArray,
+                    sameScaffoldBoundEntriesArray,
+                  });
+                })
+              );
+            })
+          );
+        }),
+        map(({ similarLigandBoundEntriesArray, sameScaffoldBoundEntriesArray }) => {
+          console.log({ similarLigandBoundEntriesArray, sameScaffoldBoundEntriesArray });
           this.similarLigandsGrid = this.similarLigands.map((similarLigand, index) => ({
             chem_comp_id: similarLigand.chem_comp_id,
             name: similarLigand.name,
             similarity_score: similarLigand.similarity_score,
             substructure_match: similarLigand.substructure_match,
-            bound_entries: boundEntriesArray[index],
+            bound_entries: similarLigandBoundEntriesArray[index],
           }));
           this.filtSimilarLigandsGrid = this.similarLigandsGrid;
           this.similarLigandpageLength = this.filtSimilarLigandsGrid.length;
           this.similarLigandsPage = this.filtSimilarLigandsGrid.slice(0, this.similarLigandpageSize);
-        });
 
-        forkJoin(sameScaffoldBoundEntries).subscribe((boundEntriesArray: string[][]) => {
           this.sameScaffoldGrid = this.sameScaffolds.map((sameScaffolds, index) => ({
             chem_comp_id: sameScaffolds.chem_comp_id,
             name: sameScaffolds.name,
             similarity_score: sameScaffolds.similarity_score,
             substructure_match: sameScaffolds.substructure_match,
-            bound_entries: boundEntriesArray[index],
+            bound_entries: sameScaffoldBoundEntriesArray[index],
           }));
           this.filtSameScaffoldGrid = this.sameScaffoldGrid;
           this.sameScaffoldpageLength = this.filtSameScaffoldGrid.length;
           this.sameScaffoldPage = this.filtSameScaffoldGrid.slice(0, this.sameScaffoldpageSize);
-        });
-      });
-    }
+        })
+      )
+      .subscribe();
+    // if (this.ligandId) {
+    //   this.aggregatedApiService.fetchRelatedLigands(this.ligandId).subscribe((relatedLigand: RelatedLigand) => {
+    //     this.similarLigands = relatedLigand['similar_ligands'];
+    //     this.sameScaffolds = relatedLigand['same_scaffold'];
+
+    //     const similarLigandBoundEntries = this.similarLigands.map((similarLigand) =>
+    //       this.aggregatedApiService.fetchBoundEntries(similarLigand.chem_comp_id).pipe(catchError((error) => of(error)))
+    //     );
+
+    //     const sameScaffoldBoundEntries = this.sameScaffolds.map((sameScaffold) =>
+    //       this.aggregatedApiService.fetchBoundEntries(sameScaffold.chem_comp_id).pipe(catchError((error) => of(error)))
+    //     );
+
+    //     forkJoin(similarLigandBoundEntries).subscribe((boundEntriesArray: string[][]) => {
+    //       console.log(boundEntriesArray);
+    //       this.similarLigandsGrid = this.similarLigands.map((similarLigand, index) => ({
+    //         chem_comp_id: similarLigand.chem_comp_id,
+    //         name: similarLigand.name,
+    //         similarity_score: similarLigand.similarity_score,
+    //         substructure_match: similarLigand.substructure_match,
+    //         bound_entries: boundEntriesArray[index],
+    //       }));
+    //       console.log(this.similarLigandsGrid);
+    //       this.filtSimilarLigandsGrid = this.similarLigandsGrid;
+    //       this.similarLigandpageLength = this.filtSimilarLigandsGrid.length;
+    //       this.similarLigandsPage = this.filtSimilarLigandsGrid.slice(0, this.similarLigandpageSize);
+    //     });
+
+    //     forkJoin(sameScaffoldBoundEntries).subscribe((boundEntriesArray: string[][]) => {
+    //       this.sameScaffoldGrid = this.sameScaffolds.map((sameScaffolds, index) => ({
+    //         chem_comp_id: sameScaffolds.chem_comp_id,
+    //         name: sameScaffolds.name,
+    //         similarity_score: sameScaffolds.similarity_score,
+    //         substructure_match: sameScaffolds.substructure_match,
+    //         bound_entries: boundEntriesArray[index],
+    //       }));
+    //       this.filtSameScaffoldGrid = this.sameScaffoldGrid;
+    //       this.sameScaffoldpageLength = this.filtSameScaffoldGrid.length;
+    //       this.sameScaffoldPage = this.filtSameScaffoldGrid.slice(0, this.sameScaffoldpageSize);
+    //     });
+    //   });
+    // }
   }
 }
