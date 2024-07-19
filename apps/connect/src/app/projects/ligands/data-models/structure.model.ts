@@ -4,7 +4,7 @@ export interface Structure {
   ec_number: string;
   annotation: string;
   count: number;
-  rep_structure: string;
+  // rep_structure?: string;
 }
 
 export interface Substructure {
