@@ -1,9 +1,12 @@
-import { Component, Input, CUSTOM_ELEMENTS_SCHEMA, ViewChild, Renderer2, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, Input, CUSTOM_ELEMENTS_SCHEMA, ViewChild, Renderer2, ElementRef, AfterViewInit, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction } from '../../../data-models/structure.model';
 import { IntxDataUrl, PDBIntxData } from '../../../data-models/interaction.model';
+import { ActivatedRoute } from '@angular/router';
+import { EMPTY, map, mergeMap, switchMap, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'pdbc-interaction',
@@ -14,13 +17,17 @@ import { IntxDataUrl, PDBIntxData } from '../../../data-models/interaction.model
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class InteractionComponent implements AfterViewInit {
-  @Input() ligandId!: string;
-  intxUrl = '';
-  helpLogoSrc = '/assets/images/help_outline_24px.svg';
+  public ligandId!: string;
+  private intxUrl!: string;
+  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   @ViewChild('ligandEnv', { read: ElementRef }) ligandEnvContainer!: ElementRef;
   @ViewChild('ligHeatMap', { read: ElementRef }) ligandHeatMapContainer!: ElementRef;
-  constructor(private aggregatedApiService: AggregatedApiService, private renderer: Renderer2) {}
+
+  private readonly aggregatedApiService = inject(AggregatedApiService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly renderer = inject(Renderer2);
 
   renderHeatMap(interaction: PDBIntxData) {
     const ligandHeatmap = this.ligandHeatMapContainer.nativeElement;
@@ -30,24 +37,34 @@ export class InteractionComponent implements AfterViewInit {
     ligandHeatmap.registerLigandEnv('ligand-int-env');
   }
 
-  renderAtomIntx() {
+  ngAfterViewInit() {
     const ligandEnv = this.ligandEnvContainer.nativeElement;
-    this.aggregatedApiService.fetchDepiction(this.ligandId).subscribe((depiction: Depiction) => {
-      this.renderer.setProperty(ligandEnv, 'depiction', depiction);
-      this.aggregatedApiService.fetchIntxData(this.ligandId).subscribe((intxDataUrl: IntxDataUrl) => {
-        const interaction = intxDataUrl.interactions;
-        this.intxUrl = intxDataUrl.IntxUrl;
-        this.renderer.setProperty(ligandEnv, 'interaction', interaction[this.ligandId]);
-        this.renderer.setProperty(ligandEnv, 'contactType', '["TOTAL"]');
-        // this.renderer.setProperty(ligandEnv, 'zoom', true);
-        this.renderHeatMap(interaction);
-      });
-    });
+    this.route.params
+      .pipe(
+        switchMap((params) => {
+          this.ligandId = params['ligandId'].toUpperCase();
+          return this.aggregatedApiService.fetchDepiction(this.ligandId);
+        }),
+        mergeMap((depiction: Depiction) => {
+          this.renderer.setProperty(ligandEnv, 'depiction', depiction);
+          return this.aggregatedApiService.fetchIntxData(this.ligandId);
+        }),
+        map((intxDataUrl: IntxDataUrl) => {
+          const interaction = intxDataUrl.interactions;
+          this.intxUrl = intxDataUrl.IntxUrl;
+          if (interaction[this.ligandId]) {
+            this.renderer.setProperty(ligandEnv, 'interaction', interaction[this.ligandId]);
+            this.renderer.setProperty(ligandEnv, 'contactType', '["TOTAL"]');
+            this.renderHeatMap(interaction);
+          }
+          return EMPTY;
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
   }
 
-  ngAfterViewInit() {
-    if (this.ligandId) {
-      this.renderAtomIntx();
-    }
+  public downloadInteraction(): void {
+    window.open(this.intxUrl);
   }
 }

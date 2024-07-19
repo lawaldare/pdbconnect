@@ -86,7 +86,6 @@ export class StructuresComponent implements AfterViewInit, OnInit {
           return this.aggregatedApiService.fetchBoundEntries(ligandId);
         }),
         map((boundaries) => {
-          console.log(boundaries);
           return boundaries.map(() => ({
             name: 'Glycerol-3-phosphate dehydrogenase',
             id: 'P90551',
@@ -98,7 +97,6 @@ export class StructuresComponent implements AfterViewInit, OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((data) => {
-        console.log(data);
         this.dataSource.data = data;
       });
 
