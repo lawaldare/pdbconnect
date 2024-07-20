@@ -1,27 +1,15 @@
-@if(ligandId){
 <div id="related-ligand-section">
   <h3 class="title">Related Ligands</h3>
   @if(sameScaffolds.length){
-  <!-- <div id="scaffold-section" class="scaffold-container"> -->
-  <h4>Same scaffold - {{ sameScaffolds.length }}</h4>
-  <div class="search-box">
-    <input type="search" [formControl]="sameScaffoldTerm" placeholder="Search for scaffold by name, code or PDB ID" />
-    @if(!sameScaffoldTerm.value){
-    <i class="icon icon-common icon-search"></i>
-    }
-  </div>
-  <div class="gallery-container">
-    <!-- <form class="search-container">
-        <input
-          type="search"
-          (search)="applyFilter('same')"
-          [(ngModel)]="sameScaffoldSearchText"
-          placeholder="Search for ligand by name, code or PDB ID"
-          class="form_input"
-          name="search"
-        />
-        <img src="{{ searchLogo }}" />
-      </form> -->
+  <div id="scaffold-section">
+    <h4>Same scaffold - {{ sameScaffolds.length }}</h4>
+    <div class="search-box">
+      <input type="search" [formControl]="sameScaffoldTerm" placeholder="Search for scaffold by name, code or PDB ID" />
+      @if(!sameScaffoldTerm.value){
+      <i class="icon icon-common icon-search"></i>
+      }
+    </div>
+    <!-- <div class="gallery-container"> -->
     <div class="grid-container">
       @for (sameScaffold of sameScaffoldPage; track sameScaffold) {
       <pdbc-ligand-grid [ligand]="sameScaffold"></pdbc-ligand-grid>
@@ -37,32 +25,17 @@
       aria-label="Select page of ligands"
     >
     </mat-paginator>
+    <!-- </div> -->
   </div>
-  <!-- </div> -->
   } @if(similarLigands.length){
-  <!-- <div id="similar-ligand-section" class="scaffold-container"> -->
-  <h4>Similar ligands - {{ similarLigands.length }}</h4>
-  <div class="search-box">
-    <input type="search" [formControl]="sameLigandsTerm" placeholder="Search for scaffold by name, code or PDB ID" />
-    @if(!sameLigandsTerm.value){
-    <i class="icon icon-common icon-search"></i>
-    }
-  </div>
-  <!-- <div class="scaffold-header">
-    <span class="heading-3">Similar ligands - {{ similarLigands.length }}</span>
-  </div> -->
-  <div class="gallery-container">
-    <!-- <form class="search-container">
-      <input
-        type="search"
-        (search)="applyFilter('similar')"
-        [(ngModel)]="similarLigandSearchText"
-        placeholder="Search for ligand by name, code or PDB ID"
-        class="form_input"
-        name="search"
-      />
-      <img src="{{ searchLogo }}" />
-    </form> -->
+  <div id="similar-ligand-section">
+    <h4>Similar ligands - {{ similarLigands.length }}</h4>
+    <div class="search-box">
+      <input type="search" [formControl]="sameLigandsTerm" placeholder="Search for scaffold by name, code or PDB ID" />
+      @if(!sameLigandsTerm.value){
+      <i class="icon icon-common icon-search"></i>
+      }
+    </div>
     <div class="grid-container">
       @for (similarLigand of similarLigandsPage; track similarLigand) {
       <pdbc-ligand-grid [ligand]="similarLigand"></pdbc-ligand-grid>
@@ -79,10 +52,5 @@
     >
     </mat-paginator>
   </div>
-  <!-- </div> -->
   }
 </div>
-
-}
-
-<!-- } -->

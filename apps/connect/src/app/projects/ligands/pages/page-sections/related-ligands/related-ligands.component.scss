@@ -37,22 +37,14 @@ h4 {
   }
 }
 
-.gallery-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 12px;
-  align-self: stretch;
-}
-
 .grid-container {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 12px;
-  width: 100%;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  column-gap: 80px;
+  row-gap: 12px;
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .paginator-container {

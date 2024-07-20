@@ -25,7 +25,7 @@ export class ImageCarouselComponent implements AfterViewInit {
   structureDescription = '';
   private count = 0;
 
-  @ViewChild('ligandEnv', { read: ElementRef }) ligandEnvContainer!: ElementRef;
+  // @ViewChild('ligandEnv', { read: ElementRef }) ligandEnvContainer!: ElementRef;
   @ViewChild('slide', { read: ElementRef }) slideContainer!: ElementRef;
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 

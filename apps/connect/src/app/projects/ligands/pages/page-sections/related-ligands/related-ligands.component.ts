@@ -5,8 +5,9 @@ import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold } from '../../..
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { forkJoin, of, catchError, switchMap, tap, mergeMap, map } from 'rxjs';
+import { forkJoin, of, catchError, switchMap, tap, mergeMap, map, filter } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'pdbc-related-ligands',
@@ -16,14 +17,15 @@ import { ActivatedRoute } from '@angular/router';
   styleUrl: './related-ligands.component.scss',
 })
 export class RelatedLigandsComponent implements OnInit {
-  @Input() ligandId?: string;
   searchLogo = '/assets/images/Search.svg';
   similarLigands: SimilarLigand[] = [];
   similarLigandsGrid: LigandGrid[] = [];
+  unfilteredSimilarLigandsGrid: LigandGrid[] = [];
   filtSimilarLigandsGrid: LigandGrid[] = [];
   similarLigandsPage: LigandGrid[] = [];
   sameScaffolds: SameScaffold[] = [];
   sameScaffoldGrid: LigandGrid[] = [];
+  unfilteredSameScaffoldGrid: LigandGrid[] = [];
   filtSameScaffoldGrid: LigandGrid[] = [];
   sameScaffoldPage: LigandGrid[] = [];
   similarLigandpageLength = 0;
@@ -104,12 +106,10 @@ export class RelatedLigandsComponent implements OnInit {
   ngOnInit() {
     this.route.params
       .pipe(
-        tap((params) => (this.ligandId = params['ligandId'].toUpperCase())),
         switchMap((params) => {
           const ligandId = params['ligandId'].toUpperCase();
           return this.aggregatedApiService.fetchRelatedLigands(ligandId);
         }),
-        tap((relatedLigand: RelatedLigand) => console.log(relatedLigand)),
         mergeMap((relatedLigand: RelatedLigand) => {
           this.similarLigands = relatedLigand['similar_ligands'];
           this.sameScaffolds = relatedLigand['same_scaffold'];
@@ -132,72 +132,84 @@ export class RelatedLigandsComponent implements OnInit {
           );
         }),
         map(({ similarLigandBoundEntriesArray, sameScaffoldBoundEntriesArray }) => {
-          console.log({ similarLigandBoundEntriesArray, sameScaffoldBoundEntriesArray });
-          this.similarLigandsGrid = this.similarLigands.map((similarLigand, index) => ({
+          this.unfilteredSimilarLigandsGrid = this.similarLigands.map((similarLigand, index) => ({
             chem_comp_id: similarLigand.chem_comp_id,
             name: similarLigand.name,
             similarity_score: similarLigand.similarity_score,
             substructure_match: similarLigand.substructure_match,
             bound_entries: similarLigandBoundEntriesArray[index],
           }));
-          this.filtSimilarLigandsGrid = this.similarLigandsGrid;
-          this.similarLigandpageLength = this.filtSimilarLigandsGrid.length;
-          this.similarLigandsPage = this.filtSimilarLigandsGrid.slice(0, this.similarLigandpageSize);
+          this.similarLigandsGrid = this.unfilteredSimilarLigandsGrid;
+          this.setUpPagination(false);
 
-          this.sameScaffoldGrid = this.sameScaffolds.map((sameScaffolds, index) => ({
+          this.unfilteredSameScaffoldGrid = this.sameScaffolds.map((sameScaffolds, index) => ({
             chem_comp_id: sameScaffolds.chem_comp_id,
             name: sameScaffolds.name,
             similarity_score: sameScaffolds.similarity_score,
             substructure_match: sameScaffolds.substructure_match,
             bound_entries: sameScaffoldBoundEntriesArray[index],
           }));
-          this.filtSameScaffoldGrid = this.sameScaffoldGrid;
-          this.sameScaffoldpageLength = this.filtSameScaffoldGrid.length;
-          this.sameScaffoldPage = this.filtSameScaffoldGrid.slice(0, this.sameScaffoldpageSize);
-        })
+          this.sameScaffoldGrid = this.unfilteredSameScaffoldGrid;
+          this.setUpPagination(true);
+        }),
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
-    // if (this.ligandId) {
-    //   this.aggregatedApiService.fetchRelatedLigands(this.ligandId).subscribe((relatedLigand: RelatedLigand) => {
-    //     this.similarLigands = relatedLigand['similar_ligands'];
-    //     this.sameScaffolds = relatedLigand['same_scaffold'];
 
-    //     const similarLigandBoundEntries = this.similarLigands.map((similarLigand) =>
-    //       this.aggregatedApiService.fetchBoundEntries(similarLigand.chem_comp_id).pipe(catchError((error) => of(error)))
-    //     );
+    this.sameScaffoldTerm.valueChanges
+      .pipe(
+        map((searchQuery) => {
+          if (searchQuery) {
+            return this.filterItemsBySearchQuery(searchQuery, this.unfilteredSameScaffoldGrid);
+          } else {
+            return this.unfilteredSameScaffoldGrid;
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((data) => {
+        this.sameScaffoldGrid = data;
+        this.setUpPagination(true);
+      });
 
-    //     const sameScaffoldBoundEntries = this.sameScaffolds.map((sameScaffold) =>
-    //       this.aggregatedApiService.fetchBoundEntries(sameScaffold.chem_comp_id).pipe(catchError((error) => of(error)))
-    //     );
+    this.sameLigandsTerm.valueChanges
+      .pipe(
+        map((searchQuery) => {
+          console.log(this.unfilteredSimilarLigandsGrid);
+          if (searchQuery) {
+            return this.filterItemsBySearchQuery(searchQuery, this.unfilteredSimilarLigandsGrid);
+          } else {
+            return this.unfilteredSimilarLigandsGrid;
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((data) => {
+        this.similarLigandsGrid = data;
+        this.setUpPagination(false);
+      });
+  }
 
-    //     forkJoin(similarLigandBoundEntries).subscribe((boundEntriesArray: string[][]) => {
-    //       console.log(boundEntriesArray);
-    //       this.similarLigandsGrid = this.similarLigands.map((similarLigand, index) => ({
-    //         chem_comp_id: similarLigand.chem_comp_id,
-    //         name: similarLigand.name,
-    //         similarity_score: similarLigand.similarity_score,
-    //         substructure_match: similarLigand.substructure_match,
-    //         bound_entries: boundEntriesArray[index],
-    //       }));
-    //       console.log(this.similarLigandsGrid);
-    //       this.filtSimilarLigandsGrid = this.similarLigandsGrid;
-    //       this.similarLigandpageLength = this.filtSimilarLigandsGrid.length;
-    //       this.similarLigandsPage = this.filtSimilarLigandsGrid.slice(0, this.similarLigandpageSize);
-    //     });
+  // private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
+  //   return items.filter((asset) => asset.name.toLocaleLowerCase().indexOf(searchQuery.toLocaleLowerCase()) !== -1);
+  // }
 
-    //     forkJoin(sameScaffoldBoundEntries).subscribe((boundEntriesArray: string[][]) => {
-    //       this.sameScaffoldGrid = this.sameScaffolds.map((sameScaffolds, index) => ({
-    //         chem_comp_id: sameScaffolds.chem_comp_id,
-    //         name: sameScaffolds.name,
-    //         similarity_score: sameScaffolds.similarity_score,
-    //         substructure_match: sameScaffolds.substructure_match,
-    //         bound_entries: boundEntriesArray[index],
-    //       }));
-    //       this.filtSameScaffoldGrid = this.sameScaffoldGrid;
-    //       this.sameScaffoldpageLength = this.filtSameScaffoldGrid.length;
-    //       this.sameScaffoldPage = this.filtSameScaffoldGrid.slice(0, this.sameScaffoldpageSize);
-    //     });
-    //   });
-    // }
+  private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
+    return items.filter((item) => {
+      const searchQueryLower = searchQuery.toLocaleLowerCase();
+      return item.name.toLocaleLowerCase().indexOf(searchQueryLower) !== -1 || item.chem_comp_id.toString().toLocaleLowerCase().indexOf(searchQueryLower) !== -1;
+    });
+  }
+
+  private setUpPagination(isScaffoldGrid: boolean): void {
+    if (isScaffoldGrid) {
+      this.filtSameScaffoldGrid = this.sameScaffoldGrid;
+      this.sameScaffoldpageLength = this.filtSameScaffoldGrid.length;
+      this.sameScaffoldPage = this.filtSameScaffoldGrid.slice(0, this.sameScaffoldpageSize);
+    } else {
+      this.filtSimilarLigandsGrid = this.similarLigandsGrid;
+      this.similarLigandpageLength = this.filtSimilarLigandsGrid.length;
+      this.similarLigandsPage = this.filtSimilarLigandsGrid.slice(0, this.similarLigandpageSize);
+    }
   }
 }
