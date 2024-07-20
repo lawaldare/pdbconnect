@@ -18,6 +18,7 @@ import { downloadOption } from '../../data-models/download.model';
 import { ThemeType } from '@pdbc/core';
 import { forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { LigandSpecificDatabasesComponent } from '../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 
 @Component({
   selector: 'pdbc-main',
@@ -36,6 +37,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     StructuresComponent,
     InteractionComponent,
     RelatedLigandsComponent,
+    LigandSpecificDatabasesComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -74,7 +76,7 @@ export class LigandsMainPageComponent implements OnInit {
     { sectionId: 'related-ligand-section', sectionName: 'Related ligands', isSubSection: false },
     { sectionId: 'scaffold-section', sectionName: 'Same scaffold', isSubSection: true },
     { sectionId: 'similar-ligand-section', sectionName: 'Similar ligands', isSubSection: true },
-    { sectionId: 'databases-section', sectionName: 'Ligand-specific databases', isSubSection: false },
+    { sectionId: 'ligand-databases-section', sectionName: 'Ligand-specific databases', isSubSection: false },
   ];
 
   private readonly aggregatedApiService = inject(AggregatedApiService);

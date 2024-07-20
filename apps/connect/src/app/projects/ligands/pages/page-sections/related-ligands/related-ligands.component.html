@@ -9,7 +9,6 @@
       <i class="icon icon-common icon-search"></i>
       }
     </div>
-    <!-- <div class="gallery-container"> -->
     <div class="grid-container">
       @for (sameScaffold of sameScaffoldPage; track sameScaffold) {
       <pdbc-ligand-grid [ligand]="sameScaffold"></pdbc-ligand-grid>
@@ -25,7 +24,6 @@
       aria-label="Select page of ligands"
     >
     </mat-paginator>
-    <!-- </div> -->
   </div>
   } @if(similarLigands.length){
   <div id="similar-ligand-section">

@@ -20,7 +20,6 @@
         </div>
         <div class="filters">
           <span id="filter_head" class="paragraph-3">Show only</span>
-          <!-- <div class="role"> -->
           <form [formGroup]="form">
             <div class="checkbox-field" for="cofactor">
               <input type="checkbox" id="cofactor" formControlName="cofactorLike" />
@@ -43,23 +42,6 @@
               <img src="assets/images/help_outline_24px.svg" alt="help icon" />
             </div>
           </form>
-          <!-- <mat-checkbox [(ngModel)]="cofactor" (change)="applyFilter()" class="paragraph-3">
-            <span>Cofactor-like</span>
-            <img src="assets/images/help_outline_24px.svg" alt="help icon" />
-          </mat-checkbox>
-          <mat-checkbox [(ngModel)]="reactant" (change)="applyFilter()" class="paragraph-3">
-            <span>Recant-like</span>
-            <img src="assets/images/help_outline_24px.svg" alt="help icon" />
-          </mat-checkbox>
-          <mat-checkbox [(ngModel)]="drug" (change)="applyFilter()" class="paragraph-3">
-            <span>Drug-like</span>
-            <img src="assets/images/help_outline_24px.svg" alt="help icon" />
-          </mat-checkbox>
-          <mat-checkbox [(ngModel)]="unannotated" (change)="applyFilter()" class="paragraph-3">
-            <span>Unannotated</span>
-            <img src="assets/images/help_outline_24px.svg" alt="help icon" />
-          </mat-checkbox> -->
-          <!-- </div> -->
         </div>
         <div class="search-box">
           <input type="search" [formControl]="searchText" placeholder="Search the table" class="form_input" name="search" />
