@@ -41,7 +41,6 @@ export class InteractionComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // const ligandEnv = this.ligandEnvContainer.nativeElement;
     const imageContainer = this.imageContainer.nativeElement;
 
     this.route.params
@@ -53,7 +52,6 @@ export class InteractionComponent implements AfterViewInit {
         }),
         mergeMap((depiction: Depiction) => {
           this.createLigandEnvironment(imageContainer, depiction);
-          // this.renderer.setProperty(ligandEnv, 'depiction', depiction);
           return this.aggregatedApiService.fetchIntxData(this.ligandId);
         }),
         map((intxDataUrl: IntxDataUrl) => {

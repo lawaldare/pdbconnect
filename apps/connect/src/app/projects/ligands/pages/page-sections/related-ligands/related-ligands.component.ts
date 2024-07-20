@@ -5,7 +5,7 @@ import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold } from '../../..
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { forkJoin, of, catchError, switchMap, tap, mergeMap, map, filter } from 'rxjs';
+import { forkJoin, of, catchError, switchMap, tap, mergeMap, map, filter, combineLatest } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -45,42 +45,8 @@ export class RelatedLigandsComponent implements OnInit {
   public sameScaffoldTerm = new FormControl('');
   public sameLigandsTerm = new FormControl('');
 
-  applyFilter(filterOn: string) {
-    switch (filterOn) {
-      case 'similar': {
-        if (this.similarLigandSearchText != null && this.similarLigandSearchText.trim() !== '') {
-          this.filtSimilarLigandsGrid = this.similarLigandsGrid.filter((x) => {
-            return x.chem_comp_id == this.similarLigandSearchText || Array.from(x.bound_entries).includes(this.similarLigandSearchText);
-          });
-          this.similarLigandpageLength = this.filtSimilarLigandsGrid.length;
-          this.similarLigandpageIndex = 0;
-        } else {
-          this.filtSimilarLigandsGrid = this.similarLigandsGrid;
-          this.similarLigandpageLength = this.filtSimilarLigandsGrid.length;
-        }
-        const startIndex = this.similarLigandpageIndex * this.similarLigandpageSize;
-        const endIndex = startIndex + this.similarLigandpageSize;
-        this.similarLigandsPage = this.filtSimilarLigandsGrid.slice(startIndex, endIndex);
-        break;
-      }
-      case 'same': {
-        if (this.sameScaffoldSearchText != null && this.sameScaffoldSearchText.trim() !== '') {
-          this.filtSameScaffoldGrid = this.sameScaffoldGrid.filter((x) => {
-            return x.chem_comp_id == this.sameScaffoldSearchText || Array.from(x.bound_entries).includes(this.sameScaffoldSearchText);
-          });
-          this.sameScaffoldpageLength = this.filtSameScaffoldGrid.length;
-          this.sameScaffoldpageIndex = 0;
-        } else {
-          this.filtSameScaffoldGrid = this.sameScaffoldGrid;
-          this.sameScaffoldpageLength = this.filtSameScaffoldGrid.length;
-        }
-        const startIndex = this.sameScaffoldpageIndex * this.sameScaffoldpageSize;
-        const endIndex = startIndex + this.sameScaffoldpageSize;
-        this.sameScaffoldPage = this.filtSameScaffoldGrid.slice(startIndex, endIndex);
-        break;
-      }
-    }
-  }
+  public similarityFrom = new FormControl(0);
+  public similarityTo = new FormControl(100);
 
   handlePageEvent(event: PageEvent, filterOn: string) {
     switch (filterOn) {
@@ -175,7 +141,6 @@ export class RelatedLigandsComponent implements OnInit {
     this.sameLigandsTerm.valueChanges
       .pipe(
         map((searchQuery) => {
-          console.log(this.unfilteredSimilarLigandsGrid);
           if (searchQuery) {
             return this.filterItemsBySearchQuery(searchQuery, this.unfilteredSimilarLigandsGrid);
           } else {
@@ -188,17 +153,38 @@ export class RelatedLigandsComponent implements OnInit {
         this.similarLigandsGrid = data;
         this.setUpPagination(false);
       });
+
+    combineLatest([this.similarityFrom.valueChanges, this.similarityTo.valueChanges])
+      .pipe(
+        map(([from, to]) => {
+          console.log(this.unfilteredSimilarLigandsGrid);
+          if (from === null || to === null) {
+            return this.unfilteredSimilarLigandsGrid;
+          }
+
+          if (from > 0 && to > 0) {
+            return this.filterItemsBySimilarityPercentage(from, to, this.unfilteredSimilarLigandsGrid);
+          } else {
+            return this.unfilteredSimilarLigandsGrid;
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((data) => {
+        this.similarLigandsGrid = data;
+        this.setUpPagination(false);
+      });
   }
 
-  // private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
-  //   return items.filter((asset) => asset.name.toLocaleLowerCase().indexOf(searchQuery.toLocaleLowerCase()) !== -1);
-  // }
-
-  private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
+  private filterItemsBySearchQuery(searchQuery: string, items: LigandGrid[]): LigandGrid[] {
     return items.filter((item) => {
       const searchQueryLower = searchQuery.toLocaleLowerCase();
       return item.name.toLocaleLowerCase().indexOf(searchQueryLower) !== -1 || item.chem_comp_id.toString().toLocaleLowerCase().indexOf(searchQueryLower) !== -1;
     });
+  }
+
+  private filterItemsBySimilarityPercentage(min: number, max: number, items: LigandGrid[]): LigandGrid[] {
+    return items.filter((item) => item.similarity_score >= min / 100 && item.similarity_score <= max / 100);
   }
 
   private setUpPagination(isScaffoldGrid: boolean): void {

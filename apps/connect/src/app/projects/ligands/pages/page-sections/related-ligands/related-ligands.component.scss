@@ -17,6 +17,11 @@ h4 {
   margin-bottom: 12px;
 }
 
+.filter-box {
+  display: flex;
+  align-items: center;
+}
+
 .search-box {
   position: relative;
   width: 350px;
@@ -34,6 +39,32 @@ h4 {
     right: 5px;
     top: 12px;
     color: #707372;
+  }
+}
+
+.similarity-box {
+  margin-left: 54px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  span {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 27.2px; /* 170% */
+    display: block;
+  }
+
+  input {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 22.4px;
+    border: 2px solid var(--Neutral-600, #707372);
+    background: #fff;
+    width: 75px;
+    height: 32px;
+    padding: 8px;
+    margin: 0;
   }
 }
 

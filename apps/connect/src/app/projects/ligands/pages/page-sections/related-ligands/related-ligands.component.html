@@ -30,11 +30,17 @@
   } @if(similarLigands.length){
   <div id="similar-ligand-section">
     <h4>Similar ligands - {{ similarLigands.length }}</h4>
-    <div class="search-box">
-      <input type="search" [formControl]="sameLigandsTerm" placeholder="Search for scaffold by name, code or PDB ID" />
-      @if(!sameLigandsTerm.value){
-      <i class="icon icon-common icon-search"></i>
-      }
+    <div class="filter-box">
+      <div class="search-box">
+        <input type="search" [formControl]="sameLigandsTerm" placeholder="Search for scaffold by name, code or PDB ID" />
+        @if(!sameLigandsTerm.value){
+        <i class="icon icon-common icon-search"></i>
+        }
+      </div>
+      <div class="similarity-box">
+        <span>Filter by similarity between</span> <input type="number" [formControl]="similarityFrom" placeholder="60%" /> <span>and</span>
+        <input type="number" [formControl]="similarityTo" placeholder="100%" />
+      </div>
     </div>
     <div class="grid-container">
       @for (similarLigand of similarLigandsPage; track similarLigand) {
