@@ -140,8 +140,6 @@ export class PropertiesComponent implements OnChanges {
       funProperties: [...this.funProperties],
       stereoProperties: [...this.stereoProperties],
     };
-
-    console.log(this.propertiesToJSON);
   }
 
   public downloadJSON(): void {

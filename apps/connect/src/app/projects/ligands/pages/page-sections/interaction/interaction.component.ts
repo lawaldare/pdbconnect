@@ -5,7 +5,7 @@ import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction } from '../../../data-models/structure.model';
 import { IntxDataUrl, PDBIntxData } from '../../../data-models/interaction.model';
 import { ActivatedRoute } from '@angular/router';
-import { EMPTY, map, mergeMap, switchMap, tap } from 'rxjs';
+import { EMPTY, map, mergeMap, of, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -31,6 +31,7 @@ export class InteractionComponent implements AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
+  private interaction!: any;
 
   renderHeatMap(interaction: PDBIntxData) {
     const ligandHeatmap = this.ligandHeatMapContainer.nativeElement;
@@ -57,6 +58,7 @@ export class InteractionComponent implements AfterViewInit {
         map((intxDataUrl: IntxDataUrl) => {
           const interaction = intxDataUrl.interactions;
           this.intxUrl = intxDataUrl.IntxUrl;
+          this.interaction = interaction;
           if (interaction?.[this.ligandId]) {
             this.renderer.setProperty(this.ligandEv, 'interaction', interaction[this.ligandId]);
             this.renderer.setProperty(this.ligandEv, 'contactType', '["TOTAL"]');
@@ -70,7 +72,13 @@ export class InteractionComponent implements AfterViewInit {
   }
 
   public downloadInteraction(): void {
-    window.open(this.intxUrl);
+    const blob = new Blob([JSON.stringify(this.interaction, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'interaction.json';
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 
   private createLigandEnvironment(container: ElementRef, prop: Depiction): void {

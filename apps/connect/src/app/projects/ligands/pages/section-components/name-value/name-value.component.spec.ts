@@ -16,6 +16,7 @@ describe('NameValueComponent', () => {
   });
 
   it('should create', () => {
+    component.data = { name: 'Test', value: 'Test' };
     expect(component).toBeTruthy();
   });
 });

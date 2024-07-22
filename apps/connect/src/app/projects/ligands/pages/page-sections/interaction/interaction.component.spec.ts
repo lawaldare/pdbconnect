@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InteractionComponent } from './interaction.component';
 import { HttpClientModule } from '@angular/common/http';
+import { RouterModule } from '@angular/router';
 
 describe('InteractionComponent', () => {
   let component: InteractionComponent;
@@ -8,7 +9,7 @@ describe('InteractionComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InteractionComponent, HttpClientModule],
+      imports: [InteractionComponent, HttpClientModule, RouterModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InteractionComponent);
