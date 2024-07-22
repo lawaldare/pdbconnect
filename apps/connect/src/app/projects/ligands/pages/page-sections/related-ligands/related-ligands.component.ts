@@ -77,6 +77,7 @@ export class RelatedLigandsComponent implements OnInit {
           return this.aggregatedApiService.fetchRelatedLigands(ligandId);
         }),
         mergeMap((relatedLigand: RelatedLigand) => {
+          console.log(relatedLigand);
           this.similarLigands = relatedLigand['similar_ligands'];
           this.sameScaffolds = relatedLigand['same_scaffold'];
 

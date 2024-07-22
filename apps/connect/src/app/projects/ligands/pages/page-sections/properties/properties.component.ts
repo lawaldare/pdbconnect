@@ -18,10 +18,15 @@ export class PropertiesComponent implements OnChanges {
   public funProperties: LigandProperty[] = [];
   public stereoProperties: LigandProperty[] = [];
   @Input() properties!: PhysChemProperties;
+  private propertiesToJSON!: Record<string, any[]>;
 
   ngOnChanges() {
     this.molProperties = [
       { name: 'Molecular weight', value: `${this.properties.exactmw} Da` },
+      {
+        name: 'Labute accessible surface area',
+        value: `${this.properties.labute_asa} &#8491; <sup>2</sup>`,
+      },
       {
         name: 'Heavy atoms',
         value: `${this.properties.num_heavy_atoms}`,
@@ -30,10 +35,7 @@ export class PropertiesComponent implements OnChanges {
         name: 'Heteroatoms',
         value: `${this.properties.num_heteroatoms}`,
       },
-      {
-        name: 'Labute accessible surface area',
-        value: `${this.properties.labute_asa} &#8491; <sup>2</sup>`,
-      },
+
       {
         name: 'Carbon SP3 value',
         value: `${this.properties.fraction_csp3}`,
@@ -122,5 +124,33 @@ export class PropertiesComponent implements OnChanges {
         value: `${this.properties.num_atom_stereo_centers}`,
       },
     ];
+
+    this.propertiesToJSON = {
+      molProperties: [
+        { name: 'Molecular weight', value: this.properties.exactmw },
+        {
+          name: 'Labute accessible surface area',
+          value: this.properties.labute_asa,
+        },
+        ...this.molProperties.slice(2),
+      ],
+      confProperties: [...this.confProperties],
+      ringProperties: [...this.ringProperties],
+      surfProperties: [...this.surfProperties],
+      funProperties: [...this.funProperties],
+      stereoProperties: [...this.stereoProperties],
+    };
+
+    console.log(this.propertiesToJSON);
+  }
+
+  public downloadJSON(): void {
+    const blob = new Blob([JSON.stringify(this.propertiesToJSON, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'physiochemical-properties.json';
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 }
