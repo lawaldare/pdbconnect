@@ -14,6 +14,7 @@ import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ClickOutsideDirective } from '@pdbc/core';
 import * as XLSX from 'xlsx';
+import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 
 @Component({
   selector: 'pdbc-structures',
@@ -29,6 +30,7 @@ import * as XLSX from 'xlsx';
     MatCheckboxModule,
     ClickOutsideDirective,
     ReactiveFormsModule,
+    ToolTipComponent,
   ],
   templateUrl: './structures.component.html',
   styleUrls: ['./structures.component.scss'],

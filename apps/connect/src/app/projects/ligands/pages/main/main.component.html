@@ -4,7 +4,7 @@
 <main>
   <div class="container">
     <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections"></pdbc-pdbe-nav-menu>
-    <div>
+    <article>
       @if(description){
       <section class="hero">
         <h2 class="id">{{ ligandId }}</h2>
@@ -39,6 +39,6 @@
       <div class="ligand-specific-databases">
         <pdbc-ligand-specific-databases></pdbc-ligand-specific-databases>
       </div>
-    </div>
+    </article>
   </div>
 </main>

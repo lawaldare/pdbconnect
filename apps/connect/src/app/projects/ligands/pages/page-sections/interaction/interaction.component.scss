@@ -35,6 +35,12 @@ button {
   width: 100%;
   justify-content: space-between;
   gap: 37.92px;
+
+  pdbe-ligand-interactions {
+    @media screen and (max-width: 540px) {
+      display: none;
+    }
+  }
 }
 
 .heatmap-container {
@@ -48,6 +54,10 @@ button {
   align-items: stretch;
   flex-direction: column;
   width: 270px;
+
+  @media screen and (max-width: 767px) {
+    width: 100%;
+  }
 
   .ligandEnv-header {
     h4 {

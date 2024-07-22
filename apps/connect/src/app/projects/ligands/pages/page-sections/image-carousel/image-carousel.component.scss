@@ -1,21 +1,15 @@
-.carousel-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 38px;
+header {
+  position: relative;
 }
 
-.carousel-header {
-  width: 325px;
-  color: var(--Neutral-900, #1a1c1a);
+h4 {
   text-align: center;
-}
+  position: relative;
+  margin-bottom: 16px;
 
-#helper_icon {
-  width: 18px;
-  height: 18px;
-  padding-left: 5px;
+  lib-tool-tip {
+    top: 27px;
+  }
 }
 
 .gallery-container {
@@ -64,10 +58,10 @@
   }
 }
 
-.depiction-description {
-  display: flex;
-  width: 250px;
-  height: 80px;
+.paragraph-3 {
+  margin: 0;
+  margin-bottom: 44px;
+  text-transform: capitalize;
 }
 
 .slide-container {

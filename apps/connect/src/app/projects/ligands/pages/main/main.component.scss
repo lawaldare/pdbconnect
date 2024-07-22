@@ -5,6 +5,14 @@ main {
     display: flex;
     gap: 28px;
 
+    @media screen and (max-width: 767px) {
+      gap: 0px;
+    }
+
+    article {
+      width: 100%;
+    }
+
     .hero {
       padding: 12px 0 32px 0;
       h2 {
@@ -42,8 +50,9 @@ main {
       justify-content: space-between;
       padding-bottom: 40px;
 
-      @media screen and (max-width: 768px) {
+      @media screen and (max-width: 767px) {
         flex-direction: column;
+        gap: 30px;
       }
     }
 

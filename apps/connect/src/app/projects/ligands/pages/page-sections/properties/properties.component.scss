@@ -21,6 +21,11 @@ h3 {
   width: 100%;
   gap: 48px;
   justify-content: space-between;
+
+  @media screen and (max-width: 767px) {
+    flex-direction: column;
+    gap: 30px;
+  }
 }
 
 .property-box-end {

@@ -37,8 +37,9 @@
       div.info-row-content {
         flex-direction: row;
         gap: 5px;
-        span {
+        a {
           color: #3b6fb6;
+          border: none;
           cursor: pointer;
           i.icon {
             margin-top: 5px;

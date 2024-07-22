@@ -5,17 +5,19 @@ import { Depiction } from '../../../data-models/structure.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { of, switchMap } from 'rxjs';
+import { ClickOutsideDirective } from '@pdbc/core';
+import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 
 @Component({
   selector: 'pdbc-image-carousel',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ClickOutsideDirective, ToolTipComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './image-carousel.component.html',
   styleUrl: './image-carousel.component.scss',
 })
 export class ImageCarouselComponent implements AfterViewInit {
-  helpLogoSrc = '/assets/images/help_outline_24px.svg';
+  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
   arrowSrc = '/assets/images/left_arrow.svg';
   public ligandId!: string;
   currentSlide = 0;
@@ -24,6 +26,7 @@ export class ImageCarouselComponent implements AfterViewInit {
   private slides = signal<number[]>([]);
   structureDescription = '';
   private count = 0;
+  public showTooltips = false;
 
   // @ViewChild('ligandEnv', { read: ElementRef }) ligandEnvContainer!: ElementRef;
   @ViewChild('slide', { read: ElementRef }) slideContainer!: ElementRef;
@@ -52,6 +55,14 @@ export class ImageCarouselComponent implements AfterViewInit {
       .subscribe();
   }
 
+  public onShowTooltips() {
+    this.showTooltips = !this.showTooltips;
+  }
+
+  public onClickedOutside() {
+    this.showTooltips = false;
+  }
+
   /**
    * Function to download substructure data from API
    * @param ligandId
@@ -69,7 +80,7 @@ export class ImageCarouselComponent implements AfterViewInit {
             this.substructureAtoms.push(atom);
           }
         }
-        this.substructureNames.update((values) => [...values, `Murcko scaffold`]);
+        // this.substructureNames.update((values) => [...values, `Murcko scaffold`]);
         this.substructureAtoms.push(Object.values(substructure['scaffold'])[0]);
         if (this.substructureNames().length > 0) {
           this.generateSlideNumbers();
@@ -79,7 +90,7 @@ export class ImageCarouselComponent implements AfterViewInit {
   }
 
   private generateSlideNumbers(): void {
-    for (let index = 0; index <= this.substructureNames().length - 1; index++) {
+    for (let index = 0; index <= this.substructureNames().length + 1; index++) {
       this.slides.update((numbers) => [...numbers, index]);
     }
   }
@@ -122,6 +133,7 @@ export class ImageCarouselComponent implements AfterViewInit {
 
   onNextClick() {
     this.currentSlide = (this.currentSlide + 1) % this.slides().length;
+    console.log('CURRENT SLIDE', this.currentSlide);
     this.renderSubstructure(); // <--- Highlighted change
   }
 
@@ -135,12 +147,14 @@ export class ImageCarouselComponent implements AfterViewInit {
         break;
 
       case 1:
-        this.structureDescription = `Structural representation of ${this.ligandId} with atom names`;
+        this.structureDescription = `Atom labeled ${this.ligandId}`;
         break;
 
       default:
-        this.structureDescription = `Structural representation of ${this.ligandId} with ${this.substructureNames()[this.currentSlide - 2]} highlighted`;
+        this.structureDescription = `${this.substructureNames()[this.currentSlide - 2]} highlighted in gray`;
     }
+
+    // this.structureDescription = `Structural representation of ${this.ligandId} with ${this.substructureNames()[this.currentSlide]} highlighted`;
   }
 
   /**
@@ -160,8 +174,10 @@ export class ImageCarouselComponent implements AfterViewInit {
 
       default:
         this.renderer.setProperty(el, 'atomNames', false);
-        this.renderer.setProperty(el, 'highlightSubstructure', this.substructureAtoms[index - 2]);
+        this.renderer.setProperty(el, 'highlightSubstructure', this.substructureAtoms[this.currentSlide - 2]);
     }
+
+    // this.renderer.setProperty(el, 'highlightSubstructure', this.substructureAtoms[this.currentSlide]);
   }
 
   /**
@@ -188,39 +204,35 @@ export class ImageCarouselComponent implements AfterViewInit {
     const slideContainer = this.slideContainer.nativeElement;
     const slideElements = slideContainer.children;
     const totalSlides = slideElements.length;
+    // console.log(slideElements);
+    // console.log(this.currentSlide);
     this.setDepictionProperty(this.ligandEv, this.currentSlide);
-    for (let i = 0; i < totalSlides; i++) {
-      const slideIndex = (this.currentSlide + i) % totalSlides;
-      // this.renderer.addClass(slideElements[slideIndex], 'active');
-      if (i < 3) {
-        this.renderer.setStyle(slideElements[slideIndex], 'display', 'flex');
-        if (this.slides()[i] === this.currentSlide) {
-          this.renderer.addClass(slideElements[i], 'active');
-        } else {
-          this.renderer.removeClass(slideElements[i], 'active');
-        }
-        this.setDepictionProperty(slideElements[slideIndex].firstElementChild, slideIndex);
+
+    for (let index = 0; index < totalSlides; index++) {
+      const slideIndex = (this.currentSlide + index) % totalSlides;
+
+      console.log(index, slideIndex, this.currentSlide);
+
+      if (index === this.currentSlide) {
+        this.renderer.addClass(slideElements[index], 'active');
       } else {
-        this.renderer.setStyle(slideElements[slideIndex], 'display', 'none');
+        this.renderer.removeClass(slideElements[index], 'active');
       }
 
-      // if (this.slides()[i + 1] === this.currentSlide) {
-      //   this.renderer.addClass(slideElements[i], 'active');
+      // if (index < 3) {
+      //   this.renderer.setStyle(slideElements[slideIndex], 'display', 'flex');
+      //   this.setDepictionProperty(slideElements[slideIndex].firstElementChild, slideIndex);
       // } else {
-      //   this.renderer.removeClass(slideElements[i], 'active');
+      //   this.renderer.setStyle(slideElements[slideIndex], 'display', 'none');
       // }
     }
 
-    console.log(this.currentSlide);
-
-    // if (this.currentSlide) {
-    //   this.renderer.addClass(slideElements[this.currentSlide], 'active');
-    // } else {
-    //   this.renderer.removeChild(slideElements[this.currentSlide], 'active');
-    // }
-
     this.setDepictionDescription();
   }
+
+  // 0 1 2 3 4
+  // 0 1 2 3 4
+  //
 
   /**
    * Renders first view of image carousel
@@ -236,6 +248,7 @@ export class ImageCarouselComponent implements AfterViewInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((depiction: Depiction) => {
         this.createLigandEnvironment(imageContainer, depiction, true);
+        console.log(this.substructureNames());
         if (this.substructureNames().length > 0) {
           // for (const slide of this.slides()) {
           //   const div = this.renderer.createElement('div');
@@ -248,6 +261,7 @@ export class ImageCarouselComponent implements AfterViewInit {
           //   this.createLigandEnvironment(div, depiction);
           //   // this.setDepictionProperty(slideEl, slide);
           // }
+          console.log(this.slides());
           for (let i = 0; i < this.slides().length; i++) {
             const div = this.renderer.createElement('div');
             this.renderer.appendChild(slideContainer, div);
@@ -262,6 +276,7 @@ export class ImageCarouselComponent implements AfterViewInit {
             this.createLigandEnvironment(div, depiction);
           }
         }
+
         this.setDepictionDescription();
       });
   }

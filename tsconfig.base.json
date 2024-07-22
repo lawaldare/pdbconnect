@@ -17,6 +17,7 @@
     "paths": {
       "@pdbc/core": ["libs/core/src/index.ts"],
       "@pdbc/lib-docs": ["libs/lib-docs/src/index.ts"],
+      "@pdbe-lib/tool-tip": ["libs/pdbe/tool-tip/src/index.ts"],
       "@pdbe-lib/button": ["libs/pdbe/button/src/index.ts"],
       "@pdbe-lib/chips": ["libs/pdbe/chips/src/index.ts"],
       "@pdbe-lib/dropdown": ["libs/pdbe/dropdown/src/index.ts"],
