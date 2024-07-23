@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { LigandsMainPageComponent } from './main.component';
 import { HttpClientModule } from '@angular/common/http';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('LigandsMainPage', () => {
   let component: LigandsMainPageComponent;
@@ -9,7 +10,7 @@ describe('LigandsMainPage', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LigandsMainPageComponent, RouterTestingModule, HttpClientModule],
+      imports: [LigandsMainPageComponent, RouterTestingModule, HttpClientModule, NoopAnimationsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LigandsMainPageComponent);

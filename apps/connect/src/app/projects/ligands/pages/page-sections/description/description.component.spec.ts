@@ -51,11 +51,11 @@ describe('DescriptionComponent', () => {
 
     fixture = TestBed.createComponent(DescriptionComponent);
     component = fixture.componentInstance;
+    component.description = mockDescription;
     fixture.detectChanges();
   });
 
   it('should create', () => {
-    component.description = mockDescription;
     expect(component).toBeTruthy();
   });
 });

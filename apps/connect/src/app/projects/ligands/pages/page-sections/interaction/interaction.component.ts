@@ -1,4 +1,16 @@
-import { Component, Input, CUSTOM_ELEMENTS_SCHEMA, ViewChild, Renderer2, ElementRef, AfterViewInit, DestroyRef, inject } from '@angular/core';
+import {
+  Component,
+  Input,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ViewChild,
+  Renderer2,
+  ElementRef,
+  AfterViewInit,
+  DestroyRef,
+  inject,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
@@ -15,6 +27,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   templateUrl: './interaction.component.html',
   styleUrl: './interaction.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InteractionComponent implements AfterViewInit {
   public ligandId!: string;
@@ -31,6 +44,7 @@ export class InteractionComponent implements AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
+  private readonly cdr = inject(ChangeDetectorRef);
   private interaction!: any;
 
   renderHeatMap(interaction: PDBIntxData) {
@@ -49,6 +63,7 @@ export class InteractionComponent implements AfterViewInit {
         switchMap((params) => {
           this.resetRenderer();
           this.ligandId = params['ligandId'].toUpperCase();
+          this.cdr.detectChanges();
           return this.aggregatedApiService.fetchDepiction(this.ligandId);
         }),
         mergeMap((depiction: Depiction) => {
