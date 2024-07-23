@@ -18,7 +18,7 @@ import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 })
 export class ImageCarouselComponent implements AfterViewInit {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
-  arrowSrc = '/assets/images/left_arrow.svg';
+  public readonly arrowSrc = '/assets/images/left_arrow.svg';
   public ligandId!: string;
   currentSlide = 0;
   private substructureNames = signal<string[]>([]);
