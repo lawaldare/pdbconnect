@@ -5,7 +5,7 @@ import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold } from '../../..
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { forkJoin, of, catchError, switchMap, tap, mergeMap, map, filter, combineLatest } from 'rxjs';
+import { forkJoin, of, catchError, switchMap, tap, mergeMap, map, filter, combineLatest, EMPTY, Observable } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -18,19 +18,27 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class RelatedLigandsComponent implements OnInit {
   searchLogo = '/assets/images/Search.svg';
+  stereoisomers: { name: string; chem_comp_id: string }[] = [];
+  stereoisomersGrid: any[] = [];
   similarLigands: SimilarLigand[] = [];
   similarLigandsGrid: LigandGrid[] = [];
   unfilteredSimilarLigandsGrid: LigandGrid[] = [];
   filtSimilarLigandsGrid: LigandGrid[] = [];
   similarLigandsPage: LigandGrid[] = [];
+  stereoisomersPage: any[] = [];
   sameScaffolds: SameScaffold[] = [];
   sameScaffoldGrid: LigandGrid[] = [];
   unfilteredSameScaffoldGrid: LigandGrid[] = [];
+  unfilteredStereoisomers: { name: string; chem_comp_id: string; bound_entries: any }[] = [];
   filtSameScaffoldGrid: LigandGrid[] = [];
+  filtStereoisomersGrid: any[] = [];
   sameScaffoldPage: LigandGrid[] = [];
   similarLigandpageLength = 0;
   similarLigandpageIndex = 0;
   similarLigandpageSize = 6;
+  stereoisomerspageLength = 0;
+  stereoisomerspageIndex = 0;
+  stereoisomerspageSize = 6;
   pageSizeOptions = [6, 12, 18];
   similarLigandSearchText = '';
   sameScaffoldpageLength = 0;
@@ -44,6 +52,7 @@ export class RelatedLigandsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   public sameScaffoldTerm = new FormControl('');
   public sameLigandsTerm = new FormControl('');
+  public stereoisomerTerm = new FormControl('');
 
   public similarityFrom = new FormControl(0);
   public similarityTo = new FormControl(100);
@@ -79,25 +88,17 @@ export class RelatedLigandsComponent implements OnInit {
         mergeMap((relatedLigand: RelatedLigand) => {
           this.similarLigands = relatedLigand['similar_ligands'];
           this.sameScaffolds = relatedLigand['same_scaffold'];
+          this.stereoisomers = relatedLigand['stereoisomers'];
 
-          const similarLigandBoundEntries = this.similarLigands.map((similarLigand) => this.aggregatedApiService.fetchBoundEntries(similarLigand.chem_comp_id));
+          const similarLigandBoundEntries = this.similarLigands.map((similarLigand) => this.fetchBoundEntriesWithFallback(similarLigand.chem_comp_id));
 
-          const sameScaffoldBoundEntries = this.sameScaffolds.map((sameScaffold) => this.aggregatedApiService.fetchBoundEntries(sameScaffold.chem_comp_id));
+          const sameScaffoldBoundEntries = this.sameScaffolds.map((scaffold) => this.fetchBoundEntriesWithFallback(scaffold.chem_comp_id));
 
-          return forkJoin(similarLigandBoundEntries).pipe(
-            mergeMap((similarLigandBoundEntriesArray) => {
-              return forkJoin(sameScaffoldBoundEntries).pipe(
-                mergeMap((sameScaffoldBoundEntriesArray) => {
-                  return of({
-                    similarLigandBoundEntriesArray,
-                    sameScaffoldBoundEntriesArray,
-                  });
-                })
-              );
-            })
-          );
+          const stereoisomersBoundEntries = this.stereoisomers.map((stereoisomer) => this.fetchBoundEntriesWithFallback(stereoisomer.chem_comp_id));
+
+          return this.aggregateLigandEntries(similarLigandBoundEntries, sameScaffoldBoundEntries, stereoisomersBoundEntries);
         }),
-        map(({ similarLigandBoundEntriesArray, sameScaffoldBoundEntriesArray }) => {
+        map(({ similarLigandBoundEntriesArray, sameScaffoldBoundEntriesArray, stereoisomersBoundEntriesArray }) => {
           this.unfilteredSimilarLigandsGrid = this.similarLigands.map((similarLigand, index) => ({
             chem_comp_id: similarLigand.chem_comp_id,
             name: similarLigand.name,
@@ -106,7 +107,7 @@ export class RelatedLigandsComponent implements OnInit {
             bound_entries: similarLigandBoundEntriesArray[index],
           }));
           this.similarLigandsGrid = this.unfilteredSimilarLigandsGrid;
-          this.setUpPagination(false);
+          this.setUpPagination('similarligand');
 
           this.unfilteredSameScaffoldGrid = this.sameScaffolds.map((sameScaffolds, index) => ({
             chem_comp_id: sameScaffolds.chem_comp_id,
@@ -116,7 +117,15 @@ export class RelatedLigandsComponent implements OnInit {
             bound_entries: sameScaffoldBoundEntriesArray[index],
           }));
           this.sameScaffoldGrid = this.unfilteredSameScaffoldGrid;
-          this.setUpPagination(true);
+          this.setUpPagination('samescaffold');
+
+          this.unfilteredStereoisomers = this.stereoisomers.map((stereoisomer, index) => ({
+            chem_comp_id: stereoisomer.chem_comp_id,
+            name: stereoisomer.name,
+            bound_entries: stereoisomersBoundEntriesArray[index],
+          }));
+          this.stereoisomersGrid = this.unfilteredStereoisomers;
+          this.setUpPagination('stereoisomers');
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -135,7 +144,7 @@ export class RelatedLigandsComponent implements OnInit {
       )
       .subscribe((data) => {
         this.sameScaffoldGrid = data;
-        this.setUpPagination(true);
+        this.setUpPagination('samescaffold');
       });
 
     this.sameLigandsTerm.valueChanges
@@ -151,13 +160,28 @@ export class RelatedLigandsComponent implements OnInit {
       )
       .subscribe((data) => {
         this.similarLigandsGrid = data;
-        this.setUpPagination(false);
+        this.setUpPagination('similarligand');
+      });
+
+    this.stereoisomerTerm.valueChanges
+      .pipe(
+        map((searchQuery) => {
+          if (searchQuery) {
+            return this.filterItemsBySearchQuery(searchQuery, this.unfilteredSimilarLigandsGrid);
+          } else {
+            return this.unfilteredSimilarLigandsGrid;
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((data) => {
+        this.stereoisomersGrid = data;
+        this.setUpPagination('stereoisomers');
       });
 
     combineLatest([this.similarityFrom.valueChanges, this.similarityTo.valueChanges])
       .pipe(
         map(([from, to]) => {
-          console.log(this.unfilteredSimilarLigandsGrid);
           if (from === null || to === null) {
             return this.unfilteredSimilarLigandsGrid;
           }
@@ -172,7 +196,7 @@ export class RelatedLigandsComponent implements OnInit {
       )
       .subscribe((data) => {
         this.similarLigandsGrid = data;
-        this.setUpPagination(false);
+        this.setUpPagination('similarligand');
       });
   }
 
@@ -187,15 +211,63 @@ export class RelatedLigandsComponent implements OnInit {
     return items.filter((item) => item.similarity_score >= min / 100 && item.similarity_score <= max / 100);
   }
 
-  private setUpPagination(isScaffoldGrid: boolean): void {
-    if (isScaffoldGrid) {
-      this.filtSameScaffoldGrid = this.sameScaffoldGrid;
-      this.sameScaffoldpageLength = this.filtSameScaffoldGrid.length;
-      this.sameScaffoldPage = this.filtSameScaffoldGrid.slice(0, this.sameScaffoldpageSize);
-    } else {
-      this.filtSimilarLigandsGrid = this.similarLigandsGrid;
-      this.similarLigandpageLength = this.filtSimilarLigandsGrid.length;
-      this.similarLigandsPage = this.filtSimilarLigandsGrid.slice(0, this.similarLigandpageSize);
+  private setUpPagination(type: string): void {
+    switch (type) {
+      case 'samescaffold':
+        this.filtSameScaffoldGrid = this.sameScaffoldGrid;
+        this.sameScaffoldpageLength = this.filtSameScaffoldGrid.length;
+        this.sameScaffoldPage = this.filtSameScaffoldGrid.slice(0, this.sameScaffoldpageSize);
+        break;
+      case 'similarligand':
+        this.filtSimilarLigandsGrid = this.similarLigandsGrid;
+        this.similarLigandpageLength = this.filtSimilarLigandsGrid.length;
+        this.similarLigandsPage = this.filtSimilarLigandsGrid.slice(0, this.similarLigandpageSize);
+        break;
+      case 'stereoisomers':
+        this.filtStereoisomersGrid = this.stereoisomersGrid;
+        this.stereoisomerspageLength = this.filtStereoisomersGrid.length;
+        this.stereoisomersPage = this.filtStereoisomersGrid.slice(0, this.stereoisomerspageSize);
+        break;
     }
+  }
+  private fetchBoundEntriesWithFallback(chemCompId: string): Observable<string[]> {
+    return this.aggregatedApiService.fetchBoundEntries(chemCompId).pipe(
+      catchError(() => of([])) // Return an empty array on error
+    );
+  }
+  private aggregateLigandEntries(
+    similarLigandBoundEntries: Observable<string[]>[],
+    sameScaffoldBoundEntries: Observable<string[]>[],
+    stereoisomersBoundEntries: Observable<string[] | any>[]
+  ): Observable<any> {
+    const observablesToJoin = [];
+
+    if (similarLigandBoundEntries.length > 0) {
+      observablesToJoin.push(forkJoin(similarLigandBoundEntries));
+    } else {
+      observablesToJoin.push(of([]));
+    }
+
+    if (sameScaffoldBoundEntries.length > 0) {
+      observablesToJoin.push(forkJoin(sameScaffoldBoundEntries));
+    } else {
+      observablesToJoin.push(of([]));
+    }
+
+    if (stereoisomersBoundEntries.length > 0) {
+      observablesToJoin.push(forkJoin(stereoisomersBoundEntries));
+    } else {
+      observablesToJoin.push(of([]));
+    }
+
+    return forkJoin(observablesToJoin).pipe(
+      mergeMap(([similarLigandBoundEntriesArray, sameScaffoldBoundEntriesArray, stereoisomersBoundEntriesArray]) => {
+        return of({
+          similarLigandBoundEntriesArray,
+          sameScaffoldBoundEntriesArray,
+          stereoisomersBoundEntriesArray,
+        });
+      })
+    );
   }
 }

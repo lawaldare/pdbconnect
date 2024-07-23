@@ -1,10 +1,10 @@
 <div id="related-ligand-section">
   <h3 class="title">Related Ligands</h3>
   @if(sameScaffolds.length){
-  <div id="scaffold-section">
+  <section id="scaffold-section">
     <h4>Same scaffold - {{ sameScaffolds.length }}</h4>
     <div class="search-box">
-      <input type="search" [formControl]="sameScaffoldTerm" placeholder="Search for scaffold by name, code or PDB ID" />
+      <input type="search" [formControl]="sameScaffoldTerm" placeholder="Search by name or ligandId" />
       @if(!sameScaffoldTerm.value){
       <i class="icon icon-common icon-search"></i>
       }
@@ -24,13 +24,13 @@
       aria-label="Select page of ligands"
     >
     </mat-paginator>
-  </div>
+  </section>
   } @if(similarLigands.length){
-  <div id="similar-ligand-section">
+  <section id="similar-ligand-section">
     <h4>Similar ligands - {{ similarLigands.length }}</h4>
     <div class="filter-box">
       <div class="search-box">
-        <input type="search" [formControl]="sameLigandsTerm" placeholder="Search for scaffold by name, code or PDB ID" />
+        <input type="search" [formControl]="sameLigandsTerm" placeholder="Search by name or ligandId" />
         @if(!sameLigandsTerm.value){
         <i class="icon icon-common icon-search"></i>
         }
@@ -55,6 +55,33 @@
       aria-label="Select page of ligands"
     >
     </mat-paginator>
-  </div>
+  </section>
+  } @if(stereoisomers.length){
+  <section id="similar-ligand-section">
+    <h4>Stereoisomers - {{ stereoisomers.length }}</h4>
+    <div class="filter-box">
+      <div class="search-box">
+        <input type="search" [formControl]="stereoisomerTerm" placeholder="Search by name or ligandId" />
+        @if(!sameLigandsTerm.value){
+        <i class="icon icon-common icon-search"></i>
+        }
+      </div>
+    </div>
+    <div class="grid-container">
+      @for (stereoisomer of stereoisomersPage; track stereoisomer) {
+      <pdbc-ligand-grid [ligand]="stereoisomer"></pdbc-ligand-grid>
+      }
+    </div>
+    <mat-paginator
+      class="paginator-container"
+      [length]="stereoisomerspageLength"
+      [pageSize]="stereoisomerspageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="handlePageEvent($event, 'similar')"
+      showFirstLastButtons
+      aria-label="Select page of ligands"
+    >
+    </mat-paginator>
+  </section>
   }
 </div>
