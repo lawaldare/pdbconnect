@@ -19,7 +19,6 @@ import { RouterModule } from '@angular/router';
 })
 export class PdbeHeaderSearchComponent implements OnInit {
   @Input() headerSearchConfig!: HeaderSearchConfig;
-  showClearIcon = signal(false);
   searchTermStream = new Subject<string>();
 
   public buttonTheme!: string;
@@ -39,11 +38,6 @@ export class PdbeHeaderSearchComponent implements OnInit {
       .pipe(
         debounceTime(300), // wait for 300ms pause in events
         distinctUntilChanged(),
-        tap((value) => {
-          console.log(value);
-          const result = value ? true : false;
-          this.showClearIcon.set(result);
-        }),
         filter(Boolean)
       )
       .subscribe((value) => {

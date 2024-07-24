@@ -6,7 +6,7 @@
       <button class="vf-button vf-button--search-{{ buttonTheme }} mobile">
         <i class="icon icon-common icon-search"></i>
       </button>
-      @if(showClearIcon()){
+      @if(form.controls.searchTerm.value){
       <i class="icon icon-common icon-times"></i>
       }
     </form>

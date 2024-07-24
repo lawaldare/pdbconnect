@@ -7,8 +7,8 @@
     <article>
       @if(description){
       <section class="hero">
-        <h2 class="id">{{ ligandId }}</h2>
-        <h4 class="name">{{ description.name }}</h4>
+        <h2>{{ ligandId }}</h2>
+        <h4>{{ description.name }}</h4>
         @for(annotation of description.annotations; track annotation.name){
         <pdbc-pdbe-chips [label]="annotation.name | titlecase" [url]="annotation.url" backgroundColor="#F9CF3B" fontColor="#1A1C1A"></pdbc-pdbe-chips>
         }

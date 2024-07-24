@@ -38,6 +38,7 @@ const mockDescription = {
     num_aliphatic_heterocycles: 6,
   },
   annotations: [],
+  crossLinks: [],
 };
 
 describe('DescriptionComponent', () => {
