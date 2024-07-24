@@ -208,10 +208,27 @@ export class ImageCarouselComponent implements AfterViewInit {
     // console.log(this.currentSlide);
     this.setDepictionProperty(this.ligandEv, this.currentSlide);
 
+    if (this.currentSlide === this.slides().length - 1) {
+      console.log('I am here');
+      // this.currentSlide = 1;
+      for (let index = 0; index < this.slides().length; index++) {
+        if (index === 0) {
+          this.renderer.addClass(slideElements[index], 'active');
+        } else {
+          this.renderer.removeClass(slideElements[index], 'active');
+        }
+        if (index < 3) {
+          this.renderer.setStyle(slideElements[index], 'display', 'flex'); // <--- Highlighted change
+        } else {
+          this.renderer.setStyle(slideElements[index], 'display', 'none'); // <--- Highlighted change
+        }
+      }
+    }
+
     for (let index = 0; index < totalSlides; index++) {
       const slideIndex = (this.currentSlide + index) % totalSlides;
 
-      console.log(index, slideIndex, this.currentSlide);
+      // console.log('index:-', index, 'slideIndex:-', slideIndex, 'currentSlide:-', this.currentSlide);
 
       if (index === this.currentSlide) {
         this.renderer.addClass(slideElements[index], 'active');
@@ -219,13 +236,24 @@ export class ImageCarouselComponent implements AfterViewInit {
         this.renderer.removeClass(slideElements[index], 'active');
       }
 
-      // if (index < 3) {
-      //   this.renderer.setStyle(slideElements[slideIndex], 'display', 'flex');
-      //   this.setDepictionProperty(slideElements[slideIndex].firstElementChild, slideIndex);
+      if (this.currentSlide > 2 && this.currentSlide < this.slides().length) {
+        if (index >= this.currentSlide - 2 && index <= this.currentSlide) {
+          this.renderer.setStyle(slideElements[index], 'display', 'flex');
+          this.setDepictionProperty(slideElements[slideIndex], this.currentSlide);
+        } else {
+          this.renderer.setStyle(slideElements[index], 'display', 'none');
+        }
+      }
+
+      // if (index >= this.currentSlide && index < this.currentSlide + 3) {
+      //   this.renderer.setStyle(slideElements[index], 'display', 'flex');
+      //   this.setDepictionProperty(slideElements[index].firstElementChild, index);
       // } else {
-      //   this.renderer.setStyle(slideElements[slideIndex], 'display', 'none');
+      //   this.renderer.setStyle(slideElements[index], 'display', 'none');
       // }
     }
+
+    console.log(slideElements);
 
     this.setDepictionDescription();
   }
@@ -291,6 +319,8 @@ export class ImageCarouselComponent implements AfterViewInit {
       this.ligandEv = ligand;
     }
   }
+
+  // private restartSubstructuresView(){}
 
   private resetRenderer(): void {
     const slideContainer = this.slideContainer.nativeElement;
