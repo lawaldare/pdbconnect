@@ -1,0 +1,55 @@
+#ligand-databases-section {
+  font-family: 'IBM Plex Sans';
+  line-height: 27.2px;
+}
+
+p {
+  margin: 0;
+}
+
+h3 {
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 39px;
+  margin-bottom: 12px;
+}
+
+.cross-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  row-gap: 16px;
+  column-gap: 40px;
+
+  @media screen and (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media screen and (max-width: 540px) {
+    grid-template-columns: 1fr;
+  }
+
+  .cross-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    p {
+      color: var(--Neutral-900, #1a1c1a);
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    a {
+      box-shadow: none;
+      border: none;
+      color: var(--Blue-600, #3b6fb6);
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 27.2px;
+
+      i {
+        margin-left: 10px;
+      }
+    }
+  }
+}

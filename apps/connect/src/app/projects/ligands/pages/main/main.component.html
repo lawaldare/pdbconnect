@@ -36,9 +36,11 @@
       <div class="related-ligands">
         <pdbc-related-ligands></pdbc-related-ligands>
       </div>
+      @if(description){
       <div class="ligand-specific-databases">
-        <pdbc-ligand-specific-databases></pdbc-ligand-specific-databases>
+        <pdbc-ligand-specific-databases [crossLinks]="description.crossLinks"></pdbc-ligand-specific-databases>
       </div>
+      }
     </article>
   </div>
 </main>

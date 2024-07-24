@@ -54,7 +54,7 @@ export class RelatedLigandsComponent implements OnInit {
   public sameLigandsTerm = new FormControl('');
   public stereoisomerTerm = new FormControl('');
 
-  public similarityFrom = new FormControl(0);
+  public similarityFrom = new FormControl(60);
   public similarityTo = new FormControl(100);
 
   handlePageEvent(event: PageEvent, filterOn: string) {

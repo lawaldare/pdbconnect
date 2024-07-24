@@ -17,6 +17,7 @@ export interface DescriptionData {
   smiles: string;
   properties: PhysChemProperties;
   annotations: FunctionalAnnotation[];
+  crossLinks: CrossLink[];
 }
 
 export interface downloadData {
@@ -24,6 +25,11 @@ export interface downloadData {
   idealSDF: string;
   modelSDF: string;
   modelCML: string;
+}
+
+export interface CrossLink {
+  resource: string;
+  resource_id: string;
 }
 
 @Injectable({
@@ -92,6 +98,7 @@ export class AggregatedApiService {
     const ligandSummary = data[ligandId][0];
     const ligandProperties = ligandSummary['phys_chem_properties'];
     const ligandAnnotations = ligandSummary['functional_annotations'];
+    const ligandCrossLinks = ligandSummary['cross_links'];
 
     let synonyms;
 
@@ -113,6 +120,7 @@ export class AggregatedApiService {
       smiles: ligandSummary.smiles,
       properties: ligandProperties,
       annotations: ligandAnnotations,
+      crossLinks: ligandCrossLinks,
     };
   }
 
