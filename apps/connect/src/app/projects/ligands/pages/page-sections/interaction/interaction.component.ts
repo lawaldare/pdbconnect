@@ -1,23 +1,11 @@
-import {
-  Component,
-  Input,
-  CUSTOM_ELEMENTS_SCHEMA,
-  ViewChild,
-  Renderer2,
-  ElementRef,
-  AfterViewInit,
-  DestroyRef,
-  inject,
-  ChangeDetectorRef,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild, Renderer2, ElementRef, AfterViewInit, DestroyRef, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction } from '../../../data-models/structure.model';
 import { IntxDataUrl, PDBIntxData } from '../../../data-models/interaction.model';
 import { ActivatedRoute } from '@angular/router';
-import { EMPTY, map, mergeMap, of, switchMap, tap } from 'rxjs';
+import { EMPTY, map, mergeMap, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -27,11 +15,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   templateUrl: './interaction.component.html',
   styleUrl: './interaction.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InteractionComponent implements AfterViewInit {
   public ligandId!: string;
-  private intxUrl!: string;
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   @ViewChild('ligandEnv', { read: ElementRef }) ligandEnvContainer!: ElementRef;
@@ -46,6 +32,7 @@ export class InteractionComponent implements AfterViewInit {
   private readonly renderer = inject(Renderer2);
   private readonly cdr = inject(ChangeDetectorRef);
   private interaction!: any;
+  public showLigandInteraction = false;
 
   renderHeatMap(interaction: PDBIntxData) {
     const ligandHeatmap = this.ligandHeatMapContainer.nativeElement;
@@ -63,7 +50,6 @@ export class InteractionComponent implements AfterViewInit {
         switchMap((params) => {
           this.resetRenderer();
           this.ligandId = params['ligandId'].toUpperCase();
-          this.cdr.detectChanges();
           return this.aggregatedApiService.fetchDepiction(this.ligandId);
         }),
         mergeMap((depiction: Depiction) => {
@@ -72,12 +58,14 @@ export class InteractionComponent implements AfterViewInit {
         }),
         map((intxDataUrl: IntxDataUrl) => {
           const interaction = intxDataUrl.interactions;
-          this.intxUrl = intxDataUrl.IntxUrl;
           this.interaction = interaction;
-          if (interaction?.[this.ligandId]) {
+          if (interaction && interaction[this.ligandId]) {
+            this.showLigandInteraction = true;
             this.renderer.setProperty(this.ligandEv, 'interaction', interaction[this.ligandId]);
             this.renderer.setProperty(this.ligandEv, 'contactType', '["TOTAL"]');
             this.renderHeatMap(interaction);
+          } else {
+            this.resetRenderer();
           }
           return EMPTY;
         }),

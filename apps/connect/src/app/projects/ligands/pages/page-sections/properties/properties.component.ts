@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PhysChemProperties, LigandProperty } from '../../../data-models/description.model';
 import { NameValueComponent } from '../../section-components/name-value/name-value.component';
@@ -9,15 +9,17 @@ import { NameValueComponent } from '../../section-components/name-value/name-val
   imports: [CommonModule, NameValueComponent],
   templateUrl: './properties.component.html',
   styleUrls: ['./properties.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PropertiesComponent implements OnChanges {
+  @Input() properties!: PhysChemProperties;
+
   public molProperties: LigandProperty[] = [];
   public confProperties: LigandProperty[] = [];
   public ringProperties: LigandProperty[] = [];
   public surfProperties: LigandProperty[] = [];
   public funProperties: LigandProperty[] = [];
   public stereoProperties: LigandProperty[] = [];
-  @Input() properties!: PhysChemProperties;
   private propertiesToJSON!: Record<string, any[]>;
 
   ngOnChanges() {

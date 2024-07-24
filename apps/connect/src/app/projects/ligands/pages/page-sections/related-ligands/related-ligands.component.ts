@@ -75,6 +75,14 @@ export class RelatedLigandsComponent implements OnInit {
         this.sameScaffoldPage = this.filtSameScaffoldGrid.slice(startIndex, endIndex);
         break;
       }
+      case 'stereoisomer': {
+        this.stereoisomerspageIndex = event.pageIndex;
+        this.stereoisomerspageSize = event.pageSize;
+        const startIndex = this.stereoisomerspageIndex * this.stereoisomerspageSize;
+        const endIndex = startIndex + this.stereoisomerspageSize;
+        this.stereoisomersPage = this.filtStereoisomersGrid.slice(startIndex, endIndex);
+        break;
+      }
     }
   }
 
@@ -167,9 +175,9 @@ export class RelatedLigandsComponent implements OnInit {
       .pipe(
         map((searchQuery) => {
           if (searchQuery) {
-            return this.filterItemsBySearchQuery(searchQuery, this.unfilteredSimilarLigandsGrid);
+            return this.filterItemsBySearchQuery(searchQuery, this.unfilteredStereoisomers);
           } else {
-            return this.unfilteredSimilarLigandsGrid;
+            return this.unfilteredStereoisomers;
           }
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -200,7 +208,7 @@ export class RelatedLigandsComponent implements OnInit {
       });
   }
 
-  private filterItemsBySearchQuery(searchQuery: string, items: LigandGrid[]): LigandGrid[] {
+  private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
     return items.filter((item) => {
       const searchQueryLower = searchQuery.toLocaleLowerCase();
       return item.name.toLocaleLowerCase().indexOf(searchQueryLower) !== -1 || item.chem_comp_id.toString().toLocaleLowerCase().indexOf(searchQueryLower) !== -1;

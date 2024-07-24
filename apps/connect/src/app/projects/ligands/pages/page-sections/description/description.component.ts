@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DescriptionData } from '../../../services/aggregated-api.service';
 import { MaterialModule, TruncateTextDirective } from '@pdbc/core';
@@ -11,6 +11,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   imports: [CommonModule, TruncateTextDirective, MaterialModule, ClipboardModule],
   templateUrl: './description.component.html',
   styleUrls: ['./description.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DescriptionComponent {
   @Input() description!: DescriptionData;
