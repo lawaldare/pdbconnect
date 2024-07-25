@@ -65,10 +65,12 @@ h4 {
 }
 
 .slide-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
+  // display: flex;
+  // flex-direction: row;
+  // justify-content: center;
+  // align-items: center;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   align-self: stretch;
 }

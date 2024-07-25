@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, DestroyRef, signal, computed } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, DestroyRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction } from '../../../data-models/structure.model';
@@ -20,15 +20,13 @@ export class ImageCarouselComponent implements AfterViewInit {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
   public readonly arrowSrc = '/assets/images/left_arrow.svg';
   public ligandId!: string;
-  currentSlide = 0;
+  private currentSlide = 0;
   private substructureNames = signal<string[]>([]);
-  substructureAtoms!: Array<string[]>;
+  private substructureAtoms!: Array<string[]>;
   private slides = signal<number[]>([]);
-  structureDescription = '';
-  private count = 0;
+  public structureDescription = '';
   public showTooltips = false;
 
-  // @ViewChild('ligandEnv', { read: ElementRef }) ligandEnvContainer!: ElementRef;
   @ViewChild('slide', { read: ElementRef }) slideContainer!: ElementRef;
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
@@ -47,7 +45,6 @@ export class ImageCarouselComponent implements AfterViewInit {
           this.resetRenderer();
           this.ligandId = params['ligandId'].toUpperCase();
           this.init(this.ligandId);
-          // this.renderLigand(this.ligandId);
           return of({});
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -80,7 +77,7 @@ export class ImageCarouselComponent implements AfterViewInit {
             this.substructureAtoms.push(atom);
           }
         }
-        // this.substructureNames.update((values) => [...values, `Murcko scaffold`]);
+        this.substructureNames.update((values) => [...values, `Murcko scaffold`]);
         this.substructureAtoms.push(Object.values(substructure['scaffold'])[0]);
         if (this.substructureNames().length > 0) {
           this.generateSlideNumbers();
@@ -99,42 +96,20 @@ export class ImageCarouselComponent implements AfterViewInit {
    * Controls the previous click on the image carousel
    * Updates the slides and renders the substructures
    */
-  // onPreviousClick() {
-  //   const previous = this.currentSlide - 1;
-  //   this.currentSlide = previous < 0 ? this.substructureNames().length + 1 : previous;
-  //   if (!this.slides().includes(this.currentSlide)) {
-  //     this.slides()[2] = this.slides()[1];
-  //     this.slides()[1] = this.slides()[0];
-  //     this.slides()[0] = this.currentSlide;
-  //   }
-
-  //   this.renderSubstructure();
-  // }
 
   onPreviousClick() {
     this.currentSlide = (this.currentSlide - 1 + this.slides().length) % this.slides().length;
-    this.renderSubstructure(); // <--- Highlighted change
+    this.renderSubstructure();
   }
 
   /**
    * Controls the next click on the image carousel
    * Updates the slides and renders the substructures
    */
-  // onNextClick() {
-  //   const next = this.currentSlide + 1;
-  //   this.currentSlide = next === this.substructureNames().length + 2 ? 0 : next;
-  //   if (!this.slides().includes(this.currentSlide)) {
-  //     this.slides()[0] = this.slides()[1];
-  //     this.slides()[1] = this.slides()[2];
-  //     this.slides()[2] = this.currentSlide;
-  //   }
-  //   this.renderSubstructure();
-  // }
 
   onNextClick() {
     this.currentSlide = (this.currentSlide + 1) % this.slides().length;
-    console.log('CURRENT SLIDE', this.currentSlide);
-    this.renderSubstructure(); // <--- Highlighted change
+    this.renderSubstructure();
   }
 
   /**
@@ -153,8 +128,6 @@ export class ImageCarouselComponent implements AfterViewInit {
       default:
         this.structureDescription = `${this.substructureNames()[this.currentSlide - 2]} highlighted in gray`;
     }
-
-    // this.structureDescription = `Structural representation of ${this.ligandId} with ${this.substructureNames()[this.currentSlide]} highlighted`;
   }
 
   /**
@@ -176,91 +149,29 @@ export class ImageCarouselComponent implements AfterViewInit {
         this.renderer.setProperty(el, 'atomNames', false);
         this.renderer.setProperty(el, 'highlightSubstructure', this.substructureAtoms[this.currentSlide - 2]);
     }
-
-    // this.renderer.setProperty(el, 'highlightSubstructure', this.substructureAtoms[this.currentSlide]);
   }
 
   /**
    * Highlight substructures
    * Sets depiction description
    */
-  // private renderSubstructure() {
-  //   const slideContainer = this.slideContainer.nativeElement;
-  //   this.setDepictionProperty(this.ligandEv, this.currentSlide);
-  //   const slideElements = slideContainer.children;
-  //   for (let i = 0; i < slideElements.length; i++) {
-  //     if (this.slides()[i] == this.currentSlide) {
-  //       this.renderer.addClass(slideElements[i], 'active');
-  //     } else {
-  //       this.renderer.removeClass(slideElements[i], 'active');
-  //     }
 
-  //     const ligandEl = slideElements[i].firstElementChild;
-  //     this.setDepictionProperty(ligandEl, this.slides()[i]);
-  //   }
-  //   this.setDepictionDescription();
-  // }
   private renderSubstructure() {
     const slideContainer = this.slideContainer.nativeElement;
-    const slideElements = slideContainer.children;
-    const totalSlides = slideElements.length;
-    // console.log(slideElements);
-    // console.log(this.currentSlide);
     this.setDepictionProperty(this.ligandEv, this.currentSlide);
-
-    if (this.currentSlide === this.slides().length - 1) {
-      console.log('I am here');
-      // this.currentSlide = 1;
-      for (let index = 0; index < this.slides().length; index++) {
-        if (index === 0) {
-          this.renderer.addClass(slideElements[index], 'active');
-        } else {
-          this.renderer.removeClass(slideElements[index], 'active');
-        }
-        if (index < 3) {
-          this.renderer.setStyle(slideElements[index], 'display', 'flex'); // <--- Highlighted change
-        } else {
-          this.renderer.setStyle(slideElements[index], 'display', 'none'); // <--- Highlighted change
-        }
-      }
-    }
-
-    for (let index = 0; index < totalSlides; index++) {
-      const slideIndex = (this.currentSlide + index) % totalSlides;
-
-      // console.log('index:-', index, 'slideIndex:-', slideIndex, 'currentSlide:-', this.currentSlide);
-
-      if (index === this.currentSlide) {
-        this.renderer.addClass(slideElements[index], 'active');
+    const slideElements = slideContainer.children;
+    for (let i = 0; i < slideElements.length; i++) {
+      if (this.slides()[i] == this.currentSlide) {
+        this.renderer.addClass(slideElements[i], 'active');
       } else {
-        this.renderer.removeClass(slideElements[index], 'active');
+        this.renderer.removeClass(slideElements[i], 'active');
       }
 
-      if (this.currentSlide > 2 && this.currentSlide < this.slides().length) {
-        if (index >= this.currentSlide - 2 && index <= this.currentSlide) {
-          this.renderer.setStyle(slideElements[index], 'display', 'flex');
-          this.setDepictionProperty(slideElements[slideIndex], this.currentSlide);
-        } else {
-          this.renderer.setStyle(slideElements[index], 'display', 'none');
-        }
-      }
-
-      // if (index >= this.currentSlide && index < this.currentSlide + 3) {
-      //   this.renderer.setStyle(slideElements[index], 'display', 'flex');
-      //   this.setDepictionProperty(slideElements[index].firstElementChild, index);
-      // } else {
-      //   this.renderer.setStyle(slideElements[index], 'display', 'none');
-      // }
+      const ligandEl = slideElements[i].firstElementChild;
+      this.setDepictionProperty(ligandEl, this.slides()[i]);
     }
-
-    console.log(slideElements);
-
     this.setDepictionDescription();
   }
-
-  // 0 1 2 3 4
-  // 0 1 2 3 4
-  //
 
   /**
    * Renders first view of image carousel
@@ -276,32 +187,16 @@ export class ImageCarouselComponent implements AfterViewInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((depiction: Depiction) => {
         this.createLigandEnvironment(imageContainer, depiction, true);
-        console.log(this.substructureNames());
         if (this.substructureNames().length > 0) {
-          // for (const slide of this.slides()) {
-          //   const div = this.renderer.createElement('div');
-          //   this.renderer.appendChild(slideContainer, div);
-          //   this.renderer.addClass(div, 'slide');
-          //   if (slide === 0) {
-          //     this.renderer.addClass(div, 'active');
-          //   }
-          //   this.divsRendered.push(div);
-          //   this.createLigandEnvironment(div, depiction);
-          //   // this.setDepictionProperty(slideEl, slide);
-          // }
-          console.log(this.slides());
-          for (let i = 0; i < this.slides().length; i++) {
+          for (const slide of this.slides()) {
             const div = this.renderer.createElement('div');
             this.renderer.appendChild(slideContainer, div);
             this.renderer.addClass(div, 'slide');
-            if (i === 0) this.renderer.addClass(div, 'active');
-            if (i < 3) {
-              this.renderer.setStyle(div, 'display', 'flex'); // <--- Highlighted change
-            } else {
-              this.renderer.setStyle(div, 'display', 'none'); // <--- Highlighted change
+            if (slide === 0) {
+              this.renderer.addClass(div, 'active');
             }
             this.divsRendered.push(div);
-            this.createLigandEnvironment(div, depiction);
+            this.createLigandEnvironment(div, depiction, false, slide);
           }
         }
 
@@ -309,18 +204,23 @@ export class ImageCarouselComponent implements AfterViewInit {
       });
   }
 
-  private createLigandEnvironment(container: ElementRef, prop: Depiction, mainLigand = false): void {
+  private createLigandEnvironment(container: ElementRef, prop: Depiction, mainLigand = false, slide?: number): void {
     const ligand = this.renderer.createElement('pdb-ligand-env');
     this.renderer.appendChild(container, ligand);
     this.renderer.setProperty(ligand, 'depiction', prop);
+
+    if (slide === 0) {
+      this.setDepictionProperty(ligand, slide);
+    }
+    if (slide) {
+      this.setDepictionProperty(ligand, slide);
+    }
 
     if (mainLigand) {
       this.renderer.setAttribute(ligand, 'depiction-only', '');
       this.ligandEv = ligand;
     }
   }
-
-  // private restartSubstructuresView(){}
 
   private resetRenderer(): void {
     const slideContainer = this.slideContainer.nativeElement;
