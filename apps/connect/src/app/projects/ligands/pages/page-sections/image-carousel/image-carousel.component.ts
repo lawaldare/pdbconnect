@@ -204,10 +204,10 @@ export class ImageCarouselComponent implements AfterViewInit {
       });
   }
 
-  private createLigandEnvironment(container: ElementRef, prop: Depiction, mainLigand = false, slide?: number): void {
+  private createLigandEnvironment(container: ElementRef, depiction: Depiction, mainLigand = false, slide?: number): void {
     const ligand = this.renderer.createElement('pdb-ligand-env');
     this.renderer.appendChild(container, ligand);
-    this.renderer.setProperty(ligand, 'depiction', prop);
+    this.renderer.setProperty(ligand, 'depiction', depiction);
 
     if (slide === 0) {
       this.setDepictionProperty(ligand, slide);
