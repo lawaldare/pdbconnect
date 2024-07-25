@@ -147,7 +147,7 @@ export class ImageCarouselComponent implements AfterViewInit {
 
       default:
         this.renderer.setProperty(el, 'atomNames', false);
-        this.renderer.setProperty(el, 'highlightSubstructure', this.substructureAtoms[this.currentSlide - 2]);
+        this.renderer.setProperty(el, 'highlightSubstructure', this.substructureAtoms[index - 2]);
     }
   }
 
