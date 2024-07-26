@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PhysChemProperties, LigandProperty } from '../../../data-models/description.model';
 import { NameValueComponent } from '../../section-components/name-value/name-value.component';
@@ -9,46 +9,26 @@ import { NameValueComponent } from '../../section-components/name-value/name-val
   imports: [CommonModule, NameValueComponent],
   templateUrl: './properties.component.html',
   styleUrls: ['./properties.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PropertiesComponent implements OnInit {
-  molProperties: LigandProperty[] = [];
-  confProperties: LigandProperty[] = [];
-  ringProperties: LigandProperty[] = [];
-  surfProperties: LigandProperty[] = [];
-  funProperties: LigandProperty[] = [];
-  stereoProperties: LigandProperty[] = [];
-  @Input() properties: PhysChemProperties = {
-    exactmw: 0,
-    num_heavy_atoms: 0,
-    num_heteroatoms: 0,
-    labute_asa: 0,
-    fraction_csp3: 0,
-    crippen_mr: 0,
-    crippen_clog_p: 0,
-    num_rotatable_bonds: 0,
-    num_aromatic_rings: 0,
-    num_rings: 0,
-    num_aliphatic_rings: 0,
-    num_heterocycles: 0,
-    num_saturated_rings: 0,
-    num_aromatic_heterocycles: 0,
-    num_saturated_heterocycles: 0,
-    num_aliphatic_heterocycles: 0,
-    num_spiro_atoms: 0,
-    num_bridgehead_atoms: 0,
-    tpsa: 0,
-    num_hbd: 0,
-    num_hba: 0,
-    num_amide_bonds: 0,
-    num_atom_stereo_centers: 0,
-    lipinski_hba: 0,
-    num_unspec_atom_stereo_centers: 0,
-    lipinski_hbd: 0,
-  };
+export class PropertiesComponent implements OnChanges {
+  @Input() properties!: PhysChemProperties;
 
-  ngOnInit() {
+  public molProperties: LigandProperty[] = [];
+  public confProperties: LigandProperty[] = [];
+  public ringProperties: LigandProperty[] = [];
+  public surfProperties: LigandProperty[] = [];
+  public funProperties: LigandProperty[] = [];
+  public stereoProperties: LigandProperty[] = [];
+  private propertiesToJSON!: Record<string, any[]>;
+
+  ngOnChanges() {
     this.molProperties = [
       { name: 'Molecular weight', value: `${this.properties.exactmw} Da` },
+      {
+        name: 'Labute accessible surface area',
+        value: `${this.properties.labute_asa} &#8491; <sup>2</sup>`,
+      },
       {
         name: 'Heavy atoms',
         value: `${this.properties.num_heavy_atoms}`,
@@ -57,10 +37,7 @@ export class PropertiesComponent implements OnInit {
         name: 'Heteroatoms',
         value: `${this.properties.num_heteroatoms}`,
       },
-      {
-        name: 'Labute accessible surface area',
-        value: `${this.properties.labute_asa} &#8491; <sup>2</sup>`,
-      },
+
       {
         name: 'Carbon SP3 value',
         value: `${this.properties.fraction_csp3}`,
@@ -149,5 +126,31 @@ export class PropertiesComponent implements OnInit {
         value: `${this.properties.num_atom_stereo_centers}`,
       },
     ];
+
+    this.propertiesToJSON = {
+      molProperties: [
+        { name: 'Molecular weight', value: this.properties.exactmw },
+        {
+          name: 'Labute accessible surface area',
+          value: this.properties.labute_asa,
+        },
+        ...this.molProperties.slice(2),
+      ],
+      confProperties: [...this.confProperties],
+      ringProperties: [...this.ringProperties],
+      surfProperties: [...this.surfProperties],
+      funProperties: [...this.funProperties],
+      stereoProperties: [...this.stereoProperties],
+    };
+  }
+
+  public downloadJSON(): void {
+    const blob = new Blob([JSON.stringify(this.propertiesToJSON, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'physiochemical-properties.json';
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 }

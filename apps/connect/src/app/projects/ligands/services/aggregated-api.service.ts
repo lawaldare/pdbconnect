@@ -8,7 +8,7 @@ import { PDBRelatedLigands, BoundEntries, RelatedLigand } from '../data-models/r
 import { PDBIntxData, IntxDataUrl } from '../data-models/interaction.model';
 import { shareReplay, map } from 'rxjs';
 
-export type descriptionData = {
+export interface DescriptionData {
   name: string;
   synonyms: string;
   formula: string;
@@ -17,13 +17,19 @@ export type descriptionData = {
   smiles: string;
   properties: PhysChemProperties;
   annotations: FunctionalAnnotation[];
-};
+  crossLinks: CrossLink[];
+}
 
 export interface downloadData {
   cif: string;
   idealSDF: string;
   modelSDF: string;
   modelCML: string;
+}
+
+export interface CrossLink {
+  resource: string;
+  resource_id: string;
 }
 
 @Injectable({
@@ -88,10 +94,11 @@ export class AggregatedApiService {
     );
   }
 
-  processDescriptionData(ligandId: string, data: PDBLigandDescription): descriptionData {
+  processDescriptionData(ligandId: string, data: PDBLigandDescription): DescriptionData {
     const ligandSummary = data[ligandId][0];
     const ligandProperties = ligandSummary['phys_chem_properties'];
     const ligandAnnotations = ligandSummary['functional_annotations'];
+    const ligandCrossLinks = ligandSummary['cross_links'];
 
     let synonyms;
 
@@ -113,6 +120,7 @@ export class AggregatedApiService {
       smiles: ligandSummary.smiles,
       properties: ligandProperties,
       annotations: ligandAnnotations,
+      crossLinks: ligandCrossLinks,
     };
   }
 

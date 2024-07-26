@@ -1,3 +1,13 @@
 .mdc-list {
   padding: 0 !important;
 }
+
+thead {
+  tr {
+    th {
+      @media screen and (max-width: 767px) {
+        white-space: nowrap !important;
+      }
+    }
+  }
+}

@@ -1,30 +1,32 @@
-.interaction-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 16px;
-  align-self: stretch;
+#interaction-section {
+  font-family: 'IBM Plex Sans';
+  line-height: 27.2px;
 }
 
-.interaction-header {
-  display: flex;
-  align-items: baseline;
-  gap: 20px;
-  align-self: stretch;
+h3 {
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 39px;
+  margin-bottom: 20px;
 }
 
-.view-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding-bottom: 40px;
+article {
+  color: #000;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 23px;
+
+  p {
+    margin-top: 7px;
+    a {
+      color: var(--Blue-600, #3b6fb6);
+      border: none;
+    }
+  }
 }
 
-.heatmap-description {
-  display: flex;
-  flex-direction: column;
-  width: 70%;
-  gap: 16px;
+button {
+  margin-bottom: 16px;
 }
 
 .intx-component-container {
@@ -32,6 +34,13 @@
   padding-top: 16px;
   width: 100%;
   justify-content: space-between;
+  gap: 37.92px;
+
+  pdbe-ligand-interactions {
+    @media screen and (max-width: 540px) {
+      display: none;
+    }
+  }
 }
 
 .heatmap-container {
@@ -44,16 +53,33 @@
   display: flex;
   align-items: stretch;
   flex-direction: column;
-  width: 20%;
+  width: 270px;
+
+  @media screen and (max-width: 767px) {
+    width: 100%;
+  }
+
+  .ligandEnv-header {
+    h4 {
+      font-size: 21px;
+      font-weight: 500;
+      margin-bottom: 17px;
+
+      img {
+        display: inline;
+      }
+    }
+  }
 }
 
-.ligandEnv-content {
+.image-container {
   height: 380px;
   border: 1px solid var(--Neutral-200, #e4e4e4);
 }
 
-#helper_icon {
-  width: 18px;
-  height: 18px;
-  padding-left: 5px;
+.empty-text {
+  font-family: 'IBM Plex Sans';
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 27.2px;
 }

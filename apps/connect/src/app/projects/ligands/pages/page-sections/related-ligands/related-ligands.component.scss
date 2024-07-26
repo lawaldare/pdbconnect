@@ -1,72 +1,81 @@
-.related-ligands-container {
-  display: flex;
-  width: 100%;
-  padding-bottom: 40px;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
+#related-ligands-section {
+  font-family: 'IBM Plex Sans';
+  line-height: 27.2px;
 }
 
-.scaffold-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  align-self: stretch;
+.title {
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 39px;
+  margin-bottom: 20px;
 }
 
-.header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  align-self: stretch;
+h4 {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 31.2px;
+  margin-bottom: 12px;
 }
 
-.scaffold-header {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.search-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  width: 30%;
-  border-bottom: 1px solid var(--Neutral-600, #707372);
-}
-
-.form_input {
+.filter-box {
   display: flex;
   align-items: center;
-  border: none;
-  width: 100%;
-  height: 30px;
 }
 
-.gallery-container {
+.search-box {
+  position: relative;
+  width: 350px;
+  font-size: 16px;
+
+  input {
+    border: none;
+    border-bottom: 1px solid var(--Neutral-600, #707372);
+    box-shadow: none;
+    padding-left: 0px;
+  }
+
+  .icon-search {
+    position: absolute;
+    right: 5px;
+    top: 12px;
+    color: #707372;
+  }
+}
+
+.similarity-box {
+  margin-left: 54px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  align-self: stretch;
+
+  span {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 27.2px; /* 170% */
+    display: block;
+  }
+
+  input {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 22.4px;
+    border: 2px solid var(--Neutral-600, #707372);
+    background: #fff;
+    width: 75px;
+    height: 32px;
+    padding: 8px;
+    margin: 0;
+  }
 }
 
 .grid-container {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 12px;
-  width: 100%;
-  flex-wrap: wrap;
-}
-
-input:focus {
-  outline: none;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  column-gap: 80px;
+  row-gap: 12px;
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .paginator-container {

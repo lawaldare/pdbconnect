@@ -1,11 +1,10 @@
-@import 'libs/pdbe/styles/src/lib/pdbe-styles/typography.scss';
-@import 'libs/pdbe/styles/src/lib/pdbe-styles/icons.scss';
-
+:host {
+  font-family: 'IBM Plex Sans';
+}
 .dropdown-holder {
-  --dropdown-width: 154px;
   display: flex;
-  width: var(--dropdown-width);
-  // width: 154px;
+  min-width: 152px;
+  width: 100%;
   padding: 8px 12px;
   justify-content: space-between;
   align-items: center;
@@ -13,46 +12,38 @@
   background-color: #ffffff;
   box-sizing: border-box;
   cursor: pointer;
+  gap: 16px;
+  color: var(--Neutral-900, #1a1c1a);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 27.2px;
 }
 .dropdown-holder:focus {
   border: 1px solid #3b6fb6;
 }
-.dropdown-text {
-  font-weight: 600;
-}
 .dropdown-options {
-  --dropdown-opts-width: 197px;
-  --dropdown-opts-maxheight: 392px;
-  // position: absolute;
-  position: relative;
-  z-index: 5;
-  margin-top: 4px;
-  // top: 2px;
-  // right: 0;
   border-radius: 2px;
   box-shadow: 1px 1px 4px 0px rgba(0, 0, 0, 0.25);
-  width: var(--dropdown-opts-width);
-  max-height: var(--dropdown-opts-maxheight);
+  min-width: 200px;
+  width: 100%;
+  max-height: 400px;
   overflow-y: auto;
   background-color: #ffffff;
+  z-index: 99;
+  position: relative;
+
+  &.closed {
+    display: none;
+  }
 }
-.dropdown-options.closed {
-  display: none;
-}
+
 i.open {
   transform: rotate(180deg);
 }
-.dropdown-options-container {
-  position: relative;
-  // top: 2px;
-  display: block;
-  width: 100%;
-  z-index: 5;
-  background-color: #ffffff;
-}
+
 .dropdown-option {
   width: 100%;
-  min-height: 39px;
+  height: 40px;
   padding: 8px 12px;
   box-sizing: border-box;
   cursor: pointer;

@@ -1,79 +1,87 @@
-@if(ligandId){
-<div id="related-ligand-section" class="related-ligands-container">
-  <div class="header">
-    <span class="heading-2"> Related ligands</span>
-  </div>
-  @if(sameScaffolds.length > 0){
-  <div id="scaffold-section" class="scaffold-container">
-    <div class="scaffold-header">
-      <span class="heading-3">Same scaffold - {{ sameScaffolds.length }}</span>
+<div id="related-ligand-section">
+  <h3 class="title">Related Ligands</h3>
+  @if(sameScaffolds.length){
+  <section id="scaffold-section">
+    <h4>Same scaffold - {{ sameScaffolds.length }}</h4>
+    <div class="search-box">
+      <input type="search" [formControl]="sameScaffoldTerm" placeholder="Search by name or ligandId" />
+      @if(!sameScaffoldTerm.value){
+      <i class="icon icon-common icon-search"></i>
+      }
     </div>
-    <div class="gallery-container">
-      <form class="search-container">
-        <input
-          type="search"
-          (search)="applyFilter('same')"
-          [(ngModel)]="sameScaffoldSearchText"
-          placeholder="Search for ligand by name, code or PDB ID"
-          class="form_input"
-          name="search"
-        />
-        <img src="{{ searchLogo }}" />
-      </form>
-      <div class="grid-container">
-        @for (sameScaffold of sameScaffoldPage; track sameScaffold) {
-        <pdbc-ligand-grid [ligand]="sameScaffold"></pdbc-ligand-grid>
-        }
-      </div>
-      <mat-paginator
-        class="paginator-container"
-        [length]="sameScaffoldpageLength"
-        [pageSize]="sameScaffoldpageSize"
-        [pageSizeOptions]="pageSizeOptions"
-        (page)="handlePageEvent($event, 'same')"
-        showFirstLastButtons
-        aria-label="Select page of ligands"
-      >
-      </mat-paginator>
+    <div class="grid-container">
+      @for (sameScaffold of sameScaffoldPage; track sameScaffold) {
+      <pdbc-ligand-grid [ligand]="sameScaffold"></pdbc-ligand-grid>
+      }
     </div>
-  </div>
+    <mat-paginator
+      class="paginator-container"
+      [length]="sameScaffoldpageLength"
+      [pageSize]="sameScaffoldpageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="handlePageEvent($event, 'same')"
+      showFirstLastButtons
+      aria-label="Select page of ligands"
+    >
+    </mat-paginator>
+  </section>
   } @if(similarLigands.length){
-  <div id="similar-ligand-section" class="scaffold-container">
-    <div class="scaffold-header">
-      <span class="heading-3">Similar ligands - {{ similarLigands.length }}</span>
-    </div>
-    <div class="gallery-container">
-      <form class="search-container">
-        <input
-          type="search"
-          (search)="applyFilter('similar')"
-          [(ngModel)]="similarLigandSearchText"
-          placeholder="Search for ligand by name, code or PDB ID"
-          class="form_input"
-          name="search"
-        />
-        <img src="{{ searchLogo }}" />
-      </form>
-      <div class="grid-container">
-        @for (similarLigand of similarLigandsPage; track similarLigand) {
-        <pdbc-ligand-grid [ligand]="similarLigand"></pdbc-ligand-grid>
+  <section id="similar-ligand-section">
+    <h4>Similar ligands - {{ similarLigands.length }}</h4>
+    <div class="filter-box">
+      <div class="search-box">
+        <input type="search" [formControl]="sameLigandsTerm" placeholder="Search by name or ligandId" />
+        @if(!sameLigandsTerm.value){
+        <i class="icon icon-common icon-search"></i>
         }
       </div>
-      <mat-paginator
-        class="paginator-container"
-        [length]="similarLigandpageLength"
-        [pageSize]="similarLigandpageSize"
-        [pageSizeOptions]="pageSizeOptions"
-        (page)="handlePageEvent($event, 'similar')"
-        showFirstLastButtons
-        aria-label="Select page of ligands"
-      >
-      </mat-paginator>
+      <div class="similarity-box">
+        <span>Filter by similarity between</span> <input type="number" [formControl]="similarityFrom" placeholder="60%" /> <span>and</span>
+        <input type="number" [formControl]="similarityTo" placeholder="100%" />
+      </div>
     </div>
-  </div>
+    <div class="grid-container">
+      @for (similarLigand of similarLigandsPage; track similarLigand) {
+      <pdbc-ligand-grid [ligand]="similarLigand"></pdbc-ligand-grid>
+      }
+    </div>
+    <mat-paginator
+      class="paginator-container"
+      [length]="similarLigandpageLength"
+      [pageSize]="similarLigandpageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="handlePageEvent($event, 'similar')"
+      showFirstLastButtons
+      aria-label="Select page of ligands"
+    >
+    </mat-paginator>
+  </section>
+  } @if(stereoisomers.length){
+  <section id="similar-ligand-section">
+    <h4>Stereoisomers - {{ stereoisomers.length }}</h4>
+    <div class="filter-box">
+      <div class="search-box">
+        <input type="search" [formControl]="stereoisomerTerm" placeholder="Search by name or ligandId" />
+        @if(!sameLigandsTerm.value){
+        <i class="icon icon-common icon-search"></i>
+        }
+      </div>
+    </div>
+    <div class="grid-container">
+      @for (stereoisomer of stereoisomersPage; track stereoisomer) {
+      <pdbc-ligand-grid [ligand]="stereoisomer"></pdbc-ligand-grid>
+      }
+    </div>
+    <mat-paginator
+      class="paginator-container"
+      [length]="stereoisomerspageLength"
+      [pageSize]="stereoisomerspageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="handlePageEvent($event, 'stereoisomer')"
+      showFirstLastButtons
+      aria-label="Select page of ligands"
+    >
+    </mat-paginator>
+  </section>
   }
 </div>
-
-}
-
-<!-- } -->

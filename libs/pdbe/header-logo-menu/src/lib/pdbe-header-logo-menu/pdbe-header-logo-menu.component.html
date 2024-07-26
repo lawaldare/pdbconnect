@@ -1,24 +1,27 @@
-<div class="pdbe-header-logo-menu-top" [ngStyle]="{ 'background-color': backgroundColor }">
-  <div class="pdbe-header-logo-menu" [ngStyle]="{ 'background-color': backgroundColor }">
-    <div class="pdbe-header-logo-menu-container">
-      <div class="header-logo-img-title">
-        <img [ngClass]="getHeaderLogoClass()" src="{{ headerLogoSrc }}" alt="" />
-        <span id="header-title" class="heading-1"> {{ headerTitle }}</span>
-      </div>
-      <div class="pdbe-header-logo-menu-icons">
-        <i class="icon icon-common icon-bars" [ngClass]="getCollapsedClass(false)" (click)="invertCollapseState()" style="width: 32px; height: 32px"></i>
-        <i class="icon icon-common icon-close" [ngClass]="getCollapsedClass(true)" (click)="invertCollapseState()" style="width: 24px; height: 24px"></i>
-      </div>
-      <ng-container *ngTemplateOutlet="pdbeHeaderLogoLinks; context: { forMobile: false }"></ng-container>
+<section [ngStyle]="{ 'background-color': headerConfig.backgroundColor }">
+  <div class="container">
+    <div class="header-logo">
+      <img [ngClass]="getHeaderLogoClass" src="{{ headerLogoSrc }}" alt="logo" />
+      <span class="header-title">{{ headerConfig.headerTitle }}</span>
     </div>
-    <ng-container *ngTemplateOutlet="pdbeHeaderLogoLinks; context: { forMobile: true }"></ng-container>
+    <i class="icon icon-common icon-align-justify" (click)="showMobileMenu()"></i>
+    <ul class="nav-links">
+      @for(link of links; track link.name){
+      <li class="nav-link">
+        <a [href]="link.path" target="_blank">{{ link.name }}</a>
+      </li>
+      }
+    </ul>
   </div>
-</div>
-<ng-template #pdbeHeaderLogoLinks let-node="forMobile">
-  <div class="pdbe-header-logo-menu-urls" [ngClass]="getCollapsedClass(true)">
-    <div *ngFor="let url of urls" [ngClass]="{ 'hoverable-mobile-menu': node }" [ngStyle]="{ '--bg-color': menuHighlightColor }">
-      <!-- <a class="pdbe-header-menu-link paragraph-2 paragraph-2-menu-link" href="{{ url.path }}" target="_blank">{{ url.name }}</a> -->
-      <pdbc-pdbe-link-button [externalLink]="true" [label]="url.name" [url]="url.path" [fontStyle]="'paragraph-2'" [fontColor]="'#FFFFFF'"> </pdbc-pdbe-link-button>
-    </div>
-  </div>
-</ng-template>
+</section>
+@if(isMobile()){
+<section class="mobile-menu" [ngStyle]="{ 'background-color': headerConfig.backgroundColor }">
+  <ul class="nav-links">
+    @for(link of links; track link.name){
+    <li class="nav-link">
+      <a [href]="link.path" target="_blank">{{ link.name }}</a>
+    </li>
+    }
+  </ul>
+</section>
+}

@@ -1,86 +1,90 @@
-<div id="structures-section" class="structure-container">
-  <span id="structure-title" class="heading-2"> Structures </span>
+<div id="structures-section">
+  <h3>Structures</h3>
   <mat-tab-group>
     <mat-tab>
       <ng-template mat-tab-label>
-        <span class="heading-4"> {{ this.structureData.length }} PDB structures</span>
+        <h4>{{ this.structureData.length }} PDB structures</h4>
       </ng-template>
-      <div class="controller">
+      <div class="controllers">
+        <div class="downloads" libClickOutside (clickOutside)="onClickedOutside()">
+          <button class="vf-button vf-button--link" (click)="onShowOptions()">
+            <span>Download structures</span>
+            <i class="icon icon-common icon-chevron-down"></i>
+          </button>
+          @if(showOptions){
+          <section class="download-options">
+            <span (click)="downloadCSV()">Table .csv</span>
+            <span>3D coordinates .mmCIF</span>
+          </section>
+          }
+        </div>
         <div class="filters">
           <span id="filter_head" class="paragraph-3">Show only</span>
-          <div class="role">
-            <mat-checkbox [(ngModel)]="cofactor" (change)="applyFilter()" class="paragraph-3">Cofactor-like</mat-checkbox>
-            <mat-checkbox [(ngModel)]="reactant" (change)="applyFilter()" class="paragraph-3">Reactant-like</mat-checkbox>
-            <mat-checkbox [(ngModel)]="drug" (change)="applyFilter()" class="paragraph-3">Drug-like</mat-checkbox>
-            <mat-checkbox [(ngModel)]="unannotated" (change)="applyFilter()" class="paragraph-3">Unannotated</mat-checkbox>
-            <form class="search">
-              <input type="search" (search)="applyFilter()" [(ngModel)]="searchText" placeholder="Search the table" class="form_input" name="search" />
-              <img src="{{ searchLogo }}" />
-            </form>
-          </div>
+          <form [formGroup]="form">
+            <div class="checkbox-field" for="cofactor">
+              <input type="checkbox" id="cofactor" formControlName="cofactorLike" />
+              <label for="cofactor">Cofactor-like</label>
+              <lib-tool-tip></lib-tool-tip>
+            </div>
+            <div class="checkbox-field">
+              <input type="checkbox" id="reactant" formControlName="reactantLike" />
+              <label for="reactant">Reactant-like</label>
+              <lib-tool-tip></lib-tool-tip>
+            </div>
+            <div class="checkbox-field">
+              <input type="checkbox" id="drug" formControlName="drugLike" />
+              <label for="drug">Drug-like</label>
+              <lib-tool-tip></lib-tool-tip>
+            </div>
+            <div class="checkbox-field">
+              <input type="checkbox" id="unannotated" formControlName="unannotated" />
+              <label for="unannotated">Unannotated</label>
+              <lib-tool-tip></lib-tool-tip>
+            </div>
+          </form>
+        </div>
+        <div class="search-box">
+          <input type="search" [formControl]="searchText" placeholder="Search the table" class="form_input" name="search" />
+          <i class="icon icon-common icon-search"></i>
         </div>
       </div>
       <div>
-        <table mat-table [dataSource]="dataSource" matSort>
+        <table mat-table [dataSource]="dataSource" matSort id="structure-table">
           <!-- Position Column -->
           <ng-container matColumnDef="name">
-            <th class="heading-5" mat-header-cell *matHeaderCellDef>Protein name</th>
-            <td id="name" mat-cell *matCellDef="let item">{{ item.name }}</td>
+            <th mat-header-cell *matHeaderCellDef>Protein name</th>
+            <td mat-cell *matCellDef="let item">{{ item.name }}</td>
           </ng-container>
 
           <!-- Name Column -->
           <ng-container matColumnDef="id">
-            <th class="heading-5" mat-header-cell *matHeaderCellDef>PDBe-KB Proteins</th>
-            <td class="table_row" mat-cell *matCellDef="let item">
-              <pdbc-pdbe-link-button
-                [externalLink]="true"
-                [label]="item.id"
-                [url]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + item.id"
-                [fontStyle]="'heading-5'"
-                [fontColor]="'#3B6FB6'"
-                [hoverColor]="'#193F90'"
-                [visitedColor]="'#563D82'"
-                [focusBorderColor]="'#3B6FB6'"
-                [activeFontWeight]="300"
-                [whiteSpace]="'normal'"
-                [mobileIconName]="'link'"
-              ></pdbc-pdbe-link-button>
+            <th mat-header-cell *matHeaderCellDef>PDBe-KB Proteins</th>
+            <td mat-cell *matCellDef="let item">
+              <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + item.id" target="_blank">
+                {{ item.id }}
+                <i class="icon icon-link icon-common"></i>
+              </a>
             </td>
           </ng-container>
 
           <!-- Weight Column -->
           <ng-container matColumnDef="ec_number">
-            <th class="heading-5" mat-header-cell *matHeaderCellDef>EC number</th>
-            <td class="table_row" mat-cell *matCellDef="let item">{{ item.ec_number }}</td>
+            <th mat-header-cell *matHeaderCellDef>EC number</th>
+            <td mat-cell *matCellDef="let item">{{ item.ec_number }}</td>
           </ng-container>
 
           <!-- Symbol Column -->
           <ng-container matColumnDef="annotation">
-            <th class="heading-5" mat-header-cell *matHeaderCellDef>Ligand annotation</th>
-            <td class="table_row" mat-cell *matCellDef="let item">{{ item.annotation }}</td>
+            <th mat-header-cell *matHeaderCellDef>Ligand annotation</th>
+            <td mat-cell *matCellDef="let item">{{ item.annotation }}</td>
           </ng-container>
 
           <ng-container matColumnDef="count">
-            <th class="heading-5" mat-header-cell *matHeaderCellDef mat-sort-header disableClear>Total structures</th>
-            <td class="table_row" mat-cell *matCellDef="let item">{{ item.count }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="rep_structure">
-            <th class="heading-5" mat-header-cell *matHeaderCellDef>PDB structure</th>
-            <td class="table_row" mat-cell *matCellDef="let item">
-              <pdbc-pdbe-link-button
-                [externalLink]="true"
-                [label]="item.rep_structure"
-                [url]="'entry/' + item.rep_structure"
-                [fontStyle]="'heading-5'"
-                [fontColor]="'#3B6FB6'"
-                [hoverColor]="'#193F90'"
-                [visitedColor]="'#563D82'"
-                [focusBorderColor]="'#3B6FB6'"
-                [activeFontWeight]="300"
-                [whiteSpace]="'normal'"
-                [mobileIconName]="'link'"
-              ></pdbc-pdbe-link-button>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header disableClear>Total structures</th>
+            <td mat-cell *matCellDef="let item">
+              <a [href]="olamide" target="_blank">
+                {{ item.count }}
+              </a>
             </td>
           </ng-container>
 
@@ -93,7 +97,7 @@
         </div>
       </div>
     </mat-tab>
-    <mat-tab>
+    <mat-tab [disabled]="true">
       <ng-template mat-tab-label>
         <span class="heading-4"> 20 Nucleic Acids (50 PDB structures) </span>
       </ng-template>

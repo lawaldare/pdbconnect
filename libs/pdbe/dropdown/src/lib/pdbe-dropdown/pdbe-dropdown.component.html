@@ -1,15 +1,7 @@
-<div>
-  <div class="dropdown-holder" [ngStyle]="{ '--dropdown-width': dropdownWidth }" (click)="expandedStatus = !expandedStatus; clicked()">
-    <span class="paragraph-3 dropdown-text">{{ dropdownText }}</span>
-    <i class="icon icon-common icon-arrow-down" [ngClass]="expandedStatus ? 'open' : ''"></i>
-  </div>
-  <div
-    class="dropdown-options"
-    [ngStyle]="{ '--dropdown-opts-width': optionsWidth, '--dropdown-opts-maxheight': optionsMaxHeight }"
-    [ngClass]="expandedStatus ? '' : 'closed'"
-  >
-    <div class="dropdown-options-container">
-      <a *ngFor="let opt of options" class="dropdown-option paragraph-4" [href]="opt.url" target="_blank">{{ opt.name }}</a>
-    </div>
-  </div>
+<div class="dropdown-holder" (click)="toggleDropdown()">
+  <span>{{ dropdownText }}</span>
+  <i class="icon icon-common icon-arrow-down" [ngClass]="expandedStatus() ? 'open' : ''"></i>
+</div>
+<div class="dropdown-options" [ngClass]="expandedStatus() ? '' : 'closed'">
+  <a *ngFor="let opt of options" class="dropdown-option" [href]="opt.url" target="_blank">{{ opt.name }}</a>
 </div>

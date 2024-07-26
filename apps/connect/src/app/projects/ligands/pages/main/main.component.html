@@ -1,95 +1,46 @@
-<pdbc-pdbe-header-logo-menu
-  [backgroundColor]="'#085F5C'"
-  [logoType]="'PDBe-KB'"
-  [urls]="[
-    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
-    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
-    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' }
-  ]"
-  [menuHighlightColor]="'#086C68'"
-  [headerTitle]="'Ligands'"
-></pdbc-pdbe-header-logo-menu>
-<pdbc-pdbe-header-search
-  [backgroundColor]="'rgba(8, 95, 92, 0.79)'"
-  [hasAdvancedSearch]="false"
-  [buttonText]="'Search'"
-  [examples]="[
-    { label: 'STI', url: 'ligands/STI' },
-    { label: 'IMATINIB', url: 'ligands/STI' }
-  ]"
-  [placeholder]="'Search in PDBe and PDBe-KB'"
-  [suggestions]="[]"
-  [searchButtonChipsType]="'PDBe-KB'"
-></pdbc-pdbe-header-search>
-<div id="main-container-outer">
-  @if(ligandId && description){
-  <div id="main-container">
-    <div id="main-left-container">
-      <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections"></pdbc-pdbe-nav-menu>
-    </div>
-    <div id="main-right-container">
-      <div id="main-fixed-top-white-bg"></div>
-      <div id="main-right-sticky">
-        <div class="title">
-          <span id="main-title">{{ ligandId }}</span>
-          <span class="heading-3">{{ description.name }} </span>
-        </div>
-        <div *ngFor="let annotation of description.annotations" id="annotation">
-          <pdbc-pdbe-chips
-            [label]="annotation.name | titlecase"
-            [url]="annotation.url"
-            [backgroundColor]="'#F9CF3B'"
-            [highlightColor]="'#F9CF3B'"
-            [fontColor]="'#1A1C1A'"
-          ></pdbc-pdbe-chips>
-        </div>
-        <div id="main-btn-bar" [ngClass]="expandedDropdowns ? 'expanded' : ''">
-          <pdbc-pdbe-button
-            [backgroundColor]="'#056643'"
-            [fontColor]="'#FFFFFF'"
-            [borderColor]="'#056643'"
-            [shadowColor]="'#0A5032'"
-            [label]="'View 3D'"
-            [paddingSize]="'Small'"
-            [mobileIconName]="'none'"
-          ></pdbc-pdbe-button>
-          <div class="main-btn-bar-break-column"></div>
-          <pdbc-pdbe-dropdown
-            #dDropdown
-            class="hide-mobile"
-            [elementId]="'dwl-btn'"
-            [dropdownText]="'Download as'"
-            [options]="downloadOptions"
-            [optionsWidth]="'296px'"
-            [optionsMaxHeight]="'334px'"
-          ></pdbc-pdbe-dropdown>
-        </div>
-      </div>
-      <div id="description-container">
-        <pdbc-description
-          [name]="description.name"
-          [synonyms]="description.synonyms"
-          [formula]="description.formula"
-          [inchi]="description.inchi"
-          [inchikey]="description.inchikey"
-          [smiles]="description.smiles"
-        ></pdbc-description>
-        <pdbc-image-carousel [ligandId]="ligandId"></pdbc-image-carousel>
-      </div>
-      <div id="property-container">
-        <pdbc-properties [properties]="description.properties"></pdbc-properties>
-      </div>
-      <div id="structure-container">
-        <pdbc-structures [ligandId]="ligandId"></pdbc-structures>
-      </div>
-      <div id="interaction-container">
-        <pdbc-interaction [ligandId]="ligandId"></pdbc-interaction>
-      </div>
-      <div id="related-ligands-container">
-        <pdbc-related-ligands [ligandId]="ligandId"></pdbc-related-ligands>
-      </div>
-    </div>
-  </div>
+<pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig"></pdbc-pdbe-header-logo-menu>
+<pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig"></pdbc-pdbe-header-search>
 
-  }
-</div>
+<main>
+  <div class="container">
+    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections"></pdbc-pdbe-nav-menu>
+    <article>
+      @if(description){
+      <section class="hero">
+        <h2>{{ ligandId }}</h2>
+        <h4>{{ description.name }}</h4>
+        @for(annotation of description.annotations; track annotation.name){
+        <pdbc-pdbe-chips [label]="annotation.name | titlecase" [url]="annotation.url" backgroundColor="#F9CF3B" fontColor="#1A1C1A"></pdbc-pdbe-chips>
+        }
+        <div class="action-buttons" [ngClass]="expandedDropdowns() ? 'expanded' : ''">
+          <button class="vf-button vf-button--primary vf-button--sm">View 3D</button>
+          <div class="drop-down">
+            <pdbc-pdbe-dropdown #dDropdown dropdownText="Download as" [options]="downloadOptions" elementId="dwld"></pdbc-pdbe-dropdown>
+          </div>
+        </div>
+      </section>
+      <section class="description">
+        <pdbc-description [description]="description"></pdbc-description>
+        <pdbc-image-carousel #imageCarouselRef></pdbc-image-carousel>
+      </section>
+      <section class="property">
+        <pdbc-properties [properties]="description.properties"></pdbc-properties>
+      </section>
+      }
+      <section class="structure">
+        <pdbc-structures></pdbc-structures>
+      </section>
+      <section class="interaction">
+        <pdbc-interaction></pdbc-interaction>
+      </section>
+      <div class="related-ligands">
+        <pdbc-related-ligands></pdbc-related-ligands>
+      </div>
+      @if(description){
+      <div class="ligand-specific-databases">
+        <pdbc-ligand-specific-databases [crossLinks]="description.crossLinks"></pdbc-ligand-specific-databases>
+      </div>
+      }
+    </article>
+  </div>
+</main>

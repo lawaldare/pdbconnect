@@ -1,68 +1,70 @@
-.description-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
-}
-
-.description-graphics {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 38px;
-}
-#description-title {
-  color: #000;
-}
-
-.info-row {
-  color: var(--Neutral-900, #1a1c1a);
+#description-section {
+  width: 716px;
   font-family: 'IBM Plex Sans';
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 27.2px; /* 170% */
-}
+  line-height: 27.2px;
 
-.description-info-rows {
-  margin-top: 16px;
-}
-.info-row-content {
-  max-width: 534px;
-}
+  @media screen and (max-width: 767px) {
+    width: 100%;
+  }
 
-#formula-box {
-  display: flex;
-  padding: 4px 12px;
-  align-items: flex-start;
-  gap: 10px;
-  background: var(--Neutral-100, #f3f3f3);
-}
+  .title {
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 39px;
+    margin-bottom: 20px;
+  }
 
-@media screen and (max-width: 1024px) {
-  .info-row-content {
-    max-width: 522px;
+  article {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    i.icon-clone {
+      cursor: pointer;
+      color: #3b6fb6;
+    }
   }
-}
-@media screen and (max-width: 768px) {
-  .info-row-content {
-    max-width: 324px;
-  }
-}
-@media screen and (max-width: 540px) {
-  .info-row-content {
-    max-width: 347px;
-  }
-  .info-row-title {
-    width: 120px;
-  }
-}
-@media screen and (max-width: 375px) {
-  .info-row-content {
-    max-width: 222px;
-  }
-  .info-row-title {
-    width: 90px;
+
+  .info-row {
+    display: flex;
+    position: relative;
+
+    &.formula-row {
+      justify-content: flex-start;
+    }
+
+    &.source-row {
+      div.info-row-content {
+        flex-direction: row;
+        gap: 5px;
+        a {
+          color: #3b6fb6;
+          border: none;
+          cursor: pointer;
+          i.icon {
+            margin-top: 5px;
+            margin-left: 5px;
+          }
+        }
+      }
+    }
+
+    &-title {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    &-content {
+      font-size: 16px;
+      font-weight: 400;
+
+      &.formula {
+        max-width: fit-content;
+        padding: 4px 12px;
+        background: var(--Neutral-100, #f3f3f3);
+        font-weight: 500;
+        line-height: 23px;
+      }
+    }
   }
 }

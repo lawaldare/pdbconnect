@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DropdownService } from './pdbe-dropdown.service';
 
@@ -11,14 +11,12 @@ import { DropdownService } from './pdbe-dropdown.service';
 })
 export class PdbeDropdownComponent implements OnInit, OnDestroy {
   @Input() dropdownText = '';
-  @Input() dropdownWidth = '154px';
   @Input() options: { name: string; url: string; downloadable: boolean }[] = [];
-  @Input() optionsWidth = '197px';
-  @Input() optionsMaxHeight = '392px';
-  @Input() autoCloseOtherDropdowns = true;
-
   @Input() elementId = 'default';
-  expandedStatus = false;
+
+  private autoCloseOtherDropdowns = true;
+  public expandedStatus = signal(false);
+
   @Output() dropdownClicked: EventEmitter<string> = new EventEmitter();
 
   constructor(private dropdownService: DropdownService) {
@@ -26,7 +24,7 @@ export class PdbeDropdownComponent implements OnInit, OnDestroy {
     // if id of new element is clicked
     this.dropdownService.getCurrentDropdownValue().subscribe((newValue) => {
       if (this.autoCloseOtherDropdowns && this.elementId !== newValue) {
-        this.closeDropdown();
+        this.expandedStatus.set(false);
       }
     });
   }
@@ -45,14 +43,9 @@ export class PdbeDropdownComponent implements OnInit, OnDestroy {
     }
   }
 
-  closeDropdown() {
-    this.expandedStatus = false;
-  }
-
-  clicked() {
-    this.dropdownClicked.emit(this.elementId);
+  public toggleDropdown() {
+    this.expandedStatus.update((value) => !value);
     if (this.autoCloseOtherDropdowns) {
-      // when clicked element sends it's id to help icon siblings to close
       this.dropdownService.setCurrentDropdownValue(this.elementId);
     }
   }

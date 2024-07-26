@@ -1,53 +1,23 @@
-<div class="search-top-container-marginbox" [ngStyle]="{ 'background-color': backgroundColor }">
-  <div class="search-top-container" [ngStyle]="{ 'background-color': backgroundColor }">
-    <div class="search-bar-btn-container flexbox-row">
-      <div class="flexbox-column-1">
-        <input
-          #searchBox
-          autocomplete="off"
-          placeholder="{{ placeholder }}"
-          id="searchitem"
-          class="paragraph-2-enforce vf-form__input pdbeAutoCompleteSearchBox"
-          required=""
-          spellcheck="false"
-          data-ms-editor="true"
-          (keyup)="search(searchBox.value)"
-          (keyup.enter)="openSearch(searchBox.value)"
-        />
+<section [ngStyle]="{ 'background-color': headerSearchConfig.backgroundColor }">
+  <div class="container">
+    <form [formGroup]="form" (ngSubmit)="onSubmit(form)">
+      <input type="text" class="input-field" formControlName="searchTerm" placeholder="Search in PDBe and PDBe-KB" />
+      <button class="vf-button vf-button--search-{{ buttonTheme }}">Search</button>
+      <button class="vf-button vf-button--search-{{ buttonTheme }} mobile">
+        <i class="icon icon-common icon-search"></i>
+      </button>
+      @if(form.controls.searchTerm.value){
+      <i class="icon icon-common icon-times"></i>
+      }
+    </form>
+    <section>
+      <div class="left">
+        Examples: @for(example of headerSearchConfig.examples; track example.label){
+        <a [ngClass]="chipBg" [routerLink]="example.url">{{ example.label }}</a>
+        }
       </div>
-      <div class="flexbox-column-2">
-        <pdbc-pdbe-button
-          *ngIf="searchButtonStyle"
-          [backgroundColor]="searchButtonStyle.backgroundColor"
-          [fontColor]="searchButtonStyle.fontColor"
-          [borderColor]="searchButtonStyle.borderColor"
-          [shadowColor]="searchButtonStyle.shadowColor"
-          [label]="searchButtonStyle.label"
-          [paddingSize]="searchButtonStyle.paddingSize"
-          [mobileIconName]="searchButtonStyle.mobileIconName"
-        >
-        </pdbc-pdbe-button>
-      </div>
-    </div>
-    <div class="search-examples-container flexbox-row" *ngIf="examples && examples.length > 0">
-      <div class="flexbox-column-1">
-        <div class="search-example-chips flexbox-row">
-          <span class="search-example-title paragraph-3 flexbox-column-no-flex" style="color: white">Examples:</span>
-          <div class="flexbox-column-no-flex" *ngFor="let example of examples">
-            <pdbc-pdbe-chips
-              *ngIf="searchChipsStyle"
-              [label]="example.label"
-              [url]="example.url"
-              [backgroundColor]="searchChipsStyle.backgroundColor"
-              [highlightColor]="searchChipsStyle.highlightColor"
-              [fontColor]="'white'"
-            ></pdbc-pdbe-chips>
-          </div>
-        </div>
-      </div>
-      <div *ngIf="hasAdvancedSearch" class="search-advanced-container flexbox-column-2">
-        <pdbc-pdbe-link-button [label]="'Advanced search'" [fontStyle]="'paragraph-3'" [fontColor]="'#FFFFFF'"></pdbc-pdbe-link-button>
-      </div>
-    </div>
+      <!-- //TODO:To be implemented later! -->
+      <!-- <div class="right">Advanced search</div> -->
+    </section>
   </div>
-</div>
+</section>

@@ -234,7 +234,7 @@ export class PdbeNavMenuComponent implements OnInit {
       }
     }
     // Calculate the target scroll position, adjusting for sticky element height and a small offset
-    const targetPosition = target.getBoundingClientRect().top + window.scrollY - extraHeight - 10;
+    const targetPosition = target?.getBoundingClientRect().top + window.scrollY - extraHeight - 10;
 
     // Get the current scroll position
     const startPosition = window.scrollY;

@@ -1,14 +1,5 @@
-<pdbc-pdbe-header-logo-menu
-  [backgroundColor]="'#056643'"
-  [logoType]="'PDBe'"
-  [urls]="[
-    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
-    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
-    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' }
-  ]"
-  [menuHighlightColor]="'#0a5032'"
-></pdbc-pdbe-header-logo-menu>
-<pdbc-pdbe-header-search
+<pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig"></pdbc-pdbe-header-logo-menu>
+<!-- <pdbc-pdbe-header-search
   [backgroundColor]="'#007B53'"
   [hasAdvancedSearch]="true"
   [buttonText]="'Search'"
@@ -25,7 +16,7 @@
   [placeholder]="'Search in PDBe and PDBe-KB'"
   [suggestions]="[]"
   [searchButtonChipsType]="'PDBe'"
-></pdbc-pdbe-header-search>
+></pdbc-pdbe-header-search> -->
 <div id="main-container-outer">
   @if (entryId && entryData) {
   <div id="main-container">
@@ -37,7 +28,7 @@
         <span id="main-title">{{ entryId }}</span>
         <span id="main-subtitle">{{ entryData.title }}</span>
         <div id="main-btn-bar" [ngClass]="expandedDropdowns ? 'expanded' : ''">
-          <pdbc-pdbe-button
+          <!-- <pdbc-pdbe-button
             [backgroundColor]="'#C66717'"
             [fontSize]="'16px'"
             [fontColor]="'#FFFFFF'"
@@ -46,25 +37,12 @@
             [label]="'View 3D structure'"
             [paddingSize]="'Small'"
             [mobileIconName]="'none'"
-          ></pdbc-pdbe-button>
+          ></pdbc-pdbe-button> -->
+          <button class="vf-button vf-button--primary">View 3D structure</button>
+
           <div class="main-btn-bar-break-column"></div>
-          <pdbc-pdbe-dropdown
-            #vDropdown
-            class="hide-mobile"
-            [dropdownText]="'Download files'"
-            [options]="downloadOptions"
-            [dropdownWidth]="'166px'"
-            [optionsWidth]="'296px'"
-            [optionsMaxHeight]="'334px'"
-          ></pdbc-pdbe-dropdown>
-          <pdbc-pdbe-dropdown
-            #dDropdown
-            class="hide-mobile"
-            [dropdownText]="'View files'"
-            [options]="viewOptions"
-            [optionsWidth]="'197px'"
-            [optionsMaxHeight]="'390px'"
-          ></pdbc-pdbe-dropdown>
+          <pdbc-pdbe-dropdown #vDropdown class="hide-mobile" [dropdownText]="'Download files'" [options]="downloadOptions"></pdbc-pdbe-dropdown>
+          <pdbc-pdbe-dropdown #dDropdown class="hide-mobile" [dropdownText]="'View files'" [options]="viewOptions"></pdbc-pdbe-dropdown>
         </div>
       </div>
       <div id="main-summary-holder">

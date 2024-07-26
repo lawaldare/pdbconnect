@@ -1,7 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
+import { HeaderLogoMenuConfig, PDBE_HEADER_LOGO_SRC, PDBE_KB_HEADER_LOGO_SRC } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-pdbe-header-logo-menu',
@@ -10,44 +11,26 @@ import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
   templateUrl: './pdbe-header-logo-menu.component.html',
   styleUrls: ['./pdbe-header-logo-menu.component.scss'],
 })
-export class PdbeHeaderLogoMenuComponent {
-  @Input() backgroundColor = '';
-  @Input() logoType = '';
-  @Input() urls: { name: string; path: string }[] = [];
-  @Input() menuHighlightColor = '';
-  @Input() headerTitle = '';
-  headerLogoSrc = '';
-  collapsedMenu = true;
+export class PdbeHeaderLogoMenuComponent implements OnInit {
+  @Input() headerConfig!: HeaderLogoMenuConfig;
+  public headerLogoSrc = '';
+  public isMobile = signal(false);
+
+  public readonly links = [
+    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
+    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
+    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
+  ];
 
   ngOnInit() {
-    if (this.logoType === 'PDBe') {
-      this.headerLogoSrc = '/assets/images/PDBe-letterhead-white-RGB_2013.png';
-    } else if (this.logoType === 'PDBe-KB') {
-      this.headerLogoSrc = '/assets/images/PDBE-KB_logo_2019_white_text.png';
-    }
+    this.headerLogoSrc = this.headerConfig.logoType === 'PDBE' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
   }
 
-  getHeaderLogoClass() {
-    if (this.logoType === 'PDBe') {
-      return 'pdbe-header-logo-img';
-    } else if (this.logoType === 'PDBe-KB') {
-      return 'pdbe-kb-header-logo-img';
-    }
-    return '';
+  public get getHeaderLogoClass(): string {
+    return this.headerConfig.logoType === 'PDBE' ? 'pdbe-header-logo-img' : 'pdbe-kb-header-logo-img';
   }
 
-  getCollapsedClass(isCollapsedDefault: boolean) {
-    if (isCollapsedDefault && this.collapsedMenu) {
-      return 'collapsed';
-    } else if (isCollapsedDefault && !this.collapsedMenu) {
-      return 'expanded';
-    } else if (!isCollapsedDefault && this.collapsedMenu) {
-      return 'expanded';
-    }
-    return 'collapsed';
-  }
-
-  invertCollapseState() {
-    this.collapsedMenu = !this.collapsedMenu;
+  public showMobileMenu(): void {
+    this.isMobile.update((value) => !value);
   }
 }

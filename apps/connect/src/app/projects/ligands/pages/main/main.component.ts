@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, HostListener, OnInit } from '@angular/core';
+import { Component, ElementRef, ViewChild, HostListener, OnInit, inject, DestroyRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DescriptionComponent } from '../page-sections/description/description.component';
@@ -13,8 +13,12 @@ import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { PdbeButtonComponent } from '@pdbe-lib/button';
 import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
-import { AggregatedApiService, descriptionData } from '../../services/aggregated-api.service';
+import { AggregatedApiService, DescriptionData } from '../../services/aggregated-api.service';
 import { downloadOption } from '../../data-models/download.model';
+import { ThemeType } from '@pdbc/core';
+import { forkJoin, map, of, switchMap, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { LigandSpecificDatabasesComponent } from '../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 
 @Component({
   selector: 'pdbc-main',
@@ -33,15 +37,33 @@ import { downloadOption } from '../../data-models/download.model';
     StructuresComponent,
     InteractionComponent,
     RelatedLigandsComponent,
+    LigandSpecificDatabasesComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
 })
 export class LigandsMainPageComponent implements OnInit {
-  ligandId: string | undefined;
-  description?: descriptionData;
-  downloadOptions: downloadOption[] = [];
-  expandedDropdowns = false;
+  public ligandId!: string;
+  public description!: DescriptionData;
+  public downloadOptions: downloadOption[] = [];
+  public expandedDropdowns = signal(false);
+
+  public readonly headerLogoMenuConfig = {
+    backgroundColor: '#085F5C',
+    logoType: 'PDBe-KB',
+    headerTitle: 'Ligands',
+  };
+
+  public readonly headerSearchConfig = {
+    examples: [
+      { label: 'STI', url: '/ligands/STI' },
+      { label: 'XRS', url: '/ligands/XRS' },
+      { label: 'NAG', url: '/ligands/NAG' },
+      { label: 'HEM', url: '/ligands/HEM' },
+    ],
+    backgroundColor: 'rgba(8, 95, 92, 0.79)',
+    type: ThemeType.PDBEKB,
+  };
 
   @ViewChild('dDropdown') dDropdown!: PdbeDropdownComponent;
   @ViewChild('dDropdown', { read: ElementRef }) downloadDropdownContainer!: ElementRef; // To access dropdown HTML element
@@ -54,47 +76,38 @@ export class LigandsMainPageComponent implements OnInit {
     { sectionId: 'related-ligand-section', sectionName: 'Related ligands', isSubSection: false },
     { sectionId: 'scaffold-section', sectionName: 'Same scaffold', isSubSection: true },
     { sectionId: 'similar-ligand-section', sectionName: 'Similar ligands', isSubSection: true },
-    { sectionId: 'databases-section', sectionName: 'Ligand-specific databases', isSubSection: false },
+    { sectionId: 'ligand-databases-section', sectionName: 'Ligand-specific databases', isSubSection: false },
   ];
 
-  constructor(private route: ActivatedRoute, private aggregatedApiService: AggregatedApiService) {
-    this.route.params.subscribe((params) => {
-      this.ligandId = params['ligandId'].toUpperCase();
-    });
-  }
-
-  /**
-   * Function to fetch and process data from Summary API
-   * @param ligandId
-   */
-  getDescription(ligandId: string) {
-    this.aggregatedApiService.fetchDescription(ligandId).subscribe((data) => {
-      this.description = this.aggregatedApiService.processDescriptionData(ligandId, data);
-    });
-  }
-
-  /**
-   * Function to fetch and process downloadable files of ligand
-   * @param ligandId
-   */
-  getDownloads(ligandId: string) {
-    this.aggregatedApiService.fetchDownload(ligandId).subscribe((data) => {
-      const download = this.aggregatedApiService.processDownloadData(ligandId, data);
-      // Data for download dropdown control
-      this.downloadOptions = [
-        { name: 'CIF file', url: download.cif, downloadable: true },
-        { name: 'Ideal SDF', url: download.idealSDF, downloadable: true },
-        { name: 'Model SDF', url: download.modelSDF, downloadable: true },
-        { name: 'Model CML', url: download.modelCML, downloadable: true },
-      ];
-    });
-  }
+  private readonly aggregatedApiService = inject(AggregatedApiService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
-    if (this.ligandId) {
-      this.getDescription(this.ligandId);
-      this.getDownloads(this.ligandId);
-    }
+    this.route.params
+      .pipe(
+        switchMap((params) => {
+          const ligandId = params['ligandId'].toUpperCase();
+          return forkJoin([this.aggregatedApiService.fetchDescription(ligandId), this.aggregatedApiService.fetchDownload(ligandId), of(ligandId)]);
+        }),
+        tap(([, , ligandId]) => (this.ligandId = ligandId)),
+        map(([descriptionData, downloadData, ligandId]) => {
+          return {
+            processDescriptionData: this.aggregatedApiService.processDescriptionData(ligandId, descriptionData),
+            processDownloadData: this.aggregatedApiService.processDownloadData(ligandId, downloadData),
+          };
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((data) => {
+        this.description = data.processDescriptionData;
+        this.downloadOptions = [
+          { name: 'CIF file', url: data.processDownloadData.cif, downloadable: true },
+          { name: 'Ideal SDF', url: data.processDownloadData.idealSDF, downloadable: true },
+          { name: 'Model SDF', url: data.processDownloadData.modelSDF, downloadable: true },
+          { name: 'Model CML', url: data.processDownloadData.modelCML, downloadable: true },
+        ];
+      });
   }
 
   /**
@@ -105,13 +118,10 @@ export class LigandsMainPageComponent implements OnInit {
   clickOutsideDropdowns(event: Event) {
     const hasClickedDownload = this.downloadDropdownContainer.nativeElement.contains(event.target);
     if (!hasClickedDownload) {
-      this.dDropdown.closeDropdown();
-      this.expandedDropdowns = false;
-    } else if (this.dDropdown.expandedStatus) {
-      // if click inside any of the dropdowns
-      this.expandedDropdowns = true;
+      this.dDropdown.expandedStatus.set(false);
+      this.expandedDropdowns.set(false);
     } else {
-      this.expandedDropdowns = false;
+      this.expandedDropdowns.set(true);
     }
   }
 }

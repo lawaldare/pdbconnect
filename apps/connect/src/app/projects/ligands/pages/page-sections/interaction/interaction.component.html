@@ -1,54 +1,25 @@
-<div id="interaction-section" class="interaction-container">
-  <div class="interaction-header">
-    <span class="heading-2"> Interaction statistics</span>
-  </div>
-  <div class="view-container">
-    <div class="heatmap-description">
-      <span class="paragraph-3"
-        >Interaction statistics shows the frequency of interaction of each atom of small molecule with any amino acid in all the structures to which it is
-        bound.</span
-      >
-      <div>
-        <span class="paragraph-3">Protein-ligand interactions are computed using </span>
-        <pdbc-pdbe-link-button
-          [externalLink]="true"
-          [label]="'PDBe Arpeggio'"
-          [url]="'https://github.com/PDBeurope/arpeggio'"
-          [fontStyle]="'Paragraph 3 (16px)'"
-          [fontColor]="'#3B6FB6'"
-          [hoverColor]="'#193F90'"
-          [visitedColor]="'#563D82'"
-          [focusBorderColor]="'#3B6FB6'"
-          [activeFontWeight]="300"
-          [whiteSpace]="'normal'"
-        ></pdbc-pdbe-link-button>
+<div id="interaction-section">
+  <h3 class="title">Interaction statistics</h3>
+  <article>
+    Interaction statistics shows the frequency of interaction of each atom of small molecule with any amino acid in all the structures to which it is bound. This
+    information was computed using 44 ligand instances in 24 PDB structures and 43 PDB chains.
+    <p>Protein-ligand interactions are computed using <a href="https://github.com/PDBeurope/arpeggio" target="_blank"> Arpeggio webserver </a></p>
+  </article>
+  <button class="vf-button vf-button--link" (click)="downloadInteraction()">
+    Download all interactions
+    <i class="icon icon-common icon-download"></i>
+  </button>
+  <div class="intx-component-container">
+    <div class="lig-heat-container" #ligHeatMapContainer></div>
+    <div class="ligandEnv-container">
+      <div class="ligandEnv-header">
+        <h4>
+          Interaction frequency of {{ ligandId }} molecule
+          <img src="{{ helpLogoSrc }}" />
+        </h4>
       </div>
-      <div></div>
-      <pdbc-pdbe-link-button
-        [externalLink]="true"
-        [label]="'Download all interactions'"
-        [url]="this.intxUrl"
-        [fontStyle]="'Paragraph 3 (16px)'"
-        [fontColor]="'#3B6FB6'"
-        [hoverColor]="'#193F90'"
-        [visitedColor]="'#563D82'"
-        [focusBorderColor]="'#3B6FB6'"
-        [activeFontWeight]="300"
-        [whiteSpace]="'normal'"
-      ></pdbc-pdbe-link-button>
-    </div>
-    <div class="intx-component-container">
-      <div class="heatmap-container">
-        <pdbe-ligand-interactions #ligHeatMap></pdbe-ligand-interactions>
-      </div>
-      <div class="ligandEnv-container">
-        <div class="ligandEnv-header">
-          <span class="heading-4">Interaction frequency of {{ ligandId }} molecule</span>
-          <img id="helper_icon" src="{{ helpLogoSrc }}" />
-        </div>
-        <div class="ligandEnv-content">
-          <pdb-ligand-env #ligandEnv id="ligand-int-env"></pdb-ligand-env>
-        </div>
+      <div class="ligandEnv-content">
+        <div class="image-container" #imageContainer></div>
       </div>
     </div>
   </div>
