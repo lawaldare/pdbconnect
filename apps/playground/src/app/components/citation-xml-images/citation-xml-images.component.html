@@ -2,8 +2,13 @@
   <h2 mat-dialog-title>Images for {{ data.entryId }}</h2>
   <i class="icon icon-common icon-window-close" (click)="closeDialog()"></i>
 </header>
-<section class="splide">
+<section class="splide" id="main">
   <div class="splide__track">
-    <div id="container" class="splide__list" #gallery></div>
+    <div class="splide__list" #main></div>
+  </div>
+</section>
+<section class="splide" id="thumbnail">
+  <div class="splide__track">
+    <div class="splide__list" #gallery></div>
   </div>
 </section>

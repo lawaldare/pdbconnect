@@ -1,3 +1,7 @@
+#main {
+  padding: 40px;
+}
+
 .image-cover {
   width: 100%;
   display: grid;
@@ -15,8 +19,12 @@
   overflow-y: scroll;
 }
 
-.splide__arrows.splide__arrows--ltr {
-  display: none;
+.splide__slide {
+  opacity: 0.6;
+}
+
+.splide__slide.is-active {
+  opacity: 1;
 }
 
 header {
@@ -28,5 +36,15 @@ header {
   .icon-window-close {
     cursor: pointer;
     font-size: 30px;
+  }
+}
+
+#thumbnail {
+  position: sticky;
+  bottom: 0;
+  background: white;
+
+  .splide__list {
+    justify-content: center;
   }
 }

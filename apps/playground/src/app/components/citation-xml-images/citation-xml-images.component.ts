@@ -15,6 +15,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 })
 export class CitationXmlImagesComponent implements AfterViewInit {
   @ViewChild('gallery', { read: ElementRef }) galleryContainer!: ElementRef;
+  @ViewChild('main', { read: ElementRef }) mainContainer!: ElementRef;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { pubmedId: string; entryId: string },
@@ -28,14 +29,29 @@ export class CitationXmlImagesComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.getXMLImages(this.data.pubmedId);
     setTimeout(() => {
-      const splide = new Splide('.splide', {
-        type: 'loop',
-        perPage: 1,
-        focus: 'center',
-        // fixedHeight: '600px',
+      const main = new Splide('#main', {
+        type: 'fade',
+        rewind: true,
+        pagination: false,
+        arrows: false,
       });
-
-      splide.mount();
+      const thumbnails = new Splide('#thumbnail', {
+        fixedWidth: 100,
+        fixedHeight: 60,
+        gap: 10,
+        rewind: true,
+        pagination: false,
+        isNavigation: true,
+        breakpoints: {
+          600: {
+            fixedWidth: 60,
+            fixedHeight: 44,
+          },
+        },
+      });
+      main.sync(thumbnails);
+      main.mount();
+      thumbnails.mount();
     }, 500);
   }
 
@@ -49,7 +65,9 @@ export class CitationXmlImagesComponent implements AfterViewInit {
         },
         (error) => {
           const container = this.galleryContainer.nativeElement;
+          const main = this.mainContainer.nativeElement;
           this.xmlImageRendererService.parseAndRenderXML(this.renderer, error.error.text, container);
+          this.xmlImageRendererService.parseAndRenderXML(this.renderer, error.error.text, main);
         }
       );
   }
