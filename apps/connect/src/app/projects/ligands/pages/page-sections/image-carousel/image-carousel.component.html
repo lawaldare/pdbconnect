@@ -15,14 +15,23 @@
 </header>
 <div class="gallery-container">
   <div class="gallery">
-    <button class="control" (click)="onPreviousClick()">
+    <!-- <button class="control" (click)="onPreviousClick()">
       <img src="{{ arrowSrc }}" class="arrow" />
-    </button>
-    <div class="image-container" #imageContainer></div>
-    <button class="control" (click)="onNextClick()">
+    </button> -->
+    <section class="splide" id="main">
+      <div class="splide__track">
+        <div #imageContainer class="image-container splide__list"></div>
+      </div>
+    </section>
+    <!-- <div class="image-container" #imageContainer></div> -->
+    <!-- <button class="control" (click)="onNextClick()">
       <img src="{{ arrowSrc }}" class="arrow right" />
-    </button>
+    </button> -->
   </div>
   <p class="paragraph-3">{{ this.structureDescription }}</p>
-  <div #slide class="slide-container"></div>
+  <section class="splide" id="thumbnail">
+    <div class="splide__track">
+      <div #slide class="slide-container splide__list"></div>
+    </div>
+  </section>
 </div>

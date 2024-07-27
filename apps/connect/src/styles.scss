@@ -7,6 +7,9 @@
 @import 'libs/pdbe/styles/src/lib/pdbe-styles/_button.scss';
 @import 'libs/core/src/lib/material.scss';
 
+@import '@splidejs/splide/css';
+@import '@splidejs/splide/css/core';
+
 body {
   margin: 0;
   overflow-x: hidden;
