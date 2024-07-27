@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable, Renderer2 } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
 @Injectable({
@@ -8,7 +8,7 @@ import { Observable, map } from 'rxjs';
 export class PlaygroundService {
   private BASE_API = 'https://www.ebi.ac.uk/pdbe/api/pdb/entry/';
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   public getPrimaryPublicationAbstract(entryId: string): Observable<any> {
     return this.http.get<any>(`${this.BASE_API}publications/${entryId}`).pipe(map((data) => data[entryId][0]));
@@ -23,5 +23,9 @@ export class PlaygroundService {
         };
       })
     );
+  }
+
+  public getXMLImages(pubmedId: string): Observable<any> {
+    return this.http.get<any>(`https://www.ebi.ac.uk/pdbe/static/pubmed-files/${pubmedId}/images`);
   }
 }

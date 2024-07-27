@@ -1,14 +1,14 @@
 <li>
   <p>
-    <a class="row__right__link" [href]="'https://europepmc.org/article/MED/' + article.pubmed_id" target="_blank">{{ article.title }} </a>
+    <a class="row__right__link" [href]="'https://europepmc.org/article/MED/' + article().pubmed_id" target="_blank">{{ article().title }} </a>
   </p>
   <p>
-    <i>{{ article.authors }}</i>
+    <i>{{ article().authors }}</i>
   </p>
   <p>
-    {{ article.journal }}
-    <strong>{{ article.volume }}</strong>
-    {{ article.pages }}
-    ({{ article.year }})
+    {{ article().journal }}
+    <strong>{{ article().volume }}</strong>
+    {{ article().pages }}
+    ({{ article().year }})
   </p>
 </li>

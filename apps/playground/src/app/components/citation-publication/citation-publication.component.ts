@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CitationArticleComponent } from '../citation-article/citation-article.component';
 import { Article } from '../../models/article.model';
@@ -12,7 +12,7 @@ import { Article } from '../../models/article.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CitationPublicationComponent {
-  @Input() publicationInfo!: Article[];
-  @Input() entryId!: string;
-  @Input() headerText!: string;
+  public publicationInfo = input.required<Article[]>();
+  public entryId = input.required<string>();
+  public headerText = input.required<string>();
 }

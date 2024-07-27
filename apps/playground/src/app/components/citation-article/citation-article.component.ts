@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Article } from '../../models/article.model';
 
@@ -11,5 +11,5 @@ import { Article } from '../../models/article.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CitationArticleComponent {
-  @Input() article!: Article;
+  public article = input.required<Article>();
 }
