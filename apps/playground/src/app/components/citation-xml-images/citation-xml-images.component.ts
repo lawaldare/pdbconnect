@@ -1,30 +1,32 @@
-import { AfterViewInit, Component, DestroyRef, ElementRef, inject, input, Renderer2, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, ElementRef, Inject, Renderer2, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CoreService } from '@pdbc/core';
+import { XMLImageRendererService, MaterialModule } from '@pdbc/core';
 import { PlaygroundService } from '../../services/playground.service';
 import Splide from '@splidejs/splide';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'pdbe-citation-xml-images',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MaterialModule],
   templateUrl: './citation-xml-images.component.html',
   styleUrl: './citation-xml-images.component.scss',
 })
 export class CitationXmlImagesComponent implements AfterViewInit {
-  private readonly playgroundService = inject(PlaygroundService);
-  private readonly coreService = inject(CoreService);
-
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly renderer = inject(Renderer2);
-
-  public pubmedId = input.required<string>();
-
   @ViewChild('gallery', { read: ElementRef }) galleryContainer!: ElementRef;
 
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: { pubmedId: string; entryId: string },
+    private readonly playgroundService: PlaygroundService,
+    private readonly xmlImageRendererService: XMLImageRendererService,
+    private readonly renderer: Renderer2,
+    private readonly destroyRef: DestroyRef,
+    private dialogRef: MatDialogRef<CitationXmlImagesComponent>
+  ) {}
+
   ngAfterViewInit(): void {
-    this.getXMLImages(this.pubmedId());
+    this.getXMLImages(this.data.pubmedId);
     setTimeout(() => {
       const splide = new Splide('.splide', {
         type: 'loop',
@@ -37,7 +39,7 @@ export class CitationXmlImagesComponent implements AfterViewInit {
     }, 500);
   }
 
-  private getXMLImages(pubmedId: string) {
+  private getXMLImages(pubmedId: string): void {
     this.playgroundService
       .getXMLImages(pubmedId)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -47,8 +49,12 @@ export class CitationXmlImagesComponent implements AfterViewInit {
         },
         (error) => {
           const container = this.galleryContainer.nativeElement;
-          this.coreService.parseAndRenderXML(this.renderer, error.error.text, container);
+          this.xmlImageRendererService.parseAndRenderXML(this.renderer, error.error.text, container);
         }
       );
+  }
+
+  public closeDialog(): void {
+    this.dialogRef.close();
   }
 }

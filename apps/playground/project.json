@@ -16,8 +16,16 @@
         "polyfills": ["zone.js"],
         "tsConfig": "apps/playground/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
-        "assets": ["apps/playground/src/favicon.ico", "apps/playground/src/assets"],
-        "styles": ["apps/playground/src/styles.scss"],
+        "assets": [
+          "apps/playground/src/favicon.ico",
+          "apps/playground/src/assets",
+          {
+            "glob": "**/*",
+            "input": "shared_assets/",
+            "output": "./assets/"
+          }
+        ],
+        "styles": ["@angular/material/prebuilt-themes/indigo-pink.css", "apps/playground/src/styles.scss"],
         "scripts": []
       },
       "configurations": {

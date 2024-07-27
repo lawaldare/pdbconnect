@@ -3,7 +3,7 @@ import { Injectable, Renderer2 } from '@angular/core';
 @Injectable({
   providedIn: 'root',
 })
-export class CoreService {
+export class XMLImageRendererService {
   public parseAndRenderXML(renderer: Renderer2, xmlString: string, container: HTMLDivElement) {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlString, 'application/xml');

@@ -8,5 +8,4 @@ export * from './lib/directives/truncate-text.directive';
 export * from './lib/models/name-value.model';
 export * from './lib/directives/click-outside.directive';
 export * from './lib/services/util.service';
-export * from './lib/services/core.service';
-export * from './lib/services/popup-window.service';
+export * from './lib/services/xml-image-renderer.service';

@@ -4,21 +4,22 @@ import { PlaygroundService } from '../../services/playground.service';
 import { combineLatest, map, tap } from 'rxjs';
 import { CitationArticleComponent } from '../../components/citation-article/citation-article.component';
 import { CitationPublicationComponent } from '../../components/citation-publication/citation-publication.component';
-import { PopupWindowService } from '@pdbc/core';
+import { MaterialModule } from '@pdbc/core';
 import { CitationXmlImagesComponent } from '../../components/citation-xml-images/citation-xml-images.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'pdbe-citation',
   standalone: true,
-  imports: [CommonModule, CitationArticleComponent, CitationPublicationComponent, CitationXmlImagesComponent],
+  imports: [CommonModule, CitationArticleComponent, CitationPublicationComponent, MaterialModule, CitationXmlImagesComponent],
   templateUrl: './citation.component.html',
   styleUrl: './citation.component.scss',
 })
 export class CitationComponent {
   private readonly playgroundService = inject(PlaygroundService);
-  private readonly popupWindowService = inject(PopupWindowService);
+  readonly dialog = inject(MatDialog);
 
-  public entryId = signal('7v08'); //'7v08', '3d12', '5tj5
+  public entryId = signal('4zqo'); //'7v08', '3d12', '5tj5', '4zqo'
   public relatedEntries!: string[];
 
   public pubmedId!: string;
@@ -41,6 +42,10 @@ export class CitationComponent {
   }
 
   public openXMLImagesInNewWindow(): void {
-    this.popupWindowService.popOut(this.popoutWrapper, 'curve-analysis-chart');
+    const dialogRef = this.dialog.open(CitationXmlImagesComponent, {
+      height: '800px',
+      width: '800px',
+      data: { pubmedId: this.pubmedId, entryId: this.entryId() },
+    });
   }
 }

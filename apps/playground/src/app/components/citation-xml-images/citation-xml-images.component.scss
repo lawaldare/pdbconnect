@@ -18,3 +18,15 @@
 .splide__arrows.splide__arrows--ltr {
   display: none;
 }
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 20px;
+
+  .icon-window-close {
+    cursor: pointer;
+    font-size: 30px;
+  }
+}
