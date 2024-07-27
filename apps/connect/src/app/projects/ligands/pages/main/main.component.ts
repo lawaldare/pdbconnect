@@ -58,7 +58,7 @@ export class LigandsMainPageComponent implements OnInit {
     examples: [
       { label: 'STI', url: '/ligands/STI' },
       { label: 'XRS', url: '/ligands/XRS' },
-      { label: 'G16', url: '/ligands/G16' },
+      { label: 'MHS', url: '/ligands/MHS' },
       { label: 'V9P', url: '/ligands/V9P' },
     ],
     backgroundColor: 'rgba(8, 95, 92, 0.79)',
