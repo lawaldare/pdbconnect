@@ -20,7 +20,7 @@ export class CitationComponent {
   private readonly playgroundService = inject(PlaygroundService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly dialog = inject(MatDialog);
+  private readonly dialog = inject(MatDialog);
 
   public entryId = signal('7v08'); //'7v08', '3d12', '5tj5', '4zqo'
   public relatedEntries!: string[];
