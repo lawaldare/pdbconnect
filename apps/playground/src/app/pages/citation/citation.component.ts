@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlaygroundService } from '../../services/playground.service';
 import { combineLatest, map, tap } from 'rxjs';
@@ -7,6 +7,7 @@ import { CitationPublicationComponent } from '../../components/citation-publicat
 import { MaterialModule } from '@pdbc/core';
 import { CitationXmlImagesComponent } from '../../components/citation-xml-images/citation-xml-images.component';
 import { MatDialog } from '@angular/material/dialog';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'pdbe-citation',
@@ -17,14 +18,14 @@ import { MatDialog } from '@angular/material/dialog';
 })
 export class CitationComponent {
   private readonly playgroundService = inject(PlaygroundService);
+  private readonly destroyRef = inject(DestroyRef);
+
   readonly dialog = inject(MatDialog);
 
-  public entryId = signal('4zqo'); //'7v08', '3d12', '5tj5', '4zqo'
+  public entryId = signal('7v08'); //'7v08', '3d12', '5tj5', '4zqo'
   public relatedEntries!: string[];
 
-  public pubmedId!: string;
-
-  @ViewChild('popoutWrapper') private popoutWrapper!: ElementRef;
+  public imageXMLText = signal('');
 
   public pageData$ = combineLatest([
     this.playgroundService.getPrimaryPublicationAbstract(this.entryId()),
@@ -32,7 +33,7 @@ export class CitationComponent {
   ]).pipe(
     map((data) => ({ sectionOne: data[0], sectionTwo: data[1] })),
     tap((data) => {
-      this.pubmedId = data.sectionOne.pubmed_id;
+      this.getXMLImages(data.sectionOne.pubmed_id);
       this.setRelatedEntries(data.sectionOne.associated_entries ?? null);
     })
   );
@@ -42,10 +43,26 @@ export class CitationComponent {
   }
 
   public openXMLImagesInNewWindow(): void {
-    const dialogRef = this.dialog.open(CitationXmlImagesComponent, {
+    this.dialog.open(CitationXmlImagesComponent, {
       height: '800px',
-      width: '800px',
-      data: { pubmedId: this.pubmedId, entryId: this.entryId() },
+      width: '1200px',
+      data: { entryId: this.entryId(), imageXMLText: this.imageXMLText() },
     });
+  }
+
+  private getXMLImages(pubmedId: string): void {
+    this.playgroundService
+      .getXMLImages(pubmedId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
+        (data) => {
+          console.log(data);
+        },
+        (error) => {
+          if (error.status === 200) {
+            this.imageXMLText.set(error.error.text);
+          }
+        }
+      );
   }
 }

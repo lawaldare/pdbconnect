@@ -1,9 +1,7 @@
-import { AfterViewInit, Component, DestroyRef, ElementRef, Inject, Renderer2, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Inject, Renderer2, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { XMLImageRendererService, MaterialModule } from '@pdbc/core';
-import { PlaygroundService } from '../../services/playground.service';
 import Splide from '@splidejs/splide';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
@@ -18,16 +16,14 @@ export class CitationXmlImagesComponent implements AfterViewInit {
   @ViewChild('main', { read: ElementRef }) mainContainer!: ElementRef;
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: { pubmedId: string; entryId: string },
-    private readonly playgroundService: PlaygroundService,
+    @Inject(MAT_DIALOG_DATA) public data: { entryId: string; imageXMLText: string },
     private readonly xmlImageRendererService: XMLImageRendererService,
     private readonly renderer: Renderer2,
-    private readonly destroyRef: DestroyRef,
     private dialogRef: MatDialogRef<CitationXmlImagesComponent>
   ) {}
 
   ngAfterViewInit(): void {
-    this.getXMLImages(this.data.pubmedId);
+    this.parseAndRenderXML();
     setTimeout(() => {
       const main = new Splide('#main', {
         type: 'fade',
@@ -55,21 +51,11 @@ export class CitationXmlImagesComponent implements AfterViewInit {
     }, 500);
   }
 
-  private getXMLImages(pubmedId: string): void {
-    this.playgroundService
-      .getXMLImages(pubmedId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(
-        (data) => {
-          console.log(data);
-        },
-        (error) => {
-          const container = this.galleryContainer.nativeElement;
-          const main = this.mainContainer.nativeElement;
-          this.xmlImageRendererService.parseAndRenderXML(this.renderer, error.error.text, container);
-          this.xmlImageRendererService.parseAndRenderXML(this.renderer, error.error.text, main);
-        }
-      );
+  private parseAndRenderXML(): void {
+    const container = this.galleryContainer.nativeElement;
+    const main = this.mainContainer.nativeElement;
+    this.xmlImageRendererService.parseAndRenderXML(this.renderer, this.data.imageXMLText, container);
+    this.xmlImageRendererService.parseAndRenderXML(this.renderer, this.data.imageXMLText, main);
   }
 
   public closeDialog(): void {

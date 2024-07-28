@@ -24,12 +24,14 @@
           >{{ pageData.sectionOne.pubmed_id }}
           <i class="icon icon-link icon-common"></i>
         </a>
+        @if(this.imageXMLText()){
         <div>
           <button class="vf-button vf-button--link" (click)="openXMLImagesInNewWindow()">
-            View XML Images
+            View the Images
             <i class="icon icon-common icon-common"></i>
           </button>
         </div>
+        }
       </div>
     </div>
   </div>
