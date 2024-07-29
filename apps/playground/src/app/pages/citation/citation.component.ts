@@ -22,7 +22,7 @@ export class CitationComponent {
 
   private readonly dialog = inject(MatDialog);
 
-  public entryId = signal('7v08'); //'7v08', '3d12', '5tj5', '4zqo'
+  public entryId = signal('4zqo'); //'7v08', '3d12', '5tj5', '4zqo'
   public relatedEntries!: string[];
 
   public imageXMLText = signal('');
