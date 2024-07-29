@@ -57,7 +57,7 @@ build:
   extends: .distributed
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t build --parallel=3 --exclude=playground
-    - node ./bin/index.js "$(npx nx print-affected --type=app --base=$NX_BASE --head=$NX_HEAD) --exclude=playground"
+    - node ./bin/index.js "$(npx nx print-affected --type=app --base=$NX_BASE --head=$NX_HEAD --exclude=playground)"
     - cat dynamic-gitlab-ci.yml
   artifacts:
     paths:
