@@ -7,6 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 import { of, switchMap } from 'rxjs';
 import { ClickOutsideDirective } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
+import Splide from '@splidejs/splide';
 
 @Component({
   selector: 'pdbc-image-carousel',
@@ -31,7 +32,7 @@ export class ImageCarouselComponent implements AfterViewInit {
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
   private divsRendered: any[] = [];
-  private ligandEv!: any;
+  private mainDivsRendered: any[] = [];
 
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly renderer = inject(Renderer2);
@@ -49,7 +50,39 @@ export class ImageCarouselComponent implements AfterViewInit {
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe();
+      .subscribe(() => {
+        setTimeout(() => {
+          const main = new Splide('#main', {
+            type: 'fade',
+            rewind: true,
+            pagination: false,
+            arrows: false,
+          });
+          const thumbnails = new Splide('#thumbnail', {
+            fixedWidth: 83,
+            gap: 10,
+            rewind: true,
+            pagination: false,
+            isNavigation: true,
+            breakpoints: {
+              600: {
+                fixedWidth: 60,
+                fixedHeight: 44,
+              },
+            },
+          });
+          main.sync(thumbnails);
+          main.mount();
+          thumbnails.mount();
+
+          thumbnails.on('move', (event) => {
+            // do something
+            console.log(event);
+            this.currentSlide = event;
+            this.setDepictionDescription();
+          });
+        }, 500);
+      });
   }
 
   public onShowTooltips() {
@@ -93,26 +126,6 @@ export class ImageCarouselComponent implements AfterViewInit {
   }
 
   /**
-   * Controls the previous click on the image carousel
-   * Updates the slides and renders the substructures
-   */
-
-  onPreviousClick() {
-    this.currentSlide = (this.currentSlide - 1 + this.slides().length) % this.slides().length;
-    this.renderSubstructure();
-  }
-
-  /**
-   * Controls the next click on the image carousel
-   * Updates the slides and renders the substructures
-   */
-
-  onNextClick() {
-    this.currentSlide = (this.currentSlide + 1) % this.slides().length;
-    this.renderSubstructure();
-  }
-
-  /**
    * Updates the depiction description
    */
   private setDepictionDescription() {
@@ -152,28 +165,6 @@ export class ImageCarouselComponent implements AfterViewInit {
   }
 
   /**
-   * Highlight substructures
-   * Sets depiction description
-   */
-
-  private renderSubstructure() {
-    const slideContainer = this.slideContainer.nativeElement;
-    this.setDepictionProperty(this.ligandEv, this.currentSlide);
-    const slideElements = slideContainer.children;
-    for (let i = 0; i < slideElements.length; i++) {
-      if (this.slides()[i] == this.currentSlide) {
-        this.renderer.addClass(slideElements[i], 'active');
-      } else {
-        this.renderer.removeClass(slideElements[i], 'active');
-      }
-
-      const ligandEl = slideElements[i].firstElementChild;
-      this.setDepictionProperty(ligandEl, this.slides()[i]);
-    }
-    this.setDepictionDescription();
-  }
-
-  /**
    * Renders first view of image carousel
    * @param ligandId
    */
@@ -186,17 +177,13 @@ export class ImageCarouselComponent implements AfterViewInit {
       .fetchDepiction(ligandId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((depiction: Depiction) => {
-        this.createLigandEnvironment(imageContainer, depiction, true);
         if (this.substructureNames().length > 0) {
           for (const slide of this.slides()) {
-            const div = this.renderer.createElement('div');
-            this.renderer.appendChild(slideContainer, div);
-            this.renderer.addClass(div, 'slide');
-            if (slide === 0) {
-              this.renderer.addClass(div, 'active');
-            }
-            this.divsRendered.push(div);
-            this.createLigandEnvironment(div, depiction, false, slide);
+            const slideDivs = this.generateDivContainerForLigand(slideContainer, false);
+            this.createLigandEnvironment(slideDivs, depiction, slide);
+
+            const mainDiv = this.generateDivContainerForLigand(imageContainer, true);
+            this.createLigandEnvironment(mainDiv, depiction, slide);
           }
         }
 
@@ -204,7 +191,20 @@ export class ImageCarouselComponent implements AfterViewInit {
       });
   }
 
-  private createLigandEnvironment(container: ElementRef, depiction: Depiction, mainLigand = false, slide?: number): void {
+  private generateDivContainerForLigand(container: ElementRef, isMain: boolean): ElementRef {
+    const div = this.renderer.createElement('div');
+    this.renderer.appendChild(container, div);
+    this.renderer.addClass(div, 'slide');
+    this.renderer.addClass(div, 'splide__slide');
+    if (isMain) {
+      this.mainDivsRendered.push(div);
+    } else {
+      this.divsRendered.push(div);
+    }
+    return div;
+  }
+
+  private createLigandEnvironment(container: ElementRef, depiction: Depiction, slide?: number): void {
     const ligand = this.renderer.createElement('pdb-ligand-env');
     this.renderer.appendChild(container, ligand);
     this.renderer.setProperty(ligand, 'depiction', depiction);
@@ -214,11 +214,6 @@ export class ImageCarouselComponent implements AfterViewInit {
     }
     if (slide) {
       this.setDepictionProperty(ligand, slide);
-    }
-
-    if (mainLigand) {
-      this.renderer.setAttribute(ligand, 'depiction-only', '');
-      this.ligandEv = ligand;
     }
   }
 
@@ -230,12 +225,13 @@ export class ImageCarouselComponent implements AfterViewInit {
       this.renderer.removeChild(slideContainer, div);
     }
 
-    if (this.ligandEv) {
-      this.renderer.removeChild(imageContainer, this.ligandEv);
+    for (const div of this.mainDivsRendered) {
+      this.renderer.removeChild(imageContainer, div);
     }
 
     this.slides.set([]);
     this.divsRendered = [];
+    this.mainDivsRendered = [];
     this.substructureNames.set([]);
     this.substructureAtoms = [];
   }

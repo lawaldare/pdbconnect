@@ -4,3 +4,15 @@ h4 {
   color: #54585a;
   line-height: 27.2px;
 }
+
+button {
+  margin-bottom: 20px;
+}
+
+.paginator-container {
+  display: flex;
+  padding: 16px 2px;
+  justify-content: flex-end;
+  align-items: center;
+  align-self: stretch;
+}

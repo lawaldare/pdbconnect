@@ -11,7 +11,7 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 })
 export class OthersComponent {
   public config = {
-    moleculeId: '3d12',
+    moleculeId: '4zqo', //'7v08', '3d12', '5tj5', '4zqo'
     bgColor: { r: 255, g: 255, b: 255 },
     hideControls: true,
     hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],

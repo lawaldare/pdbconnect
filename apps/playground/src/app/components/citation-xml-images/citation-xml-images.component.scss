@@ -1,0 +1,50 @@
+#main {
+  padding: 40px;
+}
+
+.image-cover {
+  width: 100%;
+  display: grid;
+
+  img {
+    object-fit: cover;
+    border: 1px solid #707372;
+    padding: 10px;
+    margin-bottom: 10px;
+    place-self: center;
+  }
+}
+
+.splide__slide.is-active.is-visible {
+  overflow-y: scroll;
+}
+
+.splide__slide {
+  opacity: 0.6;
+}
+
+.splide__slide.is-active {
+  opacity: 1;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 20px;
+
+  .icon-window-close {
+    cursor: pointer;
+    font-size: 30px;
+  }
+}
+
+#thumbnail {
+  position: sticky;
+  bottom: 0;
+  background: white;
+
+  .splide__list {
+    justify-content: center;
+  }
+}

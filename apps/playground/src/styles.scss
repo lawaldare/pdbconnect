@@ -8,6 +8,9 @@
 @import 'libs/pdbe/styles/src/lib/pdbe-styles/_button.scss';
 @import 'libs/core/src/lib/material.scss';
 
+@import '@splidejs/splide/css';
+@import '@splidejs/splide/css/core';
+
 body {
   margin: 0;
   overflow-x: hidden;
@@ -52,6 +55,7 @@ a {
   font-weight: 400;
   line-height: 27.2px;
   text-decoration: none;
+  border: none;
 
   &:focus {
     border: 1px solid #193f90;
@@ -67,10 +71,16 @@ a {
   &:hover {
     color: #193f90;
     text-decoration: underline;
+    border: none;
   }
 }
 
 .icon-link:before {
   position: unset;
   z-index: unset;
+}
+
+.om-morpho {
+  width: 720px;
+  height: auto;
 }

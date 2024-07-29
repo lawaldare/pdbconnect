@@ -69,3 +69,21 @@ h3 {
   line-height: 27.3px;
   margin-bottom: 12px;
 }
+
+.image-cover {
+  width: 100%;
+  display: grid;
+
+  img {
+    object-fit: cover;
+    border: 1px solid #707372;
+    padding: 10px;
+    margin-bottom: 10px;
+    place-self: center;
+  }
+}
+
+.xml-container {
+  height: 0px;
+  width: 0px;
+}

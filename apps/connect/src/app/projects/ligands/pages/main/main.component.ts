@@ -58,8 +58,8 @@ export class LigandsMainPageComponent implements OnInit {
     examples: [
       { label: 'STI', url: '/ligands/STI' },
       { label: 'XRS', url: '/ligands/XRS' },
-      { label: 'NAG', url: '/ligands/NAG' },
-      { label: 'HEM', url: '/ligands/HEM' },
+      { label: 'MHS', url: '/ligands/MHS' },
+      { label: 'V9P', url: '/ligands/V9P' },
     ],
     backgroundColor: 'rgba(8, 95, 92, 0.79)',
     type: ThemeType.PDBEKB,
