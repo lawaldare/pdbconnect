@@ -1,0 +1,14 @@
+main {
+  padding-top: 50px;
+
+  h1,
+  p {
+    margin-bottom: 20px;
+  }
+}
+
+::ng-deep span {
+  border-bottom: 1px dotted #29a0b1;
+  cursor: help;
+  position: relative;
+}

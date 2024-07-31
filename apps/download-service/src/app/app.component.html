@@ -1,0 +1,30 @@
+<!-- now only for ebi header and footer -->
+<pdbc-vf-ebi-header></pdbc-vf-ebi-header>
+<pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig"></pdbc-pdbe-header-logo-menu>
+
+<main>
+  <div class="container">
+    <h1 class="heading-1">PDBe Download Service</h1>
+    <p class="paragraph-3">
+      Use this page to download coordinate files and experimental data files, FASTA sequence files, and ligand data files for one or many PDB entries or small
+      molecules.
+    </p>
+    <p class="paragraph-3">Enter PDB or small molecule IDs and click 'Download' to save a compressed folder containing your files onto your local disk.</p>
+    <p class="paragraph-3">Each download includes a list of IDs successfully downloaded named <i>contains.txt</i></p>
+    <p class="paragraph-3">
+      Another file called <i>missing.txt</i> is present if any &nbsp;
+      <lib-tool-tip textIcon="requested IDs are missing.">
+        Some common reasons for missing IDs are: &#13;- Obsolete IDs&#13;- Unreleased PDB IDs&#13;- The user requested NMR data for non-NMR IDs&#13;- Experimental
+        data for the requested IDs were not deposited
+      </lib-tool-tip>
+    </p>
+
+    <app-data-type-box id="structures" [dataType]="structureData"> </app-data-type-box>
+
+    <app-data-type-box id="smallmolecules" [dataType]="moleculesData"> </app-data-type-box>
+
+    <app-data-type-box id="sifts" [dataType]="siftsData"> </app-data-type-box>
+  </div>
+</main>
+
+<pdbc-vf-ebi-footer></pdbc-vf-ebi-footer>

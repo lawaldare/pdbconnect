@@ -1,0 +1,38 @@
+<div class="format-box">
+  <mat-radio-group [(ngModel)]="chosenformat">
+    <h3 class="format-title">{{ dataType().descriptorType['boxTitle'] }}</h3>
+    <div class="row form-instruction">
+      Enter a list of {{ dataType().descriptorType['idType'] }} IDs below. The IDs can be separated by one of these delimiters:
+      <span class="tooltipped" matTooltip="Example: {{ dataType().descriptorType['fE'] }}, {{ dataType().descriptorType['sE'] }}, ...">comma</span>,
+      <span class="tooltipped" matTooltip="Example: {{ dataType().descriptorType['fE'] }}; {{ dataType().descriptorType['sE'] }}; ...">semicolon</span>,
+      <span class="tooltipped" matTooltip="Example: {{ dataType().descriptorType['fE'] }}&#9;{{ dataType().descriptorType['sE'] }}&#9;...">tab</span>,
+      <span class="tooltipped" matTooltip="Example: {{ dataType().descriptorType['fE'] }} {{ dataType().descriptorType['sE'] }} ...">space</span> or
+      <span class="tooltipped" matTooltip="Example:&#13;{{ dataType().descriptorType['fE'] }}&#13;{{ dataType().descriptorType['sE'] }}&#13;...">newline</span>.
+    </div>
+
+    <textarea
+      matInput
+      [(ngModel)]="pdbid"
+      placeholder="Example: {{ dataType().descriptorType['fE'] }}, {{ dataType().descriptorType['sE'] }}, ..."
+      class="full-width"
+    ></textarea>
+
+    <div class="row form-instruction">Select the data to download:</div>
+    <div class="flex-container">
+      <div *ngFor="let item of dataType().dataContent" class="box-container">
+        <app-data-content [dataContent]="item"></app-data-content>
+      </div>
+    </div>
+    <div class="row form-choose">
+      <div class="spinner-wrapper">
+        <button (click)="buttonClicked(dataType().submissionType)" class="button">Submit to download</button>
+        <div style="padding-left: 35px" *ngIf="isLoadingEntry()">
+          <mat-progress-spinner class="example-margin" [mode]="'indeterminate'" [diameter]="'39'"></mat-progress-spinner>
+        </div>
+      </div>
+    </div>
+    <div class="alert alert-danger" *ngIf="errorEntryText()">
+      <p><b>ERROR</b>: {{ errorEntryText() }}</p>
+    </div>
+  </mat-radio-group>
+</div>
