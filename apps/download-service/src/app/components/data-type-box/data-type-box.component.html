@@ -1,14 +1,24 @@
 <div class="format-box">
   <mat-radio-group [(ngModel)]="chosenformat">
-    <h3 class="format-title">{{ dataType().descriptorType['boxTitle'] }}</h3>
-    <div class="row form-instruction">
-      Enter a list of {{ dataType().descriptorType['idType'] }} IDs below. The IDs can be separated by one of these delimiters:
-      <span class="tooltipped" matTooltip="Example: {{ dataType().descriptorType['fE'] }}, {{ dataType().descriptorType['sE'] }}, ...">comma</span>,
-      <span class="tooltipped" matTooltip="Example: {{ dataType().descriptorType['fE'] }}; {{ dataType().descriptorType['sE'] }}; ...">semicolon</span>,
-      <span class="tooltipped" matTooltip="Example: {{ dataType().descriptorType['fE'] }}&#9;{{ dataType().descriptorType['sE'] }}&#9;...">tab</span>,
-      <span class="tooltipped" matTooltip="Example: {{ dataType().descriptorType['fE'] }} {{ dataType().descriptorType['sE'] }} ...">space</span> or
-      <span class="tooltipped" matTooltip="Example:&#13;{{ dataType().descriptorType['fE'] }}&#13;{{ dataType().descriptorType['sE'] }}&#13;...">newline</span>.
-    </div>
+    <h2 class="heading-2">{{ dataType().descriptorType['boxTitle'] }}</h2>
+    <p class="paragraph-2">Enter a list of {{ dataType().descriptorType['idType'] }} IDs below. The IDs can be separated by one of these delimiters:</p>
+    <ul>
+      <li>
+        <lib-tool-tip textIcon="comma,"> Example: {{ dataType().descriptorType['fE'] }}, {{ dataType().descriptorType['sE'] }}, ... </lib-tool-tip>
+      </li>
+      <li>
+        <lib-tool-tip textIcon="semicolon,"> Example: {{ dataType().descriptorType['fE'] }}; {{ dataType().descriptorType['sE'] }}; ... </lib-tool-tip>
+      </li>
+      <li>
+        <lib-tool-tip textIcon="tab,"> Example: {{ dataType().descriptorType['fE'] }}, {{ dataType().descriptorType['sE'] }}, ..." </lib-tool-tip>
+      </li>
+      <li>
+        <lib-tool-tip textIcon="space,"> Example: {{ dataType().descriptorType['fE'] }}, {{ dataType().descriptorType['sE'] }}, ..." </lib-tool-tip>
+      </li>
+      <li>
+        <lib-tool-tip textIcon="newline,"> Example: {{ dataType().descriptorType['fE'] }}, {{ dataType().descriptorType['sE'] }}, ..." </lib-tool-tip>
+      </li>
+    </ul>
 
     <textarea
       matInput
@@ -17,18 +27,18 @@
       class="full-width"
     ></textarea>
 
-    <div class="row form-instruction">Select the data to download:</div>
+    <p class="paragraph-2">Select the data to download:</p>
     <div class="flex-container">
-      <div *ngFor="let item of dataType().dataContent" class="box-container">
+      @for(item of dataType().dataContent; track item){
+      <div class="box-container">
         <app-data-content [dataContent]="item"></app-data-content>
       </div>
+      }
     </div>
-    <div class="row form-choose">
-      <div class="spinner-wrapper">
-        <button (click)="buttonClicked(dataType().submissionType)" class="button">Submit to download</button>
-        <div style="padding-left: 35px" *ngIf="isLoadingEntry()">
-          <mat-progress-spinner class="example-margin" [mode]="'indeterminate'" [diameter]="'39'"></mat-progress-spinner>
-        </div>
+    <div class="spinner-wrapper">
+      <button (click)="submit(dataType().submissionType)" class="vf-button vf-button--primary">Submit to download</button>
+      <div style="padding-left: 35px" *ngIf="isLoadingEntry()">
+        <mat-progress-spinner class="example-margin" [mode]="'indeterminate'" [diameter]="'39'"></mat-progress-spinner>
       </div>
     </div>
     <div class="alert alert-danger" *ngIf="errorEntryText()">

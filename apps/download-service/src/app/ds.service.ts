@@ -1,9 +1,9 @@
-import { Injectable, Inject, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { catchError, tap } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
 
 import { HttpHeaders, HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -15,16 +15,11 @@ export class DownloadService {
     responseType: 'json' as 'json',
   };
 
-  // private readonly httpBlobOptions = {
-  //   headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-  //   responseType: 'blob' as 'json',
-  // };
-
   private readonly http = inject(HttpClient);
 
   private readonly fileDownloadUrl = environment.downloadAPIUrl;
 
-  public postFileDownloadServer(apiType: string, fdsType: string, fdsConfig: string): Observable<any> {
+  public postFileDownloadServer(apiType: string, fdsType: string, fdsConfig: Record<string, string[]>): Observable<any> {
     return this.http.post<any>(`${this.fileDownloadUrl}/${apiType}/${fdsType}`, fdsConfig, this.httpOptions).pipe(
       catchError((err) => {
         let errMsg = `${err.status}, ${err.statusText}`;
@@ -37,7 +32,6 @@ export class DownloadService {
   }
 
   public getFileDownloadServer(hashedurl: string): Observable<any> {
-    // return this.http.get<any>(hashedurl, this.httpBlobOptions)
     return this.http
       .get<any>(hashedurl, {
         observe: 'response',

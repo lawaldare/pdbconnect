@@ -1,1 +1,14 @@
-<p>data-content works!</p>
+@if(dataContent()){
+<h3 class="heading-3">{{ dataContent().title }}</h3>
+@for(icontent of dataContent().content; track icontent){
+<p>
+  <lib-tool-tip [textIcon]="icontent.subtitle"> {{ icontent.subText }}: </lib-tool-tip>
+</p>
+
+@for(isub of icontent.subContent; track isub; let i = $index){
+<div class="radio-box">
+  <mat-radio-button class="row" [value]="icontent.values[i]">
+    <lib-tool-tip [textIcon]="icontent.subContent[i]"> {{ icontent.text[i] }} </lib-tool-tip>
+  </mat-radio-button>
+</div>
+} } }
