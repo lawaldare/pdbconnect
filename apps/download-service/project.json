@@ -49,6 +49,21 @@
             }
           ],
           "outputHashing": "all"
+        },
+        "development": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "1mb",
+              "maximumError": "2mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "200kb",
+              "maximumError": "250kb"
+            }
+          ],
+          "outputHashing": "all"
         }
       },
       "defaultConfiguration": ""
@@ -63,7 +78,7 @@
           "buildTarget": "download-service:build:development"
         }
       },
-      "defaultConfiguration": "production"
+      "defaultConfiguration": "development"
     },
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
