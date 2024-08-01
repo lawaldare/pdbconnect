@@ -70,6 +70,8 @@ button {
 
 .spinner-wrapper {
   display: flex;
+  justify-items: center;
+  align-items: center;
 }
 
 :host ::ng-deep .mat-progress-spinner circle,
