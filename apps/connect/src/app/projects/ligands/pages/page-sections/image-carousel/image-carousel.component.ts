@@ -7,7 +7,8 @@ import { ActivatedRoute } from '@angular/router';
 import { of, switchMap } from 'rxjs';
 import { ClickOutsideDirective } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
-import Splide from '@splidejs/splide';
+import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'pdbc-image-carousel',
@@ -32,12 +33,13 @@ export class ImageCarouselComponent implements AfterViewInit {
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
   private divsRendered: any[] = [];
-  private mainDivsRendered: any[] = [];
+  private ligandEv!: any;
 
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly renderer = inject(Renderer2);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
+  private readonly dialog = inject(MatDialog);
 
   ngAfterViewInit() {
     this.route.params
@@ -50,39 +52,7 @@ export class ImageCarouselComponent implements AfterViewInit {
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(() => {
-        setTimeout(() => {
-          const main = new Splide('#main', {
-            type: 'fade',
-            rewind: true,
-            pagination: false,
-            arrows: false,
-          });
-          const thumbnails = new Splide('#thumbnail', {
-            fixedWidth: 83,
-            gap: 10,
-            rewind: true,
-            pagination: false,
-            isNavigation: true,
-            breakpoints: {
-              600: {
-                fixedWidth: 60,
-                fixedHeight: 44,
-              },
-            },
-          });
-          main.sync(thumbnails);
-          main.mount();
-          thumbnails.mount();
-
-          thumbnails.on('move', (event) => {
-            // do something
-            console.log(event);
-            this.currentSlide = event;
-            this.setDepictionDescription();
-          });
-        }, 500);
-      });
+      .subscribe();
   }
 
   public onShowTooltips() {
@@ -93,41 +63,73 @@ export class ImageCarouselComponent implements AfterViewInit {
     this.showTooltips = false;
   }
 
-  /**
-   * Function to download substructure data from API
-   * @param ligandId
-   */
+  onPreviousClick() {
+    const previous = this.currentSlide - 1;
+    this.currentSlide = previous < 0 ? this.substructureNames().length + 1 : previous;
+    if (!this.slides().includes(this.currentSlide)) {
+      // this.slides()[2] = this.slides()[1];
+      this.slides()[1] = this.slides()[0];
+      this.slides()[0] = this.currentSlide;
+    }
+
+    this.renderSubstructure();
+  }
+
+  onNextClick() {
+    const next = this.currentSlide + 1;
+    this.currentSlide = next === this.substructureNames().length + 2 ? 0 : next;
+    if (!this.slides().includes(this.currentSlide)) {
+      this.slides()[0] = this.slides()[1];
+      this.slides()[1] = this.currentSlide;
+      // this.slides()[2] = this.currentSlide;
+    }
+    this.renderSubstructure();
+  }
+
+  public openMolstarDialog(): void {
+    const data = {
+      entryList: [
+        `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.ligandId}_ideal.pdb`,
+        `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.ligandId}_model.pdb`,
+      ],
+    };
+
+    this.dialog.open(MolstarDialogComponent, {
+      disableClose: false,
+      panelClass: 'molstarDialog',
+      data: data,
+    });
+  }
+
   private init(ligandId: string) {
     this.aggregatedApiService
       .fetchSubstructures(ligandId)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((substructures) => {
-        const substructure = substructures[ligandId][0];
-        const fragments = Object.entries(substructure['fragments']);
-        for (const [fragment, atoms] of fragments) {
-          for (const atom of atoms) {
-            this.substructureNames.update((values) => [...values, `${fragment} fragment`]);
-            this.substructureAtoms.push(atom);
+      .subscribe(
+        (substructures) => {
+          const substructure = substructures[ligandId][0];
+          const fragments = Object.entries(substructure['fragments']);
+          for (const [fragment, atoms] of fragments) {
+            for (const atom of atoms) {
+              this.substructureNames.update((values) => [...values, `${fragment} fragment`]);
+              this.substructureAtoms.push(atom);
+            }
           }
-        }
-        this.substructureNames.update((values) => [...values, `Murcko scaffold`]);
-        this.substructureAtoms.push(Object.values(substructure['scaffold'])[0]);
-        if (this.substructureNames().length > 0) {
-          this.generateSlideNumbers();
+          this.substructureNames.update((values) => [...values, `Murcko scaffold`]);
+          this.substructureAtoms.push(Object.values(substructure['scaffold'])[0]);
+          if (this.substructureNames().length > 0) {
+            this.slides.update((slides) => [...slides, 0, 1]);
+            this.renderLigand(this.ligandId);
+          }
+        },
+        (error) => {
+          this.substructureNames.update((values) => [...values, `Murcko scaffold`]);
+          this.slides.update((slides) => [...slides, 0, 1]);
           this.renderLigand(this.ligandId);
         }
-      });
+      );
   }
 
-  private generateSlideNumbers(): void {
-    for (let index = 0; index <= this.substructureNames().length + 1; index++) {
-      this.slides.update((numbers) => [...numbers, index]);
-    }
-  }
-
-  /**
-   * Updates the depiction description
-   */
   private setDepictionDescription() {
     switch (this.currentSlide) {
       case 0:
@@ -143,9 +145,6 @@ export class ImageCarouselComponent implements AfterViewInit {
     }
   }
 
-  /**
-   * Sets the property of depiction to highlight substructures and atom names
-   */
   private setDepictionProperty(el: HTMLElement, index: number) {
     switch (index) {
       case 0:
@@ -164,10 +163,22 @@ export class ImageCarouselComponent implements AfterViewInit {
     }
   }
 
-  /**
-   * Renders first view of image carousel
-   * @param ligandId
-   */
+  private renderSubstructure() {
+    const slideContainer = this.slideContainer.nativeElement;
+    this.setDepictionProperty(this.ligandEv, this.currentSlide);
+    const slideElements = slideContainer.children;
+    for (let i = 0; i < slideElements.length; i++) {
+      if (this.slides()[i] == this.currentSlide) {
+        this.renderer.addClass(slideElements[i], 'active');
+      } else {
+        this.renderer.removeClass(slideElements[i], 'active');
+      }
+
+      const ligandEl = slideElements[i].firstElementChild;
+      this.setDepictionProperty(ligandEl, this.slides()[i]);
+    }
+    this.setDepictionDescription();
+  }
 
   private renderLigand(ligandId: string) {
     const slideContainer = this.slideContainer.nativeElement;
@@ -177,13 +188,17 @@ export class ImageCarouselComponent implements AfterViewInit {
       .fetchDepiction(ligandId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((depiction: Depiction) => {
+        this.createLigandEnvironment(imageContainer, depiction, true);
         if (this.substructureNames().length > 0) {
           for (const slide of this.slides()) {
-            const slideDivs = this.generateDivContainerForLigand(slideContainer, false);
-            this.createLigandEnvironment(slideDivs, depiction, slide);
-
-            const mainDiv = this.generateDivContainerForLigand(imageContainer, true);
-            this.createLigandEnvironment(mainDiv, depiction, slide);
+            const div = this.renderer.createElement('div');
+            this.renderer.appendChild(slideContainer, div);
+            this.renderer.addClass(div, 'slide');
+            if (slide === 0) {
+              this.renderer.addClass(div, 'active');
+            }
+            this.divsRendered.push(div);
+            this.createLigandEnvironment(div, depiction, false, slide);
           }
         }
 
@@ -191,20 +206,7 @@ export class ImageCarouselComponent implements AfterViewInit {
       });
   }
 
-  private generateDivContainerForLigand(container: ElementRef, isMain: boolean): ElementRef {
-    const div = this.renderer.createElement('div');
-    this.renderer.appendChild(container, div);
-    this.renderer.addClass(div, 'slide');
-    this.renderer.addClass(div, 'splide__slide');
-    if (isMain) {
-      this.mainDivsRendered.push(div);
-    } else {
-      this.divsRendered.push(div);
-    }
-    return div;
-  }
-
-  private createLigandEnvironment(container: ElementRef, depiction: Depiction, slide?: number): void {
+  private createLigandEnvironment(container: ElementRef, depiction: Depiction, mainLigand = false, slide?: number): void {
     const ligand = this.renderer.createElement('pdb-ligand-env');
     this.renderer.appendChild(container, ligand);
     this.renderer.setProperty(ligand, 'depiction', depiction);
@@ -214,6 +216,11 @@ export class ImageCarouselComponent implements AfterViewInit {
     }
     if (slide) {
       this.setDepictionProperty(ligand, slide);
+    }
+
+    if (mainLigand) {
+      this.renderer.setAttribute(ligand, 'depiction-only', '');
+      this.ligandEv = ligand;
     }
   }
 
@@ -225,13 +232,12 @@ export class ImageCarouselComponent implements AfterViewInit {
       this.renderer.removeChild(slideContainer, div);
     }
 
-    for (const div of this.mainDivsRendered) {
-      this.renderer.removeChild(imageContainer, div);
+    if (this.ligandEv) {
+      this.renderer.removeChild(imageContainer, this.ligandEv);
     }
 
     this.slides.set([]);
     this.divsRendered = [];
-    this.mainDivsRendered = [];
     this.substructureNames.set([]);
     this.substructureAtoms = [];
   }

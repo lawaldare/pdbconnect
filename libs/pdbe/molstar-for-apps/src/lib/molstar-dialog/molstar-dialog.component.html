@@ -1,0 +1,12 @@
+<section>
+  <mat-form-field>
+    <mat-label>Select Conformer</mat-label>
+    <mat-select [(value)]="selected">
+      @for (option of selections; track option) {
+      <mat-option [value]="option.value">{{ option.viewValue }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <i class="icon icon-common icon-window-close" (click)="dialogRef.close()"></i>
+</section>
+<div class="container" #viewContainer></div>

@@ -54,6 +54,7 @@ export interface PhysChemProperties {
 export interface LigandProperty {
   name: string;
   value: string;
+  toolTip?: string;
 }
 
 export interface LigandDescription {

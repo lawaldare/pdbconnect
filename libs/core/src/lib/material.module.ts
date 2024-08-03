@@ -7,8 +7,19 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 
 @NgModule({
-  exports: [MatSidenavModule, MatListModule, MatSnackBarModule, MatPaginatorModule, MatDialogModule, MatTooltipModule, MatRadioModule, MatProgressSpinnerModule],
+  exports: [
+    MatSidenavModule,
+    MatListModule,
+    MatSnackBarModule,
+    MatPaginatorModule,
+    MatDialogModule,
+    MatTooltipModule,
+    MatRadioModule,
+    MatProgressSpinnerModule,
+    MatSelectModule,
+  ],
 })
 export class MaterialModule {}

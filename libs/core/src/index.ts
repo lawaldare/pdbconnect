@@ -5,7 +5,6 @@ export * from './lib/models/header-logo-menu.model';
 export * from './lib/models/header-search.model';
 export * from './lib/enums/theme.enum';
 export * from './lib/directives/truncate-text.directive';
-export * from './lib/models/name-value.model';
 export * from './lib/directives/click-outside.directive';
 export * from './lib/services/util.service';
 export * from './lib/services/xml-image-renderer.service';

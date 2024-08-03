@@ -7,12 +7,14 @@ import { Depiction } from '../../../data-models/structure.model';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { of, switchMap } from 'rxjs';
-import { UtilService } from '@pdbc/core';
+import { MaterialModule, UtilService } from '@pdbc/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 
 @Component({
   selector: 'pdbc-ligand-grid',
   standalone: true,
-  imports: [CommonModule, PdbeLinkButtonComponent, RouterModule],
+  imports: [CommonModule, PdbeLinkButtonComponent, RouterModule, MaterialModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './ligand-grid.component.html',
   styleUrl: './ligand-grid.component.scss',
@@ -33,6 +35,7 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly util = inject(UtilService);
+  private readonly dialog = inject(MatDialog);
 
   renderLigandImg(ligandId: string) {
     const imageContainer = this.imageContainer.nativeElement;
@@ -77,5 +80,17 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
     if (this.ligandEv) {
       this.renderer.removeChild(imageContainer, this.ligandEv);
     }
+  }
+
+  public openMolstarDialog(id: string): void {
+    const data = {
+      entryList: [`https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${id}_ideal.pdb`, `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${id}_model.pdb`],
+    };
+
+    this.dialog.open(MolstarDialogComponent, {
+      disableClose: false,
+      panelClass: 'molstarDialog',
+      data: data,
+    });
   }
 }

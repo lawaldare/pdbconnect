@@ -15,23 +15,21 @@
 </header>
 <div class="gallery-container">
   <div class="gallery">
-    <!-- <button class="control" (click)="onPreviousClick()">
+    <button class="control" (click)="onPreviousClick()">
       <img src="{{ arrowSrc }}" class="arrow" />
-    </button> -->
-    <section class="splide" id="main">
-      <div class="splide__track">
-        <div #imageContainer class="image-container splide__list"></div>
+    </button>
+    <div class="image-container" #imageContainer>
+      <div class="wallpaper">
+        <span (click)="openMolstarDialog()">
+          View in 3D&nbsp;
+          <i class="icon icon-common icon-eye"></i>
+        </span>
       </div>
-    </section>
-    <!-- <div class="image-container" #imageContainer></div> -->
-    <!-- <button class="control" (click)="onNextClick()">
+    </div>
+    <button class="control" (click)="onNextClick()">
       <img src="{{ arrowSrc }}" class="arrow right" />
-    </button> -->
+    </button>
   </div>
   <p class="paragraph-3">{{ this.structureDescription }}</p>
-  <section class="splide" id="thumbnail">
-    <div class="splide__track">
-      <div #slide class="slide-container splide__list"></div>
-    </div>
-  </section>
+  <div #slide class="slide-container"></div>
 </div>

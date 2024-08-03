@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold } from '../../../data-models/related-ligands.model';
@@ -35,15 +35,17 @@ export class RelatedLigandsComponent implements OnInit {
   sameScaffoldPage: LigandGrid[] = [];
   similarLigandpageLength = 0;
   similarLigandpageIndex = 0;
-  similarLigandpageSize = 6;
+  similarLigandpageSize = 5;
   stereoisomerspageLength = 0;
   stereoisomerspageIndex = 0;
-  stereoisomerspageSize = 6;
-  pageSizeOptions = [6, 12, 18];
+  stereoisomerspageSize = 5;
+  public sameScaffoldPageSizeOptions = signal<number[]>([]);
+  public similarLigandPageSizeOptions = signal<number[]>([]);
+  public stereoisomersPageSizeOptions = signal<number[]>([]);
   similarLigandSearchText = '';
   sameScaffoldpageLength = 0;
   sameScaffoldpageIndex = 0;
-  sameScaffoldpageSize = 6;
+  sameScaffoldpageSize = 5;
   sameScaffoldSearchText = '';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -94,6 +96,10 @@ export class RelatedLigandsComponent implements OnInit {
           return this.aggregatedApiService.fetchRelatedLigands(ligandId);
         }),
         mergeMap((relatedLigand: RelatedLigand) => {
+          this.sameScaffoldPageSizeOptions.set([]);
+          this.similarLigandPageSizeOptions.set([]);
+          this.stereoisomersPageSizeOptions.set([]);
+
           this.similarLigands = relatedLigand['similar_ligands'];
           this.sameScaffolds = relatedLigand['same_scaffold'];
           this.stereoisomers = relatedLigand['stereoisomers'];
@@ -133,6 +139,11 @@ export class RelatedLigandsComponent implements OnInit {
             bound_entries: stereoisomersBoundEntriesArray[index],
           }));
           this.stereoisomersGrid = this.unfilteredStereoisomers;
+
+          this.sameScaffoldPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
+          this.similarLigandPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
+          this.stereoisomersPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
+
           this.setUpPagination('stereoisomers');
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -224,16 +235,19 @@ export class RelatedLigandsComponent implements OnInit {
       case 'samescaffold':
         this.filtSameScaffoldGrid = this.sameScaffoldGrid;
         this.sameScaffoldpageLength = this.filtSameScaffoldGrid.length;
+        this.sameScaffoldPageSizeOptions.update((options) => [...new Set([...options, this.sameScaffoldpageLength])]);
         this.sameScaffoldPage = this.filtSameScaffoldGrid.slice(0, this.sameScaffoldpageSize);
         break;
       case 'similarligand':
         this.filtSimilarLigandsGrid = this.similarLigandsGrid;
         this.similarLigandpageLength = this.filtSimilarLigandsGrid.length;
+        this.similarLigandPageSizeOptions.update((options) => [...new Set([...options, this.similarLigandpageLength])]);
         this.similarLigandsPage = this.filtSimilarLigandsGrid.slice(0, this.similarLigandpageSize);
         break;
       case 'stereoisomers':
         this.filtStereoisomersGrid = this.stereoisomersGrid;
         this.stereoisomerspageLength = this.filtStereoisomersGrid.length;
+        this.stereoisomersPageSizeOptions.update((options) => [...new Set([...options, this.stereoisomerspageLength])]);
         this.stereoisomersPage = this.filtStereoisomersGrid.slice(0, this.stereoisomerspageSize);
         break;
     }
