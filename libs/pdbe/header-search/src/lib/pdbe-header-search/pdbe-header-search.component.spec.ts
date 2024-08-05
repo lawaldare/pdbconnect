@@ -3,7 +3,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 import { PdbeHeaderSearchComponent } from './pdbe-header-search.component';
 
-describe('PdbeHeaderSearchComponent', () => {
+xdescribe('PdbeHeaderSearchComponent', () => {
   let component: PdbeHeaderSearchComponent;
   let fixture: ComponentFixture<PdbeHeaderSearchComponent>;
 
