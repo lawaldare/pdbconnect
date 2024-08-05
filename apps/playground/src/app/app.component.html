@@ -2,15 +2,10 @@
 <pdbc-vf-ebi-header></pdbc-vf-ebi-header>
 <div class="container">
   <div class="content">
-    <nav>
-      <mat-list role="list">
-        <mat-list-item role="listitem" routerLink="/citation" routerLinkActive="active">Citation</mat-list-item>
-        <mat-list-item role="listitem" routerLink="/summary" routerLinkActive="active">Summary</mat-list-item>
-        <mat-list-item role="listitem" routerLink="/others" routerLinkActive="active">Others</mat-list-item>
-        <mat-list-item role="listitem" routerLink="/buttons" routerLinkActive="active">Buttons</mat-list-item>
-      </mat-list>
-    </nav>
-    <main>
+    @if (showNavigationBar) {
+      <app-navigation-bar></app-navigation-bar>
+    }
+    <main [ngClass]="{'nav-width': showNavigationBar}">
       <router-outlet></router-outlet>
     </main>
   </div>
