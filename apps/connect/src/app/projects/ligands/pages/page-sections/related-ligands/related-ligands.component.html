@@ -11,7 +11,7 @@
     </div>
     <div class="grid-container">
       @for (sameScaffold of sameScaffoldPage; track sameScaffold) {
-      <pdbc-ligand-grid [ligand]="sameScaffold"></pdbc-ligand-grid>
+      <pdbc-ligand-grid [ligand]="sameScaffold" />
       }
     </div>
     <mat-paginator
@@ -42,7 +42,7 @@
     </div>
     <div class="grid-container">
       @for (similarLigand of similarLigandsPage; track similarLigand) {
-      <pdbc-ligand-grid [ligand]="similarLigand"></pdbc-ligand-grid>
+      <pdbc-ligand-grid [ligand]="similarLigand" />
       }
     </div>
     <mat-paginator
@@ -69,7 +69,7 @@
     </div>
     <div class="grid-container">
       @for (stereoisomer of stereoisomersPage; track stereoisomer) {
-      <pdbc-ligand-grid [ligand]="stereoisomer"></pdbc-ligand-grid>
+      <pdbc-ligand-grid [ligand]="stereoisomer" />
       }
     </div>
     <mat-paginator
