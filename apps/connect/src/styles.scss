@@ -37,3 +37,29 @@ body {
 .mat-mdc-form-field-subscript-wrapper {
   display: none !important;
 }
+
+a {
+  color: #3b6fb6;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 27.2px;
+  text-decoration: none;
+  border: none;
+
+  &:focus {
+    border: 1px solid #193f90;
+  }
+
+  &:visited {
+    color: #563d82;
+    i {
+      color: #563d82;
+    }
+  }
+
+  &:hover {
+    color: #193f90;
+    text-decoration: underline;
+    border: none;
+  }
+}
