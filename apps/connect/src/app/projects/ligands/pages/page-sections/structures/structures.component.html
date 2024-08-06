@@ -3,7 +3,7 @@
   <mat-tab-group>
     <mat-tab>
       <ng-template mat-tab-label>
-        <h4>{{ this.structureData.length }} PDB structures</h4>
+        <h4>{{ this.dataSource.data.length }} PDB structures</h4>
       </ng-template>
       <div class="controllers">
         <div class="downloads" libClickOutside (clickOutside)="onClickedOutside()">
@@ -92,7 +92,13 @@
           <tr mat-row *matRowDef="let row; let odd = odd; columns: displayedColumns" [ngClass]="{ odd_row: odd }"></tr>
         </table>
         <div class="paginator-container">
-          <mat-paginator [length]="this.structureData.length" [pageSize]="6" [pageSizeOptions]="[4, 8, 23]" showFirstLastButtons aria-label="Select page of proteins">
+          <mat-paginator
+            [length]="this.structureData.length"
+            [pageSize]="5"
+            [pageSizeOptions]="pageSizeOptions()"
+            showFirstLastButtons
+            aria-label="Select page of proteins"
+          >
           </mat-paginator>
         </div>
       </div>

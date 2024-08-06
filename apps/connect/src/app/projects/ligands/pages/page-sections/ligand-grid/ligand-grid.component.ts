@@ -21,10 +21,8 @@ import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 })
 export class LigandGridComponent implements OnChanges, AfterViewInit {
   @Input() ligand!: LigandGrid;
-  ligandUrl = '';
   public boundEntryLabel = '';
   public boundEntryUrl = '';
-  boundProteinLabel = '';
 
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
   private ligandEv!: any;
