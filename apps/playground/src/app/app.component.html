@@ -1,6 +1,10 @@
 <!-- now only for ebi header and footer -->
 <pdbc-vf-ebi-header></pdbc-vf-ebi-header>
-<div class="container">
+@if (showPdbeLogoAndSearch) {
+  <pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
+  <pdbc-pdbe-header-search [headerSearchConfig]="pdbeSearchConfig"></pdbc-pdbe-header-search>
+}
+<div class="container" [ngClass]="{'container-default': defaultMargins}">
   <div class="content">
     @if (showNavigationBar) {
       <app-navigation-bar></app-navigation-bar>
