@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DescriptionData } from '../../../services/aggregated-api.service';
 import { MaterialModule, TruncateTextDirective } from '@pdbc/core';
@@ -14,7 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DescriptionComponent {
-  public readonly description = input.required<DescriptionData>();
+  public description = input.required<DescriptionData>();
 
   private clipboard = inject(Clipboard);
   private _snackBar = inject(MatSnackBar);

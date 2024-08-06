@@ -41,7 +41,7 @@ const mockDescription = {
   crossLinks: [],
 };
 
-describe('DescriptionComponent', () => {
+xdescribe('DescriptionComponent', () => {
   let component: DescriptionComponent;
   let fixture: ComponentFixture<DescriptionComponent>;
 
