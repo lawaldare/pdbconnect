@@ -11,5 +11,5 @@ export const appRoutes: Route[] = [
   { path: 'summary', component: SummaryComponent, title: 'Summary Page', data: { showNavigationBar: true } },
   { path: 'others', component: OthersComponent, title: 'Summary Page', data: { showNavigationBar: true } },
   { path: 'buttons', component: ButtonsPlaygroundComponent, title: 'Buttons Page', data: { showNavigationBar: true } },
-  { path: 'entry', component: EntryEcm2024Component, title: 'Entry Page', data: { showNavigationBar: false } },
+  { path: 'entry/:entryId', component: EntryEcm2024Component, title: 'Entry Page', data: { showNavigationBar: false, showPdbeLogoAndSearch: true, defaultMargins: false, bgColor: '#e3e3e3' } },
 ];
