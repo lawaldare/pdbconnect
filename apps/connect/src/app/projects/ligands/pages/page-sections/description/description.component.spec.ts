@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DescriptionComponent } from './description.component';
 
-const mockDescription = {
+const mockDescription: any = {
   name: 'fluorinated heme',
   synonyms: 'fluorinated heme',
   formula: 'C34 H33 F3 Fe N4 O4',
