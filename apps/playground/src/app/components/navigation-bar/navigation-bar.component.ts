@@ -4,7 +4,7 @@ import { CoreModule } from '@pdbc/core';
 import { RouterModule } from '@angular/router';
 
 @Component({
-  selector: 'app-navigation-bar',
+  selector: 'pdbe-navigation-bar',
   standalone: true,
   imports: [CommonModule, CoreModule, RouterModule],
   templateUrl: './navigation-bar.component.html',

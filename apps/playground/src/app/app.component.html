@@ -1,15 +1,15 @@
 <!-- now only for ebi header and footer -->
 <pdbc-vf-ebi-header></pdbc-vf-ebi-header>
-@if (showPdbeLogoAndSearch) {
-  <pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
-  <pdbc-pdbe-header-search [headerSearchConfig]="pdbeSearchConfig"></pdbc-pdbe-header-search>
+@if (showPdbeLogoAndSearch()) {
+<pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
+<pdbc-pdbe-header-search [headerSearchConfig]="pdbeSearchConfig"></pdbc-pdbe-header-search>
 }
-<div class="container" [ngClass]="{'container-default': defaultMargins}">
+<div class="container" [ngClass]="{ 'container-default': defaultMargins() }">
   <div class="content">
-    @if (showNavigationBar) {
-      <app-navigation-bar></app-navigation-bar>
+    @if (showNavigationBar()) {
+    <pdbe-navigation-bar></pdbe-navigation-bar>
     }
-    <main [ngClass]="{'nav-width': showNavigationBar}">
+    <main [ngClass]="{ 'nav-width': showNavigationBar() }">
       <router-outlet></router-outlet>
     </main>
   </div>

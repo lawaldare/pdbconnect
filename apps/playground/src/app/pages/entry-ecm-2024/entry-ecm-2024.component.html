@@ -1,170 +1,167 @@
 @if (pageData$ | async; as pageData) {
-    <div class="page-body">
-        <div class="content-container">
-            <h1 id="page-title" class="heading-1 left-align-txt">{{entryId()}}</h1>
-            <!-- Information section -->
-            <section id="info-rows" class="page-section left-align-txt">
-                <h3 class="heading-3">Information</h3>
-                <div id="info-table">
-                    <p class="info-col-row paragraph-3">
-                        <span class="info-col-title">Entry title</span>
-                        <span class="info-col-content">{{ pageData.summary.entryTitle }}</span>
-                    </p>
-                    <p class="info-col-row paragraph-3">
-                        <span class="info-col-title">Source organism</span>
-                        <span class="info-col-content">
-                            <span *ngFor="let sourceOrganism of pageData.molecules.organismScientificNames ; index as i" class="info-row-content-word">
-                            <pdbc-pdbe-link-button
-                                [externalLink]="true"
-                                [label]="sourceOrganism"
-                                [url]="
-                                'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22q_organism_name%22:%5B%7B%22value%22:%22' +
-                                sourceOrganism +
-                                '%22,%22condition1%22:%22AND%22,%22condition2%22:%22Contains%22%7D%5D,%22resultState%22:%7B%22tabIndex%22:0,%22paginationIndex%22:1,%22perPage%22:%2210%22,%22sortBy%22:%22Sort%20by%22%7D%7D'
-                                "
-                                [fontStyle]="'paragraph-3'"
-                                [fontColor]="'#3B6FB6'"
-                                [hoverColor]="'#193F90'"
-                                [visitedColor]="'#563D82'"
-                                [focusBorderColor]="'#3B6FB6'"
-                                [activeFontWeight]="300"
-                                [whiteSpace]="'normal'"
-                                [mobileIconName]="'search-12px'"
-                            ></pdbc-pdbe-link-button>
-                            <br />
-                            </span>
-                        </span>
-                    </p>
-                    <p class="info-col-row paragraph-3">
-                        <span class="info-col-title">Experiment type</span>
-                        <span class="info-col-content">{{ pageData.experiment.experimentalMethod }}</span>
-                    </p>
-                    @if (pageData.experiment.resolution) {
-                        <p class="info-col-row paragraph-3">
-                            <span class="info-col-title">Resolution</span>
-                            <span class="info-col-content">{{ pageData.experiment.resolution }}</span>
-                        </p>
-                    }
-                    <p class="info-col-row paragraph-3">
-                        <span class="info-col-title">Released</span>
-                        <span class="info-col-content">{{ pageData.summary.releaseDate }}</span>
-                    </p>
-                    <p class="info-col-row paragraph-3">
-                        <span class="info-col-title">Primary publication</span>
-                        <span class="info-col-content">
-                            {{ pageData.publication.publicationTitle }}<br>
-                            <i>{{ pageData.publication.publicationJournal }}</i>
-                            {{ pageData.publication.publicationVolume }}
-                            {{ pageData.publication.publicationPage }}
-                            {{ pageData.publication.publicationYear }}
-                            @if (pageData.publication.publicationPMID ) {
-                                PMID:
-                                <pdbc-pdbe-link-button
-                                    [externalLink]="true"
-                                    [label]="pageData.publication.publicationPMID"
-                                    [url]="'https://europepmc.org/article/MED/' + pageData.publication.publicationPMID"
-                                    [fontStyle]="'paragraph-3'"
-                                    [fontColor]="'#3B6FB6'"
-                                    [hoverColor]="'#193F90'"
-                                    [visitedColor]="'#563D82'"
-                                    [focusBorderColor]="'#3B6FB6'"
-                                    [activeFontWeight]="300"
-                                    [mobileIconName]="'link'"
-                                    [whiteSpace]="'normal'"
-                                ></pdbc-pdbe-link-button>
-                            }
-                            <br>
-                            @for (authorName of pageData.publication.publicationAuthors; track authorName; let index = $index) {
-                                <pdbc-pdbe-link-button
-                                [externalLink]="true"
-                                [label]="authorName"
-                                [url]="
-                                    'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22q_all_authors%22:%5B%7B%22value%22:%22' +
-                                    authorName +
-                                    '%22,%22condition1%22:%22AND%22,%22condition2%22:%22Contains%22%7D%5D,%22resultState%22:%7B%22tabIndex%22:0,%22paginationIndex%22:1,%22perPage%22:%2210%22,%22sortBy%22:%22Sort%20by%22%7D%7D'
-                                "
-                                [fontStyle]="'paragraph-3'"
-                                [fontColor]="'#3B6FB6'"
-                                [hoverColor]="'#193F90'"
-                                [visitedColor]="'#563D82'"
-                                [focusBorderColor]="'#3B6FB6'"
-                                [activeFontWeight]="300"
-                                [whiteSpace]="'normal'"
-                                ></pdbc-pdbe-link-button>
-                                @if (index === pageData.publication.publicationAuthors.length - 1) {
-                                    <br>
-                                }
-                            }
-                            @if (pageData.publication.publicationDOI) {
-                                DOI:
-                                <pdbc-pdbe-link-button
-                                    [externalLink]="true"
-                                    [label]="pageData.publication.publicationDOI"
-                                    [url]="'https://doi.org/' + pageData.publication.publicationDOI"
-                                    [fontStyle]="'paragraph-3'"
-                                    [fontColor]="'#3B6FB6'"
-                                    [hoverColor]="'#193F90'"
-                                    [visitedColor]="'#563D82'"
-                                    [focusBorderColor]="'#3B6FB6'"
-                                    [activeFontWeight]="300"
-                                    [mobileIconName]="'link'"
-                                    [whiteSpace]="'normal'"
-                                ></pdbc-pdbe-link-button>
-                            }
-                        </span>
-                    </p>
-                    <p class="info-col-row paragraph-3">
-                        <span class="info-col-title">Entry authors</span>
-                        <span class="info-col-content">{{ pageData.summary.entryAuthors }}</span>
-                    </p>
-                    <p class="info-col-row paragraph-3">
-                        <span class="info-col-title">PDB DOI</span>
-                        <span class="info-col-content">
-                            <pdbc-pdbe-link-button
-                            [externalLink]="true"
-                            [label]="pageData.publication.pdbEntryDOI"
-                            [url]="'https://doi.org/' + pageData.publication.pdbEntryDOI"
-                            [fontStyle]="'paragraph-3'"
-                            [fontColor]="'#3B6FB6'"
-                            [hoverColor]="'#193F90'"
-                            [visitedColor]="'#563D82'"
-                            [focusBorderColor]="'#3B6FB6'"
-                            [activeFontWeight]="300"
-                            [mobileIconName]="'link'"
-                            [whiteSpace]="'normal'"
-                            ></pdbc-pdbe-link-button>
-                        </span>
-                    </p>
-                </div>
-            </section>
-            <!-- Container for 3D concept -->
-            <section id="struct-3d-container" class="page-section left-align-txt">
-                <app-struc-explorer-ecm-2024></app-struc-explorer-ecm-2024>
-            </section>
-            <!-- Ligands and Environments -->
-             <section id="lig-envs" class="page-section left-align-txt">
-                <h3 id="lig-envs-title" class="heading-3">
-                    <span>Ligands and Environments</span>
-                    <span class="paragraph-3">View all ligands</span>
-                    <!-- TODO: modify & add this to a @for loop. taken from Grails -->
-                    <!-- <div class="ligands-environ-residue grid_6 image-tooltip" title="${residue.value[0].chem_comp_name}">
-                        <a href="${residue_url}" style="border: none;text-decoration: none;"> 
+<div class="page-body">
+  <div class="content-container">
+    <h1 id="page-title" class="heading-1 left-align-txt">{{ entryId() }}</h1>
+    <!-- Information section -->
+    <pdbe-entry-information></pdbe-entry-information>
+    <section id="info-rows" class="page-section left-align-txt">
+      <h3 class="heading-3">Information</h3>
+      <div id="info-table">
+        <p class="info-col-row paragraph-3">
+          <span class="info-col-title">Entry title</span>
+          <span class="info-col-content">{{ pageData.summary.entryTitle }}</span>
+        </p>
+        <p class="info-col-row paragraph-3">
+          <span class="info-col-title">Source organism</span>
+          <span class="info-col-content">
+            <span *ngFor="let sourceOrganism of pageData.molecules.organismScientificNames; index as i" class="info-row-content-word">
+              <pdbc-pdbe-link-button
+                [externalLink]="true"
+                [label]="sourceOrganism"
+                [url]="
+                  'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22q_organism_name%22:%5B%7B%22value%22:%22' +
+                  sourceOrganism +
+                  '%22,%22condition1%22:%22AND%22,%22condition2%22:%22Contains%22%7D%5D,%22resultState%22:%7B%22tabIndex%22:0,%22paginationIndex%22:1,%22perPage%22:%2210%22,%22sortBy%22:%22Sort%20by%22%7D%7D'
+                "
+                [fontStyle]="'paragraph-3'"
+                [fontColor]="'#3B6FB6'"
+                [hoverColor]="'#193F90'"
+                [visitedColor]="'#563D82'"
+                [focusBorderColor]="'#3B6FB6'"
+                [activeFontWeight]="300"
+                [whiteSpace]="'normal'"
+                [mobileIconName]="'search-12px'"
+              ></pdbc-pdbe-link-button>
+              <br />
+            </span>
+          </span>
+        </p>
+        <p class="info-col-row paragraph-3">
+          <span class="info-col-title">Experiment type</span>
+          <span class="info-col-content">{{ pageData.experiment.experimentalMethod }}</span>
+        </p>
+        @if (pageData.experiment.resolution) {
+        <p class="info-col-row paragraph-3">
+          <span class="info-col-title">Resolution</span>
+          <span class="info-col-content">{{ pageData.experiment.resolution }}</span>
+        </p>
+        }
+        <p class="info-col-row paragraph-3">
+          <span class="info-col-title">Released</span>
+          <span class="info-col-content">{{ pageData.summary.releaseDate }}</span>
+        </p>
+        <p class="info-col-row paragraph-3">
+          <span class="info-col-title">Primary publication</span>
+          <span class="info-col-content">
+            {{ pageData.publication.publicationTitle }}<br />
+            <i>{{ pageData.publication.publicationJournal }}</i>
+            {{ pageData.publication.publicationVolume }}
+            {{ pageData.publication.publicationPage }}
+            {{ pageData.publication.publicationYear }}
+            @if (pageData.publication.publicationPMID ) { PMID:
+            <pdbc-pdbe-link-button
+              [externalLink]="true"
+              [label]="pageData.publication.publicationPMID"
+              [url]="'https://europepmc.org/article/MED/' + pageData.publication.publicationPMID"
+              [fontStyle]="'paragraph-3'"
+              [fontColor]="'#3B6FB6'"
+              [hoverColor]="'#193F90'"
+              [visitedColor]="'#563D82'"
+              [focusBorderColor]="'#3B6FB6'"
+              [activeFontWeight]="300"
+              [mobileIconName]="'link'"
+              [whiteSpace]="'normal'"
+            ></pdbc-pdbe-link-button>
+            }
+            <br />
+            @for (authorName of pageData.publication.publicationAuthors; track authorName; let index = $index) {
+            <pdbc-pdbe-link-button
+              [externalLink]="true"
+              [label]="authorName"
+              [url]="
+                'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22q_all_authors%22:%5B%7B%22value%22:%22' +
+                authorName +
+                '%22,%22condition1%22:%22AND%22,%22condition2%22:%22Contains%22%7D%5D,%22resultState%22:%7B%22tabIndex%22:0,%22paginationIndex%22:1,%22perPage%22:%2210%22,%22sortBy%22:%22Sort%20by%22%7D%7D'
+              "
+              [fontStyle]="'paragraph-3'"
+              [fontColor]="'#3B6FB6'"
+              [hoverColor]="'#193F90'"
+              [visitedColor]="'#563D82'"
+              [focusBorderColor]="'#3B6FB6'"
+              [activeFontWeight]="300"
+              [whiteSpace]="'normal'"
+            ></pdbc-pdbe-link-button>
+            @if (index === pageData.publication.publicationAuthors.length - 1) {
+            <br />
+            } } @if (pageData.publication.publicationDOI) { DOI:
+            <pdbc-pdbe-link-button
+              [externalLink]="true"
+              [label]="pageData.publication.publicationDOI"
+              [url]="'https://doi.org/' + pageData.publication.publicationDOI"
+              [fontStyle]="'paragraph-3'"
+              [fontColor]="'#3B6FB6'"
+              [hoverColor]="'#193F90'"
+              [visitedColor]="'#563D82'"
+              [focusBorderColor]="'#3B6FB6'"
+              [activeFontWeight]="300"
+              [mobileIconName]="'link'"
+              [whiteSpace]="'normal'"
+            ></pdbc-pdbe-link-button>
+            }
+          </span>
+        </p>
+        <p class="info-col-row paragraph-3">
+          <span class="info-col-title">Entry authors</span>
+          <span class="info-col-content">{{ pageData.summary.entryAuthors }}</span>
+        </p>
+        <p class="info-col-row paragraph-3">
+          <span class="info-col-title">PDB DOI</span>
+          <span class="info-col-content">
+            <pdbc-pdbe-link-button
+              [externalLink]="true"
+              [label]="pageData.publication.pdbEntryDOI"
+              [url]="'https://doi.org/' + pageData.publication.pdbEntryDOI"
+              [fontStyle]="'paragraph-3'"
+              [fontColor]="'#3B6FB6'"
+              [hoverColor]="'#193F90'"
+              [visitedColor]="'#563D82'"
+              [focusBorderColor]="'#3B6FB6'"
+              [activeFontWeight]="300"
+              [mobileIconName]="'link'"
+              [whiteSpace]="'normal'"
+            ></pdbc-pdbe-link-button>
+          </span>
+        </p>
+      </div>
+    </section>
+    <!-- Container for 3D concept -->
+    <section id="struct-3d-container" class="page-section left-align-txt">
+      <app-struc-explorer-ecm-2024></app-struc-explorer-ecm-2024>
+    </section>
+    <!-- Ligands and Environments -->
+    <section id="lig-envs" class="page-section left-align-txt">
+      <h3 id="lig-envs-title" class="heading-3">
+        <span>Ligands and Environments</span>
+        <span class="paragraph-3">View all ligands</span>
+        <!-- TODO: modify & add this to a @for loop. taken from Grails -->
+        <!-- <div class="ligands-environ-residue grid_6 image-tooltip" title="${residue.value[0].chem_comp_name}">
+                        <a href="${residue_url}" style="border: none;text-decoration: none;">
                           <img src="//www${grailsApplication.config?.applicationEnv == null ? '' : grailsApplication.config.applicationEnv}.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${residue.key}_100.svg" alt="Ligand ${residue.key}" class="residue-image">
                         </a>
                         <span class="data-label grid_24">
                           <a href="${residue_url}">${residue.value.size()} x ${residue.key}</a>
                         </span>
                       </div> -->
-                </h3>
-                <p class="paragraph-3">
-                    <span>bound ligands</span>
-                </p>
-                <div class="bound-ligand-gallery"></div>
-                <p class="paragraph-3">
-                    <span>modified residues</span>
-                </p>
-                <div class="modified-resid-gallery"></div>
-             </section>
-        </div>
-    </div>
+      </h3>
+      <p class="paragraph-3">
+        <span>bound ligands</span>
+      </p>
+      <div class="bound-ligand-gallery"></div>
+      <p class="paragraph-3">
+        <span>modified residues</span>
+      </p>
+      <div class="modified-resid-gallery"></div>
+    </section>
+  </div>
+</div>
 }

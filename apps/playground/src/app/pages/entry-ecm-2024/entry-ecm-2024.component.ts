@@ -5,11 +5,12 @@ import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { PlaygroundService } from '../../services/playground.service';
 import { combineLatest, map } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
+import { EntryInformationComponent } from '../../components/entry-information/entry-information.component';
 
 @Component({
-  selector: 'app-entry-ecm-2024',
+  selector: 'pdbe-entry-ecm-2024',
   standalone: true,
-  imports: [CommonModule, StrucExplorerEcm2024Component, PdbeLinkButtonComponent],
+  imports: [CommonModule, StrucExplorerEcm2024Component, PdbeLinkButtonComponent, EntryInformationComponent],
   templateUrl: './entry-ecm-2024.component.html',
   styleUrl: './entry-ecm-2024.component.scss',
 })
@@ -17,11 +18,11 @@ export class EntryEcm2024Component {
   private readonly playgroundService = inject(PlaygroundService);
 
   public entryId = signal('1trn'); //'7v08', '3d12', '5tj5', '4zqo'
-  
+
   private route = inject(ActivatedRoute);
 
   constructor() {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       const id = params.get('entryId');
       if (id) {
         this.entryId.set(id); // Update the signal with the route parameter
@@ -37,15 +38,14 @@ export class EntryEcm2024Component {
       this.playgroundService.getEntryEcmSummary(this.entryId()),
       this.playgroundService.getEntryEcmMolecules(this.entryId()),
       this.playgroundService.getEntryEcmExperiment(this.entryId()),
-      this.playgroundService.getEntryEcmPublication(this.entryId())
+      this.playgroundService.getEntryEcmPublication(this.entryId()),
     ]).pipe(
       map(([summary, molecules, experiment, publication]) => ({
         summary,
         molecules,
         experiment,
-        publication
+        publication,
       }))
     );
   }
-
 }

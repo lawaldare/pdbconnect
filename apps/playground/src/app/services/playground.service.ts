@@ -38,9 +38,9 @@ export class PlaygroundService {
         const dateObj = new Date(Date.parse(formattedApiDate)).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
         return {
           entryTitle: datum.title!,
-          entryAuthors: datum.entry_authors!.join(" "),
-          releaseDate: dateObj
-        }
+          entryAuthors: datum.entry_authors!.join(' '),
+          releaseDate: dateObj,
+        };
       })
     );
   }
@@ -49,7 +49,7 @@ export class PlaygroundService {
     return this.http.get<any>(`${this.BASE_API}molecules/${entryId}`).pipe(
       map((data) => {
         const molecules = data[entryId];
-        let organismNames: string[] = [];
+        const organismNames: string[] = [];
         // See: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/1trn
         // and a more different example at: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/6hr1
         for (const entityDetail of molecules) {
@@ -68,7 +68,7 @@ export class PlaygroundService {
         }
         return {
           organismScientificNames: organismNames,
-        }
+        };
       })
     );
   }
@@ -79,8 +79,8 @@ export class PlaygroundService {
         const datum = data[entryId][0];
         return {
           experimentalMethod: datum.experimental_method,
-          resolutionValue: datum.resolution
-        }
+          resolutionValue: datum.resolution,
+        };
       })
     );
   }
@@ -89,29 +89,28 @@ export class PlaygroundService {
     return this.http.get<any>(`${this.BASE_API}publications/${entryId}`).pipe(
       map((data) => {
         const datum = data[entryId][0];
-        let authorList: string[] = [];
+        const authorList: string[] = [];
         for (const authorData of datum.author_list) {
           authorList.push(authorData.full_name!);
         }
-        if (datum.journal_info.pdb_abbreviation! !== "To be published") {
+        if (datum.journal_info.pdb_abbreviation! !== 'To be published') {
           return {
             publicationTitle: datum.title,
             publicationAuthors: authorList,
             publicationJournal: datum.journal_info.pdb_abbreviation!,
-            publicationVolume: datum.journal_info.volume!, 
+            publicationVolume: datum.journal_info.volume!,
             publicationPages: datum.journal_info.pages!,
             publicationYear: datum.journal_info.year!,
             publicationPMID: datum.pubmed_id!,
             publicationDOI: datum.doi!,
             pdbEntryDOI: `10.2210/pdb${entryId}/pdb`,
-          }
+          };
         }
-        return  {
-          publicationTitle: "To be published",
+        return {
+          publicationTitle: 'To be published',
           pdbEntryDOI: `10.2210/pdb${entryId}/pdb`,
-        }
+        };
       })
     );
   }
-
 }
