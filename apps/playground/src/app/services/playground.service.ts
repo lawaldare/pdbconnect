@@ -46,31 +46,7 @@ export class PlaygroundService {
   }
 
   public getEntryEcmMolecules(entryId: string): Observable<any> {
-    return this.http.get<any>(`${this.BASE_API}molecules/${entryId}`).pipe(
-      map((data) => {
-        const molecules = data[entryId];
-        const organismNames: string[] = [];
-        // See: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/1trn
-        // and a more different example at: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/6hr1
-        for (const entityDetail of molecules) {
-          // if entity object has source (bound molecules and water do not have)
-          if (Object.prototype.hasOwnProperty.call(entityDetail, 'source')) {
-            for (const eachSource of entityDetail.source!) {
-              if (!Object.prototype.hasOwnProperty.call(eachSource, 'organism_scientific_name')) {
-                continue;
-              }
-              // if source object has scientific name not yet in array
-              if (organismNames.indexOf(eachSource.organism_scientific_name!) === -1) {
-                organismNames.push(eachSource.organism_scientific_name!);
-              }
-            }
-          }
-        }
-        return {
-          organismScientificNames: organismNames,
-        };
-      })
-    );
+    return this.http.get<any>(`${this.BASE_API}molecules/${entryId}`);
   }
 
   public getEntryEcmExperiment(entryId: string): Observable<any> {

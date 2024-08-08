@@ -1,9 +1,83 @@
 <div id="information-section">
-  <h3 class="title">Information</h3>
+  <h4 class="heading-4">Information</h4>
   <div class="info-row">
-    <span class="info-row-title">Synonyms</span>
-    <div class="info-row-content">
-      <!-- {{ description.synonyms }} -->
-    </div>
+    <span>Entry title</span>
+    <article>
+      {{ information().summary.entryTitle }}
+    </article>
+  </div>
+  <div class="info-row">
+    <span>Source organism</span>
+    <article>
+      @for(sourceOrganism of information().molecules.organismScientificNames; track sourceOrganism){
+      <span>
+        <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">{{ sourceOrganism }}</a>
+        <i class="icon icon-common icon-search"></i> </span
+      >, }
+    </article>
+  </div>
+  <div class="info-row">
+    <span>Experiment type</span>
+    <article>
+      {{ information().experiment.experimentalMethod }}
+    </article>
+  </div>
+  @if (information().experiment.resolution) {
+  <div class="info-row">
+    <span>Resolution</span>
+    <article>
+      {{ information().experiment.resolution }}
+    </article>
+  </div>
+  }
+  <div class="info-row">
+    <span>Released</span>
+    <article>
+      {{ information().summary.releaseDate }}
+    </article>
+  </div>
+  <div class="info-row">
+    <span>Primary Publication</span>
+    <article>
+      <p>{{ information().publication.publicationTitle }}</p>
+      <p>
+        <i>{{ information().publication.publicationJournal }}</i>
+        {{ information().publication.publicationVolume }}
+        {{ information().publication.publicationPage }}
+        {{ information().publication.publicationYear }}
+      </p>
+      @if(information().publication.publicationPMID){
+      <p>
+        PMID:
+        <a [href]="'https://europepmc.org/article/MED/' + information().publication.publicationPMID" target="_blank"
+          >{{ information().publication.publicationPMID }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </p>
+      } @if(information().publication.publicationDOI){
+      <p>
+        DOI:
+        <a [href]="'https://doi.org/' + information().publication.publicationDOI" target="_blank"
+          >{{ information().publication.publicationDOI }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </p>
+      }
+    </article>
+  </div>
+  <div class="info-row">
+    <span>Entry authors</span>
+    <article>
+      {{ information().summary.entryAuthors }}
+    </article>
+  </div>
+  <div class="info-row">
+    <span>PDB DOI</span>
+    <article>
+      <a [href]="'https://doi.org/' + information().publication.pdbEntryDOI" target="_blank"
+        >{{ information().publication.pdbEntryDOI }}
+        <i class="icon icon-link icon-common"></i>
+      </a>
+    </article>
   </div>
 </div>
