@@ -6,7 +6,7 @@
 FROM nginx:1.21.3
 WORKDIR /app
 
-COPY dist/apps/download/browser /usr/share/nginx/html
+COPY dist/apps/download /usr/share/nginx/html
 COPY apps/download/nginx-custom.conf /etc/nginx/conf.d/default.conf
 
 ARG APP_BASE_HREF

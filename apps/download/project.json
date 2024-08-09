@@ -2,60 +2,42 @@
   "name": "download",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "prefix": "app",
+  "prefix": "pdbc",
   "sourceRoot": "apps/download/src",
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@angular-devkit/build-angular:application",
+      "executor": "@nx/angular:webpack-browser",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/download",
         "index": "apps/download/src/index.html",
-        "browser": "apps/download/src/main.ts",
+        "main": "apps/download/src/main.ts",
         "polyfills": ["zone.js"],
         "tsConfig": "apps/download/tsconfig.app.json",
-        "inlineStyleLanguage": "scss",
         "assets": [
           "apps/download/src/favicon.ico",
           "apps/download/src/assets",
+          "apps/download/src/app.config.json",
           {
             "glob": "**/*",
             "input": "shared_assets/",
             "output": "./assets/"
           }
         ],
-        "styles": ["./node_modules/@angular/material/prebuilt-themes/indigo-pink.css", "apps/download/src/styles.scss"],
-        "scripts": []
+        "styles": ["apps/download/src/styles.scss"],
+        "scripts": [],
+        "customWebpackConfig": {
+          "path": "apps/download/webpack.config.js"
+        },
+        "baseHref": "$APP_BASE_HREF"
       },
       "configurations": {
         "production": {
-          "fileReplacements": [
-            {
-              "replace": "apps/download/src/environments/environment.ts",
-              "with": "apps/download/src/environments/environment.prod.ts"
-            }
-          ],
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "1mb",
-              "maximumError": "2mb"
-            },
-            {
-              "type": "anyComponentStyle",
-              "maximumWarning": "200kb",
-              "maximumError": "250kb"
-            }
-          ],
-          "outputHashing": "all",
-          "baseHref": "$APP_BASE_HREF"
-        },
-        "development": {
-          "budgets": [
-            {
-              "type": "initial",
-              "maximumWarning": "1mb",
+              "maximumWarning": "500kb",
               "maximumError": "2mb"
             },
             {
@@ -65,12 +47,20 @@
             }
           ],
           "outputHashing": "all"
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
         }
       },
-      "defaultConfiguration": ""
+      "defaultConfiguration": "production"
     },
     "serve": {
-      "executor": "@angular-devkit/build-angular:dev-server",
+      "executor": "@nx/angular:dev-server",
       "configurations": {
         "production": {
           "buildTarget": "download:build:production"
@@ -88,7 +78,8 @@
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint"
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
     },
     "test": {
       "executor": "@nx/jest:jest",
@@ -100,10 +91,7 @@
     "serve-static": {
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "download:build",
-        "port": 4200,
-        "staticFilePath": "dist/apps/download/browser",
-        "spa": true
+        "buildTarget": "download:build"
       }
     }
   }
