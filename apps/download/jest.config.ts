@@ -1,9 +1,9 @@
 /* eslint-disable */
 export default {
-  displayName: 'download-service',
+  displayName: 'download',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
-  coverageDirectory: '../../coverage/apps/download-service',
+  coverageDirectory: '../../coverage/apps/download',
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
       'jest-preset-angular',
