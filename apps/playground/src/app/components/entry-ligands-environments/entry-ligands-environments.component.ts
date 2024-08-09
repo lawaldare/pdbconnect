@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { PlaygroundService } from '../../services/playground.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { switchMap, of, map, forkJoin } from 'rxjs';
+import { switchMap, of, map, forkJoin, catchError, EMPTY } from 'rxjs';
 import { Molecule } from '../../models/molecule.model';
 import { ModifiedResidues } from '../../models/modified-residues.model';
 
@@ -29,6 +29,8 @@ export class EntryLigandsEnvironmentsComponent implements OnInit {
   public boundLigandsImages: { imageUrl: string; title: string }[] = [];
 
   public modifiedResiduesImages: { imageUrl: string; title: string }[] = [];
+
+  public loadingText = signal('');
 
   ngOnInit(): void {
     this.route.params
@@ -56,6 +58,10 @@ export class EntryLigandsEnvironmentsComponent implements OnInit {
               };
             }),
           ];
+        }),
+        catchError(() => {
+          this.loadingText.set('No data available!');
+          return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef)
       )
