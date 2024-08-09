@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { switchMap, catchError, EMPTY, tap, forkJoin, map } from 'rxjs';
+import { switchMap, catchError, EMPTY, forkJoin, map } from 'rxjs';
 import { PlaygroundService } from '../../services/playground.service';
 
 @Component({
@@ -32,7 +32,6 @@ export class EntryCitationComponent {
       this.generateAticleCitingText(articleCiting);
       return primaryPublications;
     }),
-    tap((data) => console.log(data)),
     catchError(() => {
       this.loadingText.set('No data available!');
       return EMPTY;

@@ -100,7 +100,6 @@ export class EntryEcm2024Component implements OnInit {
       this.playgroundService.getEntryEcmSummary(this.entryId()),
       this.playgroundService.getEntryEcmMolecules(this.entryId()).pipe(
         map((data) => {
-          console.log(data);
           const molecules = data[this.entryId()];
           this.molecules = molecules;
           const organismNames: string[] = [];
