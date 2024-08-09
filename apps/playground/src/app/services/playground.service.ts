@@ -1,6 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
+import { Molecule } from '../models/molecule.model';
+import { ModifiedResidues } from '../models/modified-residues.model';
 
 @Injectable({
   providedIn: 'root',
@@ -45,20 +47,16 @@ export class PlaygroundService {
     );
   }
 
-  public getEntryEcmMolecules(entryId: string): Observable<any> {
-    return this.http.get<any>(`${this.BASE_API}molecules/${entryId}`);
+  public getEntryEcmMolecules(entryId: string): Observable<Record<string, Molecule[]>> {
+    return this.http.get<Record<string, Molecule[]>>(`${this.BASE_API}molecules/${entryId}`);
+  }
+
+  public getModifiedResidues(entryId: string): Observable<Record<string, ModifiedResidues[]>> {
+    return this.http.get<Record<string, ModifiedResidues[]>>(`${this.BASE_API}modified_AA_or_NA/${entryId}`);
   }
 
   public getEntryEcmExperiment(entryId: string): Observable<any> {
-    return this.http.get<any>(`${this.BASE_API}experiment/${entryId}`).pipe(
-      map((data) => {
-        const datum = data[entryId][0];
-        return {
-          experimentalMethod: datum.experimental_method,
-          resolutionValue: datum.resolution,
-        };
-      })
-    );
+    return this.http.get<any>(`${this.BASE_API}experiment/${entryId}`).pipe(map((data) => data[entryId][0]));
   }
 
   public getEntryEcmPublication(entryId: string): Observable<any> {

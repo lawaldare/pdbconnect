@@ -1,0 +1,44 @@
+<div id="citation-section">
+  <header>
+    <h4 class="heading-4">Citation</h4>
+    <a routerLink="/ligands">
+      View details and sample information
+      <i class="icon icon-common icon-chevron-circle-right"></i>
+    </a>
+  </header>
+  @if(entryPublication$ | async; as entryPublication){
+  <div class="row">
+    <div class="row__left">Primary publication</div>
+    <div class="row__right">
+      <a [href]="'https://europepmc.org/article/MED/' + entryPublication.pubmed_id" target="_blank">{{ entryPublication.title }} </a>
+      <div class="row__right__pmid">
+        <span class="row__right__pmid__info">
+          <i>{{ entryPublication.journal_info.pdb_abbreviation }}</i>
+          {{ entryPublication.journal_info.volume }}
+          {{ entryPublication.journal_info.pages }}
+          ({{ entryPublication.journal_info.year }})
+        </span>
+        <span class="row__right__authors__title">PMID:</span>
+        <a [href]="'https://europepmc.org/article/MED/' + entryPublication.pubmed_id" target="_blank"
+          >{{ entryPublication.pubmed_id }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </div>
+      <div class="row__right__authors">
+        <span class="row__right__authors__title">Authors:</span>
+        @for(author of entryPublication.author_list; track author.full_name){
+        <span>
+          <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a> </span
+        >, }
+      </div>
+      <a [href]="'https://doi.org/' + entryPublication.doi" target="_blank"
+        >{{ entryPublication.doi }}
+        <i class="icon icon-link icon-common"></i>
+      </a>
+    </div>
+  </div>
+
+  } @else {
+  <p>{{ loadingText() }}</p>
+  }
+</div>

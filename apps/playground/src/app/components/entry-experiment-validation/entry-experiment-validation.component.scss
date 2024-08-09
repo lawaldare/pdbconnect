@@ -1,0 +1,49 @@
+#experiment-validation-section {
+  padding: 8px 12px;
+  padding-bottom: 24px;
+  background: #fff;
+  width: 780px;
+  font-family: 'IBM Plex Sans';
+  color: #1a1c1a;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+
+  a {
+    font-weight: 500;
+    margin-left: 8px;
+  }
+}
+
+.info-row {
+  display: flex;
+  gap: 12px;
+
+  & > span {
+    min-width: 126px;
+    color: #1a1c1a;
+    font-size: 14px;
+    font-weight: 500;
+    display: block;
+  }
+}
+
+section {
+  display: flex;
+  justify-content: space-between;
+
+  .content {
+    article {
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 22.4px;
+    }
+  }
+
+  img {
+    width: 488px;
+  }
+}

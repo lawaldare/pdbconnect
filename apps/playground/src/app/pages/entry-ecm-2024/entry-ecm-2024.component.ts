@@ -3,21 +3,37 @@ import { CommonModule } from '@angular/common';
 import { StrucExplorerEcm2024Component } from '../../components/struc-explorer-ecm-2024/struc-explorer-ecm-2024.component';
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { PlaygroundService } from '../../services/playground.service';
-import { combineLatest, map, Observable, of, switchMap } from 'rxjs';
+import { combineLatest, map, Observable, of, switchMap, tap } from 'rxjs';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { EntryInformationComponent } from '../../components/entry-information/entry-information.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EntryLigandsEnvironmentsComponent } from '../../components/entry-ligands-environments/entry-ligands-environments.component';
+import { EntryMacromoleculesComponent } from '../../components/entry-macromolecules/entry-macromolecules.component';
+import { EntryExperimentValidationComponent } from '../../components/entry-experiment-validation/entry-experiment-validation.component';
+import { EntryCitationComponent } from '../../components/entry-citation/entry-citation.component';
+import { Molecule } from '../../models/molecule.model';
 
 @Component({
   selector: 'pdbe-entry-ecm-2024',
   standalone: true,
-  imports: [CommonModule, StrucExplorerEcm2024Component, PdbeLinkButtonComponent, EntryInformationComponent, EntryLigandsEnvironmentsComponent, RouterModule],
+  imports: [
+    CommonModule,
+    StrucExplorerEcm2024Component,
+    PdbeLinkButtonComponent,
+    EntryInformationComponent,
+    EntryLigandsEnvironmentsComponent,
+    RouterModule,
+    EntryMacromoleculesComponent,
+    EntryExperimentValidationComponent,
+    EntryCitationComponent,
+  ],
   templateUrl: './entry-ecm-2024.component.html',
   styleUrl: './entry-ecm-2024.component.scss',
 })
 export class EntryEcm2024Component implements OnInit {
   private readonly playgroundService = inject(PlaygroundService);
+
+  public molecules!: Molecule[];
 
   public readonly navItems = [
     {
@@ -86,6 +102,7 @@ export class EntryEcm2024Component implements OnInit {
         map((data) => {
           console.log(data);
           const molecules = data[this.entryId()];
+          this.molecules = molecules;
           const organismNames: string[] = [];
           // See: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/1trn
           // and a more different example at: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/6hr1
@@ -108,7 +125,12 @@ export class EntryEcm2024Component implements OnInit {
           };
         })
       ),
-      this.playgroundService.getEntryEcmExperiment(this.entryId()),
+      this.playgroundService.getEntryEcmExperiment(this.entryId()).pipe(
+        map((response) => ({
+          experimentalMethod: response.experimental_method,
+          resolutionValue: response.resolution,
+        }))
+      ),
       this.playgroundService.getEntryEcmPublication(this.entryId()),
     ]).pipe(
       map(([summary, molecules, experiment, publication]) => ({
