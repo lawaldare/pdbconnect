@@ -15,7 +15,7 @@ import { PlaygroundService } from '../../services/playground.service';
 export class EntryCitationComponent {
   private readonly playgroundService = inject(PlaygroundService);
 
-  private route = inject(ActivatedRoute);
+  private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
   public loadingText = signal('Loading...');
@@ -44,6 +44,24 @@ export class EntryCitationComponent {
     const articles = citing.citedThePublication.Articles.length + citing.metionedButNotCited.Articles.length;
     const reviews = citing.citedThePublication.Reviews.length + citing.metionedButNotCited.Reviews.length;
 
-    console.log(articles + reviews);
+    if (articles && reviews) {
+      const text = `There are ${articles} articles and ${reviews} reviews which cite or mention this structure.`;
+      this.articleText.set(text);
+      return;
+    }
+
+    if (articles) {
+      const text = `There are ${articles} articles which cite or mention this structure.`;
+      this.articleText.set(text);
+      return;
+    }
+
+    if (reviews) {
+      const text = `There are ${reviews} reviews which cite or mention this structure.`;
+      this.articleText.set(text);
+      return;
+    }
+
+    this.articleText.set(`We are not aware of any publication which cites or mentions this structure.`);
   }
 }
