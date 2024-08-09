@@ -18,6 +18,8 @@
           {{ entryPublication.journal_info.pages }}
           ({{ entryPublication.journal_info.year }})
         </span>
+      </div>
+      <div class="row__right_-authors">
         <span class="row__right__authors__title">PMID:</span>
         <a [href]="'https://europepmc.org/article/MED/' + entryPublication.pubmed_id" target="_blank"
           >{{ entryPublication.pubmed_id }}

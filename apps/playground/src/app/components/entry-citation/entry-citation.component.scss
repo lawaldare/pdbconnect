@@ -4,8 +4,8 @@
   background: #fff;
   font-family: 'IBM Plex Sans';
   color: #1a1c1a;
-  font-size: 14px;
-  line-height: 22.4px;
+  font-size: 16px;
+  line-height: 27.3px;
 }
 
 header {
@@ -14,13 +14,15 @@ header {
   margin-bottom: 24px;
 
   a {
-    font-weight: 500;
     margin-left: 8px;
   }
 }
 
 .row {
   display: flex;
+  a {
+    font-size: 16px !important;
+  }
   &__left {
     width: 126px;
     font-weight: 500;
@@ -68,8 +70,6 @@ section {
 
 .article-text {
   text-align: center;
-  font-size: 14px;
   font-weight: 500;
-  line-height: 22.4px;
   margin-top: 44px;
 }

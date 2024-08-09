@@ -13,7 +13,6 @@ header {
   margin-bottom: 24px;
 
   a {
-    font-weight: 500;
     margin-left: 8px;
   }
 }
@@ -24,8 +23,8 @@ header {
 
   & > span {
     min-width: 126px;
-    color: #1a1c1a;
-    font-size: 14px;
+    color: hsl(120, 4%, 11%);
+    font-size: 16px;
     font-weight: 500;
     display: block;
   }
@@ -37,7 +36,7 @@ section {
 
   .content {
     article {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 400;
       line-height: 22.4px;
     }

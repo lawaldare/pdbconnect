@@ -29,7 +29,7 @@ export class EntryCitationComponent {
       return forkJoin([this.playgroundService.getPrimaryPublicationAbstract(entryId), this.playgroundService.getArticleCitingPDBEntry(entryId)]);
     }),
     map(([primaryPublications, articleCiting]) => {
-      this.generateAticleCitingNumbers(articleCiting);
+      this.generateAticleCitingText(articleCiting);
       return primaryPublications;
     }),
     tap((data) => console.log(data)),
@@ -40,7 +40,7 @@ export class EntryCitationComponent {
     takeUntilDestroyed(this.destroyRef)
   );
 
-  generateAticleCitingNumbers(citing: any): void {
+  private generateAticleCitingText(citing: any): void {
     const articles = citing.citedThePublication.Articles.length + citing.metionedButNotCited.Articles.length;
     const reviews = citing.citedThePublication.Reviews.length + citing.metionedButNotCited.Reviews.length;
 
