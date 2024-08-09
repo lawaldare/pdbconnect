@@ -48,7 +48,8 @@
               "maximumError": "250kb"
             }
           ],
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "baseHref": "$APP_BASE_HREF"
         },
         "development": {
           "budgets": [
