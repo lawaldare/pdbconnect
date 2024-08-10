@@ -1,7 +1,7 @@
 <div id="macromolecules-section">
   <h4 class="heading-4">Macromolecules</h4>
   <section class="filter">
-    <p>{{ this.moleculesUpdated()?.length }} result(s)</p>
+    <p>{{ this.moleculesUpdated().length }} result(s)</p>
     <mat-radio-group aria-label="Select an option" [formControl]="filter" (change)="onChange($event)">
       <mat-radio-button value="all">Show all</mat-radio-button>
       <mat-radio-button value="dna">Show only DNA and RNA</mat-radio-button>
@@ -66,7 +66,7 @@
     </table>
     <div class="paginator-container">
       <mat-paginator
-        [length]="this.moleculesUpdated()?.length"
+        [length]="this.moleculesUpdated().length"
         [pageSize]="5"
         [pageSizeOptions]="[5, 10, 15, 20]"
         showFirstLastButtons
