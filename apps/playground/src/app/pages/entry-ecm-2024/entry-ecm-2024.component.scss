@@ -11,7 +11,8 @@ nav {
   top: 0px;
   left: 0px;
   height: 100%;
-
+  width: 80px;
+  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   a,
   a:active,
   a:visited,
@@ -22,6 +23,7 @@ nav {
 
     i {
       color: #000 !important;
+      width: 50px;
     }
   }
 
@@ -34,7 +36,11 @@ nav {
     span {
       margin-left: 8px;
       display: none;
-      transition: all 5s ease-in-out;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      align-self: center;
+      flex: 1;
     }
 
     &:hover {
@@ -52,20 +58,13 @@ nav {
   }
 
   &:hover {
+    width: 350px;
     box-shadow: 2px 0px 3px 0px rgba(0, 0, 0, 0.3);
-  }
-
-  &:hover .icon {
-    margin-right: 8px;
-  }
-
-  &:hover a {
-    min-width: 257px;
   }
 
   &:hover a {
     span {
-      display: inline;
+      display: inline-flex;
     }
   }
 }
