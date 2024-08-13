@@ -7,25 +7,28 @@ import { MoleculeTypePipe } from '../../pipe/molecule-type.pipe';
 import { MatPaginator } from '@angular/material/paginator';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatRadioChange } from '@angular/material/radio';
+import { UniprotMappingDirective } from '../../directives/uniprot-mapping.directive';
 
 @Component({
   selector: 'pdbe-entry-macromolecules',
   standalone: true,
-  imports: [CommonModule, MaterialModule, MoleculeTypePipe, ReactiveFormsModule],
+  imports: [CommonModule, MaterialModule, MoleculeTypePipe, ReactiveFormsModule, UniprotMappingDirective],
   templateUrl: './entry-macromolecules.component.html',
   styleUrl: './entry-macromolecules.component.scss',
 })
 export class EntryMacromoleculesComponent implements OnChanges {
   @Input({ required: true }) molecules!: Molecule[];
+  @Input({ required: true }) uniprotMapping!: any;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  public readonly displayedColumns = ['name', 'length', 'theoretical_weight', 'expression_system', 'source_organism', 'gene_names'];
+  public readonly displayedColumns = ['name', 'length', 'theoretical_weight', 'expression_system', 'uniprot_mapping', 'source_organism', 'gene_names'];
 
   public dataSource!: MatTableDataSource<Molecule, MatPaginator>;
 
   public filter = new FormControl('all');
 
   public moleculesUpdated = signal<Molecule[]>([]);
+  public uniprotMappingUpdated = signal<any>({});
 
   constructor() {
     effect(() => {
@@ -36,8 +39,14 @@ export class EntryMacromoleculesComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     const currentValue = changes['molecules']?.currentValue;
+    const currentUniprotMapping = changes['uniprotMapping']?.currentValue;
+
     if (currentValue) {
       this.moleculesUpdated.update((molecules) => [...molecules, ...currentValue]);
+    }
+
+    if (currentUniprotMapping) {
+      this.uniprotMappingUpdated.update(() => currentUniprotMapping);
     }
   }
 

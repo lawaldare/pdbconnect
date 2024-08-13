@@ -34,6 +34,7 @@ export class EntryEcm2024Component implements OnInit {
   private readonly playgroundService = inject(PlaygroundService);
 
   public molecules!: Molecule[];
+  public uniprotMapping!: any;
 
   public readonly navItems = [
     {
@@ -131,8 +132,14 @@ export class EntryEcm2024Component implements OnInit {
         }))
       ),
       this.playgroundService.getEntryEcmPublication(this.entryId()),
+      this.playgroundService.getUniprotMapping(this.entryId()).pipe(
+        map((data) => {
+          this.uniprotMapping = data;
+          return data;
+        })
+      ),
     ]).pipe(
-      map(([summary, molecules, experiment, publication]) => ({
+      map(([summary, molecules, experiment, publication, uniprotMapping]) => ({
         summary,
         molecules,
         experiment,

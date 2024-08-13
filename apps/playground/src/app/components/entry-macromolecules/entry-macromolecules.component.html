@@ -42,6 +42,11 @@
         </td>
       </ng-container>
 
+      <ng-container matColumnDef="uniprot_mapping">
+        <th mat-header-cell *matHeaderCellDef>Uniprot mapping</th>
+        <td mat-cell *matCellDef="let element" uniprotMapping [entityId]="element.entity_id" [uniprotMappings]="uniprotMappingUpdated()"></td>
+      </ng-container>
+
       <ng-container matColumnDef="source_organism">
         <th mat-header-cell *matHeaderCellDef>Source orgamism</th>
         <td mat-cell *matCellDef="let element">
