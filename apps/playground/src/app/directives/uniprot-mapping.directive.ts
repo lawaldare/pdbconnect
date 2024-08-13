@@ -23,8 +23,8 @@ export class UniprotMappingDirective implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     // console.log(changes['entityId'].currentValue);
     // console.log(changes['uniprotMappings'].currentValue);
-    const entityId = changes['entityId'].currentValue;
-    const uniprotMappings = changes['uniprotMappings'].currentValue;
+    const entityId = changes['entityId']?.currentValue;
+    const uniprotMappings = changes['uniprotMappings']?.currentValue;
 
     const key = this.getKeyByEntityId(uniprotMappings, entityId);
 

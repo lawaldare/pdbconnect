@@ -1,13 +1,14 @@
-import { Component, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlaygroundService } from '../../services/playground.service';
-import { combineLatest, map, tap } from 'rxjs';
+import { combineLatest, forkJoin, map, switchMap, tap } from 'rxjs';
 import { CitationArticleComponent } from '../../components/citation-article/citation-article.component';
 import { CitationPublicationComponent } from '../../components/citation-publication/citation-publication.component';
 import { MaterialModule } from '@pdbc/core';
 import { CitationXmlImagesComponent } from '../../components/citation-xml-images/citation-xml-images.component';
 import { MatDialog } from '@angular/material/dialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'pdbe-citation',
@@ -16,21 +17,37 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   templateUrl: './citation.component.html',
   styleUrl: './citation.component.scss',
 })
-export class CitationComponent {
+export class CitationComponent implements OnInit {
   private readonly playgroundService = inject(PlaygroundService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
 
   private readonly dialog = inject(MatDialog);
+  private readonly route = inject(ActivatedRoute);
 
-  public entryId = signal('7v08'); //'7v08', '3d12', '5tj5', '4zqo'
+  private staticEntryId = '7v08'; //'7v08', '3d12', '5tj5', '4zqo'
+
+  public entryId = signal(this.staticEntryId);
   public relatedEntries!: string[];
 
   public imageXMLText = signal('');
 
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
-  public pageData$ = combineLatest([
+  public pageData$ = this.route.params.pipe(
+    switchMap((params) => {
+      // const entryId = params['entryId'].toLowerCase();
+      params['entryId'] ? this.entryId.set(params['entryId'].toLowerCase()) : this.entryId.set(this.staticEntryId);
+      return forkJoin([this.playgroundService.getPrimaryPublicationAbstract(this.entryId()), this.playgroundService.getArticleCitingPDBEntry(this.entryId())]);
+    }),
+    map((data) => ({ sectionOne: data[0], sectionTwo: data[1] })),
+    tap((data) => {
+      this.getXMLImages(data.sectionOne.pubmed_id);
+      this.setRelatedEntries(data.sectionOne.associated_entries ?? null);
+    })
+  );
+
+  public pagdeData$ = combineLatest([
     this.playgroundService.getPrimaryPublicationAbstract(this.entryId()),
     this.playgroundService.getArticleCitingPDBEntry(this.entryId()),
   ]).pipe(
@@ -40,6 +57,8 @@ export class CitationComponent {
       this.setRelatedEntries(data.sectionOne.associated_entries ?? null);
     })
   );
+
+  ngOnInit(): void {}
 
   private setRelatedEntries(entries: string): void {
     this.relatedEntries = entries?.split(',').map((entry) => entry.trim()) ?? null;

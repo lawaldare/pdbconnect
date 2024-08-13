@@ -8,6 +8,7 @@ import { EntryEcm2024Component } from './pages/entry-ecm-2024/entry-ecm-2024.com
 export const appRoutes: Route[] = [
   { path: '', pathMatch: 'full', redirectTo: 'citation', data: { showNavigationBar: true } },
   { path: 'citation', component: CitationComponent, title: 'Citation Page', data: { showNavigationBar: true } },
+  { path: 'citation/:entryId', component: CitationComponent, title: 'Citation Page', data: { showNavigationBar: true } },
   { path: 'summary', component: SummaryComponent, title: 'Summary Page', data: { showNavigationBar: true } },
   { path: 'others', component: OthersComponent, title: 'Summary Page', data: { showNavigationBar: true } },
   { path: 'buttons', component: ButtonsPlaygroundComponent, title: 'Buttons Page', data: { showNavigationBar: true } },
