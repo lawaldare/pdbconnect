@@ -31,3 +31,47 @@ section.filter {
     margin-right: 16px;
   }
 }
+
+td {
+  a {
+    font-size: 14px;
+    line-height: 20px;
+    font-style: italic;
+  }
+}
+
+.mat-column-name {
+  width: 12.5%;
+}
+.mat-column-length {
+  width: 12.5%;
+}
+.mat-column-theoretical_weight {
+  width: 10%;
+}
+.mat-column-expression_system {
+  width: 8%;
+}
+.mat-column-uniprot_mapping {
+  width: 12.5%;
+}
+.mat-column-source-organism {
+  width: 12.5%;
+}
+.mat-column-gene_names {
+  width: 12.5%;
+}
+.mat-column-sequence_domain {
+  width: 19.5%;
+}
+
+.scrollable-content {
+  max-height: 100px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 10px;
+}
+
+.scrollable-content ul {
+  padding: 0;
+}

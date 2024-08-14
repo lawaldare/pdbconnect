@@ -51,14 +51,26 @@
         <th mat-header-cell *matHeaderCellDef>Source orgamism</th>
         <td mat-cell *matCellDef="let element">
           @if(element?.source?.length){ @for(el of element.source; track el.tax_id){
-          <p>{{ el.organism_scientific_name }}</p>
+          <a href="">{{ el.organism_scientific_name }}</a>
           } } @else {-}
         </td>
       </ng-container>
 
       <ng-container matColumnDef="gene_names">
         <th mat-header-cell *matHeaderCellDef>Gene names</th>
-        <td mat-cell *matCellDef="let element">{{ element?.gene_name?.join(',') || '-' }}</td>
+        <td mat-cell *matCellDef="let element" gene [geneNames]="element.gene_name"></td>
+      </ng-container>
+
+      <ng-container matColumnDef="sequence_domain">
+        <th mat-header-cell *matHeaderCellDef>Sequence Domain</th>
+        <td
+          mat-cell
+          *matCellDef="let element"
+          sequence-domain
+          [entityId]="element.entity_id"
+          [interproMappings]="interproMappingUpdated()"
+          [pfamMappings]="pfamMappingUpdated()"
+        ></td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

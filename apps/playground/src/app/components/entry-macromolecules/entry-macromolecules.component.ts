@@ -8,20 +8,34 @@ import { MatPaginator } from '@angular/material/paginator';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatRadioChange } from '@angular/material/radio';
 import { UniprotMappingDirective } from '../../directives/uniprot-mapping.directive';
+import { SequenceDomainDirective } from '../../directives/sequence-domain.directives';
+import { GeneDirective } from '../../directives/gene.directive';
 
 @Component({
   selector: 'pdbe-entry-macromolecules',
   standalone: true,
-  imports: [CommonModule, MaterialModule, MoleculeTypePipe, ReactiveFormsModule, UniprotMappingDirective],
+  imports: [CommonModule, MaterialModule, MoleculeTypePipe, ReactiveFormsModule, UniprotMappingDirective, SequenceDomainDirective, GeneDirective],
   templateUrl: './entry-macromolecules.component.html',
   styleUrl: './entry-macromolecules.component.scss',
 })
 export class EntryMacromoleculesComponent implements OnChanges {
   @Input({ required: true }) molecules!: Molecule[];
   @Input({ required: true }) uniprotMapping!: any;
+  @Input({ required: true }) interproMapping!: any;
+  @Input({ required: true }) pfamMapping!: any;
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  public readonly displayedColumns = ['name', 'length', 'theoretical_weight', 'expression_system', 'uniprot_mapping', 'source_organism', 'gene_names'];
+  public readonly displayedColumns = [
+    'name',
+    'length',
+    'theoretical_weight',
+    'expression_system',
+    'uniprot_mapping',
+    'source_organism',
+    'gene_names',
+    'sequence_domain',
+  ];
 
   public dataSource!: MatTableDataSource<Molecule, MatPaginator>;
 
@@ -29,6 +43,8 @@ export class EntryMacromoleculesComponent implements OnChanges {
 
   public moleculesUpdated = signal<Molecule[]>([]);
   public uniprotMappingUpdated = signal<any>({});
+  public interproMappingUpdated = signal<any>({});
+  public pfamMappingUpdated = signal<any>({});
 
   constructor() {
     effect(() => {
@@ -40,6 +56,8 @@ export class EntryMacromoleculesComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     const currentValue = changes['molecules']?.currentValue;
     const currentUniprotMapping = changes['uniprotMapping']?.currentValue;
+    const currentInterproMapping = changes['interproMapping']?.currentValue;
+    const currentPfamMapping = changes['pfamMapping']?.currentValue;
 
     if (currentValue) {
       this.moleculesUpdated.update((molecules) => [...molecules, ...currentValue]);
@@ -47,6 +65,14 @@ export class EntryMacromoleculesComponent implements OnChanges {
 
     if (currentUniprotMapping) {
       this.uniprotMappingUpdated.update(() => currentUniprotMapping);
+    }
+
+    if (currentInterproMapping) {
+      this.interproMappingUpdated.update(() => currentInterproMapping);
+    }
+
+    if (currentPfamMapping) {
+      this.pfamMappingUpdated.update(() => currentPfamMapping);
     }
   }
 

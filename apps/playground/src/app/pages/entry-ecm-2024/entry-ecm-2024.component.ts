@@ -35,6 +35,8 @@ export class EntryEcm2024Component implements OnInit {
 
   public molecules!: Molecule[];
   public uniprotMapping!: any;
+  public interproMapping!: any;
+  public pfamMapping!: any;
 
   public readonly navItems = [
     {
@@ -138,8 +140,20 @@ export class EntryEcm2024Component implements OnInit {
           return data;
         })
       ),
+      this.playgroundService.getInterproMapping(this.entryId()).pipe(
+        map((data) => {
+          this.interproMapping = data;
+          return data;
+        })
+      ),
+      this.playgroundService.getPfamMapping(this.entryId()).pipe(
+        map((data) => {
+          this.pfamMapping = data;
+          return data;
+        })
+      ),
     ]).pipe(
-      map(([summary, molecules, experiment, publication, uniprotMapping]) => ({
+      map(([summary, molecules, experiment, publication, uniprotMapping, interproMapping, pfamMapping]) => ({
         summary,
         molecules,
         experiment,

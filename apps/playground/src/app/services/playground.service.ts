@@ -20,6 +20,14 @@ export class PlaygroundService {
     const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/';
     return this.http.get<any>(`${BASE_API}/${entryId}`).pipe(map((data) => data[entryId]['UniProt']));
   }
+  public getInterproMapping(entryId: string): Observable<any> {
+    const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/interpro/';
+    return this.http.get<any>(`${BASE_API}/${entryId}`).pipe(map((data) => data[entryId]['InterPro']));
+  }
+  public getPfamMapping(entryId: string): Observable<any> {
+    const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/pfam/';
+    return this.http.get<any>(`${BASE_API}/${entryId}`).pipe(map((data) => data[entryId]['Pfam']));
+  }
   public getArticleCitingPDBEntry(entryId: string): Observable<any> {
     return this.http.get<any>(`${this.BASE_API}related_publications/${entryId}`).pipe(
       map((data) => {

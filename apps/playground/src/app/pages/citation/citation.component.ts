@@ -17,7 +17,7 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './citation.component.html',
   styleUrl: './citation.component.scss',
 })
-export class CitationComponent implements OnInit {
+export class CitationComponent {
   private readonly playgroundService = inject(PlaygroundService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
@@ -36,29 +36,20 @@ export class CitationComponent implements OnInit {
 
   public pageData$ = this.route.params.pipe(
     switchMap((params) => {
-      // const entryId = params['entryId'].toLowerCase();
-      params['entryId'] ? this.entryId.set(params['entryId'].toLowerCase()) : this.entryId.set(this.staticEntryId);
+      const entryId = params['entryId'] ? params['entryId'].toLowerCase() : this.staticEntryId;
+      this.entryId.set(entryId);
       return forkJoin([this.playgroundService.getPrimaryPublicationAbstract(this.entryId()), this.playgroundService.getArticleCitingPDBEntry(this.entryId())]);
     }),
     map((data) => ({ sectionOne: data[0], sectionTwo: data[1] })),
     tap((data) => {
-      this.getXMLImages(data.sectionOne.pubmed_id);
-      this.setRelatedEntries(data.sectionOne.associated_entries ?? null);
+      if (data.sectionOne.pubmed_id) {
+        this.getXMLImages(data.sectionOne.pubmed_id);
+      }
+      if (data.sectionOne.associated_entries) {
+        this.setRelatedEntries(data.sectionOne.associated_entries);
+      }
     })
   );
-
-  public pagdeData$ = combineLatest([
-    this.playgroundService.getPrimaryPublicationAbstract(this.entryId()),
-    this.playgroundService.getArticleCitingPDBEntry(this.entryId()),
-  ]).pipe(
-    map((data) => ({ sectionOne: data[0], sectionTwo: data[1] })),
-    tap((data) => {
-      this.getXMLImages(data.sectionOne.pubmed_id);
-      this.setRelatedEntries(data.sectionOne.associated_entries ?? null);
-    })
-  );
-
-  ngOnInit(): void {}
 
   private setRelatedEntries(entries: string): void {
     this.relatedEntries = entries?.split(',').map((entry) => entry.trim()) ?? null;
