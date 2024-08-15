@@ -31,8 +31,8 @@ export class ImageCarouselComponent implements AfterViewInit {
   @ViewChild('slide', { read: ElementRef }) slideContainer!: ElementRef;
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
-  private divsRendered: any[] = [];
-  private mainDivsRendered: any[] = [];
+  private divsRendered: any[] = []; // eslint-disable-line no-explicit-any
+  private mainDivsRendered: any[] = []; // eslint-disable-line no-explicit-any
 
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly renderer = inject(Renderer2);

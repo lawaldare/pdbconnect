@@ -39,8 +39,8 @@ export class InteractionComponent implements AfterViewInit {
   // @ViewChild('ligHeatMap', { read: ElementRef }) ligandHeatMapContainer!: ElementRef;
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
-  private ligandEv!: any;
-  private ligandHeatmapEv!: any;
+  private ligandEv!: any; // eslint-disable-line no-explicit-any
+  private ligandHeatmapEv!: any; // eslint-disable-line no-explicit-any
 
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly route = inject(ActivatedRoute);
@@ -48,8 +48,8 @@ export class InteractionComponent implements AfterViewInit {
   private readonly renderer = inject(Renderer2);
   private readonly cdr = inject(ChangeDetectorRef);
   private _snackBar = inject(MatSnackBar);
-  public interaction!: any;
-  private emptyText!: any;
+  public interaction!: any; // eslint-disable-line no-explicit-any
+  private emptyText!: any; // eslint-disable-line no-explicit-any
 
   private renderHeatMap(interaction: PDBIntxData): void {
     const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;

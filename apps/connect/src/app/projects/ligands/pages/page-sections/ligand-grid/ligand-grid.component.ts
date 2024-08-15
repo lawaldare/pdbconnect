@@ -25,7 +25,7 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
   boundProteinLabel = '';
 
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
-  private ligandEv!: any;
+  private ligandEv!: any; // eslint-disable-line no-explicit-any
   public ligandId!: string;
 
   private readonly aggregatedApiService = inject(AggregatedApiService);

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PhysChemProperties, LigandProperty } from '../../../data-models/description.model';
 import { NameValueComponent } from '../../section-components/name-value/name-value.component';
@@ -20,7 +20,7 @@ export class PropertiesComponent implements OnChanges {
   public surfProperties: LigandProperty[] = [];
   public funProperties: LigandProperty[] = [];
   public stereoProperties: LigandProperty[] = [];
-  private propertiesToJSON!: Record<string, any[]>;
+  private propertiesToJSON!: Record<string, any[]>; // eslint-disable-line no-explicit-any
 
   ngOnChanges() {
     this.molProperties = [
