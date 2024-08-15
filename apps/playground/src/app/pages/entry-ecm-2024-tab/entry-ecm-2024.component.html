@@ -1,0 +1,65 @@
+<section class="root-container">
+  <main>
+    <header>
+      <h1 class="heading-1">{{ entryId() }}</h1>
+      <section class="action-buttons" libClickOutside (clickOutside)="onClickedOutside()">
+        <div class="downloads">
+          <button class="vf-button vf-button--link" (click)="onShowDownloadOptions()">
+            <span>Download files</span>
+            <i class="icon icon-common icon-chevron-down"></i>
+          </button>
+          @if(showDownloadOptions()){
+          <section class="download-options">
+            @for(option of downloadOptions; track option.url){
+            <a [href]="option.url" download>{{ option.name }}</a>
+            }
+          </section>
+          }
+        </div>
+        <div class="downloads">
+          <button class="vf-button vf-button--link" (click)="onShowViewOptions()">
+            <span>View files</span>
+            <i class="icon icon-common icon-chevron-down"></i>
+          </button>
+          @if(showViewOptions()){
+          <section class="download-options">
+            @for(option of viewOptions; track option.url){
+            <a [href]="option.url" target="_blank">{{ option.name }}</a>
+            }
+          </section>
+          }
+        </div>
+      </section>
+    </header>
+    <mat-tab-group animationDuration="0ms">
+      <mat-tab label="Overview">
+        <section class="hero">
+          @if (pageData$ | async; as pageData) {
+          <pdbe-entry-information [information]="pageData"></pdbe-entry-information>
+          }
+          <pdbe-entry-ligands-environments></pdbe-entry-ligands-environments>
+        </section>
+        <!-- Container for 3D concept -->
+        <section id="struct-3d-container" class="page-section">
+          <pdbe-struc-explorer-ecm-2024 [entryId]="this.entryId()"></pdbe-struc-explorer-ecm-2024>
+        </section>
+        <pdbe-entry-macromolecules
+          [molecules]="molecules"
+          [uniprotMapping]="uniprotMapping"
+          [interproMapping]="interproMapping"
+          [pfamMapping]="pfamMapping"
+        ></pdbe-entry-macromolecules>
+        <section class="footer">
+          <pdbe-entry-experiment-validation></pdbe-entry-experiment-validation>
+          <pdbe-entry-citation></pdbe-entry-citation>
+        </section>
+      </mat-tab>
+      <mat-tab label="Function and Biology">Function and Biology</mat-tab>
+      <mat-tab label="Macromolecules">Macromolecules</mat-tab>
+      <mat-tab label="Ligands and Environments">Ligands and Environments</mat-tab>
+      <mat-tab label="Assemblies">Assemblies</mat-tab>
+      <mat-tab label="Experiments and Validation">Experiments and Validation</mat-tab>
+      <mat-tab label="Citations">Citations</mat-tab>
+    </mat-tab-group>
+  </main>
+</section>

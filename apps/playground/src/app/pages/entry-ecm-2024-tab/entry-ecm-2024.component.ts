@@ -17,7 +17,7 @@ import { EntryExperimentValidationComponent } from '../../components/entry-exper
 import { EntryCitationComponent } from '../../components/entry-citation/entry-citation.component';
 import { Molecule } from '../../models/molecule.model';
 import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
-import { ClickOutsideDirective } from '@pdbc/core';
+import { ClickOutsideDirective, MaterialModule } from '@pdbc/core';
 
 export interface DownloadOption {
   name: string;
@@ -26,7 +26,7 @@ export interface DownloadOption {
 }
 
 @Component({
-  selector: 'pdbe-entry-ecm-2024',
+  selector: 'pdbe-entry-ecm-2024-vertical',
   standalone: true,
   imports: [
     CommonModule,
@@ -40,11 +40,12 @@ export interface DownloadOption {
     EntryExperimentValidationComponent,
     EntryCitationComponent,
     PdbeDropdownComponent,
+    MaterialModule,
   ],
   templateUrl: './entry-ecm-2024.component.html',
   styleUrl: './entry-ecm-2024.component.scss',
 })
-export class EntryEcm2024Component implements OnInit {
+export class EntryEcm2024TabComponent implements OnInit {
   private readonly playgroundService = inject(PlaygroundService);
 
   public downloadOptions: DownloadOption[] = [];

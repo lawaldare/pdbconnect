@@ -4,6 +4,7 @@ import { CitationComponent } from './pages/citation/citation.component';
 import { OthersComponent } from './pages/others/others.component';
 import { ButtonsPlaygroundComponent } from './pages/buttons-playground/buttons-playground.component';
 import { EntryEcm2024Component } from './pages/entry-ecm-2024/entry-ecm-2024.component';
+import { EntryEcm2024TabComponent } from './pages/entry-ecm-2024-tab/entry-ecm-2024.component';
 
 export const appRoutes: Route[] = [
   { path: '', pathMatch: 'full', redirectTo: 'citation', data: { showNavigationBar: true } },
@@ -15,7 +16,13 @@ export const appRoutes: Route[] = [
   {
     path: 'entry/:entryId',
     component: EntryEcm2024Component,
-    title: 'Entry Page',
+    title: 'Nav Header Entry Page',
+    data: { showNavigationBar: false, showPdbeLogoAndSearch: true, defaultMargins: false, bgColor: '#e3e3e3' },
+  },
+  {
+    path: 'entry/:entryId/tab',
+    component: EntryEcm2024TabComponent,
+    title: 'Tab Header Entry Page',
     data: { showNavigationBar: false, showPdbeLogoAndSearch: true, defaultMargins: false, bgColor: '#e3e3e3' },
   },
 ];
