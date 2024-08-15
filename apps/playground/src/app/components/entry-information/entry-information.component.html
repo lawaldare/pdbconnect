@@ -9,11 +9,12 @@
   <div class="info-row">
     <span>Source organism</span>
     <article>
-      @for(sourceOrganism of information().molecules.organismScientificNames; track sourceOrganism){
+      @for(sourceOrganism of information().molecules.organismScientificNames; track sourceOrganism; let islast = $last){
       <span>
         <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">{{ sourceOrganism }}</a>
-        <i class="icon icon-common icon-search"></i> </span
-      >, }
+      </span>
+      {{ islast ? '' : ',' }} }
+      <i class="icon icon-common icon-search"></i>
     </article>
   </div>
   <div class="info-row">
