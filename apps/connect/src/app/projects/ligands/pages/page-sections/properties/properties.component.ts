@@ -20,7 +20,7 @@ export class PropertiesComponent implements OnChanges {
   public surfProperties: LigandProperty[] = [];
   public funProperties: LigandProperty[] = [];
   public stereoProperties: LigandProperty[] = [];
-  private propertiesToJSON!: Record<string, any[]>; // eslint-disable-line no-explicit-any
+  private propertiesToJSON!: Record<string, any[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   ngOnChanges() {
     this.molProperties = [

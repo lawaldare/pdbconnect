@@ -20,9 +20,9 @@ import { GeneDirective } from '../../directives/gene.directive';
 })
 export class EntryMacromoleculesComponent implements OnChanges {
   @Input({ required: true }) molecules!: Molecule[];
-  @Input({ required: true }) uniprotMapping!: any;
-  @Input({ required: true }) interproMapping!: any;
-  @Input({ required: true }) pfamMapping!: any;
+  @Input({ required: true }) uniprotMapping!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  @Input({ required: true }) interproMapping!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  @Input({ required: true }) pfamMapping!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -42,9 +42,9 @@ export class EntryMacromoleculesComponent implements OnChanges {
   public filter = new FormControl('all');
 
   public moleculesUpdated = signal<Molecule[]>([]);
-  public uniprotMappingUpdated = signal<any>({});
-  public interproMappingUpdated = signal<any>({});
-  public pfamMappingUpdated = signal<any>({});
+  public uniprotMappingUpdated = signal<any>({}); // eslint-disable-line @typescript-eslint/no-explicit-any
+  public interproMappingUpdated = signal<any>({}); // eslint-disable-line @typescript-eslint/no-explicit-any
+  public pfamMappingUpdated = signal<any>({}); // eslint-disable-line @typescript-eslint/no-explicit-any
 
   constructor() {
     effect(() => {

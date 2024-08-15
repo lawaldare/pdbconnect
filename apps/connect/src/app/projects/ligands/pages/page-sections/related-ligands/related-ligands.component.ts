@@ -1,4 +1,4 @@
-/* eslint-disable no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Component, OnInit, ViewChild, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
