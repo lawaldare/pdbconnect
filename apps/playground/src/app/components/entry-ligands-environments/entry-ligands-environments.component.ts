@@ -1,9 +1,9 @@
-import { Component, DestroyRef, inject, input, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { PlaygroundService } from '../../services/playground.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { switchMap, of, map, forkJoin, catchError, EMPTY } from 'rxjs';
+import { switchMap, map, forkJoin, catchError, EMPTY } from 'rxjs';
 import { Molecule } from '../../models/molecule.model';
 import { ModifiedResidues } from '../../models/modified-residues.model';
 
@@ -76,7 +76,7 @@ export class EntryLigandsEnvironmentsComponent implements OnInit {
 
     const uniqueChemCompIds = new Set();
     const uniqueObjects: ModifiedResidues[] = [];
-    const chemCompIdCounts: any = {};
+    const chemCompIdCounts: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
 
     residues.forEach((obj) => {
       const chemCompId = obj.chem_comp_id;

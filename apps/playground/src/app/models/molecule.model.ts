@@ -11,7 +11,7 @@ export interface Molecule {
   mutation_flag: string;
   number_of_copies: number;
   pdb_sequence: string;
-  pdb_sequence_indices_with_multiple_residues: any;
+  pdb_sequence_indices_with_multiple_residues: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   sample_preparation: string;
   sequence: string;
   source: MoleculeSource[];

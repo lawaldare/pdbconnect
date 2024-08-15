@@ -1,4 +1,8 @@
 /* eslint-disable @angular-eslint/no-input-rename */
+/* eslint-disable @angular-eslint/directive-selector */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-prototype-builtins */
+
 import { Directive, Input, ElementRef, Renderer2, inject, SimpleChanges, OnChanges } from '@angular/core';
 
 @Directive({

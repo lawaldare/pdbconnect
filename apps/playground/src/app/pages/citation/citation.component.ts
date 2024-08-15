@@ -1,7 +1,7 @@
-import { Component, DestroyRef, ElementRef, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlaygroundService } from '../../services/playground.service';
-import { combineLatest, forkJoin, map, switchMap, tap } from 'rxjs';
+import { forkJoin, map, switchMap, tap } from 'rxjs';
 import { CitationArticleComponent } from '../../components/citation-article/citation-article.component';
 import { CitationPublicationComponent } from '../../components/citation-publication/citation-publication.component';
 import { MaterialModule } from '@pdbc/core';

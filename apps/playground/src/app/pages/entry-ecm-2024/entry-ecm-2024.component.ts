@@ -1,9 +1,13 @@
-import { Component, DestroyRef, Input, OnInit, inject, signal } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StrucExplorerEcm2024Component } from '../../components/struc-explorer-ecm-2024/struc-explorer-ecm-2024.component';
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { PlaygroundService } from '../../services/playground.service';
-import { combineLatest, map, Observable, of, switchMap, tap } from 'rxjs';
+import { combineLatest, map, Observable, of, switchMap } from 'rxjs';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { EntryInformationComponent } from '../../components/entry-information/entry-information.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';

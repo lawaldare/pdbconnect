@@ -21,7 +21,7 @@ export class EntryCitationComponent {
   public loadingText = signal('Loading...');
   public articleText = signal('');
 
-  public articleCiting!: any;
+  public articleCiting!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   public entryPublication$ = this.route.params.pipe(
     switchMap((params) => {
@@ -40,6 +40,7 @@ export class EntryCitationComponent {
   );
 
   private generateAticleCitingText(citing: any): void {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     const articles = citing.citedThePublication.Articles.length + citing.metionedButNotCited.Articles.length;
     const reviews = citing.citedThePublication.Reviews.length + citing.metionedButNotCited.Reviews.length;
 
