@@ -14,7 +14,7 @@ import { PdbeButtonComponent } from '@pdbe-lib/button';
 import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { AggregatedApiService, DescriptionData } from '../../services/aggregated-api.service';
-import { downloadOption } from '../../data-models/download.model';
+import { DownloadOption } from '../../data-models/download.model';
 import { ThemeType } from '@pdbc/core';
 import { forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -45,7 +45,7 @@ import { LigandSpecificDatabasesComponent } from '../page-sections/ligand-specif
 export class LigandsMainPageComponent implements OnInit {
   public ligandId!: string;
   public description!: DescriptionData;
-  public downloadOptions: downloadOption[] = [];
+  public downloadOptions: DownloadOption[] = [];
   public expandedDropdowns = signal(false);
 
   public readonly headerLogoMenuConfig = {

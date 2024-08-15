@@ -16,7 +16,7 @@ export interface PDBLigandFile {
   [key: string]: LigandFile;
 }
 
-export interface downloadOption {
+export interface DownloadOption {
   name: string;
   url: string;
   downloadable: boolean;

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, HostListener, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StrucExplorerEcm2024Component } from '../../components/struc-explorer-ecm-2024/struc-explorer-ecm-2024.component';
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
@@ -16,6 +16,15 @@ import { EntryMacromoleculesComponent } from '../../components/entry-macromolecu
 import { EntryExperimentValidationComponent } from '../../components/entry-experiment-validation/entry-experiment-validation.component';
 import { EntryCitationComponent } from '../../components/entry-citation/entry-citation.component';
 import { Molecule } from '../../models/molecule.model';
+import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
+import { url } from 'inspector';
+import { ClickOutsideDirective } from '@pdbc/core';
+
+export interface DownloadOption {
+  name: string;
+  url: string;
+  downloadable: boolean;
+}
 
 @Component({
   selector: 'pdbe-entry-ecm-2024',
@@ -27,15 +36,20 @@ import { Molecule } from '../../models/molecule.model';
     EntryInformationComponent,
     EntryLigandsEnvironmentsComponent,
     RouterModule,
+    ClickOutsideDirective,
     EntryMacromoleculesComponent,
     EntryExperimentValidationComponent,
     EntryCitationComponent,
+    PdbeDropdownComponent,
   ],
   templateUrl: './entry-ecm-2024.component.html',
   styleUrl: './entry-ecm-2024.component.scss',
 })
 export class EntryEcm2024Component implements OnInit {
   private readonly playgroundService = inject(PlaygroundService);
+
+  public downloadOptions: DownloadOption[] = [];
+  public viewOptions: DownloadOption[] = [];
 
   public molecules!: Molecule[];
   public uniprotMapping!: any;
@@ -81,6 +95,9 @@ export class EntryEcm2024Component implements OnInit {
   ];
 
   public entryId = signal('1trn'); //'7v08', '3d12', '5tj5', '4zqo'
+
+  public showDownloadOptions = signal(false);
+  public showViewOptions = signal(false);
 
   private route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -156,13 +173,95 @@ export class EntryEcm2024Component implements OnInit {
           return data;
         })
       ),
+      this.playgroundService.getPDBEntryFiles(this.entryId()).pipe(
+        map((data) => {
+          this.downloadOptions = this.processData(data).downloads;
+          this.viewOptions = this.processData(data).views;
+          return data;
+        })
+      ),
     ]).pipe(
-      map(([summary, molecules, experiment, publication, uniprotMapping, interproMapping, pfamMapping]) => ({
+      map(([summary, molecules, experiment, publication, uniprotMapping, interproMapping, pfamMapping, files]) => ({
         summary,
         molecules,
         experiment,
         publication,
       }))
     );
+  }
+
+  private processData(data: any) {
+    const order = ['Archive mmCIF file', 'Updated mmCIF file', 'PDB file', 'Compatible PDB file bundle (tar.gz)', 'FASTA (Entry)', 'Full report (PDF)'];
+
+    let downloads: any[] = [];
+    let views: any[] = [];
+
+    Object.keys(data).forEach((key) => {
+      if (data[key].downloads) {
+        downloads = downloads.concat(data[key].downloads);
+      }
+      if (data[key].views) {
+        views = views.concat(data[key].views);
+      }
+    });
+
+    downloads.sort((a, b) => {
+      const indexA = order.indexOf(a.label);
+      const indexB = order.indexOf(b.label);
+
+      if (indexA === -1 && indexB === -1) {
+        return 0;
+      } else if (indexA === -1) {
+        return 1;
+      } else if (indexB === -1) {
+        return -1;
+      } else {
+        return indexA - indexB;
+      }
+    });
+
+    views.sort((a, b) => {
+      const indexA = order.indexOf(a.label);
+      const indexB = order.indexOf(b.label);
+
+      if (indexA === -1 && indexB === -1) {
+        return 0;
+      } else if (indexA === -1) {
+        return 1;
+      } else if (indexB === -1) {
+        return -1;
+      } else {
+        return indexA - indexB;
+      }
+    });
+
+    const downloadsUpdated = downloads.map((d) => {
+      return {
+        name: d.label,
+        url: d.url,
+        downloadable: true,
+      };
+    });
+
+    const viewsUpdated = views.map((d) => {
+      return {
+        name: d.label,
+        url: d.url,
+        downloadable: false,
+      };
+    });
+
+    return { downloads: downloadsUpdated, views: viewsUpdated };
+  }
+
+  public onShowDownloadOptions() {
+    this.showDownloadOptions.update((value) => !value);
+  }
+  public onShowViewOptions() {
+    this.showViewOptions.update((value) => !value);
+  }
+  public onClickedOutside() {
+    this.showViewOptions.set(false);
+    this.showDownloadOptions.set(false);
   }
 }

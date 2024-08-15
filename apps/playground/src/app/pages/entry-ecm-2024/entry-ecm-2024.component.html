@@ -7,8 +7,39 @@
     </a>
     }
   </nav>
+
   <main>
-    <h1 class="heading-1">{{ entryId() }}</h1>
+    <header>
+      <h1 class="heading-1">{{ entryId() }}</h1>
+      <section class="action-buttons" libClickOutside (clickOutside)="onClickedOutside()">
+        <div class="downloads">
+          <button class="vf-button vf-button--link" (click)="onShowDownloadOptions()">
+            <span>Download files</span>
+            <i class="icon icon-common icon-chevron-down"></i>
+          </button>
+          @if(showDownloadOptions()){
+          <section class="download-options">
+            @for(option of downloadOptions; track option.url){
+            <a [href]="option.url" download>{{ option.name }}</a>
+            }
+          </section>
+          }
+        </div>
+        <div class="downloads">
+          <button class="vf-button vf-button--link" (click)="onShowViewOptions()">
+            <span>View files</span>
+            <i class="icon icon-common icon-chevron-down"></i>
+          </button>
+          @if(showViewOptions()){
+          <section class="download-options">
+            @for(option of viewOptions; track option.url){
+            <a [href]="option.url" target="_blank">{{ option.name }}</a>
+            }
+          </section>
+          }
+        </div>
+      </section>
+    </header>
     <section class="hero">
       @if (pageData$ | async; as pageData) {
       <pdbe-entry-information [information]="pageData"></pdbe-entry-information>
@@ -29,13 +60,5 @@
       <pdbe-entry-experiment-validation></pdbe-entry-experiment-validation>
       <pdbe-entry-citation></pdbe-entry-citation>
     </section>
-
-    <!-- @if (pageData$ | async; as pageData) {
-    <pdbe-entry-information [information]="pageData"></pdbe-entry-information>
-    } -->
-    <!-- Container for 3D concept -->
-    <!-- <section id="struct-3d-container" class="page-section">
-      <app-struc-explorer-ecm-2024></app-struc-explorer-ecm-2024>
-    </section> -->
   </main>
 </section>
