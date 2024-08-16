@@ -415,7 +415,7 @@ export class StrucExplorerEcm2024Component {
 
         if (keyName === `lig-${ccdId}`) {
           const ligand = getResidues(comp.cell.obj.data)[0];
-          returnData.title = `Ligand environment for ${ligand.label_comp_id} ${ligand.auth_asym_id} ${ligand.auth_seq_id} (Auth):`;
+          returnData.title = `Ligand environment for ${ligand.label_comp_id} ${ligand.auth_asym_id} ${ligand.auth_seq_id}:`;
         }
         if (keyName === `env-${ccdId}`) {
           returnData.extraInfo.push({ value: 'Residues within 5Å of this ligand:', type: 'title' });
@@ -446,15 +446,16 @@ export class StrucExplorerEcm2024Component {
                 `${resid.label_comp_id}`,
                 `${resid.auth_asym_id}`,
                 `${resid.auth_seq_id}${authorInsertionCode}`,
-                `${resid.label_asym_id}`,
-                `${labelSeqId}`,
+                // `${resid.label_asym_id}`,
+                // `${labelSeqId}`,
               ],
             };
           });
           returnData.extraInfo.push({
             value: '',
             values: {
-              colNames: ['Molecule', 'Residue', 'Chain', 'Resid. Id (Auth)', 'Asym Id', 'Resid. Id'],
+              // colNames: ['Molecule', 'Residue', 'Chain', 'Resid. Id (Auth)', 'Asym Id', 'Resid. Id'],
+              colNames: ['Molecule', 'Residue', 'Chain', 'Resid. Id'],
               rows: residRows,
             },
             type: 'table',

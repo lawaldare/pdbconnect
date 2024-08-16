@@ -347,7 +347,8 @@ export class StructureExplorerService {
                                 {
                                     value: "",
                                     values: {
-                                        colNames: ["Domain", "Seg. idx", "Begin", "End", "Begin (Auth)", "End (Auth)"],
+                                        // colNames: ["Domain", "Seg. idx", "Begin", "End", "Begin (Auth)", "End (Auth)"],
+                                        colNames: ["Domain", "Seg. idx", "Begin", "End"],
                                         rows: []
                                     },
                                     type: "table",
@@ -365,7 +366,7 @@ export class StructureExplorerService {
                     }
 
                     const segmentId = eachMapping.segment_id;
-                    const residueText = `Start: ${eachMapping.start.residue_number} - End: ${eachMapping.end.residue_number} (Auth: ${eachMapping.start.author_residue_number}${eachMapping.start.author_insertion_code} - ${eachMapping.end.author_residue_number}${eachMapping.end.author_insertion_code}; Segment ${segmentId} of ${domainId})`
+                    // const residueText = `Start: ${eachMapping.start.residue_number} - End: ${eachMapping.end.residue_number} (Auth: ${eachMapping.start.author_residue_number}${eachMapping.start.author_insertion_code} - ${eachMapping.end.author_residue_number}${eachMapping.end.author_insertion_code}; Segment ${segmentId} of ${domainId})`
                     // scopEntityMappings[scopIdx].molecules[mappedIdx].extraInfo.push({value: residueText, type: "text"});
                     scopEntityMappings[scopIdx].molecules[mappedIdx].extraInfo[4].values!.rows.push({
                         molstarSelection: {
@@ -381,8 +382,8 @@ export class StructureExplorerService {
                         data: [
                             `${domainId}`,
                             `${segmentId}`,
-                            `${eachMapping.start.residue_number}`,
-                            `${eachMapping.end.residue_number}`,
+                            // `${eachMapping.start.residue_number}`,
+                            // `${eachMapping.end.residue_number}`,
                             `${eachMapping.start.author_residue_number}${eachMapping.start.author_insertion_code}`,
                             `${eachMapping.end.author_residue_number}${eachMapping.end.author_insertion_code}`
                         ]
@@ -469,7 +470,8 @@ export class StructureExplorerService {
                                 {
                                     value: "",
                                     values: {
-                                        colNames: ["Domain", "Seg. idx", "Begin", "End", "Begin (Auth)", "End (Auth)"],
+                                        // colNames: ["Domain", "Seg. idx", "Begin", "End", "Begin (Auth)", "End (Auth)"],
+                                        colNames: ["Domain", "Seg. idx", "Begin", "End"],
                                         rows: []
                                     },
                                     type: "table",
@@ -503,8 +505,8 @@ export class StructureExplorerService {
                         data: [
                             `${domainId}`,
                             `${segmentId}`,
-                            `${eachMapping.start.residue_number}`,
-                            `${eachMapping.end.residue_number}`,
+                            // `${eachMapping.start.residue_number}`,
+                            // `${eachMapping.end.residue_number}`,
                             `${eachMapping.start.author_residue_number}${eachMapping.start.author_insertion_code}`,
                             `${eachMapping.end.author_residue_number}${eachMapping.end.author_insertion_code}`
                         ]
@@ -617,7 +619,8 @@ export class StructureExplorerService {
                                 {
                                     value: "",
                                     values: {
-                                        colNames: ["Begin", "End", "Begin (Auth)", "End (Auth)"],
+                                        // colNames: ["Begin", "End", "Begin (Auth)", "End (Auth)"],
+                                        colNames: ["Begin", "End"],
                                         rows: []
                                     },
                                     type: "table",
@@ -644,8 +647,8 @@ export class StructureExplorerService {
                             }]
                         },
                         data: [
-                            `${eachMapping.start.residue_number}`,
-                            `${eachMapping.end.residue_number}`,
+                            // `${eachMapping.start.residue_number}`,
+                            // `${eachMapping.end.residue_number}`,
                             `${eachMapping.start.author_residue_number}${eachMapping.start.author_insertion_code}`,
                             `${eachMapping.end.author_residue_number}${eachMapping.end.author_insertion_code}`,
                         ]
@@ -694,7 +697,8 @@ export class StructureExplorerService {
                 {
                     value: "",
                     values: {
-                        colNames: ["Molecule", "Residue", "Chain", "Resid. Id (Auth)", "Asym Id", "Resid. Id"],
+                        // colNames: ["Molecule", "Residue", "Chain", "Resid. Id (Auth)", "Asym Id", "Resid. Id"],
+                        colNames: ["Molecule", "Residue", "Chain", "Resid. Id"],
                         rows: [{
                             molstarSelection: {
                                 entityId: `${modification.entity_id}`,
@@ -711,8 +715,8 @@ export class StructureExplorerService {
                             `${modification.chem_comp_id}`,
                             `${modification.chain_id}`,
                             `${modification.author_residue_number}${modification.author_insertion_code}`,
-                            `${modification.struct_asym_id}`,
-                            `${modification.residue_number}`
+                            // `${modification.struct_asym_id}`,
+                            // `${modification.residue_number}`
                             ]
                         }]
                     },
@@ -748,8 +752,8 @@ export class StructureExplorerService {
                         `${modification.chem_comp_id}`,
                         `${modification.chain_id}`,
                         `${modification.author_residue_number}${modification.author_insertion_code}`,
-                        `${modification.struct_asym_id}`,
-                        `${modification.residue_number}`
+                        // `${modification.struct_asym_id}`,
+                        // `${modification.residue_number}`
                     ]
                 })
             }
@@ -758,12 +762,10 @@ export class StructureExplorerService {
       }),
       catchError((error: HttpErrorResponse) => {
         if (error.status === 404) {
-        //   console.error('Error 404: Resource not found', error);
           // Handle 404 error specifically, e.g., return an empty array or a default value
           return of([]); // Returning an empty array as a fallback
         } else {
           // Handle other types of errors
-        //   console.error('An error occurred:', error);
           return of([]); // or you could throw an error or return a default value
         }
       })
