@@ -37,9 +37,11 @@ nav {
     color: #000 !important;
     border: none;
 
-    i {
+    i,
+    img {
       color: #000 !important;
-      width: 50px;
+      max-width: 50px;
+      width: 100%;
     }
   }
 
@@ -71,6 +73,10 @@ nav {
     &-conceptual {
       font-size: 35px;
     }
+
+    &-analyse {
+      text-align: center;
+    }
   }
 
   &:hover {
@@ -83,6 +89,10 @@ nav {
       display: inline-flex;
     }
   }
+
+  // &:hover .icon-analyse {
+  //   text-align: unset;
+  // }
 }
 
 .active {
@@ -144,7 +154,6 @@ section.footer {
     max-height: 400px;
     overflow-y: auto;
     background-color: #ffffff;
-
     a {
       display: block;
       text-decoration: none;
