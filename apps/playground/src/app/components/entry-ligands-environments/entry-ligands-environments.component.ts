@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { PlaygroundService } from '../../services/playground.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { switchMap, map, forkJoin, catchError, EMPTY } from 'rxjs';
+import { switchMap, map, forkJoin, catchError, EMPTY, of, throwError } from 'rxjs';
 import { Molecule } from '../../models/molecule.model';
 import { ModifiedResidues } from '../../models/modified-residues.model';
 
@@ -38,10 +38,19 @@ export class EntryLigandsEnvironmentsComponent implements OnInit {
         switchMap((params) => {
           const entryId = params['entryId'].toLowerCase();
           this.entryId.set(entryId);
-          return forkJoin([this.playgroundService.getEntryEcmMolecules(this.entryId()), this.playgroundService.getModifiedResidues(this.entryId())]);
+          return forkJoin([
+            this.playgroundService.getEntryEcmMolecules(this.entryId()),
+            this.playgroundService.getModifiedResidues(this.entryId()).pipe(
+              catchError((error) => {
+                return of(undefined);
+              })
+            )
+          ]);
         }),
         map(([ligands, residues]) => {
-          this.modifiedResidues = this.getUniqueModifiedResidues(residues);
+          if (residues) {
+            this.modifiedResidues = this.getUniqueModifiedResidues(residues);
+          }
           this.boundLigands = ligands[this.entryId()].filter((mol) => mol.molecule_type === 'bound');
 
           return [
@@ -60,7 +69,7 @@ export class EntryLigandsEnvironmentsComponent implements OnInit {
           ];
         }),
         catchError(() => {
-          this.loadingText.set('No data available!');
+          this.loadingText.set('No ligands or modified residues in this entry.');
           return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef)

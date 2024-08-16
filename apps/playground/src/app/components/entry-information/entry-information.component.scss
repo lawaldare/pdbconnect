@@ -29,4 +29,11 @@ article {
   i {
     margin-left: 5px;
   }
+  i:before {
+    --icon-search-color: #193f90;
+    width: 12px;
+    height: 12px;
+    mask-size: auto 12px;
+    top: 2px;
+  }
 }

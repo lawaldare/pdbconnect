@@ -125,7 +125,15 @@ export class EntryEcm2024TabComponent implements OnInit {
       this.playgroundService.getEntryEcmMolecules(this.entryId()).pipe(
         map((data) => {
           const molecules = data[this.entryId()];
-          this.molecules = molecules;
+          this.molecules = molecules.filter(
+            (mol) =>
+              mol.molecule_type === 'polypeptide(L)' ||
+              mol.molecule_type === 'polypeptide(R)' ||
+              mol.molecule_type === 'carbohydrate polymer' ||
+              mol.molecule_type === 'polyribonucleotide' ||
+              mol.molecule_type === 'polydeoxyribonucleotide' ||
+              mol.molecule_type === 'polydeoxyribonucleotide/polyribonucleotide hybrid'
+          );
           const organismNames: string[] = [];
           // See: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/1trn
           // and a more different example at: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/6hr1
@@ -256,9 +264,11 @@ export class EntryEcm2024TabComponent implements OnInit {
 
   public onShowDownloadOptions() {
     this.showDownloadOptions.update((value) => !value);
+    this.showViewOptions.update((_value) => false);
   }
   public onShowViewOptions() {
     this.showViewOptions.update((value) => !value);
+    this.showDownloadOptions.update((_value) => false);
   }
   public onClickedOutside() {
     this.showViewOptions.set(false);

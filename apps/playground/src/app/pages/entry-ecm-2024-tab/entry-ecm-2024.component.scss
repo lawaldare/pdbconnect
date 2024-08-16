@@ -44,6 +44,7 @@ section.footer {
   display: flex;
   gap: 16px;
   width: 100%;
+  margin-bottom: 270px;
 
   pdbe-entry-citation {
     flex-grow: 1;
@@ -68,6 +69,8 @@ section.footer {
 
   .download-options {
     position: absolute;
+    margin-top: 6px;
+    margin-left: 4px;
     background-color: white;
     border-radius: 2px;
     box-shadow: 1px 1px 4px 0px rgba(0, 0, 0, 0.25);

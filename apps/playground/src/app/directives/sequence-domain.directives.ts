@@ -48,7 +48,7 @@ export class SequenceDomainDirective implements OnChanges {
       const li = this.renderer.createElement('li');
       const a = this.renderer.createElement('a');
       a.textContent = s;
-      a.href = '';
+      // a.href = '';
       this.renderer.appendChild(li, a);
       this.renderer.appendChild(ul, li);
     });

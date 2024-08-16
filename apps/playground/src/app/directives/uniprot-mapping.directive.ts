@@ -24,18 +24,20 @@ export class UniprotMappingDirective implements OnChanges {
       const key = this.getKeyByEntityId(uniprotMappings, entityId);
 
       if (key) {
-        const keyUpdated = `Canonical: <a href="">${key}</a>`;
+        const keyUpdated = `Canonical: <a>${key}</a>`;
 
         const pCanonical = this.renderer.createElement('p');
         pCanonical.innerHTML = keyUpdated;
         this.renderer.appendChild(this.el.nativeElement, pCanonical);
       }
 
-      const coverage = this.generateRandomNumber(40, 90);
+      if (key) {
+        const coverage = this.generateRandomNumber(40, 90);
 
-      const pCoverage = this.renderer.createElement('p');
-      pCoverage.innerHTML = coverage;
-      this.renderer.appendChild(this.el.nativeElement, pCoverage);
+        const pCoverage = this.renderer.createElement('p');
+        pCoverage.innerHTML = coverage;
+        this.renderer.appendChild(this.el.nativeElement, pCoverage);
+      }
 
       if (key) {
         const residue = this.getResidues(uniprotMappings[key]);

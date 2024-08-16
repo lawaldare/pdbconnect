@@ -14,6 +14,15 @@ main {
   margin-top: 8px;
 }
 
+header {
+  display: flex;
+  align-items: center;
+
+  a {
+    margin-left: 8px;
+  }
+}
+
 section.filter {
   margin-top: 24px;
   margin-bottom: 16px;
@@ -33,6 +42,8 @@ section.filter {
 }
 
 td {
+  padding: 8px;
+
   a {
     font-size: 14px;
     line-height: 20px;
@@ -40,8 +51,39 @@ td {
   }
 }
 
+.mdc-form-field {
+  font-family: 'IBM Plex Sans';
+  font-size: 16px;
+  line-height: 27.2px;
+  color: var(--Neutral-900, #1A1C1A);
+}
+
+.mat-mdc-header-row {
+  font-family: 'IBM Plex Sans';
+  font-size: 16px;
+  line-height: 27.2px;
+  color: var(--Neutral-900, #1A1C1A);
+}
+
+.mat-mdc-row {
+  font-family: 'IBM Plex Sans';
+  font-size: 16px;
+  line-height: 27.2px;
+  color: var(--Neutral-900, #1A1C1A);
+}
+
 .mat-column-name {
+  word-break: break-word;
   width: 12.5%;
+  span:first-child{
+    font-weight: 500;
+  }
+  .anchor {
+    color: var(--Blue-600, #3B6FB6);
+    font-size: 16px;
+    font-style: normal;
+    line-height: 27.2px;
+  }
 }
 .mat-column-length {
   width: 12.5%;

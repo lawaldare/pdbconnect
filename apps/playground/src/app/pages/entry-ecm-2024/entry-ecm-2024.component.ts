@@ -55,43 +55,11 @@ export class EntryEcm2024Component implements OnInit {
   public interproMapping!: any;
   public pfamMapping!: any;
 
-  public readonly navItems = [
-    {
-      url: '/',
-      icon: 'icon-common icon-home',
-      label: 'Home',
-    },
-    {
-      url: '/biology',
-      icon: 'icon-conceptual icon-ontology',
-      label: 'Function and Biology',
-    },
-    {
-      url: '/ligands',
-      icon: 'icon-conceptual icon-chemical',
-      label: 'Ligands and Environments',
-    },
-    {
-      url: '/molecules',
-      icon: 'icon-conceptual icon-expression',
-      label: 'Macromolecules',
-    },
-    {
-      url: '/assemblies',
-      icon: 'icon-conceptual icon-structures',
-      label: 'Assemblies',
-    },
-    {
-      url: '/experiments',
-      icon: 'icon-common icon-analyse',
-      label: 'Experiments and Validation',
-    },
-    {
-      url: '/citation',
-      icon: 'icon-conceptual icon-literature',
-      label: 'Citation',
-    },
-  ];
+  public navItems: {
+    url: string;
+    icon: string;
+    label: string;
+  }[] = [];
 
   public entryId = signal('1trn'); //'7v08', '3d12', '5tj5', '4zqo'
 
@@ -109,6 +77,7 @@ export class EntryEcm2024Component implements OnInit {
         switchMap((params) => {
           const entryId = params['entryId'].toLowerCase();
           this.entryId.set(entryId);
+          this.setNavItems();
           return this.setPageData();
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -118,13 +87,61 @@ export class EntryEcm2024Component implements OnInit {
       });
   }
 
+  private setNavItems() {
+    this.navItems = [
+      {
+        url: `/`,
+        icon: 'icon-common icon-home',
+        label: 'Home',
+      },
+      {
+        url: `/${this.entryId()}/biology`,
+        icon: 'icon-conceptual icon-ontology',
+        label: 'Function and Biology',
+      },
+      {
+        url: `/${this.entryId()}/ligands`,
+        icon: 'icon-conceptual icon-chemical',
+        label: 'Ligands and Environments',
+      },
+      {
+        url: `/${this.entryId()}/molecules`,
+        icon: 'icon-conceptual icon-proteins',
+        label: 'Macromolecules',
+      },
+      {
+        url: `/${this.entryId()}/assemblies`,
+        icon: 'icon-conceptual icon-structures',
+        label: 'Assemblies',
+      },
+      {
+        url: `/${this.entryId()}/experiments`,
+        icon: 'icon-common icon-analyse',
+        label: 'Experiments and Validation',
+      },
+      {
+        url: `/${this.entryId()}/citations`,
+        icon: 'icon-conceptual icon-literature',
+        label: 'Citation',
+      },
+    ];
+  }
+
   private setPageData(): Observable<any> {
     return combineLatest([
       this.playgroundService.getEntryEcmSummary(this.entryId()),
       this.playgroundService.getEntryEcmMolecules(this.entryId()).pipe(
         map((data) => {
           const molecules = data[this.entryId()];
-          this.molecules = molecules;
+          this.molecules = molecules.filter(
+            (mol) =>
+              mol.molecule_type === 'polypeptide(L)' ||
+              mol.molecule_type === 'polypeptide(R)' ||
+              mol.molecule_type === 'carbohydrate polymer' ||
+              mol.molecule_type === 'polyribonucleotide' ||
+              mol.molecule_type === 'polydeoxyribonucleotide' ||
+              mol.molecule_type === 'polydeoxyribonucleotide/polyribonucleotide hybrid'
+          );
           const organismNames: string[] = [];
           // See: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/1trn
           // and a more different example at: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/6hr1
@@ -255,9 +272,11 @@ export class EntryEcm2024Component implements OnInit {
 
   public onShowDownloadOptions() {
     this.showDownloadOptions.update((value) => !value);
+    this.showViewOptions.update((_value) => false);
   }
   public onShowViewOptions() {
     this.showViewOptions.update((value) => !value);
+    this.showDownloadOptions.update((_value) => false);
   }
   public onClickedOutside() {
     this.showViewOptions.set(false);

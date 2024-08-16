@@ -1,11 +1,13 @@
 <section class="root-container">
   <nav>
-    @for(navItem of navItems; track navItem.url){
-    <a [routerLink]="navItem.url" routerLinkActive="active">
-      <i class="icon {{ navItem.icon }}"></i>
-      <span>{{ navItem.label }}</span>
-    </a>
-    }
+    <div>
+      @for(navItem of navItems; track navItem.url){
+      <a [routerLink]="navItem.url" routerLinkActive="active">
+        <i class="icon {{ navItem.icon }}"></i>
+        <span>{{ navItem.label }}</span>
+      </a>
+      }
+    </div>
   </nav>
 
   <main>

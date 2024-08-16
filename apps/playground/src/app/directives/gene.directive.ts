@@ -19,7 +19,7 @@ export class GeneDirective implements OnChanges {
       names.forEach((name: string) => {
         const a = this.renderer.createElement('a');
         a.textContent = `${name}, `;
-        a.href = '';
+        // a.href = '';
         this.renderer.appendChild(this.el.nativeElement, a);
       });
     }
