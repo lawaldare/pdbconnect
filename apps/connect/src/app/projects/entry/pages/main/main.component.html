@@ -27,22 +27,10 @@
       <div id="main-right-sticky">
         <span id="main-title">{{ entryId }}</span>
         <span id="main-subtitle">{{ entryData.title }}</span>
-        <div id="main-btn-bar" [ngClass]="expandedDropdowns ? 'expanded' : ''">
-          <!-- <pdbc-pdbe-button
-            [backgroundColor]="'#C66717'"
-            [fontSize]="'16px'"
-            [fontColor]="'#FFFFFF'"
-            [borderColor]="'#C66717'"
-            [shadowColor]="'#B65417'"
-            [label]="'View 3D structure'"
-            [paddingSize]="'Small'"
-            [mobileIconName]="'none'"
-          ></pdbc-pdbe-button> -->
+        <div id="main-btn-bar">
           <button class="vf-button vf-button--primary">View 3D structure</button>
-
-          <div class="main-btn-bar-break-column"></div>
-          <pdbc-pdbe-dropdown #vDropdown class="hide-mobile" [dropdownText]="'Download files'" [options]="downloadOptions"></pdbc-pdbe-dropdown>
-          <pdbc-pdbe-dropdown #dDropdown class="hide-mobile" [dropdownText]="'View files'" [options]="viewOptions"></pdbc-pdbe-dropdown>
+          <lib-dropdown-menu [options]="downloadOptions" title="Download files"></lib-dropdown-menu>
+          <lib-dropdown-menu [options]="viewOptions" title="View files"></lib-dropdown-menu>
         </div>
       </div>
       <div id="main-summary-holder">

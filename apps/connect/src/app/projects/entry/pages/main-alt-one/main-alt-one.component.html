@@ -26,10 +26,9 @@
     <div id="main-right-container">
       <div id="main-right-sticky">
         <span id="main-title">{{ entryId }}</span>
-        <div id="main-btn-bar" class="hide-mobile" [ngClass]="expandedDropdowns ? 'expanded' : ''">
-          <div class="main-btn-bar-break-column"></div>
-          <pdbc-pdbe-dropdown #vDropdown class="hide-mobile" [dropdownText]="'Download files'" [options]="downloadOptions"></pdbc-pdbe-dropdown>
-          <pdbc-pdbe-dropdown #dDropdown class="hide-mobile" [dropdownText]="'View files'" [options]="viewOptions"></pdbc-pdbe-dropdown>
+        <div id="main-btn-bar" class="hide-mobile">
+          <lib-dropdown-menu [options]="downloadOptions" title="Download files"></lib-dropdown-menu>
+          <lib-dropdown-menu [options]="viewOptions" title="View files"></lib-dropdown-menu>
         </div>
       </div>
       <div id="main-summary-holder">

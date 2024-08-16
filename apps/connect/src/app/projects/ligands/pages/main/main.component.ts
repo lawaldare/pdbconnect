@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, HostListener, OnInit, inject, DestroyRef, signal } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DescriptionComponent } from '../page-sections/description/description.component';
@@ -11,7 +11,6 @@ import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { PdbeButtonComponent } from '@pdbe-lib/button';
-import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { AggregatedApiService, DescriptionData } from '../../services/aggregated-api.service';
 import { downloadOption } from '../../data-models/download.model';
@@ -19,6 +18,7 @@ import { ThemeType } from '@pdbc/core';
 import { forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../page-sections/ligand-specific-databases/ligand-specific-databases.component';
+import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 
 @Component({
   selector: 'pdbc-main',
@@ -29,7 +29,6 @@ import { LigandSpecificDatabasesComponent } from '../page-sections/ligand-specif
     PdbeHeaderSearchComponent,
     PdbeNavMenuComponent,
     PdbeButtonComponent,
-    PdbeDropdownComponent,
     PdbeChipsComponent,
     DescriptionComponent,
     ImageCarouselComponent,
@@ -38,6 +37,7 @@ import { LigandSpecificDatabasesComponent } from '../page-sections/ligand-specif
     InteractionComponent,
     RelatedLigandsComponent,
     LigandSpecificDatabasesComponent,
+    DropdownMenuComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -46,7 +46,6 @@ export class LigandsMainPageComponent implements OnInit {
   public ligandId!: string;
   public description!: DescriptionData;
   public downloadOptions: downloadOption[] = [];
-  public expandedDropdowns = signal(false);
 
   public readonly headerLogoMenuConfig = {
     backgroundColor: '#085F5C',
@@ -65,8 +64,6 @@ export class LigandsMainPageComponent implements OnInit {
     type: ThemeType.PDBEKB,
   };
 
-  @ViewChild('dDropdown') dDropdown!: PdbeDropdownComponent;
-  @ViewChild('dDropdown', { read: ElementRef }) downloadDropdownContainer!: ElementRef; // To access dropdown HTML element
   // Data for sticky navigation menu
   navSections = [
     { sectionId: 'description-section', sectionName: 'Description', isSubSection: false },
@@ -108,20 +105,5 @@ export class LigandsMainPageComponent implements OnInit {
           { name: 'Model CML', url: data.processDownloadData.modelCML, downloadable: true },
         ];
       });
-  }
-
-  /**
-   * Function to close dropdowns when page is clicked elsewhere
-   * @param event
-   */
-  @HostListener('document:click', ['$event'])
-  clickOutsideDropdowns(event: Event) {
-    const hasClickedDownload = this.downloadDropdownContainer.nativeElement.contains(event.target);
-    if (!hasClickedDownload) {
-      this.dDropdown.expandedStatus.set(false);
-      this.expandedDropdowns.set(false);
-    } else {
-      this.expandedDropdowns.set(true);
-    }
   }
 }

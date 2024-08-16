@@ -12,11 +12,9 @@
         @for(annotation of description.annotations; track annotation.name){
         <pdbc-pdbe-chips [label]="annotation.name | titlecase" [url]="annotation.url" backgroundColor="#F9CF3B" fontColor="#1A1C1A" />
         }
-        <div class="action-buttons" [ngClass]="expandedDropdowns() ? 'expanded' : ''">
+        <div class="action-buttons">
           <button class="vf-button vf-button--primary vf-button--sm">View 3D</button>
-          <div class="drop-down">
-            <pdbc-pdbe-dropdown #dDropdown dropdownText="Download as" [options]="downloadOptions" elementId="dwld" />
-          </div>
+          <lib-dropdown-menu [options]="downloadOptions" title="Download as"></lib-dropdown-menu>
         </div>
       </section>
       <section class="description">

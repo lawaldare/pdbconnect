@@ -8,6 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatMenuModule } from '@angular/material/menu';
 
 @NgModule({
   exports: [
@@ -20,6 +21,7 @@ import { MatSelectModule } from '@angular/material/select';
     MatRadioModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    MatMenuModule,
   ],
 })
 export class MaterialModule {}

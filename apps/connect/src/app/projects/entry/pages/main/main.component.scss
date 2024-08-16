@@ -97,18 +97,7 @@
 .main-btn-bar-break-column {
   display: none;
 }
-#main-btn-bar > pdbc-pdbe-dropdown {
-  margin-top: 6px;
-  margin-bottom: 6px;
-  width: 154px;
-}
-// TODO: Add height, width, font-size as angular attributes
-#main-btn-bar > pdbc-pdbe-button > button {
-  height: 56px;
-  width: 176px;
-  font-size: 16px;
-  box-sizing: border-box;
-}
+
 @media screen and (max-width: 1024px) {
   //   #main-container {
   //     // margin-right: 34px;
@@ -167,9 +156,7 @@
     padding: 12px 0px 0px 12px;
     max-height: 138.38px;
   }
-  #main-btn-bar > pdbc-pdbe-dropdown {
-    margin-right: 4px;
-  }
+
   .main-btn-bar-break-column {
     display: block;
     flex-basis: 100%;

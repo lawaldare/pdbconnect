@@ -1,9 +1,9 @@
 /* eslint-disable */
 export default {
-  displayName: 'pdbe-dropdown',
+  displayName: 'dropdown-menu',
   preset: '../../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
-  coverageDirectory: '../../../coverage/libs/pdbe/dropdown',
+  coverageDirectory: '../../../coverage/libs/pdbe/dropdown-menu',
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
       'jest-preset-angular',

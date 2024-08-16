@@ -1,0 +1,11 @@
+<button mat-button [matMenuTriggerFor]="menu" [style.background]="backgroundColor()">
+  <span>{{ title() }}</span>
+  <i class="icon icon-common icon-arrow-down"></i>
+</button>
+<mat-menu #menu="matMenu">
+  @for(option of options(); track option.url){ @if(option.downloadable){
+  <a mat-menu-item [href]="option.url" download>{{ option.name }}</a>
+  } @else {
+  <a mat-menu-item [href]="option.url" target="_blank">{{ option.name }}</a>
+  } }
+</mat-menu>
