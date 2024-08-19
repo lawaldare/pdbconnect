@@ -44,7 +44,7 @@ export class EntryLigandsEnvironmentsComponent implements OnInit {
               catchError((error) => {
                 return of(undefined);
               })
-            )
+            ),
           ]);
         }),
         map(([ligands, residues]) => {

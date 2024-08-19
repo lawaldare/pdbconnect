@@ -1,6 +1,6 @@
-import { Component, ElementRef, Input, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { StructureExplorerService, extraInfoObj } from './struc-explorer-ecm-2024.service';
+import { MenuItemMolObj, StructureExplorerService, extraInfoObj } from './struc-explorer-ecm-2024.service';
 import { firstValueFrom } from 'rxjs';
 import { clearHighlightLoci, focusLoci, getResidues, highlightLoci, unfocusLoci } from './get-residues-for-components';
 
@@ -19,7 +19,7 @@ const PASTEL_COLORS = ['#66c5cc', '#f6cf71', '#f89c74', '#dcb0f2', '#87c55f', '#
   templateUrl: './struc-explorer-ecm-2024.component.html',
   styleUrl: './struc-explorer-ecm-2024.component.scss',
 })
-export class StrucExplorerEcm2024Component {
+export class StrucExplorerEcm2024Component implements AfterViewInit {
   private readonly apiService = inject(StructureExplorerService);
 
   @Input() public entryId = '1trn'; //'7v08', '3d12', '5tj5', '4zqo'
@@ -68,8 +68,8 @@ export class StrucExplorerEcm2024Component {
   public explorerCurrentTitle?: string;
   public explorerCurrentOption?: string;
   public explorerCurrentSubTitle?: string;
-  public hasBackOpt: boolean = false;
-  public hasBackToStartOpt: boolean = false;
+  public hasBackOpt = false;
+  public hasBackToStartOpt = false;
   public menuType?: string;
   public currentExtraInfo: extraInfoObj[] = [];
   public allowedMenuTypes = ['navigation', 'selection', 'domains'];
@@ -134,7 +134,9 @@ export class StrucExplorerEcm2024Component {
     let modificationsData = [];
     try {
       modificationsData = await firstValueFrom(this.apiService.getModifications(this.entryId, this.entityIdsToProteinNames));
-    } catch (_error) {}
+    } catch (_error) {
+      modificationsData = [];
+    }
 
     this.sectionsData['Modifications'] = modificationsData;
 
@@ -144,7 +146,7 @@ export class StrucExplorerEcm2024Component {
     this.uniqueModificationsCountString = `${modificationsData.length} unique ${pluralModifications}`;
 
     this.galleryManager = await PDBeMolstarPlugin.extensions.stateGallery.StateGalleryManager.create(this.molstarViewInstance.plugin, this.entryId);
-    let imageList = [];
+    const imageList = [];
     for (const imageObj of this.galleryManager.images) {
       this.imagesByName[imageObj.filename] = imageObj;
       if (imageObj.clean_description.includes('this domain is out of the observed residue ranges!')) {
@@ -157,17 +159,23 @@ export class StrucExplorerEcm2024Component {
     let scopData = { domains: [], count: 0 };
     try {
       scopData = (await firstValueFrom(this.apiService.getScop(this.entryId, imageList, this.entityIdsToProteinNames))) || { domains: [], count: 0 };
-    } catch (_error) {}
+    } catch (_error) {
+      scopData = { domains: [], count: 0 };
+    }
 
     let cathData = { domains: [], count: 0 };
     try {
       cathData = (await firstValueFrom(this.apiService.getCath(this.entryId, imageList, this.entityIdsToProteinNames))) || { domains: [], count: 0 };
-    } catch (_error) {}
+    } catch (_error) {
+      cathData = { domains: [], count: 0 };
+    }
 
     let pfamData = { domains: [], count: 0 };
     try {
       pfamData = (await firstValueFrom(this.apiService.getPfam(this.entryId, imageList, this.entityIdsToProteinNames))) || { domains: [], count: 0 };
-    } catch (_error) {}
+    } catch (_error) {
+      pfamData = { domains: [], count: 0 };
+    }
 
     this.sectionsData['Domains']['SCOP'] = scopData.domains;
     this.sectionsData['Domains']['CATH'] = cathData.domains;
@@ -175,10 +183,10 @@ export class StrucExplorerEcm2024Component {
 
     this.sectionsData['Domains']['isEmpty'] = false;
 
-    let totalDomains = scopData.count + cathData.count + pfamData.count;
+    const totalDomains = scopData.count + cathData.count + pfamData.count;
     // const toBeDomains = totalDomains > 1 ? "are" : "is";
     // this.uniqueDomainsCountString = `There ${toBeDomains} `;
-    let toAppend = [];
+    const toAppend = [];
     if (cathData.count > 0) {
       toAppend.push(`${cathData.count} unique CATH`);
       this.sectionsData['Domains']['isEmpty'] = false;
@@ -228,7 +236,7 @@ export class StrucExplorerEcm2024Component {
     this.setControls();
   }
 
-  loadSelectedData(menuItem: any) {
+  loadSelectedData(menuItem: MenuItemMolObj) {
     if (this.currentImg !== menuItem.img) {
       this.setExtraInfo(menuItem.extraInfo);
       this.loadImg(menuItem.img);
@@ -246,7 +254,7 @@ export class StrucExplorerEcm2024Component {
     }
   }
 
-  setExtraInfo(extraInfoObj: any) {
+  setExtraInfo(extraInfoObj: extraInfoObj[]) {
     this.currentExtraInfo = JSON.parse(JSON.stringify(extraInfoObj));
     const kbLink = this.currentExtraInfo.filter((eachInfo) => eachInfo.type === 'kb-link');
     if (kbLink.length > 0) {
@@ -312,7 +320,7 @@ export class StrucExplorerEcm2024Component {
       this.hasBackOpt = true;
       this.hasBackToStartOpt = false;
       this.menuType = 'selection';
-      let menuDataMacromolecules = this.sectionsData.Macromolecules.entities;
+      const menuDataMacromolecules = this.sectionsData.Macromolecules.entities;
       this.menuData = menuDataMacromolecules;
     }
     if (this.currentSection === 'Ligands') {
@@ -323,7 +331,7 @@ export class StrucExplorerEcm2024Component {
       this.hasBackOpt = true;
       this.hasBackToStartOpt = false;
       this.menuType = 'selection';
-      let menuDataLigands = this.sectionsData.Ligands.entities;
+      const menuDataLigands = this.sectionsData.Ligands.entities;
       this.menuData = menuDataLigands;
     }
     if (this.currentSection.includes('Ligands___')) {
@@ -367,7 +375,7 @@ export class StrucExplorerEcm2024Component {
       this.hasBackOpt = true;
       this.hasBackToStartOpt = false;
       this.menuType = 'selection';
-      let menuDataModifications = this.sectionsData.Modifications;
+      const menuDataModifications = this.sectionsData.Modifications;
       this.menuData = menuDataModifications;
     }
   }
@@ -397,7 +405,7 @@ export class StrucExplorerEcm2024Component {
   }
 
   async getInfoForEnvironment(ccdId: string) {
-    let returnData: {
+    const returnData: {
       title: string;
       extraInfo: extraInfoObj[];
     } = {
@@ -407,7 +415,7 @@ export class StrucExplorerEcm2024Component {
     // let allowedKeyNames = [
     //   `lig-${ccdId}`,`env-${ccdId}`,`wide-${ccdId}`,`link-${ccdId}`
     // ]
-    let structureData = [this.molstarViewInstance.plugin.managers.structure.hierarchy.current.structures[0]];
+    const structureData = [this.molstarViewInstance.plugin.managers.structure.hierarchy.current.structures[0]];
     for await (const s of structureData) {
       for (const comp of s.components) {
         const keySplit = comp.key.split('/');
@@ -424,9 +432,9 @@ export class StrucExplorerEcm2024Component {
             let moleculeName = this.entityIdsToProteinNames[resid.label_entity_id!];
             moleculeName = moleculeName !== undefined ? moleculeName : '';
 
-            let labelSeqId = resid.label_seq_id !== null ? resid.label_seq_id : '';
+            const labelSeqId = resid.label_seq_id !== null ? resid.label_seq_id : '';
 
-            let authorInsertionCode = resid.pdbx_PDB_ins_code !== null ? resid.pdbx_PDB_ins_code : '';
+            const authorInsertionCode = resid.pdbx_PDB_ins_code !== null ? resid.pdbx_PDB_ins_code : '';
 
             return {
               molstarSelection: {
