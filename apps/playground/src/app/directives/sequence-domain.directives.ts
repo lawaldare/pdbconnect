@@ -22,7 +22,7 @@ export class SequenceDomainDirective implements OnChanges {
     const entityId = changes['entityId']?.currentValue;
     const interproMappings = changes['interproMappings']?.currentValue;
     const pfamMappings = changes['pfamMappings']?.currentValue;
-    
+
     if (entityId) {
       this.entityId = entityId;
     }
