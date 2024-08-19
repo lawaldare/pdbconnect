@@ -15,10 +15,11 @@ import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { AggregatedApiService, DescriptionData } from '../../services/aggregated-api.service';
 import { downloadOption } from '../../data-models/download.model';
 import { ThemeType } from '@pdbc/core';
-import { forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
+import { switchMap, tap, map } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
 
 @Component({
   selector: 'pdbc-main',
@@ -83,7 +84,7 @@ export class LigandsMainPageComponent implements OnInit {
   ngOnInit(): void {
     this.route.params
       .pipe(
-        switchMap((params) => {
+        switchMap((params: { [x: string]: string }) => {
           const ligandId = params['ligandId'].toUpperCase();
           return forkJoin([this.aggregatedApiService.fetchDescription(ligandId), this.aggregatedApiService.fetchDownload(ligandId), of(ligandId)]);
         }),
@@ -96,7 +97,7 @@ export class LigandsMainPageComponent implements OnInit {
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((data) => {
+      .subscribe((data: { processDescriptionData: DescriptionData; processDownloadData: { cif: any; idealSDF: any; modelSDF: any; modelCML: any } }) => {
         this.description = data.processDescriptionData;
         this.downloadOptions = [
           { name: 'CIF file', url: data.processDownloadData.cif, downloadable: true },

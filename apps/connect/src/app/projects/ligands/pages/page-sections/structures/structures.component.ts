@@ -9,12 +9,12 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
-import { of, catchError, switchMap, map, tap } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ClickOutsideDirective } from '@pdbc/core';
 import * as XLSX from 'xlsx';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
+import { switchMap, map, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'pdbc-structures',
@@ -83,11 +83,11 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   ngOnInit() {
     this.route.params
       .pipe(
-        switchMap((params) => {
+        switchMap((params: { [x: string]: string }) => {
           const ligandId = params['ligandId'].toUpperCase();
           return this.aggregatedApiService.fetchBoundEntries(ligandId);
         }),
-        map((boundaries) => {
+        map((boundaries: any[]) => {
           return boundaries.map(() => ({
             name: 'Glycerol-3-phosphate dehydrogenase',
             id: 'P90551',
@@ -98,13 +98,13 @@ export class StructuresComponent implements AfterViewInit, OnInit {
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((data) => {
+      .subscribe((data: Structure[]) => {
         this.dataSource.data = data;
         this.pageSizeOptions.update((options) => [...new Set([...options, this.dataSource.data.length])]);
       });
 
-    this.form.valueChanges.pipe(tap((values) => console.log(values))).subscribe();
-    this.searchText.valueChanges.pipe(tap((value) => console.log(value))).subscribe();
+    this.form.valueChanges.pipe(tap((values: any) => console.log(values))).subscribe();
+    this.searchText.valueChanges.pipe(tap((value: any) => console.log(value))).subscribe();
     // if (this.ligandId) {
     //   this.aggregatedApiService
     //     .fetchBoundEntries(this.ligandId)
