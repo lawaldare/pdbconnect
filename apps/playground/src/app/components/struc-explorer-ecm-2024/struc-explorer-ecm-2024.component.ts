@@ -3,6 +3,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disableno-empty */
 
 import { AfterViewInit, Component, ElementRef, Input, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
