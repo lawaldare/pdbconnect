@@ -22,12 +22,24 @@ export class SequenceDomainDirective implements OnChanges {
     const entityId = changes['entityId']?.currentValue;
     const interproMappings = changes['interproMappings']?.currentValue;
     const pfamMappings = changes['pfamMappings']?.currentValue;
+    
+    if (entityId) {
+      this.entityId = entityId;
+    }
+    if (interproMappings && Object.keys(interproMappings).length > 0) {
+      this.interproMappings = interproMappings;
+    }
+    if (pfamMappings && Object.keys(pfamMappings).length > 0) {
+      this.pfamMappings = pfamMappings;
+    }
 
-    // console.log(interproMappings, pfamMappings);
+    if (Object.keys(this.interproMappings).length === 0) return;
+    if (Object.keys(this.pfamMappings).length === 0) return;
+    if (!this.entityId) return;
 
-    const interproMappingsMatched = this.getObjectsByEntityId(interproMappings, entityId);
+    const interproMappingsMatched = this.getObjectsByEntityId(this.interproMappings, this.entityId);
 
-    const pfamMappingsMatched = this.getObjectsByEntityId(pfamMappings, entityId);
+    const pfamMappingsMatched = this.getObjectsByEntityId(this.pfamMappings, this.entityId);
 
     const interproNames = interproMappingsMatched.map((m) => m.name);
 
