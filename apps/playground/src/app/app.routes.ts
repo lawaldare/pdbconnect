@@ -14,13 +14,13 @@ export const appRoutes: Route[] = [
   { path: 'others', component: OthersComponent, title: 'Summary Page', data: { showNavigationBar: true } },
   { path: 'buttons', component: ButtonsPlaygroundComponent, title: 'Buttons Page', data: { showNavigationBar: true } },
   {
-    path: 'entry/:entryId',
+    path: 'entry',
     component: EntryEcm2024Component,
     title: 'Nav Header Entry Page',
     data: { showNavigationBar: false, showPdbeLogoAndSearch: true, defaultMargins: false, bgColor: '#e3e3e3' },
   },
   {
-    path: 'entry/:entryId/tab',
+    path: 'tab/entry',
     component: EntryEcm2024TabComponent,
     title: 'Tab Header Entry Page',
     data: { showNavigationBar: false, showPdbeLogoAndSearch: true, defaultMargins: false, bgColor: '#e3e3e3' },

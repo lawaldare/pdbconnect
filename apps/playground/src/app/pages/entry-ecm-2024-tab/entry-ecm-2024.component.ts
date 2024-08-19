@@ -105,7 +105,7 @@ export class EntryEcm2024TabComponent implements OnInit {
   public pageData$!: Observable<any>;
 
   ngOnInit(): void {
-    this.route.params
+    this.route.queryParams
       .pipe(
         switchMap((params) => {
           const entryId = params['entryId'].toLowerCase();
