@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -21,7 +23,7 @@ export class EntryCitationComponent {
   public loadingText = signal('Loading...');
   public articleText = signal('');
 
-  public articleCiting!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  public articleCiting!: any;
 
   public entryPublication$ = this.route.params.pipe(
     switchMap((params) => {

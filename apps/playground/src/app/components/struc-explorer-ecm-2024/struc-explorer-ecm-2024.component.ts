@@ -1,4 +1,10 @@
-import { Component, ElementRef, Input, ViewChild, inject } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-prototype-builtins */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
+import { AfterViewInit, Component, ElementRef, Input, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StructureExplorerService, extraInfoObj } from './struc-explorer-ecm-2024.service';
 import { firstValueFrom } from 'rxjs';
@@ -19,7 +25,7 @@ const PASTEL_COLORS = ['#66c5cc', '#f6cf71', '#f89c74', '#dcb0f2', '#87c55f', '#
   templateUrl: './struc-explorer-ecm-2024.component.html',
   styleUrl: './struc-explorer-ecm-2024.component.scss',
 })
-export class StrucExplorerEcm2024Component {
+export class StrucExplorerEcm2024Component implements AfterViewInit {
   private readonly apiService = inject(StructureExplorerService);
 
   @Input() public entryId = '1trn'; //'7v08', '3d12', '5tj5', '4zqo'

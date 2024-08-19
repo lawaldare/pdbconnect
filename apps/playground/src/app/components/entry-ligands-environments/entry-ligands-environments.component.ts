@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -44,7 +46,7 @@ export class EntryLigandsEnvironmentsComponent implements OnInit {
               catchError((error) => {
                 return of(undefined);
               })
-            )
+            ),
           ]);
         }),
         map(([ligands, residues]) => {
