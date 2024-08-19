@@ -23,11 +23,11 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   ];
 
   ngOnInit() {
-    this.headerLogoSrc = this.headerConfig.logoType === 'PDBE' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
+    this.headerLogoSrc = this.headerConfig.logoType === 'PDBe' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
   }
 
   public get getHeaderLogoClass(): string {
-    return this.headerConfig.logoType === 'PDBE' ? 'pdbe-header-logo-img' : 'pdbe-kb-header-logo-img';
+    return this.headerConfig.logoType === 'PDBe' ? 'pdbe-header-logo-img' : 'pdbe-kb-header-logo-img';
   }
 
   public showMobileMenu(): void {

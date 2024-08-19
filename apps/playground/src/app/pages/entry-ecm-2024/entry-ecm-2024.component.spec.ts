@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MolstarComponent } from './molstar.component';
+import { EntryEcm2024Component } from './entry-ecm-2024.component';
 
-describe('MolstarComponent', () => {
-  let component: MolstarComponent;
-  let fixture: ComponentFixture<MolstarComponent>;
+describe('EntryEcm2024Component', () => {
+  let component: EntryEcm2024Component;
+  let fixture: ComponentFixture<EntryEcm2024Component>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MolstarComponent],
+      imports: [EntryEcm2024Component],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(MolstarComponent);
+    fixture = TestBed.createComponent(EntryEcm2024Component);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
