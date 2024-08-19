@@ -13,7 +13,7 @@ import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { PdbeButtonComponent } from '@pdbe-lib/button';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { AggregatedApiService, DescriptionData } from '../../services/aggregated-api.service';
-import { downloadOption } from '../../data-models/download.model';
+import { DownloadOption } from '../../data-models/download.model';
 import { ThemeType } from '@pdbc/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../page-sections/ligand-specific-databases/ligand-specific-databases.component';
@@ -46,7 +46,7 @@ import { forkJoin, of } from 'rxjs';
 export class LigandsMainPageComponent implements OnInit {
   public ligandId!: string;
   public description!: DescriptionData;
-  public downloadOptions: downloadOption[] = [];
+  public downloadOptions: DownloadOption[] = [];
 
   public readonly headerLogoMenuConfig = {
     backgroundColor: '#085F5C',

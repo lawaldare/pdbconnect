@@ -1,6 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
+import { Molecule } from '../models/molecule.model';
+import { ModifiedResidues } from '../models/modified-residues.model';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +18,25 @@ export class PlaygroundService {
   public getPrimaryPublicationAbstract(entryId: string): Observable<any> {
     return this.http.get<any>(`${this.BASE_API}publications/${entryId}`).pipe(map((data) => data[entryId][0]));
   }
+
+  public getUniprotMapping(entryId: string): Observable<any> {
+    const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/';
+    return this.http.get<any>(`${BASE_API}/${entryId}`).pipe(map((data) => data[entryId]['UniProt']));
+  }
+  public getInterproMapping(entryId: string): Observable<any> {
+    const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/interpro/';
+    return this.http.get<any>(`${BASE_API}/${entryId}`).pipe(map((data) => data[entryId]['InterPro']));
+  }
+  public getPfamMapping(entryId: string): Observable<any> {
+    const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/pfam/';
+    return this.http.get<any>(`${BASE_API}/${entryId}`).pipe(map((data) => data[entryId]['Pfam']));
+  }
+
+  public getPDBEntryFiles(entryId: string): Observable<any> {
+    const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/pdb/entry/files/';
+    return this.http.get<any>(`${BASE_API}/${entryId}`).pipe(map((data) => data[entryId]));
+  }
+
   public getArticleCitingPDBEntry(entryId: string): Observable<any> {
     return this.http.get<any>(`${this.BASE_API}related_publications/${entryId}`).pipe(
       map((data) => {
@@ -45,44 +69,16 @@ export class PlaygroundService {
     );
   }
 
-  public getEntryEcmMolecules(entryId: string): Observable<any> {
-    return this.http.get<any>(`${this.BASE_API}molecules/${entryId}`).pipe(
-      map((data) => {
-        const molecules = data[entryId];
-        const organismNames: string[] = [];
-        // See: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/1trn
-        // and a more different example at: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/6hr1
-        for (const entityDetail of molecules) {
-          // if entity object has source (bound molecules and water do not have)
-          if (Object.prototype.hasOwnProperty.call(entityDetail, 'source')) {
-            for (const eachSource of entityDetail.source!) {
-              if (!Object.prototype.hasOwnProperty.call(eachSource, 'organism_scientific_name')) {
-                continue;
-              }
-              // if source object has scientific name not yet in array
-              if (organismNames.indexOf(eachSource.organism_scientific_name!) === -1) {
-                organismNames.push(eachSource.organism_scientific_name!);
-              }
-            }
-          }
-        }
-        return {
-          organismScientificNames: organismNames,
-        };
-      })
-    );
+  public getEntryEcmMolecules(entryId: string): Observable<Record<string, Molecule[]>> {
+    return this.http.get<Record<string, Molecule[]>>(`${this.BASE_API}molecules/${entryId}`);
+  }
+
+  public getModifiedResidues(entryId: string): Observable<Record<string, ModifiedResidues[]>> {
+    return this.http.get<Record<string, ModifiedResidues[]>>(`${this.BASE_API}modified_AA_or_NA/${entryId}`);
   }
 
   public getEntryEcmExperiment(entryId: string): Observable<any> {
-    return this.http.get<any>(`${this.BASE_API}experiment/${entryId}`).pipe(
-      map((data) => {
-        const datum = data[entryId][0];
-        return {
-          experimentalMethod: datum.experimental_method,
-          resolutionValue: datum.resolution,
-        };
-      })
-    );
+    return this.http.get<any>(`${this.BASE_API}experiment/${entryId}`).pipe(map((data) => data[entryId][0]));
   }
 
   public getEntryEcmPublication(entryId: string): Observable<any> {

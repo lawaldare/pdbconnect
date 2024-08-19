@@ -1,1 +1,358 @@
-<p>struc-explorer-ecm-2024 works!</p>
+<div class="str-explorer-container">
+  <div class="str-explorer-assembly-row">
+    <h3>Assembly {{ assemblyId }} (preferred)</h3>
+    <p>
+      View all assemblies
+      <i class="icon icon-common icon-arrow-alt-circle-right"></i>
+    </p>
+  </div>
+  <div class="str-explorer-main">
+    <!-- TODO: replace whole controls by svg so animation is possible -->
+    <div class="str-explorer-controls">
+      @if (hasBackOpt || hasBackToStartOpt) {
+      <div class="str-easy-nav">
+        @if (hasBackToStartOpt) {
+        <div class="str-easy-btn" (click)="easyNav('start')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="12" viewBox="0 0 15 12" fill="none">
+            <path
+              d="M0.000104904 6.00221C-0.000244141 5.80627 0.0381699 5.6122 0.113135 5.43117C0.1881 5.25015 0.298135 5.08573 0.436904 4.94741L5.3773 0.249405C5.46294 0.167559 5.56389 0.103421 5.67437 0.060668C5.78485 0.0179154 5.90268 -0.00261109 6.0211 0.000265448C6.13953 0.00314199 6.25622 0.029365 6.36449 0.077431C6.47276 0.125497 6.57048 0.194461 6.65205 0.280368C6.73361 0.366276 6.79742 0.467438 6.83981 0.578055C6.8822 0.688671 6.90234 0.806567 6.89907 0.924983C6.89581 1.0434 6.8692 1.16001 6.82078 1.26812C6.77236 1.37623 6.70308 1.47372 6.6169 1.55501L2.1625 5.78501C2.13294 5.81294 2.10939 5.84661 2.0933 5.88395C2.0772 5.9213 2.0689 5.96154 2.0689 6.00221C2.0689 6.04288 2.0772 6.08312 2.0933 6.12046C2.10939 6.15781 2.13294 6.19148 2.1625 6.21941L6.6169 10.4494C6.70308 10.5307 6.77236 10.6282 6.82078 10.7363C6.8692 10.8444 6.89581 10.961 6.89907 11.0794C6.90234 11.1979 6.8822 11.3157 6.83981 11.4264C6.79742 11.537 6.73361 11.6381 6.65205 11.724C6.57048 11.81 6.47276 11.8789 6.36449 11.927C6.25622 11.9751 6.13953 12.0013 6.0211 12.0042C5.90268 12.007 5.78485 11.9865 5.67437 11.9437C5.56389 11.901 5.46294 11.8369 5.3773 11.755L0.448905 7.08221C0.306613 6.94065 0.193711 6.77236 0.116689 6.58701C0.0396676 6.40167 4.62532e-05 6.20292 0.000104904 6.00221Z"
+              fill="#3B6FB6"
+            />
+            <path
+              d="M6.89927 6.00221C6.89893 5.80627 6.93734 5.6122 7.0123 5.43117C7.08727 5.25015 7.19731 5.08573 7.33607 4.94741L12.2765 0.249405C12.3621 0.167559 12.4631 0.103421 12.5735 0.060668C12.684 0.0179154 12.8018 -0.00261109 12.9203 0.000265448C13.0387 0.00314199 13.1554 0.029365 13.2637 0.077431C13.3719 0.125497 13.4697 0.194461 13.5512 0.280368C13.6328 0.366276 13.6966 0.467438 13.739 0.578055C13.7814 0.688671 13.8015 0.806567 13.7982 0.924983C13.795 1.0434 13.7684 1.16001 13.72 1.26812C13.6715 1.37623 13.6022 1.47372 13.5161 1.55501L9.06167 5.78501C9.03211 5.81294 9.00856 5.84661 8.99247 5.88395C8.97637 5.9213 8.96807 5.96154 8.96807 6.00221C8.96807 6.04288 8.97637 6.08312 8.99247 6.12046C9.00856 6.15781 9.03211 6.19148 9.06167 6.21941L13.5161 10.4494C13.6022 10.5307 13.6715 10.6282 13.72 10.7363C13.7684 10.8444 13.795 10.961 13.7982 11.0794C13.8015 11.1979 13.7814 11.3157 13.739 11.4264C13.6966 11.537 13.6328 11.6381 13.5512 11.724C13.4697 11.81 13.3719 11.8789 13.2637 11.927C13.1554 11.9751 13.0387 12.0013 12.9203 12.0042C12.8018 12.007 12.684 11.9865 12.5735 11.9437C12.4631 11.901 12.3621 11.8369 12.2765 11.755L7.34807 7.08221C7.20578 6.94065 7.09288 6.77236 7.01586 6.58701C6.93884 6.40167 6.89922 6.20292 6.89927 6.00221Z"
+              fill="#3B6FB6"
+            />
+          </svg>
+          Go to start
+        </div>
+        } @if (hasBackOpt) {
+        <div class="str-easy-btn" (click)="easyNav('back')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <g clip-path="url(#clip0_655_271)">
+              <path
+                d="M2.55113 6.00001C2.55078 5.80407 2.5892 5.61001 2.66416 5.42898C2.73913 5.24795 2.84916 5.08354 2.98793 4.94521L7.92833 0.247208C8.01397 0.165361 8.11492 0.101223 8.2254 0.0584707C8.33587 0.0157181 8.4537 -0.00480836 8.57213 -0.00193182C8.69055 0.000944725 8.80725 0.0271677 8.91552 0.0752337C9.02379 0.1233 9.12151 0.192263 9.20307 0.278171C9.28464 0.364079 9.34844 0.465241 9.39083 0.575857C9.43322 0.686474 9.45336 0.80437 9.4501 0.922785C9.44683 1.0412 9.42023 1.15781 9.37181 1.26592C9.32339 1.37403 9.2541 1.47153 9.16793 1.55281L4.71353 5.78281C4.68397 5.81074 4.66042 5.84441 4.64432 5.88176C4.62823 5.9191 4.61993 5.95934 4.61993 6.00001C4.61993 6.04068 4.62823 6.08092 4.64432 6.11827C4.66042 6.15561 4.68397 6.18928 4.71353 6.21721L9.16793 10.4472C9.2541 10.5285 9.32339 10.626 9.37181 10.7341C9.42023 10.8422 9.44683 10.9588 9.4501 11.0772C9.45336 11.1957 9.43322 11.3135 9.39083 11.4242C9.34844 11.5348 9.28464 11.6359 9.20307 11.7219C9.12151 11.8078 9.02379 11.8767 8.91552 11.9248C8.80725 11.9729 8.69055 11.9991 8.57213 12.002C8.4537 12.0048 8.33587 11.9843 8.2254 11.9416C8.11492 11.8988 8.01397 11.8347 7.92833 11.7528L2.99993 7.08001C2.85764 6.93845 2.74474 6.77016 2.66771 6.58482C2.59069 6.39947 2.55107 6.20072 2.55113 6.00001Z"
+                fill="#3B6FB6"
+              />
+            </g>
+            <defs>
+              <clipPath id="clip0_655_271">
+                <rect width="12" height="12" fill="white" transform="matrix(0 1 -1 0 12 0)" />
+              </clipPath>
+            </defs>
+          </svg>
+          Go back
+        </div>
+        }
+      </div>
+      }
+      <div class="str-explorer-title">
+        @if (explorerCurrentTitle) {
+        <h4>{{ explorerCurrentTitle }}</h4>
+        }
+      </div>
+      @if (explorerCurrentSubTitle) {
+      <p class="str-summary-info">{{ explorerCurrentSubTitle }}</p>
+      } @if (allowedMenuTypes.indexOf(menuType!) !== -1 ) {
+      <div class="str-main-selector">
+        <!-- TODO: Add color coded for selection -->
+        @if (menuType === 'selection') { @for (menuItem of menuData; track menuItem) {
+        <div class="str-sel-menu-item" [ngClass]="menuItem.img === currentImg ? 'is-selected' : ''" (click)="loadSelectedData(menuItem)">
+          {{ menuItem.name }}
+        </div>
+        } } @if (menuType === 'navigation') { @for (menuItem of mainMenuData; track menuItem) {
+        <div class="str-nav-menu-item" (click)="setStateAndLoadImg(menuItem.name)" [ngClass]="menuItem.isActive ? 'str-menu-item-active' : 'str-menu-item-inactive'">
+          {{ menuItem.name }}
+          <svg [ngStyle]="{ display: menuItem.isActive ? '' : 'none' }" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <g clip-path="url(#clip0_655_149)">
+              <path
+                d="M9.44887 5.99977C9.44922 5.80383 9.4108 5.60976 9.33584 5.42873C9.26087 5.2477 9.15084 5.08329 9.01207 4.94497L4.07167 0.246964C3.98603 0.165117 3.88508 0.100979 3.7746 0.0582266C3.66413 0.015474 3.5463 -0.0050525 3.42787 -0.00217596C3.30945 0.000700584 3.19275 0.0269235 3.08448 0.0749895C2.97621 0.123056 2.87849 0.192019 2.79693 0.277927C2.71536 0.363835 2.65156 0.464997 2.60917 0.575613C2.56678 0.68623 2.54664 0.804126 2.5499 0.922541C2.55317 1.04096 2.57977 1.15756 2.62819 1.26568C2.67661 1.37379 2.7459 1.47128 2.83207 1.55256L7.28647 5.78257C7.31603 5.8105 7.33958 5.84416 7.35568 5.88151C7.37177 5.91886 7.38007 5.9591 7.38007 5.99977C7.38007 6.04043 7.37177 6.08067 7.35568 6.11802C7.33958 6.15537 7.31603 6.18904 7.28647 6.21697L2.83207 10.447C2.7459 10.5283 2.67661 10.6257 2.62819 10.7339C2.57977 10.842 2.55317 10.9586 2.5499 11.077C2.54664 11.1954 2.56678 11.3133 2.60917 11.4239C2.65156 11.5345 2.71536 11.6357 2.79693 11.7216C2.87849 11.8075 2.97621 11.8765 3.08448 11.9245C3.19275 11.9726 3.30945 11.9988 3.42787 12.0017C3.5463 12.0046 3.66413 11.9841 3.7746 11.9413C3.88508 11.8986 3.98603 11.8344 4.07167 11.7526L9.00007 7.07977C9.14236 6.93821 9.25526 6.76992 9.33229 6.58457C9.40931 6.39922 9.44893 6.20048 9.44887 5.99977Z"
+                fill="#1A1C1A"
+              />
+            </g>
+            <defs>
+              <clipPath id="clip0_655_149">
+                <rect width="12" height="12" fill="white" transform="matrix(0 1 1 0 0 0)" />
+              </clipPath>
+            </defs>
+          </svg>
+        </div>
+        } } @if (menuType === 'domains') {
+        <div class="str-nav-expandable-domains">
+          <div
+            class="str-nav-div-expandable"
+            [ngClass]="sectionsData.Domains.CATH.length > 0 ? 'str-nav-div-expandable-active' : 'str-nav-div-expandable-inactive'"
+            (click)="setExpandable('CATH')"
+          >
+            CATH @if (sectionsData.Domains.CATH.length > 0) {
+            <svg
+              [ngStyle]="{ display: expandedDictionary['CATH'] ? 'none' : '' }"
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+            >
+              <line y1="7" x2="14" y2="7" stroke="#1A1C1A" stroke-width="2" />
+              <line x1="7" y1="14" x2="7" stroke="#1A1C1A" stroke-width="2" />
+            </svg>
+            <svg
+              [ngStyle]="{ display: expandedDictionary['CATH'] ? '' : 'none' }"
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+            >
+              <line y1="7" x2="14" y2="7" stroke="#1A1C1A" stroke-width="2" />
+            </svg>
+            }
+          </div>
+          @if (sectionsData.Domains.CATH.length > 0) {
+          <div class="str-nav-div-expandable-children" [ngStyle]="{ display: expandedDictionary['CATH'] ? '' : 'none' }">
+            @for (domainItem of sectionsData.Domains.CATH; track domainItem) {
+            <div class="str-nav-div-expandable" (click)="setExpandable('CATH___' + domainItem.name)">
+              {{ domainItem.name }}
+              <svg
+                [ngStyle]="{ display: expandedDictionary['CATH___' + domainItem.name] ? 'none' : '' }"
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+              >
+                <line y1="7" x2="14" y2="7" stroke="#1A1C1A" stroke-width="2" />
+                <line x1="7" y1="14" x2="7" stroke="#1A1C1A" stroke-width="2" />
+              </svg>
+              <svg
+                [ngStyle]="{ display: expandedDictionary['CATH___' + domainItem.name] ? '' : 'none' }"
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+              >
+                <line y1="7" x2="14" y2="7" stroke="#1A1C1A" stroke-width="2" />
+              </svg>
+            </div>
+            <div class="str-nav-div-expandable-children" [ngStyle]="{ display: expandedDictionary['CATH___' + domainItem.name] ? '' : 'none' }">
+              @for (moleculeItem of domainItem.molecules; track moleculeItem) {
+              <div class="str-sel-menu-item" [ngClass]="moleculeItem.img === currentImg ? 'is-selected' : ''" (click)="loadSelectedData(moleculeItem)">
+                {{ moleculeItem.name }}
+              </div>
+              }
+            </div>
+            }
+          </div>
+          }
+          <div
+            class="str-nav-div-expandable"
+            [ngClass]="sectionsData.Domains.Pfam.length > 0 ? 'str-nav-div-expandable-active' : 'str-nav-div-expandable-inactive'"
+            (click)="setExpandable('Pfam')"
+          >
+            Pfam @if (sectionsData.Domains.Pfam.length > 0) {
+            <svg
+              [ngStyle]="{ display: expandedDictionary['Pfam'] ? 'none' : '' }"
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+            >
+              <line y1="7" x2="14" y2="7" stroke="#1A1C1A" stroke-width="2" />
+              <line x1="7" y1="14" x2="7" stroke="#1A1C1A" stroke-width="2" />
+            </svg>
+            <svg
+              [ngStyle]="{ display: expandedDictionary['Pfam'] ? '' : 'none' }"
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+            >
+              <line y1="7" x2="14" y2="7" stroke="#1A1C1A" stroke-width="2" />
+            </svg>
+            }
+          </div>
+          @if (sectionsData.Domains.Pfam.length > 0) {
+          <div class="str-nav-div-expandable-children" [ngStyle]="{ display: expandedDictionary['Pfam'] ? '' : 'none' }">
+            @for (domainItem of sectionsData.Domains.Pfam; track domainItem) {
+            <div class="str-nav-div-expandable" (click)="setExpandable('Pfam___' + domainItem.name)">
+              {{ domainItem.name }}
+              <svg
+                [ngStyle]="{ display: expandedDictionary['Pfam___' + domainItem.name] ? 'none' : '' }"
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+              >
+                <line y1="7" x2="14" y2="7" stroke="#1A1C1A" stroke-width="2" />
+                <line x1="7" y1="14" x2="7" stroke="#1A1C1A" stroke-width="2" />
+              </svg>
+              <svg
+                [ngStyle]="{ display: expandedDictionary['Pfam___' + domainItem.name] ? '' : 'none' }"
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+              >
+                <line y1="7" x2="14" y2="7" stroke="#1A1C1A" stroke-width="2" />
+              </svg>
+            </div>
+            <div class="str-nav-div-expandable-children" [ngStyle]="{ display: expandedDictionary['Pfam___' + domainItem.name] ? '' : 'none' }">
+              @for (moleculeItem of domainItem.molecules; track moleculeItem) {
+              <div class="str-sel-menu-item" [ngClass]="moleculeItem.img === currentImg ? 'is-selected' : ''" (click)="loadSelectedData(moleculeItem)">
+                {{ moleculeItem.name }}
+              </div>
+              }
+            </div>
+            }
+          </div>
+          }
+          <div
+            class="str-nav-div-expandable"
+            [ngClass]="sectionsData.Domains.SCOP.length > 0 ? 'str-nav-div-expandable-active' : 'str-nav-div-expandable-inactive'"
+            (click)="setExpandable('SCOP')"
+          >
+            SCOP 1.75 @if (sectionsData.Domains.SCOP.length > 0) {
+            <svg
+              [ngStyle]="{ display: expandedDictionary['SCOP'] ? 'none' : '' }"
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+            >
+              <line y1="7" x2="14" y2="7" stroke="#1A1C1A" stroke-width="2" />
+              <line x1="7" y1="14" x2="7" stroke="#1A1C1A" stroke-width="2" />
+            </svg>
+            <svg
+              [ngStyle]="{ display: expandedDictionary['SCOP'] ? '' : 'none' }"
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+            >
+              <line y1="7" x2="14" y2="7" stroke="#1A1C1A" stroke-width="2" />
+            </svg>
+            }
+          </div>
+          @if (sectionsData.Domains.SCOP.length > 0) {
+          <div class="str-nav-div-expandable-children" [ngStyle]="{ display: expandedDictionary['SCOP'] ? '' : 'none' }">
+            @for (domainItem of sectionsData.Domains.SCOP; track domainItem) {
+            <div class="str-nav-div-expandable" (click)="setExpandable('SCOP___' + domainItem.name)">
+              {{ domainItem.name }}
+              <svg
+                [ngStyle]="{ display: expandedDictionary['SCOP___' + domainItem.name] ? 'none' : '' }"
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+              >
+                <line y1="7" x2="14" y2="7" stroke="#1A1C1A" stroke-width="2" />
+                <line x1="7" y1="14" x2="7" stroke="#1A1C1A" stroke-width="2" />
+              </svg>
+              <svg
+                [ngStyle]="{ display: expandedDictionary['SCOP___' + domainItem.name] ? '' : 'none' }"
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+              >
+                <line y1="7" x2="14" y2="7" stroke="#1A1C1A" stroke-width="2" />
+              </svg>
+            </div>
+            <div class="str-nav-div-expandable-children" [ngStyle]="{ display: expandedDictionary['SCOP___' + domainItem.name] ? '' : 'none' }">
+              @for (moleculeItem of domainItem.molecules; track moleculeItem) {
+              <div class="str-sel-menu-item" [ngClass]="moleculeItem.img === currentImg ? 'is-selected' : ''" (click)="loadSelectedData(moleculeItem)">
+                {{ moleculeItem.name }}
+              </div>
+              }
+            </div>
+            }
+          </div>
+          }
+        </div>
+        }
+      </div>
+      } @if (menuType === 'domains') {
+      <hr style="margin: 0; width: 98%; margin-top: 4px" />
+      }
+      <div
+        class="str-extra-info"
+        [ngClass]="{
+          'with-margin': !explorerCurrentSubTitle && allowedMenuTypes.indexOf(menuType!) === -1,
+          'short-height': menuType === 'domains',
+          'medium-height': currentSection === 'Macromolecules',
+          'max-height': currentSection.includes('Ligands___')
+        }"
+      >
+        @for (extraItem of currentExtraInfo; track extraItem) { @if (extraItem.type === 'title') {
+        <div class="str-xinfo-title">{{ extraItem.value }}</div>
+        } @if (extraItem.type === 'text') {
+        <div class="str-xinfo-text">{{ extraItem.value }}</div>
+        } @if (extraItem.type === 'lig-btn') {
+        <div class="str-xinfo-lig-btn-container">
+          <button class="str-xinfo-lig-btn" (click)="showLigandsEnv(extraItem.value, extraItem.link!.src)">
+            {{ extraItem.link!.txt }}
+          </button>
+        </div>
+        } @if (extraItem.type === 'search-link') {
+        <a class="str-xinfo-slink" [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?complex_id:' + extraItem.value" target="_blank">
+          {{ extraItem.value }}
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path
+              d="M11.7074 10.2984L9.38631 7.97604C10.093 6.91754 10.381 5.63386 10.1942 4.37469C10.0073 3.11553 9.35909 1.97091 8.3755 1.16349C7.39191 0.356061 6.14332 -0.0564404 4.8726 0.00622068C3.60187 0.0688817 2.39987 0.602224 1.5004 1.50251C0.600931 2.40279 0.0683058 3.60564 0.00612835 4.87708C-0.0560491 6.14852 0.356667 7.39765 1.164 8.38149C1.97133 9.36533 3.11555 10.0135 4.37409 10.2C5.63263 10.3865 6.91551 10.0979 7.97318 9.39045L10.2943 11.7123C10.4832 11.8968 10.7368 12 11.0008 12C11.2648 12 11.5184 11.8968 11.7074 11.7123C11.8947 11.5248 12 11.2705 12 11.0053C12 10.7402 11.8947 10.4859 11.7074 10.2984ZM5.12942 1.50596C5.84594 1.50596 6.54637 1.71854 7.14213 2.11684C7.73789 2.51513 8.20223 3.08124 8.47643 3.74358C8.75063 4.40592 8.82238 5.13474 8.68259 5.83788C8.5428 6.54102 8.19777 7.18689 7.69111 7.69382C7.18446 8.20075 6.53894 8.54598 5.83619 8.68584C5.13344 8.8257 4.40502 8.75392 3.74304 8.47957C3.08106 8.20522 2.51526 7.74063 2.11719 7.14454C1.71911 6.54845 1.50664 5.84763 1.50664 5.13072C1.5077 4.1697 1.88972 3.24834 2.56889 2.56879C3.24807 1.88925 4.16892 1.50701 5.12942 1.50596Z"
+              fill="#3B6FB6"
+            />
+          </svg>
+        </a>
+        } @if (extraItem.type === 'table') {
+        <table class="str-xinfo-table">
+          <thead>
+            <tr>
+              @for (colName of extraItem.values!.colNames; track colName) {
+              <th>{{ colName }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of extraItem.values!.rows; track row) {
+            <tr>
+              @for (tdVal of row.data; track tdVal) { @if (extraItem.molstarInteractivity) {
+              <td class="str-xinfo-zoomable" (mouseenter)="focusCell(row.molstarSelection!)" (mouseleave)="unfocusCell()" (click)="zoomCell(row.molstarSelection!)">
+                {{ tdVal }}
+              </td>
+              } @else {
+              <td>{{ tdVal }}</td>
+              } }
+            </tr>
+            }
+          </tbody>
+        </table>
+        } }
+      </div>
+      @if (kbLinkData) {
+      <div class="str-kb-link">
+        <a class="str-xinfo-kblink" [href]="kbLinkData!.src" target="_blank">
+          {{ kbLinkData!.txt }}
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M8 0C6.41775 0 4.87104 0.469192 3.55544 1.34824C2.23985 2.22729 1.21447 3.47672 0.608967 4.93853C0.00346629 6.40034 -0.15496 8.00887 0.153721 9.56072C0.462403 11.1126 1.22433 12.538 2.34315 13.6569C3.46197 14.7757 4.88743 15.5376 6.43928 15.8463C7.99113 16.155 9.59966 15.9965 11.0615 15.391C12.5233 14.7855 13.7727 13.7602 14.6518 12.4446C15.5308 11.129 16 9.58225 16 8C15.9977 5.87897 15.1541 3.84547 13.6543 2.34568C12.1545 0.845885 10.121 0.00229405 8 0V0ZM12.208 8.48133L8.53334 12.3627C8.47374 12.4262 8.40194 12.4771 8.32222 12.5123C8.24249 12.5475 8.1565 12.5663 8.06936 12.5674C7.98223 12.5686 7.89576 12.5522 7.81511 12.5192C7.73446 12.4862 7.6613 12.4373 7.6 12.3753L7.40334 12.1753C7.27802 12.0469 7.20558 11.8761 7.20039 11.6968C7.1952 11.5175 7.25765 11.3427 7.37534 11.2073L8.90867 9.492C9.15267 9.21867 9.05267 8.99467 8.686 8.99467H4.35267C4.17586 8.99467 4.00629 8.92443 3.88127 8.7994C3.75624 8.67438 3.686 8.50481 3.686 8.328V7.66133C3.686 7.48452 3.75624 7.31495 3.88127 7.18993C4.00629 7.0649 4.17586 6.99467 4.35267 6.99467H8.676C9.04267 6.99467 9.14267 6.77333 8.892 6.50333L7.31134 4.78467C7.19209 4.65154 7.12799 4.478 7.13208 4.29932C7.13617 4.12063 7.20813 3.95021 7.33334 3.82267L7.53334 3.62267C7.59488 3.56135 7.66801 3.51289 7.74846 3.48012C7.82892 3.44735 7.91509 3.43092 8.00196 3.43179C8.08883 3.43266 8.17466 3.45081 8.25444 3.48518C8.33422 3.51956 8.40637 3.56946 8.46667 3.632L12.2067 7.51533C12.3295 7.64611 12.3979 7.81868 12.3982 7.99807C12.3984 8.17745 12.3304 8.35022 12.208 8.48133Z"
+              fill="#3B6FB6"
+            />
+          </svg>
+        </a>
+      </div>
+      }
+    </div>
+    <div class="str-explorer-view">
+      <div class="container" #viewContainer [style.height]="molstarHeight" [style.width]="molstarWidth"></div>
+    </div>
+  </div>
+  <div class="str-explorer-green-bar"></div>
+</div>

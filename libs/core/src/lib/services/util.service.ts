@@ -6,12 +6,20 @@ import { Injectable } from '@angular/core';
 export class UtilService {
   // constructor() {}
 
-  public generateMultipleQueryURL(arr: string[]): string {
-    const queryArray = arr.map((str) => {
-      return { value: str, condition1: 'OR', condition2: 'Equal to' };
-    });
+  public generateQueryURL(arr: string[] | string, queryTerm: string): string {
+    const isArray = Array.isArray(arr);
 
-    const payload = { q_pdb_id: queryArray };
+    let queryArray: { value: string; condition1: string; condition2: string }[];
+
+    if (isArray) {
+      queryArray = (arr as string[]).map((str) => {
+        return { value: str, condition1: 'OR', condition2: 'Equal to' };
+      });
+    } else {
+      queryArray = [{ value: arr as string, condition1: 'AND', condition2: 'Contains' }];
+    }
+
+    const payload = { [queryTerm]: queryArray };
 
     const urlStringObject = JSON.stringify(payload);
 

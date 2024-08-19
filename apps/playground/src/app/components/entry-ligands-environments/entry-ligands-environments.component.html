@@ -1,0 +1,32 @@
+<div id="ligands-environments-section">
+  <header>
+    <h4 class="heading-4">Ligands and Environments</h4>
+    <a routerLink="/ligands">
+      View all ligands
+      <i class="icon icon-common icon-arrow-alt-circle-right"></i>
+    </a>
+  </header>
+  @if(boundLigands.length){
+  <p>{{ boundLigands.length }} bound ligands</p>
+  }
+  <section>
+    @for(image of boundLigandsImages.slice(0,10); track image.title){
+    <article>
+      <img [src]="image.imageUrl" alt="ligands" />
+      <span>{{ image.title }}</span>
+    </article>
+    }
+  </section>
+  @if(modifiedResidues.length){
+  <p>{{ modifiedResidues.length }} modified residues</p>
+  }
+  <section>
+    @for(image of modifiedResiduesImages.slice(0,10); track image.title){
+    <article>
+      <img [src]="image.imageUrl" alt="ligands" />
+      <span>{{ image.title }}</span>
+    </article>
+    }
+  </section>
+  <p>{{ loadingText() }}</p>
+</div>

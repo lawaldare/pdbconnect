@@ -1,6 +1,4 @@
 section.root-container {
-  display: flex;
-  gap: 24px;
   position: relative;
 }
 
@@ -20,94 +18,12 @@ header {
   }
 }
 
-nav {
-  padding: 24px 12px;
-  background: #fff;
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  height: 100%;
-  width: 80px;
-  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  text-align: center;
-  z-index: 1;
-  div {
-    position: sticky;
-    top: 0;
-  }
-  a,
-  a:active,
-  a:visited,
-  a:hover,
-  .icon-common {
-    color: #000 !important;
-    border: none;
-
-    i,
-    img {
-      color: #000 !important;
-      max-width: 50px;
-      width: 100%;
-    }
-  }
-
-  a {
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    margin-bottom: 16px;
-    padding: 14px 11px;
-    span {
-      margin-left: 8px;
-      display: none;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      align-self: center;
-      flex: 1;
-    }
-
-    &:hover {
-      background: #f3f3f3;
-      cursor: pointer;
-    }
-  }
-
-  .icon {
-    font-size: 25px;
-
-    &-conceptual {
-      font-size: 35px;
-    }
-
-    &-analyse {
-      text-align: center;
-    }
-  }
-
-  &:hover {
-    width: 350px;
-    box-shadow: 2px 0px 3px 0px rgba(0, 0, 0, 0.3);
-  }
-
-  &:hover a {
-    span {
-      display: inline-flex;
-    }
-  }
-
-  // &:hover .icon-analyse {
-  //   text-align: unset;
-  // }
-}
-
 .active {
   background: var(--Brand-50, #d0debb);
 }
 
 main {
   width: 100%;
-  margin-left: 100px;
 }
 
 h1 {
@@ -163,6 +79,8 @@ section.footer {
     max-height: 400px;
     overflow-y: auto;
     background-color: #ffffff;
+    z-index: 9999;
+
     a {
       display: block;
       text-decoration: none;

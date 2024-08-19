@@ -11,3 +11,36 @@ thead {
     }
   }
 }
+
+.mat-mdc-radio-button .mdc-radio {
+  padding: 3px !important;
+}
+
+.mdc-tab.mat-mdc-tab {
+  span.mdc-tab__content {
+    span.mdc-tab__text-label {
+      color: var(--Neutral-900, #1a1c1a);
+      text-align: center;
+
+      /* Paragraph 3 */
+      font-family: 'IBM Plex Sans';
+      font-size: 16px !important;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 27.2px; /* 170% */
+    }
+  }
+
+  &.mdc-tab--active .mdc-tab__text-label {
+    font-weight: 500 !important;
+  }
+
+  &.mdc-tab--active {
+    background: var(--Brand-50, #d0debb);
+  }
+}
+
+mat-tab-header {
+  border-bottom: 1px solid #000;
+  margin-bottom: 24px;
+}

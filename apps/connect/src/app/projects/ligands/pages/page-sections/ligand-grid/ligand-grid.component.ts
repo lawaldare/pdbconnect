@@ -25,7 +25,7 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
   public boundEntryUrl = '';
 
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
-  private ligandEv!: any;
+  private ligandEv!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   public ligandId!: string;
 
   private readonly aggregatedApiService = inject(AggregatedApiService);
@@ -55,7 +55,7 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
     const numBoundEntries = this.ligand.bound_entries.length;
     const boundEntryLabelSuffix = numBoundEntries <= 1 ? 'PDB Entry' : 'PDB Entries';
     this.boundEntryLabel = `${numBoundEntries} ${boundEntryLabelSuffix}`;
-    this.boundEntryUrl = this.util.generateMultipleQueryURL(this.ligand.bound_entries);
+    this.boundEntryUrl = this.util.generateQueryURL(this.ligand.bound_entries, 'q_pdb_id');
   }
 
   ngAfterViewInit() {

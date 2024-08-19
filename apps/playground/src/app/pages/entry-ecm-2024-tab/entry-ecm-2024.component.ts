@@ -17,7 +17,7 @@ import { EntryExperimentValidationComponent } from '../../components/entry-exper
 import { EntryCitationComponent } from '../../components/entry-citation/entry-citation.component';
 import { Molecule } from '../../models/molecule.model';
 import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
-import { ClickOutsideDirective } from '@pdbc/core';
+import { ClickOutsideDirective, MaterialModule } from '@pdbc/core';
 
 export interface DownloadOption {
   name: string;
@@ -26,7 +26,7 @@ export interface DownloadOption {
 }
 
 @Component({
-  selector: 'pdbe-entry-ecm-2024',
+  selector: 'pdbe-entry-ecm-2024-vertical',
   standalone: true,
   imports: [
     CommonModule,
@@ -40,11 +40,12 @@ export interface DownloadOption {
     EntryExperimentValidationComponent,
     EntryCitationComponent,
     PdbeDropdownComponent,
+    MaterialModule,
   ],
   templateUrl: './entry-ecm-2024.component.html',
   styleUrl: './entry-ecm-2024.component.scss',
 })
-export class EntryEcm2024Component implements OnInit {
+export class EntryEcm2024TabComponent implements OnInit {
   private readonly playgroundService = inject(PlaygroundService);
 
   public downloadOptions: DownloadOption[] = [];
@@ -55,11 +56,43 @@ export class EntryEcm2024Component implements OnInit {
   public interproMapping!: any;
   public pfamMapping!: any;
 
-  public navItems: {
-    url: string;
-    icon: string;
-    label: string;
-  }[] = [];
+  public readonly navItems = [
+    {
+      url: '/',
+      icon: 'icon-common icon-home',
+      label: 'Home',
+    },
+    {
+      url: '/biology',
+      icon: 'icon-conceptual icon-ontology',
+      label: 'Function and Biology',
+    },
+    {
+      url: '/ligands',
+      icon: 'icon-conceptual icon-chemical',
+      label: 'Ligands and Environments',
+    },
+    {
+      url: '/molecules',
+      icon: 'icon-conceptual icon-expression',
+      label: 'Macromolecules',
+    },
+    {
+      url: '/assemblies',
+      icon: 'icon-conceptual icon-structures',
+      label: 'Assemblies',
+    },
+    {
+      url: '/experiments',
+      icon: 'icon-common icon-analyse',
+      label: 'Experiments and Validation',
+    },
+    {
+      url: '/citation',
+      icon: 'icon-conceptual icon-literature',
+      label: 'Citation',
+    },
+  ];
 
   public entryId = signal('1trn'); //'7v08', '3d12', '5tj5', '4zqo'
 
@@ -77,7 +110,6 @@ export class EntryEcm2024Component implements OnInit {
         switchMap((params) => {
           const entryId = params['entryId'].toLowerCase();
           this.entryId.set(entryId);
-          this.setNavItems();
           return this.setPageData();
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -85,46 +117,6 @@ export class EntryEcm2024Component implements OnInit {
       .subscribe((data) => {
         this.pageData$ = of(data);
       });
-  }
-
-  private setNavItems() {
-    this.navItems = [
-      {
-        url: `/`,
-        icon: 'icon-common icon-home',
-        label: 'Home',
-      },
-      {
-        url: `/${this.entryId()}/biology`,
-        icon: 'icon-conceptual icon-ontology',
-        label: 'Function and Biology',
-      },
-      {
-        url: `/${this.entryId()}/ligands`,
-        icon: 'icon-conceptual icon-chemical',
-        label: 'Ligands and Environments',
-      },
-      {
-        url: `/${this.entryId()}/molecules`,
-        icon: 'icon-conceptual icon-proteins',
-        label: 'Macromolecules',
-      },
-      {
-        url: `/${this.entryId()}/assemblies`,
-        icon: 'icon-conceptual icon-structures',
-        label: 'Assemblies',
-      },
-      {
-        url: `/${this.entryId()}/experiments`,
-        icon: 'icon-common icon-analyse',
-        label: 'Experiments and Validation',
-      },
-      {
-        url: `/${this.entryId()}/citations`,
-        icon: 'icon-conceptual icon-literature',
-        label: 'Citation',
-      },
-    ];
   }
 
   private setPageData(): Observable<any> {
