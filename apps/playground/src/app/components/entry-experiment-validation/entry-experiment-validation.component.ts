@@ -20,7 +20,7 @@ export class EntryExperimentValidationComponent {
 
   public loadingText = signal('Loading...');
 
-  public entryElementData$ = this.route.params.pipe(
+  public entryElementData$ = this.route.queryParams.pipe(
     switchMap((params) => {
       const entryId = params['entryId'].toLowerCase();
       return this.playgroundService.getEntryEcmExperiment(entryId);

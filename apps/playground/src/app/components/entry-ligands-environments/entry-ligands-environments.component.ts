@@ -33,7 +33,7 @@ export class EntryLigandsEnvironmentsComponent implements OnInit {
   public loadingText = signal('');
 
   ngOnInit(): void {
-    this.route.params
+    this.route.queryParams
       .pipe(
         switchMap((params) => {
           const entryId = params['entryId'].toLowerCase();
