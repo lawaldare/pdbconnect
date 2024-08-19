@@ -23,7 +23,7 @@ export class EntryCitationComponent {
 
   public articleCiting!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-  public entryPublication$ = this.route.params.pipe(
+  public entryPublication$ = this.route.queryParams.pipe(
     switchMap((params) => {
       const entryId = params['entryId'].toLowerCase();
       return forkJoin([this.playgroundService.getPrimaryPublicationAbstract(entryId), this.playgroundService.getArticleCitingPDBEntry(entryId)]);
