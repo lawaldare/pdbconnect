@@ -1,0 +1,119 @@
+#macromolecules-section {
+  padding: 8px 12px;
+  padding-bottom: 24px;
+  background: #fff;
+  font-family: 'IBM Plex Sans';
+  color: #1a1c1a;
+  font-size: 16px;
+  line-height: 27.3px;
+  margin-bottom: 16px;
+  margin-top: 16px;
+}
+
+main {
+  margin-top: 8px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+
+  a {
+    margin-left: 8px;
+  }
+}
+
+section.filter {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  p {
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 28.5px;
+  }
+
+  mat-radio-button {
+    margin-right: 16px;
+  }
+}
+
+td {
+  padding: 8px;
+
+  a {
+    font-size: 14px;
+    line-height: 20px;
+    font-style: italic;
+  }
+}
+
+.mdc-form-field {
+  font-family: 'IBM Plex Sans';
+  font-size: 16px;
+  line-height: 27.2px;
+  color: var(--Neutral-900, #1a1c1a);
+}
+
+.mat-mdc-header-row {
+  font-family: 'IBM Plex Sans';
+  font-size: 16px;
+  line-height: 27.2px;
+  color: var(--Neutral-900, #1a1c1a);
+}
+
+.mat-mdc-row {
+  font-family: 'IBM Plex Sans';
+  font-size: 16px;
+  line-height: 27.2px;
+  color: var(--Neutral-900, #1a1c1a);
+}
+
+.mat-column-name {
+  word-break: break-word;
+  width: 12.5%;
+  span:first-child {
+    font-weight: 500;
+  }
+  .anchor {
+    color: var(--Blue-600, #3b6fb6);
+    font-size: 16px;
+    font-style: normal;
+    line-height: 27.2px;
+  }
+}
+.mat-column-length {
+  width: 12.5%;
+}
+.mat-column-theoretical_weight {
+  width: 10%;
+}
+.mat-column-expression_system {
+  width: 8%;
+}
+.mat-column-uniprot_mapping {
+  width: 12.5%;
+}
+.mat-column-source-organism {
+  width: 12.5%;
+}
+.mat-column-gene_names {
+  width: 12.5%;
+}
+.mat-column-sequence_domain {
+  width: 19.5%;
+}
+
+.scrollable-content {
+  max-height: 100px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 10px;
+}
+
+.scrollable-content ul {
+  padding: 0;
+}

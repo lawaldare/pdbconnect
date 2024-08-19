@@ -1,11 +1,13 @@
-import { Component, OnInit, Input, ViewChild, DestroyRef, inject } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { Component, OnInit, ViewChild, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold } from '../../../data-models/related-ligands.model';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { forkJoin, of, catchError, switchMap, tap, mergeMap, map, filter, combineLatest, EMPTY, Observable } from 'rxjs';
+import { forkJoin, of, catchError, switchMap, mergeMap, map, combineLatest, Observable } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 

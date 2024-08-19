@@ -1,0 +1,68 @@
+<div id="experiment-validation-section">
+  <header>
+    <h4 class="heading-4">Experiments and Validation</h4>
+    <a routerLink="/ligands">
+      View details and sample information
+      <i class="icon icon-common icon-arrow-alt-circle-right"></i>
+    </a>
+  </header>
+  @if(entryElementData$ | async; as entryElementData){
+  <section>
+    <div class="content">
+      <div class="info-row">
+        <span>Entry title</span>
+        <article>
+          {{ entryElementData.experimental_method }}
+        </article>
+      </div>
+      <div class="info-row">
+        <span>Resolution</span>
+        <article>
+          {{ entryElementData.resolution }}
+        </article>
+      </div>
+      @if(entryElementData?.diffraction_experiment?.length){
+      <div class="info-row">
+        <span>X-ray source</span>
+        <article>
+          {{ entryElementData?.diffraction_experiment?.[0].beam_source_type }}
+        </article>
+      </div>
+      } @if(entryElementData.spacegroup){
+      <div class="info-row">
+        <span>Spacegroup</span>
+        <article>
+          {{ entryElementData.spacegroup }}
+        </article>
+      </div>
+      } @if(entryElementData.r_work){
+      <div class="info-row">
+        <span>Rwork</span>
+        <article>
+          {{ entryElementData.r_work }}
+        </article>
+      </div>
+      } @if(entryElementData.r_free){
+      <div class="info-row">
+        <span>Rfree</span>
+        <article>
+          {{ entryElementData.r_free }}
+        </article>
+      </div>
+      } @if(entryElementData?.expression_host_scientific_name?.[0].scientific_name){
+      <div class="info-row">
+        <span>Expression System</span>
+        <article>
+          {{ entryElementData.expression_host_scientific_name[0].scientific_name }}
+        </article>
+      </div>
+      }
+    </div>
+    <div class="image">
+      <img src="assets/icons/entry-experiments.png" alt="entry experiment image" />
+    </div>
+  </section>
+  } @else {
+  <p>{{ loadingText() }}</p>
+  }
+</div>

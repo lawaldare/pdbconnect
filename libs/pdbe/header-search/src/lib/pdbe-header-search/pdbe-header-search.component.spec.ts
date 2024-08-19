@@ -1,7 +1,5 @@
-import { ComponentFixture, TestBed, tick, fakeAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-
-import { PdbeChipsStyleDatum } from '@pdbe-lib/chips';
 
 import { PdbeHeaderSearchComponent } from './pdbe-header-search.component';
 
