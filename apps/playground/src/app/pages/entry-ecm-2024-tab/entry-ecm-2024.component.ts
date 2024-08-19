@@ -16,8 +16,8 @@ import { EntryMacromoleculesComponent } from '../../components/entry-macromolecu
 import { EntryExperimentValidationComponent } from '../../components/entry-experiment-validation/entry-experiment-validation.component';
 import { EntryCitationComponent } from '../../components/entry-citation/entry-citation.component';
 import { Molecule } from '../../models/molecule.model';
-import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
 import { ClickOutsideDirective, MaterialModule } from '@pdbc/core';
+import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 
 export interface DownloadOption {
   name: string;
@@ -39,8 +39,8 @@ export interface DownloadOption {
     EntryMacromoleculesComponent,
     EntryExperimentValidationComponent,
     EntryCitationComponent,
-    PdbeDropdownComponent,
     MaterialModule,
+    DropdownMenuComponent,
   ],
   templateUrl: './entry-ecm-2024.component.html',
   styleUrl: './entry-ecm-2024.component.scss',
