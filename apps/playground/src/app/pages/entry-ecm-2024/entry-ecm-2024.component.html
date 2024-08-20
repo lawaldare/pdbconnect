@@ -1,0 +1,42 @@
+<section class="root-container">
+  <nav>
+    <div>
+      @for(navItem of navItems; track navItem.url){
+      <a [routerLink]="navItem.url" routerLinkActive="active">
+        <i class="icon {{ navItem.icon }}"></i>
+        <span>{{ navItem.label }}</span>
+      </a>
+      }
+    </div>
+  </nav>
+
+  <main>
+    <header>
+      <h1 class="heading-1">{{ entryId() }}</h1>
+      <section class="action-buttons" libClickOutside (clickOutside)="onClickedOutside()">
+        <lib-dropdown-menu [options]="downloadOptions" title="Download files"></lib-dropdown-menu>
+        <lib-dropdown-menu [options]="viewOptions" title="View files"></lib-dropdown-menu>
+      </section>
+    </header>
+    <section class="hero">
+      @if (pageData$ | async; as pageData) {
+      <pdbe-entry-information [information]="pageData"></pdbe-entry-information>
+      }
+      <pdbe-entry-ligands-environments></pdbe-entry-ligands-environments>
+    </section>
+    <!-- Container for 3D concept -->
+    <section id="struct-3d-container" class="page-section">
+      <pdbe-struc-explorer-ecm-2024 [entryId]="this.entryId()"></pdbe-struc-explorer-ecm-2024>
+    </section>
+    <pdbe-entry-macromolecules
+      [molecules]="molecules"
+      [uniprotMapping]="uniprotMapping"
+      [interproMapping]="interproMapping"
+      [pfamMapping]="pfamMapping"
+    ></pdbe-entry-macromolecules>
+    <section class="footer">
+      <pdbe-entry-experiment-validation></pdbe-entry-experiment-validation>
+      <pdbe-entry-citation></pdbe-entry-citation>
+    </section>
+  </main>
+</section>

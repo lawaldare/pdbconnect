@@ -6,12 +6,12 @@ import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { PdbeButtonComponent } from '@pdbe-lib/button';
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
-import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
 import { EntryApiService, EntryDataAltOne } from '../../services/entry-api.service';
 import { StrucQualityGradientsComponent } from '../../components/struc-quality-gradients/struc-quality-gradients.component';
 import { PdbeMolstarForAppsComponent } from '@pdbe-lib/molstar-for-apps';
 import { InitParams } from 'pdbe-molstar/lib/spec';
 import { SummaryAltOneComponent } from '../page-sections/summary-alt-one/summary-alt-one.component';
+import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 
 @Component({
   selector: 'pdbc-main-alt-one',
@@ -26,7 +26,7 @@ import { SummaryAltOneComponent } from '../page-sections/summary-alt-one/summary
     PdbeLinkButtonComponent,
     PdbeNavMenuComponent,
     PdbeButtonComponent,
-    PdbeDropdownComponent,
+    DropdownMenuComponent,
   ],
   templateUrl: './main-alt-one.component.html',
   styleUrl: './main-alt-one.component.scss',
@@ -46,11 +46,6 @@ export class EntryMainAltOnePageComponent implements OnInit {
     menuHighlightColor: '#0a5032',
   };
 
-  expandedDropdowns = false;
-  @ViewChild('vDropdown') viewDropdown!: PdbeDropdownComponent; // To access dropdown class instance
-  @ViewChild('vDropdown', { read: ElementRef }) viewDropdownContainer!: ElementRef; // To access dropdown HTML element
-  @ViewChild('dDropdown') downloadDropdown!: PdbeDropdownComponent; // To access dropdown class instance
-  @ViewChild('dDropdown', { read: ElementRef }) downloadDropdownContainer!: ElementRef; // To access dropdown HTML element
   // Data for sticky navigation menu
   navSections = [
     { sectionId: 'summary-section', isSubSection: false, sectionName: 'Summary' },
@@ -121,27 +116,6 @@ export class EntryMainAltOnePageComponent implements OnInit {
       this.downloadOptions = this.entryData.fileURLs.downloads;
       this.viewOptions = this.entryData.fileURLs.views;
     });
-  }
-
-  /**
-   * Function to close dropdowns when page is clicked elsewhere
-   * @param event
-   */
-  @HostListener('document:click', ['$event'])
-  clickOutsideDropdowns(event: Event) {
-    const hasClickedView = this.viewDropdownContainer.nativeElement.contains(event.target);
-    const hasClickedDownload = this.downloadDropdownContainer.nativeElement.contains(event.target);
-    if (!hasClickedView && !hasClickedDownload) {
-      // if click outside dropdowns
-      this.downloadDropdown.expandedStatus.set(false);
-      this.viewDropdown.expandedStatus.set(false);
-      this.expandedDropdowns = false;
-    } else if (this.downloadDropdown.expandedStatus() || this.viewDropdown.expandedStatus()) {
-      // if click inside any of the dropdowns
-      this.expandedDropdowns = true;
-    } else {
-      this.expandedDropdowns = false;
-    }
   }
 
   setMolstarAnnotationView(isExpanded: boolean) {

@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, OnInit, Input, inject, DestroyRef } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit, Input, inject, DestroyRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Structure } from '../../../data-models/structure.model';
@@ -9,12 +9,12 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
-import { of, catchError, switchMap, map, tap } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ClickOutsideDirective } from '@pdbc/core';
 import * as XLSX from 'xlsx';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
+import { switchMap, map, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'pdbc-structures',
@@ -36,10 +36,9 @@ import { ToolTipComponent } from '@pdbe-lib/tool-tip';
   styleUrls: ['./structures.component.scss'],
 })
 export class StructuresComponent implements AfterViewInit, OnInit {
-  @Input() ligandId!: string;
-  displayedColumns: string[] = ['name', 'id', 'ec_number', 'annotation', 'count'];
-  structureData: Structure[] = [];
-  dataSource = new MatTableDataSource<Structure>(this.structureData);
+  public readonly displayedColumns: string[] = ['name', 'id', 'ec_number', 'annotation', 'count'];
+  public structureData: Structure[] = [];
+  public dataSource = new MatTableDataSource<Structure>(this.structureData);
   public searchText = new FormControl('');
   public readonly olamide =
     'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22q_pdb_id%22:%5B%7B%22value%22:%221cbs%22,%22condition1%22:%22AND%22,%22condition2%22:%22Equal%20to%22%7D,%7B%22value%22:%223d12%22,%22condition1%22:%22OR%22,%22condition2%22:%22Equal%20to%22%7D,%7B%22value%22:%22101m%22,%22condition1%22:%22OR%22,%22condition2%22:%22Equal%20to%22%7D%5D,%22resultState%22:%7B%22tabIndex%22:0,%22paginationIndex%22:1,%22perPage%22:%2210%22,%22sortBy%22:%22Sort%20by%22%7D%7D';
@@ -50,6 +49,7 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   public showOptions = false;
+  public pageSizeOptions = signal([5, 10, 15, 20]);
 
   private readonly fb = inject(FormBuilder);
 
@@ -83,11 +83,11 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   ngOnInit() {
     this.route.params
       .pipe(
-        switchMap((params) => {
+        switchMap((params: { [x: string]: string }) => {
           const ligandId = params['ligandId'].toUpperCase();
           return this.aggregatedApiService.fetchBoundEntries(ligandId);
         }),
-        map((boundaries) => {
+        map((boundaries: any[]) => {
           return boundaries.map(() => ({
             name: 'Glycerol-3-phosphate dehydrogenase',
             id: 'P90551',
@@ -98,12 +98,13 @@ export class StructuresComponent implements AfterViewInit, OnInit {
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((data) => {
+      .subscribe((data: Structure[]) => {
         this.dataSource.data = data;
+        this.pageSizeOptions.update((options) => [...new Set([...options, this.dataSource.data.length])]);
       });
 
-    this.form.valueChanges.pipe(tap((values) => console.log(values))).subscribe();
-    this.searchText.valueChanges.pipe(tap((value) => console.log(value))).subscribe();
+    this.form.valueChanges.pipe(tap((values: any) => console.log(values))).subscribe();
+    this.searchText.valueChanges.pipe(tap((value: any) => console.log(value))).subscribe();
     // if (this.ligandId) {
     //   this.aggregatedApiService
     //     .fetchBoundEntries(this.ligandId)

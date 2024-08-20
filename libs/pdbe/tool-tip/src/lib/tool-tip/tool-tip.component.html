@@ -1,5 +1,8 @@
+@if(textIcon){
+<span class="icon"> {{ textIcon }}</span>
+} @else {
 <img src="{{ helpLogoSrc }}" class="icon" />
-
+}
 <div class="tool-tip" #toolTip [ngStyle]="{ 'min-width': minWidth }">
   <ng-content></ng-content>
 </div>

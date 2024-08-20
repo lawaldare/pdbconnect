@@ -1,6 +1,13 @@
 @if(ligand){
 <div class="ligand-container">
-  <div class="image-container" #imageContainer></div>
+  <div class="image-container" #imageContainer>
+    <div class="wallpaper">
+      <span (click)="openMolstarDialog(ligand.chem_comp_id)">
+        View in 3D&nbsp;
+        <i class="icon icon-common icon-eye"></i>
+      </span>
+    </div>
+  </div>
   <div class="ligand-description">
     <a [routerLink]="['/ligands', ligand.chem_comp_id]">
       {{ ligand.chem_comp_id }}

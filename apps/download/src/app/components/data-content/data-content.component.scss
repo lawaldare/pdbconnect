@@ -1,0 +1,22 @@
+h3 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+p {
+  margin-bottom: 20px;
+  font-size: 20px;
+
+  ::ng-deep lib-tool-tip {
+    position: relative;
+  }
+}
+
+.radio-box {
+  margin-bottom: 20px;
+
+  ::ng-deep lib-tool-tip {
+    position: relative;
+    font-size: 16px;
+  }
+}

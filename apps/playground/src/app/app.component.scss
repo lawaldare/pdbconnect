@@ -3,27 +3,15 @@
   width: 100%;
 }
 
-nav {
+app-navigation-bar {
   width: 15%;
   padding-right: 20px;
 }
 
 main {
+  width: 100%;
+}
+
+.nav-width {
   width: 85%;
-}
-
-mat-list-item {
-  font-size: 18px;
-  line-height: 35px;
-  cursor: pointer !important;
-  display: inline-block;
-  border-bottom: 1px solid var(--Neutral-300, #d0d0ce);
-
-  &:hover {
-    background-color: #d0debb;
-  }
-}
-
-.active {
-  background-color: #d0debb;
 }

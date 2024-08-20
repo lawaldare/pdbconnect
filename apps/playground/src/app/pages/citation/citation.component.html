@@ -1,6 +1,6 @@
 @if(pageData$ | async; as pageData){
 <h2>Citations</h2>
-<section>
+<section class="primary-publication">
   <div class="row">
     <div class="row__left">Primary publication</div>
     <div class="row__right">
@@ -24,17 +24,20 @@
           >{{ pageData.sectionOne.pubmed_id }}
           <i class="icon icon-link icon-common"></i>
         </a>
-        @if(this.imageXMLText()){
+        <!-- @if(this.imageXMLText()){
         <div>
           <button class="vf-button vf-button--link" (click)="openXMLImagesInNewWindow()">
             View the Images
             <i class="icon icon-common icon-common"></i>
           </button>
         </div>
-        }
+        } -->
       </div>
     </div>
   </div>
+  <!-- @if(this.imageXMLText()){ -->
+  <article #imageContainer (click)="openXMLImagesInNewWindow()"></article>
+  <!-- } -->
 </section>
 <section>
   @if(relatedEntries){

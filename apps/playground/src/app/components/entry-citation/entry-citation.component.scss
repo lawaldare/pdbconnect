@@ -1,0 +1,75 @@
+#citation-section {
+  padding: 8px 12px;
+  padding-bottom: 24px;
+  background: #fff;
+  font-family: 'IBM Plex Sans';
+  color: #1a1c1a;
+  font-size: 16px;
+  line-height: 27.3px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+
+  a {
+    margin-left: 8px;
+  }
+}
+
+.row {
+  display: flex;
+  a {
+    font-size: 16px !important;
+  }
+  &__left {
+    width: 126px;
+    font-weight: 500;
+    margin-right: 12px;
+  }
+
+  &__right {
+    width: calc(100% - 179px);
+    &__authors {
+      &__title {
+        font-weight: 400;
+      }
+    }
+
+    &__entry {
+      cursor: pointer;
+      margin-right: 8px;
+
+      a {
+        margin-right: 5px;
+      }
+    }
+
+    &__text {
+      font-weight: 400;
+      margin: 0;
+    }
+
+    &__pmid {
+      &__info {
+        font-weight: 400;
+      }
+    }
+  }
+}
+
+section {
+  margin-bottom: 8px;
+
+  &.primary-publication {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
+.article-text {
+  text-align: center;
+  font-weight: 500;
+  margin-top: 44px;
+}

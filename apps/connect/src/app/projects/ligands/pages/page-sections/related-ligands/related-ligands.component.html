@@ -4,21 +4,21 @@
   <section id="scaffold-section">
     <h4>Same scaffold - {{ sameScaffolds.length }}</h4>
     <div class="search-box">
-      <input type="search" [formControl]="sameScaffoldTerm" placeholder="Search by name or ligandId" />
+      <input type="search" [formControl]="sameScaffoldTerm" placeholder="Search by name or PDB ID" />
       @if(!sameScaffoldTerm.value){
       <i class="icon icon-common icon-search"></i>
       }
     </div>
     <div class="grid-container">
       @for (sameScaffold of sameScaffoldPage; track sameScaffold) {
-      <pdbc-ligand-grid [ligand]="sameScaffold"></pdbc-ligand-grid>
+      <pdbc-ligand-grid [ligand]="sameScaffold" />
       }
     </div>
     <mat-paginator
       class="paginator-container"
       [length]="sameScaffoldpageLength"
       [pageSize]="sameScaffoldpageSize"
-      [pageSizeOptions]="pageSizeOptions"
+      [pageSizeOptions]="sameScaffoldPageSizeOptions()"
       (page)="handlePageEvent($event, 'same')"
       showFirstLastButtons
       aria-label="Select page of ligands"
@@ -30,7 +30,7 @@
     <h4>Similar ligands - {{ similarLigands.length }}</h4>
     <div class="filter-box">
       <div class="search-box">
-        <input type="search" [formControl]="sameLigandsTerm" placeholder="Search by name or ligandId" />
+        <input type="search" [formControl]="sameLigandsTerm" placeholder="Search by name or PDB ID" />
         @if(!sameLigandsTerm.value){
         <i class="icon icon-common icon-search"></i>
         }
@@ -42,14 +42,14 @@
     </div>
     <div class="grid-container">
       @for (similarLigand of similarLigandsPage; track similarLigand) {
-      <pdbc-ligand-grid [ligand]="similarLigand"></pdbc-ligand-grid>
+      <pdbc-ligand-grid [ligand]="similarLigand" />
       }
     </div>
     <mat-paginator
       class="paginator-container"
       [length]="similarLigandpageLength"
       [pageSize]="similarLigandpageSize"
-      [pageSizeOptions]="pageSizeOptions"
+      [pageSizeOptions]="similarLigandPageSizeOptions()"
       (page)="handlePageEvent($event, 'similar')"
       showFirstLastButtons
       aria-label="Select page of ligands"
@@ -61,7 +61,7 @@
     <h4>Stereoisomers - {{ stereoisomers.length }}</h4>
     <div class="filter-box">
       <div class="search-box">
-        <input type="search" [formControl]="stereoisomerTerm" placeholder="Search by name or ligandId" />
+        <input type="search" [formControl]="stereoisomerTerm" placeholder="Search by name or PDB ID" />
         @if(!sameLigandsTerm.value){
         <i class="icon icon-common icon-search"></i>
         }
@@ -69,14 +69,14 @@
     </div>
     <div class="grid-container">
       @for (stereoisomer of stereoisomersPage; track stereoisomer) {
-      <pdbc-ligand-grid [ligand]="stereoisomer"></pdbc-ligand-grid>
+      <pdbc-ligand-grid [ligand]="stereoisomer" />
       }
     </div>
     <mat-paginator
       class="paginator-container"
       [length]="stereoisomerspageLength"
       [pageSize]="stereoisomerspageSize"
-      [pageSizeOptions]="pageSizeOptions"
+      [pageSizeOptions]="stereoisomersPageSizeOptions()"
       (page)="handlePageEvent($event, 'stereoisomer')"
       showFirstLastButtons
       aria-label="Select page of ligands"

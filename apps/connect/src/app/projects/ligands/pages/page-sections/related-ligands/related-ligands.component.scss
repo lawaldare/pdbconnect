@@ -18,8 +18,10 @@ h4 {
 }
 
 .filter-box {
-  display: flex;
-  align-items: center;
+  // display: flex;
+  // flex-direction: column;
+  // justify-content: start;
+  // align-items: center;
 }
 
 .search-box {
@@ -43,10 +45,10 @@ h4 {
 }
 
 .similarity-box {
-  margin-left: 54px;
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 20px;
 
   span {
     font-size: 16px;

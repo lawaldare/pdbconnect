@@ -1,44 +1,42 @@
-<pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig"></pdbc-pdbe-header-logo-menu>
-<pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig"></pdbc-pdbe-header-search>
+<pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig" />
+<pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
 
 <main>
   <div class="container">
-    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections"></pdbc-pdbe-nav-menu>
+    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" />
     <article>
       @if(description){
       <section class="hero">
         <h2>{{ ligandId }}</h2>
         <h4>{{ description.name }}</h4>
         @for(annotation of description.annotations; track annotation.name){
-        <pdbc-pdbe-chips [label]="annotation.name | titlecase" [url]="annotation.url" backgroundColor="#F9CF3B" fontColor="#1A1C1A"></pdbc-pdbe-chips>
+        <pdbc-pdbe-chips [label]="annotation.name | titlecase" [url]="annotation.url" backgroundColor="#F9CF3B" fontColor="#1A1C1A" />
         }
-        <div class="action-buttons" [ngClass]="expandedDropdowns() ? 'expanded' : ''">
+        <div class="action-buttons">
           <button class="vf-button vf-button--primary vf-button--sm">View 3D</button>
-          <div class="drop-down">
-            <pdbc-pdbe-dropdown #dDropdown dropdownText="Download as" [options]="downloadOptions" elementId="dwld"></pdbc-pdbe-dropdown>
-          </div>
+          <lib-dropdown-menu [options]="downloadOptions" title="Download as"></lib-dropdown-menu>
         </div>
       </section>
       <section class="description">
-        <pdbc-description [description]="description"></pdbc-description>
-        <pdbc-image-carousel #imageCarouselRef></pdbc-image-carousel>
+        <pdbc-description [description]="description" />
+        <pdbc-image-carousel #imageCarouselRef />
       </section>
       <section class="property">
-        <pdbc-properties [properties]="description.properties"></pdbc-properties>
+        <pdbc-properties [properties]="description.properties" />
       </section>
       }
       <section class="structure">
-        <pdbc-structures></pdbc-structures>
+        <pdbc-structures />
       </section>
       <section class="interaction">
-        <pdbc-interaction></pdbc-interaction>
+        <pdbc-interaction />
       </section>
       <div class="related-ligands">
-        <pdbc-related-ligands></pdbc-related-ligands>
+        <pdbc-related-ligands />
       </div>
       @if(description){
       <div class="ligand-specific-databases">
-        <pdbc-ligand-specific-databases [crossLinks]="description.crossLinks"></pdbc-ligand-specific-databases>
+        <pdbc-ligand-specific-databases [crossLinks]="description.crossLinks" />
       </div>
       }
     </article>

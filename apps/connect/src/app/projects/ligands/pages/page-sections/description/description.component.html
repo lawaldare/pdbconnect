@@ -3,41 +3,41 @@
   <div class="info-row">
     <span class="info-row-title">Synonyms</span>
     <div class="info-row-content">
-      {{ description.synonyms }}
+      {{ description().synonyms }}
     </div>
   </div>
   <div class="info-row formula-row">
     <span class="info-row-title">Formula</span>
     <article>
       <div class="info-row-content formula">
-        {{ description.formula }}
+        {{ description().formula }}
       </div>
-      <i class="icon icon-common icon-clone" (click)="copy(description.formula)"></i>
+      <i class="icon icon-common icon-clone" (click)="copy(description().formula)"></i>
     </article>
   </div>
   <div class="info-row">
     <span class="info-row-title">IUPAC InChI</span>
     <article>
-      <div class="info-row-content" libTruncateText [truncateText]="description.inchi" [limit]="120"></div>
-      <i class="icon icon-common icon-clone" (click)="copy(description.inchi)"></i>
+      <div class="info-row-content" libTruncateText [truncateText]="description().inchi" [limit]="120"></div>
+      <i class="icon icon-common icon-clone" (click)="copy(description().inchi)"></i>
     </article>
   </div>
   <div class="info-row">
     <span class="info-row-title">IUPAC InChIKey</span>
     <article>
       <div class="info-row-content">
-        {{ description.inchikey }}
+        {{ description().inchikey }}
       </div>
-      <i class="icon icon-common icon-clone" (click)="copy(description.inchikey)"></i>
+      <i class="icon icon-common icon-clone" (click)="copy(description().inchikey)"></i>
     </article>
   </div>
   <div class="info-row">
     <span class="info-row-title">SMILES</span>
     <article>
       <div class="info-row-content">
-        {{ description.smiles }}
+        {{ description().smiles }}
       </div>
-      <i class="icon icon-common icon-clone" (click)="copy(description.smiles)"></i>
+      <i class="icon icon-common icon-clone" (click)="copy(description().smiles)"></i>
     </article>
   </div>
   <div class="info-row source-row">

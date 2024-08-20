@@ -1,7 +1,0 @@
-<div class="dropdown-holder" (click)="toggleDropdown()">
-  <span>{{ dropdownText }}</span>
-  <i class="icon icon-common icon-arrow-down" [ngClass]="expandedStatus() ? 'open' : ''"></i>
-</div>
-<div class="dropdown-options" [ngClass]="expandedStatus() ? '' : 'closed'">
-  <a *ngFor="let opt of options" class="dropdown-option" [href]="opt.url" target="_blank">{{ opt.name }}</a>
-</div>

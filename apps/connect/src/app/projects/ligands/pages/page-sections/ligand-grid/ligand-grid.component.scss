@@ -13,6 +13,30 @@
   justify-content: center;
   align-items: center;
   border: 1px solid var(--Neutral-600, #707372);
+  position: relative;
+  transition: all 2s ease-in;
+
+  .wallpaper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #f2f2f2;
+    z-index: 2;
+    display: none;
+    justify-content: center;
+    align-items: center;
+
+    span {
+      cursor: pointer;
+    }
+  }
+
+  &:hover > .wallpaper {
+    display: flex;
+    background: #f2f2f2a1;
+  }
 }
 
 .ligand-description {

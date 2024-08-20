@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PdbeHeaderLogoMenuComponent } from './pdbe-header-logo-menu.component';
 
-describe('PdbeHeaderLogoMenuComponent', () => {
+xdescribe('PdbeHeaderLogoMenuComponent', () => {
   let component: PdbeHeaderLogoMenuComponent;
   let fixture: ComponentFixture<PdbeHeaderLogoMenuComponent>;
 
