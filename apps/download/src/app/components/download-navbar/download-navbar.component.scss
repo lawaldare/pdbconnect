@@ -1,0 +1,33 @@
+header {
+  background-color: #056643;
+  overflow: hidden;
+
+  position: fixed;
+  top: 0;
+  width: 100%;
+
+  nav {
+    display: flex;
+    align-items: center;
+    // gap: 50px;
+
+    li {
+      list-style: none;
+      padding: 0 25px;
+
+      a,
+      a:visited,
+      a:active,
+      a:focus,
+      a:hover,
+      i {
+        text-decoration: none;
+        color: #fff;
+      }
+
+      &:not(:last-child) {
+        border-right: 1px solid white;
+      }
+    }
+  }
+}

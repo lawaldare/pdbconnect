@@ -8,10 +8,20 @@ import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { MaterialModule } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { DataType } from './models/data-type-box.model';
+import { DownloadNavbarComponent } from './components/download-navbar/download-navbar.component';
 
 @Component({
   standalone: true,
-  imports: [VfEbiHeaderComponent, VfEbiFooterComponent, DataContentComponent, DataTypeBoxComponent, PdbeHeaderLogoMenuComponent, MaterialModule, ToolTipComponent],
+  imports: [
+    VfEbiHeaderComponent,
+    VfEbiFooterComponent,
+    DataContentComponent,
+    DataTypeBoxComponent,
+    PdbeHeaderLogoMenuComponent,
+    MaterialModule,
+    ToolTipComponent,
+    DownloadNavbarComponent,
+  ],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -36,7 +46,7 @@ export class AppComponent {
   };
 
   public readonly headerLogoMenuConfig = {
-    backgroundColor: '#085F5C',
-    logoType: 'PDBe-KB',
+    backgroundColor: '#056643',
+    logoType: 'PDBe',
   };
 }
