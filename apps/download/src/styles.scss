@@ -17,6 +17,9 @@ body {
   margin: 0;
   font-family: 'IBM Plex Sans' Roboto, 'Helvetica Neue', sans-serif;
 }
+html {
+  scroll-behavior: smooth;
+}
 
 .container {
   width: 100%;

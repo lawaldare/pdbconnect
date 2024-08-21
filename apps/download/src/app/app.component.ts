@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { descriptorStructure, descriptorSmallMolecules, descriptorSifts, dataContentSmallMolecules, dataContentStructure, dataContentSifts } from './constants';
 import { DataContentComponent } from './components/data-content/data-content.component';
 import { DataTypeBoxComponent } from './components/data-type-box/data-type-box.component';
@@ -49,4 +49,18 @@ export class AppComponent {
     backgroundColor: '#056643',
     logoType: 'PDBe',
   };
+
+  @ViewChild('navbar', { read: ElementRef }) navbar!: ElementRef;
+
+  @HostListener('window:scroll', ['$event'])
+  private onScroll($event: any): void {
+    const navbar = this.navbar.nativeElement;
+    const sticky = navbar.offsetTop;
+
+    if (window.scrollY > sticky) {
+      navbar.classList.add('sticky');
+    } else {
+      navbar.classList.remove('sticky');
+    }
+  }
 }

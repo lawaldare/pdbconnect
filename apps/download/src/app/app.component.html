@@ -1,7 +1,7 @@
 <!-- now only for ebi header and footer -->
 <pdbc-vf-ebi-header></pdbc-vf-ebi-header>
 <pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig"></pdbc-pdbe-header-logo-menu>
-<pdbc-download-navbar></pdbc-download-navbar>
+<pdbc-download-navbar #navbar></pdbc-download-navbar>
 <main>
   <div class="container">
     <h1 class="heading-1">PDBe Download Service</h1>
@@ -18,12 +18,17 @@
         data for the requested IDs were not deposited
       </lib-tool-tip>
     </p>
+    <section id="structures">
+      <app-data-type-box [dataType]="structureData"> </app-data-type-box>
+    </section>
 
-    <app-data-type-box id="structures" [dataType]="structureData"> </app-data-type-box>
+    <section id="smallmolecules">
+      <app-data-type-box [dataType]="moleculesData"> </app-data-type-box>
+    </section>
 
-    <app-data-type-box id="smallmolecules" [dataType]="moleculesData"> </app-data-type-box>
-
-    <app-data-type-box id="sifts" [dataType]="siftsData"> </app-data-type-box>
+    <section id="sifts">
+      <app-data-type-box [dataType]="siftsData"> </app-data-type-box>
+    </section>
   </div>
 </main>
 
