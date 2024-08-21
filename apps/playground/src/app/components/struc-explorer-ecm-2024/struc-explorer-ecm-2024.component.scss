@@ -339,7 +339,7 @@
   margin-left: 8px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   color: var(--Blue-600, #3b6fb6);
   /* Small body text */
   font-family: 'IBM Plex Sans';
@@ -347,6 +347,9 @@
   font-style: normal;
   font-weight: 400;
   line-height: 27.2px; /* 170% */
+}
+.str-xinfo-slink > svg {
+  margin-top: -4px;
 }
 .str-xinfo-slink:visited {
   color: var(--Blue-600, #3b6fb6);

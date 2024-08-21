@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, inject, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { PlaygroundService } from '../../services/playground.service';
@@ -15,6 +15,8 @@ import { ModifiedResidues } from '../../models/modified-residues.model';
   styleUrl: './entry-ligands-environments.component.scss',
 })
 export class EntryLigandsEnvironmentsComponent implements OnInit {
+  @Output() switchTab = new EventEmitter<string>();
+  
   private readonly playgroundService = inject(PlaygroundService);
 
   private readonly route = inject(ActivatedRoute);
@@ -108,5 +110,9 @@ export class EntryLigandsEnvironmentsComponent implements OnInit {
     });
 
     return uniqueObjects;
+  }
+
+  public selectTab(name: string) {
+    this.switchTab.emit(name);
   }
 }
