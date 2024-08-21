@@ -105,7 +105,7 @@ export class EntryEcm2024Component implements OnInit {
   private route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
-  public currentSection = "/";
+  public currentSection = '/';
 
   public pageData$!: Observable<any>;
 
@@ -286,6 +286,6 @@ export class EntryEcm2024Component implements OnInit {
 
   public switchToTab(name: string) {
     this.currentSection = name;
-    window.scrollTo({top: 0});
+    window.scrollTo({ top: 0 });
   }
 }

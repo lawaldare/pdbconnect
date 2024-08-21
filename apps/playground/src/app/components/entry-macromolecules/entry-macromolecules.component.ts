@@ -20,7 +20,7 @@ import { GeneDirective } from '../../directives/gene.directive';
 })
 export class EntryMacromoleculesComponent implements OnChanges {
   @Output() switchTab = new EventEmitter<string>();
-  
+
   @Input({ required: true }) molecules!: Molecule[];
   @Input({ required: true }) uniprotMapping!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   @Input({ required: true }) interproMapping!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -100,7 +100,7 @@ export class EntryMacromoleculesComponent implements OnChanges {
 
     this.moleculesUpdated.update(() => this.molecules);
   }
-  
+
   public selectTab(name: string) {
     this.switchTab.emit(name);
   }

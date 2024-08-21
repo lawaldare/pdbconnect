@@ -38,8 +38,8 @@
         @for(author of entryPublication.author_list; track author.full_name){
         <span>
           <!-- <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a> </span>,  -->
-          <a>{{ author.full_name }}</a> </span>, 
-        }
+          <a>{{ author.full_name }}</a> </span
+        >, }
       </div>
       @if(entryPublication.doi) {
       <!-- <a [href]="'https://doi.org/' + entryPublication.doi" target="_blank" -->

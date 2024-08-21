@@ -16,7 +16,7 @@ import { ModifiedResidues } from '../../models/modified-residues.model';
 })
 export class EntryLigandsEnvironmentsComponent implements OnInit {
   @Output() switchTab = new EventEmitter<string>();
-  
+
   private readonly playgroundService = inject(PlaygroundService);
 
   private readonly route = inject(ActivatedRoute);

@@ -21,7 +21,7 @@ const PASTEL_COLORS = ['#66c5cc', '#f6cf71', '#f89c74', '#dcb0f2', '#87c55f', '#
 })
 export class StrucExplorerEcm2024Component implements AfterViewInit {
   @Output() switchTab = new EventEmitter<string>();
-  
+
   private readonly apiService = inject(StructureExplorerService);
 
   @Input() public entryId = '1trn'; //'7v08', '3d12', '5tj5', '4zqo'
@@ -547,8 +547,8 @@ export class StrucExplorerEcm2024Component implements AfterViewInit {
   }
 
   public selectTab(name: string) {
-    console.log("name")
-    console.log(name)
+    console.log('name');
+    console.log(name);
     this.switchTab.emit(name);
   }
 }
