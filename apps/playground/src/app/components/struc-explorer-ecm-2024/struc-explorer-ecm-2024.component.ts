@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MenuItemMolObj, StructureExplorerService, extraInfoObj } from './struc-explorer-ecm-2024.service';
 import { firstValueFrom } from 'rxjs';
@@ -20,6 +20,8 @@ const PASTEL_COLORS = ['#66c5cc', '#f6cf71', '#f89c74', '#dcb0f2', '#87c55f', '#
   styleUrl: './struc-explorer-ecm-2024.component.scss',
 })
 export class StrucExplorerEcm2024Component implements AfterViewInit {
+  @Output() switchTab = new EventEmitter<string>();
+
   private readonly apiService = inject(StructureExplorerService);
 
   @Input() public entryId = '1trn'; //'7v08', '3d12', '5tj5', '4zqo'
@@ -542,5 +544,11 @@ export class StrucExplorerEcm2024Component implements AfterViewInit {
       if (!currentBtnEle) continue;
       currentBtnEle.style.display = 'none';
     }
+  }
+
+  public selectTab(name: string) {
+    console.log('name');
+    console.log(name);
+    this.switchTab.emit(name);
   }
 }

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StrucExplorerEcm2024Component } from '../../components/struc-explorer-ecm-2024/struc-explorer-ecm-2024.component';
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
@@ -18,6 +18,7 @@ import { EntryCitationComponent } from '../../components/entry-citation/entry-ci
 import { Molecule } from '../../models/molecule.model';
 import { PdbeDropdownComponent } from '@pdbe-lib/dropdown';
 import { ClickOutsideDirective, MaterialModule } from '@pdbc/core';
+import { MatTabGroup } from '@angular/material/tabs';
 
 export interface DownloadOption {
   name: string;
@@ -46,6 +47,8 @@ export interface DownloadOption {
   styleUrl: './entry-ecm-2024.component.scss',
 })
 export class EntryEcm2024TabComponent implements OnInit {
+  @ViewChild('tabGroup') tabGroup!: MatTabGroup;
+
   private readonly playgroundService = inject(PlaygroundService);
 
   public downloadOptions: DownloadOption[] = [];
@@ -273,5 +276,11 @@ export class EntryEcm2024TabComponent implements OnInit {
   public onClickedOutside() {
     this.showViewOptions.set(false);
     this.showDownloadOptions.set(false);
+  }
+
+  public switchToTab(name: string) {
+    const tabList = ['/', '/function', '/ligands', '/macromolecules', '/assemblies', '/experiments', '/citations'];
+    this.tabGroup.selectedIndex = tabList.indexOf(name);
+    window.scrollTo({ top: 0 });
   }
 }

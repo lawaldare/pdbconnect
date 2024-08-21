@@ -1,4 +1,4 @@
-import { Component, effect, Input, OnChanges, signal, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, effect, EventEmitter, Input, OnChanges, Output, signal, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Molecule } from '../../models/molecule.model';
 import { MaterialModule } from '@pdbc/core';
@@ -19,6 +19,8 @@ import { GeneDirective } from '../../directives/gene.directive';
   styleUrl: './entry-macromolecules.component.scss',
 })
 export class EntryMacromoleculesComponent implements OnChanges {
+  @Output() switchTab = new EventEmitter<string>();
+
   @Input({ required: true }) molecules!: Molecule[];
   @Input({ required: true }) uniprotMapping!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   @Input({ required: true }) interproMapping!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -97,5 +99,9 @@ export class EntryMacromoleculesComponent implements OnChanges {
     }
 
     this.moleculesUpdated.update(() => this.molecules);
+  }
+
+  public selectTab(name: string) {
+    this.switchTab.emit(name);
   }
 }
