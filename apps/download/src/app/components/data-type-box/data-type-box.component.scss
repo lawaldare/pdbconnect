@@ -1,7 +1,16 @@
 ::ng-deep span {
-  border-bottom: 1px dotted #29a0b1;
+  margin-right: 3px;
   cursor: help;
   position: relative;
+  border-bottom: none;
+
+  &.icon {
+    font-weight: 500;
+  }
+}
+
+::ng-deep lib-tool-tip {
+  position: relative !important;
 }
 
 p {
@@ -77,4 +86,8 @@ button {
 :host ::ng-deep .mat-progress-spinner circle,
 .mat-spinner circle {
   stroke: grey;
+}
+
+ul {
+  display: flex;
 }
