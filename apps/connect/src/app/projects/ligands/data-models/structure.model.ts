@@ -1,27 +1,40 @@
-export interface Structure {
-  name: string;
-  id: string;
-  ec_number: string;
-  annotation: string;
-  count: number;
-  // rep_structure?: string;
-}
-
 export interface Substructure {
-  fragments: Fragment;
-  scaffold: Scaffold;
+  fragments: Fragment[];
+  scaffolds: Fragment[];
 }
 
 export interface Fragment {
-  [key: string]: Array<string[]>;
+  name: string;
+  atoms: string[][];
+  descriptors: Descriptor;
 }
 
-export interface Scaffold {
-  [key: string]: string[];
+export interface Descriptor {
+  inchi: string;
+  inchikey: string;
+  smiles: string;
 }
 
 export interface PDBSubstructures {
-  [key: string]: Substructure[];
+  [key: string]: Substructure;
+}
+
+export interface LigandStructuresAPIResponse {
+  [key: string]: LigandStructure[];
+}
+
+export interface LigandStructure {
+  uniprot_id: string;
+  name: string;
+  ec_numbers: string[];
+  interacting_chains: Chain[];
+  annotations: string[];
+}
+
+export interface Chain {
+  pdb_id: string;
+  auth_asym_id: string;
+  struct_asym_id: string;
 }
 
 export interface Resolution {

@@ -14,7 +14,12 @@
           @if(showOptions){
           <section class="download-options">
             <span (click)="downloadCSV()">Table .csv</span>
-            <span>3D coordinates .mmCIF</span>
+            <span (click)="downloadMMCIF()">3D coordinates .mmCIF</span>
+            @if(isLoadingEntry()){
+            <div style="padding-left: 35px">
+              <mat-progress-spinner class="example-margin" [mode]="'indeterminate'" [diameter]="'39'"></mat-progress-spinner>
+            </div>
+            }
           </section>
           }
         </div>
@@ -53,43 +58,59 @@
           <!-- Position Column -->
           <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef>Protein name</th>
-            <td mat-cell *matCellDef="let item">{{ item.name }}</td>
+            <td mat-cell *matCellDef="let item">{{ item.name || '-' }}</td>
           </ng-container>
 
           <!-- Name Column -->
-          <ng-container matColumnDef="id">
+          <ng-container matColumnDef="uniprot_id">
             <th mat-header-cell *matHeaderCellDef>PDBe-KB Proteins</th>
             <td mat-cell *matCellDef="let item">
-              <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + item.id" target="_blank">
-                {{ item.id }}
+              <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + item.uniprot_id" target="_blank">
+                {{ item.uniprot_id || '-' }}
+                @if(item.uniprot_id){
                 <i class="icon icon-link icon-common"></i>
+                }
               </a>
             </td>
           </ng-container>
 
           <!-- Weight Column -->
           <ng-container matColumnDef="ec_number">
-            <th mat-header-cell *matHeaderCellDef>EC number</th>
-            <td mat-cell *matCellDef="let item">{{ item.ec_number }}</td>
+            <th mat-header-cell *matHeaderCellDef>EC numbers</th>
+            <td mat-cell *matCellDef="let item">
+              @for(number of item.ec_numbers; track number){
+              <span class="ec-number">{{ number }}</span>
+              }
+            </td>
           </ng-container>
 
           <!-- Symbol Column -->
           <ng-container matColumnDef="annotation">
             <th mat-header-cell *matHeaderCellDef>Ligand annotation</th>
-            <td mat-cell *matCellDef="let item">{{ item.annotation }}</td>
+            <td mat-cell *matCellDef="let item">
+              @if(item.annotations && item.annotations.length){ @for(number of item.annotations; track number){
+              <span class="annotation">{{ number }}</span>
+              } } @else {
+              <span class="annotation">unannotated</span>
+              }
+            </td>
           </ng-container>
 
           <ng-container matColumnDef="count">
             <th mat-header-cell *matHeaderCellDef mat-sort-header disableClear>Total structures</th>
-            <td mat-cell *matCellDef="let item">
-              <a [href]="olamide" target="_blank">
-                {{ item.count }}
+            <td mat-cell *matCellDef="let item" class="count">
+              <a role="button" (click)="openTotalDialog(item.interacting_chains)">
+                {{ item.interacting_chains | ligandInteractingChainsNumber }}
               </a>
             </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; let odd = odd; columns: displayedColumns" [ngClass]="{ odd_row: odd }"></tr>
+          <!-- Row shown when there is no matching data. -->
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell">No data matching the filter</td>
+          </tr>
         </table>
         <div class="paginator-container">
           <mat-paginator

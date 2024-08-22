@@ -1,7 +1,7 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, DestroyRef, signal } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, DestroyRef, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
-import { Depiction } from '../../../data-models/structure.model';
+import { Depiction, Fragment } from '../../../data-models/structure.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { of, switchMap } from 'rxjs';
@@ -22,7 +22,7 @@ export class ImageCarouselComponent implements AfterViewInit {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
   public readonly arrowSrc = '/assets/images/left_arrow.svg';
   public ligandId!: string;
-  private currentSlide = 0;
+  private currentSlide = signal(0);
   private substructureNames = signal<string[]>([]);
   private substructureAtoms!: Array<string[]>;
   private slides = signal<number[]>([]);
@@ -34,6 +34,8 @@ export class ImageCarouselComponent implements AfterViewInit {
 
   private divsRendered: any[] = [];
   private ligandEv!: any;
+  private fragments = signal<Fragment[]>([]);
+  private currentFragment = computed(() => this.fragments()[this.currentSlide() - 2]);
 
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly renderer = inject(Renderer2);
@@ -63,25 +65,34 @@ export class ImageCarouselComponent implements AfterViewInit {
     this.showTooltips = false;
   }
 
+  public get showCopyButtons(): boolean {
+    return this.currentSlide() > 1;
+  }
+
+  public copy() {
+    console.log(this.currentSlide());
+    console.log(this.currentFragment());
+  }
+
   onPreviousClick() {
-    const previous = this.currentSlide - 1;
-    this.currentSlide = previous < 0 ? this.substructureNames().length + 1 : previous;
-    if (!this.slides().includes(this.currentSlide)) {
+    const previous = this.currentSlide() - 1 < 0 ? this.substructureNames().length + 1 : this.currentSlide() - 1;
+    this.currentSlide.set(previous);
+    if (!this.slides().includes(this.currentSlide())) {
       // this.slides()[2] = this.slides()[1];
       this.slides()[1] = this.slides()[0];
-      this.slides()[0] = this.currentSlide;
+      this.slides()[0] = this.currentSlide();
     }
 
     this.renderSubstructure();
   }
 
   onNextClick() {
-    const next = this.currentSlide + 1;
-    this.currentSlide = next === this.substructureNames().length + 2 ? 0 : next;
-    if (!this.slides().includes(this.currentSlide)) {
+    const next = this.currentSlide() + 1 === this.substructureNames().length + 2 ? 0 : this.currentSlide() + 1;
+    this.currentSlide.set(next);
+    if (!this.slides().includes(this.currentSlide())) {
       this.slides()[0] = this.slides()[1];
-      this.slides()[1] = this.currentSlide;
-      // this.slides()[2] = this.currentSlide;
+      this.slides()[1] = this.currentSlide();
+      // this.slides()[2] = this.currentSlide();
     }
     this.renderSubstructure();
   }
@@ -107,16 +118,15 @@ export class ImageCarouselComponent implements AfterViewInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(
         (substructures) => {
-          const substructure = substructures[ligandId][0];
-          const fragments = Object.entries(substructure['fragments']);
-          for (const [fragment, atoms] of fragments) {
-            for (const atom of atoms) {
-              this.substructureNames.update((values) => [...values, `${fragment} fragment`]);
-              this.substructureAtoms.push(atom);
-            }
-          }
-          this.substructureNames.update((values) => [...values, `Murcko scaffold`]);
-          this.substructureAtoms.push(Object.values(substructure['scaffold'])[0]);
+          console.log('substructures', substructures);
+          const fragments = substructures[ligandId].fragments;
+          this.getSubstructureNamesAndAtoms(fragments);
+
+          const scaffolds = substructures[ligandId].scaffolds;
+          this.getSubstructureNamesAndAtoms(scaffolds);
+
+          console.log(this.substructureAtoms);
+          console.log(this.fragments());
           if (this.substructureNames().length > 0) {
             this.slides.update((slides) => [...slides, 0, 1]);
             this.renderLigand(this.ligandId);
@@ -130,8 +140,19 @@ export class ImageCarouselComponent implements AfterViewInit {
       );
   }
 
+  private getSubstructureNamesAndAtoms(data: Fragment[]): void {
+    for (const fragment of data) {
+      for (const atom of fragment.atoms) {
+        this.substructureNames.update((values) => [...values, `${fragment.name} fragment`]);
+        this.substructureAtoms.push(atom);
+      }
+
+      this.fragments.update((fragments) => [...fragments, fragment]);
+    }
+  }
+
   private setDepictionDescription() {
-    switch (this.currentSlide) {
+    switch (this.currentSlide()) {
       case 0:
         this.structureDescription = `Structural representation of ${this.ligandId}`;
         break;
@@ -141,7 +162,7 @@ export class ImageCarouselComponent implements AfterViewInit {
         break;
 
       default:
-        this.structureDescription = `${this.substructureNames()[this.currentSlide - 2]} highlighted in gray`;
+        this.structureDescription = `${this.substructureNames()[this.currentSlide() - 2]} highlighted in gray`;
     }
   }
 
@@ -165,10 +186,10 @@ export class ImageCarouselComponent implements AfterViewInit {
 
   private renderSubstructure() {
     const slideContainer = this.slideContainer.nativeElement;
-    this.setDepictionProperty(this.ligandEv, this.currentSlide);
+    this.setDepictionProperty(this.ligandEv, this.currentSlide());
     const slideElements = slideContainer.children;
     for (let i = 0; i < slideElements.length; i++) {
-      if (this.slides()[i] == this.currentSlide) {
+      if (this.slides()[i] == this.currentSlide()) {
         this.renderer.addClass(slideElements[i], 'active');
       } else {
         this.renderer.removeClass(slideElements[i], 'active');

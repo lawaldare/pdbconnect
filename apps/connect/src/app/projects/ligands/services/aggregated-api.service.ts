@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PDBLigandDescription, PhysChemProperties, FunctionalAnnotation } from '../data-models/description.model';
 import { PDBLigandFile } from '../data-models/download.model';
-import { PDBSubstructures, Substructure, Depiction } from '../data-models/structure.model';
+import { Depiction, LigandStructure, LigandStructuresAPIResponse, PDBSubstructures } from '../data-models/structure.model';
 import { PDBRelatedLigands, BoundEntries, RelatedLigand } from '../data-models/related-ligands.model';
 import { PDBIntxData, IntxDataUrl } from '../data-models/interaction.model';
 import { shareReplay, map } from 'rxjs';
@@ -54,6 +54,11 @@ export class AggregatedApiService {
   fetchSubstructures(ligandId: string): Observable<PDBSubstructures> {
     const substructureUrl = `${this.api_url}/compound/substructures/${ligandId}`;
     return this.http.get<PDBSubstructures>(substructureUrl);
+  }
+
+  fetchLigandStructures(ligandId: string): Observable<LigandStructure[]> {
+    const ligandStructureAPI = `${this.api_url}/compound/uniprot/${ligandId}`;
+    return this.http.get<LigandStructuresAPIResponse>(ligandStructureAPI).pipe(map((data) => data[ligandId]));
   }
 
   fetchDepiction(ligandId: string): Observable<Depiction> {
@@ -149,8 +154,8 @@ export class AggregatedApiService {
     };
   }
 
-  processSubstructures(ligandId: string, data: PDBSubstructures): Substructure {
-    const ligandSubstructures = data[ligandId][0];
-    return ligandSubstructures;
-  }
+  // processSubstructures(ligandId: string, data: PDBSubstructures): Substructure {
+  //   const ligandSubstructures = data[ligandId][0];
+  //   return ligandSubstructures;
+  // }
 }

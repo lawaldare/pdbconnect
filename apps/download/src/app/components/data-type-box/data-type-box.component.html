@@ -37,9 +37,11 @@
     </div>
     <div class="spinner-wrapper">
       <button (click)="submit(dataType().submissionType)" class="vf-button vf-button--primary">Submit to download</button>
-      <div style="padding-left: 35px" *ngIf="isLoadingEntry()">
+      @if(isLoadingEntry()){
+      <div style="padding-left: 35px">
         <mat-progress-spinner class="example-margin" [mode]="'indeterminate'" [diameter]="'39'"></mat-progress-spinner>
       </div>
+      }
     </div>
     <div class="alert alert-danger" *ngIf="errorEntryText()">
       <p><b>ERROR</b>: {{ errorEntryText() }}</p>

@@ -31,5 +31,18 @@
     </button>
   </div>
   <p class="paragraph-3">{{ this.structureDescription }}</p>
+  @if(showCopyButtons){
+  <section class="copy-section">
+    <p (click)="copy()">
+      SMILES
+      <i class="icon icon-common icon-clone"></i>
+    </p>
+    <P
+      >INCHIKey
+      <i class="icon icon-common icon-clone"></i>
+    </P>
+  </section>
+  }
+
   <div #slide class="slide-container"></div>
 </div>

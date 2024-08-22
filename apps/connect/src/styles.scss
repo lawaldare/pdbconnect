@@ -24,6 +24,16 @@ body {
   font-family: Roboto, 'Helvetica Neue', sans-serif;
 }
 
+.ligand-total-Dialog {
+  max-width: 30vw !important;
+  width: 30vw;
+  height: 50%;
+}
+
+.ligand-total-Dialog .mat-dialog-container {
+  padding: 0px;
+}
+
 .molstarDialog {
   max-width: 95vw !important;
   width: 95vw;

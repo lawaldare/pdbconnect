@@ -39,7 +39,7 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
     const imageContainer = this.imageContainer.nativeElement;
 
     this.aggregatedApiService
-      .fetchDepiction(ligandId)
+      .fetchDepiction(this.ligand.chem_comp_id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((depiction: Depiction) => {
         const ligand = this.renderer.createElement('pdb-ligand-env');
