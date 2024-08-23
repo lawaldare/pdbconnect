@@ -1,4 +1,3 @@
-test
 # Creating a new project
 
 #### \* After reading the [guidelines here](./guidelines.md) follow the steps below to create a new project
