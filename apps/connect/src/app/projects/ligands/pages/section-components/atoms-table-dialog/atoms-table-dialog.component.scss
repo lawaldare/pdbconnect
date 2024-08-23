@@ -1,0 +1,28 @@
+section {
+  padding: 20px;
+
+  p {
+    margin: 0;
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-size: 30px;
+    background: #d7e5d8;
+    font-weight: 700;
+    line-height: 40px;
+    margin-bottom: 10px;
+    padding-left: 10px;
+  }
+}
+
+header {
+  padding: 10px;
+  display: flex;
+  justify-content: end;
+
+  i {
+    font-size: 20px;
+    cursor: pointer;
+  }
+}

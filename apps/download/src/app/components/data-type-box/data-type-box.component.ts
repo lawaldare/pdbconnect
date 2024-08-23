@@ -41,5 +41,6 @@ export class DataTypeBoxComponent implements OnInit {
     }
 
     this.downloadService.initiateDownload(apiType, this.pdbid, this.chosenformat);
+    localStorage.clear();
   }
 }

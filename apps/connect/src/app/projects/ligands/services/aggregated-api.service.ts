@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { PDBLigandDescription, PhysChemProperties, FunctionalAnnotation } from '../data-models/description.model';
 import { PDBLigandFile } from '../data-models/download.model';
 import { Depiction, LigandStructure, LigandStructuresAPIResponse, PDBSubstructures } from '../data-models/structure.model';
-import { PDBRelatedLigands, BoundEntries, RelatedLigand } from '../data-models/related-ligands.model';
+import { PDBRelatedLigands, RelatedLigand } from '../data-models/related-ligands.model';
 import { PDBIntxData, IntxDataUrl } from '../data-models/interaction.model';
 import { shareReplay, map } from 'rxjs';
 
@@ -14,7 +14,7 @@ export interface DescriptionData {
   formula: string;
   inchi: string;
   inchikey: string;
-  smiles: string;
+  smiles: { program: string; version: string; name: string }[];
   properties: PhysChemProperties;
   annotations: FunctionalAnnotation[];
   crossLinks: CrossLink[];
@@ -32,17 +32,41 @@ export interface CrossLink {
   resource_id: string;
 }
 
+export interface Atom {
+  atom_name: string;
+  pdb_name: string;
+  element: string;
+  leaving_atom: boolean;
+  charge: number;
+  stereo: string;
+  aromatic: boolean;
+  ideal_x: number;
+  ideal_y: number;
+  ideal_z: number;
+}
+
+export interface Bond {
+  atom_1: string;
+  atom_2: string;
+  bond_type: string;
+  bond_order: number;
+  aromatic: boolean;
+  stereo: boolean;
+  ideal_length: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AggregatedApiService {
   private api_url = 'https://wwwdev.ebi.ac.uk/pdbe/aggregated-api'; // URL to web api
   private static_url = 'https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2'; //URL to static ligand files
+  private readonly pdbeUrl = 'https://wwwdev.ebi.ac.uk/pdbe/api/pdb/';
 
   constructor(private http: HttpClient) {}
 
   fetchDescription(ligandId: string): Observable<PDBLigandDescription> {
-    const descriptionUrl = `${this.api_url}/compound/summary/${ligandId}`;
+    const descriptionUrl = `${this.api_url}/pdb/compound/summary/${ligandId}`;
     return this.http.get<PDBLigandDescription>(descriptionUrl);
   }
 
@@ -77,14 +101,9 @@ export class AggregatedApiService {
     return relatedLigand;
   }
 
-  fetchBoundEntries(ligandId: string): Observable<string[]> {
+  fetchBoundEntries(ligandId: string): Observable<any> {
     const boundEntryURL = `${this.api_url}/pdb/compound/in_pdb/${ligandId}`;
-    const boundEntries = this.http.get<BoundEntries>(boundEntryURL).pipe(
-      shareReplay(1),
-      map((boundEntries: BoundEntries) => {
-        return boundEntries[ligandId];
-      })
-    );
+    const boundEntries = this.http.get<any>(boundEntryURL);
     return boundEntries;
   }
 
@@ -152,6 +171,16 @@ export class AggregatedApiService {
       modelSDF: modelSDFUrl,
       modelCML: cmlUrl,
     };
+  }
+
+  public getAtoms(ligandId: string): Observable<Atom[]> {
+    const atomAPI = `${this.pdbeUrl}compound/atoms/${ligandId}`;
+    return this.http.get<any>(atomAPI).pipe(map((data) => data[ligandId]));
+  }
+
+  public getBonds(ligandId: string): Observable<Bond[]> {
+    const bondAPI = `${this.pdbeUrl}compound/bonds/${ligandId}`;
+    return this.http.get<any>(bondAPI).pipe(map((data) => data[ligandId]));
   }
 
   // processSubstructures(ligandId: string, data: PDBSubstructures): Substructure {

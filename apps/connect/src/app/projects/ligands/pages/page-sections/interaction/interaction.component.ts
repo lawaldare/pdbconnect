@@ -143,7 +143,7 @@ export class InteractionComponent implements AfterViewInit {
   private generateEmptyText(): void {
     const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;
     const p = this.renderer.createElement('p');
-    const text = this.renderer.createText(`No interaction data for ${this.ligandId}`);
+    const text = this.renderer.createText(`Interaction view not available for ${this.ligandId}`);
     this.renderer.appendChild(p, text);
     this.renderer.removeClass(p, 'empty-text');
     this.renderer.appendChild(ligandHeatmapContainer, p);

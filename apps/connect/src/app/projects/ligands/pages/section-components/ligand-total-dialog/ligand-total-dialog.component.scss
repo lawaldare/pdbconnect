@@ -1,4 +1,4 @@
-:host {
+section {
   padding: 20px;
 }
 
@@ -10,5 +10,11 @@ header {
   i {
     font-size: 20px;
     cursor: pointer;
+  }
+}
+
+a {
+  i {
+    margin-left: 5px;
   }
 }

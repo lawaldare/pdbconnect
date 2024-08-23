@@ -105,11 +105,13 @@ export class ImageCarouselComponent implements AfterViewInit {
       ],
     };
 
-    this.dialog.open(MolstarDialogComponent, {
-      disableClose: false,
-      panelClass: 'molstarDialog',
-      data: data,
-    });
+    console.log(this.currentFragment());
+
+    // this.dialog.open(MolstarDialogComponent, {
+    //   disableClose: false,
+    //   panelClass: 'molstarDialog',
+    //   data: data,
+    // });
   }
 
   private init(ligandId: string) {

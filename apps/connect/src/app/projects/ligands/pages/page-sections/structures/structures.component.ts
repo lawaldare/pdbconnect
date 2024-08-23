@@ -1,7 +1,7 @@
-import { Component, ViewChild, AfterViewInit, OnInit, Input, inject, DestroyRef, signal } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit, inject, DestroyRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { LigandStructure } from '../../../data-models/structure.model';
+import { Chain, LigandStructure } from '../../../data-models/structure.model';
 import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -9,13 +9,12 @@ import { MatTableDataSource } from '@angular/material/table';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ClickOutsideDirective, DownloadFileTypeService, DownloadService, MaterialModule, UtilService } from '@pdbc/core';
+import { ClickOutsideDirective, DownloadFileTypeService, DownloadService, MaterialModule } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { LigandInteractingChainsNumberPipe } from '../../../ligandInteractingChainsNumber.pipe';
 import { MatDialog } from '@angular/material/dialog';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
-import { Chain } from '@angular/compiler';
 import { EMPTY } from 'rxjs';
 import { LigandUtilService } from '../../../ligand-util.service';
 
@@ -142,11 +141,16 @@ export class StructuresComponent implements AfterViewInit, OnInit {
         'PDBe-KB Proteins': structure.uniprot_id,
         'EC Numbers': (structure.ec_numbers ?? []).join(','),
         'Ligand Annotation': (structure.annotations ?? []).join(','),
+        'All Structures (list:pdb:auth_asym_id:struct_asym_id)': this.getInteractingChain(structure.interacting_chains),
         'Total Structures': this.chainPipe.transform(structure.interacting_chains),
       };
     });
 
     this.downloadFileTypeService.downloadCSV(mappedData, 'structures');
+  }
+
+  private getInteractingChain(chains: Chain[]): string {
+    return chains.map((chain) => `${chain.pdb_id}:${chain.auth_asym_id}:${chain.struct_asym_id}`).join(', ');
   }
 
   public onShowOptions() {

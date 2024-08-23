@@ -35,9 +35,9 @@
     <span class="info-row-title">SMILES</span>
     <article>
       <div class="info-row-content">
-        {{ description().smiles }}
+        {{ description().smiles[0].name }}
       </div>
-      <i class="icon icon-common icon-clone" (click)="copy(description().smiles)"></i>
+      <i class="icon icon-common icon-clone" (click)="copy(description().smiles[0].name)"></i>
     </article>
   </div>
   <div class="info-row source-row">
@@ -45,5 +45,9 @@
     <div class="info-row-content">
       Source <a href="https://www.eyesopen.com/" target="_blank">OpenEye <i class="icon icon-link icon-common"></i></a>
     </div>
+  </div>
+  <div class="action-buttons">
+    <button class="vf-button vf-button--primary vf-button--sm" (click)="openAtomsDialog()">View Atoms</button>
+    <button class="vf-button vf-button--primary vf-button--sm" (click)="openBondsDialog()">View Bonds</button>
   </div>
 </div>

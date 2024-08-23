@@ -29,22 +29,36 @@
             <div class="checkbox-field" for="cofactor">
               <input type="checkbox" id="cofactor" formControlName="cofactorLike" />
               <label for="cofactor">Cofactor-like</label>
-              <lib-tool-tip></lib-tool-tip>
+              <lib-tool-tip minWidth="400px">
+                Using the PARITY method, ligands are initially compared to a template library of 27 cofactor classes. If they meet the similarity threshold, they’re
+                further compared to the representative molecule for the matched cofactor class. If the similarity score remains above the threshold and the ligand is
+                found in a PDB entry with an approved EC number for the matched class, it’s classified as cofactor-like; otherwise, it’s flagged for manual
+                annotation. For more information, please refer to:
+                <a href="https://doi.org/10.1093/bioinformatics/btz115" target="_blank">https://doi.org/10.1093/bioinformatics/btz115</a>.
+              </lib-tool-tip>
             </div>
             <div class="checkbox-field">
               <input type="checkbox" id="reactant" formControlName="reactantLike" />
               <label for="reactant">Reactant-like</label>
-              <lib-tool-tip></lib-tool-tip>
+              <lib-tool-tip>
+                Reactants are annotated based on mapping to the <a href="https://www.rhea-db.org/" target="_blank">Rhea database</a>, an expert-curated resource that
+                uses the ChEBI ontology to describe reaction participants and their structures. For each reaction in Rhea, we map all associated PDB structures based
+                on the protein (UniProt accession) that catalyses the reaction. Using the PARITY method, we then compare the bound ligands in these PDB structures to
+                ChEBI compounds involved in the reaction, annotating those with a minimum similarity score of 0.7 as reactant-like.
+              </lib-tool-tip>
             </div>
             <div class="checkbox-field">
               <input type="checkbox" id="drug" formControlName="drugLike" />
               <label for="drug">Drug-like</label>
-              <lib-tool-tip></lib-tool-tip>
+              <lib-tool-tip>
+                Drug-like molecules are annotated by mapping to the <a href="https://go.drugbank.com/" target="_blank">DrugBank database</a>. Ligands bound to PDB
+                structures of pharmacologically active targets listed in DrugBank are classified as drug-like.
+              </lib-tool-tip>
             </div>
             <div class="checkbox-field">
               <input type="checkbox" id="unannotated" formControlName="unannotated" />
               <label for="unannotated">Unannotated</label>
-              <lib-tool-tip></lib-tool-tip>
+              <lib-tool-tip> The functional role of these ligands has not yet been annotated </lib-tool-tip>
             </div>
           </form>
         </div>
@@ -91,7 +105,7 @@
               @if(item.annotations && item.annotations.length){ @for(number of item.annotations; track number){
               <span class="annotation">{{ number }}</span>
               } } @else {
-              <span class="annotation">unannotated</span>
+              <span class="unannotated">unannotated</span>
               }
             </td>
           </ng-container>

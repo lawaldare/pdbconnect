@@ -215,6 +215,10 @@ table {
       &.annotation {
         background: #f9cf3b;
       }
+
+      &.unannotated {
+        background: #e3e3e2;
+      }
     }
 
     a {

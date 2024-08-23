@@ -63,7 +63,7 @@ export interface LigandDescription {
   formula: string;
   inchi: string;
   inchi_key: string;
-  smiles: string;
+  smiles: { program: string; version: string; name: string }[];
   ww_pdb_info: WwPdbInfo;
   functional_annotations: FunctionalAnnotation[];
   cross_links: CrossLink[];
