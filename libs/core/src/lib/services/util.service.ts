@@ -1,10 +1,15 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Clipboard } from '@angular/cdk/clipboard';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UtilService {
   // constructor() {}
+
+  private _snackBar = inject(MatSnackBar);
+  private clipboard = inject(Clipboard);
 
   public generateQueryURL(arr: string[] | string, queryTerm: string): string {
     const isArray = Array.isArray(arr);
@@ -66,5 +71,18 @@ export class UtilService {
       }
     }
     return false;
+  }
+
+  public copy(value: string): void {
+    const result = this.clipboard.copy(value);
+    if (result) {
+      this.openSnackBar('Copied to clipboard successfully', 'Dismiss');
+    }
+  }
+
+  private openSnackBar(message: string, action: string) {
+    this._snackBar.open(message, action, {
+      duration: 3000,
+    });
   }
 }

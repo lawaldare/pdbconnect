@@ -35,9 +35,9 @@
     <span class="info-row-title">SMILES</span>
     <article>
       <div class="info-row-content">
-        {{ description().smiles[0].name }}
+        {{ description().smiles | ligandSmiles }}
       </div>
-      <i class="icon icon-common icon-clone" (click)="copy(description().smiles[0].name)"></i>
+      <i class="icon icon-common icon-clone" (click)="copySmiles(description().smiles)"></i>
     </article>
   </div>
   <div class="info-row source-row">

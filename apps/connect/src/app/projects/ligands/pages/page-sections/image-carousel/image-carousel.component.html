@@ -33,11 +33,11 @@
   <p class="paragraph-3">{{ this.structureDescription }}</p>
   @if(showCopyButtons){
   <section class="copy-section">
-    <p (click)="copy()">
+    <p (click)="copySmiles()">
       SMILES
       <i class="icon icon-common icon-clone"></i>
     </p>
-    <P
+    <P (click)="copyInchiKeys()"
       >INCHIKey
       <i class="icon icon-common icon-clone"></i>
     </P>

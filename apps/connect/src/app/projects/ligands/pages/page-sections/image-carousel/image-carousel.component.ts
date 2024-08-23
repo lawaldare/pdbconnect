@@ -5,7 +5,7 @@ import { Depiction, Fragment } from '../../../data-models/structure.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { of, switchMap } from 'rxjs';
-import { ClickOutsideDirective } from '@pdbc/core';
+import { ClickOutsideDirective, UtilService } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
@@ -32,6 +32,8 @@ export class ImageCarouselComponent implements AfterViewInit {
   @ViewChild('slide', { read: ElementRef }) slideContainer!: ElementRef;
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
+  private tempFragments: Fragment[] = [];
+
   private divsRendered: any[] = [];
   private ligandEv!: any;
   private fragments = signal<Fragment[]>([]);
@@ -42,6 +44,7 @@ export class ImageCarouselComponent implements AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly dialog = inject(MatDialog);
+  private readonly utilService = inject(UtilService);
 
   ngAfterViewInit() {
     this.route.params
@@ -57,11 +60,11 @@ export class ImageCarouselComponent implements AfterViewInit {
       .subscribe();
   }
 
-  public onShowTooltips() {
+  public onShowTooltips(): void {
     this.showTooltips = !this.showTooltips;
   }
 
-  public onClickedOutside() {
+  public onClickedOutside(): void {
     this.showTooltips = false;
   }
 
@@ -69,8 +72,13 @@ export class ImageCarouselComponent implements AfterViewInit {
     return this.currentSlide() > 1;
   }
 
-  public copy() {
-    console.log(this.currentSlide());
+  public copySmiles(): void {
+    this.utilService.copy(this.currentFragment().descriptors.smiles);
+    console.log(this.currentFragment());
+  }
+
+  public copyInchiKeys(): void {
+    this.utilService.copy(this.currentFragment().descriptors.inchikey);
     console.log(this.currentFragment());
   }
 
@@ -98,20 +106,13 @@ export class ImageCarouselComponent implements AfterViewInit {
   }
 
   public openMolstarDialog(): void {
-    const data = {
-      entryList: [
-        `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.ligandId}_ideal.pdb`,
-        `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.ligandId}_model.pdb`,
-      ],
-    };
-
-    console.log(this.currentFragment());
-
-    // this.dialog.open(MolstarDialogComponent, {
-    //   disableClose: false,
-    //   panelClass: 'molstarDialog',
-    //   data: data,
-    // });
+    this.dialog.open(MolstarDialogComponent, {
+      disableClose: false,
+      panelClass: 'molstarDialog',
+      data: {
+        moleculeId: this.ligandId,
+      },
+    });
   }
 
   private init(ligandId: string) {
@@ -148,9 +149,21 @@ export class ImageCarouselComponent implements AfterViewInit {
         this.substructureNames.update((values) => [...values, `${fragment.name} fragment`]);
         this.substructureAtoms.push(atom);
       }
-
-      this.fragments.update((fragments) => [...fragments, fragment]);
+      this.tempFragments.push(fragment);
     }
+
+    const mappedFragments = this.tempFragments.reduce((acc: Fragment[], curr: Fragment) => {
+      for (const atom of curr.atoms) {
+        acc.push({
+          name: curr.name,
+          descriptors: curr.descriptors,
+          atoms: [atom],
+        });
+      }
+      return acc;
+    }, []);
+
+    this.fragments.update(() => mappedFragments);
   }
 
   private setDepictionDescription() {
