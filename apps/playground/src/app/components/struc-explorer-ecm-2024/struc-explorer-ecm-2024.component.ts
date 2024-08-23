@@ -147,7 +147,8 @@ export class StrucExplorerEcm2024Component implements AfterViewInit {
     // this.uniqueModificationsCountString = `There ${toBeModifications} ${modificationsData.length} unique ${pluralModifications} in this assembly.`;
     this.uniqueModificationsCountString = `${modificationsData.length} unique ${pluralModifications}`;
 
-    this.galleryManager = await PDBeMolstarPlugin.extensions.stateGallery.StateGalleryManager.create(this.molstarViewInstance.plugin, this.entryId);
+    this.galleryManager = await PDBeMolstarPlugin.extensions.StateGallery.StateGalleryManager.create(this.molstarViewInstance.plugin, this.entryId);
+
     const imageList = [];
     for (const imageObj of this.galleryManager.images) {
       this.imagesByName[imageObj.filename] = imageObj;
