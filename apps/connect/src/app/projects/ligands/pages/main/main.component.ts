@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DescriptionComponent } from '../page-sections/description/description.component';
@@ -20,6 +20,8 @@ import { LigandSpecificDatabasesComponent } from '../page-sections/ligand-specif
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { switchMap, tap, map } from 'rxjs/operators';
 import { forkJoin, of } from 'rxjs';
+import { Fragment } from '../../data-models/structure.model';
+import { LigandUtilService } from '../../ligand-util.service';
 
 @Component({
   selector: 'pdbc-main',
@@ -54,6 +56,8 @@ export class LigandsMainPageComponent implements OnInit {
     headerTitle: 'Ligands',
   };
 
+  private currentFragment = signal<any>({});
+
   public readonly headerSearchConfig = {
     examples: [
       { label: 'STI', url: '/ligands/STI' },
@@ -80,6 +84,7 @@ export class LigandsMainPageComponent implements OnInit {
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly ligandUtilService = inject(LigandUtilService);
 
   ngOnInit(): void {
     this.route.params
@@ -106,5 +111,13 @@ export class LigandsMainPageComponent implements OnInit {
           { name: 'Model CML', url: data.processDownloadData.modelCML, downloadable: true },
         ];
       });
+  }
+
+  public getCurrentFragment(currentFragment: Fragment): void {
+    this.currentFragment.set(currentFragment);
+  }
+
+  public openMolstarDialog(): void {
+    this.ligandUtilService.openMolstarDialog(this.currentFragment(), this.ligandId);
   }
 }

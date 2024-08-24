@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, DestroyRef, signal, computed } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, DestroyRef, signal, computed, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction, Fragment } from '../../../data-models/structure.model';
@@ -7,8 +7,8 @@ import { ActivatedRoute } from '@angular/router';
 import { of, switchMap } from 'rxjs';
 import { ClickOutsideDirective, UtilService } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
-import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
+import { LigandUtilService } from '../../../ligand-util.service';
 
 @Component({
   selector: 'pdbc-image-carousel',
@@ -39,12 +39,14 @@ export class ImageCarouselComponent implements AfterViewInit {
   private fragments = signal<Fragment[]>([]);
   private currentFragment = computed(() => this.fragments()[this.currentSlide() - 2]);
 
+  public sendCurrentFragment = output<Fragment>();
+
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly renderer = inject(Renderer2);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private readonly dialog = inject(MatDialog);
   private readonly utilService = inject(UtilService);
+  private readonly ligandUtilService = inject(LigandUtilService);
 
   ngAfterViewInit() {
     this.route.params
@@ -104,14 +106,7 @@ export class ImageCarouselComponent implements AfterViewInit {
   }
 
   public openMolstarDialog(): void {
-    this.dialog.open(MolstarDialogComponent, {
-      disableClose: false,
-      panelClass: 'molstarDialog',
-      data: {
-        moleculeId: this.ligandId,
-        atoms: this.currentFragment()?.atoms[0] ?? [],
-      },
-    });
+    this.ligandUtilService.openMolstarDialog(this.currentFragment(), this.ligandId);
   }
 
   private init(ligandId: string) {
@@ -175,6 +170,8 @@ export class ImageCarouselComponent implements AfterViewInit {
       default:
         this.structureDescription = `${this.substructureNames()[this.currentSlide() - 2]} highlighted in gray`;
     }
+
+    this.sendCurrentFragment.emit(this.currentFragment());
   }
 
   private setDepictionProperty(el: HTMLElement, index: number) {

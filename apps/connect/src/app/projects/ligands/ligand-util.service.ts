@@ -1,5 +1,7 @@
-import { Injectable } from '@angular/core';
-import { LigandStructure } from './data-models/structure.model';
+import { inject, Injectable } from '@angular/core';
+import { Fragment, LigandStructure } from './data-models/structure.model';
+import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
+import { MatDialog } from '@angular/material/dialog';
 
 export interface StructureFilter {
   cofactorLike: boolean;
@@ -12,6 +14,8 @@ export interface StructureFilter {
   providedIn: 'root',
 })
 export class LigandUtilService {
+  private readonly dialog = inject(MatDialog);
+
   public filterStructures(data: LigandStructure[], values: StructureFilter): LigandStructure[] {
     let cofactorLike: LigandStructure[] = [];
     let drugLike: LigandStructure[] = [];
@@ -47,5 +51,16 @@ export class LigandUtilService {
 
     const result = [...cofactorLike, ...reactantLike, ...drugLike, ...unannotated];
     return result;
+  }
+
+  public openMolstarDialog(fragment: Fragment, ligandId: string): void {
+    this.dialog.open(MolstarDialogComponent, {
+      disableClose: false,
+      panelClass: 'molstarDialog',
+      data: {
+        moleculeId: ligandId,
+        atoms: fragment?.atoms[0] ?? [],
+      },
+    });
   }
 }

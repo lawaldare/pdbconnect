@@ -13,13 +13,13 @@
         <pdbc-pdbe-chips [label]="annotation.name | titlecase" [url]="annotation.url" backgroundColor="#F9CF3B" fontColor="#1A1C1A" />
         }
         <div class="action-buttons">
-          <button class="vf-button vf-button--primary vf-button--sm">View 3D</button>
+          <button class="vf-button vf-button--primary vf-button--sm" (click)="openMolstarDialog()">View 3D</button>
           <lib-dropdown-menu [options]="downloadOptions" title="Download as"></lib-dropdown-menu>
         </div>
       </section>
       <section class="description">
         <pdbc-description [description]="description" [ligandId]="ligandId" />
-        <pdbc-image-carousel #imageCarouselRef />
+        <pdbc-image-carousel #imageCarouselRef (sendCurrentFragment)="getCurrentFragment($event)" />
       </section>
       <section class="property">
         <pdbc-properties [properties]="description.properties" />

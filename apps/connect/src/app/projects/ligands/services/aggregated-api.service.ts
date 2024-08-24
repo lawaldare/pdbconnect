@@ -126,13 +126,13 @@ export class AggregatedApiService {
 
     let synonyms;
 
-    if (ligandSummary.synonyms.length !== 0) {
-      const synonymSet = new Set<string>(ligandSummary.synonyms.map((x) => x.value));
+    if (ligandSummary.synonyms) {
+      const synonymSet = new Set<string>(ligandSummary?.synonyms?.map((x) => x.value));
       synonyms = Array.from(synonymSet)
         .sort((x: string, y: string) => x.length - y.length)
         .reduce((x, y) => `${x}, ${y}`);
     } else {
-      synonyms = ligandSummary.name;
+      synonyms = ligandSummary?.name;
     }
 
     return {

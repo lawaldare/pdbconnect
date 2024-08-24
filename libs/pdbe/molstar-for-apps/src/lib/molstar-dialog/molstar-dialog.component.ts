@@ -21,6 +21,18 @@ export class MolstarDialogComponent implements AfterViewInit {
   public selected = signal('');
   public selectedControl = computed(() => new FormControl(this.selected(), { nonNullable: true }));
 
+  private readonly selectionConfig = {
+    data: [
+      {
+        struct_asym_id: 'A',
+        atoms: this.dialogData.atoms,
+        color: { r: 255, g: 255, b: 0 },
+        // focus: true,
+      },
+    ],
+    // nonSelectedColor: { r: 130, g: 130, b: 130 },
+  };
+
   @ViewChild('viewContainer') viewContainer!: ElementRef;
 
   constructor(public dialogRef: MatDialogRef<MolstarDialogComponent>, @Inject(MAT_DIALOG_DATA) public dialogData: any) {}
@@ -47,23 +59,10 @@ export class MolstarDialogComponent implements AfterViewInit {
         format: 'pdb',
       },
       isLandscape: false,
+      selection: this.selectionConfig,
     };
 
     this.molstarViewInstance.render(container, molstarParams);
-
-    // this.molstarViewInstance.visual.select({
-    //   data: [
-    //     {
-    //       struct_asym_id: 'B',
-    //       atoms: this.dialogData.atoms,
-    //       representation: 'molecular-surface',
-    //       color: { r: 255, g: 255, b: 0 },
-    //       focus: true,
-    //     },
-    //   ],
-    // });
-
-    // this.molstarViewInstance.visual.clearSelection();
 
     this.selections = [
       {
@@ -84,6 +83,7 @@ export class MolstarDialogComponent implements AfterViewInit {
         url: event.value,
         format: 'pdb',
       },
+      selection: this.selectionConfig,
       bgColor: { r: 255, g: 255, b: 255 },
     };
     this.molstarViewInstance.visual.update(updateParams);
