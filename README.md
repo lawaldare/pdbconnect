@@ -70,6 +70,10 @@ Monorepo for PDBe front-end applications and component library
 - `npx nx storybook lib-docs:build-storybook`
 - `npx http-server dist/storybook/lib-docs/`
 
+##### 13. For updating the angular version
+
+- `npx nx migrate latest`
+
 ## Using the Playground App
 
 Simply create a page component in the `pages` folder to showcase whatever you want to do. Add its `route` in the `app.routes.ts`, then put its link the `app.component.html` file as sidebar menu.
