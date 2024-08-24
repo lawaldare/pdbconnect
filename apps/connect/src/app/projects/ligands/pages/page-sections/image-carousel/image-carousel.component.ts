@@ -106,11 +106,13 @@ export class ImageCarouselComponent implements AfterViewInit {
   }
 
   public openMolstarDialog(): void {
+    console.log(this.currentFragment());
     this.dialog.open(MolstarDialogComponent, {
       disableClose: false,
       panelClass: 'molstarDialog',
       data: {
         moleculeId: this.ligandId,
+        atoms: this.currentFragment()?.atoms[0] ?? [],
       },
     });
   }

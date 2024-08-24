@@ -60,6 +60,20 @@ export class MolstarDialogComponent implements AfterViewInit {
 
     this.molstarViewInstance.render(container, molstarParams);
 
+    // this.molstarViewInstance.visual.select({
+    //   data: [
+    //     {
+    //       struct_asym_id: 'B',
+    //       atoms: this.dialogData.atoms,
+    //       representation: 'molecular-surface',
+    //       color: { r: 255, g: 255, b: 0 },
+    //       focus: true,
+    //     },
+    //   ],
+    // });
+
+    // this.molstarViewInstance.visual.clearSelection();
+
     this.selections = [
       {
         viewValue: 'Ideal Coordinates',
