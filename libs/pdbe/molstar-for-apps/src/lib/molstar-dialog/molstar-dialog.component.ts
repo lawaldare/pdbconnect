@@ -1,14 +1,16 @@
-import { AfterViewInit, Component, effect, ElementRef, Inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, Inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatSelectChange } from '@angular/material/select';
 
 declare let PDBeMolstarPlugin: any;
 
 @Component({
   selector: 'lib-molstar-dialog',
   standalone: true,
-  imports: [CommonModule, MaterialModule],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule],
   templateUrl: './molstar-dialog.component.html',
   styleUrl: './molstar-dialog.component.scss',
 })
@@ -17,22 +19,11 @@ export class MolstarDialogComponent implements AfterViewInit {
 
   public selections: { viewValue: string; value: string }[] = [];
   public selected = signal('');
+  public selectedControl = computed(() => new FormControl(this.selected(), { nonNullable: true }));
 
   @ViewChild('viewContainer') viewContainer!: ElementRef;
 
-  constructor(public dialogRef: MatDialogRef<MolstarDialogComponent>, @Inject(MAT_DIALOG_DATA) public dialogData: any) {
-    effect(() => {
-      const updateParams = {
-        customData: {
-          url: this.selected(),
-          format: 'pdb',
-        },
-        bgColor: { r: 255, g: 255, b: 255 },
-      };
-
-      this.molstarViewInstance.visual.update(updateParams);
-    });
-  }
+  constructor(public dialogRef: MatDialogRef<MolstarDialogComponent>, @Inject(MAT_DIALOG_DATA) public dialogData: any) {}
 
   ngAfterViewInit(): void {
     this.molstarViewInstance = new PDBeMolstarPlugin();
@@ -85,5 +76,16 @@ export class MolstarDialogComponent implements AfterViewInit {
       },
     ];
     this.selected.set(this.selections[1].value);
+  }
+
+  public onSelectionChange(event: MatSelectChange) {
+    const updateParams = {
+      customData: {
+        url: event.value,
+        format: 'pdb',
+      },
+      bgColor: { r: 255, g: 255, b: 255 },
+    };
+    this.molstarViewInstance.visual.update(updateParams);
   }
 }
