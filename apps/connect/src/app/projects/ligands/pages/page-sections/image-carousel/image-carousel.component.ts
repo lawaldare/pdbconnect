@@ -74,12 +74,10 @@ export class ImageCarouselComponent implements AfterViewInit {
 
   public copySmiles(): void {
     this.utilService.copy(this.currentFragment().descriptors.smiles);
-    console.log(this.currentFragment());
   }
 
   public copyInchiKeys(): void {
     this.utilService.copy(this.currentFragment().descriptors.inchikey);
-    console.log(this.currentFragment());
   }
 
   onPreviousClick() {
@@ -106,7 +104,6 @@ export class ImageCarouselComponent implements AfterViewInit {
   }
 
   public openMolstarDialog(): void {
-    console.log(this.currentFragment());
     this.dialog.open(MolstarDialogComponent, {
       disableClose: false,
       panelClass: 'molstarDialog',
@@ -123,15 +120,12 @@ export class ImageCarouselComponent implements AfterViewInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(
         (substructures) => {
-          console.log('substructures', substructures);
           const fragments = substructures[ligandId].fragments;
           this.getSubstructureNamesAndAtoms(fragments);
 
           const scaffolds = substructures[ligandId].scaffolds;
           this.getSubstructureNamesAndAtoms(scaffolds);
 
-          console.log(this.substructureAtoms);
-          console.log(this.fragments());
           if (this.substructureNames().length > 0) {
             this.slides.update((slides) => [...slides, 0, 1]);
             this.renderLigand(this.ligandId);
