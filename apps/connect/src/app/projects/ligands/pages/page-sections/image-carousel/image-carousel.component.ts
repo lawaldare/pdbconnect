@@ -7,7 +7,6 @@ import { ActivatedRoute } from '@angular/router';
 import { of, switchMap } from 'rxjs';
 import { ClickOutsideDirective, UtilService } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
-import { MatDialog } from '@angular/material/dialog';
 import { LigandUtilService } from '../../../ligand-util.service';
 
 @Component({

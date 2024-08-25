@@ -1,0 +1,29 @@
+import { ThemeType } from '@pdbc/core';
+
+export const navSections = [
+  { sectionId: 'description-section', sectionName: 'Description', isSubSection: false },
+  { sectionId: 'properties-section', sectionName: 'Physicochemical properties', isSubSection: false },
+  { sectionId: 'structures-section', sectionName: 'Structures', isSubSection: false },
+  { sectionId: 'interaction-section', sectionName: 'Interaction statistics', isSubSection: false },
+  { sectionId: 'related-ligand-section', sectionName: 'Related ligands', isSubSection: false },
+  { sectionId: 'scaffold-section', sectionName: 'Same scaffold', isSubSection: true },
+  { sectionId: 'similar-ligand-section', sectionName: 'Similar ligands', isSubSection: true },
+  { sectionId: 'ligand-databases-section', sectionName: 'Ligand-specific databases', isSubSection: false },
+];
+
+export const headerSearchConfig = {
+  examples: [
+    { label: 'STI', url: '/ligands/STI' },
+    { label: 'XRS', url: '/ligands/XRS' },
+    { label: 'MHS', url: '/ligands/MHS' },
+    { label: 'HEM', url: '/ligands/HEM' },
+  ],
+  backgroundColor: 'rgba(8, 95, 92, 0.79)',
+  type: ThemeType.PDBEKB,
+};
+
+export const headerLogoMenuConfig = {
+  backgroundColor: '#085F5C',
+  logoType: 'PDBe-KB',
+  headerTitle: 'Ligands',
+};
