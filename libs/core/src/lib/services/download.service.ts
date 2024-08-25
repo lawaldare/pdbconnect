@@ -3,7 +3,6 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { EMPTY, Observable, throwError } from 'rxjs';
 
 import { HttpHeaders, HttpClient } from '@angular/common/http';
-import { environment } from '../../../../../apps/download/environments/environment';
 import { UtilService } from './util.service';
 import { downloadParams, fdsTypeDict } from '../constants/download.constant';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -28,19 +27,18 @@ export class DownloadService {
   private readonly utilService = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
 
-  private readonly fileDownloadUrl = environment.downloadAPIUrl;
   public errorEntryText = signal('');
   public isLoadingEntry = signal(false);
 
-  public initiateDownload(apiType: string, pdbids: string, chosenFormat: string): void {
+  public initiateDownload(apiUrl: string, apiType: string, pdbids: string, chosenFormat: string): void {
     this.isLoadingEntry.set(true);
 
     const correctIds = this.utilService.cleanUpIds(pdbids);
     this.fdsConfig.set({ ids: correctIds });
-    this.getDownloadParams(apiType, chosenFormat);
+    this.getDownloadParams(apiUrl, apiType, chosenFormat);
   }
 
-  private getDownloadParams(apiType: string, chosenFormat: string): void {
+  private getDownloadParams(apiUrl: string, apiType: string, chosenFormat: string): void {
     this.fdstype.set(this.fdsTypeDict[chosenFormat]);
     if (chosenFormat in this.downloadParams) {
       for (const key in this.downloadParams[chosenFormat]) {
@@ -48,11 +46,11 @@ export class DownloadService {
         this.fdsConfig()[key] = value;
       }
     }
-    this.postFile(apiType, chosenFormat);
+    this.postFile(apiUrl, apiType, chosenFormat);
   }
 
-  private postFile(apiType: string, chosenFormat: string): void {
-    this.postFileDownloadServer(apiType, this.fdstype(), this.fdsConfig())
+  private postFile(apiUrl: string, apiType: string, chosenFormat: string): void {
+    this.postFileDownloadServer(apiUrl, apiType, this.fdstype(), this.fdsConfig())
       .pipe(
         map((response) => {
           this.errorEntryText.set('');
@@ -91,8 +89,8 @@ export class DownloadService {
       .subscribe();
   }
 
-  public postFileDownloadServer(apiType: string, fdsType: string, fdsConfig: Record<string, string[]>): Observable<any> {
-    return this.http.post<any>(`${this.fileDownloadUrl}/${apiType}/${fdsType}`, fdsConfig, this.httpOptions).pipe(
+  private postFileDownloadServer(apiUrl: string, apiType: string, fdsType: string, fdsConfig: Record<string, string[]>): Observable<any> {
+    return this.http.post<any>(`${apiUrl}/${apiType}/${fdsType}`, fdsConfig, this.httpOptions).pipe(
       catchError((err) => {
         let errMsg = `${err.status}, ${err.statusText}`;
         if (err.status == 422) {
@@ -103,7 +101,7 @@ export class DownloadService {
     );
   }
 
-  public getFileDownloadServer(hashedurl: string): Observable<any> {
+  private getFileDownloadServer(hashedurl: string): Observable<any> {
     return this.http
       .get<any>(hashedurl, {
         observe: 'response',

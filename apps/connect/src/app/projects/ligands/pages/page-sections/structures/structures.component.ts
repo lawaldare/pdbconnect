@@ -17,6 +17,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
 import { EMPTY } from 'rxjs';
 import { LigandUtilService } from '../../../ligand-util.service';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'pdbc-structures',
@@ -52,6 +53,7 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   private readonly downloadService = inject(DownloadService);
   private readonly ligandUtilService = inject(LigandUtilService);
+  private readonly fileDownloadUrl = environment.downloadAPIUrl;
 
   public showOptions = false;
   public pageSizeOptions = signal([5, 10, 15, 20]);
@@ -125,11 +127,11 @@ export class StructuresComponent implements AfterViewInit, OnInit {
     const uniqueData = [...new Set(mappedData)];
 
     if (uniqueData.length <= 100) {
-      this.downloadService.initiateDownload('entry', uniqueData.join(','), 'updated-mmCIF');
+      this.downloadService.initiateDownload(this.fileDownloadUrl, 'entry', uniqueData.join(','), 'updated-mmCIF');
     } else {
       //go to download service
       localStorage.setItem('pdbIds', uniqueData.join(','));
-      const url = 'https://wwwdev.ebi.ac.uk/pdbe/dowload/docs';
+      const url = 'https://wwwdev.ebi.ac.uk/pdbe/download/docs';
       window.open(url);
     }
   }

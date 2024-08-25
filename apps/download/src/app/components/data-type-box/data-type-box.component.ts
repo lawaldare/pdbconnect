@@ -1,10 +1,11 @@
-import { Component, DestroyRef, inject, input, OnInit, signal } from '@angular/core';
+import { Component, inject, input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DownloadService, MaterialModule } from '@pdbc/core';
 import { DataType } from '../../models/data-type-box.model';
 import { DataContentComponent } from '../data-content/data-content.component';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-data-type-box',
@@ -20,6 +21,7 @@ export class DataTypeBoxComponent implements OnInit {
   public pdbid!: string;
   public isLoadingEntry = this.downloadService.isLoadingEntry;
   public errorEntryText = this.downloadService.errorEntryText;
+  private readonly fileDownloadUrl = environment.downloadAPIUrl;
 
   ngOnInit(): void {
     if (localStorage['pdbIds']) {
@@ -40,7 +42,7 @@ export class DataTypeBoxComponent implements OnInit {
       return;
     }
 
-    this.downloadService.initiateDownload(apiType, this.pdbid, this.chosenformat);
+    this.downloadService.initiateDownload(this.fileDownloadUrl, apiType, this.pdbid, this.chosenformat);
     localStorage.clear();
   }
 }
