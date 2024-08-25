@@ -21,21 +21,23 @@ export class MolstarDialogComponent implements AfterViewInit {
   public selected = signal('');
   public selectedControl = computed(() => new FormControl(this.selected(), { nonNullable: true }));
 
-  private readonly selectionConfig = {
-    data: [
-      {
-        struct_asym_id: 'A',
-        atoms: this.dialogData.atoms,
-        color: { r: 255, g: 255, b: 0 },
-        // focus: true,
-      },
-    ],
-    // nonSelectedColor: { r: 130, g: 130, b: 130 },
-  };
+  private selectionConfig = {};
 
   @ViewChild('viewContainer') viewContainer!: ElementRef;
 
-  constructor(public dialogRef: MatDialogRef<MolstarDialogComponent>, @Inject(MAT_DIALOG_DATA) public dialogData: any) {}
+  constructor(public dialogRef: MatDialogRef<MolstarDialogComponent>, @Inject(MAT_DIALOG_DATA) public dialogData: any) {
+    this.selectionConfig = {
+      data: [
+        {
+          struct_asym_id: 'A',
+          atoms: dialogData.atoms,
+          color: { r: 255, g: 255, b: 0 },
+          focus: true,
+        },
+      ],
+      // nonSelectedColor: { r: 130, g: 130, b: 130 },
+    };
+  }
 
   ngAfterViewInit(): void {
     this.molstarViewInstance = new PDBeMolstarPlugin();

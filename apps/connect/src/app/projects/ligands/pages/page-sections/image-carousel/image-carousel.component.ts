@@ -268,5 +268,7 @@ export class ImageCarouselComponent implements AfterViewInit {
     this.divsRendered = [];
     this.substructureNames.set([]);
     this.substructureAtoms = [];
+    this.currentSlide.set(0);
+    this.tempFragments = [];
   }
 }
