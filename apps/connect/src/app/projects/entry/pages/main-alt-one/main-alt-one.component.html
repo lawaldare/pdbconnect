@@ -67,18 +67,7 @@
             ></lib-pdbe-molstar-for-apps>
             <div style="margin-top: 16px; margin-bottom: 16px">
               @if (molstarLoaded) {
-              <pdbc-pdbe-button
-                [backgroundColor]="'#C66717'"
-                [fontSize]="'16px'"
-                [fontColor]="'#FFFFFF'"
-                [borderColor]="'#C66717'"
-                [shadowColor]="'#B65417'"
-                [label]="'View annotated 3D'"
-                [paddingSize]="'Small'"
-                [mobileIconName]="'none'"
-                [buttonWidth]="'100%'"
-                (click)="triggerAnnotatatedView()"
-              ></pdbc-pdbe-button>
+              <button class="vf-button vf-button--accent" style="width: 100%" (click)="triggerAnnotatatedView()">View annotated 3D</button>
               }
             </div>
           </div>

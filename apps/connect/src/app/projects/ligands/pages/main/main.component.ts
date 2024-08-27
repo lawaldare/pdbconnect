@@ -10,7 +10,6 @@ import { RelatedLigandsComponent } from '../page-sections/related-ligands/relate
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
-import { PdbeButtonComponent } from '@pdbe-lib/button';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { AggregatedApiService, DescriptionData } from '../../services/aggregated-api.service';
 import { DownloadOption } from '../../data-models/download.model';
@@ -31,7 +30,6 @@ import { headerLogoMenuConfig, headerSearchConfig, navSections } from '../../lig
     PdbeHeaderLogoMenuComponent,
     PdbeHeaderSearchComponent,
     PdbeNavMenuComponent,
-    PdbeButtonComponent,
     PdbeChipsComponent,
     DescriptionComponent,
     ImageCarouselComponent,

@@ -176,6 +176,15 @@ a.vf-button:focus {
   font-size: 16px;
 }
 
+.vf-button--accent {
+  --vf-button-border-color: #c66717;
+  --vf-button-background-color: #c66717;
+  --vf-button-shadow-border-color: #b65417;
+  --vf-button-shadow-background-color: #b65417;
+  --vf-button-border-color--visited: #b65417;
+  font-size: 16px;
+}
+
 .vf-button--search-pdbe {
   --vf-button-background-color: #ffffff;
   --vf-button-border-color: var(--vf-color--green--dark);
