@@ -16,7 +16,7 @@ stages:
     paths:
       - .npm/
   before_script:
-    - npm ci --force --cache .npm --prefer-offline
+    - npm ci --legacy-peer-deps --cache .npm --prefer-offline
     - NX_HEAD=$CI_COMMIT_SHA
     - NX_BASE=${CI_MERGE_REQUEST_DIFF_BASE_SHA:-$CI_COMMIT_BEFORE_SHA}
 
