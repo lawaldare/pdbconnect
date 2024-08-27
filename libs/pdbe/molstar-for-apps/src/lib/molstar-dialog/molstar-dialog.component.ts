@@ -30,7 +30,7 @@ export class MolstarDialogComponent implements AfterViewInit {
       data: [
         {
           struct_asym_id: 'A',
-          atoms: dialogData.atoms,
+          atoms: dialogData.atoms ?? [],
           color: { r: 255, g: 255, b: 0 },
           focus: true,
         },
