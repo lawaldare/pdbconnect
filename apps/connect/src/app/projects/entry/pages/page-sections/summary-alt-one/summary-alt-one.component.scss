@@ -27,6 +27,11 @@
   display: none;
 }
 
+::ng-deep lib-tool-tip {
+  position: relative !important;
+  margin-left: 5px;
+}
+
 @media screen and (max-width: 1024px) {
   // .summary-container {
   //     margin-right: 34px;

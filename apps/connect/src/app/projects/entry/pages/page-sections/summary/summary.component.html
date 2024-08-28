@@ -8,22 +8,15 @@
         <span class="info-row-content">
           <!-- TODO convert this component to use routerLink -->
           <span *ngFor="let sourceOrganism of sourceOrganisms; index as i" class="info-row-content-word">
-            <pdbc-pdbe-link-button
-              [externalLink]="true"
-              [label]="sourceOrganism"
-              [url]="
+            <a
+              [href]="
                 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22q_organism_name%22:%5B%7B%22value%22:%22' +
                 sourceOrganism +
                 '%22,%22condition1%22:%22AND%22,%22condition2%22:%22Contains%22%7D%5D,%22resultState%22:%7B%22tabIndex%22:0,%22paginationIndex%22:1,%22perPage%22:%2210%22,%22sortBy%22:%22Sort%20by%22%7D%7D'
               "
-              [fontStyle]="'paragraph-3'"
-              [fontColor]="'#3B6FB6'"
-              [hoverColor]="'#193F90'"
-              [visitedColor]="'#563D82'"
-              [focusBorderColor]="'#3B6FB6'"
-              [activeFontWeight]="300"
-              [whiteSpace]="'normal'"
-            ></pdbc-pdbe-link-button>
+              target="_blank"
+              >{{ sourceOrganism }}</a
+            >
             <br />
           </span>
         </span>
@@ -33,34 +26,8 @@
         <span class="info-row-content">
           <span class="info-row-content-line" style="white-space: nowrap; display: flex; gap: 12px">
             {{ experimentType }}
-            <pdbc-pdbe-link-button
-              class="hideMobile"
-              [externalLink]="false"
-              [label]="'go to Experiments info'"
-              [url]="'exp-validation-section'"
-              [fontStyle]="'paragraph-3'"
-              [fontColor]="'#3B6FB6'"
-              [hoverColor]="'#193F90'"
-              [visitedColor]="'#563D82'"
-              [focusBorderColor]="'#3B6FB6'"
-              [activeFontWeight]="300"
-              [whiteSpace]="'nowrap'"
-            ></pdbc-pdbe-link-button>
           </span>
           <span *ngIf="resolutionValue" class="info-row-content-line">{{ resolutionValue }}Å resolution</span>
-          <pdbc-pdbe-link-button
-            class="showMobile"
-            [externalLink]="false"
-            [label]="'go to Experiments info'"
-            [url]="'exp-validation-section'"
-            [fontStyle]="'paragraph-3'"
-            [fontColor]="'#3B6FB6'"
-            [hoverColor]="'#193F90'"
-            [visitedColor]="'#563D82'"
-            [focusBorderColor]="'#3B6FB6'"
-            [activeFontWeight]="300"
-            [whiteSpace]="'normal'"
-          ></pdbc-pdbe-link-button>
         </span>
       </div>
       <div class="info-row">
@@ -72,38 +39,19 @@
         <span class="info-row-content">
           <span class="info-row-content-line">
             {{ publicationTitle }}
-            <pdbc-pdbe-link-button
-              [externalLink]="false"
-              [label]="'go to Citations'"
-              [url]="'citations-section'"
-              [fontStyle]="'paragraph-3'"
-              [fontColor]="'#3B6FB6'"
-              [hoverColor]="'#193F90'"
-              [visitedColor]="'#563D82'"
-              [focusBorderColor]="'#3B6FB6'"
-              [activeFontWeight]="300"
-              [whiteSpace]="'normal'"
-            ></pdbc-pdbe-link-button>
           </span>
           <span class="info-row-content-line">
             <span *ngFor="let publicationOrEntryAuthor of publicationOrEntryAuthors; index as i" class="info-row-content-word">
               <!-- <span *ngIf="i > 0 && i + 1 < publicationOrEntryAuthors.length" class="info-row-content-word">,</span> -->
-              <pdbc-pdbe-link-button
-                [externalLink]="true"
-                [label]="publicationOrEntryAuthor + getComma(i)"
-                [url]="
+              <a
+                [href]="
                   'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22q_all_authors%22:%5B%7B%22value%22:%22' +
                   publicationOrEntryAuthor +
                   '%22,%22condition1%22:%22AND%22,%22condition2%22:%22Contains%22%7D%5D,%22resultState%22:%7B%22tabIndex%22:0,%22paginationIndex%22:1,%22perPage%22:%2210%22,%22sortBy%22:%22Sort%20by%22%7D%7D'
                 "
-                [fontStyle]="'paragraph-3'"
-                [fontColor]="'#3B6FB6'"
-                [hoverColor]="'#193F90'"
-                [visitedColor]="'#563D82'"
-                [focusBorderColor]="'#3B6FB6'"
-                [activeFontWeight]="300"
-                [whiteSpace]="'normal'"
-              ></pdbc-pdbe-link-button>
+                target="_blank"
+                >{{ publicationOrEntryAuthor + getComma(i) }}</a
+              >
             </span>
           </span>
           <span *ngIf="publicationJournal" class="info-row-content-line">
@@ -117,56 +65,20 @@
       <div *ngIf="publicationPMID" class="info-row">
         <span class="info-row-title">PMID</span>
         <span class="info-row-content-line">
-          <pdbc-pdbe-link-button
-            [externalLink]="true"
-            [label]="publicationPMID"
-            [url]="'https://europepmc.org/article/MED/' + publicationPMID"
-            [fontStyle]="'paragraph-3'"
-            [fontColor]="'#3B6FB6'"
-            [hoverColor]="'#193F90'"
-            [visitedColor]="'#563D82'"
-            [focusBorderColor]="'#3B6FB6'"
-            [activeFontWeight]="300"
-            [mobileIconName]="'link'"
-            [whiteSpace]="'normal'"
-          ></pdbc-pdbe-link-button>
+          <a [href]="'https://europepmc.org/article/MED/' + publicationPMID" target="_blank">{{ publicationPMID }}</a>
         </span>
       </div>
       <div class="info-row">
         <span class="info-row-title">PDB entry DOI</span>
         <span class="info-row-content">
-          <pdbc-pdbe-link-button
-            [externalLink]="true"
-            [label]="pdbEntryDOI"
-            [url]="'https://doi.org/' + pdbEntryDOI"
-            [fontStyle]="'paragraph-3'"
-            [fontColor]="'#3B6FB6'"
-            [hoverColor]="'#193F90'"
-            [visitedColor]="'#563D82'"
-            [focusBorderColor]="'#3B6FB6'"
-            [activeFontWeight]="300"
-            [mobileIconName]="'link'"
-            [whiteSpace]="'normal'"
-          ></pdbc-pdbe-link-button>
+          <a [href]="'https://doi.org/' + pdbEntryDOI" target="_blank">{{ pdbEntryDOI }}</a>
         </span>
       </div>
       <div *ngIf="emdbEntries.length > 0" class="info-row">
         <span class="info-row-title">Related structures</span>
         <span class="info-row-content-line">
           <span *ngFor="let emdbEntry of emdbEntries; index as i" class="info-row-content-word">
-            <pdbc-pdbe-link-button
-              [externalLink]="true"
-              [label]="emdbEntry"
-              [url]="'https://www.ebi.ac.uk/emdb/' + emdbEntry"
-              [fontStyle]="'paragraph-3'"
-              [fontColor]="'#3B6FB6'"
-              [hoverColor]="'#193F90'"
-              [visitedColor]="'#563D82'"
-              [focusBorderColor]="'#3B6FB6'"
-              [activeFontWeight]="300"
-              [mobileIconName]="'link'"
-              [whiteSpace]="'normal'"
-            ></pdbc-pdbe-link-button>
+            <a [href]="'https://www.ebi.ac.uk/emdb/' + emdbEntry" target="_blank">{{ emdbEntry }}</a>
           </span>
         </span>
         <!-- <span class="info-row-content">

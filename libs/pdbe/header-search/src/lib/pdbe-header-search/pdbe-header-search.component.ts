@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
-import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { HeaderSearchConfig, ThemeType } from '@pdbc/core';
@@ -12,7 +11,7 @@ import { RouterModule } from '@angular/router';
 @Component({
   selector: 'pdbc-pdbe-header-search',
   standalone: true,
-  imports: [CommonModule, PdbeLinkButtonComponent, PdbeChipsComponent, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, PdbeChipsComponent, ReactiveFormsModule, RouterModule],
   templateUrl: './pdbe-header-search.component.html',
   styleUrls: ['./pdbe-header-search.component.scss'],
 })

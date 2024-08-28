@@ -61,19 +61,7 @@
             }
             <div style="height: 12px"></div>
             @if (entryData.qualityScores.pdbredo) {
-            <pdbc-pdbe-link-button
-              [externalLink]="true"
-              [label]="'PDB-REDO'"
-              [url]="'https://pdb-redo.eu/db/' + entryId"
-              [fontStyle]="'paragraph-3'"
-              [fontColor]="'#3B6FB6'"
-              [hoverColor]="'#193F90'"
-              [visitedColor]="'#563D82'"
-              [focusBorderColor]="'#3B6FB6'"
-              [activeFontWeight]="300"
-              [mobileIconName]="'link'"
-              [whiteSpace]="'normal'"
-            ></pdbc-pdbe-link-button>
+            <a [href]="'https://pdb-redo.eu/db/' + entryId" target="_blank">PDB-REDO</a>
             <pdbc-struc-quality-gradients [componentType]="'GeometryFit_RdToGr'" [renderGradients]="entryData.qualityScores.pdbredo"></pdbc-struc-quality-gradients>
             <div class="paragraph-4">
               The sliders show the change in model quality between the archive PDB entry and the PDB-REDO entry. PDB-REDO is an external service and is not a part of

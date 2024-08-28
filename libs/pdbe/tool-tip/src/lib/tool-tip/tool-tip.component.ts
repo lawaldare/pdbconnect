@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, input, Input, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({

@@ -11,7 +11,6 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction } from '../../../data-models/structure.model';
 import { IntxDataUrl, PDBIntxData } from '../../../data-models/interaction.model';
@@ -24,7 +23,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 @Component({
   selector: 'pdbc-interaction',
   standalone: true,
-  imports: [CommonModule, PdbeLinkButtonComponent, MaterialModule],
+  imports: [CommonModule, MaterialModule],
   templateUrl: './interaction.component.html',
   styleUrl: './interaction.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

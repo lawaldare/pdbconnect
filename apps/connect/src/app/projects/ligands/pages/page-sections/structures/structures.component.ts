@@ -2,7 +2,6 @@ import { Component, ViewChild, AfterViewInit, OnInit, inject, DestroyRef, signal
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Chain, LigandStructure } from '../../../data-models/structure.model';
-import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -22,16 +21,7 @@ import { environment } from '../../../../../../environments/environment';
 @Component({
   selector: 'pdbc-structures',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    PdbeLinkButtonComponent,
-    ClickOutsideDirective,
-    ReactiveFormsModule,
-    ToolTipComponent,
-    LigandInteractingChainsNumberPipe,
-    MaterialModule,
-  ],
+  imports: [CommonModule, FormsModule, ClickOutsideDirective, ReactiveFormsModule, ToolTipComponent, LigandInteractingChainsNumberPipe, MaterialModule],
   templateUrl: './structures.component.html',
   styleUrls: ['./structures.component.scss'],
   providers: [LigandInteractingChainsNumberPipe],

@@ -1,7 +1,6 @@
 import { Component, Input, CUSTOM_ELEMENTS_SCHEMA, Renderer2, ElementRef, ViewChild, AfterViewInit, DestroyRef, inject, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LigandGrid } from '../../../data-models/related-ligands.model';
-import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction } from '../../../data-models/structure.model';
 import { RouterModule } from '@angular/router';
@@ -13,7 +12,7 @@ import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 @Component({
   selector: 'pdbc-ligand-grid',
   standalone: true,
-  imports: [CommonModule, PdbeLinkButtonComponent, RouterModule, MaterialModule],
+  imports: [CommonModule, RouterModule, MaterialModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './ligand-grid.component.html',
   styleUrl: './ligand-grid.component.scss',
