@@ -1,11 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 /* You can add global styles to this file, and also import other style files */
 /* You can add global styles to this file, and also import other style files */
-@import 'libs/pdbe/styles/src/lib/pdbe-styles/icons.scss';
-@import 'libs/pdbe/styles/src/lib/pdbe-styles/typography.scss';
-@import 'libs/pdbe/styles/src/lib/pdbe-styles/templates.scss';
-@import 'libs/pdbe/styles/src/lib/pdbe-styles/am_custom_style.scss';
-@import 'libs/pdbe/styles/src/lib/pdbe-styles/_button.scss';
+@import 'libs/core/src/lib/styles/pdbe-styles/typography.scss';
+@import 'libs/core/src/lib/styles/pdbe-styles/templates.scss';
+@import 'libs/core/src/lib/styles/pdbe-styles/am_custom_style.scss';
+@import 'libs/core/src/lib/styles/pdbe-styles/_button.scss';
 @import 'libs/core/src/lib/material.scss';
 
 html,

@@ -63,4 +63,14 @@ export class LigandUtilService {
       },
     });
   }
+
+  public downloadJSON(data: any, name: string) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name}.json`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
 }

@@ -1,9 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
-@import 'libs/pdbe/styles/src/lib/pdbe-styles/icons.scss';
-@import 'libs/pdbe/styles/src/lib/pdbe-styles/typography.scss';
-@import 'libs/pdbe/styles/src/lib/pdbe-styles/templates.scss';
-@import 'libs/pdbe/styles/src/lib/pdbe-styles/am_custom_style.scss';
-@import 'libs/pdbe/styles/src/lib/pdbe-styles/_button.scss';
+@import 'libs/core/src/lib/styles/pdbe-styles/typography.scss';
+@import 'libs/core/src/lib/styles/icons.scss';
+@import 'libs/core/src/lib/styles/pdbe-styles/templates.scss';
+@import 'libs/core/src/lib/styles/pdbe-styles/am_custom_style.scss';
+@import 'libs/core/src/lib/styles/pdbe-styles/_button.scss';
 @import 'libs/core/src/lib/material.scss';
 
 body {
@@ -18,40 +18,6 @@ body {
 body {
   margin: 0;
   font-family: Roboto, 'Helvetica Neue', sans-serif;
-}
-
-.bond-Dialog {
-  max-width: 60vw !important;
-  width: 60vw;
-  height: 90%;
-}
-
-.bond-Dialog .mat-dialog-container {
-  padding: 0px;
-}
-
-.ligand-total-Dialog {
-  max-width: 30vw !important;
-  width: 30vw;
-  height: 50%;
-}
-
-.ligand-total-Dialog .mat-dialog-container {
-  padding: 0px;
-}
-
-.molstarDialog {
-  max-width: 95vw !important;
-  width: 95vw;
-  height: 90%;
-}
-
-.molstarDialog .mat-dialog-container {
-  padding: 0px;
-}
-
-.mat-mdc-form-field-subscript-wrapper {
-  display: none !important;
 }
 
 a {

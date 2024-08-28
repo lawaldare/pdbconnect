@@ -70,3 +70,37 @@ mat-tab-header {
 .mat-mdc-text-field-wrapper {
   height: 10px;
 }
+
+.bond-Dialog {
+  max-width: 60vw !important;
+  width: 60vw;
+  height: 90%;
+}
+
+.bond-Dialog .mat-dialog-container {
+  padding: 0px;
+}
+
+.ligand-total-Dialog {
+  max-width: 30vw !important;
+  width: 30vw;
+  height: 50%;
+}
+
+.ligand-total-Dialog .mat-dialog-container {
+  padding: 0px;
+}
+
+.molstarDialog {
+  max-width: 95vw !important;
+  width: 95vw;
+  height: 90%;
+}
+
+.molstarDialog .mat-dialog-container {
+  padding: 0px;
+}
+
+.mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
