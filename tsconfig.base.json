@@ -18,26 +18,17 @@
       "@pdbc/core": ["libs/core/src/index.ts"],
       "@pdbc/lib-docs": ["libs/lib-docs/src/index.ts"],
       "@pdbe-lib/chips": ["libs/pdbe/chips/src/index.ts"],
-      "@pdbe-lib/dropdown": ["libs/pdbe/dropdown/src/index.ts"],
       "@pdbe-lib/dropdown-menu": ["libs/pdbe/dropdown-menu/src/index.ts"],
       "@pdbe-lib/header-logo-menu": ["libs/pdbe/header-logo-menu/src/index.ts"],
       "@pdbe-lib/header-search": ["libs/pdbe/header-search/src/index.ts"],
-      "@pdbe-lib/help-icon": ["libs/pdbe/help-icon/src/index.ts"],
-      "@pdbe-lib/hero-banner": ["libs/pdbe/hero-banner/src/index.ts"],
-      "@pdbe-lib/link-button": ["libs/pdbe/link-button/src/index.ts"],
       "@pdbe-lib/molstar-for-apps": ["libs/pdbe/molstar-for-apps/src/index.ts"],
       "@pdbe-lib/nav-menu": ["libs/pdbe/nav-menu/src/index.ts"],
-      "@pdbe-lib/page-header": ["libs/pdbe/page-header/src/index.ts"],
-      "@pdbe-lib/search-autocomplete": ["libs/pdbe/search-autocomplete/src/index.ts"],
       "@pdbe-lib/shared-services": ["libs/pdbe/shared-services/src/index.ts"],
       "@pdbe-lib/styles": ["libs/pdbe/styles/src/index.ts"],
       "@pdbe-lib/swagger-docs": ["libs/pdbe/swagger-docs/src/index.ts"],
       "@pdbe-lib/tool-tip": ["libs/pdbe/tool-tip/src/index.ts"],
-      "@vf-lib/button": ["libs/vf/button/src/index.ts"],
       "@vf-lib/ebi-footer": ["libs/vf/ebi-footer/src/index.ts"],
-      "@vf-lib/ebi-header": ["libs/vf/ebi-header/src/index.ts"],
-      "@vf-lib/link": ["libs/vf/link/src/index.ts"],
-      "@vf-lib/nav": ["libs/vf/nav/src/index.ts"]
+      "@vf-lib/ebi-header": ["libs/vf/ebi-header/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
