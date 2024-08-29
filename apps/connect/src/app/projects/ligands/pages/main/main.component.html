@@ -19,7 +19,7 @@
       </section>
       <section class="description">
         <pdbc-description [description]="description" [ligandId]="ligandId" />
-        <pdbc-image-carousel #imageCarouselRef (sendCurrentFragment)="getCurrentFragment($event)" />
+        <pdbc-image-carousel #imageCarouselRef />
       </section>
       <section class="property">
         <pdbc-properties [properties]="description.properties" />

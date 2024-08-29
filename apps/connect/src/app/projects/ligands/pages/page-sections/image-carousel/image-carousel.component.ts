@@ -170,7 +170,7 @@ export class ImageCarouselComponent implements AfterViewInit {
         this.structureDescription = `${this.substructureNames()[this.currentSlide() - 2]} highlighted in gray`;
     }
 
-    this.sendCurrentFragment.emit(this.currentFragment());
+    this.ligandUtilService.currentFragment.set(this.currentFragment());
   }
 
   private setDepictionProperty(el: HTMLElement, index: number) {

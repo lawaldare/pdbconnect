@@ -84,11 +84,7 @@ export class LigandsMainPageComponent implements OnInit {
       });
   }
 
-  public getCurrentFragment(currentFragment: Fragment): void {
-    this.currentFragment.set(currentFragment);
-  }
-
   public openMolstarDialog(): void {
-    this.ligandUtilService.openMolstarDialog(this.currentFragment(), this.ligandId);
+    this.ligandUtilService.openMolstarDialog(this.ligandUtilService.currentFragment(), this.ligandId);
   }
 }

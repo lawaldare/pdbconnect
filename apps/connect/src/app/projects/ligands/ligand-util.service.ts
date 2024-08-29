@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Fragment, LigandStructure } from './data-models/structure.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
@@ -73,4 +73,6 @@ export class LigandUtilService {
     a.click();
     window.URL.revokeObjectURL(url);
   }
+
+  public currentFragment = signal<Fragment>({} as Fragment);
 }
