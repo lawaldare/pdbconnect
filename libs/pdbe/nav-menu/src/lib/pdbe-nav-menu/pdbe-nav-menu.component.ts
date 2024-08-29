@@ -204,7 +204,7 @@ export class PdbeNavMenuComponent implements OnInit {
     (<HTMLElement>document.activeElement)?.blur();
 
     // Necessary so clicked element remains active while scrollIntoView is scrolling
-    let scrollTimeout: string | number | NodeJS.Timeout | undefined;
+    let scrollTimeout: string | number | any | undefined;
     const onScrollEnd = (_e: Event) => {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
