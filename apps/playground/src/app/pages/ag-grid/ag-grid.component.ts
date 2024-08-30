@@ -73,7 +73,7 @@ export class AGridComponent {
   private readonly playgroundService = inject(PlaygroundService);
   public rowGridData: IRow[] = [];
   public colGridDefs: ColDef[] = [
-    { field: 'mission', checkboxSelection: true, width: 150 },
+    { field: 'mission', checkboxSelection: true, width: 150, headerCheckboxSelection: true },
     { field: 'company', cellRenderer: CompanyLogoRenderer, width: 130 },
     { field: 'location', width: 225 },
     { field: 'date', valueFormatter: this.dateFormatter },
