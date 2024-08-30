@@ -109,4 +109,8 @@ export class PlaygroundService {
       })
     );
   }
+
+  public loadGridData(): Observable<any> {
+    return this.http.get<any[]>('https://www.ag-grid.com/example-assets/space-mission-data.json');
+  }
 }

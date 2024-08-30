@@ -1,5 +1,5 @@
 import { Route } from '@angular/router';
-import { SummaryComponent } from './pages/summary/summary.component';
+import { AGridComponent } from './pages/ag-grid/ag-grid.component';
 import { CitationComponent } from './pages/citation/citation.component';
 import { OthersComponent } from './pages/others/others.component';
 import { ButtonsPlaygroundComponent } from './pages/buttons-playground/buttons-playground.component';
@@ -10,7 +10,7 @@ export const appRoutes: Route[] = [
   { path: '', pathMatch: 'full', redirectTo: 'citation', data: { showNavigationBar: true } },
   { path: 'citation', component: CitationComponent, title: 'Citation Page', data: { showNavigationBar: true } },
   { path: 'citation/:entryId', component: CitationComponent, title: 'Citation Page', data: { showNavigationBar: true } },
-  { path: 'summary', component: SummaryComponent, title: 'Summary Page', data: { showNavigationBar: true } },
+  { path: 'ag-grid', component: AGridComponent, title: 'AG-Grid Page', data: { showNavigationBar: true } },
   { path: 'others', component: OthersComponent, title: 'Summary Page', data: { showNavigationBar: true } },
   { path: 'buttons', component: ButtonsPlaygroundComponent, title: 'Buttons Page', data: { showNavigationBar: true } },
   {
