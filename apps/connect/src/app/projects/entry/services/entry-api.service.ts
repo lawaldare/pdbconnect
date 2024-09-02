@@ -141,12 +141,12 @@ export class EntryApiService {
 
   fetchEntryPagesData(pdbId: string): Observable<FromAPIOutput> {
     const dataToRetrieve = [
-      { name: 'PDBeEntrySummary', url: `${environment.pdbeApiUrl}pdb/entry/summary/${pdbId}` },
-      { name: 'PDBeEntryMolecules', url: `${environment.pdbeApiUrl}pdb/entry/molecules/${pdbId}` },
-      { name: 'PDBeEntryExperiment', url: `${environment.pdbeApiUrl}pdb/entry/experiment/${pdbId}` },
-      { name: 'PDBeEntryPublications', url: `${environment.pdbeApiUrl}pdb/entry/publications/${pdbId}` },
-      { name: 'PDBEntryFiles', url: `${environment.pdbeApiUrl}pdb/entry/files/${pdbId}` },
-      { name: 'ValidationSummaryQualityScores', url: `${environment.pdbeApiUrl}validation/summary_quality_scores/entry/${pdbId}` },
+      { name: 'PDBeEntrySummary', url: `${environment.pdbeBaseUrl}pdb/entry/summary/${pdbId}` },
+      { name: 'PDBeEntryMolecules', url: `${environment.pdbeBaseUrl}pdb/entry/molecules/${pdbId}` },
+      { name: 'PDBeEntryExperiment', url: `${environment.pdbeBaseUrl}pdb/entry/experiment/${pdbId}` },
+      { name: 'PDBeEntryPublications', url: `${environment.pdbeBaseUrl}pdb/entry/publications/${pdbId}` },
+      { name: 'PDBEntryFiles', url: `${environment.pdbeBaseUrl}pdb/entry/files/${pdbId}` },
+      { name: 'ValidationSummaryQualityScores', url: `${environment.pdbeBaseUrl}validation/summary_quality_scores/entry/${pdbId}` },
       { name: 'PDBRedoQualityScores', url: `https://pdb-redo.eu/db/${pdbId}/pdbe.json` },
     ];
     return this.dataRetrievalService.fetchUntypedData(dataToRetrieve);
@@ -154,15 +154,15 @@ export class EntryApiService {
 
   fetchEntryPagesAltOneData(pdbId: string): Observable<FromAPIOutputAltOne> {
     const dataToRetrieve = [
-      { name: 'PDBeEntrySummary', url: `${environment.pdbeApiUrl}pdb/entry/summary/${pdbId}` },
-      { name: 'PDBeEntryMolecules', url: `${environment.pdbeApiUrl}pdb/entry/molecules/${pdbId}` },
-      { name: 'PDBeEntryExperiment', url: `${environment.pdbeApiUrl}pdb/entry/experiment/${pdbId}` },
-      { name: 'PDBeEntryPublications', url: `${environment.pdbeApiUrl}pdb/entry/publications/${pdbId}` },
-      { name: 'PDBEntryFiles', url: `${environment.pdbeApiUrl}pdb/entry/files/${pdbId}` },
-      { name: 'ValidationSummaryQualityScores', url: `${environment.pdbeApiUrl}validation/summary_quality_scores/entry/${pdbId}` },
+      { name: 'PDBeEntrySummary', url: `${environment.pdbeBaseUrl}pdb/entry/summary/${pdbId}` },
+      { name: 'PDBeEntryMolecules', url: `${environment.pdbeBaseUrl}pdb/entry/molecules/${pdbId}` },
+      { name: 'PDBeEntryExperiment', url: `${environment.pdbeBaseUrl}pdb/entry/experiment/${pdbId}` },
+      { name: 'PDBeEntryPublications', url: `${environment.pdbeBaseUrl}pdb/entry/publications/${pdbId}` },
+      { name: 'PDBEntryFiles', url: `${environment.pdbeBaseUrl}pdb/entry/files/${pdbId}` },
+      { name: 'ValidationSummaryQualityScores', url: `${environment.pdbeBaseUrl}validation/summary_quality_scores/entry/${pdbId}` },
       { name: 'PDBRedoQualityScores', url: `https://pdb-redo.eu/db/${pdbId}/pdbe.json` },
-      { name: 'PDBComplexData', url: `${environment.pdbeAggregatedApiUrl}complex/details/${pdbId}?id_type=pdb_id` },
-      { name: 'PDBEntryModifiedAAorNA', url: `${environment.pdbeApiUrl}pdb/entry/modified_AA_or_NA/${pdbId}` },
+      { name: 'PDBComplexData', url: `${environment.pdbeBaseUrl}aggregated-api/complex/details/${pdbId}?id_type=pdb_id` },
+      { name: 'PDBEntryModifiedAAorNA', url: `${environment.pdbeBaseUrl}pdb/entry/modified_AA_or_NA/${pdbId}` },
       // GET /pdb/entry/cofactor/{pdb_id} ???
     ];
     return this.dataRetrievalService.fetchUntypedData(dataToRetrieve);
@@ -170,7 +170,7 @@ export class EntryApiService {
 
   fetchLigandSummariesForEntry(chemCompIds: string[]): Observable<{ [key: string]: PDBCompoundSummary }> {
     const dataToRetrieve = chemCompIds.map((chemCompId) => {
-      return { name: chemCompId, url: `${environment.pdbeAggregatedApiUrl}compound/summary/${chemCompId}` };
+      return { name: chemCompId, url: `${environment.pdbeBaseUrl}api/pdb/compound/summary/${chemCompId}` };
     });
     return this.dataRetrievalService.fetchUntypedData(dataToRetrieve);
   }

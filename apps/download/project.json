@@ -25,7 +25,7 @@
             "output": "./assets/"
           }
         ],
-        "styles": ["apps/download/src/styles.scss"],
+        "styles": ["@angular/material/prebuilt-themes/indigo-pink.css", "apps/download/src/styles.scss"],
         "scripts": [],
         "customWebpackConfig": {
           "path": "apps/download/webpack.config.js"

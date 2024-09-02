@@ -43,7 +43,7 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   private readonly downloadService = inject(DownloadService);
   private readonly ligandUtilService = inject(LigandUtilService);
-  private readonly fileDownloadUrl = environment.downloadAPIUrl;
+  private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
 
   public showOptions = false;
   public pageSizeOptions = signal([5, 10, 15, 20]);
