@@ -75,7 +75,8 @@ storybook_build:
   image: node:18
   extends: .distributed
   script:
-    - npx nx build-storybook lib-docs --configuration=ci
+    - nvm use 18
+    - npx nx build-storybook lib-docs --configuration=ci --verbose
   artifacts:
     paths:
       - dist/
