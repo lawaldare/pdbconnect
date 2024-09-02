@@ -7,7 +7,7 @@ import { Depiction, LigandStructure, LigandStructuresAPIResponse, PDBSubstructur
 import { PDBRelatedLigands, RelatedLigand } from '../data-models/related-ligands.model';
 import { PDBIntxData, IntxDataUrl } from '../data-models/interaction.model';
 import { shareReplay, map } from 'rxjs';
-import { environment } from 'apps/connect/src/environments/environment';
+import { environment } from '../../../../environments/environment';
 
 export interface DescriptionData {
   name: string;
