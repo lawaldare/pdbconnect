@@ -134,7 +134,7 @@ export class PropertiesComponent implements OnChanges {
         toolTip: `Number of hydrogen bond donors`,
       },
       {
-        name: 'Hydrogen bond',
+        name: 'Hydrogen bond acceptors',
         value: `${this.properties.num_hba}`,
         toolTip: `Number of hydrogen bond acceptors`,
       },
