@@ -75,7 +75,7 @@ storybook_build:
   image: node:18
   extends: .distributed
   script:
-    - npx nx build-storybook lib-docs
+    - npx nx build-storybook lib-docs --verbose
   artifacts:
     paths:
       - dist/
