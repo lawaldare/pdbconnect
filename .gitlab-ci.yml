@@ -60,6 +60,7 @@ build:
     - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
     - cat dynamic-gitlab-ci.yml
   cache:
+    key: $CI_PIPELINE_ID
     paths:
       - dist/
   artifacts:
@@ -140,6 +141,10 @@ pages:
     - build
   script:
     - cp -r dist/* public/
+  cache:
+    key: $CI_PIPELINE_ID
+    paths:
+      - dist/
   artifacts:
     paths:
       - public
