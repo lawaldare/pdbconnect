@@ -68,6 +68,8 @@ build:
   tags:
     - pdbe-docker
   except:
+    variables:
+      - $CI_PIPELINE_SOURCE == "web"
     refs:
       - playground
 
