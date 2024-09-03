@@ -59,10 +59,9 @@ build:
     - npx nx run-many -t build --parallel=3 --exclude=playground
     - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
     - cat dynamic-gitlab-ci.yml
-    - tar -czf dist.tar.gz dist/
   artifacts:
     paths:
-      - dist.tar.gz
+      - dist/
       - dynamic-gitlab-ci.yml
     expire_in: 1 week
   tags:
@@ -138,7 +137,6 @@ pages:
   needs:
     - build
   script:
-    - tar -xzf dist.tar.gz
     - cp -r dist/* public/
   artifacts:
     paths:
