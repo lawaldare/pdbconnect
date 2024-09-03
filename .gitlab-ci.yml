@@ -161,3 +161,23 @@ playground_build_and_publish:
   only:
     refs:
       - playground
+
+deploy_all_apps_to_dev:
+  stage: build
+  image: node:18
+  extends: .distributed
+  script:
+    - npx nx run-many -t build --parallel=3 --exclude=playground
+    - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
+    - cat dynamic-gitlab-ci.yml
+  artifacts:
+    paths:
+      - dist/
+      - dynamic-gitlab-ci.yml
+    expire_in: 1 week
+  tags:
+    - pdbe-shell
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
+    - when: never
