@@ -30,8 +30,6 @@ format-check:
     - npx nx format:check --base=$NX_BASE --head=$NX_HEAD
   tags:
     - pdbe-shell
-  rules:
-    - if: $CI_PIPELINE_SOURCE != "web"
 
 lint:
   stage: test
@@ -40,8 +38,6 @@ lint:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t lint --parallel=3
   tags:
     - pdbe-shell
-  rules:
-    - if: $CI_PIPELINE_SOURCE != "web"
 
 test:
   stage: test
@@ -50,8 +46,6 @@ test:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t test --parallel=3 --configuration=ci
   tags:
     - pdbe-shell
-  rules:
-    - if: $CI_PIPELINE_SOURCE != "web"
 
 build:
   stage: build
@@ -62,8 +56,8 @@ build:
     - lint
   extends: .distributed
   script:
-    - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t build --parallel=3 --exclude=playground
-    - node ./bin/index.js "$(npx nx show projects --affected --json --type=app --base=$NX_BASE --head=$NX_HEAD --exclude=playground)"
+    - npx nx run-many --base=$NX_BASE --head=$NX_HEAD -t build --parallel=3 --exclude=playground
+    - node ./bin/index.js "$(npx nx show projects --json --type=app --base=$NX_BASE --head=$NX_HEAD --exclude=playground)"
     - cat dynamic-gitlab-ci.yml
   artifacts:
     paths:
@@ -73,8 +67,6 @@ build:
   tags:
     - pdbe-shell
   except:
-    variables:
-      - $CI_PIPELINE_SOURCE == "web"
     refs:
       - playground
 
@@ -93,8 +85,6 @@ storybook_build:
   except:
     refs:
       - playground
-    variables:
-      - $CI_PIPELINE_SOURCE == "web"
 
 storybook_publish:
   stage: publish
@@ -109,8 +99,6 @@ storybook_publish:
   except:
     refs:
       - playground
-    variables:
-      - $CI_PIPELINE_SOURCE == "web"
 
 storybook_publish_deploy:
   stage: deploy
@@ -128,16 +116,11 @@ storybook_publish_deploy:
   except:
     refs:
       - playground
-    variables:
-      - $CI_PIPELINE_SOURCE == "web"
 
 triggers:
   stage: trigger
   needs:
-    - job: build
-      optional: true
-    - job: build_all_apps
-      optional: true
+    - build
   trigger:
     include:
       - artifact: dynamic-gitlab-ci.yml
@@ -164,8 +147,6 @@ pages:
   except:
     refs:
       - playground
-    variables:
-      - $CI_PIPELINE_SOURCE == "web"
 
 playground_build_and_publish:
   stage: build
@@ -180,25 +161,3 @@ playground_build_and_publish:
   only:
     refs:
       - playground
-    variables:
-      - $CI_PIPELINE_SOURCE != "web"
-
-build_all_apps:
-  stage: build
-  image: node:18
-  extends: .distributed
-  script:
-    - npx nx run-many -t build --parallel=3 --exclude=playground
-    - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
-    - cat dynamic-gitlab-ci.yml
-  artifacts:
-    paths:
-      - dist/
-      - dynamic-gitlab-ci.yml
-    expire_in: 1 week
-  tags:
-    - pdbe-docker
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "web"
-      when: manual
-    - when: never
