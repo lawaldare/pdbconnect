@@ -11,7 +11,6 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction } from '../../../data-models/structure.model';
 import { IntxDataUrl, PDBIntxData } from '../../../data-models/interaction.model';
@@ -20,11 +19,12 @@ import { EMPTY, map, mergeMap, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MaterialModule } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { LigandUtilService } from '../../../ligand-util.service';
 
 @Component({
   selector: 'pdbc-interaction',
   standalone: true,
-  imports: [CommonModule, PdbeLinkButtonComponent, MaterialModule],
+  imports: [CommonModule, MaterialModule],
   templateUrl: './interaction.component.html',
   styleUrl: './interaction.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -34,9 +34,7 @@ export class InteractionComponent implements AfterViewInit {
   public ligandId!: string;
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
-  // @ViewChild('ligandEnv', { read: ElementRef }) ligandEnvContainer!: ElementRef;
   @ViewChild('ligHeatMapContainer', { read: ElementRef }) ligandHeatMapContainer!: ElementRef;
-  // @ViewChild('ligHeatMap', { read: ElementRef }) ligandHeatMapContainer!: ElementRef;
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
   private ligandEv!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -47,7 +45,8 @@ export class InteractionComponent implements AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
   private readonly cdr = inject(ChangeDetectorRef);
-  private _snackBar = inject(MatSnackBar);
+  private readonly ligandUtilService = inject(LigandUtilService);
+  private readonly _snackBar = inject(MatSnackBar);
   public interaction!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   private emptyText!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -96,13 +95,7 @@ export class InteractionComponent implements AfterViewInit {
 
   public downloadInteraction(): void {
     if (this.interaction && this.interaction?.[this.ligandId]) {
-      const blob = new Blob([JSON.stringify(this.interaction, null, 2)], { type: 'application/json' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'interaction.json';
-      a.click();
-      window.URL.revokeObjectURL(url);
+      this.ligandUtilService.downloadJSON(this.interaction, 'interaction');
     } else {
       this._snackBar.open(`No interaction data for ${this.ligandId}`, 'Dismiss', {
         duration: 3000,
@@ -143,7 +136,7 @@ export class InteractionComponent implements AfterViewInit {
   private generateEmptyText(): void {
     const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;
     const p = this.renderer.createElement('p');
-    const text = this.renderer.createText(`No interaction data for ${this.ligandId}`);
+    const text = this.renderer.createText(`Interaction view not available for ${this.ligandId}`);
     this.renderer.appendChild(p, text);
     this.renderer.removeClass(p, 'empty-text');
     this.renderer.appendChild(ligandHeatmapContainer, p);

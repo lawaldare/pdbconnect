@@ -103,39 +103,53 @@ export class RelatedLigandsComponent implements OnInit {
           this.sameScaffolds = relatedLigand['same_scaffold'];
           this.stereoisomers = relatedLigand['stereoisomers'];
 
-          const similarLigandBoundEntries = this.similarLigands.map((similarLigand) => this.fetchBoundEntriesWithFallback(similarLigand.chem_comp_id));
+          const validIdsArray = [];
 
-          const sameScaffoldBoundEntries = this.sameScaffolds.map((scaffold) => this.fetchBoundEntriesWithFallback(scaffold.chem_comp_id));
+          const similarLigandsIds = this.similarLigands.map((ligand) => ligand.chem_comp_id).join(',') ?? '';
 
-          const stereoisomersBoundEntries = this.stereoisomers.map((stereoisomer) => this.fetchBoundEntriesWithFallback(stereoisomer.chem_comp_id));
+          const sameScaffoldIds = this.sameScaffolds.map((ligand) => ligand.chem_comp_id).join(',') ?? '';
 
-          return this.aggregateLigandEntries(similarLigandBoundEntries, sameScaffoldBoundEntries, stereoisomersBoundEntries);
+          const stereoisomersIds = this.stereoisomers.map((ligand) => ligand.chem_comp_id).join(',') ?? '';
+
+          if (similarLigandsIds) {
+            validIdsArray.push(this.aggregatedApiService.fetchBoundEntries(similarLigandsIds));
+          }
+
+          if (sameScaffoldIds) {
+            validIdsArray.push(this.aggregatedApiService.fetchBoundEntries(sameScaffoldIds));
+          }
+
+          if (stereoisomersIds) {
+            validIdsArray.push(this.aggregatedApiService.fetchBoundEntries(stereoisomersIds));
+          }
+
+          return forkJoin(validIdsArray);
         }),
-        map(({ similarLigandBoundEntriesArray, sameScaffoldBoundEntriesArray, stereoisomersBoundEntriesArray }) => {
-          this.unfilteredSimilarLigandsGrid = this.similarLigands.map((similarLigand, index) => ({
+        map(([similarLigandBoundEntriesArray, sameScaffoldBoundEntriesArray, stereoisomersBoundEntriesArray]) => {
+          this.unfilteredSimilarLigandsGrid = this.similarLigands.map((similarLigand) => ({
             chem_comp_id: similarLigand.chem_comp_id,
             name: similarLigand.name,
             similarity_score: similarLigand.similarity_score,
             substructure_match: similarLigand.substructure_match,
-            bound_entries: similarLigandBoundEntriesArray[index],
+            bound_entries: similarLigandBoundEntriesArray[similarLigand.chem_comp_id],
           }));
           this.similarLigandsGrid = this.unfilteredSimilarLigandsGrid;
           this.setUpPagination('similarligand');
 
-          this.unfilteredSameScaffoldGrid = this.sameScaffolds.map((sameScaffolds, index) => ({
+          this.unfilteredSameScaffoldGrid = this.sameScaffolds.map((sameScaffolds) => ({
             chem_comp_id: sameScaffolds.chem_comp_id,
             name: sameScaffolds.name,
             similarity_score: sameScaffolds.similarity_score,
             substructure_match: sameScaffolds.substructure_match,
-            bound_entries: sameScaffoldBoundEntriesArray[index],
+            bound_entries: sameScaffoldBoundEntriesArray[sameScaffolds.chem_comp_id],
           }));
           this.sameScaffoldGrid = this.unfilteredSameScaffoldGrid;
           this.setUpPagination('samescaffold');
 
-          this.unfilteredStereoisomers = this.stereoisomers.map((stereoisomer, index) => ({
+          this.unfilteredStereoisomers = this.stereoisomers.map((stereoisomer) => ({
             chem_comp_id: stereoisomer.chem_comp_id,
             name: stereoisomer.name,
-            bound_entries: stereoisomersBoundEntriesArray[index],
+            bound_entries: stereoisomersBoundEntriesArray[stereoisomer.chem_comp_id],
           }));
           this.stereoisomersGrid = this.unfilteredStereoisomers;
 
@@ -250,45 +264,5 @@ export class RelatedLigandsComponent implements OnInit {
         this.stereoisomersPage = this.filtStereoisomersGrid.slice(0, this.stereoisomerspageSize);
         break;
     }
-  }
-  private fetchBoundEntriesWithFallback(chemCompId: string): Observable<string[]> {
-    return this.aggregatedApiService.fetchBoundEntries(chemCompId).pipe(
-      catchError(() => of([])) // Return an empty array on error
-    );
-  }
-  private aggregateLigandEntries(
-    similarLigandBoundEntries: Observable<string[]>[],
-    sameScaffoldBoundEntries: Observable<string[]>[],
-    stereoisomersBoundEntries: Observable<string[] | any>[]
-  ): Observable<any> {
-    const observablesToJoin = [];
-
-    if (similarLigandBoundEntries.length > 0) {
-      observablesToJoin.push(forkJoin(similarLigandBoundEntries));
-    } else {
-      observablesToJoin.push(of([]));
-    }
-
-    if (sameScaffoldBoundEntries.length > 0) {
-      observablesToJoin.push(forkJoin(sameScaffoldBoundEntries));
-    } else {
-      observablesToJoin.push(of([]));
-    }
-
-    if (stereoisomersBoundEntries.length > 0) {
-      observablesToJoin.push(forkJoin(stereoisomersBoundEntries));
-    } else {
-      observablesToJoin.push(of([]));
-    }
-
-    return forkJoin(observablesToJoin).pipe(
-      mergeMap(([similarLigandBoundEntriesArray, sameScaffoldBoundEntriesArray, stereoisomersBoundEntriesArray]) => {
-        return of({
-          similarLigandBoundEntriesArray,
-          sameScaffoldBoundEntriesArray,
-          stereoisomersBoundEntriesArray,
-        });
-      })
-    );
   }
 }

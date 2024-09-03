@@ -1,12 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
-import { PdbeHelpIconComponent } from '@pdbe-lib/help-icon';
+import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 
 @Component({
   selector: 'pdbc-summary-alt-one',
   standalone: true,
-  imports: [CommonModule, PdbeLinkButtonComponent, PdbeHelpIconComponent],
+  imports: [CommonModule, ToolTipComponent],
   templateUrl: './summary-alt-one.component.html',
   styleUrl: './summary-alt-one.component.scss',
 })

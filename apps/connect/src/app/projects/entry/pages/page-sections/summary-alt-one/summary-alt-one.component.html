@@ -12,68 +12,29 @@
       <div class="info-row">
         <span class="info-row-title">
           Assembly
-          <lib-pdbe-help-icon
-            [tooltipContent]="
-              'Assembly refers to the composition of a single or multiple 
-                  molecules (which can be protein, nucleic acid or small molecules) arranged into a 
-                  specific configuration to form a larger functional unit (complex).'
-            "
-            [marginTop]="'2.5px'"
-          ></lib-pdbe-help-icon>
+          <lib-tool-tip>
+            Assembly refers to the composition of a single or multiple molecules (which can be protein, nucleic acid or small molecules) arranged into a specific
+            configuration to form a larger functional unit (complex).
+          </lib-tool-tip>
         </span>
         <span class="info-row-content">
           @if (complexName) {
           <span class="info-row-content-line">
             {{ complexName }}
-            <lib-pdbe-help-icon
-              [tooltipTitle]="'Assembly name'"
-              [tooltipContent]="
-                'The assembly name is sourced from: Complex Portal, 
-                            UniProt, Rfam, Gene Ontology or manual curation when available. If 
-                            the assembly name is not available, an assembly number is displayed'
-              "
-              [marginTop]="'2.5px'"
-            ></lib-pdbe-help-icon>
+            <lib-tool-tip>
+              The assembly name is sourced from: Complex Portal, UniProt, Rfam, Gene Ontology or manual curation when available. If the assembly name is not
+              available, an assembly number is displayed.
+            </lib-tool-tip>
           </span>
           }
           <span class="info-row-content-line">
-            <pdbc-pdbe-link-button
-              [externalLink]="true"
-              [label]="complexId"
-              [url]="'https://www.ebi.ac.uk/pdbe/entry/search/index?complex_id:' + complexId"
-              [fontStyle]="'paragraph-3'"
-              [fontColor]="'#3B6FB6'"
-              [hoverColor]="'#193F90'"
-              [visitedColor]="'#563D82'"
-              [focusBorderColor]="'#3B6FB6'"
-              [activeFontWeight]="300"
-              [whiteSpace]="'normal'"
-              [mobileIconName]="'search-12px'"
-            ></pdbc-pdbe-link-button>
-            <lib-pdbe-help-icon
-              [tooltipTitle]="'Complex ID'"
-              [tooltipContent]="
-                'PDB-CPX-XXXXXX is an identifier assigned to 
-                        each unique assembly composition in the PDB.'
-              "
-              [marginLeft]="'24px'"
-              [marginTop]="'3.5px'"
-            ></lib-pdbe-help-icon>
+            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?complex_id:' + complexId" target="_blank">{{ complexId }}</a>
+            <lib-tool-tip>
+              <h6 style="font-weight: 600">Complex ID</h6>
+              PDB-CPX-XXXXXX is an identifier assigned to each unique assembly composition in the PDB.
+            </lib-tool-tip>
           </span>
-          <span class="info-row-content-line">
-            <pdbc-pdbe-link-button
-              [externalLink]="false"
-              [label]="'go to Assemblies'"
-              [url]="'assemblies-section'"
-              [fontStyle]="'paragraph-3'"
-              [fontColor]="'#3B6FB6'"
-              [hoverColor]="'#193F90'"
-              [visitedColor]="'#563D82'"
-              [focusBorderColor]="'#3B6FB6'"
-              [activeFontWeight]="300"
-              [whiteSpace]="'nowrap'"
-            ></pdbc-pdbe-link-button>
-          </span>
+          <span class="info-row-content-line"> </span>
         </span>
       </div>
       }
@@ -84,23 +45,15 @@
         <span class="info-row-content">
           <!-- TODO convert this component to use routerLink -->
           <span *ngFor="let sourceOrganism of sourceOrganisms; index as i" class="info-row-content-word">
-            <pdbc-pdbe-link-button
-              [externalLink]="true"
-              [label]="sourceOrganism"
-              [url]="
+            <a
+              [href]="
                 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22q_organism_name%22:%5B%7B%22value%22:%22' +
                 sourceOrganism +
                 '%22,%22condition1%22:%22AND%22,%22condition2%22:%22Contains%22%7D%5D,%22resultState%22:%7B%22tabIndex%22:0,%22paginationIndex%22:1,%22perPage%22:%2210%22,%22sortBy%22:%22Sort%20by%22%7D%7D'
               "
-              [fontStyle]="'paragraph-3'"
-              [fontColor]="'#3B6FB6'"
-              [hoverColor]="'#193F90'"
-              [visitedColor]="'#563D82'"
-              [focusBorderColor]="'#3B6FB6'"
-              [activeFontWeight]="300"
-              [whiteSpace]="'normal'"
-              [mobileIconName]="'search-12px'"
-            ></pdbc-pdbe-link-button>
+              target="_blank"
+              >{{ sourceOrganism }}</a
+            >
             <br />
           </span>
         </span>
@@ -116,20 +69,7 @@
             {{ polymericEntity }}
           </span>
           }
-          <span class="info-row-content-line">
-            <pdbc-pdbe-link-button
-              [externalLink]="false"
-              [label]="'go to Macromolecules'"
-              [url]="'macromolecules-section'"
-              [fontStyle]="'paragraph-3'"
-              [fontColor]="'#3B6FB6'"
-              [hoverColor]="'#193F90'"
-              [visitedColor]="'#563D82'"
-              [focusBorderColor]="'#3B6FB6'"
-              [activeFontWeight]="300"
-              [whiteSpace]="'nowrap'"
-            ></pdbc-pdbe-link-button>
-          </span>
+          <span class="info-row-content-line"> </span>
         </span>
       </div>
       }
@@ -143,20 +83,7 @@
             {{ smallMoleculeItem.text }}
           </span>
           }
-          <span class="info-row-content-line">
-            <pdbc-pdbe-link-button
-              [externalLink]="false"
-              [label]="'go to Ligands and Environments'"
-              [url]="'ligands-envs-section'"
-              [fontStyle]="'paragraph-3'"
-              [fontColor]="'#3B6FB6'"
-              [hoverColor]="'#193F90'"
-              [visitedColor]="'#563D82'"
-              [focusBorderColor]="'#3B6FB6'"
-              [activeFontWeight]="300"
-              [whiteSpace]="'nowrap'"
-            ></pdbc-pdbe-link-button>
-          </span>
+          <span class="info-row-content-line"> </span>
         </span>
       </div>
       }
@@ -169,19 +96,7 @@
       <div class="info-row">
         <span class="info-row-title">PDB DOI</span>
         <span class="info-row-content">
-          <pdbc-pdbe-link-button
-            [externalLink]="true"
-            [label]="pdbEntryDOI"
-            [url]="'https://doi.org/' + pdbEntryDOI"
-            [fontStyle]="'paragraph-3'"
-            [fontColor]="'#3B6FB6'"
-            [hoverColor]="'#193F90'"
-            [visitedColor]="'#563D82'"
-            [focusBorderColor]="'#3B6FB6'"
-            [activeFontWeight]="300"
-            [mobileIconName]="'link'"
-            [whiteSpace]="'normal'"
-          ></pdbc-pdbe-link-button>
+          <a [href]="'https://doi.org/' + pdbEntryDOI" target="_blank">{{ pdbEntryDOI }}</a>
         </span>
       </div>
       <!-- Primary publication row -->
@@ -195,22 +110,16 @@
             <span class="info-row-content-word">Authors: </span>
             <span class="info-row-content-word">
               @for (publicationOrEntryAuthor of publicationOrEntryAuthors; track publicationOrEntryAuthor; let i = $index) {
-              <pdbc-pdbe-link-button
-                [externalLink]="true"
-                [label]="publicationOrEntryAuthor + getComma(i)"
-                [url]="
+              <a
+                [href]="
                   'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22q_all_authors%22:%5B%7B%22value%22:%22' +
                   publicationOrEntryAuthor +
                   '%22,%22condition1%22:%22AND%22,%22condition2%22:%22Contains%22%7D%5D,%22resultState%22:%7B%22tabIndex%22:0,%22paginationIndex%22:1,%22perPage%22:%2210%22,%22sortBy%22:%22Sort%20by%22%7D%7D'
                 "
-                [fontStyle]="'paragraph-3'"
-                [fontColor]="'#3B6FB6'"
-                [hoverColor]="'#193F90'"
-                [visitedColor]="'#563D82'"
-                [focusBorderColor]="'#3B6FB6'"
-                [activeFontWeight]="300"
-                [whiteSpace]="'normal'"
-              ></pdbc-pdbe-link-button>
+                target="_blank"
+                >{{ publicationOrEntryAuthor + getComma(i) }}</a
+              >
+
               }
             </span>
           </span>
@@ -227,54 +136,16 @@
             <span style="width: 16px; height: 100%; visibility: hidden">_</span>
             <span class="info-row-content-word" style="display: inline-block">
               PMID:
-              <pdbc-pdbe-link-button
-                [externalLink]="true"
-                [label]="publicationPMID"
-                [url]="'https://europepmc.org/article/MED/' + publicationPMID"
-                [fontStyle]="'paragraph-3'"
-                [fontColor]="'#3B6FB6'"
-                [hoverColor]="'#193F90'"
-                [visitedColor]="'#563D82'"
-                [focusBorderColor]="'#3B6FB6'"
-                [activeFontWeight]="300"
-                [mobileIconName]="'link'"
-                [whiteSpace]="'normal'"
-              ></pdbc-pdbe-link-button>
+              <a [href]="'https://europepmc.org/article/MED/' + publicationPMID" target="_blank">{{ publicationPMID }}</a>
             </span>
             } }
           </span>
           @if (publicationDOI) {
           <span class="info-row-content-line">
             DOI:
-            <pdbc-pdbe-link-button
-              [externalLink]="true"
-              [label]="publicationDOI"
-              [url]="'https://doi.org/' + publicationDOI"
-              [fontStyle]="'paragraph-3'"
-              [fontColor]="'#3B6FB6'"
-              [hoverColor]="'#193F90'"
-              [visitedColor]="'#563D82'"
-              [focusBorderColor]="'#3B6FB6'"
-              [activeFontWeight]="300"
-              [mobileIconName]="'link'"
-              [whiteSpace]="'normal'"
-            ></pdbc-pdbe-link-button>
+            <a [href]="'https://doi.org/' + publicationDOI" target="_blank">{{ publicationDOI }}</a>
           </span>
           }
-          <span class="info-row-content-line">
-            <pdbc-pdbe-link-button
-              [externalLink]="false"
-              [label]="'go to Citations'"
-              [url]="'citations-section'"
-              [fontStyle]="'paragraph-3'"
-              [fontColor]="'#3B6FB6'"
-              [hoverColor]="'#193F90'"
-              [visitedColor]="'#563D82'"
-              [focusBorderColor]="'#3B6FB6'"
-              [activeFontWeight]="300"
-              [whiteSpace]="'normal'"
-            ></pdbc-pdbe-link-button>
-          </span>
         </span>
       </div>
     </div>

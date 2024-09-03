@@ -1,12 +1,10 @@
 import { Component, Input, CUSTOM_ELEMENTS_SCHEMA, Renderer2, ElementRef, ViewChild, AfterViewInit, DestroyRef, inject, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LigandGrid } from '../../../data-models/related-ligands.model';
-import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction } from '../../../data-models/structure.model';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { of, switchMap } from 'rxjs';
 import { MaterialModule, UtilService } from '@pdbc/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
@@ -14,7 +12,7 @@ import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 @Component({
   selector: 'pdbc-ligand-grid',
   standalone: true,
-  imports: [CommonModule, PdbeLinkButtonComponent, RouterModule, MaterialModule],
+  imports: [CommonModule, RouterModule, MaterialModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './ligand-grid.component.html',
   styleUrl: './ligand-grid.component.scss',
@@ -31,15 +29,14 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly renderer = inject(Renderer2);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly route = inject(ActivatedRoute);
   private readonly util = inject(UtilService);
   private readonly dialog = inject(MatDialog);
 
-  renderLigandImg(ligandId: string) {
+  renderLigandImg() {
+    this.resetRenderer();
     const imageContainer = this.imageContainer.nativeElement;
-
     this.aggregatedApiService
-      .fetchDepiction(ligandId)
+      .fetchDepiction(this.ligand.chem_comp_id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((depiction: Depiction) => {
         const ligand = this.renderer.createElement('pdb-ligand-env');
@@ -59,17 +56,7 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.route.params
-      .pipe(
-        switchMap((params) => {
-          this.resetRenderer();
-          this.ligandId = params['ligandId'].toUpperCase();
-          this.renderLigandImg(this.ligandId);
-          return of({});
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe();
+    this.renderLigandImg();
   }
 
   private resetRenderer(): void {
@@ -80,9 +67,9 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  public openMolstarDialog(id: string): void {
+  public openMolstarDialog(): void {
     const data = {
-      entryList: [`https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${id}_ideal.pdb`, `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${id}_model.pdb`],
+      moleculeId: this.ligand.chem_comp_id,
     };
 
     this.dialog.open(MolstarDialogComponent, {

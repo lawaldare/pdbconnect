@@ -8,3 +8,6 @@ export * from './lib/directives/truncate-text.directive';
 export * from './lib/directives/click-outside.directive';
 export * from './lib/services/util.service';
 export * from './lib/services/xml-image-renderer.service';
+export * from './lib/constants/download.constant';
+export * from './lib/services/download.service';
+export * from './lib/services/download-file-type.service';

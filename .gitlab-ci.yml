@@ -16,7 +16,7 @@ stages:
     paths:
       - .npm/
   before_script:
-    - npm ci --cache .npm --prefer-offline
+    - npm ci --legacy-peer-deps --cache .npm --prefer-offline
     - NX_HEAD=$CI_COMMIT_SHA
     - NX_BASE=${CI_MERGE_REQUEST_DIFF_BASE_SHA:-$CI_COMMIT_BEFORE_SHA}
 
@@ -57,7 +57,7 @@ build:
   extends: .distributed
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t build --parallel=3 --exclude=playground
-    - node ./bin/index.js "$(npx nx print-affected --type=app --base=$NX_BASE --head=$NX_HEAD --exclude=playground)"
+    - node ./bin/index.js "$(npx nx show projects --affected --json --type=app --base=$NX_BASE --head=$NX_HEAD --exclude=playground)"
     - cat dynamic-gitlab-ci.yml
   artifacts:
     paths:
@@ -81,7 +81,7 @@ storybook_build:
       - dist/
     expire_in: 1 week
   tags:
-    - pdbe-shell
+    - pdbe-docker
   except:
     refs:
       - playground

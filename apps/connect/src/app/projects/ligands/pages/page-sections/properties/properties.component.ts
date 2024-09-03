@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, Input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PhysChemProperties, LigandProperty } from '../../../data-models/description.model';
 import { NameValueComponent } from '../../section-components/name-value/name-value.component';
+import { LigandUtilService } from '../../../ligand-util.service';
 
 @Component({
   selector: 'pdbc-properties',
@@ -21,6 +22,8 @@ export class PropertiesComponent implements OnChanges {
   public funProperties: LigandProperty[] = [];
   public stereoProperties: LigandProperty[] = [];
   private propertiesToJSON!: Record<string, any[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+  private readonly ligandUtilService = inject(LigandUtilService);
 
   ngOnChanges() {
     this.molProperties = [
@@ -131,7 +134,7 @@ export class PropertiesComponent implements OnChanges {
         toolTip: `Number of hydrogen bond donors`,
       },
       {
-        name: 'Hydrogen bond',
+        name: 'Hydrogen bond acceptors',
         value: `${this.properties.num_hba}`,
         toolTip: `Number of hydrogen bond acceptors`,
       },
@@ -207,12 +210,6 @@ export class PropertiesComponent implements OnChanges {
   }
 
   public downloadJSON(): void {
-    const blob = new Blob([JSON.stringify(this.propertiesToJSON, null, 2)], { type: 'application/json' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'physiochemical-properties.json';
-    a.click();
-    window.URL.revokeObjectURL(url);
+    this.ligandUtilService.downloadJSON(this.propertiesToJSON, 'physiochemical-properties');
   }
 }

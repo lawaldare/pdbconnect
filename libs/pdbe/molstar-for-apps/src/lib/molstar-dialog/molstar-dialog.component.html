@@ -1,7 +1,7 @@
 <section>
   <mat-form-field>
     <mat-label>Select Conformer</mat-label>
-    <mat-select [(value)]="selected">
+    <mat-select [formControl]="selectedControl()" (selectionChange)="onSelectionChange($event)">
       @for (option of selections; track option) {
       <mat-option [value]="option.value">{{ option.viewValue }}</mat-option>
       }

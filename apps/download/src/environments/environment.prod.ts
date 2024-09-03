@@ -1,4 +1,5 @@
 export const environment = {
-  production: false,
-  downloadAPIUrl: 'https://www.ebi.ac.uk/pdbe/download/api/pdb',
+  production: true,
+  debug: false,
+  pdbeBaseUrl: 'https://www.ebi.ac.uk/pdbe/',
 };

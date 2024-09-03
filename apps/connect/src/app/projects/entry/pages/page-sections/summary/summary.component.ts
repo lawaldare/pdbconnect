@@ -1,11 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 
 @Component({
   selector: 'pdbc-summary',
   standalone: true,
-  imports: [CommonModule, PdbeLinkButtonComponent],
+  imports: [CommonModule],
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss'],
 })

@@ -56,7 +56,7 @@ const createCIFile = (projects) => {
 const createDynamicGitLabFile = () => {
   const [stringifiedAffected] = process.argv.slice(2);
 
-  const { projects } = JSON.parse(stringifiedAffected);
+  const projects = JSON.parse(stringifiedAffected);
 
   const content = createCIFile(projects);
 

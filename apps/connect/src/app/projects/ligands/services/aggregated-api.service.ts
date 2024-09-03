@@ -3,10 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PDBLigandDescription, PhysChemProperties, FunctionalAnnotation } from '../data-models/description.model';
 import { PDBLigandFile } from '../data-models/download.model';
-import { PDBSubstructures, Substructure, Depiction } from '../data-models/structure.model';
-import { PDBRelatedLigands, BoundEntries, RelatedLigand } from '../data-models/related-ligands.model';
+import { Depiction, LigandStructure, LigandStructuresAPIResponse, PDBSubstructures } from '../data-models/structure.model';
+import { PDBRelatedLigands, RelatedLigand } from '../data-models/related-ligands.model';
 import { PDBIntxData, IntxDataUrl } from '../data-models/interaction.model';
 import { shareReplay, map } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 export interface DescriptionData {
   name: string;
@@ -14,7 +15,7 @@ export interface DescriptionData {
   formula: string;
   inchi: string;
   inchikey: string;
-  smiles: string;
+  smiles: { program: string; version: string; name: string }[];
   properties: PhysChemProperties;
   annotations: FunctionalAnnotation[];
   crossLinks: CrossLink[];
@@ -32,37 +33,66 @@ export interface CrossLink {
   resource_id: string;
 }
 
+export interface Atom {
+  atom_name: string;
+  pdb_name: string;
+  element: string;
+  leaving_atom: boolean;
+  charge: number;
+  stereo: string;
+  aromatic: boolean;
+  ideal_x: number;
+  ideal_y: number;
+  ideal_z: number;
+}
+
+export interface Bond {
+  atom_1: string;
+  atom_2: string;
+  bond_type: string;
+  bond_order: number;
+  aromatic: boolean;
+  stereo: boolean;
+  ideal_length: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AggregatedApiService {
-  private api_url = 'https://wwwdev.ebi.ac.uk/pdbe/aggregated-api'; // URL to web api
-  private static_url = 'https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2'; //URL to static ligand files
+  private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}aggregated-api/`;
+  private readonly StaticFilesApiUrl = `${environment.pdbeBaseUrl}static/files/pdbechem_v2/`;
+  private readonly CompoundApiUrl = `${environment.pdbeBaseUrl}api/pdb/compound/`;
 
   constructor(private http: HttpClient) {}
 
   fetchDescription(ligandId: string): Observable<PDBLigandDescription> {
-    const descriptionUrl = `${this.api_url}/compound/summary/${ligandId}`;
+    const descriptionUrl = `${this.AggregatedApiUrl}/pdb/compound/summary/${ligandId}`;
     return this.http.get<PDBLigandDescription>(descriptionUrl);
   }
 
   fetchDownload(ligandId: string): Observable<PDBLigandFile> {
-    const downloadUrl = `${this.api_url}/pdb/compound/files/${ligandId}`;
+    const downloadUrl = `${this.AggregatedApiUrl}/pdb/compound/files/${ligandId}`;
     return this.http.get<PDBLigandFile>(downloadUrl);
   }
 
   fetchSubstructures(ligandId: string): Observable<PDBSubstructures> {
-    const substructureUrl = `${this.api_url}/compound/substructures/${ligandId}`;
+    const substructureUrl = `${this.AggregatedApiUrl}/compound/substructures/${ligandId}`;
     return this.http.get<PDBSubstructures>(substructureUrl);
   }
 
+  fetchLigandStructures(ligandId: string): Observable<LigandStructure[]> {
+    const ligandStructureAPI = `${this.AggregatedApiUrl}/compound/uniprot/${ligandId}`;
+    return this.http.get<LigandStructuresAPIResponse>(ligandStructureAPI).pipe(map((data) => data[ligandId]));
+  }
+
   fetchDepiction(ligandId: string): Observable<Depiction> {
-    const depictionUrl = `${this.static_url}/${ligandId}/annotation`;
+    const depictionUrl = `${this.StaticFilesApiUrl}/${ligandId}/annotation`;
     return this.http.get<Depiction>(depictionUrl).pipe(shareReplay(1));
   }
 
   fetchRelatedLigands(ligandId: string): Observable<RelatedLigand> {
-    const relatedLigandUrl = `${this.api_url}/compound/similarity/${ligandId}`;
+    const relatedLigandUrl = `${this.AggregatedApiUrl}/compound/similarity/${ligandId}`;
     const relatedLigand = this.http.get<PDBRelatedLigands>(relatedLigandUrl).pipe(
       shareReplay(1),
       map((relatedLigands: PDBRelatedLigands) => {
@@ -72,19 +102,14 @@ export class AggregatedApiService {
     return relatedLigand;
   }
 
-  fetchBoundEntries(ligandId: string): Observable<string[]> {
-    const boundEntryURL = `${this.api_url}/pdb/compound/in_pdb/${ligandId}`;
-    const boundEntries = this.http.get<BoundEntries>(boundEntryURL).pipe(
-      shareReplay(1),
-      map((boundEntries: BoundEntries) => {
-        return boundEntries[ligandId];
-      })
-    );
+  fetchBoundEntries(ligandId: string): Observable<any> {
+    const boundEntryURL = `${this.AggregatedApiUrl}/pdb/compound/in_pdb/${ligandId}`;
+    const boundEntries = this.http.get<any>(boundEntryURL);
     return boundEntries;
   }
 
   fetchIntxData(ligandId: string): Observable<IntxDataUrl> {
-    const IntxUrl = `${this.api_url}/compound/interaction/${ligandId}`;
+    const IntxUrl = `${this.AggregatedApiUrl}/compound/interaction/${ligandId}`;
     return this.http.get<PDBIntxData>(IntxUrl).pipe(
       map((interactions: PDBIntxData) => ({
         IntxUrl: IntxUrl,
@@ -102,13 +127,13 @@ export class AggregatedApiService {
 
     let synonyms;
 
-    if (ligandSummary.synonyms.length !== 0) {
-      const synonymSet = new Set<string>(ligandSummary.synonyms.map((x) => x.value));
+    if (ligandSummary.synonyms) {
+      const synonymSet = new Set<string>(ligandSummary?.synonyms?.map((x) => x.value));
       synonyms = Array.from(synonymSet)
         .sort((x: string, y: string) => x.length - y.length)
         .reduce((x, y) => `${x}, ${y}`);
     } else {
-      synonyms = ligandSummary.name;
+      synonyms = ligandSummary?.name;
     }
 
     return {
@@ -149,8 +174,18 @@ export class AggregatedApiService {
     };
   }
 
-  processSubstructures(ligandId: string, data: PDBSubstructures): Substructure {
-    const ligandSubstructures = data[ligandId][0];
-    return ligandSubstructures;
+  public getAtoms(ligandId: string): Observable<Atom[]> {
+    const atomAPI = `${this.CompoundApiUrl}atoms/${ligandId}`;
+    return this.http.get<any>(atomAPI).pipe(map((data) => data[ligandId]));
   }
+
+  public getBonds(ligandId: string): Observable<Bond[]> {
+    const bondAPI = `${this.CompoundApiUrl}bonds/${ligandId}`;
+    return this.http.get<any>(bondAPI).pipe(map((data) => data[ligandId]));
+  }
+
+  // processSubstructures(ligandId: string, data: PDBSubstructures): Substructure {
+  //   const ligandSubstructures = data[ligandId][0];
+  //   return ligandSubstructures;
+  // }
 }

@@ -2,7 +2,7 @@
 <h3 class="heading-3">{{ dataContent().title }}</h3>
 @for(icontent of dataContent().content; track icontent){
 <p>
-  <lib-tool-tip [textIcon]="icontent.subtitle"> {{ icontent.subText }}: </lib-tool-tip>
+  <lib-tool-tip [textIcon]="icontent.subtitle"> {{ icontent.subText }} </lib-tool-tip>
 </p>
 
 @for(isub of icontent.subContent; track isub; let i = $index){

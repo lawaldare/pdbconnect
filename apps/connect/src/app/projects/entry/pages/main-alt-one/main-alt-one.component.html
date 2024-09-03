@@ -67,18 +67,7 @@
             ></lib-pdbe-molstar-for-apps>
             <div style="margin-top: 16px; margin-bottom: 16px">
               @if (molstarLoaded) {
-              <pdbc-pdbe-button
-                [backgroundColor]="'#C66717'"
-                [fontSize]="'16px'"
-                [fontColor]="'#FFFFFF'"
-                [borderColor]="'#C66717'"
-                [shadowColor]="'#B65417'"
-                [label]="'View annotated 3D'"
-                [paddingSize]="'Small'"
-                [mobileIconName]="'none'"
-                [buttonWidth]="'100%'"
-                (click)="triggerAnnotatatedView()"
-              ></pdbc-pdbe-button>
+              <button class="vf-button vf-button--accent" style="width: 100%" (click)="triggerAnnotatatedView()">View annotated 3D</button>
               }
             </div>
           </div>
@@ -114,21 +103,6 @@
               </span>
             </div>
             }
-            <div class="main-exp-info-row" style="margin-bottom: 16px">
-              <pdbc-pdbe-link-button
-                class="showMobile"
-                [externalLink]="false"
-                [label]="'go to Experiments info'"
-                [url]="'exp-validation-section'"
-                [fontStyle]="'paragraph-3'"
-                [fontColor]="'#3B6FB6'"
-                [hoverColor]="'#193F90'"
-                [visitedColor]="'#563D82'"
-                [focusBorderColor]="'#3B6FB6'"
-                [activeFontWeight]="300"
-                [whiteSpace]="'normal'"
-              ></pdbc-pdbe-link-button>
-            </div>
             <div style="max-width: 374px">
               @if (entryData.qualityScores.pdbredo) {
               <div class="paragraph-3" style="font-weight: 500">PDB model quality summary</div>
@@ -140,17 +114,8 @@
                 <div class="paragraph-3" style="font-weight: 500">PDB-REDO summary</div>
                 <div class="paragraph-4" style="font-size: 13px">
                   The
-                  <pdbc-pdbe-link-button
-                    [externalLink]="true"
-                    [label]="'PDB-REDO databank'"
-                    [url]="'https://pdb-redo.eu/db/' + entryId"
-                    [fontColor]="'#3B6FB6'"
-                    [hoverColor]="'#193F90'"
-                    [visitedColor]="'#563D82'"
-                    [focusBorderColor]="'#3B6FB6'"
-                    [activeFontWeight]="300"
-                    [whiteSpace]="'normal'"
-                  ></pdbc-pdbe-link-button>
+                  <a [href]="'https://pdb-redo.eu/db/' + entryId" target="_blank">PDB-REDO</a>
+
                   contains optimised versions of existing PDB entries with electron density maps, a description of model changes, and a wealth of model validation
                   data. PDB-REDO is an external service. It is not a part of PDBe.
                 </div>

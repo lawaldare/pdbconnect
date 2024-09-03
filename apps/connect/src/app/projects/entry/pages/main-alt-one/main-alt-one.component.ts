@@ -4,8 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
-import { PdbeButtonComponent } from '@pdbe-lib/button';
-import { PdbeLinkButtonComponent } from '@pdbe-lib/link-button';
 import { EntryApiService, EntryDataAltOne } from '../../services/entry-api.service';
 import { StrucQualityGradientsComponent } from '../../components/struc-quality-gradients/struc-quality-gradients.component';
 import { PdbeMolstarForAppsComponent } from '@pdbe-lib/molstar-for-apps';
@@ -23,9 +21,7 @@ import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
     PdbeHeaderSearchComponent,
     SummaryAltOneComponent,
     StrucQualityGradientsComponent,
-    PdbeLinkButtonComponent,
     PdbeNavMenuComponent,
-    PdbeButtonComponent,
     DropdownMenuComponent,
   ],
   templateUrl: './main-alt-one.component.html',

@@ -9,3 +9,15 @@ main {
   border-bottom: 1px dotted #29a0b1;
   cursor: help;
 }
+
+.sticky {
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+#structures,
+#smallmolecules,
+#sifts {
+  padding-top: 20px;
+}

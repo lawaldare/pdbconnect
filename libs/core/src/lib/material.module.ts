@@ -11,6 +11,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSortModule } from '@angular/material/sort';
 
 @NgModule({
   exports: [
@@ -26,6 +28,8 @@ import { MatTabsModule } from '@angular/material/tabs';
     MatSelectModule,
     MatMenuModule,
     MatTableModule,
+    MatCheckboxModule,
+    MatSortModule,
   ],
 })
 export class MaterialModule {}
