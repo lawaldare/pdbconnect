@@ -65,7 +65,7 @@ build:
       - dynamic-gitlab-ci.yml
     expire_in: 1 week
   tags:
-    - pdbe-shell
+    - pdbe-docker
   except:
     refs:
       - playground
