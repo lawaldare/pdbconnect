@@ -134,7 +134,10 @@ storybook_publish_deploy:
 triggers:
   stage: trigger
   needs:
-    - build
+    - job: build
+      optional: true
+    - job: build_all_apps
+      optional: true
   trigger:
     include:
       - artifact: dynamic-gitlab-ci.yml
@@ -180,7 +183,7 @@ playground_build_and_publish:
     variables:
       - $CI_PIPELINE_SOURCE != "web"
 
-deploy_all_apps_to_dev:
+build_all_apps:
   stage: build
   image: node:18
   extends: .distributed
