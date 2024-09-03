@@ -1,5 +1,5 @@
 @if(textIcon){
-<span class="icon"> {{ textIcon }}</span>
+<span class="icon" [innerHTML]="textIcon"></span>
 } @else {
 <img src="{{ helpLogoSrc }}" class="icon" />
 }
