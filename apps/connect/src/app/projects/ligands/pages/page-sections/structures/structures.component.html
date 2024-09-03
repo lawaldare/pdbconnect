@@ -68,7 +68,7 @@
         </div>
       </div>
       <div>
-        <table mat-table [dataSource]="dataSource" matSort id="structure-table">
+        <table mat-table [dataSource]="dataSource">
           <!-- Position Column -->
           <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef>Protein name</th>
@@ -111,7 +111,7 @@
           </ng-container>
 
           <ng-container matColumnDef="count">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header disableClear>Total structures</th>
+            <th mat-header-cell *matHeaderCellDef>Total structures</th>
             <td mat-cell *matCellDef="let item" class="count">
               <a role="button" (click)="openTotalDialog(item.interacting_chains)">
                 {{ item.interacting_chains | ligandInteractingChainsNumber }}

@@ -34,7 +34,7 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   public unfilteredStructures = signal<LigandStructure[]>([]);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  // @ViewChild(MatSort) sort!: MatSort;
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -54,7 +54,7 @@ export class StructuresComponent implements AfterViewInit, OnInit {
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    // this.dataSource.sort = this.sort;
   }
 
   public readonly form = this.fb.nonNullable.group({

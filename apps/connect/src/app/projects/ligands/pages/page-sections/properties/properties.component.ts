@@ -70,7 +70,7 @@ export class PropertiesComponent implements OnChanges {
     ];
     this.ringProperties = [
       {
-        name: 'Aromatic Rings',
+        name: 'Aromatic rings',
         value: `${this.properties.num_aromatic_rings}`,
         toolTip: `Number of aromatic rings`,
       },

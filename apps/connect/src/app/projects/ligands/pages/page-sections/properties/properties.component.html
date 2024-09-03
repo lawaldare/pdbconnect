@@ -1,6 +1,6 @@
 <div id="properties-section">
   <header>
-    <h3>Physicochemical properties</h3>
+    <h3>Physiochemical properties</h3>
     <button class="vf-button vf-button--link" (click)="downloadJSON()">
       Download physiochemical properties
       <i class="icon icon-common icon-download"></i>
@@ -37,7 +37,7 @@
         }
       </div>
       <div class="property-sub-box">
-        <span class="heading-3"> Functional Group properties</span>
+        <span class="heading-3"> Functional group properties</span>
         @for(funProperty of funProperties; track funProperty.name){
         <pdbc-name-value [data]="funProperty"></pdbc-name-value>
         }

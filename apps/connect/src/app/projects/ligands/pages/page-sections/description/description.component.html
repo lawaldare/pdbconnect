@@ -12,14 +12,26 @@
       <div class="info-row-content formula">
         {{ description().formula }}
       </div>
-      <i class="icon icon-common icon-clone" (click)="copy(description().formula)"></i>
+      <i
+        class="icon icon-common icon-clone"
+        matTooltipClass="description-tooltip"
+        matTooltip="Copy the synonyms formula"
+        matTooltipPosition="above"
+        (click)="copy(description().formula)"
+      ></i>
     </article>
   </div>
   <div class="info-row">
     <span class="info-row-title">IUPAC InChI</span>
     <article>
       <div class="info-row-content" libTruncateText [truncateText]="description().inchi" [limit]="120"></div>
-      <i class="icon icon-common icon-clone" (click)="copy(description().inchi)"></i>
+      <i
+        class="icon icon-common icon-clone"
+        matTooltipClass="description-tooltip"
+        matTooltip="Copy the IUPAC InChI"
+        matTooltipPosition="above"
+        (click)="copy(description().inchi)"
+      ></i>
     </article>
   </div>
   <div class="info-row">
@@ -28,7 +40,13 @@
       <div class="info-row-content">
         {{ description().inchikey }}
       </div>
-      <i class="icon icon-common icon-clone" (click)="copy(description().inchikey)"></i>
+      <i
+        class="icon icon-common icon-clone"
+        matTooltipClass="description-tooltip"
+        matTooltip="Copy the IUPAC InChIKey"
+        matTooltipPosition="above"
+        (click)="copy(description().inchikey)"
+      ></i>
     </article>
   </div>
   <div class="info-row">
@@ -37,7 +55,13 @@
       <div class="info-row-content">
         {{ description().smiles | ligandSmiles }}
       </div>
-      <i class="icon icon-common icon-clone" (click)="copySmiles(description().smiles)"></i>
+      <i
+        class="icon icon-common icon-clone"
+        matTooltipClass="description-tooltip"
+        matTooltip="Copy the smiles"
+        matTooltipPosition="above"
+        (click)="copySmiles(description().smiles)"
+      ></i>
     </article>
   </div>
   <div class="info-row source-row">
