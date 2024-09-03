@@ -197,7 +197,7 @@ build_all_apps:
       - dynamic-gitlab-ci.yml
     expire_in: 1 week
   tags:
-    - pdbe-shell
+    - pdbe-docker
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
       when: manual
