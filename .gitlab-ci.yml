@@ -59,14 +59,12 @@ build:
     - npx nx run-many -t build --parallel=3 --exclude=playground
     - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
     - cat dynamic-gitlab-ci.yml
-  cache:
-    key: $CI_PIPELINE_ID
-    paths:
-      - dist/
+    - tar -czf dist.tar.gz dist/
   artifacts:
     paths:
+      - dist.tar.gz
       - dynamic-gitlab-ci.yml
-    expire_in: 1 day
+    expire_in: 1 week
   tags:
     - pdbe-docker
   except:
@@ -82,7 +80,7 @@ storybook_build:
   artifacts:
     paths:
       - dist/
-    expire_in: 1 day
+    expire_in: 1 week
   tags:
     - pdbe-docker
   except:
@@ -140,11 +138,8 @@ pages:
   needs:
     - build
   script:
+    - tar -xzf dist.tar.gz
     - cp -r dist/* public/
-  cache:
-    key: $CI_PIPELINE_ID
-    paths:
-      - dist/
   artifacts:
     paths:
       - public
