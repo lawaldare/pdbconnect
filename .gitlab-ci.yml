@@ -59,11 +59,14 @@ build:
     - npx nx run-many -t build --parallel=3 --exclude=playground
     - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
     - cat dynamic-gitlab-ci.yml
-  artifacts:
+  cache:
     paths:
       - dist/
+    expire_in: 1 day
+  artifacts:
+    paths:
       - dynamic-gitlab-ci.yml
-    expire_in: 1 week
+    expire_in: 1 day
   tags:
     - pdbe-docker
   except:
@@ -79,7 +82,7 @@ storybook_build:
   artifacts:
     paths:
       - dist/
-    expire_in: 1 week
+    expire_in: 1 day
   tags:
     - pdbe-docker
   except:
