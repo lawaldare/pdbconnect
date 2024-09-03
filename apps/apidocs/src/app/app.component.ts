@@ -15,6 +15,11 @@ export class AppComponent {
   title = 'PDBe RESTful API Documentation';
   @Input() url = '';
 
+  public readonly headerLogoMenuConfig = {
+    backgroundColor: '#056643',
+    logoType: 'PDBe',
+  };
+
   constructor(private configService: ConfigService) {}
 
   ngOnInit(): void {

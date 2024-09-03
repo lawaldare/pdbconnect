@@ -1,12 +1,3 @@
-<pdbc-pdbe-header-logo-menu
-  [backgroundColor]="'#056643'"
-  [logoType]="'PDBe'"
-  [urls]="[
-    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
-    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
-    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' }
-  ]"
-  [menuHighlightColor]="'#0a5032'"
-></pdbc-pdbe-header-logo-menu>
+<pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig" />
 <pdbc-pdbe-swagger-docs jsonUrl="{{ url }}"></pdbc-pdbe-swagger-docs>
 <pdbc-vf-ebi-footer></pdbc-vf-ebi-footer>
