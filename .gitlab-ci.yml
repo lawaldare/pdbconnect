@@ -62,7 +62,6 @@ build:
   cache:
     paths:
       - dist/
-    expire_in: 1 day
   artifacts:
     paths:
       - dynamic-gitlab-ci.yml
