@@ -16,12 +16,13 @@ import { environment } from '../../../environments/environment';
 })
 export class DataTypeBoxComponent implements OnInit {
   private readonly downloadService = inject(DownloadService);
+  private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
+
   public readonly dataType = input.required<DataType>();
   public chosenformat!: string;
   public pdbid!: string;
   public isLoadingEntry = this.downloadService.isLoadingEntry;
   public errorEntryText = this.downloadService.errorEntryText;
-  private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
 
   ngOnInit(): void {
     if (localStorage['pdbIds']) {
