@@ -56,7 +56,7 @@ build:
     - lint
   extends: .distributed
   script:
-    - npx nx run-many --base=$NX_BASE --head=$NX_HEAD -t build --parallel=3 --exclude=playground
+    - npx nx run-many -t build --parallel=3 --exclude=playground
     - node ./bin/index.js "$(npx nx show projects --json --type=app --base=$NX_BASE --head=$NX_HEAD --exclude=playground)"
     - cat dynamic-gitlab-ci.yml
   artifacts:
