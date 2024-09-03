@@ -73,10 +73,10 @@ build:
   tags:
     - pdbe-shell
   except:
+    variables:
+      - $CI_PIPELINE_SOURCE == "web"
     refs:
       - playground
-  rules:
-    - if: $CI_PIPELINE_SOURCE != "web"
 
 storybook_build:
   stage: build
@@ -93,8 +93,8 @@ storybook_build:
   except:
     refs:
       - playground
-  rules:
-    - if: $CI_PIPELINE_SOURCE != "web"
+    variables:
+      - $CI_PIPELINE_SOURCE == "web"
 
 storybook_publish:
   stage: publish
@@ -109,8 +109,8 @@ storybook_publish:
   except:
     refs:
       - playground
-  rules:
-    - if: $CI_PIPELINE_SOURCE != "web"
+    variables:
+      - $CI_PIPELINE_SOURCE == "web"
 
 storybook_publish_deploy:
   stage: deploy
@@ -128,8 +128,8 @@ storybook_publish_deploy:
   except:
     refs:
       - playground
-  rules:
-    - if: $CI_PIPELINE_SOURCE != "web"
+    variables:
+      - $CI_PIPELINE_SOURCE == "web"
 
 triggers:
   stage: trigger
@@ -145,8 +145,6 @@ triggers:
   except:
     refs:
       - playground
-  rules:
-    - if: $CI_PIPELINE_SOURCE != "web"
 
 pages:
   stage: deploy
@@ -163,8 +161,8 @@ pages:
   except:
     refs:
       - playground
-  rules:
-    - if: $CI_PIPELINE_SOURCE != "web"
+    variables:
+      - $CI_PIPELINE_SOURCE == "web"
 
 playground_build_and_publish:
   stage: build
@@ -179,8 +177,8 @@ playground_build_and_publish:
   only:
     refs:
       - playground
-  rules:
-    - if: $CI_PIPELINE_SOURCE != "web"
+    variables:
+      - $CI_PIPELINE_SOURCE != "web"
 
 deploy_all_apps_to_dev:
   stage: build
