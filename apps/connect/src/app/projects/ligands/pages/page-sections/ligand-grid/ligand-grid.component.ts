@@ -70,6 +70,7 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
   public openMolstarDialog(): void {
     const data = {
       moleculeId: this.ligand.chem_comp_id,
+      atoms: this.ligand.substructure_match,
     };
 
     this.dialog.open(MolstarDialogComponent, {
