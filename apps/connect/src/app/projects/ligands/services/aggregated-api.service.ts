@@ -67,32 +67,32 @@ export class AggregatedApiService {
   constructor(private http: HttpClient) {}
 
   fetchDescription(ligandId: string): Observable<PDBLigandDescription> {
-    const descriptionUrl = `${this.AggregatedApiUrl}/pdb/compound/summary/${ligandId}`;
+    const descriptionUrl = `${this.AggregatedApiUrl}pdb/compound/summary/${ligandId}`;
     return this.http.get<PDBLigandDescription>(descriptionUrl);
   }
 
   fetchDownload(ligandId: string): Observable<PDBLigandFile> {
-    const downloadUrl = `${this.AggregatedApiUrl}/pdb/compound/files/${ligandId}`;
+    const downloadUrl = `${this.AggregatedApiUrl}pdb/compound/files/${ligandId}`;
     return this.http.get<PDBLigandFile>(downloadUrl);
   }
 
   fetchSubstructures(ligandId: string): Observable<PDBSubstructures> {
-    const substructureUrl = `${this.AggregatedApiUrl}/compound/substructures/${ligandId}`;
+    const substructureUrl = `${this.AggregatedApiUrl}compound/substructures/${ligandId}`;
     return this.http.get<PDBSubstructures>(substructureUrl);
   }
 
   fetchLigandStructures(ligandId: string): Observable<LigandStructure[]> {
-    const ligandStructureAPI = `${this.AggregatedApiUrl}/compound/uniprot/${ligandId}`;
+    const ligandStructureAPI = `${this.AggregatedApiUrl}compound/uniprot/${ligandId}`;
     return this.http.get<LigandStructuresAPIResponse>(ligandStructureAPI).pipe(map((data) => data[ligandId]));
   }
 
   fetchDepiction(ligandId: string): Observable<Depiction> {
-    const depictionUrl = `${this.StaticFilesApiUrl}/${ligandId}/annotation`;
+    const depictionUrl = `${this.StaticFilesApiUrl}${ligandId}/annotation`;
     return this.http.get<Depiction>(depictionUrl).pipe(shareReplay(1));
   }
 
   fetchRelatedLigands(ligandId: string): Observable<RelatedLigand> {
-    const relatedLigandUrl = `${this.AggregatedApiUrl}/compound/similarity/${ligandId}`;
+    const relatedLigandUrl = `${this.AggregatedApiUrl}compound/similarity/${ligandId}`;
     const relatedLigand = this.http.get<PDBRelatedLigands>(relatedLigandUrl).pipe(
       shareReplay(1),
       map((relatedLigands: PDBRelatedLigands) => {
@@ -103,13 +103,13 @@ export class AggregatedApiService {
   }
 
   fetchBoundEntries(ligandId: string): Observable<any> {
-    const boundEntryURL = `${this.AggregatedApiUrl}/pdb/compound/in_pdb/${ligandId}`;
+    const boundEntryURL = `${this.AggregatedApiUrl}pdb/compound/in_pdb/${ligandId}`;
     const boundEntries = this.http.get<any>(boundEntryURL);
     return boundEntries;
   }
 
   fetchIntxData(ligandId: string): Observable<IntxDataUrl> {
-    const IntxUrl = `${this.AggregatedApiUrl}/compound/interaction/${ligandId}`;
+    const IntxUrl = `${this.AggregatedApiUrl}compound/interaction/${ligandId}`;
     return this.http.get<PDBIntxData>(IntxUrl).pipe(
       map((interactions: PDBIntxData) => ({
         IntxUrl: IntxUrl,
