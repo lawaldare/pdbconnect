@@ -5,14 +5,14 @@ import { Depiction, Fragment } from '../../../data-models/structure.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { of, switchMap } from 'rxjs';
-import { ClickOutsideDirective, UtilService } from '@pdbc/core';
+import { ClickOutsideDirective, MaterialModule, UtilService } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { LigandUtilService } from '../../../ligand-util.service';
 
 @Component({
   selector: 'pdbc-image-carousel',
   standalone: true,
-  imports: [CommonModule, ClickOutsideDirective, ToolTipComponent],
+  imports: [CommonModule, ClickOutsideDirective, ToolTipComponent, MaterialModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './image-carousel.component.html',
   styleUrl: './image-carousel.component.scss',

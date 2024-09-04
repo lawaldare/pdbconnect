@@ -7,7 +7,7 @@ import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold } from '../../..
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { forkJoin, of, catchError, switchMap, mergeMap, map, combineLatest, Observable } from 'rxjs';
+import { forkJoin, of, catchError, switchMap, mergeMap, map, combineLatest, Observable, startWith } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -211,7 +211,10 @@ export class RelatedLigandsComponent implements OnInit {
         this.setUpPagination('stereoisomers');
       });
 
-    combineLatest([this.similarityFrom.valueChanges, this.similarityTo.valueChanges])
+    combineLatest([
+      this.similarityFrom.valueChanges.pipe(startWith(this.similarityFrom.value)),
+      this.similarityTo.valueChanges.pipe(startWith(this.similarityTo.value)),
+    ])
       .pipe(
         map(([from, to]) => {
           if (from === null || to === null) {

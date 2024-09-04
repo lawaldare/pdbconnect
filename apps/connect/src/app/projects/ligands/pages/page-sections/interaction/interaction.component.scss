@@ -35,6 +35,8 @@ button {
   width: 100%;
   justify-content: space-between;
   gap: 37.92px;
+  border: 1px solid var(--Neutral-200, #656363);
+  padding: 20px;
 
   pdbe-ligand-interactions {
     @media screen and (max-width: 540px) {
@@ -59,9 +61,14 @@ button {
     width: 100%;
   }
 
+  .ligandEnv-content {
+    height: 380px;
+    border: 1px solid var(--Neutral-200, #e4e4e4);
+  }
+
   .ligandEnv-header {
     h4 {
-      font-size: 21px;
+      font-size: 16px;
       font-weight: 500;
       margin-bottom: 17px;
 

@@ -9,13 +9,14 @@ import {
   inject,
   ChangeDetectorRef,
   ChangeDetectionStrategy,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
-import { Depiction } from '../../../data-models/structure.model';
+import { Depiction, LigandStructure } from '../../../data-models/structure.model';
 import { IntxDataUrl, PDBIntxData } from '../../../data-models/interaction.model';
 import { ActivatedRoute } from '@angular/router';
-import { EMPTY, map, mergeMap, switchMap } from 'rxjs';
+import { EMPTY, forkJoin, map, mergeMap, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MaterialModule } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -50,6 +51,10 @@ export class InteractionComponent implements AfterViewInit {
   public interaction!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   private emptyText!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
+  public ligandInstances = signal(0);
+  public pdbstructures = signal(0);
+  public pdbchains = signal(0);
+
   private renderHeatMap(interaction: PDBIntxData): void {
     const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;
     const ligandHeatmap = this.renderer.createElement('pdbe-ligand-interactions');
@@ -74,11 +79,11 @@ export class InteractionComponent implements AfterViewInit {
         }),
         mergeMap((depiction: Depiction) => {
           this.createLigandEnvironment(imageContainer, depiction);
-          return this.aggregatedApiService.fetchIntxData(this.ligandId);
+          return forkJoin([this.aggregatedApiService.fetchIntxData(this.ligandId), this.aggregatedApiService.fetchLigandStructures(this.ligandId)]);
         }),
-        map((intxDataUrl: IntxDataUrl) => {
+        map(([intxDataUrl, structures]) => {
           const interaction = intxDataUrl.interactions;
-          console.log(interaction);
+          this.generateStructureStatistics(structures);
           this.interaction = interaction;
           if (interaction && interaction?.[this.ligandId]) {
             this.renderer.setProperty(this.ligandEv, 'interaction', interaction[this.ligandId]);
@@ -142,5 +147,21 @@ export class InteractionComponent implements AfterViewInit {
     this.renderer.removeClass(p, 'empty-text');
     this.renderer.appendChild(ligandHeatmapContainer, p);
     this.emptyText = p;
+  }
+
+  private generateStructureStatistics(structures: LigandStructure[]): void {
+    const numberOfPDBChains = structures.reduce((acc: number, curr: LigandStructure) => {
+      if (curr.interacting_chains === null || curr.interacting_chains.length === 0) {
+        acc = 0;
+        return acc;
+      }
+
+      const mappedValue = curr.interacting_chains.map((val) => val.pdb_id);
+      acc += [...new Set(mappedValue)].length;
+      return acc;
+    }, 0);
+    this.pdbchains.set(numberOfPDBChains);
+    this.pdbstructures.set(structures.length);
+    this.ligandInstances.set(44);
   }
 }
