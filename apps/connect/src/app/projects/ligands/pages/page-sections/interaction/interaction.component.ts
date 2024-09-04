@@ -78,6 +78,7 @@ export class InteractionComponent implements AfterViewInit {
         }),
         map((intxDataUrl: IntxDataUrl) => {
           const interaction = intxDataUrl.interactions;
+          console.log(interaction);
           this.interaction = interaction;
           if (interaction && interaction?.[this.ligandId]) {
             this.renderer.setProperty(this.ligandEv, 'interaction', interaction[this.ligandId]);

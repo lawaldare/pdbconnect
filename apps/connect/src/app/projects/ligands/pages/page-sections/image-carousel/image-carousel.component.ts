@@ -188,6 +188,9 @@ export class ImageCarouselComponent implements AfterViewInit {
       default:
         this.renderer.setProperty(el, 'atomNames', false);
         this.renderer.setProperty(el, 'highlightSubstructure', this.substructureAtoms[index - 2]);
+      // setTimeout(() => {
+      //   this.renderer.setProperty(el, 'highlightColor', '#000000');
+      // }, 2000);
     }
   }
 
@@ -238,6 +241,7 @@ export class ImageCarouselComponent implements AfterViewInit {
     const ligand = this.renderer.createElement('pdb-ligand-env');
     this.renderer.appendChild(container, ligand);
     this.renderer.setProperty(ligand, 'depiction', depiction);
+    // this.renderer.setProperty(ligand, 'highlightColor', 'red');
 
     if (slide === 0) {
       this.setDepictionProperty(ligand, slide);
