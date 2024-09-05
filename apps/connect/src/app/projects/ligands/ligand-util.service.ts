@@ -75,4 +75,5 @@ export class LigandUtilService {
   }
 
   public currentFragment = signal<Fragment>({} as Fragment);
+  public fragments = signal<Fragment[]>([]);
 }

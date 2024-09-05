@@ -7,11 +7,12 @@ import { BondsTableDialogComponent } from '../../section-components/bonds-table-
 import { AtomsTableDialogComponent } from '../../section-components/atoms-table-dialog/atoms-table-dialog.component';
 import { LigandSmilesPipe, Smile } from '../../../ligandsmiles.pipe';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
+import { CCDsDirective } from '../../../description-contains-ccds.directive';
 
 @Component({
   selector: 'pdbc-description',
   standalone: true,
-  imports: [CommonModule, TruncateTextDirective, MaterialModule, LigandSmilesPipe, ToolTipComponent],
+  imports: [CommonModule, TruncateTextDirective, MaterialModule, LigandSmilesPipe, ToolTipComponent, CCDsDirective],
   templateUrl: './description.component.html',
   styleUrls: ['./description.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -21,6 +21,8 @@ import { forkJoin, of } from 'rxjs';
 import { Fragment } from '../../data-models/structure.model';
 import { LigandUtilService } from '../../ligand-util.service';
 import { headerLogoMenuConfig, headerSearchConfig, navSections } from '../../ligand.constant';
+import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'pdbc-main',
@@ -48,7 +50,7 @@ export class LigandsMainPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ligandUtilService = inject(LigandUtilService);
-  private currentFragment = signal<any>({});
+  private readonly dialog = inject(MatDialog);
 
   public ligandId!: string;
   public description!: DescriptionData;
@@ -85,6 +87,13 @@ export class LigandsMainPageComponent implements OnInit {
   }
 
   public openMolstarDialog(): void {
-    this.ligandUtilService.openMolstarDialog(this.ligandUtilService.currentFragment(), this.ligandId);
+    this.dialog.open(MolstarDialogComponent, {
+      disableClose: false,
+      panelClass: 'molstarDialog',
+      data: {
+        moleculeId: this.ligandId,
+        fragments: this.ligandUtilService.fragments,
+      },
+    });
   }
 }

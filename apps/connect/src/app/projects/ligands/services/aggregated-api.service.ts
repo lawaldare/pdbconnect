@@ -19,6 +19,7 @@ export interface DescriptionData {
   properties: PhysChemProperties;
   annotations: FunctionalAnnotation[];
   crossLinks: CrossLink[];
+  subcomponent_occurrences: Record<string, number>;
 }
 
 export interface downloadData {
@@ -146,6 +147,7 @@ export class AggregatedApiService {
       properties: ligandProperties,
       annotations: ligandAnnotations,
       crossLinks: ligandCrossLinks,
+      subcomponent_occurrences: ligandSummary.subcomponent_occurrences,
     };
   }
 

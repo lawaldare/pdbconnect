@@ -2,7 +2,7 @@
   <h3 class="title">Description</h3>
   <div class="info-row">
     <span class="info-row-title">Synonyms</span>
-    <div class="info-row-content">
+    <div class="info-row-content" libTruncateText [truncateText]="description().synonyms" [limit]="60">
       {{ description().synonyms }}
     </div>
   </div>
@@ -70,6 +70,12 @@
       Source <a href="https://www.eyesopen.com/" target="_blank">OpenEye <i class="icon icon-link icon-common"></i></a>
     </div>
   </div>
+  @if(description().subcomponent_occurrences){
+  <div class="info-row">
+    <span class="info-row-title">Contains CCDs</span>
+    <div class="info-row-content" ccds [subcomponentOccurrences]="description().subcomponent_occurrences"></div>
+  </div>
+  }
   <div class="action-buttons">
     <button class="vf-button vf-button--primary vf-button--sm" (click)="openAtomsDialog()">View Atoms</button>
     <button class="vf-button vf-button--primary vf-button--sm" (click)="openBondsDialog()">View Bonds</button>

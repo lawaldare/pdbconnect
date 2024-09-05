@@ -14,7 +14,7 @@ export const navSections = [
 export const headerSearchConfig = {
   examples: [
     { label: 'STI', url: '/ligands/STI' },
-    { label: 'XRS', url: '/ligands/XRS' },
+    { label: 'GLC', url: '/ligands/GLC' },
     { label: 'MHS', url: '/ligands/MHS' },
     { label: 'HEM', url: '/ligands/HEM' },
   ],

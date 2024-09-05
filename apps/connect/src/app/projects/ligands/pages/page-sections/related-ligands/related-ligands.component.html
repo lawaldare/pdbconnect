@@ -10,8 +10,10 @@
       }
     </div>
     <div class="grid-container">
-      @for (sameScaffold of sameScaffoldPage; track sameScaffold) {
+      @if(sameScaffoldPage.length){ @for (sameScaffold of sameScaffoldPage; track sameScaffold) {
       <pdbc-ligand-grid [ligand]="sameScaffold" />
+      } } @else {
+      <p>Loading...</p>
       }
     </div>
     <mat-paginator

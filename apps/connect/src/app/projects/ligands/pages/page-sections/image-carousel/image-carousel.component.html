@@ -18,19 +18,12 @@
     <button class="control" (click)="onPreviousClick()">
       <img src="{{ arrowSrc }}" class="arrow" />
     </button>
-    <div class="image-container" #imageContainer>
-      <div class="wallpaper">
-        <span (click)="openMolstarDialog()">
-          View in 3D&nbsp;
-          <i class="icon icon-common icon-eye"></i>
-        </span>
-      </div>
-    </div>
+    <div class="image-container" #imageContainer></div>
     <button class="control" (click)="onNextClick()">
       <img src="{{ arrowSrc }}" class="arrow right" />
     </button>
   </div>
-  <p class="paragraph-3">{{ this.structureDescription }}</p>
+  <p class="paragraph-3">{{ structureDescription() }}</p>
   @if(showCopyButtons){
   <section class="copy-section">
     <p (click)="copySmiles()">

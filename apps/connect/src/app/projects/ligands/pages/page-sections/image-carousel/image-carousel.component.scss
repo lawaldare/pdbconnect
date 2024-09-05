@@ -74,6 +74,7 @@ h4 {
 .arrow {
   width: 24px;
   height: 24px;
+  cursor: pointer;
 
   &.right {
     transform: rotate(180deg);
