@@ -1,6 +1,7 @@
 <div id="related-ligand-section">
+  @if(sameScaffolds.length || similarLigands.length || stereoisomers.length){
   <h3 class="title">Related Ligands</h3>
-  @if(sameScaffolds.length){
+  } @if(sameScaffolds.length){
   <section id="scaffold-section">
     <h4>Same scaffold - {{ sameScaffolds.length }}</h4>
     <div class="search-box">
