@@ -1,18 +1,16 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, DestroyRef, signal } from '@angular/core';
+import { Component, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, DestroyRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { of, switchMap } from 'rxjs';
 import { ClickOutsideDirective, MaterialModule, UtilService } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
-import { LigandUtilService } from '../../../ligand-util.service';
 import { ImageCarouselComponentFacade } from './image-carousel.facade';
 
 @Component({
   selector: 'pdbc-image-carousel',
   standalone: true,
   imports: [CommonModule, ClickOutsideDirective, ToolTipComponent, MaterialModule],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './image-carousel.component.html',
   styleUrl: './image-carousel.component.scss',
 })

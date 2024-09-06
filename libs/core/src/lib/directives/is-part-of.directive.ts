@@ -24,9 +24,16 @@ export class IsPartOfDirective implements OnInit, OnChanges {
   private init(): void {
     this.fullText = this.truncateText;
     this.truncatedText = this.truncateText.length > this.limit ? this.truncateText.substring(0, this.limit) + '...' : this.truncateText;
-    this.renderer.setProperty(this.el.nativeElement, 'innerText', this.truncatedText);
+    const textArray = this.truncatedText.split(',');
+    for (const text of textArray) {
+      const a = this.renderer.createElement('a');
+      a.textContent = text;
+      this.renderer.setAttribute(a, 'href', `ligands/${text.trim()}`);
+      this.renderer.appendChild(this.el.nativeElement, a);
+    }
+    // this.renderer.setProperty(this.el.nativeElement, 'innerText', this.truncatedText);
     if (this.truncateText.trim().length > this.limit) {
-      this.addShowMore('Show more');
+      // this.addShowMore('Show more');
     }
   }
 
@@ -60,6 +67,8 @@ export class IsPartOfDirective implements OnInit, OnChanges {
       'style',
       this.truncated ? 'height: 110px' : this.el.nativeElement.offsetHeight > 300 ? 'height: 110px' : 'height: 300px'
     );
+
+    console.log(displayText);
 
     this.renderer.setProperty(this.el.nativeElement, 'innerText', displayText);
     this.addShowMore(showMoreText);

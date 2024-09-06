@@ -70,18 +70,16 @@
       Source <a href="https://www.eyesopen.com/" target="_blank">OpenEye <i class="icon icon-link icon-common"></i></a>
     </div>
   </div>
-  @if(description().subcomponent_occurrences){
+  @if(description().subcomponent_occurrences && !isMainLigandId()){
   <div class="info-row">
     <span class="info-row-title">Contains CCDs</span>
     <div class="info-row-content" ccds [subcomponentOccurrences]="description().subcomponent_occurrences"></div>
   </div>
-  } @if(supercomponents().length){
+  } @if(supercomponents().length && isMainLigandId()){
   <div class="info-row">
     <span class="info-row-title">Is a part of</span>
     <article>
-      <div class="info-row-content supercomponents" libIsPartOf [truncateText]="supercomponents().join(', ')" [limit]="120">
-        {{ supercomponents().join(', ') }}
-      </div>
+      <div class="info-row-content supercomponents" libIsPartOf [truncateText]="supercomponents().join(', ')"></div>
       <i
         class="icon icon-common icon-clone"
         matTooltipClass="description-tooltip"

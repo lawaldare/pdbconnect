@@ -156,7 +156,7 @@ export class AggregatedApiService {
     };
   }
 
-  processDownloadData(ligandId: string, data: PDBLigandFile): downloadData {
+  processDownloadData(ligandId: string, data: any): downloadData {
     const downloadFile = data[ligandId]['ligand']['downloads'];
     let idealSDFUrl = '';
     let modelSDFUrl = '';

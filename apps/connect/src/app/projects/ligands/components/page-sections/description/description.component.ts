@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DescriptionData } from '../../../services/aggregated-api.service';
 import { IsPartOfDirective, MaterialModule, TruncateTextDirective, UtilService } from '@pdbc/core';
@@ -8,11 +8,12 @@ import { AtomsTableDialogComponent } from '../../section-components/atoms-table-
 import { LigandSmilesPipe, Smile } from '../../../ligandsmiles.pipe';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { CCDsDirective } from '../../../description-contains-ccds.directive';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'pdbc-description',
   standalone: true,
-  imports: [CommonModule, TruncateTextDirective, IsPartOfDirective, MaterialModule, LigandSmilesPipe, ToolTipComponent, CCDsDirective],
+  imports: [CommonModule, TruncateTextDirective, IsPartOfDirective, MaterialModule, LigandSmilesPipe, ToolTipComponent, CCDsDirective, RouterModule],
   templateUrl: './description.component.html',
   styleUrls: ['./description.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,10 +23,24 @@ export class DescriptionComponent {
   public description = input.required<DescriptionData>();
   public ligandId = input.required<string>();
   public supercomponents = input.required<string[]>();
+  public isMainLigandId = signal(true);
 
   private readonly dialog = inject(MatDialog);
   private readonly utilService = inject(UtilService);
   private readonly smilesPipe = inject(LigandSmilesPipe);
+
+  constructor() {
+    effect(
+      () => {
+        if (this.ligandId().startsWith('CLC') || this.ligandId().startsWith('PRD')) {
+          this.isMainLigandId.set(false);
+        } else {
+          this.isMainLigandId.set(true);
+        }
+      },
+      { allowSignalWrites: true }
+    );
+  }
 
   public copy(value: string): void {
     this.utilService.copy(value);
