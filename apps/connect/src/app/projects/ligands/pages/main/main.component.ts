@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, DestroyRef, signal } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DescriptionComponent } from '../page-sections/description/description.component';
@@ -16,8 +16,8 @@ import { DownloadOption } from '../../data-models/download.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { switchMap, map } from 'rxjs/operators';
-import { forkJoin, of } from 'rxjs';
+import { switchMap, map, catchError } from 'rxjs/operators';
+import { EMPTY, forkJoin, of } from 'rxjs';
 import { Fragment } from '../../data-models/structure.model';
 import { LigandUtilService } from '../../ligand-util.service';
 import { headerLogoMenuConfig, headerSearchConfig, navSections } from '../../ligand.constant';
@@ -58,6 +58,7 @@ export class LigandsMainPageComponent implements OnInit {
   public readonly headerLogoMenuConfig = headerLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchConfig;
   public readonly navSections = navSections;
+  public supercomponents!: string[];
 
   ngOnInit(): void {
     this.route.params
@@ -65,9 +66,15 @@ export class LigandsMainPageComponent implements OnInit {
         switchMap((params: { [x: string]: string }) => {
           const ligandId = params['ligandId'].toUpperCase();
           this.ligandId = ligandId;
-          return forkJoin([this.aggregatedApiService.fetchDescription(ligandId), this.aggregatedApiService.fetchDownload(ligandId), of(ligandId)]);
+          return forkJoin([
+            this.aggregatedApiService.fetchDescription(ligandId),
+            this.aggregatedApiService.fetchDownload(ligandId),
+            this.aggregatedApiService.fetchSupercomponents(ligandId).pipe(catchError(() => of([]))),
+            of(ligandId),
+          ]);
         }),
-        map(([descriptionData, downloadData, ligandId]) => {
+        map(([descriptionData, downloadData, supercomponents, ligandId]) => {
+          this.supercomponents = supercomponents;
           return {
             processDescriptionData: this.aggregatedApiService.processDescriptionData(ligandId, descriptionData),
             processDownloadData: this.aggregatedApiService.processDownloadData(ligandId, downloadData),

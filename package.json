@@ -51,6 +51,7 @@
     "@visual-framework/vf-text": "^1.1.0",
     "@visual-framework/vf-u-fullbleed": "^1.2.2",
     "@visual-framework/vf-utility-classes": "^2.0.0",
+    "ngx-skeleton-loader": "^9.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rxjs": "~7.8.0",

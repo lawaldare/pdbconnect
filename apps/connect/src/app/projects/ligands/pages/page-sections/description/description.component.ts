@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DescriptionData } from '../../../services/aggregated-api.service';
-import { MaterialModule, TruncateTextDirective, UtilService } from '@pdbc/core';
+import { IsPartOfDirective, MaterialModule, TruncateTextDirective, UtilService } from '@pdbc/core';
 import { MatDialog } from '@angular/material/dialog';
 import { BondsTableDialogComponent } from '../../section-components/bonds-table-dialog/bonds-table-dialog.component';
 import { AtomsTableDialogComponent } from '../../section-components/atoms-table-dialog/atoms-table-dialog.component';
@@ -12,7 +12,7 @@ import { CCDsDirective } from '../../../description-contains-ccds.directive';
 @Component({
   selector: 'pdbc-description',
   standalone: true,
-  imports: [CommonModule, TruncateTextDirective, MaterialModule, LigandSmilesPipe, ToolTipComponent, CCDsDirective],
+  imports: [CommonModule, TruncateTextDirective, IsPartOfDirective, MaterialModule, LigandSmilesPipe, ToolTipComponent, CCDsDirective],
   templateUrl: './description.component.html',
   styleUrls: ['./description.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,6 +21,7 @@ import { CCDsDirective } from '../../../description-contains-ccds.directive';
 export class DescriptionComponent {
   public description = input.required<DescriptionData>();
   public ligandId = input.required<string>();
+  public supercomponents = input.required<string[]>();
 
   private readonly dialog = inject(MatDialog);
   private readonly utilService = inject(UtilService);

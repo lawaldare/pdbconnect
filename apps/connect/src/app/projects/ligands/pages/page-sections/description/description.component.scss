@@ -59,6 +59,11 @@
       font-size: 16px;
       font-weight: 400;
 
+      &.supercomponents {
+        overflow: scroll;
+        // height: 300px;
+      }
+
       &.formula {
         max-width: fit-content;
         padding: 4px 12px;

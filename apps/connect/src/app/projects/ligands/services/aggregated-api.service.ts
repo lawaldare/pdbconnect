@@ -82,6 +82,11 @@ export class AggregatedApiService {
     return this.http.get<PDBSubstructures>(substructureUrl);
   }
 
+  fetchSupercomponents(ligandId: string): Observable<string[]> {
+    const substructureUrl = `${this.AggregatedApiUrl}pdb/compound/supercomponents/${ligandId}`;
+    return this.http.get<string[]>(substructureUrl).pipe(map((data: any) => data[ligandId]));
+  }
+
   fetchLigandStructures(ligandId: string): Observable<LigandStructure[]> {
     const ligandStructureAPI = `${this.AggregatedApiUrl}compound/uniprot/${ligandId}`;
     return this.http.get<LigandStructuresAPIResponse>(ligandStructureAPI).pipe(map((data) => data[ligandId]));

@@ -7,14 +7,15 @@ import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold } from '../../..
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { forkJoin, of, catchError, switchMap, mergeMap, map, combineLatest, Observable, startWith } from 'rxjs';
+import { forkJoin, switchMap, mergeMap, map, combineLatest, startWith } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
   selector: 'pdbc-related-ligands',
   standalone: true,
-  imports: [CommonModule, FormsModule, LigandGridComponent, MatPaginator, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, LigandGridComponent, MatPaginator, ReactiveFormsModule, NgxSkeletonLoaderModule],
   templateUrl: './related-ligands.component.html',
   styleUrl: './related-ligands.component.scss',
 })
@@ -57,6 +58,14 @@ export class RelatedLigandsComponent implements OnInit {
 
   public similarityFrom = new FormControl(60);
   public similarityTo = new FormControl(100);
+
+  public readonly skeletonTheme = {
+    'border-radius': '0px',
+    height: '150px',
+    'background-color': '#f4f4f4',
+    border: '1px solid white',
+    width: '150px',
+  };
 
   handlePageEvent(event: PageEvent, filterOn: string) {
     switch (filterOn) {

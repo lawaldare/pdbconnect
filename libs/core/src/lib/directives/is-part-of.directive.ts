@@ -1,10 +1,10 @@
 import { Directive, ElementRef, Renderer2, Input, OnInit, OnChanges } from '@angular/core';
 
 @Directive({
-  selector: '[libTruncateText]',
+  selector: '[libIsPartOf]',
   standalone: true,
 })
-export class TruncateTextDirective implements OnInit, OnChanges {
+export class IsPartOfDirective implements OnInit, OnChanges {
   @Input() truncateText = '';
   @Input() limit = 60;
   private truncated = true;
@@ -54,6 +54,13 @@ export class TruncateTextDirective implements OnInit, OnChanges {
     this.truncated = !this.truncated;
     const displayText = this.truncated ? this.truncatedText : this.fullText;
     const showMoreText = this.truncated ? 'Show more' : 'Show less';
+    console.log(this.el.nativeElement.offsetHeight, this.truncated);
+    this.renderer.setAttribute(
+      this.el.nativeElement,
+      'style',
+      this.truncated ? 'height: 110px' : this.el.nativeElement.offsetHeight > 300 ? 'height: 110px' : 'height: 300px'
+    );
+
     this.renderer.setProperty(this.el.nativeElement, 'innerText', displayText);
     this.addShowMore(showMoreText);
   }

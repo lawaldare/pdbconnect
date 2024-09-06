@@ -75,6 +75,22 @@
     <span class="info-row-title">Contains CCDs</span>
     <div class="info-row-content" ccds [subcomponentOccurrences]="description().subcomponent_occurrences"></div>
   </div>
+  } @if(supercomponents().length){
+  <div class="info-row">
+    <span class="info-row-title">Is a part of</span>
+    <article>
+      <div class="info-row-content supercomponents" libIsPartOf [truncateText]="supercomponents().join(', ')" [limit]="120">
+        {{ supercomponents().join(', ') }}
+      </div>
+      <i
+        class="icon icon-common icon-clone"
+        matTooltipClass="description-tooltip"
+        matTooltip="Copy the smiles"
+        matTooltipPosition="above"
+        (click)="copy(supercomponents().join(', '))"
+      ></i>
+    </article>
+  </div>
   }
   <div class="action-buttons">
     <button class="vf-button vf-button--primary vf-button--sm" (click)="openAtomsDialog()">View Atoms</button>

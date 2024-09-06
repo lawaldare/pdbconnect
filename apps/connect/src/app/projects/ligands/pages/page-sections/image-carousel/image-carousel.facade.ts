@@ -191,6 +191,7 @@ export class ImageCarouselComponentFacade {
 
     if (mainLigand) {
       renderer.setAttribute(ligand, 'depiction-only', '');
+      renderer.setAttribute(ligand, 'zoom-on', 'true');
       this.ligandEv = ligand;
     }
   }
