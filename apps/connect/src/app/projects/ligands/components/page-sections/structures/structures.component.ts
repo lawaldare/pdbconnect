@@ -11,12 +11,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ClickOutsideDirective, DownloadFileTypeService, DownloadService, MaterialModule } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { map, switchMap } from 'rxjs/operators';
-import { LigandInteractingChainsNumberPipe } from '../../../ligandInteractingChainsNumber.pipe';
 import { MatDialog } from '@angular/material/dialog';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
 import { EMPTY } from 'rxjs';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { environment } from '../../../../../../environments/environment';
+import { LigandInteractingChainsNumberPipe } from '../../../pipes/ligandInteractingChainsNumber.pipe';
 
 @Component({
   selector: 'pdbc-structures',

@@ -5,10 +5,10 @@ import { IsPartOfDirective, MaterialModule, TruncateTextDirective, UtilService }
 import { MatDialog } from '@angular/material/dialog';
 import { BondsTableDialogComponent } from '../../section-components/bonds-table-dialog/bonds-table-dialog.component';
 import { AtomsTableDialogComponent } from '../../section-components/atoms-table-dialog/atoms-table-dialog.component';
-import { LigandSmilesPipe, Smile } from '../../../ligandsmiles.pipe';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
-import { CCDsDirective } from '../../../description-contains-ccds.directive';
+import { CCDsDirective } from '../../../directives/description-contains-ccds.directive';
 import { RouterModule } from '@angular/router';
+import { LigandSmilesPipe, Smile } from '../../../pipes/ligandsmiles.pipe';
 
 @Component({
   selector: 'pdbc-description',

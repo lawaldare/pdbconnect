@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Chain } from './data-models/structure.model';
+import { Chain } from '../data-models/structure.model';
 
 @Pipe({
   name: 'ligandInteractingChainsNumber',
