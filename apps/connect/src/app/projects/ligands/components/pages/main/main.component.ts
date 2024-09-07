@@ -18,6 +18,7 @@ import { switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { headerLogoMenuConfig, headerSearchConfig, navSections } from '../../../ligand.constant';
 import { MainComponentFacade } from './main.facade';
+import { MainComponentStore } from './main.store';
 
 @Component({
   selector: 'pdbc-main',
@@ -45,13 +46,15 @@ export class LigandsMainPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly facade = inject(MainComponentFacade);
 
+  private readonly store = inject(MainComponentStore);
+
   public readonly headerLogoMenuConfig = headerLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchConfig;
   public readonly navSections = navSections;
 
-  public description = this.facade.description;
-  public downloadOptions = this.facade.downloadOptions;
-  public supercomponents = this.facade.supercomponents;
+  public description = this.store.description;
+  public downloadOptions = this.store.downloadOptions;
+  public supercomponents = this.store.supercomponents;
   public descriptionLoaded = computed(() => (Object.keys(this.description()).length ? true : false));
 
   public ligandId!: string;
@@ -61,7 +64,8 @@ export class LigandsMainPageComponent implements OnInit {
       .pipe(
         switchMap((params) => {
           this.ligandId = params['ligandId'].toUpperCase();
-          this.facade.init(this.ligandId);
+          // this.facade.init(this.ligandId);
+          this.store.init(this.ligandId);
           return of({});
         }),
         takeUntilDestroyed(this.destroyRef)
