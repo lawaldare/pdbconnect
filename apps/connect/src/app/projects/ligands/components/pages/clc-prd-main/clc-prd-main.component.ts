@@ -13,7 +13,7 @@ import { ActivatedRoute } from '@angular/router';
 import { of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { MainComponentFacade } from '../main/main.facade';
+import { MainComponentStore } from '../main/main.store';
 
 @Component({
   selector: 'pdbc-clc-prd-main',
@@ -36,15 +36,15 @@ import { MainComponentFacade } from '../main/main.facade';
 export class ClcPrdMainComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly facade = inject(MainComponentFacade);
+  private readonly store = inject(MainComponentStore);
 
   public readonly headerLogoMenuConfig = headerLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchConfig;
   public readonly navSections = navSections;
 
-  public description = this.facade.description;
-  public downloadOptions = this.facade.downloadOptions;
-  public supercomponents = this.facade.supercomponents;
+  public description = this.store.description;
+  public downloadOptions = this.store.downloadOptions;
+  public supercomponents = this.store.supercomponents;
   public descriptionLoaded = computed(() => (Object.keys(this.description()).length ? true : false));
 
   public ligandId!: string;
@@ -54,7 +54,7 @@ export class ClcPrdMainComponent implements OnInit {
       .pipe(
         switchMap((params) => {
           this.ligandId = params['ligandId'].toUpperCase();
-          this.facade.init(this.ligandId);
+          this.store.init(this.ligandId);
           return of({});
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -63,6 +63,6 @@ export class ClcPrdMainComponent implements OnInit {
   }
 
   public openMolstarDialog(): void {
-    this.facade.openMolstarDialog();
+    this.store.openMolstarDialog();
   }
 }

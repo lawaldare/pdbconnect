@@ -17,7 +17,6 @@ import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { headerLogoMenuConfig, headerSearchConfig, navSections } from '../../../ligand.constant';
-import { MainComponentFacade } from './main.facade';
 import { MainComponentStore } from './main.store';
 
 @Component({
@@ -44,8 +43,6 @@ import { MainComponentStore } from './main.store';
 export class LigandsMainPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly facade = inject(MainComponentFacade);
-
   private readonly store = inject(MainComponentStore);
 
   public readonly headerLogoMenuConfig = headerLogoMenuConfig;
@@ -74,6 +71,6 @@ export class LigandsMainPageComponent implements OnInit {
   }
 
   public openMolstarDialog(): void {
-    this.facade.openMolstarDialog();
+    this.store.openMolstarDialog();
   }
 }

@@ -1,9 +1,9 @@
-import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { AggregatedApiService, DescriptionData } from '../../../services/aggregated-api.service';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { inject } from '@angular/core';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { catchError, forkJoin, map, of, pipe, switchMap } from 'rxjs';
+import { catchError, forkJoin, of, pipe, switchMap } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { LigandUtilService } from '../../../ligand-util.service';
@@ -41,25 +41,26 @@ export const MainComponentStore = signalStore(
               aggregatedApiService.fetchDownload(ligandId).pipe(catchError(() => of({}))),
               aggregatedApiService.fetchSupercomponents(ligandId).pipe(catchError(() => of([]))),
               of(ligandId),
-            ]);
-          }),
-          tapResponse(
-            ([descriptionData, downloadData, supercomponents, ligandId]) => {
-              const processDescriptionData = aggregatedApiService.processDescriptionData(ligandId, descriptionData);
-              const processDownloadData = aggregatedApiService.processDownloadData(ligandId, downloadData);
-              patchState(store, {
-                description: processDescriptionData,
-                supercomponents,
-                downloadOptions: [
-                  { name: 'CIF file', url: processDownloadData.cif, downloadable: true },
-                  { name: 'Ideal SDF', url: processDownloadData.idealSDF, downloadable: true },
-                  { name: 'Model SDF', url: processDownloadData.modelSDF, downloadable: true },
-                  { name: 'Model CML', url: processDownloadData.modelCML, downloadable: true },
-                ],
-              });
-            },
-            (error) => console.error(error)
-          )
+            ]).pipe(
+              tapResponse(
+                ([descriptionData, downloadData, supercomponents, ligandId]) => {
+                  const processDescriptionData = aggregatedApiService.processDescriptionData(ligandId, descriptionData);
+                  const processDownloadData = aggregatedApiService.processDownloadData(ligandId, downloadData);
+                  patchState(store, {
+                    description: processDescriptionData,
+                    supercomponents,
+                    downloadOptions: [
+                      { name: 'CIF file', url: processDownloadData.cif, downloadable: true },
+                      { name: 'Ideal SDF', url: processDownloadData.idealSDF, downloadable: true },
+                      { name: 'Model SDF', url: processDownloadData.modelSDF, downloadable: true },
+                      { name: 'Model CML', url: processDownloadData.modelCML, downloadable: true },
+                    ],
+                  });
+                },
+                (error) => console.error(error)
+              )
+            );
+          })
         )
       ),
       openMolstarDialog() {

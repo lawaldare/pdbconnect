@@ -1,20 +1,8 @@
-import {
-  Component,
-  CUSTOM_ELEMENTS_SCHEMA,
-  ViewChild,
-  Renderer2,
-  ElementRef,
-  AfterViewInit,
-  DestroyRef,
-  inject,
-  ChangeDetectorRef,
-  ChangeDetectionStrategy,
-  signal,
-} from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild, Renderer2, ElementRef, AfterViewInit, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction, LigandStructure } from '../../../data-models/structure.model';
-import { IntxDataUrl, PDBIntxData } from '../../../data-models/interaction.model';
+import { PDBIntxData } from '../../../data-models/interaction.model';
 import { ActivatedRoute } from '@angular/router';
 import { EMPTY, forkJoin, map, mergeMap, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -29,7 +17,6 @@ import { LigandUtilService } from '../../../ligand-util.service';
   templateUrl: './interaction.component.html',
   styleUrl: './interaction.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InteractionComponent implements AfterViewInit {
   public ligandId!: string;
@@ -45,7 +32,6 @@ export class InteractionComponent implements AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
-  private readonly cdr = inject(ChangeDetectorRef);
   private readonly ligandUtilService = inject(LigandUtilService);
   private readonly _snackBar = inject(MatSnackBar);
   public interaction!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -74,7 +60,6 @@ export class InteractionComponent implements AfterViewInit {
         switchMap((params) => {
           this.resetRenderer();
           this.ligandId = params['ligandId'].toUpperCase();
-          this.cdr.detectChanges();
           return this.aggregatedApiService.fetchDepiction(this.ligandId);
         }),
         mergeMap((depiction: Depiction) => {
