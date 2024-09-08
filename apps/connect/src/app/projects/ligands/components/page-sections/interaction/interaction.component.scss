@@ -39,6 +39,8 @@ button {
   padding: 20px;
 
   pdbe-ligand-interactions {
+    width: 100%;
+
     @media screen and (max-width: 540px) {
       display: none;
     }
@@ -49,6 +51,10 @@ button {
   display: flex;
   width: 70%;
   height: auto;
+}
+
+.lig-heat-container {
+  width: calc(100% - 308px);
 }
 
 .ligandEnv-container {

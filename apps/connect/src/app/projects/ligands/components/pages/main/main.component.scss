@@ -9,8 +9,12 @@ main {
       gap: 0px;
     }
 
+    pdbc-pdbe-nav-menu {
+      width: 220px;
+    }
+
     article {
-      width: 100%;
+      width: calc(100% - 248px);
     }
 
     .hero {

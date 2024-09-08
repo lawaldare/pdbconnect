@@ -61,6 +61,8 @@
 
       &.supercomponents {
         overflow: scroll;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
         // height: 300px;
       }
 

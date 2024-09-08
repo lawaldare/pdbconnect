@@ -34,7 +34,7 @@ export class InteractionComponent implements AfterViewInit {
   private readonly renderer = inject(Renderer2);
   private readonly ligandUtilService = inject(LigandUtilService);
   private readonly _snackBar = inject(MatSnackBar);
-  public interaction!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  public interaction!: PDBIntxData; // eslint-disable-line @typescript-eslint/no-explicit-any
   private emptyText!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   public ligandInstances = signal(0);
