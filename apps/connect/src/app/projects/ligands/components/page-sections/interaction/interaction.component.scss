@@ -45,6 +45,14 @@ button {
       display: none;
     }
   }
+
+  ::ng-deep pdbe-ligand-interactions .heatmap-container {
+    width: 563px;
+
+    .heatmap-main {
+      width: 563px;
+    }
+  }
 }
 
 .heatmap-container {
