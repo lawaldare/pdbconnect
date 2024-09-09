@@ -424,7 +424,6 @@ export class InteractionsHeatmapComponent implements OnInit {
     tooltipDiv.setAttribute('id', 'removable-div');
     tooltipDiv.setAttribute('class', 'heatmap-tooltip-box');
     tooltipDiv.style.position = 'absolute';
-    // tooltipDiv.style.left = '7px';
     tooltipDiv.style.left = `${xCoord}px`;
     tooltipDiv.style.bottom = '17px';
     tooltipDiv.style.display = 'unset';
@@ -438,23 +437,6 @@ export class InteractionsHeatmapComponent implements OnInit {
     `;
     tooltipDiv.appendChild(contentDiv);
     (whereToPlace as HTMLElement).appendChild(tooltipDiv);
-
-    // <div class="heatmap-pinned-tooltip-box" style="position: absolute;left: 73px;bottom: 273px;display: unset;">
-    //   <div class="heatmap-pinned-tooltip-content">
-    //     <b>You are at</b> <br>
-    //     Atom name: <b>N3</b><br>
-    //     Ligand interactions frequency: <b>0.00</b><br>
-    //     (Perc: <b>0.00%</b>)
-    //   </div>
-    //   <div class="heatmap-pinned-tooltip-close">
-    //     <svg viewBox="0 0 24 24" preserveAspectRatio="none">
-    //       <path d="M19,6.41 L17.59,5 L12,10.59 L6.41,5 L5,6.41 L10.59,12 L5,17.59 L6.41,19 L12,13.41 L17.59,19 L19,17.59 L13.41,12 L19,6.41 Z"></path>
-    //     </svg>
-    //   </div>
-    //   <svg class="heatmap-pinned-tooltip-pin" viewBox="0 0 100 100" preserveAspectRatio="none">
-    //     <path d="M0,100 L100,40 L60,0 Z"></path>
-    //   </svg>
-    // </div>
   }
 
   async destroyForcedTooltipAtoms() {
