@@ -44,6 +44,12 @@ export class IsPartOfDirective implements OnChanges {
 
     this.renderer.appendChild(showMore, icon);
     this.renderer.appendChild(this.el.nativeElement, showMore);
+
+    this.renderer.setAttribute(
+      this.el.nativeElement,
+      'style',
+      this.truncated() ? 'height: 70px' : this.el.nativeElement.offsetHeight >= 55 ? 'height: 300px' : 'height: 55px'
+    );
   }
 
   private toggleText(event: Event): void {
@@ -58,7 +64,7 @@ export class IsPartOfDirective implements OnChanges {
     this.renderer.setAttribute(
       this.el.nativeElement,
       'style',
-      this.truncated() ? 'height: 55px' : this.el.nativeElement.offsetHeight >= 55 ? 'height: 300px' : 'height: 55px'
+      this.truncated() ? 'height: 70px' : this.el.nativeElement.offsetHeight >= 55 ? 'height: 300px' : 'height: 55px'
     );
     this.addShowMore(showMoreText);
   }
