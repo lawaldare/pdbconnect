@@ -69,7 +69,8 @@ export class IsPartOfDirective implements OnChanges {
     }
     for (const text of textArray) {
       const a = this.renderer.createElement('a');
-      a.textContent = textArray.indexOf(text) === textArray.length - 1 && textArray.length !== 1 ? `${text}... ` : `${text},`;
+      a.textContent =
+        textArray.indexOf(text) !== textArray.length - 1 ? `${text}, ` : textArray.length === 1 ? `${text}.` : this.truncated() ? `${text}...` : `${text}.`;
       this.renderer.setAttribute(a, 'ng-reflect-router-link', `/ligands,${text.trim()}`);
       this.renderer.setAttribute(a, 'href', `/ligands/${text.trim()}`);
       this.renderer.appendChild(this.el.nativeElement, a);
