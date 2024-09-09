@@ -1,4 +1,4 @@
-import { LigIntHeatmapData } from "./lig-int-heatmap-data";
+import { LigIntHeatmapData } from './lig-int-heatmap-data';
 
 export interface ViewerData {
   atomNames: string[];

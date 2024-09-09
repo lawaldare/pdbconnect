@@ -1,18 +1,18 @@
 export type LigIntAPIKeys =
-  "AMIDEAMIDE" |
-  "AMIDERING" |
-  "CARBONPI" |
-  "CATIONPI" |
-  "DONORPI" |
-  "METSULPHURPI" |
-  "aromatic" |
-  "carbonyl" |
-  "hbond" |
-  "hydrophobic" |
-  "plane_plane" |
-  "polar" |
-  "vdw" |
-  "vdw_clash";
+  | 'AMIDEAMIDE'
+  | 'AMIDERING'
+  | 'CARBONPI'
+  | 'CATIONPI'
+  | 'DONORPI'
+  | 'METSULPHURPI'
+  | 'aromatic'
+  | 'carbonyl'
+  | 'hbond'
+  | 'hydrophobic'
+  | 'plane_plane'
+  | 'polar'
+  | 'vdw'
+  | 'vdw_clash';
 
 interface AtomCountsObj {
   atom: string;

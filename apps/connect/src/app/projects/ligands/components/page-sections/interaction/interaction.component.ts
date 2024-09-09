@@ -87,7 +87,7 @@ export class InteractionComponent implements AfterViewInit {
   }
 
   public changeLigandEnvironmentFilters(filterString: string) {
-    this.renderer.setAttribute(this.ligandEv, "contact-type", filterString);
+    this.renderer.setAttribute(this.ligandEv, 'contact-type', filterString);
   }
 
   public downloadInteraction(): void {
@@ -118,18 +118,18 @@ export class InteractionComponent implements AfterViewInit {
     // this.resetligandHeatmap();
   }
 
-//   private resetligandHeatmap(): void {
-//     const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;
-//     if (this.ligandHeatmapEv) {
-//       this.renderer.removeChild(ligandHeatmapContainer, this.ligandHeatmapEv);
-//       this.ligandHeatmapEv = null;
-//     }
+  //   private resetligandHeatmap(): void {
+  //     const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;
+  //     if (this.ligandHeatmapEv) {
+  //       this.renderer.removeChild(ligandHeatmapContainer, this.ligandHeatmapEv);
+  //       this.ligandHeatmapEv = null;
+  //     }
 
-//     if (this.emptyText) {
-//       this.renderer.removeChild(ligandHeatmapContainer, this.emptyText);
-//       this.emptyText = null;
-//     }
-//   }
+  //     if (this.emptyText) {
+  //       this.renderer.removeChild(ligandHeatmapContainer, this.emptyText);
+  //       this.emptyText = null;
+  //     }
+  //   }
 
   private generateEmptyText(): void {
     const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;

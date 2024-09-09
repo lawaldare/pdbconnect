@@ -1,7 +1,7 @@
 .interactions-heatmap-container {
-    // width: 661px;
-    // height: 390px;
-    display: flex;
+  // width: 661px;
+  // height: 390px;
+  display: flex;
 }
 
 .hm-left-column {
@@ -100,8 +100,6 @@
   }
 }
 
-
-
 .heatmap-container-atoms {
   width: 661px;
   height: 23px;
@@ -153,15 +151,16 @@ nightingale-navigation {
   font-size: 14px;
   margin-bottom: 0;
 }
-::ng-deep .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background, .mdc-checkbox__native-control:enabled:indeterminate~.mdc-checkbox__background {
+::ng-deep .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background,
+.mdc-checkbox__native-control:enabled:indeterminate ~ .mdc-checkbox__background {
   background-color: #0075ff !important;
   border-color: #0075ff !important;
 }
-::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked+.mdc-radio__background .mdc-radio__outer-circle {
+::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__outer-circle {
   // background-color: #0075ff !important;
   border-color: #0075ff !important;
 }
-::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked+.mdc-radio__background .mdc-radio__inner-circle {
+::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
   // background-color: #0075ff !important;
   border-color: #0075ff !important;
 }

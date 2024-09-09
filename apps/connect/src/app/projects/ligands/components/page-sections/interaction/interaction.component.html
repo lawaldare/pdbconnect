@@ -11,6 +11,9 @@
   </button>
   <div class="intx-component-container">
     <!-- <div class="lig-heat-container" #ligHeatMapContainer></div> -->
+    @if (ligandId) {
+    <pdbc-interactions-heatmap [ligandId]="this.ligandId" (newFilteringEvent)="changeLigandEnvironmentFilters($event)"></pdbc-interactions-heatmap>
+    }
     <div class="ligandEnv-container">
       <div class="ligandEnv-header">
         <h4>
@@ -22,8 +25,5 @@
         <div class="image-container" #imageContainer></div>
       </div>
     </div>
-    @if (ligandId) {
-      <pdbc-interactions-heatmap [ligandId]="this.ligandId" (newFilteringEvent)="changeLigandEnvironmentFilters($event)"></pdbc-interactions-heatmap>
-    }
   </div>
 </div>
