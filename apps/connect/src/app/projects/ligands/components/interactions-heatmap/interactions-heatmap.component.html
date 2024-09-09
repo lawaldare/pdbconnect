@@ -45,20 +45,20 @@
   <div class="visualisation-column">
     @if (atomNamesList) {
     <nightingale-manager>
-      <nightingale-navigation [length]="viewerData!.length" width="681" height="40" margin-left="0" margin-right="10"></nightingale-navigation>
+      <nightingale-navigation [length]="viewerData!.length" width="581" height="40" margin-left="0" margin-right="10"></nightingale-navigation>
       <pdb-ligand-interactions-sequence
         id="ligand-atoms-sequence"
         [length]="viewerData!.length"
         [sequence]="atomNamesString!"
         height="40"
-        width="681"
+        width="581"
         margin-left="0"
         margin-right="10"
       ></pdb-ligand-interactions-sequence>
       <nightingale-sequence-heatmap-new
         id="heatmap-container-atoms"
         heatmap-id="heatmap-atoms"
-        width="681"
+        width="581"
         height="23"
         margin-left="0"
         highlight-event="onmouseover"
@@ -67,7 +67,7 @@
       <nightingale-sequence-heatmap-new
         id="heatmap-container-resids"
         heatmap-id="heatmap-resids"
-        width="681"
+        width="581"
         height="390"
         margin-left="0"
         highlight-event="onmouseover"
