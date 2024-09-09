@@ -66,7 +66,7 @@ export class ImageCarouselComponentFacade {
     const mappedFragments = this.tempFragments.reduce((acc: Fragment[], curr: Fragment) => {
       for (const atom of curr.atoms) {
         acc.push({
-          name: curr.name,
+          name: curr.name === 'MurckoScaffold' ? 'Murcko scaffold' : curr.name,
           descriptors: curr.descriptors,
           atoms: [atom],
         });

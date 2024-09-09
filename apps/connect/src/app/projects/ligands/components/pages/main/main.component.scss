@@ -54,6 +54,7 @@ main {
       display: flex;
       justify-content: space-between;
       padding-bottom: 40px;
+      gap: 12px;
 
       @media screen and (max-width: 767px) {
         flex-direction: column;

@@ -51,7 +51,7 @@ export class IsPartOfDirective implements OnChanges {
       this.renderer.setAttribute(a, 'ng-reflect-router-link', `/ligands,${text.trim()}`);
       this.renderer.setAttribute(a, 'href', `/ligands/${text.trim()}`);
       this.renderer.appendChild(this.el.nativeElement, a);
-      this.renderer.setAttribute(a, 'style', 'margin-left:5px;');
+      this.renderer.setAttribute(a, 'style', 'margin-right:5px;');
     }
   }
 }

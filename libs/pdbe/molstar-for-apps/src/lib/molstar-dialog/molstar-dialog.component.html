@@ -10,7 +10,7 @@
     </mat-form-field>
     @if(showFragmentOptions()){
     <mat-form-field>
-      <mat-label>Select Fragment</mat-label>
+      <mat-label>Select Scaffold/Fragment</mat-label>
       <mat-select [formControl]="selectedFragmentControl()" (selectionChange)="onFragmentChange($event)">
         @for (option of fragments(); track option) {
         <mat-option [value]="option.name">{{ option.name + ' Fragment Highlighted' | titlecase }}</mat-option>

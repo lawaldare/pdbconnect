@@ -47,6 +47,7 @@ export class MolstarDialogComponent implements AfterViewInit {
     if (dialogData.fragments) {
       this.showFragmentOptions.set(true);
       this.fragments.update(() => dialogData.fragments());
+      console.log(this.fragments());
       this.selectedFrament.set(this.fragments()[0].name);
       this.atoms = this.fragments()[0].atoms[0];
     } else {
