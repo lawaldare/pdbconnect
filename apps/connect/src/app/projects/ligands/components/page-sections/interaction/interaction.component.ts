@@ -9,11 +9,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MaterialModule } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LigandUtilService } from '../../../ligand-util.service';
+import { InteractionsHeatmapComponent } from '../../../components/interactions-heatmap/interactions-heatmap.component';
 
 @Component({
   selector: 'pdbc-interaction',
   standalone: true,
-  imports: [CommonModule, MaterialModule],
+  imports: [CommonModule, MaterialModule, InteractionsHeatmapComponent],
   templateUrl: './interaction.component.html',
   styleUrl: './interaction.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -42,14 +43,15 @@ export class InteractionComponent implements AfterViewInit {
   public pdbchains = signal(0);
 
   private renderHeatMap(interaction: PDBIntxData): void {
-    const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;
-    const ligandHeatmap = this.renderer.createElement('pdbe-ligand-interactions');
-    this.renderer.appendChild(ligandHeatmapContainer, ligandHeatmap);
-    this.renderer.setAttribute(ligandHeatmap, 'pdbeapi', 'false');
-    this.renderer.setAttribute(ligandHeatmap, 'accession', this.ligandId);
-    ligandHeatmap.setDataAndRender(interaction);
-    ligandHeatmap.registerLigandEnv('ligand-int-env');
-    this.ligandHeatmapEv = ligandHeatmap;
+    // const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;
+    // comment below when disabling this
+    // const ligandHeatmap = this.renderer.createElement('pdbe-ligand-interactions');
+    // this.renderer.appendChild(ligandHeatmapContainer, ligandHeatmap);
+    // this.renderer.setAttribute(ligandHeatmap, 'pdbeapi', 'false');
+    // this.renderer.setAttribute(ligandHeatmap, 'accession', this.ligandId);
+    // ligandHeatmap.setDataAndRender(interaction);
+    // ligandHeatmap.registerLigandEnv('ligand-int-env');
+    // this.ligandHeatmapEv = ligandHeatmap;
   }
 
   ngAfterViewInit() {
@@ -84,6 +86,10 @@ export class InteractionComponent implements AfterViewInit {
       .subscribe();
   }
 
+  public changeLigandEnvironmentFilters(filterString: string) {
+    this.renderer.setAttribute(this.ligandEv, "contact-type", filterString);
+  }
+
   public downloadInteraction(): void {
     if (this.interaction && this.interaction?.[this.ligandId]) {
       this.ligandUtilService.downloadJSON(this.interaction, 'interaction');
@@ -97,6 +103,7 @@ export class InteractionComponent implements AfterViewInit {
   private createLigandEnvironment(container: ElementRef, prop: Depiction): void {
     const ligand = this.renderer.createElement('pdb-ligand-env');
     this.renderer.appendChild(container, ligand);
+    this.renderer.setProperty(ligand, 'id', 'ligand-int-env');
     this.renderer.setProperty(ligand, 'depiction', prop);
     this.ligandEv = ligand;
   }
@@ -108,21 +115,21 @@ export class InteractionComponent implements AfterViewInit {
       this.renderer.removeChild(imageContainer, this.ligandEv);
     }
 
-    this.resetligandHeatmap();
+    // this.resetligandHeatmap();
   }
 
-  private resetligandHeatmap(): void {
-    const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;
-    if (this.ligandHeatmapEv) {
-      this.renderer.removeChild(ligandHeatmapContainer, this.ligandHeatmapEv);
-      this.ligandHeatmapEv = null;
-    }
+//   private resetligandHeatmap(): void {
+//     const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;
+//     if (this.ligandHeatmapEv) {
+//       this.renderer.removeChild(ligandHeatmapContainer, this.ligandHeatmapEv);
+//       this.ligandHeatmapEv = null;
+//     }
 
-    if (this.emptyText) {
-      this.renderer.removeChild(ligandHeatmapContainer, this.emptyText);
-      this.emptyText = null;
-    }
-  }
+//     if (this.emptyText) {
+//       this.renderer.removeChild(ligandHeatmapContainer, this.emptyText);
+//       this.emptyText = null;
+//     }
+//   }
 
   private generateEmptyText(): void {
     const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;

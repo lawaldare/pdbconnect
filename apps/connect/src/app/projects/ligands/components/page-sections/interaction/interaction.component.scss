@@ -94,6 +94,7 @@ button {
 }
 
 .image-container {
+  width: 260px;
   height: 380px;
   border: 1px solid var(--Neutral-200, #e4e4e4);
 }
@@ -104,3 +105,18 @@ button {
   font-weight: 400;
   line-height: 27.2px;
 }
+
+.ligandEnv-content {
+  height: 380px;
+  border: 1px solid var(--Neutral-200, #e4e4e4);
+}
+
+#helper_icon {
+  width: 18px;
+  height: 18px;
+  padding-left: 5px;
+}
+
+// .lig-heat-container {
+//   display: none;
+// }

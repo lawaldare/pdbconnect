@@ -1,0 +1,167 @@
+.interactions-heatmap-container {
+    // width: 661px;
+    // height: 390px;
+    display: flex;
+}
+
+.hm-left-column {
+  width: 210px;
+  .hm-left-row {
+    width: 210px;
+    height: 23px;
+    display: flex;
+    align-items: center;
+    .hm-left-title {
+      line-height: normal;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 0;
+    }
+  }
+}
+
+.controls-container {
+  display: flex;
+  .controls-sort-filter {
+    width: 160px;
+    .controls-title {
+      margin-top: 10px;
+      line-height: normal;
+      font-size: 16px;
+      margin-bottom: 0;
+      font-weight: 500;
+      button {
+        margin-left: 8px;
+        font-size: 14px;
+      }
+    }
+    #hm-int-filters {
+      padding-top: 8px;
+      max-height: 266px;
+      overflow: auto;
+      mat-checkbox {
+        margin-bottom: 4px;
+      }
+    }
+  }
+  #hm-aa-legend {
+    width: 50px;
+    height: 390px;
+    .each-aa-box {
+      height: 19.5px;
+      font-size: 14.4px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+    }
+  }
+}
+
+.legend-title {
+  font-size: 14px;
+  text-align: left;
+  color: #333;
+  margin-left: 2px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  max-width: 230px;
+}
+
+.interactions-heatmap-legend {
+  margin-top: 20px;
+  line-height: normal;
+  display: flex;
+  border-style: groove;
+  width: fit-content;
+  margin-left: 180px;
+  .legend-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    .legend-category {
+      padding-left: 19px;
+    }
+  }
+  .legend-row-flex-plots {
+    margin-left: 120px;
+    margin-right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    .legend-row-block {
+      display: block;
+      width: 230px;
+      .legend-category-plot {
+        font-family: 'IBM Plex Sans';
+        font-size: 12px;
+        margin-top: 12px;
+        width: 170px;
+      }
+    }
+  }
+}
+
+
+
+.heatmap-container-atoms {
+  width: 661px;
+  height: 23px;
+}
+.heatmap-container {
+  width: 661px;
+  height: 390px;
+}
+.heatmap-main {
+  width: 661px;
+  height: 390px;
+  position: absolute;
+  /** margin-left: 10px; */
+  z-index: 1;
+  line-height: 1;
+}
+.heatmap-main-atoms {
+  width: 661px;
+  height: 23px;
+  position: absolute;
+  z-index: 1;
+  line-height: 1;
+}
+.hotmap-pinned-tooltip-content {
+  line-height: 1;
+}
+
+// nightingale-manager > * {
+//     margin-top: -10px;
+// }
+nightingale-navigation {
+  margin-top: 4px;
+}
+#ligand-atoms-sequence {
+  margin-top: -10px;
+}
+#heatmap-container-atoms {
+  margin-bottom: 25px;
+}
+.heatmap-marker-y {
+  color: white;
+  background-color: white;
+  fill: white;
+}
+
+::ng-deep .mdc-label {
+  font-family: 'IBM Plex Sans';
+  line-height: normal;
+  font-size: 14px;
+  margin-bottom: 0;
+}
+::ng-deep .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background, .mdc-checkbox__native-control:enabled:indeterminate~.mdc-checkbox__background {
+  background-color: #0075ff !important;
+  border-color: #0075ff !important;
+}
+::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked+.mdc-radio__background .mdc-radio__outer-circle {
+  // background-color: #0075ff !important;
+  border-color: #0075ff !important;
+}
+::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked+.mdc-radio__background .mdc-radio__inner-circle {
+  // background-color: #0075ff !important;
+  border-color: #0075ff !important;
+}

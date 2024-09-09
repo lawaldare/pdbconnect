@@ -1,0 +1,126 @@
+
+<div class="interactions-heatmap-container">
+  <div class="hm-left-column">
+    <div class="hm-left-row" style="height: 40px;"></div>
+    <div class="hm-left-row" style="height: 40px;">
+      <p class="hm-left-title" style="padding-top: 17px">Ligand atoms</p>
+    </div>
+    <div class="hm-left-row" style="margin-top:4px;">
+      <p class="hm-left-title">Interaction frequencies</p>
+    </div>
+    <div class="hm-left-row" style="margin-top:4px; margin-bottom:4px;">
+      <p class="hm-left-title">Atom-wise amino acids</p>
+    </div>
+    <div class="controls-container">
+      <div class="controls-sort-filter">
+        <div class="controls-row">
+          <p class="controls-title">Sort by:</p>
+          <mat-radio-button (click)="changeSorting('by_aa_props')" checked>Amino acid properties</mat-radio-button>
+          <mat-radio-button (click)="changeSorting('by_frequency')">Frequency</mat-radio-button>
+        </div>
+        <div class="controls-row">
+          @if (viewerData) {
+            <p class="controls-title">Filter by: 
+              @if (viewerData.filters.length > 0) {
+                <button class="vf-button vf-button--link" (click)="clearFilters()">Clear</button>
+              }
+            </p>
+          }
+        </div>
+        <div id="hm-int-filters">
+          @if (interactionFilters) {
+            @for (filter of interactionFilters; track filter) {
+              <mat-checkbox [checked]="hasFilter(filter)" (click)="filterByInteraction($event.target!, filter)">{{ getFilterName(filter) }}</mat-checkbox>
+            }
+          }
+        </div>
+      </div>
+      <div id="hm-aa-legend">
+        @if (aminoAcidsLegend) {
+          @for (aa of aminoAcidsLegend; track aa) {
+            <div class="each-aa-box">
+              <img [src]="getImgForAA(aa)" width="15px">
+              <span>{{ aa }}</span>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+  <div class="visualisation-column">
+    @if (atomNamesList) {
+      <nightingale-manager>
+        <nightingale-navigation
+            [length]="viewerData!.length"
+            width="681"
+            height="40"
+            margin-left="0"
+            margin-right="10"
+        ></nightingale-navigation>
+        <pdb-ligand-interactions-sequence
+            id="ligand-atoms-sequence"
+            [length]="viewerData!.length"
+            [sequence]="atomNamesString!"
+            height="40"
+            width="681"
+            margin-left="0"
+            margin-right="10"
+        ></pdb-ligand-interactions-sequence>
+        <nightingale-sequence-heatmap-new
+          id="heatmap-container-atoms"
+          heatmap-id="heatmap-atoms"
+          width="681"
+          height="23"
+          margin-left="0"
+          highlight-event="onmouseover"
+          hm-highlight-width="1"
+        ></nightingale-sequence-heatmap-new>
+        <nightingale-sequence-heatmap-new
+          id="heatmap-container-resids"
+          heatmap-id="heatmap-resids"
+          width="681"
+          height="390"
+          margin-left="0"
+          highlight-event="onmouseover"
+          highlight-color="#FFFFFF00"
+          hm-highlight-width="1"
+        ></nightingale-sequence-heatmap-new>
+      </nightingale-manager>
+    }
+  </div>
+</div>
+<div class="interactions-heatmap-legend">
+  <div class="legend-row">
+    <div class="legend-title" style="margin-left: 8px;">Icons:</div>
+    <div></div>
+      @for (categoryName of categoryNames; track categoryName) {
+        <div class="legend-category">
+          <img [src]="getImgForCategory(categoryName)" width="15px"> {{ categoryName }}
+        </div>
+      }
+  </div>
+  <div class="legend-row-flex-plots">
+    <div class="legend-row-block">
+      <div class="legend-title">Frequency colour scale:</div>
+      @if (atomDomainMap && atomColorMap) {
+        <div class="legend-category-plot">
+           <div 
+           [ngStyle]="{
+             marginLeft: '18px',
+             width: '130px',
+             height: '20px',
+             background: 'linear-gradient(to right,' + atomColorMap[0] +' 0%,' + atomColorMap[1] + ' 100%)'
+           }"></div>
+          <span style="float:left;margin-left:4px">{{atomDomainMap[0]}}</span> <span style="float:right">{{atomDomainMap[1]}}</span>
+        </div>
+      }
+    </div>
+    <div class="legend-row-block">
+      <div class="legend-title">Atom-wise heatmap colour scale:</div>
+      <div class="legend-category-plot">
+        <div style="margin-left:18px;width:130px;height:20px;background:linear-gradient(to right,#fff 0,#b99ebb .1%,#5d505d 100%)"></div>
+        <span style="float:left;margin-left:4px">0%</span> <span style="float:right">100%</span>
+      </div>
+    </div>
+  </div>
+</div>
