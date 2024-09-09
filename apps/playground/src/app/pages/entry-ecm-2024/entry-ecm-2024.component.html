@@ -2,7 +2,7 @@
   <nav>
     <div>
       @for(navItem of navItems; track navItem.url){
-      <a [routerLink]="navItem.url" routerLinkActive="active">
+      <a [ngClass]="currentSection === navItem.url ? 'active' : ''" (click)="switchToTab(navItem.url)">
         <i class="icon {{ navItem.icon }}"></i>
         <span>{{ navItem.label }}</span>
       </a>
@@ -18,25 +18,94 @@
         <lib-dropdown-menu [options]="viewOptions" title="View files"></lib-dropdown-menu>
       </section>
     </header>
-    <section class="hero">
-      @if (pageData$ | async; as pageData) {
-      <pdbe-entry-information [information]="pageData"></pdbe-entry-information>
-      }
-      <pdbe-entry-ligands-environments></pdbe-entry-ligands-environments>
+    <section class="home" [ngStyle]="{ display: currentSection === '/' ? '' : 'none' }">
+      <section class="hero">
+        @if (pageData$ | async; as pageData) {
+        <pdbe-entry-information [information]="pageData"></pdbe-entry-information>
+        }
+        <pdbe-entry-ligands-environments (switchTab)="switchToTab($event)"></pdbe-entry-ligands-environments>
+      </section>
+      <!-- Container for 3D concept -->
+      <section id="struct-3d-container" class="page-section">
+        <pdbe-struc-explorer-ecm-2024 [entryId]="this.entryId()" (switchTab)="switchToTab($event)"></pdbe-struc-explorer-ecm-2024>
+      </section>
+      <pdbe-entry-macromolecules
+        [molecules]="molecules"
+        [uniprotMapping]="uniprotMapping"
+        [interproMapping]="interproMapping"
+        [pfamMapping]="pfamMapping"
+        (switchTab)="switchToTab($event)"
+      ></pdbe-entry-macromolecules>
+      <section class="footer">
+        <pdbe-entry-experiment-validation (switchTab)="switchToTab($event)"></pdbe-entry-experiment-validation>
+        <pdbe-entry-citation (switchTab)="switchToTab($event)"></pdbe-entry-citation>
+      </section>
     </section>
-    <!-- Container for 3D concept -->
-    <section id="struct-3d-container" class="page-section">
-      <pdbe-struc-explorer-ecm-2024 [entryId]="this.entryId()"></pdbe-struc-explorer-ecm-2024>
+    <section class="other-sections" [ngStyle]="{ display: currentSection === '/function' ? '' : 'none' }">
+      <h2>Function and Biology</h2>
+      <br />
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+      nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+      fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <br /><br />
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+      nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+      fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     </section>
-    <pdbe-entry-macromolecules
-      [molecules]="molecules"
-      [uniprotMapping]="uniprotMapping"
-      [interproMapping]="interproMapping"
-      [pfamMapping]="pfamMapping"
-    ></pdbe-entry-macromolecules>
-    <section class="footer">
-      <pdbe-entry-experiment-validation></pdbe-entry-experiment-validation>
-      <pdbe-entry-citation></pdbe-entry-citation>
+    <section class="other-sections" [ngStyle]="{ display: currentSection === '/ligands' ? '' : 'none' }">
+      <h2>Ligands and Environments</h2>
+      <br />
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+      nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+      fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <br /><br />
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+      nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+      fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </section>
+    <section class="other-sections" [ngStyle]="{ display: currentSection === '/macromolecules' ? '' : 'none' }">
+      <h2>Macromolecules</h2>
+      <br />
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+      nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+      fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <br /><br />
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+      nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+      fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </section>
+    <section class="other-sections" [ngStyle]="{ display: currentSection === '/assemblies' ? '' : 'none' }">
+      <h2>Assemblies</h2>
+      <br />
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+      nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+      fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <br /><br />
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+      nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+      fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </section>
+    <section class="other-sections" [ngStyle]="{ display: currentSection === '/experiments' ? '' : 'none' }">
+      <h2>Experiments and Validation</h2>
+      <br />
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+      nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+      fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <br /><br />
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+      nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+      fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </section>
+    <section class="other-sections" [ngStyle]="{ display: currentSection === '/citations' ? '' : 'none' }">
+      <h2>Citations</h2>
+      <br />
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+      nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+      fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <br /><br />
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+      nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+      fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     </section>
   </main>
 </section>

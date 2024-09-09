@@ -1,11 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, inject, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { PlaygroundService } from '../../services/playground.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { switchMap, map, forkJoin, catchError, EMPTY, of, throwError } from 'rxjs';
+import { switchMap, map, forkJoin, catchError, EMPTY, of } from 'rxjs';
 import { Molecule } from '../../models/molecule.model';
 import { ModifiedResidues } from '../../models/modified-residues.model';
 
@@ -17,6 +15,8 @@ import { ModifiedResidues } from '../../models/modified-residues.model';
   styleUrl: './entry-ligands-environments.component.scss',
 })
 export class EntryLigandsEnvironmentsComponent implements OnInit {
+  @Output() switchTab = new EventEmitter<string>();
+
   private readonly playgroundService = inject(PlaygroundService);
 
   private readonly route = inject(ActivatedRoute);
@@ -35,7 +35,7 @@ export class EntryLigandsEnvironmentsComponent implements OnInit {
   public loadingText = signal('');
 
   ngOnInit(): void {
-    this.route.params
+    this.route.queryParams
       .pipe(
         switchMap((params) => {
           const entryId = params['entryId'].toLowerCase();
@@ -110,5 +110,9 @@ export class EntryLigandsEnvironmentsComponent implements OnInit {
     });
 
     return uniqueObjects;
+  }
+
+  public selectTab(name: string) {
+    this.switchTab.emit(name);
   }
 }

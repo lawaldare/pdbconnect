@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { PlaygroundService } from '../../services/playground.service';
@@ -13,6 +13,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   styleUrl: './entry-experiment-validation.component.scss',
 })
 export class EntryExperimentValidationComponent {
+  @Output() switchTab = new EventEmitter<string>();
   private readonly playgroundService = inject(PlaygroundService);
 
   private route = inject(ActivatedRoute);
@@ -20,7 +21,7 @@ export class EntryExperimentValidationComponent {
 
   public loadingText = signal('Loading...');
 
-  public entryElementData$ = this.route.params.pipe(
+  public entryElementData$ = this.route.queryParams.pipe(
     switchMap((params) => {
       const entryId = params['entryId'].toLowerCase();
       return this.playgroundService.getEntryEcmExperiment(entryId);
@@ -31,4 +32,8 @@ export class EntryExperimentValidationComponent {
     }),
     takeUntilDestroyed(this.destroyRef)
   );
+
+  public selectTab(name: string) {
+    this.switchTab.emit(name);
+  }
 }

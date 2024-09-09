@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StrucExplorerEcm2024Component } from '../../components/struc-explorer-ecm-2024/struc-explorer-ecm-2024.component';
 import { PlaygroundService } from '../../services/playground.service';
@@ -17,6 +17,7 @@ import { EntryCitationComponent } from '../../components/entry-citation/entry-ci
 import { Molecule } from '../../models/molecule.model';
 import { ClickOutsideDirective, MaterialModule } from '@pdbc/core';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
+import { MatTabGroup } from '@angular/material/tabs';
 
 export interface DownloadOption {
   name: string;
@@ -44,6 +45,8 @@ export interface DownloadOption {
   styleUrl: './entry-ecm-2024.component.scss',
 })
 export class EntryEcm2024TabComponent implements OnInit {
+  @ViewChild('tabGroup') tabGroup!: MatTabGroup;
+
   private readonly playgroundService = inject(PlaygroundService);
 
   public downloadOptions: DownloadOption[] = [];
@@ -103,7 +106,7 @@ export class EntryEcm2024TabComponent implements OnInit {
   public pageData$!: Observable<any>;
 
   ngOnInit(): void {
-    this.route.params
+    this.route.queryParams
       .pipe(
         switchMap((params) => {
           const entryId = params['entryId'].toLowerCase();
@@ -271,5 +274,11 @@ export class EntryEcm2024TabComponent implements OnInit {
   public onClickedOutside() {
     this.showViewOptions.set(false);
     this.showDownloadOptions.set(false);
+  }
+
+  public switchToTab(name: string) {
+    const tabList = ['/', '/function', '/ligands', '/macromolecules', '/assemblies', '/experiments', '/citations'];
+    this.tabGroup.selectedIndex = tabList.indexOf(name);
+    window.scrollTo({ top: 0 });
   }
 }

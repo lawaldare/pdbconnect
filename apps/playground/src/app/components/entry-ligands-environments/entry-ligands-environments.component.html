@@ -1,7 +1,8 @@
 <div id="ligands-environments-section">
   <header>
     <h4 class="heading-4">Ligands and Environments</h4>
-    <a routerLink="/ligands">
+    <!-- <a routerLink="/ligands"> -->
+    <a (click)="selectTab('/ligands')">
       View all ligands
       <i class="icon icon-common icon-arrow-alt-circle-right"></i>
     </a>
@@ -13,7 +14,10 @@
     @for(image of boundLigandsImages.slice(0,10); track image.title){
     <article>
       <img [src]="image.imageUrl" alt="ligands" />
-      <span>{{ image.title }}</span>
+      <span>
+        <a>{{ image.title }}</a>
+        <i class="icon icon-link icon-common"></i>
+      </span>
     </article>
     }
   </section>
@@ -24,7 +28,10 @@
     @for(image of modifiedResiduesImages.slice(0,10); track image.title){
     <article>
       <img [src]="image.imageUrl" alt="ligands" />
-      <span>{{ image.title }}</span>
+      <span>
+        <a>{{ image.title }} </a>
+        <i class="icon icon-link icon-common"></i>
+      </span>
     </article>
     }
   </section>

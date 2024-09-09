@@ -46,6 +46,11 @@ export type extraInfoObj = {
 type domainMoleculeObj = {
   name: string;
   img: string;
+};
+export type MenuItemMolObj = {
+  name: string;
+  img: string;
+  envImg?: string;
   extraInfo: extraInfoObj[];
 };
 
@@ -98,7 +103,7 @@ export class StructureExplorerService {
         }
         const participants: { accession: string; stoichiometry: number }[] = data[entryId][0].participants;
 
-        let participantTypes = [];
+        const participantTypes = [];
         let mericityTotal = 0;
         for (const participant of participants) {
           if (participantTypes.indexOf(participant.accession) === -1) {
@@ -148,7 +153,7 @@ export class StructureExplorerService {
     // https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/6hr1
     return this.http.get<any>(`${this.BASE_API_MAP}uniprot/${entryId}`).pipe(
       map((data) => {
-        let uniprotsByEntityId: { [key: number]: string[] } = {};
+        const uniprotsByEntityId: { [key: number]: string[] } = {};
         const uniprotDictionary: {
           [key: string]: {
             name: string;
@@ -173,7 +178,7 @@ export class StructureExplorerService {
         } = data[entryId].UniProt;
         for (const [uniprotId, uniprotDetails] of Object.entries(uniprotDictionary)) {
           for (const mapObj of uniprotDetails.mappings) {
-            if (!uniprotDictionary.hasOwnProperty(mapObj.entity_id)) {
+            if (!Object.prototype.hasOwnProperty.call(uniprotDictionary, mapObj.entity_id)) {
               uniprotsByEntityId[mapObj.entity_id] = [];
             }
             uniprotsByEntityId[mapObj.entity_id].push(uniprotId);
@@ -195,27 +200,27 @@ export class StructureExplorerService {
           'polydeoxyribonucleotide/polyribonucleotide hybrid': 'DNA/RNA hybrid',
           'carbohydrate polymer': 'Carbohydrate',
         };
-        let macromoleculeTypesCounts: {
+        const macromoleculeTypesCounts: {
           [key: string]: number;
         } = {};
-        let entityIdsToProteinNames: {
+        const entityIdsToProteinNames: {
           [key: number]: string;
         } = {};
         const macromoleculeTypes = Object.keys(macromoleculeTypesToNames);
         let totalMacromoleculeCount = 0;
         const molecules = data[entryId];
-        let macromoleculeNamesAndImgs = [];
-        let ligandsNamesAndImgs = [];
+        const macromoleculeNamesAndImgs: MenuItemMolObj[] = [];
+        const ligandsNamesAndImgs: MenuItemMolObj[] = [];
         for (const entityDetail of molecules) {
           // if macromolecule
           if (macromoleculeTypes.indexOf(entityDetail.molecule_type) > -1) {
             const chainNames = entityDetail.in_chains.join(', ');
             const chainWord = entityDetail.in_chains.length > 1 ? 'Chains' : 'Chain';
-            let macromoleculeTypeName = macromoleculeTypesToNames[entityDetail.molecule_type as macromoleculeTypes];
-            let extraInfoData: extraInfoObj[] = [];
+            const macromoleculeTypeName = macromoleculeTypesToNames[entityDetail.molecule_type as macromoleculeTypes];
+            const extraInfoData: extraInfoObj[] = [];
 
             let moleculeMainName = `${macromoleculeTypeName}`;
-            if (entityDetail.hasOwnProperty('molecule_name') && entityDetail.molecule_name) {
+            if (Object.prototype.hasOwnProperty.call(entityDetail, 'molecule_name') && entityDetail.molecule_name) {
               if (entityDetail.molecule_name.length > 0) {
                 moleculeMainName = entityDetail.molecule_name[0];
                 if (macromoleculeTypeName === 'DNA') {
@@ -230,20 +235,20 @@ export class StructureExplorerService {
                 extraInfoData.push({ value: `${entityDetail.molecule_name.join(', ')}`, type: 'text' });
               }
             }
-            if (entityDetail.hasOwnProperty('gene_name') && entityDetail.gene_name) {
+            if (Object.prototype.hasOwnProperty.call(entityDetail, 'gene_name') && entityDetail.gene_name) {
               if (entityDetail.gene_name.length > 0) {
                 extraInfoData.push({ value: 'Gene names:', type: 'title' });
                 extraInfoData.push({ value: `${entityDetail.gene_name.join(', ')}`, type: 'text' });
               }
             }
-            if (entityDetail.hasOwnProperty('source') && entityDetail.source) {
+            if (Object.prototype.hasOwnProperty.call(entityDetail, 'source') && entityDetail.source) {
               if (entityDetail.source.length > 0) {
                 const sourceOrganisms = entityDetail.source.map((eachSource: any) => eachSource.organism_scientific_name).join(', ');
                 extraInfoData.push({ value: 'Source organisms:', type: 'title' });
                 extraInfoData.push({ value: `${sourceOrganisms}`, type: 'text' });
               }
             }
-            if (uniprotsByEntityId.hasOwnProperty(entityDetail.entity_id) === true) {
+            if (Object.prototype.hasOwnProperty.call(uniprotsByEntityId, entityDetail.entity_id) === true) {
               moleculeMainName += ` - ${uniprotsByEntityId[entityDetail.entity_id]}`;
 
               extraInfoData.push({
@@ -257,13 +262,13 @@ export class StructureExplorerService {
             }
             entityIdsToProteinNames[entityDetail.entity_id] = moleculeMainName;
 
-            let moleculeIdOrChains = `(${chainWord}: ${chainNames})`;
+            const moleculeIdOrChains = `(${chainWord}: ${chainNames})`;
             macromoleculeNamesAndImgs.push({
               name: `${moleculeMainName} ${moleculeIdOrChains}`,
               img: `${entryId.toLowerCase()}_entity_${entityDetail.entity_id}_front`,
               extraInfo: extraInfoData,
             });
-            if (macromoleculeTypesCounts.hasOwnProperty(macromoleculeTypeName) === false) {
+            if (Object.prototype.hasOwnProperty.call(macromoleculeTypesCounts, macromoleculeTypeName) === false) {
               macromoleculeTypesCounts[macromoleculeTypeName] = 0;
             }
             macromoleculeTypesCounts[macromoleculeTypeName] += 1;
@@ -307,11 +312,11 @@ export class StructureExplorerService {
             });
           }
         }
-        let countStrings = [];
+        const countStrings = [];
         for (const [moleculeType, moleculeCount] of Object.entries(macromoleculeTypesCounts)) {
           countStrings.push(`${moleculeCount} unique ${moleculeType.replace('Protein', 'protein')}`);
         }
-        let lastMolecule = countStrings.pop();
+        const lastMolecule = countStrings.pop();
         const lastMoleculeName = totalMacromoleculeCount > 1 ? `and ${lastMolecule}` : lastMolecule;
         // const toBeMacromolecules = totalMacromoleculeCount > 1 ? "are" : "is";
         const pluralMacromolecules = totalMacromoleculeCount > 1 ? 'molecules' : 'molecule';
@@ -330,10 +335,10 @@ export class StructureExplorerService {
   public getScop(entryId: string, images: string[], entityIdsToProteinNames: { [key: number]: string }): Observable<any> {
     return this.http.get<any>(`${this.BASE_API_MAP}scop/${entryId}`).pipe(
       map((data) => {
-        let scopEntityMappingsNames: string[] = [];
-        let scopEntityMappings: {
+        const scopEntityMappingsNames: string[] = [];
+        const scopEntityMappings: {
           name: string;
-          molecules: domainMoleculeObj[];
+          molecules: MenuItemMolObj[];
         }[] = [];
         const scopFamilies = data[entryId]['SCOP'];
         const scopFamiliesIds = Object.keys(scopFamilies);
@@ -341,7 +346,7 @@ export class StructureExplorerService {
           for (const eachMapping of scopFamilies[scopId].mappings) {
             const entityId = eachMapping.entity_id;
             const chainId = eachMapping.chain_id;
-            let imgName = `${entryId.toLowerCase()}_${entityId}_${chainId}_SCOP_${scopId}`;
+            const imgName = `${entryId.toLowerCase()}_${entityId}_${chainId}_SCOP_${scopId}`;
 
             // mappings from chains not in images are not considered
             if (images.indexOf(imgName) === -1) continue;
@@ -416,8 +421,8 @@ export class StructureExplorerService {
           }
           const scopIdx = scopEntityMappingsNames.indexOf(scopId);
           for (let index = 0; index < scopEntityMappings[scopIdx].molecules.length; index++) {
-            let domainCount = scopEntityMappings[scopIdx].molecules[index]['extraInfo'][3].temp!.length;
-            let domainNames = scopEntityMappings[scopIdx].molecules[index]['extraInfo'][3].temp!.join(', ');
+            const domainCount = scopEntityMappings[scopIdx].molecules[index]['extraInfo'][3].temp!.length;
+            const domainNames = scopEntityMappings[scopIdx].molecules[index]['extraInfo'][3].temp!.join(', ');
 
             const toBeDomains = domainCount > 1 ? 'are' : 'is';
             const nameDomains = domainCount > 1 ? 'domains' : 'domain';
@@ -454,10 +459,10 @@ export class StructureExplorerService {
   public getCath(entryId: string, images: string[], entityIdsToProteinNames: { [key: number]: string }): Observable<any> {
     return this.http.get<any>(`${this.BASE_API_MAP}cath/${entryId}`).pipe(
       map((data) => {
-        let cathEntityMappingsNames: string[] = [];
-        let cathEntityMappings: {
+        const cathEntityMappingsNames: string[] = [];
+        const cathEntityMappings: {
           name: string;
-          molecules: domainMoleculeObj[];
+          molecules: MenuItemMolObj[];
         }[] = [];
         const cathFamilies = data[entryId]['CATH'];
         const cathFamiliesIds = Object.keys(cathFamilies);
@@ -465,7 +470,7 @@ export class StructureExplorerService {
           for (const eachMapping of cathFamilies[cathId].mappings) {
             const entityId = eachMapping.entity_id;
             const chainId = eachMapping.chain_id;
-            let imgName = `${entryId.toLowerCase()}_${entityId}_${chainId}_CATH_${cathId}`;
+            const imgName = `${entryId.toLowerCase()}_${entityId}_${chainId}_CATH_${cathId}`;
 
             // mappings from chains not in images are not considered
             if (images.indexOf(imgName) === -1) continue;
@@ -540,8 +545,8 @@ export class StructureExplorerService {
           }
           const cathIdx = cathEntityMappingsNames.indexOf(cathId);
           for (let index = 0; index < cathEntityMappings[cathIdx].molecules.length; index++) {
-            let domainCount = cathEntityMappings[cathIdx].molecules[index]['extraInfo'][3].temp!.length;
-            let domainNames = cathEntityMappings[cathIdx].molecules[index]['extraInfo'][3].temp!.join(', ');
+            const domainCount = cathEntityMappings[cathIdx].molecules[index]['extraInfo'][3].temp!.length;
+            const domainNames = cathEntityMappings[cathIdx].molecules[index]['extraInfo'][3].temp!.join(', ');
 
             const toBeDomains = domainCount > 1 ? 'are' : 'is';
             const nameDomains = domainCount > 1 ? 'domains' : 'domain';
@@ -604,10 +609,10 @@ export class StructureExplorerService {
   public getPfam(entryId: string, images: string[], entityIdsToProteinNames: { [key: number]: string }): Observable<any> {
     return this.http.get<any>(`${this.BASE_API_MAP}pfam/${entryId}`).pipe(
       map((data) => {
-        let pfamEntityMappingsNames: string[] = [];
-        let pfamEntityMappings: {
+        const pfamEntityMappingsNames: string[] = [];
+        const pfamEntityMappings: {
           name: string;
-          molecules: domainMoleculeObj[];
+          molecules: MenuItemMolObj[];
         }[] = [];
         const pfamFamilies = data[entryId]['Pfam'];
         const pfamFamiliesIds = Object.keys(pfamFamilies);
@@ -615,7 +620,7 @@ export class StructureExplorerService {
           for (const eachMapping of pfamFamilies[pfamId].mappings) {
             const entityId = eachMapping.entity_id;
             const chainId = eachMapping.chain_id;
-            let imgName = `${entryId.toLowerCase()}_${entityId}_${chainId}_Pfam_${pfamId}`;
+            const imgName = `${entryId.toLowerCase()}_${entityId}_${chainId}_Pfam_${pfamId}`;
 
             // mappings from chains not in images are not considered
             if (images.indexOf(imgName) === -1) continue;
@@ -709,11 +714,11 @@ export class StructureExplorerService {
     return this.http.get<any>(`${this.BASE_API}modified_AA_or_NA/${entryId}`).pipe(
       map((data) => {
         if (!data) return [];
-        let modificationsImgs = [];
-        let modificationsNamesAndImgs = [];
-        let modifications = data[entryId];
+        const modificationsImgs = [];
+        const modificationsNamesAndImgs = [];
+        const modifications = data[entryId];
         for (const modification of modifications) {
-          let modificationObj = {
+          const modificationObj = {
             name: `${modification.chem_comp_id} - ${modification.chem_comp_name}`,
             img: `${entryId.toLowerCase()}_modres_${modification.chem_comp_id}_front`,
             extraInfo: [

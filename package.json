@@ -54,6 +54,7 @@
     "@visual-framework/vf-u-fullbleed": "^1.2.2",
     "@visual-framework/vf-utility-classes": "^2.0.0",
     "ngx-skeleton-loader": "^9.0.0",
+    "ag-grid-angular": "^32.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rxjs": "~7.8.0",

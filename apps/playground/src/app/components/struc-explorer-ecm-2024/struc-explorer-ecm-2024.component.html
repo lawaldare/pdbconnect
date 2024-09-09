@@ -1,10 +1,10 @@
 <div class="str-explorer-container">
   <div class="str-explorer-assembly-row">
     <h3>Assembly {{ assemblyId }} (preferred)</h3>
-    <p>
+    <a (click)="selectTab('/assemblies')">
       View all assemblies
       <i class="icon icon-common icon-arrow-alt-circle-right"></i>
-    </p>
+    </a>
   </div>
   <div class="str-explorer-main">
     <!-- TODO: replace whole controls by svg so animation is possible -->
@@ -302,7 +302,8 @@
           </button>
         </div>
         } @if (extraItem.type === 'search-link') {
-        <a class="str-xinfo-slink" [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?complex_id:' + extraItem.value" target="_blank">
+        <!-- <a class="str-xinfo-slink" [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?complex_id:' + extraItem.value" target="_blank"> -->
+        <a class="str-xinfo-slink">
           {{ extraItem.value }}
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path
@@ -338,7 +339,8 @@
       </div>
       @if (kbLinkData) {
       <div class="str-kb-link">
-        <a class="str-xinfo-kblink" [href]="kbLinkData!.src" target="_blank">
+        <!-- <a class="str-xinfo-kblink" [href]="kbLinkData!.src" target="_blank"> -->
+        <a class="str-xinfo-kblink">
           {{ kbLinkData!.txt }}
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path
