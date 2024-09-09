@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
+import { Component, effect, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DescriptionData } from '../../../services/aggregated-api.service';
 import { IsPartOfDirective, MaterialModule, TruncateTextDirective, UtilService } from '@pdbc/core';
@@ -9,6 +9,7 @@ import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { CCDsDirective } from '../../../directives/description-contains-ccds.directive';
 import { RouterModule } from '@angular/router';
 import { LigandSmilesPipe, Smile } from '../../../pipes/ligandsmiles.pipe';
+import { LigandUtilService } from '../../../ligand-util.service';
 
 @Component({
   selector: 'pdbc-description',
@@ -16,7 +17,6 @@ import { LigandSmilesPipe, Smile } from '../../../pipes/ligandsmiles.pipe';
   imports: [CommonModule, TruncateTextDirective, IsPartOfDirective, MaterialModule, LigandSmilesPipe, ToolTipComponent, CCDsDirective, RouterModule],
   templateUrl: './description.component.html',
   styleUrls: ['./description.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [LigandSmilesPipe],
 })
 export class DescriptionComponent {
@@ -28,6 +28,7 @@ export class DescriptionComponent {
   private readonly dialog = inject(MatDialog);
   private readonly utilService = inject(UtilService);
   private readonly smilesPipe = inject(LigandSmilesPipe);
+  private readonly ligandUtilService = inject(LigandUtilService);
 
   constructor() {
     effect(
@@ -40,6 +41,10 @@ export class DescriptionComponent {
       },
       { allowSignalWrites: true }
     );
+  }
+
+  public downloadIds(): void {
+    this.ligandUtilService.downloadTxt(this.supercomponents(), 'supercomponents');
   }
 
   public copy(value: string): void {

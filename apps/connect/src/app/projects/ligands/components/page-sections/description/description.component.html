@@ -78,15 +78,24 @@
   } @if(supercomponents().length && isMainLigandId()){
   <div class="info-row">
     <span class="info-row-title">Is a part of</span>
-    <article>
-      <div class="info-row-content supercomponents" libIsPartOf [truncateText]="supercomponents().join(', ')"></div>
-      <i
-        class="icon icon-common icon-clone"
-        matTooltipClass="description-tooltip"
-        matTooltip="Copy the smiles"
-        matTooltipPosition="above"
-        (click)="copy(supercomponents().join(', '))"
-      ></i>
+    <article class="article-supercomponents">
+      <div class="info-row-content supercomponents" libIsPartOf [truncateTexts]="supercomponents()"></div>
+      <div class="supercomponent-actions">
+        @if(supercomponents().length > 1){
+        <button class="vf-button vf-button--link" (click)="downloadIds()">
+          Download list of IDs
+          <i class="icon icon-common icon-download"></i>
+        </button>
+        } @else {
+        <i
+          class="icon icon-common icon-clone"
+          matTooltipClass="description-tooltip"
+          matTooltip="Copy the ID"
+          matTooltipPosition="above"
+          (click)="copy(supercomponents().join(', '))"
+        ></i>
+        }
+      </div>
     </article>
   </div>
   }

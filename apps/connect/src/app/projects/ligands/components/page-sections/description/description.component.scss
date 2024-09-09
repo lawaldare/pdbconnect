@@ -19,6 +19,14 @@
     align-items: center;
     gap: 12px;
 
+    &.article-supercomponents {
+      display: block;
+
+      .supercomponent-actions {
+        margin-top: 10px;
+      }
+    }
+
     i.icon-clone {
       cursor: pointer;
       color: #3b6fb6;
@@ -63,7 +71,16 @@
         overflow: scroll;
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        height: 30px;
+        max-height: 200px;
+        transition: box-shadow 0.3s ease;
+
+        &.top-shadow {
+          box-shadow: inset 0 10px 10px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        &.bottom-shadow {
+          box-shadow: inset 0 -10px 10px -10px rgba(0, 0, 0, 0.5);
+        }
       }
 
       &.formula {
