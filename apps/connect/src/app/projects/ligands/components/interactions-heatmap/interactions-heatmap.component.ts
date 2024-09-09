@@ -253,7 +253,15 @@ export class InteractionsHeatmapComponent implements OnInit {
     this.setAtomsColorScale();
     this.heatmapAtomsElement.heatmapInstance!.events.hover.subscribe((e: any) => {
       if (e.cell !== undefined) {
-        if (e.cell.datum === undefined) return;
+        if (e.cell.datum === undefined) {
+          this.isMouseHovering = false;
+          document.dispatchEvent(
+            new CustomEvent('PDB.ligHeatmap.mouseout', {
+              detail: {},
+              bubbles: true,
+            })
+          );
+        };
         this.isMouseHovering = true;
         const atomName = this.atomNamesList![e.cell.datum.xValue - 1];
         document.dispatchEvent(
