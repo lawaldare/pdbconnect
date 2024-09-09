@@ -15,7 +15,7 @@ export const headerSearchConfig = {
   examples: [
     { label: 'STI', url: '/ligands/STI' },
     { label: 'GLC', url: '/ligands/GLC' },
-    { label: 'MHS', url: '/ligands/MHS' },
+    { label: 'NAG', url: '/ligands/NAG' },
     { label: 'HEM', url: '/ligands/HEM' },
   ],
   backgroundColor: 'rgba(8, 95, 92, 0.79)',
