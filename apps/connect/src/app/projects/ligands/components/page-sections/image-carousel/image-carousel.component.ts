@@ -20,7 +20,6 @@ export class ImageCarouselComponent implements AfterViewInit {
   public readonly arrowSrc = '/assets/images/left_arrow.svg';
   public ligandId!: string;
 
-  @ViewChild('slide', { read: ElementRef }) slideContainer!: ElementRef;
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
   private readonly renderer = inject(Renderer2);
@@ -40,9 +39,9 @@ export class ImageCarouselComponent implements AfterViewInit {
     this.route.params
       .pipe(
         switchMap((params) => {
-          this.facade.resetRenderer(this.renderer, this.imageContainer, this.slideContainer);
+          this.facade.resetRenderer(this.renderer, this.imageContainer);
           this.ligandId = params['ligandId'].toUpperCase();
-          this.facade.init(this.renderer, this.ligandId, this.imageContainer, this.slideContainer);
+          this.facade.init(this.renderer, this.ligandId, this.imageContainer);
           return of({});
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -71,10 +70,10 @@ export class ImageCarouselComponent implements AfterViewInit {
   }
 
   onPreviousClick() {
-    this.facade.onPreviousClick(this.renderer, this.slideContainer);
+    this.facade.onPreviousClick(this.renderer);
   }
 
   onNextClick() {
-    this.facade.onNextClick(this.renderer, this.slideContainer);
+    this.facade.onNextClick(this.renderer);
   }
 }

@@ -8,27 +8,23 @@ import { Depiction, Fragment } from '../../../data-models/structure.model';
   providedIn: 'root',
 })
 export class ImageCarouselComponentFacade {
-  public currentSlide = signal(0);
-  public substructureNames = signal<string[]>([]);
-  public substructureAtoms!: Array<string[]>;
-  public slides = signal<number[]>([]);
-
-  private ligandId!: string;
-  private tempFragments: Fragment[] = [];
-
-  public structureDescription = signal('');
-
-  private fragments = signal<Fragment[]>([]);
-  public currentFragment = computed(() => this.fragments()[this.currentSlide() - 2]);
-
-  private divsRendered: any[] = [];
-  private ligandEv!: any;
-
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ligandUtilService = inject(LigandUtilService);
 
-  public init(renderer: Renderer2, ligandId: string, imageContainer: ElementRef, slideContainer: ElementRef) {
+  private ligandId!: string;
+  private tempFragments: Fragment[] = [];
+  private fragments = signal<Fragment[]>([]);
+  private ligandEv!: any;
+
+  public structureDescription = signal('');
+  public currentSlide = signal(0);
+  public substructureNames = signal<string[]>([]);
+  public substructureAtoms!: Array<string[]>;
+  public slides = signal<number[]>([]);
+  public currentFragment = computed(() => this.fragments()[this.currentSlide() - 2]);
+
+  public init(renderer: Renderer2, ligandId: string, imageContainer: ElementRef) {
     this.ligandId = ligandId;
     this.aggregatedApiService
       .fetchSubstructures(ligandId)
@@ -43,13 +39,13 @@ export class ImageCarouselComponentFacade {
 
           if (this.substructureNames().length > 0) {
             this.slides.update((slides) => [...slides, 0, 1]);
-            this.renderLigand(renderer, ligandId, imageContainer, slideContainer);
+            this.renderLigand(renderer, ligandId, imageContainer);
           }
         },
         (error) => {
           this.substructureNames.update((values) => [...values, `Murcko scaffold`]);
           this.slides.update((slides) => [...slides, 0, 1]);
-          this.renderLigand(renderer, ligandId, imageContainer, slideContainer);
+          this.renderLigand(renderer, ligandId, imageContainer);
         }
       );
   }
@@ -78,7 +74,7 @@ export class ImageCarouselComponentFacade {
     this.ligandUtilService.fragments.update(() => this.fragments());
   }
 
-  private setDepictionDescription() {
+  private setDepictionDescription(): void {
     switch (this.currentSlide()) {
       case 0:
         this.structureDescription.set(`Structural representation of ${this.ligandId}`);
@@ -95,7 +91,7 @@ export class ImageCarouselComponentFacade {
     this.ligandUtilService.currentFragment.set(this.currentFragment());
   }
 
-  private setDepictionProperty(renderer: Renderer2, el: HTMLElement, index: number) {
+  private setDepictionProperty(renderer: Renderer2, el: HTMLElement, index: number): void {
     switch (index) {
       case 0:
         renderer.setProperty(el, 'atomNames', false);
@@ -113,7 +109,7 @@ export class ImageCarouselComponentFacade {
     }
   }
 
-  public onPreviousClick(renderer: Renderer2, slideContainer: ElementRef) {
+  public onPreviousClick(renderer: Renderer2): void {
     const previous = this.currentSlide() - 1 < 0 ? this.substructureNames().length + 1 : this.currentSlide() - 1;
     this.currentSlide.set(previous);
     if (!this.slides().includes(this.currentSlide())) {
@@ -121,63 +117,37 @@ export class ImageCarouselComponentFacade {
       this.slides()[0] = this.currentSlide();
     }
 
-    this.renderSubstructure(renderer, slideContainer);
+    this.updateLigandImage(renderer);
   }
 
-  public onNextClick(renderer: Renderer2, slideContainer: ElementRef) {
+  public onNextClick(renderer: Renderer2): void {
     const next = this.currentSlide() + 1 === this.substructureNames().length + 2 ? 0 : this.currentSlide() + 1;
     this.currentSlide.set(next);
     if (!this.slides().includes(this.currentSlide())) {
       this.slides()[0] = this.slides()[1];
       this.slides()[1] = this.currentSlide();
     }
-    this.renderSubstructure(renderer, slideContainer);
+    this.updateLigandImage(renderer);
   }
 
-  private renderSubstructure(renderer: Renderer2, slideContainer: ElementRef) {
-    const slideContainerElement = slideContainer.nativeElement;
+  private updateLigandImage(renderer: Renderer2): void {
     this.setDepictionProperty(renderer, this.ligandEv, this.currentSlide());
-    const slideElements = slideContainerElement.children;
-    for (let i = 0; i < slideElements.length; i++) {
-      if (this.slides()[i] == this.currentSlide()) {
-        renderer.addClass(slideElements[i], 'active');
-      } else {
-        renderer.removeClass(slideElements[i], 'active');
-      }
-
-      const ligandEl = slideElements[i].firstElementChild;
-      this.setDepictionProperty(renderer, ligandEl, this.slides()[i]);
-    }
     this.setDepictionDescription();
   }
 
-  private renderLigand(renderer: Renderer2, ligandId: string, imageContainer: ElementRef, slideContainer: ElementRef) {
-    const slideContainerRef = slideContainer.nativeElement;
+  private renderLigand(renderer: Renderer2, ligandId: string, imageContainer: ElementRef): void {
     const imageContainerRef = imageContainer.nativeElement;
 
     this.aggregatedApiService
       .fetchDepiction(ligandId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((depiction: Depiction) => {
-        this.createLigandEnvironment(renderer, imageContainerRef, depiction, true);
-        if (this.substructureNames().length > 0) {
-          for (const slide of this.slides()) {
-            const div = renderer.createElement('div');
-            renderer.appendChild(slideContainerRef, div);
-            renderer.addClass(div, 'slide');
-            if (slide === 0) {
-              renderer.addClass(div, 'active');
-            }
-            this.divsRendered.push(div);
-            this.createLigandEnvironment(renderer, div, depiction, false, slide);
-          }
-        }
-
+        this.createLigandEnvironment(renderer, imageContainerRef, depiction);
         this.setDepictionDescription();
       });
   }
 
-  private createLigandEnvironment(renderer: Renderer2, container: ElementRef, depiction: Depiction, mainLigand = false, slide?: number): void {
+  private createLigandEnvironment(renderer: Renderer2, container: ElementRef, depiction: Depiction, slide?: number): void {
     const ligand = renderer.createElement('pdb-ligand-env');
     renderer.appendChild(container, ligand);
     renderer.setProperty(ligand, 'depiction', depiction);
@@ -189,27 +159,19 @@ export class ImageCarouselComponentFacade {
       this.setDepictionProperty(renderer, ligand, slide);
     }
 
-    if (mainLigand) {
-      renderer.setAttribute(ligand, 'depiction-only', '');
-      renderer.setAttribute(ligand, 'zoom-on', 'true');
-      this.ligandEv = ligand;
-    }
+    renderer.setAttribute(ligand, 'depiction-only', '');
+    renderer.setAttribute(ligand, 'zoom-on', 'true');
+    this.ligandEv = ligand;
   }
 
-  public resetRenderer(renderer: Renderer2, imageContainer: ElementRef, slideContainer: ElementRef): void {
-    const slideContainerRef = slideContainer.nativeElement;
+  public resetRenderer(renderer: Renderer2, imageContainer: ElementRef): void {
     const imageContainerRef = imageContainer.nativeElement;
-
-    for (const div of this.divsRendered) {
-      renderer.removeChild(slideContainerRef, div);
-    }
 
     if (this.ligandEv) {
       renderer.removeChild(imageContainerRef, this.ligandEv);
     }
 
     this.slides.set([]);
-    this.divsRendered = [];
     this.substructureNames.set([]);
     this.substructureAtoms = [];
     this.currentSlide.set(0);
