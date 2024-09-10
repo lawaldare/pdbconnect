@@ -85,7 +85,7 @@ export class ImageCarouselComponentFacade {
         break;
 
       default:
-        this.structureDescription.set(`${this.substructureNames()[this.currentSlide() - 2]} highlighted in gray`);
+        this.structureDescription.set(`${this.substructureNames()[this.currentSlide() - 2]} highlighted in yellow`);
     }
 
     this.ligandUtilService.currentFragment.set(this.currentFragment());
