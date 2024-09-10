@@ -11,8 +11,6 @@
     Download all interactions
     <i class="icon icon-common icon-download"></i>
   </button>
-  {{ showLigandHeatmap() }}
-
   <div class="intx-component-container">
     <pdbc-interactions-heatmap [ligandId]="ligandId()" (newFilteringEvent)="changeLigandEnvironmentFilters($event)"></pdbc-interactions-heatmap>
     <div class="ligandEnv-container">
