@@ -1,4 +1,4 @@
-import { Component, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, DestroyRef, signal } from '@angular/core';
+import { Component, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, DestroyRef, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
@@ -6,6 +6,7 @@ import { of, switchMap } from 'rxjs';
 import { ClickOutsideDirective, MaterialModule, UtilService } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { ImageCarouselComponentFacade } from './image-carousel.facade';
+import { LigandUtilService } from '../../../ligand-util.service';
 
 @Component({
   selector: 'pdbc-image-carousel',
@@ -27,9 +28,13 @@ export class ImageCarouselComponent implements AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly utilService = inject(UtilService);
   private readonly facade = inject(ImageCarouselComponentFacade);
+  private readonly ligandUtilService = inject(LigandUtilService);
 
   public structureDescription = this.facade.structureDescription;
   public showTooltips = signal(false);
+
+  public total = computed(() => this.ligandUtilService.fragments().length + 2);
+  public currentSlide = computed(() => this.facade.currentSlide() + 1);
 
   ngAfterViewInit() {
     this.route.params

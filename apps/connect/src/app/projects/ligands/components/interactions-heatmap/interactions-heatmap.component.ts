@@ -1,4 +1,16 @@
-import { AfterViewInit, Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, ChangeDetectorRef, HostListener, Output, EventEmitter, Input } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  inject,
+  OnInit,
+  ChangeDetectorRef,
+  HostListener,
+  Output,
+  EventEmitter,
+  Input,
+  OnChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import '@nightingale-elements/nightingale-manager';
 import '@nightingale-elements/nightingale-navigation';
@@ -69,7 +81,7 @@ type CategoryNames = 'Positively charged' | 'Negatively charged' | 'Polar' | 'Hy
   styleUrl: './interactions-heatmap.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class InteractionsHeatmapComponent implements OnInit {
+export class InteractionsHeatmapComponent implements OnChanges {
   private interactionsApiService = inject(InteractionsApiService);
   private aggregatedApiService = inject(AggregatedApiService);
   private cdr = inject(ChangeDetectorRef);
@@ -261,7 +273,7 @@ export class InteractionsHeatmapComponent implements OnInit {
               bubbles: true,
             })
           );
-        };
+        }
         this.isMouseHovering = true;
         const atomName = this.atomNamesList![e.cell.datum.xValue - 1];
         document.dispatchEvent(
@@ -330,7 +342,7 @@ export class InteractionsHeatmapComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
+  ngOnChanges(): void {
     (async () => {
       await this.createViewerData();
       await this.setupHeatmapAtoms();

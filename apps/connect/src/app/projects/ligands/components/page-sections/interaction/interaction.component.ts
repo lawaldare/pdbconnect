@@ -20,7 +20,7 @@ import { InteractionsHeatmapComponent } from '../../../components/interactions-h
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class InteractionComponent implements AfterViewInit {
-  public ligandId!: string;
+  public ligandId = signal('');
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   @ViewChild('ligHeatMapContainer', { read: ElementRef }) ligandHeatMapContainer!: ElementRef;
@@ -41,43 +41,31 @@ export class InteractionComponent implements AfterViewInit {
   public ligandInstances = signal(0);
   public pdbstructures = signal(0);
   public pdbchains = signal(0);
-
-  private renderHeatMap(interaction: PDBIntxData): void {
-    // const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;
-    // comment below when disabling this
-    // const ligandHeatmap = this.renderer.createElement('pdbe-ligand-interactions');
-    // this.renderer.appendChild(ligandHeatmapContainer, ligandHeatmap);
-    // this.renderer.setAttribute(ligandHeatmap, 'pdbeapi', 'false');
-    // this.renderer.setAttribute(ligandHeatmap, 'accession', this.ligandId);
-    // ligandHeatmap.setDataAndRender(interaction);
-    // ligandHeatmap.registerLigandEnv('ligand-int-env');
-    // this.ligandHeatmapEv = ligandHeatmap;
-  }
+  public showLigandHeatmap = signal(false);
 
   ngAfterViewInit() {
-    const imageContainer = this.imageContainer.nativeElement;
-
     this.route.params
       .pipe(
         switchMap((params) => {
-          this.resetRenderer();
-          this.ligandId = params['ligandId'].toUpperCase();
-          return this.aggregatedApiService.fetchDepiction(this.ligandId);
+          this.ligandId.set(params['ligandId'].toUpperCase());
+          this.showLigandHeatmap.set(true);
+          return this.aggregatedApiService.fetchDepiction(this.ligandId());
         }),
         mergeMap((depiction: Depiction) => {
+          const imageContainer = this.imageContainer.nativeElement;
+          this.resetRenderer();
           this.createLigandEnvironment(imageContainer, depiction);
-          return forkJoin([this.aggregatedApiService.fetchIntxData(this.ligandId), this.aggregatedApiService.fetchLigandStructures(this.ligandId)]);
+          return forkJoin([this.aggregatedApiService.fetchIntxData(this.ligandId()), this.aggregatedApiService.fetchLigandStructures(this.ligandId())]);
         }),
         map(([intxDataUrl, structures]) => {
           const interaction = intxDataUrl.interactions;
           this.generateStructureStatistics(structures);
           this.interaction = interaction;
-          if (interaction && interaction?.[this.ligandId]) {
-            this.renderer.setProperty(this.ligandEv, 'interaction', interaction[this.ligandId]);
+          if (interaction && interaction?.[this.ligandId()]) {
+            this.renderer.setProperty(this.ligandEv, 'interaction', interaction[this.ligandId()]);
             this.renderer.setProperty(this.ligandEv, 'contactType', '["TOTAL"]');
-            this.renderHeatMap(interaction);
           } else {
-            this.generateEmptyText();
+            this.showLigandHeatmap.set(false);
           }
           return EMPTY;
         }),
@@ -91,7 +79,7 @@ export class InteractionComponent implements AfterViewInit {
   }
 
   public downloadInteraction(): void {
-    if (this.interaction && this.interaction?.[this.ligandId]) {
+    if (this.interaction && this.interaction?.[this.ligandId()]) {
       this.ligandUtilService.downloadJSON(this.interaction, 'interaction');
     } else {
       this._snackBar.open(`No interaction data for ${this.ligandId}`, 'Dismiss', {
@@ -114,31 +102,6 @@ export class InteractionComponent implements AfterViewInit {
     if (this.ligandEv) {
       this.renderer.removeChild(imageContainer, this.ligandEv);
     }
-
-    // this.resetligandHeatmap();
-  }
-
-  //   private resetligandHeatmap(): void {
-  //     const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;
-  //     if (this.ligandHeatmapEv) {
-  //       this.renderer.removeChild(ligandHeatmapContainer, this.ligandHeatmapEv);
-  //       this.ligandHeatmapEv = null;
-  //     }
-
-  //     if (this.emptyText) {
-  //       this.renderer.removeChild(ligandHeatmapContainer, this.emptyText);
-  //       this.emptyText = null;
-  //     }
-  //   }
-
-  private generateEmptyText(): void {
-    const ligandHeatmapContainer = this.ligandHeatMapContainer.nativeElement;
-    const p = this.renderer.createElement('p');
-    const text = this.renderer.createText(`Interaction view not available for ${this.ligandId}`);
-    this.renderer.appendChild(p, text);
-    this.renderer.removeClass(p, 'empty-text');
-    this.renderer.appendChild(ligandHeatmapContainer, p);
-    this.emptyText = p;
   }
 
   private generateStructureStatistics(structures: LigandStructure[]): void {
