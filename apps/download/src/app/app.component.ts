@@ -9,6 +9,7 @@ import { MaterialModule } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { DataType } from './models/data-type-box.model';
 import { DownloadNavbarComponent } from './components/download-navbar/download-navbar.component';
+import { DownloadType } from './enums/downloadType.enum';
 
 @Component({
   standalone: true,
@@ -28,6 +29,7 @@ import { DownloadNavbarComponent } from './components/download-navbar/download-n
 })
 export class AppComponent {
   public readonly title = 'PDBe Download Service';
+  public readonly downloadType = DownloadType;
 
   public readonly structureData: DataType = {
     submissionType: 'entry',

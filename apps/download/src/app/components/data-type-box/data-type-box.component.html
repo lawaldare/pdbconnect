@@ -37,14 +37,33 @@
     </div>
     <div class="spinner-wrapper">
       <button (click)="submit(dataType().submissionType)" class="vf-button vf-button--primary">Submit to download</button>
-      @if(isLoadingEntry()){
+      @if(downloadService.isLoadingEntryForStructures() && downloadType() === types.Structures){
+      <div style="padding-left: 35px">
+        <mat-progress-spinner class="example-margin" [mode]="'indeterminate'" [diameter]="'39'"></mat-progress-spinner>
+      </div>
+      } @if(downloadService.isLoadingEntryForMolecules() && downloadType() === types.Molecules){
+      <div style="padding-left: 35px">
+        <mat-progress-spinner class="example-margin" [mode]="'indeterminate'" [diameter]="'39'"></mat-progress-spinner>
+      </div>
+      } @if(downloadService.isLoadingEntryForResidues() && downloadType() === types.Residues){
+      <p>Loading</p>
       <div style="padding-left: 35px">
         <mat-progress-spinner class="example-margin" [mode]="'indeterminate'" [diameter]="'39'"></mat-progress-spinner>
       </div>
       }
     </div>
-    <div class="alert alert-danger" *ngIf="errorEntryText()">
-      <p><b>ERROR</b>: {{ errorEntryText() }}</p>
+    @if(downloadService.errorEntryTextForStructures() && downloadType() === types.Structures){
+    <div class="alert alert-danger">
+      <p><b>ERROR</b>: {{ downloadService.errorEntryTextForStructures() }}</p>
     </div>
+    } @if(downloadService.errorEntryTextForMolecules() && downloadType() === types.Molecules){
+    <div class="alert alert-danger">
+      <p><b>ERROR</b>: {{ downloadService.errorEntryTextForMolecules() }}</p>
+    </div>
+    } @if(downloadService.errorEntryTextForResidues() && downloadType() === types.Residues){
+    <div class="alert alert-danger">
+      <p><b>ERROR</b>: {{ downloadService.errorEntryTextForResidues() }}</p>
+    </div>
+    }
   </mat-radio-group>
 </div>
