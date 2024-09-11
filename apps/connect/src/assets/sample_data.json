@@ -1,0 +1,91 @@
+{
+   "PDB-CPX-159519":[
+      {
+         "name":"Hemoglobin HbA complex",
+         "source_organism":"Homo sapiens",
+         "complex_portal_id":"CPX-2158",
+         "oligomeric_state":"Homotetramer",
+         "stoichiometry":"4",
+         "symmetry":{
+            "symbol":"D2",
+            "type":"Dihedral"
+         },
+         "participants":[
+            {
+               "accession":"P68871",
+               "stoichiometry":2
+            },
+            {
+               "accession":"P69905",
+               "stoichiometry":2
+            }
+         ],
+         "observed_experimental_methods_and_count":{
+            "x-ray diffraction":6
+         },
+         "assemblies":[
+            {
+               "pdb_id":"1a0u",
+               "assembly_id":1,
+               "preferred_assembly":true,
+               "exp_method":"x-ray diffraction",
+               "resolution":2.14,
+               "symmetry_symbol":"D2"
+            },
+            {
+               "pdb_id":"1buw",
+               "assembly_id":1,
+               "preferred_assembly":true,
+               "exp_method":"x-ray diffraction",
+               "resolution":1.9,
+               "symmetry_symbol":"D2"
+            },
+            {
+               "pdb_id":"1y4b",
+               "assembly_id":1,
+               "preferred_assembly":true,
+               "exp_method":"x-ray diffraction",
+               "resolution":2.1,
+               "symmetry_symbol":"D2"
+            },
+            {
+               "pdb_id":"1y7g",
+               "assembly_id":1,
+               "preferred_assembly":true,
+               "exp_method":"x-ray diffraction",
+               "resolution":2.1,
+               "symmetry_symbol":"D2"
+            },
+            {
+               "pdb_id":"1rq3",
+               "assembly_id":1,
+               "preferred_assembly":true,
+               "exp_method":"x-ray diffraction",
+               "resolution":1.91,
+               "symmetry_symbol":"D2"
+            },
+            {
+               "pdb_id":"1j3y",
+               "assembly_id":1,
+               "preferred_assembly":true,
+               "exp_method":"x-ray diffraction",
+               "resolution":1.55,
+               "symmetry_symbol":"D2"
+            }
+         ],
+         "subcomplexes":[
+            
+         ],
+         "supercomplexes":[
+            "PDB-CPX-159520",
+            "PDB-CPX-159521",
+            "PDB-CPX-159522",
+            "PDB-CPX-159523",
+            "PDB-CPX-159524",
+            "PDB-CPX-232887",
+            "PDB-CPX-232888",
+            "PDB-CPX-247173"
+         ]
+      }
+   ]
+}

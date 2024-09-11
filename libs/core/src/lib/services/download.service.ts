@@ -43,9 +43,11 @@ export class DownloadService {
   public isLoadingEntryForResidues = signal(false);
   private downloadType = signal<DownloadType>(DownloadType.Structures);
 
-  public initiateDownload(apiUrl: string, apiType: string, pdbids: string, chosenFormat: string, downloadType: DownloadType): void {
-    this.downloadType.set(downloadType);
-    this.updateLoading(downloadType, true);
+  public initiateDownload(apiUrl: string, apiType: string, pdbids: string, chosenFormat: string, downloadType?: DownloadType): void {
+    if (downloadType) {
+      this.downloadType.set(downloadType);
+      this.updateLoading(downloadType, true);
+    }
     this.isLoadingEntry.set(true);
     const correctIds = this.utilService.cleanUpIds(pdbids);
     this.fdsConfig.set({ ids: correctIds });
