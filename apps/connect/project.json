@@ -47,16 +47,25 @@
               "maximumError": "400kb"
             }
           ],
+          "aot": true,
+          "buildOptimizer": true,
+          "extractLicenses": true,
+          "namedChunks": false,
+          "optimization": true,
+          "sourceMap": true,
+          "vendorChunk": false,
           "outputHashing": "all",
           "baseHref": "$APP_BASE_HREF"
         },
         "development": {
-          "buildOptimizer": false,
-          "optimization": false,
-          "vendorChunk": true,
-          "extractLicenses": false,
+          "aot": true,
+          "buildOptimizer": true,
+          "extractLicenses": true,
+          "namedChunks": false,
+          "optimization": true,
           "sourceMap": true,
-          "namedChunks": true
+          "vendorChunk": false,
+          "outputHashing": "all"
         }
       },
       "defaultConfiguration": "production"

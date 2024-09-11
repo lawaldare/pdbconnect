@@ -2,7 +2,9 @@
   "name": "@pdbc/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "source-map-explorer": "source-map-explorer dist/apps/connect/**/*.js"
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "18.2.1",
@@ -62,6 +64,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rxjs": "~7.8.0",
+    "source-map-explorer": "^2.5.3",
     "storybook": "^8.2.8",
     "swagger-ui-dist": "^5.9.1",
     "tslib": "^2.3.0",
