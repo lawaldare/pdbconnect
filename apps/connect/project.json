@@ -64,8 +64,7 @@
           "namedChunks": false,
           "optimization": true,
           "sourceMap": true,
-          "vendorChunk": false,
-          "baseHref": "$APP_BASE_HREF"
+          "vendorChunk": false
         }
       },
       "defaultConfiguration": "production"

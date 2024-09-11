@@ -1,0 +1,19 @@
+<pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig" />
+<pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
+
+<main>
+  <div class="container">
+    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" />
+    @if(summaryData){
+    <article>
+      <section class="hero">
+        <h2>{{ summaryData.name }}</h2>
+        <h4>{{ this.complexId() }}</h4>
+      </section>
+      <section class="summary">
+        <pdbc-summary />
+      </section>
+    </article>
+    }
+  </div>
+</main>
