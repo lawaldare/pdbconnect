@@ -1,7 +1,7 @@
 import { Component, effect, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DescriptionData } from '../../../services/aggregated-api.service';
-import { IsPartOfDirective, MaterialModule, TruncateTextDirective, UtilService } from '@pdbc/core';
+import { MaterialModule, TruncateTextDirective, UtilService } from '@pdbc/core';
 import { MatDialog } from '@angular/material/dialog';
 import { BondsTableDialogComponent } from '../../section-components/bonds-table-dialog/bonds-table-dialog.component';
 import { AtomsTableDialogComponent } from '../../section-components/atoms-table-dialog/atoms-table-dialog.component';
@@ -10,6 +10,7 @@ import { CCDsDirective } from '../../../directives/description-contains-ccds.dir
 import { RouterModule } from '@angular/router';
 import { LigandSmilesPipe, Smile } from '../../../pipes/ligandsmiles.pipe';
 import { LigandUtilService } from '../../../ligand-util.service';
+import { IsPartOfDirective } from '../../../directives/is-part-of.directive';
 
 @Component({
   selector: 'pdbc-description',
