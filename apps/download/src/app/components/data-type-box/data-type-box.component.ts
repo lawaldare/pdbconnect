@@ -6,6 +6,7 @@ import { DataType } from '../../models/data-type-box.model';
 import { DataContentComponent } from '../data-content/data-content.component';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { environment } from '../../../environments/environment';
+import { DownloadType } from '../../enums/downloadType.enum';
 
 @Component({
   selector: 'app-data-type-box',
@@ -15,14 +16,18 @@ import { environment } from '../../../environments/environment';
   styleUrl: './data-type-box.component.scss',
 })
 export class DataTypeBoxComponent implements OnInit {
-  private readonly downloadService = inject(DownloadService);
+  public readonly downloadService = inject(DownloadService);
   private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
 
   public readonly dataType = input.required<DataType>();
+  public readonly downloadType = input.required<DownloadType>();
+
+  public readonly types = DownloadType;
+
   public chosenformat!: string;
   public pdbid!: string;
-  public isLoadingEntry = this.downloadService.isLoadingEntry;
-  public errorEntryText = this.downloadService.errorEntryText;
+  // public isLoadingEntry = this.downloadService.isLoadingEntry;
+  // public errorEntryText = this.downloadService.errorEntryText;
 
   ngOnInit(): void {
     if (localStorage['pdbIds']) {
@@ -33,17 +38,17 @@ export class DataTypeBoxComponent implements OnInit {
   public submit(apiType: string): void {
     if (!this.pdbid) {
       const errorText = `Please enter at least one ${this.dataType().descriptorType['idType']} ID.`;
-      this.downloadService.showErrorText(errorText);
+      this.downloadService.updateErrorText(this.downloadType(), errorText);
       return;
     }
 
     if (!this.chosenformat) {
       const errorText = `Please choose the type of ${this.dataType().descriptorType['idType']} data to download.`;
-      this.downloadService.showErrorText(errorText);
+      this.downloadService.updateErrorText(this.downloadType(), errorText);
       return;
     }
 
-    this.downloadService.initiateDownload(this.fileDownloadUrl, apiType, this.pdbid, this.chosenformat);
+    this.downloadService.initiateDownload(this.fileDownloadUrl, apiType, this.pdbid, this.chosenformat, this.downloadType());
     localStorage.clear();
   }
 }
