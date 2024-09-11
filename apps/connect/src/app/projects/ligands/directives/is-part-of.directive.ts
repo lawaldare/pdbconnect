@@ -1,3 +1,8 @@
+/* eslint-disable @angular-eslint/no-input-rename */
+/* eslint-disable @angular-eslint/directive-selector */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-prototype-builtins */
+
 import { Directive, ElementRef, Renderer2, Input, OnChanges, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 
