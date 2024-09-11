@@ -1,4 +1,5 @@
 import { Directive, ElementRef, Renderer2, Input, OnChanges, HostListener } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Directive({
   selector: '[libIsPartOf]',
@@ -8,7 +9,7 @@ export class IsPartOfDirective implements OnChanges {
   @Input() truncateTexts: string[] = [];
   @Input() limit = 60;
 
-  constructor(private el: ElementRef, private renderer: Renderer2) {}
+  constructor(private el: ElementRef, private renderer: Renderer2, private router: Router) {}
 
   @HostListener('scroll', ['$event'])
   onScroll() {
@@ -48,10 +49,13 @@ export class IsPartOfDirective implements OnChanges {
     for (const text of textArray) {
       const a = this.renderer.createElement('a');
       a.textContent = textArray.indexOf(text) !== textArray.length - 1 ? `${text} ` : `${text}.`;
-      this.renderer.setAttribute(a, 'ng-reflect-router-link', `/ligands,${text.trim()}`);
-      this.renderer.setAttribute(a, 'href', `/ligands/${text.trim()}`);
       this.renderer.appendChild(this.el.nativeElement, a);
       this.renderer.setAttribute(a, 'style', 'margin-right:5px;');
+
+      // this.renderer.listen(a, 'click', (event) => {
+      //   event.preventDefault();
+      //   this.router.navigate([`/ligands/${text.trim()}`]);
+      // });
     }
   }
 }
