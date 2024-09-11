@@ -121,7 +121,7 @@ export class StructuresComponent implements AfterViewInit, OnInit {
     } else {
       //go to download service
       localStorage.setItem('pdbIds', uniqueData.join(','));
-      const url = 'https://wwwdev.ebi.ac.uk/pdbe/download/docs';
+      const url = `${environment.pdbeBaseUrl}download/docs`;
       window.open(url);
     }
   }
