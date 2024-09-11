@@ -2,7 +2,7 @@ import { ThemeType } from '@pdbc/core';
 
 export const navSections = [
   { sectionId: 'description-section', sectionName: 'Description', isSubSection: false },
-  { sectionId: 'properties-section', sectionName: 'Physicochemical properties', isSubSection: false },
+  { sectionId: 'properties-section', sectionName: 'Physiochemical properties', isSubSection: false },
   { sectionId: 'structures-section', sectionName: 'Structures', isSubSection: false },
   { sectionId: 'interaction-section', sectionName: 'Interaction statistics', isSubSection: false },
   { sectionId: 'related-ligand-section', sectionName: 'Related ligands', isSubSection: false },
@@ -14,8 +14,8 @@ export const navSections = [
 export const headerSearchConfig = {
   examples: [
     { label: 'STI', url: '/ligands/STI' },
-    { label: 'XRS', url: '/ligands/XRS' },
-    { label: 'MHS', url: '/ligands/MHS' },
+    { label: 'GLC', url: '/ligands/GLC' },
+    { label: 'NAG', url: '/ligands/NAG' },
     { label: 'HEM', url: '/ligands/HEM' },
   ],
   backgroundColor: 'rgba(8, 95, 92, 0.79)',

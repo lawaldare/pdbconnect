@@ -54,7 +54,6 @@ export class TruncateTextDirective implements OnInit, OnChanges {
     this.truncated = !this.truncated;
     const displayText = this.truncated ? this.truncatedText : this.fullText;
     const showMoreText = this.truncated ? 'Show more' : 'Show less';
-
     this.renderer.setProperty(this.el.nativeElement, 'innerText', displayText);
     this.addShowMore(showMoreText);
   }

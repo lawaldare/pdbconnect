@@ -1,12 +1,24 @@
 <section>
-  <mat-form-field>
-    <mat-label>Select Conformer</mat-label>
-    <mat-select [formControl]="selectedControl()" (selectionChange)="onSelectionChange($event)">
-      @for (option of selections; track option) {
-      <mat-option [value]="option.value">{{ option.viewValue }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
+  <div>
+    <mat-form-field>
+      <mat-label>Select Conformer</mat-label>
+      <mat-select [formControl]="selectedControl()" (selectionChange)="onSelectionChange($event)">
+        @for (option of selections; track option) {
+        <mat-option [value]="option.value">{{ option.viewValue }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    @if(showFragmentOptions()){
+    <mat-form-field>
+      <mat-label>Select Scaffold/Fragment</mat-label>
+      <mat-select [formControl]="selectedFragmentControl()" (selectionChange)="onFragmentChange($event)">
+        @for (option of fragments(); track option) {
+        <mat-option [value]="option.name">{{ option.name + ' Fragment Highlighted' | titlecase }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    }
+  </div>
   <i class="icon icon-common icon-window-close" (click)="dialogRef.close()"></i>
 </section>
 <div class="container" #viewContainer></div>

@@ -1,4 +1,4 @@
-import { Component, effect, Input, OnChanges, signal, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, effect, EventEmitter, input, Input, OnChanges, Output, signal, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Molecule } from '../../models/molecule.model';
 import { MaterialModule } from '@pdbc/core';
@@ -19,10 +19,12 @@ import { GeneDirective } from '../../directives/gene.directive';
   styleUrl: './entry-macromolecules.component.scss',
 })
 export class EntryMacromoleculesComponent implements OnChanges {
-  @Input({ required: true }) molecules!: Molecule[];
-  @Input({ required: true }) uniprotMapping!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-  @Input({ required: true }) interproMapping!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-  @Input({ required: true }) pfamMapping!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  @Output() switchTab = new EventEmitter<string>();
+
+  public molecules = input.required<Molecule[]>();
+  public uniprotMapping = input.required<any>(); // eslint-disable-line @typescript-eslint/no-explicit-any
+  public interproMapping = input.required<any>(); // eslint-disable-line @typescript-eslint/no-explicit-any
+  public pfamMapping = input.required<any>(); // eslint-disable-line @typescript-eslint/no-explicit-any
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -80,13 +82,13 @@ export class EntryMacromoleculesComponent implements OnChanges {
     const filterSelected = event.value;
 
     if (filterSelected === 'proteins') {
-      const proteinMolecules = this.molecules.filter((mol) => mol.molecule_type === 'polypeptide(L)' || mol.molecule_type === 'polypeptide(R)');
+      const proteinMolecules = this.molecules().filter((mol) => mol.molecule_type === 'polypeptide(L)' || mol.molecule_type === 'polypeptide(R)');
       this.moleculesUpdated.update(() => proteinMolecules);
       return;
     }
 
     if (filterSelected === 'dna') {
-      const dnaMolecules = this.molecules.filter(
+      const dnaMolecules = this.molecules().filter(
         (mol) =>
           mol.molecule_type === 'polyribonucleotide' ||
           mol.molecule_type === 'polydeoxyribonucleotide' ||
@@ -96,6 +98,10 @@ export class EntryMacromoleculesComponent implements OnChanges {
       return;
     }
 
-    this.moleculesUpdated.update(() => this.molecules);
+    this.moleculesUpdated.update(() => this.molecules());
+  }
+
+  public selectTab(name: string) {
+    this.switchTab.emit(name);
   }
 }

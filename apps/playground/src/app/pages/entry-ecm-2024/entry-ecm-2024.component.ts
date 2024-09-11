@@ -57,7 +57,43 @@ export class EntryEcm2024Component implements OnInit {
     url: string;
     icon: string;
     label: string;
-  }[] = [];
+  }[] = [
+    {
+      url: `/`,
+      icon: 'icon-common icon-home',
+      label: 'Home',
+    },
+    {
+      url: `/function`,
+      icon: 'icon-conceptual icon-ontology',
+      label: 'Function and Biology',
+    },
+    {
+      url: `/ligands`,
+      icon: 'icon-conceptual icon-chemical',
+      label: 'Ligands and Environments',
+    },
+    {
+      url: `/macromolecules`,
+      icon: 'icon-conceptual icon-proteins',
+      label: 'Macromolecules',
+    },
+    {
+      url: `/assemblies`,
+      icon: 'icon-conceptual icon-structures',
+      label: 'Assemblies',
+    },
+    {
+      url: `/experiments`,
+      icon: 'icon-common icon-analyse',
+      label: 'Experiments and Validation',
+    },
+    {
+      url: `/citations`,
+      icon: 'icon-conceptual icon-literature',
+      label: 'Citation',
+    },
+  ];
 
   public entryId = signal('1trn'); //'7v08', '3d12', '5tj5', '4zqo'
 
@@ -67,15 +103,16 @@ export class EntryEcm2024Component implements OnInit {
   private route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
+  public currentSection = '/';
+
   public pageData$!: Observable<any>;
 
   ngOnInit(): void {
-    this.route.params
+    this.route.queryParams
       .pipe(
         switchMap((params) => {
           const entryId = params['entryId'].toLowerCase();
           this.entryId.set(entryId);
-          this.setNavItems();
           return this.setPageData();
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -85,45 +122,9 @@ export class EntryEcm2024Component implements OnInit {
       });
   }
 
-  private setNavItems() {
-    this.navItems = [
-      {
-        url: `/`,
-        icon: 'icon-common icon-home',
-        label: 'Home',
-      },
-      {
-        url: `/${this.entryId()}/biology`,
-        icon: 'icon-conceptual icon-ontology',
-        label: 'Function and Biology',
-      },
-      {
-        url: `/${this.entryId()}/ligands`,
-        icon: 'icon-conceptual icon-chemical',
-        label: 'Ligands and Environments',
-      },
-      {
-        url: `/${this.entryId()}/molecules`,
-        icon: 'icon-conceptual icon-proteins',
-        label: 'Macromolecules',
-      },
-      {
-        url: `/${this.entryId()}/assemblies`,
-        icon: 'icon-conceptual icon-structures',
-        label: 'Assemblies',
-      },
-      {
-        url: `/${this.entryId()}/experiments`,
-        icon: 'icon-common icon-analyse',
-        label: 'Experiments and Validation',
-      },
-      {
-        url: `/${this.entryId()}/citations`,
-        icon: 'icon-conceptual icon-literature',
-        label: 'Citation',
-      },
-    ];
-  }
+  // public switchSection(sectionName: string) {
+  //   this.currentSection = sectionName;
+  // }
 
   private setPageData(): Observable<any> {
     return combineLatest([
@@ -279,5 +280,10 @@ export class EntryEcm2024Component implements OnInit {
   public onClickedOutside() {
     this.showViewOptions.set(false);
     this.showDownloadOptions.set(false);
+  }
+
+  public switchToTab(name: string) {
+    this.currentSection = name;
+    window.scrollTo({ top: 0 });
   }
 }

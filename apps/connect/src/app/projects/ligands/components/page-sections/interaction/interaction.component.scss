@@ -1,0 +1,122 @@
+#interaction-section {
+  font-family: 'IBM Plex Sans';
+  line-height: 27.2px;
+}
+
+h3 {
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 39px;
+  margin-bottom: 20px;
+}
+
+article {
+  color: #000;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 23px;
+
+  p {
+    margin-top: 7px;
+    a {
+      color: var(--Blue-600, #3b6fb6);
+      border: none;
+    }
+  }
+}
+
+button {
+  margin-bottom: 16px;
+}
+
+.intx-component-container {
+  display: flex;
+  padding-top: 16px;
+  width: 100%;
+  justify-content: space-between;
+  gap: 37.92px;
+  border: 1px solid var(--Neutral-200, #656363);
+  padding: 20px;
+
+  pdbe-ligand-interactions {
+    width: 100%;
+
+    @media screen and (max-width: 540px) {
+      display: none;
+    }
+  }
+
+  ::ng-deep pdbe-ligand-interactions .heatmap-container {
+    width: 563px;
+
+    .heatmap-main {
+      width: 563px;
+    }
+  }
+}
+
+.heatmap-container {
+  display: flex;
+  width: 70%;
+  height: auto;
+}
+
+.lig-heat-container {
+  width: calc(100% - 308px);
+}
+
+.ligandEnv-container {
+  display: flex;
+  align-items: stretch;
+  flex-direction: column;
+  width: 270px;
+
+  @media screen and (max-width: 767px) {
+    width: 100%;
+  }
+
+  .ligandEnv-content {
+    height: 380px;
+    // border: 1px solid var(--Neutral-200, #e4e4e4);
+  }
+
+  .ligandEnv-header {
+    h4 {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 17px;
+
+      img {
+        display: inline;
+      }
+    }
+  }
+}
+
+.image-container {
+  width: 260px;
+  height: 380px;
+  border: 1px solid var(--Neutral-200, #e4e4e4);
+}
+
+.empty-text {
+  font-family: 'IBM Plex Sans';
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 27.2px;
+}
+
+.ligandEnv-content {
+  height: 380px;
+  // border: 1px solid var(--Neutral-200, #e4e4e4);
+}
+
+#helper_icon {
+  width: 18px;
+  height: 18px;
+  padding-left: 5px;
+}
+
+// .lig-heat-container {
+//   display: none;
+// }

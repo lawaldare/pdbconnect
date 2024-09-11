@@ -22,6 +22,7 @@ stages:
 
 variables:
   GIT_DEPTH: 0
+  BUILD_CONF: development
 
 format-check:
   stage: test
@@ -56,7 +57,9 @@ build:
     - lint
   extends: .distributed
   script:
-    - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t build --parallel=3 --exclude=playground
+    - if [ "$CI_COMMIT_BRANCH" = "main" ] || [ -n "$CI_COMMIT_TAG" ]; then export BUILD_CONF="production"; fi
+    - echo "Build configuration is set to $BUILD_CONF"
+    - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t build --parallel=3 --exclude=playground --configuration=$BUILD_CONF
     - node ./bin/index.js "$(npx nx show projects --affected --json --type=app --base=$NX_BASE --head=$NX_HEAD --exclude=playground)"
     - cat dynamic-gitlab-ci.yml
   artifacts:
@@ -65,7 +68,7 @@ build:
       - dynamic-gitlab-ci.yml
     expire_in: 1 week
   tags:
-    - pdbe-shell
+    - pdbe-docker
   except:
     refs:
       - playground
@@ -155,6 +158,7 @@ playground_build_and_publish:
   script:
     - npx nx build playground
     - npm install netlify-cli
+    - cp netlify.toml dist/apps/playground/browser/
     - node_modules/.bin/netlify deploy --filter playground --site $NETLIFY_PLAYGROUND_SITE_ID --dir dist/apps/playground/browser --prod
   tags:
     - pdbe-docker

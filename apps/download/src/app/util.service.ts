@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class UtilsService {
-  public cleanUpIds(pdbids: string): any[] {
+  public cleanUpIds(pdbids: string): string[] {
     return pdbids
       .split(/,| |;|\t|\r?\n/)
       .map(Function.prototype.call, String.prototype.trim)
