@@ -11,6 +11,7 @@ import { RouterModule } from '@angular/router';
 import { LigandSmilesPipe, Smile } from '../../../pipes/ligandsmiles.pipe';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { IsPartOfDirective } from '../../../directives/is-part-of.directive';
+import { ComponentType } from '@angular/cdk/overlay';
 
 @Component({
   selector: 'pdbc-description',
@@ -57,18 +58,9 @@ export class DescriptionComponent {
     this.utilService.copy(result ?? '');
   }
 
-  public openAtomsDialog() {
-    this.dialog.open(AtomsTableDialogComponent, {
-      disableClose: false,
-      panelClass: 'bond-Dialog',
-      data: {
-        ligandId: this.ligandId(),
-      },
-    });
-  }
-
-  public openBondsDialog() {
-    this.dialog.open(BondsTableDialogComponent, {
+  public openDialog(type: string) {
+    const component: ComponentType<any> = type === 'atom' ? AtomsTableDialogComponent : BondsTableDialogComponent;
+    this.dialog.open(component, {
       disableClose: false,
       panelClass: 'bond-Dialog',
       data: {
