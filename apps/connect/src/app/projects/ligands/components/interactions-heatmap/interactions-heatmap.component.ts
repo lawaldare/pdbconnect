@@ -10,6 +10,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  input,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import '@nightingale-elements/nightingale-manager';
@@ -99,7 +100,8 @@ export class InteractionsHeatmapComponent implements OnChanges {
   atomColorMap?: string[];
   residDomainMap?: number[];
   residColorMap?: string[];
-  @Input() ligandId?: string;
+  public ligandId = input.required<string>();
+  public interactions = input.required<PDBIntxData>();
   @Output() newFilteringEvent = new EventEmitter<string>();
 
   private aminoAcidsImgs = {
@@ -220,10 +222,10 @@ export class InteractionsHeatmapComponent implements OnChanges {
 
   async createViewerData() {
     this.atomNamesList = undefined;
-    const cifresultIntData: PDBIntxData = (await firstValueFrom(this.aggregatedApiService.fetchIntxData(this.ligandId!))).interactions;
-    const resultIntDataAcc: LigIntCountsDictionary = cifresultIntData[this.ligandId!];
+    const cifresultIntData: PDBIntxData = this.interactions();
+    const resultIntDataAcc: LigIntCountsDictionary = cifresultIntData[this.ligandId()];
 
-    const cifData = await firstValueFrom(this.interactionsApiService.fetchCompoundAtoms(this.ligandId!));
+    const cifData = await firstValueFrom(this.interactionsApiService.fetchCompoundAtoms(this.ligandId()));
     this.atomNamesList = (cifData as unknown as string)
       .split('_chem_comp_atom.pdbx_ordinal')[1]!
       .split('#')[0]!
