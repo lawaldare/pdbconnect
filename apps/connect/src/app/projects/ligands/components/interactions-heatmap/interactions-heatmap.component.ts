@@ -11,6 +11,7 @@ import {
   Input,
   OnChanges,
   input,
+  SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import '@nightingale-elements/nightingale-manager';
@@ -222,7 +223,7 @@ export class InteractionsHeatmapComponent implements OnChanges {
 
   async createViewerData() {
     this.atomNamesList = undefined;
-    const cifresultIntData: PDBIntxData = this.interactions();
+    const cifresultIntData: PDBIntxData = await this.interactions();
     const resultIntDataAcc: LigIntCountsDictionary = cifresultIntData[this.ligandId()];
 
     const cifData = await firstValueFrom(this.interactionsApiService.fetchCompoundAtoms(this.ligandId()));
@@ -344,12 +345,14 @@ export class InteractionsHeatmapComponent implements OnChanges {
     });
   }
 
-  ngOnChanges(): void {
-    (async () => {
-      await this.createViewerData();
-      await this.setupHeatmapAtoms();
-      await this.setupHeatmapResids();
-    })();
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['interactions']?.currentValue) {
+      (async () => {
+        await this.createViewerData();
+        await this.setupHeatmapAtoms();
+        await this.setupHeatmapResids();
+      })();
+    }
   }
 
   setAtomsColorScale() {

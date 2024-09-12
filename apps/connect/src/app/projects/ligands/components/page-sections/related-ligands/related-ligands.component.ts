@@ -140,7 +140,7 @@ export class RelatedLigandsComponent implements OnInit {
             name: similarLigand.name,
             similarity_score: similarLigand.similarity_score,
             substructure_match: similarLigand.substructure_match,
-            bound_entries: similarLigandBoundEntriesArray[similarLigand.chem_comp_id],
+            bound_entries: similarLigandBoundEntriesArray?.[similarLigand.chem_comp_id],
           }));
           this.similarLigandsGrid = this.unfilteredSimilarLigandsGrid;
           this.setUpPagination('similarligand');
@@ -150,7 +150,7 @@ export class RelatedLigandsComponent implements OnInit {
             name: sameScaffolds.name,
             similarity_score: sameScaffolds.similarity_score,
             substructure_match: sameScaffolds.substructure_match,
-            bound_entries: sameScaffoldBoundEntriesArray[sameScaffolds.chem_comp_id],
+            bound_entries: sameScaffoldBoundEntriesArray?.[sameScaffolds.chem_comp_id],
           }));
           this.sameScaffoldGrid = this.unfilteredSameScaffoldGrid;
           this.setUpPagination('samescaffold');
@@ -158,7 +158,7 @@ export class RelatedLigandsComponent implements OnInit {
           this.unfilteredStereoisomers = this.stereoisomers.map((stereoisomer) => ({
             chem_comp_id: stereoisomer.chem_comp_id,
             name: stereoisomer.name,
-            bound_entries: stereoisomersBoundEntriesArray[stereoisomer.chem_comp_id],
+            bound_entries: stereoisomersBoundEntriesArray?.[stereoisomer.chem_comp_id],
           }));
           this.stereoisomersGrid = this.unfilteredStereoisomers;
 

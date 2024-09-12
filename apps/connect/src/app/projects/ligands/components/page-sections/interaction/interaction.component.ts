@@ -27,7 +27,6 @@ export class InteractionComponent implements AfterViewInit {
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
   private ligandEv!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-  private ligandHeatmapEv!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly route = inject(ActivatedRoute);
@@ -36,7 +35,6 @@ export class InteractionComponent implements AfterViewInit {
   private readonly ligandUtilService = inject(LigandUtilService);
   private readonly _snackBar = inject(MatSnackBar);
   public interaction!: PDBIntxData; // eslint-disable-line @typescript-eslint/no-explicit-any
-  private emptyText!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   public ligandInstances = signal(0);
   public pdbstructures = signal(0);
