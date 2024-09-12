@@ -1,1 +1,69 @@
-<p>summary works!</p>
+<div id="summary-section">
+  @if(summaryData().complex_portal_id){
+  <div class="info-row">
+    <span class="info-row-title">Complex portal ID</span>
+    <div class="info-row-content">
+      <a [href]="'https://www.ebi.ac.uk/complexportal/complex/' + summaryData().complex_portal_id" target="_blank">
+        {{ summaryData().complex_portal_id }}
+      </a>
+    </div>
+  </div>
+  }
+  <div class="info-row">
+    <span class="info-row-title">Source Organism</span>
+    <div class="info-row-content">
+      <em>{{ summaryData().source_organism }}</em>
+    </div>
+  </div>
+  <div class="info-row">
+    <span class="info-row-title">Particpants</span>
+    <div class="info-row-content">
+      {{ summaryData().participants | participant }}
+    </div>
+  </div>
+  <div class="info-row">
+    <span class="info-row-title">Oligomeric State</span>
+    <div class="info-row-content">
+      {{ summaryData().oligomeric_state }}
+    </div>
+  </div>
+  <div class="info-row">
+    <span class="info-row-title">Stoichiometry</span>
+    <div class="info-row-content">
+      {{ summaryData().stoichiometry }}
+    </div>
+  </div>
+  <div class="info-row">
+    <span class="info-row-title">Symmetry</span>
+    <div class="info-row-content">
+      {{ summaryData().symmetry | symmetry }}
+    </div>
+  </div>
+  <div class="info-row">
+    <span class="info-row-title">Observed experimental methods and count</span>
+    <div class="info-row-content">
+      {{ summaryData().observed_experimental_methods_and_count | oemc }}
+    </div>
+  </div>
+  <div class="info-row">
+    <span class="info-row-title">Number of assemblies</span>
+    <div class="info-row-content">
+      {{ summaryData().assemblies.length }}
+    </div>
+  </div>
+  @let numberOfSubComplexes = summaryData().subcomplexes.length; @if(numberOfSubComplexes){
+  <div class="info-row">
+    <span class="info-row-title">Number of subcomplexes</span>
+    <div class="info-row-content">
+      {{ numberOfSubComplexes }}
+    </div>
+  </div>
+  } @let numberOfSuperComplexes = summaryData().supercomplexes.length; @if(numberOfSuperComplexes){
+  <div class="info-row">
+    <span class="info-row-title">Number of supercomplexes</span>
+    <div class="info-row-content">
+      {{ numberOfSuperComplexes }}
+    </div>
+  </div>
+  }
+</div>

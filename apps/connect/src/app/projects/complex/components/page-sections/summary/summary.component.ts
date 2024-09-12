@@ -1,11 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ComplexParticipantsPipe } from '../../../pipes/participants.pipe';
+import { ComplexSymmetryPipe } from '../../../pipes/symmetry.pipe';
+import { OEMCPipe } from '../../../pipes/oemc.pipe';
 
 @Component({
   selector: 'pdbc-summary',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, OEMCPipe, ComplexParticipantsPipe, ComplexSymmetryPipe],
   templateUrl: './summary.component.html',
-  styleUrls: ['../../../../ligands/components/pages/main/main.component.scss', './summary.component.scss'],
+  styleUrls: ['./summary.component.scss'],
 })
-export class SummaryComponent {}
+export class SummaryComponent {
+  public summaryData = input.required<any>();
+}
