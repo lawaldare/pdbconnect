@@ -47,3 +47,9 @@ export const headerLogoMenuConfig = {
   logoType: 'PDBe-KB',
   headerTitle: 'Ligands',
 };
+
+export const headerComplexLogoMenuConfig = {
+  backgroundColor: '#085F5C',
+  logoType: 'PDBe-KB',
+  headerTitle: 'Complex',
+};

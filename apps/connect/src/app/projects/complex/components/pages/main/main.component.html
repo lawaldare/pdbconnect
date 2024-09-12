@@ -7,11 +7,13 @@
     @if(summaryData){
     <article>
       <section class="hero">
-        <h2>{{ summaryData.name }}</h2>
+        <h2>{{ summaryData.name || this.complexId() }}</h2>
+        @if(this.complexId()){
         <h4>{{ this.complexId() }}</h4>
+        }
       </section>
       <section class="summary">
-        <pdbc-summary />
+        <pdbc-summary [summaryData]="summaryData" />
       </section>
     </article>
     }
