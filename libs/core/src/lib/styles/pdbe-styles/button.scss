@@ -93,6 +93,7 @@
 }
 
 /* stylelint-enable */
+
 /*!
 * Component: @visual-framework/vf-button
 * Version: 3.0.0-alpha.0
@@ -102,6 +103,7 @@
   --vf-button__color__background--default: var(--vf-color--grey);
   --vf-button__color__background--default-dark: var(--vf-color--grey--darkest);
   --vf-button__color__border--default-visited: var(--vf-color--grey--lightest);
+
   font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
   font-size: 18px;
   font-weight: 700;
@@ -113,14 +115,14 @@
   -moz-appearance: none;
   appearance: none;
   /* stylelint-enable */
-  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   backface-visibility: hidden;
   background-color: var(--vf-button-background-color);
   border-radius: 2px;
   border: 2px solid var(--vf-button-border-color);
-  -webkit-box-shadow: 8px 8px 0px 0px var(--vf-button-shadow-background-color);
-  box-shadow: 8px 8px 0px 0px var(--vf-button-shadow-background-color);
-  color: var(--vf-button-text-color, #ffffff);
+  box-shadow: 8px 8px 0 0 var(--vf-button-shadow-background-color);
+  box-shadow: 8px 8px 0 0 var(--vf-button-shadow-background-color);
+  color: var(--vf-button-text-color, #fff);
   cursor: pointer;
   display: inline-block;
   margin: 0 16px 16px 0;
@@ -129,36 +131,36 @@
   position: relative;
   text-align: center;
   text-decoration: none;
-  -webkit-transform: translate(0, 0);
   transform: translate(0, 0);
-  -webkit-transition: all linear 125ms;
+  transform: translate(0, 0);
+  transition: all linear 125ms;
   transition: all linear 125ms;
 }
 
 .vf-button:hover {
-  -webkit-box-shadow: 4px 4px 0px 0px var(--vf-button-shadow-background-color);
-  box-shadow: 4px 4px 0px 0px var(--vf-button-shadow-background-color);
-  -webkit-transform: translate(4px, 4px);
+  box-shadow: 4px 4px 0 0 var(--vf-button-shadow-background-color);
+  box-shadow: 4px 4px 0 0 var(--vf-button-shadow-background-color);
   transform: translate(4px, 4px);
-  -webkit-transition: all linear 125ms;
+  transform: translate(4px, 4px);
+  transition: all linear 125ms;
   transition: all linear 125ms;
 }
 
 .vf-button:focus {
-  -webkit-box-shadow: 2px 2px 0px 0px var(--vf-button-shadow-background-color);
-  box-shadow: 2px 2px 0px 0px var(--vf-button-shadow-background-color);
-  -webkit-transform: translate(4px, 4px);
+  box-shadow: 2px 2px 0 0 var(--vf-button-shadow-background-color);
+  box-shadow: 2px 2px 0 0 var(--vf-button-shadow-background-color);
   transform: translate(4px, 4px);
-  -webkit-transition: all linear 125ms;
+  transform: translate(4px, 4px);
+  transition: all linear 125ms;
   transition: all linear 125ms;
 }
 
 .vf-button:active {
-  -webkit-box-shadow: 0px 0px 0 var(--vf-button-shadow-background-color, var(--vf-button__color__background--default-dark)), 2px 2px 2px rgba(0, 0, 0, 0.125),
-    -5px -5px rgba(0, 0, 0, 0);
-  box-shadow: 0px 0px 0 var(--vf-button-shadow-background-color, var(--vf-button__color__background--default-dark)), 2px 2px 2px rgba(0, 0, 0, 0.125),
-    -5px -5px rgba(0, 0, 0, 0);
-  -webkit-transform: translate(8px, 8px) translateZ(1px);
+  box-shadow: 0 0 0 var(--vf-button-shadow-background-color, var(--vf-button__color__background--default-dark)), 2px 2px 2px rgb(0 0 0 / 12.5%),
+    -5px -5px rgb(0 0 0 / 0%);
+  box-shadow: 0 0 0 var(--vf-button-shadow-background-color, var(--vf-button__color__background--default-dark)), 2px 2px 2px rgb(0 0 0 / 12.5%),
+    -5px -5px rgb(0 0 0 / 0%);
+  transform: translate(8px, 8px) translateZ(1px);
   transform: translate(8px, 8px) translateZ(1px);
 }
 
@@ -173,6 +175,7 @@ a.vf-button:focus {
   --vf-button-shadow-border-color: #0a5032;
   --vf-button-shadow-background-color: #0a5032;
   --vf-button-border-color--visited: #0a5032;
+
   font-size: 16px;
 }
 
@@ -182,15 +185,17 @@ a.vf-button:focus {
   --vf-button-shadow-border-color: #b65417;
   --vf-button-shadow-background-color: #b65417;
   --vf-button-border-color--visited: #b65417;
+
   font-size: 16px;
 }
 
 .vf-button--search-pdbe {
-  --vf-button-background-color: #ffffff;
+  --vf-button-background-color: #fff;
   --vf-button-border-color: var(--vf-color--green--dark);
   --vf-button-text-color: var(--vf-color--green--dark);
   --vf-button-shadow-border-color: var(--vf-color--green--dark);
   --vf-button-shadow-background-color: var(--vf-color--green--dark);
+
   padding: 8px 48px;
 }
 
@@ -200,7 +205,7 @@ a.vf-button:focus {
 }
 
 .vf-button--secondary-pdbe {
-  --vf-button-background-color: #ffffff;
+  --vf-button-background-color: #fff;
   --vf-button-border-color: var(--vf-color--green--dark);
   --vf-button-text-color: var(--vf-color--green--dark);
   --vf-button-shadow-border-color: var(--vf-color--green--dark);
@@ -213,11 +218,12 @@ a.vf-button:focus {
 }
 
 .vf-button--search-pdbe-kb {
-  --vf-button-background-color: #ffffff;
+  --vf-button-background-color: #fff;
   --vf-button-border-color: var(--vf-color--green--light);
   --vf-button-text-color: var(--vf-color--green--light);
   --vf-button-shadow-border-color: var(--vf-color--green--light);
   --vf-button-shadow-background-color: var(--vf-color--green--darkest);
+
   padding: 8px 48px;
 }
 
@@ -227,7 +233,7 @@ a.vf-button:focus {
 }
 
 .vf-button--secondary-pdbe-kb {
-  --vf-button-background-color: #ffffff;
+  --vf-button-background-color: #fff;
   --vf-button-border-color: var(--vf-color--green--light);
   --vf-button-text-color: var(--vf-color--green--light);
   --vf-button-shadow-border-color: var(--vf-color--green--light);
@@ -261,6 +267,7 @@ a.vf-button:focus {
   line-height: 1;
   padding: 8px;
 }
+
 .vf-button--sm.vf-button--rounded {
   border-radius: 8px;
 }
@@ -268,20 +275,21 @@ a.vf-button:focus {
 .vf-button--icon {
   background: none;
   border: 0;
-  -webkit-box-shadow: none;
   box-shadow: none;
-  color: currentColor;
+  box-shadow: none;
+  color: currentcolor;
   cursor: pointer;
   margin: 0;
   outline: none;
   padding: 0;
-  -webkit-transform: none;
+  transform: none;
   transform: none;
 }
+
 .vf-button--icon:focus,
 .vf-button--icon:hover {
-  -webkit-box-shadow: none;
   box-shadow: none;
-  -webkit-transform: none;
+  box-shadow: none;
+  transform: none;
   transform: none;
 }
