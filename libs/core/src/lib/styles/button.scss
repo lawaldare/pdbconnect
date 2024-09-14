@@ -116,11 +116,9 @@
   appearance: none;
   /* stylelint-enable */
   backface-visibility: hidden;
-  backface-visibility: hidden;
   background-color: var(--vf-button-background-color);
   border-radius: 2px;
   border: 2px solid var(--vf-button-border-color);
-  box-shadow: 8px 8px 0 0 var(--vf-button-shadow-background-color);
   box-shadow: 8px 8px 0 0 var(--vf-button-shadow-background-color);
   color: var(--vf-button-text-color, #fff);
   cursor: pointer;
@@ -132,35 +130,24 @@
   text-align: center;
   text-decoration: none;
   transform: translate(0, 0);
-  transform: translate(0, 0);
-  transition: all linear 125ms;
   transition: all linear 125ms;
 }
 
 .vf-button:hover {
   box-shadow: 4px 4px 0 0 var(--vf-button-shadow-background-color);
-  box-shadow: 4px 4px 0 0 var(--vf-button-shadow-background-color);
   transform: translate(4px, 4px);
-  transform: translate(4px, 4px);
-  transition: all linear 125ms;
   transition: all linear 125ms;
 }
 
 .vf-button:focus {
   box-shadow: 2px 2px 0 0 var(--vf-button-shadow-background-color);
-  box-shadow: 2px 2px 0 0 var(--vf-button-shadow-background-color);
   transform: translate(4px, 4px);
-  transform: translate(4px, 4px);
-  transition: all linear 125ms;
   transition: all linear 125ms;
 }
 
 .vf-button:active {
   box-shadow: 0 0 0 var(--vf-button-shadow-background-color, var(--vf-button__color__background--default-dark)), 2px 2px 2px rgb(0 0 0 / 12.5%),
     -5px -5px rgb(0 0 0 / 0%);
-  box-shadow: 0 0 0 var(--vf-button-shadow-background-color, var(--vf-button__color__background--default-dark)), 2px 2px 2px rgb(0 0 0 / 12.5%),
-    -5px -5px rgb(0 0 0 / 0%);
-  transform: translate(8px, 8px) translateZ(1px);
   transform: translate(8px, 8px) translateZ(1px);
 }
 
@@ -276,20 +263,16 @@ a.vf-button:focus {
   background: none;
   border: 0;
   box-shadow: none;
-  box-shadow: none;
   color: currentcolor;
   cursor: pointer;
   margin: 0;
   outline: none;
   padding: 0;
   transform: none;
-  transform: none;
 }
 
 .vf-button--icon:focus,
 .vf-button--icon:hover {
   box-shadow: none;
-  box-shadow: none;
-  transform: none;
   transform: none;
 }

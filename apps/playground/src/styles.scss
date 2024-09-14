@@ -1,20 +1,16 @@
 /* You can add global styles to this file, and also import other style files */
 
 /* You can add global styles to this file, and also import other style files */
-@import url('libs/core/src/lib/styles/pdbe-styles/typography');
-@import url('libs/core/src/lib/styles/pdbe-styles/templates');
-@import url('libs/core/src/lib/styles/icons');
-@import url('libs/core/src/lib/styles/pdbe-styles/am_custom_style');
-@import url('libs/core/src/lib/styles/pdbe-styles/button');
-@import url('libs/core/src/lib/styles/material');
 @import url('@splidejs/splide/css');
 @import url('@splidejs/splide/css/core');
-
-/* Core Data Grid CSS */
 @import url('ag-grid-community/styles/ag-grid.css');
-
-/* Quartz Theme Specific CSS */
 @import url('ag-grid-community/styles/ag-theme-quartz.css');
+@import url('libs/core/src/lib/styles/typography');
+@import url('libs/core/src/lib/styles/templates');
+@import url('libs/core/src/lib/styles/icons');
+@import url('libs/core/src/lib/styles/am_custom_style');
+@import url('libs/core/src/lib/styles/button');
+@import url('libs/core/src/lib/styles/material');
 @import url('libs/core/src/lib/styles/ag-grid');
 
 html,

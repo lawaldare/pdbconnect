@@ -1,10 +1,11 @@
 // @import url("https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css");
-@import './typography.scss';
+@import url('./typography');
 
 // Subtype of paragraph 2 used in header menu links
 .paragraph-2-menu-link {
   color: white;
 }
+
 .paragraph-2-menu-link:hover {
   // font-weight: 400;
   text-decoration: underline;
@@ -20,7 +21,7 @@
   margin-right: auto;
   margin-left: auto;
 
-  @media (max-width: 575px) {
+  @media (width <= 575px) {
     padding: 10px;
   }
 
@@ -28,15 +29,15 @@
   //   max-width: 540px;
   // }
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     max-width: 720px;
   }
 
-  @media (min-width: 992px) {
+  @media (width >= 992px) {
     max-width: 960px;
   }
 
-  @media (min-width: 1200px) {
+  @media (width >= 1200px) {
     max-width: 1440px;
   }
 }

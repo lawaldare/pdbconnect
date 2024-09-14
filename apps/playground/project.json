@@ -13,6 +13,9 @@
         "outputPath": "dist/apps/playground",
         "index": "apps/playground/src/index.html",
         "browser": "apps/playground/src/main.ts",
+        "stylePreprocessorOptions": {
+          "includePaths": ["libs/core/src/lib/styles"]
+        },
         "polyfills": ["zone.js"],
         "tsConfig": "apps/playground/tsconfig.app.json",
         "inlineStyleLanguage": "scss",

@@ -4,7 +4,10 @@
     "outDir": "../../dist/out-tsc",
     "declaration": true,
     "declarationMap": true,
-    "types": []
+    "types": [],
+    "paths": {
+      "@core/styles/*": ["libs/core/styles/s*"]
+    }
   },
   "exclude": ["src/**/*.spec.ts", "src/test-setup.ts", "jest.config.ts", "src/**/*.test.ts"],
   "include": ["src/**/*.ts"]
