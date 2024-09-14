@@ -1,4 +1,4 @@
-@import 'libs/core/src/lib/styles/pdbe-styles/typography.scss';
+@import url('libs/core/src/lib/styles/typography.scss');
 
 .struc-quality-gradient-main {
   margin-top: 4px;
@@ -29,7 +29,7 @@
   height: 14px;
   padding-top: 1px;
   padding-bottom: 1px;
-  border: 1px #cccccc solid;
+  border: 1px #ccc solid;
 }
 
 .val-bucket {
@@ -37,31 +37,31 @@
   width: 27.38px;
   height: 14px;
   border: 2px solid #444;
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgb(255 255 255 / 70%);
 }
 
 .val-gradient-rdtobl {
   background: #f00;
-  background: -moz-linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 100%);
+  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 100%);
   background: -webkit-gradient(linear, left top, right top, color-stop(0%, #f00), color-stop(50%, #fff), color-stop(51%, #fff), color-stop(100%, #00f));
-  background: -webkit-linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 100%);
-  background: -o-linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 100%);
-  background: -ms-linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 100%);
+  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 100%);
+  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 100%);
+  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 100%);
   background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #00f 100%);
 }
 
 .val-gradient-rdtogr {
   background: red;
-  background: -moz-linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 696%);
+  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 696%);
   background: -webkit-gradient(linear, left top, right top, color-stop(0, red), color-stop(50%, #fff), color-stop(51%, #fff), color-stop(100%, #696));
-  background: -webkit-linear-gradient(left, red 0, #fff 50%, #fff 51%, #696 100%);
+  background: linear-gradient(left, red 0, #fff 50%, #fff 51%, #696 100%);
   background: -webkit-gradient(linear, left top, right top, color-stop(0, red), color-stop(50%, #fff), color-stop(51%, #fff), to(#696));
-  background: -o-linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #696 100%);
-  background: -ms-linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #696 100%);
+  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #696 100%);
+  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #696 100%);
   background: linear-gradient(to right, red 0, #fff 50%, #fff 51%, #696 100%);
 }
 
-@media screen and (max-width: 540px) {
+@media screen and (width <= 540px) {
   .val-lane {
     display: flex;
     width: 100%;
@@ -70,7 +70,7 @@
   }
 }
 
-@media screen and (max-width: 375px) {
+@media screen and (width <= 375px) {
   .val-lane {
     display: flex;
     width: 100%;
