@@ -1,0 +1,527 @@
+$ag-grid-header-height: 36px;
+$ag-grid-padding: 12px;
+
+@mixin agCellIconAlignment {
+  font-weight: 900;
+  margin: 0 0 3px 6px;
+  display: inline-block;
+  vertical-align: middle;
+  font-family: OmIconFont;
+}
+
+.ag-theme-quartz {
+  /* bright green, 10% opacity */
+  --ag-selected-row-background-color: rgb(0, 255, 0, 0.1);
+  --ag-header-background-color: #fff;
+  --ag-border-color: #1a1c1a;
+}
+
+ag-grid-angular {
+  display: block;
+  width: 100%;
+  height: 500px;
+
+  // &.is-auto-height {
+  //   height: auto !important;
+  //   .ag-body-viewport {
+  //     min-height: 100px;
+  //   }
+
+  //   .ag-center-cols-clipper {
+  //     min-height: unset !important;
+  //   }
+  // }
+
+  // &.is-grouped-by-row {
+  //   .ag-row {
+  //     border: none;
+  //   }
+  //   .ag-row-group {
+  //     font-weight: bold;
+  //   }
+  // }
+
+  // .is-header-hidden {
+  //   &.ag-header-cell {
+  //     display: none;
+  //   }
+  //   &.ag-cell {
+  //     &.is-header-hidden {
+  //       padding: 0 !important;
+  //       border-color: transparent !important;
+  //       .ag-cell-wrapper {
+  //         margin-left: 12px;
+  //       }
+  //     }
+  //   }
+  // }
+
+  .ag-root-wrapper {
+    background-color: #ffffff;
+    border: none;
+  }
+
+  .ag-row-odd {
+    background-color: #f3f3f3;
+  }
+
+  .ag-row {
+    border: none;
+  }
+
+  .ag-sticky-bottom {
+    border: none;
+  }
+
+  .ag-header-cell-resize::after {
+    // display: none;
+    width: 1px;
+  }
+
+  // & * {
+  //   scroll-behavior: unset;
+  // }
+
+  // .ag-has-focus .ag-cell-focus:not(.ag-cell-range-selected) {
+  //   border: 0 !important;
+  // }
+
+  // .ag-column-drop-cell > span {
+  //   color: #ffffff;
+  // }
+
+  // .ag-horizontal-left-spacer,
+  // .ag-horizontal-right-spacer {
+  //   visibility: hidden;
+  // }
+
+  // .ag-pinned-left-cols-container .is-changed .ag-cell:first-of-type {
+  //   &::before {
+  //     content: '';
+  //     position: absolute;
+  //     height: 100%;
+  //     left: 0;
+  //     width: 6px;
+  //     z-index: 2;
+  //     background-color: #e99b00;
+  //   }
+  // }
+
+  // .ag-header {
+  //   .ag-pinned-left-header,
+  //   .ag-pinned-left-cols-container .ag-row .ag-cell:last-of-type {
+  //     border-right-width: 1px;
+
+  //     .ag-header-group-text {
+  //       display: none;
+  //     }
+  //   }
+
+  //   .ag-pinned-right-header {
+  //     .ag-header-cell {
+  //       &::before {
+  //         width: 0;
+  //       }
+  //     }
+  //   }
+
+  //   .ag-header-cell,
+  //   .ag-header-icon {
+  //     color: var(#20364b);
+  //   }
+  //   .ag-header-cell {
+  //     font-size: 12px;
+  //     padding: 0 $ag-grid-padding;
+
+  //     .ag-header-select-all {
+  //       margin-right: 0 !important;
+  //     }
+
+  //     &-moving {
+  //       background-color: #475e72;
+  //       color: #ffffff;
+  //     }
+
+  //     .ag-header-cell-text {
+  //       white-space: pre-line;
+  //       line-height: 1.2em;
+  //     }
+
+  //     &.ag-header-cell-tenor {
+  //       .ag-header-cell-text {
+  //         width: 100%;
+  //         text-align: center;
+  //       }
+  //     }
+
+  //     &:not(:last-of-type) {
+  //       &::before {
+  //         content: '';
+  //         position: absolute;
+  //         height: calc(100% - 20px);
+  //         top: 10px;
+  //         right: 0;
+  //         width: 1px;
+  //         z-index: 2;
+  //         pointer-events: none;
+  //         background-color: #d1dadd;
+  //       }
+  //     }
+
+  //     .ag-sort-ascending-icon,
+  //     .ag-sort-descending-icon {
+  //       position: absolute;
+  //       right: 10px;
+  //       top: 10px;
+  //       padding: 0;
+  //     }
+
+  //     .ag-header-cell-menu-button {
+  //       z-index: 1;
+  //       cursor: pointer !important;
+  //     }
+
+  //     .ag-header-cell-sorted-asc,
+  //     .ag-header-cell-sorted-desc {
+  //       .ag-header-cell-menu-button,
+  //       .ag-filter-icon {
+  //         padding-right: 0;
+  //         margin-right: 20px;
+  //       }
+  //     }
+  //     &.om-center {
+  //       padding: 0;
+  //       .ag-header-cell-text {
+  //         margin: auto;
+  //         text-align: center;
+  //       }
+  //       .ag-cell-label-container {
+  //         padding: 0 16px;
+  //       }
+
+  //       .ag-header-cell-menu-button {
+  //         margin-right: 12px;
+  //       }
+
+  //       .ag-header-cell-menu-button,
+  //       .ag-sort-indicator-icon {
+  //         position: absolute;
+  //         right: 0;
+  //       }
+
+  //       &.om-center-action-column {
+  //         .ag-cell-label-container {
+  //           padding: 0;
+  //         }
+  //       }
+  //     }
+  //   }
+  //   .ag-icon {
+  //     .ag-icon-asc::before {
+  //       content: '\f103';
+  //     }
+  //     .ag-icon-desc::before {
+  //       content: '\f10e';
+  //     }
+  //   }
+
+  //   .ag-header-cell-resize::after {
+  //     width: 1px;
+  //   }
+  // }
+
+  // .ag-row {
+  //   border-width: 1px;
+
+  //   &.is-header {
+  //     background: #f8f9fc !important;
+  //     font-weight: bold;
+  //     color: transparent;
+  //     .is-header-content {
+  //       color: var(#20364b);
+  //     }
+  //   }
+
+  //   &.is-changed {
+  //     box-sizing: border-box;
+  //     > .ag-cell {
+  //       margin-left: -1px;
+  //     }
+  //   }
+  //   &.is-alert {
+  //     .ag-cell {
+  //       background-color: #e99b00;
+  //     }
+  //   }
+  //   &.is-error {
+  //     .ag-cell {
+  //       background-color: #e45b5b;
+  //     }
+  //   }
+  //   &.ag-row-selected {
+  //     &.ag-row-odd {
+  //       background: #fafafa;
+  //     }
+  //     &.ag-row-even {
+  //       background: #f2f3f7;
+  //     }
+  //     &::before {
+  //       background: inherit;
+  //     }
+  //   }
+  //   &.ag-row-group-expanded {
+  //     .ag-cell.is-hidden-row-expanded {
+  //       font-size: 0;
+  //     }
+  //   }
+  //   &:not(.ag-row-hover) {
+  //     &.is-row-greyed-out {
+  //       background-color: #a4aab1;
+  //     }
+  //     .is-header {
+  //       background-color: #f8f9fc;
+  //     }
+  //   }
+  // }
+
+  // .ag-cell {
+  //   font-size: 12px;
+  //   line-height: inherit;
+  //   background-color: inherit;
+
+  //   &:not(.ag-cell-inline-editing) {
+  //     padding: 0 $ag-grid-padding;
+  //   }
+
+  //   &:not(.ag-cell-range-selected):not(.ag-cell-last-left-pinned) {
+  //     border-right: 0;
+  //   }
+
+  //   &.is-alert:not(.ag-cell-inline-editing) {
+  //     background-color: #e99b00;
+  //     &::before {
+  //       content: 'Required';
+  //       color: #e99b00;
+  //       position: absolute;
+  //       left: 10px;
+  //     }
+  //   }
+
+  //   &.is-error {
+  //     background-color: #e45b5b;
+  //     border: 1px solid #e45b5b;
+  //     box-sizing: border-box;
+  //   }
+
+  //   &.is-uppercase {
+  //     text-transform: capitalize;
+  //   }
+
+  //   &.is-bold {
+  //     font-weight: bold;
+  //   }
+
+  //   &.allow-overflow {
+  //     z-index: 1;
+  //     overflow: visible;
+  //     .ag-cell-wrapper {
+  //       width: fit-content;
+  //     }
+  //   }
+
+  //   &.indent-1 {
+  //     padding-left: 46px !important;
+  //   }
+  //   &.indent-2 {
+  //     padding-left: 72px !important;
+  //   }
+  //   &.indent-3 {
+  //     padding-left: 100px !important;
+  //   }
+  //   &.is-child {
+  //     &::before {
+  //       content: '\21B3';
+  //       padding-right: 8px;
+  //     }
+  //   }
+
+  //   &.is-increase::after {
+  //     @include agCellIconAlignment();
+  //     content: '\ea1';
+  //     color: #43be9c;
+  //   }
+  //   &.is-decrease::after {
+  //     @include agCellIconAlignment();
+  //     content: '\ead';
+  //     color: #e45b5b;
+  //   }
+
+  //   .ag-cell-wrapper {
+  //     height: 100%;
+  //     line-height: 100%;
+  //     align-items: center;
+  //   }
+
+  //   .is-block-subtitle {
+  //     color: #a4aab1;
+  //     font-weight: normal;
+  //     display: block;
+  //     margin-top: 4px;
+  //   }
+
+  //   .mat-icon-button.mat-button-base {
+  //     &:hover {
+  //       background: transparent !important;
+  //       color: var(#20364b);
+  //       &.is-accent {
+  //         color: #43be9c;
+  //       }
+  //       &.is-alert {
+  //         color: #e99b00;
+  //       }
+  //       &.is-warning {
+  //         color: #e45b5b;
+  //       }
+  //       &.is-stroke {
+  //         color: #d1dadd;
+  //       }
+  //     }
+  //   }
+
+  //   &.is-read-only {
+  //     cursor: not-allowed;
+  //   }
+  //   &.ag-cell-inline-editing {
+  //     height: 100%;
+  //   }
+  // }
+
+  // .ag-side-bar {
+  //   .ag-side-buttons {
+  //     width: 28px;
+  //     padding-top: $ag-grid-header-height;
+  //     .ag-side-button {
+  //       .ag-side-button-button,
+  //       .ag-side-button-button:hover {
+  //         color: var(#20364b);
+  //         font-weight: bold;
+  //       }
+  //     }
+  //   }
+
+  //   .ag-tool-panel-wrapper {
+  //     width: 431px;
+  //     min-height: 500px;
+  //   }
+
+  //   .ag-column-panel {
+  //     color: var(#20364b);
+  //     .ag-column-select {
+  //       border: none;
+  //     }
+  //     .ag-column-select-header {
+  //       height: $ag-grid-header-height + 1px;
+  //       padding: 0 $ag-grid-padding;
+  //     }
+  //     .ag-virtual-list-viewport {
+  //       padding: 8px $ag-grid-padding;
+  //     }
+  //     .ag-column-select-column-drag-handle {
+  //       display: none;
+  //     }
+  //   }
+  // }
+
+  // .ag-checkbox {
+  //   + .ag-header-cell-comp-wrapper {
+  //     margin-left: 8px;
+  //   }
+  // }
+
+  // .ag-checkbox-input-wrapper {
+  //   box-shadow: none !important;
+  //   .ag-checkbox-input {
+  //     cursor: pointer;
+  //   }
+  //   &::after {
+  //     color: #d1dadd;
+  //     font-family: OmIconFont;
+  //     content: '\c1';
+  //     color: transparent;
+  //     border: 2px solid var(#20364b);
+  //     border-radius: 2px;
+  //     transform: scale(0.8);
+  //     margin: -1.6px 0px 0px -1.6px;
+  //   }
+  //   &.ag-indeterminate::after {
+  //     content: '\c2'; // dash
+  //     color: #ffffff;
+  //     background-color: var(#20364b);
+  //     font-weight: bold;
+  //   }
+  //   &.ag-checked::after {
+  //     content: '\c1'; // check mark
+  //     color: #ffffff;
+  //     background-color: var(#20364b);
+  //   }
+  // }
+
+  // .ag-icon-contracted::before,
+  // .ag-icon-expanded::before {
+  //   font-family: OmIconFont;
+  //   top: 9px;
+  //   border: 1px solid;
+  //   border-radius: 4px;
+  //   position: absolute;
+  // }
+
+  // .ag-icon-contracted::before {
+  //   content: '\c3';
+  //   font-size: 14px;
+  //   padding-left: 2.5px;
+  //   padding-right: 2.5px;
+  // }
+
+  // .ag-icon-expanded::before {
+  //   content: '\c2';
+  //   font-size: 12px;
+  //   padding-left: 2px;
+  //   padding-right: 2px;
+  // }
+
+  // .ag-body-horizontal-scroll {
+  //   display: flex !important;
+  //   position: relative !important;
+  // }
+  // ::-webkit-scrollbar {
+  //   -webkit-appearance: none;
+  //   width: 8px;
+  //   height: 8px;
+  // }
+  // ::-webkit-scrollbar-thumb {
+  //   border-radius: 4px;
+  //   background: var(#20364b);
+  // }
+  // .ag-popup-editor {
+  //   visibility: hidden;
+  // }
+
+  // .om-pinned-column {
+  //   background-color: #f8f9fc !important;
+  // }
+
+  // .ag-popup {
+  //   z-index: 10;
+  // }
+
+  // .om-grid-bottom-bar {
+  //   width: 100%;
+  //   background-color: #f8f9fc !important;
+  //   border-top: 1px solid #d1dadd;
+
+  //   button {
+  //     font-size: 12px;
+  //     background-color: unset;
+  //   }
+  // }
+}

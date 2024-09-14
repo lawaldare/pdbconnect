@@ -5,7 +5,7 @@
 @import 'libs/core/src/lib/styles/icons.scss';
 @import 'libs/core/src/lib/styles/pdbe-styles/am_custom_style.scss';
 @import 'libs/core/src/lib/styles/pdbe-styles/_button.scss';
-@import 'libs/core/src/lib/material.scss';
+@import 'libs/core/src/lib/styles/material.scss';
 
 @import '@splidejs/splide/css';
 @import '@splidejs/splide/css/core';
@@ -14,6 +14,8 @@
 @import 'ag-grid-community/styles/ag-grid.css';
 /* Quartz Theme Specific CSS */
 @import 'ag-grid-community/styles/ag-theme-quartz.css';
+
+@import 'libs/core/src/lib/styles/ag-grid.scss';
 
 body {
   margin: 0;

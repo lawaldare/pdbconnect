@@ -40,21 +40,20 @@ export class AGridComponent {
     {
       headerName: 'Make & Model',
       valueGetter: (p: ValueGetterParams) => p.data.make + ' ' + p.data.model,
-      flex: 2,
     },
-    { field: 'price', valueFormatter: (p) => '£' + Math.floor(p.value).toLocaleString(), flex: 1, editable: true },
+    { field: 'price', valueFormatter: (p) => '£' + Math.floor(p.value).toLocaleString() },
     {
       field: 'electric',
-      flex: 1,
       cellClassRules: {
         // apply green to electric cars
         'rag-green': (params) => params.value === true,
       },
+      valueFormatter: (p) => p.value.toLocaleString(),
     },
-    { field: 'button', cellRenderer: CustomButtonComponent, flex: 1 },
+    { field: 'button', cellRenderer: CustomButtonComponent },
   ];
 
-  themeClass = 'ag-theme-quartz-dark';
+  themeClass = 'ag-theme-quartz';
 
   // Return formatted date value
   dateFormatter(params: ValueFormatterParams) {
@@ -68,12 +67,17 @@ export class AGridComponent {
 
   public readonly defaultColDef: ColDef = {
     filter: true,
+    flex: 1,
+  };
+
+  public readonly defaultColGridDef: ColDef = {
+    filter: true,
   };
 
   private readonly playgroundService = inject(PlaygroundService);
   public rowGridData: IRow[] = [];
   public colGridDefs: ColDef[] = [
-    { field: 'mission', checkboxSelection: true, width: 150, headerCheckboxSelection: true },
+    { field: 'mission', width: 200 },
     { field: 'company', cellRenderer: CompanyLogoRenderer, width: 130 },
     { field: 'location', width: 225 },
     { field: 'date', valueFormatter: this.dateFormatter },
