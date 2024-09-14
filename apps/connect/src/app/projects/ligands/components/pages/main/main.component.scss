@@ -1,12 +1,12 @@
-@import 'libs/core/src/lib/styles/pdbe-styles/pdb_connect.scss';
+@import url('libs/core/src/lib/styles/pdb_connect.scss');
 
 main {
   .container {
     display: flex;
     gap: 28px;
 
-    @media screen and (max-width: 767px) {
-      gap: 0px;
+    @media screen and (width <= 767px) {
+      gap: 0;
     }
 
     pdbc-pdbe-nav-menu {
@@ -18,7 +18,8 @@ main {
     }
 
     .hero {
-      padding: 12px 0 32px 0;
+      padding: 12px 0 32px;
+
       h2 {
         font-size: 42px;
         font-weight: 700;
@@ -40,6 +41,7 @@ main {
         background: var(--Neutral-100, #f3f3f3);
         display: flex;
         gap: 20px;
+
         .drop-down {
           width: 152px;
         }
@@ -56,7 +58,7 @@ main {
       padding-bottom: 40px;
       gap: 12px;
 
-      @media screen and (max-width: 767px) {
+      @media screen and (width <= 767px) {
         flex-direction: column;
         gap: 30px;
       }

@@ -5,13 +5,13 @@
 @import url('@splidejs/splide/css/core');
 @import url('ag-grid-community/styles/ag-grid.css');
 @import url('ag-grid-community/styles/ag-theme-quartz.css');
-@import url('libs/core/src/lib/styles/typography');
-@import url('libs/core/src/lib/styles/templates');
-@import url('libs/core/src/lib/styles/icons');
-@import url('libs/core/src/lib/styles/am_custom_style');
-@import url('libs/core/src/lib/styles/button');
-@import url('libs/core/src/lib/styles/material');
-@import url('libs/core/src/lib/styles/ag-grid');
+@import url('libs/core/src/lib/styles/typography.scss');
+@import url('libs/core/src/lib/styles/templates.scss');
+@import url('libs/core/src/lib/styles/icons.scss');
+@import url('libs/core/src/lib/styles/am_custom_style.scss');
+@import url('libs/core/src/lib/styles/button.scss');
+@import url('libs/core/src/lib/styles/material.scss');
+@import url('libs/core/src/lib/styles/ag-grid.scss');
 
 html,
 body {
