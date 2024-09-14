@@ -1,12 +1,13 @@
-@import 'libs/core/src/lib/styles/pdbe-styles/typography.scss';
+@import url('libs/core/src/lib/styles/typography.scss');
 
 :root {
   --chip-bg-color: black;
   --hover-bg-color: white;
 }
+
 .pdbe-chips {
   padding: 4px 10px;
-  font-family: 'IBM Plex Sans';
+  font-family: 'IBM Plex Sans', sans-serif;
   text-decoration: none;
   border-radius: 6px;
   background-color: var(--chip-bg-color);
@@ -14,6 +15,7 @@
   font-weight: 400;
   line-height: 22.4px;
 }
+
 .pdbe-chips:hover {
   background-color: var(--hover-bg-color);
   cursor: pointer;
