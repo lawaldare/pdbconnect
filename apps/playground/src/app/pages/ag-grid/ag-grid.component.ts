@@ -6,6 +6,7 @@ import { CustomButtonComponent } from './button-cell-renderer.component';
 import { PlaygroundService } from '../../services/playground.service';
 import { CompanyLogoRenderer } from './logo-renderer';
 import { MissionResultRenderer } from './mission-result-renderer.component';
+import { AG_Grid_Theme_Class } from '@pdbc/core';
 
 // Row Data Interface
 interface IRow {
@@ -53,7 +54,7 @@ export class AGridComponent {
     { field: 'button', cellRenderer: CustomButtonComponent },
   ];
 
-  themeClass = 'ag-theme-quartz';
+  themeClass = AG_Grid_Theme_Class;
 
   // Return formatted date value
   dateFormatter(params: ValueFormatterParams) {
@@ -75,6 +76,7 @@ export class AGridComponent {
   };
 
   private readonly playgroundService = inject(PlaygroundService);
+  public rowSelection: 'single' | 'multiple' = 'multiple';
   public rowGridData: IRow[] = [];
   public colGridDefs: ColDef[] = [
     { field: 'mission', width: 200 },

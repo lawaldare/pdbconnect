@@ -37,4 +37,13 @@ ag-grid-angular {
   .ag-header-cell-resize::after {
     width: 1px;
   }
+
+  .ag-picker-field-wrapper {
+    border-radius: 0;
+  }
+
+  .ag-input-field-input.ag-text-field-input,
+  .ag-input-field-input.ag-number-field-input {
+    border-radius: 0 !important;
+  }
 }
