@@ -42,22 +42,22 @@
 
 .val-gradient-rdtobl {
   background: #f00;
-  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 100%);
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #00f 100%);
   background: -webkit-gradient(linear, left top, right top, color-stop(0%, #f00), color-stop(50%, #fff), color-stop(51%, #fff), color-stop(100%, #00f));
-  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 100%);
-  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 100%);
-  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 100%);
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #00f 100%);
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #00f 100%);
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #00f 100%);
   background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #00f 100%);
 }
 
 .val-gradient-rdtogr {
   background: red;
-  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #00f 696%);
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #00f 696%);
   background: -webkit-gradient(linear, left top, right top, color-stop(0, red), color-stop(50%, #fff), color-stop(51%, #fff), color-stop(100%, #696));
-  background: linear-gradient(left, red 0, #fff 50%, #fff 51%, #696 100%);
+  background: linear-gradient(to right, red 0, #fff 50%, #fff 51%, #696 100%);
   background: -webkit-gradient(linear, left top, right top, color-stop(0, red), color-stop(50%, #fff), color-stop(51%, #fff), to(#696));
-  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #696 100%);
-  background: linear-gradient(left, #f00 0, #fff 50%, #fff 51%, #696 100%);
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #696 100%);
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #696 100%);
   background: linear-gradient(to right, red 0, #fff 50%, #fff 51%, #696 100%);
 }
 
