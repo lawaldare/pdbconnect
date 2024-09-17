@@ -1,11 +1,13 @@
 <div id="description-section">
   <h3 class="title">Description</h3>
+  @if(description().synonyms){
   <div class="info-row">
     <span class="info-row-title">Synonyms</span>
     <div class="info-row-content" libTruncateText [truncateText]="description().synonyms" [limit]="60">
       {{ description().synonyms }}
     </div>
   </div>
+  }
   <div class="info-row formula-row">
     <span class="info-row-title">Formula</span>
     <article>
@@ -49,6 +51,7 @@
       ></i>
     </article>
   </div>
+  @if(description().smiles && isMainLigandId()){
   <div class="info-row">
     <span class="info-row-title">SMILES</span>
     <article>
@@ -64,6 +67,24 @@
       ></i>
     </article>
   </div>
+  } @if(description().smiles && !isMainLigandId()){
+  <div class="info-row">
+    <span class="info-row-title">SMILES</span>
+    <article>
+      <div class="info-row-content">
+        {{ description().smiles | ligandSmiles : false }}
+      </div>
+      <i
+        class="icon icon-common icon-clone"
+        matTooltipClass="description-tooltip"
+        matTooltip="Copy the SMILES"
+        matTooltipPosition="above"
+        (click)="copySmiles(description().smiles)"
+      ></i>
+    </article>
+  </div>
+  }
+
   <div class="info-row source-row">
     <span class="info-row-title"></span>
     <div class="info-row-content">
@@ -98,9 +119,10 @@
       </div>
     </article>
   </div>
-  }
+  } @if(isMainLigandId()){
   <div class="action-buttons">
     <button class="vf-button vf-button--primary vf-button--sm" (click)="openDialog('atom')">View Atoms</button>
     <button class="vf-button vf-button--primary vf-button--sm" (click)="openDialog('bond')">View Bonds</button>
   </div>
+  }
 </div>

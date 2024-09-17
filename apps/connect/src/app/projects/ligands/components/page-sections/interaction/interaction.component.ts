@@ -78,7 +78,7 @@ export class InteractionComponent implements AfterViewInit {
 
   public downloadInteraction(): void {
     if (this.interaction && this.interaction?.[this.ligandId()]) {
-      this.ligandUtilService.downloadJSON(this.interaction, 'interaction');
+      this.ligandUtilService.downloadJSON(this.interaction, `interaction_${this.ligandId()}`);
     } else {
       this._snackBar.open(`No interaction data for ${this.ligandId}`, 'Dismiss', {
         duration: 3000,

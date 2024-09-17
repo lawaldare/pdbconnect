@@ -32,6 +32,7 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   public dataSource = new MatTableDataSource<LigandStructure>(this.structureData);
   public searchText = new FormControl('', { nonNullable: true });
   public unfilteredStructures = signal<LigandStructure[]>([]);
+  private readonly ligandInteractingChainsNumberPipe = inject(LigandInteractingChainsNumberPipe);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   // @ViewChild(MatSort) sort!: MatSort;
@@ -51,6 +52,8 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   public isLoadingEntry = this.downloadService.isLoadingEntry;
 
   private readonly fb = inject(FormBuilder);
+
+  public dataStatistics = signal<string>('');
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
@@ -74,6 +77,7 @@ export class StructuresComponent implements AfterViewInit, OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((data: LigandStructure[]) => {
+        this.fetchDataStatistics(data);
         this.unfilteredStructures.update(() => [...data]);
         this.dataSource.data = data;
         this.pageSizeOptions.update((options) => [...new Set([...options, this.dataSource.data.length])]);
@@ -96,6 +100,22 @@ export class StructuresComponent implements AfterViewInit, OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+  }
+
+  private fetchDataStatistics(data: LigandStructure[]): void {
+    let proteins = 0;
+    let structures = 0;
+
+    for (const structure of data) {
+      if (structure.uniprot_id) {
+        proteins++;
+      }
+      const total = this.ligandInteractingChainsNumberPipe.transform(structure.interacting_chains);
+      structures += total;
+    }
+    console.log(`Total Proteins: ${proteins}`);
+    console.log(`Total Structures: ${structures}`);
+    this.dataStatistics.set(`${proteins} Proteins (${structures} PDB Structures)`);
   }
 
   private filterItemsBySearchQuery(searchQuery: string, items: LigandStructure[]): any[] {

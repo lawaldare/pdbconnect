@@ -14,6 +14,7 @@ import { of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { MainComponentStore } from '../main/main.store';
+import { LigandUtilService } from '../../../ligand-util.service';
 
 @Component({
   selector: 'pdbc-clc-prd-main',
@@ -37,6 +38,7 @@ export class ClcPrdMainComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(MainComponentStore);
+  public readonly ligandUtilService = inject(LigandUtilService);
 
   public readonly headerLogoMenuConfig = headerLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchConfig;

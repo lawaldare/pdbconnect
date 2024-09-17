@@ -57,10 +57,10 @@ export class IsPartOfDirective implements OnChanges {
       this.renderer.appendChild(this.el.nativeElement, a);
       this.renderer.setAttribute(a, 'style', 'margin-right:5px;');
 
-      // this.renderer.listen(a, 'click', (event) => {
-      //   event.preventDefault();
-      //   this.router.navigate([`/ligands/${text.trim()}`]);
-      // });
+      this.renderer.listen(a, 'click', (event) => {
+        event.preventDefault();
+        this.router.navigate([`/ligands/${text.trim()}`]);
+      });
     }
   }
 }

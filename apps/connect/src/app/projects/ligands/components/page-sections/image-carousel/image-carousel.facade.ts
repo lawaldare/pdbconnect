@@ -43,7 +43,6 @@ export class ImageCarouselComponentFacade {
           }
         },
         (error) => {
-          this.substructureNames.update((values) => [...values, `Murcko scaffold`]);
           this.slides.update((slides) => [...slides, 0, 1]);
           this.renderLigand(renderer, ligandId, imageContainer);
         }

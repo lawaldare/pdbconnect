@@ -11,12 +11,16 @@ export interface Smile {
   standalone: true,
 })
 export class LigandSmilesPipe implements PipeTransform {
-  transform(value: Smile[]): string | null {
-    for (const smile of value) {
-      if (smile.program === 'OpenEye OEToolkits') {
-        return smile.name;
+  transform(value: Smile[], isMainLigand = true): string | null {
+    if (isMainLigand) {
+      for (const smile of value) {
+        if (smile.program === 'OpenEye OEToolkits') {
+          return smile.name;
+        }
       }
+      return null;
+    } else {
+      return value[0].name;
     }
-    return null;
   }
 }

@@ -2,7 +2,7 @@ import { ThemeType } from '@pdbc/core';
 
 export const navSections = [
   { sectionId: 'description-section', sectionName: 'Description', isSubSection: false },
-  { sectionId: 'properties-section', sectionName: 'Physiochemical properties', isSubSection: false },
+  { sectionId: 'properties-section', sectionName: 'Physicochemical properties', isSubSection: false },
   { sectionId: 'structures-section', sectionName: 'Structures', isSubSection: false },
   { sectionId: 'interaction-section', sectionName: 'Interaction statistics', isSubSection: false },
   { sectionId: 'related-ligand-section', sectionName: 'Related ligands', isSubSection: false },

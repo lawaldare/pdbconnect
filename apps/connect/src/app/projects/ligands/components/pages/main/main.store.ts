@@ -3,7 +3,7 @@ import { AggregatedApiService, DescriptionData } from '../../../services/aggrega
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { inject } from '@angular/core';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { catchError, forkJoin, of, pipe, switchMap } from 'rxjs';
+import { catchError, forkJoin, Observable, of, pipe, switchMap } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { LigandUtilService } from '../../../ligand-util.service';
@@ -36,24 +36,34 @@ export const MainComponentStore = signalStore(
         pipe(
           switchMap((ligandId) => {
             patchState(store, { ligandId });
-            return forkJoin([
-              aggregatedApiService.fetchDescription(ligandId),
-              aggregatedApiService.fetchDownload(ligandId).pipe(catchError(() => of({}))),
-              aggregatedApiService.fetchSupercomponents(ligandId).pipe(catchError(() => of([]))),
-              of(ligandId),
-            ]).pipe(
+            let observables: Observable<any>[];
+            if (ligandId.startsWith('PRD') || ligandId.startsWith('CLC')) {
+              observables = [aggregatedApiService.fetchDescription(ligandId), of(ligandId), of([])];
+            } else {
+              observables = [
+                aggregatedApiService.fetchDescription(ligandId),
+                of(ligandId),
+                aggregatedApiService.fetchSupercomponents(ligandId).pipe(catchError(() => of([]))),
+              ];
+            }
+
+            return forkJoin(observables).pipe(
               tapResponse(
-                ([descriptionData, downloadData, supercomponents, ligandId]) => {
+                ([descriptionData, ligandId, supercomponents]) => {
                   const processDescriptionData = aggregatedApiService.processDescriptionData(ligandId, descriptionData);
-                  const processDownloadData = aggregatedApiService.processDownloadData(ligandId, downloadData);
+                  // const processDownloadData = aggregatedApiService.processDownloadData(ligandId, downloadData);
                   patchState(store, {
                     description: processDescriptionData,
                     supercomponents,
                     downloadOptions: [
-                      { name: 'CIF file', url: processDownloadData.cif, downloadable: true },
-                      { name: 'Ideal SDF', url: processDownloadData.idealSDF, downloadable: true },
-                      { name: 'Model SDF', url: processDownloadData.modelSDF, downloadable: true },
-                      { name: 'Model CML', url: processDownloadData.modelCML, downloadable: true },
+                      // { name: 'CIF file', url: processDownloadData.cif, downloadable: true },
+                      // { name: 'Ideal SDF', url: processDownloadData.idealSDF, downloadable: true },
+                      // { name: 'Model SDF', url: processDownloadData.modelSDF, downloadable: true },
+                      // { name: 'Model CML', url: processDownloadData.modelCML, downloadable: true },
+                      { name: 'CIF file', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${ligandId}.cif`, downloadable: true },
+                      { name: 'Ideal SDF', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${ligandId}_ideal.sdf`, downloadable: true },
+                      { name: 'Model SDF', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${ligandId}_model.sdf`, downloadable: true },
+                      { name: 'Model CML', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${ligandId}_model.cml`, downloadable: true },
                     ],
                   });
                 },

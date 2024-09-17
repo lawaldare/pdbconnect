@@ -20,6 +20,9 @@ export class CCDsDirective implements OnChanges {
 
     const occurrences = Object.keys(subcomponentOccurrences).join(', ');
 
-    this.renderer.appendChild(this.el.nativeElement, occurrences);
+    const span = this.renderer.createElement('span');
+    span.textContent = occurrences;
+
+    this.renderer?.appendChild(this.el.nativeElement, span);
   }
 }

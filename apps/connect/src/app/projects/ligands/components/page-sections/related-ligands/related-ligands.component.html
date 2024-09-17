@@ -11,7 +11,7 @@
       }
     </div>
     <div class="grid-container">
-      @if(sameScaffoldPage.length){ @for (sameScaffold of sameScaffoldPage; track sameScaffold) {
+      @if(sameScaffoldPage.length){ @for (sameScaffold of sameScaffoldPage; track sameScaffold.chem_comp_id) {
       <pdbc-ligand-grid [ligand]="sameScaffold" />
       } } @else { @for(wasabi of [1,2,3,4,5]; track wasabi){
       <ngx-skeleton-loader count="1" appearance="circle" animation="pulse" [theme]="skeletonTheme" />
@@ -44,7 +44,7 @@
       </div>
     </div>
     <div class="grid-container">
-      @if(similarLigandsPage.length){ @for (similarLigand of similarLigandsPage; track similarLigand) {
+      @if(similarLigandsPage.length){ @for (similarLigand of similarLigandsPage; track similarLigand.chem_comp_id) {
       <pdbc-ligand-grid [ligand]="similarLigand" />
       } } @else { @for(wasabi of [1,2,3,4,5]; track wasabi){
       <ngx-skeleton-loader count="1" appearance="circle" animation="pulse" [theme]="skeletonTheme" />
@@ -73,7 +73,7 @@
       </div>
     </div>
     <div class="grid-container">
-      @if(stereoisomersPage.length){ @for (stereoisomer of stereoisomersPage; track stereoisomer) {
+      @if(stereoisomersPage.length){ @for (stereoisomer of stereoisomersPage; track stereoisomer.chem_comp_id) {
       <pdbc-ligand-grid [ligand]="stereoisomer" />
       } } @else { @for(wasabi of [1,2,3,4,5]; track wasabi){
       <ngx-skeleton-loader count="1" appearance="circle" animation="pulse" [theme]="skeletonTheme" />
