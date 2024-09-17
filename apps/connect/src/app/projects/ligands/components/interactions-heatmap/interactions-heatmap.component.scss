@@ -23,7 +23,7 @@
 .controls-container {
   display: flex;
   .controls-sort-filter {
-    width: 160px;
+    width: 180px;
     .controls-title {
       margin-top: 10px;
       line-height: normal;
@@ -45,7 +45,7 @@
     }
   }
   #hm-aa-legend {
-    width: 50px;
+    width: 30px;
     height: 390px;
     .each-aa-box {
       height: 19.5px;
@@ -53,6 +53,9 @@
       font-weight: 600;
       display: flex;
       align-items: center;
+      span {
+        margin-left: 2px;
+      }
     }
   }
 }

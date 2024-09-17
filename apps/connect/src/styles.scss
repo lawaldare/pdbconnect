@@ -46,3 +46,12 @@ a {
     border: none !important;
   }
 }
+
+// For: https://www.ebi.ac.uk/panda/jira/browse/PDBE-7249
+nightingale-navigation .container .brush .handle {
+  fill: darkgrey;
+  stroke: black;
+  stroke-width: 1px;
+  height: 18px;
+  y: 0;
+}

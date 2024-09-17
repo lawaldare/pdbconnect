@@ -13,9 +13,32 @@ import NightingaleSequenceHeatmap from '@nightingale-elements/nightingale-sequen
 import * as d3 from 'd3';
 import { MatRadioButton } from '@angular/material/radio';
 import { MatCheckbox } from '@angular/material/checkbox';
-import { AminoAcidCode, AMINOACIDSIMAGE, CATEGORIESIMAGE, CategoryNames, InteractionNames } from './interactions-heatmap.constant';
+import { AminoAcidCode, AminoAcidOneCode, AMINOACIDSIMAGE, CATEGORIESIMAGE, CategoryNames, InteractionNames } from './interactions-heatmap.constant';
 
 // import NightingaleSequenceHeatmap from '@nightingale-elements/nightingale-sequence-heatmap';
+
+const AATHREETOONE = {
+  ALA: 'A',
+  CYS: 'C',
+  ASP: 'D',
+  GLU: 'E',
+  PHE: 'F',
+  GLY: 'G',
+  HIS: 'H',
+  ILE: 'I',
+  LYS: 'K',
+  LEU: 'L',
+  MET: 'M',
+  ASN: 'N',
+  PRO: 'P',
+  GLN: 'Q',
+  ARG: 'R',
+  SER: 'S',
+  THR: 'T',
+  VAL: 'V',
+  TRP: 'W',
+  TYR: 'Y',
+};
 
 @Component({
   selector: 'pdbc-interactions-heatmap',
@@ -53,7 +76,7 @@ export class InteractionsHeatmapComponent implements OnChanges {
   public categoryNames = Object.keys(this.categoriesImgs);
 
   getImgForAA(aa: string) {
-    return this.aminoAcidsImgs[aa as AminoAcidCode];
+    return this.aminoAcidsImgs[aa as AminoAcidOneCode];
   }
   getFilterName(filter: string) {
     return INTX_NAME_STANDARDIZER[filter as InteractionNames];
@@ -144,7 +167,7 @@ export class InteractionsHeatmapComponent implements OnChanges {
 
     this.viewerData = processInitialData(resultIntDataAcc, this.atomNamesList);
     this.atomNamesString = this.atomNamesList.join(',');
-    this.aminoAcidsLegend = this.viewerData.yDomain;
+    this.aminoAcidsLegend = this.viewerData.yDomain.map((aa) => AATHREETOONE[aa as AminoAcidCode]);
     this.interactionFilters = this.viewerData.validFilters;
     this.cdr.detectChanges();
     this.nightingaleAtoms = await this.waitForElm('#ligand-atoms-sequence');
@@ -263,8 +286,8 @@ export class InteractionsHeatmapComponent implements OnChanges {
     const maxValue = Math.max(...this.viewerData['averages'].map((v: any) => v.freq as number));
     const colorMin = '#a0bb9e';
     const colorMax = '#505d50';
-    this.atomDomainMap = [0.01, maxValue];
-    this.atomColorMap = [colorMin, colorMax];
+    this.atomDomainMap = [0.0, 0.01, maxValue];
+    this.atomColorMap = ['#FFFFFF', colorMin, colorMax];
     const atomColorScale = d3.scaleLinear(this.atomDomainMap, this.atomColorMap);
     this.heatmapAtomsElement?.heatmapInstance?.setColor((d: any) => atomColorScale(d['freq']));
   }
@@ -295,7 +318,7 @@ export class InteractionsHeatmapComponent implements OnChanges {
         this.viewerData['heatmap'] // heatmap data
       );
     }
-    this.aminoAcidsLegend = this.viewerData.yDomain;
+    this.aminoAcidsLegend = this.viewerData.yDomain.map((aa) => AATHREETOONE[aa as AminoAcidCode]);
   }
 
   clearFilters() {
@@ -341,7 +364,7 @@ export class InteractionsHeatmapComponent implements OnChanges {
     const filters = this.viewerData['filters'].length > 0 ? this.viewerData['filters'] : ['TOTAL'];
     const joinedFilters = `["${filters.join('","')}"]`;
     this.newFilteringEvent.emit(joinedFilters);
-    this.aminoAcidsLegend = this.viewerData.yDomain;
+    this.aminoAcidsLegend = this.viewerData.yDomain.map((aa) => AATHREETOONE[aa as AminoAcidCode]);
   }
 
   async forceShowTooltipAtoms(atomDatum: any) {
