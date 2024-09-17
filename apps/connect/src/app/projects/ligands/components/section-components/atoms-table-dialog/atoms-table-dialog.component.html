@@ -6,14 +6,14 @@
   <p>Molecule: {{ dialogData.ligandId }}</p>
   <p>Atoms of a chemical element, that composes a molecule</p>
   <p>Total Number of Atoms: {{ numberOfAtoms() }}</p>
-
-  <ag-grid-angular
-    style="margin-top: 50px"
-    class="ag-theme-quartz"
-    [rowData]="rowData"
-    [columnDefs]="colDefs"
-    [gridOptions]="gridOptions"
-    (gridReady)="onGridReady()"
-    [paginationPageSizeSelector]="paginationPageSizeSelector()"
-  />
+  <div style="margin-top: 5px; height: 566px">
+    <ag-grid-angular
+      class="ag-theme-quartz"
+      [rowData]="rowData"
+      [columnDefs]="colDefs"
+      [gridOptions]="gridOptions"
+      (gridReady)="onGridReady()"
+      [paginationPageSizeSelector]="paginationPageSizeSelector()"
+    />
+  </div>
 </section>

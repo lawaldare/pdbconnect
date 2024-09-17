@@ -20,8 +20,6 @@ export class AtomsTableDialogComponent {
   private readonly destroyRef = inject(DestroyRef);
   public readonly dialogRef = inject(MatDialogRef<AtomsTableDialogComponent>);
 
-  public pageSizeOptions = signal([10, 20, 30]);
-
   public readonly gridOptions: GridOptions = {
     ...agGridOptionsBase,
   };

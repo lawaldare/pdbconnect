@@ -1,6 +1,6 @@
 import { detect } from 'detect-browser';
 
-import { GetContextMenuItemsParams, GridOptions, MenuItemDef } from 'ag-grid-community';
+import { GridOptions } from 'ag-grid-community';
 
 function isWebkitScrollbarSupported() {
   // https://developer.mozilla.org/en-US/docs/Web/CSS/::-webkit-scrollbar
@@ -31,6 +31,7 @@ export const agGridOptionsBase: GridOptions = {
     autoHeaderHeight: true,
     wrapHeaderText: true,
     wrapText: true,
+    autoHeight: true,
   },
   // headerHeight: 36,
   ...agGridRowDefault,

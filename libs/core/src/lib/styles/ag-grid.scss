@@ -9,9 +9,8 @@ $ag-grid-padding: 12px;
 }
 
 ag-grid-angular {
-  display: block;
+  height: 100%;
   width: 100%;
-  height: 500px;
 
   & * {
     scroll-behavior: unset;
