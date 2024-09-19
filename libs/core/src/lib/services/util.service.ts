@@ -35,6 +35,21 @@ export class UtilService {
     return first + encodedURL;
   }
 
+  public generateSortedQueryURL(ligandId: string) {
+    const queryArray = [{ value: ligandId as string, condition1: 'AND', condition2: 'Contains' }];
+    const resultState = { tabIndex: 0, paginationIndex: 1, perPage: 10, sortBy: 'release_date desc' };
+
+    const payload = { q_compound_id: queryArray, resultState: resultState };
+
+    const urlStringObject = JSON.stringify(payload);
+
+    const encodedURL = encodeURIComponent(urlStringObject);
+
+    const first = 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=';
+
+    return first + encodedURL;
+  }
+
   public cleanUpIds(pdbids: string): any[] {
     return pdbids
       .split(/,| |;|\t|\r?\n/)
