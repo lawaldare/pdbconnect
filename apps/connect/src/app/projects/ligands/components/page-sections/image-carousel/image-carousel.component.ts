@@ -32,7 +32,7 @@ export class ImageCarouselComponent implements AfterViewInit {
   public structureDescription = this.facade.structureDescription;
   public showTooltips = signal(false);
 
-  public total = computed(() => this.ligandUtilService.fragments().length + 2);
+  public total = computed(() => this.ligandUtilService.currentFragments().length + 2);
   public currentSlide = computed(() => this.facade.currentSlide() + 1);
 
   ngAfterViewInit() {

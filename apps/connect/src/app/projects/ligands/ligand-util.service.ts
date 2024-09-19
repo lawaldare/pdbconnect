@@ -85,6 +85,10 @@ export class LigandUtilService {
     window.URL.revokeObjectURL(url);
   }
 
-  public currentFragment = signal<Fragment>({} as Fragment);
-  public fragments = signal<Fragment[]>([]);
+  private readonly fragments = signal<Fragment[]>([]);
+  public currentFragments = this.fragments.asReadonly();
+
+  setFragments(fragments: Fragment[]): void {
+    this.fragments.update(() => fragments);
+  }
 }

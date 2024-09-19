@@ -70,7 +70,7 @@ export class ImageCarouselComponentFacade {
     }, []);
 
     this.fragments.update(() => mappedFragments);
-    this.ligandUtilService.fragments.update(() => this.fragments());
+    this.ligandUtilService.setFragments(this.fragments());
   }
 
   private setDepictionDescription(): void {
@@ -86,8 +86,6 @@ export class ImageCarouselComponentFacade {
       default:
         this.structureDescription.set(`${this.substructureNames()[this.currentSlide() - 2]} highlighted in yellow`);
     }
-
-    this.ligandUtilService.currentFragment.set(this.currentFragment());
   }
 
   private setDepictionProperty(renderer: Renderer2, el: HTMLElement, index: number): void {

@@ -79,7 +79,7 @@ export const MainComponentStore = signalStore(
           panelClass: 'molstarDialog',
           data: {
             moleculeId: store.ligandId(),
-            fragments: ligandUtilService.fragments,
+            fragments: ligandUtilService.currentFragments,
           },
         });
       },
