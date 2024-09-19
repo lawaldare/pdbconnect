@@ -1,20 +1,24 @@
 /* You can add global styles to this file, and also import other style files */
+
 /* You can add global styles to this file, and also import other style files */
+
 /* You can add global styles to this file, and also import other style files */
-@import 'libs/core/src/lib/styles/pdbe-styles/typography.scss';
-@import 'libs/core/src/lib/styles/pdbe-styles/templates.scss';
-@import 'libs/core/src/lib/styles/pdbe-styles/am_custom_style.scss';
-@import 'libs/core/src/lib/styles/pdbe-styles/_button.scss';
-@import 'libs/core/src/lib/material.scss';
+@import url('libs/core/src/lib/styles/typography.scss');
+@import url('libs/core/src/lib/styles/templates.scss');
+@import url('libs/core/src/lib/styles/am_custom_style.scss');
+@import url('libs/core/src/lib/styles/button.scss');
+@import url('libs/core/src/lib/styles/material.scss');
 
 html,
 body {
   height: 100%;
 }
+
 body {
   margin: 0;
   font-family: 'IBM Plex Sans' Roboto, 'Helvetica Neue', sans-serif;
 }
+
 html {
   scroll-behavior: smooth;
 }
@@ -25,15 +29,15 @@ html {
   margin-right: auto;
   margin-left: auto;
 
-  @media (min-width: 576px) {
+  @media (width >= 576px) {
     max-width: 540px;
   }
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     max-width: 720px;
   }
 
-  @media (min-width: 992px) {
+  @media (width >= 992px) {
     max-width: 1440px;
   }
 }
@@ -56,6 +60,7 @@ a {
 
   &:visited {
     color: #563d82;
+
     i {
       color: #563d82;
     }
