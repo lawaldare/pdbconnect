@@ -46,10 +46,20 @@ export class MolstarDialogComponent implements AfterViewInit {
   constructor(public dialogRef: MatDialogRef<MolstarDialogComponent>, @Inject(MAT_DIALOG_DATA) public dialogData: any) {
     if (dialogData.fragments) {
       this.showFragmentOptions.set(true);
-      this.fragments.update(() => dialogData.fragments());
-      console.log(this.fragments());
+      this.fragments.update(() => {
+        return dialogData.fragments().reduce(
+          (acc: Fragment[], curr: Fragment) => {
+            acc.push({
+              ...curr,
+              name: curr.name.toLocaleLowerCase().includes('murcko') ? 'Murcko scaffold highlighted' : `${curr.name} highlighted fragment`,
+            });
+            return acc;
+          },
+          [{ name: '', atoms: [], descriptors: {} }]
+        );
+      });
       this.selectedFrament.set(this.fragments()[0].name);
-      this.atoms = this.fragments()[0].atoms[0];
+      this.atoms = this.fragments()[0].atoms.length ? this.fragments()[0].atoms[0] : [];
     } else {
       this.showFragmentOptions.set(false);
       this.atoms = dialogData.atoms;
@@ -60,7 +70,7 @@ export class MolstarDialogComponent implements AfterViewInit {
         {
           struct_asym_id: 'A',
           atoms: this.atoms,
-          color: { r: 249, g: 207, b: 59 },
+          color: this.atoms.length ? { r: 249, g: 207, b: 59 } : { r: 152, g: 152, b: 152 },
         },
       ],
     };
@@ -125,7 +135,7 @@ export class MolstarDialogComponent implements AfterViewInit {
         {
           struct_asym_id: 'A',
           atoms: selectedFrament?.atoms[0],
-          color: { r: 249, g: 207, b: 59 },
+          color: selectedFrament?.atoms.length ? { r: 249, g: 207, b: 59 } : { r: 152, g: 152, b: 152 },
         },
       ],
     };

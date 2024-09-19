@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ComplexParticipantsPipe } from '../../../pipes/participants.pipe';
 import { ComplexSymmetryPipe } from '../../../pipes/symmetry.pipe';
 import { OEMCPipe } from '../../../pipes/oemc.pipe';
+import { ComplexData } from '../../../models/complex-structure.model';
 
 @Component({
   selector: 'pdbc-summary',
@@ -12,5 +13,5 @@ import { OEMCPipe } from '../../../pipes/oemc.pipe';
   styleUrls: ['./summary.component.scss'],
 })
 export class SummaryComponent {
-  public summaryData = input.required<any>();
+  public summaryData = input.required<ComplexData>();
 }

@@ -1,9 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-
-export interface Symmetry {
-  symbol: string;
-  type: number;
-}
+import { Symmetry } from '../models/complex-structure.model';
 
 @Pipe({
   name: 'symmetry',

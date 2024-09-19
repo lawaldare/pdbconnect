@@ -7,13 +7,19 @@
     @if(summaryData){
     <article>
       <section class="hero">
-        <h2>{{ summaryData.name || this.complexId() }}</h2>
-        @if(this.complexId()){
-        <h4>{{ this.complexId() }}</h4>
+        @if(summaryData.name){
+        <h2 libTruncateText [truncateText]="summaryData.name" [limit]="30"></h2>
+        } @else {
+        {{ complexId() }}
+        } @if(complexId()){
+        <h4>{{ complexId() }}</h4>
         }
       </section>
       <section class="summary">
         <pdbc-summary [summaryData]="summaryData" />
+      </section>
+      <section class="summary">
+        <pdbc-complex-structures [assemblies]="summaryData.assemblies" />
       </section>
     </article>
     }

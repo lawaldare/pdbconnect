@@ -76,11 +76,11 @@ export class ImageCarouselComponentFacade {
   private setDepictionDescription(): void {
     switch (this.currentSlide()) {
       case 0:
-        this.structureDescription.set(`Structural representation of ${this.ligandId}`);
+        this.structureDescription.set(`Atom labelled ${this.ligandId}`);
         break;
 
       case 1:
-        this.structureDescription.set(`Atom labeled ${this.ligandId}`);
+        this.structureDescription.set(`Structural representation of ${this.ligandId}`);
         break;
 
       default:
@@ -93,12 +93,12 @@ export class ImageCarouselComponentFacade {
   private setDepictionProperty(renderer: Renderer2, el: HTMLElement, index: number): void {
     switch (index) {
       case 0:
-        renderer.setProperty(el, 'atomNames', false);
+        renderer.setProperty(el, 'atomNames', true);
         renderer.setProperty(el, 'highlightSubstructure', '');
         break;
 
       case 1:
-        renderer.setProperty(el, 'atomNames', true);
+        renderer.setProperty(el, 'atomNames', false);
         renderer.setProperty(el, 'highlightSubstructure', '');
         break;
 
@@ -143,20 +143,21 @@ export class ImageCarouselComponentFacade {
       .subscribe((depiction: Depiction) => {
         this.createLigandEnvironment(renderer, imageContainerRef, depiction);
         this.setDepictionDescription();
+        this.updateLigandImage(renderer);
       });
   }
 
-  private createLigandEnvironment(renderer: Renderer2, container: ElementRef, depiction: Depiction, slide?: number): void {
+  private createLigandEnvironment(renderer: Renderer2, container: ElementRef, depiction: Depiction): void {
     const ligand = renderer.createElement('pdb-ligand-env');
     renderer.appendChild(container, ligand);
     renderer.setProperty(ligand, 'depiction', depiction);
 
-    if (slide === 0) {
-      this.setDepictionProperty(renderer, ligand, slide);
-    }
-    if (slide) {
-      this.setDepictionProperty(renderer, ligand, slide);
-    }
+    // if (slide === 0) {
+    //   this.setDepictionProperty(renderer, ligand, slide);
+    // }
+    // if (slide) {
+    //   this.setDepictionProperty(renderer, ligand, slide);
+    // }
 
     renderer.setAttribute(ligand, 'depiction-only', '');
     renderer.setAttribute(ligand, 'zoom-on', 'true');
