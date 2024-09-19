@@ -107,7 +107,7 @@ class Depiction {
   }
   highlightSubgraph(e, t) {
     if (this.atoms && (this.highlight.selectAll('*').remove(), e)) {
-      t = t || '#FFFF00';
+      t = t || '#FFB81C';
       let n = this.atoms.filter((t) => e.includes(t.name));
       this.highlight
         .selectAll()

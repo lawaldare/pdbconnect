@@ -41,6 +41,8 @@ export class MolstarDialogComponent implements AfterViewInit {
   private atoms!: string[];
   public showFragmentOptions = signal<boolean>(false);
 
+  private readonly highlightColor = { r: 249, g: 207, b: 59 };
+
   @ViewChild('viewContainer') viewContainer!: ElementRef;
 
   constructor(public dialogRef: MatDialogRef<MolstarDialogComponent>, @Inject(MAT_DIALOG_DATA) public dialogData: any) {
@@ -70,7 +72,7 @@ export class MolstarDialogComponent implements AfterViewInit {
         {
           struct_asym_id: 'A',
           atoms: this.atoms,
-          color: this.atoms.length ? { r: 249, g: 207, b: 59 } : { r: 152, g: 152, b: 152 },
+          color: this.atoms.length ? this.highlightColor : { r: 152, g: 152, b: 152 },
         },
       ],
     };
@@ -135,7 +137,7 @@ export class MolstarDialogComponent implements AfterViewInit {
         {
           struct_asym_id: 'A',
           atoms: selectedFrament?.atoms[0],
-          color: selectedFrament?.atoms.length ? { r: 249, g: 207, b: 59 } : { r: 152, g: 152, b: 152 },
+          color: selectedFrament?.atoms.length ? this.highlightColor : { r: 152, g: 152, b: 152 },
         },
       ],
     };

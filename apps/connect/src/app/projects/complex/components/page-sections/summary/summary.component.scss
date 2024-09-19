@@ -19,4 +19,11 @@
 .info-row-content {
   font-size: 16px;
   font-weight: 400;
+  word-break: normal;
+  flex-wrap: wrap;
+
+  &.participants {
+    flex-direction: row;
+    gap: 5px;
+  }
 }

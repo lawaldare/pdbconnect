@@ -16,10 +16,8 @@
     </div>
   </div>
   <div class="info-row">
-    <span class="info-row-title">Particpants</span>
-    <div class="info-row-content">
-      {{ summaryData().participants | participant }}
-    </div>
+    <span class="info-row-title">Participants</span>
+    <div class="info-row-content participants" pdbcParticipant [participants]="summaryData().participants"></div>
   </div>
   <div class="info-row">
     <span class="info-row-title">Oligomeric State</span>

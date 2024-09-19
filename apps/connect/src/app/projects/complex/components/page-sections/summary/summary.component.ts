@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ComplexParticipantsPipe } from '../../../pipes/participants.pipe';
+import { ParticipantDirective } from '../../../directives/participants.directive';
 import { ComplexSymmetryPipe } from '../../../pipes/symmetry.pipe';
 import { OEMCPipe } from '../../../pipes/oemc.pipe';
 import { ComplexData } from '../../../models/complex-structure.model';
@@ -8,7 +8,7 @@ import { ComplexData } from '../../../models/complex-structure.model';
 @Component({
   selector: 'pdbc-summary',
   standalone: true,
-  imports: [CommonModule, OEMCPipe, ComplexParticipantsPipe, ComplexSymmetryPipe],
+  imports: [CommonModule, OEMCPipe, ParticipantDirective, ComplexSymmetryPipe],
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss'],
 })
