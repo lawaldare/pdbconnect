@@ -5,11 +5,12 @@ import { ComplexData } from '../../../models/complex-structure.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { ParticipantDirective } from '../../../directives/participants.directive';
+import { MaterialModule } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-complex-card',
   standalone: true,
-  imports: [CommonModule, RouterModule, ParticipantDirective],
+  imports: [CommonModule, RouterModule, ParticipantDirective, MaterialModule],
   templateUrl: './complex-card.component.html',
   styleUrl: './complex-card.component.scss',
 })

@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Chain, LigandStructure } from '../../../data-models/structure.model';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { ActivatedRoute } from '@angular/router';
@@ -35,7 +34,6 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   private readonly ligandInteractingChainsNumberPipe = inject(LigandInteractingChainsNumberPipe);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  // @ViewChild(MatSort) sort!: MatSort;
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -57,7 +55,6 @@ export class StructuresComponent implements AfterViewInit, OnInit {
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
-    // this.dataSource.sort = this.sort;
   }
 
   public readonly form = this.fb.nonNullable.group({

@@ -29,5 +29,22 @@
         margin-left: 5px;
       }
     }
+
+    p {
+      font-size: 13px;
+    }
+  }
+}
+
+::ng-deep .complex-name-tooltip {
+  .mdc-tooltip__surface {
+    background-color: #fff !important;
+    color: #1a1c1a !important;
+    font-size: 16px !important;
+    padding: 10px;
+    box-shadow: 0 5px 5px -3px rgb(0 0 0 / 20%), 0 8px 10px 1px rgb(0 0 0 / 14%), 0 3px 14px 2px rgb(0 0 0 / 12%);
+    white-space: nowrap;
+    max-width: unset !important;
+    max-height: unset !important;
   }
 }
