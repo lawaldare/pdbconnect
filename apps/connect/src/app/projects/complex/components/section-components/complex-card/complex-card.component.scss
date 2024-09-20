@@ -5,7 +5,8 @@
   font-family: 'IBM Plex Sans', sans-serif;
 
   .image-box {
-    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
     height: 150px;
     border: 1px solid var(--Neutral-600, #707372);
 
