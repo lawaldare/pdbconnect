@@ -18,8 +18,11 @@
       <section class="summary">
         <pdbc-summary [summaryData]="summaryData" />
       </section>
-      <section class="summary">
+      <section class="structures">
         <pdbc-complex-structures [assemblies]="summaryData.assemblies" />
+      </section>
+      <section class="interactions">
+        <pdbc-complex-interactions [summaryData]="summaryData" />
       </section>
     </article>
     }

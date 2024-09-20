@@ -7,6 +7,8 @@ import { Participant } from '../models/complex-structure.model';
 })
 export class ParticipantDirective implements OnChanges {
   @Input() participants!: Participant[];
+  @Input() isItForSummary = true;
+
   private anchors: any[] = [];
   constructor(private el: ElementRef, private renderer: Renderer2) {}
 

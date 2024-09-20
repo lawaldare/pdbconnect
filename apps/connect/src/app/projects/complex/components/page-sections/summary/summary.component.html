@@ -31,12 +31,14 @@
       {{ summaryData().stoichiometry }}
     </div>
   </div>
+  @if(summaryData().symmetry.type){
   <div class="info-row">
     <span class="info-row-title">Symmetry</span>
     <div class="info-row-content">
       {{ summaryData().symmetry | symmetry }}
     </div>
   </div>
+  }
   <div class="info-row">
     <span class="info-row-title">Observed experimental methods and counts</span>
     <div class="info-row-content">

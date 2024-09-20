@@ -34,4 +34,5 @@ export interface ComplexData {
   assemblies: Assembly[];
   subcomplexes: string[];
   supercomplexes: string[];
+  complexId: string;
 }

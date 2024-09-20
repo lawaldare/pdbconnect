@@ -1,6 +1,6 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { headerComplexLogoMenuConfig, headerSearchComplexConfig, navComplexSections } from '../../../../ligands/ligand.constant';
+
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
@@ -12,6 +12,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ComplexStructuresComponent } from '../../page-sections/complex-structures/complex-structures.component';
 import { ComplexData } from '../../../models/complex-structure.model';
 import { TruncateTextDirective } from '@pdbc/core';
+import { headerComplexLogoMenuConfig, headerSearchComplexConfig, navComplexSections } from '../../../complex.constant';
+import { ComplexInteractionsComponent } from '../../page-sections/complex-interactions/complex-interactions.component';
 
 @Component({
   selector: 'pdbc-main',
@@ -24,6 +26,7 @@ import { TruncateTextDirective } from '@pdbc/core';
     SummaryComponent,
     ComplexStructuresComponent,
     TruncateTextDirective,
+    ComplexInteractionsComponent,
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',
@@ -56,6 +59,7 @@ export class MainComponent implements OnInit {
       )
       .subscribe((data: ComplexData) => {
         this.summaryData = data;
+        console.log('Complex data:', this.summaryData);
       });
   }
 }

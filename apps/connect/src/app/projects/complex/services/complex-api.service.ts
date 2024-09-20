@@ -13,8 +13,13 @@ export class ComplexAPIService {
   private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}aggregated-api/`;
 
   public getSummaryForComplexData(complexId: string): Observable<ComplexData> {
-    return this.http
-      .get<ComplexData>(`${this.AggregatedApiUrl}complex/details/${complexId}?id_type=pdb_complex_id`)
-      .pipe(map((response: any) => response[complexId][0]));
+    return this.http.get<ComplexData>(`${this.AggregatedApiUrl}complex/details/${complexId}?id_type=pdb_complex_id`).pipe(
+      map((response: any) => {
+        return {
+          ...response[complexId][0],
+          complexId: complexId,
+        };
+      })
+    );
   }
 }
