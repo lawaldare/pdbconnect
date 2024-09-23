@@ -1,4 +1,4 @@
-@import url(https://cdn.jsdelivr.net/npm/pdbe-molstar@3.2.0/build/pdbe-molstar-light.css);
+@import url("https://cdn.jsdelivr.net/npm/pdbe-molstar@3.2.0/build/pdbe-molstar-light.css");
 
 .container {
   position: relative;
@@ -16,6 +16,15 @@ section {
     font-size: 30px;
     margin-right: 20px;
     cursor: pointer;
+  }
+
+  &.caption {
+    justify-content: center;
+
+    p {
+      margin: 0;
+      text-align: center;
+    }
   }
 }
 

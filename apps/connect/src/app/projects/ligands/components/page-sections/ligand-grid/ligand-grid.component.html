@@ -9,7 +9,7 @@
     </div>
   </div>
   <div class="ligand-description">
-    <a [routerLink]="['/ligands', ligand.chem_comp_id]">
+    <a [routerLink]="['/ligands', ligand.chem_comp_id]" matTooltipClass="complex-name-tooltip" [matTooltip]="ligand.name" matTooltipPosition="above">
       {{ ligand.chem_comp_id }}
       <i class="icon icon-link icon-common"></i>
     </a>

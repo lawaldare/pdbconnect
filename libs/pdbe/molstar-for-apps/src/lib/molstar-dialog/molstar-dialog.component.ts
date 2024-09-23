@@ -11,6 +11,7 @@ export interface Fragment {
   name: string;
   atoms: string[][];
   descriptors: Descriptor;
+  caption?: string;
 }
 
 export interface Descriptor {
@@ -43,6 +44,8 @@ export class MolstarDialogComponent implements AfterViewInit {
 
   private readonly highlightColor = { r: 249, g: 207, b: 59 };
 
+  public caption = signal<string>('');
+
   @ViewChild('viewContainer') viewContainer!: ElementRef;
 
   constructor(public dialogRef: MatDialogRef<MolstarDialogComponent>, @Inject(MAT_DIALOG_DATA) public dialogData: any) {
@@ -54,6 +57,9 @@ export class MolstarDialogComponent implements AfterViewInit {
             acc.push({
               ...curr,
               name: curr.name.toLocaleLowerCase().includes('murcko') ? 'Murcko scaffold highlighted' : `${curr.name} highlighted fragment`,
+              caption: curr.name.toLocaleLowerCase().includes('murcko')
+                ? `The Murco scaffold is highlighted in yellow in the PDBe ligand ${this.dialogData.moleculeId}`
+                : `The ${curr.name} fragment is highlighted in yellow in the PDBe ligand ${this.dialogData.moleculeId}`,
             });
             return acc;
           },
@@ -111,8 +117,9 @@ export class MolstarDialogComponent implements AfterViewInit {
         url: this.selected(),
         format: 'pdb',
       },
-      isLandscape: false,
+      landscape: true,
       selection: this.selectionConfig,
+      hideControls: true,
     };
 
     this.molstarViewInstance.render(container, molstarParams);
@@ -132,6 +139,9 @@ export class MolstarDialogComponent implements AfterViewInit {
 
   public onFragmentChange(event: MatSelectChange) {
     const selectedFrament = this.fragments().find((fragment) => fragment.name === event.value);
+    if (selectedFrament?.caption) {
+      this.caption.set(selectedFrament.caption);
+    }
     this.selectionConfig = {
       data: [
         {

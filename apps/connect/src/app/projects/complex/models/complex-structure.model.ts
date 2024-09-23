@@ -22,7 +22,7 @@ export interface Assembly {
   title: string;
 }
 export interface ComplexData {
-  name: string;
+  name: string | null;
   complex_portal_id: string;
   source_organism: string;
   representative_structure: RepresentativeStructure;

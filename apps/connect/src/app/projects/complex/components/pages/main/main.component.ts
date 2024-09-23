@@ -7,13 +7,14 @@ import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { SummaryComponent } from '../../page-sections/summary/summary.component';
 import { ComplexAPIService } from '../../../services/complex-api.service';
 import { ActivatedRoute } from '@angular/router';
-import { catchError, EMPTY, switchMap } from 'rxjs';
+import { catchError, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ComplexStructuresComponent } from '../../page-sections/complex-structures/complex-structures.component';
 import { ComplexData } from '../../../models/complex-structure.model';
 import { TruncateTextDirective } from '@pdbc/core';
 import { headerComplexLogoMenuConfig, headerSearchComplexConfig, navComplexSections } from '../../../complex.constant';
 import { ComplexInteractionsComponent } from '../../page-sections/complex-interactions/complex-interactions.component';
+import { ComplexPublicationsComponent } from '../../page-sections/complex-publications/complex-publications.component';
 
 @Component({
   selector: 'pdbc-main',
@@ -27,6 +28,7 @@ import { ComplexInteractionsComponent } from '../../page-sections/complex-intera
     ComplexStructuresComponent,
     TruncateTextDirective,
     ComplexInteractionsComponent,
+    ComplexPublicationsComponent,
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',
@@ -41,7 +43,7 @@ export class MainComponent implements OnInit {
 
   private readonly complexAPIService = inject(ComplexAPIService);
 
-  public summaryData!: ComplexData;
+  public summaryData!: ComplexData | null;
   public complexId = signal<string>('');
 
   ngOnInit(): void {
@@ -49,15 +51,16 @@ export class MainComponent implements OnInit {
       .pipe(
         switchMap((params) => {
           this.complexId.set(params['complexId'].toUpperCase());
-          return this.complexAPIService.getSummaryForComplexData(this.complexId());
-        }),
-        catchError((error) => {
-          console.error('Error fetching complex data:', error);
-          return EMPTY;
+          return this.complexAPIService.getSummaryForComplexData(this.complexId()).pipe(
+            catchError((error) => {
+              console.error('Error fetching complex data:', error);
+              return of(null);
+            })
+          );
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((data: ComplexData) => {
+      .subscribe((data: ComplexData | null) => {
         this.summaryData = data;
         console.log('Complex data:', this.summaryData);
       });

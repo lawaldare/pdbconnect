@@ -22,4 +22,8 @@ export class ComplexAPIService {
       })
     );
   }
+
+  public getPublications(pdbIds: string): Observable<any> {
+    return this.http.post<any>(`${this.AggregatedApiUrl}pdb/entry/publications`, pdbIds);
+  }
 }
