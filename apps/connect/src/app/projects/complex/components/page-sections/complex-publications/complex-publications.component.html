@@ -1,1 +1,43 @@
-<p>complex-publications works!</p>
+<div id="publications-section">
+  <h3>Publications</h3>
+
+  <section>
+    @for(publication of publicationsPage; track publication){
+    <article>
+      <h5>{{ publication.title }}</h5>
+      <p>
+        @for(author of publication.author_list; track author.full_name; let islast = $last){
+        <span> {{ author.full_name }}</span> {{ islast ? '' : ',' }} }
+      </p>
+      <p>
+        {{ publication.journal_info.ISO_abbreviation }} <strong>{{ publication.journal_info.volume }}</strong> {{ publication.journal_info.pages }} ({{
+          publication.journal_info.year
+        }})
+      </p>
+      <p>
+        PMID:<a [href]="'https://europepmc.org/article/MED/' + publication.pubmed_id" target="_blank">
+          {{ publication.pubmed_id }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </p>
+      <p>
+        DOI:<a [href]="'https://doi.org/' + publication.doi" target="_blank">
+          {{ publication.doi }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </p>
+      <p></p>
+    </article>
+    }
+    <mat-paginator
+      class="paginator-container"
+      [length]="publicationsLength()"
+      [pageSize]="publicationsPageSize()"
+      [pageSizeOptions]="pageSizeOptions()"
+      (page)="handlePageEvent($event)"
+      showFirstLastButtons
+      aria-label="Select page of subcomplexes"
+    >
+    </mat-paginator>
+  </section>
+</div>

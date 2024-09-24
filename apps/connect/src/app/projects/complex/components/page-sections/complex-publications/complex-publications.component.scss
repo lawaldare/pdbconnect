@@ -1,3 +1,14 @@
-p {
-  margin: 0;
+#publications-section {
+  p {
+    margin: 0;
+  }
+
+  h3,
+  article {
+    margin-bottom: 20px;
+  }
+
+  .icon-link {
+    margin-left: 5px;
+  }
 }

@@ -21,8 +21,11 @@ main {
       width: calc(100% - 248px);
     }
 
-    .summary {
-      padding-bottom: 40px;
+    .summary,
+    .structures,
+    .interactions,
+    .publications {
+      padding-bottom: 60px;
     }
   }
 }
