@@ -28,7 +28,7 @@ export class LigandTotalDialogComponent {
   public rowData!: Chain[];
 
   public readonly themeClass = AG_Grid_Theme_Class;
-  public paginationPageSizeSelector = signal<number[]>([20, 50]);
+  public paginationPageSizeSelector = signal<number[]>([10, 20, 50]);
 
   constructor(public dialogRef: MatDialogRef<LigandTotalDialogComponent>, @Inject(MAT_DIALOG_DATA) public dialogData: Chain[]) {}
 

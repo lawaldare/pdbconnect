@@ -48,6 +48,10 @@ a {
   }
 }
 
+p {
+  margin: 0 !important;
+}
+
 // For: https://www.ebi.ac.uk/panda/jira/browse/PDBE-7249
 nightingale-navigation .container .brush .handle {
   fill: darkgrey;

@@ -11,9 +11,17 @@ $ag-grid-padding: 12px;
 ag-grid-angular {
   height: 100%;
   width: 100%;
+  font-size: 16px !important;
+  line-height: 19px !important;
 
   & * {
     scroll-behavior: unset;
+  }
+
+  .ag-cell {
+    --ag-internal-calculated-line-height: 24px !important;
+
+    padding: 10px 14px;
   }
 
   .ag-root-wrapper {

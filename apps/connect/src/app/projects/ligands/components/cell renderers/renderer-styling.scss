@@ -1,0 +1,34 @@
+.unannotated {
+  background-color: #e4e4e4;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.cofactor-like {
+  background-color: #dbbfe3;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.drug-like {
+  background-color: #d2de55;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.reactant-like {
+  background-color: #ffe99b;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+p {
+  display: inline-block;
+}

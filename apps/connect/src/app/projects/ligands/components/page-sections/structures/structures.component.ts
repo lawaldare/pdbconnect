@@ -1,39 +1,31 @@
-import { Component, ViewChild, AfterViewInit, OnInit, inject, DestroyRef, signal } from '@angular/core';
+import { Component, inject, DestroyRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Chain, LigandStructure } from '../../../data-models/structure.model';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ClickOutsideDirective, DownloadFileTypeService, DownloadService, MaterialModule } from '@pdbc/core';
-import { ToolTipComponent } from '@pdbe-lib/tool-tip';
-import { map, switchMap } from 'rxjs/operators';
+import { AG_Grid_Theme_Class, agGridOptionsBase, DownloadFileTypeService, DownloadService, ExternalLinkRendererComponent, MaterialModule } from '@pdbc/core';
+import { switchMap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
-import { EMPTY } from 'rxjs';
-import { LigandUtilService } from '../../../ligand-util.service';
 import { environment } from '../../../../../../environments/environment';
 import { LigandInteractingChainsNumberPipe } from '../../../pipes/ligandInteractingChainsNumber.pipe';
+import { MatRadioChange } from '@angular/material/radio';
+import { AgGridAngular } from 'ag-grid-angular';
+import { GridOptions, ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
+import { TotalStructureRendererComponent } from '../../cell renderers/total-structure.component';
+import { LigandAnnotationRendererComponent } from '../../cell renderers/ligand-annotation.component';
 
 @Component({
   selector: 'pdbc-structures',
   standalone: true,
-  imports: [CommonModule, FormsModule, ClickOutsideDirective, ReactiveFormsModule, ToolTipComponent, LigandInteractingChainsNumberPipe, MaterialModule],
+  imports: [CommonModule, ReactiveFormsModule, LigandInteractingChainsNumberPipe, AgGridAngular, MaterialModule],
   templateUrl: './structures.component.html',
   styleUrls: ['./structures.component.scss'],
   providers: [LigandInteractingChainsNumberPipe],
 })
-export class StructuresComponent implements AfterViewInit, OnInit {
-  public readonly displayedColumns: string[] = ['name', 'uniprot_id', 'ec_number', 'annotation', 'count'];
-  public structureData: LigandStructure[] = [];
-  public dataSource = new MatTableDataSource<LigandStructure>(this.structureData);
-  public searchText = new FormControl('', { nonNullable: true });
-  public unfilteredStructures = signal<LigandStructure[]>([]);
-  private readonly ligandInteractingChainsNumberPipe = inject(LigandInteractingChainsNumberPipe);
-
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+export class StructuresComponent {
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -41,30 +33,65 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   private readonly chainPipe = inject(LigandInteractingChainsNumberPipe);
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   private readonly downloadService = inject(DownloadService);
-  private readonly ligandUtilService = inject(LigandUtilService);
   private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
 
-  public showOptions = false;
-  public pageSizeOptions = signal([5, 10, 15, 20]);
-
-  public isLoadingEntry = this.downloadService.isLoadingEntry;
-
-  private readonly fb = inject(FormBuilder);
-
   public dataStatistics = signal<string>('');
+  public filter = new FormControl('proteins');
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-  }
+  public readonly gridOptions: GridOptions = {
+    ...agGridOptionsBase,
+    defaultColDef: {
+      ...agGridOptionsBase.defaultColDef,
+      filter: false,
+    },
+    paginationPageSize: 10,
+    context: this,
+  };
 
-  public readonly form = this.fb.nonNullable.group({
-    cofactorLike: false,
-    reactantLike: false,
-    drugLike: false,
-    unannotated: false,
-  });
+  public readonly themeClass = AG_Grid_Theme_Class;
 
-  ngOnInit() {
+  public readonly colDefs: ColDef[] = [
+    {
+      headerName: 'Protein name',
+      field: 'name',
+    },
+    {
+      headerName: 'PDBe-KB link',
+      field: 'uniprot_id',
+      cellRenderer: ExternalLinkRendererComponent,
+    },
+    {
+      headerName: 'Total structures',
+      field: 'count',
+      cellRenderer: TotalStructureRendererComponent,
+      cellRendererParams: {
+        onValueClicked: (params: any) => this.openTotalDialog(params.data.interacting_chains),
+      },
+    },
+    {
+      headerName: 'Species',
+    },
+    {
+      headerName: 'EC number',
+      field: 'ec_number',
+      cellRenderer: (params: any) => {
+        return params.data.ec_numbers?.join(', ');
+      },
+    },
+    {
+      headerName: 'Ligand annotation',
+      field: 'annotations',
+      filter: true,
+      cellRenderer: LigandAnnotationRendererComponent,
+    },
+  ];
+
+  public rowData = signal<LigandStructure[]>([]);
+  public paginationPageSizeSelector = signal<number[]>([10, 20, 50]);
+
+  onGridReady(params: GridReadyEvent<any>) {
+    // this.rowData = this.assemblies();
+    // this.gridApi = params.api;
     this.route.params
       .pipe(
         switchMap((params: { [x: string]: string }) => {
@@ -74,59 +101,36 @@ export class StructuresComponent implements AfterViewInit, OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((data: LigandStructure[]) => {
+        this.rowData.update(() => [...data]);
         this.fetchDataStatistics(data);
-        this.unfilteredStructures.update(() => [...data]);
-        this.dataSource.data = data;
-        this.pageSizeOptions.update((options) => [...new Set([...options, this.dataSource.data.length])]);
+        this.paginationPageSizeSelector.update((options) => [...new Set([...options, data.length])]);
       });
+  }
 
-    this.form.valueChanges
-      .pipe(
-        switchMap((values: any) => {
-          this.dataSource.data = this.ligandUtilService.filterStructures(this.unfilteredStructures(), values);
-          return EMPTY;
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe();
-    this.searchText.valueChanges
-      .pipe(
-        map((searchQuery) => {
-          this.dataSource.data = this.filterItemsBySearchQuery(searchQuery, this.unfilteredStructures());
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe();
+  onChange(event: MatRadioChange) {
+    const filterSelected = event.value;
+    console.log(filterSelected);
   }
 
   private fetchDataStatistics(data: LigandStructure[]): void {
     let proteins = 0;
+    const proteinsArray = [];
     let structures = 0;
 
     for (const structure of data) {
       if (structure.uniprot_id) {
         proteins++;
+        proteinsArray.push(structure);
       }
-      const total = this.ligandInteractingChainsNumberPipe.transform(structure.interacting_chains);
+      const total = this.chainPipe.transform(structure.interacting_chains);
       structures += total;
     }
-    console.log(`Total Proteins: ${proteins}`);
-    console.log(`Total Structures: ${structures}`);
-    this.dataStatistics.set(`${proteins} Proteins (${structures} PDB Structures)`);
-  }
-
-  private filterItemsBySearchQuery(searchQuery: string, items: LigandStructure[]): any[] {
-    return items.filter((item) => {
-      const searchQueryLower = searchQuery.toLocaleLowerCase();
-      return (
-        (item.name ?? '').toLocaleLowerCase().indexOf(searchQueryLower) !== -1 ||
-        (item.uniprot_id ?? '').toString().toLocaleLowerCase().indexOf(searchQueryLower) !== -1
-      );
-    });
+    console.log(proteinsArray);
+    this.dataStatistics.set(`Found in ${proteins} Proteins and ${structures} PDB Structures. Group data by: `);
   }
 
   public downloadMMCIF() {
-    const mappedData = this.unfilteredStructures().reduce((acc: string[], structure) => {
+    const mappedData = this.rowData().reduce((acc: string[], structure) => {
       acc = [...acc, ...structure.interacting_chains.map((c) => c.pdb_id)];
       return acc;
     }, []);
@@ -144,7 +148,7 @@ export class StructuresComponent implements AfterViewInit, OnInit {
   }
 
   public downloadCSV(): void {
-    const mappedData = this.unfilteredStructures().map((structure) => {
+    const mappedData = this.rowData().map((structure) => {
       return {
         'Protein Name': structure.name,
         'PDBe-KB Proteins': structure.uniprot_id,
@@ -160,13 +164,6 @@ export class StructuresComponent implements AfterViewInit, OnInit {
 
   private getInteractingChain(chains: Chain[]): string {
     return chains.map((chain) => `${chain.pdb_id}:${chain.auth_asym_id}:${chain.struct_asym_id}`).join(', ');
-  }
-
-  public onShowOptions() {
-    this.showOptions = !this.showOptions;
-  }
-  public onClickedOutside() {
-    this.showOptions = false;
   }
 
   public openTotalDialog(data: Chain[]) {

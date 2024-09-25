@@ -13,3 +13,4 @@ export * from './lib/services/download.service';
 export * from './lib/services/download-file-type.service';
 export * from './lib/constants/ag-grid.constant';
 export * from './lib/cell-renderers/boolean.component';
+export * from './lib/cell-renderers/external-link.component';
