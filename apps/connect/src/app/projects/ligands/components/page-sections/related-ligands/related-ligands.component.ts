@@ -11,6 +11,7 @@ import { forkJoin, switchMap, mergeMap, map, combineLatest, startWith } from 'rx
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { LigandUtilService } from '../../../ligand-util.service';
 
 @Component({
   selector: 'pdbc-related-ligands',
@@ -52,12 +53,16 @@ export class RelatedLigandsComponent implements OnInit {
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly ligandUtilService = inject(LigandUtilService);
+
   public sameScaffoldTerm = new FormControl('');
   public sameLigandsTerm = new FormControl('');
   public stereoisomerTerm = new FormControl('');
 
   public similarityFrom = new FormControl(60);
   public similarityTo = new FormControl(100);
+
+  private relatedLigand!: any;
 
   public readonly skeletonTheme = {
     'border-radius': '0px',
@@ -104,6 +109,7 @@ export class RelatedLigandsComponent implements OnInit {
           return this.aggregatedApiService.fetchRelatedLigands(ligandId);
         }),
         mergeMap((relatedLigand: RelatedLigand) => {
+          this.relatedLigand = relatedLigand;
           this.sameScaffoldPageSizeOptions.set([]);
           this.similarLigandPageSizeOptions.set([]);
           this.stereoisomersPageSizeOptions.set([]);
@@ -276,5 +282,9 @@ export class RelatedLigandsComponent implements OnInit {
         this.stereoisomersPage = this.filtStereoisomersGrid.slice(0, this.stereoisomerspageSize);
         break;
     }
+  }
+
+  public downloadJSON(): void {
+    this.ligandUtilService.downloadJSON(this.relatedLigand, 'related-ligands');
   }
 }

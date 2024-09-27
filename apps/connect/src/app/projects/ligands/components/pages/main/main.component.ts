@@ -18,6 +18,7 @@ import { switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { headerLogoMenuConfig, headerSearchConfig, navSections } from '../../../ligand.constant';
 import { MainComponentStore } from './main.store';
+import { MaterialModule } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-main',
@@ -36,6 +37,7 @@ import { MainComponentStore } from './main.store';
     RelatedLigandsComponent,
     LigandSpecificDatabasesComponent,
     DropdownMenuComponent,
+    MaterialModule,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],

@@ -1,6 +1,14 @@
-import { Component, input, OnChanges } from '@angular/core';
+import { Component, inject, input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CrossLink } from '../../../services/aggregated-api.service';
+import { LigandSpecificDatabasesComponentFacade } from './ligand-specific-databases.facade';
+
+export interface MappedCrossLink {
+  resource: string;
+  resourceIds: string[];
+  description?: string;
+  link?: string;
+}
 
 @Component({
   selector: 'pdbc-ligand-specific-databases',
@@ -11,6 +19,9 @@ import { CrossLink } from '../../../services/aggregated-api.service';
 })
 export class LigandSpecificDatabasesComponent implements OnChanges {
   public crossLinks = input.required<CrossLink[]>();
+  private readonly facade = inject(LigandSpecificDatabasesComponentFacade);
+  public mappedCrossLinks = this.facade.crosslinks;
+  private readonly unwantedDatabases = ['actor', 'nih', 'rxnorm', 'dailymed', 'pdbe', 'atlas'];
 
   public chembl: string | undefined;
   public chebi: string | undefined;
@@ -21,7 +32,8 @@ export class LigandSpecificDatabasesComponent implements OnChanges {
   public brenda: string | undefined;
 
   ngOnChanges(): void {
-    console.log('CrossLinks updated:', this.crossLinks());
+    this.facade.init(this.crossLinks());
+    console.log('Mapped crosslinks:', this.mappedCrossLinks());
     this.chembl = this.crossLinks().find((link) => link.resource.toLowerCase() === 'ChEMBL'.toLowerCase())?.resource_id;
     this.chebi = this.crossLinks().find((link) => link.resource.toLowerCase() === 'ChEBI'.toLowerCase())?.resource_id;
     this.drugbank = this.crossLinks().find((link) => link.resource.toLowerCase() === 'DrugBank'.toLowerCase())?.resource_id;

@@ -1,12 +1,3 @@
-#ligand-databases-section {
-  font-family: 'IBM Plex Sans';
-  line-height: 27.2px;
-}
-
-p {
-  margin: 0;
-}
-
 h3 {
   font-size: 30px;
   font-weight: 500;
@@ -16,27 +7,34 @@ h3 {
 
 .cross-links {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  row-gap: 16px;
-  column-gap: 40px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 40px;
 
-  @media screen and (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media screen and (max-width: 540px) {
+  @media screen and (width <= 768px) {
     grid-template-columns: 1fr;
   }
 
   .cross-link {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    gap: 12px;
+
+    .resource-ids {
+      display: flex;
+      flex-direction: column;
+
+      a {
+        align-self: flex-start;
+      }
+    }
 
     p {
       color: var(--Neutral-900, #1a1c1a);
       font-size: 16px;
       font-weight: 500;
+      margin: 0;
+      width: 132px;
+      max-width: 132px;
+      min-width: 132px;
     }
 
     a {

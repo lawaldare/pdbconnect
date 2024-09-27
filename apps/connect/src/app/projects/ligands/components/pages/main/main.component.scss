@@ -13,6 +13,23 @@ main {
       width: 220px;
     }
 
+    header {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+
+      .annotations {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+
+        a {
+          font-size: 14px;
+          line-height: 22.4px;
+        }
+      }
+    }
+
     article {
       width: calc(100% - 248px);
     }
@@ -72,8 +89,4 @@ main {
       padding-bottom: 60px;
     }
   }
-}
-
-pdbc-pdbe-chips {
-  margin-right: 10px;
 }

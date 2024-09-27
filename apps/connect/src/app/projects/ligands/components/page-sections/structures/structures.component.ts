@@ -37,13 +37,13 @@ export class StructuresComponent {
 
   public dataStatistics = signal<string>('');
   public filter = new FormControl('proteins');
-
+  private ligandId = signal<string>('');
   public readonly gridOptions: GridOptions = {
     ...agGridOptionsBase,
-    defaultColDef: {
-      ...agGridOptionsBase.defaultColDef,
-      filter: false,
-    },
+    // defaultColDef: {
+    //   ...agGridOptionsBase.defaultColDef,
+    //   filter: false,
+    // },
     paginationPageSize: 10,
     context: this,
   };
@@ -67,9 +67,20 @@ export class StructuresComponent {
       cellRendererParams: {
         onValueClicked: (params: any) => this.openTotalDialog(params.data.interacting_chains),
       },
+      hide: false,
+    },
+    {
+      headerName: 'PDB ID and Chain',
+      field: 'pdb_id',
+      cellRenderer: (params: any) => `<div>
+      <a href="https://www.ebi.ac.uk/pdbe/entry/pdb/${params.value}/bound/${this.ligandId()}" target="_blank">${params.value}</a>
+      <i class="icon icon-link icon-common" style="margin-left: 5px;"></i>
+      </div>`,
+      hide: true,
     },
     {
       headerName: 'Species',
+      valueFormatter: () => '--',
     },
     {
       headerName: 'EC number',
@@ -87,21 +98,29 @@ export class StructuresComponent {
   ];
 
   public rowData = signal<LigandStructure[]>([]);
-  public paginationPageSizeSelector = signal<number[]>([10, 20, 50]);
+  public proteins = signal<LigandStructure[]>([]);
+  public structures = signal<LigandStructure[]>([]);
 
-  onGridReady(params: GridReadyEvent<any>) {
+  public paginationPageSizeSelector = signal<number[]>([10, 20, 50]);
+  private gridApi!: GridApi;
+
+  onGridReady(event: GridReadyEvent<any>) {
     // this.rowData = this.assemblies();
-    // this.gridApi = params.api;
+    this.gridApi = event.api;
     this.route.params
       .pipe(
         switchMap((params: { [x: string]: string }) => {
+          this.resetColumns();
           const ligandId = params['ligandId'].toUpperCase();
+          this.ligandId.set(ligandId);
           return this.aggregatedApiService.fetchLigandStructures(ligandId);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((data: LigandStructure[]) => {
-        this.rowData.update(() => [...data]);
+        this.generateStructures(data);
+        this.proteins.update(() => [...data]);
+        this.rowData.update(() => [...this.proteins()]);
         this.fetchDataStatistics(data);
         this.paginationPageSizeSelector.update((options) => [...new Set([...options, data.length])]);
       });
@@ -109,23 +128,47 @@ export class StructuresComponent {
 
   onChange(event: MatRadioChange) {
     const filterSelected = event.value;
-    console.log(filterSelected);
+    if (filterSelected === 'proteins') {
+      this.gridApi.setColumnsVisible(['pdb_id'], false);
+      this.gridApi.setColumnsVisible(['count'], true);
+      this.rowData.update(() => [...this.proteins()]);
+    } else {
+      this.gridApi.setColumnsVisible(['pdb_id'], true);
+      this.gridApi.setColumnsVisible(['count'], false);
+      this.rowData.update(() => [...this.structures()]);
+    }
+    this.paginationPageSizeSelector.update((options) => [...new Set([...options, this.rowData().length])]);
+  }
+
+  public resetColumns() {
+    this.gridApi.setColumnsVisible(['pdb_id'], false);
+    this.gridApi.setColumnsVisible(['count'], true);
+  }
+
+  private generateStructures(data: LigandStructure[]): void {
+    const structures = data.reduce((acc: any, structure) => {
+      structure.interacting_chains.forEach((chain) => {
+        acc.push({
+          ...structure,
+          pdb_id: `${chain.pdb_id}_${chain.auth_asym_id}`,
+        });
+      });
+      return acc;
+    }, []);
+    this.structures.update(() => [...structures]);
   }
 
   private fetchDataStatistics(data: LigandStructure[]): void {
     let proteins = 0;
-    const proteinsArray = [];
     let structures = 0;
 
     for (const structure of data) {
       if (structure.uniprot_id) {
         proteins++;
-        proteinsArray.push(structure);
       }
       const total = this.chainPipe.transform(structure.interacting_chains);
       structures += total;
     }
-    console.log(proteinsArray);
     this.dataStatistics.set(`Found in ${proteins} Proteins and ${structures} PDB Structures. Group data by: `);
   }
 

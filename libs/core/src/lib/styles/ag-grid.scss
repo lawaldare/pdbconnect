@@ -24,6 +24,12 @@ ag-grid-angular {
     padding: 10px 14px;
   }
 
+  .ag-ltr,
+  .ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+    border: none !important;
+    outline: none !important;
+  }
+
   .ag-root-wrapper {
     background-color: #fff;
     border: none;

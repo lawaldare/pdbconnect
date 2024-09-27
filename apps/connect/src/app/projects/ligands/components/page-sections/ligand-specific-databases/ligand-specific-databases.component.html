@@ -1,64 +1,20 @@
+@if(mappedCrossLinks().length){
 <div id="ligand-databases-section">
-  @if(chembl || chebi || drugbank || zinc || pubchem || bindingdb || brenda){
   <h3>Ligand-specific databases</h3>
-  }
   <section class="cross-links">
-    @if(chembl){
+    @for(crosslink of mappedCrossLinks(); track crosslink.resource){
     <div class="cross-link">
-      <p>ChEMBL</p>
-      <a [href]="'https://www.ebi.ac.uk/chembl/compound_report_card/' + chembl" target="_blank">
-        {{ chembl }}
-        <i _ngcontent-ng-c108322402="" class="icon icon-link icon-common"></i>
-      </a>
-    </div>
-    } @if(chebi){
-    <div class="cross-link">
-      <p>ChEBI</p>
-      <a [href]="'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:' + chebi" target="_blank">
-        {{ chebi }}
-        <i _ngcontent-ng-c108322402="" class="icon icon-link icon-common"></i>
-      </a>
-    </div>
-    } @if(drugbank){
-    <div class="cross-link">
-      <p>DrugBank</p>
-      <a [href]="'https://go.drugbank.com/drugs/' + drugbank" target="_blank">
-        {{ drugbank }}
-        <i _ngcontent-ng-c108322402="" class="icon icon-link icon-common"></i>
-      </a>
-    </div>
-    } @if(zinc){
-    <div class="cross-link">
-      <p>ZINC</p>
-      <a [href]="'https://zinc20.docking.org/substances/' + zinc" target="_blank">
-        {{ zinc }}
-        <i _ngcontent-ng-c108322402="" class="icon icon-link icon-common"></i>
-      </a>
-    </div>
-    } @if(pubchem){
-    <div class="cross-link">
-      <p>PubChem</p>
-      <a [href]="'https://pubchem.ncbi.nlm.nih.gov/compound/' + pubchem" target="_blank">
-        {{ pubchem }}
-        <i _ngcontent-ng-c108322402="" class="icon icon-link icon-common"></i>
-      </a>
-    </div>
-    } @if(bindingdb){
-    <div class="cross-link">
-      <p>BindingDb</p>
-      <a [href]="'https://www.bindingdb.org/rwd/bind/chemsearch/marvin/MolStructure.jsp?monomerid=' + bindingdb" target="_blank">
-        {{ bindingdb }}
-        <i _ngcontent-ng-c108322402="" class="icon icon-link icon-common"></i>
-      </a>
-    </div>
-    } @if(brenda){
-    <div class="cross-link">
-      <p>BRENDA</p>
-      <a [href]="'https://www.brenda-enzymes.org/ligand.php?brenda_ligand_id=' + brenda" target="_blank">
-        {{ brenda }}
-        <i _ngcontent-ng-c108322402="" class="icon icon-link icon-common"></i>
-      </a>
+      <p>{{ crosslink.resource }}</p>
+      <div class="resource-ids">
+        @for(id of crosslink.resourceIds; track id){ @let url = crosslink.link + id;
+        <a [href]="url" target="_blank">
+          {{ id }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+        }
+      </div>
     </div>
     }
   </section>
 </div>
+}

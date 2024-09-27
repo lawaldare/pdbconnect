@@ -1,13 +1,17 @@
-#related-ligands-section {
-  font-family: 'IBM Plex Sans';
-  line-height: 27.2px;
+header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  button {
+    align-self: flex-end;
+  }
 }
 
 .title {
   font-size: 30px;
   font-weight: 500;
   line-height: 39px;
-  margin-bottom: 20px;
 }
 
 h4 {
@@ -33,7 +37,7 @@ h4 {
     border: none;
     border-bottom: 1px solid var(--Neutral-600, #707372);
     box-shadow: none;
-    padding-left: 0px;
+    padding-left: 0;
   }
 
   .icon-search {
@@ -73,9 +77,9 @@ h4 {
 .grid-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  column-gap: 80px;
-  row-gap: 12px;
-  @media (max-width: 767px) {
+  gap: 12px 80px;
+
+  @media (width <= 767px) {
     grid-template-columns: 1fr;
   }
 }
