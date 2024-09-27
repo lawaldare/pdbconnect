@@ -9,5 +9,5 @@ export const appRoutes: Route[] = [
   { path: 'entry/alt-one/:entryId', component: EntryMainAltOnePageComponent, title: 'PDBe Entry Pages' },
   { path: 'proteins/:entryId', component: ProteinsMainPageComponent, title: 'PDBe Proteins Pages' },
   { path: 'ligands/:ligandId', component: LigandWrapperComponent, title: 'PDBe Ligand Pages' },
-  { path: 'chemicalCompound/show/:ligandId', component: LigandWrapperComponent, title: 'PDBe Ligand Pages' },
+  { path: 'chemicalCompound/show/:ligandId', component: LigandWrapperComponent, title: 'PDBe Ligand Pages (PDBeChem)' },
 ];
