@@ -3,7 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <title>PDBe Connect Pages</title>
-    <base href="/" />
+    <!-- <base href="/" /> -->
+    <script>
+      if (document.location.hostname === 'localhost') {
+        document.write('<base href="/" />');
+      } else {
+        const pathnames = document.location.pathname;
+        const pathnamesArray = pathnames.split('/');
+        const baseHref = `/${pathnamesArray[1]}/${pathnamesArray[2]}/`;
+        document.write('<base href="' + baseHref + '" />');
+      }
+    </script>
     <meta name="HandheldFriendly" content="true" />
     <meta name="MobileOptimized" content="width" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />

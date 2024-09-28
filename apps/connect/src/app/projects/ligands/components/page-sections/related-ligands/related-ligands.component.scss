@@ -6,6 +6,14 @@ header {
   button {
     align-self: flex-end;
   }
+
+  @media screen and (width <= 768px) {
+    flex-direction: column;
+
+    button {
+      align-self: flex-start;
+    }
+  }
 }
 
 .title {
@@ -79,7 +87,7 @@ h4 {
   grid-template-columns: repeat(2, 1fr);
   gap: 12px 80px;
 
-  @media (width <= 767px) {
+  @media screen and (width <= 768px) {
     grid-template-columns: 1fr;
   }
 }

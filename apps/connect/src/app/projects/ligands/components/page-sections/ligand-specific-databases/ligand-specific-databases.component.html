@@ -5,7 +5,7 @@
     @for(crosslink of mappedCrossLinks(); track crosslink.resource){
     <div class="cross-link">
       <p>{{ crosslink.resource }}</p>
-      <div class="resource-ids">
+      <div class="resource-ids" (scroll)="onScroll($event)">
         @for(id of crosslink.resourceIds; track id){ @let url = crosslink.link + id;
         <a [href]="url" target="_blank">
           {{ id }}

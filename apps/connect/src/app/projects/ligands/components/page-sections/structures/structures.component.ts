@@ -106,6 +106,7 @@ export class StructuresComponent {
 
   onGridReady(event: GridReadyEvent<any>) {
     // this.rowData = this.assemblies();
+    // event.api.autoSizeAllColumns();
     this.gridApi = event.api;
     this.route.params
       .pipe(

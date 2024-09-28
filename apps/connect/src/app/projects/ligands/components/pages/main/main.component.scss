@@ -5,12 +5,16 @@ main {
     display: flex;
     gap: 28px;
 
-    @media screen and (width <= 767px) {
+    @media screen and (width <= 768px) {
       gap: 0;
     }
 
     pdbc-pdbe-nav-menu {
       width: 220px;
+
+      @media screen and (width <= 768px) {
+        display: none;
+      }
     }
 
     header {
@@ -32,6 +36,10 @@ main {
 
     article {
       width: calc(100% - 248px);
+
+      @media screen and (width <= 768px) {
+        width: 100%;
+      }
     }
 
     .hero {
@@ -75,7 +83,7 @@ main {
       padding-bottom: 40px;
       gap: 12px;
 
-      @media screen and (width <= 767px) {
+      @media screen and (width <= 768px) {
         flex-direction: column;
         gap: 30px;
       }
