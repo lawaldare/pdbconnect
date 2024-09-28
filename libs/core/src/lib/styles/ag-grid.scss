@@ -59,4 +59,8 @@ ag-grid-angular {
   .ag-input-field-input.ag-number-field-input {
     border-radius: 0 !important;
   }
+
+  .ag-header-container {
+    white-space: wrap !important;
+  }
 }

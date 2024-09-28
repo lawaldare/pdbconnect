@@ -1,15 +1,16 @@
 <ag-grid-angular style="height: 302px; margin-bottom: 50px" [class]="themeClass" [rowData]="rowData" [columnDefs]="colDefs" [defaultColDef]="defaultColDef" />
 
-<ag-grid-angular
-  style="margin-bottom: 50px"
-  class="ag-theme-quartz"
-  [rowData]="rowGridData"
-  [columnDefs]="colGridDefs"
-  [defaultColDef]="defaultColGridDef"
-  [rowSelection]="rowSelection"
-  [pagination]="true"
-  (gridReady)="onGridReady()"
-  (cellValueChanged)="onCellValueChanged($event)"
-  [rowSelection]="'multiple'"
-  (selectionChanged)="onSelectionChanged($event)"
-/>
+<div style="margin-top: 5px; height: 500px">
+  <ag-grid-angular
+    style="margin-bottom: 50px"
+    class="ag-theme-quartz"
+    [rowData]="rowGridData"
+    [columnDefs]="colGridDefs"
+    [gridOptions]="gridOptions"
+    [rowSelection]="rowSelection"
+    (gridReady)="onGridReady()"
+    (cellValueChanged)="onCellValueChanged($event)"
+    [rowSelection]="'multiple'"
+    (selectionChanged)="onSelectionChanged($event)"
+  />
+</div>

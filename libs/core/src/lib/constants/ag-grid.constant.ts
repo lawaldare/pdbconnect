@@ -25,7 +25,7 @@ export const AG_Grid_Theme_Class = 'ag-theme-quartz';
 export const agGridOptionsBase: GridOptions = {
   defaultColDef: {
     filter: true,
-    flex: 1,
+    // flex: 1,
     resizable: true,
     sortable: true,
     autoHeaderHeight: true,

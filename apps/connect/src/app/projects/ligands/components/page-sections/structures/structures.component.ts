@@ -40,10 +40,10 @@ export class StructuresComponent {
   private ligandId = signal<string>('');
   public readonly gridOptions: GridOptions = {
     ...agGridOptionsBase,
-    // defaultColDef: {
-    //   ...agGridOptionsBase.defaultColDef,
-    //   filter: false,
-    // },
+    defaultColDef: {
+      ...agGridOptionsBase.defaultColDef,
+      // filter: false,
+    },
     paginationPageSize: 10,
     context: this,
   };
@@ -54,11 +54,13 @@ export class StructuresComponent {
     {
       headerName: 'Protein name',
       field: 'name',
+      width: 300,
     },
     {
       headerName: 'PDBe-KB link',
       field: 'uniprot_id',
       cellRenderer: ExternalLinkRendererComponent,
+      width: 150,
     },
     {
       headerName: 'Total structures',
@@ -68,6 +70,7 @@ export class StructuresComponent {
         onValueClicked: (params: any) => this.openTotalDialog(params.data.interacting_chains),
       },
       hide: false,
+      width: 130,
     },
     {
       headerName: 'PDB ID and Chain',
@@ -81,6 +84,7 @@ export class StructuresComponent {
     {
       headerName: 'Species',
       valueFormatter: () => '--',
+      width: 170,
     },
     {
       headerName: 'EC number',
@@ -88,12 +92,14 @@ export class StructuresComponent {
       cellRenderer: (params: any) => {
         return params.data.ec_numbers?.join(', ');
       },
+      width: 150,
     },
     {
       headerName: 'Ligand annotation',
       field: 'annotations',
       filter: true,
       cellRenderer: LigandAnnotationRendererComponent,
+      width: 150,
     },
   ];
 

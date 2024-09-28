@@ -1,12 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, ValueGetterParams, CellValueChangedEvent, SelectionChangedEvent, ValueFormatterParams } from 'ag-grid-community'; // Column Definition Type Interface
+import { ColDef, ValueGetterParams, CellValueChangedEvent, SelectionChangedEvent, ValueFormatterParams, GridOptions } from 'ag-grid-community'; // Column Definition Type Interface
 import { CustomButtonComponent } from './button-cell-renderer.component';
 import { PlaygroundService } from '../../services/playground.service';
 import { CompanyLogoRenderer } from './logo-renderer';
 import { MissionResultRenderer } from './mission-result-renderer.component';
-import { AG_Grid_Theme_Class } from '@pdbc/core';
+import { AG_Grid_Theme_Class, agGridOptionsBase } from '@pdbc/core';
 
 // Row Data Interface
 interface IRow {
@@ -73,6 +73,10 @@ export class AGridComponent {
 
   public readonly defaultColGridDef: ColDef = {
     filter: true,
+  };
+
+  public readonly gridOptions: GridOptions = {
+    ...agGridOptionsBase,
   };
 
   private readonly playgroundService = inject(PlaygroundService);
