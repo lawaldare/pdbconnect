@@ -60,7 +60,7 @@ export class StructuresComponent {
       headerName: 'PDBe-KB link',
       field: 'uniprot_id',
       cellRenderer: ExternalLinkRendererComponent,
-      width: 150,
+      width: 160,
     },
     {
       headerName: 'Total structures',
@@ -80,11 +80,12 @@ export class StructuresComponent {
       <i class="icon icon-link icon-common" style="margin-left: 5px;"></i>
       </div>`,
       hide: true,
+      width: 150,
     },
     {
       headerName: 'Species',
       valueFormatter: () => '--',
-      width: 170,
+      minWidth: 170,
     },
     {
       headerName: 'EC number',
@@ -99,7 +100,7 @@ export class StructuresComponent {
       field: 'annotations',
       filter: true,
       cellRenderer: LigandAnnotationRendererComponent,
-      width: 150,
+      width: 170,
     },
   ];
 

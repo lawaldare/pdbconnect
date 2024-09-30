@@ -1,6 +1,12 @@
 @if(mappedCrossLinks().length){
 <div id="ligand-databases-section">
-  <h3>Ligand-specific databases</h3>
+  <header>
+    <h3>Ligand-specific databases</h3>
+    <button class="vf-button vf-button--link" (click)="facade.downloadJSON()">
+      Download list of all databases IDs
+      <i class="icon icon-common icon-download"></i>
+    </button>
+  </header>
   <section class="cross-links">
     @for(crosslink of mappedCrossLinks(); track crosslink.resource){
     <div class="cross-link">

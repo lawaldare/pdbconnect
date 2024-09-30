@@ -31,6 +31,14 @@ section.filter {
   .group {
     display: flex;
     align-items: center;
+
+    @media screen and (width <= 768px) {
+      flex-direction: column;
+
+      mat-radio-group {
+        width: 100%;
+      }
+    }
   }
 
   mat-radio-button {

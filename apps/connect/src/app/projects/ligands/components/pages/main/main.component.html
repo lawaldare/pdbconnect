@@ -38,13 +38,17 @@
       <section class="interaction">
         <pdbc-interaction />
       </section>
-      <div class="related-ligands">
+      <section class="mobile-interaction">
+        <h3>Interaction statistics</h3>
+        <div class="content">The interaction is unavailable for devices with smaller screen. Please use a larger screen to see the interaction.</div>
+      </section>
+      <section class="related-ligands">
         <pdbc-related-ligands />
-      </div>
+      </section>
       @if(description()){
-      <div class="ligand-specific-databases">
+      <section class="ligand-specific-databases">
         <pdbc-ligand-specific-databases [crossLinks]="description().crossLinks" />
-      </div>
+      </section>
       } }
     </article>
   </div>

@@ -19,14 +19,13 @@ export interface MappedCrossLink {
 })
 export class LigandSpecificDatabasesComponent implements OnChanges {
   public crossLinks = input.required<CrossLink[]>();
-  private readonly facade = inject(LigandSpecificDatabasesComponentFacade);
+  public readonly facade = inject(LigandSpecificDatabasesComponentFacade);
   public mappedCrossLinks = this.facade.crosslinks;
 
   @ViewChild('crosslink', { read: ElementRef }) crosslink!: ElementRef;
 
   onScroll(event: Event): void {
     const element = event.target as HTMLElement;
-    console.log('Scroll top:', element.scrollTop);
     if (element.scrollTop === 0) {
       element.classList.remove('top-shadow');
       element.classList.add('bottom-shadow');
@@ -38,6 +37,5 @@ export class LigandSpecificDatabasesComponent implements OnChanges {
 
   ngOnChanges(): void {
     this.facade.init(this.crossLinks());
-    console.log('Mapped crosslinks:', this.mappedCrossLinks());
   }
 }

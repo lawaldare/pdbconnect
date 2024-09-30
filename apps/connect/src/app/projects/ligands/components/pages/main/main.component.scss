@@ -93,8 +93,38 @@ main {
     .structure,
     .interaction,
     .related-ligands,
-    .ligand-specific-databases {
+    .ligand-specific-databases,
+    .mobile-interaction {
       padding-bottom: 60px;
+    }
+
+    .interaction {
+      @media screen and (width <= 768px) {
+        display: none;
+      }
+    }
+
+    .mobile-interaction {
+      display: none;
+
+      h3 {
+        font-size: 30px;
+        font-weight: 500;
+        line-height: 39px;
+        margin-bottom: 20px;
+      }
+
+      .content {
+        border: 1px dashed #d0d0ce;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 22px;
+      }
+
+      @media screen and (width <= 768px) {
+        display: block;
+      }
     }
   }
 }

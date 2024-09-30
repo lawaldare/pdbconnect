@@ -1,5 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { CrossLink } from '../../../services/aggregated-api.service';
+import { LigandUtilService } from '../../../ligand-util.service';
 
 export interface MappedCrossLink {
   resource: string;
@@ -14,8 +15,11 @@ export interface MappedCrossLink {
 export class LigandSpecificDatabasesComponentFacade {
   private readonly unwantedDatabases = ['actor', 'nih', 'rxnorm', 'dailymed', 'pdbe', 'atlas'];
   public crosslinks = signal<MappedCrossLink[]>([]);
+  private readonly ligandUtilService = inject(LigandUtilService);
+  private unmappedCrossLinks = signal<CrossLink[]>([]);
 
   public init(crossLinks: CrossLink[]): void {
+    this.unmappedCrossLinks.update(() => [...crossLinks]);
     const mappedLinks = crossLinks.reduce((acc: Record<string, string[]>, link: CrossLink) => {
       if (!this.unwantedDatabases.includes(link.resource.toLowerCase())) {
         if (acc[link.resource]) {
@@ -237,5 +241,9 @@ export class LigandSpecificDatabasesComponentFacade {
       }
     });
     this.crosslinks.update(() => updatedMappedLinksArray);
+  }
+
+  public downloadJSON(): void {
+    this.ligandUtilService.downloadJSON(this.unmappedCrossLinks(), 'crosslinks');
   }
 }

@@ -12,6 +12,10 @@
   font-weight: 500;
   min-width: 179px;
   min-height: 28px;
+
+  @media screen and (width <= 768px) {
+    min-width: 130px;
+  }
 }
 
 .info-row-content {

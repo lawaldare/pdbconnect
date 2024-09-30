@@ -9,6 +9,7 @@ $ag-grid-padding: 12px;
 }
 
 ag-grid-angular {
+  flex: 1;
   height: 100%;
   width: 100%;
   font-size: 16px !important;
@@ -62,5 +63,26 @@ ag-grid-angular {
 
   .ag-header-container {
     white-space: wrap !important;
+  }
+
+  .ag-horizontal-left-spacer,
+  .ag-horizontal-right-spacer {
+    visibility: hidden;
+  }
+
+  .ag-paging-panel {
+    @media screen and (width <= 768px) {
+      flex-direction: column;
+      height: 100px;
+      justify-content: flex-start;
+
+      span {
+        margin-bottom: 10px;
+
+        &:nth-child(1) {
+          margin-top: 10px;
+        }
+      }
+    }
   }
 }
