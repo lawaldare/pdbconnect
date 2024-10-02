@@ -76,6 +76,6 @@ export class LigandsMainPageComponent implements OnInit {
 
   public openMolstarDialog(): void {
     this.store.openMolstarDialog();
-    this.dlService.logClickEvents('button_click', 'view_3D_click', 'view 3D');
+    this.googleAnalyticsService.logClickEvents('click', 'Button', 'view_3D_click', 'View 3D');
   }
 }
