@@ -18,7 +18,7 @@ import { switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { headerLogoMenuConfig, headerSearchConfig, navSections } from '../../../ligand.constant';
 import { MainComponentStore } from './main.store';
-import { DataLayerService, MaterialModule } from '@pdbc/core';
+import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-main',
@@ -47,6 +47,7 @@ export class LigandsMainPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(MainComponentStore);
   public readonly dlService = inject(DataLayerService);
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   public readonly headerLogoMenuConfig = headerLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchConfig;

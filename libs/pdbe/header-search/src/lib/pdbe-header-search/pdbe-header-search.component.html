@@ -13,7 +13,9 @@
     <section>
       <div class="left">
         Examples: @for(example of headerSearchConfig.examples; track example.label){
-        <a [ngClass]="chipBg" [routerLink]="example.url" (click)="dlService.logClickEvents('id_example', 'id_click', example.label)">{{ example.label }}</a>
+        <a [ngClass]="chipBg" [routerLink]="example.url" (click)="googleAnalyticsService.logClickEvents('click', 'Id Examples', 'id_click', example.label)">{{
+          example.label
+        }}</a>
         }
       </div>
       <!-- //TODO:To be implemented later! -->

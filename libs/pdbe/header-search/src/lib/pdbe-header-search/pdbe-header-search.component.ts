@@ -5,7 +5,7 @@ import { Subject } from 'rxjs';
 
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { DataLayerService, HeaderSearchConfig, ThemeType } from '@pdbc/core';
+import { DataLayerService, GoogleAnalyticsService, HeaderSearchConfig, ThemeType } from '@pdbc/core';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -27,6 +27,7 @@ export class PdbeHeaderSearchComponent implements OnInit {
   });
 
   public readonly dlService = inject(DataLayerService);
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   constructor(private fb: FormBuilder) {}
 

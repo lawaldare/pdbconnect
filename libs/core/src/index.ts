@@ -16,3 +16,4 @@ export * from './lib/cell-renderers/boolean.component';
 export * from './lib/cell-renderers/external-link.component';
 export * from './lib/services/google-analytics/data-layer.service';
 export * from './lib/services/google-analytics/window-reference.service';
+export * from './lib/services/google-analytics/google-analytics.service';

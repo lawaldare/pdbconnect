@@ -4,8 +4,12 @@
 </button>
 <mat-menu #menu="matMenu">
   @for(option of options(); track option.url){ @if(option.downloadable){
-  <a (click)="dlService.logClickEvents('dowload_list', 'dowload_list_click', option.name)" mat-menu-item [href]="option.url" download>{{ option.name }}</a>
+  <a (click)="googleAnalyticsService.logClickEvents('click', 'Download list', 'dowload_list_click', option.name)" mat-menu-item [href]="option.url" download>{{
+    option.name
+  }}</a>
   } @else {
-  <a (click)="dlService.logClickEvents('dowload_list', 'dowload_list_click', option.name)" mat-menu-item [href]="option.url" target="_blank">{{ option.name }}</a>
+  <a (click)="googleAnalyticsService.logClickEvents('click', 'Download list', 'dowload_list_click', option.name)" mat-menu-item [href]="option.url" target="_blank">{{
+    option.name
+  }}</a>
   } }
 </mat-menu>
