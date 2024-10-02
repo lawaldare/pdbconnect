@@ -1,11 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { HeaderSearchConfig, ThemeType } from '@pdbc/core';
+import { DataLayerService, HeaderSearchConfig, ThemeType } from '@pdbc/core';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -25,6 +25,8 @@ export class PdbeHeaderSearchComponent implements OnInit {
   public form = this.fb.group({
     searchTerm: '',
   });
+
+  public readonly dlService = inject(DataLayerService);
 
   constructor(private fb: FormBuilder) {}
 

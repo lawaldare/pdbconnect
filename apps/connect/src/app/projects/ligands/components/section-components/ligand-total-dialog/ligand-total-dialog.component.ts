@@ -20,9 +20,9 @@ export class LigandTotalDialogComponent {
   };
 
   public readonly colDefs: ColDef[] = [
-    { headerName: 'PDB ID', field: 'pdb_id' },
-    { headerName: 'AUTH ASYM ID', field: 'auth_asym_id' },
-    { headerName: 'STRUCT ASYM ID', field: 'struct_asym_id' },
+    { headerName: 'PDB ID', field: 'pdb_id', flex: 1 },
+    { headerName: 'AUTH ASYM ID', field: 'auth_asym_id', flex: 1 },
+    { headerName: 'STRUCT ASYM ID', field: 'struct_asym_id', flex: 1 },
   ];
 
   public rowData!: Chain[];

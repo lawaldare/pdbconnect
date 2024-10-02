@@ -14,3 +14,5 @@ export * from './lib/services/download-file-type.service';
 export * from './lib/constants/ag-grid.constant';
 export * from './lib/cell-renderers/boolean.component';
 export * from './lib/cell-renderers/external-link.component';
+export * from './lib/services/google-analytics/data-layer.service';
+export * from './lib/services/google-analytics/window-reference.service';

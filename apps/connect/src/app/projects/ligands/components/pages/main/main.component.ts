@@ -18,7 +18,7 @@ import { switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { headerLogoMenuConfig, headerSearchConfig, navSections } from '../../../ligand.constant';
 import { MainComponentStore } from './main.store';
-import { MaterialModule } from '@pdbc/core';
+import { DataLayerService, MaterialModule } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-main',
@@ -46,6 +46,7 @@ export class LigandsMainPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(MainComponentStore);
+  public readonly dlService = inject(DataLayerService);
 
   public readonly headerLogoMenuConfig = headerLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchConfig;
@@ -74,5 +75,6 @@ export class LigandsMainPageComponent implements OnInit {
 
   public openMolstarDialog(): void {
     this.store.openMolstarDialog();
+    this.dlService.logClickEvents('button_click', 'view_3D_click', 'view 3D');
   }
 }
