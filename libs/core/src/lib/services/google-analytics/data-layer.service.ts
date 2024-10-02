@@ -26,13 +26,13 @@ export class DataLayerService {
     this.pingHome(hit);
   }
 
-  public logClickEvents(eventName: string, eventCategory: string, eventLabel: any, eventValue = ''): void {
+  public logClickEvents(event_name: string, event_category: string, event_action: string, event_label: any, event_value = ''): void {
     const hit = {
-      eventName,
-      eventCategory,
-      eventAction: 'click',
-      eventLabel,
-      eventValue,
+      event_name,
+      event_category,
+      event_action,
+      event_label,
+      event_value,
     };
     this.pingHome(hit);
   }

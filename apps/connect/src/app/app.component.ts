@@ -32,7 +32,7 @@ export class AppComponent implements OnInit {
   constructor(private _router: Router) {
     this._router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((e: NavigationEnd) => {
       gtag('js', new Date());
-      gtag('config', environment.googleAnalyticsTag);
+      gtag('config', environment.googleAnalyticsTag, { debug_mode: true });
     });
   }
 
