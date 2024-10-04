@@ -1,6 +1,7 @@
 <div id="structures-section">
   <header>
-    <h3>Bond structures</h3>
+    <h3>Bound structures</h3>
+    @if(rowData().length){
     <button class="vf-button vf-button--link" (click)="downloadCSV()">
       Download structures (csv)
       <i class="icon icon-common icon-download"></i>
@@ -9,7 +10,9 @@
       Download coordinates (mmCIF)
       <i class="icon icon-common icon-download"></i>
     </button>
+    }
   </header>
+  @if(rowData().length){
   <section class="filter">
     <div class="group">
       <p>{{ dataStatistics() }}</p>
@@ -19,6 +22,7 @@
       </mat-radio-group>
     </div>
   </section>
+  }
 
   <div style="margin-top: 5px; height: 500px">
     <ag-grid-angular

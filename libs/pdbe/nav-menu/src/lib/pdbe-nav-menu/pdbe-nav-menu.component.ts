@@ -1,8 +1,9 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ActivatedRoute } from '@angular/router'; // <-- do not forget to import
 import { delay } from 'rxjs';
+import { UtilService } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-pdbe-nav-menu',
@@ -20,14 +21,15 @@ export class PdbeNavMenuComponent implements OnInit {
   }[] = [];
   @Input() verticalStickyElementId?: string;
 
-  // sectionId of navSection that current active on nav component (bold and with background)
-  currentlyActive?: string;
-  previouslyActive?: string;
+  private readonly UtilService = inject(UtilService);
+  private readonly route = inject(ActivatedRoute);
 
   // sectionId of navSection that current active on nav component (bold and with background)
-  clickedActive?: string;
+  public currentlyActive = this.UtilService.currentlyActive;
+  public previouslyActive?: string;
 
-  constructor(private route: ActivatedRoute) {}
+  // sectionId of navSection that current active on nav component (bold and with background)
+  public clickedActive?: string;
 
   ngOnInit() {
     // if page route contains anchor navigation, trigger scrolling to it
@@ -125,6 +127,7 @@ export class PdbeNavMenuComponent implements OnInit {
      * @param {Event} _e - The scroll event.
      */
     const checkScrolledIntoView = (_e: Event) => {
+      console.log('Scrolled', _e);
       // If scrolling was initiated by a click, do nothing
       if (this.clickedActive) return;
 
@@ -164,10 +167,12 @@ export class PdbeNavMenuComponent implements OnInit {
       const st = window.pageYOffset || document.documentElement.scrollTop; // Credits: "https://github.com/qeremy/so/blob/master/so.dom.js#L426"
       if (st > lastScrollTop) {
         // Scrolling down: set the first visible section as active
-        this.currentlyActive = activeList[0];
+        // this.currentlyActive = activeList[0];
+        this.UtilService.setCurrentActive(activeList[0]);
       } else if (st < lastScrollTop) {
         // Scrolling up: set the last visible section as active
-        this.currentlyActive = activeList[activeList.length - 1];
+        // this.currentlyActive = activeList[activeList.length - 1];
+        this.UtilService.setCurrentActive(activeList[activeList.length - 1]);
       }
       // Update the last known scroll position (prevent negative values e.g Mobile)
       lastScrollTop = st <= 0 ? 0 : st;
@@ -195,7 +200,8 @@ export class PdbeNavMenuComponent implements OnInit {
    * @param elementId element id to scroll to
    */
   scrollTo(elementId: string) {
-    this.currentlyActive = elementId;
+    // this.currentlyActive = elementId;
+    this.UtilService.setCurrentActive(elementId);
     const element = document.getElementById(elementId);
     // element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     this.smoothScroll(element!, 500);

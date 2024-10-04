@@ -38,6 +38,7 @@ h3 {
     .resource-ids {
       display: flex;
       flex-direction: column;
+      min-height: 40px;
       max-height: 100px;
       overflow-y: auto;
       width: 100%;

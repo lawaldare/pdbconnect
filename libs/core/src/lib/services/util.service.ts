@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Clipboard } from '@angular/cdk/clipboard';
 
@@ -99,5 +99,11 @@ export class UtilService {
     this._snackBar.open(message, action, {
       duration: 3000,
     });
+  }
+
+  public readonly currentlyActive = signal<string>('');
+
+  public setCurrentActive(activeSection: string) {
+    this.currentlyActive.set(activeSection);
   }
 }

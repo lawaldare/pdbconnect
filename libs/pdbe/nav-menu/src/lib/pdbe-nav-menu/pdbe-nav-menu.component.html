@@ -1,11 +1,11 @@
-@if (navSections.length > 0) {
+@if (navSections.length) {
 <div class="nav-menu">
   @for (navSection of navSections; track navSection.sectionId; let i = $index) {
   <div
     [id]="navSection.sectionId + '_to_activate'"
     [ngClass]="[
       navSection.isSubSection ? 'nav-subsection' : 'nav-section',
-      navSection.sectionId === currentlyActive || navSection.sectionId === clickedActive ? 'isactive' : ''
+      navSection.sectionId === currentlyActive() || navSection.sectionId === clickedActive ? 'isactive' : ''
     ]"
   >
     <a

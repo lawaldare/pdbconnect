@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, inject, input, OnChanges, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, input, OnChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CrossLink } from '../../../services/aggregated-api.service';
 import { LigandSpecificDatabasesComponentFacade } from './ligand-specific-databases.facade';

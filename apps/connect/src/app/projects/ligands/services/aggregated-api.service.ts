@@ -78,7 +78,7 @@ export class AggregatedApiService {
   }
 
   fetchSubstructures(ligandId: string): Observable<PDBSubstructures> {
-    const substructureUrl = `${this.AggregatedApiUrl}compound/substructures/${ligandId}`;
+    const substructureUrl = `${this.AggregatedApiUrl}pdb/compound/substructures/${ligandId}`;
     return this.http.get<PDBSubstructures>(substructureUrl);
   }
 

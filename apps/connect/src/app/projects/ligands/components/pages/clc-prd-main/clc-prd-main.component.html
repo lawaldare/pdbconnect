@@ -7,14 +7,26 @@
     <article>
       @if(descriptionLoaded()){
       <section class="hero">
-        <h2>{{ ligandId }}</h2>
+        <header>
+          <h2>{{ ligandId }}</h2>
+          <div class="annotations">
+            @for(annotation of description().annotations; track annotation.name){ @if(annotation.name === 'cofactor-like'){
+            <a class="cofactor-like" [href]="annotation.url" target="_blank">Cofactor-like</a>
+            } @if(annotation.name === 'drug-like'){
+            <a class="drug-like" [href]="annotation.url" target="_blank">Drug-like</a>
+            } @if(annotation.name === 'reactant-like'){
+            <a class="reactant-like" [href]="annotation.url" target="_blank">Reactant-like</a>
+            } }
+          </div>
+        </header>
         <h4>{{ description().name }}</h4>
-        @for(annotation of description().annotations; track annotation.name){
-        <pdbc-pdbe-chips [label]="annotation.name | titlecase" [url]="annotation.url" backgroundColor="#F9CF3B" fontColor="#1A1C1A" />
-        }
         <div class="action-buttons">
           <button class="vf-button vf-button--primary vf-button--sm" (click)="openMolstarDialog()">View 3D</button>
-          <lib-dropdown-menu [options]="downloadOptions()" title="Download as"></lib-dropdown-menu>
+          <lib-dropdown-menu
+            [options]="downloadOptions()"
+            title="Download as"
+            (click)="googleAnalyticsService.logClickEvents('download_dropdown_open', 'Interaction', 'open_dropdown', 'Download as')"
+          ></lib-dropdown-menu>
         </div>
       </section>
       <section class="description">

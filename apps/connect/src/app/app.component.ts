@@ -4,6 +4,7 @@ import { VfEbiHeaderComponent } from '@vf-lib/ebi-header';
 import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 import { filter } from 'rxjs';
 import { environment } from '../environments/environment';
+import { UtilService } from '@pdbc/core';
 
 declare const gtag: any;
 @Component({
@@ -14,9 +15,10 @@ declare const gtag: any;
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  constructor(private _router: Router) {
+  constructor(private _router: Router, private utilService: UtilService) {
     this._router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((e: NavigationEnd) => {
       window.scrollTo(0, 0);
+      this.utilService.setCurrentActive('');
       gtag('js', new Date());
       gtag('config', environment.googleAnalyticsTag, { debug_mode: true });
     });
