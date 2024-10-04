@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { of, switchMap } from 'rxjs';
-import { ClickOutsideDirective, MaterialModule, UtilService } from '@pdbc/core';
+import { ClickOutsideDirective, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { ImageCarouselComponentFacade } from './image-carousel.facade';
 import { LigandUtilService } from '../../../ligand-util.service';
@@ -28,6 +28,8 @@ export class ImageCarouselComponent implements AfterViewInit {
   private readonly utilService = inject(UtilService);
   private readonly facade = inject(ImageCarouselComponentFacade);
   private readonly ligandUtilService = inject(LigandUtilService);
+
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   public structureDescription = this.facade.structureDescription;
   public showTooltips = signal(false);
@@ -55,6 +57,7 @@ export class ImageCarouselComponent implements AfterViewInit {
 
   public onClickedOutside(): void {
     this.showTooltips.set(false);
+    this.googleAnalyticsService.logClickEvents('tooltip_hover', 'Information', 'hover_tooltip', 'Tooltip Information');
   }
 
   public get showCopyButtons(): boolean {
@@ -63,17 +66,21 @@ export class ImageCarouselComponent implements AfterViewInit {
 
   public copySmiles(): void {
     this.utilService.copy(this.facade.currentFragment().descriptors.smiles);
+    this.googleAnalyticsService.logClickEvents('copy_chemical_data', 'Chemical Info', 'copy_formula', 'SMILES');
   }
 
   public copyInchiKeys(): void {
     this.utilService.copy(this.facade.currentFragment().descriptors.inchikey);
+    this.googleAnalyticsService.logClickEvents('copy_chemical_data', 'Chemical Info', 'copy_formula', 'InChiKeys');
   }
 
-  onPreviousClick() {
+  public onPreviousClick() {
     this.facade.onPreviousClick(this.renderer);
+    this.googleAnalyticsService.logClickEvents('fragment_gallery_navigation', 'Fragment Images', 'navigate_left', 'Previous Fragment Image');
   }
 
-  onNextClick() {
+  public onNextClick() {
     this.facade.onNextClick(this.renderer);
+    this.googleAnalyticsService.logClickEvents('fragment_gallery_navigation', 'Fragment Images', 'navigate_right', 'Next Fragment Image');
   }
 }

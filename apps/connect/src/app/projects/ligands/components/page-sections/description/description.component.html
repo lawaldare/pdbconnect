@@ -19,7 +19,7 @@
         matTooltipClass="description-tooltip"
         matTooltip="Copy the formula"
         matTooltipPosition="above"
-        (click)="copy(description().formula)"
+        (click)="copy(description().formula, 'Formula')"
       ></i>
     </article>
   </div>
@@ -32,7 +32,7 @@
         matTooltipClass="description-tooltip"
         matTooltip="Copy the IUPAC InChI"
         matTooltipPosition="above"
-        (click)="copy(description().inchi)"
+        (click)="copy(description().inchi, 'IUPAC InChI')"
       ></i>
     </article>
   </div>
@@ -47,7 +47,7 @@
         matTooltipClass="description-tooltip"
         matTooltip="Copy the IUPAC InChIKey"
         matTooltipPosition="above"
-        (click)="copy(description().inchikey)"
+        (click)="copy(description().inchikey, 'IUPAC InChIKey')"
       ></i>
     </article>
   </div>
@@ -63,7 +63,7 @@
         matTooltipClass="description-tooltip"
         matTooltip="Copy the SMILES"
         matTooltipPosition="above"
-        (click)="copySmiles(description().smiles)"
+        (click)="copySmiles(description().smiles, 'SMILES')"
       ></i>
     </article>
   </div>
@@ -79,7 +79,7 @@
         matTooltipClass="description-tooltip"
         matTooltip="Copy the SMILES"
         matTooltipPosition="above"
-        (click)="copySmiles(description().smiles)"
+        (click)="copySmiles(description().smiles, 'SMILES')"
       ></i>
     </article>
   </div>
@@ -88,7 +88,13 @@
   <div class="info-row source-row">
     <span class="info-row-title"></span>
     <div class="info-row-content">
-      Source <a href="https://www.eyesopen.com/" target="_blank">OpenEye <i class="icon icon-link icon-common"></i></a>
+      Source
+      <a
+        href="https://www.eyesopen.com/"
+        target="_blank"
+        (click)="googleAnalyticsService.logClickEvents('outbound_click', 'External Source', 'click_source', 'OpenEye')"
+        >OpenEye <i class="icon icon-link icon-common"></i
+      ></a>
     </div>
   </div>
   @if(description().subcomponent_occurrences && !isMainLigandId()){
@@ -113,7 +119,7 @@
           matTooltipClass="description-tooltip"
           matTooltip="Copy the ID"
           matTooltipPosition="above"
-          (click)="copy(supercomponents().join(', '))"
+          (click)="copy(supercomponents().join(', '), 'List of ids')"
         ></i>
         }
       </div>

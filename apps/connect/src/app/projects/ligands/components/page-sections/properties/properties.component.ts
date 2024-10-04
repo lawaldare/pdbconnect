@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { PhysChemProperties, LigandProperty } from '../../../data-models/description.model';
 import { NameValueComponent } from '../../section-components/name-value/name-value.component';
 import { LigandUtilService } from '../../../ligand-util.service';
+import { GoogleAnalyticsService } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-properties',
@@ -24,6 +25,7 @@ export class PropertiesComponent implements OnChanges {
   private propertiesToJSON!: Record<string, any[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   private readonly ligandUtilService = inject(LigandUtilService);
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   ngOnChanges() {
     this.molProperties = [
@@ -211,5 +213,6 @@ export class PropertiesComponent implements OnChanges {
 
   public downloadJSON(): void {
     this.ligandUtilService.downloadJSON(this.propertiesToJSON, 'physiochemical-properties');
+    this.googleAnalyticsService.logClickEvents('download_physicochemical_properties', 'Download', 'download_properties', 'Physicochemical Properties');
   }
 }

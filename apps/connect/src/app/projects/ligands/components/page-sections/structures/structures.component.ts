@@ -5,7 +5,15 @@ import { Chain, LigandStructure } from '../../../data-models/structure.model';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AG_Grid_Theme_Class, agGridOptionsBase, DownloadFileTypeService, DownloadService, ExternalLinkRendererComponent, MaterialModule } from '@pdbc/core';
+import {
+  AG_Grid_Theme_Class,
+  agGridOptionsBase,
+  DownloadFileTypeService,
+  DownloadService,
+  ExternalLinkRendererComponent,
+  GoogleAnalyticsService,
+  MaterialModule,
+} from '@pdbc/core';
 import { switchMap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
@@ -34,6 +42,8 @@ export class StructuresComponent {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   private readonly downloadService = inject(DownloadService);
   private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
+
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   public dataStatistics = signal<string>('');
   public filter = new FormControl('proteins');
@@ -196,6 +206,7 @@ export class StructuresComponent {
       const url = `${environment.pdbeBaseUrl}download/docs`;
       window.open(url);
     }
+    this.googleAnalyticsService.logClickEvents('download_coordinates_mmcif', 'Download', 'download_mmcif', 'Download coordinates');
   }
 
   public downloadCSV(): void {
@@ -211,6 +222,7 @@ export class StructuresComponent {
     });
 
     this.downloadFileTypeService.downloadCSV(mappedData, 'structures');
+    this.googleAnalyticsService.logClickEvents('download_structure_csv', 'Download', 'download_csv', 'Download structures');
   }
 
   private getInteractingChain(chains: Chain[]): string {
