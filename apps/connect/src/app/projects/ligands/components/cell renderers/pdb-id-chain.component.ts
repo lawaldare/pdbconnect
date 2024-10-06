@@ -1,7 +1,7 @@
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community/';
 import { Component, inject } from '@angular/core';
-import { GoogleAnalyticsService } from '../services/google-analytics/google-analytics.service';
+import { GoogleAnalyticsService } from '@pdbc/core';
 
 @Component({
   standalone: true,
@@ -20,7 +20,7 @@ import { GoogleAnalyticsService } from '../services/google-analytics/google-anal
     }
   `,
 })
-export class ExternalLinkRendererComponent implements ICellRendererAngularComp {
+export class PDBIdChainRendererComponent implements ICellRendererAngularComp {
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   // Init Cell Value

@@ -2,7 +2,12 @@
 <div id="ligand-databases-section">
   <header>
     <h3>Ligand-specific databases</h3>
-    <button class="vf-button vf-button--link" (click)="facade.downloadJSON()">
+    <button
+      class="vf-button vf-button--link"
+      (click)="
+        facade.downloadJSON(); googleAnalyticsService.logClickEvents('download_databases_ids', 'Ligand-specific databases', 'download_ids', 'ligand_databases_ids')
+      "
+    >
       Download list of all databases IDs
       <i class="icon icon-common icon-download"></i>
     </button>
@@ -12,8 +17,8 @@
     <div class="cross-link">
       <p>{{ crosslink.resource }}</p>
       <div class="resource-ids" (scroll)="onScroll($event)">
-        @for(id of crosslink.resourceIds; track id){ @let url = crosslink.link + id;
-        <a [href]="url" target="_blank">
+        @for(id of crosslink.resourceIds; track id){ @let url = crosslink.link + id; @let eventName = 'click_' + crosslink.resource + '_link';
+        <a [href]="url" target="_blank" (click)="googleAnalyticsService.logClickEvents(eventName, 'Ligand-specific databases', 'click_database_link', id)">
           {{ id }}
           <i class="icon icon-link icon-common"></i>
         </a>

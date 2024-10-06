@@ -3,6 +3,7 @@ import { ICellRendererParams } from 'ag-grid-community/';
 import { Component, inject } from '@angular/core';
 import { Chain } from '../../data-models/structure.model';
 import { LigandInteractingChainsNumberPipe } from '../../pipes/ligandInteractingChainsNumber.pipe';
+import { GoogleAnalyticsService } from '@pdbc/core';
 
 export interface TotalStructureCellRendererParams extends ICellRendererParams {
   value: Chain[];
@@ -16,6 +17,7 @@ export interface TotalStructureCellRendererParams extends ICellRendererParams {
 })
 export class TotalStructureRendererComponent implements ICellRendererAngularComp {
   params!: TotalStructureCellRendererParams;
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly chainPipe = inject(LigandInteractingChainsNumberPipe);
 
   // Init Cell Value
@@ -37,5 +39,6 @@ export class TotalStructureRendererComponent implements ICellRendererAngularComp
   openTotalDialog(event: Event): void {
     event.preventDefault();
     this.params.onValueClicked(this.params);
+    this.googleAnalyticsService.logClickEvents('click_total_structure', 'Structure', 'click_number_of_structures', this.params.value.length.toString());
   }
 }

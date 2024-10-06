@@ -6,7 +6,7 @@ import { PDBIntxData } from '../../../data-models/interaction.model';
 import { ActivatedRoute } from '@angular/router';
 import { EMPTY, forkJoin, map, mergeMap, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MaterialModule } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { InteractionsHeatmapComponent } from '../../../components/interactions-heatmap/interactions-heatmap.component';
@@ -34,6 +34,8 @@ export class InteractionComponent implements AfterViewInit {
   private readonly renderer = inject(Renderer2);
   private readonly ligandUtilService = inject(LigandUtilService);
   private readonly _snackBar = inject(MatSnackBar);
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+
   public interaction!: PDBIntxData; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   public ligandInstances = signal(0);
@@ -84,6 +86,7 @@ export class InteractionComponent implements AfterViewInit {
         duration: 3000,
       });
     }
+    this.googleAnalyticsService.logClickEvents('download_interaction', 'Interations', 'download_all_interaction', 'all_interactions');
   }
 
   private createLigandEnvironment(container: ElementRef, prop: Depiction): void {

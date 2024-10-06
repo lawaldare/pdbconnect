@@ -12,6 +12,7 @@ import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LigandUtilService } from '../../../ligand-util.service';
+import { GoogleAnalyticsService } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-related-ligands',
@@ -54,6 +55,7 @@ export class RelatedLigandsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ligandUtilService = inject(LigandUtilService);
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   public sameScaffoldTerm = new FormControl('');
   public sameLigandsTerm = new FormControl('');
@@ -286,5 +288,6 @@ export class RelatedLigandsComponent implements OnInit {
 
   public downloadJSON(): void {
     this.ligandUtilService.downloadJSON(this.relatedLigand, 'related-ligands');
+    this.googleAnalyticsService.logClickEvents('download_related_ligands', 'Related Ligands', 'download_ligands', 'related_ligands');
   }
 }

@@ -5,7 +5,7 @@ import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction } from '../../../data-models/structure.model';
 import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MaterialModule, UtilService } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 
@@ -31,6 +31,7 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly util = inject(UtilService);
   private readonly dialog = inject(MatDialog);
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   renderLigandImg() {
     this.resetRenderer();

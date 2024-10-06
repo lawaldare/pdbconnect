@@ -127,7 +127,6 @@ export class PdbeNavMenuComponent implements OnInit {
      * @param {Event} _e - The scroll event.
      */
     const checkScrolledIntoView = (_e: Event) => {
-      console.log('Scrolled', _e);
       // If scrolling was initiated by a click, do nothing
       if (this.clickedActive) return;
 

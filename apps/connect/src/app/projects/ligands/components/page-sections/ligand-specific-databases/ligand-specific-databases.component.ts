@@ -2,6 +2,7 @@ import { Component, ElementRef, inject, input, OnChanges, ViewChild } from '@ang
 import { CommonModule } from '@angular/common';
 import { CrossLink } from '../../../services/aggregated-api.service';
 import { LigandSpecificDatabasesComponentFacade } from './ligand-specific-databases.facade';
+import { GoogleAnalyticsService } from '@pdbc/core';
 
 export interface MappedCrossLink {
   resource: string;
@@ -20,6 +21,8 @@ export interface MappedCrossLink {
 export class LigandSpecificDatabasesComponent implements OnChanges {
   public crossLinks = input.required<CrossLink[]>();
   public readonly facade = inject(LigandSpecificDatabasesComponentFacade);
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+
   public mappedCrossLinks = this.facade.crosslinks;
 
   @ViewChild('crosslink', { read: ElementRef }) crosslink!: ElementRef;
