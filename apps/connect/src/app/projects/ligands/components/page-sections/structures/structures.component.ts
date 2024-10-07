@@ -74,13 +74,17 @@ export class StructuresComponent {
     },
     {
       headerName: 'Total structures',
-      field: 'count',
+      field: 'interacting_chains',
       cellRenderer: TotalStructureRendererComponent,
       cellRendererParams: {
         onValueClicked: (params: any) => this.openTotalDialog(params.data.interacting_chains),
       },
       hide: false,
-      width: 130,
+      width: 150,
+      comparator: (a, b): number => {
+        return this.chainPipe.transform(a) - this.chainPipe.transform(b);
+      },
+      sort: 'desc',
     },
     {
       headerName: 'PDB ID and Chain',
@@ -94,8 +98,9 @@ export class StructuresComponent {
     },
     {
       headerName: 'Species',
-      valueFormatter: () => '--',
-      minWidth: 170,
+      field: 'species',
+      cellRenderer: (params: any) => params.data.species.scientific_name || '--',
+      minWidth: 160,
     },
     {
       headerName: 'EC number',
@@ -106,7 +111,7 @@ export class StructuresComponent {
       width: 150,
     },
     {
-      headerName: 'Ligand annotation',
+      headerName: 'Ligand function',
       field: 'annotations',
       filter: true,
       cellRenderer: LigandAnnotationRendererComponent,

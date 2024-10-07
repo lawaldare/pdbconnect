@@ -12,11 +12,22 @@ import { LigandSmilesPipe, Smile } from '../../../pipes/ligandsmiles.pipe';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { IsPartOfDirective } from '../../../directives/is-part-of.directive';
 import { ComponentType } from '@angular/cdk/overlay';
+import { LigandSmilesDirective } from '../../../directives/ligandsmiles.directive';
 
 @Component({
   selector: 'pdbc-description',
   standalone: true,
-  imports: [CommonModule, TruncateTextDirective, IsPartOfDirective, MaterialModule, LigandSmilesPipe, ToolTipComponent, CCDsDirective, RouterModule],
+  imports: [
+    CommonModule,
+    TruncateTextDirective,
+    IsPartOfDirective,
+    MaterialModule,
+    LigandSmilesPipe,
+    ToolTipComponent,
+    CCDsDirective,
+    RouterModule,
+    LigandSmilesDirective,
+  ],
   templateUrl: './description.component.html',
   styleUrls: ['./description.component.scss'],
   providers: [LigandSmilesPipe],

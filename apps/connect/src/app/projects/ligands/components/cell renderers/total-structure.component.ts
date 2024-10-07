@@ -21,7 +21,6 @@ export class TotalStructureRendererComponent implements ICellRendererAngularComp
   private readonly chainPipe = inject(LigandInteractingChainsNumberPipe);
 
   // Init Cell Value
-  public value!: Chain[];
   public total!: number;
   onValueClicked!: () => void;
   agInit(params: ICellRendererParams): void {
@@ -31,8 +30,7 @@ export class TotalStructureRendererComponent implements ICellRendererAngularComp
   // Return Cell Value
   refresh(params: ICellRendererParams): boolean {
     this.params = params as TotalStructureCellRendererParams;
-    this.value = params.data.interacting_chains;
-    this.total = this.chainPipe.transform(this.value);
+    this.total = this.chainPipe.transform(this.params.value);
     return true;
   }
 

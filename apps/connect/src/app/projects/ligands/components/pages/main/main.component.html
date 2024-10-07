@@ -11,11 +11,11 @@
           <h2>{{ ligandId }}</h2>
           <div class="annotations">
             @for(annotation of description().annotations; track annotation.name){ @if(annotation.name === 'cofactor-like'){
-            <a class="cofactor-like" [href]="annotation.url" target="_blank">Cofactor-like</a>
+            <span class="cofactor-like" matTooltipClass="complex-name-tooltip" [matTooltip]="cofactorTooltip" matTooltipPosition="below">Cofactor-like</span>
             } @if(annotation.name === 'drug-like'){
-            <a class="drug-like" [href]="annotation.url" target="_blank">Drug-like</a>
+            <span class="drug-like" matTooltipClass="complex-name-tooltip" [matTooltip]="drugTooltip" matTooltipPosition="below">Drug-like</span>
             } @if(annotation.name === 'reactant-like'){
-            <a class="reactant-like" [href]="annotation.url" target="_blank">Reactant-like</a>
+            <p class="reactant-like" matTooltipClass="complex-name-tooltip" [matTooltip]="reactantTooltip" matTooltipPosition="below">Reactant-like</p>
             } }
           </div>
         </header>

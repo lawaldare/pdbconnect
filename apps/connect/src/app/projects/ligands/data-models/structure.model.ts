@@ -30,6 +30,7 @@ export interface LigandStructure {
   interacting_chains: Chain[];
   annotations: string[];
   pdb_id?: string;
+  num_ligand_instances: number;
 }
 
 export interface Chain {

@@ -4,7 +4,7 @@ import { AggregatedApiService, Bond } from '../../../services/aggregated-api.ser
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-import { AG_Grid_Theme_Class, agGridOptionsBase, BooleanRendererComponent, MaterialModule } from '@pdbc/core';
+import { AG_Grid_Theme_Class, agGridOptionsBase, BooleanRendererComponent, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridOptions, ColDef } from 'ag-grid-community';
 
@@ -19,6 +19,8 @@ export class BondsTableDialogComponent {
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly destroyRef = inject(DestroyRef);
   public readonly dialogRef = inject(MatDialogRef<BondsTableDialogComponent>);
+  private readonly downloadFileTypeService = inject(DownloadFileTypeService);
+
   public bonds: Bond[] = [];
   public readonly displayedColumns: string[] = ['atom_1', 'atom_2', 'bond_type', 'bond_order', 'aromatic', 'stereo', 'ideal_length'];
   public readonly gridOptions: GridOptions = {
@@ -53,5 +55,9 @@ export class BondsTableDialogComponent {
         this.numberOfBonds.set(data.length);
         this.paginationPageSizeSelector.update((options) => [...new Set([...options, data.length])]);
       });
+  }
+
+  public downloadCSV(): void {
+    this.downloadFileTypeService.downloadCSV(this.rowData, 'bonds');
   }
 }

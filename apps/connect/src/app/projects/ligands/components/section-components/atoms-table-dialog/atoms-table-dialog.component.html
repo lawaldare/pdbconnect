@@ -4,8 +4,12 @@
 <section>
   <h2>Atoms of Molecule</h2>
   <p>Molecule: {{ dialogData.ligandId }}</p>
-  <p>Atoms of a chemical element, that composes a molecule</p>
+  <p>Atoms of a chemical element, that composes a molecule from ideal coordinates of {{ dialogData.ligandId }}</p>
   <p>Total Number of Atoms: {{ numberOfAtoms() }}</p>
+  <button class="vf-button vf-button--link" (click)="downloadCSV()">
+    Download atoms (csv)
+    <i class="icon icon-common icon-download"></i>
+  </button>
   <div style="margin-top: 5px; height: 566px">
     <ag-grid-angular
       class="ag-theme-quartz"

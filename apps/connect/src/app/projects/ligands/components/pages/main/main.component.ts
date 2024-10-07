@@ -16,7 +16,7 @@ import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-spe
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { headerLogoMenuConfig, headerSearchConfig, navSections } from '../../../ligand.constant';
+import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig, navSections, reactantTooltip } from '../../../ligand.constant';
 import { MainComponentStore } from './main.store';
 import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 
@@ -57,6 +57,10 @@ export class LigandsMainPageComponent implements OnInit {
   public downloadOptions = this.store.downloadOptions;
   public supercomponents = this.store.supercomponents;
   public descriptionLoaded = computed(() => (Object.keys(this.description()).length ? true : false));
+
+  public cofactorTooltip = cofactorTooltip;
+  public drugTooltip = drugTooltip;
+  public reactantTooltip = reactantTooltip;
 
   public ligandId!: string;
 

@@ -116,8 +116,9 @@ export class InteractionComponent implements AfterViewInit {
       acc += [...new Set(mappedValue)].length;
       return acc;
     }, 0);
+    const instances = structures.reduce((acc: number, curr: LigandStructure) => acc + curr.num_ligand_instances, 0);
     this.pdbchains.set(numberOfPDBChains);
     this.pdbstructures.set(structures.length);
-    this.ligandInstances.set(44);
+    this.ligandInstances.set(instances);
   }
 }

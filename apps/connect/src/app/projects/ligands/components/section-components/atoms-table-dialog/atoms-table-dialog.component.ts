@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AggregatedApiService, Atom } from '../../../services/aggregated-api.service';
-import { AG_Grid_Theme_Class, agGridOptionsBase, BooleanRendererComponent, MaterialModule } from '@pdbc/core';
+import { AG_Grid_Theme_Class, agGridOptionsBase, BooleanRendererComponent, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridOptions, ColDef } from 'ag-grid-community';
 
@@ -19,6 +19,7 @@ export class AtomsTableDialogComponent {
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly destroyRef = inject(DestroyRef);
   public readonly dialogRef = inject(MatDialogRef<AtomsTableDialogComponent>);
+  private readonly downloadFileTypeService = inject(DownloadFileTypeService);
 
   public readonly gridOptions: GridOptions = {
     ...agGridOptionsBase,
@@ -54,5 +55,9 @@ export class AtomsTableDialogComponent {
         this.numberOfAtoms.set(data.length);
         this.paginationPageSizeSelector.update((options) => [...new Set([...options, data.length])]);
       });
+  }
+
+  public downloadCSV(): void {
+    this.downloadFileTypeService.downloadCSV(this.rowData, 'atoms');
   }
 }

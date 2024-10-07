@@ -58,15 +58,16 @@ export class MolstarDialogComponent implements AfterViewInit {
               ...curr,
               name: curr.name.toLocaleLowerCase().includes('murcko') ? 'Murcko scaffold highlighted' : `${curr.name} highlighted fragment`,
               caption: curr.name.toLocaleLowerCase().includes('murcko')
-                ? `The Murco scaffold is highlighted in yellow in the PDBe ligand ${this.dialogData.moleculeId}`
-                : `The ${curr.name} fragment is highlighted in yellow in the PDBe ligand ${this.dialogData.moleculeId}`,
+                ? `The Murco scaffold is highlighted in yellow in the PDB ligand ${this.dialogData.moleculeId}`
+                : `The ${curr.name} fragment is highlighted in yellow in the PDB ligand ${this.dialogData.moleculeId}`,
             });
             return acc;
           },
-          [{ name: '', atoms: [], descriptors: {} }]
+          [{ name: 'Default View (no highlight)', atoms: [], descriptors: {}, caption: `PDB Ligand ${this.dialogData.moleculeId}` }]
         );
       });
       this.selectedFrament.set(this.fragments()[0].name);
+      this.caption.set(this.fragments()[0].caption ?? '');
       this.atoms = this.fragments()[0].atoms.length ? this.fragments()[0].atoms[0] : [];
     } else {
       this.showFragmentOptions.set(false);
@@ -141,6 +142,8 @@ export class MolstarDialogComponent implements AfterViewInit {
     const selectedFrament = this.fragments().find((fragment) => fragment.name === event.value);
     if (selectedFrament?.caption) {
       this.caption.set(selectedFrament.caption);
+    } else {
+      this.caption.set('');
     }
     this.selectionConfig = {
       data: [

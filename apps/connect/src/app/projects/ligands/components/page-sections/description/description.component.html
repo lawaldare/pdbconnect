@@ -55,9 +55,7 @@
   <div class="info-row">
     <span class="info-row-title">SMILES</span>
     <article>
-      <div class="info-row-content">
-        {{ description().smiles | ligandSmiles }}
-      </div>
+      <div class="info-row-content" ligandsmiles [smiles]="description().smiles"></div>
       <i
         class="icon icon-common icon-clone"
         matTooltipClass="description-tooltip"
@@ -71,9 +69,7 @@
   <div class="info-row">
     <span class="info-row-title">SMILES</span>
     <article>
-      <div class="info-row-content">
-        {{ description().smiles | ligandSmiles : false }}
-      </div>
+      <div class="info-row-content" ligandsmiles [smiles]="description().smiles" [isMainLigand]="false"></div>
       <i
         class="icon icon-common icon-clone"
         matTooltipClass="description-tooltip"
@@ -100,7 +96,7 @@
   @if(description().subcomponent_occurrences && !isMainLigandId()){
   <div class="info-row">
     <span class="info-row-title">Contains CCDs</span>
-    <div class="info-row-content" ccds [subcomponentOccurrences]="description().subcomponent_occurrences"></div>
+    <div class="info-row-content ccd" ccds [subcomponentOccurrences]="description().subcomponent_occurrences"></div>
   </div>
   } @if(supercomponents().length && isMainLigandId()){
   <div class="info-row">
