@@ -134,6 +134,7 @@ export class StructuresComponent {
       .pipe(
         switchMap((params: { [x: string]: string }) => {
           this.resetColumns();
+          this.setLoading(true);
           const ligandId = params['ligandId'].toUpperCase();
           this.ligandId.set(ligandId);
           return this.aggregatedApiService.fetchLigandStructures(ligandId);
@@ -146,7 +147,12 @@ export class StructuresComponent {
         this.rowData.update(() => [...this.proteins()]);
         this.fetchDataStatistics(data);
         this.paginationPageSizeSelector.update((options) => [...new Set([...options, data.length])]);
+        this.setLoading(false);
       });
+  }
+
+  private setLoading(value: boolean) {
+    this.gridApi.setGridOption('loading', value);
   }
 
   onChange(event: MatRadioChange) {
