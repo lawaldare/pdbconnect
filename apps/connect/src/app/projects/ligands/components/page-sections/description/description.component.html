@@ -23,6 +23,7 @@
       ></i>
     </article>
   </div>
+  @if(description().inchi){
   <div class="info-row">
     <span class="info-row-title">IUPAC InChI</span>
     <article>
@@ -36,6 +37,7 @@
       ></i>
     </article>
   </div>
+  } @if(description().inchikey){
   <div class="info-row">
     <span class="info-row-title">IUPAC InChIKey</span>
     <article>
@@ -51,7 +53,7 @@
       ></i>
     </article>
   </div>
-  @if(description().smiles && isMainLigandId()){
+  } @if(description().smiles.length && isMainLigandId()){
   <div class="info-row">
     <span class="info-row-title">SMILES</span>
     <article>
@@ -65,7 +67,7 @@
       ></i>
     </article>
   </div>
-  } @if(description().smiles && !isMainLigandId()){
+  } @if(description().smiles.length && !isMainLigandId()){
   <div class="info-row">
     <span class="info-row-title">SMILES</span>
     <article>

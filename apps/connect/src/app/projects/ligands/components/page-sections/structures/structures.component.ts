@@ -141,14 +141,21 @@ export class StructuresComponent {
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((data: LigandStructure[]) => {
-        this.generateStructures(data);
-        this.proteins.update(() => [...data]);
-        this.rowData.update(() => [...this.proteins()]);
-        this.fetchDataStatistics(data);
-        this.paginationPageSizeSelector.update((options) => [...new Set([...options, data.length])]);
-        this.setLoading(false);
-      });
+      .subscribe(
+        (data: LigandStructure[]) => {
+          this.generateStructures(data);
+          this.proteins.update(() => [...data]);
+          this.rowData.update(() => [...this.proteins()]);
+          this.fetchDataStatistics(data);
+          this.paginationPageSizeSelector.update((options) => [...new Set([...options, data.length])]);
+          this.setLoading(false);
+        },
+        (error) => {
+          console.error('Error fetching ligand structures:', error);
+          this.setLoading(false);
+          this.rowData.update(() => []);
+        }
+      );
   }
 
   private setLoading(value: boolean) {

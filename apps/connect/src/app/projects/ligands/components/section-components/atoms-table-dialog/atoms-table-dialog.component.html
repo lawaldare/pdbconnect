@@ -16,7 +16,7 @@
       [rowData]="rowData"
       [columnDefs]="colDefs"
       [gridOptions]="gridOptions"
-      (gridReady)="onGridReady()"
+      (gridReady)="onGridReady($event)"
       [paginationPageSizeSelector]="paginationPageSizeSelector()"
     />
   </div>

@@ -24994,7 +24994,13 @@ let Y$ = class extends V$ {
     }
   }
   render() {
-    return yt`<svg class="container"></svg>`;
+    let t = { display: 'none', height: '40px', position: 'absolute', width: '581px', alignItems: 'center', fontSize: '14px' };
+    return (
+      this.getEnd() - this.getStart() > 25 && (t.display = 'flex'),
+      yt`<div style="${Wt(
+        t
+      )}"><p><span>Please zoom using the vertical tracks </span><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjE5Ij4KICAgIDxyZWN0IHg9IjEiIHk9IjAiIHdpZHRoPSI2cHgiIGhlaWdodD0iMThweCIgc3R5bGU9ImZpbGw6IGRhcmtncmV5OyBzdHJva2U6IGJsYWNrOyBzdHJva2Utd2lkdGg6IDFweDsiPjwvcmVjdD4KPC9zdmc+"><span>(until 25 or fewer atoms) to show ligand atom names</span></p></div><svg class="container"></svg>`
+    );
   }
 };
 (W$ = new WeakMap()), (L$ = new WeakMap()), (F$ = new WeakMap()), (Y$ = i([No('pdb-ligand-interactions-sequence')], Y$));
@@ -25010,4 +25016,4 @@ window.customElements
   : document.addEventListener('WebComponentsReady', function () {
       G$();
     });
-//# sourceMappingURL=heatmap-components-v0.1.js.map
+//# sourceMappingURL=heatmap-components-v0.2.js.map

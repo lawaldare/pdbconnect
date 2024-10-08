@@ -5,7 +5,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AggregatedApiService, Atom } from '../../../services/aggregated-api.service';
 import { AG_Grid_Theme_Class, agGridOptionsBase, BooleanRendererComponent, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
-import { GridOptions, ColDef } from 'ag-grid-community';
+import { GridOptions, ColDef, GridReadyEvent } from 'ag-grid-community';
 
 @Component({
   selector: 'pdbc-atoms-table-dialog',
@@ -46,7 +46,8 @@ export class AtomsTableDialogComponent {
 
   constructor(@Inject(MAT_DIALOG_DATA) public dialogData: any) {}
 
-  onGridReady() {
+  onGridReady(event: GridReadyEvent<any>) {
+    event.api.autoSizeAllColumns();
     this.aggregatedApiService
       .getAtoms(this.dialogData.ligandId)
       .pipe(takeUntilDestroyed(this.destroyRef))

@@ -65,11 +65,11 @@ export class LigandsMainPageComponent implements OnInit {
   public ligandId!: string;
 
   ngOnInit(): void {
+    console.log(this.description());
     this.route.params
       .pipe(
         switchMap((params) => {
           this.ligandId = params['ligandId'].toUpperCase();
-          // this.facade.init(this.ligandId);
           this.store.init(this.ligandId);
           return of({});
         }),
