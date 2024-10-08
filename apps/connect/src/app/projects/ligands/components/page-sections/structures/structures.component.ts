@@ -159,11 +159,11 @@ export class StructuresComponent {
     const filterSelected = event.value;
     if (filterSelected === 'proteins') {
       this.gridApi.setColumnsVisible(['pdb_id'], false);
-      this.gridApi.setColumnsVisible(['count'], true);
+      this.gridApi.setColumnsVisible(['interacting_chains'], true);
       this.rowData.update(() => [...this.proteins()]);
     } else {
       this.gridApi.setColumnsVisible(['pdb_id'], true);
-      this.gridApi.setColumnsVisible(['count'], false);
+      this.gridApi.setColumnsVisible(['interacting_chains'], false);
       this.rowData.update(() => [...this.structures()]);
     }
     this.paginationPageSizeSelector.update((options) => [...new Set([...options, this.rowData().length])]);
@@ -171,7 +171,7 @@ export class StructuresComponent {
 
   public resetColumns() {
     this.gridApi.setColumnsVisible(['pdb_id'], false);
-    this.gridApi.setColumnsVisible(['count'], true);
+    this.gridApi.setColumnsVisible(['interacting_chains'], true);
   }
 
   private generateStructures(data: LigandStructure[]): void {
