@@ -42,6 +42,7 @@ export class InteractionComponent implements AfterViewInit {
   public pdbstructures = signal(0);
   public pdbchains = signal(0);
   public showLigandHeatmap = signal(false);
+  public showAtomicNames = signal(false);
 
   ngAfterViewInit() {
     this.route.params
@@ -95,6 +96,11 @@ export class InteractionComponent implements AfterViewInit {
     this.renderer.setProperty(ligand, 'id', 'ligand-int-env');
     this.renderer.setProperty(ligand, 'depiction', prop);
     this.ligandEv = ligand;
+  }
+
+  public toggleAtomNames(): void {
+    this.showAtomicNames.update((value) => !value);
+    this.renderer.setProperty(this.ligandEv, 'atomNames', this.showAtomicNames() ? true : false);
   }
 
   private resetRenderer(): void {

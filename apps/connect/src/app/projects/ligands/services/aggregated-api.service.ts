@@ -20,6 +20,8 @@ export interface DescriptionData {
   annotations: FunctionalAnnotation[];
   crossLinks: CrossLink[];
   subcomponent_occurrences: Record<string, number>;
+  released: boolean;
+  superseded_by: string | undefined;
 }
 
 export interface downloadData {
@@ -153,6 +155,8 @@ export class AggregatedApiService {
       annotations: ligandAnnotations,
       crossLinks: ligandCrossLinks,
       subcomponent_occurrences: ligandSummary.subcomponent_occurrences,
+      released: ligandSummary.released,
+      superseded_by: ligandSummary.superseded_by,
     };
   }
 

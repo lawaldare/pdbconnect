@@ -14,6 +14,6 @@ export class GoogleAnalyticsService {
       event_value: value,
     });
 
-    console.log('gtag event captured...');
+    // console.log('gtag event captured...');
   }
 }

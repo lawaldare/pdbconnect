@@ -8,6 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { tapResponse } from '@ngrx/operators';
+import { Router } from '@angular/router';
 
 type MainState = {
   ligandId: string;
@@ -30,11 +31,13 @@ export const MainComponentStore = signalStore(
     const aggregatedApiService = inject(AggregatedApiService);
     const dialog = inject(MatDialog);
     const ligandUtilService = inject(LigandUtilService);
+    const router = inject(Router);
 
     return {
       init: rxMethod<string>(
         pipe(
           switchMap((ligandId) => {
+            console.log('Fetching ligand details:', ligandId);
             patchState(store, { ligandId });
             let observables: Observable<any>[];
             if (ligandId.startsWith('PRD') || ligandId.startsWith('CLC')) {
@@ -51,15 +54,20 @@ export const MainComponentStore = signalStore(
               tapResponse(
                 ([descriptionData, ligandId, supercomponents]) => {
                   const processDescriptionData = aggregatedApiService.processDescriptionData(ligandId, descriptionData);
-                  // const processDownloadData = aggregatedApiService.processDownloadData(ligandId, downloadData);
+                  if (!processDescriptionData.released && processDescriptionData.superseded_by) {
+                    router.navigate(['/ligands', processDescriptionData.superseded_by]);
+                    return;
+                  }
+
+                  if (!processDescriptionData.released && processDescriptionData.superseded_by === null) {
+                    router.navigate(['/ligands', store.ligandId(), 'unreleased']);
+                    patchState(store, { ligandId, description: {} as DescriptionData, downloadOptions: [], supercomponents: [] });
+                    return;
+                  }
                   patchState(store, {
                     description: processDescriptionData,
                     supercomponents,
                     downloadOptions: [
-                      // { name: 'CIF file', url: processDownloadData.cif, downloadable: true },
-                      // { name: 'Ideal SDF', url: processDownloadData.idealSDF, downloadable: true },
-                      // { name: 'Model SDF', url: processDownloadData.modelSDF, downloadable: true },
-                      // { name: 'Model CML', url: processDownloadData.modelCML, downloadable: true },
                       { name: 'CIF file', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${ligandId}.cif`, downloadable: true },
                       { name: 'Ideal SDF', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${ligandId}_ideal.sdf`, downloadable: true },
                       { name: 'Model SDF', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${ligandId}_model.sdf`, downloadable: true },

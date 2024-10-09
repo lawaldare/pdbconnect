@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, DestroyRef, computed } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DescriptionComponent } from '../../page-sections/description/description.component';
@@ -65,7 +65,6 @@ export class LigandsMainPageComponent implements OnInit {
   public ligandId!: string;
 
   ngOnInit(): void {
-    console.log(this.description());
     this.route.params
       .pipe(
         switchMap((params) => {

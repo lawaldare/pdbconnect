@@ -79,11 +79,13 @@ export class StructuresComponent {
       cellRendererParams: {
         onValueClicked: (params: any) => this.openTotalDialog(params.data.interacting_chains),
       },
+      valueGetter: (params: any) => {
+        return this.chainPipe.transform(params.data.interacting_chains);
+      },
       hide: false,
       width: 150,
-      comparator: (a, b): number => {
-        return this.chainPipe.transform(a) - this.chainPipe.transform(b);
-      },
+      comparator: (a, b): number => a - b,
+      filter: 'agNumberColumnFilter',
       sort: 'desc',
     },
     {
@@ -99,13 +101,21 @@ export class StructuresComponent {
     {
       headerName: 'Species',
       field: 'species',
-      cellRenderer: (params: any) => params.data.species.scientific_name || '--',
+      valueGetter: (params: any) => {
+        const scientificName = params.data.species?.scientific_name ?? '';
+        const commonName = params.data.species?.common_name ? `(${params.data.species.common_name})` : '';
+        return scientificName + commonName || '---';
+      },
+      comparator: (a, b): number => {
+        return a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
+      },
+      filter: 'agTextColumnFilter',
       minWidth: 160,
     },
     {
       headerName: 'EC number',
       field: 'ec_number',
-      cellRenderer: (params: any) => {
+      valueFormatter: (params: any) => {
         return params.data.ec_numbers?.join(', ');
       },
       width: 150,

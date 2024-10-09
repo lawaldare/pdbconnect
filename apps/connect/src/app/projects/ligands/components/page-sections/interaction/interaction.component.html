@@ -26,6 +26,8 @@
       </div>
       <div class="ligandEnv-content">
         <div class="image-container" #imageContainer></div>
+        @let text = showAtomicNames() ? 'Hide' : 'View';
+        <button class="vf-button vf-button--primary vf-button--sm" (click)="toggleAtomNames()">{{ text }} atomic names</button>
       </div>
     </div>
   </div>

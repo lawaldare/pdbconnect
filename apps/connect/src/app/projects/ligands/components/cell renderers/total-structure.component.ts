@@ -12,13 +12,12 @@ export interface TotalStructureCellRendererParams extends ICellRendererParams {
 
 @Component({
   standalone: true,
-  template: `<a href="#" (click)="openTotalDialog($event)">{{ total }}</a>`,
+  template: `<a href="#" (click)="openTotalDialog($event)">{{ params.value }}</a>`,
   providers: [LigandInteractingChainsNumberPipe],
 })
 export class TotalStructureRendererComponent implements ICellRendererAngularComp {
   params!: TotalStructureCellRendererParams;
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
-  private readonly chainPipe = inject(LigandInteractingChainsNumberPipe);
 
   // Init Cell Value
   public total!: number;
@@ -30,7 +29,6 @@ export class TotalStructureRendererComponent implements ICellRendererAngularComp
   // Return Cell Value
   refresh(params: ICellRendererParams): boolean {
     this.params = params as TotalStructureCellRendererParams;
-    this.total = this.chainPipe.transform(this.params.value);
     return true;
   }
 
