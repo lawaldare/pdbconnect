@@ -37,7 +37,6 @@ export const MainComponentStore = signalStore(
       init: rxMethod<string>(
         pipe(
           switchMap((ligandId) => {
-            console.log('Fetching ligand details:', ligandId);
             patchState(store, { ligandId });
             let observables: Observable<any>[];
             if (ligandId.startsWith('PRD') || ligandId.startsWith('CLC')) {
