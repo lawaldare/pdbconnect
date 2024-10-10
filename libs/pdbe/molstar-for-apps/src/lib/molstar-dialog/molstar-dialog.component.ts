@@ -29,6 +29,7 @@ export interface Descriptor {
 })
 export class MolstarDialogComponent implements AfterViewInit {
   private molstarViewInstance: any;
+  private cells: any[] = [];
 
   public selections: { viewValue: string; value: string }[] = [];
   public selected = signal('');
@@ -43,8 +44,12 @@ export class MolstarDialogComponent implements AfterViewInit {
   public showFragmentOptions = signal<boolean>(false);
 
   private readonly highlightColor = { r: 249, g: 207, b: 59 };
+  private readonly defaultColor = { r: 152, g: 152, b: 152 };
 
   public caption = signal<string>('');
+  public count = signal<number>(0);
+
+  private selectedFramentObject: Fragment | undefined;
 
   @ViewChild('viewContainer') viewContainer!: ElementRef;
 
@@ -79,7 +84,7 @@ export class MolstarDialogComponent implements AfterViewInit {
         {
           struct_asym_id: 'A',
           atoms: this.atoms,
-          color: this.atoms.length ? this.highlightColor : { r: 152, g: 152, b: 152 },
+          color: this.atoms.length ? this.highlightColor : this.defaultColor,
         },
       ],
     };
@@ -105,6 +110,7 @@ export class MolstarDialogComponent implements AfterViewInit {
         value: entryList[1],
       },
     ];
+
     this.selected.set(this.selections[1].value);
 
     const molstarParams = {
@@ -124,6 +130,33 @@ export class MolstarDialogComponent implements AfterViewInit {
     };
 
     this.molstarViewInstance.render(container, molstarParams);
+    this.molstarViewInstance.events.loadComplete.subscribe(() => {
+      if (this.count() === 0 || this.selectedFramentObject?.name === 'Default View (no highlight)') {
+        this.displayLabel();
+      } else {
+        this.removeLabel();
+        this.cells = [];
+      }
+    });
+  }
+
+  private async displayLabel() {
+    this.count.update((value) => value + 1);
+    for (const structure of this.molstarViewInstance.plugin.managers.structure.hierarchy.current.structures) {
+      for (const component of structure.components) {
+        const sel = await this.molstarViewInstance.plugin.builders.structure.representation.addRepresentation(component.cell, {
+          type: 'label',
+          typeParams: { level: 'element', borderColor: 'black', sizeFactor: 1.5 },
+        });
+        this.cells.push(sel);
+      }
+    }
+  }
+
+  private removeLabel() {
+    for (const cell of this.cells) {
+      this.molstarViewInstance.plugin.build().delete(cell).commit();
+    }
   }
 
   public onSelectionChange(event: MatSelectChange) {
@@ -139,18 +172,18 @@ export class MolstarDialogComponent implements AfterViewInit {
   }
 
   public onFragmentChange(event: MatSelectChange) {
-    const selectedFrament = this.fragments().find((fragment) => fragment.name === event.value);
-    if (selectedFrament?.caption) {
-      this.caption.set(selectedFrament.caption);
-    } else {
-      this.caption.set('');
+    this.selectedFramentObject = this.fragments().find((fragment) => fragment.name === event.value);
+
+    if (this.selectedFramentObject?.caption) {
+      this.caption.set(this.selectedFramentObject.caption);
     }
+
     this.selectionConfig = {
       data: [
         {
           struct_asym_id: 'A',
-          atoms: selectedFrament?.atoms[0],
-          color: selectedFrament?.atoms.length ? this.highlightColor : { r: 152, g: 152, b: 152 },
+          atoms: this.selectedFramentObject?.atoms[0],
+          color: this.selectedFramentObject?.atoms.length ? this.highlightColor : this.defaultColor,
         },
       ],
     };

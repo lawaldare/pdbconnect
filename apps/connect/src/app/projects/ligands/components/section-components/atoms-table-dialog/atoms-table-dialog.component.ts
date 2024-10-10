@@ -3,9 +3,16 @@ import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AggregatedApiService, Atom } from '../../../services/aggregated-api.service';
-import { AG_Grid_Theme_Class, agGridOptionsBase, BooleanRendererComponent, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
+import { AG_Grid_Theme_Class, agGridOptionsBase, autoSizeStrategy, BooleanRendererComponent, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
-import { GridOptions, ColDef, GridReadyEvent } from 'ag-grid-community';
+import {
+  GridOptions,
+  ColDef,
+  GridReadyEvent,
+  SizeColumnsToContentStrategy,
+  SizeColumnsToFitGridStrategy,
+  SizeColumnsToFitProvidedWidthStrategy,
+} from 'ag-grid-community';
 
 @Component({
   selector: 'pdbc-atoms-table-dialog',
@@ -24,6 +31,8 @@ export class AtomsTableDialogComponent {
   public readonly gridOptions: GridOptions = {
     ...agGridOptionsBase,
   };
+
+  public readonly autoSizeStrategy = autoSizeStrategy;
 
   public readonly themeClass = AG_Grid_Theme_Class;
 

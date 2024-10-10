@@ -4,7 +4,7 @@ import { AggregatedApiService, Bond } from '../../../services/aggregated-api.ser
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-import { AG_Grid_Theme_Class, agGridOptionsBase, BooleanRendererComponent, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
+import { AG_Grid_Theme_Class, agGridOptionsBase, autoSizeStrategy, BooleanRendererComponent, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridOptions, ColDef } from 'ag-grid-community';
 
@@ -43,6 +43,8 @@ export class BondsTableDialogComponent {
 
   public rowData!: Bond[];
   public paginationPageSizeSelector = signal<number[]>([20, 50]);
+
+  public readonly autoSizeStrategy = autoSizeStrategy;
 
   constructor(@Inject(MAT_DIALOG_DATA) public dialogData: any) {}
 

@@ -1,7 +1,7 @@
 import { Component, Inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { AG_Grid_Theme_Class, agGridOptionsBase, MaterialModule } from '@pdbc/core';
+import { AG_Grid_Theme_Class, agGridOptionsBase, autoSizeStrategy, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridOptions, ColDef } from 'ag-grid-community';
 import { Chain } from '../../../data-models/structure.model';
@@ -18,6 +18,8 @@ export class LigandTotalDialogComponent {
     ...agGridOptionsBase,
     paginationPageSize: 10,
   };
+
+  public readonly autoSizeStrategy = autoSizeStrategy;
 
   public readonly colDefs: ColDef[] = [
     { headerName: 'PDB ID', field: 'pdb_id', flex: 1 },

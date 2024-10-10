@@ -1,6 +1,6 @@
 import { detect } from 'detect-browser';
 
-import { GridOptions } from 'ag-grid-community';
+import { GridOptions, SizeColumnsToContentStrategy, SizeColumnsToFitGridStrategy, SizeColumnsToFitProvidedWidthStrategy } from 'ag-grid-community';
 
 function isWebkitScrollbarSupported() {
   // https://developer.mozilla.org/en-US/docs/Web/CSS/::-webkit-scrollbar
@@ -49,4 +49,9 @@ export const agGridOptionsBase: GridOptions = {
   suppressColumnVirtualisation: false,
   singleClickEdit: true,
   tooltipShowDelay: 0,
+};
+
+export const autoSizeStrategy: SizeColumnsToFitGridStrategy | SizeColumnsToFitProvidedWidthStrategy | SizeColumnsToContentStrategy = {
+  type: 'fitGridWidth',
+  defaultMinWidth: 100,
 };
