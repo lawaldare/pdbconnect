@@ -4,6 +4,7 @@ import { MaterialModule } from '@pdbc/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
+import { CustomCasePipe } from './custom-case.pipe';
 
 declare let PDBeMolstarPlugin: any;
 
@@ -23,7 +24,7 @@ export interface Descriptor {
 @Component({
   selector: 'lib-molstar-dialog',
   standalone: true,
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, CustomCasePipe],
   templateUrl: './molstar-dialog.component.html',
   styleUrl: './molstar-dialog.component.scss',
 })
@@ -55,6 +56,7 @@ export class MolstarDialogComponent implements AfterViewInit {
 
   constructor(public dialogRef: MatDialogRef<MolstarDialogComponent>, @Inject(MAT_DIALOG_DATA) public dialogData: any) {
     if (dialogData.fragments) {
+      const id = dialogData.moleculeId.toUpperCase();
       this.showFragmentOptions.set(true);
       this.fragments.update(() => {
         return dialogData.fragments().reduce(
@@ -63,12 +65,25 @@ export class MolstarDialogComponent implements AfterViewInit {
               ...curr,
               name: curr.name.toLocaleLowerCase().includes('murcko') ? 'Murcko scaffold highlighted' : `${curr.name} highlighted fragment`,
               caption: curr.name.toLocaleLowerCase().includes('murcko')
-                ? `The Murco scaffold is highlighted in yellow in the PDB ligand ${this.dialogData.moleculeId}`
-                : `The ${curr.name} fragment is highlighted in yellow in the PDB ligand ${this.dialogData.moleculeId}`,
+                ? `The Murco scaffold is highlighted in yellow in the PDB ligand ${id}`
+                : `The ${curr.name} fragment is highlighted in yellow in the PDB ligand ${id}`,
             });
             return acc;
           },
-          [{ name: 'Default View (no highlight)', atoms: [], descriptors: {}, caption: `PDB Ligand ${this.dialogData.moleculeId}` }]
+          [
+            {
+              name: `Atom-labelled ${id} (no substructure highlighted)`,
+              atoms: [],
+              descriptors: {},
+              caption: `Atom-labelled PDB Ligand ${id}`,
+            },
+            {
+              name: `${id} (no substructure highlighted)`,
+              atoms: [],
+              descriptors: {},
+              caption: `PDB Ligand ${id} (without atomic names)`,
+            },
+          ]
         );
       });
       this.selectedFrament.set(this.fragments()[0].name);
@@ -117,7 +132,7 @@ export class MolstarDialogComponent implements AfterViewInit {
       moleculeId: this.dialogData.moleculeId,
       lowPrecisionCoords: false,
       subscribeEvents: true,
-      selectInteraction: false,
+      selectInteraction: true,
       visualStyle: 'ball-and-stick',
       bgColor: { r: 255, g: 255, b: 255 },
       customData: {
@@ -125,13 +140,15 @@ export class MolstarDialogComponent implements AfterViewInit {
         format: 'pdb',
       },
       landscape: true,
+      granularity: 'elementInstances',
       selection: this.selectionConfig,
       hideControls: true,
     };
 
     this.molstarViewInstance.render(container, molstarParams);
     this.molstarViewInstance.events.loadComplete.subscribe(() => {
-      if (this.count() === 0 || this.selectedFramentObject?.name === 'Default View (no highlight)') {
+      const label = `Atom-labelled ${this.dialogData.moleculeId.toUpperCase()} (no substructure highlighted)`;
+      if (this.count() === 0 || this.selectedFramentObject?.name === label) {
         this.displayLabel();
       } else {
         this.removeLabel();
@@ -195,6 +212,7 @@ export class MolstarDialogComponent implements AfterViewInit {
       selection: this.selectionConfig,
       bgColor: { r: 255, g: 255, b: 255 },
     };
+
     this.molstarViewInstance.visual.update(updateParams);
   }
 }

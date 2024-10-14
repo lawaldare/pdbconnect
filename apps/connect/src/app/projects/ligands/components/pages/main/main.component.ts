@@ -20,6 +20,7 @@ import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig,
 import { MainComponentStore } from './main.store';
 import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
+import { LigandUtilService } from '../../../ligand-util.service';
 
 @Component({
   selector: 'pdbc-main',
@@ -51,6 +52,7 @@ export class LigandsMainPageComponent implements OnInit {
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly bioschemasService = inject(LigandsBioschemasService);
   private readonly renderer = inject(Renderer2);
+  private readonly ligandUtilService = inject(LigandUtilService);
 
   public readonly headerLogoMenuConfig = headerLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchConfig;
@@ -68,12 +70,11 @@ export class LigandsMainPageComponent implements OnInit {
 
   public ligandId!: string;
 
-  public schema = {
-    '@context': 'http://schema.org',
-    '@type': 'WebSite',
-    name: 'angular.io',
-    url: 'https://angular.io',
-  };
+  private readonly schemas = computed(() => ({
+    similarLigands: this.ligandUtilService.currentSimilarLigands(),
+    structures: this.ligandUtilService.currentStuctures(),
+    summary: this.ligandUtilService.currentSummary(),
+  }));
 
   ngOnInit(): void {
     this.route.params
@@ -81,7 +82,9 @@ export class LigandsMainPageComponent implements OnInit {
         switchMap((params) => {
           this.ligandId = params['ligandId'].toUpperCase();
           this.store.init(this.ligandId);
-          this.generateSchemaData();
+          setTimeout(() => {
+            this.generateSchemaData();
+          }, 1000);
           return of({});
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -90,13 +93,7 @@ export class LigandsMainPageComponent implements OnInit {
   }
 
   private generateSchemaData(): void {
-    const schema = {
-      '@context': 'http://schema.org',
-      '@type': 'WebSite',
-      name: this.ligandId,
-      url: 'https://angular.io',
-    };
-    this.bioschemasService.setJsonLd(this.renderer, schema);
+    this.bioschemasService.buildBioschemasJSON(this.renderer, this.schemas);
   }
 
   public openMolstarDialog(): void {

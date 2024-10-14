@@ -24,6 +24,7 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { GridOptions, ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
 import { TotalStructureRendererComponent } from '../../cell renderers/total-structure.component';
 import { LigandAnnotationRendererComponent } from '../../cell renderers/ligand-annotation.component';
+import { LigandUtilService } from '../../../ligand-util.service';
 
 @Component({
   selector: 'pdbc-structures',
@@ -42,6 +43,7 @@ export class StructuresComponent {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   private readonly downloadService = inject(DownloadService);
   private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
+  private readonly ligandUtilService = inject(LigandUtilService);
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
@@ -148,12 +150,13 @@ export class StructuresComponent {
           this.setLoading(true);
           const ligandId = params['ligandId'].toUpperCase();
           this.ligandId.set(ligandId);
-          return this.aggregatedApiService.fetchLigandStructures(ligandId);
+          return this.aggregatedApiService.getLigandStructures(ligandId);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(
         (data: LigandStructure[]) => {
+          this.ligandUtilService.setStructures(data);
           this.generateStructures(data);
           this.proteins.update(() => [...data]);
           this.rowData.update(() => [...this.proteins()]);

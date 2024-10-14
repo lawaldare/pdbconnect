@@ -57,7 +57,7 @@ export interface LigandProperty {
   toolTip?: string;
 }
 
-export interface LigandDescription {
+export interface LigandSummary {
   name: string;
   released: boolean;
   formula: string;
@@ -73,6 +73,6 @@ export interface LigandDescription {
   subcomponent_occurrences: Record<string, number>;
 }
 
-export interface PDBLigandDescription {
-  [key: string]: LigandDescription[];
+export interface PDBLigandSummary {
+  [key: string]: LigandSummary[];
 }

@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable, Renderer2 } from '@angular/core';
+import { Inject, Injectable, Renderer2, Signal } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
@@ -14,7 +14,7 @@ export class LigandsBioschemasService {
    * @param data                  The data for the JSON-LD script
    * @returns                     Void
    */
-  public setJsonLd(renderer: Renderer2, data: any): void {
+  private setJsonLd(renderer: Renderer2, data: any): void {
     this.removeJsonLdScript(renderer);
     const script = renderer.createElement('script');
     script.type = 'application/ld+json';
@@ -29,5 +29,9 @@ export class LigandsBioschemasService {
     if (script) {
       renderer.removeChild(this.document.body, script);
     }
+  }
+
+  public buildBioschemasJSON(renderer: Renderer2, data: Signal<any>): void {
+    console.log('Building Bioschemas JSON:', data());
   }
 }

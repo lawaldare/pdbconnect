@@ -44,10 +44,10 @@ export const MainComponentStore = signalStore(
             patchState(store, { ligandId });
             let observables: Observable<any>[];
             if (ligandId.startsWith('PRD') || ligandId.startsWith('CLC')) {
-              observables = [aggregatedApiService.fetchDescription(ligandId), of(ligandId), of([])];
+              observables = [aggregatedApiService.getLigandSummary(ligandId), of(ligandId), of([])];
             } else {
               observables = [
-                aggregatedApiService.fetchDescription(ligandId),
+                aggregatedApiService.getLigandSummary(ligandId),
                 of(ligandId),
                 aggregatedApiService.fetchSupercomponents(ligandId).pipe(catchError(() => of([]))),
               ];
@@ -56,9 +56,9 @@ export const MainComponentStore = signalStore(
             return forkJoin(observables).pipe(
               tapResponse(
                 ([descriptionData, ligandId, supercomponents]) => {
+                  ligandUtilService.setSummary(descriptionData);
                   patchState(store, { count: store.count() + 1 }); // increment count after successful fetch!
                   const processDescriptionData = aggregatedApiService.processDescriptionData(ligandId, descriptionData);
-
                   if (!processDescriptionData.released && processDescriptionData.superseded_by) {
                     patchState(store, {
                       redirectText: `The chemical component you are trying to view (${ligandId}) has been obsoleted. You have been redirected to the component which superceded it.`,

@@ -108,7 +108,7 @@ export class RelatedLigandsComponent implements OnInit {
       .pipe(
         switchMap((params) => {
           const ligandId = params['ligandId'].toUpperCase();
-          return this.aggregatedApiService.fetchRelatedLigands(ligandId);
+          return this.aggregatedApiService.getRelatedLigands(ligandId);
         }),
         mergeMap((relatedLigand: RelatedLigand) => {
           this.relatedLigand = relatedLigand;
@@ -119,6 +119,8 @@ export class RelatedLigandsComponent implements OnInit {
           this.similarLigands = relatedLigand['similar_ligands'];
           this.sameScaffolds = relatedLigand['same_scaffold'];
           this.stereoisomers = relatedLigand['stereoisomers'];
+
+          this.ligandUtilService.setSimilarLigands(this.similarLigands);
 
           const validIdsArray = [];
 

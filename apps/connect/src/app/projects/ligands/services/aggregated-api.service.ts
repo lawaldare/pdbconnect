@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PDBLigandDescription, PhysChemProperties, FunctionalAnnotation } from '../data-models/description.model';
+import { PDBLigandSummary, PhysChemProperties, FunctionalAnnotation } from '../data-models/description.model';
 import { PDBLigandFile } from '../data-models/download.model';
 import { Depiction, LigandStructure, LigandStructuresAPIResponse, PDBSubstructures } from '../data-models/structure.model';
 import { PDBRelatedLigands, RelatedLigand } from '../data-models/related-ligands.model';
@@ -69,9 +69,9 @@ export class AggregatedApiService {
 
   constructor(private http: HttpClient) {}
 
-  fetchDescription(ligandId: string): Observable<PDBLigandDescription> {
+  getLigandSummary(ligandId: string): Observable<PDBLigandSummary> {
     const descriptionUrl = `${this.AggregatedApiUrl}pdb/compound/summary/${ligandId}`;
-    return this.http.get<PDBLigandDescription>(descriptionUrl);
+    return this.http.get<PDBLigandSummary>(descriptionUrl);
   }
 
   fetchDownload(ligandId: string): Observable<PDBLigandFile> {
@@ -89,7 +89,7 @@ export class AggregatedApiService {
     return this.http.get<string[]>(substructureUrl).pipe(map((data: any) => data[ligandId]));
   }
 
-  fetchLigandStructures(ligandId: string): Observable<LigandStructure[]> {
+  getLigandStructures(ligandId: string): Observable<LigandStructure[]> {
     const ligandStructureAPI = `${this.AggregatedApiUrl}compound/uniprot/${ligandId}`;
     return this.http.get<LigandStructuresAPIResponse>(ligandStructureAPI).pipe(map((data) => data[ligandId]));
   }
@@ -99,7 +99,7 @@ export class AggregatedApiService {
     return this.http.get<Depiction>(depictionUrl).pipe(shareReplay(1));
   }
 
-  fetchRelatedLigands(ligandId: string): Observable<RelatedLigand> {
+  getRelatedLigands(ligandId: string): Observable<RelatedLigand> {
     const relatedLigandUrl = `${this.AggregatedApiUrl}compound/similarity/${ligandId}`;
     const relatedLigand = this.http.get<PDBRelatedLigands>(relatedLigandUrl).pipe(
       shareReplay(1),
@@ -127,7 +127,7 @@ export class AggregatedApiService {
     );
   }
 
-  processDescriptionData(ligandId: string, data: PDBLigandDescription): DescriptionData {
+  processDescriptionData(ligandId: string, data: PDBLigandSummary): DescriptionData {
     const ligandSummary = data[ligandId][0];
     const ligandProperties = ligandSummary['phys_chem_properties'];
     const ligandAnnotations = ligandSummary['functional_annotations'];

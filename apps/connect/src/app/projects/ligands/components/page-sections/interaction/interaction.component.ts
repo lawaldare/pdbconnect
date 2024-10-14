@@ -56,7 +56,7 @@ export class InteractionComponent implements AfterViewInit {
           const imageContainer = this.imageContainer.nativeElement;
           this.resetRenderer();
           this.createLigandEnvironment(imageContainer, depiction);
-          return forkJoin([this.aggregatedApiService.fetchIntxData(this.ligandId()), this.aggregatedApiService.fetchLigandStructures(this.ligandId())]);
+          return forkJoin([this.aggregatedApiService.fetchIntxData(this.ligandId()), this.aggregatedApiService.getLigandStructures(this.ligandId())]);
         }),
         map(([intxDataUrl, structures]) => {
           const interaction = intxDataUrl.interactions;
