@@ -15,6 +15,8 @@ type MainState = {
   description: DescriptionData;
   downloadOptions: DownloadOption[];
   supercomponents: string[];
+  redirectText: string;
+  count: number;
 };
 
 const initialState: MainState = {
@@ -22,6 +24,8 @@ const initialState: MainState = {
   description: {} as DescriptionData,
   downloadOptions: [],
   supercomponents: [],
+  redirectText: '',
+  count: 0,
 };
 
 export const MainComponentStore = signalStore(
@@ -52,8 +56,13 @@ export const MainComponentStore = signalStore(
             return forkJoin(observables).pipe(
               tapResponse(
                 ([descriptionData, ligandId, supercomponents]) => {
+                  patchState(store, { count: store.count() + 1 }); // increment count after successful fetch!
                   const processDescriptionData = aggregatedApiService.processDescriptionData(ligandId, descriptionData);
+
                   if (!processDescriptionData.released && processDescriptionData.superseded_by) {
+                    patchState(store, {
+                      redirectText: `The chemical component you are trying to view (${ligandId}) has been obsoleted. You have been redirected to the component which superceded it.`,
+                    });
                     router.navigate(['/ligands', processDescriptionData.superseded_by]);
                     return;
                   }
@@ -62,6 +71,11 @@ export const MainComponentStore = signalStore(
                     router.navigate(['/ligands', store.ligandId(), 'unreleased']);
                     patchState(store, { ligandId, description: {} as DescriptionData, downloadOptions: [], supercomponents: [] });
                     return;
+                  }
+
+                  //this is to clear the redirect text after navigating away from the redirected page!
+                  if (store.count() > 2) {
+                    patchState(store, { redirectText: '' });
                   }
                   patchState(store, {
                     description: processDescriptionData,

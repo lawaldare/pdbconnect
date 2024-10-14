@@ -5,6 +5,7 @@
   <div class="container">
     <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" />
     <article>
+      <p>{{ redirectText() }}</p>
       @if(descriptionLoaded()){
       <section class="hero">
         <header>

@@ -23,6 +23,12 @@ ag-grid-angular {
     --ag-internal-calculated-line-height: 24px !important;
 
     padding: 10px 14px;
+
+    &.species-cell {
+      .ag-cell-value {
+        font-style: italic !important;
+      }
+    }
   }
 
   .ag-ltr,

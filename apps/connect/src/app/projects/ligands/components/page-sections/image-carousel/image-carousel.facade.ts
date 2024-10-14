@@ -69,7 +69,9 @@ export class ImageCarouselComponentFacade {
       return acc;
     }, []);
 
-    this.fragments.update(() => mappedFragments);
+    const uniqueFragments = mappedFragments.filter((obj, index, self) => index === self.findIndex((o) => o.name === obj.name));
+
+    this.fragments.update(() => uniqueFragments);
     this.ligandUtilService.setFragments(this.fragments());
   }
 
@@ -135,8 +137,10 @@ export class ImageCarouselComponentFacade {
   private renderLigand(renderer: Renderer2, ligandId: string, imageContainer: ElementRef): void {
     const imageContainerRef = imageContainer.nativeElement;
 
+    const mappedLigandId = ligandId.startsWith('PRD') ? `${ligandId.split('_')[0]}CC_${ligandId.split('_')[1]}` : ligandId;
+
     this.aggregatedApiService
-      .fetchDepiction(ligandId)
+      .fetchDepiction(mappedLigandId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((depiction: Depiction) => {
         this.createLigandEnvironment(renderer, imageContainerRef, depiction);

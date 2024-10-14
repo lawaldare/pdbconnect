@@ -111,6 +111,7 @@ export class StructuresComponent {
       },
       filter: 'agTextColumnFilter',
       minWidth: 160,
+      cellClass: 'species-cell',
     },
     {
       headerName: 'EC number',

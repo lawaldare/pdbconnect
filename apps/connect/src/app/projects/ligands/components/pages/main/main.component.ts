@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, DestroyRef, computed, signal } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, computed, signal, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DescriptionComponent } from '../../page-sections/description/description.component';
@@ -19,6 +19,7 @@ import { of } from 'rxjs';
 import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig, navSections, reactantTooltip } from '../../../ligand.constant';
 import { MainComponentStore } from './main.store';
 import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
+import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 
 @Component({
   selector: 'pdbc-main',
@@ -48,6 +49,8 @@ export class LigandsMainPageComponent implements OnInit {
   private readonly store = inject(MainComponentStore);
   public readonly dlService = inject(DataLayerService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  private readonly bioschemasService = inject(LigandsBioschemasService);
+  private readonly renderer = inject(Renderer2);
 
   public readonly headerLogoMenuConfig = headerLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchConfig;
@@ -56,6 +59,7 @@ export class LigandsMainPageComponent implements OnInit {
   public description = this.store.description;
   public downloadOptions = this.store.downloadOptions;
   public supercomponents = this.store.supercomponents;
+  public redirectText = this.store.redirectText;
   public descriptionLoaded = computed(() => (Object.keys(this.description()).length ? true : false));
 
   public cofactorTooltip = cofactorTooltip;
@@ -64,17 +68,35 @@ export class LigandsMainPageComponent implements OnInit {
 
   public ligandId!: string;
 
+  public schema = {
+    '@context': 'http://schema.org',
+    '@type': 'WebSite',
+    name: 'angular.io',
+    url: 'https://angular.io',
+  };
+
   ngOnInit(): void {
     this.route.params
       .pipe(
         switchMap((params) => {
           this.ligandId = params['ligandId'].toUpperCase();
           this.store.init(this.ligandId);
+          this.generateSchemaData();
           return of({});
         }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+  }
+
+  private generateSchemaData(): void {
+    const schema = {
+      '@context': 'http://schema.org',
+      '@type': 'WebSite',
+      name: this.ligandId,
+      url: 'https://angular.io',
+    };
+    this.bioschemasService.setJsonLd(this.renderer, schema);
   }
 
   public openMolstarDialog(): void {
