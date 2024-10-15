@@ -147,6 +147,7 @@ export class MolstarDialogComponent implements AfterViewInit {
 
     this.molstarViewInstance.render(container, molstarParams);
     this.molstarViewInstance.events.loadComplete.subscribe(() => {
+      console.log('Molecule loaded successfully');
       const label = `Atom-labelled ${this.dialogData.moleculeId.toUpperCase()} (no substructure highlighted)`;
       if (this.count() === 0 || this.selectedFramentObject?.name === label) {
         this.displayLabel();
@@ -199,7 +200,7 @@ export class MolstarDialogComponent implements AfterViewInit {
       data: [
         {
           struct_asym_id: 'A',
-          atoms: this.selectedFramentObject?.atoms[0],
+          atoms: this.selectedFramentObject?.atoms[0] ?? [],
           color: this.selectedFramentObject?.atoms.length ? this.highlightColor : this.defaultColor,
         },
       ],

@@ -2,8 +2,8 @@ import { inject, Injectable, signal } from '@angular/core';
 import { Fragment, LigandStructure } from './data-models/structure.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
-import { PDBLigandSummary } from './data-models/description.model';
 import { SimilarLigand } from './data-models/related-ligands.model';
+import { LigandSummary } from './data-models/description.model';
 
 export interface StructureFilter {
   cofactorLike: boolean;
@@ -101,10 +101,10 @@ export class LigandUtilService {
     this.structures.update(() => structures);
   }
 
-  private readonly summary = signal<PDBLigandSummary>({});
+  private readonly summary = signal<LigandSummary>({} as LigandSummary);
   public currentSummary = this.summary.asReadonly();
 
-  public setSummary(summary: PDBLigandSummary): void {
+  public setSummary(summary: LigandSummary): void {
     this.summary.update(() => summary);
   }
 

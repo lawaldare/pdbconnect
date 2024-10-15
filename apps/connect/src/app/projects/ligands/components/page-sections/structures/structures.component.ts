@@ -25,6 +25,7 @@ import { GridOptions, ColDef, GridApi, GridReadyEvent } from 'ag-grid-community'
 import { TotalStructureRendererComponent } from '../../cell renderers/total-structure.component';
 import { LigandAnnotationRendererComponent } from '../../cell renderers/ligand-annotation.component';
 import { LigandUtilService } from '../../../ligand-util.service';
+import { SpeciesRendererComponent } from '../../cell renderers/species.component';
 
 @Component({
   selector: 'pdbc-structures',
@@ -103,17 +104,13 @@ export class StructuresComponent {
     {
       headerName: 'Species',
       field: 'species',
-      valueGetter: (params: any) => {
-        const scientificName = params.data.species?.scientific_name ?? '';
-        const commonName = params.data.species?.common_name ? `(${params.data.species.common_name})` : '';
-        return scientificName + commonName || '---';
-      },
       comparator: (a, b): number => {
-        return a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
+        console.log('species', a, b);
+        return a.scientific_name?.toLocaleLowerCase().localeCompare(b.scientific_name?.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
       },
+      cellRenderer: SpeciesRendererComponent,
       filter: 'agTextColumnFilter',
       minWidth: 160,
-      cellClass: 'species-cell',
     },
     {
       headerName: 'EC number',

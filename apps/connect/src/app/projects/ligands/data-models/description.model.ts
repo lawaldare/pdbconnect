@@ -72,7 +72,3 @@ export interface LigandSummary {
   superseded_by: string | undefined;
   subcomponent_occurrences: Record<string, number>;
 }
-
-export interface PDBLigandSummary {
-  [key: string]: LigandSummary[];
-}

@@ -93,7 +93,7 @@ export class LigandsMainPageComponent implements OnInit {
   }
 
   private generateSchemaData(): void {
-    this.bioschemasService.buildBioschemasJSON(this.renderer, this.schemas);
+    this.bioschemasService.buildBioschemasJSON(this.renderer, this.schemas, this.ligandId);
   }
 
   public openMolstarDialog(): void {

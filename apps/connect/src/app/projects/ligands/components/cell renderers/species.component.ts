@@ -1,0 +1,28 @@
+import { ICellRendererAngularComp } from 'ag-grid-angular';
+import { ICellRendererParams } from 'ag-grid-community/';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ToolTipComponent } from '@pdbe-lib/tool-tip';
+import { MaterialModule } from '@pdbc/core';
+
+@Component({
+  standalone: true,
+  imports: [CommonModule, ToolTipComponent, MaterialModule],
+  template: `<span
+    ><i>{{ value.scientific_name }}</i> ({{ value.common_name }})</span
+  >`,
+  styleUrls: ['./renderer-styling.scss'],
+})
+export class SpeciesRendererComponent implements ICellRendererAngularComp {
+  // Init Cell Value
+  public value!: { scientific_name: string; common_name: string };
+  agInit(params: ICellRendererParams): void {
+    this.refresh(params);
+  }
+
+  // Return Cell Value
+  refresh(params: ICellRendererParams): boolean {
+    this.value = params.value;
+    return true;
+  }
+}
