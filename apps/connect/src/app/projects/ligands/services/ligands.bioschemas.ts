@@ -18,10 +18,10 @@ export class LigandsBioschemasService {
     this.removeJsonLdScript(renderer);
     const script = renderer.createElement('script');
     script.type = 'application/ld+json';
-    script.text = `${JSON.stringify(data)}`;
+    script.textContent = JSON.stringify(data);
     script.setAttribute('class', 'structured-data');
 
-    renderer.appendChild(this.document.body, script);
+    renderer.appendChild(this.document.head, script);
   }
 
   private removeJsonLdScript(renderer: Renderer2): void {
