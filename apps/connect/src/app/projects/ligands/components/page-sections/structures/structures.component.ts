@@ -105,7 +105,6 @@ export class StructuresComponent {
       headerName: 'Species',
       field: 'species',
       comparator: (a, b): number => {
-        console.log('species', a, b);
         return a.scientific_name?.toLocaleLowerCase().localeCompare(b.scientific_name?.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
       },
       cellRenderer: SpeciesRendererComponent,
