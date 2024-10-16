@@ -39,18 +39,18 @@ export class LigandsBioschemasService {
       name: ligandId,
       description: '',
       molecularFormula: data().summary.formula,
-      molecularWeight: `${data().summary.weight.toFixed(2)} g/mol`,
+      molecularWeight: `${data().summary.weight?.toFixed(2)} g/mol`,
       inChI: data().summary.inchi,
       inChIKey: data().summary.inchi_key,
       iupacName: data().summary.name,
-      smiles: data().summary.smiles.find((s: any) => s.program === 'OpenEye OEToolkits').name,
-      alternateName: data().summary.synonyms.map((synonym: any) => synonym.value),
+      smiles: data().summary.smiles.find((s: any) => s.program === 'OpenEye OEToolkits')?.name ?? '',
+      alternateName: data().summary.synonyms ?? [].map((synonym: any) => synonym.value),
       chemicalRole: data().summary.functional_annotations.map((annotation: any) => annotation.name.split('-')[0]),
       url: `https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/${ligandId}`,
       hasRepresentation: {
         '@type': 'PropertyValue',
         propertyID: 'SMILES',
-        value: data().summary.smiles.find((s: any) => s.program === 'OpenEye OEToolkits').name,
+        value: data().summary.smiles.find((s: any) => s.program === 'OpenEye OEToolkits')?.name ?? '',
       },
       image: `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${ligandId}_400.svg`,
       bioChemInteration: data().structures.map((structure: any) => {
@@ -74,6 +74,6 @@ export class LigandsBioschemasService {
     };
 
     this.setJsonLd(renderer, JSON);
-    // console.log('Bioschemas JSON:', JSON);
+    console.log('Bioschemas JSON:', JSON);
   }
 }
