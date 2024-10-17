@@ -7,9 +7,8 @@ import { Participant } from '../models/complex-structure.model';
 })
 export class ParticipantDirective implements OnChanges {
   @Input() participants!: Participant[];
-  @Input() isItForSummary = true;
 
-  private anchors: any[] = [];
+  private orderedList: any;
   constructor(private el: ElementRef, private renderer: Renderer2) {}
 
   ngOnChanges(): void {
@@ -18,31 +17,40 @@ export class ParticipantDirective implements OnChanges {
 
   private init(): void {
     this.resetEnv();
+    const orderedList = this.renderer.createElement('ol');
+    this.renderer.appendChild(this.el.nativeElement, orderedList);
     for (const participant of this.participants) {
-      if (!participant.accession.includes('_')) {
+      if (participant.accession_type === 'UniProt') {
         const anchorTag = this.renderer.createElement('a');
-        anchorTag.textContent = `${participant.accession} (${participant.stoichiometry})`;
+        anchorTag.textContent = `${participant.accession}`;
         const proteinLink = `https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/${participant.accession}`;
         const rfLink = `https://rfam.org/family/${participant.accession}`;
         const link = participant.accession.startsWith('RF') ? rfLink : proteinLink;
         this.renderer.setAttribute(anchorTag, 'href', link);
         this.renderer.setAttribute(anchorTag, 'target', '_blank');
-        this.renderer.appendChild(this.el.nativeElement, anchorTag);
-        this.anchors.push(anchorTag);
-      }
 
-      if (participant.accession.includes('_')) {
+        const text = `(${participant.name}, ${participant.stoichiometry} ${participant.stoichiometry > 1 ? 'copies' : 'copy'}) `;
+        const textTag = this.renderer.createText(text);
+
+        const list = this.renderer.createElement('li');
+        this.renderer.appendChild(orderedList, list);
+
+        this.renderer.appendChild(list, anchorTag);
+        this.renderer.appendChild(list, textTag);
+      } else {
         const spanTag = this.renderer.createElement('span');
-        spanTag.textContent = `${participant.accession} (${participant.stoichiometry})`;
-        this.renderer.appendChild(this.el.nativeElement, spanTag);
-        this.anchors.push(spanTag);
+        spanTag.textContent = `${participant.accession} (${participant.name}, ${participant.stoichiometry} ${participant.stoichiometry > 1 ? 'copies' : 'copy'}) `;
+        const list = this.renderer.createElement('li');
+        this.renderer.appendChild(list, spanTag);
+        this.renderer.appendChild(orderedList, list);
       }
     }
+    this.orderedList = orderedList;
   }
 
   resetEnv(): void {
-    for (const anchor of this.anchors) {
-      this.renderer.removeChild(this.el.nativeElement, anchor);
+    if (this.orderedList) {
+      this.renderer.removeChild(this.el.nativeElement, this.orderedList);
     }
   }
 }

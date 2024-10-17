@@ -38,7 +38,10 @@ export class ComplexPublicationsComponent implements OnChanges {
         }
         return acc;
       }, []);
-      this.complexPublications.update(() => mappedPublications);
+      const uniqueMappedPublications = mappedPublications.filter(
+        (publication, index, self) => index === self.findIndex((p) => p.pubmed_id === publication.pubmed_id)
+      );
+      this.complexPublications.update(() => uniqueMappedPublications);
       this.publicationsPage = this.complexPublications().slice(0, this.publicationsPageSize());
     });
   }

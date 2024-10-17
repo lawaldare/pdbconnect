@@ -22,8 +22,7 @@ export class ComplexStructuresComponent {
   public readonly themeClass = AG_Grid_Theme_Class;
 
   public readonly colDefs: ColDef[] = [
-    { headerName: 'PDB ID', field: 'pdb_id', flex: 1.2, sort: 'asc' },
-    { headerName: 'Assembly ID', field: 'assembly_id', flex: 1.5 },
+    { headerName: 'ID', valueGetter: (params) => `${params.data.pdb_id}_${params.data.assembly_id}`, flex: 1.2, sort: 'asc' },
     { headerName: 'Title', field: 'title', flex: 3 },
     { headerName: 'Experimental Method', field: 'experimental_method', flex: 2 },
     { headerName: 'Resolution (Å)', field: 'resolution', flex: 1.6 },

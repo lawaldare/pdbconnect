@@ -11,6 +11,8 @@ export interface RepresentativeStructure {
 export interface Participant {
   accession: string;
   stoichiometry: number;
+  accession_type: string;
+  name: string;
 }
 export interface Assembly {
   assembly_id: number;
