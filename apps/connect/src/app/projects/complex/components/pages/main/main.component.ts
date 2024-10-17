@@ -15,6 +15,7 @@ import { TruncateTextDirective } from '@pdbc/core';
 import { headerComplexLogoMenuConfig, headerSearchComplexConfig, navComplexSections } from '../../../complex.constant';
 import { ComplexInteractionsComponent } from '../../page-sections/complex-interactions/complex-interactions.component';
 import { ComplexPublicationsComponent } from '../../page-sections/complex-publications/complex-publications.component';
+import { ComplexLigandsComponent } from '../../page-sections/complex-ligands/complex-ligands.component';
 
 @Component({
   selector: 'pdbc-main',
@@ -29,6 +30,7 @@ import { ComplexPublicationsComponent } from '../../page-sections/complex-public
     TruncateTextDirective,
     ComplexInteractionsComponent,
     ComplexPublicationsComponent,
+    ComplexLigandsComponent,
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',

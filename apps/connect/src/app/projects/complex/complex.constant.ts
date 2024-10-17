@@ -13,11 +13,10 @@ export const headerSearchComplexConfig = {
 
 export const navComplexSections = [
   { sectionId: 'summary-section', sectionName: 'Summary', isSubSection: false },
-  // { sectionId: 'properties-section', sectionName: 'Physiochemical properties', isSubSection: false },
   { sectionId: 'structures-section', sectionName: 'Structures', isSubSection: false },
   { sectionId: 'interaction-section', sectionName: 'Interactions', isSubSection: false },
   { sectionId: 'publications-section', sectionName: 'Publications', isSubSection: false },
-  // { sectionId: 'scaffold-section', sectionName: 'Same scaffold', isSubSection: true },
+  { sectionId: 'ligands-section', sectionName: 'Ligands and enviroment', isSubSection: false },
   // { sectionId: 'similar-ligand-section', sectionName: 'Similar ligands', isSubSection: true },
   // { sectionId: 'ligand-databases-section', sectionName: 'Ligand-specific databases', isSubSection: false },
 ];

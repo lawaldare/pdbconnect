@@ -23,6 +23,10 @@ export class ComplexAPIService {
     );
   }
 
+  public getLigandsForComplexPages(complexId: string): Observable<any> {
+    return this.http.get<any>(`${this.AggregatedApiUrl}complex/bound_molecules_summary/${complexId}`).pipe(map((response: any) => response[complexId]));
+  }
+
   public getPublications(pdbIds: string): Observable<any> {
     return this.http.post<any>(`${this.AggregatedApiUrl}pdb/entry/publications`, pdbIds);
   }
