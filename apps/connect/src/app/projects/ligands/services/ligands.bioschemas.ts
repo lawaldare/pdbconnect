@@ -32,7 +32,6 @@ export class LigandsBioschemasService {
   }
 
   public buildBioschemasJSON(renderer: Renderer2, data: Signal<any>, ligandId: string): void {
-    console.log('Building Bioschemas JSON-LD...', data());
     const JSON = {
       '@context': 'http://schema.org/',
       '@type': 'MolecularEntity',
@@ -75,6 +74,5 @@ export class LigandsBioschemasService {
     };
 
     this.setJsonLd(renderer, JSON);
-    console.log('Bioschemas JSON:', JSON);
   }
 }
