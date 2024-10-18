@@ -49,7 +49,6 @@ export class ComplexLigandsComponent {
       );
     }),
     tap((ligands) => {
-      console.log('Fetched ligands:', ligands);
       this.ligandsPage.update(() => ligands.slice(0, this.ligandsPageSize()));
     })
   );

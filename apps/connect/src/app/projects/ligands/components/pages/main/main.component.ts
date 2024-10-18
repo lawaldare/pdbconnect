@@ -112,6 +112,5 @@ export class LigandsMainPageComponent implements OnInit {
     }, []);
     const uniqueAnnotations = [...new Set(mappedAnnotations)];
     this.annotations.update(() => uniqueAnnotations);
-    console.log('Unique annotations', this.annotations());
   }
 }
