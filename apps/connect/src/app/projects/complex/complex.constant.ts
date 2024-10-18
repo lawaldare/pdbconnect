@@ -14,9 +14,9 @@ export const headerSearchComplexConfig = {
 export const navComplexSections = [
   { sectionId: 'summary-section', sectionName: 'Summary', isSubSection: false },
   { sectionId: 'structures-section', sectionName: 'Structures', isSubSection: false },
+  { sectionId: 'ligands-section', sectionName: 'Ligands', isSubSection: false },
   { sectionId: 'interaction-section', sectionName: 'Macromolecular interactions', isSubSection: false },
   { sectionId: 'publications-section', sectionName: 'Publications', isSubSection: false },
-  { sectionId: 'ligands-section', sectionName: 'Ligands', isSubSection: false },
   // { sectionId: 'similar-ligand-section', sectionName: 'Similar ligands', isSubSection: true },
   // { sectionId: 'ligand-databases-section', sectionName: 'Ligand-specific databases', isSubSection: false },
 ];
