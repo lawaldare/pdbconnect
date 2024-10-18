@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, DestroyRef, computed, signal, Renderer2 } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, computed, signal, Renderer2, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DescriptionComponent } from '../../page-sections/description/description.component';
@@ -21,6 +21,7 @@ import { MainComponentStore } from './main.store';
 import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandUtilService } from '../../../ligand-util.service';
+import { LigandStructure } from '../../../data-models/structure.model';
 
 @Component({
   selector: 'pdbc-main',
@@ -64,6 +65,8 @@ export class LigandsMainPageComponent implements OnInit {
   public redirectText = this.store.redirectText;
   public descriptionLoaded = computed(() => (Object.keys(this.description()).length ? true : false));
 
+  public annotations = signal<string[]>([]);
+
   public cofactorTooltip = cofactorTooltip;
   public drugTooltip = drugTooltip;
   public reactantTooltip = reactantTooltip;
@@ -84,6 +87,7 @@ export class LigandsMainPageComponent implements OnInit {
           this.store.init(this.ligandId);
           setTimeout(() => {
             this.generateSchemaData();
+            this.getAnnotationsFromStructures();
           }, 1000);
           return of({});
         }),
@@ -99,5 +103,15 @@ export class LigandsMainPageComponent implements OnInit {
   public openMolstarDialog(): void {
     this.store.openMolstarDialog();
     this.googleAnalyticsService.logClickEvents('view_3d_button_click', 'Interaction', 'view_3d', 'View 3D');
+  }
+
+  private getAnnotationsFromStructures(): void {
+    const structuresWithAnnotations = this.ligandUtilService.currentStuctures().filter((structure) => structure.annotations);
+    const mappedAnnotations = structuresWithAnnotations.reduce((acc: string[], structure) => {
+      return acc.concat(structure.annotations);
+    }, []);
+    const uniqueAnnotations = [...new Set(mappedAnnotations)];
+    this.annotations.update(() => uniqueAnnotations);
+    console.log('Unique annotations', this.annotations());
   }
 }

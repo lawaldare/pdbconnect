@@ -16,7 +16,7 @@ export class OEMCDirective implements OnChanges {
 
   private init(): void {
     this.resetEnv();
-    const orderedList = this.renderer.createElement('ol');
+    const orderedList = this.renderer.createElement('ul');
     this.renderer.appendChild(this.el.nativeElement, orderedList);
 
     for (const [key, value] of Object.entries(this.data)) {

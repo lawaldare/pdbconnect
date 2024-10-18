@@ -32,6 +32,7 @@ export class LigandsBioschemasService {
   }
 
   public buildBioschemasJSON(renderer: Renderer2, data: Signal<any>, ligandId: string): void {
+    console.log('Building Bioschemas JSON-LD...', data());
     const JSON = {
       '@context': 'http://schema.org/',
       '@type': 'MolecularEntity',
@@ -44,7 +45,7 @@ export class LigandsBioschemasService {
       inChIKey: data().summary.inchi_key,
       iupacName: data().summary.name,
       smiles: data().summary.smiles.find((s: any) => s.program === 'OpenEye OEToolkits')?.name ?? '',
-      alternateName: data().summary.synonyms ?? [].map((synonym: any) => synonym.value),
+      alternateName: (data().summary.synonyms ?? []).map((synonym: any) => synonym.value),
       chemicalRole: data().summary.functional_annotations.map((annotation: any) => annotation.name.split('-')[0]),
       url: `https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/${ligandId}`,
       hasRepresentation: {
@@ -53,7 +54,7 @@ export class LigandsBioschemasService {
         value: data().summary.smiles.find((s: any) => s.program === 'OpenEye OEToolkits')?.name ?? '',
       },
       image: `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${ligandId}_400.svg`,
-      bioChemInteration: data().structures.map((structure: any) => {
+      bioChemInteraction: data().structures.map((structure: any) => {
         return {
           '@type': 'BioChemEntity',
           name: structure.uniprot_id,

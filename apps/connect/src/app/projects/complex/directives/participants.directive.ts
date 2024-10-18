@@ -17,7 +17,7 @@ export class ParticipantDirective implements OnChanges {
 
   private init(): void {
     this.resetEnv();
-    const orderedList = this.renderer.createElement('ol');
+    const orderedList = this.renderer.createElement('ul');
     this.renderer.appendChild(this.el.nativeElement, orderedList);
     for (const participant of this.participants) {
       if (participant.accession_type === 'UniProt') {
@@ -29,7 +29,7 @@ export class ParticipantDirective implements OnChanges {
         this.renderer.setAttribute(anchorTag, 'href', link);
         this.renderer.setAttribute(anchorTag, 'target', '_blank');
 
-        const text = `(${participant.name}, ${participant.stoichiometry} ${participant.stoichiometry > 1 ? 'copies' : 'copy'}) `;
+        const text = ` (${participant.name}, ${participant.stoichiometry} ${participant.stoichiometry > 1 ? 'copies' : 'copy'})`;
         const textTag = this.renderer.createText(text);
 
         const list = this.renderer.createElement('li');

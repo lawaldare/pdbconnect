@@ -16,7 +16,7 @@
     </div>
   </div>
   <div class="info-row">
-    <span class="info-row-title">Participants</span>
+    <span class="info-row-title">Components</span>
     <div class="info-row-content participants" pdbcParticipant [participants]="summaryData().participants"></div>
   </div>
   <div class="info-row">
@@ -25,12 +25,12 @@
       {{ summaryData().oligomeric_state }}
     </div>
   </div>
-  <div class="info-row">
+  <!-- <div class="info-row">
     <span class="info-row-title">Stoichiometry</span>
     <div class="info-row-content">
       {{ summaryData().stoichiometry }}
     </div>
-  </div>
+  </div> -->
   @if(summaryData().symmetry){
   <div class="info-row">
     <span class="info-row-title">Global Symmetry</span>
@@ -50,8 +50,9 @@
         matTooltipClass="complex-name-tooltip"
         matTooltip="Number of assemblies having the same set of components and stoichiometry as the complex of interest."
         matTooltipPosition="right"
-        >{{ summaryData().assemblies.length }}</span
-      >
+        >{{ summaryData().assemblies.length }}
+        <img src="{{ helpLogoSrc }}" class="icon" />
+      </span>
     </div>
   </div>
   @let numberOfSubComplexes = summaryData().subcomplexes.length; @if(numberOfSubComplexes){
@@ -62,8 +63,9 @@
         matTooltipClass="complex-name-tooltip"
         matTooltip="Number of unique smaller complexes that contain a subset of the components of the complex of interest."
         matTooltipPosition="right"
-        >{{ numberOfSubComplexes }}</span
-      >
+        >{{ numberOfSubComplexes }}
+        <img src="{{ helpLogoSrc }}" class="icon" />
+      </span>
     </div>
   </div>
   } @let numberOfSuperComplexes = summaryData().supercomplexes.length; @if(numberOfSuperComplexes){
@@ -74,8 +76,9 @@
         matTooltipClass="complex-name-tooltip"
         matTooltip="Number of unique complexes that contain the components of the complex of interest along with additional members. These supercomplexes represent larger assemblies where the complex interacts with other macromolecules."
         matTooltipPosition="right"
-        >{{ numberOfSuperComplexes }}</span
-      >
+        >{{ numberOfSuperComplexes }}
+        <img src="{{ helpLogoSrc }}" class="icon" />
+      </span>
     </div>
   </div>
   }

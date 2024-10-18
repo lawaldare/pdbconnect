@@ -18,6 +18,7 @@ export class AppComponent implements OnInit {
   constructor(private _router: Router, private utilService: UtilService) {
     this._router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((e: NavigationEnd) => {
       window.scrollTo(0, 0);
+      // window.location.reload();
       this.utilService.setCurrentActive('');
       gtag('js', new Date());
       gtag('config', environment.googleAnalyticsTag, { debug_mode: true });

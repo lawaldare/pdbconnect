@@ -27,6 +27,10 @@
   }
 }
 
+.summary-tooltip {
+  position: relative;
+}
+
 ::ng-deep .complex-name-tooltip {
   .mdc-tooltip__surface {
     background-color: #fff !important;

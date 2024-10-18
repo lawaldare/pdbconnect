@@ -39,7 +39,7 @@ export class ComplexLigandsComponent {
               ligandId: key,
             };
             acc.push(mappedObj);
-            return acc;
+            return acc.sort((a, b) => b.num_ligand_instances - a.num_ligand_instances);
           }, []);
         }),
         catchError((error) => {
@@ -49,6 +49,7 @@ export class ComplexLigandsComponent {
       );
     }),
     tap((ligands) => {
+      console.log('Fetched ligands:', ligands);
       this.ligandsPage.update(() => ligands.slice(0, this.ligandsPageSize()));
     })
   );

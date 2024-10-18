@@ -36,7 +36,7 @@ export class UtilService {
   }
 
   public generateSortedQueryURL(ligandId: string) {
-    const queryArray = [{ value: ligandId as string, condition1: 'AND', condition2: 'Contains' }];
+    const queryArray = [{ value: ligandId as string, condition1: 'AND', condition2: 'Equals' }];
     const resultState = { tabIndex: 0, paginationIndex: 1, perPage: 10, sortBy: 'release_date desc' };
 
     const payload = { q_compound_id: queryArray, resultState: resultState };

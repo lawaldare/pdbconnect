@@ -15,4 +15,5 @@ import { MaterialModule } from '@pdbc/core';
 })
 export class SummaryComponent {
   public summaryData = input.required<ComplexData>();
+  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 }

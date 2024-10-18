@@ -21,14 +21,14 @@
       <section class="structures">
         <pdbc-complex-structures [assemblies]="summaryData.assemblies" />
       </section>
+      <section class="ligands">
+        <pdbc-complex-ligands />
+      </section>
       <section class="interactions">
         <pdbc-complex-interactions [summaryData]="summaryData" />
       </section>
       <section class="publication">
         <pdbc-complex-publications [assemblies]="summaryData.assemblies" />
-      </section>
-      <section class="ligands">
-        <pdbc-complex-ligands />
       </section>
     </article>
     }
