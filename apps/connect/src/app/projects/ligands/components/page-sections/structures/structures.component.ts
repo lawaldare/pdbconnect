@@ -14,7 +14,7 @@ import {
   GoogleAnalyticsService,
   MaterialModule,
 } from '@pdbc/core';
-import { switchMap } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
 import { environment } from '../../../../../../environments/environment';
@@ -26,6 +26,7 @@ import { TotalStructureRendererComponent } from '../../cell renderers/total-stru
 import { LigandAnnotationRendererComponent } from '../../cell renderers/ligand-annotation.component';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { SpeciesRendererComponent } from '../../cell renderers/species.component';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'pdbc-structures',
@@ -146,7 +147,7 @@ export class StructuresComponent {
           this.setLoading(true);
           const ligandId = params['ligandId'].toUpperCase();
           this.ligandId.set(ligandId);
-          return this.aggregatedApiService.getLigandStructures(ligandId);
+          return this.aggregatedApiService.getLigandStructures(ligandId).pipe(catchError(() => of([])));
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -154,6 +155,7 @@ export class StructuresComponent {
         (data: LigandStructure[]) => {
           this.ligandUtilService.setStructures(data);
           this.generateStructures(data);
+          console.log('Structures:', data);
           this.proteins.update(() => [...data]);
           this.rowData.update(() => [...this.proteins()]);
           this.fetchDataStatistics(data);

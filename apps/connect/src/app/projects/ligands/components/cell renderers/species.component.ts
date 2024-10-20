@@ -9,7 +9,9 @@ import { MaterialModule } from '@pdbc/core';
   standalone: true,
   imports: [CommonModule, ToolTipComponent, MaterialModule],
   template: `<span
-    ><i>{{ value.scientific_name }}</i> ({{ value.common_name }})</span
+    >@if(value.scientific_name){
+    <i>{{ value.scientific_name }}</i>
+    } @if(value.common_name){ ({{ value.common_name }}) }</span
   >`,
   styleUrls: ['./renderer-styling.scss'],
 })

@@ -4,7 +4,7 @@ import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction, LigandStructure } from '../../../data-models/structure.model';
 import { PDBIntxData } from '../../../data-models/interaction.model';
 import { ActivatedRoute } from '@angular/router';
-import { EMPTY, forkJoin, map, mergeMap, switchMap } from 'rxjs';
+import { catchError, EMPTY, forkJoin, map, mergeMap, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -56,7 +56,10 @@ export class InteractionComponent implements AfterViewInit {
           const imageContainer = this.imageContainer.nativeElement;
           this.resetRenderer();
           this.createLigandEnvironment(imageContainer, depiction);
-          return forkJoin([this.aggregatedApiService.fetchIntxData(this.ligandId()), this.aggregatedApiService.getLigandStructures(this.ligandId())]);
+          return forkJoin([
+            this.aggregatedApiService.fetchIntxData(this.ligandId()),
+            this.aggregatedApiService.getLigandStructures(this.ligandId()).pipe(catchError(() => of([]))),
+          ]);
         }),
         map(([intxDataUrl, structures]) => {
           const interaction = intxDataUrl.interactions;
