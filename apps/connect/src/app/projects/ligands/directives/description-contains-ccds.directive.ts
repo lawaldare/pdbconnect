@@ -33,7 +33,7 @@ export class CCDsDirective implements OnChanges {
       this.renderer.listen(a, 'click', (event) => {
         event.preventDefault();
         this.googleAnalyticsService.logClickEvents('click_ccd_id', 'CLC CCD List', 'click_ccd_id', text.trim());
-        this.router.navigate([`/ligands/${text.trim()}`]);
+        this.router.navigate([`/chemicalCompound/show/${text.trim()}`]);
       });
     }
   }

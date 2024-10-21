@@ -59,12 +59,12 @@ export const MainComponentStore = signalStore(
                     patchState(store, {
                       redirectText: `The chemical component you are trying to view (${ligandId}) has been obsoleted. You have been redirected to the component which superceded it.`,
                     });
-                    router.navigate(['/ligands', processDescriptionData.superseded_by]);
+                    router.navigate(['/chemicalCompound/show', processDescriptionData.superseded_by]);
                     return;
                   }
 
                   if (!processDescriptionData.released && processDescriptionData.superseded_by === null) {
-                    router.navigate(['/ligands', store.ligandId(), 'unreleased']);
+                    router.navigate(['/chemicalCompound/show', store.ligandId(), 'unreleased']);
                     patchState(store, { ligandId, description: {} as DescriptionData, downloadOptions: [], supercomponents: [] });
                     return;
                   }
