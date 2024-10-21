@@ -13,4 +13,5 @@ export const appRoutes: Route[] = [
   { path: 'ligands/:ligandId', component: LigandWrapperComponent, title: 'PDBe Ligand Pages' },
   { path: 'ligands/:ligandId/unreleased', component: UnreleasedComponent, title: 'PDBe Ligand Pages' },
   { path: 'complex/:complexId', component: MainComponent, title: 'Complex Pages' },
+  { path: 'chemicalCompound/show/:ligandId', component: LigandWrapperComponent, title: 'PDBe Ligand Pages (PDBeChem)' },
 ];
