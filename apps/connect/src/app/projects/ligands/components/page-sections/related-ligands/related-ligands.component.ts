@@ -3,7 +3,7 @@
 import { Component, OnInit, ViewChild, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold } from '../../../data-models/related-ligands.model';
+import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold, StereoIsomer } from '../../../data-models/related-ligands.model';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
@@ -22,7 +22,7 @@ import { GoogleAnalyticsService } from '@pdbc/core';
   styleUrl: './related-ligands.component.scss',
 })
 export class RelatedLigandsComponent implements OnInit {
-  public stereoisomers: { name: string; chem_comp_id: string }[] = [];
+  public stereoisomers: StereoIsomer[] = [];
   private stereoisomersGrid: any[] = [];
   public similarLigands: SimilarLigand[] = [];
   private similarLigandsGrid: LigandGrid[] = [];
@@ -171,6 +171,7 @@ export class RelatedLigandsComponent implements OnInit {
             bound_entries: stereoisomersBoundEntriesArray?.[stereoisomer.chem_comp_id],
           }));
           this.stereoisomersGrid = this.unfilteredStereoisomers;
+          console.log('stereoisomers', this.stereoisomersGrid);
 
           this.sameScaffoldPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
           this.similarLigandPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);

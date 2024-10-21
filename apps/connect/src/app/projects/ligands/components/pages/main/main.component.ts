@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, DestroyRef, computed, signal, Renderer2, Signal } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, computed, signal, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DescriptionComponent } from '../../page-sections/description/description.component';
@@ -15,7 +15,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { switchMap } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { combineLatest, of } from 'rxjs';
 import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig, navSections, reactantTooltip } from '../../../ligand.constant';
 import { MainComponentStore } from './main.store';
 import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
@@ -25,6 +25,7 @@ import { LigandStructure } from '../../../data-models/structure.model';
 import { BiodataState } from '../../../../store/biodata.model';
 import { Store } from '@ngrx/store';
 import { BiodataActions } from '../../../../store/biodata.actions';
+import { BiodataSelectors } from '../../../../store/biodata.selectors';
 
 @Component({
   selector: 'pdbc-main',
@@ -88,11 +89,13 @@ export class LigandsMainPageComponent implements OnInit {
       .pipe(
         switchMap((params) => {
           this.ligandId = params['ligandId'].toUpperCase();
-          this.globalStore.dispatch(BiodataActions.setCurrentLigandId({ ligandId: this.ligandId }));
-          this.globalStore.dispatch(BiodataActions.getStructures());
-          this.globalStore.dispatch(BiodataActions.getSummary());
-          this.globalStore.dispatch(BiodataActions.setDownloadOptions());
-
+          // this.globalStore.dispatch(BiodataActions.setCurrentLigandId({ ligandId: this.ligandId }));
+          // this.globalStore.dispatch(BiodataActions.getStructures());
+          // this.globalStore.dispatch(BiodataActions.getSummary());
+          // this.globalStore.dispatch(BiodataActions.setDownloadOptions());
+          // this.globalStore.dispatch(BiodataActions.getRelatedLigands());
+          // this.globalStore.dispatch(BiodataActions.getSupercomponents());
+          // this.globalStore.dispatch(BiodataActions.getSubstructures());
           this.store.init(this.ligandId);
           setTimeout(() => {
             this.generateSchemaData();

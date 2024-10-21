@@ -31,10 +31,10 @@ export class ImageCarouselComponentFacade {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(
         (substructures) => {
-          const fragments = substructures[ligandId].fragments;
+          const fragments = substructures.fragments;
           this.getSubstructureNamesAndAtoms(fragments);
 
-          const scaffolds = substructures[ligandId].scaffolds;
+          const scaffolds = substructures.scaffolds;
           this.getSubstructureNamesAndAtoms(scaffolds);
 
           if (this.substructureNames().length > 0) {

@@ -15,10 +15,6 @@ export interface Descriptor {
   smiles: string;
 }
 
-export interface PDBSubstructures {
-  [key: string]: Substructure;
-}
-
 export interface LigandStructuresAPIResponse {
   [key: string]: LigandStructure[];
 }

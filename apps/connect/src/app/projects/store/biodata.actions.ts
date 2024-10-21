@@ -1,7 +1,8 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
-import { LigandStructure } from '../ligands/data-models/structure.model';
+import { LigandStructure, Substructure } from '../ligands/data-models/structure.model';
 import { LigandSummary } from '../ligands/data-models/description.model';
 import { DescriptionData } from '../ligands/services/aggregated-api.service';
+import { RelatedLigand } from '../ligands/data-models/related-ligands.model';
 
 export const BiodataActions = createActionGroup({
   source: 'Ligands Page',
@@ -15,5 +16,14 @@ export const BiodataActions = createActionGroup({
     'Get Summary Failure': emptyProps(),
     'Set Description': props<{ description: DescriptionData }>(),
     'Set Download Options': emptyProps(),
+    'Get Related Ligands': emptyProps(),
+    'Get Related Ligands Success': props<{ relatedLigands: RelatedLigand }>(),
+    'Get Related Ligands Failure': emptyProps(),
+    'Get Supercomponents': emptyProps(),
+    'Get Supercomponents Success': props<{ supercomponents: string[] }>(),
+    'Get Supercomponents Failure': emptyProps(),
+    'Get Substructures': emptyProps(),
+    'Get Substructures Success': props<{ substructures: Substructure }>(),
+    'Get Substructures Failure': emptyProps(),
   },
 });
