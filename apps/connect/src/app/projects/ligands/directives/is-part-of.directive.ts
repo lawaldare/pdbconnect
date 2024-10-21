@@ -32,14 +32,6 @@ export class IsPartOfDirective implements OnChanges {
       container.classList.add('top-shadow');
       container.classList.remove('bottom-shadow');
     }
-
-    // Check if the container is at the bottom
-    // if (container.scrollHeight - container.scrollTop >= container.clientHeight) {
-    //   container.classList.remove('bottom-shadow');
-    //   // container.classList.add('top-shadow');
-    // } else {
-    //   container.classList.add('bottom-shadow');
-    // }
   }
 
   ngOnChanges(): void {
