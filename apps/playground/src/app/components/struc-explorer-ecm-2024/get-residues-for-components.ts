@@ -123,8 +123,8 @@ export function chainEntityResidSelection(molstarSelection: molstarSelectionObj)
 
   const groups: Expression[] = [];
 
-  let atmGroupsQueries: any[] = [];
-  let selection: any = {};
+  const atmGroupsQueries: any[] = [];
+  const selection: any = {};
   selection['entityTest'] = (l: any) => StructureProperties.entity.id(l.element) === molstarSelection.entityId;
   selection['chainTest'] = (l: any) => StructureProperties.chain.auth_asym_id(l.element) === molstarSelection.authChainId;
 
@@ -167,7 +167,7 @@ export async function getViewerLoci(viewer: any, molstarSelection: molstarSelect
   // const reprObj = await viewer.plugin!.builders.structure.representation.addRepresentation(vis, (repr as StructureRepresentationBuiltInProps));
 
   let queryLoci: Loci = EmptyLoci;
-  let assemblyRef = viewer.plugin!.managers.structure.hierarchy.current.structures[0].cell.transform.ref;
+  const assemblyRef = viewer.plugin!.managers.structure.hierarchy.current.structures[0].cell.transform.ref;
   // if(assemblyRef === '') return EmptyLoci;
   if (assemblyRef !== '') {
     const data = (viewer.plugin!.state.data.select(assemblyRef)[0].obj as PluginStateObject.Molecule.Structure).data;

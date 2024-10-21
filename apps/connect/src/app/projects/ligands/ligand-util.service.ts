@@ -74,5 +74,17 @@ export class LigandUtilService {
     window.URL.revokeObjectURL(url);
   }
 
+  public downloadTxt(data: any, name: string) {
+    const fileContent = data.join('\n');
+    const blob = new Blob([fileContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name}.txt`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
   public currentFragment = signal<Fragment>({} as Fragment);
+  public fragments = signal<Fragment[]>([]);
 }

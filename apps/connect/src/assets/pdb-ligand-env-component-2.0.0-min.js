@@ -107,7 +107,7 @@ class Depiction {
   }
   highlightSubgraph(e, t) {
     if (this.atoms && (this.highlight.selectAll('*').remove(), e)) {
-      t = t || '#BFBFBF';
+      t = t || '#FFFF00';
       let n = this.atoms.filter((t) => e.includes(t.name));
       this.highlight
         .selectAll()
@@ -134,8 +134,14 @@ class Depiction {
       void 0 === n && (n = '0.00'), (t.value = n);
     });
     const n = this.atoms,
-      i = d3.scaleLinear([0, d3.max(n.map((e) => e.value))], [15, 30]),
-      s = d3.scaleLinear([0.01, d3.max(n.map((e) => e.value))], ['#a0bb9e', '#505d4f']);
+      i = e.map((e) => e.value),
+      s = new Model.Gradient(i, t).getScales(),
+      o = d3.quantile(i, 0.25),
+      r = d3.quantile(i, 0.75),
+      a = s.firstScale,
+      l = s.secondScale,
+      d = s.thirdScale,
+      c = d3.scaleLinear([0, 0.01, d3.max(n.map((e) => e.value))], ['#ffffff', '#a0bb9e', '#505d4f']);
     this.weight.selectAll('*').remove(),
       this.weight
         .selectAll()
@@ -145,9 +151,9 @@ class Depiction {
         .attr('class', (e) => `${e.name}_Circles weightCircles`)
         .attr('cx', (e) => e.position.x)
         .attr('cy', (e) => e.position.y)
-        .attr('r', (e) => i(e.value))
-        .attr('fill', (e) => (e.value + '' == '0.00' ? '#FFFFFF' : s(e.value)))
-        .attr('fill-opacity', (e) => (e.value + '' == '0.00' ? 0 : '1.0'))
+        .attr('r', (e) => (e.value >= o ? l.radiusScale(e.value) : e.value >= r ? d.radiusScale(e.value) : a.radiusScale(e.value)))
+        .attr('fill', (e) => c(e.value))
+        .attr('fill-opacity', '1.0')
         .on('mouseenter', (e, t, n) => {
           this.atomMouseEnterEventHandler(e, n[t], !1);
         })
@@ -405,12 +411,12 @@ class Visualization {
   }
   ligHeatmapMouseoverEventHandler(e) {
     if (void 0 === this.depiction) return;
+    if (void 0 === this.ligandIntxData) return;
     const t = e.detail.name,
       n = this.depiction.atoms.filter((e) => e.name === t),
-      i = t.replace(/([!\"#$%&'()*+,.\/:;<=>?@[\\\]^`{|}~])/g, '\\$1'),
-      s = d3.select(`.${i}_Circles`).nodes(),
-      o = s[s.length - 1];
-    n.length > 0 ? this.depiction.atomMouseEnterEventHandler(n[0], o, !0) : this.depiction.atomMouseLeaveEventHandler(!1);
+      i = d3.select(`.${t}_Circles`).nodes(),
+      s = i[i.length - 1];
+    n.length > 0 && this.depiction.atomMouseEnterEventHandler(n[0], s, !0);
   }
   ligHeatmapMouseoutEventHandler(e) {
     void 0 !== this.depiction && this.depiction.atomMouseLeaveEventHandler(!0);
@@ -3090,10 +3096,13 @@ class VisualsMapper {
           e && this.display && (this.display.ligandIntxData = e);
         }
         set highlightSubstructure(e) {
-          this.display && (this.display.addLigandHighlight(e, this.highlightColor), (this.substructureHighlight = e));
+          this.display && ((this.substructureHighlight = e), this.display.addLigandHighlight(this.substructureHighlight));
         }
         set highlightColor(e) {
-          e && this.display && ((this.highlightColor = e), this.display.addLigandHighlight(this.substructureHighlight, this.highlightColor));
+          e &&
+            this.display &&
+            this.substructureHighlight &&
+            ((this.highlightColor = e), this.display.addLigandHighlight(this.substructureHighlight, this.highlightColor));
         }
         set zoom(e) {
           this.display && this.display.toggleZoom(e);

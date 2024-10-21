@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
@@ -15,6 +13,8 @@ import { PlaygroundService } from '../../services/playground.service';
   styleUrl: './entry-citation.component.scss',
 })
 export class EntryCitationComponent {
+  @Output() switchTab = new EventEmitter<string>();
+
   private readonly playgroundService = inject(PlaygroundService);
 
   private readonly route = inject(ActivatedRoute);
@@ -25,7 +25,7 @@ export class EntryCitationComponent {
 
   public articleCiting!: any;
 
-  public entryPublication$ = this.route.params.pipe(
+  public entryPublication$ = this.route.queryParams.pipe(
     switchMap((params) => {
       const entryId = params['entryId'].toLowerCase();
       return forkJoin([this.playgroundService.getPrimaryPublicationAbstract(entryId), this.playgroundService.getArticleCitingPDBEntry(entryId)]);
@@ -65,5 +65,9 @@ export class EntryCitationComponent {
     }
 
     this.articleText.set(`We are not aware of any publication which cites or mentions this structure.`);
+  }
+
+  public selectTab(name: string) {
+    this.switchTab.emit(name);
   }
 }

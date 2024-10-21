@@ -14,7 +14,7 @@
 }
 
 .nav-section {
-  width: fit-content;
+  // width: fit-content;
   height: fit-content;
   border-bottom: 1px solid var(--Neutral-300, #d0d0ce);
 }
@@ -27,7 +27,7 @@
   display: flex;
   align-items: center;
   // width is proportion to scale between 1024px and 1440px
-  width: 16.8055556vw; // 242 / 1440 in %
+  // width: 16.8055556vw; // 242 / 1440 in %
   min-width: 193px; // 201px from 1024px design - left and right pads (4px each)
   max-width: 242px; // 250px from 1440px design - left and right pads (4px each)
   min-height: 28px;
@@ -54,9 +54,9 @@
   // container of nested list items
   --nav-menu-highlight-color: '#D3D3D3';
   // width is proportion to scale between 1024px and 1440px
-  width: 17.3611111vw; // 250 / 1440 in %
-  min-width: 201px; // from 1024px design
-  max-width: 250px; // from 1440px design
+  // width: 17.3611111vw; // 250 / 1440 in %
+  // min-width: 201px; // from 1024px design
+  // max-width: 250px; // from 1440px design
   min-height: 28px;
   border-bottom: 1px solid var(--Neutral-300, #d0d0ce);
 }

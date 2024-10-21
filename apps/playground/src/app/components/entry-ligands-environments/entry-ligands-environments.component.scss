@@ -42,5 +42,18 @@ article {
     font-size: 14px;
     font-weight: 500;
     line-height: 22.4px;
+    i {
+      width: 12px;
+    }
+    i:before {
+      --icon-search-color: #193f90;
+      width: 12px;
+      height: 12px;
+      -webkit-mask-size: auto 12px;
+      mask-size: auto 12px;
+      position: absolute;
+      z-index: -1;
+      left: 4px;
+    }
   }
 }

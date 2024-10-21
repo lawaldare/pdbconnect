@@ -22,6 +22,7 @@ stages:
 
 variables:
   GIT_DEPTH: 0
+  BUILD_CONF: development
 
 format-check:
   stage: test
@@ -155,6 +156,7 @@ playground_build_and_publish:
   script:
     - npx nx build playground
     - npm install netlify-cli
+    - cp netlify.toml dist/apps/playground/browser/
     - node_modules/.bin/netlify deploy --filter playground --site $NETLIFY_PLAYGROUND_SITE_ID --dir dist/apps/playground/browser --prod
   tags:
     - pdbe-docker

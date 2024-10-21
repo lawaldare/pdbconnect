@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 import { PdbeSwaggerDocsComponent } from '@pdbe-lib/swagger-docs';
@@ -11,7 +11,7 @@ import { ConfigService } from '@pdbe-lib/shared-services';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'PDBe RESTful API Documentation';
   @Input() url = '';
 

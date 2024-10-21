@@ -21,7 +21,6 @@ header {
 }
 
 nav {
-  padding: 24px 12px;
   background: #fff;
   position: absolute;
   top: 0px;
@@ -32,6 +31,7 @@ nav {
   text-align: center;
   z-index: 1;
   div {
+    padding: 24px 12px;
     position: sticky;
     top: 0;
   }
@@ -114,6 +114,10 @@ h1 {
   margin-bottom: 16px;
 }
 
+.other-sections {
+  min-height: 600px;
+}
+
 section.hero {
   display: flex;
   gap: 16px;
@@ -163,6 +167,7 @@ section.footer {
     max-height: 400px;
     overflow-y: auto;
     background-color: #ffffff;
+    z-index: 1;
     a {
       display: block;
       text-decoration: none;
@@ -173,6 +178,10 @@ section.footer {
       &:not(:last-child) {
         border-bottom: 1px solid var(--Neutral-300, #d0d0ce);
       }
+    }
+
+    @media (max-width: 1700px) {
+      right: 0;
     }
   }
 }
