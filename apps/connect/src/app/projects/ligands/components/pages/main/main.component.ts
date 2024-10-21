@@ -22,6 +22,9 @@ import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { LigandStructure } from '../../../data-models/structure.model';
+import { BiodataState } from '../../../../store/biodata.model';
+import { Store } from '@ngrx/store';
+import { BiodataActions } from '../../../../store/biodata.actions';
 
 @Component({
   selector: 'pdbc-main',
@@ -54,6 +57,7 @@ export class LigandsMainPageComponent implements OnInit {
   private readonly bioschemasService = inject(LigandsBioschemasService);
   private readonly renderer = inject(Renderer2);
   private readonly ligandUtilService = inject(LigandUtilService);
+  private readonly globalStore = inject(Store<BiodataState>);
 
   public readonly headerLogoMenuConfig = headerLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchConfig;
@@ -84,6 +88,11 @@ export class LigandsMainPageComponent implements OnInit {
       .pipe(
         switchMap((params) => {
           this.ligandId = params['ligandId'].toUpperCase();
+          this.globalStore.dispatch(BiodataActions.setCurrentLigandId({ ligandId: this.ligandId }));
+          this.globalStore.dispatch(BiodataActions.getStructures());
+          this.globalStore.dispatch(BiodataActions.getSummary());
+          this.globalStore.dispatch(BiodataActions.setDownloadOptions());
+
           this.store.init(this.ligandId);
           setTimeout(() => {
             this.generateSchemaData();
