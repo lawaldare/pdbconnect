@@ -1,0 +1,24 @@
+@if(complexData()){
+
+<div class="card-container">
+  <div class="image-box">
+    <img [src]="complexImageSrc()" alt="Complex Image" />
+  </div>
+  <article>
+    <a
+      [routerLink]="['/complex', complexData().complexId]"
+      matTooltipClass="complex-name-tooltip"
+      [matTooltip]="complexData().name ?? 'Other'"
+      matTooltipPosition="above"
+    >
+      {{ complexData().complexId }}
+      <i class="icon icon-link icon-common"></i>
+    </a>
+    <p class="participant">
+      @for(participant of complexData().participants; track participant){
+      <span>{{ participant.accession }} ({{ participant.stoichiometry }}), </span>
+      }
+    </p>
+  </article>
+</div>
+}

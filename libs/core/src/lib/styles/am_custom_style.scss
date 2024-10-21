@@ -1,18 +1,18 @@
+.mat-sort-header-container.mat-sort-header-sorted .mat-sort-header-arrow {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  color: var(--Neutral-700);
+}
+
 .mat-sort-header-container:not(.mat-sort-header-sorted) .mat-sort-header-arrow {
   opacity: 0.54 !important;
-  transform: translateY(0px) !important;
+  transform: translateY(0) !important;
   color: var(--Neutral-700);
 }
 
 .mat-sort-header-container:not(.mat-sort-header-sorted) .mat-sort-header-arrow:hover {
   opacity: 1 !important;
   transform: translateY(1%) !important;
-  color: var(--Neutral-700);
-}
-
-.mat-sort-header-container.mat-sort-header-sorted .mat-sort-header-arrow {
-  opacity: 1 !important;
-  transform: translateY(0px) !important;
   color: var(--Neutral-700);
 }
 

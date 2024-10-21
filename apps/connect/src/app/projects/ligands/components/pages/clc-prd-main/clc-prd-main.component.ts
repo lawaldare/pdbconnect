@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, Renderer2 } from '@angular/core';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
@@ -14,6 +14,9 @@ import { of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { MainComponentStore } from '../main/main.store';
+import { LigandUtilService } from '../../../ligand-util.service';
+import { GoogleAnalyticsService } from '@pdbc/core';
+import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 
 @Component({
   selector: 'pdbc-clc-prd-main',
@@ -37,6 +40,11 @@ export class ClcPrdMainComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(MainComponentStore);
+  public readonly ligandUtilService = inject(LigandUtilService);
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+
+  private readonly bioschemasService = inject(LigandsBioschemasService);
+  private readonly renderer = inject(Renderer2);
 
   public readonly headerLogoMenuConfig = headerLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchConfig;
@@ -49,17 +57,30 @@ export class ClcPrdMainComponent implements OnInit {
 
   public ligandId!: string;
 
+  private readonly schemas = computed(() => ({
+    similarLigands: this.ligandUtilService.currentSimilarLigands(),
+    structures: this.ligandUtilService.currentStuctures(),
+    summary: this.ligandUtilService.currentSummary(),
+  }));
+
   ngOnInit(): void {
     this.route.params
       .pipe(
         switchMap((params) => {
           this.ligandId = params['ligandId'].toUpperCase();
           this.store.init(this.ligandId);
+          setTimeout(() => {
+            this.generateSchemaData();
+          }, 1000);
           return of({});
         }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+  }
+
+  private generateSchemaData(): void {
+    this.bioschemasService.buildBioschemasJSON(this.renderer, this.schemas, this.ligandId);
   }
 
   public openMolstarDialog(): void {

@@ -19,15 +19,15 @@
       </lib-tool-tip>
     </p>
     <section id="structures">
-      <app-data-type-box [dataType]="structureData"> </app-data-type-box>
+      <app-data-type-box [dataType]="structureData" [downloadType]="downloadType.Structures"> </app-data-type-box>
     </section>
 
     <section id="smallmolecules">
-      <app-data-type-box [dataType]="moleculesData"> </app-data-type-box>
+      <app-data-type-box [dataType]="moleculesData" [downloadType]="downloadType.Molecules"> </app-data-type-box>
     </section>
 
     <section id="sifts">
-      <app-data-type-box [dataType]="siftsData"> </app-data-type-box>
+      <app-data-type-box [dataType]="siftsData" [downloadType]="downloadType.Residues"> </app-data-type-box>
     </section>
   </div>
 </main>

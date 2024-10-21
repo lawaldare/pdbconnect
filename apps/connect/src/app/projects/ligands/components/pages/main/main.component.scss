@@ -1,24 +1,50 @@
-@import 'libs/core/src/lib/styles/pdbe-styles/pdb_connect.scss';
+@import url('libs/core/src/lib/styles/pdb_connect.scss');
 
 main {
   .container {
     display: flex;
     gap: 28px;
 
-    @media screen and (max-width: 767px) {
-      gap: 0px;
+    @media screen and (width <= 768px) {
+      gap: 0;
     }
 
     pdbc-pdbe-nav-menu {
       width: 220px;
+
+      @media screen and (width <= 768px) {
+        display: none;
+      }
+    }
+
+    header {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+
+      .annotations {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+
+        span {
+          font-size: 14px;
+          line-height: 22.4px;
+        }
+      }
     }
 
     article {
       width: calc(100% - 248px);
+
+      @media screen and (width <= 768px) {
+        width: 100%;
+      }
     }
 
     .hero {
-      padding: 12px 0 32px 0;
+      padding: 12px 0 32px;
+
       h2 {
         font-size: 42px;
         font-weight: 700;
@@ -40,6 +66,7 @@ main {
         background: var(--Neutral-100, #f3f3f3);
         display: flex;
         gap: 20px;
+
         .drop-down {
           width: 152px;
         }
@@ -56,7 +83,7 @@ main {
       padding-bottom: 40px;
       gap: 12px;
 
-      @media screen and (max-width: 767px) {
+      @media screen and (width <= 768px) {
         flex-direction: column;
         gap: 30px;
       }
@@ -66,12 +93,38 @@ main {
     .structure,
     .interaction,
     .related-ligands,
-    .ligand-specific-databases {
-      padding-bottom: 40px;
+    .ligand-specific-databases,
+    .mobile-interaction {
+      padding-bottom: 60px;
+    }
+
+    .interaction {
+      @media screen and (width <= 768px) {
+        display: none;
+      }
+    }
+
+    .mobile-interaction {
+      display: none;
+
+      h3 {
+        font-size: 30px;
+        font-weight: 500;
+        line-height: 39px;
+        margin-bottom: 20px;
+      }
+
+      .content {
+        border: 1px dashed #d0d0ce;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 22px;
+      }
+
+      @media screen and (width <= 768px) {
+        display: block;
+      }
     }
   }
-}
-
-pdbc-pdbe-chips {
-  margin-right: 10px;
 }

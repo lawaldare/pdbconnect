@@ -1,4 +1,4 @@
-@import 'libs/core/src/lib/styles/pdbe-styles/pdb_connect.scss';
+@import url('libs/core/src/lib/styles/pdb_connect.scss');
 
 section {
   .container {
@@ -6,17 +6,19 @@ section {
     align-items: center;
     justify-content: space-between;
 
-    @media only screen and (max-width: 540px) {
+    @media only screen and (width <= 540px) {
       padding: 22px 24px;
     }
 
     .header-logo {
       display: flex;
       align-items: center;
+
       .pdbe-header-logo-img {
         width: 141.43px;
         height: 44px;
       }
+
       .pdbe-kb-header-logo-img {
         width: 233.4px;
         height: 44px;
@@ -38,7 +40,7 @@ section {
       cursor: pointer;
       display: none;
 
-      @media only screen and (max-width: 540px) {
+      @media only screen and (width <= 540px) {
         display: block;
       }
     }
@@ -52,6 +54,7 @@ section {
       .nav-link {
         list-style: none;
         cursor: pointer;
+
         a {
           text-decoration: none;
           color: white;
@@ -61,7 +64,7 @@ section {
         }
       }
 
-      @media only screen and (max-width: 540px) {
+      @media only screen and (width <= 540px) {
         display: none;
       }
     }
@@ -71,9 +74,11 @@ section {
 .mobile-menu {
   .nav-links {
     margin: 0 !important;
+
     .nav-link {
       list-style: none;
       padding: 16px 8px;
+
       a {
         text-decoration: none;
         color: white;

@@ -1,50 +1,47 @@
 /* You can add global styles to this file, and also import other style files */
+
 /* You can add global styles to this file, and also import other style files */
-@import 'libs/core/src/lib/styles/pdbe-styles/typography.scss';
-@import 'libs/core/src/lib/styles/pdbe-styles/templates.scss';
-@import 'libs/core/src/lib/styles/icons.scss';
-@import 'libs/core/src/lib/styles/pdbe-styles/am_custom_style.scss';
-@import 'libs/core/src/lib/styles/pdbe-styles/_button.scss';
-@import 'libs/core/src/lib/material.scss';
-
-@import '@splidejs/splide/css';
-@import '@splidejs/splide/css/core';
-
-/* Core Data Grid CSS */
-@import 'ag-grid-community/styles/ag-grid.css';
-/* Quartz Theme Specific CSS */
-@import 'ag-grid-community/styles/ag-theme-quartz.css';
-
-body {
-  margin: 0;
-  overflow-x: hidden;
-}
+@import url('@splidejs/splide/css');
+@import url('@splidejs/splide/css/core');
+@import url('ag-grid-community/styles/ag-grid.css');
+@import url('ag-grid-community/styles/ag-theme-quartz.css');
+@import url('libs/core/src/lib/styles/typography.scss');
+@import url('libs/core/src/lib/styles/templates.scss');
+@import url('libs/core/src/lib/styles/icons.scss');
+@import url('libs/core/src/lib/styles/am_custom_style.scss');
+@import url('libs/core/src/lib/styles/button.scss');
+@import url('libs/core/src/lib/styles/material.scss');
+@import url('libs/core/src/lib/styles/ag-grid.scss');
 
 html,
 body {
   height: 100%;
 }
+
 body {
+  font-family: 'IBM Plex Sans', sans-serif;
   margin: 0;
-  font-family: 'IBM Plex Sans';
+  overflow-x: hidden;
 }
 
 .container {
   width: 100%;
+
   // padding: 22px 34px;
   margin-right: auto;
   margin-left: auto;
+
   // margin-top: 50px;
 
-  @media (min-width: 576px) {
+  @media (width >= 576px) {
     max-width: 540px;
   }
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     max-width: 720px;
   }
 
-  @media (min-width: 992px) {
+  @media (width >= 992px) {
     max-width: 1440px;
   }
 }
@@ -72,6 +69,7 @@ a {
 
   &:visited {
     color: #563d82;
+
     i {
       color: #563d82;
     }
@@ -84,7 +82,7 @@ a {
   }
 }
 
-.icon-link:before {
+.icon-link::before {
   position: unset;
   z-index: unset;
 }

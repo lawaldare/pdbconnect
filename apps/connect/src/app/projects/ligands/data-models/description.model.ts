@@ -57,7 +57,7 @@ export interface LigandProperty {
   toolTip?: string;
 }
 
-export interface LigandDescription {
+export interface LigandSummary {
   name: string;
   released: boolean;
   formula: string;
@@ -71,8 +71,4 @@ export interface LigandDescription {
   phys_chem_properties: PhysChemProperties;
   superseded_by: string | undefined;
   subcomponent_occurrences: Record<string, number>;
-}
-
-export interface PDBLigandDescription {
-  [key: string]: LigandDescription[];
 }

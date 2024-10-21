@@ -4,6 +4,7 @@ import { MaterialModule } from '@pdbc/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
+import { CustomCasePipe } from './custom-case.pipe';
 
 declare let PDBeMolstarPlugin: any;
 
@@ -11,6 +12,7 @@ export interface Fragment {
   name: string;
   atoms: string[][];
   descriptors: Descriptor;
+  caption?: string;
 }
 
 export interface Descriptor {
@@ -22,12 +24,13 @@ export interface Descriptor {
 @Component({
   selector: 'lib-molstar-dialog',
   standalone: true,
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, CustomCasePipe],
   templateUrl: './molstar-dialog.component.html',
   styleUrl: './molstar-dialog.component.scss',
 })
 export class MolstarDialogComponent implements AfterViewInit {
   private molstarViewInstance: any;
+  private cells: any[] = [];
 
   public selections: { viewValue: string; value: string }[] = [];
   public selected = signal('');
@@ -41,15 +44,51 @@ export class MolstarDialogComponent implements AfterViewInit {
   private atoms!: string[];
   public showFragmentOptions = signal<boolean>(false);
 
+  private readonly highlightColor = { r: 249, g: 207, b: 59 };
+  private readonly defaultColor = { r: 152, g: 152, b: 152 };
+
+  public caption = signal<string>('');
+  public count = signal<number>(0);
+
+  private selectedFramentObject: Fragment | undefined;
+
   @ViewChild('viewContainer') viewContainer!: ElementRef;
 
   constructor(public dialogRef: MatDialogRef<MolstarDialogComponent>, @Inject(MAT_DIALOG_DATA) public dialogData: any) {
     if (dialogData.fragments) {
+      const id = dialogData.moleculeId.toUpperCase();
       this.showFragmentOptions.set(true);
-      this.fragments.update(() => dialogData.fragments());
-      console.log(this.fragments());
+      this.fragments.update(() => {
+        return dialogData.fragments().reduce(
+          (acc: Fragment[], curr: Fragment) => {
+            acc.push({
+              ...curr,
+              name: curr.name.toLocaleLowerCase().includes('murcko') ? 'Murcko scaffold highlighted' : `${curr.name} highlighted fragment`,
+              caption: curr.name.toLocaleLowerCase().includes('murcko')
+                ? `The Murco scaffold is highlighted in yellow in the PDB ligand ${id}`
+                : `The ${curr.name} fragment is highlighted in yellow in the PDB ligand ${id}`,
+            });
+            return acc;
+          },
+          [
+            {
+              name: `Atom-labelled ${id} (no substructure highlighted)`,
+              atoms: [],
+              descriptors: {},
+              caption: `Atom-labelled PDB Ligand ${id}`,
+            },
+            {
+              name: `${id} (no substructure highlighted)`,
+              atoms: [],
+              descriptors: {},
+              caption: `PDB Ligand ${id} (without atomic names)`,
+            },
+          ]
+        );
+      });
       this.selectedFrament.set(this.fragments()[0].name);
-      this.atoms = this.fragments()[0].atoms[0];
+      this.caption.set(this.fragments()[0].caption ?? '');
+      this.atoms = this.fragments()[0].atoms.length ? this.fragments()[0].atoms[0] : [];
     } else {
       this.showFragmentOptions.set(false);
       this.atoms = dialogData.atoms;
@@ -60,7 +99,7 @@ export class MolstarDialogComponent implements AfterViewInit {
         {
           struct_asym_id: 'A',
           atoms: this.atoms,
-          color: { r: 249, g: 207, b: 59 },
+          color: this.atoms.length ? this.highlightColor : this.defaultColor,
         },
       ],
     };
@@ -86,24 +125,56 @@ export class MolstarDialogComponent implements AfterViewInit {
         value: entryList[1],
       },
     ];
+
     this.selected.set(this.selections[1].value);
 
     const molstarParams = {
       moleculeId: this.dialogData.moleculeId,
       lowPrecisionCoords: false,
       subscribeEvents: true,
-      selectInteraction: false,
+      selectInteraction: true,
       visualStyle: 'ball-and-stick',
       bgColor: { r: 255, g: 255, b: 255 },
       customData: {
         url: this.selected(),
         format: 'pdb',
       },
-      isLandscape: false,
+      landscape: true,
+      granularity: 'elementInstances',
       selection: this.selectionConfig,
+      hideControls: true,
     };
 
     this.molstarViewInstance.render(container, molstarParams);
+    this.molstarViewInstance.events.loadComplete.subscribe(() => {
+      console.log('Molecule loaded successfully');
+      const label = `Atom-labelled ${this.dialogData.moleculeId.toUpperCase()} (no substructure highlighted)`;
+      if (this.count() === 0 || this.selectedFramentObject?.name === label) {
+        this.displayLabel();
+      } else {
+        this.removeLabel();
+        this.cells = [];
+      }
+    });
+  }
+
+  private async displayLabel() {
+    this.count.update((value) => value + 1);
+    for (const structure of this.molstarViewInstance.plugin.managers.structure.hierarchy.current.structures) {
+      for (const component of structure.components) {
+        const sel = await this.molstarViewInstance.plugin.builders.structure.representation.addRepresentation(component.cell, {
+          type: 'label',
+          typeParams: { level: 'element', borderColor: 'black', sizeFactor: 1.5 },
+        });
+        this.cells.push(sel);
+      }
+    }
+  }
+
+  private removeLabel() {
+    for (const cell of this.cells) {
+      this.molstarViewInstance.plugin.build().delete(cell).commit();
+    }
   }
 
   public onSelectionChange(event: MatSelectChange) {
@@ -119,13 +190,18 @@ export class MolstarDialogComponent implements AfterViewInit {
   }
 
   public onFragmentChange(event: MatSelectChange) {
-    const selectedFrament = this.fragments().find((fragment) => fragment.name === event.value);
+    this.selectedFramentObject = this.fragments().find((fragment) => fragment.name === event.value);
+
+    if (this.selectedFramentObject?.caption) {
+      this.caption.set(this.selectedFramentObject.caption);
+    }
+
     this.selectionConfig = {
       data: [
         {
           struct_asym_id: 'A',
-          atoms: selectedFrament?.atoms[0],
-          color: { r: 249, g: 207, b: 59 },
+          atoms: this.selectedFramentObject?.atoms[0] ?? [],
+          color: this.selectedFramentObject?.atoms.length ? this.highlightColor : this.defaultColor,
         },
       ],
     };
@@ -137,6 +213,7 @@ export class MolstarDialogComponent implements AfterViewInit {
       selection: this.selectionConfig,
       bgColor: { r: 255, g: 255, b: 255 },
     };
+
     this.molstarViewInstance.visual.update(updateParams);
   }
 }

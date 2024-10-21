@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '@pdbc/core';
+import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 
 export interface DownloadOption {
   name: string;
@@ -17,6 +17,9 @@ export interface DownloadOption {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DropdownMenuComponent {
+  public readonly dlService = inject(DataLayerService);
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+
   public readonly title = input.required<string>();
   public readonly options = input.required<DownloadOption[]>();
   public readonly backgroundColor = input<string>('#FFF');

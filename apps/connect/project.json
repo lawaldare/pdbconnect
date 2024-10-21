@@ -66,12 +66,23 @@
           "sourceMap": true,
           "vendorChunk": false,
           "baseHref": "$APP_BASE_HREF"
+        },
+        "local": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
         }
       },
-      "defaultConfiguration": "production"
+      "defaultConfiguration": ""
     },
     "serve": {
       "executor": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "buildTarget": "connect:build:local"
+      },
       "configurations": {
         "production": {
           "buildTarget": "connect:build:production"
@@ -80,7 +91,7 @@
           "buildTarget": "connect:build:development"
         }
       },
-      "defaultConfiguration": "development"
+      "defaultConfiguration": ""
     },
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",

@@ -1,11 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, ValueGetterParams, CellValueChangedEvent, SelectionChangedEvent, ValueFormatterParams } from 'ag-grid-community'; // Column Definition Type Interface
+import { ColDef, ValueGetterParams, CellValueChangedEvent, SelectionChangedEvent, ValueFormatterParams, GridOptions } from 'ag-grid-community'; // Column Definition Type Interface
 import { CustomButtonComponent } from './button-cell-renderer.component';
 import { PlaygroundService } from '../../services/playground.service';
 import { CompanyLogoRenderer } from './logo-renderer';
 import { MissionResultRenderer } from './mission-result-renderer.component';
+import { AG_Grid_Theme_Class, agGridOptionsBase } from '@pdbc/core';
 
 // Row Data Interface
 interface IRow {
@@ -40,21 +41,20 @@ export class AGridComponent {
     {
       headerName: 'Make & Model',
       valueGetter: (p: ValueGetterParams) => p.data.make + ' ' + p.data.model,
-      flex: 2,
     },
-    { field: 'price', valueFormatter: (p) => '£' + Math.floor(p.value).toLocaleString(), flex: 1, editable: true },
+    { field: 'price', valueFormatter: (p) => '£' + Math.floor(p.value).toLocaleString() },
     {
       field: 'electric',
-      flex: 1,
       cellClassRules: {
         // apply green to electric cars
         'rag-green': (params) => params.value === true,
       },
+      valueFormatter: (p) => p.value.toLocaleString(),
     },
-    { field: 'button', cellRenderer: CustomButtonComponent, flex: 1 },
+    { field: 'button', cellRenderer: CustomButtonComponent },
   ];
 
-  themeClass = 'ag-theme-quartz-dark';
+  themeClass = AG_Grid_Theme_Class;
 
   // Return formatted date value
   dateFormatter(params: ValueFormatterParams) {
@@ -68,12 +68,22 @@ export class AGridComponent {
 
   public readonly defaultColDef: ColDef = {
     filter: true,
+    flex: 1,
+  };
+
+  public readonly defaultColGridDef: ColDef = {
+    filter: true,
+  };
+
+  public readonly gridOptions: GridOptions = {
+    ...agGridOptionsBase,
   };
 
   private readonly playgroundService = inject(PlaygroundService);
+  public rowSelection: 'single' | 'multiple' = 'multiple';
   public rowGridData: IRow[] = [];
   public colGridDefs: ColDef[] = [
-    { field: 'mission', checkboxSelection: true, width: 150, headerCheckboxSelection: true },
+    { field: 'mission', width: 200 },
     { field: 'company', cellRenderer: CompanyLogoRenderer, width: 130 },
     { field: 'location', width: 225 },
     { field: 'date', valueFormatter: this.dateFormatter },

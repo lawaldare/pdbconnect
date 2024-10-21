@@ -1,42 +1,69 @@
-#ligand-databases-section {
-  font-family: 'IBM Plex Sans';
-  line-height: 27.2px;
-}
+header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
 
-p {
-  margin: 0;
+  button {
+    align-self: flex-end;
+  }
+
+  @media screen and (width <= 768px) {
+    flex-direction: column;
+
+    button {
+      align-self: flex-start;
+    }
+  }
 }
 
 h3 {
   font-size: 30px;
   font-weight: 500;
   line-height: 39px;
-  margin-bottom: 12px;
 }
 
 .cross-links {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  row-gap: 16px;
-  column-gap: 40px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 40px;
 
-  @media screen and (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media screen and (max-width: 540px) {
+  @media screen and (width <= 768px) {
     grid-template-columns: 1fr;
   }
 
   .cross-link {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    gap: 12px;
+
+    .resource-ids {
+      display: flex;
+      flex-direction: column;
+      min-height: 40px;
+      max-height: 100px;
+      overflow-y: auto;
+      width: 100%;
+
+      &.top-shadow {
+        box-shadow: inset 0 10px 10px -10px rgb(0 0 0 / 50%);
+      }
+
+      &.bottom-shadow {
+        box-shadow: inset 0 -10px 10px -10px rgb(0 0 0 / 50%);
+      }
+
+      a {
+        align-self: flex-start;
+      }
+    }
 
     p {
       color: var(--Neutral-900, #1a1c1a);
       font-size: 16px;
       font-weight: 500;
+      margin: 0;
+      width: 132px;
+      max-width: 132px;
+      min-width: 132px;
     }
 
     a {

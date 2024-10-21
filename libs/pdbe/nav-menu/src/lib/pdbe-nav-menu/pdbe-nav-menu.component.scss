@@ -1,13 +1,13 @@
-@import 'libs/core/src/lib/styles/pdbe-styles/typography.scss';
+@import url('libs/core/src/lib/styles/typography.scss');
 
 .nav-menu {
   display: none;
-  position: -webkit-sticky;
   position: sticky;
   top: 20px;
 }
+
 // By design nav menu only appears when screen is at least 768px
-@media screen and (min-width: 768px) {
+@media screen and (width >= 768px) {
   .nav-menu {
     display: block;
   }
@@ -24,17 +24,16 @@
 .nav-section > .nav-atag {
   // normal list items
   --nav-menu-highlight-color: '#D3D3D3';
+
   display: flex;
   align-items: center;
+
   // width is proportion to scale between 1024px and 1440px
   // width: 16.8055556vw; // 242 / 1440 in %
   min-width: 193px; // 201px from 1024px design - left and right pads (4px each)
   max-width: 242px; // 250px from 1440px design - left and right pads (4px each)
   min-height: 28px;
-  padding-top: 4px; // pads from design
-  padding-left: 4px; // pads from design
-  padding-right: 4px; // pads from design
-  padding-bottom: 3px; // pads from design
+  padding: 4px 4px 3px; // pads from design // pads from design // pads from design // pads from design
   text-decoration: none;
   cursor: pointer;
 }
@@ -42,9 +41,11 @@
 .nav-section > .nav-atag:hover {
   background-color: var(--nav-menu-highlight-color);
 }
+
 .nav-section > .nav-atag:focus {
   background-color: var(--nav-menu-highlight-color);
 }
+
 .nav-section.isactive > .nav-atag {
   background-color: var(--nav-menu-highlight-color);
   font-weight: 500;
@@ -53,6 +54,7 @@
 .nav-subsection {
   // container of nested list items
   --nav-menu-highlight-color: '#D3D3D3';
+
   // width is proportion to scale between 1024px and 1440px
   // width: 17.3611111vw; // 250 / 1440 in %
   // min-width: 201px; // from 1024px design
@@ -65,9 +67,11 @@
   cursor: pointer;
   background-color: var(--nav-menu-highlight-color);
 }
+
 .nav-subsection > .nav-atag:focus {
   background-color: var(--nav-menu-highlight-color);
 }
+
 .nav-subsection.isactive > .nav-atag {
   background-color: var(--nav-menu-highlight-color);
   font-weight: 500;
@@ -80,29 +84,28 @@
   max-width: 234px;
   min-width: 185px;
   min-height: 28px;
-  padding-left: 20px; // pads from design (including nested)
-  padding-top: 4px; // pads from design
-  padding-right: 4px; // pads from design
-  padding-bottom: 3px; // pads from design
+  padding: 4px 4px 3px 20px; // pads from design (including nested) // pads from design // pads from design // pads from design
   text-decoration: none;
 }
 
 // Between 768px and 1024px, width scales proportionally according to below
-@media screen and (max-width: 1024px) {
+@media screen and (width <= 1024px) {
   .nav-section > .nav-atag {
     // normal list items
     // width is proportion to scale between 768px and 1024px
-    width: 18.8476562vw; // 193 / 1024 in %
+    width: 18.8477vw; // 193 / 1024 in %
     min-width: 156px; // 164px from 768px design - left/right pads (4px each)
     max-width: 193px; // 201px from 1024px design - left/right pads (4px each)
   }
+
   .nav-subsection {
     // container of nested list items
     // width is proportion to scale between 768px and 1024px
-    width: 19.6289062vw; // 201 / 1024 in %
+    width: 19.6289vw; // 201 / 1024 in %
     min-width: 164px; // from 768px design
     max-width: 201px; // from 1024px design
   }
+
   .nav-subsection > .nav-atag {
     // nested list items
     max-width: 185px;
@@ -111,18 +114,20 @@
 }
 
 // At 768px, width is fixed to 164px
-@media screen and (width: 768px) {
+@media screen and (width <= 768px) {
   .nav-section > .nav-atag {
     // normal list items
     width: 156px; // 164px from 768px design - left/right pads (4px each)
   }
+
   .nav-subsection {
     // container of nested list items
     width: 164px; // from 768px design
   }
+
   .nav-subsection > .nav-atag {
     // nested list items
-    max-width: 140px; //164px from design - left (20px) and right(4px) pads
-    min-width: 140px; //164px from design - left (20px) and right(4px) pads
+    max-width: 140px; // 164px from design - left (20px) and right(4px) pads
+    min-width: 140px; // 164px from design - left (20px) and right(4px) pads
   }
 }

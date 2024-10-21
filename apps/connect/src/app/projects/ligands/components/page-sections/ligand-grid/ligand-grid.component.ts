@@ -5,7 +5,7 @@ import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction } from '../../../data-models/structure.model';
 import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MaterialModule, UtilService } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 
@@ -31,6 +31,7 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly util = inject(UtilService);
   private readonly dialog = inject(MatDialog);
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   renderLigandImg() {
     this.resetRenderer();
@@ -52,7 +53,7 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
     const numBoundEntries = (this.ligand.bound_entries ?? []).length;
     const boundEntryLabelSuffix = numBoundEntries <= 1 ? 'PDB Entry' : 'PDB Entries';
     this.boundEntryLabel = `${numBoundEntries} ${boundEntryLabelSuffix}`;
-    this.boundEntryUrl = this.util.generateQueryURL(this.ligand.bound_entries ?? [], 'q_pdb_id');
+    this.boundEntryUrl = this.util.generateSortedQueryURL(this.ligand.chem_comp_id);
   }
 
   ngAfterViewInit() {

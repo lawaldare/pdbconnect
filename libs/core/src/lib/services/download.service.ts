@@ -7,6 +7,12 @@ import { UtilService } from './util.service';
 import { downloadParams, fdsTypeDict } from '../constants/download.constant';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
+export enum DownloadType {
+  Structures = 'structures',
+  Molecules = 'molecules',
+  Residues = 'residues',
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -28,11 +34,21 @@ export class DownloadService {
   private readonly destroyRef = inject(DestroyRef);
 
   public errorEntryText = signal('');
+  public errorEntryTextForStructures = signal('');
+  public errorEntryTextForMolecules = signal('');
+  public errorEntryTextForResidues = signal('');
   public isLoadingEntry = signal(false);
+  public isLoadingEntryForStructures = signal(false);
+  public isLoadingEntryForMolecules = signal(false);
+  public isLoadingEntryForResidues = signal(false);
+  private downloadType = signal<DownloadType>(DownloadType.Structures);
 
-  public initiateDownload(apiUrl: string, apiType: string, pdbids: string, chosenFormat: string): void {
+  public initiateDownload(apiUrl: string, apiType: string, pdbids: string, chosenFormat: string, downloadType?: DownloadType): void {
+    if (downloadType) {
+      this.downloadType.set(downloadType);
+      this.updateLoading(downloadType, true);
+    }
     this.isLoadingEntry.set(true);
-
     const correctIds = this.utilService.cleanUpIds(pdbids);
     this.fdsConfig.set({ ids: correctIds });
     this.getDownloadParams(apiUrl, apiType, chosenFormat);
@@ -54,11 +70,15 @@ export class DownloadService {
       .pipe(
         map((response) => {
           this.errorEntryText.set('');
+          this.errorEntryTextForStructures.set('');
+          this.errorEntryTextForMolecules.set('');
+          this.errorEntryTextForResidues.set('');
           this.hashedUrl.set(response.url.replace('http:', 'https:'));
           this.getFile(apiType, chosenFormat);
         }),
         catchError((error) => {
           this.showErrorText(error);
+          this.updateErrorText(this.downloadType(), error);
           return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -73,6 +93,7 @@ export class DownloadService {
           if (response.status == '200') {
             setTimeout(() => {
               this.utilService.downloadFile(response.body, `${chosenFormat}.tar.gz`, 'application/tar+gzip');
+              this.updateLoading(this.downloadType(), false);
               this.isLoadingEntry.set(false);
             }, 1000);
           } else if (response.status == '202') {
@@ -82,6 +103,7 @@ export class DownloadService {
           } else {
             const errorText = `Error: The download server returns non 200/202 status: ${response.status}`;
             this.showErrorText(errorText);
+            this.updateErrorText(this.downloadType(), errorText);
           }
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -126,8 +148,50 @@ export class DownloadService {
   public showErrorText(text: string): void {
     this.errorEntryText.set(text);
     this.isLoadingEntry.set(false);
+    this.updateLoading(this.downloadType(), false);
     setTimeout(() => {
       this.errorEntryText.set('');
     }, 3000);
+  }
+
+  private updateLoading(downloadType: DownloadType, update: boolean) {
+    if (downloadType === DownloadType.Structures) {
+      this.isLoadingEntryForStructures = signal(update);
+      return;
+    }
+    if (downloadType === DownloadType.Molecules) {
+      this.isLoadingEntryForMolecules = signal(update);
+      return;
+    }
+
+    if (downloadType === DownloadType.Residues) {
+      this.isLoadingEntryForResidues = signal(update);
+      return;
+    }
+  }
+
+  public updateErrorText(downloadType: DownloadType, text: string) {
+    if (downloadType === DownloadType.Structures) {
+      this.errorEntryTextForStructures = signal(text);
+      setTimeout(() => {
+        this.errorEntryTextForStructures.set('');
+      }, 3000);
+      return;
+    }
+    if (downloadType === DownloadType.Molecules) {
+      this.errorEntryTextForMolecules = signal(text);
+      setTimeout(() => {
+        this.errorEntryTextForMolecules.set('');
+      }, 3000);
+      return;
+    }
+
+    if (downloadType === DownloadType.Residues) {
+      this.errorEntryTextForResidues = signal(text);
+      setTimeout(() => {
+        this.errorEntryTextForResidues.set('');
+      }, 3000);
+      return;
+    }
   }
 }

@@ -1,11 +1,13 @@
 <div id="description-section">
   <h3 class="title">Description</h3>
+  @if(description().synonyms){
   <div class="info-row">
     <span class="info-row-title">Synonyms</span>
     <div class="info-row-content" libTruncateText [truncateText]="description().synonyms" [limit]="60">
-      {{ description().synonyms }}
+      <!-- {{ description().synonyms }} -->
     </div>
   </div>
+  }
   <div class="info-row formula-row">
     <span class="info-row-title">Formula</span>
     <article>
@@ -17,10 +19,11 @@
         matTooltipClass="description-tooltip"
         matTooltip="Copy the formula"
         matTooltipPosition="above"
-        (click)="copy(description().formula)"
+        (click)="copy(description().formula, 'Formula')"
       ></i>
     </article>
   </div>
+  @if(description().inchi){
   <div class="info-row">
     <span class="info-row-title">IUPAC InChI</span>
     <article>
@@ -30,10 +33,11 @@
         matTooltipClass="description-tooltip"
         matTooltip="Copy the IUPAC InChI"
         matTooltipPosition="above"
-        (click)="copy(description().inchi)"
+        (click)="copy(description().inchi, 'IUPAC InChI')"
       ></i>
     </article>
   </div>
+  } @if(description().inchikey){
   <div class="info-row">
     <span class="info-row-title">IUPAC InChIKey</span>
     <article>
@@ -45,39 +49,60 @@
         matTooltipClass="description-tooltip"
         matTooltip="Copy the IUPAC InChIKey"
         matTooltipPosition="above"
-        (click)="copy(description().inchikey)"
+        (click)="copy(description().inchikey, 'IUPAC InChIKey')"
       ></i>
     </article>
   </div>
+  } @if(description().smiles.length && isMainLigandId()){
   <div class="info-row">
     <span class="info-row-title">SMILES</span>
     <article>
-      <div class="info-row-content">
-        {{ description().smiles | ligandSmiles }}
-      </div>
+      <div class="info-row-content" ligandsmiles [smiles]="description().smiles"></div>
       <i
         class="icon icon-common icon-clone"
         matTooltipClass="description-tooltip"
         matTooltip="Copy the SMILES"
         matTooltipPosition="above"
-        (click)="copySmiles(description().smiles)"
+        (click)="copySmiles(description().smiles, 'SMILES')"
       ></i>
     </article>
   </div>
+  } @if(description().smiles.length && !isMainLigandId()){
+  <div class="info-row">
+    <span class="info-row-title">SMILES</span>
+    <article>
+      <div class="info-row-content" ligandsmiles [smiles]="description().smiles" [isMainLigand]="false"></div>
+      <i
+        class="icon icon-common icon-clone"
+        matTooltipClass="description-tooltip"
+        matTooltip="Copy the SMILES"
+        matTooltipPosition="above"
+        (click)="copySmiles(description().smiles, 'SMILES')"
+      ></i>
+    </article>
+  </div>
+  }
+
   <div class="info-row source-row">
     <span class="info-row-title"></span>
     <div class="info-row-content">
-      Source <a href="https://www.eyesopen.com/" target="_blank">OpenEye <i class="icon icon-link icon-common"></i></a>
+      Source
+      <a
+        href="https://www.eyesopen.com/"
+        target="_blank"
+        (click)="googleAnalyticsService.logClickEvents('outbound_click', 'External Source', 'click_source', 'OpenEye')"
+        >OpenEye <i class="icon icon-link icon-common"></i
+      ></a>
     </div>
   </div>
   @if(description().subcomponent_occurrences && !isMainLigandId()){
   <div class="info-row">
     <span class="info-row-title">Contains CCDs</span>
-    <div class="info-row-content" ccds [subcomponentOccurrences]="description().subcomponent_occurrences"></div>
+    <div class="info-row-content ccd" ccds [subcomponentOccurrences]="description().subcomponent_occurrences"></div>
   </div>
   } @if(supercomponents().length && isMainLigandId()){
   <div class="info-row">
-    <span class="info-row-title">Is a part of</span>
+    <span class="info-row-title">Is part of</span>
     <article class="article-supercomponents">
       <div class="info-row-content supercomponents" libIsPartOf [truncateTexts]="supercomponents()"></div>
       <div class="supercomponent-actions">
@@ -92,15 +117,16 @@
           matTooltipClass="description-tooltip"
           matTooltip="Copy the ID"
           matTooltipPosition="above"
-          (click)="copy(supercomponents().join(', '))"
+          (click)="copy(supercomponents().join(', '), 'List of ids')"
         ></i>
         }
       </div>
     </article>
   </div>
-  }
+  } @if(isMainLigandId()){
   <div class="action-buttons">
-    <button class="vf-button vf-button--primary vf-button--sm" (click)="openAtomsDialog()">View Atoms</button>
-    <button class="vf-button vf-button--primary vf-button--sm" (click)="openBondsDialog()">View Bonds</button>
+    <button class="vf-button vf-button--primary vf-button--sm" (click)="openDialog('atom')">View Atoms</button>
+    <button class="vf-button vf-button--primary vf-button--sm" (click)="openDialog('bond')">View Bonds</button>
   </div>
+  }
 </div>

@@ -43,7 +43,6 @@ export class ImageCarouselComponentFacade {
           }
         },
         (error) => {
-          this.substructureNames.update((values) => [...values, `Murcko scaffold`]);
           this.slides.update((slides) => [...slides, 0, 1]);
           this.renderLigand(renderer, ligandId, imageContainer);
         }
@@ -70,36 +69,36 @@ export class ImageCarouselComponentFacade {
       return acc;
     }, []);
 
-    this.fragments.update(() => mappedFragments);
-    this.ligandUtilService.fragments.update(() => this.fragments());
+    const uniqueFragments = mappedFragments.filter((obj, index, self) => index === self.findIndex((o) => o.name === obj.name));
+
+    this.fragments.update(() => uniqueFragments);
+    this.ligandUtilService.setFragments(this.fragments());
   }
 
   private setDepictionDescription(): void {
     switch (this.currentSlide()) {
       case 0:
-        this.structureDescription.set(`Structural representation of ${this.ligandId}`);
+        this.structureDescription.set(`Atom labelled ${this.ligandId}`);
         break;
 
       case 1:
-        this.structureDescription.set(`Atom labeled ${this.ligandId}`);
+        this.structureDescription.set(`Structural representation of ${this.ligandId}`);
         break;
 
       default:
         this.structureDescription.set(`${this.substructureNames()[this.currentSlide() - 2]} highlighted in yellow`);
     }
-
-    this.ligandUtilService.currentFragment.set(this.currentFragment());
   }
 
   private setDepictionProperty(renderer: Renderer2, el: HTMLElement, index: number): void {
     switch (index) {
       case 0:
-        renderer.setProperty(el, 'atomNames', false);
+        renderer.setProperty(el, 'atomNames', true);
         renderer.setProperty(el, 'highlightSubstructure', '');
         break;
 
       case 1:
-        renderer.setProperty(el, 'atomNames', true);
+        renderer.setProperty(el, 'atomNames', false);
         renderer.setProperty(el, 'highlightSubstructure', '');
         break;
 
@@ -138,26 +137,29 @@ export class ImageCarouselComponentFacade {
   private renderLigand(renderer: Renderer2, ligandId: string, imageContainer: ElementRef): void {
     const imageContainerRef = imageContainer.nativeElement;
 
+    const mappedLigandId = ligandId.startsWith('PRD') ? `${ligandId.split('_')[0]}CC_${ligandId.split('_')[1]}` : ligandId;
+
     this.aggregatedApiService
-      .fetchDepiction(ligandId)
+      .fetchDepiction(mappedLigandId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((depiction: Depiction) => {
         this.createLigandEnvironment(renderer, imageContainerRef, depiction);
         this.setDepictionDescription();
+        this.updateLigandImage(renderer);
       });
   }
 
-  private createLigandEnvironment(renderer: Renderer2, container: ElementRef, depiction: Depiction, slide?: number): void {
+  private createLigandEnvironment(renderer: Renderer2, container: ElementRef, depiction: Depiction): void {
     const ligand = renderer.createElement('pdb-ligand-env');
     renderer.appendChild(container, ligand);
     renderer.setProperty(ligand, 'depiction', depiction);
 
-    if (slide === 0) {
-      this.setDepictionProperty(renderer, ligand, slide);
-    }
-    if (slide) {
-      this.setDepictionProperty(renderer, ligand, slide);
-    }
+    // if (slide === 0) {
+    //   this.setDepictionProperty(renderer, ligand, slide);
+    // }
+    // if (slide) {
+    //   this.setDepictionProperty(renderer, ligand, slide);
+    // }
 
     renderer.setAttribute(ligand, 'depiction-only', '');
     renderer.setAttribute(ligand, 'zoom-on', 'true');

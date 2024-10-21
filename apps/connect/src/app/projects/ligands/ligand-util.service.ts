@@ -2,6 +2,8 @@ import { inject, Injectable, signal } from '@angular/core';
 import { Fragment, LigandStructure } from './data-models/structure.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
+import { SimilarLigand } from './data-models/related-ligands.model';
+import { LigandSummary } from './data-models/description.model';
 
 export interface StructureFilter {
   cofactorLike: boolean;
@@ -85,6 +87,31 @@ export class LigandUtilService {
     window.URL.revokeObjectURL(url);
   }
 
-  public currentFragment = signal<Fragment>({} as Fragment);
-  public fragments = signal<Fragment[]>([]);
+  private readonly fragments = signal<Fragment[]>([]);
+  public currentFragments = this.fragments.asReadonly();
+
+  setFragments(fragments: Fragment[]): void {
+    this.fragments.update(() => fragments);
+  }
+
+  private readonly structures = signal<LigandStructure[]>([]);
+  public currentStuctures = this.structures.asReadonly();
+
+  public setStructures(structures: LigandStructure[]): void {
+    this.structures.update(() => structures);
+  }
+
+  private readonly summary = signal<LigandSummary>({} as LigandSummary);
+  public currentSummary = this.summary.asReadonly();
+
+  public setSummary(summary: LigandSummary): void {
+    this.summary.update(() => summary);
+  }
+
+  private readonly similarLigands = signal<SimilarLigand[]>([]);
+  public currentSimilarLigands = this.similarLigands.asReadonly();
+
+  public setSimilarLigands(similarLigands: SimilarLigand[]): void {
+    this.similarLigands.update(() => similarLigands);
+  }
 }

@@ -4,9 +4,9 @@ import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction, LigandStructure } from '../../../data-models/structure.model';
 import { PDBIntxData } from '../../../data-models/interaction.model';
 import { ActivatedRoute } from '@angular/router';
-import { EMPTY, forkJoin, map, mergeMap, switchMap } from 'rxjs';
+import { catchError, EMPTY, forkJoin, map, mergeMap, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MaterialModule } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { InteractionsHeatmapComponent } from '../../../components/interactions-heatmap/interactions-heatmap.component';
@@ -27,7 +27,6 @@ export class InteractionComponent implements AfterViewInit {
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
   private ligandEv!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-  private ligandHeatmapEv!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly route = inject(ActivatedRoute);
@@ -35,13 +34,15 @@ export class InteractionComponent implements AfterViewInit {
   private readonly renderer = inject(Renderer2);
   private readonly ligandUtilService = inject(LigandUtilService);
   private readonly _snackBar = inject(MatSnackBar);
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+
   public interaction!: PDBIntxData; // eslint-disable-line @typescript-eslint/no-explicit-any
-  private emptyText!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   public ligandInstances = signal(0);
   public pdbstructures = signal(0);
   public pdbchains = signal(0);
   public showLigandHeatmap = signal(false);
+  public showAtomicNames = signal(false);
 
   ngAfterViewInit() {
     this.route.params
@@ -55,7 +56,10 @@ export class InteractionComponent implements AfterViewInit {
           const imageContainer = this.imageContainer.nativeElement;
           this.resetRenderer();
           this.createLigandEnvironment(imageContainer, depiction);
-          return forkJoin([this.aggregatedApiService.fetchIntxData(this.ligandId()), this.aggregatedApiService.fetchLigandStructures(this.ligandId())]);
+          return forkJoin([
+            this.aggregatedApiService.fetchIntxData(this.ligandId()),
+            this.aggregatedApiService.getLigandStructures(this.ligandId()).pipe(catchError(() => of([]))),
+          ]);
         }),
         map(([intxDataUrl, structures]) => {
           const interaction = intxDataUrl.interactions;
@@ -80,12 +84,13 @@ export class InteractionComponent implements AfterViewInit {
 
   public downloadInteraction(): void {
     if (this.interaction && this.interaction?.[this.ligandId()]) {
-      this.ligandUtilService.downloadJSON(this.interaction, 'interaction');
+      this.ligandUtilService.downloadJSON(this.interaction, `interaction_${this.ligandId()}`);
     } else {
       this._snackBar.open(`No interaction data for ${this.ligandId}`, 'Dismiss', {
         duration: 3000,
       });
     }
+    this.googleAnalyticsService.logClickEvents('download_interaction', 'Interations', 'download_all_interaction', 'all_interactions');
   }
 
   private createLigandEnvironment(container: ElementRef, prop: Depiction): void {
@@ -94,6 +99,11 @@ export class InteractionComponent implements AfterViewInit {
     this.renderer.setProperty(ligand, 'id', 'ligand-int-env');
     this.renderer.setProperty(ligand, 'depiction', prop);
     this.ligandEv = ligand;
+  }
+
+  public toggleAtomNames(): void {
+    this.showAtomicNames.update((value) => !value);
+    this.renderer.setProperty(this.ligandEv, 'atomNames', this.showAtomicNames() ? true : false);
   }
 
   private resetRenderer(): void {
@@ -115,8 +125,9 @@ export class InteractionComponent implements AfterViewInit {
       acc += [...new Set(mappedValue)].length;
       return acc;
     }, 0);
+    const instances = structures.reduce((acc: number, curr: LigandStructure) => acc + curr.num_ligand_instances, 0);
     this.pdbchains.set(numberOfPDBChains);
     this.pdbstructures.set(structures.length);
-    this.ligandInstances.set(44);
+    this.ligandInstances.set(instances);
   }
 }

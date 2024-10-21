@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Clipboard } from '@angular/cdk/clipboard';
 
@@ -25,6 +25,21 @@ export class UtilService {
     }
 
     const payload = { [queryTerm]: queryArray };
+
+    const urlStringObject = JSON.stringify(payload);
+
+    const encodedURL = encodeURIComponent(urlStringObject);
+
+    const first = 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=';
+
+    return first + encodedURL;
+  }
+
+  public generateSortedQueryURL(ligandId: string) {
+    const queryArray = [{ value: ligandId as string, condition1: 'AND', condition2: 'Equals' }];
+    const resultState = { tabIndex: 0, paginationIndex: 1, perPage: 10, sortBy: 'release_date desc' };
+
+    const payload = { q_compound_id: queryArray, resultState: resultState };
 
     const urlStringObject = JSON.stringify(payload);
 
@@ -84,5 +99,11 @@ export class UtilService {
     this._snackBar.open(message, action, {
       duration: 3000,
     });
+  }
+
+  public readonly currentlyActive = signal<string>('');
+
+  public setCurrentActive(activeSection: string) {
+    this.currentlyActive.set(activeSection);
   }
 }

@@ -10,7 +10,6 @@ export class CustomButtonComponent implements ICellRendererAngularComp {
   text!: string;
 
   agInit(params: ICellRendererParams): void {
-    console.log(params);
     this.text = params.value;
   }
   refresh(params: ICellRendererParams) {

@@ -11,6 +11,8 @@ import { forkJoin, switchMap, mergeMap, map, combineLatest, startWith } from 'rx
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { LigandUtilService } from '../../../ligand-util.service';
+import { GoogleAnalyticsService } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-related-ligands',
@@ -52,12 +54,17 @@ export class RelatedLigandsComponent implements OnInit {
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly ligandUtilService = inject(LigandUtilService);
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+
   public sameScaffoldTerm = new FormControl('');
   public sameLigandsTerm = new FormControl('');
   public stereoisomerTerm = new FormControl('');
 
   public similarityFrom = new FormControl(60);
   public similarityTo = new FormControl(100);
+
+  private relatedLigand!: any;
 
   public readonly skeletonTheme = {
     'border-radius': '0px',
@@ -101,9 +108,10 @@ export class RelatedLigandsComponent implements OnInit {
       .pipe(
         switchMap((params) => {
           const ligandId = params['ligandId'].toUpperCase();
-          return this.aggregatedApiService.fetchRelatedLigands(ligandId);
+          return this.aggregatedApiService.getRelatedLigands(ligandId);
         }),
         mergeMap((relatedLigand: RelatedLigand) => {
+          this.relatedLigand = relatedLigand;
           this.sameScaffoldPageSizeOptions.set([]);
           this.similarLigandPageSizeOptions.set([]);
           this.stereoisomersPageSizeOptions.set([]);
@@ -111,6 +119,8 @@ export class RelatedLigandsComponent implements OnInit {
           this.similarLigands = relatedLigand['similar_ligands'];
           this.sameScaffolds = relatedLigand['same_scaffold'];
           this.stereoisomers = relatedLigand['stereoisomers'];
+
+          this.ligandUtilService.setSimilarLigands(this.similarLigands);
 
           const validIdsArray = [];
 
@@ -140,7 +150,7 @@ export class RelatedLigandsComponent implements OnInit {
             name: similarLigand.name,
             similarity_score: similarLigand.similarity_score,
             substructure_match: similarLigand.substructure_match,
-            bound_entries: similarLigandBoundEntriesArray[similarLigand.chem_comp_id],
+            bound_entries: similarLigandBoundEntriesArray?.[similarLigand.chem_comp_id],
           }));
           this.similarLigandsGrid = this.unfilteredSimilarLigandsGrid;
           this.setUpPagination('similarligand');
@@ -150,7 +160,7 @@ export class RelatedLigandsComponent implements OnInit {
             name: sameScaffolds.name,
             similarity_score: sameScaffolds.similarity_score,
             substructure_match: sameScaffolds.substructure_match,
-            bound_entries: sameScaffoldBoundEntriesArray[sameScaffolds.chem_comp_id],
+            bound_entries: sameScaffoldBoundEntriesArray?.[sameScaffolds.chem_comp_id],
           }));
           this.sameScaffoldGrid = this.unfilteredSameScaffoldGrid;
           this.setUpPagination('samescaffold');
@@ -158,7 +168,7 @@ export class RelatedLigandsComponent implements OnInit {
           this.unfilteredStereoisomers = this.stereoisomers.map((stereoisomer) => ({
             chem_comp_id: stereoisomer.chem_comp_id,
             name: stereoisomer.name,
-            bound_entries: stereoisomersBoundEntriesArray[stereoisomer.chem_comp_id],
+            bound_entries: stereoisomersBoundEntriesArray?.[stereoisomer.chem_comp_id],
           }));
           this.stereoisomersGrid = this.unfilteredStereoisomers;
 
@@ -276,5 +286,10 @@ export class RelatedLigandsComponent implements OnInit {
         this.stereoisomersPage = this.filtStereoisomersGrid.slice(0, this.stereoisomerspageSize);
         break;
     }
+  }
+
+  public downloadJSON(): void {
+    this.ligandUtilService.downloadJSON(this.relatedLigand, 'related-ligands');
+    this.googleAnalyticsService.logClickEvents('download_related_ligands', 'Related Ligands', 'download_ligands', 'related_ligands');
   }
 }

@@ -1,0 +1,32 @@
+@import url('./typography.scss');
+
+.paragraph-2-menu-link {
+  color: white;
+}
+
+.paragraph-2-menu-link:hover {
+  text-decoration: underline;
+}
+
+.container {
+  width: 100%;
+  padding: 22px 34px;
+  margin-right: auto;
+  margin-left: auto;
+
+  @media (width <= 575px) {
+    padding: 10px;
+  }
+
+  @media (width >= 768px) {
+    max-width: 720px;
+  }
+
+  @media (width >= 992px) {
+    max-width: 960px;
+  }
+
+  @media (width >= 1200px) {
+    max-width: 1440px;
+  }
+}

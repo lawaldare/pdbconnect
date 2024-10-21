@@ -5,38 +5,57 @@
   <div class="container">
     <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" />
     <article>
+      <p>{{ redirectText() }}</p>
       @if(descriptionLoaded()){
       <section class="hero">
-        <h2>{{ ligandId }}</h2>
+        <header>
+          <h2>{{ ligandId }}</h2>
+          <div class="annotations">
+            @for(annotation of annotations(); track annotation){ @if(annotation === 'cofactor-like'){
+            <span class="cofactor-like" matTooltipClass="complex-name-tooltip" [matTooltip]="cofactorTooltip" matTooltipPosition="below">Cofactor-like</span>
+            } @if(annotation === 'drug-like'){
+            <span class="drug-like" matTooltipClass="complex-name-tooltip" [matTooltip]="drugTooltip" matTooltipPosition="below">Drug-like</span>
+            } @if(annotation === 'reactant-like'){
+            <p class="reactant-like" matTooltipClass="complex-name-tooltip" [matTooltip]="reactantTooltip" matTooltipPosition="below">Reactant-like</p>
+            } }
+          </div>
+        </header>
         <h4>{{ description().name }}</h4>
-        @for(annotation of description().annotations; track annotation.name){
-        <pdbc-pdbe-chips [label]="annotation.name | titlecase" [url]="annotation.url" backgroundColor="#F9CF3B" fontColor="#1A1C1A" />
-        }
         <div class="action-buttons">
           <button class="vf-button vf-button--primary vf-button--sm" (click)="openMolstarDialog()">View 3D</button>
-          <lib-dropdown-menu [options]="downloadOptions()" title="Download as"></lib-dropdown-menu>
+          <lib-dropdown-menu
+            [options]="downloadOptions()"
+            title="Download as"
+            (click)="googleAnalyticsService.logClickEvents('download_dropdown_open', 'Interaction', 'open_dropdown', 'Download as')"
+          ></lib-dropdown-menu>
         </div>
       </section>
       <section class="description">
         <pdbc-description [description]="description()" [ligandId]="ligandId" [supercomponents]="supercomponents()" />
         <pdbc-image-carousel #imageCarouselRef />
       </section>
+
       <section class="property">
         <pdbc-properties [properties]="description().properties" />
       </section>
+
       <section class="structure">
         <pdbc-structures />
       </section>
       <section class="interaction">
         <pdbc-interaction />
       </section>
-      <div class="related-ligands">
+      <section class="mobile-interaction">
+        <h3>Interaction statistics</h3>
+        <div class="content">The interaction is unavailable for devices with smaller screen. Please use a larger screen to see the interaction.</div>
+      </section>
+      <section class="related-ligands">
         <pdbc-related-ligands />
-      </div>
+      </section>
       @if(description()){
-      <div class="ligand-specific-databases">
+      <section class="ligand-specific-databases">
         <pdbc-ligand-specific-databases [crossLinks]="description().crossLinks" />
-      </div>
+      </section>
       } }
     </article>
   </div>

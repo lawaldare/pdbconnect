@@ -2,14 +2,13 @@
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  font-family: 'IBM Plex Sans';
 }
 
 .image-container {
   display: flex;
-  width: 150px;
-  height: 150px;
-  padding: 0px 8px;
+  width: 300px;
+  height: 300px;
+  padding: 0 8px;
   justify-content: center;
   align-items: center;
   border: 1px solid var(--Neutral-600, #707372);
@@ -18,10 +17,7 @@
 
   .wallpaper {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: #f2f2f2;
     z-index: 2;
     display: none;
@@ -74,7 +70,7 @@
 
 .content {
   display: flex;
-  padding: 0px 4px;
+  padding: 0 4px;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
@@ -89,5 +85,20 @@
       height: 14px;
       width: 14px;
     }
+  }
+}
+
+::ng-deep .complex-name-tooltip {
+  .mdc-tooltip__surface {
+    background-color: #fff !important;
+    color: #1a1c1a !important;
+    font-size: 16px !important;
+    line-height: 27px;
+    padding: 10px;
+    box-shadow: 0 5px 5px -3px rgb(0 0 0 / 20%), 0 8px 10px 1px rgb(0 0 0 / 14%), 0 3px 14px 2px rgb(0 0 0 / 12%);
+
+    // white-space: nowrap;
+    max-width: 400px !important;
+    max-height: unset !important;
   }
 }

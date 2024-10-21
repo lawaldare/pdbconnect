@@ -1,256 +1,63 @@
-#structures-section {
-  font-family: 'IBM Plex Sans';
-  line-height: 27.2px;
+header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  button {
+    align-self: flex-end;
+  }
+
+  @media screen and (width <= 768px) {
+    flex-direction: column;
+
+    button {
+      align-self: flex-start;
+    }
+  }
 }
 
 h3 {
   font-size: 30px;
   font-weight: 500;
   line-height: 39px;
-  margin-bottom: 20px;
 }
 
-h4 {
-  color: #085f5c;
-  text-align: center;
-  font-size: 21px;
-  font-style: normal;
-  font-weight: 500;
-}
-
-.table_row {
-  color: var(--Neutral-900, #1a1c1a);
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-}
-
-.controllers {
+section.filter {
+  margin-bottom: 16px;
   display: flex;
-  padding: 0 8px;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  // align-self: stretch;
+
+  .group {
+    display: flex;
+    align-items: center;
+
+    @media screen and (width <= 768px) {
+      flex-direction: column;
+
+      mat-radio-group {
+        width: 100%;
+      }
+    }
+  }
+
+  mat-radio-button {
+    margin-right: 16px;
+  }
 }
 
 .filters {
   display: flex;
   align-items: center;
   gap: 16px;
-
-  form {
-    display: flex;
-    align-items: center;
-    gap: 40px;
-  }
 }
 
-.downloads {
-  position: relative;
-
-  button {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+#structure-checkbox {
+  ::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__outer-circle {
+    border-color: #0a5032 !important;
   }
 
-  @media screen and (max-width: 767px) {
-    white-space: nowrap !important;
+  ::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
+    border-color: #0a5032 !important;
   }
-
-  .download-options {
-    position: absolute;
-    background-color: white;
-    border-radius: 2px;
-    box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
-    min-width: 224px;
-    width: 100%;
-    max-height: 400px;
-    overflow-y: auto;
-    background-color: #ffffff;
-
-    span {
-      display: block;
-      text-decoration: none;
-      padding: 8px;
-      cursor: pointer;
-      display: block;
-
-      &:not(:last-child) {
-        border-bottom: 1px solid var(--Neutral-300, #d0d0ce);
-      }
-    }
-  }
-}
-
-.checkbox-field {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  position: relative;
-
-  lib-tool-tip {
-    top: -1px;
-    right: -20px;
-  }
-
-  input {
-    margin: 0;
-    height: 16px;
-    width: 16px;
-    border: 2px solid var(--Neutral-600, #707372);
-    background: #fff;
-  }
-
-  label {
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 27.2px;
-    margin-right: 4px;
-
-    @media screen and (max-width: 767px) {
-      white-space: nowrap !important;
-    }
-  }
-}
-
-.search-box {
-  position: relative;
-
-  .icon-search {
-    position: absolute;
-    right: 5px;
-    top: 12px;
-    color: #707372;
-  }
-
-  @media screen and (max-width: 767px) {
-    display: none;
-  }
-}
-
-.search {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  flex: 1 0 0;
-}
-
-.controllers {
-  @media screen and (max-width: 540px) {
-    display: none;
-  }
-}
-#filter_head {
-  @media screen and (max-width: 767px) {
-    white-space: nowrap !important;
-  }
-}
-
-// .vf-form__input {
-//   border: none !important;
-//   border-bottom: 1px solid var(--neutral-600, #707372) !important;
-//   font-size: 14px !important;
-//   padding-left: 0 !important;
-//   color: #000 !important;
-//   font-weight: 500;
-// }
-
-.form_input {
-  border: none;
-  border-bottom: 1px solid var(--Neutral-600, #707372);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1 0 0;
-  padding-top: 10px;
-}
-
-.paginator-container {
-  display: flex;
-  padding: 16px 2px;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 32px;
-  align-self: stretch;
-  background: var(--Neutral-0, #fff);
-}
-
-.odd_row {
-  background: var(--Neutral-100, #f3f3f3);
-}
-
-input:focus {
-  outline: none;
-}
-
-table {
-  th {
-    font-size: 19px;
-    font-weight: 500;
-    line-height: 28.5px; /* 150% */
-    vertical-align: top;
-    text-align: left;
-    padding: 5px;
-  }
-  td {
-    font-size: 16px;
-    font-weight: 400;
-    vertical-align: top;
-    text-align: left;
-
-    &.count {
-      text-align: center;
-    }
-
-    span {
-      display: inline-block;
-      border-radius: 6px;
-      padding: 4px 10px;
-      margin: 3px;
-      font-family: 'IBM Plex Sans';
-      font-size: 14px;
-      font-weight: 400;
-      line-height: 22.4px;
-
-      &.ec-number {
-        background: #f9cf3b;
-      }
-
-      &.annotation {
-        background: #f9cf3b;
-      }
-
-      &.unannotated {
-        background: #e3e3e2;
-      }
-    }
-
-    a {
-      .icon-common {
-        margin-left: 5px;
-      }
-    }
-  }
-}
-
-.mat-column-name {
-  width: 25%;
-}
-
-.mat-column-uniprot_id {
-  width: 15%;
-}
-
-.mat-column-ec_number {
-  width: 30%;
-}
-
-.mat-column-annotation {
-  width: 25%;
-}
-
-.mat-column-count {
-  width: 5% !important;
 }

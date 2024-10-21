@@ -13,7 +13,7 @@
       <mat-label>Select Scaffold/Fragment</mat-label>
       <mat-select [formControl]="selectedFragmentControl()" (selectionChange)="onFragmentChange($event)">
         @for (option of fragments(); track option) {
-        <mat-option [value]="option.name">{{ option.name + ' Fragment Highlighted' | titlecase }}</mat-option>
+        <mat-option [value]="option.name">{{ option.name | customCase }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
@@ -22,3 +22,6 @@
   <i class="icon icon-common icon-window-close" (click)="dialogRef.close()"></i>
 </section>
 <div class="container" #viewContainer></div>
+<section class="caption">
+  <p>{{ caption() }}</p>
+</section>

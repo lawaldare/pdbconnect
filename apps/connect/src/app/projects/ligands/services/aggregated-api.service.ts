@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PDBLigandDescription, PhysChemProperties, FunctionalAnnotation } from '../data-models/description.model';
+import { PhysChemProperties, FunctionalAnnotation, LigandSummary } from '../data-models/description.model';
 import { PDBLigandFile } from '../data-models/download.model';
 import { Depiction, LigandStructure, LigandStructuresAPIResponse, PDBSubstructures } from '../data-models/structure.model';
 import { PDBRelatedLigands, RelatedLigand } from '../data-models/related-ligands.model';
@@ -20,6 +20,8 @@ export interface DescriptionData {
   annotations: FunctionalAnnotation[];
   crossLinks: CrossLink[];
   subcomponent_occurrences: Record<string, number>;
+  released: boolean;
+  superseded_by: string | undefined;
 }
 
 export interface downloadData {
@@ -67,9 +69,9 @@ export class AggregatedApiService {
 
   constructor(private http: HttpClient) {}
 
-  fetchDescription(ligandId: string): Observable<PDBLigandDescription> {
+  getLigandSummary(ligandId: string): Observable<LigandSummary> {
     const descriptionUrl = `${this.AggregatedApiUrl}pdb/compound/summary/${ligandId}`;
-    return this.http.get<PDBLigandDescription>(descriptionUrl);
+    return this.http.get<LigandSummary>(descriptionUrl).pipe(map((data: any) => data[ligandId][0]));
   }
 
   fetchDownload(ligandId: string): Observable<PDBLigandFile> {
@@ -78,7 +80,7 @@ export class AggregatedApiService {
   }
 
   fetchSubstructures(ligandId: string): Observable<PDBSubstructures> {
-    const substructureUrl = `${this.AggregatedApiUrl}compound/substructures/${ligandId}`;
+    const substructureUrl = `${this.AggregatedApiUrl}pdb/compound/substructures/${ligandId}`;
     return this.http.get<PDBSubstructures>(substructureUrl);
   }
 
@@ -87,7 +89,7 @@ export class AggregatedApiService {
     return this.http.get<string[]>(substructureUrl).pipe(map((data: any) => data[ligandId]));
   }
 
-  fetchLigandStructures(ligandId: string): Observable<LigandStructure[]> {
+  getLigandStructures(ligandId: string): Observable<LigandStructure[]> {
     const ligandStructureAPI = `${this.AggregatedApiUrl}compound/uniprot/${ligandId}`;
     return this.http.get<LigandStructuresAPIResponse>(ligandStructureAPI).pipe(map((data) => data[ligandId]));
   }
@@ -97,7 +99,7 @@ export class AggregatedApiService {
     return this.http.get<Depiction>(depictionUrl).pipe(shareReplay(1));
   }
 
-  fetchRelatedLigands(ligandId: string): Observable<RelatedLigand> {
+  getRelatedLigands(ligandId: string): Observable<RelatedLigand> {
     const relatedLigandUrl = `${this.AggregatedApiUrl}compound/similarity/${ligandId}`;
     const relatedLigand = this.http.get<PDBRelatedLigands>(relatedLigandUrl).pipe(
       shareReplay(1),
@@ -125,8 +127,8 @@ export class AggregatedApiService {
     );
   }
 
-  processDescriptionData(ligandId: string, data: PDBLigandDescription): DescriptionData {
-    const ligandSummary = data[ligandId][0];
+  processDescriptionData(data: LigandSummary): DescriptionData {
+    const ligandSummary = data;
     const ligandProperties = ligandSummary['phys_chem_properties'];
     const ligandAnnotations = ligandSummary['functional_annotations'];
     const ligandCrossLinks = ligandSummary['cross_links'];
@@ -153,6 +155,8 @@ export class AggregatedApiService {
       annotations: ligandAnnotations,
       crossLinks: ligandCrossLinks,
       subcomponent_occurrences: ligandSummary.subcomponent_occurrences,
+      released: ligandSummary.released,
+      superseded_by: ligandSummary.superseded_by,
     };
   }
 

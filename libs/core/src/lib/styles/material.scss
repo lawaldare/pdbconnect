@@ -5,7 +5,7 @@
 thead {
   tr {
     th {
-      @media screen and (max-width: 767px) {
+      @media screen and (width <= 767px) {
         white-space: nowrap !important;
       }
     }
@@ -27,7 +27,6 @@ thead {
       text-align: center;
 
       /* Paragraph 3 */
-      font-family: 'IBM Plex Sans';
       font-size: 16px !important;
       font-style: normal;
       font-weight: 400;
@@ -51,7 +50,7 @@ mat-tab-header {
 
 .mat-sort-header-container:not(.mat-sort-header-sorted) .mat-sort-header-arrow {
   opacity: 0.54 !important;
-  transform: translateY(0px) !important;
+  transform: translateY(0) !important;
   color: var(--Neutral-700);
 }
 
@@ -63,7 +62,7 @@ mat-tab-header {
 
 .mat-sort-header-container.mat-sort-header-sorted .mat-sort-header-arrow {
   opacity: 1 !important;
-  transform: translateY(0px) !important;
+  transform: translateY(0) !important;
   color: var(--Neutral-700);
 }
 
@@ -72,23 +71,23 @@ mat-tab-header {
 }
 
 .bond-Dialog {
-  max-width: 60vw !important;
-  width: 60vw;
+  max-width: 80vw !important;
+  width: 80vw;
   height: 90%;
 }
 
 .bond-Dialog .mat-dialog-container {
-  padding: 0px;
+  padding: 0;
 }
 
 .ligand-total-Dialog {
-  max-width: 30vw !important;
-  width: 30vw;
+  max-width: 50vw !important;
+  width: 50vw;
   height: 50%;
 }
 
 .ligand-total-Dialog .mat-dialog-container {
-  padding: 0px;
+  padding: 0;
 }
 
 .molstarDialog {
@@ -98,7 +97,7 @@ mat-tab-header {
 }
 
 .molstarDialog .mat-dialog-container {
-  padding: 0px;
+  padding: 0;
 }
 
 .mat-mdc-form-field-subscript-wrapper {

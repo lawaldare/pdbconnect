@@ -12,7 +12,11 @@
     <i class="icon icon-common icon-download"></i>
   </button>
   <div class="intx-component-container">
-    <pdbc-interactions-heatmap [ligandId]="ligandId()" (newFilteringEvent)="changeLigandEnvironmentFilters($event)"></pdbc-interactions-heatmap>
+    <pdbc-interactions-heatmap
+      [ligandId]="ligandId()"
+      (newFilteringEvent)="changeLigandEnvironmentFilters($event)"
+      [interactions]="interaction"
+    ></pdbc-interactions-heatmap>
     <div class="ligandEnv-container">
       <div class="ligandEnv-header">
         <h4>
@@ -22,6 +26,8 @@
       </div>
       <div class="ligandEnv-content">
         <div class="image-container" #imageContainer></div>
+        @let text = showAtomicNames() ? 'Hide' : 'View';
+        <button class="vf-button vf-button--primary vf-button--sm" (click)="toggleAtomNames()">{{ text }} atom names</button>
       </div>
     </div>
   </div>

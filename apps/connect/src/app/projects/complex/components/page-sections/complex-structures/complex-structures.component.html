@@ -1,0 +1,13 @@
+<div id="structures-section">
+  <h3>Structures</h3>
+  <div style="margin-top: 5px; height: 500px">
+    <ag-grid-angular
+      class="ag-theme-quartz"
+      [rowData]="rowData()"
+      [columnDefs]="colDefs"
+      [gridOptions]="gridOptions"
+      (gridReady)="onGridReady($event)"
+      [paginationPageSizeSelector]="paginationPageSizeSelector()"
+    />
+  </div>
+</div>

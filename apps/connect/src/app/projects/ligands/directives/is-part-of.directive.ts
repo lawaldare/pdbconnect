@@ -3,8 +3,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-prototype-builtins */
 
-import { Directive, ElementRef, Renderer2, Input, OnChanges, HostListener } from '@angular/core';
+import { Directive, ElementRef, Renderer2, Input, OnChanges, HostListener, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { GoogleAnalyticsService } from '@pdbc/core';
 
 @Directive({
   selector: '[libIsPartOf]',
@@ -14,7 +15,12 @@ export class IsPartOfDirective implements OnChanges {
   @Input() truncateTexts: string[] = [];
   @Input() limit = 60;
 
-  constructor(private el: ElementRef, private renderer: Renderer2, private router: Router) {}
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  public readonly el = inject(ElementRef);
+  public readonly renderer = inject(Renderer2);
+  public readonly router = inject(Router);
+
+  // constructor(private el: ElementRef, private renderer: Renderer2, private router: Router) {}
 
   @HostListener('scroll', ['$event'])
   onScroll() {
@@ -57,10 +63,11 @@ export class IsPartOfDirective implements OnChanges {
       this.renderer.appendChild(this.el.nativeElement, a);
       this.renderer.setAttribute(a, 'style', 'margin-right:5px;');
 
-      // this.renderer.listen(a, 'click', (event) => {
-      //   event.preventDefault();
-      //   this.router.navigate([`/ligands/${text.trim()}`]);
-      // });
+      this.renderer.listen(a, 'click', (event) => {
+        event.preventDefault();
+        this.googleAnalyticsService.logClickEvents('click_clc_id', 'CLC ID List', 'click_clc_id', text.trim());
+        this.router.navigate([`/ligands/${text.trim()}`]);
+      });
     }
   }
 }

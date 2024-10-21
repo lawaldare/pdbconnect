@@ -1,12 +1,19 @@
-#properties-section {
-  font-family: 'IBM Plex Sans';
-  line-height: 27.2px;
-}
-
 header {
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
+
+  button {
+    align-self: flex-end;
+  }
+
+  @media screen and (width <= 768px) {
+    flex-direction: column;
+
+    button {
+      align-self: flex-start;
+    }
+  }
 }
 
 h3 {
@@ -21,7 +28,7 @@ h3 {
   gap: 48px;
   justify-content: space-between;
 
-  @media screen and (max-width: 767px) {
+  @media screen and (width <= 768px) {
     flex-direction: column;
     gap: 30px;
   }

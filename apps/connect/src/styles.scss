@@ -1,23 +1,24 @@
 /* You can add global styles to this file, and also import other style files */
-@import 'libs/core/src/lib/styles/pdbe-styles/typography.scss';
-@import 'libs/core/src/lib/styles/icons.scss';
-@import 'libs/core/src/lib/styles/pdbe-styles/templates.scss';
-@import 'libs/core/src/lib/styles/pdbe-styles/am_custom_style.scss';
-@import 'libs/core/src/lib/styles/pdbe-styles/_button.scss';
-@import 'libs/core/src/lib/material.scss';
-
-body {
-  margin: 0;
-  overflow-x: hidden;
-}
+@import url('ag-grid-community/styles/ag-grid.css');
+@import url('ag-grid-community/styles/ag-theme-quartz.css');
+@import url('libs/core/src/lib/styles/typography.scss');
+@import url('libs/core/src/lib/styles/templates.scss');
+@import url('libs/core/src/lib/styles/icons.scss');
+@import url('libs/core/src/lib/styles/am_custom_style.scss');
+@import url('libs/core/src/lib/styles/button.scss');
+@import url('libs/core/src/lib/styles/material.scss');
+@import url('libs/core/src/lib/styles/ag-grid.scss');
 
 html,
 body {
   height: 100%;
 }
+
 body {
+  font-family: 'IBM Plex Sans', sans-serif;
   margin: 0;
-  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  overflow-x: hidden;
+  line-height: 27.2px;
 }
 
 a {
@@ -29,11 +30,15 @@ a {
   border: none;
 
   &:focus {
-    border: 1px solid #193f90;
+    // border: 1px solid #193f90;
+    border: none;
+    outline: none;
+    text-shadow: none;
   }
 
   &:visited {
     color: #563d82;
+
     i {
       color: #563d82;
     }
@@ -42,6 +47,47 @@ a {
   &:hover {
     color: #193f90;
     text-decoration: underline;
-    border: none;
+    border: none !important;
   }
+}
+
+p {
+  margin: 0 !important;
+}
+
+.unannotated {
+  background-color: #e4e4e4;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.cofactor-like {
+  background-color: #dbbfe3;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.drug-like {
+  background-color: #d2de56;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.reactant-like {
+  background-color: #fee99a;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+}
+
+// For: https://www.ebi.ac.uk/panda/jira/browse/PDBE-7249
+nightingale-navigation .container .brush .handle {
+  fill: darkgrey;
+  stroke: black;
+  stroke-width: 1px;
+  height: 18px;
+  y: 0;
 }

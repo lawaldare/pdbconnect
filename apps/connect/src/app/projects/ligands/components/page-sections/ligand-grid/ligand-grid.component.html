@@ -9,7 +9,13 @@
     </div>
   </div>
   <div class="ligand-description">
-    <a [routerLink]="['/ligands', ligand.chem_comp_id]">
+    <a
+      [routerLink]="['/ligands', ligand.chem_comp_id]"
+      matTooltipClass="complex-name-tooltip"
+      [matTooltip]="ligand.name"
+      matTooltipPosition="above"
+      (click)="googleAnalyticsService.logClickEvents('click_ligand_link', 'Related Ligands', 'click_ligand', ligand.chem_comp_id)"
+    >
       {{ ligand.chem_comp_id }}
       <i class="icon icon-link icon-common"></i>
     </a>
@@ -19,7 +25,11 @@
     <div class="description-content">
       <p>Bound in</p>
       <div class="content">
-        <a [href]="boundEntryUrl" target="_blank">
+        <a
+          [href]="boundEntryUrl"
+          target="_blank"
+          (click)="googleAnalyticsService.logClickEvents('click_pdb_entry_link', 'Related Ligands', 'click_pdb_entry', boundEntryLabel)"
+        >
           {{ boundEntryLabel }}
           <i class="icon icon-link icon-common"></i>
         </a>

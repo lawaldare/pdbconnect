@@ -1,0 +1,19 @@
+import { Component, input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ParticipantDirective } from '../../../directives/participants.directive';
+import { ComplexSymmetryPipe } from '../../../pipes/symmetry.pipe';
+import { ComplexData } from '../../../models/complex-structure.model';
+import { OEMCDirective } from '../../../directives/oemc.directive';
+import { MaterialModule } from '@pdbc/core';
+
+@Component({
+  selector: 'pdbc-summary',
+  standalone: true,
+  imports: [CommonModule, MaterialModule, ParticipantDirective, ComplexSymmetryPipe, OEMCDirective],
+  templateUrl: './summary.component.html',
+  styleUrls: ['./summary.component.scss'],
+})
+export class SummaryComponent {
+  public summaryData = input.required<ComplexData>();
+  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
+}

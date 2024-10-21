@@ -1,0 +1,35 @@
+@import url('libs/core/src/lib/styles/pdb_connect.scss');
+
+main {
+  .container {
+    display: flex;
+    gap: 28px;
+
+    @media screen and (width <= 767px) {
+      gap: 0;
+    }
+
+    .hero {
+      padding: 12px 0 32px;
+    }
+
+    .hero {
+      padding: 12px 0 32px;
+    }
+
+    pdbc-pdbe-nav-menu {
+      width: 220px;
+    }
+
+    article {
+      width: calc(100% - 248px);
+    }
+
+    .summary,
+    .structures,
+    .interactions,
+    .publications {
+      padding-bottom: 60px;
+    }
+  }
+}
