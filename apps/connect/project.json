@@ -76,7 +76,7 @@
           "namedChunks": true
         }
       },
-      "defaultConfiguration": ""
+      "defaultConfiguration": "production"
     },
     "serve": {
       "executor": "@angular-devkit/build-angular:dev-server",
