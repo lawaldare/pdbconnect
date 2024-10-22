@@ -1,4 +1,9 @@
-@if(isMainLigandId()){
+<pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig" />
+<pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
+
+@if(showNotificationBanner()){
+<lib-notification />
+} @if(isMainLigandId()){
 <pdbc-main />
 } @else{
 <pdbc-clc-prd-main />

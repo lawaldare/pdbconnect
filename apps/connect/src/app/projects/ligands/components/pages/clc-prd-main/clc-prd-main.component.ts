@@ -10,13 +10,16 @@ import { PropertiesComponent } from '../../page-sections/properties/properties.c
 import { StructuresComponent } from '../../page-sections/structures/structures.component';
 import { headerLogoMenuConfig, headerSearchConfig, navSections } from '../../../ligand.constant';
 import { ActivatedRoute } from '@angular/router';
-import { of, switchMap } from 'rxjs';
+import { EMPTY, mergeMap, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { MainComponentStore } from '../main/main.store';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { GoogleAnalyticsService } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
+import { BiodataSelectors } from '../../../../store/biodata.selectors';
+import { Store } from '@ngrx/store';
+import { BiodataState } from '../../../../store/biodata.model';
 
 @Component({
   selector: 'pdbc-clc-prd-main',
@@ -46,9 +49,8 @@ export class ClcPrdMainComponent implements OnInit {
   private readonly bioschemasService = inject(LigandsBioschemasService);
   private readonly renderer = inject(Renderer2);
 
-  public readonly headerLogoMenuConfig = headerLogoMenuConfig;
-  public readonly headerSearchConfig = headerSearchConfig;
   public readonly navSections = navSections;
+  private readonly globalStore = inject(Store<BiodataState>);
 
   public description = this.store.description;
   public downloadOptions = this.store.downloadOptions;
@@ -64,15 +66,16 @@ export class ClcPrdMainComponent implements OnInit {
   }));
 
   ngOnInit(): void {
-    this.route.params
+    this.globalStore
+      .select(BiodataSelectors.ligandId)
       .pipe(
-        switchMap((params) => {
-          this.ligandId = params['ligandId'].toUpperCase();
+        mergeMap((ligandId) => {
+          this.ligandId = ligandId;
           this.store.init(this.ligandId);
           setTimeout(() => {
             this.generateSchemaData();
           }, 1000);
-          return of({});
+          return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef)
       )

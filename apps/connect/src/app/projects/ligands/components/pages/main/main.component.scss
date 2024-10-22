@@ -4,6 +4,7 @@ main {
   .container {
     display: flex;
     gap: 28px;
+    padding-top: 10px;
 
     @media screen and (width <= 768px) {
       gap: 0;

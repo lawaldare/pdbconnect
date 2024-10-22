@@ -2,8 +2,6 @@ import { Component, inject, DestroyRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Chain, LigandStructure } from '../../../data-models/structure.model';
-// import { AggregatedApiService } from '../../../services/aggregated-api.service';
-// import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AG_Grid_Theme_Class,
@@ -40,8 +38,6 @@ import { BiodataSelectors } from '../../../../store/biodata.selectors';
   providers: [LigandInteractingChainsNumberPipe],
 })
 export class StructuresComponent {
-  // private readonly aggregatedApiService = inject(AggregatedApiService);
-  // private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialog = inject(MatDialog);
   private readonly chainPipe = inject(LigandInteractingChainsNumberPipe);
@@ -168,34 +164,6 @@ export class StructuresComponent {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
-    // this.route.params
-    //   .pipe(
-    //     switchMap((params: { [x: string]: string }) => {
-    //       this.resetColumns();
-    //       this.setLoading(true);
-    //       const ligandId = params['ligandId'].toUpperCase();
-    //       this.ligandId.set(ligandId);
-    //       return this.aggregatedApiService.getLigandStructures(ligandId).pipe(catchError(() => of([])));
-    //     }),
-    //     takeUntilDestroyed(this.destroyRef)
-    //   )
-    //   .subscribe(
-    //     (data: LigandStructure[]) => {
-    //       this.ligandUtilService.setStructures(data);
-    //       this.generateStructures(data);
-    //       console.log('Structures:', data);
-    //       this.proteins.update(() => [...data]);
-    //       this.rowData.update(() => [...this.proteins()]);
-    //       this.fetchDataStatistics(data);
-    //       this.paginationPageSizeSelector.update((options) => [...new Set([...options, data.length])]);
-    //       this.setLoading(false);
-    //     },
-    //     (error) => {
-    //       console.error('Error fetching ligand structures:', error);
-    //       this.setLoading(false);
-    //       this.rowData.update(() => []);
-    //     }
-    //   );
   }
 
   private setLoading(value: boolean) {

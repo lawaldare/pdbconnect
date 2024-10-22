@@ -11,21 +11,19 @@ import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { map, switchMap } from 'rxjs/operators';
-import { combineLatest, of } from 'rxjs';
-import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig, navSections, reactantTooltip } from '../../../ligand.constant';
+import { map, mergeMap } from 'rxjs/operators';
+import { cofactorTooltip, drugTooltip, navSections, reactantTooltip } from '../../../ligand.constant';
 import { MainComponentStore } from './main.store';
 import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandUtilService } from '../../../ligand-util.service';
-import { LigandStructure } from '../../../data-models/structure.model';
 import { BiodataState } from '../../../../store/biodata.model';
 import { Store } from '@ngrx/store';
-import { BiodataActions } from '../../../../store/biodata.actions';
 import { BiodataSelectors } from '../../../../store/biodata.selectors';
+import { combineLatest, EMPTY } from 'rxjs';
 
 @Component({
   selector: 'pdbc-main',
@@ -60,8 +58,6 @@ export class LigandsMainPageComponent implements OnInit {
   public readonly ligandUtilService = inject(LigandUtilService);
   private readonly globalStore = inject(Store<BiodataState>);
 
-  public readonly headerLogoMenuConfig = headerLogoMenuConfig;
-  public readonly headerSearchConfig = headerSearchConfig;
   public readonly navSections = navSections;
 
   public description = this.store.description;
@@ -87,24 +83,22 @@ export class LigandsMainPageComponent implements OnInit {
   public isThereStructures = signal<boolean>(true);
 
   ngOnInit(): void {
-    this.route.params
+    combineLatest([this.globalStore.select(BiodataSelectors.ligandId), this.globalStore.select(BiodataSelectors.structures)])
       .pipe(
-        switchMap((params) => {
-          this.ligandId = params['ligandId'].toUpperCase();
-          this.globalStore.dispatch(BiodataActions.setCurrentLigandId({ ligandId: this.ligandId }));
-          this.globalStore.dispatch(BiodataActions.getStructures());
-          // this.globalStore.dispatch(BiodataActions.getSummary());
-          // this.globalStore.dispatch(BiodataActions.setDownloadOptions());
-          // this.globalStore.dispatch(BiodataActions.getRelatedLigands());
-          // this.globalStore.dispatch(BiodataActions.getSupercomponents());
-          // this.globalStore.dispatch(BiodataActions.getSubstructures());
-          this.store.init(this.ligandId);
-          this.getAnnotationsFromStructures();
-
+        mergeMap(([ligandId, structures]) => {
+          this.ligandId = ligandId;
+          this.store.init(ligandId);
           setTimeout(() => {
             this.generateSchemaData();
           }, 1000);
-          return of({});
+          this.isThereStructures.update(() => structures.length > 0);
+          const structuresWithAnnotations = (structures ?? []).filter((structure) => structure.annotations);
+          const mappedAnnotations = structuresWithAnnotations.reduce((acc: string[], structure) => {
+            return acc.concat(structure.annotations);
+          }, []);
+          const uniqueAnnotations = [...new Set(mappedAnnotations)];
+          this.annotations.update(() => uniqueAnnotations);
+          return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -118,22 +112,5 @@ export class LigandsMainPageComponent implements OnInit {
   public openMolstarDialog(): void {
     this.store.openMolstarDialog();
     this.googleAnalyticsService.logClickEvents('view_3d_button_click', 'Interaction', 'view_3d', 'View 3D');
-  }
-
-  private getAnnotationsFromStructures(): void {
-    this.globalStore
-      .select(BiodataSelectors.structures)
-      .pipe(
-        map((structures) => {
-          this.isThereStructures.update(() => structures.length > 0);
-          const structuresWithAnnotations = (structures ?? []).filter((structure) => structure.annotations);
-          const mappedAnnotations = structuresWithAnnotations.reduce((acc: string[], structure) => {
-            return acc.concat(structure.annotations);
-          }, []);
-          const uniqueAnnotations = [...new Set(mappedAnnotations)];
-          this.annotations.update(() => uniqueAnnotations);
-        })
-      )
-      .subscribe();
   }
 }
