@@ -171,8 +171,6 @@ export class RelatedLigandsComponent implements OnInit {
             bound_entries: stereoisomersBoundEntriesArray?.[stereoisomer.chem_comp_id],
           }));
           this.stereoisomersGrid = this.unfilteredStereoisomers;
-          console.log('stereoisomers', this.stereoisomersGrid);
-
           this.sameScaffoldPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
           this.similarLigandPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
           this.stereoisomersPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);

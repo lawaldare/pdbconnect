@@ -11,7 +11,7 @@ import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { switchMap } from 'rxjs/operators';
@@ -57,7 +57,7 @@ export class LigandsMainPageComponent implements OnInit {
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly bioschemasService = inject(LigandsBioschemasService);
   private readonly renderer = inject(Renderer2);
-  private readonly ligandUtilService = inject(LigandUtilService);
+  public readonly ligandUtilService = inject(LigandUtilService);
   private readonly globalStore = inject(Store<BiodataState>);
 
   public readonly headerLogoMenuConfig = headerLogoMenuConfig;
@@ -84,13 +84,16 @@ export class LigandsMainPageComponent implements OnInit {
     summary: this.ligandUtilService.currentSummary(),
   }));
 
+  private structures = toSignal(this.globalStore.select(BiodataSelectors.structures));
+  public isThereStructures = computed(() => (this.structures() ?? []).length > 0);
+
   ngOnInit(): void {
     this.route.params
       .pipe(
         switchMap((params) => {
           this.ligandId = params['ligandId'].toUpperCase();
-          // this.globalStore.dispatch(BiodataActions.setCurrentLigandId({ ligandId: this.ligandId }));
-          // this.globalStore.dispatch(BiodataActions.getStructures());
+          this.globalStore.dispatch(BiodataActions.setCurrentLigandId({ ligandId: this.ligandId }));
+          this.globalStore.dispatch(BiodataActions.getStructures());
           // this.globalStore.dispatch(BiodataActions.getSummary());
           // this.globalStore.dispatch(BiodataActions.setDownloadOptions());
           // this.globalStore.dispatch(BiodataActions.getRelatedLigands());

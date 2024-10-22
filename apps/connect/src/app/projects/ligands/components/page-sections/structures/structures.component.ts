@@ -2,8 +2,8 @@ import { Component, inject, DestroyRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Chain, LigandStructure } from '../../../data-models/structure.model';
-import { AggregatedApiService } from '../../../services/aggregated-api.service';
-import { ActivatedRoute } from '@angular/router';
+// import { AggregatedApiService } from '../../../services/aggregated-api.service';
+// import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AG_Grid_Theme_Class,
@@ -14,7 +14,7 @@ import {
   GoogleAnalyticsService,
   MaterialModule,
 } from '@pdbc/core';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, map, take, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
 import { environment } from '../../../../../../environments/environment';
@@ -26,7 +26,10 @@ import { TotalStructureRendererComponent } from '../../cell renderers/total-stru
 import { LigandAnnotationRendererComponent } from '../../cell renderers/ligand-annotation.component';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { SpeciesRendererComponent } from '../../cell renderers/species.component';
-import { of } from 'rxjs';
+import { combineLatest, of } from 'rxjs';
+import { BiodataState } from '../../../../store/biodata.model';
+import { Store } from '@ngrx/store';
+import { BiodataSelectors } from '../../../../store/biodata.selectors';
 
 @Component({
   selector: 'pdbc-structures',
@@ -37,8 +40,8 @@ import { of } from 'rxjs';
   providers: [LigandInteractingChainsNumberPipe],
 })
 export class StructuresComponent {
-  private readonly aggregatedApiService = inject(AggregatedApiService);
-  private readonly route = inject(ActivatedRoute);
+  // private readonly aggregatedApiService = inject(AggregatedApiService);
+  // private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialog = inject(MatDialog);
   private readonly chainPipe = inject(LigandInteractingChainsNumberPipe);
@@ -48,6 +51,7 @@ export class StructuresComponent {
   private readonly ligandUtilService = inject(LigandUtilService);
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  private readonly globalStore = inject(Store<BiodataState>);
 
   public dataStatistics = signal<string>('');
   public filter = new FormControl('proteins');
@@ -140,34 +144,58 @@ export class StructuresComponent {
     // this.rowData = this.assemblies();
     // event.api.autoSizeAllColumns();
     this.gridApi = event.api;
-    this.route.params
+    combineLatest([this.globalStore.select(BiodataSelectors.ligandId).pipe(take(1)), this.globalStore.select(BiodataSelectors.structures)])
       .pipe(
-        switchMap((params: { [x: string]: string }) => {
-          this.resetColumns();
+        tap(([ligandId, structures]) => {
           this.setLoading(true);
-          const ligandId = params['ligandId'].toUpperCase();
           this.ligandId.set(ligandId);
-          return this.aggregatedApiService.getLigandStructures(ligandId).pipe(catchError(() => of([])));
         }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(
-        (data: LigandStructure[]) => {
-          this.ligandUtilService.setStructures(data);
-          this.generateStructures(data);
-          console.log('Structures:', data);
-          this.proteins.update(() => [...data]);
+        map(([, structures]) => {
+          this.ligandUtilService.setStructures(structures);
+          this.generateStructures(structures);
+          this.proteins.update(() => [...structures]);
           this.rowData.update(() => [...this.proteins()]);
-          this.fetchDataStatistics(data);
-          this.paginationPageSizeSelector.update((options) => [...new Set([...options, data.length])]);
+          this.fetchDataStatistics(structures);
+          this.paginationPageSizeSelector.update((options) => [...new Set([...options, structures.length])]);
           this.setLoading(false);
-        },
-        (error) => {
+        }),
+        catchError((error) => {
           console.error('Error fetching ligand structures:', error);
           this.setLoading(false);
           this.rowData.update(() => []);
-        }
-      );
+          return of([]);
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
+    // this.route.params
+    //   .pipe(
+    //     switchMap((params: { [x: string]: string }) => {
+    //       this.resetColumns();
+    //       this.setLoading(true);
+    //       const ligandId = params['ligandId'].toUpperCase();
+    //       this.ligandId.set(ligandId);
+    //       return this.aggregatedApiService.getLigandStructures(ligandId).pipe(catchError(() => of([])));
+    //     }),
+    //     takeUntilDestroyed(this.destroyRef)
+    //   )
+    //   .subscribe(
+    //     (data: LigandStructure[]) => {
+    //       this.ligandUtilService.setStructures(data);
+    //       this.generateStructures(data);
+    //       console.log('Structures:', data);
+    //       this.proteins.update(() => [...data]);
+    //       this.rowData.update(() => [...this.proteins()]);
+    //       this.fetchDataStatistics(data);
+    //       this.paginationPageSizeSelector.update((options) => [...new Set([...options, data.length])]);
+    //       this.setLoading(false);
+    //     },
+    //     (error) => {
+    //       console.error('Error fetching ligand structures:', error);
+    //       this.setLoading(false);
+    //       this.rowData.update(() => []);
+    //     }
+    //   );
   }
 
   private setLoading(value: boolean) {
