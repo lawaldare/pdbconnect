@@ -1,13 +1,10 @@
 import { Injectable } from '@angular/core';
-import { PlatformLocation } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BaseHrefService {
-  constructor(private platformLocation: PlatformLocation) {}
-
-  setBaseHref() {
+  public setBaseHref() {
     const hostname = document.location.hostname;
     let baseHref: string;
 
