@@ -84,7 +84,11 @@ export const MainComponentStore = signalStore(
                     ],
                   });
                 },
-                (error) => console.error(error)
+                (error) => {
+                  console.log(error);
+                  router.navigate(['/chemicalCompound/show', store.ligandId(), 'unreleased']);
+                  patchState(store, { ligandId, description: {} as DescriptionData, downloadOptions: [], supercomponents: [] });
+                }
               )
             );
           })
