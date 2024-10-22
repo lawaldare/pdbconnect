@@ -9,8 +9,10 @@ export class BaseHrefService {
     let baseHref: string;
 
     if (hostname === 'localhost') {
+      console.log('Running on localhost', hostname);
       baseHref = '/';
     } else {
+      console.log('Running on production', hostname);
       const pathnamesArray = document.location.pathname.split('/');
       baseHref = `/${pathnamesArray[1]}/${pathnamesArray[2]}/`;
     }
