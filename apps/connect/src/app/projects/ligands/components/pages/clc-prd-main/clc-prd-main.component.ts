@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, Renderer2 } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, Renderer2, signal } from '@angular/core';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
@@ -10,7 +10,7 @@ import { PropertiesComponent } from '../../page-sections/properties/properties.c
 import { StructuresComponent } from '../../page-sections/structures/structures.component';
 import { headerLogoMenuConfig, headerSearchConfig, navSections } from '../../../ligand.constant';
 import { ActivatedRoute } from '@angular/router';
-import { EMPTY, mergeMap, of, switchMap } from 'rxjs';
+import { combineLatest, EMPTY, mergeMap, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { MainComponentStore } from '../main/main.store';
@@ -57,6 +57,8 @@ export class ClcPrdMainComponent implements OnInit {
   public supercomponents = this.store.supercomponents;
   public descriptionLoaded = computed(() => (Object.keys(this.description()).length ? true : false));
 
+  public isThereStructures = signal<boolean>(true);
+
   public ligandId!: string;
 
   private readonly schemas = computed(() => ({
@@ -66,15 +68,15 @@ export class ClcPrdMainComponent implements OnInit {
   }));
 
   ngOnInit(): void {
-    this.globalStore
-      .select(BiodataSelectors.ligandId)
+    combineLatest([this.globalStore.select(BiodataSelectors.ligandId), this.globalStore.select(BiodataSelectors.structures)])
       .pipe(
-        mergeMap((ligandId) => {
+        mergeMap(([ligandId, structures]) => {
           this.ligandId = ligandId;
           this.store.init(this.ligandId);
           setTimeout(() => {
             this.generateSchemaData();
           }, 1000);
+          this.isThereStructures.update(() => structures.length > 0);
           return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef)
