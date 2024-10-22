@@ -14,7 +14,7 @@ import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { switchMap } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { combineLatest, of } from 'rxjs';
 import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig, navSections, reactantTooltip } from '../../../ligand.constant';
 import { MainComponentStore } from './main.store';
@@ -84,8 +84,7 @@ export class LigandsMainPageComponent implements OnInit {
     summary: this.ligandUtilService.currentSummary(),
   }));
 
-  private structures = toSignal(this.globalStore.select(BiodataSelectors.structures));
-  public isThereStructures = computed(() => (this.structures() ?? []).length > 0);
+  public isThereStructures = signal<boolean>(true);
 
   ngOnInit(): void {
     this.route.params
@@ -100,9 +99,10 @@ export class LigandsMainPageComponent implements OnInit {
           // this.globalStore.dispatch(BiodataActions.getSupercomponents());
           // this.globalStore.dispatch(BiodataActions.getSubstructures());
           this.store.init(this.ligandId);
+          this.getAnnotationsFromStructures();
+
           setTimeout(() => {
             this.generateSchemaData();
-            this.getAnnotationsFromStructures();
           }, 1000);
           return of({});
         }),
@@ -121,11 +121,19 @@ export class LigandsMainPageComponent implements OnInit {
   }
 
   private getAnnotationsFromStructures(): void {
-    const structuresWithAnnotations = this.ligandUtilService.currentStuctures().filter((structure) => structure.annotations);
-    const mappedAnnotations = structuresWithAnnotations.reduce((acc: string[], structure) => {
-      return acc.concat(structure.annotations);
-    }, []);
-    const uniqueAnnotations = [...new Set(mappedAnnotations)];
-    this.annotations.update(() => uniqueAnnotations);
+    this.globalStore
+      .select(BiodataSelectors.structures)
+      .pipe(
+        map((structures) => {
+          this.isThereStructures.update(() => structures.length > 0);
+          const structuresWithAnnotations = (structures ?? []).filter((structure) => structure.annotations);
+          const mappedAnnotations = structuresWithAnnotations.reduce((acc: string[], structure) => {
+            return acc.concat(structure.annotations);
+          }, []);
+          const uniqueAnnotations = [...new Set(mappedAnnotations)];
+          this.annotations.update(() => uniqueAnnotations);
+        })
+      )
+      .subscribe();
   }
 }
