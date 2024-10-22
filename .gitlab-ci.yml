@@ -60,11 +60,6 @@ build:
     - npx nx run-many -t build --parallel=3 --exclude=playground
     - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
     - cat dynamic-gitlab-ci.yml
-  cache:
-    key: $CI_PIPELINE_ID
-    paths:
-      - dist/
-    expire_in: 1 day
   artifacts:
     paths:
       - dist/
