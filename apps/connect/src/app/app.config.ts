@@ -17,12 +17,12 @@ export function initializeApp(baseHrefService: BaseHrefService) {
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideEffects([BiodataEffects]),
-    provideStore({ biodata: biodataReducer }),
     provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),
     provideHttpClient(),
     provideAnimations(),
     provideAnimationsAsync(),
+    provideEffects([BiodataEffects]),
+    provideStore({ biodata: biodataReducer }),
     provideStoreDevtools({
       maxAge: 25, // Retains last 25 states
       logOnly: !isDevMode(), // Restrict extension to log-only mode
