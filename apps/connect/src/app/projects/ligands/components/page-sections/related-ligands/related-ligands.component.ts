@@ -7,12 +7,15 @@ import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold, StereoIsomer } 
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { forkJoin, switchMap, mergeMap, map, combineLatest, startWith } from 'rxjs';
+import { forkJoin, switchMap, mergeMap, map, combineLatest, startWith, filter } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { GoogleAnalyticsService } from '@pdbc/core';
+import { BiodataState } from '../../../../store/biodata.model';
+import { Store } from '@ngrx/store';
+import { BiodataSelectors } from '../../../../store/biodata.selectors';
 
 @Component({
   selector: 'pdbc-related-ligands',
@@ -56,6 +59,7 @@ export class RelatedLigandsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly ligandUtilService = inject(LigandUtilService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  private readonly globalStore = inject(Store<BiodataState>);
 
   public sameScaffoldTerm = new FormControl('');
   public sameLigandsTerm = new FormControl('');
@@ -104,23 +108,21 @@ export class RelatedLigandsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.route.params
+    this.globalStore
+      .select(BiodataSelectors.relatedLigands)
       .pipe(
-        switchMap((params) => {
-          const ligandId = params['ligandId'].toUpperCase();
-          return this.aggregatedApiService.getRelatedLigands(ligandId);
-        }),
+        filter(Boolean),
         mergeMap((relatedLigand: RelatedLigand) => {
           this.relatedLigand = relatedLigand;
           this.sameScaffoldPageSizeOptions.set([]);
           this.similarLigandPageSizeOptions.set([]);
           this.stereoisomersPageSizeOptions.set([]);
 
+          console.log('Related ligand:', relatedLigand);
+
           this.similarLigands = relatedLigand['similar_ligands'];
           this.sameScaffolds = relatedLigand['same_scaffold'];
           this.stereoisomers = relatedLigand['stereoisomers'];
-
-          this.ligandUtilService.setSimilarLigands(this.similarLigands);
 
           const validIdsArray = [];
 

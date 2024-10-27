@@ -62,12 +62,6 @@ export class ClcPrdMainComponent implements OnInit {
 
   public ligandId = signal<string>('');
 
-  private readonly schemas = computed(() => ({
-    similarLigands: this.ligandUtilService.currentSimilarLigands(),
-    structures: this.ligandUtilService.currentStuctures(),
-    summary: this.ligandUtilService.currentSummary(),
-  }));
-
   ngOnInit(): void {
     combineLatest([this.globalStore.select(BiodataSelectors.ligandId), this.globalStore.select(BiodataSelectors.structures)])
       .pipe(

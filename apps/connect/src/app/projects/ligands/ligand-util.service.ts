@@ -93,25 +93,4 @@ export class LigandUtilService {
   setFragments(fragments: Fragment[]): void {
     this.fragments.update(() => fragments);
   }
-
-  private readonly structures = signal<LigandStructure[]>([]);
-  public currentStuctures = this.structures.asReadonly();
-
-  public setStructures(structures: LigandStructure[]): void {
-    this.structures.update(() => structures);
-  }
-
-  private readonly summary = signal<LigandSummary>({} as LigandSummary);
-  public currentSummary = this.summary.asReadonly();
-
-  public setSummary(summary: LigandSummary): void {
-    this.summary.update(() => summary);
-  }
-
-  private readonly similarLigands = signal<SimilarLigand[]>([]);
-  public currentSimilarLigands = this.similarLigands.asReadonly();
-
-  public setSimilarLigands(similarLigands: SimilarLigand[]): void {
-    this.similarLigands.update(() => similarLigands);
-  }
 }

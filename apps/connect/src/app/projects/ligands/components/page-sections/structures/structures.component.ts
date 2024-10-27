@@ -146,7 +146,6 @@ export class StructuresComponent {
           this.ligandId.set(ligandId);
         }),
         map(([, structures]) => {
-          this.ligandUtilService.setStructures(structures);
           this.generateStructures(structures);
           this.proteins.update(() => [...structures]);
           this.rowData.update(() => [...this.proteins()]);
