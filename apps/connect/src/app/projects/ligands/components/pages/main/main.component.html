@@ -6,7 +6,7 @@
       @if(descriptionLoaded()){
       <section class="hero">
         <header>
-          <h2>{{ ligandId }}</h2>
+          <h2>{{ ligandId() }}</h2>
           <div class="annotations">
             @for(annotation of annotations(); track annotation){ @if(annotation === 'cofactor-like'){
             <span class="cofactor-like" matTooltipClass="complex-name-tooltip" [matTooltip]="cofactorTooltip" matTooltipPosition="below">Cofactor-like</span>
@@ -17,7 +17,7 @@
             } }
           </div>
         </header>
-        <h4>{{ description().name }}</h4>
+        <h4>{{ description()?.name }}</h4>
         <div class="action-buttons">
           <button class="vf-button vf-button--primary vf-button--sm" (click)="openMolstarDialog()">View 3D</button>
           <lib-dropdown-menu
@@ -28,12 +28,12 @@
         </div>
       </section>
       <section class="description">
-        <pdbc-description [description]="description()" [ligandId]="ligandId" [supercomponents]="supercomponents()" />
+        <pdbc-description />
         <pdbc-image-carousel #imageCarouselRef />
       </section>
 
       <section class="property">
-        <pdbc-properties [properties]="description().properties" />
+        <pdbc-properties />
       </section>
       @if(isThereStructures()){
       <section class="structure">
@@ -52,7 +52,7 @@
       </section>
       @if(description()){
       <section class="ligand-specific-databases">
-        <pdbc-ligand-specific-databases [crossLinks]="description().crossLinks" />
+        <pdbc-ligand-specific-databases />
       </section>
       } }
     </article>

@@ -22,8 +22,5 @@ export const BiodataActions = createActionGroup({
     'Get Supercomponents': emptyProps(),
     'Get Supercomponents Success': props<{ supercomponents: string[] }>(),
     'Get Supercomponents Failure': emptyProps(),
-    'Get Substructures': emptyProps(),
-    'Get Substructures Success': props<{ substructures: Substructure }>(),
-    'Get Substructures Failure': emptyProps(),
   },
 });

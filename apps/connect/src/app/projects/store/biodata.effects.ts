@@ -37,7 +37,7 @@ export class BiodataEffects {
           mergeMap((summary) => [
             BiodataActions.getSummarySuccess({ summary }),
             BiodataActions.setDescription({
-              description: this.aggregatedApiService.processDescriptionData(summary),
+              description: { ...this.aggregatedApiService.processDescriptionData(summary), ligandId: id },
             }),
           ]),
           catchError(() => of(BiodataActions.getSummaryFailure()))
@@ -71,21 +71,6 @@ export class BiodataEffects {
             return BiodataActions.getSupercomponentsSuccess({ supercomponents });
           }),
           catchError(() => of(BiodataActions.getSupercomponentsFailure()))
-        )
-      )
-    )
-  );
-
-  getSubstructures$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(BiodataActions.getSubstructures),
-      switchMap(() => this.store.select(BiodataSelectors.ligandId).pipe(take(1))),
-      mergeMap((id: string) =>
-        this.aggregatedApiService.fetchSubstructures(id).pipe(
-          map((substructures: Substructure) => {
-            return BiodataActions.getSubstructuresSuccess({ substructures });
-          }),
-          catchError(() => of(BiodataActions.getSubstructuresFailure()))
         )
       )
     )

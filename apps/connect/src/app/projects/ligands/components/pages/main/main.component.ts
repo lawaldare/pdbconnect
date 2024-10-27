@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, DestroyRef, computed, signal, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { DescriptionComponent } from '../../page-sections/description/description.component';
 import { ImageCarouselComponent } from '../../page-sections/image-carousel/image-carousel.component';
 import { PropertiesComponent } from '../../page-sections/properties/properties.component';
@@ -11,19 +11,21 @@ import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { map, mergeMap } from 'rxjs/operators';
+import { mergeMap } from 'rxjs/operators';
 import { cofactorTooltip, drugTooltip, navSections, reactantTooltip } from '../../../ligand.constant';
-import { MainComponentStore } from './main.store';
 import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { BiodataState } from '../../../../store/biodata.model';
 import { Store } from '@ngrx/store';
 import { BiodataSelectors } from '../../../../store/biodata.selectors';
-import { combineLatest, EMPTY } from 'rxjs';
+import { combineLatest, of } from 'rxjs';
+import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
+import { MatDialog } from '@angular/material/dialog';
+import { DescriptionData } from '../../../services/aggregated-api.service';
 
 @Component({
   selector: 'pdbc-main',
@@ -48,23 +50,23 @@ import { combineLatest, EMPTY } from 'rxjs';
   styleUrls: ['./main.component.scss'],
 })
 export class LigandsMainPageComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly store = inject(MainComponentStore);
   public readonly dlService = inject(DataLayerService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly bioschemasService = inject(LigandsBioschemasService);
   private readonly renderer = inject(Renderer2);
   public readonly ligandUtilService = inject(LigandUtilService);
   private readonly globalStore = inject(Store<BiodataState>);
+  private readonly dialog = inject(MatDialog);
 
   public readonly navSections = navSections;
 
-  public description = this.store.description;
-  public downloadOptions = this.store.downloadOptions;
-  public supercomponents = this.store.supercomponents;
-  public redirectText = this.store.redirectText;
-  public descriptionLoaded = computed(() => (Object.keys(this.description()).length ? true : false));
+  public description = toSignal(this.globalStore.select(BiodataSelectors.description));
+  public downloadOptions = toSignal(this.globalStore.select(BiodataSelectors.downloadOptions));
+  public supercomponents = toSignal(this.globalStore.select(BiodataSelectors.supercomponents));
+  public redirectText = signal<string>('');
+  public descriptionLoaded = computed(() => (Object.keys(this.description() ?? {}).length ? true : false));
 
   public annotations = signal<string[]>([]);
 
@@ -72,25 +74,20 @@ export class LigandsMainPageComponent implements OnInit {
   public drugTooltip = drugTooltip;
   public reactantTooltip = reactantTooltip;
 
-  public ligandId!: string;
-
-  private readonly schemas = computed(() => ({
-    similarLigands: this.ligandUtilService.currentSimilarLigands(),
-    structures: this.ligandUtilService.currentStuctures(),
-    summary: this.ligandUtilService.currentSummary(),
-  }));
+  public ligandId = signal<string>('');
 
   public isThereStructures = signal<boolean>(true);
 
   ngOnInit(): void {
-    combineLatest([this.globalStore.select(BiodataSelectors.ligandId), this.globalStore.select(BiodataSelectors.structures)])
+    combineLatest([
+      this.globalStore.select(BiodataSelectors.ligandId),
+      this.globalStore.select(BiodataSelectors.structures),
+      this.globalStore.select(BiodataSelectors.description),
+    ])
       .pipe(
-        mergeMap(([ligandId, structures]) => {
-          this.ligandId = ligandId;
-          this.store.init(ligandId);
-          setTimeout(() => {
-            this.generateSchemaData();
-          }, 1000);
+        mergeMap(([ligandId, structures, description]) => {
+          this.redirectLigandPages(description);
+          this.ligandId.set(ligandId);
           this.isThereStructures.update(() => structures.length > 0);
           const structuresWithAnnotations = (structures ?? []).filter((structure) => structure.annotations);
           const mappedAnnotations = structuresWithAnnotations.reduce((acc: string[], structure) => {
@@ -98,19 +95,44 @@ export class LigandsMainPageComponent implements OnInit {
           }, []);
           const uniqueAnnotations = [...new Set(mappedAnnotations)];
           this.annotations.update(() => uniqueAnnotations);
-          return EMPTY;
+          return of({});
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe();
+      .subscribe(() => {
+        this.generateSchemaData();
+      });
+  }
+
+  private redirectLigandPages(description: DescriptionData): void {
+    if (!description.released && description.superseded_by) {
+      this.redirectText.set(
+        `The chemical component you are trying to view (${description.ligandId}) has been obsoleted. You have been redirected to the component which superceded it.`
+      ),
+        this.router.navigate(['/chemicalCompound/show', description.superseded_by]);
+      return;
+    }
+
+    if (!description.released && description.superseded_by === null) {
+      this.router.navigate(['/chemicalCompound/show', this.ligandId(), 'unreleased']);
+      this.redirectText.set('');
+      return;
+    }
   }
 
   private generateSchemaData(): void {
-    this.bioschemasService.buildBioschemasJSON(this.renderer, this.schemas, this.ligandId);
+    this.bioschemasService.buildBioschemasJSON(this.renderer);
   }
 
   public openMolstarDialog(): void {
-    this.store.openMolstarDialog();
     this.googleAnalyticsService.logClickEvents('view_3d_button_click', 'Interaction', 'view_3d', 'View 3D');
+    this.dialog.open(MolstarDialogComponent, {
+      disableClose: false,
+      panelClass: 'molstarDialog',
+      data: {
+        moleculeId: this.ligandId(),
+        fragments: this.ligandUtilService.currentFragments,
+      },
+    });
   }
 }

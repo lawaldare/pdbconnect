@@ -3,6 +3,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction, Fragment } from '../../../data-models/structure.model';
+import { BiodataState } from '../../../../store/biodata.model';
+import { Store } from '@ngrx/store';
+import { BiodataSelectors } from '../../../../store/biodata.selectors';
+import { take } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -11,6 +15,7 @@ export class ImageCarouselComponentFacade {
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ligandUtilService = inject(LigandUtilService);
+  private readonly globalStore = inject(Store<BiodataState>);
 
   private ligandId!: string;
   private tempFragments: Fragment[] = [];
@@ -26,6 +31,7 @@ export class ImageCarouselComponentFacade {
 
   public init(renderer: Renderer2, ligandId: string, imageContainer: ElementRef) {
     this.ligandId = ligandId;
+    this.ligandId = ligandId;
     this.aggregatedApiService
       .fetchSubstructures(ligandId)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -38,15 +44,18 @@ export class ImageCarouselComponentFacade {
           this.getSubstructureNamesAndAtoms(scaffolds);
 
           if (this.substructureNames().length > 0) {
-            this.slides.update((slides) => [...slides, 0, 1]);
-            this.renderLigand(renderer, ligandId, imageContainer);
+            this.updateSlidesAndRender(renderer, ligandId, imageContainer);
           }
         },
         (error) => {
-          this.slides.update((slides) => [...slides, 0, 1]);
-          this.renderLigand(renderer, ligandId, imageContainer);
+          this.updateSlidesAndRender(renderer, ligandId, imageContainer);
         }
       );
+  }
+
+  private updateSlidesAndRender(renderer: Renderer2, ligandId: string, imageContainer: ElementRef) {
+    this.slides.update((slides) => [...slides, 0, 1]);
+    this.renderLigand(renderer, ligandId, imageContainer);
   }
 
   private getSubstructureNamesAndAtoms(data: Fragment[]): void {

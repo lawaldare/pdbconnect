@@ -38,11 +38,10 @@ export class LigandWrapperComponent implements OnInit {
           const ligandId = params['ligandId'].toUpperCase();
           this.globalStore.dispatch(BiodataActions.setCurrentLigandId({ ligandId }));
           this.globalStore.dispatch(BiodataActions.getStructures());
-          // this.globalStore.dispatch(BiodataActions.getSummary());
-          // this.globalStore.dispatch(BiodataActions.setDownloadOptions());
-          // this.globalStore.dispatch(BiodataActions.getRelatedLigands());
-          // this.globalStore.dispatch(BiodataActions.getSupercomponents());
-          // this.globalStore.dispatch(BiodataActions.getSubstructures());
+          this.globalStore.dispatch(BiodataActions.getSummary());
+          this.globalStore.dispatch(BiodataActions.setDownloadOptions());
+          this.globalStore.dispatch(BiodataActions.getRelatedLigands());
+          this.globalStore.dispatch(BiodataActions.getSupercomponents());
           if (ligandId.startsWith('CLC') || ligandId.startsWith('PRD')) {
             this.isMainLigandId.set(false);
           } else {

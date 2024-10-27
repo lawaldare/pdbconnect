@@ -8,18 +8,19 @@ import { DescriptionComponent } from '../../page-sections/description/descriptio
 import { ImageCarouselComponent } from '../../page-sections/image-carousel/image-carousel.component';
 import { PropertiesComponent } from '../../page-sections/properties/properties.component';
 import { StructuresComponent } from '../../page-sections/structures/structures.component';
-import { headerLogoMenuConfig, headerSearchConfig, navSections } from '../../../ligand.constant';
+import { navSections } from '../../../ligand.constant';
 import { ActivatedRoute } from '@angular/router';
-import { combineLatest, EMPTY, mergeMap, of, switchMap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { combineLatest, EMPTY, mergeMap } from 'rxjs';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { MainComponentStore } from '../main/main.store';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { GoogleAnalyticsService } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { BiodataSelectors } from '../../../../store/biodata.selectors';
 import { Store } from '@ngrx/store';
 import { BiodataState } from '../../../../store/biodata.model';
+import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'pdbc-clc-prd-main',
@@ -42,24 +43,24 @@ import { BiodataState } from '../../../../store/biodata.model';
 export class ClcPrdMainComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly store = inject(MainComponentStore);
   public readonly ligandUtilService = inject(LigandUtilService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   private readonly bioschemasService = inject(LigandsBioschemasService);
   private readonly renderer = inject(Renderer2);
+  private readonly dialog = inject(MatDialog);
 
   public readonly navSections = navSections;
   private readonly globalStore = inject(Store<BiodataState>);
 
-  public description = this.store.description;
-  public downloadOptions = this.store.downloadOptions;
-  public supercomponents = this.store.supercomponents;
-  public descriptionLoaded = computed(() => (Object.keys(this.description()).length ? true : false));
+  public description = toSignal(this.globalStore.select(BiodataSelectors.description));
+  public downloadOptions = toSignal(this.globalStore.select(BiodataSelectors.downloadOptions));
+  public supercomponents = toSignal(this.globalStore.select(BiodataSelectors.supercomponents));
+  public descriptionLoaded = computed(() => (Object.keys(this.description() ?? {}).length ? true : false));
 
   public isThereStructures = signal<boolean>(true);
 
-  public ligandId!: string;
+  public ligandId = signal<string>('');
 
   private readonly schemas = computed(() => ({
     similarLigands: this.ligandUtilService.currentSimilarLigands(),
@@ -71,10 +72,9 @@ export class ClcPrdMainComponent implements OnInit {
     combineLatest([this.globalStore.select(BiodataSelectors.ligandId), this.globalStore.select(BiodataSelectors.structures)])
       .pipe(
         mergeMap(([ligandId, structures]) => {
-          this.ligandId = ligandId;
-          this.store.init(this.ligandId);
+          this.ligandId.set(ligandId);
           setTimeout(() => {
-            this.generateSchemaData();
+            // this.generateSchemaData();
           }, 1000);
           this.isThereStructures.update(() => structures.length > 0);
           return EMPTY;
@@ -84,11 +84,19 @@ export class ClcPrdMainComponent implements OnInit {
       .subscribe();
   }
 
-  private generateSchemaData(): void {
-    this.bioschemasService.buildBioschemasJSON(this.renderer, this.schemas, this.ligandId);
-  }
+  // private generateSchemaData(): void {
+  //   this.bioschemasService.buildBioschemasJSON(this.renderer, this.schemas, this.ligandId);
+  // }
 
   public openMolstarDialog(): void {
-    this.store.openMolstarDialog();
+    this.googleAnalyticsService.logClickEvents('view_3d_button_click', 'Interaction', 'view_3d', 'View 3D');
+    this.dialog.open(MolstarDialogComponent, {
+      disableClose: false,
+      panelClass: 'molstarDialog',
+      data: {
+        moleculeId: this.ligandId(),
+        fragments: this.ligandUtilService.currentFragments,
+      },
+    });
   }
 }

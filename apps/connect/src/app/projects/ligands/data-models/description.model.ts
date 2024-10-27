@@ -71,4 +71,5 @@ export interface LigandSummary {
   phys_chem_properties: PhysChemProperties;
   superseded_by: string | undefined;
   subcomponent_occurrences: Record<string, number>;
+  weight: number;
 }

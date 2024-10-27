@@ -1,11 +1,18 @@
 import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable, Renderer2, Signal } from '@angular/core';
+import { EnvironmentInjector, inject, Inject, Injectable, Renderer2, runInInjectionContext, Signal } from '@angular/core';
+import { BiodataState } from '../../store/biodata.model';
+import { Store } from '@ngrx/store';
+import { BiodataSelectors } from '../../store/biodata.selectors';
+import { map } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LigandsBioschemasService {
-  constructor(@Inject(DOCUMENT) private document: Document) {}
+  private readonly globalStore = inject(Store<BiodataState>);
+
+  constructor(@Inject(DOCUMENT) private document: Document, private environmentInjector: EnvironmentInjector) {}
 
   /**
    * Set JSON-LD Microdata on the Document Body.
@@ -31,48 +38,55 @@ export class LigandsBioschemasService {
     }
   }
 
-  public buildBioschemasJSON(renderer: Renderer2, data: Signal<any>, ligandId: string): void {
-    const JSON = {
-      '@context': 'http://schema.org/',
-      '@type': 'MolecularEntity',
-      identifier: `https://identifiers.org/pdb.ligand:${ligandId}`,
-      name: ligandId,
-      description: '',
-      molecularFormula: data().summary.formula,
-      molecularWeight: `${data().summary.weight?.toFixed(2)} g/mol`,
-      inChI: data().summary.inchi,
-      inChIKey: data().summary.inchi_key,
-      iupacName: data().summary.name,
-      smiles: data().summary.smiles.find((s: any) => s.program === 'OpenEye OEToolkits')?.name ?? '',
-      alternateName: (data().summary.synonyms ?? []).map((synonym: any) => synonym.value),
-      chemicalRole: data().summary.functional_annotations.map((annotation: any) => annotation.name.split('-')[0]),
-      url: `https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/${ligandId}`,
-      hasRepresentation: {
-        '@type': 'PropertyValue',
-        propertyID: 'SMILES',
-        value: data().summary.smiles.find((s: any) => s.program === 'OpenEye OEToolkits')?.name ?? '',
-      },
-      image: `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${ligandId}_400.svg`,
-      bioChemInteraction: data().structures.map((structure: any) => {
-        return {
-          '@type': 'BioChemEntity',
-          name: structure.uniprot_id,
-          description: structure.name,
-          url: `https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/${structure.uniprot_id}`,
-          identifier: `https://identifiers.org/uniprot:${structure.uniprot_id}`,
-        };
-      }),
-      bioChemSimilarity: data().similarLigands.map((ligand: any) => {
-        return {
-          '@type': 'BioChemEntity',
-          name: ligand.chem_comp_id,
-          description: ligand.name,
-          url: `https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/${ligand.chem_comp_id}`,
-          identifier: `https://identifiers.org/pdb.ligand:${ligand.chem_comp_id}`,
-        };
-      }),
-    };
+  public buildBioschemasJSON(renderer: Renderer2): void {
+    runInInjectionContext(this.environmentInjector, () => {
+      const summary = toSignal(this.globalStore.select(BiodataSelectors.summary));
+      const structures = toSignal(this.globalStore.select(BiodataSelectors.structures));
+      const relatedLigands = toSignal(this.globalStore.select(BiodataSelectors.relatedLigands).pipe(map((relatedLigands) => relatedLigands.similar_ligands)));
+      const ligandId = toSignal(this.globalStore.select(BiodataSelectors.ligandId));
 
-    this.setJsonLd(renderer, JSON);
+      const JSON = {
+        '@context': 'http://schema.org/',
+        '@type': 'MolecularEntity',
+        identifier: `https://identifiers.org/pdb.ligand:${ligandId()}`,
+        name: ligandId(),
+        description: '',
+        molecularFormula: summary()?.formula,
+        molecularWeight: `${summary()?.weight?.toFixed(2)} g/mol`,
+        inChI: summary()?.inchi,
+        inChIKey: summary()?.inchi_key,
+        iupacName: summary()?.name,
+        smiles: summary()?.smiles?.find((s: any) => s.program === 'OpenEye OEToolkits')?.name ?? '',
+        alternateName: (summary()?.synonyms ?? []).map((synonym: any) => synonym.value),
+        chemicalRole: (summary()?.functional_annotations ?? []).map((annotation: any) => annotation.name.split('-')[0]),
+        url: `https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/${ligandId()}`,
+        hasRepresentation: {
+          '@type': 'PropertyValue',
+          propertyID: 'SMILES',
+          value: summary()?.smiles?.find((s: any) => s.program === 'OpenEye OEToolkits')?.name ?? '',
+        },
+        image: `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${ligandId()}_400.svg`,
+        bioChemInteraction: structures()?.map((structure: any) => {
+          return {
+            '@type': 'BioChemEntity',
+            name: structure.uniprot_id,
+            description: structure.name,
+            url: `https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/${structure.uniprot_id}`,
+            identifier: `https://identifiers.org/uniprot:${structure.uniprot_id}`,
+          };
+        }),
+        bioChemSimilarity: relatedLigands()?.map((ligand: any) => {
+          return {
+            '@type': 'BioChemEntity',
+            name: ligand.chem_comp_id,
+            description: ligand.name,
+            url: `https://www.ebi.ac.uk/pdbe-srv/pdbechem/chemicalCompound/show/${ligand.chem_comp_id}`,
+            identifier: `https://identifiers.org/pdb.ligand:${ligand.chem_comp_id}`,
+          };
+        }),
+      };
+
+      this.setJsonLd(renderer, JSON);
+    });
   }
 }

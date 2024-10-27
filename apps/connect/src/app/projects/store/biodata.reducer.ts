@@ -4,7 +4,6 @@ import { BiodataActions } from './biodata.actions';
 import { LigandSummary } from '../ligands/data-models/description.model';
 import { DescriptionData } from '../ligands/services/aggregated-api.service';
 import { RelatedLigand } from '../ligands/data-models/related-ligands.model';
-import { Substructure } from '../ligands/data-models/structure.model';
 
 export const BIODATA_STATE_KEY = 'biodata';
 
@@ -16,7 +15,6 @@ const initialState: BiodataState = {
   downloadOptions: [],
   relatedLigands: {} as RelatedLigand,
   supercomponents: [],
-  substructures: {} as Substructure,
 };
 
 export const biodataReducer = createReducer(
@@ -45,9 +43,9 @@ export const biodataReducer = createReducer(
     ...state,
     supercomponents: action.supercomponents,
   })),
-  on(BiodataActions.getSubstructuresSuccess, (state, action) => ({
+  on(BiodataActions.getSupercomponentsFailure, (state, action) => ({
     ...state,
-    substructures: action.substructures,
+    supercomponents: [],
   })),
   on(BiodataActions.setDownloadOptions, (state, action) => ({
     ...state,

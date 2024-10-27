@@ -22,6 +22,7 @@ export interface DescriptionData {
   subcomponent_occurrences: Record<string, number>;
   released: boolean;
   superseded_by: string | undefined;
+  ligandId?: string;
 }
 
 export interface downloadData {
