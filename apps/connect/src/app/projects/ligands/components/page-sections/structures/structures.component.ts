@@ -133,17 +133,16 @@ export class StructuresComponent {
   public proteins = signal<LigandStructure[]>([]);
   public structures = signal<LigandStructure[]>([]);
 
-  public paginationPageSizeSelector = signal<number[]>([10, 20, 50]);
+  public paginationPageSizeSelector = signal<number[]>([10, 20, 50, 100]);
   private gridApi!: GridApi;
 
   onGridReady(event: GridReadyEvent<any>) {
     // this.rowData = this.assemblies();
     // event.api.autoSizeAllColumns();
     this.gridApi = event.api;
-    combineLatest([this.globalStore.select(BiodataSelectors.ligandId).pipe(take(1)), this.globalStore.select(BiodataSelectors.structures)])
+    combineLatest([this.globalStore.select(BiodataSelectors.ligandId), this.globalStore.select(BiodataSelectors.structures)])
       .pipe(
         tap(([ligandId, structures]) => {
-          this.setLoading(true);
           this.ligandId.set(ligandId);
         }),
         map(([, structures]) => {
@@ -152,12 +151,9 @@ export class StructuresComponent {
           this.proteins.update(() => [...structures]);
           this.rowData.update(() => [...this.proteins()]);
           this.fetchDataStatistics(structures);
-          this.paginationPageSizeSelector.update((options) => [...new Set([...options, structures.length])]);
-          this.setLoading(false);
         }),
         catchError((error) => {
           console.error('Error fetching ligand structures:', error);
-          this.setLoading(false);
           this.rowData.update(() => []);
           return of([]);
         }),
@@ -166,9 +162,9 @@ export class StructuresComponent {
       .subscribe();
   }
 
-  private setLoading(value: boolean) {
-    this.gridApi.setGridOption('loading', value);
-  }
+  // private setLoading(value: boolean) {
+  //   this.gridApi.setGridOption('loading', value);
+  // }
 
   onChange(event: MatRadioChange) {
     const filterSelected = event.value;
@@ -181,7 +177,6 @@ export class StructuresComponent {
       this.gridApi.setColumnsVisible(['interacting_chains'], false);
       this.rowData.update(() => [...this.structures()]);
     }
-    this.paginationPageSizeSelector.update((options) => [...new Set([...options, this.rowData().length])]);
   }
 
   public resetColumns() {
