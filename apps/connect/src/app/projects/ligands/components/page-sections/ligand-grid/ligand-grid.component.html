@@ -1,12 +1,14 @@
 @if(ligand){
 <div class="ligand-container">
   <div class="image-container" #imageContainer>
+    @if(ligand.substructure_match){
     <div class="wallpaper">
       <span (click)="openMolstarDialog()">
         View in 3D&nbsp;
         <i class="icon icon-common icon-eye"></i>
       </span>
     </div>
+    }
   </div>
   <div class="ligand-description">
     <a
