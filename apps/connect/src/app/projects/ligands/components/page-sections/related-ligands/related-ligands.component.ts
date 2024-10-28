@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, OnInit, ViewChild, DestroyRef, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, ViewChild, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold, StereoIsomer } from '../../../data-models/related-ligands.model';
@@ -8,7 +8,6 @@ import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { forkJoin, mergeMap, map, combineLatest, startWith, filter } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LigandUtilService } from '../../../ligand-util.service';
@@ -55,7 +54,6 @@ export class RelatedLigandsComponent implements OnInit {
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   private readonly aggregatedApiService = inject(AggregatedApiService);
-  private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ligandUtilService = inject(LigandUtilService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
@@ -69,8 +67,6 @@ export class RelatedLigandsComponent implements OnInit {
   public similarityTo = new FormControl(100);
 
   private relatedLigand!: any;
-
-  public readonly loaded = computed(() => this.similarLigands().length > 0 || this.sameScaffolds().length > 0 || this.stereoisomers().length > 0);
 
   public readonly skeletonTheme = {
     'border-radius': '0px',
@@ -120,9 +116,9 @@ export class RelatedLigandsComponent implements OnInit {
           this.similarLigandPageSizeOptions.set([]);
           this.stereoisomersPageSizeOptions.set([]);
 
-          this.similarLigands.set(relatedLigand['similar_ligands']);
-          this.sameScaffolds.set(relatedLigand['same_scaffold']);
-          this.stereoisomers.set(relatedLigand['stereoisomers']);
+          this.similarLigands.update(() => relatedLigand['similar_ligands']);
+          this.sameScaffolds.update(() => relatedLigand['same_scaffold']);
+          this.stereoisomers.update(() => relatedLigand['stereoisomers']);
 
           const validIdsArray = [];
 
