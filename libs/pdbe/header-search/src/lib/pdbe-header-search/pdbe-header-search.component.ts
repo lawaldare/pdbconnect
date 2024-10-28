@@ -49,10 +49,10 @@ export class PdbeHeaderSearchComponent implements OnInit {
 
   public onSubmit(form: FormGroup): void {
     const value = form.value.searchTerm.trim();
-    if (value.length === 3 || value.length === 10) {
-      this.router.navigate(['/chemicalCompound/show/', value]).then(() => {
-        window.location.reload();
-      });
-    }
+    // if (value.length === 3 || value.length === 10) {
+    this.router.navigate(['/chemicalCompound/show/', value]).then(() => {
+      window.location.reload();
+    });
+    // }
   }
 }
