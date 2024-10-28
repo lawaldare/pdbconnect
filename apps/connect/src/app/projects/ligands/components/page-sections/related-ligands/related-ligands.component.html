@@ -1,4 +1,4 @@
-@if(sameScaffolds().length || similarLigands().length){
+@let same = sameScaffolds().length; @let similar = similarLigands().length; @if(same > 0 || similar > 0){
 <div id="related-ligand-section">
   <header>
     <h3 class="title">Related Ligands</h3>
