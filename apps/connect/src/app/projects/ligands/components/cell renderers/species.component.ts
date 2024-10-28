@@ -8,11 +8,13 @@ import { MaterialModule } from '@pdbc/core';
 @Component({
   standalone: true,
   imports: [CommonModule, ToolTipComponent, MaterialModule],
-  template: `<span
-    >@if(value.scientific_name){
-    <i>{{ value.scientific_name }}</i>
-    } @if(value.common_name){ ({{ value.common_name }}) }</span
-  >`,
+  template: `@if(value){
+    <span
+      >@if(value.scientific_name){
+      <i>{{ value.scientific_name }}</i>
+      } @if(value.common_name){ ({{ value.common_name }}) }</span
+    >
+    }`,
   styleUrls: ['./renderer-styling.scss'],
 })
 export class SpeciesRendererComponent implements ICellRendererAngularComp {
