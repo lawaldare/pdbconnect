@@ -20,7 +20,7 @@ export interface DescriptionData {
   annotations: FunctionalAnnotation[];
   crossLinks: CrossLink[];
   subcomponent_occurrences: Record<string, number>;
-  released: boolean;
+  released: string;
   superseded_by: string | undefined;
   ligandId?: string;
 }
@@ -156,7 +156,7 @@ export class AggregatedApiService {
       annotations: ligandAnnotations,
       crossLinks: ligandCrossLinks,
       subcomponent_occurrences: ligandSummary.subcomponent_occurrences,
-      released: ligandSummary.released,
+      released: ligandSummary.release_status,
       superseded_by: ligandSummary.superseded_by,
     };
   }

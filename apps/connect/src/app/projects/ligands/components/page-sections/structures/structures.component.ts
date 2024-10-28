@@ -103,12 +103,13 @@ export class StructuresComponent {
       width: 150,
     },
     {
-      headerName: 'Species',
+      headerName: 'Organism',
       field: 'organism',
+      cellRenderer: SpeciesRendererComponent,
       comparator: (a, b): number => {
         return a.scientific_name?.toLocaleLowerCase().localeCompare(b.scientific_name?.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
       },
-      cellRenderer: SpeciesRendererComponent,
+      // valueGetter: (params) => params.data.organism?.scientific_name ?? 'Unspecified',
       filter: 'agTextColumnFilter',
       minWidth: 160,
     },
@@ -188,6 +189,8 @@ export class StructuresComponent {
       structure.interacting_chains.forEach((chain) => {
         acc.push({
           ...structure,
+          name: chain.entity_name,
+          organism: chain.organisms[0],
           pdb_id: `${chain.pdb_id}_${chain.auth_asym_id}`,
         });
       });

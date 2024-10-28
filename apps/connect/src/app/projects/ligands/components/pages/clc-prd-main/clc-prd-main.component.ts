@@ -9,7 +9,7 @@ import { ImageCarouselComponent } from '../../page-sections/image-carousel/image
 import { PropertiesComponent } from '../../page-sections/properties/properties.component';
 import { StructuresComponent } from '../../page-sections/structures/structures.component';
 import { navSections } from '../../../ligand.constant';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, EMPTY, mergeMap } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
@@ -21,6 +21,8 @@ import { Store } from '@ngrx/store';
 import { BiodataState } from '../../../../store/biodata.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
+import { LigandReleasedStatus } from '../../../enums/ligand-release.enum';
+import { DescriptionData } from '../../../services/aggregated-api.service';
 
 @Component({
   selector: 'pdbc-clc-prd-main',
@@ -41,7 +43,7 @@ import { MatDialog } from '@angular/material/dialog';
   styleUrls: ['../main/main.component.scss', './clc-prd-main.component.sass'],
 })
 export class ClcPrdMainComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   public readonly ligandUtilService = inject(LigandUtilService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
@@ -58,29 +60,49 @@ export class ClcPrdMainComponent implements OnInit {
   public supercomponents = toSignal(this.globalStore.select(BiodataSelectors.supercomponents));
   public descriptionLoaded = computed(() => (Object.keys(this.description() ?? {}).length ? true : false));
 
+  public redirectText = signal<string>('');
+
   public isThereStructures = signal<boolean>(true);
 
   public ligandId = signal<string>('');
 
   ngOnInit(): void {
-    combineLatest([this.globalStore.select(BiodataSelectors.ligandId), this.globalStore.select(BiodataSelectors.structures)])
+    combineLatest([
+      this.globalStore.select(BiodataSelectors.ligandId),
+      this.globalStore.select(BiodataSelectors.structures),
+      this.globalStore.select(BiodataSelectors.description),
+    ])
       .pipe(
-        mergeMap(([ligandId, structures]) => {
+        mergeMap(([ligandId, structures, description]) => {
+          this.redirectLigandPages(description);
           this.ligandId.set(ligandId);
-          setTimeout(() => {
-            // this.generateSchemaData();
-          }, 1000);
           this.isThereStructures.update(() => structures.length > 0);
           return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe();
+      .subscribe(() => this.generateSchemaData());
   }
 
-  // private generateSchemaData(): void {
-  //   this.bioschemasService.buildBioschemasJSON(this.renderer, this.schemas, this.ligandId);
-  // }
+  private generateSchemaData(): void {
+    this.bioschemasService.buildBioschemasJSON(this.renderer);
+  }
+
+  private redirectLigandPages(description: DescriptionData): void {
+    if (description.released === LigandReleasedStatus.OBSOLETE && description.superseded_by) {
+      this.redirectText.set(
+        `The chemical component you are trying to view (${description.ligandId}) has been obsoleted. You have been redirected to the component which superceded it.`
+      ),
+        this.router.navigate(['/chemicalCompound/show', description.superseded_by]);
+      return;
+    }
+
+    if (description.released === LigandReleasedStatus.HOLD) {
+      this.router.navigate(['/chemicalCompound/show', this.ligandId(), 'unreleased']);
+      this.redirectText.set('');
+      return;
+    }
+  }
 
   public openMolstarDialog(): void {
     this.googleAnalyticsService.logClickEvents('view_3d_button_click', 'Interaction', 'view_3d', 'View 3D');

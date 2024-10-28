@@ -59,7 +59,7 @@ export interface LigandProperty {
 
 export interface LigandSummary {
   name: string;
-  released: boolean;
+  release_status: string;
   formula: string;
   inchi: string;
   inchi_key: string;

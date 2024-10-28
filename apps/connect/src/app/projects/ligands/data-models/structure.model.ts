@@ -33,6 +33,13 @@ export interface Chain {
   pdb_id: string;
   auth_asym_id: string;
   struct_asym_id: string;
+  organisms: Organism[];
+  entity_name: string;
+}
+
+export interface Organism {
+  common_name: string;
+  scientific_name: string;
 }
 
 export interface Resolution {

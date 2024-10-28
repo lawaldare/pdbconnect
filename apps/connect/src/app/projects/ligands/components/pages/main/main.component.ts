@@ -26,6 +26,7 @@ import { combineLatest, of } from 'rxjs';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
 import { DescriptionData } from '../../../services/aggregated-api.service';
+import { LigandReleasedStatus } from '../../../enums/ligand-release.enum';
 
 @Component({
   selector: 'pdbc-main',
@@ -105,7 +106,7 @@ export class LigandsMainPageComponent implements OnInit {
   }
 
   private redirectLigandPages(description: DescriptionData): void {
-    if (!description.released && description.superseded_by) {
+    if (description.released === LigandReleasedStatus.OBSOLETE && description.superseded_by) {
       this.redirectText.set(
         `The chemical component you are trying to view (${description.ligandId}) has been obsoleted. You have been redirected to the component which superceded it.`
       ),
@@ -113,11 +114,11 @@ export class LigandsMainPageComponent implements OnInit {
       return;
     }
 
-    // if (!description.released && description.superseded_by === null) {
-    //   this.router.navigate(['/chemicalCompound/show', this.ligandId(), 'unreleased']);
-    //   this.redirectText.set('');
-    //   return;
-    // }
+    if (description.released === LigandReleasedStatus.HOLD) {
+      this.router.navigate(['/chemicalCompound/show', this.ligandId(), 'unreleased']);
+      this.redirectText.set('');
+      return;
+    }
   }
 
   private generateSchemaData(): void {
