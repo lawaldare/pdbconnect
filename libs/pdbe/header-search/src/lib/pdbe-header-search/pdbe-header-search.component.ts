@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DataLayerService, GoogleAnalyticsService, HeaderSearchConfig, ThemeType } from '@pdbc/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'pdbc-pdbe-header-search',
@@ -28,6 +28,7 @@ export class PdbeHeaderSearchComponent implements OnInit {
 
   public readonly dlService = inject(DataLayerService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  private readonly router = inject(Router);
 
   constructor(private fb: FormBuilder) {}
 
@@ -42,12 +43,17 @@ export class PdbeHeaderSearchComponent implements OnInit {
         filter(Boolean)
       )
       .subscribe((value) => {
-        console.log(value);
+        // console.log(value);
       });
   }
 
   public onSubmit(form: FormGroup): void {
-    const value = form.value.searchTerm;
-    console.log(value);
+    const value = form.value.searchTerm.trim();
+    if (value.length !== 3) {
+      return;
+    }
+    this.router.navigate(['/chemicalCompound/show/', value]).then(() => {
+      window.location.reload();
+    });
   }
 }

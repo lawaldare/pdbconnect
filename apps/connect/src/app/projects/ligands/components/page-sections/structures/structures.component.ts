@@ -104,7 +104,7 @@ export class StructuresComponent {
     },
     {
       headerName: 'Species',
-      field: 'species',
+      field: 'organism',
       comparator: (a, b): number => {
         return a.scientific_name?.toLocaleLowerCase().localeCompare(b.scientific_name?.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
       },

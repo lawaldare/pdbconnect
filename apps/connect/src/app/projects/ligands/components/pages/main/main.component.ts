@@ -113,11 +113,11 @@ export class LigandsMainPageComponent implements OnInit {
       return;
     }
 
-    if (!description.released && description.superseded_by === null) {
-      this.router.navigate(['/chemicalCompound/show', this.ligandId(), 'unreleased']);
-      this.redirectText.set('');
-      return;
-    }
+    // if (!description.released && description.superseded_by === null) {
+    //   this.router.navigate(['/chemicalCompound/show', this.ligandId(), 'unreleased']);
+    //   this.redirectText.set('');
+    //   return;
+    // }
   }
 
   private generateSchemaData(): void {

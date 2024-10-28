@@ -116,9 +116,9 @@ export class RelatedLigandsComponent implements OnInit {
           this.similarLigandPageSizeOptions.set([]);
           this.stereoisomersPageSizeOptions.set([]);
 
-          this.similarLigands.update(() => relatedLigand['similar_ligands']);
-          this.sameScaffolds.update(() => relatedLigand['same_scaffold']);
-          this.stereoisomers.update(() => relatedLigand['stereoisomers']);
+          this.similarLigands.update(() => relatedLigand['similar_ligands'] || []);
+          this.sameScaffolds.update(() => relatedLigand['same_scaffold'] || []);
+          this.stereoisomers.update(() => relatedLigand['stereoisomers'] || []);
 
           const validIdsArray = [];
 
