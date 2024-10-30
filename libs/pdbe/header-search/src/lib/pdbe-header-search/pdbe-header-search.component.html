@@ -13,12 +13,7 @@
     <section>
       <div class="left">
         Examples: @for(example of headerSearchConfig.examples; track example.label){
-        <a
-          [ngClass]="chipBg"
-          [routerLink]="example.url"
-          (click)="googleAnalyticsService.logClickEvents('example_click', 'Search Examples Links', 'navigate_to_example', example.label)"
-          >{{ example.label }}</a
-        >
+        <a [ngClass]="chipBg" (click)="openLigand(example.label)">{{ example.label }}</a>
         }
       </div>
       <!-- //TODO:To be implemented later! -->

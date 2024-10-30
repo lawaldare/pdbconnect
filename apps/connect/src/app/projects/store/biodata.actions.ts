@@ -1,5 +1,5 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
-import { LigandStructure, Substructure } from '../ligands/data-models/structure.model';
+import { LigandStructure } from '../ligands/data-models/structure.model';
 import { LigandSummary } from '../ligands/data-models/description.model';
 import { DescriptionData } from '../ligands/services/aggregated-api.service';
 import { RelatedLigand } from '../ligands/data-models/related-ligands.model';
@@ -22,5 +22,7 @@ export const BiodataActions = createActionGroup({
     'Get Supercomponents': emptyProps(),
     'Get Supercomponents Success': props<{ supercomponents: string[] }>(),
     'Get Supercomponents Failure': emptyProps(),
+    'Toggle Loader': props<{ status: string }>(),
+    'Set Empty Page Text': props<{ text: string }>(),
   },
 });

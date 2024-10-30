@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, DestroyRef, computed, signal, Renderer2 } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, signal, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DescriptionComponent } from '../../page-sections/description/description.component';
@@ -25,14 +25,15 @@ import { BiodataSelectors } from '../../../../store/biodata.selectors';
 import { combineLatest, of } from 'rxjs';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
-import { DescriptionData } from '../../../services/aggregated-api.service';
-import { LigandReleasedStatus } from '../../../enums/ligand-release.enum';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { LoadingState } from '../../../enums/loading-state.enum';
 
 @Component({
   selector: 'pdbc-main',
   standalone: true,
   imports: [
     CommonModule,
+    NgxSkeletonLoaderModule,
     PdbeHeaderLogoMenuComponent,
     PdbeHeaderSearchComponent,
     PdbeNavMenuComponent,
@@ -66,8 +67,9 @@ export class LigandsMainPageComponent implements OnInit {
   public description = toSignal(this.globalStore.select(BiodataSelectors.description));
   public downloadOptions = toSignal(this.globalStore.select(BiodataSelectors.downloadOptions));
   public supercomponents = toSignal(this.globalStore.select(BiodataSelectors.supercomponents));
-  public redirectText = signal<string>('');
-  public descriptionLoaded = computed(() => (Object.keys(this.description() ?? {}).length ? true : false));
+  public redirectText$ = this.globalStore.select(BiodataSelectors.emptyPageText);
+
+  public loaded = toSignal(this.globalStore.select(BiodataSelectors.loadingState));
 
   public annotations = signal<string[]>([]);
 
@@ -76,6 +78,8 @@ export class LigandsMainPageComponent implements OnInit {
   public reactantTooltip = reactantTooltip;
 
   public ligandId = signal<string>('');
+
+  public status = LoadingState;
 
   public isThereStructures = signal<boolean>(true);
 
@@ -87,7 +91,7 @@ export class LigandsMainPageComponent implements OnInit {
     ])
       .pipe(
         mergeMap(([ligandId, structures, description]) => {
-          this.redirectLigandPages(description);
+          this.ligandUtilService.redirectLigandPages(description);
           this.ligandId.set(ligandId);
           this.isThereStructures.update(() => structures.length > 0);
           const structuresWithAnnotations = (structures ?? []).filter((structure) => structure.annotations);
@@ -103,22 +107,6 @@ export class LigandsMainPageComponent implements OnInit {
       .subscribe(() => {
         this.generateSchemaData();
       });
-  }
-
-  private redirectLigandPages(description: DescriptionData): void {
-    if (description.released === LigandReleasedStatus.OBSOLETE && description.superseded_by) {
-      this.redirectText.set(
-        `The chemical component you are trying to view (${description.ligandId}) has been obsoleted. You have been redirected to the component which superceded it.`
-      ),
-        this.router.navigate(['/chemicalCompound/show', description.superseded_by]);
-      return;
-    }
-
-    if (description.released === LigandReleasedStatus.HOLD) {
-      this.router.navigate(['/chemicalCompound/show', this.ligandId(), 'unreleased']);
-      this.redirectText.set('');
-      return;
-    }
   }
 
   private generateSchemaData(): void {

@@ -13,4 +13,6 @@ export const BiodataSelectors = {
   downloadOptions: createSelector(biodataState, (state: BiodataState) => state.downloadOptions),
   relatedLigands: createSelector(biodataState, (state: BiodataState) => state.relatedLigands),
   supercomponents: createSelector(biodataState, (state: BiodataState) => state.supercomponents),
+  loadingState: createSelector(biodataState, (state: BiodataState) => state.loadingState),
+  emptyPageText: createSelector(biodataState, (state: BiodataState) => state.emptyPageText),
 };

@@ -12,4 +12,6 @@ export interface BiodataState {
   downloadOptions: DownloadOption[];
   relatedLigands: RelatedLigand;
   supercomponents: string[];
+  loadingState: string;
+  emptyPageText: string;
 }

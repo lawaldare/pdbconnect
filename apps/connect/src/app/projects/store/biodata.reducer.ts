@@ -4,6 +4,7 @@ import { BiodataActions } from './biodata.actions';
 import { LigandSummary } from '../ligands/data-models/description.model';
 import { DescriptionData } from '../ligands/services/aggregated-api.service';
 import { RelatedLigand } from '../ligands/data-models/related-ligands.model';
+import { LoadingState } from '../ligands/enums/loading-state.enum';
 
 export const BIODATA_STATE_KEY = 'biodata';
 
@@ -15,6 +16,8 @@ const initialState: BiodataState = {
   downloadOptions: [],
   relatedLigands: {} as RelatedLigand,
   supercomponents: [],
+  loadingState: LoadingState.SUCCESS,
+  emptyPageText: '',
 };
 
 export const biodataReducer = createReducer(
@@ -46,6 +49,14 @@ export const biodataReducer = createReducer(
   on(BiodataActions.getSupercomponentsFailure, (state, action) => ({
     ...state,
     supercomponents: [],
+  })),
+  on(BiodataActions.setEmptyPageText, (state, action) => ({
+    ...state,
+    emptyPageText: action.text,
+  })),
+  on(BiodataActions.toggleLoader, (state, action) => ({
+    ...state,
+    loadingState: action.status,
   })),
   on(BiodataActions.setDownloadOptions, (state, action) => ({
     ...state,

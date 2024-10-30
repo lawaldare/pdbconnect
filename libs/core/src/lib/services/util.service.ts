@@ -108,9 +108,10 @@ export class UtilService {
   }
 
   public redirectToSearchTerm(value: string): void {
+    const trimmedValue = value.trim();
     const hrefArray = window.location.href.split('/');
     hrefArray.pop();
-    hrefArray.push(value);
+    hrefArray.push(trimmedValue);
     const href = hrefArray.join('/');
     window.open(href, '_self');
   }

@@ -2,8 +2,9 @@
   <div class="container">
     <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" />
     <article>
-      <p>{{ redirectText() }}</p>
-      @if(descriptionLoaded()){
+      @if(redirectText$ | async; as text){
+      <p class="redirect-text">{{ text }}</p>
+      } @if(loaded() === status.SUCCESS){
       <section class="hero">
         <header>
           <h2>{{ ligandId() }}</h2>
@@ -53,6 +54,12 @@
       <section class="ligand-specific-databases">
         <pdbc-ligand-specific-databases />
       </section>
+      } @else if(loaded() === status.LOADING) {
+      <div class="loader">
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px', width: '150px' }"></ngx-skeleton-loader>
+        <ngx-skeleton-loader count="2" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+        <ngx-skeleton-loader count="2" [theme]="{ 'border-radius': '0', height: '450px' }"></ngx-skeleton-loader>
+      </div>
       }
     </article>
   </div>

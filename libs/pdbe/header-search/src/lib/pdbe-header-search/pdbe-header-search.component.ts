@@ -48,7 +48,12 @@ export class PdbeHeaderSearchComponent implements OnInit {
   }
 
   public onSubmit(form: FormGroup): void {
-    const value = form.value.searchTerm.trim();
+    const value = form.value.searchTerm;
     this.utilService.redirectToSearchTerm(value);
+  }
+
+  public openLigand(ligandId: string): void {
+    this.utilService.redirectToSearchTerm(ligandId);
+    this.googleAnalyticsService.logClickEvents('example_click', 'Search Examples Links', 'navigate_to_example', ligandId);
   }
 }

@@ -5,7 +5,7 @@
 
 import { Directive, ElementRef, Renderer2, Input, OnChanges, HostListener, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { GoogleAnalyticsService } from '@pdbc/core';
+import { GoogleAnalyticsService, UtilService } from '@pdbc/core';
 
 @Directive({
   selector: '[libIsPartOf]',
@@ -16,6 +16,7 @@ export class IsPartOfDirective implements OnChanges {
   @Input() limit = 60;
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  public readonly util = inject(UtilService);
   public readonly el = inject(ElementRef);
   public readonly renderer = inject(Renderer2);
   public readonly router = inject(Router);
@@ -58,7 +59,7 @@ export class IsPartOfDirective implements OnChanges {
       this.renderer.listen(a, 'click', (event) => {
         event.preventDefault();
         this.googleAnalyticsService.logClickEvents('click_clc_id', 'CLC ID List', 'click_clc_id', text.trim());
-        this.router.navigate([`/chemicalCompound/show/${text.trim()}`]);
+        this.util.redirectToSearchTerm(text);
       });
     }
   }

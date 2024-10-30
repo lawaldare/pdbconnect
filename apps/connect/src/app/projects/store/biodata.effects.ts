@@ -4,10 +4,11 @@ import { AggregatedApiService } from '../ligands/services/aggregated-api.service
 import { Store } from '@ngrx/store';
 import { BiodataState } from './biodata.model';
 import { BiodataActions } from './biodata.actions';
-import { catchError, map, mergeMap, of, switchMap, take } from 'rxjs';
+import { catchError, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
 import { BiodataSelectors } from './biodata.selectors';
 import { RelatedLigand } from '../ligands/data-models/related-ligands.model';
-import { Substructure } from '../ligands/data-models/structure.model';
+import { LoadingState } from '../ligands/enums/loading-state.enum';
+import { LigandReleasedStatus } from '../ligands/enums/ligand-release.enum';
 
 @Injectable()
 export class BiodataEffects {
@@ -31,16 +32,29 @@ export class BiodataEffects {
   getSummary$ = createEffect(() =>
     this.actions$.pipe(
       ofType(BiodataActions.getSummary),
+      tap(() => this.store.dispatch(BiodataActions.toggleLoader({ status: LoadingState.LOADING }))),
       switchMap(() => this.store.select(BiodataSelectors.ligandId).pipe(take(1))),
       mergeMap((id: string) =>
         this.aggregatedApiService.getLigandSummary(id).pipe(
-          mergeMap((summary) => [
-            BiodataActions.getSummarySuccess({ summary }),
-            BiodataActions.setDescription({
-              description: { ...this.aggregatedApiService.processDescriptionData(summary), ligandId: id },
-            }),
-          ]),
-          catchError(() => of(BiodataActions.getSummaryFailure()))
+          mergeMap((summary) => {
+            this.store.dispatch(BiodataActions.getSummarySuccess({ summary }));
+            this.store.dispatch(
+              BiodataActions.setDescription({
+                description: { ...this.aggregatedApiService.processDescriptionData(summary), ligandId: id },
+              })
+            );
+            if (summary.release_status.toUpperCase() !== LigandReleasedStatus.HOLD) {
+              return of(BiodataActions.toggleLoader({ status: LoadingState.SUCCESS }));
+            } else {
+              return of(BiodataActions.toggleLoader({ status: LoadingState.FAILURE }));
+            }
+          }),
+          catchError(() => {
+            this.store.dispatch(BiodataActions.toggleLoader({ status: LoadingState.FAILURE }));
+            const text = `Error occurred while fetching data for ${id}. Please check the ligand ID and try again.`;
+            this.store.dispatch(BiodataActions.setEmptyPageText({ text }));
+            return of(BiodataActions.getSummaryFailure());
+          })
         )
       )
     )
