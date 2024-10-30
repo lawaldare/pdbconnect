@@ -2,7 +2,7 @@ import { Component, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, Des
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { map, of, switchMap, tap } from 'rxjs';
+import { map } from 'rxjs';
 import { ClickOutsideDirective, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { ImageCarouselComponentFacade } from './image-carousel.facade';

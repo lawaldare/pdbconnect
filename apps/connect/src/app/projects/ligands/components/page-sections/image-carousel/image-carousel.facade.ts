@@ -3,10 +3,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction, Fragment } from '../../../data-models/structure.model';
-import { BiodataState } from '../../../../store/biodata.model';
-import { Store } from '@ngrx/store';
-import { BiodataSelectors } from '../../../../store/biodata.selectors';
-import { take } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +11,6 @@ export class ImageCarouselComponentFacade {
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ligandUtilService = inject(LigandUtilService);
-  private readonly globalStore = inject(Store<BiodataState>);
 
   private ligandId!: string;
   private tempFragments: Fragment[] = [];
@@ -162,13 +157,6 @@ export class ImageCarouselComponentFacade {
     const ligand = renderer.createElement('pdb-ligand-env');
     renderer.appendChild(container, ligand);
     renderer.setProperty(ligand, 'depiction', depiction);
-
-    // if (slide === 0) {
-    //   this.setDepictionProperty(renderer, ligand, slide);
-    // }
-    // if (slide) {
-    //   this.setDepictionProperty(renderer, ligand, slide);
-    // }
 
     renderer.setAttribute(ligand, 'depiction-only', '');
     renderer.setAttribute(ligand, 'zoom-on', 'true');
