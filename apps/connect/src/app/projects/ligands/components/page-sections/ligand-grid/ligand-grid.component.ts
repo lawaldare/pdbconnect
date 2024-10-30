@@ -32,6 +32,7 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
   private readonly util = inject(UtilService);
   private readonly dialog = inject(MatDialog);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  public readonly utilService = inject(UtilService);
 
   renderLigandImg() {
     this.resetRenderer();
@@ -79,5 +80,10 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
       panelClass: 'molstarDialog',
       data: data,
     });
+  }
+
+  public openLigand(ligandId: string): void {
+    this.utilService.redirectToSearchTerm(ligandId);
+    this.googleAnalyticsService.logClickEvents('click_ligand_link', 'Related Ligands', 'click_ligand', ligandId);
   }
 }

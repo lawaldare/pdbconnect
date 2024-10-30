@@ -2,8 +2,6 @@ import { inject, Injectable, signal } from '@angular/core';
 import { Fragment, LigandStructure } from './data-models/structure.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
-import { SimilarLigand } from './data-models/related-ligands.model';
-import { LigandSummary } from './data-models/description.model';
 import { BiodataActions } from '../store/biodata.actions';
 import { LigandReleasedStatus } from './enums/ligand-release.enum';
 import { DescriptionData } from './services/aggregated-api.service';

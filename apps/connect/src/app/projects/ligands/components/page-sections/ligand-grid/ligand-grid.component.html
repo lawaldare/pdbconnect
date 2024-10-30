@@ -11,13 +11,7 @@
     }
   </div>
   <div class="ligand-description">
-    <a
-      [routerLink]="['/chemicalCompound/show', ligand.chem_comp_id]"
-      matTooltipClass="complex-name-tooltip"
-      [matTooltip]="ligand.name"
-      matTooltipPosition="above"
-      (click)="googleAnalyticsService.logClickEvents('click_ligand_link', 'Related Ligands', 'click_ligand', ligand.chem_comp_id)"
-    >
+    <a matTooltipClass="complex-name-tooltip" [matTooltip]="ligand.name" matTooltipPosition="above" (click)="openLigand(ligand.chem_comp_id)">
       {{ ligand.chem_comp_id }}
       <i class="icon icon-link icon-common"></i>
     </a>
