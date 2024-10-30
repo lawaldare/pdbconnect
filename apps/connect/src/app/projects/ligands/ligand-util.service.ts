@@ -108,6 +108,12 @@ export class LigandUtilService {
       return;
     }
 
+    if (description.released === LigandReleasedStatus.OBSOLETE) {
+      const text = `The chemical component you are trying to view (${description.ligandId}) has been obsoleted. Please check back later.`;
+      this.globalStore.dispatch(LigandActions.setEmptyPageText({ text }));
+      return;
+    }
+
     if (description.released === LigandReleasedStatus.HOLD) {
       const text = `The chemical component you are trying to view (${description.ligandId}) has not been released yet. Please check back later.`;
       this.globalStore.dispatch(LigandActions.setEmptyPageText({ text }));

@@ -10,7 +10,7 @@
   </div>
   }
   <div class="info-row">
-    <span class="info-row-title">Source Organism</span>
+    <span class="info-row-title">Source organism</span>
     <div class="info-row-content">
       <em>{{ summaryData().source_organism }}</em>
     </div>
@@ -33,17 +33,17 @@
   </div> -->
   @if(summaryData().symmetry){
   <div class="info-row">
-    <span class="info-row-title">Global Symmetry</span>
+    <span class="info-row-title">Global symmetry</span>
     <div class="info-row-content">
       {{ summaryData().symmetry | symmetry }}
     </div>
   </div>
   }
   <div class="info-row">
-    <span class="info-row-title">Observed experimental methods and counts</span>
+    <span class="info-row-title">Experimental methods count</span>
     <div class="info-row-content" pdbcOEMC [data]="summaryData().observed_experimental_methods_with_counts"></div>
   </div>
-  <div class="info-row">
+  <!-- <div class="info-row">
     <span class="info-row-title">Number of assemblies</span>
     <div class="info-row-content summary-tooltip">
       <span
@@ -81,5 +81,5 @@
       </span>
     </div>
   </div>
-  }
+  } -->
 </div>

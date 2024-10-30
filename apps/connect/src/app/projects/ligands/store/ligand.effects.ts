@@ -51,7 +51,13 @@ export class LigandEffects {
           }),
           catchError(() => {
             this.store.dispatch(LigandActions.toggleLoader({ status: LoadingState.FAILURE }));
-            const text = `Error occurred while fetching data for ${id}. Please check the ligand ID and try again.`;
+            const text = `
+              <h1>Error: 404</h1>
+              <h3>We're sorry - we can't find the page or file you requested</h3>
+              <p>We're sorry - we can't find the page or file you requested</p>
+              <p>It may have been removed, had its name changed, or be temporarily unavailable.</p>
+              <p>You might try searching for it again later</p>
+            `;
             this.store.dispatch(LigandActions.setEmptyPageText({ text }));
             return of(LigandActions.getSummaryFailure());
           })
