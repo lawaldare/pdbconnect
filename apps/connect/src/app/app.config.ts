@@ -7,8 +7,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { BaseHrefService } from './base-href.service';
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
-import { ligandReducer } from './projects/ligands/store/biodata.reducer';
-import { LigandEffects } from './projects/ligands/store/biodata.effects';
+import { ligandReducer } from './projects/ligands/store/ligand.reducer';
+import { LigandEffects } from './projects/ligands/store/ligand.effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 export function initializeApp(baseHrefService: BaseHrefService) {

@@ -7,8 +7,8 @@ import { ClcPrdMainComponent } from '../clc-prd-main/clc-prd-main.component';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { headerLogoMenuConfig, headerSearchConfig } from '../../../ligand.constant';
-import { LigandActions } from '../../../store/biodata.actions';
-import { LigandStoreState } from '../../../store/biodata.model';
+import { LigandActions } from '../../../store/ligand.actions';
+import { LigandStoreState } from '../../../store/ligand.model';
 import { Store } from '@ngrx/store';
 import { NotificationComponent } from '@pdbc/notification';
 

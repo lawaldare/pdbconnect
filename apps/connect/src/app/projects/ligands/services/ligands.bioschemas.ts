@@ -1,8 +1,8 @@
 import { DOCUMENT } from '@angular/common';
 import { EnvironmentInjector, inject, Inject, Injectable, Renderer2, runInInjectionContext, Signal } from '@angular/core';
-import { LigandStoreState } from '../store/biodata.model';
+import { LigandStoreState } from '../store/ligand.model';
 import { Store } from '@ngrx/store';
-import { LigandSelectors } from '../store/biodata.selectors';
+import { LigandSelectors } from '../store/ligand.selectors';
 import { map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 

@@ -19,9 +19,9 @@ import { cofactorTooltip, drugTooltip, navSections, reactantTooltip } from '../.
 import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandUtilService } from '../../../ligand-util.service';
-import { LigandStoreState } from '../../../store/biodata.model';
+import { LigandStoreState } from '../../../store/ligand.model';
 import { Store } from '@ngrx/store';
-import { LigandSelectors } from '../../../store/biodata.selectors';
+import { LigandSelectors } from '../../../store/ligand.selectors';
 import { combineLatest, of } from 'rxjs';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';

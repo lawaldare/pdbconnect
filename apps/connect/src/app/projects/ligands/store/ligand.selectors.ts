@@ -1,6 +1,6 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { LigandStoreState } from './biodata.model';
-import { LIGAND_STORE_STATE_KEY } from './biodata.reducer';
+import { LigandStoreState } from './ligand.model';
+import { LIGAND_STORE_STATE_KEY } from './ligand.reducer';
 
 const LigandStoreState = createFeatureSelector<LigandStoreState>(LIGAND_STORE_STATE_KEY);
 

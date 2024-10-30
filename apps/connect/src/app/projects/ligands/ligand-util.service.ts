@@ -2,10 +2,10 @@ import { inject, Injectable, signal } from '@angular/core';
 import { Fragment, LigandStructure } from './data-models/structure.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
-import { LigandActions } from './store/biodata.actions';
+import { LigandActions } from './store/ligand.actions';
 import { LigandReleasedStatus } from './enums/ligand-release.enum';
 import { DescriptionData } from './services/aggregated-api.service';
-import { LigandStoreState } from './store/biodata.model';
+import { LigandStoreState } from './store/ligand.model';
 import { Store } from '@ngrx/store';
 import { Router } from '@angular/router';
 

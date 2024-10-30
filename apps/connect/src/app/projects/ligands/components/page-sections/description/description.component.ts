@@ -14,9 +14,9 @@ import { IsPartOfDirective } from '../../../directives/is-part-of.directive';
 import { ComponentType } from '@angular/cdk/overlay';
 import { LigandSmilesDirective } from '../../../directives/ligandsmiles.directive';
 import { combineLatest, map } from 'rxjs';
-import { LigandStoreState } from '../../../store/biodata.model';
+import { LigandStoreState } from '../../../store/ligand.model';
 import { Store } from '@ngrx/store';
-import { LigandSelectors } from '../../../store/biodata.selectors';
+import { LigandSelectors } from '../../../store/ligand.selectors';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({

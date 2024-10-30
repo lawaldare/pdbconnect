@@ -4,9 +4,9 @@ import { LigandProperty } from '../../../data-models/description.model';
 import { NameValueComponent } from '../../section-components/name-value/name-value.component';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { GoogleAnalyticsService } from '@pdbc/core';
-import { LigandStoreState } from '../../../store/biodata.model';
+import { LigandStoreState } from '../../../store/ligand.model';
 import { Store } from '@ngrx/store';
-import { LigandSelectors } from '../../../store/biodata.selectors';
+import { LigandSelectors } from '../../../store/ligand.selectors';
 import { map } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
