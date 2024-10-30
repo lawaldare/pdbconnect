@@ -13,11 +13,11 @@ export const navSections = [
 
 export const headerSearchConfig = {
   examples: [
-    { label: 'STI', url: '/ligands/STI' },
-    { label: 'GLC', url: '/ligands/GLC' },
-    { label: 'XRS', url: '/ligands/XRS' },
-    { label: 'NAG', url: '/ligands/NAG' },
-    { label: 'HEM', url: '/ligands/HEM' },
+    { label: 'STI', url: '/chemicalCompound/show/STI' },
+    { label: 'GLC', url: '/chemicalCompound/show/GLC' },
+    { label: 'XRS', url: '/chemicalCompound/show/XRS' },
+    { label: 'NAG', url: '/chemicalCompound/show/NAG' },
+    { label: 'HEM', url: '/chemicalCompound/show/HEM' },
   ],
   backgroundColor: 'rgba(8, 95, 92, 0.79)',
   type: ThemeType.PDBEKB,

@@ -64,7 +64,7 @@ build:
     paths:
       - dist/
       - dynamic-gitlab-ci.yml
-    expire_in: 1 day
+    expire_in: 1 week
   tags:
     - pdbe-docker
   except:
@@ -80,7 +80,7 @@ storybook_build:
   artifacts:
     paths:
       - dist/
-    expire_in: 1 day
+    expire_in: 1 week
   tags:
     - pdbe-docker
   except:

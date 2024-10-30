@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, Renderer2 } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, Renderer2, signal } from '@angular/core';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
@@ -8,15 +8,21 @@ import { DescriptionComponent } from '../../page-sections/description/descriptio
 import { ImageCarouselComponent } from '../../page-sections/image-carousel/image-carousel.component';
 import { PropertiesComponent } from '../../page-sections/properties/properties.component';
 import { StructuresComponent } from '../../page-sections/structures/structures.component';
-import { headerLogoMenuConfig, headerSearchConfig, navSections } from '../../../ligand.constant';
-import { ActivatedRoute } from '@angular/router';
-import { of, switchMap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { navSections } from '../../../ligand.constant';
+import { Router } from '@angular/router';
+import { combineLatest, EMPTY, mergeMap } from 'rxjs';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { MainComponentStore } from '../main/main.store';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { GoogleAnalyticsService } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
+import { LigandSelectors } from '../../../store/ligand.selectors';
+import { Store } from '@ngrx/store';
+import { LigandStoreState } from '../../../store/ligand.model';
+import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
+import { MatDialog } from '@angular/material/dialog';
+import { LoadingState } from '../../../enums/loading-state.enum';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
   selector: 'pdbc-clc-prd-main',
@@ -32,58 +38,69 @@ import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
     PropertiesComponent,
     StructuresComponent,
     DropdownMenuComponent,
+    NgxSkeletonLoaderModule,
   ],
   templateUrl: './clc-prd-main.component.html',
   styleUrls: ['../main/main.component.scss', './clc-prd-main.component.sass'],
 })
 export class ClcPrdMainComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly store = inject(MainComponentStore);
   public readonly ligandUtilService = inject(LigandUtilService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   private readonly bioschemasService = inject(LigandsBioschemasService);
   private readonly renderer = inject(Renderer2);
+  private readonly dialog = inject(MatDialog);
 
-  public readonly headerLogoMenuConfig = headerLogoMenuConfig;
-  public readonly headerSearchConfig = headerSearchConfig;
   public readonly navSections = navSections;
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
-  public description = this.store.description;
-  public downloadOptions = this.store.downloadOptions;
-  public supercomponents = this.store.supercomponents;
-  public descriptionLoaded = computed(() => (Object.keys(this.description()).length ? true : false));
+  public description = toSignal(this.globalStore.select(LigandSelectors.description));
+  public downloadOptions = toSignal(this.globalStore.select(LigandSelectors.downloadOptions));
+  public supercomponents = toSignal(this.globalStore.select(LigandSelectors.supercomponents));
+  public descriptionLoaded = computed(() => (Object.keys(this.description() ?? {}).length ? true : false));
 
-  public ligandId!: string;
+  public redirectText$ = this.globalStore.select(LigandSelectors.emptyPageText);
+  public loaded = toSignal(this.globalStore.select(LigandSelectors.loadingState));
 
-  private readonly schemas = computed(() => ({
-    similarLigands: this.ligandUtilService.currentSimilarLigands(),
-    structures: this.ligandUtilService.currentStuctures(),
-    summary: this.ligandUtilService.currentSummary(),
-  }));
+  public isThereStructures = signal<boolean>(true);
+
+  public ligandId = signal<string>('');
+
+  public status = LoadingState;
 
   ngOnInit(): void {
-    this.route.params
+    combineLatest([
+      this.globalStore.select(LigandSelectors.ligandId),
+      this.globalStore.select(LigandSelectors.structures),
+      this.globalStore.select(LigandSelectors.description),
+    ])
       .pipe(
-        switchMap((params) => {
-          this.ligandId = params['ligandId'].toUpperCase();
-          this.store.init(this.ligandId);
-          setTimeout(() => {
-            this.generateSchemaData();
-          }, 1000);
-          return of({});
+        mergeMap(([ligandId, structures, description]) => {
+          this.ligandUtilService.redirectLigandPages(description);
+          this.ligandId.set(ligandId);
+          this.isThereStructures.update(() => structures.length > 0);
+          return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe();
+      .subscribe(() => this.generateSchemaData());
   }
 
   private generateSchemaData(): void {
-    this.bioschemasService.buildBioschemasJSON(this.renderer, this.schemas, this.ligandId);
+    this.bioschemasService.buildBioschemasJSON(this.renderer);
   }
 
   public openMolstarDialog(): void {
-    this.store.openMolstarDialog();
+    this.googleAnalyticsService.logClickEvents('view_3d_button_click', 'Interaction', 'view_3d', 'View 3D');
+    this.dialog.open(MolstarDialogComponent, {
+      disableClose: false,
+      panelClass: 'molstarDialog',
+      data: {
+        moleculeId: this.ligandId(),
+        fragments: this.ligandUtilService.currentFragments,
+      },
+    });
   }
 }

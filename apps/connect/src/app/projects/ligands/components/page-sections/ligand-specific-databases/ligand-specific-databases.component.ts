@@ -1,8 +1,12 @@
-import { Component, ElementRef, inject, input, OnChanges, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CrossLink } from '../../../services/aggregated-api.service';
 import { LigandSpecificDatabasesComponentFacade } from './ligand-specific-databases.facade';
 import { GoogleAnalyticsService } from '@pdbc/core';
+import { LigandStoreState } from '../../../store/ligand.model';
+import { Store } from '@ngrx/store';
+import { LigandSelectors } from '../../../store/ligand.selectors';
+import { map } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 export interface MappedCrossLink {
   resource: string;
@@ -18,12 +22,15 @@ export interface MappedCrossLink {
   templateUrl: './ligand-specific-databases.component.html',
   styleUrl: './ligand-specific-databases.component.scss',
 })
-export class LigandSpecificDatabasesComponent implements OnChanges {
-  public crossLinks = input.required<CrossLink[]>();
+export class LigandSpecificDatabasesComponent implements OnInit {
   public readonly facade = inject(LigandSpecificDatabasesComponentFacade);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   public mappedCrossLinks = this.facade.crosslinks;
+
+  private readonly globalStore = inject(Store<LigandStoreState>);
+
+  private readonly destroyRef = inject(DestroyRef);
 
   @ViewChild('crosslink', { read: ElementRef }) crosslink!: ElementRef;
 
@@ -38,7 +45,15 @@ export class LigandSpecificDatabasesComponent implements OnChanges {
     }
   }
 
-  ngOnChanges(): void {
-    this.facade.init(this.crossLinks());
+  ngOnInit(): void {
+    this.globalStore
+      .select(LigandSelectors.description)
+      .pipe(
+        map((description) => {
+          this.facade.init(description.crossLinks);
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
   }
 }

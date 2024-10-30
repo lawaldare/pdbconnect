@@ -1,5 +1,5 @@
 @import url('libs/core/src/lib/styles/pdb_connect.scss');
 
 main {
-  height: calc(100vh - 759px);
+  background: #ffb81b;
 }

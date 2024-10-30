@@ -4,6 +4,7 @@ main {
   .container {
     display: flex;
     gap: 28px;
+    padding-top: 10px;
 
     @media screen and (width <= 768px) {
       gap: 0;
@@ -40,6 +41,15 @@ main {
       @media screen and (width <= 768px) {
         width: 100%;
       }
+    }
+
+    .loader {
+      margin-top: 20px;
+    }
+
+    .redirect-text {
+      background: #ffb81b;
+      padding: 10px;
     }
 
     .hero {
@@ -127,4 +137,17 @@ main {
       }
     }
   }
+}
+
+.image-container {
+  width: 260px;
+  height: 380px;
+  border: 1px solid var(--Neutral-200, #e4e4e4);
+  margin-bottom: 20px;
+}
+
+.ligandEnv-content {
+  height: 380px;
+  display: flex;
+  justify-content: center;
 }

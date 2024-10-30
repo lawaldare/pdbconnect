@@ -3,16 +3,18 @@
 import { Component, OnInit, ViewChild, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold } from '../../../data-models/related-ligands.model';
+import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold, StereoIsomer } from '../../../data-models/related-ligands.model';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { forkJoin, switchMap, mergeMap, map, combineLatest, startWith } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { forkJoin, mergeMap, map, combineLatest, startWith, filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { GoogleAnalyticsService } from '@pdbc/core';
+import { LigandStoreState } from '../../../store/ligand.model';
+import { Store } from '@ngrx/store';
+import { LigandSelectors } from '../../../store/ligand.selectors';
 
 @Component({
   selector: 'pdbc-related-ligands',
@@ -22,15 +24,15 @@ import { GoogleAnalyticsService } from '@pdbc/core';
   styleUrl: './related-ligands.component.scss',
 })
 export class RelatedLigandsComponent implements OnInit {
-  public stereoisomers: { name: string; chem_comp_id: string }[] = [];
+  public stereoisomers = signal<StereoIsomer[]>([]);
   private stereoisomersGrid: any[] = [];
-  public similarLigands: SimilarLigand[] = [];
+  public similarLigands = signal<SimilarLigand[]>([]);
   private similarLigandsGrid: LigandGrid[] = [];
   private unfilteredSimilarLigandsGrid: LigandGrid[] = [];
   private filtSimilarLigandsGrid: LigandGrid[] = [];
   public similarLigandsPage: LigandGrid[] = [];
   public stereoisomersPage: any[] = [];
-  public sameScaffolds: SameScaffold[] = [];
+  public sameScaffolds = signal<SameScaffold[]>([]);
   private sameScaffoldGrid: LigandGrid[] = [];
   private unfilteredSameScaffoldGrid: LigandGrid[] = [];
   private unfilteredStereoisomers: { name: string; chem_comp_id: string; bound_entries: any }[] = [];
@@ -52,10 +54,10 @@ export class RelatedLigandsComponent implements OnInit {
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   private readonly aggregatedApiService = inject(AggregatedApiService);
-  private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ligandUtilService = inject(LigandUtilService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   public sameScaffoldTerm = new FormControl('');
   public sameLigandsTerm = new FormControl('');
@@ -104,31 +106,36 @@ export class RelatedLigandsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.route.params
+    this.globalStore
+      .select(LigandSelectors.relatedLigands)
       .pipe(
-        switchMap((params) => {
-          const ligandId = params['ligandId'].toUpperCase();
-          return this.aggregatedApiService.getRelatedLigands(ligandId);
-        }),
+        filter(Boolean),
         mergeMap((relatedLigand: RelatedLigand) => {
           this.relatedLigand = relatedLigand;
           this.sameScaffoldPageSizeOptions.set([]);
           this.similarLigandPageSizeOptions.set([]);
           this.stereoisomersPageSizeOptions.set([]);
 
-          this.similarLigands = relatedLigand['similar_ligands'];
-          this.sameScaffolds = relatedLigand['same_scaffold'];
-          this.stereoisomers = relatedLigand['stereoisomers'];
-
-          this.ligandUtilService.setSimilarLigands(this.similarLigands);
+          this.similarLigands.update(() => relatedLigand['similar_ligands'] || []);
+          this.sameScaffolds.update(() => relatedLigand['same_scaffold'] || []);
+          this.stereoisomers.update(() => relatedLigand['stereoisomers'] || []);
 
           const validIdsArray = [];
 
-          const similarLigandsIds = this.similarLigands.map((ligand) => ligand.chem_comp_id).join(',') ?? '';
+          const similarLigandsIds =
+            this.similarLigands()
+              .map((ligand) => ligand.chem_comp_id)
+              .join(',') ?? '';
 
-          const sameScaffoldIds = this.sameScaffolds.map((ligand) => ligand.chem_comp_id).join(',') ?? '';
+          const sameScaffoldIds =
+            this.sameScaffolds()
+              .map((ligand) => ligand.chem_comp_id)
+              .join(',') ?? '';
 
-          const stereoisomersIds = this.stereoisomers.map((ligand) => ligand.chem_comp_id).join(',') ?? '';
+          const stereoisomersIds =
+            this.stereoisomers()
+              .map((ligand) => ligand.chem_comp_id)
+              .join(',') ?? '';
 
           if (similarLigandsIds) {
             validIdsArray.push(this.aggregatedApiService.fetchBoundEntries(similarLigandsIds));
@@ -145,7 +152,7 @@ export class RelatedLigandsComponent implements OnInit {
           return forkJoin(validIdsArray);
         }),
         map(([similarLigandBoundEntriesArray, sameScaffoldBoundEntriesArray, stereoisomersBoundEntriesArray]) => {
-          this.unfilteredSimilarLigandsGrid = this.similarLigands.map((similarLigand) => ({
+          this.unfilteredSimilarLigandsGrid = this.similarLigands().map((similarLigand) => ({
             chem_comp_id: similarLigand.chem_comp_id,
             name: similarLigand.name,
             similarity_score: similarLigand.similarity_score,
@@ -155,7 +162,7 @@ export class RelatedLigandsComponent implements OnInit {
           this.similarLigandsGrid = this.unfilteredSimilarLigandsGrid;
           this.setUpPagination('similarligand');
 
-          this.unfilteredSameScaffoldGrid = this.sameScaffolds.map((sameScaffolds) => ({
+          this.unfilteredSameScaffoldGrid = this.sameScaffolds().map((sameScaffolds) => ({
             chem_comp_id: sameScaffolds.chem_comp_id,
             name: sameScaffolds.name,
             similarity_score: sameScaffolds.similarity_score,
@@ -165,13 +172,12 @@ export class RelatedLigandsComponent implements OnInit {
           this.sameScaffoldGrid = this.unfilteredSameScaffoldGrid;
           this.setUpPagination('samescaffold');
 
-          this.unfilteredStereoisomers = this.stereoisomers.map((stereoisomer) => ({
+          this.unfilteredStereoisomers = this.stereoisomers().map((stereoisomer) => ({
             chem_comp_id: stereoisomer.chem_comp_id,
             name: stereoisomer.name,
             bound_entries: stereoisomersBoundEntriesArray?.[stereoisomer.chem_comp_id],
           }));
           this.stereoisomersGrid = this.unfilteredStereoisomers;
-
           this.sameScaffoldPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
           this.similarLigandPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
           this.stereoisomersPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);

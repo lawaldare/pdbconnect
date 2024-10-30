@@ -2,11 +2,14 @@ import { Component, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, Des
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { of, switchMap } from 'rxjs';
+import { map } from 'rxjs';
 import { ClickOutsideDirective, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { ImageCarouselComponentFacade } from './image-carousel.facade';
 import { LigandUtilService } from '../../../ligand-util.service';
+import { LigandStoreState } from '../../../store/ligand.model';
+import { Store } from '@ngrx/store';
+import { LigandSelectors } from '../../../store/ligand.selectors';
 
 @Component({
   selector: 'pdbc-image-carousel',
@@ -18,7 +21,6 @@ import { LigandUtilService } from '../../../ligand-util.service';
 export class ImageCarouselComponent implements AfterViewInit {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
   public readonly arrowSrc = '/assets/images/left_arrow.svg';
-  public ligandId!: string;
 
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
@@ -30,6 +32,7 @@ export class ImageCarouselComponent implements AfterViewInit {
   private readonly ligandUtilService = inject(LigandUtilService);
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   public structureDescription = this.facade.structureDescription;
   public showTooltips = signal(false);
@@ -38,13 +41,12 @@ export class ImageCarouselComponent implements AfterViewInit {
   public currentSlide = computed(() => this.facade.currentSlide() + 1);
 
   ngAfterViewInit() {
-    this.route.params
+    this.globalStore
+      .select(LigandSelectors.ligandId)
       .pipe(
-        switchMap((params) => {
+        map((ligandId) => {
           this.facade.resetRenderer(this.renderer, this.imageContainer);
-          this.ligandId = params['ligandId'].toUpperCase();
-          this.facade.init(this.renderer, this.ligandId, this.imageContainer);
-          return of({});
+          this.facade.init(this.renderer, ligandId, this.imageContainer);
         }),
         takeUntilDestroyed(this.destroyRef)
       )

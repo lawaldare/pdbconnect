@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DescriptionData } from '../../../services/aggregated-api.service';
 import { GoogleAnalyticsService, MaterialModule, TruncateTextDirective, UtilService } from '@pdbc/core';
@@ -13,6 +13,11 @@ import { LigandUtilService } from '../../../ligand-util.service';
 import { IsPartOfDirective } from '../../../directives/is-part-of.directive';
 import { ComponentType } from '@angular/cdk/overlay';
 import { LigandSmilesDirective } from '../../../directives/ligandsmiles.directive';
+import { combineLatest, map } from 'rxjs';
+import { LigandStoreState } from '../../../store/ligand.model';
+import { Store } from '@ngrx/store';
+import { LigandSelectors } from '../../../store/ligand.selectors';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'pdbc-description',
@@ -32,11 +37,12 @@ import { LigandSmilesDirective } from '../../../directives/ligandsmiles.directiv
   styleUrls: ['./description.component.scss'],
   providers: [LigandSmilesPipe],
 })
-export class DescriptionComponent {
-  public description = input.required<DescriptionData>();
-  public ligandId = input.required<string>();
-  public supercomponents = input.required<string[]>();
+export class DescriptionComponent implements OnInit {
+  public description = signal<DescriptionData>({} as DescriptionData);
+  public ligandId = signal<string>('');
+  public supercomponents = signal<string[]>([]);
   public isMainLigandId = signal(true);
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly dialog = inject(MatDialog);
   private readonly utilService = inject(UtilService);
@@ -44,18 +50,28 @@ export class DescriptionComponent {
   private readonly ligandUtilService = inject(LigandUtilService);
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
-  constructor() {
-    effect(
-      () => {
-        if (this.ligandId().startsWith('CLC') || this.ligandId().startsWith('PRD')) {
-          this.isMainLigandId.set(false);
-        } else {
-          this.isMainLigandId.set(true);
-        }
-      },
-      { allowSignalWrites: true }
-    );
+  ngOnInit(): void {
+    combineLatest([
+      this.globalStore.select(LigandSelectors.ligandId),
+      this.globalStore.select(LigandSelectors.description),
+      this.globalStore.select(LigandSelectors.supercomponents),
+    ])
+      .pipe(
+        map(([ligandId, description, supercomponents]) => {
+          if (ligandId.startsWith('CLC') || ligandId.startsWith('PRD')) {
+            this.isMainLigandId.set(false);
+          } else {
+            this.isMainLigandId.set(true);
+          }
+          this.description.update(() => description);
+          this.supercomponents.update(() => supercomponents);
+          this.ligandId.update(() => ligandId);
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
   }
 
   public downloadIds(): void {

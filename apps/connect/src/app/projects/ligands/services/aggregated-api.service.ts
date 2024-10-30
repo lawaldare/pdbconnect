@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PhysChemProperties, FunctionalAnnotation, LigandSummary } from '../data-models/description.model';
 import { PDBLigandFile } from '../data-models/download.model';
-import { Depiction, LigandStructure, LigandStructuresAPIResponse, PDBSubstructures } from '../data-models/structure.model';
+import { Depiction, LigandStructure, LigandStructuresAPIResponse, Substructure } from '../data-models/structure.model';
 import { PDBRelatedLigands, RelatedLigand } from '../data-models/related-ligands.model';
 import { PDBIntxData, IntxDataUrl } from '../data-models/interaction.model';
 import { shareReplay, map } from 'rxjs';
@@ -20,8 +20,9 @@ export interface DescriptionData {
   annotations: FunctionalAnnotation[];
   crossLinks: CrossLink[];
   subcomponent_occurrences: Record<string, number>;
-  released: boolean;
+  released: string;
   superseded_by: string | undefined;
+  ligandId?: string;
 }
 
 export interface downloadData {
@@ -79,9 +80,9 @@ export class AggregatedApiService {
     return this.http.get<PDBLigandFile>(downloadUrl);
   }
 
-  fetchSubstructures(ligandId: string): Observable<PDBSubstructures> {
+  fetchSubstructures(ligandId: string): Observable<Substructure> {
     const substructureUrl = `${this.AggregatedApiUrl}pdb/compound/substructures/${ligandId}`;
-    return this.http.get<PDBSubstructures>(substructureUrl);
+    return this.http.get<Substructure>(substructureUrl).pipe(map((data: any) => data[ligandId]));
   }
 
   fetchSupercomponents(ligandId: string): Observable<string[]> {
@@ -155,7 +156,7 @@ export class AggregatedApiService {
       annotations: ligandAnnotations,
       crossLinks: ligandCrossLinks,
       subcomponent_occurrences: ligandSummary.subcomponent_occurrences,
-      released: ligandSummary.released,
+      released: ligandSummary.release_status,
       superseded_by: ligandSummary.superseded_by,
     };
   }

@@ -26,27 +26,31 @@ export class ImageCarouselComponentFacade {
 
   public init(renderer: Renderer2, ligandId: string, imageContainer: ElementRef) {
     this.ligandId = ligandId;
+    this.ligandId = ligandId;
     this.aggregatedApiService
       .fetchSubstructures(ligandId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(
         (substructures) => {
-          const fragments = substructures[ligandId].fragments;
+          const fragments = substructures.fragments;
           this.getSubstructureNamesAndAtoms(fragments);
 
-          const scaffolds = substructures[ligandId].scaffolds;
+          const scaffolds = substructures.scaffolds;
           this.getSubstructureNamesAndAtoms(scaffolds);
 
           if (this.substructureNames().length > 0) {
-            this.slides.update((slides) => [...slides, 0, 1]);
-            this.renderLigand(renderer, ligandId, imageContainer);
+            this.updateSlidesAndRender(renderer, ligandId, imageContainer);
           }
         },
         (error) => {
-          this.slides.update((slides) => [...slides, 0, 1]);
-          this.renderLigand(renderer, ligandId, imageContainer);
+          this.updateSlidesAndRender(renderer, ligandId, imageContainer);
         }
       );
+  }
+
+  private updateSlidesAndRender(renderer: Renderer2, ligandId: string, imageContainer: ElementRef) {
+    this.slides.update((slides) => [...slides, 0, 1]);
+    this.renderLigand(renderer, ligandId, imageContainer);
   }
 
   private getSubstructureNamesAndAtoms(data: Fragment[]): void {
@@ -153,13 +157,6 @@ export class ImageCarouselComponentFacade {
     const ligand = renderer.createElement('pdb-ligand-env');
     renderer.appendChild(container, ligand);
     renderer.setProperty(ligand, 'depiction', depiction);
-
-    // if (slide === 0) {
-    //   this.setDepictionProperty(renderer, ligand, slide);
-    // }
-    // if (slide) {
-    //   this.setDepictionProperty(renderer, ligand, slide);
-    // }
 
     renderer.setAttribute(ligand, 'depiction-only', '');
     renderer.setAttribute(ligand, 'zoom-on', 'true');

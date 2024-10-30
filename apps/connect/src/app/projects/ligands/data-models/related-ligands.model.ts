@@ -23,6 +23,7 @@ export interface LigandGrid {
 export interface StereoIsomer {
   chem_comp_id: string;
   name: string;
+  bound_entries: string[];
 }
 
 export interface RelatedLigand {

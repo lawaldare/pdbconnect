@@ -1,16 +1,15 @@
-<pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig" />
-<pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
-
 <main>
   <div class="container">
     <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" />
     <article>
-      @if(descriptionLoaded()){
+      @if(redirectText$ | async; as text){
+      <p class="redirect-text">{{ text }}</p>
+      } @if(loaded() === status.SUCCESS){
       <section class="hero">
         <header>
-          <h2>{{ ligandId }}</h2>
+          <h2>{{ ligandId() }}</h2>
           <div class="annotations">
-            @for(annotation of description().annotations; track annotation.name){ @if(annotation.name === 'cofactor-like'){
+            @for(annotation of description()?.annotations; track annotation.name){ @if(annotation.name === 'cofactor-like'){
             <a class="cofactor-like" [href]="annotation.url" target="_blank">Cofactor-like</a>
             } @if(annotation.name === 'drug-like'){
             <a class="drug-like" [href]="annotation.url" target="_blank">Drug-like</a>
@@ -19,7 +18,7 @@
             } }
           </div>
         </header>
-        <h4>{{ description().name }}</h4>
+        <h4>{{ description()?.name }}</h4>
         <div class="action-buttons">
           <button class="vf-button vf-button--primary vf-button--sm" (click)="openMolstarDialog()">View 3D</button>
           <lib-dropdown-menu
@@ -30,17 +29,23 @@
         </div>
       </section>
       <section class="description">
-        <pdbc-description [description]="description()" [ligandId]="ligandId" [supercomponents]="supercomponents()" />
+        <pdbc-description />
         <pdbc-image-carousel #imageCarouselRef />
       </section>
-      @if(description().properties){
+      @if(description()?.properties){
       <section class="property">
-        <pdbc-properties [properties]="description().properties" />
+        <pdbc-properties />
       </section>
-      }
+      } @if(isThereStructures()){
       <section class="structure">
         <pdbc-structures />
       </section>
+      } } @else if(loaded() === status.LOADING) {
+      <div class="loader">
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px', width: '150px' }"></ngx-skeleton-loader>
+        <ngx-skeleton-loader count="2" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+        <ngx-skeleton-loader count="2" [theme]="{ 'border-radius': '0', height: '450px' }"></ngx-skeleton-loader>
+      </div>
       }
     </article>
   </div>

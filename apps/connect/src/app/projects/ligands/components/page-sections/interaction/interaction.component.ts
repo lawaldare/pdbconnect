@@ -10,6 +10,9 @@ import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { InteractionsHeatmapComponent } from '../../../components/interactions-heatmap/interactions-heatmap.component';
+import { LigandStoreState } from '../../../store/ligand.model';
+import { Store } from '@ngrx/store';
+import { LigandSelectors } from '../../../store/ligand.selectors';
 
 @Component({
   selector: 'pdbc-interaction',
@@ -35,6 +38,7 @@ export class InteractionComponent implements AfterViewInit {
   private readonly ligandUtilService = inject(LigandUtilService);
   private readonly _snackBar = inject(MatSnackBar);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   public interaction!: PDBIntxData; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -45,10 +49,11 @@ export class InteractionComponent implements AfterViewInit {
   public showAtomicNames = signal(false);
 
   ngAfterViewInit() {
-    this.route.params
+    this.globalStore
+      .select(LigandSelectors.ligandId)
       .pipe(
-        switchMap((params) => {
-          this.ligandId.set(params['ligandId'].toUpperCase());
+        switchMap((id) => {
+          this.ligandId.set(id);
           this.showLigandHeatmap.set(true);
           return this.aggregatedApiService.fetchDepiction(this.ligandId());
         }),

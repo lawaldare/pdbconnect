@@ -3,7 +3,7 @@
   <div class="image-container" #imageContainer></div>
   <div class="ligand-description">
     <a
-      [routerLink]="['/ligands', ligand().ligandId]"
+      [routerLink]="['/chemicalCompound/show', ligand().ligandId]"
       matTooltipClass="complex-name-tooltip"
       [matTooltip]="ligand().name"
       matTooltipPosition="above"

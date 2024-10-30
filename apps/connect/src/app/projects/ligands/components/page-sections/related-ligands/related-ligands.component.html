@@ -1,16 +1,15 @@
+@if(sameScaffolds().length || similarLigands().length){
 <div id="related-ligand-section">
   <header>
-    @if(sameScaffolds.length || similarLigands.length || stereoisomers.length){
     <h3 class="title">Related Ligands</h3>
-    }
     <button class="vf-button vf-button--link" (click)="downloadJSON()">
       Download related ligands
       <i class="icon icon-common icon-download"></i>
     </button>
   </header>
-  @if(sameScaffolds.length){
+  @if(sameScaffolds().length){
   <section id="scaffold-section">
-    <h4>Same scaffold - {{ sameScaffolds.length }}</h4>
+    <h4>Same scaffold - {{ sameScaffolds().length }}</h4>
     <div class="search-box">
       <input type="search" [formControl]="sameScaffoldTerm" placeholder="Search by name or PDB ID" />
       @if(!sameScaffoldTerm.value){
@@ -35,9 +34,9 @@
     >
     </mat-paginator>
   </section>
-  } @if(similarLigands.length){
+  } @if(similarLigands().length){
   <section id="similar-ligand-section">
-    <h4>Similar ligands - {{ similarLigands.length }}</h4>
+    <h4>Similar ligands - {{ similarLigands().length }}</h4>
     <div class="filter-box">
       <div class="search-box">
         <input type="search" [formControl]="sameLigandsTerm" placeholder="Search by name or PDB ID" />
@@ -68,9 +67,9 @@
     >
     </mat-paginator>
   </section>
-  } @if(stereoisomers.length){
+  } @if(stereoisomers().length){
   <section id="similar-ligand-section">
-    <h4>Stereoisomers - {{ stereoisomers.length }}</h4>
+    <h4>Stereoisomers - {{ stereoisomers().length }}</h4>
     <div class="filter-box">
       <div class="search-box">
         <input type="search" [formControl]="stereoisomerTerm" placeholder="Search by name or PDB ID" />
@@ -99,3 +98,5 @@
   </section>
   }
 </div>
+
+}

@@ -2,8 +2,6 @@ import { Component, inject, DestroyRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Chain, LigandStructure } from '../../../data-models/structure.model';
-import { AggregatedApiService } from '../../../services/aggregated-api.service';
-import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AG_Grid_Theme_Class,
@@ -14,7 +12,7 @@ import {
   GoogleAnalyticsService,
   MaterialModule,
 } from '@pdbc/core';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, map, take, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
 import { environment } from '../../../../../../environments/environment';
@@ -26,7 +24,10 @@ import { TotalStructureRendererComponent } from '../../cell renderers/total-stru
 import { LigandAnnotationRendererComponent } from '../../cell renderers/ligand-annotation.component';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { SpeciesRendererComponent } from '../../cell renderers/species.component';
-import { of } from 'rxjs';
+import { combineLatest, of } from 'rxjs';
+import { LigandStoreState } from '../../../store/ligand.model';
+import { Store } from '@ngrx/store';
+import { LigandSelectors } from '../../../store/ligand.selectors';
 
 @Component({
   selector: 'pdbc-structures',
@@ -37,8 +38,6 @@ import { of } from 'rxjs';
   providers: [LigandInteractingChainsNumberPipe],
 })
 export class StructuresComponent {
-  private readonly aggregatedApiService = inject(AggregatedApiService);
-  private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialog = inject(MatDialog);
   private readonly chainPipe = inject(LigandInteractingChainsNumberPipe);
@@ -48,6 +47,7 @@ export class StructuresComponent {
   private readonly ligandUtilService = inject(LigandUtilService);
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   public dataStatistics = signal<string>('');
   public filter = new FormControl('proteins');
@@ -103,12 +103,13 @@ export class StructuresComponent {
       width: 150,
     },
     {
-      headerName: 'Species',
-      field: 'species',
+      headerName: 'Organism',
+      field: 'organism',
+      cellRenderer: SpeciesRendererComponent,
       comparator: (a, b): number => {
         return a.scientific_name?.toLocaleLowerCase().localeCompare(b.scientific_name?.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
       },
-      cellRenderer: SpeciesRendererComponent,
+      // valueGetter: (params) => params.data.organism?.scientific_name ?? 'Unspecified',
       filter: 'agTextColumnFilter',
       minWidth: 160,
     },
@@ -133,46 +134,37 @@ export class StructuresComponent {
   public proteins = signal<LigandStructure[]>([]);
   public structures = signal<LigandStructure[]>([]);
 
-  public paginationPageSizeSelector = signal<number[]>([10, 20, 50]);
+  public paginationPageSizeSelector = signal<number[]>([10, 20, 50, 100]);
   private gridApi!: GridApi;
 
   onGridReady(event: GridReadyEvent<any>) {
     // this.rowData = this.assemblies();
     // event.api.autoSizeAllColumns();
     this.gridApi = event.api;
-    this.route.params
+    combineLatest([this.globalStore.select(LigandSelectors.ligandId), this.globalStore.select(LigandSelectors.structures)])
       .pipe(
-        switchMap((params: { [x: string]: string }) => {
-          this.resetColumns();
-          this.setLoading(true);
-          const ligandId = params['ligandId'].toUpperCase();
+        tap(([ligandId, structures]) => {
           this.ligandId.set(ligandId);
-          return this.aggregatedApiService.getLigandStructures(ligandId).pipe(catchError(() => of([])));
+        }),
+        map(([, structures]) => {
+          this.generateStructures(structures);
+          this.proteins.update(() => [...structures]);
+          this.rowData.update(() => [...this.proteins()]);
+          this.fetchDataStatistics(structures);
+        }),
+        catchError((error) => {
+          console.error('Error fetching ligand structures:', error);
+          this.rowData.update(() => []);
+          return of([]);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(
-        (data: LigandStructure[]) => {
-          this.ligandUtilService.setStructures(data);
-          this.generateStructures(data);
-          console.log('Structures:', data);
-          this.proteins.update(() => [...data]);
-          this.rowData.update(() => [...this.proteins()]);
-          this.fetchDataStatistics(data);
-          this.paginationPageSizeSelector.update((options) => [...new Set([...options, data.length])]);
-          this.setLoading(false);
-        },
-        (error) => {
-          console.error('Error fetching ligand structures:', error);
-          this.setLoading(false);
-          this.rowData.update(() => []);
-        }
-      );
+      .subscribe();
   }
 
-  private setLoading(value: boolean) {
-    this.gridApi.setGridOption('loading', value);
-  }
+  // private setLoading(value: boolean) {
+  //   this.gridApi.setGridOption('loading', value);
+  // }
 
   onChange(event: MatRadioChange) {
     const filterSelected = event.value;
@@ -185,7 +177,6 @@ export class StructuresComponent {
       this.gridApi.setColumnsVisible(['interacting_chains'], false);
       this.rowData.update(() => [...this.structures()]);
     }
-    this.paginationPageSizeSelector.update((options) => [...new Set([...options, this.rowData().length])]);
   }
 
   public resetColumns() {
@@ -198,6 +189,8 @@ export class StructuresComponent {
       structure.interacting_chains.forEach((chain) => {
         acc.push({
           ...structure,
+          name: chain.entity_name,
+          organism: chain.organisms[0],
           pdb_id: `${chain.pdb_id}_${chain.auth_asym_id}`,
         });
       });

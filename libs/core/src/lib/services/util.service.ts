@@ -106,4 +106,13 @@ export class UtilService {
   public setCurrentActive(activeSection: string) {
     this.currentlyActive.set(activeSection);
   }
+
+  public redirectToSearchTerm(value: string): void {
+    const trimmedValue = value.trim();
+    const hrefArray = window.location.href.split('/');
+    hrefArray.pop();
+    hrefArray.push(trimmedValue);
+    const href = hrefArray.join('/');
+    window.open(href, '_self');
+  }
 }

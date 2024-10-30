@@ -1,15 +1,13 @@
-<pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig" />
-<pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
-
 <main>
   <div class="container">
     <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" />
     <article>
-      <p>{{ redirectText() }}</p>
-      @if(descriptionLoaded()){
+      @if(redirectText$ | async; as text){
+      <p class="redirect-text">{{ text }}</p>
+      } @if(loaded() === status.SUCCESS){
       <section class="hero">
         <header>
-          <h2>{{ ligandId }}</h2>
+          <h2>{{ ligandId() }}</h2>
           <div class="annotations">
             @for(annotation of annotations(); track annotation){ @if(annotation === 'cofactor-like'){
             <span class="cofactor-like" matTooltipClass="complex-name-tooltip" [matTooltip]="cofactorTooltip" matTooltipPosition="below">Cofactor-like</span>
@@ -20,7 +18,7 @@
             } }
           </div>
         </header>
-        <h4>{{ description().name }}</h4>
+        <h4>{{ description()?.name }}</h4>
         <div class="action-buttons">
           <button class="vf-button vf-button--primary vf-button--sm" (click)="openMolstarDialog()">View 3D</button>
           <lib-dropdown-menu
@@ -31,32 +29,41 @@
         </div>
       </section>
       <section class="description">
-        <pdbc-description [description]="description()" [ligandId]="ligandId" [supercomponents]="supercomponents()" />
+        <pdbc-description />
         <pdbc-image-carousel #imageCarouselRef />
       </section>
 
       <section class="property">
-        <pdbc-properties [properties]="description().properties" />
+        <pdbc-properties />
       </section>
-
+      @if(isThereStructures()){
       <section class="structure">
         <pdbc-structures />
       </section>
+      }
       <section class="interaction">
         <pdbc-interaction />
       </section>
       <section class="mobile-interaction">
-        <h3>Interaction statistics</h3>
-        <div class="content">The interaction is unavailable for devices with smaller screen. Please use a larger screen to see the interaction.</div>
+        <!-- <h3>Interaction statistics</h3>
+        <div class="content">The interaction is unavailable for devices with smaller screen. Please use a larger screen to see the interaction.</div> -->
+        <div class="ligandEnv-content">
+          <div class="image-container" #mainImageContainer></div>
+        </div>
       </section>
       <section class="related-ligands">
         <pdbc-related-ligands />
       </section>
-      @if(description()){
       <section class="ligand-specific-databases">
-        <pdbc-ligand-specific-databases [crossLinks]="description().crossLinks" />
+        <pdbc-ligand-specific-databases />
       </section>
-      } }
+      } @else if(loaded() === status.LOADING) {
+      <div class="loader">
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px', width: '150px' }"></ngx-skeleton-loader>
+        <ngx-skeleton-loader count="2" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+        <ngx-skeleton-loader count="2" [theme]="{ 'border-radius': '0', height: '450px' }"></ngx-skeleton-loader>
+      </div>
+      }
     </article>
   </div>
 </main>

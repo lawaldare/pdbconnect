@@ -1,21 +1,17 @@
 @if(ligand){
 <div class="ligand-container">
   <div class="image-container" #imageContainer>
+    @if(ligand.substructure_match){
     <div class="wallpaper">
       <span (click)="openMolstarDialog()">
         View in 3D&nbsp;
         <i class="icon icon-common icon-eye"></i>
       </span>
     </div>
+    }
   </div>
   <div class="ligand-description">
-    <a
-      [routerLink]="['/ligands', ligand.chem_comp_id]"
-      matTooltipClass="complex-name-tooltip"
-      [matTooltip]="ligand.name"
-      matTooltipPosition="above"
-      (click)="googleAnalyticsService.logClickEvents('click_ligand_link', 'Related Ligands', 'click_ligand', ligand.chem_comp_id)"
-    >
+    <a matTooltipClass="complex-name-tooltip" [matTooltip]="ligand.name" matTooltipPosition="above" (click)="openLigand(ligand.chem_comp_id)">
       {{ ligand.chem_comp_id }}
       <i class="icon icon-link icon-common"></i>
     </a>

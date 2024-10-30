@@ -1,8 +1,8 @@
 <section [ngStyle]="{ 'background-color': headerSearchConfig.backgroundColor }">
   <div class="container">
     <form [formGroup]="form" (ngSubmit)="onSubmit(form)">
-      <input type="text" class="input-field" formControlName="searchTerm" placeholder="Search in PDBe and PDBe-KB" />
-      <button class="vf-button vf-button--search-{{ buttonTheme }}">Search</button>
+      <input type="text" class="input-field" formControlName="searchTerm" placeholder="View PDBe-KB ligand pages by PDB ligand ID (CCD/PRD/CLC)" />
+      <button class="vf-button vf-button--search-{{ buttonTheme }}">Explore</button>
       <button class="vf-button vf-button--search-{{ buttonTheme }} mobile">
         <i class="icon icon-common icon-search"></i>
       </button>
@@ -13,12 +13,7 @@
     <section>
       <div class="left">
         Examples: @for(example of headerSearchConfig.examples; track example.label){
-        <a
-          [ngClass]="chipBg"
-          [routerLink]="example.url"
-          (click)="googleAnalyticsService.logClickEvents('example_click', 'Search Examples Links', 'navigate_to_example', example.label)"
-          >{{ example.label }}</a
-        >
+        <a [ngClass]="chipBg" (click)="openLigand(example.label)">{{ example.label }}</a>
         }
       </div>
       <!-- //TODO:To be implemented later! -->

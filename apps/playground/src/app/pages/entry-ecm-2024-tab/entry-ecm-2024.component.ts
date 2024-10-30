@@ -69,7 +69,7 @@ export class EntryEcm2024TabComponent implements OnInit {
       label: 'Function and Biology',
     },
     {
-      url: '/ligands',
+      url: '/chemicalCompound/show',
       icon: 'icon-conceptual icon-chemical',
       label: 'Ligands and Environments',
     },
@@ -277,7 +277,7 @@ export class EntryEcm2024TabComponent implements OnInit {
   }
 
   public switchToTab(name: string) {
-    const tabList = ['/', '/function', '/ligands', '/macromolecules', '/assemblies', '/experiments', '/citations'];
+    const tabList = ['/', '/function', '/chemicalCompound/show', '/macromolecules', '/assemblies', '/experiments', '/citations'];
     this.tabGroup.selectedIndex = tabList.indexOf(name);
     window.scrollTo({ top: 0 });
   }

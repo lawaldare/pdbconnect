@@ -5,8 +5,8 @@ import { Subject } from 'rxjs';
 
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { DataLayerService, GoogleAnalyticsService, HeaderSearchConfig, ThemeType } from '@pdbc/core';
-import { RouterModule } from '@angular/router';
+import { DataLayerService, GoogleAnalyticsService, HeaderSearchConfig, ThemeType, UtilService } from '@pdbc/core';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'pdbc-pdbe-header-search',
@@ -28,6 +28,7 @@ export class PdbeHeaderSearchComponent implements OnInit {
 
   public readonly dlService = inject(DataLayerService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  private readonly utilService = inject(UtilService);
 
   constructor(private fb: FormBuilder) {}
 
@@ -42,12 +43,17 @@ export class PdbeHeaderSearchComponent implements OnInit {
         filter(Boolean)
       )
       .subscribe((value) => {
-        console.log(value);
+        // console.log(value);
       });
   }
 
   public onSubmit(form: FormGroup): void {
     const value = form.value.searchTerm;
-    console.log(value);
+    this.utilService.redirectToSearchTerm(value);
+  }
+
+  public openLigand(ligandId: string): void {
+    this.utilService.redirectToSearchTerm(ligandId);
+    this.googleAnalyticsService.logClickEvents('example_click', 'Search Examples Links', 'navigate_to_example', ligandId);
   }
 }
