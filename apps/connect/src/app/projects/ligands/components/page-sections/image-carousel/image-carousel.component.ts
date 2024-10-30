@@ -7,9 +7,9 @@ import { ClickOutsideDirective, GoogleAnalyticsService, MaterialModule, UtilServ
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { ImageCarouselComponentFacade } from './image-carousel.facade';
 import { LigandUtilService } from '../../../ligand-util.service';
-import { BiodataState } from '../../../../store/biodata.model';
+import { LigandStoreState } from '../../../store/biodata.model';
 import { Store } from '@ngrx/store';
-import { BiodataSelectors } from '../../../../store/biodata.selectors';
+import { LigandSelectors } from '../../../store/biodata.selectors';
 
 @Component({
   selector: 'pdbc-image-carousel',
@@ -32,7 +32,7 @@ export class ImageCarouselComponent implements AfterViewInit {
   private readonly ligandUtilService = inject(LigandUtilService);
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
-  private readonly globalStore = inject(Store<BiodataState>);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   public structureDescription = this.facade.structureDescription;
   public showTooltips = signal(false);
@@ -42,7 +42,7 @@ export class ImageCarouselComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.globalStore
-      .select(BiodataSelectors.ligandId)
+      .select(LigandSelectors.ligandId)
       .pipe(
         map((ligandId) => {
           this.facade.resetRenderer(this.renderer, this.imageContainer);

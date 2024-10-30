@@ -2,9 +2,9 @@ import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@a
 import { CommonModule } from '@angular/common';
 import { LigandSpecificDatabasesComponentFacade } from './ligand-specific-databases.facade';
 import { GoogleAnalyticsService } from '@pdbc/core';
-import { BiodataState } from '../../../../store/biodata.model';
+import { LigandStoreState } from '../../../store/biodata.model';
 import { Store } from '@ngrx/store';
-import { BiodataSelectors } from '../../../../store/biodata.selectors';
+import { LigandSelectors } from '../../../store/biodata.selectors';
 import { map } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -28,7 +28,7 @@ export class LigandSpecificDatabasesComponent implements OnInit {
 
   public mappedCrossLinks = this.facade.crosslinks;
 
-  private readonly globalStore = inject(Store<BiodataState>);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   private readonly destroyRef = inject(DestroyRef);
 
@@ -47,7 +47,7 @@ export class LigandSpecificDatabasesComponent implements OnInit {
 
   ngOnInit(): void {
     this.globalStore
-      .select(BiodataSelectors.description)
+      .select(LigandSelectors.description)
       .pipe(
         map((description) => {
           this.facade.init(description.crossLinks);

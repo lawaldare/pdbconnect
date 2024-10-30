@@ -14,9 +14,9 @@ import { IsPartOfDirective } from '../../../directives/is-part-of.directive';
 import { ComponentType } from '@angular/cdk/overlay';
 import { LigandSmilesDirective } from '../../../directives/ligandsmiles.directive';
 import { combineLatest, map } from 'rxjs';
-import { BiodataState } from '../../../../store/biodata.model';
+import { LigandStoreState } from '../../../store/biodata.model';
 import { Store } from '@ngrx/store';
-import { BiodataSelectors } from '../../../../store/biodata.selectors';
+import { LigandSelectors } from '../../../store/biodata.selectors';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -50,13 +50,13 @@ export class DescriptionComponent implements OnInit {
   private readonly ligandUtilService = inject(LigandUtilService);
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
-  private readonly globalStore = inject(Store<BiodataState>);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   ngOnInit(): void {
     combineLatest([
-      this.globalStore.select(BiodataSelectors.ligandId),
-      this.globalStore.select(BiodataSelectors.description),
-      this.globalStore.select(BiodataSelectors.supercomponents),
+      this.globalStore.select(LigandSelectors.ligandId),
+      this.globalStore.select(LigandSelectors.description),
+      this.globalStore.select(LigandSelectors.supercomponents),
     ])
       .pipe(
         map(([ligandId, description, supercomponents]) => {

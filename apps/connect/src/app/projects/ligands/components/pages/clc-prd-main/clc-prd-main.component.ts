@@ -16,9 +16,9 @@ import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { GoogleAnalyticsService } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
-import { BiodataSelectors } from '../../../../store/biodata.selectors';
+import { LigandSelectors } from '../../../store/biodata.selectors';
 import { Store } from '@ngrx/store';
-import { BiodataState } from '../../../../store/biodata.model';
+import { LigandStoreState } from '../../../store/biodata.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
 import { LoadingState } from '../../../enums/loading-state.enum';
@@ -54,15 +54,15 @@ export class ClcPrdMainComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
 
   public readonly navSections = navSections;
-  private readonly globalStore = inject(Store<BiodataState>);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
-  public description = toSignal(this.globalStore.select(BiodataSelectors.description));
-  public downloadOptions = toSignal(this.globalStore.select(BiodataSelectors.downloadOptions));
-  public supercomponents = toSignal(this.globalStore.select(BiodataSelectors.supercomponents));
+  public description = toSignal(this.globalStore.select(LigandSelectors.description));
+  public downloadOptions = toSignal(this.globalStore.select(LigandSelectors.downloadOptions));
+  public supercomponents = toSignal(this.globalStore.select(LigandSelectors.supercomponents));
   public descriptionLoaded = computed(() => (Object.keys(this.description() ?? {}).length ? true : false));
 
-  public redirectText$ = this.globalStore.select(BiodataSelectors.emptyPageText);
-  public loaded = toSignal(this.globalStore.select(BiodataSelectors.loadingState));
+  public redirectText$ = this.globalStore.select(LigandSelectors.emptyPageText);
+  public loaded = toSignal(this.globalStore.select(LigandSelectors.loadingState));
 
   public isThereStructures = signal<boolean>(true);
 
@@ -72,9 +72,9 @@ export class ClcPrdMainComponent implements OnInit {
 
   ngOnInit(): void {
     combineLatest([
-      this.globalStore.select(BiodataSelectors.ligandId),
-      this.globalStore.select(BiodataSelectors.structures),
-      this.globalStore.select(BiodataSelectors.description),
+      this.globalStore.select(LigandSelectors.ligandId),
+      this.globalStore.select(LigandSelectors.structures),
+      this.globalStore.select(LigandSelectors.description),
     ])
       .pipe(
         mergeMap(([ligandId, structures, description]) => {

@@ -7,8 +7,8 @@ import { ClcPrdMainComponent } from '../clc-prd-main/clc-prd-main.component';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { headerLogoMenuConfig, headerSearchConfig } from '../../../ligand.constant';
-import { BiodataActions } from '../../../../store/biodata.actions';
-import { BiodataState } from '../../../../store/biodata.model';
+import { LigandActions } from '../../../store/biodata.actions';
+import { LigandStoreState } from '../../../store/biodata.model';
 import { Store } from '@ngrx/store';
 import { NotificationComponent } from '@pdbc/notification';
 
@@ -22,7 +22,7 @@ import { NotificationComponent } from '@pdbc/notification';
 export class LigandWrapperComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly globalStore = inject(Store<BiodataState>);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   public isMainLigandId = signal(true);
   public showNotificationBanner = signal<boolean>(false);
@@ -36,12 +36,12 @@ export class LigandWrapperComponent implements OnInit {
       .pipe(
         switchMap((params: { [x: string]: string }) => {
           const ligandId = params['ligandId'].toUpperCase();
-          this.globalStore.dispatch(BiodataActions.setCurrentLigandId({ ligandId }));
-          this.globalStore.dispatch(BiodataActions.getStructures());
-          this.globalStore.dispatch(BiodataActions.getSummary());
-          this.globalStore.dispatch(BiodataActions.setDownloadOptions());
-          this.globalStore.dispatch(BiodataActions.getRelatedLigands());
-          this.globalStore.dispatch(BiodataActions.getSupercomponents());
+          this.globalStore.dispatch(LigandActions.setCurrentLigandId({ ligandId }));
+          this.globalStore.dispatch(LigandActions.getStructures());
+          this.globalStore.dispatch(LigandActions.getSummary());
+          this.globalStore.dispatch(LigandActions.setDownloadOptions());
+          this.globalStore.dispatch(LigandActions.getRelatedLigands());
+          this.globalStore.dispatch(LigandActions.getSupercomponents());
           if (ligandId.startsWith('CLC') || ligandId.startsWith('PRD')) {
             this.isMainLigandId.set(false);
           } else {

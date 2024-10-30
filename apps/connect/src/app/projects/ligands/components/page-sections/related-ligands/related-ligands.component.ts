@@ -12,9 +12,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { GoogleAnalyticsService } from '@pdbc/core';
-import { BiodataState } from '../../../../store/biodata.model';
+import { LigandStoreState } from '../../../store/biodata.model';
 import { Store } from '@ngrx/store';
-import { BiodataSelectors } from '../../../../store/biodata.selectors';
+import { LigandSelectors } from '../../../store/biodata.selectors';
 
 @Component({
   selector: 'pdbc-related-ligands',
@@ -57,7 +57,7 @@ export class RelatedLigandsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly ligandUtilService = inject(LigandUtilService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
-  private readonly globalStore = inject(Store<BiodataState>);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   public sameScaffoldTerm = new FormControl('');
   public sameLigandsTerm = new FormControl('');
@@ -107,7 +107,7 @@ export class RelatedLigandsComponent implements OnInit {
 
   ngOnInit() {
     this.globalStore
-      .select(BiodataSelectors.relatedLigands)
+      .select(LigandSelectors.relatedLigands)
       .pipe(
         filter(Boolean),
         mergeMap((relatedLigand: RelatedLigand) => {

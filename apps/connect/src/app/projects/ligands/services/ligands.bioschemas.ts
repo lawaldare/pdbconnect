@@ -1,8 +1,8 @@
 import { DOCUMENT } from '@angular/common';
 import { EnvironmentInjector, inject, Inject, Injectable, Renderer2, runInInjectionContext, Signal } from '@angular/core';
-import { BiodataState } from '../../store/biodata.model';
+import { LigandStoreState } from '../store/biodata.model';
 import { Store } from '@ngrx/store';
-import { BiodataSelectors } from '../../store/biodata.selectors';
+import { LigandSelectors } from '../store/biodata.selectors';
 import { map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -10,7 +10,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
   providedIn: 'root',
 })
 export class LigandsBioschemasService {
-  private readonly globalStore = inject(Store<BiodataState>);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   constructor(@Inject(DOCUMENT) private document: Document, private environmentInjector: EnvironmentInjector) {}
 
@@ -40,10 +40,10 @@ export class LigandsBioschemasService {
 
   public buildBioschemasJSON(renderer: Renderer2): void {
     runInInjectionContext(this.environmentInjector, () => {
-      const summary = toSignal(this.globalStore.select(BiodataSelectors.summary));
-      const structures = toSignal(this.globalStore.select(BiodataSelectors.structures));
-      const relatedLigands = toSignal(this.globalStore.select(BiodataSelectors.relatedLigands).pipe(map((relatedLigands) => relatedLigands.similar_ligands)));
-      const ligandId = toSignal(this.globalStore.select(BiodataSelectors.ligandId));
+      const summary = toSignal(this.globalStore.select(LigandSelectors.summary));
+      const structures = toSignal(this.globalStore.select(LigandSelectors.structures));
+      const relatedLigands = toSignal(this.globalStore.select(LigandSelectors.relatedLigands).pipe(map((relatedLigands) => relatedLigands.similar_ligands)));
+      const ligandId = toSignal(this.globalStore.select(LigandSelectors.ligandId));
 
       const JSON = {
         '@context': 'http://schema.org/',

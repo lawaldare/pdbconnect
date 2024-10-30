@@ -19,9 +19,9 @@ import { cofactorTooltip, drugTooltip, navSections, reactantTooltip } from '../.
 import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandUtilService } from '../../../ligand-util.service';
-import { BiodataState } from '../../../../store/biodata.model';
+import { LigandStoreState } from '../../../store/biodata.model';
 import { Store } from '@ngrx/store';
-import { BiodataSelectors } from '../../../../store/biodata.selectors';
+import { LigandSelectors } from '../../../store/biodata.selectors';
 import { combineLatest, of } from 'rxjs';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
@@ -63,7 +63,7 @@ export class LigandsMainPageComponent implements OnInit {
 
   private readonly renderer = inject(Renderer2);
   public readonly ligandUtilService = inject(LigandUtilService);
-  private readonly globalStore = inject(Store<BiodataState>);
+  private readonly globalStore = inject(Store<LigandStoreState>);
   private readonly dialog = inject(MatDialog);
 
   public readonly navSections = navSections;
@@ -71,12 +71,12 @@ export class LigandsMainPageComponent implements OnInit {
   @ViewChild('mainImageContainer', { read: ElementRef }) mainImageContainer!: ElementRef;
   private ligandEv!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-  public description = toSignal(this.globalStore.select(BiodataSelectors.description));
-  public downloadOptions = toSignal(this.globalStore.select(BiodataSelectors.downloadOptions));
-  public supercomponents = toSignal(this.globalStore.select(BiodataSelectors.supercomponents));
-  public redirectText$ = this.globalStore.select(BiodataSelectors.emptyPageText);
+  public description = toSignal(this.globalStore.select(LigandSelectors.description));
+  public downloadOptions = toSignal(this.globalStore.select(LigandSelectors.downloadOptions));
+  public supercomponents = toSignal(this.globalStore.select(LigandSelectors.supercomponents));
+  public redirectText$ = this.globalStore.select(LigandSelectors.emptyPageText);
 
-  public loaded = toSignal(this.globalStore.select(BiodataSelectors.loadingState));
+  public loaded = toSignal(this.globalStore.select(LigandSelectors.loadingState));
 
   public annotations = signal<string[]>([]);
 
@@ -92,9 +92,9 @@ export class LigandsMainPageComponent implements OnInit {
 
   ngOnInit(): void {
     combineLatest([
-      this.globalStore.select(BiodataSelectors.ligandId),
-      this.globalStore.select(BiodataSelectors.structures),
-      this.globalStore.select(BiodataSelectors.description),
+      this.globalStore.select(LigandSelectors.ligandId),
+      this.globalStore.select(LigandSelectors.structures),
+      this.globalStore.select(LigandSelectors.description),
     ])
       .pipe(
         mergeMap(([ligandId, structures, description]) => {

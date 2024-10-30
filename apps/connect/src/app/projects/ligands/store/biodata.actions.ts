@@ -1,10 +1,10 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
-import { LigandStructure } from '../ligands/data-models/structure.model';
-import { LigandSummary } from '../ligands/data-models/description.model';
-import { DescriptionData } from '../ligands/services/aggregated-api.service';
-import { RelatedLigand } from '../ligands/data-models/related-ligands.model';
+import { LigandStructure } from '../data-models/structure.model';
+import { LigandSummary } from '../data-models/description.model';
+import { DescriptionData } from '../services/aggregated-api.service';
+import { RelatedLigand } from '../data-models/related-ligands.model';
 
-export const BiodataActions = createActionGroup({
+export const LigandActions = createActionGroup({
   source: 'Ligands Page',
   events: {
     'Get Structures': emptyProps(),

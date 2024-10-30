@@ -7,8 +7,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { BaseHrefService } from './base-href.service';
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
-import { biodataReducer } from './projects/store/biodata.reducer';
-import { BiodataEffects } from './projects/store/biodata.effects';
+import { ligandReducer } from './projects/ligands/store/biodata.reducer';
+import { LigandEffects } from './projects/ligands/store/biodata.effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 export function initializeApp(baseHrefService: BaseHrefService) {
@@ -21,8 +21,8 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideAnimations(),
     provideAnimationsAsync(),
-    provideEffects([BiodataEffects]),
-    provideStore({ biodata: biodataReducer }),
+    provideEffects([LigandEffects]),
+    provideStore({ ligand: ligandReducer }),
     provideStoreDevtools({
       maxAge: 25, // Retains last 25 states
       logOnly: !isDevMode(), // Restrict extension to log-only mode

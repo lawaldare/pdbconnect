@@ -1,14 +1,14 @@
-import { Action, createReducer, on } from '@ngrx/store';
-import { BiodataState } from './biodata.model';
-import { BiodataActions } from './biodata.actions';
-import { LigandSummary } from '../ligands/data-models/description.model';
-import { DescriptionData } from '../ligands/services/aggregated-api.service';
-import { RelatedLigand } from '../ligands/data-models/related-ligands.model';
-import { LoadingState } from '../ligands/enums/loading-state.enum';
+import { createReducer, on } from '@ngrx/store';
+import { LigandStoreState } from './biodata.model';
+import { LigandActions } from './biodata.actions';
+import { LigandSummary } from '../data-models/description.model';
+import { DescriptionData } from '../services/aggregated-api.service';
+import { RelatedLigand } from '../data-models/related-ligands.model';
+import { LoadingState } from '../enums/loading-state.enum';
 
-export const BIODATA_STATE_KEY = 'biodata';
+export const LIGAND_STORE_STATE_KEY = 'ligand';
 
-const initialState: BiodataState = {
+const initialState: LigandStoreState = {
   ligandId: '',
   structures: [],
   summary: {} as LigandSummary,
@@ -20,45 +20,45 @@ const initialState: BiodataState = {
   emptyPageText: '',
 };
 
-export const biodataReducer = createReducer(
+export const ligandReducer = createReducer(
   initialState,
-  on(BiodataActions.setCurrentLigandId, (state, action) => ({
+  on(LigandActions.setCurrentLigandId, (state, action) => ({
     ...state,
     ligandId: action.ligandId,
   })),
-  on(BiodataActions.getStructuresSuccess, (state, action) => ({
+  on(LigandActions.getStructuresSuccess, (state, action) => ({
     ...state,
     structures: action.structures,
   })),
-  on(BiodataActions.getRelatedLigandsSuccess, (state, action) => ({
+  on(LigandActions.getRelatedLigandsSuccess, (state, action) => ({
     ...state,
     relatedLigands: action.relatedLigands,
   })),
-  on(BiodataActions.getSummarySuccess, (state, action) => ({
+  on(LigandActions.getSummarySuccess, (state, action) => ({
     ...state,
     summary: action.summary,
   })),
-  on(BiodataActions.setDescription, (state, action) => ({
+  on(LigandActions.setDescription, (state, action) => ({
     ...state,
     description: action.description,
   })),
-  on(BiodataActions.getSupercomponentsSuccess, (state, action) => ({
+  on(LigandActions.getSupercomponentsSuccess, (state, action) => ({
     ...state,
     supercomponents: action.supercomponents,
   })),
-  on(BiodataActions.getSupercomponentsFailure, (state, action) => ({
+  on(LigandActions.getSupercomponentsFailure, (state, action) => ({
     ...state,
     supercomponents: [],
   })),
-  on(BiodataActions.setEmptyPageText, (state, action) => ({
+  on(LigandActions.setEmptyPageText, (state, action) => ({
     ...state,
     emptyPageText: action.text,
   })),
-  on(BiodataActions.toggleLoader, (state, action) => ({
+  on(LigandActions.toggleLoader, (state, action) => ({
     ...state,
     loadingState: action.status,
   })),
-  on(BiodataActions.setDownloadOptions, (state, action) => ({
+  on(LigandActions.setDownloadOptions, (state, action) => ({
     ...state,
     downloadOptions: [
       { name: 'CIF file', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${state.ligandId}.cif`, downloadable: true },

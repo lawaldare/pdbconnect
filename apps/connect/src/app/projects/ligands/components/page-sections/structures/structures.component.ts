@@ -25,9 +25,9 @@ import { LigandAnnotationRendererComponent } from '../../cell renderers/ligand-a
 import { LigandUtilService } from '../../../ligand-util.service';
 import { SpeciesRendererComponent } from '../../cell renderers/species.component';
 import { combineLatest, of } from 'rxjs';
-import { BiodataState } from '../../../../store/biodata.model';
+import { LigandStoreState } from '../../../store/biodata.model';
 import { Store } from '@ngrx/store';
-import { BiodataSelectors } from '../../../../store/biodata.selectors';
+import { LigandSelectors } from '../../../store/biodata.selectors';
 
 @Component({
   selector: 'pdbc-structures',
@@ -47,7 +47,7 @@ export class StructuresComponent {
   private readonly ligandUtilService = inject(LigandUtilService);
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
-  private readonly globalStore = inject(Store<BiodataState>);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   public dataStatistics = signal<string>('');
   public filter = new FormControl('proteins');
@@ -141,7 +141,7 @@ export class StructuresComponent {
     // this.rowData = this.assemblies();
     // event.api.autoSizeAllColumns();
     this.gridApi = event.api;
-    combineLatest([this.globalStore.select(BiodataSelectors.ligandId), this.globalStore.select(BiodataSelectors.structures)])
+    combineLatest([this.globalStore.select(LigandSelectors.ligandId), this.globalStore.select(LigandSelectors.structures)])
       .pipe(
         tap(([ligandId, structures]) => {
           this.ligandId.set(ligandId);

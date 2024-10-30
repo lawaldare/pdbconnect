@@ -10,9 +10,9 @@ import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { InteractionsHeatmapComponent } from '../../../components/interactions-heatmap/interactions-heatmap.component';
-import { BiodataState } from '../../../../store/biodata.model';
+import { LigandStoreState } from '../../../store/biodata.model';
 import { Store } from '@ngrx/store';
-import { BiodataSelectors } from '../../../../store/biodata.selectors';
+import { LigandSelectors } from '../../../store/biodata.selectors';
 
 @Component({
   selector: 'pdbc-interaction',
@@ -38,7 +38,7 @@ export class InteractionComponent implements AfterViewInit {
   private readonly ligandUtilService = inject(LigandUtilService);
   private readonly _snackBar = inject(MatSnackBar);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
-  private readonly globalStore = inject(Store<BiodataState>);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   public interaction!: PDBIntxData; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -50,7 +50,7 @@ export class InteractionComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.globalStore
-      .select(BiodataSelectors.ligandId)
+      .select(LigandSelectors.ligandId)
       .pipe(
         switchMap((id) => {
           this.ligandId.set(id);

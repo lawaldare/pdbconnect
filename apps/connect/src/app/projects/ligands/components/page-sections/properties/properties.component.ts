@@ -4,9 +4,9 @@ import { LigandProperty } from '../../../data-models/description.model';
 import { NameValueComponent } from '../../section-components/name-value/name-value.component';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { GoogleAnalyticsService } from '@pdbc/core';
-import { BiodataState } from '../../../../store/biodata.model';
+import { LigandStoreState } from '../../../store/biodata.model';
 import { Store } from '@ngrx/store';
-import { BiodataSelectors } from '../../../../store/biodata.selectors';
+import { LigandSelectors } from '../../../store/biodata.selectors';
 import { map } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -30,11 +30,11 @@ export class PropertiesComponent implements OnInit {
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly destroyRef = inject(DestroyRef);
 
-  private readonly globalStore = inject(Store<BiodataState>);
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   ngOnInit() {
     this.globalStore
-      .select(BiodataSelectors.description)
+      .select(LigandSelectors.description)
       .pipe(
         map((description) => {
           const properties = description.properties;

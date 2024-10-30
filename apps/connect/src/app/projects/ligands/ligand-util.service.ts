@@ -2,10 +2,10 @@ import { inject, Injectable, signal } from '@angular/core';
 import { Fragment, LigandStructure } from './data-models/structure.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
-import { BiodataActions } from '../store/biodata.actions';
+import { LigandActions } from './store/biodata.actions';
 import { LigandReleasedStatus } from './enums/ligand-release.enum';
 import { DescriptionData } from './services/aggregated-api.service';
-import { BiodataState } from '../store/biodata.model';
+import { LigandStoreState } from './store/biodata.model';
 import { Store } from '@ngrx/store';
 import { Router } from '@angular/router';
 
@@ -21,7 +21,7 @@ export interface StructureFilter {
 })
 export class LigandUtilService {
   private readonly dialog = inject(MatDialog);
-  private readonly globalStore = inject(Store<BiodataState>);
+  private readonly globalStore = inject(Store<LigandStoreState>);
   private readonly router = inject(Router);
 
   public filterStructures(data: LigandStructure[], values: StructureFilter): LigandStructure[] {
@@ -103,14 +103,14 @@ export class LigandUtilService {
   public redirectLigandPages(description: DescriptionData): void {
     if (description.released === LigandReleasedStatus.OBSOLETE && description.superseded_by) {
       const text = `The chemical component you are trying to view (${description.ligandId}) has been obsoleted. You have been redirected to the component which superceded it.`;
-      this.globalStore.dispatch(BiodataActions.setEmptyPageText({ text }));
+      this.globalStore.dispatch(LigandActions.setEmptyPageText({ text }));
       this.router.navigate(['/chemicalCompound/show', description.superseded_by]);
       return;
     }
 
     if (description.released === LigandReleasedStatus.HOLD) {
       const text = `The chemical component you are trying to view (${description.ligandId}) has not been released yet. Please check back later.`;
-      this.globalStore.dispatch(BiodataActions.setEmptyPageText({ text }));
+      this.globalStore.dispatch(LigandActions.setEmptyPageText({ text }));
       return;
     }
   }
