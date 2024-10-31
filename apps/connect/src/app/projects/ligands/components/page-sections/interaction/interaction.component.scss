@@ -34,16 +34,16 @@ button {
   padding: 20px;
   padding-top: 16px;
 
-  pdbe-ligand-interactions {
-    width: 100%;
-
-    @media screen and (width <= 540px) {
-      display: none;
-    }
+  @media screen and (width <= 768px) {
+    border: none;
   }
 
   ::ng-deep pdbe-ligand-interactions .heatmap-container {
     width: 563px;
+
+    @media screen and (width <= 768px) {
+      display: none;
+    }
 
     .heatmap-main {
       width: 563px;
