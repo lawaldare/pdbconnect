@@ -18,7 +18,7 @@ import { GoogleAnalyticsService } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandSelectors } from '../../../store/ligand.selectors';
 import { Store } from '@ngrx/store';
-import { LigandStoreState } from '../../../store/ligand.model';
+import { LigandStoreState } from '../../../store/biodata.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
 import { LoadingState } from '../../../enums/loading-state.enum';

@@ -7,7 +7,7 @@ import { ClickOutsideDirective, GoogleAnalyticsService, MaterialModule, UtilServ
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { ImageCarouselComponentFacade } from './image-carousel.facade';
 import { LigandUtilService } from '../../../ligand-util.service';
-import { LigandStoreState } from '../../../store/ligand.model';
+import { LigandStoreState } from '../../../store/biodata.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
 

@@ -2,7 +2,7 @@ import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@a
 import { CommonModule } from '@angular/common';
 import { LigandSpecificDatabasesComponentFacade } from './ligand-specific-databases.facade';
 import { GoogleAnalyticsService } from '@pdbc/core';
-import { LigandStoreState } from '../../../store/ligand.model';
+import { LigandStoreState } from '../../../store/biodata.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
 import { map } from 'rxjs';

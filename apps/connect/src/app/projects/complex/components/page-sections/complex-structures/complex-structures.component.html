@@ -1,3 +1,4 @@
+@if(rowData().length){
 <div id="structures-section">
   <h3>Structures</h3>
   <section>
@@ -12,6 +13,10 @@
         [paginationPageSizeSelector]="paginationPageSizeSelector()"
       />
     </div>
-    <div class="molstar"></div>
+    <div class="molstar">
+      <lib-pdbe-molstar [molstarConfig]="config()" [height]="height" [width]="width"></lib-pdbe-molstar>
+    </div>
   </section>
 </div>
+
+}
