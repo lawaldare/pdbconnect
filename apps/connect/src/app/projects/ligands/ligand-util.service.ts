@@ -5,7 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { LigandActions } from './store/ligand.actions';
 import { LigandReleasedStatus } from './enums/ligand-release.enum';
 import { DescriptionData } from './services/aggregated-api.service';
-import { LigandStoreState } from './store/biodata.model';
+import { LigandStoreState } from './store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { Router } from '@angular/router';
 

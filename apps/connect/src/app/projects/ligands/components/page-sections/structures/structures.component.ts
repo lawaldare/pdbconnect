@@ -25,7 +25,7 @@ import { LigandAnnotationRendererComponent } from '../../cell renderers/ligand-a
 import { LigandUtilService } from '../../../ligand-util.service';
 import { SpeciesRendererComponent } from '../../cell renderers/species.component';
 import { combineLatest, of } from 'rxjs';
-import { LigandStoreState } from '../../../store/biodata.model';
+import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
 

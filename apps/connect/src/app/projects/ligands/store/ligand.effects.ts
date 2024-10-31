@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { AggregatedApiService } from '../services/aggregated-api.service';
 import { Store } from '@ngrx/store';
-import { LigandStoreState } from './biodata.model';
+import { LigandStoreState } from './ligand-store.model';
 import { LigandActions } from './ligand.actions';
 import { catchError, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
 import { LigandSelectors } from './ligand.selectors';

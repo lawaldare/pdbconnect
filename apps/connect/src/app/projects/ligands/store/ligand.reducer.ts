@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { LigandStoreState } from './biodata.model';
+import { LigandStoreState } from './ligand-store.model';
 import { LigandActions } from './ligand.actions';
 import { LigandSummary } from '../data-models/description.model';
 import { DescriptionData } from '../services/aggregated-api.service';
