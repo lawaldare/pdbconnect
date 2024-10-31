@@ -64,7 +64,8 @@ export class ComplexLigandGridComponent implements AfterViewInit {
     const trimmedValue = ligandId.trim();
     const origin = window.location.origin;
     const pathname = '/chemicalCompound/show/';
-    const href = origin + pathname + trimmedValue;
+    const baseHref = window.location.hostname === 'localhost' ? '' : '/pdbe/connect';
+    const href = origin + baseHref + pathname + trimmedValue;
     window.open(href, '_self');
   }
 }
