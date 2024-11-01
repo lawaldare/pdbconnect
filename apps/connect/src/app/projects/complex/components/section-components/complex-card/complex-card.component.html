@@ -6,10 +6,10 @@
   </div>
   <article>
     <a
-      [routerLink]="['/complex', complexData().complexId]"
       matTooltipClass="complex-name-tooltip"
       [matTooltip]="complexData().name ?? 'Other'"
       matTooltipPosition="above"
+      (click)="openComplexPage(complexData().complexId)"
     >
       {{ complexData().complexId }}
       <i class="icon icon-link icon-common"></i>

@@ -2,22 +2,18 @@ import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community/';
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MaterialModule } from '@pdbc/core';
 
 @Component({
   standalone: true,
-  imports: [CommonModule],
-  template: `@if(value){
-    <span
-      >@if(value.scientific_name){
-      <i>{{ value.scientific_name }}</i>
-      } @if(value.common_name){ ({{ value.common_name }}) }</span
-    >
-    }`,
-  styleUrls: ['./renderer-styling.scss'],
+  imports: [CommonModule, MaterialModule],
+  template: `<span matTooltipClass="complex-name-tooltip" [matTooltip]="value" matTooltipPosition="above">{{
+    value.length > 30 ? value.slice(0, 30) + '...' : value
+  }}</span>`,
 })
-export class SpeciesRendererComponent implements ICellRendererAngularComp {
+export class TitleRendererComponent implements ICellRendererAngularComp {
   // Init Cell Value
-  public value!: { scientific_name: string; common_name: string };
+  public value!: string;
   agInit(params: ICellRendererParams): void {
     this.refresh(params);
   }
