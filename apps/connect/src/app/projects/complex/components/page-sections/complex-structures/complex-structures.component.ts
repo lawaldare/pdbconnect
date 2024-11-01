@@ -28,13 +28,12 @@ export class ComplexStructuresComponent implements OnInit {
       headerName: 'ID',
       field: 'id',
       valueGetter: (params) => `${params.data.pdb_id}_${params.data.assembly_id}`,
-      cellStyle: (params) => ({
+      cellStyle: () => ({
         color: '#3b6fb6',
         cursor: 'pointer',
         textDecoration: 'underline',
       }),
       flex: 1,
-      sort: 'asc',
     },
     {
       headerName: 'Title',
