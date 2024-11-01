@@ -58,7 +58,7 @@ export class ComplexStructuresComponent {
     hideControls: true,
   });
 
-  public height = '500px';
+  public height = '300px';
   public width = '100%';
 
   onGridReady(params: GridReadyEvent<Assembly>) {

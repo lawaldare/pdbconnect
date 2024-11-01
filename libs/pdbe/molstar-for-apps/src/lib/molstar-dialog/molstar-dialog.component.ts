@@ -164,7 +164,7 @@ export class MolstarDialogComponent implements AfterViewInit {
       for (const component of structure.components) {
         const sel = await this.molstarViewInstance.plugin.builders.structure.representation.addRepresentation(component.cell, {
           type: 'label',
-          typeParams: { level: 'element', borderColor: 'black', sizeFactor: 1.5 },
+          typeParams: { level: 'element', borderColor: 'black', sizeFactor: 1 },
         });
         this.cells.push(sel);
       }
