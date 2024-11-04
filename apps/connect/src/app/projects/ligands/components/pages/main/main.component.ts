@@ -14,7 +14,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { mergeMap } from 'rxjs/operators';
-import { cofactorTooltip, drugTooltip, navSections, reactantTooltip } from '../../../ligand.constant';
+import { cofactorTooltip, drugTooltip, reactantTooltip } from '../../../ligand.constant';
 import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandUtilService } from '../../../ligand-util.service';
@@ -64,7 +64,7 @@ export class LigandsMainPageComponent implements OnInit {
   private readonly globalStore = inject(Store<LigandStoreState>);
   private readonly dialog = inject(MatDialog);
 
-  public readonly navSections = navSections;
+  public readonly navSections = this.ligandUtilService.navSection();
 
   public description = toSignal(this.globalStore.select(LigandSelectors.description));
   public downloadOptions = toSignal(this.globalStore.select(LigandSelectors.downloadOptions));

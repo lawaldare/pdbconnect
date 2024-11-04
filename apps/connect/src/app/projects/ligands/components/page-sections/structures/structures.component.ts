@@ -28,6 +28,7 @@ import { combineLatest, of } from 'rxjs';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
+import { PDBIdChainRendererComponent } from '../../cell renderers/pdb-id-chain.component';
 
 @Component({
   selector: 'pdbc-structures',
@@ -95,10 +96,10 @@ export class StructuresComponent {
     {
       headerName: 'PDB ID and Chain',
       field: 'pdb_id',
-      cellRenderer: (params: any) => `<div>
-      <a href="https://www.ebi.ac.uk/pdbe/entry/pdb/${params.value}/bound/${this.ligandId()}" target="_blank">${params.value}</a>
-      <i class="icon icon-link icon-common" style="margin-left: 5px;"></i>
-      </div>`,
+      cellRenderer: PDBIdChainRendererComponent,
+      cellRendererParams: {
+        ligandId: this.ligandId,
+      },
       hide: true,
       width: 150,
     },

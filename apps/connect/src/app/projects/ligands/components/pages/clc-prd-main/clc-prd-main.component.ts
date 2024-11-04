@@ -8,7 +8,6 @@ import { DescriptionComponent } from '../../page-sections/description/descriptio
 import { ImageCarouselComponent } from '../../page-sections/image-carousel/image-carousel.component';
 import { PropertiesComponent } from '../../page-sections/properties/properties.component';
 import { StructuresComponent } from '../../page-sections/structures/structures.component';
-import { navSections } from '../../../ligand.constant';
 import { combineLatest, map } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
@@ -53,7 +52,8 @@ export class ClcPrdMainComponent implements OnInit {
   private readonly renderer = inject(Renderer2);
   private readonly dialog = inject(MatDialog);
 
-  public readonly navSections = navSections;
+  public readonly navSections = this.ligandUtilService.navSection();
+
   private readonly globalStore = inject(Store<LigandStoreState>);
 
   public description = toSignal(this.globalStore.select(LigandSelectors.description));

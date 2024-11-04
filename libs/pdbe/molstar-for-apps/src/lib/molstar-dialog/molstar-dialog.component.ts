@@ -147,7 +147,6 @@ export class MolstarDialogComponent implements AfterViewInit {
 
     this.molstarViewInstance.render(container, molstarParams);
     this.molstarViewInstance.events.loadComplete.subscribe(() => {
-      console.log('Molecule loaded successfully');
       const label = `Atom-labelled ${this.dialogData.moleculeId.toUpperCase()} (no substructure highlighted)`;
       if (this.count() === 0 || this.selectedFramentObject?.name === label) {
         this.displayLabel();

@@ -1,5 +1,11 @@
 import { ThemeType } from '@pdbc/core';
 
+export interface NavSection {
+  sectionId: string;
+  sectionName: string;
+  isSubSection: boolean;
+}
+
 export const navSections = [
   { sectionId: 'description-section', sectionName: 'Description', isSubSection: false },
   { sectionId: 'properties-section', sectionName: 'Physicochemical properties', isSubSection: false },
@@ -8,6 +14,13 @@ export const navSections = [
   { sectionId: 'related-ligand-section', sectionName: 'Related ligands', isSubSection: false },
   { sectionId: 'scaffold-section', sectionName: 'Same scaffold', isSubSection: true },
   { sectionId: 'similar-ligand-section', sectionName: 'Similar ligands', isSubSection: true },
+  { sectionId: 'ligand-databases-section', sectionName: 'Ligand-specific databases', isSubSection: false },
+];
+
+export const clcNavSections = [
+  { sectionId: 'description-section', sectionName: 'Description', isSubSection: false },
+  { sectionId: 'properties-section', sectionName: 'Physicochemical properties', isSubSection: false },
+  { sectionId: 'structures-section', sectionName: 'Bound structures', isSubSection: false },
   { sectionId: 'ligand-databases-section', sectionName: 'Ligand-specific databases', isSubSection: false },
 ];
 

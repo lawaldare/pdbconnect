@@ -6,11 +6,12 @@ import { LigandsMainPageComponent } from '../main/main.component';
 import { ClcPrdMainComponent } from '../clc-prd-main/clc-prd-main.component';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
-import { headerLogoMenuConfig, headerSearchConfig } from '../../../ligand.constant';
+import { clcNavSections, headerLogoMenuConfig, headerSearchConfig, navSections } from '../../../ligand.constant';
 import { LigandActions } from '../../../store/ligand.actions';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { NotificationComponent } from '@pdbc/notification';
+import { LigandUtilService } from '../../../ligand-util.service';
 
 @Component({
   selector: 'pdbc-ligand-wrapper',
@@ -23,6 +24,7 @@ export class LigandWrapperComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly globalStore = inject(Store<LigandStoreState>);
+  private readonly ligandUtilService = inject(LigandUtilService);
 
   public isMainLigandId = signal(true);
   public showNotificationBanner = signal<boolean>(false);
@@ -44,8 +46,10 @@ export class LigandWrapperComponent implements OnInit {
           this.globalStore.dispatch(LigandActions.getSupercomponents());
           if (ligandId.startsWith('CLC') || ligandId.startsWith('PRD')) {
             this.isMainLigandId.set(false);
+            this.ligandUtilService.setNavSections(clcNavSections);
           } else {
             this.isMainLigandId.set(true);
+            this.ligandUtilService.setNavSections(navSections);
           }
           return of({});
         }),
