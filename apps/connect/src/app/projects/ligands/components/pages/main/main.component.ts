@@ -27,6 +27,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LoadingState } from '../../../enums/loading-state.enum';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
+import { LigandStructure } from '../../../data-models/structure.model';
 
 @Component({
   selector: 'pdbc-main',
@@ -95,12 +96,7 @@ export class LigandsMainPageComponent implements OnInit {
           this.ligandUtilService.redirectLigandPages(description);
           this.ligandId.set(ligandId);
           this.isThereStructures.update(() => structures.length > 0);
-          const structuresWithAnnotations = (structures ?? []).filter((structure) => structure.annotations);
-          const mappedAnnotations = structuresWithAnnotations.reduce((acc: string[], structure) => {
-            return acc.concat(structure.annotations);
-          }, []);
-          const uniqueAnnotations = [...new Set(mappedAnnotations)];
-          this.annotations.update(() => uniqueAnnotations);
+          this.getAnnotations(structures);
           return this.aggregatedApiService.fetchDepiction(this.ligandId());
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -108,6 +104,15 @@ export class LigandsMainPageComponent implements OnInit {
       .subscribe(() => {
         this.generateSchemaData();
       });
+  }
+
+  private getAnnotations(structures: LigandStructure[]): void {
+    const structuresWithAnnotations = (structures ?? []).filter((structure) => structure.annotations);
+    const mappedAnnotations = structuresWithAnnotations.reduce((acc: string[], structure) => {
+      return acc.concat(structure.annotations);
+    }, []);
+    const uniqueAnnotations = [...new Set(mappedAnnotations)];
+    this.annotations.update(() => uniqueAnnotations);
   }
 
   private generateSchemaData(): void {
