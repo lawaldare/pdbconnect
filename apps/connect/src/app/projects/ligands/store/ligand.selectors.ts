@@ -15,4 +15,5 @@ export const LigandSelectors = {
   supercomponents: createSelector(LigandStoreState, (state: LigandStoreState) => state.supercomponents),
   loadingState: createSelector(LigandStoreState, (state: LigandStoreState) => state.loadingState),
   emptyPageText: createSelector(LigandStoreState, (state: LigandStoreState) => state.emptyPageText),
+  fragments: createSelector(LigandStoreState, (state: LigandStoreState) => state.fragments),
 };

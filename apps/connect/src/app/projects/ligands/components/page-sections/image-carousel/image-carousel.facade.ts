@@ -1,8 +1,9 @@
 import { computed, DestroyRef, ElementRef, inject, Injectable, Renderer2, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { LigandUtilService } from '../../../ligand-util.service';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction, Fragment } from '../../../data-models/structure.model';
+import { Store } from '@ngrx/store';
+import { LigandActions } from '../../../store/ligand.actions';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +11,7 @@ import { Depiction, Fragment } from '../../../data-models/structure.model';
 export class ImageCarouselComponentFacade {
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly ligandUtilService = inject(LigandUtilService);
+  private readonly store = inject(Store);
 
   private ligandId!: string;
   private tempFragments: Fragment[] = [];
@@ -76,7 +77,7 @@ export class ImageCarouselComponentFacade {
     const uniqueFragments = mappedFragments.filter((obj, index, self) => index === self.findIndex((o) => o.name === obj.name));
 
     this.fragments.update(() => uniqueFragments);
-    this.ligandUtilService.setFragments(this.fragments());
+    this.store.dispatch(LigandActions.setFragments({ fragments: this.fragments() }));
   }
 
   private setDepictionDescription(): void {

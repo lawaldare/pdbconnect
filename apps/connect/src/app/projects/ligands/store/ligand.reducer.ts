@@ -18,6 +18,7 @@ const initialState: LigandStoreState = {
   supercomponents: [],
   loadingState: LoadingState.SUCCESS,
   emptyPageText: '',
+  fragments: [],
 };
 
 export const ligandReducer = createReducer(
@@ -66,5 +67,9 @@ export const ligandReducer = createReducer(
       { name: 'Model SDF', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${state.ligandId}_model.sdf`, downloadable: true },
       { name: 'Model CML', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${state.ligandId}_model.cml`, downloadable: true },
     ],
+  })),
+  on(LigandActions.setFragments, (state, action) => ({
+    ...state,
+    fragments: action.fragments,
   }))
 );

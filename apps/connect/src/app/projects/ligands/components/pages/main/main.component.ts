@@ -85,6 +85,8 @@ export class LigandsMainPageComponent implements OnInit {
 
   public isThereStructures = signal<boolean>(true);
 
+  private fragments = toSignal(this.globalStore.select(LigandSelectors.fragments));
+
   ngOnInit(): void {
     combineLatest([
       this.globalStore.select(LigandSelectors.ligandId),
@@ -126,7 +128,7 @@ export class LigandsMainPageComponent implements OnInit {
       panelClass: 'molstarDialog',
       data: {
         moleculeId: this.ligandId(),
-        fragments: this.ligandUtilService.currentFragments,
+        fragments: this.fragments,
       },
     });
   }

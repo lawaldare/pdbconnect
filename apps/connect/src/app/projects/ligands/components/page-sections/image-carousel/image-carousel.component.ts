@@ -1,12 +1,11 @@
 import { Component, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, DestroyRef, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { ClickOutsideDirective, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { ImageCarouselComponentFacade } from './image-carousel.facade';
-import { LigandUtilService } from '../../../ligand-util.service';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
@@ -29,7 +28,6 @@ export class ImageCarouselComponent implements AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly utilService = inject(UtilService);
   private readonly facade = inject(ImageCarouselComponentFacade);
-  private readonly ligandUtilService = inject(LigandUtilService);
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly globalStore = inject(Store<LigandStoreState>);
@@ -37,7 +35,7 @@ export class ImageCarouselComponent implements AfterViewInit {
   public structureDescription = this.facade.structureDescription;
   public showTooltips = signal(false);
 
-  public total = computed(() => this.ligandUtilService.currentFragments().length + 2);
+  public total = toSignal(this.globalStore.select(LigandSelectors.fragments).pipe(map((fragments) => fragments.length + 2)));
   public currentSlide = computed(() => this.facade.currentSlide() + 1);
 
   ngAfterViewInit() {

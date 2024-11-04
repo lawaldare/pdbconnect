@@ -9,7 +9,7 @@ import { ImageCarouselComponent } from '../../page-sections/image-carousel/image
 import { PropertiesComponent } from '../../page-sections/properties/properties.component';
 import { StructuresComponent } from '../../page-sections/structures/structures.component';
 import { navSections } from '../../../ligand.constant';
-import { combineLatest, EMPTY, map, mergeMap } from 'rxjs';
+import { combineLatest, map } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { LigandUtilService } from '../../../ligand-util.service';
@@ -64,6 +64,8 @@ export class ClcPrdMainComponent implements OnInit {
   public redirectText$ = this.globalStore.select(LigandSelectors.emptyPageText);
   public loaded = toSignal(this.globalStore.select(LigandSelectors.loadingState));
 
+  private fragments = toSignal(this.globalStore.select(LigandSelectors.fragments));
+
   public isThereStructures = signal<boolean>(true);
 
   public ligandId = signal<string>('');
@@ -100,7 +102,7 @@ export class ClcPrdMainComponent implements OnInit {
       panelClass: 'molstarDialog',
       data: {
         moleculeId: this.ligandId(),
-        fragments: this.ligandUtilService.currentFragments,
+        fragments: this.fragments,
       },
     });
   }

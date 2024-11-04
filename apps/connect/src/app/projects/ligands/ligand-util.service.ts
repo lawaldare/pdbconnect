@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Fragment, LigandStructure } from './data-models/structure.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
@@ -91,13 +91,6 @@ export class LigandUtilService {
     a.download = `${name}.txt`;
     a.click();
     window.URL.revokeObjectURL(url);
-  }
-
-  private readonly fragments = signal<Fragment[]>([]);
-  public currentFragments = this.fragments.asReadonly();
-
-  setFragments(fragments: Fragment[]): void {
-    this.fragments.update(() => fragments);
   }
 
   public redirectLigandPages(description: DescriptionData): void {
