@@ -3,7 +3,7 @@
     <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" />
     <article>
       @if(redirectText$ | async; as text){
-      <p class="redirect-text">{{ text }}</p>
+      <div class="redirect-text" [innerHTML]="text"></div>
       } @if(loaded() === status.SUCCESS){
       <section class="hero">
         <header>
