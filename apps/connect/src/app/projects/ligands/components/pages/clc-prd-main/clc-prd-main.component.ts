@@ -9,8 +9,7 @@ import { ImageCarouselComponent } from '../../page-sections/image-carousel/image
 import { PropertiesComponent } from '../../page-sections/properties/properties.component';
 import { StructuresComponent } from '../../page-sections/structures/structures.component';
 import { navSections } from '../../../ligand.constant';
-import { Router } from '@angular/router';
-import { combineLatest, EMPTY, mergeMap } from 'rxjs';
+import { combineLatest, EMPTY, map, mergeMap } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { LigandUtilService } from '../../../ligand-util.service';
@@ -23,6 +22,7 @@ import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
 import { LoadingState } from '../../../enums/loading-state.enum';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 
 @Component({
   selector: 'pdbc-clc-prd-main',
@@ -39,12 +39,12 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
     StructuresComponent,
     DropdownMenuComponent,
     NgxSkeletonLoaderModule,
+    LigandSpecificDatabasesComponent,
   ],
   templateUrl: './clc-prd-main.component.html',
   styleUrls: ['../main/main.component.scss', './clc-prd-main.component.sass'],
 })
 export class ClcPrdMainComponent implements OnInit {
-  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   public readonly ligandUtilService = inject(LigandUtilService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
@@ -77,15 +77,16 @@ export class ClcPrdMainComponent implements OnInit {
       this.globalStore.select(LigandSelectors.description),
     ])
       .pipe(
-        mergeMap(([ligandId, structures, description]) => {
+        map(([ligandId, structures, description]) => {
           this.ligandUtilService.redirectLigandPages(description);
           this.ligandId.set(ligandId);
           this.isThereStructures.update(() => structures.length > 0);
-          return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(() => this.generateSchemaData());
+      .subscribe(() => {
+        this.generateSchemaData();
+      });
   }
 
   private generateSchemaData(): void {
