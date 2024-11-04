@@ -89,8 +89,11 @@
   line-height: normal;
   display: flex;
   border-style: groove;
-  width: fit-content;
-  margin-left: 60px;
+
+  // width: fit-content;
+  // margin-left: 60px;
+  justify-content: space-between;
+  padding: 10px 20px;
 
   @media screen and (width <= 768px) {
     display: none;
@@ -99,6 +102,7 @@
   .legend-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    width: 60%;
 
     .legend-category {
       padding-left: 19px;
@@ -106,7 +110,7 @@
   }
 
   .legend-row-flex-plots {
-    margin-left: 120px;
+    // margin-left: 120px;
     margin-right: 10px;
     display: flex;
     flex-direction: column;
@@ -119,7 +123,7 @@
       .legend-category-plot {
         font-size: 12px;
         margin-top: 12px;
-        width: 170px;
+        width: 240px;
       }
     }
   }

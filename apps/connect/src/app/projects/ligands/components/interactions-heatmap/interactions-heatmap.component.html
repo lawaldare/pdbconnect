@@ -79,13 +79,6 @@
   </div>
 </div>
 <div class="interactions-heatmap-legend">
-  <div class="legend-row">
-    <div class="legend-title" style="margin-left: 8px">Icons:</div>
-    <div></div>
-    @for (categoryName of categoryNames; track categoryName) {
-    <div class="legend-category"><img [src]="getImgForCategory(categoryName)" width="15px" /> {{ categoryName }}</div>
-    }
-  </div>
   <div class="legend-row-flex-plots">
     <div class="legend-row-block">
       <div class="legend-title">Frequency colour scale:</div>
@@ -94,7 +87,7 @@
         <div
           [ngStyle]="{
             marginLeft: '18px',
-            width: '130px',
+            width: '200px',
             height: '20px',
             background: 'linear-gradient(to right,' + atomColorMap[1] + ' 0%,' + atomColorMap[2] + ' 100%)'
           }"
@@ -106,9 +99,16 @@
     <div class="legend-row-block">
       <div class="legend-title">Atom-wise heatmap colour scale:</div>
       <div class="legend-category-plot">
-        <div style="margin-left: 18px; width: 130px; height: 20px; background: linear-gradient(to right, #fff 0, #b99ebb 0.1%, #5d505d 100%)"></div>
+        <div style="margin-left: 18px; width: 200px; height: 20px; background: linear-gradient(to right, #fff 0, #b99ebb 0.1%, #5d505d 100%)"></div>
         <span style="float: left; margin-left: 4px">0%</span> <span style="float: right">100%</span>
       </div>
     </div>
+  </div>
+  <div class="legend-row">
+    <div class="legend-title" style="margin-left: 8px">Icons:</div>
+    <div></div>
+    @for (categoryName of categoryNames; track categoryName) {
+    <div class="legend-category"><img [src]="getImgForCategory(categoryName)" width="15px" /> {{ categoryName }}</div>
+    }
   </div>
 </div>
