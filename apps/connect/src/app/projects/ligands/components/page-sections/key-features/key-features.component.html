@@ -1,0 +1,15 @@
+<section class="splide" id="key-features-slider">
+  <div class="splide__track">
+    <div class="splide__list">
+      @for(slide of slides; track slide.title){
+      <article class="splide__slide">
+        <h3>{{ slide.title }}</h3>
+        <a class="slide__link" [href]="slide.example_href" target="_blank">
+          <img [src]="slide.src" [alt]="slide.title" />
+        </a>
+        <div class="slide__detail" [innerHTML]="slide.details"></div>
+      </article>
+      }
+    </div>
+  </div>
+</section>

@@ -115,4 +115,12 @@ export class UtilService {
     const href = hrefArray.join('/');
     window.open(href, '_self');
   }
+
+  //TODO: Update this method for redirection from latest release page
+  public redirectToHomepageSearchTerm(value: string): void {
+    const trimmedValue = value.trim();
+    const hrefLink = window.location.href;
+    const href = hrefLink + '/chemicalCompound/show/' + trimmedValue;
+    window.open(href, '_self');
+  }
 }

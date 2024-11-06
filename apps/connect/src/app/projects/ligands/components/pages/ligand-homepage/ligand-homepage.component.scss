@@ -1,0 +1,119 @@
+@import url('libs/core/src/lib/styles/pdb_connect.scss');
+
+h2.class-header {
+  color: #1a1c1a;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 63px;
+  border-left: 4px solid #0a5032;
+  padding-left: 16px;
+  margin-bottom: 40px;
+}
+
+section.jumbotron {
+  background: rgb(15 92 90 / 60%);
+  height: 544px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+
+  h1 {
+    color: #fff;
+    text-align: center;
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 120%;
+  }
+
+  pdbc-pdbe-header-search {
+    width: 100%;
+    margin: 0 auto;
+  }
+}
+
+section.background {
+  padding: 56px 0 80px;
+
+  p {
+    color: #1a1c1a;
+    font-size: 21px;
+    font-weight: 400;
+    line-height: 27.3px;
+    margin-bottom: 24px !important;
+
+    a {
+      color: #3b6fb6;
+      font-size: 21px;
+      font-weight: 400;
+      line-height: 27.3px;
+    }
+  }
+
+  article {
+    background: #f3f3f3;
+    padding: 24px 20px 28px;
+
+    h3 {
+      color: #1a1c1a;
+      font-size: 24px;
+      font-weight: 500;
+      line-height: 31.2px;
+      margin-bottom: 12px;
+    }
+
+    li {
+      color: #1a1c1a;
+      font-size: 21px;
+      font-weight: 400;
+      line-height: 27.3px;
+    }
+  }
+}
+
+section.quicklinks {
+  background: rgb(255 250 209 / 75%);
+  padding: 48px 0;
+
+  h2 {
+    color: #0a0a0a;
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 63px;
+    margin-bottom: 20px;
+  }
+
+  ul {
+    margin-left: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    li {
+      cursor: pointer;
+      list-style: none;
+      margin-bottom: 16px;
+
+      span {
+        color: #0a5032;
+        font-size: 21px;
+        font-weight: 500;
+        line-height: 27.3px;
+        margin-right: 12px;
+
+        &:hover {
+          color: #0a5032;
+          text-decoration: none;
+        }
+      }
+
+      .icon {
+        height: 20px;
+        width: 20px;
+        color: #0a5032;
+      }
+    }
+  }
+}
+
+section.key-features {
+  padding: 80px 0;
+}

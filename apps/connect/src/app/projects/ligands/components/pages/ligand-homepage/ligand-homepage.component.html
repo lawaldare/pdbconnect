@@ -1,0 +1,66 @@
+<pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig" />
+<section class="jumbotron">
+  <h1>
+    Protein Data Bank in Europe <br />
+    Knowledge Base for Ligands
+  </h1>
+  <pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
+</section>
+<section class="background">
+  <div class="container">
+    <h2 class="class-header">Background</h2>
+    <p>
+      <a href="https://www.ebi.ac.uk/pdbe/pdbe-kb/" target="_blank">PDBe-KB</a> is an open, collaborative consortium of leading specialist data resources that provide
+      functional, biochemical, and biophysical annotations for macromolecular structures. Its aim is to facilitate access to structural data by aggregating all
+      information in a knowledge graph for specific biological entities, including proteins, ligands, complexes, and domains.
+    </p>
+    <p>
+      Initially launched with the aggregated "protein view" webpages in March 2019, PDBe-KB has now developed a novel "ligand view" to centralise small molecule data
+      within the PDB. These ligand-centric pages, keyed on PDB ligand identifiers such as CCD, PRD, and CLC IDs, provide a comprehensive overview of each ligand's
+      chemical, structural, interaction, and functional information to support research in drug discovery, molecular biology, systems biology, structural biology, and
+      pharmacology.
+    </p>
+    <article>
+      <h3>Our goals</h3>
+      <ul>
+        <li><strong>Enrich PDB Small-Molecule Data:</strong> Expand and improve the small-molecule information available in the PDB.</li>
+        <li><strong>Make Ligand Data FAIR:</strong> Ensure ligand data is Findable, Accessible, Interoperable, and Reusable (FAIR).</li>
+        <li>
+          <strong>Enhance Biological Context:</strong> Aggregate ligand-related data from PDB entries into a single view, incorporating various annotations to enrich
+          the information within relevant biological systems.
+        </li>
+      </ul>
+    </article>
+  </div>
+</section>
+<section class="quicklinks">
+  <div class="container">
+    <h2>Quick links</h2>
+    <ul>
+      @for(link of links(); track link.url){
+      <li>
+        <span>{{ link.label }}</span>
+        <i class="icon icon-common icon-arrow-circle-right"></i>
+      </li>
+      }
+    </ul>
+  </div>
+</section>
+<section class="key-features">
+  <div class="container">
+    <h2 class="class-header">Key features</h2>
+    <pdbc-key-features />
+  </div>
+</section>
+<section class="use-cases">
+  <div class="container">
+    <h2 class="class-header">Use cases</h2>
+    <pdbc-use-cases />
+  </div>
+</section>
+<section class="faq">
+  <div class="container">
+    <h2 class="class-header">FAQs</h2>
+    <pdbc-faqs />
+  </div>
+</section>

@@ -15,14 +15,23 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   public headerLogoSrc = '';
   public isMobile = signal(false);
 
-  public readonly links = [
-    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
-    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
-    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
+  public links!: { name: string; path: string; openInNewTab: boolean }[];
+
+  public readonly defaultLinks = [
+    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
+    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
+    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training', openInNewTab: true },
+  ];
+
+  public readonly homepageLinks = [
+    { name: 'Home', path: '/', openInNewTab: false },
+    { name: 'Latest releases', path: '/latest-releases', openInNewTab: false },
+    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
   ];
 
   ngOnInit() {
     this.headerLogoSrc = this.headerConfig.logoType === 'PDBe' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
+    this.links = this.headerConfig.isHomePage ? this.homepageLinks : this.defaultLinks;
   }
 
   public get getHeaderLogoClass(): string {

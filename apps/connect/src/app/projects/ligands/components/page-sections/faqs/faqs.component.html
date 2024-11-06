@@ -1,0 +1,10 @@
+<mat-accordion>
+  @for(faq of faqs(); track faq.title){
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title> {{ faq.title }} </mat-panel-title>
+    </mat-expansion-panel-header>
+    <p>{{ faq.content }}</p>
+  </mat-expansion-panel>
+  }
+</mat-accordion>

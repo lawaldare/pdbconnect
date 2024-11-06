@@ -8,7 +8,7 @@
     <ul class="nav-links">
       @for(link of links; track link.name){
       <li class="nav-link">
-        <a [href]="link.path" target="_blank">{{ link.name }}</a>
+        <a [href]="link.path" [target]="link.openInNewTab ? '_blank' : '_self'">{{ link.name }}</a>
       </li>
       }
     </ul>

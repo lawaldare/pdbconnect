@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DataLayerService, GoogleAnalyticsService, HeaderSearchConfig, ThemeType, UtilService } from '@pdbc/core';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'pdbc-pdbe-header-search',
@@ -52,8 +52,17 @@ export class PdbeHeaderSearchComponent implements OnInit {
     this.utilService.redirectToSearchTerm(value);
   }
 
+  public onHomepageSubmit(form: FormGroup): void {
+    const value = form.value.searchTerm;
+    this.utilService.redirectToHomepageSearchTerm(value);
+  }
+
   public openLigand(ligandId: string): void {
-    this.utilService.redirectToSearchTerm(ligandId);
+    if (this.headerSearchConfig.isHomepage) {
+      this.utilService.redirectToHomepageSearchTerm(ligandId);
+    } else {
+      this.utilService.redirectToSearchTerm(ligandId);
+    }
     this.googleAnalyticsService.logClickEvents('example_click', 'Search Examples Links', 'navigate_to_example', ligandId);
   }
 }
