@@ -18,6 +18,14 @@ export class KeyFeaturesComponent implements AfterViewInit {
         perPage: 3,
         rewind: true,
         gap: 20,
+        breakpoints: {
+          991: {
+            perPage: 2,
+          },
+          768: {
+            perPage: 1,
+          },
+        },
       });
 
       splide.mount();

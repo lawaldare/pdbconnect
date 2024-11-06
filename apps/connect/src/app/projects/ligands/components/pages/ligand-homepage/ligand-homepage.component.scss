@@ -23,6 +23,11 @@ section.jumbotron {
     font-size: 64px;
     font-weight: 700;
     line-height: 120%;
+
+    @media only screen and (width <= 768px) {
+      font-size: 40px;
+      line-height: 120%;
+    }
   }
 
   pdbc-pdbe-header-search {
@@ -86,6 +91,10 @@ section.quicklinks {
     margin-left: 0;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+
+    @media only screen and (width <= 768px) {
+      grid-template-columns: repeat(1, 1fr);
+    }
 
     li {
       cursor: pointer;
