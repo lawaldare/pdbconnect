@@ -120,7 +120,8 @@ export class UtilService {
   public redirectToHomepageSearchTerm(value: string): void {
     const trimmedValue = value.trim();
     const hrefLink = window.location.href;
-    const href = hrefLink + '/chemicalCompound/show/' + trimmedValue;
+    const href = hrefLink + 'chemicalCompound/show/' + trimmedValue;
+    console.log(href);
     window.open(href, '_self');
   }
 }

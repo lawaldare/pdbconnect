@@ -3,6 +3,12 @@ import { CommonModule } from '@angular/common';
 
 import { HeaderLogoMenuConfig, PDBE_HEADER_LOGO_SRC, PDBE_KB_HEADER_LOGO_SRC } from '@pdbc/core';
 
+export interface Link {
+  name: string;
+  path: string;
+  openInNewTab: boolean;
+}
+
 @Component({
   selector: 'pdbc-pdbe-header-logo-menu',
   standalone: true,
@@ -15,7 +21,7 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   public headerLogoSrc = '';
   public isMobile = signal(false);
 
-  public links!: { name: string; path: string; openInNewTab: boolean }[];
+  public links!: Link[];
 
   public readonly defaultLinks = [
     { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
@@ -40,5 +46,17 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
 
   public showMobileMenu(): void {
     this.isMobile.update((value) => !value);
+  }
+
+  public openHomepageNavLinks(link: Link): void {
+    console.log(link);
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost') {
+      window.open(link.path, link.openInNewTab ? '_blank' : '_self');
+    } else {
+      const href = window.location.href;
+      const hrefLink = href.split('/').slice(0, -1).join('/') + link.path;
+      window.open(hrefLink, link.openInNewTab ? '_blank' : '_self');
+    }
   }
 }

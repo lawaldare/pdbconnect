@@ -55,7 +55,8 @@ section {
         list-style: none;
         cursor: pointer;
 
-        a {
+        a,
+        span {
           text-decoration: none;
           color: white;
           font-size: 19px;
