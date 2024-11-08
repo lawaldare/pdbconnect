@@ -200,4 +200,9 @@ export class AggregatedApiService {
   //   const ligandSubstructures = data[ligandId][0];
   //   return ligandSubstructures;
   // }
+
+  public getLatestReleases(): Observable<any> {
+    const latestReleaseUrl = `https://www.ebi.ac.uk/pdbe/search/pdb/select?q=q_document_type:latest_chemistry&fl=new_revised_ligand,pdb_id,uniprot_accession,pubmed_id&rows=10000`;
+    return this.http.get<any>(latestReleaseUrl);
+  }
 }

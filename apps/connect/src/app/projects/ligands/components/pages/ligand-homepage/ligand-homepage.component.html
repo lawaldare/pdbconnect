@@ -1,4 +1,6 @@
 <pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig" />
+
+<!-- HERO -->
 <section class="jumbotron">
   <h1>
     Protein Data Bank in Europe <br />
@@ -6,6 +8,8 @@
   </h1>
   <pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
 </section>
+
+<!-- BACKGROUND -->
 <section class="background">
   <div class="container">
     <h2 class="class-header">Background</h2>
@@ -33,34 +37,65 @@
     </article>
   </div>
 </section>
+
+<!-- QUICK LINKS -->
 <section class="quicklinks">
   <div class="container">
     <h2>Quick links</h2>
     <ul>
       @for(link of links(); track link.label){
       <li>
-        <span>{{ link.label }}</span>
+        <span (click)="openQuickLink(link)">{{ link.label }}</span>
         <i class="icon icon-common icon-arrow-circle-right"></i>
       </li>
       }
     </ul>
   </div>
 </section>
+
+<!-- KEY FEATURES -->
 <section class="key-features">
   <div class="container">
     <h2 class="class-header">Key features</h2>
-    <pdbc-key-features />
+    <section class="splide" id="key-features-slider">
+      <div class="splide__track">
+        <div class="splide__list">
+          @for(slide of slides(); track slide.title){
+          <article class="splide__slide">
+            <h3>{{ slide.title }}</h3>
+            <a class="slide__link" [href]="slide.example_href" target="_blank">
+              <img [src]="slide.src" [alt]="slide.title" />
+            </a>
+            <div class="slide__detail" [innerHTML]="slide.details"></div>
+          </article>
+          }
+        </div>
+      </div>
+    </section>
   </div>
 </section>
+
+<!-- USE CASES -->
 <section class="use-cases">
   <div class="container">
     <h2 class="class-header">Use cases</h2>
     <pdbc-use-cases />
   </div>
 </section>
+
+<!-- FAQs -->
 <section class="faq">
   <div class="container">
     <h2 class="class-header">FAQs</h2>
-    <pdbc-faqs />
+    <mat-accordion>
+      @for(faq of faqs(); track faq.title){
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title> {{ faq.title }} </mat-panel-title>
+        </mat-expansion-panel-header>
+        <p>{{ faq.content }}</p>
+      </mat-expansion-panel>
+      }
+    </mat-accordion>
   </div>
 </section>

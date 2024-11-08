@@ -34,7 +34,6 @@ export class PDBIdChainRendererComponent implements ICellRendererAngularComp {
 
   // Return Cell Value
   refresh(params: any): boolean {
-    console.log(params);
     this.value = params.value;
     this.ligandId = params.ligandId;
     return true;

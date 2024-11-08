@@ -64,48 +64,44 @@ export const unannotatedTooltip = `The functional role of these ligands has not 
 
 export const quickLinks = [
   {
-    label: 'Latest releases',
-    url: '',
-  },
-  {
     label: 'PDBe CCDUtils',
-    url: '',
+    url: 'https://github.com/PDBeurope/ccdutils',
   },
   {
     label: 'PDBe Arpeggio',
-    url: '',
+    url: 'https://github.com/PDBeurope/arpeggio',
   },
   {
     label: 'PDBe RelLig',
-    url: '',
+    url: 'https://github.com/PDBeurope/rellig',
   },
   {
     label: 'LigEnV component',
-    url: '',
+    url: 'https://github.com/PDBeurope/ligand-env',
   },
   {
     label: 'Database schema',
-    url: '',
+    url: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/schema',
   },
   {
     label: 'Graph database',
-    url: '',
+    url: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/graph',
   },
   {
     label: 'API',
-    url: '',
+    url: 'https://www.ebi.ac.uk/pdbe/graph-api/pdbe_doc/',
   },
   {
     label: 'FTP area',
-    url: '',
+    url: 'https://ftp.ebi.ac.uk/pub/databases/msd/pdbechem_v2/',
   },
   {
     label: 'Bulk download',
-    url: '',
+    url: 'https://www.ebi.ac.uk/pdbe/download/docs',
   },
   {
     label: 'Tutorials',
-    url: '',
+    url: 'https://github.com/PDBeurope/pdbe-notebooks/tree/main/pdbe_ligands_tutorials',
   },
 ];
 

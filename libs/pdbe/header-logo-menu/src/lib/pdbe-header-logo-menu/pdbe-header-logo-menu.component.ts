@@ -49,7 +49,6 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   }
 
   public openHomepageNavLinks(link: Link): void {
-    console.log(link);
     const hostname = window.location.hostname;
     if (hostname === 'localhost') {
       window.open(link.path, link.openInNewTab ? '_blank' : '_self');

@@ -1,4 +1,4 @@
-import { Component, inject, DestroyRef, signal } from '@angular/core';
+import { Component, inject, DestroyRef, signal, ViewChild, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Chain, LigandStructure } from '../../../data-models/structure.model';
@@ -12,7 +12,7 @@ import {
   GoogleAnalyticsService,
   MaterialModule,
 } from '@pdbc/core';
-import { catchError, map, take, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
 import { environment } from '../../../../../../environments/environment';
@@ -22,18 +22,20 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { GridOptions, ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
 import { TotalStructureRendererComponent } from '../../cell renderers/total-structure.component';
 import { LigandAnnotationRendererComponent } from '../../cell renderers/ligand-annotation.component';
-import { LigandUtilService } from '../../../ligand-util.service';
 import { SpeciesRendererComponent } from '../../cell renderers/species.component';
 import { combineLatest, of } from 'rxjs';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
 import { PDBIdChainRendererComponent } from '../../cell renderers/pdb-id-chain.component';
+import { LigandECNumberPipe } from '../../../pipes/ec-numbers.pipe';
+import { cofactorTooltip, drugTooltip, reactantTooltip, unannotatedTooltip } from '../../../ligand.constant';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'pdbc-structures',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LigandInteractingChainsNumberPipe, AgGridAngular, MaterialModule],
+  imports: [CommonModule, ReactiveFormsModule, LigandInteractingChainsNumberPipe, AgGridAngular, MaterialModule, LigandECNumberPipe, MatPaginator],
   templateUrl: './structures.component.html',
   styleUrls: ['./structures.component.scss'],
   providers: [LigandInteractingChainsNumberPipe],
@@ -45,23 +47,25 @@ export class StructuresComponent {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   private readonly downloadService = inject(DownloadService);
   private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
-  private readonly ligandUtilService = inject(LigandUtilService);
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly globalStore = inject(Store<LigandStoreState>);
 
+  public cofactorTooltip = cofactorTooltip;
+  public drugTooltip = drugTooltip;
+  public reactantTooltip = reactantTooltip;
+  public unannotatedTooltip = unannotatedTooltip;
+
   public dataStatistics = signal<string>('');
   public filter = new FormControl('proteins');
-  private ligandId = signal<string>('');
+  public ligandId = signal<string>('');
   public readonly gridOptions: GridOptions = {
     ...agGridOptionsBase,
-    defaultColDef: {
-      ...agGridOptionsBase.defaultColDef,
-      // filter: false,
-    },
     paginationPageSize: 10,
     context: this,
   };
+
+  public showTotalStructureOnMobile = signal<boolean>(true);
 
   public readonly themeClass = AG_Grid_Theme_Class;
 
@@ -92,6 +96,7 @@ export class StructuresComponent {
       comparator: (a, b): number => a - b,
       filter: 'agNumberColumnFilter',
       sort: 'desc',
+      valueFormatter: () => '',
     },
     {
       headerName: 'PDB ID and Chain',
@@ -113,6 +118,7 @@ export class StructuresComponent {
       // valueGetter: (params) => params.data.organism?.scientific_name ?? 'Unspecified',
       filter: 'agTextColumnFilter',
       minWidth: 160,
+      valueFormatter: () => '',
     },
     {
       headerName: 'EC number',
@@ -128,6 +134,7 @@ export class StructuresComponent {
       filter: true,
       cellRenderer: LigandAnnotationRendererComponent,
       width: 170,
+      valueFormatter: () => '',
     },
   ];
 
@@ -135,8 +142,25 @@ export class StructuresComponent {
   public proteins = signal<LigandStructure[]>([]);
   public structures = signal<LigandStructure[]>([]);
 
+  public searchTerm = new FormControl('');
+
   public paginationPageSizeSelector = signal<number[]>([10, 20, 50, 100]);
   private gridApi!: GridApi;
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  public structuresLength = computed(() => this.rowData().length);
+  public structuresPageSize = signal<number>(5);
+  public structuresPageSizeOptions = computed(() => [5, 10, 20, 50, 100]);
+  public structuresPage: LigandStructure[] = [];
+
+  private unfilteredStructures: LigandStructure[] = [];
+
+  public handlePageEvent(event: PageEvent) {
+    const startIndex = event.pageIndex * event.pageSize;
+    const endIndex = startIndex + event.pageSize;
+    this.structuresPage = this.rowData().slice(startIndex, endIndex);
+  }
 
   onGridReady(event: GridReadyEvent<any>) {
     // this.rowData = this.assemblies();
@@ -152,6 +176,8 @@ export class StructuresComponent {
           this.proteins.update(() => [...structures]);
           this.rowData.update(() => [...this.proteins()]);
           this.fetchDataStatistics(structures);
+          this.structuresPage = this.rowData().slice(0, this.structuresPageSize());
+          this.unfilteredStructures = this.rowData();
         }),
         catchError((error) => {
           console.error('Error fetching ligand structures:', error);
@@ -161,11 +187,23 @@ export class StructuresComponent {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
-  }
 
-  // private setLoading(value: boolean) {
-  //   this.gridApi.setGridOption('loading', value);
-  // }
+    this.searchTerm.valueChanges
+      .pipe(
+        map((searchQuery) => {
+          if (searchQuery) {
+            return this.filterItemsBySearchQuery(searchQuery, this.unfilteredStructures);
+          } else {
+            return this.unfilteredStructures;
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((data) => {
+        this.rowData.update(() => data);
+        this.structuresPage = this.rowData().slice(0, this.structuresPageSize());
+      });
+  }
 
   onChange(event: MatRadioChange) {
     const filterSelected = event.value;
@@ -178,6 +216,7 @@ export class StructuresComponent {
       this.gridApi.setColumnsVisible(['interacting_chains'], false);
       this.rowData.update(() => [...this.structures()]);
     }
+    this.showTotalStructureOnMobile.update((value) => !value);
   }
 
   public resetColumns() {
@@ -258,6 +297,13 @@ export class StructuresComponent {
       disableClose: false,
       panelClass: 'ligand-total-Dialog',
       data: data,
+    });
+  }
+
+  private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
+    return items.filter((item) => {
+      const searchQueryLower = searchQuery.toLocaleLowerCase();
+      return item.name?.toLocaleLowerCase().indexOf(searchQueryLower) !== -1;
     });
   }
 }
