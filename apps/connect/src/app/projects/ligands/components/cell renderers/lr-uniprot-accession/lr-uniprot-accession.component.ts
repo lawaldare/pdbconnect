@@ -40,4 +40,17 @@ export class UniProtAccessionRendererComponent implements ICellRendererAngularCo
     }
     return true;
   }
+
+  openLigandPage(ligandId: string): void {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost') {
+      const href = `http://localhost:4200/chemicalCompound/show/${ligandId}`;
+      window.open(href, '_blank');
+    } else {
+      const hrefArray = window.location.href.split('/');
+      hrefArray.pop();
+      const href = hrefArray.join('/') + `/chemicalCompound/show/${ligandId}`;
+      window.open(href, '_blank');
+    }
+  }
 }
