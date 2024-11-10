@@ -41,7 +41,7 @@ export class UniProtAccessionRendererComponent implements ICellRendererAngularCo
     return true;
   }
 
-  openLigandPage(ligandId: string): void {
+  public openLigandPage(ligandId: string): void {
     const hostname = window.location.hostname;
     if (hostname === 'localhost') {
       const href = `http://localhost:4200/chemicalCompound/show/${ligandId}`;
