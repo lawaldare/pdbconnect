@@ -1,7 +1,7 @@
 import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LigandSpecificDatabasesComponentFacade } from './ligand-specific-databases.facade';
-import { GoogleAnalyticsService } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
@@ -18,7 +18,7 @@ export interface MappedCrossLink {
 @Component({
   selector: 'pdbc-ligand-specific-databases',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MaterialModule],
   templateUrl: './ligand-specific-databases.component.html',
   styleUrl: './ligand-specific-databases.component.scss',
 })

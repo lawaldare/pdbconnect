@@ -240,6 +240,12 @@ export class LigandSpecificDatabasesComponentFacade {
             description: 'A database of privately and publicly funded clinical studies conducted around the world.',
             link: `https://www.clinicaltrials.gov/search?term=`,
           };
+        case 'CCDC':
+          return {
+            ...mappedLink,
+            description: 'CSD structures from the Cambridge Crystallographic Data Centre',
+            link: `https://www.ccdc.cam.ac.uk/structures/search?sid=UNICHEM&pid=csd:`,
+          };
         default:
           return mappedLink;
       }
