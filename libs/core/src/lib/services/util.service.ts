@@ -124,4 +124,12 @@ export class UtilService {
     console.log(href);
     window.open(href, '_self');
   }
+
+  public sortByArrayOrder(arrayToBeSorted: any[], sortOrder: any[]) {
+    return arrayToBeSorted ? [...arrayToBeSorted].sort((a, b) => this.sortByArrayOrderComparator(a.resource, b.resource, sortOrder)) : [];
+  }
+
+  private sortByArrayOrderComparator(lhs: string, rhs: string, sortOrder: any[]) {
+    return sortOrder.indexOf(lhs) - sortOrder.indexOf(rhs);
+  }
 }

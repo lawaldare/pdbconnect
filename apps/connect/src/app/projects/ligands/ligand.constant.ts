@@ -1,11 +1,5 @@
 import { ThemeType } from '@pdbc/core';
 
-export interface NavSection {
-  sectionId: string;
-  sectionName: string;
-  isSubSection: boolean;
-}
-
 export const navSections = [
   { sectionId: 'description-section', sectionName: 'Description', isSubSection: false },
   { sectionId: 'properties-section', sectionName: 'Physicochemical properties', isSubSection: false },
@@ -54,7 +48,7 @@ export const ligandHomePageSeaderSearchConfig = {
 export const headerLogoMenuConfig = {
   backgroundColor: '#085F5C',
   logoType: 'PDBe-KB',
-  headerTitle: 'Ligands',
+  headerTitle: 'PDBeChem: Ligands powered by',
 };
 
 export const cofactorTooltip = `Using the PARITY method, ligands are initially compared to a template library of 27 cofactor classes. If they meet the similarity threshold, they are further compared to the representative molecule for the matched cofactor class. If the similarity score remains above the threshold and the ligand is found in a PDB entry with an approved EC number for the matched class, it is classified as cofactor-like; otherwise, it is flagged for manual annotation. For more information, please refer to: https://doi.org/10.1093/bioinformatics/btz115.`;
@@ -248,4 +242,40 @@ export const faqs = [
     content:
       'The PDBe-KB is part of the PDBe Europe initiative, which aims to provide a comprehensive knowledge base on protein structures, ligands, variants, and related complexes. The PDBe-KB partner resources include the PDB, PDBe-KB, AlphaFold, and other PDBe-KB partner resources. The partner resources are responsible for providing experimental and computational 3D-structure models, meta-information, and other data related to protein structures, ligands, variants, and related complexes.',
   },
+];
+
+export const dataBaseOrder = [
+  'ChEMBL',
+  'SureChEMBL',
+  'ChEBI',
+  'CCDC',
+  'PubChem',
+  'PubChem DOTF',
+  'PubChem TPHARMA',
+  'DrugBank',
+  'DrugCentral',
+  'ClinicalTrials',
+  'PharmGKB',
+  'Probes And Drugs',
+  'Guide to Pharmacology',
+  'EPA CompTox Dashboard',
+  'Mcule',
+  'ZINC',
+  'MedChemExpress',
+  'Selleck',
+  'BRENDA',
+  'KEGG LIGAND',
+  'Rhea',
+  'BindingDb',
+  'HMDB',
+  'Recon',
+  'MetaboLights',
+  'LipidMaps',
+  'SwissLipids',
+  'NMRShiftDB',
+  'LINCS',
+  'eMolecules',
+  'fdasrs',
+  'Nikkaji',
+  'ChemicalBook',
 ];

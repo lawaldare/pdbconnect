@@ -52,9 +52,9 @@ export class ClcPrdMainComponent implements OnInit {
   private readonly renderer = inject(Renderer2);
   private readonly dialog = inject(MatDialog);
 
-  public readonly navSections = this.ligandUtilService.navSection();
-
   private readonly globalStore = inject(Store<LigandStoreState>);
+
+  public navSections = toSignal(this.globalStore.select(LigandSelectors.navItems));
 
   public description = toSignal(this.globalStore.select(LigandSelectors.description));
   public downloadOptions = toSignal(this.globalStore.select(LigandSelectors.downloadOptions));

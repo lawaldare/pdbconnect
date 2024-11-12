@@ -1,6 +1,8 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { CrossLink } from '../../../services/aggregated-api.service';
 import { LigandUtilService } from '../../../ligand-util.service';
+import { UtilService } from '@pdbc/core';
+import { dataBaseOrder } from '../../../ligand.constant';
 
 export interface MappedCrossLink {
   resource: string;
@@ -16,6 +18,7 @@ export class LigandSpecificDatabasesComponentFacade {
   private readonly unwantedDatabases = ['actor', 'nih', 'rxnorm', 'dailymed', 'pdbe', 'atlas'];
   public crosslinks = signal<MappedCrossLink[]>([]);
   private readonly ligandUtilService = inject(LigandUtilService);
+  private readonly utilService = inject(UtilService);
   private unmappedCrossLinks = signal<CrossLink[]>([]);
 
   public init(crossLinks: CrossLink[]): void {
@@ -32,7 +35,8 @@ export class LigandSpecificDatabasesComponentFacade {
     }, {} as Record<string, string[]>);
 
     const mappedLinksArray: MappedCrossLink[] = Object.entries(mappedLinks).map(([resource, resourceIds]) => ({ resource, resourceIds }));
-    this.updateMappedLinks(mappedLinksArray);
+    const sortedLinksArray = this.utilService.sortByArrayOrder(mappedLinksArray, dataBaseOrder);
+    this.updateMappedLinks(sortedLinksArray);
   }
 
   private updateMappedLinks(crossLinks: MappedCrossLink[]): void {

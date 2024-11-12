@@ -57,7 +57,7 @@ export class ImageCarouselComponentFacade {
   private getSubstructureNamesAndAtoms(data: Fragment[]): void {
     for (const fragment of data) {
       for (const atom of fragment.atoms) {
-        this.substructureNames.update((values) => [...values, `${fragment.name} fragment`]);
+        this.substructureNames.update((values) => [...new Set([...values, `${fragment.name} fragment`])]);
         this.substructureAtoms.push(atom);
       }
       this.tempFragments.push(fragment);
@@ -135,6 +135,7 @@ export class ImageCarouselComponentFacade {
   }
 
   private updateLigandImage(renderer: Renderer2): void {
+    console.log(this.substructureNames());
     this.setDepictionProperty(renderer, this.ligandEv, this.currentSlide());
     this.setDepictionDescription();
   }

@@ -3,6 +3,7 @@ import { Fragment, LigandStructure } from '../data-models/structure.model';
 import { LigandSummary } from '../data-models/description.model';
 import { DescriptionData } from '../services/aggregated-api.service';
 import { RelatedLigand } from '../data-models/related-ligands.model';
+import { NavSection } from '@pdbc/core';
 
 export const LigandActions = createActionGroup({
   source: 'Ligands Page',
@@ -25,5 +26,6 @@ export const LigandActions = createActionGroup({
     'Toggle Loader': props<{ status: string }>(),
     'Set Empty Page Text': props<{ text: string }>(),
     'Set Fragments': props<{ fragments: Fragment[] }>(),
+    'Set Nav Items': props<{ navItems: NavSection[] }>(),
   },
 });

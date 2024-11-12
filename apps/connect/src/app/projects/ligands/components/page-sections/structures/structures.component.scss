@@ -64,6 +64,8 @@ section.filter {
 
 section.table-wrapper {
   margin-top: 5px;
+
+  // min-height: 100px;
   height: 500px;
 
   @media screen and (width <= 768px) {

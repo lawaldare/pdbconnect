@@ -19,6 +19,7 @@ const initialState: LigandStoreState = {
   loadingState: LoadingState.SUCCESS,
   emptyPageText: '',
   fragments: [],
+  navItems: [],
 };
 
 export const ligandReducer = createReducer(
@@ -71,5 +72,9 @@ export const ligandReducer = createReducer(
   on(LigandActions.setFragments, (state, action) => ({
     ...state,
     fragments: action.fragments,
+  })),
+  on(LigandActions.setNavItems, (state, action) => ({
+    ...state,
+    navItems: action.navItems,
   }))
 );

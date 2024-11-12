@@ -3,6 +3,7 @@ export * from './lib/material.module';
 export * from './lib/constants/header-logo-src';
 export * from './lib/models/header-logo-menu.model';
 export * from './lib/models/header-search.model';
+export * from './lib/models/nav-section.model';
 export * from './lib/enums/theme.enum';
 export * from './lib/directives/truncate-text.directive';
 export * from './lib/directives/click-outside.directive';

@@ -26,7 +26,7 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   public readonly defaultLinks = [
     { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
     { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
-    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training', openInNewTab: true },
+    { name: 'Training', path: 'https://github.com/PDBeurope/pdbe-notebooks/tree/main/pdbe_ligands_tutorials', openInNewTab: true },
   ];
 
   public readonly homepageLinks = [

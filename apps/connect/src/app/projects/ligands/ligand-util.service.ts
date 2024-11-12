@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Fragment, LigandStructure } from './data-models/structure.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
@@ -8,7 +8,6 @@ import { DescriptionData } from './services/aggregated-api.service';
 import { LigandStoreState } from './store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { Router } from '@angular/router';
-import { NavSection, navSections } from './ligand.constant';
 
 export interface StructureFilter {
   cofactorLike: boolean;
@@ -92,13 +91,6 @@ export class LigandUtilService {
     a.download = `${name}.txt`;
     a.click();
     window.URL.revokeObjectURL(url);
-  }
-
-  private readonly mainNavSection = signal<NavSection[]>(navSections);
-  public navSection = this.mainNavSection.asReadonly();
-
-  public setNavSections(navs: NavSection[]): void {
-    this.mainNavSection.update(() => navs);
   }
 
   public redirectLigandPages(description: DescriptionData): void {

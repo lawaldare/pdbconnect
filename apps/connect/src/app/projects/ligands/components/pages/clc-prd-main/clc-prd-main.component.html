@@ -1,6 +1,6 @@
 <main>
   <div class="container">
-    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" />
+    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections() ?? []" />
     <article>
       @if(redirectText$ | async; as text){
       <div class="redirect-text" [innerHTML]="text"></div>

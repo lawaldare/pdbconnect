@@ -16,4 +16,5 @@ export const LigandSelectors = {
   loadingState: createSelector(LigandStoreState, (state: LigandStoreState) => state.loadingState),
   emptyPageText: createSelector(LigandStoreState, (state: LigandStoreState) => state.emptyPageText),
   fragments: createSelector(LigandStoreState, (state: LigandStoreState) => state.fragments),
+  navItems: createSelector(LigandStoreState, (state: LigandStoreState) => state.navItems),
 };

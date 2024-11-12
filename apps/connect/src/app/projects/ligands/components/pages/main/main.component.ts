@@ -13,7 +13,7 @@ import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { mergeMap } from 'rxjs/operators';
+import { filter, mergeMap } from 'rxjs/operators';
 import { cofactorTooltip, drugTooltip, reactantTooltip } from '../../../ligand.constant';
 import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
@@ -64,7 +64,7 @@ export class LigandsMainPageComponent implements OnInit {
   private readonly globalStore = inject(Store<LigandStoreState>);
   private readonly dialog = inject(MatDialog);
 
-  public readonly navSections = this.ligandUtilService.navSection();
+  public navSections = toSignal(this.globalStore.select(LigandSelectors.navItems));
 
   public description = toSignal(this.globalStore.select(LigandSelectors.description));
   public downloadOptions = toSignal(this.globalStore.select(LigandSelectors.downloadOptions));
