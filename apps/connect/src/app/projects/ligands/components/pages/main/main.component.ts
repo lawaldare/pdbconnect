@@ -1,6 +1,5 @@
-import { Component, OnInit, inject, DestroyRef, signal, Renderer2, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, signal, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { DescriptionComponent } from '../../page-sections/description/description.component';
 import { ImageCarouselComponent } from '../../page-sections/image-carousel/image-carousel.component';
 import { PropertiesComponent } from '../../page-sections/properties/properties.component';
@@ -14,21 +13,21 @@ import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { mergeMap, tap } from 'rxjs/operators';
-import { cofactorTooltip, drugTooltip, navSections, reactantTooltip } from '../../../ligand.constant';
+import { filter, mergeMap } from 'rxjs/operators';
+import { cofactorTooltip, drugTooltip, reactantTooltip } from '../../../ligand.constant';
 import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandUtilService } from '../../../ligand-util.service';
-import { LigandStoreState } from '../../../store/ligand.model';
+import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
-import { combineLatest, of } from 'rxjs';
+import { combineLatest } from 'rxjs';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LoadingState } from '../../../enums/loading-state.enum';
-import { Depiction } from '../../../data-models/structure.model';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
+import { LigandStructure } from '../../../data-models/structure.model';
 
 @Component({
   selector: 'pdbc-main',
@@ -54,7 +53,6 @@ import { AggregatedApiService } from '../../../services/aggregated-api.service';
   styleUrls: ['./main.component.scss'],
 })
 export class LigandsMainPageComponent implements OnInit {
-  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   public readonly dlService = inject(DataLayerService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
@@ -66,10 +64,7 @@ export class LigandsMainPageComponent implements OnInit {
   private readonly globalStore = inject(Store<LigandStoreState>);
   private readonly dialog = inject(MatDialog);
 
-  public readonly navSections = navSections;
-
-  @ViewChild('mainImageContainer', { read: ElementRef }) mainImageContainer!: ElementRef;
-  private ligandEv!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  public navSections = toSignal(this.globalStore.select(LigandSelectors.navItems));
 
   public description = toSignal(this.globalStore.select(LigandSelectors.description));
   public downloadOptions = toSignal(this.globalStore.select(LigandSelectors.downloadOptions));
@@ -90,6 +85,8 @@ export class LigandsMainPageComponent implements OnInit {
 
   public isThereStructures = signal<boolean>(true);
 
+  private fragments = toSignal(this.globalStore.select(LigandSelectors.fragments));
+
   ngOnInit(): void {
     combineLatest([
       this.globalStore.select(LigandSelectors.ligandId),
@@ -101,24 +98,23 @@ export class LigandsMainPageComponent implements OnInit {
           this.ligandUtilService.redirectLigandPages(description);
           this.ligandId.set(ligandId);
           this.isThereStructures.update(() => structures.length > 0);
-          const structuresWithAnnotations = (structures ?? []).filter((structure) => structure.annotations);
-          const mappedAnnotations = structuresWithAnnotations.reduce((acc: string[], structure) => {
-            return acc.concat(structure.annotations);
-          }, []);
-          const uniqueAnnotations = [...new Set(mappedAnnotations)];
-          this.annotations.update(() => uniqueAnnotations);
+          this.getAnnotations(structures);
           return this.aggregatedApiService.fetchDepiction(this.ligandId());
-        }),
-        tap((depiction) => {
-          const mainImageContainer = this.mainImageContainer.nativeElement;
-          this.resetRenderer();
-          this.createLigandEnvironment(mainImageContainer, depiction);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(() => {
         this.generateSchemaData();
       });
+  }
+
+  private getAnnotations(structures: LigandStructure[]): void {
+    const structuresWithAnnotations = (structures ?? []).filter((structure) => structure.annotations);
+    const mappedAnnotations = structuresWithAnnotations.reduce((acc: string[], structure) => {
+      return acc.concat(structure.annotations);
+    }, []);
+    const uniqueAnnotations = [...new Set(mappedAnnotations)];
+    this.annotations.update(() => uniqueAnnotations);
   }
 
   private generateSchemaData(): void {
@@ -132,24 +128,8 @@ export class LigandsMainPageComponent implements OnInit {
       panelClass: 'molstarDialog',
       data: {
         moleculeId: this.ligandId(),
-        fragments: this.ligandUtilService.currentFragments,
+        fragments: this.fragments,
       },
     });
-  }
-
-  private createLigandEnvironment(container: ElementRef, prop: Depiction): void {
-    const ligand = this.renderer.createElement('pdb-ligand-env');
-    this.renderer.appendChild(container, ligand);
-    this.renderer.setProperty(ligand, 'id', 'ligand-int-env');
-    this.renderer.setProperty(ligand, 'depiction', prop);
-    this.ligandEv = ligand;
-  }
-
-  private resetRenderer(): void {
-    const mainImageContainer = this.mainImageContainer.nativeElement;
-
-    if (this.ligandEv) {
-      this.renderer.removeChild(mainImageContainer, this.ligandEv);
-    }
   }
 }

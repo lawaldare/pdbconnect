@@ -13,6 +13,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSortModule } from '@angular/material/sort';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @NgModule({
   exports: [
@@ -30,6 +31,7 @@ import { MatSortModule } from '@angular/material/sort';
     MatTableModule,
     MatCheckboxModule,
     MatSortModule,
+    MatExpansionModule,
   ],
 })
 export class MaterialModule {}

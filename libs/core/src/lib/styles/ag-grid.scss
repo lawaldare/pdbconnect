@@ -83,3 +83,14 @@ ag-grid-angular {
     }
   }
 }
+
+#latest-release-grid {
+  .ag-row-odd {
+    background-color: #fff !important;
+  }
+
+  .ag-row-hover:not(.ag-full-width-row)::before,
+  .ag-row-hover.ag-full-width-row.ag-row-group::before {
+    background-color: #fff !important;
+  }
+}

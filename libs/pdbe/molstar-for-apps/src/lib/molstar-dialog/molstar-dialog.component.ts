@@ -147,7 +147,6 @@ export class MolstarDialogComponent implements AfterViewInit {
 
     this.molstarViewInstance.render(container, molstarParams);
     this.molstarViewInstance.events.loadComplete.subscribe(() => {
-      console.log('Molecule loaded successfully');
       const label = `Atom-labelled ${this.dialogData.moleculeId.toUpperCase()} (no substructure highlighted)`;
       if (this.count() === 0 || this.selectedFramentObject?.name === label) {
         this.displayLabel();
@@ -164,7 +163,7 @@ export class MolstarDialogComponent implements AfterViewInit {
       for (const component of structure.components) {
         const sel = await this.molstarViewInstance.plugin.builders.structure.representation.addRepresentation(component.cell, {
           type: 'label',
-          typeParams: { level: 'element', borderColor: 'black', sizeFactor: 1.5 },
+          typeParams: { level: 'element', borderColor: 'black', sizeFactor: 1 },
         });
         this.cells.push(sel);
       }

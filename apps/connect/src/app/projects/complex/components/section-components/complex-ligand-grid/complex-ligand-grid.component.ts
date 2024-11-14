@@ -58,4 +58,14 @@ export class ComplexLigandGridComponent implements AfterViewInit {
       this.renderer.removeChild(imageContainer, this.ligandEv);
     }
   }
+
+  public openLigandPage(ligandId: string) {
+    this.googleAnalyticsService.logClickEvents('click_Complex_ligand_link', 'Related Ligands', 'click_complex_ligand', ligandId);
+    const trimmedValue = ligandId.trim();
+    const origin = window.location.origin;
+    const pathname = '/chemicalCompound/show/';
+    const baseHref = window.location.hostname === 'localhost' ? '' : '/pdbe/connect';
+    const href = origin + baseHref + pathname + trimmedValue;
+    window.open(href, '_self');
+  }
 }

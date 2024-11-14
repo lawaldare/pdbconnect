@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { LigandStoreState } from './ligand.model';
+import { LigandStoreState } from './ligand-store.model';
 import { LigandActions } from './ligand.actions';
 import { LigandSummary } from '../data-models/description.model';
 import { DescriptionData } from '../services/aggregated-api.service';
@@ -18,6 +18,8 @@ const initialState: LigandStoreState = {
   supercomponents: [],
   loadingState: LoadingState.SUCCESS,
   emptyPageText: '',
+  fragments: [],
+  navItems: [],
 };
 
 export const ligandReducer = createReducer(
@@ -66,5 +68,13 @@ export const ligandReducer = createReducer(
       { name: 'Model SDF', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${state.ligandId}_model.sdf`, downloadable: true },
       { name: 'Model CML', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${state.ligandId}_model.cml`, downloadable: true },
     ],
+  })),
+  on(LigandActions.setFragments, (state, action) => ({
+    ...state,
+    fragments: action.fragments,
+  })),
+  on(LigandActions.setNavItems, (state, action) => ({
+    ...state,
+    navItems: action.navItems,
   }))
 );

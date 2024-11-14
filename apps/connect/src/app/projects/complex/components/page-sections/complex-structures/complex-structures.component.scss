@@ -1,3 +1,21 @@
 .regex {
   display: block;
 }
+
+section {
+  display: flex;
+  width: 100%;
+
+  // align-items: center;
+  justify-content: space-between;
+
+  .table {
+    width: 60%;
+    margin-top: 5px;
+    height: 500px;
+  }
+
+  .molstar {
+    width: 40%;
+  }
+}

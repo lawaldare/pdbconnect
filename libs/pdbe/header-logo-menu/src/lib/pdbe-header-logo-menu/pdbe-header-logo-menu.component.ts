@@ -3,6 +3,12 @@ import { CommonModule } from '@angular/common';
 
 import { HeaderLogoMenuConfig, PDBE_HEADER_LOGO_SRC, PDBE_KB_HEADER_LOGO_SRC } from '@pdbc/core';
 
+export interface Link {
+  name: string;
+  path: string;
+  openInNewTab: boolean;
+}
+
 @Component({
   selector: 'pdbc-pdbe-header-logo-menu',
   standalone: true,
@@ -15,14 +21,23 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   public headerLogoSrc = '';
   public isMobile = signal(false);
 
-  public readonly links = [
-    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
-    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
-    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
+  public links!: Link[];
+
+  public readonly defaultLinks = [
+    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
+    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
+    { name: 'Training', path: 'https://github.com/PDBeurope/pdbe-notebooks/tree/main/pdbe_ligands_tutorials', openInNewTab: true },
+  ];
+
+  public readonly homepageLinks = [
+    { name: 'Home', path: '/', openInNewTab: false },
+    { name: 'Latest releases', path: '/latest-releases', openInNewTab: false },
+    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
   ];
 
   ngOnInit() {
     this.headerLogoSrc = this.headerConfig.logoType === 'PDBe' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
+    this.links = this.headerConfig.isHomePage ? this.homepageLinks : this.defaultLinks;
   }
 
   public get getHeaderLogoClass(): string {
@@ -31,5 +46,16 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
 
   public showMobileMenu(): void {
     this.isMobile.update((value) => !value);
+  }
+
+  public openHomepageNavLinks(link: Link): void {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost') {
+      window.open(link.path, link.openInNewTab ? '_blank' : '_self');
+    } else {
+      const href = window.location.href;
+      const hrefLink = href.split('/').slice(0, -1).join('/') + link.path;
+      window.open(hrefLink, link.openInNewTab ? '_blank' : '_self');
+    }
   }
 }

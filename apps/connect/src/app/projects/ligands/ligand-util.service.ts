@@ -1,11 +1,11 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Fragment, LigandStructure } from './data-models/structure.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
 import { LigandActions } from './store/ligand.actions';
 import { LigandReleasedStatus } from './enums/ligand-release.enum';
 import { DescriptionData } from './services/aggregated-api.service';
-import { LigandStoreState } from './store/ligand.model';
+import { LigandStoreState } from './store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { Router } from '@angular/router';
 
@@ -93,18 +93,17 @@ export class LigandUtilService {
     window.URL.revokeObjectURL(url);
   }
 
-  private readonly fragments = signal<Fragment[]>([]);
-  public currentFragments = this.fragments.asReadonly();
-
-  setFragments(fragments: Fragment[]): void {
-    this.fragments.update(() => fragments);
-  }
-
   public redirectLigandPages(description: DescriptionData): void {
     if (description.released === LigandReleasedStatus.OBSOLETE && description.superseded_by) {
       const text = `The chemical component you are trying to view (${description.ligandId}) has been obsoleted. You have been redirected to the component which superceded it.`;
       this.globalStore.dispatch(LigandActions.setEmptyPageText({ text }));
       this.router.navigate(['/chemicalCompound/show', description.superseded_by]);
+      return;
+    }
+
+    if (description.released === LigandReleasedStatus.OBSOLETE) {
+      const text = `The chemical component you are trying to view (${description.ligandId}) has been obsoleted. Please check back later.`;
+      this.globalStore.dispatch(LigandActions.setEmptyPageText({ text }));
       return;
     }
 

@@ -103,3 +103,16 @@ mat-tab-header {
 .mat-mdc-form-field-subscript-wrapper {
   display: none !important;
 }
+
+.mat-expansion-panel {
+  box-shadow: none !important;
+  border-bottom: 1px solid #e5e8ed;
+}
+
+.mat-expansion-panel-header {
+  padding: 16px 0 !important;
+}
+
+.mat-expansion-panel-body {
+  padding: 16px 0 !important;
+}

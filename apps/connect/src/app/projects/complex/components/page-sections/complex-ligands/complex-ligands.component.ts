@@ -39,7 +39,7 @@ export class ComplexLigandsComponent {
               ligandId: key,
             };
             acc.push(mappedObj);
-            return acc.sort((a, b) => b.num_ligand_instances - a.num_ligand_instances);
+            return acc.sort((a, b) => b.num_pdb_entries - a.num_pdb_entries);
           }, []);
         }),
         catchError((error) => {

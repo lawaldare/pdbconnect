@@ -2,13 +2,7 @@
 <div class="ligand-container">
   <div class="image-container" #imageContainer></div>
   <div class="ligand-description">
-    <a
-      [routerLink]="['/chemicalCompound/show', ligand().ligandId]"
-      matTooltipClass="complex-name-tooltip"
-      [matTooltip]="ligand().name"
-      matTooltipPosition="above"
-      (click)="googleAnalyticsService.logClickEvents('click_Complex_ligand_link', 'Related Ligands', 'click_complex_ligand', ligand().ligandId)"
-    >
+    <a matTooltipClass="complex-name-tooltip" [matTooltip]="ligand().name" matTooltipPosition="above" (click)="openLigandPage(ligand().ligandId)">
       {{ ligand().ligandId }}
       <i class="icon icon-link icon-common"></i>
     </a>

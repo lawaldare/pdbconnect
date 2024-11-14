@@ -1,5 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { LigandStoreState } from './ligand.model';
+import { LigandStoreState } from './ligand-store.model';
 import { LIGAND_STORE_STATE_KEY } from './ligand.reducer';
 
 const LigandStoreState = createFeatureSelector<LigandStoreState>(LIGAND_STORE_STATE_KEY);
@@ -15,4 +15,6 @@ export const LigandSelectors = {
   supercomponents: createSelector(LigandStoreState, (state: LigandStoreState) => state.supercomponents),
   loadingState: createSelector(LigandStoreState, (state: LigandStoreState) => state.loadingState),
   emptyPageText: createSelector(LigandStoreState, (state: LigandStoreState) => state.emptyPageText),
+  fragments: createSelector(LigandStoreState, (state: LigandStoreState) => state.fragments),
+  navItems: createSelector(LigandStoreState, (state: LigandStoreState) => state.navItems),
 };

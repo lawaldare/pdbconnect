@@ -57,7 +57,7 @@ export class LigandSmilesDirective implements OnChanges {
     const icon = this.renderer.createElement('i');
     this.renderer.addClass(icon, 'icon');
     this.renderer.addClass(icon, 'icon-common');
-    this.renderer.addClass(icon, this.truncated ? 'icon-arrow-down' : 'icon-arrow-up'); // Toggle the icon classes
+    this.renderer.addClass(icon, this.truncated ? 'icon-angle-down' : 'icon-angle-up'); // Toggle the icon classes
     this.renderer.setStyle(icon, 'margin-left', '5px'); // Add some spacing between the text and icon
 
     this.renderer.appendChild(showMore, icon);

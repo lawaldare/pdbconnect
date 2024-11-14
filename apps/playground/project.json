@@ -16,6 +16,7 @@
         "stylePreprocessorOptions": {
           "includePaths": ["libs/core/src/lib/styles"]
         },
+        "allowedImageErrorLevels": ["warning"],
         "polyfills": ["zone.js"],
         "tsConfig": "apps/playground/tsconfig.app.json",
         "inlineStyleLanguage": "scss",

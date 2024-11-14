@@ -1,9 +1,9 @@
 <main>
   <div class="container">
-    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" />
+    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections() ?? []" />
     <article>
       @if(redirectText$ | async; as text){
-      <p class="redirect-text">{{ text }}</p>
+      <div class="redirect-text" [innerHTML]="text"></div>
       } @if(loaded() === status.SUCCESS){
       <section class="hero">
         <header>
@@ -43,13 +43,6 @@
       }
       <section class="interaction">
         <pdbc-interaction />
-      </section>
-      <section class="mobile-interaction">
-        <!-- <h3>Interaction statistics</h3>
-        <div class="content">The interaction is unavailable for devices with smaller screen. Please use a larger screen to see the interaction.</div> -->
-        <div class="ligandEnv-content">
-          <div class="image-container" #mainImageContainer></div>
-        </div>
       </section>
       <section class="related-ligands">
         <pdbc-related-ligands />

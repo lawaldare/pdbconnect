@@ -1,9 +1,9 @@
 <main>
   <div class="container">
-    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" />
+    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections() ?? []" />
     <article>
       @if(redirectText$ | async; as text){
-      <p class="redirect-text">{{ text }}</p>
+      <div class="redirect-text" [innerHTML]="text"></div>
       } @if(loaded() === status.SUCCESS){
       <section class="hero">
         <header>
@@ -39,6 +39,9 @@
       } @if(isThereStructures()){
       <section class="structure">
         <pdbc-structures />
+      </section>
+      <section class="ligand-specific-databases">
+        <pdbc-ligand-specific-databases />
       </section>
       } } @else if(loaded() === status.LOADING) {
       <div class="loader">

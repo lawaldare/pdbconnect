@@ -7,4 +7,5 @@ export interface HeaderSearchConfig {
   backgroundColor?: string;
   type?: string;
   examples?: Example[];
+  isHomepage?: boolean;
 }

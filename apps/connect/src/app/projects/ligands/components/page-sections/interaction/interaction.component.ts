@@ -10,9 +10,11 @@ import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { InteractionsHeatmapComponent } from '../../../components/interactions-heatmap/interactions-heatmap.component';
-import { LigandStoreState } from '../../../store/ligand.model';
+import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
+import { navSections } from '../../../ligand.constant';
+import { LigandActions } from '../../../store/ligand.actions';
 
 @Component({
   selector: 'pdbc-interaction',
@@ -75,6 +77,8 @@ export class InteractionComponent implements AfterViewInit {
             this.renderer.setProperty(this.ligandEv, 'contactType', '["TOTAL"]');
           } else {
             this.showLigandHeatmap.set(false);
+            const tempNavsections = navSections.filter((section) => section.sectionId !== 'interaction-section');
+            this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
           }
           return EMPTY;
         }),

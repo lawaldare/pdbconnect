@@ -2,7 +2,7 @@
 
 section {
   .container {
-    height: 120px;
+    height: 130px;
 
     form {
       display: flex;
@@ -10,6 +10,7 @@ section {
       justify-content: space-between;
       gap: 20px;
       position: relative;
+      margin-bottom: 10px;
 
       button {
         margin-bottom: 8px !important;
@@ -58,6 +59,10 @@ section {
         color: #fff;
         font-size: 16px;
         cursor: pointer;
+
+        @media only screen and (width <= 768px) {
+          display: none;
+        }
 
         a {
           font-size: 16px;
