@@ -68,7 +68,7 @@ build:
       when: never
     - when: always
   script:
-    - npx nx run-many -t build --parallel=3 --exclude=playground
+    - npx nx run-many -t build --parallel=3 --exclude=playground -c $BUILD_CONF
     - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
     - cat dynamic-gitlab-ci.yml
   artifacts:
