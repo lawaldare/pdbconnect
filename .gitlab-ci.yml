@@ -66,6 +66,7 @@ build:
         BUILD_CONF: staging
     - if: "$CI_COMMIT_BRANCH == 'playground'"
       when: never
+    - when: always
   script:
     - npx nx run-many -t build --parallel=3 --exclude=playground
     - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
