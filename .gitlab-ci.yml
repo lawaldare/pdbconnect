@@ -64,6 +64,8 @@ build:
     - if: "$CI_COMMIT_BRANCH == 'main'"
       variables:
         BUILD_CONF: staging
+    - if: "$CI_COMMIT_BRANCH == 'playground'"
+      when: never
   script:
     - npx nx run-many -t build --parallel=3 --exclude=playground
     - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
@@ -75,9 +77,6 @@ build:
     expire_in: 1 week
   tags:
     - pdbe-docker
-  except:
-    refs:
-      - playground
 
 storybook_build:
   stage: build
