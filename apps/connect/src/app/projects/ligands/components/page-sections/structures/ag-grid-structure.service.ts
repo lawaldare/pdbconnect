@@ -67,7 +67,6 @@ export class AgGridStructureService {
       comparator: (a, b): number => {
         return a.scientific_name?.toLocaleLowerCase().localeCompare(b.scientific_name?.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
       },
-      // valueGetter: (params) => params.data.organism?.scientific_name ?? 'Unspecified',
       filter: 'agTextColumnFilter',
       minWidth: 160,
       valueFormatter: () => '',
