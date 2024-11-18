@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction, LigandStructure } from '../../../data-models/structure.model';
 import { PDBIntxData } from '../../../data-models/interaction.model';
-import { ActivatedRoute } from '@angular/router';
-import { catchError, EMPTY, forkJoin, map, mergeMap, of, switchMap } from 'rxjs';
+import { catchError, EMPTY, forkJoin, map, mergeMap, of, switchMap, throwError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -34,7 +33,6 @@ export class InteractionComponent implements AfterViewInit {
   private ligandEv!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   private readonly aggregatedApiService = inject(AggregatedApiService);
-  private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
   private readonly ligandUtilService = inject(LigandUtilService);
@@ -76,11 +74,13 @@ export class InteractionComponent implements AfterViewInit {
             this.renderer.setProperty(this.ligandEv, 'interaction', interaction[this.ligandId()]);
             this.renderer.setProperty(this.ligandEv, 'contactType', '["TOTAL"]');
           } else {
-            this.showLigandHeatmap.set(false);
-            const tempNavsections = navSections.filter((section) => section.sectionId !== 'interaction-section');
-            this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
+            this.updateWhenNoInteraction();
           }
           return EMPTY;
+        }),
+        catchError(() => {
+          this.updateWhenNoInteraction();
+          return throwError('Failed to fetch interaction data');
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -89,6 +89,12 @@ export class InteractionComponent implements AfterViewInit {
 
   public changeLigandEnvironmentFilters(filterString: string) {
     this.renderer.setAttribute(this.ligandEv, 'contact-type', filterString);
+  }
+
+  private updateWhenNoInteraction(): void {
+    this.showLigandHeatmap.set(false);
+    const tempNavsections = navSections.filter((section) => section.sectionId !== 'interaction-section');
+    this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
   }
 
   public downloadInteraction(): void {

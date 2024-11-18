@@ -22,13 +22,28 @@
   <section class="table-wrapper">
     <ag-grid-angular
       class="ag-theme-quartz"
-      [rowData]="rowData()"
-      [columnDefs]="colDefs"
-      [gridOptions]="gridOptions"
-      (gridReady)="onGridReady($event)"
+      [rowData]="structureRowData()"
+      [columnDefs]="structureColDefs()"
+      [gridOptions]="gridOptions()"
+      (gridReady)="onStructureGridReady($event)"
       [paginationPageSizeSelector]="paginationPageSizeSelector()"
     />
   </section>
+
+  @if(polymerRowData().length){
+  <section class="polymers">
+    <p>Found in following PDB entries as part of polymer:</p>
+    <section class="table-wrapper">
+      <ag-grid-angular
+        class="ag-theme-quartz"
+        [rowData]="polymerRowData()"
+        [columnDefs]="polymerColDefs()"
+        [gridOptions]="gridOptions()"
+        [paginationPageSizeSelector]="paginationPageSizeSelector()"
+      />
+    </section>
+  </section>
+  }
 
   <section class="structure-cards">
     <div class="search-box">

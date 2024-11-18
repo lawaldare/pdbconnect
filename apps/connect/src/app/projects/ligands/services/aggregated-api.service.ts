@@ -23,6 +23,7 @@ export interface DescriptionData {
   released: string;
   superseded_by: string | undefined;
   ligandId?: string;
+  first_observed_in: string;
 }
 
 export interface downloadData {
@@ -158,6 +159,7 @@ export class AggregatedApiService {
       subcomponent_occurrences: ligandSummary.subcomponent_occurrences,
       released: ligandSummary.release_status,
       superseded_by: ligandSummary.superseded_by,
+      first_observed_in: ligandSummary.first_observed_in,
     };
   }
 

@@ -82,6 +82,13 @@
       ></i>
     </article>
   </div>
+  } @if(description().first_observed_in){
+  <div class="info-row">
+    <span class="info-row-title">First observed in</span>
+    <div class="info-row-content">
+      <a href="" target="_blank">{{ description().first_observed_in }}</a>
+    </div>
+  </div>
   }
 
   <div class="info-row source-row">

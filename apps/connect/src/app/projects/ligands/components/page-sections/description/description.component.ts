@@ -1,4 +1,4 @@
-import { Component, DestroyRef, effect, inject, input, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DescriptionData } from '../../../services/aggregated-api.service';
 import { GoogleAnalyticsService, MaterialModule, TruncateTextDirective, UtilService } from '@pdbc/core';
