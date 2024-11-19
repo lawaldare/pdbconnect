@@ -177,7 +177,7 @@ export class StructuresComponent {
       const total = this.chainPipe.transform(structure.interacting_chains);
       structures += total;
     }
-    this.dataStatistics.set(`Found as a bound in ${proteins} distinct proteins and ${structures} PDB Structures. Group data by: `);
+    this.dataStatistics.set(`Found as a bound ligand in ${proteins} distinct proteins and ${structures} PDB Structures. Group data by: `);
   }
 
   public downloadMMCIF() {
