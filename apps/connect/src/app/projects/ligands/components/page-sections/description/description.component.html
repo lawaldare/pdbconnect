@@ -85,9 +85,18 @@
   } @if(description().first_observed_in){
   <div class="info-row">
     <span class="info-row-title">First observed in</span>
-    <div class="info-row-content">
-      <a href="" target="_blank">{{ description().first_observed_in }}</a>
-    </div>
+    <article>
+      <div class="info-row-content">
+        <a href="" target="_blank">{{ description().first_observed_in }}</a>
+      </div>
+      <i
+        class="icon icon-common icon-clone"
+        matTooltipClass="description-tooltip"
+        matTooltip="Copy the First observed in"
+        matTooltipPosition="above"
+        (click)="copy(description().first_observed_in, 'First observed in')"
+      ></i>
+    </article>
   </div>
   }
 
@@ -113,21 +122,20 @@
     <span class="info-row-title">Is part of</span>
     <article class="article-supercomponents">
       <div class="info-row-content supercomponents" libIsPartOf [truncateTexts]="supercomponents()"></div>
+      <!-- <i
+        class="icon icon-common icon-clone"
+        matTooltipClass="description-tooltip"
+        matTooltip="Copy the ID"
+        matTooltipPosition="above"
+        (click)="copy(supercomponents().join(', '), 'List of ids')"
+      ></i> -->
       <div class="supercomponent-actions">
         @if(supercomponents().length > 1){
         <button class="vf-button vf-button--link" (click)="downloadIds()">
           Download list of IDs
           <i class="icon icon-common icon-download"></i>
         </button>
-        } @else {
-        <i
-          class="icon icon-common icon-clone"
-          matTooltipClass="description-tooltip"
-          matTooltip="Copy the ID"
-          matTooltipPosition="above"
-          (click)="copy(supercomponents().join(', '), 'List of ids')"
-        ></i>
-        }
+        } @else { }
       </div>
     </article>
   </div>

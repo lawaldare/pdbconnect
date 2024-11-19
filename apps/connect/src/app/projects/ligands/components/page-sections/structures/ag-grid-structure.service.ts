@@ -92,7 +92,7 @@ export class AgGridStructureService {
     {
       headerName: 'PDB Entry ID',
       field: 'pdb_id',
-      width: 300,
+      width: 380,
       cellRenderer: (params: any) => `
       <a
 				href=""
@@ -103,20 +103,14 @@ export class AgGridStructureService {
       </a>`,
     },
     {
-      headerName: 'Type',
-      field: 'ligand_type',
-      width: 300,
-      valueFormatter: (params) => (params.value === 'p' ? 'Polymer component' : 'Bound ligand'),
-    },
-    {
       headerName: 'Total',
       field: 'ligand_total_number',
-      width: 260,
+      width: 370,
     },
     {
       headerName: 'Distinct',
       field: 'ligand_distinct_number',
-      width: 260,
+      width: 370,
     },
   ]);
 

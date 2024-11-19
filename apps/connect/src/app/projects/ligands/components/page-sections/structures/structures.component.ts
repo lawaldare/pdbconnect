@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Chain, LigandStructure, Polymer } from '../../../data-models/structure.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DownloadFileTypeService, DownloadService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
-import { catchError, map, tap } from 'rxjs/operators';
+import { DownloadFileTypeService, DownloadService, GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
+import { catchError, map, take, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
 import { environment } from '../../../../../../environments/environment';
@@ -20,6 +20,7 @@ import { LigandECNumberPipe } from '../../../pipes/ec-numbers.pipe';
 import { cofactorTooltip, drugTooltip, reactantTooltip, unannotatedTooltip } from '../../../ligand.constant';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { AgGridStructureService } from './ag-grid-structure.service';
+import { LigandActions } from '../../../store/ligand.actions';
 
 @Component({
   selector: 'pdbc-structures',
@@ -68,6 +69,8 @@ export class StructuresComponent {
   public paginationPageSizeSelector = signal<number[]>([10, 20, 50, 100]);
   private gridApi!: GridApi;
 
+  public isThereStructures = signal<boolean>(true);
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   public structuresLength = computed(() => this.structureRowData().length);
@@ -89,14 +92,18 @@ export class StructuresComponent {
       this.globalStore.select(LigandSelectors.ligandId),
       this.globalStore.select(LigandSelectors.structures),
       this.globalStore.select(LigandSelectors.polymers),
+      this.globalStore.select(LigandSelectors.navItems).pipe(take(1)),
     ])
       .pipe(
         tap(([ligandId]) => {
           this.ligandId.set(ligandId);
           this.agGridService.ligandId.set(ligandId);
         }),
-        map(([, structures, polymers]) => {
+        map(([, structures, polymers, navItems]) => {
           this.generateStructures(structures);
+          if (structures.length === 0) {
+            this.updateNavItemsWhenNoStructure(navItems);
+          }
           this.proteins.update(() => [...structures]);
           this.structureRowData.update(() => [...this.proteins()]);
           this.polymerRowData.update(() => [...polymers]);
@@ -148,6 +155,11 @@ export class StructuresComponent {
   public resetColumns() {
     this.gridApi.setColumnsVisible(['pdb_id'], false);
     this.gridApi.setColumnsVisible(['interacting_chains'], true);
+  }
+
+  private updateNavItemsWhenNoStructure(navItems: NavSection[]): void {
+    const tempNavsections = navItems.filter((section) => section.sectionId !== 'interaction-section');
+    this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
   }
 
   private generateStructures(data: LigandStructure[]): void {

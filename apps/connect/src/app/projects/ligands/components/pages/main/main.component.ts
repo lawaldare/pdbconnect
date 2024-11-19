@@ -13,7 +13,7 @@ import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { filter, mergeMap } from 'rxjs/operators';
+import { filter, mergeMap, take } from 'rxjs/operators';
 import { cofactorTooltip, drugTooltip, navSections, reactantTooltip } from '../../../ligand.constant';
 import { DataLayerService, GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
@@ -93,16 +93,14 @@ export class LigandsMainPageComponent implements OnInit {
       this.globalStore.select(LigandSelectors.ligandId),
       this.globalStore.select(LigandSelectors.structures),
       this.globalStore.select(LigandSelectors.description),
-      this.globalStore.select(LigandSelectors.navItems),
     ])
       .pipe(
-        mergeMap(([ligandId, structures, description, navItems]) => {
-          console.log(ligandId, structures, description);
+        mergeMap(([ligandId, structures, description]) => {
+          console.log(structures);
           this.ligandUtilService.redirectLigandPages(description);
           this.ligandId.set(ligandId);
           this.isThereStructures.update(() => structures.length > 0);
           this.getAnnotations(structures);
-          // this.updateWhenNoStructures(navItems);
           return this.aggregatedApiService.fetchDepiction(this.ligandId());
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -110,15 +108,6 @@ export class LigandsMainPageComponent implements OnInit {
       .subscribe(() => {
         this.generateSchemaData();
       });
-
-    // if (!this.isThereStructures()) {
-    //   this.updateWhenNoStructures();
-    // }
-  }
-
-  private updateWhenNoStructures(navItems: NavSection[]): void {
-    const tempNavsections = navItems.filter((section) => section.sectionId !== 'structures-section');
-    this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
   }
 
   private getAnnotations(structures: LigandStructure[]): void {
