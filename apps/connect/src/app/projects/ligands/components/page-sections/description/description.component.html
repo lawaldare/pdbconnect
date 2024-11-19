@@ -82,22 +82,6 @@
       ></i>
     </article>
   </div>
-  } @if(description().first_observed_in){
-  <div class="info-row">
-    <span class="info-row-title">First observed in</span>
-    <article>
-      <div class="info-row-content">
-        <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + description().first_observed_in" target="_blank">{{ description().first_observed_in }}</a>
-      </div>
-      <i
-        class="icon icon-common icon-clone"
-        matTooltipClass="description-tooltip"
-        matTooltip="Copy the First observed in"
-        matTooltipPosition="above"
-        (click)="copy(description().first_observed_in, 'First observed in')"
-      ></i>
-    </article>
-  </div>
   }
 
   <div class="info-row source-row">
@@ -137,6 +121,22 @@
         </button>
         } @else { }
       </div>
+    </article>
+  </div>
+  } @if(description().first_observed_in){
+  <div class="info-row">
+    <span class="info-row-title">First observed in</span>
+    <article>
+      <div class="info-row-content">
+        <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + description().first_observed_in" target="_blank">{{ description().first_observed_in }}</a>
+      </div>
+      <i
+        class="icon icon-common icon-clone"
+        matTooltipClass="description-tooltip"
+        matTooltip="Copy the First observed in"
+        matTooltipPosition="above"
+        (click)="copy(description().first_observed_in, 'First observed in')"
+      ></i>
     </article>
   </div>
   } @if(isMainLigandId()){
