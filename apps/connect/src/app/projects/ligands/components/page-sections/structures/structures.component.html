@@ -30,12 +30,6 @@
     />
   </section>
 
-  @if(polymerRowData().length){
-  <section class="polymers">
-    <p>Found as a part of a polymer in {{ polymerRowData().length }} PDB structures. <a [href]="polymersUrl()" target="_blank">See detailed list here.</a></p>
-  </section>
-  }
-
   <section class="structure-cards">
     <div class="search-box">
       <input type="search" [formControl]="searchTerm" placeholder="Search by protein name" />
@@ -123,4 +117,10 @@
     >
     </mat-paginator>
   </section>
+
+  @if(polymerRowData().length){
+  <section class="polymers">
+    <p>Found as a part of a polymer in {{ polymerRowData().length }} PDB structures. <a [href]="polymersUrl()" target="_blank">See detailed list here.</a></p>
+  </section>
+  }
 </div>
