@@ -32,16 +32,7 @@
 
   @if(polymerRowData().length){
   <section class="polymers">
-    <p>Found as a part of a polymer in {{ polymerRowData().length }} PDB structures</p>
-    <section class="table-wrapper">
-      <ag-grid-angular
-        class="ag-theme-quartz"
-        [rowData]="polymerRowData()"
-        [columnDefs]="polymerColDefs()"
-        [gridOptions]="gridOptions()"
-        [paginationPageSizeSelector]="paginationPageSizeSelector()"
-      />
-    </section>
+    <p>Found as a part of a polymer in {{ polymerRowData().length }} PDB structures. <a [href]="polymersUrl()" target="_blank">See detailed list here.</a></p>
   </section>
   }
 

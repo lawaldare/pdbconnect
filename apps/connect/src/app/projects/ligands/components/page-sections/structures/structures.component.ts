@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Chain, LigandStructure, Polymer } from '../../../data-models/structure.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DownloadFileTypeService, DownloadService, GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
+import { DownloadFileTypeService, DownloadService, GoogleAnalyticsService, MaterialModule, NavSection, UtilService } from '@pdbc/core';
 import { catchError, map, take, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
@@ -37,6 +37,7 @@ export class StructuresComponent {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   private readonly downloadService = inject(DownloadService);
   private readonly agGridService = inject(AgGridStructureService);
+  private readonly utilService = inject(UtilService);
 
   private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
 
@@ -57,7 +58,6 @@ export class StructuresComponent {
   public showTotalStructureOnMobile = signal<boolean>(true);
 
   public readonly structureColDefs = this.agGridService.structureColDefs;
-  public readonly polymerColDefs = this.agGridService.polymerColDefs;
 
   public structureRowData = signal<LigandStructure[]>([]);
   public polymerRowData = signal<Polymer[]>([]);
@@ -78,6 +78,8 @@ export class StructuresComponent {
 
   private unfilteredStructures: LigandStructure[] = [];
 
+  public polymersUrl = signal<string>('');
+
   public handlePageEvent(event: PageEvent) {
     const startIndex = event.pageIndex * event.pageSize;
     const endIndex = startIndex + event.pageSize;
@@ -95,6 +97,7 @@ export class StructuresComponent {
         tap(([ligandId]) => {
           this.ligandId.set(ligandId);
           this.agGridService.ligandId.set(ligandId);
+          this.polymersUrl.set(this.utilService.generateSortedQueryURL(ligandId, 'modified_compound_id'));
         }),
         map(([, structures, polymers]) => {
           this.generateStructures(structures);

@@ -88,31 +88,6 @@ export class AgGridStructureService {
       valueFormatter: () => '',
     },
   ]);
-  public readonly polymerColDefs = signal<ColDef[]>([
-    {
-      headerName: 'PDB Entry ID',
-      field: 'pdb_id',
-      width: 380,
-      cellRenderer: (params: any) => `
-      <a
-				href='https://www.ebi.ac.uk/pdbe/entry/pdb/${params.data.pdb_id}'
-				target="_blank"
-			>
-				${params.data.pdb_id}
-				<i class="icon icon-link icon-common" style="margin-left: 5px;"></i>
-      </a>`,
-    },
-    {
-      headerName: 'Total',
-      field: 'ligand_total_number',
-      width: 370,
-    },
-    {
-      headerName: 'Distinct',
-      field: 'ligand_distinct_number',
-      width: 370,
-    },
-  ]);
 
   public openTotalDialog(data: Chain[]) {
     this.dialog.open(LigandTotalDialogComponent, {
