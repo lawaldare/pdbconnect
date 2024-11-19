@@ -1,18 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnInit, Renderer2, signal } from '@angular/core';
-import { PdbeChipsComponent } from '@pdbe-lib/chips';
-import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
-import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { DescriptionComponent } from '../../page-sections/description/description.component';
 import { ImageCarouselComponent } from '../../page-sections/image-carousel/image-carousel.component';
 import { PropertiesComponent } from '../../page-sections/properties/properties.component';
 import { StructuresComponent } from '../../page-sections/structures/structures.component';
-import { combineLatest, map } from 'rxjs';
+import { combineLatest, map, take } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { LigandUtilService } from '../../../ligand-util.service';
-import { GoogleAnalyticsService } from '@pdbc/core';
+import { GoogleAnalyticsService, NavSection } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandSelectors } from '../../../store/ligand.selectors';
 import { Store } from '@ngrx/store';
@@ -22,16 +19,16 @@ import { MatDialog } from '@angular/material/dialog';
 import { LoadingState } from '../../../enums/loading-state.enum';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
+import { LigandStructure } from '../../../data-models/structure.model';
+import { clcNavSections } from '../../../ligand.constant';
+import { LigandActions } from '../../../store/ligand.actions';
 
 @Component({
   selector: 'pdbc-clc-prd-main',
   standalone: true,
   imports: [
     CommonModule,
-    PdbeHeaderLogoMenuComponent,
-    PdbeHeaderSearchComponent,
     PdbeNavMenuComponent,
-    PdbeChipsComponent,
     DescriptionComponent,
     ImageCarouselComponent,
     PropertiesComponent,
@@ -77,9 +74,11 @@ export class ClcPrdMainComponent implements OnInit {
       this.globalStore.select(LigandSelectors.ligandId),
       this.globalStore.select(LigandSelectors.structures),
       this.globalStore.select(LigandSelectors.description),
+      this.globalStore.select(LigandSelectors.navItems).pipe(take(1)),
     ])
       .pipe(
-        map(([ligandId, structures, description]) => {
+        map(([ligandId, structures, description, navItems]) => {
+          this.updateNavItemsWhenNoStructure(navItems, structures);
           this.ligandUtilService.redirectLigandPages(description);
           this.ligandId.set(ligandId);
           this.isThereStructures.update(() => structures.length > 0);
@@ -89,6 +88,17 @@ export class ClcPrdMainComponent implements OnInit {
       .subscribe(() => {
         this.generateSchemaData();
       });
+  }
+
+  private updateNavItemsWhenNoStructure(navItems: NavSection[], structures: LigandStructure[]): void {
+    let tempNavsections = [];
+    if (structures.length === 0) {
+      tempNavsections = navItems.filter((section) => section.sectionId !== 'structures-section');
+      tempNavsections = tempNavsections.filter((section) => section.sectionId !== 'ligand-databases-section');
+    } else {
+      tempNavsections = clcNavSections;
+    }
+    this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
   }
 
   private generateSchemaData(): void {

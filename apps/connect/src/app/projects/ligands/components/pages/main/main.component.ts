@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, DestroyRef, signal, Renderer2, effect } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, signal, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DescriptionComponent } from '../../page-sections/description/description.component';
 import { ImageCarouselComponent } from '../../page-sections/image-carousel/image-carousel.component';
@@ -6,14 +6,11 @@ import { PropertiesComponent } from '../../page-sections/properties/properties.c
 import { StructuresComponent } from '../../page-sections/structures/structures.component';
 import { InteractionComponent } from '../../page-sections/interaction/interaction.component';
 import { RelatedLigandsComponent } from '../../page-sections/related-ligands/related-ligands.component';
-import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
-import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
-import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { filter, mergeMap, take, tap } from 'rxjs/operators';
+import { mergeMap, take } from 'rxjs/operators';
 import { cofactorTooltip, drugTooltip, navSections, reactantTooltip } from '../../../ligand.constant';
 import { DataLayerService, GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
@@ -36,10 +33,7 @@ import { LigandActions } from '../../../store/ligand.actions';
   imports: [
     CommonModule,
     NgxSkeletonLoaderModule,
-    PdbeHeaderLogoMenuComponent,
-    PdbeHeaderSearchComponent,
     PdbeNavMenuComponent,
-    PdbeChipsComponent,
     DescriptionComponent,
     ImageCarouselComponent,
     PropertiesComponent,

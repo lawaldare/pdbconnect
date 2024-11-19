@@ -36,6 +36,7 @@ button {
 
   @media screen and (width <= 768px) {
     border: none;
+    gap: 0;
   }
 
   ::ng-deep pdbe-ligand-interactions .heatmap-container {
@@ -73,6 +74,18 @@ button {
 
   .ligandEnv-content {
     height: 380px;
+
+    @media screen and (width <= 767px) {
+      height: auto;
+    }
+  }
+
+  .footer-text {
+    display: none;
+
+    @media screen and (width <= 768px) {
+      display: block;
+    }
   }
 
   .ligandEnv-header {
@@ -93,6 +106,10 @@ button {
   height: 380px;
   border: 1px solid var(--Neutral-200, #e4e4e4);
   margin-bottom: 20px;
+
+  @media screen and (width <= 768px) {
+    width: 100%;
+  }
 }
 
 .empty-text {
