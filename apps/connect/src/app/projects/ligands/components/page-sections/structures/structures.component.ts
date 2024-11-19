@@ -69,8 +69,6 @@ export class StructuresComponent {
   public paginationPageSizeSelector = signal<number[]>([10, 20, 50, 100]);
   private gridApi!: GridApi;
 
-  public isThereStructures = signal<boolean>(true);
-
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   public structuresLength = computed(() => this.structureRowData().length);
@@ -92,18 +90,14 @@ export class StructuresComponent {
       this.globalStore.select(LigandSelectors.ligandId),
       this.globalStore.select(LigandSelectors.structures),
       this.globalStore.select(LigandSelectors.polymers),
-      this.globalStore.select(LigandSelectors.navItems).pipe(take(1)),
     ])
       .pipe(
         tap(([ligandId]) => {
           this.ligandId.set(ligandId);
           this.agGridService.ligandId.set(ligandId);
         }),
-        map(([, structures, polymers, navItems]) => {
+        map(([, structures, polymers]) => {
           this.generateStructures(structures);
-          if (structures.length === 0) {
-            this.updateNavItemsWhenNoStructure(navItems);
-          }
           this.proteins.update(() => [...structures]);
           this.structureRowData.update(() => [...this.proteins()]);
           this.polymerRowData.update(() => [...polymers]);
@@ -157,11 +151,6 @@ export class StructuresComponent {
     this.gridApi.setColumnsVisible(['interacting_chains'], true);
   }
 
-  private updateNavItemsWhenNoStructure(navItems: NavSection[]): void {
-    const tempNavsections = navItems.filter((section) => section.sectionId !== 'interaction-section');
-    this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
-  }
-
   private generateStructures(data: LigandStructure[]): void {
     const structures = data.reduce((acc: any, structure) => {
       structure.interacting_chains.forEach((chain) => {
@@ -188,7 +177,7 @@ export class StructuresComponent {
       const total = this.chainPipe.transform(structure.interacting_chains);
       structures += total;
     }
-    this.dataStatistics.set(`Found in ${proteins} Proteins and ${structures} PDB Structures. Group data by: `);
+    this.dataStatistics.set(`Found as a bound in ${proteins} distinct proteins and ${structures} PDB Structures. Group data by: `);
   }
 
   public downloadMMCIF() {
