@@ -95,7 +95,7 @@ export class AgGridStructureService {
       width: 380,
       cellRenderer: (params: any) => `
       <a
-				href=""
+				href='https://www.ebi.ac.uk/pdbe/entry/pdb/${params.data.pdb_id}'
 				target="_blank"
 			>
 				${params.data.pdb_id}

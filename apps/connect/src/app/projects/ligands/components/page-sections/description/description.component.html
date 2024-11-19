@@ -87,7 +87,7 @@
     <span class="info-row-title">First observed in</span>
     <article>
       <div class="info-row-content">
-        <a href="" target="_blank">{{ description().first_observed_in }}</a>
+        <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + description().first_observed_in" target="_blank">{{ description().first_observed_in }}</a>
       </div>
       <i
         class="icon icon-common icon-clone"
