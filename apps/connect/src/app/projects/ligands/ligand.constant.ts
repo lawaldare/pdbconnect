@@ -48,7 +48,7 @@ export const ligandHomePageSeaderSearchConfig = {
 export const headerLogoMenuConfig = {
   backgroundColor: '#085F5C',
   logoType: 'PDBe-KB',
-  headerTitle: 'PDBeChem: Ligands powered by',
+  headerTitle: 'Ligands',
 };
 
 export const cofactorTooltip = `Using the PARITY method, ligands are initially compared to a template library of 27 cofactor classes. If they meet the similarity threshold, they are further compared to the representative molecule for the matched cofactor class. If the similarity score remains above the threshold and the ligand is found in a PDB entry with an approved EC number for the matched class, it is classified as cofactor-like; otherwise, it is flagged for manual annotation. For more information, please refer to: https://doi.org/10.1093/bioinformatics/btz115.`;

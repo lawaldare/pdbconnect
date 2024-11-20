@@ -1,8 +1,8 @@
 <section [ngStyle]="{ 'background-color': headerConfig.backgroundColor }">
   <div class="container">
     <div class="header-logo">
-      <span class="header-title">{{ headerConfig.headerTitle }}</span>
       <img [ngClass]="getHeaderLogoClass" src="{{ headerLogoSrc }}" alt="logo" />
+      <span class="header-title">{{ headerConfig.headerTitle }}</span>
     </div>
     <i class="icon icon-common icon-align-justify" (click)="showMobileMenu()"></i>
     <ul class="nav-links">
