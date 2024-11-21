@@ -126,7 +126,7 @@ export class MolstarDialogComponent implements AfterViewInit {
       },
     ];
 
-    this.selected.set(this.selections[1].value);
+    this.selected.set(this.selections[0].value);
 
     const molstarParams = {
       moleculeId: this.dialogData.moleculeId,
