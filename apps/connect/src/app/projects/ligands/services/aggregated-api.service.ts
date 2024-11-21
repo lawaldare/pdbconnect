@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PhysChemProperties, FunctionalAnnotation, LigandSummary } from '../data-models/description.model';
 import { PDBLigandFile } from '../data-models/download.model';
@@ -113,8 +113,11 @@ export class AggregatedApiService {
   }
 
   fetchBoundEntries(ligandId: string): Observable<any> {
-    const boundEntryURL = `${this.AggregatedApiUrl}pdb/compound/in_pdb/${ligandId}`;
-    const boundEntries = this.http.get<any>(boundEntryURL);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+    });
+    const boundEntryURL = `${this.AggregatedApiUrl}pdb/compound/in_pdb`;
+    const boundEntries = this.http.post<any>(boundEntryURL, JSON.stringify(ligandId), { headers });
     return boundEntries;
   }
 
