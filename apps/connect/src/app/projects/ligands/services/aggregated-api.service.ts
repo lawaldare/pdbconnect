@@ -23,7 +23,7 @@ export interface DescriptionData {
   released: string;
   superseded_by: string | undefined;
   ligandId?: string;
-  first_observed_in: string;
+  first_observed_in: string[];
 }
 
 export interface downloadData {

@@ -72,5 +72,5 @@ export interface LigandSummary {
   superseded_by: string | undefined;
   subcomponent_occurrences: Record<string, number>;
   weight: number;
-  first_observed_in: string;
+  first_observed_in: string[];
 }

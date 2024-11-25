@@ -128,14 +128,16 @@
     <span class="info-row-title">First observed in</span>
     <article>
       <div class="info-row-content">
-        <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + description().first_observed_in" target="_blank">{{ description().first_observed_in }}</a>
+        @for(link of description().first_observed_in; track link; let index = $index){
+        <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + link" target="_blank">{{ link }}{{ index < description().first_observed_in.length - 1 ? ', ' : '' }}</a>
+        }
       </div>
       <i
         class="icon icon-common icon-clone"
         matTooltipClass="description-tooltip"
         matTooltip="Copy the First observed in"
         matTooltipPosition="above"
-        (click)="copy(description().first_observed_in, 'First observed in')"
+        (click)="copy(description().first_observed_in.join(', '), 'First observed in')"
       ></i>
     </article>
   </div>
