@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PhysChemProperties, FunctionalAnnotation, LigandSummary } from '../data-models/description.model';
 import { PDBLigandFile } from '../data-models/download.model';
@@ -23,6 +23,7 @@ export interface DescriptionData {
   released: string;
   superseded_by: string | undefined;
   ligandId?: string;
+  first_observed_in: string[];
 }
 
 export interface downloadData {
@@ -112,8 +113,11 @@ export class AggregatedApiService {
   }
 
   fetchBoundEntries(ligandId: string): Observable<any> {
-    const boundEntryURL = `${this.AggregatedApiUrl}pdb/compound/in_pdb/${ligandId}`;
-    const boundEntries = this.http.get<any>(boundEntryURL);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+    });
+    const boundEntryURL = `${this.AggregatedApiUrl}pdb/compound/in_pdb`;
+    const boundEntries = this.http.post<any>(boundEntryURL, JSON.stringify(ligandId), { headers });
     return boundEntries;
   }
 
@@ -158,6 +162,7 @@ export class AggregatedApiService {
       subcomponent_occurrences: ligandSummary.subcomponent_occurrences,
       released: ligandSummary.release_status,
       superseded_by: ligandSummary.superseded_by,
+      first_observed_in: ligandSummary.first_observed_in,
     };
   }
 

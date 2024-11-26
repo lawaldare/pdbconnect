@@ -3,7 +3,6 @@ import { Chain } from '../data-models/structure.model';
 
 @Pipe({
   name: 'ligandInteractingChainsNumber',
-  standalone: true,
 })
 export class LigandInteractingChainsNumberPipe implements PipeTransform {
   transform(value: Chain[]): number {

@@ -2,13 +2,12 @@ import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community/';
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { MaterialModule } from '@pdbc/core';
 import { cofactorTooltip, drugTooltip, reactantTooltip, unannotatedTooltip } from '../../ligand.constant';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, ToolTipComponent, MaterialModule],
+  imports: [CommonModule, MaterialModule],
   template: `
     @if(value && value.length){ @for(type of value; track type){ @if(type === 'cofactor-like'){
     <p class="cofactor-like" matTooltipClass="complex-name-tooltip" [matTooltip]="cofactorTooltip" matTooltipPosition="above">Cofactor-like</p>

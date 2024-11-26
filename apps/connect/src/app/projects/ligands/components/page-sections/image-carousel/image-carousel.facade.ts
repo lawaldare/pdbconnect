@@ -135,7 +135,6 @@ export class ImageCarouselComponentFacade {
   }
 
   private updateLigandImage(renderer: Renderer2): void {
-    console.log(this.substructureNames());
     this.setDepictionProperty(renderer, this.ligandEv, this.currentSlide());
     this.setDepictionDescription();
   }

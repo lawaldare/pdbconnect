@@ -54,7 +54,7 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
     const numBoundEntries = (this.ligand.bound_entries ?? []).length;
     const boundEntryLabelSuffix = numBoundEntries <= 1 ? 'PDB Entry' : 'PDB Entries';
     this.boundEntryLabel = `${numBoundEntries} ${boundEntryLabelSuffix}`;
-    this.boundEntryUrl = this.util.generateSortedQueryURL(this.ligand.chem_comp_id);
+    this.boundEntryUrl = this.util.generateSortedQueryURL(this.ligand.chem_comp_id, 'q_compound_id');
   }
 
   ngAfterViewInit() {

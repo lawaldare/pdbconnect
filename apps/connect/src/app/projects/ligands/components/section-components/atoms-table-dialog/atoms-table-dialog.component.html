@@ -2,9 +2,9 @@
   <i class="icon icon-common icon-window-close" (click)="dialogRef.close()"></i>
 </header>
 <section>
-  <h2>Atoms of Molecule</h2>
-  <p>Molecule: {{ dialogData.ligandId }}</p>
-  <p>Atoms of a chemical element, that composes a molecule from ideal coordinates of {{ dialogData.ligandId }}</p>
+  <h2>Atoms</h2>
+  <p>Atoms of the ligand from ideal coordinates</p>
+  <p>Ligand ID: {{ dialogData.ligandId }}</p>
   <p>Total Number of Atoms: {{ numberOfAtoms() }}</p>
   <button class="vf-button vf-button--link" (click)="downloadCSV()">
     Download atoms (csv)

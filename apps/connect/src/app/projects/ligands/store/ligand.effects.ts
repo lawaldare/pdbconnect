@@ -9,6 +9,7 @@ import { LigandSelectors } from './ligand.selectors';
 import { RelatedLigand } from '../data-models/related-ligands.model';
 import { LoadingState } from '../enums/loading-state.enum';
 import { LigandReleasedStatus } from '../enums/ligand-release.enum';
+import { Polymer } from '../data-models/structure.model';
 
 @Injectable()
 export class LigandEffects {
@@ -24,6 +25,22 @@ export class LigandEffects {
         this.aggregatedApiService.getLigandStructures(id).pipe(
           map((structures) => LigandActions.getStructuresSuccess({ structures })),
           catchError(() => of(LigandActions.getStructuresFailure()))
+        )
+      )
+    )
+  );
+
+  getPolymers$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(LigandActions.getPolymers),
+      switchMap(() => this.store.select(LigandSelectors.ligandId).pipe(take(1))),
+      mergeMap((id: string) =>
+        this.aggregatedApiService.fetchBoundEntries(id).pipe(
+          map((polymers) => {
+            const polymerWithTypeP = polymers[id].filter((p: Polymer) => p.ligand_type.toLocaleLowerCase() === 'p');
+            return LigandActions.getPolymersSuccess({ polymers: polymerWithTypeP });
+          }),
+          catchError(() => of(LigandActions.getPolymersFailure()))
         )
       )
     )

@@ -25,7 +25,7 @@ export const headerSearchConfig = {
     { label: 'NAG', url: '/chemicalCompound/show/NAG' },
     { label: 'HEM', url: '/chemicalCompound/show/HEM' },
     { label: 'CLC_000191', url: '/chemicalCompound/show/CLC_000191' },
-    { label: 'PRD_000204', url: '/chemicalCompound/show/PRD_000204' },
+    { label: 'PRD_000468', url: '/chemicalCompound/show/PRD_000468' },
   ],
   backgroundColor: 'rgba(15, 92, 90, 0.60)',
   type: ThemeType.PDBEKB,
@@ -48,13 +48,13 @@ export const ligandHomePageSeaderSearchConfig = {
 export const headerLogoMenuConfig = {
   backgroundColor: '#085F5C',
   logoType: 'PDBe-KB',
-  headerTitle: 'PDBeChem: Ligands powered by',
+  headerTitle: 'Ligands',
 };
 
-export const cofactorTooltip = `Using the PARITY method, ligands are initially compared to a template library of 27 cofactor classes. If they meet the similarity threshold, they are further compared to the representative molecule for the matched cofactor class. If the similarity score remains above the threshold and the ligand is found in a PDB entry with an approved EC number for the matched class, it is classified as cofactor-like; otherwise, it is flagged for manual annotation. For more information, please refer to: https://doi.org/10.1093/bioinformatics/btz115.`;
-export const drugTooltip = `Drug-like molecules are annotated by mapping to the DrugBank database (https://go.drugbank.com/). Ligands bound to PDB structures of pharmacologically active targets listed in DrugBank are classified as drug-like.`;
-export const reactantTooltip = `Reactants are annotated based on mapping to the Rhea database (https://www.rhea-db.org/), an expert-curated resource that uses the ChEBI ontology to describe reaction participants and their structures. For each reaction in Rhea, we map all associated PDB structures based on the protein (UniProt accession) that catalyses the reaction. Using the PARITY method, we then compare the bound ligands in these PDB structures to ChEBI compounds involved in the reaction, annotating those with a minimum similarity score of 0.7 as reactant-like.`;
-export const unannotatedTooltip = `The functional role of these ligands has not yet been annotated.`;
+export const cofactorTooltip = `Ligands are annotated as “cofactor-like” if their PARITY (https://www.sciencedirect.com/science/article/pii/S0969212618300492) similarity to one of the 27 cofactor classes defined in the CoFactor (https://www.ebi.ac.uk/thornton-srv/databases/CoFactor/) database is above a set threshold, and the protein binding to the ligand is an enzyme associated with that cofactor class`;
+export const drugTooltip = `Ligands are annotated as “drug-like” if the  protein binding to them is reported as a pharmacologically active target in the DrugBank database (https://go.drugbank.com/).`;
+export const reactantTooltip = `Ligands are annotated as “reactant-like” if the protein binding to them is reported to participate in a reaction in Rhea database (https://www.rhea-db.org/), and the ligand’s PARITY (https://www.sciencedirect.com/science/article/pii/S0969212618300492) similarity to a reaction participant exceeds 0.7. `;
+export const unannotatedTooltip = `No annotation available for the functional role of the ligand.`;
 
 export const quickLinks = [
   {

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
-import { ClickOutsideDirective, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
+import { CapitalizePipe, ClickOutsideDirective, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { ImageCarouselComponentFacade } from './image-carousel.facade';
 import { LigandStoreState } from '../../../store/ligand-store.model';
@@ -13,7 +13,7 @@ import { LigandSelectors } from '../../../store/ligand.selectors';
 @Component({
   selector: 'pdbc-image-carousel',
   standalone: true,
-  imports: [CommonModule, ClickOutsideDirective, ToolTipComponent, MaterialModule],
+  imports: [CommonModule, ClickOutsideDirective, ToolTipComponent, MaterialModule, CapitalizePipe],
   templateUrl: './image-carousel.component.html',
   styleUrl: './image-carousel.component.scss',
 })

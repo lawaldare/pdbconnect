@@ -1,5 +1,5 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
-import { Fragment, LigandStructure } from '../data-models/structure.model';
+import { Fragment, LigandStructure, Polymer } from '../data-models/structure.model';
 import { LigandSummary } from '../data-models/description.model';
 import { DescriptionData } from '../services/aggregated-api.service';
 import { RelatedLigand } from '../data-models/related-ligands.model';
@@ -11,6 +11,9 @@ export const LigandActions = createActionGroup({
     'Get Structures': emptyProps(),
     'Get Structures Success': props<{ structures: LigandStructure[] }>(),
     'Get Structures Failure': emptyProps(),
+    'Get Polymers': emptyProps(),
+    'Get Polymers Success': props<{ polymers: Polymer[] }>(),
+    'Get Polymers Failure': emptyProps(),
     'Set Current LigandId': props<{ ligandId: string }>(),
     'Get Summary': emptyProps(),
     'Get Summary Success': props<{ summary: LigandSummary }>(),

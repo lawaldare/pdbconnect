@@ -14,7 +14,6 @@ h4 {
 
 .display {
   color: var(--Neutral-700, #54585a);
-  font-family: 'IBM Plex Sans';
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -41,18 +40,16 @@ h4 {
   display: flex;
   width: 400px;
   height: 400px;
-  padding: 0px 10px 0px 9px;
+  padding: 0 10px 0 9px;
   justify-content: space-between;
   border: 1px solid #707372;
   background: #fff;
   position: relative;
   transition: all 2s ease-in;
+
   .wallpaper {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: #f2f2f2;
     z-index: 2;
     display: none;
@@ -73,7 +70,7 @@ h4 {
 .control {
   border: none;
   background-color: transparent;
-  opacity: 80%;
+  opacity: 0.8;
 
   &:hover,
   &:focus {
@@ -93,7 +90,6 @@ h4 {
 
 .paragraph-3 {
   margin: 0;
-  text-transform: capitalize;
 }
 
 .slide-container {
@@ -103,15 +99,16 @@ h4 {
   gap: 16px;
   align-self: stretch;
 }
+
 .slide {
   display: flex;
   width: 83px;
   height: 85px;
   justify-content: space-between;
   border: 1px solid #707372;
-
   background: #fff;
 }
+
 .active {
   border: 2px solid #085f5c;
 }
@@ -123,7 +120,6 @@ section.copy-section {
 
   p {
     color: #3b6fb6;
-    font-family: 'IBM Plex Sans';
     line-height: 27.2px;
     cursor: pointer;
     margin: 0;

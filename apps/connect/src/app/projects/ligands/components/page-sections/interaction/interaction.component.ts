@@ -3,10 +3,9 @@ import { CommonModule } from '@angular/common';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction, LigandStructure } from '../../../data-models/structure.model';
 import { PDBIntxData } from '../../../data-models/interaction.model';
-import { ActivatedRoute } from '@angular/router';
-import { catchError, EMPTY, forkJoin, map, mergeMap, of, switchMap } from 'rxjs';
+import { catchError, EMPTY, forkJoin, map, mergeMap, of, switchMap, take, throwError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { InteractionsHeatmapComponent } from '../../../components/interactions-heatmap/interactions-heatmap.component';
@@ -34,7 +33,6 @@ export class InteractionComponent implements AfterViewInit {
   private ligandEv!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   private readonly aggregatedApiService = inject(AggregatedApiService);
-  private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
   private readonly ligandUtilService = inject(LigandUtilService);
@@ -49,6 +47,7 @@ export class InteractionComponent implements AfterViewInit {
   public pdbchains = signal(0);
   public showLigandHeatmap = signal(false);
   public showAtomicNames = signal(false);
+  public navItems = signal<NavSection[]>([]);
 
   ngAfterViewInit() {
     this.globalStore
@@ -57,9 +56,10 @@ export class InteractionComponent implements AfterViewInit {
         switchMap((id) => {
           this.ligandId.set(id);
           this.showLigandHeatmap.set(true);
-          return this.aggregatedApiService.fetchDepiction(this.ligandId());
+          return forkJoin([this.aggregatedApiService.fetchDepiction(this.ligandId()), this.globalStore.select(LigandSelectors.navItems).pipe(take(1))]);
         }),
-        mergeMap((depiction: Depiction) => {
+        mergeMap(([depiction, navItems]) => {
+          this.navItems.update(() => navItems);
           const imageContainer = this.imageContainer.nativeElement;
           this.resetRenderer();
           this.createLigandEnvironment(imageContainer, depiction);
@@ -76,11 +76,13 @@ export class InteractionComponent implements AfterViewInit {
             this.renderer.setProperty(this.ligandEv, 'interaction', interaction[this.ligandId()]);
             this.renderer.setProperty(this.ligandEv, 'contactType', '["TOTAL"]');
           } else {
-            this.showLigandHeatmap.set(false);
-            const tempNavsections = navSections.filter((section) => section.sectionId !== 'interaction-section');
-            this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
+            this.updateWhenNoInteraction();
           }
           return EMPTY;
+        }),
+        catchError(() => {
+          this.updateWhenNoInteraction();
+          return throwError('Failed to fetch interaction data');
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -89,6 +91,12 @@ export class InteractionComponent implements AfterViewInit {
 
   public changeLigandEnvironmentFilters(filterString: string) {
     this.renderer.setAttribute(this.ligandEv, 'contact-type', filterString);
+  }
+
+  private updateWhenNoInteraction(): void {
+    this.showLigandHeatmap.set(false);
+    const tempNavsections = this.navItems().filter((section) => section.sectionId !== 'interaction-section');
+    this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
   }
 
   public downloadInteraction(): void {

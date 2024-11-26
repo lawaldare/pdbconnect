@@ -10,6 +10,11 @@
       <i class="icon icon-common icon-download"></i>
     </button>
   </header>
+  @if(polymerRowData().length){
+  <section class="polymers">
+    <p>Found as a part of a polymer in {{ polymerRowData().length }} PDB structures. <a [href]="polymersUrl()" target="_blank">See detailed list here.</a></p>
+  </section>
+  }
   <section class="filter">
     <div class="group">
       <p>{{ dataStatistics() }}</p>
@@ -22,10 +27,10 @@
   <section class="table-wrapper">
     <ag-grid-angular
       class="ag-theme-quartz"
-      [rowData]="rowData()"
-      [columnDefs]="colDefs"
-      [gridOptions]="gridOptions"
-      (gridReady)="onGridReady($event)"
+      [rowData]="structureRowData()"
+      [columnDefs]="structureColDefs()"
+      [gridOptions]="gridOptions()"
+      (gridReady)="onStructureGridReady($event)"
       [paginationPageSizeSelector]="paginationPageSizeSelector()"
     />
   </section>

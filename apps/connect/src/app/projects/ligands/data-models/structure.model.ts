@@ -72,3 +72,10 @@ export interface Depiction {
   ccd_id: string;
   resolution: Resolution;
 }
+
+export interface Polymer {
+  pdb_id: string;
+  ligand_type: string;
+  ligand_total_number: number;
+  ligand_distinct_number: number;
+}

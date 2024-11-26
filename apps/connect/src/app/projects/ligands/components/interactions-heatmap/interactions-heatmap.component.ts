@@ -14,6 +14,7 @@ import * as d3 from 'd3';
 import { MatRadioButton } from '@angular/material/radio';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { AminoAcidCode, AminoAcidOneCode, AMINOACIDSIMAGE, CATEGORIESIMAGE, CategoryNames, InteractionNames } from './interactions-heatmap.constant';
+import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 
 // import NightingaleSequenceHeatmap from '@nightingale-elements/nightingale-sequence-heatmap';
 
@@ -43,7 +44,7 @@ const AATHREETOONE = {
 @Component({
   selector: 'pdbc-interactions-heatmap',
   standalone: true,
-  imports: [CommonModule, MatRadioButton, MatCheckbox],
+  imports: [CommonModule, MatRadioButton, MatCheckbox, ToolTipComponent],
   templateUrl: './interactions-heatmap.component.html',
   styleUrl: './interactions-heatmap.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

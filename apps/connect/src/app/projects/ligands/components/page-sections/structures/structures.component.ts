@@ -1,41 +1,31 @@
-import { Component, inject, DestroyRef, signal, ViewChild, computed, OnInit } from '@angular/core';
+import { Component, inject, DestroyRef, signal, ViewChild, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Chain, LigandStructure } from '../../../data-models/structure.model';
+import { Chain, LigandStructure, Polymer } from '../../../data-models/structure.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  AG_Grid_Theme_Class,
-  agGridOptionsBase,
-  DownloadFileTypeService,
-  DownloadService,
-  ExternalLinkRendererComponent,
-  GoogleAnalyticsService,
-  MaterialModule,
-} from '@pdbc/core';
-import { catchError, map, tap } from 'rxjs/operators';
+import { DownloadFileTypeService, DownloadService, GoogleAnalyticsService, MaterialModule, NavSection, UtilService } from '@pdbc/core';
+import { catchError, map, take, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
 import { environment } from '../../../../../../environments/environment';
 import { LigandInteractingChainsNumberPipe } from '../../../pipes/ligandInteractingChainsNumber.pipe';
 import { MatRadioChange } from '@angular/material/radio';
 import { AgGridAngular } from 'ag-grid-angular';
-import { GridOptions, ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
-import { TotalStructureRendererComponent } from '../../cell renderers/total-structure.component';
-import { LigandAnnotationRendererComponent } from '../../cell renderers/ligand-annotation.component';
-import { SpeciesRendererComponent } from '../../cell renderers/species.component';
+import { GridApi, GridReadyEvent } from 'ag-grid-community';
 import { combineLatest, of } from 'rxjs';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
-import { PDBIdChainRendererComponent } from '../../cell renderers/pdb-id-chain.component';
 import { LigandECNumberPipe } from '../../../pipes/ec-numbers.pipe';
 import { cofactorTooltip, drugTooltip, reactantTooltip, unannotatedTooltip } from '../../../ligand.constant';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { AgGridStructureService } from './ag-grid-structure.service';
+import { LigandActions } from '../../../store/ligand.actions';
 
 @Component({
   selector: 'pdbc-structures',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LigandInteractingChainsNumberPipe, AgGridAngular, MaterialModule, LigandECNumberPipe, MatPaginator],
+  imports: [CommonModule, ReactiveFormsModule, AgGridAngular, MaterialModule, LigandECNumberPipe, MatPaginator],
   templateUrl: './structures.component.html',
   styleUrls: ['./structures.component.scss'],
   providers: [LigandInteractingChainsNumberPipe],
@@ -46,6 +36,9 @@ export class StructuresComponent {
   private readonly chainPipe = inject(LigandInteractingChainsNumberPipe);
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   private readonly downloadService = inject(DownloadService);
+  private readonly agGridService = inject(AgGridStructureService);
+  private readonly utilService = inject(UtilService);
+
   private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
@@ -59,86 +52,15 @@ export class StructuresComponent {
   public dataStatistics = signal<string>('');
   public filter = new FormControl('proteins');
   public ligandId = signal<string>('');
-  public readonly gridOptions: GridOptions = {
-    ...agGridOptionsBase,
-    paginationPageSize: 10,
-    context: this,
-  };
+
+  public readonly gridOptions = this.agGridService.gridOptions;
 
   public showTotalStructureOnMobile = signal<boolean>(true);
 
-  public readonly themeClass = AG_Grid_Theme_Class;
+  public readonly structureColDefs = this.agGridService.structureColDefs;
 
-  public readonly colDefs: ColDef[] = [
-    {
-      headerName: 'Protein name',
-      field: 'name',
-      width: 300,
-    },
-    {
-      headerName: 'PDBe-KB link',
-      field: 'uniprot_id',
-      cellRenderer: ExternalLinkRendererComponent,
-      width: 160,
-    },
-    {
-      headerName: 'Total structures',
-      field: 'interacting_chains',
-      cellRenderer: TotalStructureRendererComponent,
-      cellRendererParams: {
-        onValueClicked: (params: any) => this.openTotalDialog(params.data.interacting_chains),
-      },
-      valueGetter: (params: any) => {
-        return this.chainPipe.transform(params.data.interacting_chains);
-      },
-      hide: false,
-      width: 150,
-      comparator: (a, b): number => a - b,
-      filter: 'agNumberColumnFilter',
-      sort: 'desc',
-      valueFormatter: () => '',
-    },
-    {
-      headerName: 'PDB ID and Chain',
-      field: 'pdb_id',
-      cellRenderer: PDBIdChainRendererComponent,
-      cellRendererParams: {
-        ligandId: this.ligandId,
-      },
-      hide: true,
-      width: 150,
-    },
-    {
-      headerName: 'Organism',
-      field: 'organism',
-      cellRenderer: SpeciesRendererComponent,
-      comparator: (a, b): number => {
-        return a.scientific_name?.toLocaleLowerCase().localeCompare(b.scientific_name?.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
-      },
-      // valueGetter: (params) => params.data.organism?.scientific_name ?? 'Unspecified',
-      filter: 'agTextColumnFilter',
-      minWidth: 160,
-      valueFormatter: () => '',
-    },
-    {
-      headerName: 'EC number',
-      field: 'ec_number',
-      valueFormatter: (params: any) => {
-        return params.data.ec_numbers?.join(', ');
-      },
-      width: 150,
-    },
-    {
-      headerName: 'Ligand function',
-      field: 'annotations',
-      filter: true,
-      cellRenderer: LigandAnnotationRendererComponent,
-      width: 170,
-      valueFormatter: () => '',
-    },
-  ];
-
-  public rowData = signal<LigandStructure[]>([]);
+  public structureRowData = signal<LigandStructure[]>([]);
+  public polymerRowData = signal<Polymer[]>([]);
   public proteins = signal<LigandStructure[]>([]);
   public structures = signal<LigandStructure[]>([]);
 
@@ -149,39 +71,47 @@ export class StructuresComponent {
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  public structuresLength = computed(() => this.rowData().length);
+  public structuresLength = computed(() => this.structureRowData().length);
   public structuresPageSize = signal<number>(5);
   public structuresPageSizeOptions = computed(() => [5, 10, 20, 50, 100]);
   public structuresPage: LigandStructure[] = [];
 
   private unfilteredStructures: LigandStructure[] = [];
 
+  public polymersUrl = signal<string>('');
+
   public handlePageEvent(event: PageEvent) {
     const startIndex = event.pageIndex * event.pageSize;
     const endIndex = startIndex + event.pageSize;
-    this.structuresPage = this.rowData().slice(startIndex, endIndex);
+    this.structuresPage = this.structureRowData().slice(startIndex, endIndex);
   }
 
-  onGridReady(event: GridReadyEvent<any>) {
-    // this.rowData = this.assemblies();
-    // event.api.autoSizeAllColumns();
+  onStructureGridReady(event: GridReadyEvent<any>) {
     this.gridApi = event.api;
-    combineLatest([this.globalStore.select(LigandSelectors.ligandId), this.globalStore.select(LigandSelectors.structures)])
+    combineLatest([
+      this.globalStore.select(LigandSelectors.ligandId),
+      this.globalStore.select(LigandSelectors.structures),
+      this.globalStore.select(LigandSelectors.polymers),
+    ])
       .pipe(
-        tap(([ligandId, structures]) => {
+        tap(([ligandId]) => {
           this.ligandId.set(ligandId);
+          this.agGridService.ligandId.set(ligandId);
+          this.polymersUrl.set(this.utilService.generateSortedQueryURL(ligandId, 'modified_compound_id'));
         }),
-        map(([, structures]) => {
+        map(([, structures, polymers]) => {
           this.generateStructures(structures);
           this.proteins.update(() => [...structures]);
-          this.rowData.update(() => [...this.proteins()]);
+          this.structureRowData.update(() => [...this.proteins()]);
+          this.polymerRowData.update(() => [...polymers]);
           this.fetchDataStatistics(structures);
-          this.structuresPage = this.rowData().slice(0, this.structuresPageSize());
-          this.unfilteredStructures = this.rowData();
+          this.structuresPage = this.structureRowData().slice(0, this.structuresPageSize());
+          this.unfilteredStructures = this.structureRowData();
         }),
         catchError((error) => {
           console.error('Error fetching ligand structures:', error);
-          this.rowData.update(() => []);
+          this.structureRowData.update(() => []);
+          this.polymerRowData.update(() => []);
           return of([]);
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -200,8 +130,8 @@ export class StructuresComponent {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((data) => {
-        this.rowData.update(() => data);
-        this.structuresPage = this.rowData().slice(0, this.structuresPageSize());
+        this.structureRowData.update(() => data);
+        this.structuresPage = this.structureRowData().slice(0, this.structuresPageSize());
       });
   }
 
@@ -210,11 +140,11 @@ export class StructuresComponent {
     if (filterSelected === 'proteins') {
       this.gridApi.setColumnsVisible(['pdb_id'], false);
       this.gridApi.setColumnsVisible(['interacting_chains'], true);
-      this.rowData.update(() => [...this.proteins()]);
+      this.structureRowData.update(() => [...this.proteins()]);
     } else {
       this.gridApi.setColumnsVisible(['pdb_id'], true);
       this.gridApi.setColumnsVisible(['interacting_chains'], false);
-      this.rowData.update(() => [...this.structures()]);
+      this.structureRowData.update(() => [...this.structures()]);
     }
     this.showTotalStructureOnMobile.update((value) => !value);
   }
@@ -250,11 +180,11 @@ export class StructuresComponent {
       const total = this.chainPipe.transform(structure.interacting_chains);
       structures += total;
     }
-    this.dataStatistics.set(`Found in ${proteins} Proteins and ${structures} PDB Structures. Group data by: `);
+    this.dataStatistics.set(`Found as a bound ligand in ${proteins} distinct proteins and ${structures} PDB Structures. Group data by: `);
   }
 
   public downloadMMCIF() {
-    const mappedData = this.rowData().reduce((acc: string[], structure) => {
+    const mappedData = this.structureRowData().reduce((acc: string[], structure) => {
       acc = [...acc, ...structure.interacting_chains.map((c) => c.pdb_id)];
       return acc;
     }, []);
@@ -273,7 +203,7 @@ export class StructuresComponent {
   }
 
   public downloadCSV(): void {
-    const mappedData = this.rowData().map((structure) => {
+    const mappedData = this.structureRowData().map((structure) => {
       return {
         'Protein Name': structure.name,
         'PDBe-KB Proteins': structure.uniprot_id,
@@ -293,11 +223,7 @@ export class StructuresComponent {
   }
 
   public openTotalDialog(data: Chain[]) {
-    this.dialog.open(LigandTotalDialogComponent, {
-      disableClose: false,
-      panelClass: 'ligand-total-Dialog',
-      data: data,
-    });
+    this.agGridService.openTotalDialog(data);
   }
 
   private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {

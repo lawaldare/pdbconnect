@@ -54,7 +54,7 @@
       ></i>
     </article>
   </div>
-  } @if(description().smiles.length && isMainLigandId()){
+  } @if(description().smiles && isMainLigandId()){
   <div class="info-row">
     <span class="info-row-title">SMILES</span>
     <article>
@@ -68,7 +68,7 @@
       ></i>
     </article>
   </div>
-  } @if(description().smiles.length && !isMainLigandId()){
+  } @if(description().smiles && !isMainLigandId()){
   <div class="info-row">
     <span class="info-row-title">SMILES</span>
     <article>
@@ -106,22 +106,39 @@
     <span class="info-row-title">Is part of</span>
     <article class="article-supercomponents">
       <div class="info-row-content supercomponents" libIsPartOf [truncateTexts]="supercomponents()"></div>
+      <!-- <i
+        class="icon icon-common icon-clone"
+        matTooltipClass="description-tooltip"
+        matTooltip="Copy the ID"
+        matTooltipPosition="above"
+        (click)="copy(supercomponents().join(', '), 'List of ids')"
+      ></i> -->
       <div class="supercomponent-actions">
         @if(supercomponents().length > 1){
         <button class="vf-button vf-button--link" (click)="downloadIds()">
           Download list of IDs
           <i class="icon icon-common icon-download"></i>
         </button>
-        } @else {
-        <i
-          class="icon icon-common icon-clone"
-          matTooltipClass="description-tooltip"
-          matTooltip="Copy the ID"
-          matTooltipPosition="above"
-          (click)="copy(supercomponents().join(', '), 'List of ids')"
-        ></i>
+        } @else { }
+      </div>
+    </article>
+  </div>
+  } @if(description().first_observed_in){
+  <div class="info-row">
+    <span class="info-row-title">First observed in</span>
+    <article>
+      <div class="info-row-content">
+        @for(link of description().first_observed_in; track link; let index = $index){
+        <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + link" target="_blank">{{ link }}{{ index < description().first_observed_in.length - 1 ? ', ' : '' }}</a>
         }
       </div>
+      <i
+        class="icon icon-common icon-clone"
+        matTooltipClass="description-tooltip"
+        matTooltip="Copy the First observed in"
+        matTooltipPosition="above"
+        (click)="copy(description().first_observed_in.join(', '), 'First observed in')"
+      ></i>
     </article>
   </div>
   } @if(isMainLigandId()){

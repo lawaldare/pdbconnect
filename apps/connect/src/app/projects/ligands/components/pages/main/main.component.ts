@@ -6,16 +6,13 @@ import { PropertiesComponent } from '../../page-sections/properties/properties.c
 import { StructuresComponent } from '../../page-sections/structures/structures.component';
 import { InteractionComponent } from '../../page-sections/interaction/interaction.component';
 import { RelatedLigandsComponent } from '../../page-sections/related-ligands/related-ligands.component';
-import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
-import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
-import { PdbeChipsComponent } from '@pdbe-lib/chips';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { filter, mergeMap } from 'rxjs/operators';
-import { cofactorTooltip, drugTooltip, reactantTooltip } from '../../../ligand.constant';
-import { DataLayerService, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
+import { mergeMap, take } from 'rxjs/operators';
+import { cofactorTooltip, drugTooltip, navSections, reactantTooltip } from '../../../ligand.constant';
+import { DataLayerService, GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { LigandStoreState } from '../../../store/ligand-store.model';
@@ -28,6 +25,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LoadingState } from '../../../enums/loading-state.enum';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandStructure } from '../../../data-models/structure.model';
+import { LigandActions } from '../../../store/ligand.actions';
 
 @Component({
   selector: 'pdbc-main',
@@ -35,10 +33,7 @@ import { LigandStructure } from '../../../data-models/structure.model';
   imports: [
     CommonModule,
     NgxSkeletonLoaderModule,
-    PdbeHeaderLogoMenuComponent,
-    PdbeHeaderSearchComponent,
     PdbeNavMenuComponent,
-    PdbeChipsComponent,
     DescriptionComponent,
     ImageCarouselComponent,
     PropertiesComponent,
@@ -92,9 +87,11 @@ export class LigandsMainPageComponent implements OnInit {
       this.globalStore.select(LigandSelectors.ligandId),
       this.globalStore.select(LigandSelectors.structures),
       this.globalStore.select(LigandSelectors.description),
+      this.globalStore.select(LigandSelectors.navItems).pipe(take(1)),
     ])
       .pipe(
-        mergeMap(([ligandId, structures, description]) => {
+        mergeMap(([ligandId, structures, description, navItems]) => {
+          this.updateNavItemsWhenNoStructure(navItems, structures);
           this.ligandUtilService.redirectLigandPages(description);
           this.ligandId.set(ligandId);
           this.isThereStructures.update(() => structures.length > 0);
@@ -106,6 +103,16 @@ export class LigandsMainPageComponent implements OnInit {
       .subscribe(() => {
         this.generateSchemaData();
       });
+  }
+
+  private updateNavItemsWhenNoStructure(navItems: NavSection[], structures: LigandStructure[]): void {
+    let tempNavsections = [];
+    if (structures.length === 0) {
+      tempNavsections = navItems.filter((section) => section.sectionId !== 'structures-section');
+    } else {
+      tempNavsections = navSections;
+    }
+    this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
   }
 
   private getAnnotations(structures: LigandStructure[]): void {

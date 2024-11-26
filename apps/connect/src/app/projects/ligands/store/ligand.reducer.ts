@@ -20,6 +20,7 @@ const initialState: LigandStoreState = {
   emptyPageText: '',
   fragments: [],
   navItems: [],
+  polymers: [],
 };
 
 export const ligandReducer = createReducer(
@@ -31,6 +32,10 @@ export const ligandReducer = createReducer(
   on(LigandActions.getStructuresSuccess, (state, action) => ({
     ...state,
     structures: action.structures,
+  })),
+  on(LigandActions.getPolymersSuccess, (state, action) => ({
+    ...state,
+    polymers: action.polymers,
   })),
   on(LigandActions.getRelatedLigandsSuccess, (state, action) => ({
     ...state,

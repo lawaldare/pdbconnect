@@ -38,6 +38,7 @@ export class LigandWrapperComponent implements OnInit {
           const ligandId = params['ligandId'].toUpperCase();
           this.globalStore.dispatch(LigandActions.setCurrentLigandId({ ligandId }));
           this.globalStore.dispatch(LigandActions.getStructures());
+          this.globalStore.dispatch(LigandActions.getPolymers());
           this.globalStore.dispatch(LigandActions.getSummary());
           this.globalStore.dispatch(LigandActions.setDownloadOptions());
           this.globalStore.dispatch(LigandActions.getRelatedLigands());

@@ -3,14 +3,15 @@
 <div id="interaction-section">
   <h3 class="title">Interaction statistics</h3>
   <article>
-    Interaction statistics shows the frequency of interaction of each atom of small molecule with any amino acid in all the structures to which it is bound. This
-    information was computed using {{ ligandInstances() }} ligand instances in {{ pdbstructures() }} PDB structures and {{ pdbchains() }} PDB chains.
-    <p>Protein-ligand interactions are computed using <a href="https://github.com/PDBeurope/arpeggio" target="_blank"> Arpeggio webserver </a></p>
+    Interaction statistics shows the summary of aggregated protein-ligand interaction data of {{ ligandId() }} from {{ ligandInstances() }} ligand instances in
+    {{ pdbstructures() }} PDB structures and {{ pdbchains() }} PDB chains. The protein-ligand interactions are computed using
+    <a href="https://github.com/PDBeurope/arpeggio" target="_blank"> PDBe Arpeggio </a>
   </article>
   <button class="vf-button vf-button--link" (click)="downloadInteraction()">
     Download all interactions
     <i class="icon icon-common icon-download"></i>
   </button>
+  <a href="https://github.com/PDBe-KB/pdbe-kb-manual/wiki/Interaction-statistics" target="_blank">Documentation</a>
   <div class="intx-component-container">
     <pdbc-interactions-heatmap
       [ligandId]="ligandId()"
@@ -29,6 +30,9 @@
         @let text = showAtomicNames() ? 'Hide' : 'View';
         <button class="vf-button vf-button--primary vf-button--sm" (click)="toggleAtomNames()">{{ text }} atom names</button>
       </div>
+      <p class="footer-text">
+        For full interaction statistics, including the heatmap showing ligand atom interaction frequency with different amino acids, please view on a larger screen
+      </p>
     </div>
   </div>
 </div>
