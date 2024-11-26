@@ -3,8 +3,8 @@
 </header>
 <section>
   <h2>Chemical Bonds</h2>
-  <p>Molecule: {{ dialogData.ligandId }}</p>
-  <p>Bonds between two atoms of the molecule from ideal coordinates of {{ dialogData.ligandId }}</p>
+  <p>Bonds between two atoms of the ligand from ideal coordinates</p>
+  <p>Ligand ID: {{ dialogData.ligandId }}</p>
   <p>Total Number of Atoms: {{ numberOfBonds() }}</p>
   <button class="vf-button vf-button--link" (click)="downloadCSV()">
     Download bonds (csv)

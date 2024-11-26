@@ -24,7 +24,7 @@
     </button>
   </div>
   <p class="display">Displayed: {{ currentSlide() }} / {{ total() }}</p>
-  <p class="paragraph-3">{{ structureDescription() }}</p>
+  <p class="paragraph-3">{{ structureDescription() | capitalize }}</p>
   @if(showCopyButtons){
   <section class="copy-section">
     <p (click)="copySmiles()">
