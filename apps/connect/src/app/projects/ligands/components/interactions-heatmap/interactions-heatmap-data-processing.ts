@@ -13,7 +13,7 @@ export const INTX_NAME_STANDARDIZER = {
   metal_complex: 'Metal complex interactions',
   aromatic: 'Aromatic interactions',
   hydrophobic: 'Hydrophobic interactions',
-  carbonyl: 'Carbonyl inteactions',
+  carbonyl: 'Carbonyl interactions',
   polar: 'Polar interactions',
   CARBONPI: 'Carbon-pi interactions',
   CATIONPI: 'Cation-pi interactions',
