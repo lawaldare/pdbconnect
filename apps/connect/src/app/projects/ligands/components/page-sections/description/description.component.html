@@ -54,7 +54,7 @@
       ></i>
     </article>
   </div>
-  } @if(description().smiles.length && isMainLigandId()){
+  } @if(description().smiles && isMainLigandId()){
   <div class="info-row">
     <span class="info-row-title">SMILES</span>
     <article>
@@ -68,7 +68,7 @@
       ></i>
     </article>
   </div>
-  } @if(description().smiles.length && !isMainLigandId()){
+  } @if(description().smiles && !isMainLigandId()){
   <div class="info-row">
     <span class="info-row-title">SMILES</span>
     <article>
