@@ -25,7 +25,7 @@ export const headerSearchConfig = {
     { label: 'NAG', url: '/chemicalCompound/show/NAG' },
     { label: 'HEM', url: '/chemicalCompound/show/HEM' },
     { label: 'CLC_000191', url: '/chemicalCompound/show/CLC_000191' },
-    { label: 'PRD_000204', url: '/chemicalCompound/show/PRD_000204' },
+    { label: 'PRD_000468', url: '/chemicalCompound/show/PRD_000468' },
   ],
   backgroundColor: 'rgba(15, 92, 90, 0.60)',
   type: ThemeType.PDBEKB,
