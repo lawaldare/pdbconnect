@@ -28,7 +28,7 @@ export class AgGridStructureService {
       width: 300,
     },
     {
-      headerName: 'PDBe-KB link',
+      headerName: 'Protein Overview',
       field: 'uniprot_id',
       cellRenderer: ExternalLinkRendererComponent,
       width: 160,
