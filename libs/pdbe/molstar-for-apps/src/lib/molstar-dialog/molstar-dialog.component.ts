@@ -110,21 +110,49 @@ export class MolstarDialogComponent implements AfterViewInit {
 
     const container = this.viewContainer.nativeElement;
 
-    const entryList = [
-      `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}_ideal.pdb`,
-      `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}_model.pdb`,
-    ];
+    let entryList = [];
+    let selections = [];
 
-    this.selections = [
-      {
-        viewValue: 'Ideal Coordinates',
-        value: entryList[0],
-      },
-      {
-        viewValue: 'Model Coordinates',
-        value: entryList[1],
-      },
-    ];
+    if (this.dialogData.moleculeId.startsWith('CLC')) {
+      entryList = [`https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}_model.pdb`];
+      selections = [
+        {
+          viewValue: 'Ideal Coordinates',
+          value: entryList[0],
+        },
+      ];
+    } else if (this.dialogData.moleculeId.startsWith('PRD')) {
+      const splits = this.dialogData.moleculeId.split('_');
+      const id = `${splits[0]}CC_${splits[1]}`;
+      entryList = [`https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${id}_ideal.pdb`, `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${id}_model.pdb`];
+      selections = [
+        {
+          viewValue: 'Ideal Coordinates',
+          value: entryList[0],
+        },
+        {
+          viewValue: 'Model Coordinates',
+          value: entryList[1],
+        },
+      ];
+    } else {
+      entryList = [
+        `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}_ideal.pdb`,
+        `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}_model.pdb`,
+      ];
+      selections = [
+        {
+          viewValue: 'Ideal Coordinates',
+          value: entryList[0],
+        },
+        {
+          viewValue: 'Model Coordinates',
+          value: entryList[1],
+        },
+      ];
+    }
+
+    this.selections = selections;
 
     this.selected.set(this.selections[0].value);
 

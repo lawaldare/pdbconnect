@@ -88,6 +88,7 @@ export class StructuresComponent {
 
   onStructureGridReady(event: GridReadyEvent<any>) {
     this.gridApi = event.api;
+    this.gridApi.setGridOption('loading', true);
     combineLatest([
       this.globalStore.select(LigandSelectors.ligandId),
       this.globalStore.select(LigandSelectors.structures),
@@ -104,6 +105,9 @@ export class StructuresComponent {
           this.proteins.update(() => [...structures]);
           this.structureRowData.update(() => [...this.proteins()]);
           this.polymerRowData.update(() => [...polymers]);
+          if (this.structureRowData().length > 0) {
+            this.gridApi.setGridOption('loading', false);
+          }
           this.fetchDataStatistics(structures);
           this.structuresPage = this.structureRowData().slice(0, this.structuresPageSize());
           this.unfilteredStructures = this.structureRowData();
@@ -112,6 +116,8 @@ export class StructuresComponent {
           console.error('Error fetching ligand structures:', error);
           this.structureRowData.update(() => []);
           this.polymerRowData.update(() => []);
+          this.gridApi.setGridOption('loading', false);
+
           return of([]);
         }),
         takeUntilDestroyed(this.destroyRef)
