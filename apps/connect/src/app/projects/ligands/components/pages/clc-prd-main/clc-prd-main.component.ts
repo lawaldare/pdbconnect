@@ -38,7 +38,7 @@ import { LigandActions } from '../../../store/ligand.actions';
     LigandSpecificDatabasesComponent,
   ],
   templateUrl: './clc-prd-main.component.html',
-  styleUrls: ['../main/main.component.scss', './clc-prd-main.component.sass'],
+  styleUrls: ['../main/main.component.scss'],
 })
 export class ClcPrdMainComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);

@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { agGridOptionsBase, ExternalLinkRendererComponent } from '@pdbc/core';
-import { GridOptions, ColDef } from 'ag-grid-community';
+import { GridOptions, ColDef, ITextFilterParams } from 'ag-grid-community';
 import { TotalStructureRendererComponent } from '../../cell renderers/total-structure.component';
 import { Chain } from '../../../data-models/structure.model';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
@@ -32,6 +32,7 @@ export class AgGridStructureService {
       field: 'uniprot_id',
       cellRenderer: ExternalLinkRendererComponent,
       width: 160,
+      filter: false,
     },
     {
       headerName: 'Total structures',
@@ -46,7 +47,7 @@ export class AgGridStructureService {
       hide: false,
       width: 150,
       comparator: (a, b): number => a - b,
-      filter: 'agNumberColumnFilter',
+      filter: false,
       sort: 'desc',
       valueFormatter: () => '',
     },
@@ -67,9 +68,9 @@ export class AgGridStructureService {
       comparator: (a, b): number => {
         return a.scientific_name?.toLocaleLowerCase().localeCompare(b.scientific_name?.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
       },
-      filter: 'agTextColumnFilter',
+      filter: false,
+      valueFormatter: (p) => '',
       minWidth: 160,
-      valueFormatter: () => '',
     },
     {
       headerName: 'EC number',
@@ -78,12 +79,13 @@ export class AgGridStructureService {
         return params.data.ec_numbers?.join(', ');
       },
       width: 150,
+      filter: false,
     },
     {
       headerName: 'Ligand function',
       field: 'annotations',
-      filter: true,
       cellRenderer: LigandAnnotationRendererComponent,
+      filter: false,
       width: 170,
       valueFormatter: () => '',
     },

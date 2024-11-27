@@ -17,7 +17,7 @@ import { NotificationComponent } from '@pdbc/notification';
   standalone: true,
   imports: [LigandsMainPageComponent, ClcPrdMainComponent, PdbeHeaderLogoMenuComponent, PdbeHeaderSearchComponent, NotificationComponent],
   templateUrl: './ligand-wrapper.component.html',
-  styleUrl: './ligand-wrapper.component.sass',
+  styleUrl: './ligand-wrapper.component.scss',
 })
 export class LigandWrapperComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
