@@ -232,7 +232,7 @@ export class LigandSpecificDatabasesComponentFacade {
           return {
             ...mappedLink,
             description: 'A free database of commercially-available compounds for virtual screening, provided by the Shoichet Laboratory at UCSF.',
-            link: `https://zinc15.docking.org/substances/ZINC000098207730/`,
+            link: `https://zinc15.docking.org/substances/`,
           };
         case 'clinicaltrials':
           return {
