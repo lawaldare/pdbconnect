@@ -78,7 +78,7 @@ export class LigandsMainPageComponent implements OnInit {
 
   public status = LoadingState;
 
-  public isThereStructures = signal<boolean>(true);
+  // public isThereStructures = signal<boolean>(true);
 
   private fragments = toSignal(this.globalStore.select(LigandSelectors.fragments));
 
@@ -94,7 +94,7 @@ export class LigandsMainPageComponent implements OnInit {
           this.updateNavItemsWhenNoStructure(navItems, structures);
           this.ligandUtilService.redirectLigandPages(description);
           this.ligandId.set(ligandId);
-          this.isThereStructures.update(() => structures.length > 0);
+          // this.isThereStructures.update(() => structures.length > 0);
           this.getAnnotations(structures);
           return this.aggregatedApiService.fetchDepiction(this.ligandId());
         }),
