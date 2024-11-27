@@ -16,6 +16,15 @@ export class AgGridStructureService {
   private readonly dialog = inject(MatDialog);
   public ligandId = signal<string>('');
 
+  countryFilterParams: ITextFilterParams = {
+    filterOptions: ['contains'],
+    textMatcher: ({ value, filterText }) => {
+      return value.toLowerCase().indexOf(filterText?.toLowerCase()) >= 0;
+    },
+    trimInput: true,
+    debounceMs: 1000,
+  };
+
   public readonly gridOptions = signal<GridOptions>({
     ...agGridOptionsBase,
     paginationPageSize: 10,
@@ -32,7 +41,7 @@ export class AgGridStructureService {
       field: 'uniprot_id',
       cellRenderer: ExternalLinkRendererComponent,
       width: 160,
-      filter: false,
+      sortable: false,
     },
     {
       headerName: 'Total structures',
@@ -66,10 +75,11 @@ export class AgGridStructureService {
       field: 'organism',
       cellRenderer: SpeciesRendererComponent,
       comparator: (a, b): number => {
-        return a.scientific_name?.toLocaleLowerCase().localeCompare(b.scientific_name?.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
+        return a?.scientific_name?.toLocaleLowerCase().localeCompare(b?.scientific_name?.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
       },
-      filter: false,
-      valueFormatter: (p) => '',
+      filter: 'agTextColumnFilter',
+      filterParams: this.countryFilterParams,
+      valueFormatter: (p) => p.data.organism?.scientific_name,
       minWidth: 160,
     },
     {
@@ -80,11 +90,13 @@ export class AgGridStructureService {
       },
       width: 150,
       filter: false,
+      sortable: false,
     },
     {
       headerName: 'Ligand function',
       field: 'annotations',
       cellRenderer: LigandAnnotationRendererComponent,
+      sortable: false,
       filter: false,
       width: 170,
       valueFormatter: () => '',
