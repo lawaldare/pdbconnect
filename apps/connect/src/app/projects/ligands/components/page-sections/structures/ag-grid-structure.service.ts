@@ -16,13 +16,22 @@ export class AgGridStructureService {
   private readonly dialog = inject(MatDialog);
   public ligandId = signal<string>('');
 
-  countryFilterParams: ITextFilterParams = {
+  private readonly organismsFilterParams: ITextFilterParams = {
     filterOptions: ['contains'],
     textMatcher: ({ value, filterText }) => {
       return value.toLowerCase().indexOf(filterText?.toLowerCase()) >= 0;
     },
     trimInput: true,
-    debounceMs: 1000,
+    debounceMs: 500,
+  };
+
+  private readonly ligandFunctionFilterParams: ITextFilterParams = {
+    filterOptions: ['contains'],
+    textMatcher: ({ value, filterText }) => {
+      return value.toLowerCase().indexOf(filterText?.toLowerCase()) >= 0;
+    },
+    trimInput: true,
+    debounceMs: 500,
   };
 
   public readonly gridOptions = signal<GridOptions>({
@@ -78,7 +87,7 @@ export class AgGridStructureService {
         return a?.scientific_name?.toLocaleLowerCase().localeCompare(b?.scientific_name?.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
       },
       filter: 'agTextColumnFilter',
-      filterParams: this.countryFilterParams,
+      filterParams: this.organismsFilterParams,
       valueFormatter: (p) => p.data.organism?.scientific_name,
       minWidth: 160,
     },
@@ -97,9 +106,10 @@ export class AgGridStructureService {
       field: 'annotations',
       cellRenderer: LigandAnnotationRendererComponent,
       sortable: false,
-      filter: false,
+      filter: 'agTextColumnFilter',
+      filterParams: this.ligandFunctionFilterParams,
+      valueFormatter: (p) => p.data.annotations?.join(','),
       width: 170,
-      valueFormatter: () => '',
     },
   ]);
 
