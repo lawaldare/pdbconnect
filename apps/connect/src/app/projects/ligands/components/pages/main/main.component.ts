@@ -78,8 +78,6 @@ export class LigandsMainPageComponent implements OnInit {
 
   public status = LoadingState;
 
-  // public isThereStructures = signal<boolean>(true);
-
   private fragments = toSignal(this.globalStore.select(LigandSelectors.fragments));
 
   ngOnInit(): void {
