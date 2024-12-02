@@ -33,8 +33,8 @@ export class MolstarDialogComponent implements AfterViewInit {
   private cells: any[] = [];
 
   public selections: { viewValue: string; value: string }[] = [];
-  public selected = signal('');
-  public selectedControl = computed(() => new FormControl(this.selected(), { nonNullable: true }));
+  public selectedConformer = signal('');
+  public selectedConformerControl = computed(() => new FormControl(this.selectedConformer(), { nonNullable: true }));
 
   public selectedFrament = signal('');
   public selectedFragmentControl = computed(() => new FormControl(this.selectedFrament(), { nonNullable: true }));
@@ -154,7 +154,7 @@ export class MolstarDialogComponent implements AfterViewInit {
 
     this.selections = selections;
 
-    this.selected.set(this.selections[0].value);
+    this.selectedConformer.set(this.selections[0].value);
 
     const molstarParams = {
       moleculeId: this.dialogData.moleculeId,
@@ -164,7 +164,7 @@ export class MolstarDialogComponent implements AfterViewInit {
       visualStyle: 'ball-and-stick',
       bgColor: { r: 255, g: 255, b: 255 },
       customData: {
-        url: this.selected(),
+        url: this.selectedConformer(),
         format: 'pdb',
       },
       landscape: true,
@@ -204,10 +204,11 @@ export class MolstarDialogComponent implements AfterViewInit {
     }
   }
 
-  public onSelectionChange(event: MatSelectChange) {
+  public onConformerChange(event: MatSelectChange) {
+    this.selectedConformer.set(event.value);
     const updateParams = {
       customData: {
-        url: event.value,
+        url: this.selectedConformer(),
         format: 'pdb',
       },
       selection: this.selectionConfig,
@@ -234,7 +235,7 @@ export class MolstarDialogComponent implements AfterViewInit {
     };
     const updateParams = {
       customData: {
-        url: this.selected(),
+        url: this.selectedConformer(),
         format: 'pdb',
       },
       selection: this.selectionConfig,
