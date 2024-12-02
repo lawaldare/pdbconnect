@@ -36,7 +36,7 @@ export class MolstarDialogComponent implements AfterViewInit {
   public selectedConformer = signal('');
   public selectedConformerControl = computed(() => new FormControl(this.selectedConformer(), { nonNullable: true }));
 
-  public selectedFrament = signal('');
+  public selectedFrament = signal<Fragment>({} as Fragment);
   public selectedFragmentControl = computed(() => new FormControl(this.selectedFrament(), { nonNullable: true }));
 
   private selectionConfig = {};
@@ -87,7 +87,7 @@ export class MolstarDialogComponent implements AfterViewInit {
         );
       });
       console.log('fragments', this.fragments());
-      this.selectedFrament.set(this.fragments()[0].name);
+      this.selectedFrament.set(this.fragments()[0]);
       this.caption.set(this.fragments()[0].caption ?? '');
       this.atoms = this.fragments()[0].atoms.length ? this.fragments()[0].atoms[0] : [];
     } else {
@@ -219,7 +219,7 @@ export class MolstarDialogComponent implements AfterViewInit {
   }
 
   public onFragmentChange(event: MatSelectChange) {
-    this.selectedFramentObject = this.fragments().find((fragment) => fragment.name === event.value);
+    this.selectedFramentObject = event.value;
 
     if (this.selectedFramentObject?.caption) {
       this.caption.set(this.selectedFramentObject.caption);
