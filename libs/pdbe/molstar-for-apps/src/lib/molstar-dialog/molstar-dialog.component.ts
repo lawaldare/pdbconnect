@@ -86,6 +86,7 @@ export class MolstarDialogComponent implements AfterViewInit {
           ]
         );
       });
+      console.log('fragments', this.fragments());
       this.selectedFrament.set(this.fragments()[0].name);
       this.caption.set(this.fragments()[0].caption ?? '');
       this.atoms = this.fragments()[0].atoms.length ? this.fragments()[0].atoms[0] : [];
@@ -219,7 +220,7 @@ export class MolstarDialogComponent implements AfterViewInit {
 
   public onFragmentChange(event: MatSelectChange) {
     this.selectedFramentObject = this.fragments().find((fragment) => fragment.name === event.value);
-
+    console.log('this.selectedFramentObject', this.selectedFramentObject);
     if (this.selectedFramentObject?.caption) {
       this.caption.set(this.selectedFramentObject.caption);
     }
