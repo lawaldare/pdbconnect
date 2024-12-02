@@ -220,7 +220,7 @@ export class MolstarDialogComponent implements AfterViewInit {
 
   public onFragmentChange(event: MatSelectChange) {
     this.selectedFramentObject = this.fragments().find((fragment) => fragment.name === event.value);
-    console.log('this.selectedFramentObject', this.selectedFramentObject);
+
     if (this.selectedFramentObject?.caption) {
       this.caption.set(this.selectedFramentObject.caption);
     }
