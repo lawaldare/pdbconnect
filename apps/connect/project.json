@@ -18,6 +18,7 @@
         "assets": [
           "apps/connect/src/favicon.ico",
           "apps/connect/src/assets",
+          "apps/connect/src/robots.txt",
           {
             "glob": "**/*",
             "input": "shared_assets/",
