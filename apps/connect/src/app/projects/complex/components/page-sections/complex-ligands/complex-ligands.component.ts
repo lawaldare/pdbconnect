@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnChanges, signal, SimpleChanges } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ComplexAPIService } from '../../../services/complex-api.service';
 import { ActivatedRoute } from '@angular/router';
@@ -39,7 +39,7 @@ export class ComplexLigandsComponent {
               ligandId: key,
             };
             acc.push(mappedObj);
-            return acc.sort((a, b) => b.num_pdb_entries - a.num_pdb_entries);
+            return this.sortWithAnnotationsFirst(acc);
           }, []);
         }),
         catchError((error) => {
@@ -64,5 +64,18 @@ export class ComplexLigandsComponent {
     const startIndex = event.pageIndex * event.pageSize;
     const endIndex = startIndex + event.pageSize;
     this.ligandsPage.update(() => (this.ligands() ?? []).slice(startIndex, endIndex));
+  }
+
+  private sortWithAnnotationsFirst(data: ComplexLigand[]) {
+    return data.sort((a, b) => {
+      const aHasAnnotations = a.annotations && a.annotations.length > 0;
+      const bHasAnnotations = b.annotations && b.annotations.length > 0;
+
+      if (aHasAnnotations && !bHasAnnotations) return -1;
+
+      if (!aHasAnnotations && bHasAnnotations) return 1;
+
+      return 0;
+    });
   }
 }

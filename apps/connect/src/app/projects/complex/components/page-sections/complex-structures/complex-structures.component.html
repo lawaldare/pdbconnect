@@ -8,8 +8,10 @@
         [rowData]="rowData()"
         [columnDefs]="colDefs"
         [gridOptions]="gridOptions"
-        (cellClicked)="onCellClicked($event)"
-        (gridReady)="onGridReady($event)"
+        [rowSelection]="rowSelection"
+        [initialState]="initialState"
+        [selectionColumnDef]="selectionColumnDef"
+        (selectionChanged)="onSelectionChanged($event)"
         [paginationPageSizeSelector]="paginationPageSizeSelector()"
       />
     </div>
