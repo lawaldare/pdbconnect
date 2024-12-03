@@ -1,0 +1,220 @@
+<section class="top-structure-section">
+  <nav>
+    <button class="tab-button" [ngClass]="{ active: currentTab === 'Assembly' }" (click)="switchCurrentTab('Assembly')" style="width: 101px; max-width: 101px">
+      Assembly
+    </button>
+    <div class="vertical-line" [ngClass]="currentTab === 'Assembly' ? 'active' : ''"></div>
+
+    <button
+      class="tab-button"
+      [ngClass]="{ active: currentTab === 'Macromolecules', inactive: tabsStates['Macromolecules'].isInactive }"
+      (click)="switchCurrentTab('Macromolecules')"
+      style="width: 151px; max-width: 151px"
+    >
+      Macromolecules
+    </button>
+    <div class="vertical-line" [ngClass]="currentTab === 'Macromolecules' ? 'active' : ''"></div>
+
+    <button
+      class="tab-button"
+      [ngClass]="{ active: currentTab === 'Ligands', inactive: tabsStates['Ligands'].isInactive }"
+      (click)="switchCurrentTab('Ligands')"
+      style="width: 88px; max-width: 88px"
+    >
+      Ligands
+    </button>
+    <div class="vertical-line" [ngClass]="currentTab === 'Ligands' ? 'active' : ''"></div>
+
+    <button
+      class="tab-button"
+      [ngClass]="{ active: currentTab === 'Domains', inactive: tabsStates['Domains'].isInactive }"
+      (click)="switchCurrentTab('Domains')"
+      style="width: 96px; max-width: 96px"
+    >
+      Domains
+    </button>
+    <div class="vertical-line" [ngClass]="currentTab === 'Domains' ? 'active' : ''"></div>
+
+    <button
+      class="tab-button"
+      [ngClass]="{ active: currentTab === 'Modifications', inactive: tabsStates['Modifications'].isInactive }"
+      (click)="switchCurrentTab('Modifications')"
+      style="width: 118px; max-width: 118px"
+    >
+      Modifications
+    </button>
+  </nav>
+  <section class="tab-content">
+    <section class="molstar-controls">
+      @if (currentMolstarSelection) {
+      <div>
+        <!-- <span class="molstar-control-txt">Selected: {{currentMolstarSelectionName}}</span> -->
+        <span class="molstar-control-txt">Selected:</span>
+        <span class="molstar-control-txt-info">
+          <mat-form-field appearance="fill">
+            <mat-select [(ngModel)]="currentMolstarSelectionInfo" (selectionChange)="onMolstarSelect($event)">
+              @for (eachInfo of currentMolstarSelectionInfoList; track eachInfo;) {
+              <mat-option [value]="eachInfo">
+                {{ eachInfo }}
+              </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </span>
+        <button class="molstar-control-btn" (click)="switchMolstarZoomed(currentMolstarSelection)">
+          <!-- <i _ngcontent-ng-c3321304204="" class="icon icon-common icon-search-plus"></i> -->
+          Zoom in
+        </button>
+        <button class="molstar-control-btn" (click)="switchMolstarZoomed(undefined)">
+          <!-- <i _ngcontent-ng-c3321304204="" class="icon icon-common icon-search-minus"></i> -->
+          Zoom out
+        </button>
+        <!-- <button class="molstar-control-btn">
+                        <i _ngcontent-ng-c3321304204="" class="icon icon-common icon-caret-left"></i>
+                        Back
+                    </button>
+                    <button class="molstar-control-btn">
+                        Next
+                        <i _ngcontent-ng-c3321304204="" class="icon icon-common icon-caret-right"></i>
+                    </button> -->
+      </div>
+      }
+      <section class="molstar-container" #molstarContainer></section>
+    </section>
+    <section class="info-controls" #infoControls>
+      @if (currentTab === 'Assembly') {
+      <h5>Preferred assembly details</h5>
+      @if (assemblyData().name) {
+      <div class="info-row">
+        <span>Assembly name</span>
+        <article>
+          <a>{{ assemblyData().name }}</a>
+          <i class="icon icon-common icon-search"></i>
+        </article>
+      </div>
+      } @if (assemblyData().complexId) {
+      <div class="info-row">
+        <span>PDBe Complex ID</span>
+        <article>
+          <a>{{ assemblyData().complexId }}</a>
+          <i class="icon icon-common icon-search"></i>
+        </article>
+      </div>
+      } @if (assemblyData().composition) {
+      <div class="info-row">
+        <span>Assembly composition</span>
+        <article>
+          {{ assemblyData().composition }}
+        </article>
+      </div>
+      }
+      <div class="info-row">
+        <span>Entry contents</span>
+        <article>
+          @for (contentLine of entryContentsDescription(); track contentLine; let islast = $last) {
+          {{ contentLine }}
+          <br />
+          }
+        </article>
+      </div>
+      } @else if (currentTab === 'Macromolecules') {
+      <h5>
+        @for(moleculeTypeCount of moleculesDescription(); track moleculeTypeCount; let isfirst = $first; let islast = $last) {
+        {{ islast && !isfirst ? 'and' : '' }}
+        {{ !isfirst && !islast ? ',' : '' }}
+        {{ moleculeTypeCount }}
+        } molecule{{ macromolecules().length === 1 ? '' : 's' }}
+      </h5>
+      @for (macromolecule of macromolecules(); track macromolecule; let i = $index; ) {
+      <div
+        class="select-gallery-container valid"
+        [ngClass]="currentTabSelection === macromolecule.entity_id + '' ? 'active' : ''"
+        (click)="switchTabListSelection('Macromolecules', macromolecule.entity_id + '')"
+      >
+        <div class="color-code-bar" [ngStyle]="{ 'background-color': colorsFromMolj()[macromolecule.entity_id] }"></div>
+        <button class="select-entity-btn">{{ macromolecule.molecule_name[0] }}</button>
+      </div>
+      @if (currentTabSelection === macromolecule.entity_id+'') {
+      <div class="more-details-btn">
+        <div class="color-code-bar" [ngStyle]="{ 'background-color': colorsFromMolj()[macromolecule.entity_id] }"></div>
+        <button class="details-btn" (click)="viewDetails()">View more details below</button>
+      </div>
+      } } } @else if (currentTab === 'Ligands') {
+      <h5>{{ ligands().length }} bound ligand{{ ligands().length === 1 ? '' : 's' }}</h5>
+      @for (ligand of ligands(); track ligand; let i = $index; ) {
+      <div
+        class="select-gallery-container valid"
+        [ngClass]="currentTabSelection === ligand.entity_id + '' ? 'active' : ''"
+        (click)="switchTabListSelection('Ligands', ligand.entity_id + '')"
+      >
+        <div class="color-code-bar" [ngStyle]="{ 'background-color': colorsFromMolj()[ligand.entity_id] }"></div>
+        <button class="select-entity-btn">{{ ligand.molecule_name[0] }} - {{ ligand.chem_comp_ids[0] }}</button>
+      </div>
+      @if (currentTabSelection === ligand.entity_id+'') {
+      <div class="more-details-btn">
+        <div class="color-code-bar" [ngStyle]="{ 'background-color': colorsFromMolj()[ligand.entity_id] }"></div>
+        <button class="details-btn" (click)="viewDetails()">View more details below</button>
+      </div>
+      } } } @else if (currentTab === 'Domains') {
+      <!-- Domains dropdown -->
+      <mat-form-field appearance="fill">
+        <mat-label>Select Domain Resource</mat-label>
+        <mat-select [(ngModel)]="currentDomainResource" (selectionChange)="onDomainSelect($event)">
+          @for (resource of objectKeys(domainCountByResource()); track resource;) {
+          <mat-option [value]="resource" [disabled]="domainCountByResource()[resource] === 0"> {{ resource }} ({{ domainCountByResource()[resource] }}) </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <!-- Domains dropdown end -->
+      <h5>
+        {{ domainCountByResource()[currentDomainResource] }} unique {{ currentDomainResource }}
+        @if(domainCountByResource()[currentDomainResource] > 1){accessions} @else{accession} in this entry
+      </h5>
+      <!-- Domains selectable list -->
+      @for (entityId of objectKeys(domainsByEntityAndResource()[currentDomainResource]); track entityId;) {
+      <div class="select-gallery-container invalid">
+        <div class="color-code-bar" [ngStyle]="{ 'background-color': colorsFromMolj()[entityId] }"></div>
+        <button class="select-entity-btn">{{ moleculeNameByEntityId()[entityId] }}</button>
+      </div>
+      @for (classificationObj of objectValues(domainsByEntityAndResource()[currentDomainResource][entityId]); track classificationObj;) {
+      <div
+        class="select-gallery-container valid nested-1"
+        [ngClass]="currentTabSelection === classificationObj.img ? 'active' : ''"
+        (click)="switchTabListSelection('Domains', classificationObj.img)"
+      >
+        <div class="color-code-bars">
+          @for (domainId of objectKeys(domainsByEntityAndResource()[currentDomainResource][entityId][classificationObj.accession]['domains']); track domainId;) {
+          <div class="color-code-sqr" [ngStyle]="{ 'background-color': colorsFromMolj()[domainId] }"></div>
+          }
+        </div>
+        <button class="select-entity-btn">↳ {{ classificationObj.description }} ({{ classificationObj.accession }})</button>
+      </div>
+      @if (currentTabSelection === classificationObj.img) {
+      <div class="more-details-btn">
+        <button class="details-btn" (click)="viewDetails()">View more details below</button>
+      </div>
+      } } } } @else if (currentTab === 'Modifications') {
+      <h5>{{ modifications().length }} modification{{ modifications().length === 1 ? '' : 's' }}</h5>
+      @for(modification of modifications(); track modification) {
+      <div
+        class="select-gallery-container"
+        [ngClass]="currentTabSelection === modification.img ? 'active' : ''"
+        (click)="switchTabListSelection('Modifications', modification.img)"
+      >
+        <div class="color-code-bar" [ngStyle]="{ 'background-color': colorsFromMolj()[modification.chem_comp_id] }"></div>
+        <button class="select-entity-btn">{{ modification.name }} - {{ modification.chem_comp_id }}</button>
+      </div>
+      @if (currentTabSelection === modification.img) {
+      <div class="more-details-btn">
+        <div class="color-code-bar" [ngStyle]="{ 'background-color': colorsFromMolj()[modification.chem_comp_id] }"></div>
+        <button class="details-btn" (click)="viewDetails()">View more details below</button>
+      </div>
+      } } }
+    </section>
+    <!-- @if (currentTabSelection !== 'Main') {
+            <div class="more-details-div">
+                <button class="details-btn">View more details below</button>
+            </div>
+        } -->
+  </section>
+</section>
