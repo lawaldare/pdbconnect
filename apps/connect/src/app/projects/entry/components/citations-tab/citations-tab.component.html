@@ -1,0 +1,117 @@
+<div class="citations">
+  <h2 class="heading-2">Citations</h2>
+  @if (primaryPublication() && articlesCiting()) {
+  <section class="primary-publication">
+    <div class="row" style="margin-left: 0; margin-right: 0; gap: 0">
+      <div class="row__left">Primary publication</div>
+      <div class="row__right">
+        <a [href]="'https://europepmc.org/article/MED/' + primaryPublication().pubmed_id" target="_blank">{{ primaryPublication().title }} </a>
+        <div class="row__right__authors">
+          <span class="row__right__authors__title">Authors:</span>
+          @for(author of primaryPublication().author_list; track author.full_name){
+          <span>
+            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a> </span
+          >, }
+        </div>
+        <div class="row__right__pmid">
+          <span class="row__right__pmid__info">
+            <i>{{ primaryPublication().journal_info.pdb_abbreviation }}</i>
+            {{ primaryPublication().journal_info.volume }}
+            {{ primaryPublication().journal_info.pages }}
+            ({{ primaryPublication().journal_info.year }})
+          </span>
+          <span class="row__right__authors__title">PMID:</span>
+          <a [href]="'https://europepmc.org/article/MED/' + primaryPublication().pubmed_id" target="_blank"
+            >{{ primaryPublication().pubmed_id }}
+            <i class="icon icon-link icon-common"></i>
+          </a>
+          <!-- @if(this.imageXMLText()){
+            <div>
+              <button class="vf-button vf-button--link" (click)="openXMLImagesInNewWindow()">
+                View the Images
+                <i class="icon icon-common icon-common"></i>
+              </button>
+            </div>
+            } -->
+        </div>
+      </div>
+    </div>
+    <!-- @if(this.imageXMLText()){ -->
+    <article #imageContainer (click)="openXMLImagesInNewWindow()"></article>
+    <!-- } -->
+  </section>
+  <section>
+    @if(relatedEntries){
+    <div class="">
+      <div class="row__left">Related entries</div>
+      <div class="row__right">
+        @for(entry of relatedEntries; track entry){
+        <span class="row__right__entry">
+          <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + entry" target="_blank" class="row__right__link"
+            >{{ entry }}
+            <i class="icon icon-link icon-common"></i>
+          </a>
+        </span>
+        }
+      </div>
+    </div>
+    }
+  </section>
+  <section class="mb-24">
+    <div class="">
+      <div class="row__left">Abstract</div>
+      <div class="row__right">
+        @if(primaryPublication().abstract.unassigned ) {
+        <p class="row__right__text" [innerHTML]="primaryPublication().abstract.unassigned"></p>
+        } @else {
+        <div style="margin-top: 4px">
+          @if (primaryPublication().abstract.background) {
+          <p class="row__left">Background</p>
+          <p class="row__right__text">{{ primaryPublication().abstract.background }}</p>
+          } @if (primaryPublication().abstract.objective) {
+          <p class="row__left">Objective</p>
+          <p class="row__right__text">{{ primaryPublication().abstract.objective }}</p>
+          } @if (primaryPublication().abstract.methods) {
+          <p class="row__left">Methods</p>
+          <p class="row__right__text">{{ primaryPublication().abstract.methods }}</p>
+          } @if (primaryPublication().abstract.results) {
+          <p class="row__left">Results</p>
+          <p class="row__right__text">{{ primaryPublication().abstract.results }}</p>
+          } @if (primaryPublication().abstract.conclusions) {
+          <p class="row__left">Conclusions</p>
+          <p class="row__right__text">{{ primaryPublication().abstract.conclusions }}</p>
+          }
+        </div>
+        }
+      </div>
+    </div>
+  </section>
+  @if(articlesCiting().cited_by.Articles.length){
+  <div class="article-list-container">
+    <h3 class="heading-3">Articles citing the PDB entry</h3>
+    <pdbc-citation-publication [publicationInfo]="articlesCiting().cited_by.Articles" [entryId]="entryId()" headerText="cited"></pdbc-citation-publication>
+  </div>
+  } @if(articlesCiting().cited_by.Reviews.length){
+  <div class="article-list-container">
+    <h3 class="heading-3">Reviews citing the publications</h3>
+    <pdbc-citation-publication [publicationInfo]="articlesCiting().cited_by.Reviews" [entryId]="entryId()" headerText="cited"></pdbc-citation-publication>
+  </div>
+  } @if(articlesCiting().appears_without_citation.Articles.length){
+  <div class="article-list-container">
+    <h3 class="heading-3">Articles - {{ this.entryId() }} mentioned but not cited</h3>
+    <pdbc-citation-publication
+      [publicationInfo]="articlesCiting().appears_without_citation.Articles"
+      [entryId]="entryId()"
+      headerText="mentioned"
+    ></pdbc-citation-publication>
+  </div>
+
+  } @if(articlesCiting().appears_without_citation.Reviews.length){
+  <h3 class="heading-3">Reviews - {{ this.entryId() }} mentioned but not cited</h3>
+  <pdbc-citation-publication
+    [publicationInfo]="articlesCiting().appears_without_citation.Reviews"
+    [entryId]="entryId()"
+    headerText="mentioned"
+  ></pdbc-citation-publication>
+  } }
+</div>
