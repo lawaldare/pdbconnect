@@ -1,0 +1,40 @@
+<h4>
+  Most {{ headerText() }} displayed. &nbsp;
+  <a [href]="'https://europepmc.org/search?query=(ACCESSION_TYPE:pdb)' + entryId()" target="_blank"
+    >View all in Europe PMC
+    <i class="icon icon-link icon-common"></i>
+  </a>
+</h4>
+@if(showFirstFive()){
+<ol>
+  @for(article of publicationInfo().slice(0,5); track article.pubmed_id){
+  <pdbc-citation-article [article]="article"></pdbc-citation-article>
+  }
+</ol>
+@if(publicationInfo().length > 5){
+<button class="vf-button vf-button--link" (click)="showAllArticles()">
+  See all {{ publicationInfo().length }} papers
+  <i class="icon icon-common icon-common"></i>
+</button>
+} } @else {
+<ol>
+  @for(article of pagedPublicationInfo; track article.pubmed_id){
+  <pdbc-citation-article [article]="article"></pdbc-citation-article>
+  }
+</ol>
+<mat-paginator
+  class="paginator-container"
+  [length]="pageLength()"
+  [pageSize]="pageSize()"
+  [pageSizeOptions]="pageSizeOptions"
+  aria-label="Select page"
+  showFirstLastButtons
+  (page)="handlePageEvent($event)"
+>
+</mat-paginator>
+
+<button class="vf-button vf-button--link" (click)="showAllArticles()">
+  See less papers
+  <i class="icon icon-common icon-common"></i>
+</button>
+}
