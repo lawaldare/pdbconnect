@@ -1,0 +1,102 @@
+.experiments-validation {
+  margin: 20px;
+}
+
+.each-method {
+  margin-top: 24px;
+}
+
+.initial-info {
+  margin-top: 6px;
+
+  // margin-left: 4px;
+}
+
+.validation-metrics {
+  margin-top: 14px;
+
+  img {
+    width: 690px;
+  }
+
+  .validation-list {
+    margin-left: 14px;
+  }
+}
+
+.experimental-info {
+  margin-top: 14px;
+
+  .content {
+    margin-left: 4px;
+
+    .table-container {
+      width: 90%;
+    }
+
+    h5 {
+      margin-top: 6px;
+    }
+  }
+}
+
+.reported-r-vals {
+  min-width: 160px;
+
+  p {
+    display: flex;
+    align-items: center;
+
+    span:last-of-type {
+      flex-grow: 1;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}
+
+.no-validation-report {
+  display: flex;
+  width: 530px;
+  height: 130px;
+  justify-content: center;
+  align-items: center;
+  border: 1px black solid;
+}
+
+.info-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 4px;
+
+  & > span {
+    max-width: 180px;
+    width: 100%;
+    color: #1a1c1a;
+    font-size: 16px;
+    font-weight: 500;
+    display: block;
+  }
+}
+
+article {
+  margin-top: auto;
+  margin-bottom: auto;
+
+  i {
+    // margin-left: 5px;
+    margin-left: 2px;
+    display: inline-block;
+  }
+
+  i::before {
+    --icon-search-color: #193f90;
+
+    width: 12px;
+    height: 12px;
+    mask-size: auto 12px;
+    position: absolute;
+    z-index: -1;
+    top: 4px;
+  }
+}
