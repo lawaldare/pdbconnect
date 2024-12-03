@@ -1,0 +1,74 @@
+<div id="information-section">
+  <!-- TODO: Add struct gradient -->
+  <div class="info-row">
+    <span>Entry title</span>
+    <article>
+      {{ information().summary.entryTitle }}
+    </article>
+  </div>
+  <div class="info-row">
+    <span>Source organism</span>
+    <article>
+      @for(sourceOrganism of information().molecules.organismScientificNames; track sourceOrganism; let islast = $last){
+      <span>
+        <!-- <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">{{ sourceOrganism }}</a> -->
+        <a>{{ sourceOrganism }}</a>
+      </span>
+      <i class="icon icon-common icon-search"></i>
+      {{ islast ? '' : ',' }} }
+    </article>
+  </div>
+  <div class="info-row">
+    <span>Primary Publication</span>
+    <article>
+      <p>{{ information().publication.publicationTitle }}</p>
+      @if(information().publication.publicationAuthors){
+      <p>
+        @for(authorName of information().publication.publicationAuthors; track authorName; let islast = $last){
+        <!-- <a [href]="generateAuthorSearchUrl(authorName)" target="_blank">{{ authorName }}</a> -->
+        <a>{{ authorName }}</a>
+        <!-- <i class="icon icon-common icon-search"></i> -->
+        {{ islast ? '' : ',' }}
+        }
+      </p>
+      }
+      <p>
+        <i>{{ information().publication.publicationJournal }}</i>
+        {{ information().publication.publicationVolume }}
+        {{ information().publication.publicationPage }}
+        {{ information().publication.publicationYear }}
+      </p>
+      @if(information().publication.publicationPMID){
+      <p>
+        PMID:
+        <!-- <a [href]="'https://europepmc.org/article/MED/' + information().publication.publicationPMID" target="_blank" -->
+        <a
+          >{{ information().publication.publicationPMID }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </p>
+      } @if(information().publication.publicationDOI){
+      <p>
+        DOI:
+        <!-- <a [href]="'https://doi.org/' + information().publication.publicationDOI" target="_blank" -->
+        <a
+          >{{ information().publication.publicationDOI }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </p>
+      }
+    </article>
+  </div>
+  <div class="info-row">
+    <span>PDB model quality summary</span>
+    <article>
+      <pdbc-str-quality-gradient [componentType]="'GeometryFit_RdToBl'" [renderGradients]="information().qualityScores"></pdbc-str-quality-gradient>
+
+      <!-- <a [href]="'https://doi.org/' + information().publication.pdbEntryDOI" target="_blank" -->
+      <!-- <a
+          >{{ information().publication.pdbEntryDOI }}
+          <i class="icon icon-link icon-common"></i>
+        </a> -->
+    </article>
+  </div>
+</div>
