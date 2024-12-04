@@ -17,61 +17,102 @@
   [suggestions]="[]"
   [searchButtonChipsType]="'PDBe'"
 ></pdbc-pdbe-header-search> -->
-<div id="main-container-outer">
-  @if (entryId && entryData) {
-  <div id="main-container">
-    <div id="main-left-container">
-      <pdbc-pdbe-nav-menu [highlightColor]="'#D0DEBB'" [navSections]="navSections" [verticalStickyElementId]="'main-right-sticky'"></pdbc-pdbe-nav-menu>
-    </div>
-    <div id="main-right-container">
-      <div id="main-right-sticky">
-        <span id="main-title">{{ entryId }}</span>
-        <span id="main-subtitle">{{ entryData.title }}</span>
-        <div id="main-btn-bar">
-          <button class="vf-button vf-button--primary">View 3D structure</button>
-          <lib-dropdown-menu [options]="downloadOptions" title="Download files"></lib-dropdown-menu>
-          <lib-dropdown-menu [options]="viewOptions" title="View files"></lib-dropdown-menu>
-        </div>
-      </div>
-      <div id="main-summary-holder">
-        <pdbc-summary
-          [entryId]="entryId"
-          [sourceOrganisms]="entryData.organismScientificNames"
-          [experimentType]="entryData.experimentalMethod"
-          [resolutionValue]="entryData.resolutionValue"
-          [releasedData]="entryData.releasedData"
-          [publicationTitle]="entryData.publicationTitle"
-          [publicationOrEntryAuthors]="entryData.publicationOrEntryAuthors"
-          [publicationJournal]="entryData.publicationJournal"
-          [publicationVolume]="entryData.publicationVolume"
-          [publicationPage]="entryData.publicationPage"
-          [publicationYear]="entryData.publicationYear"
-          [publicationPMID]="entryData.publicationPMID"
-        ></pdbc-summary>
-        <div id="main-molstar-qsummary">
-          @if (molstarConfigs.moleculeId) {
-          <div id="main-molstar">
-            <lib-pdbe-molstar-for-apps [displayConfigs]="molstarConfigs" [molstarWidth]="'100%'" [molstarHeight]="'265px'"></lib-pdbe-molstar-for-apps>
-          </div>
-          }
-          <div id="main-qsummary">
-            @if (entryData.qualityScores.pdbredo) {
-            <div class="paragraph-3" style="font-weight: 500">PDB model quality summary</div>
-            <pdbc-struc-quality-gradients [componentType]="'GeometryFit_RdToBl'" [renderGradients]="entryData.qualityScores.pdb"></pdbc-struc-quality-gradients>
-            }
-            <div style="height: 12px"></div>
-            @if (entryData.qualityScores.pdbredo) {
-            <a [href]="'https://pdb-redo.eu/db/' + entryId" target="_blank">PDB-REDO</a>
-            <pdbc-struc-quality-gradients [componentType]="'GeometryFit_RdToGr'" [renderGradients]="entryData.qualityScores.pdbredo"></pdbc-struc-quality-gradients>
-            <div class="paragraph-4">
-              The sliders show the change in model quality between the archive PDB entry and the PDB-REDO entry. PDB-REDO is an external service and is not a part of
-              PDBe.
-            </div>
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  }
-</div>
+<section class="root-container">
+  <main>
+    <!-- Contains header line of page with entry id, experimental method, release data, link, download and view dropdowns -->
+    <header>
+      <section class="title-info">
+        <h1 class="heading-1">{{ entryId() }}</h1>
+        @if (pageData$ | async; as pageData) {
+        <span>{{ pageData.experiment.experimentalMethod }}</span>
+        @if (pageData.experiment.resolutionValues.length > 0) { @for (resolutionValue of pageData.experiment.resolutionValues; track resolutionValue;) { @if
+        (resolutionValue) {
+        <span>{{ resolutionValue }}Å</span>
+        } }
+        <!-- <span>{{ pageData.experiment.resolutionValue }}Å</span> -->
+        }
+        <span>Released {{ pageData.summary.releaseDate }}</span>
+        <span>
+          <a
+            >{{ pageData.publication.pdbEntryDOI }}
+            <i class="icon icon-link icon-common"></i>
+          </a>
+        </span>
+        }
+      </section>
+      <section class="action-buttons" libClickOutside (clickOutside)="onClickedOutside()">
+        <lib-dropdown-menu [options]="downloadOptions" title="Download files"></lib-dropdown-menu>
+        <lib-dropdown-menu [options]="viewOptions" title="View files"></lib-dropdown-menu>
+      </section>
+    </header>
+    <!-- Contains components of the page top: general information and the 3d explorer -->
+    <section class="top-info">
+      <section class="summary">
+        @if (pageData$ | async; as pageData) {
+        <!-- inside entry/components/main-information-area -->
+        <pdbc-main-information-area [information]="pageData"></pdbc-main-information-area>
+        }
+      </section>
+      <section class="explore-3d-tabs">
+        @if (pageData$ | async; as pageData) {
+        <!-- inside entry/components/overview-molstar -->
+        <pdbc-overview-molstar
+          [entryId]="this.entryId()"
+          [complexDetails]="pageData.complexDetails"
+          [macromolecules]="pageData.molecules.macroMolecules"
+          [ligands]="pageData.molecules.boundLigands"
+          [inputModifications]="pageData.modifications"
+          [residueListing]="pageData.residueListing"
+          [pfamMappings]="pageData.pfamMapping"
+          [cathMappings]="pageData.cathMapping"
+          [scopMappings]="pageData.scopMapping"
+        ></pdbc-overview-molstar>
+        }
+      </section>
+    </section>
+    <!--  -->
+    @if (pageData$ | async; as pageData) {
+    <section id="detail-tabs" class="details-tabs">
+      <!-- Navigation controls between tabs -->
+      <nav>
+        @for (tabName of allTabs; track tabName) {
+        <button class="tab-button" [ngClass]="{ active: currentTab() === tabName.name }" (click)="changeCurrentTab(tabName.name)">
+          {{ tabName.display }}
+        </button>
+        <div class="vertical-line" [ngClass]="currentTab() === tabName.name ? 'active' : ''"></div>
+        }
+        <div class="grow-width"></div>
+      </nav>
+      <!-- TODO: Add common CSS for table tabs here -->
+      <!-- TODO: Check CSS of Macromolecule and Ligands tables to match design -->
+      <!-- Tabs, each with related components -->
+      <section class="tab-content">
+        @for (tabName of allTabs; track tabName) { @if(currentTab() === tabName.name) { @if(tableTabs.indexOf(tabName.name) > -1) {
+        <section class="left-side">
+          <!-- inside entry/components/interactive-tables -->
+          <pdbc-interactive-tables [tabName]="getTableName(tabName.name)" [pageInformation]="pageData"></pdbc-interactive-tables>
+        </section>
+        <section class="right-side">
+          <!-- inside entry/components/details-dashboard -->
+          <pdbc-details-dashboard [entryId]="entryId()" [tabName]="getTableName(tabName.name)" [pageInformation]="pageData"></pdbc-details-dashboard>
+        </section>
+        } @if(tabName.name === 'Experiments') {
+        <!-- inside entry/components/experiments-validation-tab -->
+        <pdbc-experiments-validation-tab
+          [entryId]="entryId()"
+          [depositionDate]="pageData.summary.depositionDate"
+          [releaseDate]="pageData.summary.releaseDate"
+          [revisionDate]="pageData.summary.revisionDate"
+          [experimentalDetails]="pageData.experiment.details"
+          [keyValidationStats]="pageData.keyValidationStats"
+          [xRayRefine]="pageData.xRayRefine"
+        ></pdbc-experiments-validation-tab>
+        } @if(tabName.name === 'Citations') {
+        <!-- inside entry/components/citations-tab -->
+        <pdbc-citations-tab [entryId]="entryId()" [primaryPublication]="pageData.primaryPublication" [articlesCiting]="pageData.articlesCiting"></pdbc-citations-tab>
+        } } }
+      </section>
+    </section>
+    }
+  </main>
+</section>

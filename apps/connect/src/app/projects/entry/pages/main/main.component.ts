@@ -1,89 +1,481 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SummaryComponent } from '../page-sections/summary/summary.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
-import { EntryApiService, EntryData } from '../../services/entry-api.service';
+import { EntryApiService } from '../../services/entry-api.service';
 import { StrucQualityGradientsComponent } from '../../components/struc-quality-gradients/struc-quality-gradients.component';
 import { PdbeMolstarForAppsComponent } from '@pdbe-lib/molstar-for-apps';
-import { InitParams } from 'pdbe-molstar/lib/spec';
-import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
+// import { InitParams } from 'pdbe-molstar/lib/spec';
+import { DownloadOption, DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
+import { catchError, combineLatest, forkJoin, map, mergeMap, Observable, of, switchMap } from 'rxjs';
+import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { AnyExperimentDetail } from '../../data-models/experimental-details.model';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { UniProtMapping } from '../../data-models/uniprot-mapping.model';
+import { BestStructureMapping } from '../../data-models/uniport-best-structures.model';
+import { BestStructureDict } from '../../data-models/uniprot-best-structures.model';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ClickOutsideDirective } from '@pdbc/core';
+import { MainInformationAreaComponent } from '../../components/main-information-area/main-information-area.component';
+import { OverviewMolstarComponent } from '../../components/overview-molstar/overview-molstar.component';
+import { InteractiveTablesComponent } from '../../components/interactive-tables/interactive-tables.component';
+import { DetailsDashboardComponent } from '../../components/details-dashboard/details-dashboard.component';
+import { ExperimentsValidationTabComponent } from '../../components/experiments-validation-tab/experiments-validation-tab.component';
+import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
+
+export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
 @Component({
   selector: 'pdbc-main',
   standalone: true,
   imports: [
     CommonModule,
-    PdbeMolstarForAppsComponent,
     PdbeHeaderLogoMenuComponent,
     PdbeHeaderSearchComponent,
-    SummaryComponent,
-    StrucQualityGradientsComponent,
     PdbeNavMenuComponent,
     DropdownMenuComponent,
+    ClickOutsideDirective,
+    MainInformationAreaComponent,
+    OverviewMolstarComponent,
+    InteractiveTablesComponent,
+    DetailsDashboardComponent,
+    ExperimentsValidationTabComponent,
+    CitationsTabComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
 })
 export class EntryMainPageComponent implements OnInit {
-  entryId!: string;
-  entryData: EntryData | undefined; // Entry pages data
-
-  public headerLogoMenuConfig = {
-    backgroundColor: '#056643',
-    logoType: 'PDBe',
-    urls: [
-      { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
-      { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
-      { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
-    ],
-    menuHighlightColor: '#0a5032',
-  };
-
-  navSections = [
-    { sectionId: 'summary-section', isSubSection: false, sectionName: 'Summary' },
-    { sectionId: 'function-biology-section', isSubSection: false, sectionName: 'Function and Biology' },
-    { sectionId: 'family-domains-section', isSubSection: false, sectionName: 'Family and Domains' },
-    { sectionId: 'macromolecules-section', isSubSection: false, sectionName: 'Macromolecules' },
-    { sectionId: 'ligands-envs-section', isSubSection: false, sectionName: 'Ligands and Environments' },
-    { sectionId: 'assemblies-section', isSubSection: false, sectionName: 'Assemblies' },
-    { sectionId: 'exp-validation-section', isSubSection: false, sectionName: 'Experiments and Validation' },
-    { sectionId: 'citations-section', isSubSection: false, sectionName: 'Citations' },
+  // public currentTab = 'Assemblies';
+  public allTabs = [
+    {
+      name: 'Assemblies',
+      display: 'Assemblies',
+    },
+    {
+      name: 'Macromolecules',
+      display: 'Macromolecules',
+    },
+    {
+      name: 'Ligands',
+      display: 'Ligands and Environments',
+    },
+    {
+      name: 'Domains',
+      display: 'Domains',
+    },
+    {
+      name: 'Experiments',
+      display: 'Experiments and Validation',
+    },
+    {
+      name: 'Citations',
+      display: 'Citations',
+    },
   ];
-  // Data for download dropdown control
-  downloadOptions: { name: string; url: string; downloadable: boolean }[] = [];
-  // Data for view dropdown control
-  viewOptions: { name: string; url: string; downloadable: boolean }[] = [];
+  public tableTabs = ['Assemblies', 'Macromolecules', 'Ligands', 'Domains'];
 
-  // configuration to initialize molstar
-  // docs in: https://github.com/molstar/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin#plugin-parameters-options
-  molstarConfigs: Partial<InitParams> = {
-    moleculeId: '',
-    hideControls: true,
-    hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
-    landscape: true,
-    subscribeEvents: false,
-    bgColor: { r: 255, g: 255, b: 255 },
-  };
+  private readonly entryAPIService = inject(EntryApiService);
 
-  constructor(private route: ActivatedRoute, private router: Router, private entryApiService: EntryApiService) {
-    this.route.params.subscribe((params) => {
-      this.entryId = params['entryId'].toLowerCase();
-      if (params['entryId'] !== this.entryId) {
-        this.router.navigate(['', this.entryId]);
+  public entryId = signal('1trn'); //'7v08', '3d12', '5tj5', '4zqo'
+  public showDownloadOptions = signal(false);
+  public showViewOptions = signal(false);
+
+  private route = inject(ActivatedRoute);
+  public readonly signals = inject(ComponentCommunicationService);
+  public currentTab = this.signals.currentTab;
+  public tabSwitchOrigin = this.signals.tabSwitchOrigin;
+  public previousTab = 'undefined';
+
+  private readonly destroyRef = inject(DestroyRef);
+
+  public pageData$!: Observable<any>;
+
+  public experimentalDetails!: AnyExperimentDetail[];
+  public downloadOptions: DownloadOption[] = [];
+  public viewOptions: DownloadOption[] = [];
+
+  constructor() {
+    effect(async () => {
+      // Access the current state
+      const tabState = this.signals.tabState();
+
+      if (this.tabSwitchOrigin() !== 'main') {
+        // if (this.currentTab() !== this.previousTab) {
+        console.log('switch!!!!');
+        const el = document.getElementById('detail-tabs');
+        el!.scrollIntoView();
+        this.previousTab = `${this.currentTab()}`;
       }
-      this.molstarConfigs.moleculeId = this.entryId!;
     });
   }
 
   ngOnInit(): void {
-    this.entryApiService.fetchEntryPagesData(this.entryId).subscribe((data) => {
-      this.entryData = this.entryApiService.processEntryPagesData(this.entryId, data);
+    this.previousTab = `${this.currentTab()}`;
+    this.route.queryParams
+      .pipe(
+        switchMap((params) => {
+          const entryId = params['entryId'].toLowerCase();
+          this.entryId.set(entryId);
+          return this.setPageData();
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((data) => {
+        console.log('data');
+        console.log(data);
+        this.pageData$ = of(data);
+      });
+  }
 
-      this.downloadOptions = this.entryData.fileURLs.downloads;
-      this.viewOptions = this.entryData.fileURLs.views;
+  private setPageData(): Observable<any> {
+    return combineLatest([
+      this.entryAPIService.getEntrySummary(this.entryId()),
+      this.entryAPIService.getEntryMolecules(this.entryId()).pipe(
+        map((data) => {
+          const molecules = data[this.entryId()];
+
+          const macromoleculeSortedTypesArray = [
+            'polypeptide(L)',
+            'polypeptide(R)',
+            'carbohydrate polymer',
+            'polyribonucleotide',
+            'polydeoxyribonucleotide',
+            'polydeoxyribonucleotide/polyribonucleotide hybrid',
+          ];
+
+          const macroMolecules = molecules
+            .filter((mol) => macromoleculeSortedTypesArray.indexOf(mol.molecule_type) > -1)
+            .sort((a, b) => macromoleculeSortedTypesArray.indexOf(a.molecule_type) - macromoleculeSortedTypesArray.indexOf(b.molecule_type));
+
+          const boundLigands = molecules.filter((mol) => mol.molecule_type === 'bound');
+
+          const organismNames: string[] = [];
+
+          // See: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/1trn
+          // and a more different example at: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/6hr1
+          for (const entityDetail of molecules) {
+            const sources = entityDetail['source'] ?? [];
+            for (const eachSource of sources) {
+              const organismName = eachSource['organism_scientific_name'] ?? undefined;
+              if (organismName && organismNames.indexOf(organismName) === -1) {
+                organismNames.push(organismName);
+              }
+            }
+          }
+          return {
+            macroMolecules: macroMolecules,
+            boundLigands: boundLigands,
+            organismScientificNames: organismNames,
+          };
+        })
+      ),
+      this.entryAPIService.getExperiment(this.entryId()).pipe(
+        map((response) => {
+          this.experimentalDetails = response;
+
+          const experimentalMethodTitle = response.length > 1 ? 'Hybrid' : (response[0].experimental_method as string);
+          const resolutionValues: number | undefined = response.map((datum: AnyExperimentDetail) => {
+            if ('resolution' in datum) return datum['resolution'];
+            else return undefined;
+          });
+
+          return {
+            experimentalMethod: experimentalMethodTitle,
+            resolutionValues: resolutionValues,
+            details: response,
+          };
+        })
+      ),
+      this.entryAPIService.getEntryPublication(this.entryId()),
+      this.entryAPIService.getUniprotMapping(this.entryId()).pipe(
+        mergeMap((data: UniProtMapping) => {
+          // For each UniProt id we create a bestStructures observable
+          const uniprotIds = Object.keys(data);
+          const bestStructuresObservables = uniprotIds.map((uniprotId) => this.entryAPIService.getBestStructures(uniprotId));
+
+          // Dictionaries needed for views
+          const bestStructuresMappingsByUniProtIds: { [key: string]: BestStructureMapping[] } = {};
+          const uniprotCountsInPDBe: { [key: string]: number } = {};
+
+          // Use forkJoin to wait for all bestStructures observables to complete
+          return forkJoin(bestStructuresObservables).pipe(
+            map((uniprotDictInList: unknown) => {
+              for (const uniprotDict of uniprotDictInList as BestStructureDict[]) {
+                const uniprotId = Object.keys(uniprotDict)[0];
+                const uniprotData = uniprotDict[uniprotId];
+
+                // dictionary uniprotCountsInPDBe is updated for counts of all unique entries which have a UniProt id mapped
+                const uniquePDBIds = uniprotData.map((datum) => datum.pdb_id).filter((value, index, array) => array.indexOf(value) === index);
+
+                uniprotCountsInPDBe[uniprotId] = uniquePDBIds.length;
+
+                // dictionary bestStructuresMappingsByUniProtIds is updated with best structures mappings for this entry
+                const uniprotDataFiltered = uniprotDict[uniprotId].filter((datum) => datum.pdb_id === this.entryId());
+
+                bestStructuresMappingsByUniProtIds[uniprotId] = bestStructuresMappingsByUniProtIds[uniprotId] ?? [];
+                bestStructuresMappingsByUniProtIds[uniprotId].push(...uniprotDataFiltered);
+              }
+              return {
+                uniprotMapping: data,
+                uniprotCountsInPDBe: uniprotCountsInPDBe,
+                bestStructuresMappingsByUniProtIds: bestStructuresMappingsByUniProtIds,
+              };
+            })
+          );
+        }),
+        // TODO: Improve error handling when some observables contain data and others not
+        catchError((_error: HttpErrorResponse) => {
+          return of({
+            uniprotMapping: {},
+            uniprotCountsInPDBe: {},
+            bestStructuresMappingsByUniProtIds: {},
+          });
+        })
+      ),
+      this.entryAPIService.getInterproMapping(this.entryId()).pipe(
+        map((data) => data),
+        catchError((_error: HttpErrorResponse) => {
+          return of({});
+        })
+      ),
+      this.entryAPIService.getPfamMapping(this.entryId()).pipe(
+        map((data) => data),
+        catchError((_error: HttpErrorResponse) => {
+          return of({});
+        })
+      ),
+      this.entryAPIService.getPDBEntryFiles(this.entryId()).pipe(
+        map((data) => {
+          this.downloadOptions = this.processData(data).downloads;
+          this.viewOptions = this.processData(data).views;
+          return data;
+        })
+      ),
+      this.entryAPIService.getSummaryQualityScores(this.entryId()).pipe(
+        map((data) => data),
+        catchError((_error: HttpErrorResponse) => {
+          return of({});
+        })
+      ),
+      this.entryAPIService.getCATHMapping(this.entryId()).pipe(
+        map((data) => data),
+        catchError((_error: HttpErrorResponse) => {
+          return of({});
+        })
+      ),
+      this.entryAPIService.getSCOP175Mapping(this.entryId()).pipe(
+        map((data) => data),
+        catchError((_error: HttpErrorResponse) => {
+          return of({});
+        })
+      ),
+      this.entryAPIService.getModifications(this.entryId()).pipe(
+        map((data) => data),
+        catchError((_error: HttpErrorResponse) => {
+          return of([]);
+        })
+      ),
+      this.entryAPIService.getResidueListing(this.entryId()).pipe(
+        map((data) => data),
+        catchError((_error: HttpErrorResponse) => {
+          return of({ molecules: [] });
+        })
+      ),
+      this.entryAPIService.getValidationKeyStats(this.entryId()).pipe(
+        map((data) => data),
+        catchError((_error: HttpErrorResponse) => {
+          return of(undefined);
+        })
+      ),
+      this.entryAPIService.getValidationXRayRefine(this.entryId()).pipe(
+        map((data) => data),
+        catchError((_error: HttpErrorResponse) => {
+          return of(undefined);
+        })
+      ),
+      this.entryAPIService.getPrimaryPublicationAbstract(this.entryId()).pipe(
+        map((data) => data),
+        catchError((_error: HttpErrorResponse) => {
+          return of(undefined);
+        })
+      ),
+      this.entryAPIService.getArticleCitingPDBEntry(this.entryId()).pipe(
+        map((data) => data),
+        catchError((_error: HttpErrorResponse) => {
+          return of(undefined);
+        })
+      ),
+      this.entryAPIService.getPreferredAssembly(this.entryId()).pipe(
+        map((data) => data),
+        catchError((_error: HttpErrorResponse) => {
+          return of([]);
+        })
+      ),
+      this.entryAPIService.getAssembly(this.entryId()).pipe(
+        // This is a special case where we have to parse getAssembly to run multiple getPisaAssembly
+        mergeMap((data) => {
+          const pisaAssemblyObservables = data
+            .sort((a, b) => parseInt(a.assembly_id) - parseInt(b.assembly_id))
+            .map((assemblyDatum) => this.entryAPIService.getPisaAssembly(this.entryId(), assemblyDatum.assembly_id));
+
+          // Use forkJoin to wait for all PisaAssembly observables to complete
+          return forkJoin(pisaAssemblyObservables).pipe(
+            map((pisaAssemblies) => ({
+              assemblies: data,
+              pisaAssemblies: pisaAssemblies,
+            }))
+          );
+        }),
+        catchError((_error: HttpErrorResponse) => {
+          return of({
+            assemblies: [],
+            pisaAssemblies: [],
+          });
+        })
+      ),
+      this.entryAPIService.getCarbohydrates(this.entryId()).pipe(
+        map((data) => data),
+        catchError((_error: HttpErrorResponse) => {
+          return of([]);
+        })
+      ),
+    ]).pipe(
+      map(
+        ([
+          summary,
+          molecules,
+          experiment,
+          publication,
+          uniprotData,
+          interproMapping,
+          pfamMapping,
+          files,
+          qualityScores,
+          cathMapping,
+          scopMapping,
+          modifications,
+          residueListing,
+          keyValidationStats,
+          xRayRefine,
+          primaryPublication,
+          articlesCiting,
+          complexDetails,
+          assembliesData,
+          carbohydratesData,
+        ]) => ({
+          summary,
+          molecules,
+          experiment,
+          publication,
+          uniprotData,
+          interproMapping,
+          pfamMapping,
+          files,
+          qualityScores,
+          cathMapping,
+          scopMapping,
+          modifications,
+          residueListing,
+          keyValidationStats,
+          xRayRefine,
+          primaryPublication,
+          articlesCiting,
+          complexDetails,
+          assembliesData,
+          carbohydratesData,
+        })
+      )
+    );
+  }
+
+  public changeCurrentTab(tabName: string) {
+    this.previousTab = `${tabName}`;
+    this.tabSwitchOrigin.set('main');
+    this.currentTab.set(tabName);
+  }
+
+  public getTableName(tabName: string) {
+    return tabName as TableNames;
+  }
+
+  private processData(data: any) {
+    const order = ['Archive mmCIF file', 'Updated mmCIF file', 'PDB file', 'Compatible PDB file bundle (tar.gz)', 'FASTA (Entry)', 'Full report (PDF)'];
+
+    let downloads: any[] = [];
+    let views: any[] = [];
+
+    Object.keys(data).forEach((key) => {
+      if (data[key].downloads) {
+        downloads = downloads.concat(data[key].downloads);
+      }
+      if (data[key].views) {
+        views = views.concat(data[key].views);
+      }
     });
+
+    downloads.sort((a, b) => {
+      const indexA = order.indexOf(a.label);
+      const indexB = order.indexOf(b.label);
+
+      if (indexA === -1 && indexB === -1) {
+        return 0;
+      } else if (indexA === -1) {
+        return 1;
+      } else if (indexB === -1) {
+        return -1;
+      } else {
+        return indexA - indexB;
+      }
+    });
+
+    views.sort((a, b) => {
+      const indexA = order.indexOf(a.label);
+      const indexB = order.indexOf(b.label);
+
+      if (indexA === -1 && indexB === -1) {
+        return 0;
+      } else if (indexA === -1) {
+        return 1;
+      } else if (indexB === -1) {
+        return -1;
+      } else {
+        return indexA - indexB;
+      }
+    });
+
+    const downloadsUpdated = downloads.map((d) => {
+      return {
+        name: d.label,
+        url: d.url,
+        downloadable: true,
+      };
+    });
+
+    const viewsUpdated = views.map((d) => {
+      return {
+        name: d.label,
+        url: d.url,
+        downloadable: false,
+      };
+    });
+
+    return { downloads: downloadsUpdated, views: viewsUpdated };
+  }
+
+  public onShowDownloadOptions() {
+    this.showDownloadOptions.update((value) => !value);
+    this.showViewOptions.update((_value) => false);
+  }
+  public onShowViewOptions() {
+    this.showViewOptions.update((value) => !value);
+    this.showDownloadOptions.update((_value) => false);
+  }
+  public onClickedOutside() {
+    this.showViewOptions.set(false);
+    this.showDownloadOptions.set(false);
   }
 }
