@@ -1,0 +1,54 @@
+.icon-search-small-blue::before {
+  --icon-search-color: #3b6fb6;
+
+  width: 14px;
+  height: 14px;
+  mask-size: auto 14px;
+  position: absolute;
+  z-index: -1;
+  left: 2px;
+}
+
+.vf-button--secondary {
+  --vf-button-border-color: #056643;
+  --vf-button-background-color: #fff;
+  --vf-button-shadow-border-color: #0a5032;
+  --vf-button-shadow-background-color: #0a5032;
+  --vf-button-border-color--visited: #0a5032;
+
+  color: #0a5032;
+  padding: 4px 8px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 27.2px; /* 170% */
+}
+
+.vf-button-sqr-shape {
+  border-radius: 0;
+}
+
+.vf-table-button {
+  display: flex;
+  padding: 2px 4px;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  color: var(--Neutral-800, #373a36);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 27.2px; /* 170% */
+  background: var(--Neutral-100, #f3f3f3);
+  cursor: pointer;
+}
+
+.ag-row-selected .vf-table-button {
+  color: #fff;
+  background: var(--Brand-900, #0a5032);
+}

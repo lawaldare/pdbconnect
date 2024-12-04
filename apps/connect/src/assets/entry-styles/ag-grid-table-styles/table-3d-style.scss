@@ -1,0 +1,66 @@
+@import url('./table-3d-column-styles.scss');
+
+ag-grid-angular.table-3d {
+  width: 100%;
+
+  // width: 660px;
+  // height: 870px;
+  // max-height: 870px; /* Set the max height */
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-style: normal;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 27.2px; /* 170% */
+
+  --ag-cell-horizontal-padding: 8px;
+  --ag-cell-vertical-padding: 8px;
+  --ag-row-hover-color: #e7efdd;
+  --ag-selected-row-background-color: #d0debb;
+  --ag-odd-row-background-color: #fff;
+  --ag-line-height: 27.2px;
+
+  // --ag-row-height: 100%;
+}
+
+ag-grid-angular.table-3d .ag-row-odd {
+  background-color: var(--ag-odd-row-background-color);
+  cursor: pointer;
+  border-bottom: 1px solid var(--Neutral-300, #d0d0ce);
+}
+
+ag-grid-angular.table-3d .ag-row-even {
+  cursor: pointer;
+  border-bottom: 1px solid var(--Neutral-300, #d0d0ce);
+}
+
+// For table header styles
+ag-grid-angular.table-3d .ag-header-cell-text {
+  text-overflow: clip;
+  overflow: visible;
+  white-space: normal;
+}
+
+ag-grid-angular.table-3d .ag-cell {
+  white-space: normal;
+  word-break: break-word;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+ag-grid-angular.table-3d .ag-header-cell-resize::after {
+  visibility: hidden;
+}
+
+ag-grid-angular.table-3d .ag-header-cell-label {
+  font-weight: 500;
+}
+
+ag-grid-angular.table-3d .ag-ltr .ag-cell {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+ag-grid-angular.table-3d .ag-cell-value {
+  // padding-top: 8px;
+  line-height: 27.2px;
+}
