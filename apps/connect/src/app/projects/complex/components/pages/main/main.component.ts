@@ -64,6 +64,7 @@ export class MainComponent implements OnInit {
       )
       .subscribe((data: ComplexData | null) => {
         this.summaryData = data;
+        console.log(this.summaryData);
       });
   }
 }
