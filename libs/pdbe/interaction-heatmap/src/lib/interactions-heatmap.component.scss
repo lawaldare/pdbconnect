@@ -40,6 +40,10 @@
       margin-top: 10px;
     }
 
+    .controls-row {
+      margin-top: 10px;
+    }
+
     .controls-title {
       line-height: normal;
       font-size: 16px;
@@ -217,4 +221,8 @@ nightingale-navigation {
 ::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
   // background-color: #0075ff !important;
   border-color: #0075ff !important;
+}
+
+.exploring-finger {
+  animation: moveFingerRightToLeft 2s infinite ease-in-out;
 }
