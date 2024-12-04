@@ -2,10 +2,6 @@
 
 ag-grid-angular.table-3d {
   width: 100%;
-
-  // width: 660px;
-  // height: 870px;
-  // max-height: 870px; /* Set the max height */
   font-family: 'IBM Plex Sans', sans-serif;
   font-style: normal;
   font-size: 16px;
@@ -18,8 +14,6 @@ ag-grid-angular.table-3d {
   --ag-selected-row-background-color: #d0debb;
   --ag-odd-row-background-color: #fff;
   --ag-line-height: 27.2px;
-
-  // --ag-row-height: 100%;
 }
 
 ag-grid-angular.table-3d .ag-row-odd {
@@ -61,6 +55,5 @@ ag-grid-angular.table-3d .ag-ltr .ag-cell {
 }
 
 ag-grid-angular.table-3d .ag-cell-value {
-  // padding-top: 8px;
   line-height: 27.2px;
 }
