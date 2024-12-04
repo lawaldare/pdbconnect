@@ -37,7 +37,6 @@ export class ComplexStructuresComponent implements OnInit {
     },
     { headerName: 'Exp. method', field: 'experimental_method', width: 170 },
     { headerName: 'Res. (Å)', field: 'resolution', width: 100 },
-    // { headerName: 'Symmetry', field: 'symmetry', valueFormatter: (params) => `${params.value.type} (${params.value.symbol})`, flex: 1.6 },
   ];
 
   public rowData = computed(() => this.assemblies() as Assembly[]);
