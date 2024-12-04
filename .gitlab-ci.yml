@@ -32,6 +32,8 @@ format-check:
     - npx nx format:check --base=$NX_BASE --head=$NX_HEAD
   tags:
     - pdbe-shell
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 lint:
   stage: test
@@ -40,6 +42,8 @@ lint:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t lint --parallel=3
   tags:
     - pdbe-shell
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 test:
   stage: test
@@ -48,6 +52,8 @@ test:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t test --parallel=3 --configuration=ci
   tags:
     - pdbe-shell
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 build:
   stage: build
@@ -66,7 +72,8 @@ build:
         BUILD_CONF: staging
     - if: "$CI_COMMIT_REF_NAME == 'playground'"
       when: never
-    - when: always
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
   script:
     - npx nx run-many -t build --parallel=3 --exclude=playground -c $BUILD_CONF
     - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
@@ -137,6 +144,9 @@ triggers:
     strategy: depend
   variables:
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      when: always
   except:
     refs:
       - playground
@@ -153,9 +163,8 @@ pages:
     expire_in: never
   dependencies:
     - build
-  except:
-    refs:
-      - playground
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 playground_build_and_publish:
   stage: build
