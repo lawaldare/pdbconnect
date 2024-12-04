@@ -15,6 +15,7 @@ import { ComplexDetails } from '../data-models/complex-details.model';
 import { AssemblyData } from '../data-models/assembly.model';
 import { PisaAssembly } from '../data-models/pisa-assembly.model';
 import { CarbohydrateMolecule } from '../data-models/carbohydrate-polymer.model';
+import { Molecule } from '../data-models/molecule.model';
 
 @Injectable({
   providedIn: 'root',
@@ -25,6 +26,38 @@ export class EntryApiService {
   private VALIDATION_API = 'https://www.ebi.ac.uk/pdbe/api/validation/';
 
   private readonly http = inject(HttpClient);
+
+  public getEntrySummary(entryId: string): Observable<any> {
+    return this.http.get<any>(`${this.BASE_API}summary/${entryId}`).pipe(
+      map((data) => {
+        const datum = data[entryId][0];
+
+        const releaseApiDate = datum.release_date;
+        const formattedReleasedApiDate = `${releaseApiDate.substring(4, 6)}/${releaseApiDate.substring(6)}/${releaseApiDate.substring(0, 4)}`;
+        const releasedDateObj = new Date(Date.parse(formattedReleasedApiDate)).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+
+        const depositionApiDate = datum.deposition_date;
+        const formattedDepositedApiDate = `${depositionApiDate.substring(4, 6)}/${depositionApiDate.substring(6)}/${depositionApiDate.substring(0, 4)}`;
+        const depositionDateObj = new Date(Date.parse(formattedDepositedApiDate)).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+
+        const revisionApiDate = datum.revision_date;
+        const formattedRevisionApiDate = `${revisionApiDate.substring(4, 6)}/${revisionApiDate.substring(6)}/${revisionApiDate.substring(0, 4)}`;
+        const revisionDateObj = new Date(Date.parse(formattedRevisionApiDate)).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+
+        return {
+          entryTitle: datum.title!,
+          entryAuthors: datum.entry_authors!.join(' '),
+          depositionDate: depositionDateObj,
+          releaseDate: releasedDateObj,
+          revisionDate: revisionDateObj,
+        };
+      })
+    );
+  }
+
+  public getEntryMolecules(entryId: string): Observable<Record<string, Molecule[]>> {
+    return this.http.get<Record<string, Molecule[]>>(`${this.BASE_API}molecules/${entryId}`);
+  }
 
   public getPrimaryPublicationAbstract(entryId: string): Observable<CitationDetail> {
     return this.http.get<Record<string, CitationDetail[]>>(`${this.BASE_API}publications/${entryId}`).pipe(map((data) => data[entryId][0]));
@@ -71,6 +104,35 @@ export class EntryApiService {
       map((data) => {
         // const uniprotData = data[uniprotId];
         return data;
+      })
+    );
+  }
+
+  public getEntryPublication(entryId: string): Observable<any> {
+    return this.http.get<any>(`${this.BASE_API}publications/${entryId}`).pipe(
+      map((data) => {
+        const datum = data[entryId][0];
+        const authorList: string[] = [];
+        for (const authorData of datum.author_list) {
+          authorList.push(authorData.full_name!);
+        }
+        if (datum.journal_info.pdb_abbreviation! !== 'To be published') {
+          return {
+            publicationTitle: datum.title,
+            publicationAuthors: authorList,
+            publicationJournal: datum.journal_info.pdb_abbreviation!,
+            publicationVolume: datum.journal_info.volume!,
+            publicationPages: datum.journal_info.pages!,
+            publicationYear: datum.journal_info.year!,
+            publicationPMID: datum.pubmed_id!,
+            publicationDOI: datum.doi!,
+            pdbEntryDOI: `10.2210/pdb${entryId}/pdb`,
+          };
+        }
+        return {
+          publicationTitle: 'To be published',
+          pdbEntryDOI: `10.2210/pdb${entryId}/pdb`,
+        };
       })
     );
   }
