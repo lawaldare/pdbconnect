@@ -26,6 +26,7 @@ import { LoadingState } from '../../../enums/loading-state.enum';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandStructure } from '../../../data-models/structure.model';
 import { LigandActions } from '../../../store/ligand.actions';
+import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 
 @Component({
   selector: 'pdbc-main',
@@ -43,7 +44,8 @@ import { LigandActions } from '../../../store/ligand.actions';
     LigandSpecificDatabasesComponent,
     DropdownMenuComponent,
     MaterialModule,
-  ],
+    ToolTipComponent
+],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
 })
