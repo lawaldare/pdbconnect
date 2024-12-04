@@ -1,0 +1,90 @@
+<h4 [ngClass]="tabName() === 'Ligands' ? 'heading-5' : 'heading-4'">{{ selectionTitle }}</h4>
+<div class="kb-container">
+  @if (selectionButtonText) {
+  <button class="kb-link-button">{{ selectionButtonText }}</button>
+  } @if (selectionSearchText) {
+  {{ selectionSearchText }}
+  }
+</div>
+<div class="chains">
+  @if (selectedChains) {
+  <div>{{ selectedChains }}</div>
+  } @if (hasDropdown) {
+  <mat-form-field appearance="fill">
+    <mat-label>{{ dropdownTitle }}</mat-label>
+    <mat-select [(ngModel)]="dropdownSelected" (selectionChange)="onDropdownSelect($event)">
+      @for (dropdownOption of dropdownOptions; track dropdownOption;) {
+      <mat-option [value]="dropdownOption">
+        {{ dropdownOption }}
+      </mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  }
+</div>
+@if (sequenceDetails.length > 0) {
+<div class="sequence-container">
+  @for (sequenceDetail of sequenceDetails; track sequenceDetail;) {
+  <div class="title">
+    <span class="text">{{ sequenceDetail.title }}</span>
+    <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
+  </div>
+  <div class="sequence">
+    @for (sequenceSegment of sequenceDetail.segments; track sequenceSegment) {
+    <span [style.background]="sequenceSegment.color ? sequenceSegment.color : ''">{{ sequenceSegment.sequence }}</span>
+    }
+  </div>
+  }
+</div>
+}
+
+<div class="top-vis">
+  <section class="molstar-details-container">
+    <!-- selected state molstar -->
+    <div class="molstar-container" #molstarContainer [ngClass]="hasTopologyViewer || hasLigandEnv ? '' : 'big'"></div>
+  </section>
+  @if (hasLigandEnv) {
+  <section class="lig-env-container">
+    <div class="ligand-env" #ligandEnvContainer></div>
+  </section>
+  } @if (hasTopologyViewer) {
+  <section class="topology-viewer-container">
+    <div class="topology-container" #topologyViewerContainer></div>
+  </section>
+  }
+</div>
+
+<div class="bottom-vis">
+  @if (currentRowDatum && tabName() === "Assemblies") {
+  <section class="assembly-section">
+    <div class="info-row">
+      <span>Accessible surface area</span>
+      <article>{{ getAdditionalData('accessibleSurfaceArea') }}2</article>
+    </div>
+    <div class="info-row">
+      <span>Buried surface area</span>
+      <article>{{ getAdditionalData('buriedSurfaceArea') }}2</article>
+    </div>
+    <div class="info-row">
+      <span>Dissociation area</span>
+      <article>{{ getAdditionalData('dissociationArea') }}2</article>
+    </div>
+    <div class="info-row">
+      <span>Dissociation energy</span>
+      <article>{{ getAdditionalData('dissociationEnergy') }}</article>
+    </div>
+    <div class="info-row">
+      <span>Dissociation entropy</span>
+      <article>{{ getAdditionalData('dissociationEntropy') }}</article>
+    </div>
+    <div class="info-row">
+      <span>Symmetry number</span>
+      <article>{{ getAdditionalData('symmetryNumber') }}</article>
+    </div>
+  </section>
+  } @if (hasProtvista) {
+  <section class="protvista-container">
+    <div #protvistaContainer></div>
+  </section>
+  }
+</div>

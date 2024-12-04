@@ -1,0 +1,193 @@
+import { ElementRef, Injectable, signal, WritableSignal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import {
+  MolstarSelectionObj,
+  removeComponent,
+  createComponent,
+  addRepresentationToComponent,
+  focusLoci,
+  changeComponentVisibility,
+  changeRepresentationVisibility,
+} from '../../helpers/molstar-helpers';
+import {
+  LIGANDS_REPR_HIGHLIGHT,
+  LIGANDS_REPR_NONSELECTION_POLYMER,
+  LIGANDS_REPR_SELECTION,
+  MACROMOLECULES_REPR_SELECTION_CARB,
+  PROTEIN_REPR_SELECTION,
+  REPR_NONSELECTION_BRANCHED,
+  REPR_NONSELECTION_LIGAND,
+  REPR_NONSELECTION_POLYMER,
+} from './molstar-repr-objects';
+import { AssembliesRowData, DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../interactive-tables/data-models-and-definitions/row-and-table.model';
+
+declare let PDBeMolstarPlugin: any;
+
+export interface MolstarConfigObject {
+  moleculeId?: string;
+  customData?: {
+    url: string;
+    format: string;
+    binary: boolean;
+  };
+  assemblyId?: string;
+  loadMaps?: boolean;
+  bgColor: { r: number; g: number; b: number };
+  hideControls: boolean;
+  hideCanvasControls?: string[];
+  landscape: boolean;
+  subscribeEvents: boolean;
+}
+
+@Injectable({
+  providedIn: 'root',
+})
+export class MolstarVisualisationsForTabs {
+  // public molstarViewInstance: WritableSignal<any> = signal(undefined);
+  public molstarViewInstance: any;
+  private isMolstarRendered = false;
+
+  public resetAttributesForRendering() {
+    this.molstarViewInstance = undefined;
+    this.isMolstarRendered = false;
+  }
+
+  private async initMolstar(molstarContainer: ElementRef, molstarConfigObject: MolstarConfigObject) {
+    if (this.molstarViewInstance) {
+      console.error('MOLSTAR INSTANCE EXISTS');
+    }
+    // this.molstarViewInstance().set(new PDBeMolstarPlugin());
+    this.molstarViewInstance = new PDBeMolstarPlugin();
+    const container = molstarContainer.nativeElement;
+    this.molstarViewInstance.render(container, molstarConfigObject);
+    await firstValueFrom(this.molstarViewInstance.events.loadComplete);
+  }
+
+  private async updateMolstar(molstarConfigObject: MolstarConfigObject) {
+    this.molstarViewInstance.visual.update(molstarConfigObject, true);
+    await firstValueFrom(this.molstarViewInstance.events.loadComplete);
+  }
+
+  public async renderMolstarAssemblies(entryId: string, molstarContainer: ElementRef, datum: AssembliesRowData) {
+    const assemblyId = datum.assemblyId;
+    const molstarConfigObject: MolstarConfigObject = {
+      moleculeId: entryId,
+      assemblyId: assemblyId,
+      bgColor: { r: 255, g: 255, b: 255 },
+      hideControls: true,
+      //hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
+      landscape: true,
+      subscribeEvents: false,
+    };
+    if (this.isMolstarRendered === false) {
+      await this.initMolstar(molstarContainer, molstarConfigObject);
+      this.isMolstarRendered = true;
+    } else {
+      await this.updateMolstar(molstarConfigObject);
+    }
+  }
+
+  public async renderMolstarDomains(entryId: string, molstarContainer: ElementRef, datum: DomainsRowData) {
+    const molstarSelection = datum.additionalData.selections[0];
+
+    const molstarConfigObject: MolstarConfigObject = {
+      moleculeId: entryId,
+      bgColor: { r: 255, g: 255, b: 255 },
+      hideControls: true,
+      hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
+      landscape: true,
+      subscribeEvents: true,
+    };
+    if (this.isMolstarRendered === false) {
+      await this.initMolstar(molstarContainer, molstarConfigObject);
+      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-polymer', REPR_NONSELECTION_POLYMER, true);
+      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-ligand', REPR_NONSELECTION_LIGAND, true);
+      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-non-standard', REPR_NONSELECTION_LIGAND, true);
+      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-branched', REPR_NONSELECTION_BRANCHED, true);
+      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-branched', REPR_NONSELECTION_LIGAND, false);
+      this.isMolstarRendered = true;
+    } else {
+      await removeComponent(this.molstarViewInstance, `structure-component-static-domains`);
+    }
+    await createComponent(this.molstarViewInstance, `structure-component-static-domains`, molstarSelection, PROTEIN_REPR_SELECTION);
+    await focusLoci(this.molstarViewInstance, molstarSelection);
+  }
+
+  public async renderMolstarLigands(entryId: string, molstarContainer: ElementRef, datum: LigandsRowData, molstarSelection: MolstarSelectionObj) {
+    const entityId = molstarSelection.entityId!;
+    const chainId = molstarSelection.authChainId!;
+
+    let urlToDownload = '';
+    let reprNonSelectionPolymer: any;
+    if (datum.type === 'modification') {
+      urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${entryId}/atoms?label_entity_id=${entityId}&auth_asym_id=${chainId}&encoding=bcif`;
+      reprNonSelectionPolymer = REPR_NONSELECTION_POLYMER;
+    } else {
+      const authSeqId = molstarSelection.residues[0].authBegin;
+      const authInsCode = molstarSelection.residues[0].authBeginIns;
+      urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${entryId}/residueSurroundings?auth_seq_id=${authSeqId}&pdbx_PDB_ins_code=${authInsCode}&auth_asym_id=${chainId}&radius=10&encoding=bcif`;
+      reprNonSelectionPolymer = LIGANDS_REPR_NONSELECTION_POLYMER;
+    }
+
+    const molstarConfigObject: MolstarConfigObject = {
+      customData: {
+        url: urlToDownload,
+        format: 'cif',
+        binary: true,
+      },
+      loadMaps: true,
+      bgColor: { r: 255, g: 255, b: 255 },
+      hideControls: true,
+      // hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
+      landscape: true,
+      subscribeEvents: true,
+    };
+
+    if (this.isMolstarRendered === false) {
+      await this.initMolstar(molstarContainer, molstarConfigObject);
+      this.isMolstarRendered = true;
+    } else {
+      await this.updateMolstar(molstarConfigObject);
+    }
+
+    await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-polymer', reprNonSelectionPolymer, true);
+    // await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-ligand', reprNonSelectionLigand, true);
+    // await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-non-standard', reprNonSelectionLigand, true);
+    await changeComponentVisibility(this.molstarViewInstance, 'structure-component-static-ligand', true);
+    await changeComponentVisibility(this.molstarViewInstance, 'structure-component-static-non-standard', true);
+    await changeComponentVisibility(this.molstarViewInstance, 'structure-component-static-branched', true);
+    await createComponent(this.molstarViewInstance, `structure-component-static-${datum.type}`, molstarSelection, LIGANDS_REPR_SELECTION);
+    await createComponent(this.molstarViewInstance, `structure-component-static-${datum.type}-selected`, molstarSelection, LIGANDS_REPR_HIGHLIGHT);
+    await focusLoci(this.molstarViewInstance, molstarSelection);
+  }
+
+  public async renderMolstarMacromolecules(entryId: string, molstarContainer: ElementRef, datum: MacromoleculesRowData, molstarSelection: MolstarSelectionObj) {
+    const moleculeType = datum.additionalData.molecule.molecule_type;
+
+    const molstarConfigObject: MolstarConfigObject = {
+      moleculeId: entryId,
+      bgColor: { r: 255, g: 255, b: 255 },
+      hideControls: true,
+      hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
+      landscape: true,
+      subscribeEvents: true,
+    };
+    if (this.isMolstarRendered === false) {
+      await this.initMolstar(molstarContainer, molstarConfigObject);
+      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-polymer', REPR_NONSELECTION_POLYMER, true);
+      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-ligand', REPR_NONSELECTION_LIGAND, true);
+      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-non-standard', REPR_NONSELECTION_LIGAND, true);
+      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-branched', REPR_NONSELECTION_BRANCHED, true);
+      // await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-branched', REPR_NONSELECTION_LIGAND, false);
+      if (moleculeType.includes('carbohydrate')) {
+        await changeRepresentationVisibility(this.molstarViewInstance, 'structure-component-static-branched', false, 0);
+      }
+      this.isMolstarRendered = true;
+    } else {
+      await removeComponent(this.molstarViewInstance, `structure-component-static-macromolecule`);
+    }
+    const reprSelection = moleculeType.includes('carbohydrate') ? MACROMOLECULES_REPR_SELECTION_CARB : PROTEIN_REPR_SELECTION;
+    await createComponent(this.molstarViewInstance, `structure-component-static-macromolecule`, molstarSelection, reprSelection);
+    await focusLoci(this.molstarViewInstance, molstarSelection);
+  }
+}
