@@ -1,22 +1,5 @@
-<pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig"></pdbc-pdbe-header-logo-menu>
-<!-- <pdbc-pdbe-header-search
-  [backgroundColor]="'#007B53'"
-  [hasAdvancedSearch]="true"
-  [buttonText]="'Search'"
-  [examples]="[
-    {
-      label: 'Haemoglobin',
-      url: 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22text%22:%5B%7B%22value%22:%22hemoglobin%22, %22condition1%22:%22AND%22, %22condition2%22:%22Contains%22%7D%5D, %22resultState%22:%7B%22tabIndex%22:0, %22paginationIndex%22:1, %22perPage%22:%2210%22, %22sortBy%22:%22Sort%20by%22%7D%7D'
-    },
-    {
-      label: 'BRCA1_HUMAN',
-      url: 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22text%22:%5B%7B%22value%22:%22BRCA1_HUMAN%22, %22condition1%22:%22AND%22, %22condition2%22:%22Contains%22%7D%5D, %22resultState%22:%7B%22tabIndex%22:0, %22paginationIndex%22:1, %22perPage%22:%2210%22, %22sortBy%22:%22Sort%20by%22%7D%7D'
-    }
-  ]"
-  [placeholder]="'Search in PDBe and PDBe-KB'"
-  [suggestions]="[]"
-  [searchButtonChipsType]="'PDBe'"
-></pdbc-pdbe-header-search> -->
+<pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
+<pdbc-pdbe-header-search [headerSearchConfig]="pdbeSearchConfig"></pdbc-pdbe-header-search>
 <section class="root-container">
   <main>
     <!-- Contains header line of page with entry id, experimental method, release data, link, download and view dropdowns -->

@@ -25,9 +25,15 @@ import { InteractiveTablesComponent } from '../../components/interactive-tables/
 import { DetailsDashboardComponent } from '../../components/details-dashboard/details-dashboard.component';
 import { ExperimentsValidationTabComponent } from '../../components/experiments-validation-tab/experiments-validation-tab.component';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
+import { ThemeType } from '@pdbc/core';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
-
+/**
+ * TODO:
+ * - Add Protvista and Top Viewer SCRIPTS
+ * - Add Dynamic SCRIPT loading
+ * - Lib Search bar component must be flexible for PDBe vs Ligand pages
+ */
 @Component({
   selector: 'pdbc-main',
   standalone: true,
@@ -49,6 +55,37 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
   styleUrls: ['./main.component.scss'],
 })
 export class EntryMainPageComponent implements OnInit {
+  // Properties to control the PDBe logo visibility and style
+  public showPdbeLogoAndSearch = signal(false);
+  public readonly pdbeLogoConfig = {
+    backgroundColor: '#056643',
+    logoType: 'PDBe',
+    urls: [
+      { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
+      { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
+      { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
+    ],
+    menuHighlightColor: '#0a5032',
+  };
+
+  public readonly pdbeSearchConfig = {
+    examples: [
+      {
+        label: 'Haemoglobin',
+        url: 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22text%22:%5B%7B%22value%22:%22hemoglobin%22, %22condition1%22:%22AND%22, %22condition2%22:%22Contains%22%7D%5D, %22resultState%22:%7B%22tabIndex%22:0, %22paginationIndex%22:1, %22perPage%22:%2210%22, %22sortBy%22:%22Sort%20by%22%7D%7D',
+      },
+      {
+        label: 'BRCA1_HUMAN',
+        url: 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22text%22:%5B%7B%22value%22:%22BRCA1_HUMAN%22, %22condition1%22:%22AND%22, %22condition2%22:%22Contains%22%7D%5D, %22resultState%22:%7B%22tabIndex%22:0, %22paginationIndex%22:1, %22perPage%22:%2210%22, %22sortBy%22:%22Sort%20by%22%7D%7D',
+      },
+    ],
+    backgroundColor: '#007B53',
+    hasAdvancedSearch: true,
+    buttonText: 'Search',
+
+    type: ThemeType.PDBE,
+  };
+
   // public currentTab = 'Assemblies';
   public allTabs = [
     {
@@ -115,7 +152,7 @@ export class EntryMainPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.previousTab = `${this.currentTab()}`;
-    this.route.queryParams
+    this.route.params
       .pipe(
         switchMap((params) => {
           const entryId = params['entryId'].toLowerCase();
