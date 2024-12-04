@@ -19,6 +19,7 @@ import {
   TableRow,
 } from '../interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { TableNames } from '../../pages/main/main.component';
 
 declare let PdbTopologyViewerPlugin: any;
 
@@ -49,10 +50,10 @@ export interface SequenceDetail {
   templateUrl: './details-dashboard.component.html',
   styleUrl: './details-dashboard.component.scss',
 })
-export class EntryDetailsVisualisationsV4Component implements OnDestroy {
+export class DetailsDashboardComponent implements OnDestroy {
   public readonly entryId = input.required<string>();
-  // public readonly tabName = input.required<TableNames>();
-  public readonly tabName = input.required<string>();
+  public readonly tabName = input.required<TableNames>();
+  // public readonly tabName = input.required<string>();
   public readonly pageInformation = input.required<any>();
 
   public readonly signals = inject(ComponentCommunicationService);

@@ -17,7 +17,7 @@ import { EntryApiService } from '../../services/entry-api.service';
   templateUrl: './citations-tab.component.html',
   styleUrl: './citations-tab.component.scss',
 })
-export class EntryCitationsV4Component implements OnInit {
+export class CitationsTabComponent implements OnInit {
   // public readonly sectionOne
   // public readonly sectionTwo
 

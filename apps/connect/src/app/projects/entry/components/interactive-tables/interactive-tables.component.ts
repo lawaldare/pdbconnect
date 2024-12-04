@@ -11,19 +11,20 @@ import { ColDef, GridApi, GridReadyEvent, GridOptions, IRowNode, SelectionChange
 import { ASSEMBLIES_COL_DEFS, DOMAINS_COL_DEFS, LIGANDS_COL_DEFS, MACROMOLECULES_COL_DEFS } from './data-models-and-definitions/column-definition-objects';
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, Observable, Subscription, take, timer } from 'rxjs';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { TableNames } from '../../pages/main/main.component';
 
 type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
 
 @Component({
-  selector: 'pdbc-interactive-tables-v4',
+  selector: 'pdbc-interactive-tables',
   standalone: true,
   imports: [CommonModule, AgGridAngular],
   templateUrl: './interactive-tables.component.html',
   styleUrl: './interactive-tables.component.scss',
 })
 export class InteractiveTablesComponent implements OnInit, OnDestroy {
-  // public readonly tabName = input.required<TableNames>();
-  public readonly tabName = input.required<string>();
+  public readonly tabName = input.required<TableNames>();
+  // public readonly tabName = input.required<string>();
   public readonly pageInformation = input.required<any>();
 
   public readonly signals = inject(ComponentCommunicationService);
