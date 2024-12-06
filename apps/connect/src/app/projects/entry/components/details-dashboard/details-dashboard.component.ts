@@ -20,6 +20,7 @@ import {
 } from '../interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { TableNames } from '../../pages/main/main.component';
+import { Molecule } from '../../data-models/molecule.model';
 
 declare let PdbTopologyViewerPlugin: any;
 
@@ -54,7 +55,7 @@ export class DetailsDashboardComponent implements OnDestroy {
   public readonly entryId = input.required<string>();
   public readonly tabName = input.required<TableNames>();
   // public readonly tabName = input.required<string>();
-  public readonly pageInformation = input.required<any>();
+  public readonly macromolecules = input.required<Molecule[]>();
 
   public readonly signals = inject(ComponentCommunicationService);
   private readonly utilService = inject(UtilService);
@@ -146,7 +147,7 @@ export class DetailsDashboardComponent implements OnDestroy {
         this.selectionTitle = `${datum.domain} (Accession: ${datum.additionalData.accession})`;
         this.selectionButtonText = 'Compare this domain in other entries';
         this.selectedChains = this.dataProcessing.getDomainChains(datum);
-        this.sequenceDetails = this.dataProcessing.getDomainSequenceDetails(this.pageInformation(), datum);
+        this.sequenceDetails = this.dataProcessing.getDomainSequenceDetails(this.macromolecules(), datum);
         this.hasProtvista = true;
       } else if (this.tabName() === 'Ligands') {
         datum = datum as LigandsRowData;

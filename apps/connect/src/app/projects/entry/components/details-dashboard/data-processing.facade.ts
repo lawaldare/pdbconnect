@@ -20,7 +20,7 @@ export class VisualisationsDataProcessing {
     return `Chain${hasPlural} ${uniqueChains.join(', ')}`;
   }
 
-  public getDomainSequenceDetails(pageInformation: any, datum: DomainsRowData) {
+  public getDomainSequenceDetails(macromolecules: Molecule[], datum: DomainsRowData) {
     const sequenceDetails: SequenceDetail[] = [];
     const boundariesByEntityId = datum.additionalData.boundaries.reduce((obj: BoundsByEntityId, boundary) => {
       obj[boundary.entity] = obj[boundary.entity] ?? [];
@@ -33,7 +33,7 @@ export class VisualisationsDataProcessing {
     )})`;
 
     for (const [entityId, boundaryList] of Object.entries(boundariesByEntityId)) {
-      const entityOfBoundary = pageInformation.molecules.macroMolecules.filter((mol: Molecule) => mol.entity_id === parseInt(entityId))[0];
+      const entityOfBoundary = macromolecules.filter((mol: Molecule) => mol.entity_id === parseInt(entityId))[0];
 
       const uniqueChainsInBoundaries = boundaryList.map((sel) => sel.chain).filter((ch, idx, chains) => chains.indexOf(ch) === idx);
       const hasPlural = uniqueChainsInBoundaries.length > 1 ? 's' : '';
