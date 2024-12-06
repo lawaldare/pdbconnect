@@ -16,6 +16,7 @@ import { AssemblyData } from '../data-models/assembly.model';
 import { PisaAssembly } from '../data-models/pisa-assembly.model';
 import { CarbohydrateMolecule } from '../data-models/carbohydrate-polymer.model';
 import { Molecule } from '../data-models/molecule.model';
+import { EntrySummary, ProcessedSummary } from '../data-models/summary.model';
 
 @Injectable({
   providedIn: 'root',
@@ -27,8 +28,8 @@ export class EntryApiService {
 
   private readonly http = inject(HttpClient);
 
-  public getEntrySummary(entryId: string): Observable<any> {
-    return this.http.get<any>(`${this.BASE_API}summary/${entryId}`).pipe(
+  public getEntrySummary(entryId: string): Observable<ProcessedSummary> {
+    return this.http.get<Record<string, EntrySummary[]>>(`${this.BASE_API}summary/${entryId}`).pipe(
       map((data) => {
         const datum = data[entryId][0];
 

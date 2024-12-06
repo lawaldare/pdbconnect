@@ -34,6 +34,7 @@ import { ComplexDetails } from '../../data-models/complex-details.model';
 import { AssemblyData } from '../../data-models/assembly.model';
 import { PisaAssembly } from '../../data-models/pisa-assembly.model';
 import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
+import { ProcessedSummary } from '../../data-models/summary.model';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 /**
@@ -93,7 +94,7 @@ export class EntryMainPageComponent implements OnInit {
   // TODO: refactor header and search for PDBe Entry pgs
 
   //getEntrySummary
-  public summaryData!: any;
+  public summaryData!: ProcessedSummary;
 
   // getEntryMolecules
   public macroMolecules!: Molecule[];
