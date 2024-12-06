@@ -19,6 +19,6 @@ export abstract class DataToTable {
   abstract tableFilters: WritableSignal<TableFilter[]>;
 
   // Abstract methods
-  abstract generateTableData(pageInformation: any): TableRow[];
-  abstract generateTableFilters(pageInformation: any): TableFilter[];
+  abstract generateTableData(): TableRow[];
+  abstract generateTableFilters(): TableFilter[];
 }

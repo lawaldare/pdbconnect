@@ -34,6 +34,13 @@ interface EntityUniProtMapping {
 }
 
 export class MacromoleculeDataToTable extends DataToTable {
+  // Macromolecule specific data
+  macromolecules: Molecule[];
+  carbohydrates: CarbohydrateMolecule[];
+  uniprotMapping: UniProtMapping;
+  bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] };
+  residueListing: ResidueListing;
+
   molstarHardResetOnSelect = false;
   protvistaForSelection = true;
   topolViewerForSelection = true;
@@ -42,24 +49,33 @@ export class MacromoleculeDataToTable extends DataToTable {
   tableRows: WritableSignal<TableRow[]> = signal([]);
   tableFilters: WritableSignal<TableFilter[]> = signal([]);
 
-  generateTableData(pageInformation: any): TableRow[] {
-    const macromolecules: Molecule[] = pageInformation.molecules.macroMolecules;
-    const carbohydrates: CarbohydrateMolecule[] = pageInformation.carbohydratesData;
-    const residueListing: ResidueListing = pageInformation.residueListing;
-    const uniprotMapping: UniProtMapping = pageInformation.uniprotData.uniprotMapping;
-    const bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] } = pageInformation.uniprotData.bestStructuresMappingsByUniProtIds;
+  constructor(
+    carbohydrates: CarbohydrateMolecule[],
+    uniprotMapping: UniProtMapping,
+    bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] },
+    macromolecules: Molecule[],
+    residueListing: ResidueListing
+  ) {
+    super();
+    this.carbohydrates = carbohydrates;
+    this.uniprotMapping = uniprotMapping;
+    this.bestStructuresMappingsByUniProtId = bestStructuresMappingsByUniProtId;
+    this.macromolecules = macromolecules;
+    this.residueListing = residueListing;
+  }
 
-    const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIds(residueListing);
+  generateTableData(): TableRow[] {
+    const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIds(this.residueListing);
     const mappingsByEntityByAccession: EntityUniProtMapping = this.generateUniprotMappings(
-      uniprotMapping,
-      bestStructuresMappingsByUniProtId,
+      this.uniprotMapping,
+      this.bestStructuresMappingsByUniProtId,
       startEndByEntityByChain
     );
 
     let rows: TableRow[] = [];
     if (this.tableRows().length === 0) {
       const macromoleculeRows: MacromoleculesRowData[] = [];
-      for (const molecule of macromolecules) {
+      for (const molecule of this.macromolecules) {
         // if molecule is a protein, we try to retrieve uniprot mappings
         const residueRanges = molecule.molecule_type.includes('polypeptide')
           ? this.getUniProtResidueRanges(molecule.entity_id, molecule.in_chains, mappingsByEntityByAccession)
@@ -68,7 +84,7 @@ export class MacromoleculeDataToTable extends DataToTable {
         let moleculeLength = molecule.length;
         let carbohydrate: CarbohydrateMolecule | undefined = undefined;
         if (molecule.molecule_type.includes('carbohydrate')) {
-          carbohydrate = carbohydrates.filter((carb) => carb.entity_id === molecule.entity_id)[0];
+          carbohydrate = this.carbohydrates.filter((carb) => carb.entity_id === molecule.entity_id)[0];
           moleculeLength = carbohydrate.chains[0].residues.length;
         }
 
@@ -230,9 +246,7 @@ export class MacromoleculeDataToTable extends DataToTable {
     });
   }
 
-  public generateTableFilters(pageInformation: any): TableFilter[] {
-    const macromolecules: Molecule[] = pageInformation.molecules.macroMolecules;
-
+  public generateTableFilters(): TableFilter[] {
     let newFilters: TableFilter[] = [];
     if (this.tableFilters().length === 0) {
       const allTypes = [
@@ -257,16 +271,16 @@ export class MacromoleculeDataToTable extends DataToTable {
           filterDescriptionSuffix: 'carbohydrate',
         },
       ];
-      const plural = macromolecules.length > 1 ? 's' : '';
+      const plural = this.macromolecules.length > 1 ? 's' : '';
 
       newFilters.push({
         types: allTypes,
-        description: `All (${macromolecules.length} macromolecule${plural})`,
+        description: `All (${this.macromolecules.length} macromolecule${plural})`,
       });
 
       for (const moleculeTypeCondition of moleculeTypeConditions) {
         // filter the complete macromolecule list by the type
-        const filteredMacromolecules = macromolecules.filter((mol) => moleculeTypeCondition.moleculeTypes.indexOf(mol.molecule_type) > -1);
+        const filteredMacromolecules = this.macromolecules.filter((mol) => moleculeTypeCondition.moleculeTypes.indexOf(mol.molecule_type) > -1);
         const plural = filteredMacromolecules.length > 1 ? 's' : '';
         if (filteredMacromolecules.length > 0) {
           newFilters.push({

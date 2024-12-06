@@ -12,6 +12,16 @@ import { ASSEMBLIES_COL_DEFS, DOMAINS_COL_DEFS, LIGANDS_COL_DEFS, MACROMOLECULES
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, Observable, Subscription, take, timer } from 'rxjs';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { TableNames } from '../../pages/main/main.component';
+import { ComplexDetails } from '../../data-models/complex-details.model';
+import { AssemblyData } from '../../data-models/assembly.model';
+import { PisaAssembly } from '../../data-models/pisa-assembly.model';
+import { CathMappings, PfamMappings, ScopMappings } from '../../data-models/domains.model';
+import { Molecule } from '../../data-models/molecule.model';
+import { ResidueListing } from '../../data-models/residue-listing.model';
+import { ModifiedResidue } from '../../data-models/modified-residues.model';
+import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
+import { UniProtMapping } from '../../data-models/uniprot-mapping.model';
+import { BestStructureMapping } from '../../data-models/uniprot-best-structures.model';
 
 type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
 
@@ -25,7 +35,31 @@ type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable |
 export class InteractiveTablesComponent implements OnInit, OnDestroy {
   public readonly tabName = input.required<TableNames>();
   // public readonly tabName = input.required<string>();
-  public readonly pageInformation = input.required<any>();
+
+  // For assemblies table
+  public readonly complexDetails = input.required<ComplexDetails[]>();
+  public readonly assemblyData = input.required<AssemblyData[]>();
+  public readonly pisaAssemblyData = input.required<PisaAssembly[]>();
+
+  // For domains table
+  public readonly pfamMappings = input.required<PfamMappings>();
+  public readonly cathMappings = input.required<CathMappings>();
+  public readonly scopMappings = input.required<ScopMappings>();
+
+  // For ligands table
+  public readonly ligands = input.required<Molecule[]>();
+  public readonly modifications = input.required<ModifiedResidue[]>();
+
+  // For macromolecules table
+  public readonly carbohydrates = input.required<CarbohydrateMolecule[]>();
+  public readonly uniprotMapping = input.required<UniProtMapping>();
+  public readonly bestStrMapUniProtId = input.required<{ [key: string]: BestStructureMapping[] }>();
+
+  // For macromolecules, domains table
+  public readonly macromolecules = input.required<Molecule[]>();
+
+  // For domains, ligands, macromolecules
+  public readonly residueListing = input.required<ResidueListing>();
 
   public readonly signals = inject(ComponentCommunicationService);
 
@@ -73,18 +107,24 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
       for (const tabName of ['Assemblies', 'Domains', 'Ligands', 'Macromolecules']) {
         let tempTableData: DataToTable;
         if (tabName === 'Assemblies') {
-          tempTableData = new AssemblyDataToTable();
+          tempTableData = new AssemblyDataToTable(this.complexDetails(), this.assemblyData(), this.pisaAssemblyData());
         }
         if (tabName === 'Domains') {
-          tempTableData = new DomainDataToTable();
+          tempTableData = new DomainDataToTable(this.pfamMappings(), this.cathMappings(), this.scopMappings(), this.macromolecules(), this.residueListing());
         }
         if (tabName === 'Ligands') {
-          tempTableData = new LigandDataToTable();
+          tempTableData = new LigandDataToTable(this.ligands(), this.modifications(), this.residueListing());
         }
         if (tabName === 'Macromolecules') {
-          tempTableData = new MacromoleculeDataToTable();
+          tempTableData = new MacromoleculeDataToTable(
+            this.carbohydrates(),
+            this.uniprotMapping(),
+            this.bestStrMapUniProtId(),
+            this.macromolecules(),
+            this.residueListing()
+          );
         }
-        tempTableData!.generateTableData(this.pageInformation());
+        tempTableData!.generateTableData();
         this.signals.setTabData(tabName, tempTableData!.tableRows());
       }
       this.signals.isTabDataGenerated.set(true);
@@ -95,20 +135,26 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
     this.initializeData();
 
     if (this.tabName() === 'Assemblies') {
-      this.tableData = new AssemblyDataToTable();
+      this.tableData = new AssemblyDataToTable(this.complexDetails(), this.assemblyData(), this.pisaAssemblyData());
       this.columnDefinitions = ASSEMBLIES_COL_DEFS;
     } else if (this.tabName() === 'Domains') {
-      this.tableData = new DomainDataToTable();
+      this.tableData = new DomainDataToTable(this.pfamMappings(), this.cathMappings(), this.scopMappings(), this.macromolecules(), this.residueListing());
       this.columnDefinitions = DOMAINS_COL_DEFS;
     } else if (this.tabName() === 'Ligands') {
-      this.tableData = new LigandDataToTable();
+      this.tableData = new LigandDataToTable(this.ligands(), this.modifications(), this.residueListing());
       this.columnDefinitions = LIGANDS_COL_DEFS;
     } else if (this.tabName() === 'Macromolecules') {
-      this.tableData = new MacromoleculeDataToTable();
+      this.tableData = new MacromoleculeDataToTable(
+        this.carbohydrates(),
+        this.uniprotMapping(),
+        this.bestStrMapUniProtId(),
+        this.macromolecules(),
+        this.residueListing()
+      );
       this.columnDefinitions = MACROMOLECULES_COL_DEFS;
     }
-    this.tableData!.generateTableData(this.pageInformation());
-    this.tableData!.generateTableFilters(this.pageInformation());
+    this.tableData!.generateTableData();
+    this.tableData!.generateTableFilters();
 
     // this.signals.setTabData(this.tabName(), this.tableData!.tableRows());
 
@@ -233,7 +279,7 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
     } else if (this.tabName() === 'Ligands') {
       return this.currentTableFilter.indexOf(node.data.type) > -1;
     } else if (this.tabName() === 'Macromolecules') {
-      // const matchingIdx = this.pageInformation().macromolecules
+      // const matchingIdx = this.macromolecules()
       //   .map((mol: Molecule, idx: number) => (this.currentTableFilter.includes(mol.molecule_type) ? idx : -1))
       //   .filter((idx: number) => idx > -1);
       // return matchingIdx.includes(this.unsortedTableRows().indexOf(node.data));

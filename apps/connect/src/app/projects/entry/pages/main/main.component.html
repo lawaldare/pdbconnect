@@ -75,7 +75,22 @@
         @for (tabName of allTabs; track tabName) { @if(currentTab() === tabName.name) { @if(tableTabs.indexOf(tabName.name) > -1) {
         <section class="left-side">
           <!-- inside entry/components/interactive-tables -->
-          <pdbc-interactive-tables [tabName]="getTableName(tabName.name)" [pageInformation]="pageData"></pdbc-interactive-tables>
+          <pdbc-interactive-tables
+            [tabName]="getTableName(tabName.name)"
+            [complexDetails]="complexDetails"
+            [assemblyData]="assemblies"
+            [pisaAssemblyData]="pisaAssemblies"
+            [pfamMappings]="pfamMapping"
+            [cathMappings]="cathMapping"
+            [scopMappings]="scop175Mapping"
+            [macromolecules]="macroMolecules"
+            [residueListing]="residueListing"
+            [ligands]="boundLigands"
+            [modifications]="modifications"
+            [carbohydrates]="carbohydrates"
+            [uniprotMapping]="uniprotMapping"
+            [bestStrMapUniProtId]="bestStructuresMappingsByUniProtIds"
+          ></pdbc-interactive-tables>
         </section>
         <section class="right-side">
           <!-- inside entry/components/details-dashboard -->

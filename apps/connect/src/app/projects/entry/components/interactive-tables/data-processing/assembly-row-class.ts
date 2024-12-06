@@ -9,6 +9,11 @@ import { signal, WritableSignal } from '@angular/core';
 const ALLOWEDTYPES = ['polypeptide(L)', 'polypeptide(R)', 'polyribonucleotide', 'polydeoxyribonucleotide', 'polydeoxyribonucleotide/polyribonucleotide hybrid'];
 
 export class AssemblyDataToTable extends DataToTable {
+  // Assembly specific data
+  complexDetails: ComplexDetails[];
+  assemblyData: AssemblyData[];
+  pisaAssemblyData: PisaAssembly[];
+
   molstarHardResetOnSelect = true;
   protvistaForSelection = false;
   topolViewerForSelection = false;
@@ -17,17 +22,20 @@ export class AssemblyDataToTable extends DataToTable {
   tableRows: WritableSignal<TableRow[]> = signal([]);
   tableFilters: WritableSignal<TableFilter[]> = signal([]);
 
-  generateTableData(pageInformation: any): TableRow[] {
-    const complexDetails: ComplexDetails[] = pageInformation.complexDetails;
-    const assemblyData: AssemblyData[] = pageInformation.assembliesData.assemblies;
-    const pisaAssemblyData: PisaAssembly[] = pageInformation.assembliesData.pisaAssemblies;
+  constructor(complexDetails: ComplexDetails[], assemblyData: AssemblyData[], pisaAssemblyData: PisaAssembly[]) {
+    super();
+    this.complexDetails = complexDetails;
+    this.assemblyData = assemblyData;
+    this.pisaAssemblyData = pisaAssemblyData;
+  }
 
+  generateTableData(): TableRow[] {
     let rows: TableRow[] = [];
 
     if (this.tableRows().length === 0) {
       const assembliesRows: AssembliesRowData[] = [];
       let preferredAssembly = -1;
-      for (const complexDetail of complexDetails) {
+      for (const complexDetail of this.complexDetails) {
         for (const assemblyInfo of complexDetail.assemblies) {
           if (assemblyInfo.preferred_assembly) {
             preferredAssembly = assemblyInfo.assembly_id;
@@ -37,12 +45,12 @@ export class AssemblyDataToTable extends DataToTable {
         if (preferredAssembly > -1) break;
       }
 
-      for (const assemblyDatum of assemblyData) {
-        const complexDetail = complexDetails.filter((eachComplexDetail) => {
+      for (const assemblyDatum of this.assemblyData) {
+        const complexDetail = this.complexDetails.filter((eachComplexDetail) => {
           const complexAssemblyIds = eachComplexDetail.assemblies.map((assemblyInfo) => assemblyInfo.assembly_id + '');
           return complexAssemblyIds.indexOf(assemblyDatum.assembly_id) > -1;
         })[0];
-        const pisaAssemblyDatum = pisaAssemblyData.filter((pisaAssembly) => pisaAssembly.assembly_id === assemblyDatum.assembly_id)[0];
+        const pisaAssemblyDatum = this.pisaAssemblyData.filter((pisaAssembly) => pisaAssembly.assembly_id === assemblyDatum.assembly_id)[0];
         const preferredWord = assemblyDatum.assembly_id === `${preferredAssembly}` ? ' (preferred)' : '';
         let moleculeNames = assemblyDatum.entities.filter((mol) => ALLOWEDTYPES.indexOf(mol.molecule_type) > -1).map((assembly) => assembly.molecule_name[0]);
 
@@ -109,7 +117,7 @@ export class AssemblyDataToTable extends DataToTable {
     return composition;
   }
 
-  generateTableFilters(pageInformation: any): TableFilter[] {
+  generateTableFilters(): TableFilter[] {
     this.tableFilters.set([]);
     return [];
   }

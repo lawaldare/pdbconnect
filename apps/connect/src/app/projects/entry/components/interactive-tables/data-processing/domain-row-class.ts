@@ -7,6 +7,13 @@ import { DomainsBoundaries, TableFilter, TableRow } from '../data-models-and-def
 import { DataToTable } from './abstract-base-row-class';
 
 export class DomainDataToTable extends DataToTable {
+  // Domain specific data
+  pfamMappings: PfamMappings;
+  cathMappings: CathMappings;
+  scopMappings: ScopMappings;
+  macromolecules: Molecule[];
+  residueListing: ResidueListing;
+
   molstarHardResetOnSelect = false;
   protvistaForSelection = true;
   topolViewerForSelection = false;
@@ -15,24 +22,27 @@ export class DomainDataToTable extends DataToTable {
   tableRows: WritableSignal<TableRow[]> = signal([]);
   tableFilters: WritableSignal<TableFilter[]> = signal([]);
 
-  generateTableData(pageInformation: any): TableRow[] {
-    const macromolecules: Molecule[] = pageInformation.molecules.macroMolecules;
-    const residueListing: ResidueListing = pageInformation.residueListing;
-    const pfamMappings: PfamMappings = pageInformation.pfamMapping;
-    const cathMappings: CathMappings = pageInformation.cathMapping;
-    const scopMappings: ScopMappings = pageInformation.scopMapping;
+  constructor(pfamMappings: PfamMappings, cathMappings: CathMappings, scopMappings: ScopMappings, macromolecules: Molecule[], residueListing: ResidueListing) {
+    super();
+    this.pfamMappings = pfamMappings;
+    this.cathMappings = cathMappings;
+    this.scopMappings = scopMappings;
+    this.macromolecules = macromolecules;
+    this.residueListing = residueListing;
+  }
 
+  generateTableData(): TableRow[] {
     let rows: TableRow[] = [];
     if (this.tableRows().length === 0) {
       // parse Pfam domains json structure
-      for (const [resourceAcc, data] of Object.entries(pfamMappings)) {
+      for (const [resourceAcc, data] of Object.entries(this.pfamMappings)) {
         const domainDesc = data.description;
         for (let i = 0; i < data.mappings.length; i++) {
           const mapping = data.mappings[i];
           const domain = `${resourceAcc}-${i + 1}`;
-          const moleculeNames = macromolecules.filter((mol) => mapping.entity_id === mol.entity_id).map((mol) => mol.molecule_name[0]);
+          const moleculeNames = this.macromolecules.filter((mol) => mapping.entity_id === mol.entity_id).map((mol) => mol.molecule_name[0]);
 
-          const segmentData = this.formatSegments([mapping], residueListing);
+          const segmentData = this.formatSegments([mapping], this.residueListing);
           if (segmentData.segments.length === 0) continue;
 
           rows.push({
@@ -52,7 +62,7 @@ export class DomainDataToTable extends DataToTable {
       }
 
       // parse CATH domains json structure
-      for (const [resourceAcc, data] of Object.entries(cathMappings)) {
+      for (const [resourceAcc, data] of Object.entries(this.cathMappings)) {
         // domain names in CATH are unique 'domain' fields inside mappings
         const domainDesc = data.homology;
         const domainNames = data.mappings.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
@@ -62,9 +72,9 @@ export class DomainDataToTable extends DataToTable {
 
           const entityIds = mappings.map((mapping) => mapping.entity_id).filter((entityId, idx, ids) => ids.indexOf(entityId) === idx);
 
-          const moleculeNames = macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => mol.molecule_name[0]);
+          const moleculeNames = this.macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => mol.molecule_name[0]);
 
-          const segmentData = this.formatSegments(mappings, residueListing);
+          const segmentData = this.formatSegments(mappings, this.residueListing);
           if (segmentData.segments.length === 0) continue;
 
           rows.push({
@@ -84,7 +94,7 @@ export class DomainDataToTable extends DataToTable {
       }
 
       // parse SCOP domains json structure
-      for (const [resourceAcc, data] of Object.entries(scopMappings)) {
+      for (const [resourceAcc, data] of Object.entries(this.scopMappings)) {
         // domain names in SCOP are unique 'scop_id' fields inside mappings
         const domainDesc = data.description;
         const domainNames = data.mappings.map((mapping) => mapping.scop_id!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
@@ -94,9 +104,9 @@ export class DomainDataToTable extends DataToTable {
 
           const entityIds = mappings.map((mapping) => mapping.entity_id).filter((entityId, idx, ids) => ids.indexOf(entityId) === idx);
 
-          const moleculeNames = macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => mol.molecule_name[0]);
+          const moleculeNames = this.macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => mol.molecule_name[0]);
 
-          const segmentData = this.formatSegments(mappings, residueListing);
+          const segmentData = this.formatSegments(mappings, this.residueListing);
           if (segmentData.segments.length === 0) continue;
 
           rows.push({
@@ -195,25 +205,20 @@ export class DomainDataToTable extends DataToTable {
     };
   }
 
-  generateTableFilters(pageInformation: any): TableFilter[] {
-    const pfamMappings: PfamMappings = pageInformation.pfamMapping;
-    const residueListing: ResidueListing = pageInformation.residueListing as ResidueListing;
-    const cathMappings: CathMappings = pageInformation.cathMapping;
-    const scopMappings: ScopMappings = pageInformation.scopMapping;
+  generateTableFilters(): TableFilter[] {
     let newFilters: TableFilter[] = [];
     if (this.tableFilters().length === 0) {
-      // TODO: Filter non observed mappings here
       let pfamDomainCount = 0;
-      for (const [_resourceAcc, data] of Object.entries(pfamMappings)) {
-        const filteredPfamMappings = this.filterMappingObserved(data.mappings, residueListing);
+      for (const [_resourceAcc, data] of Object.entries(this.pfamMappings)) {
+        const filteredPfamMappings = this.filterMappingObserved(data.mappings, this.residueListing);
         pfamDomainCount += filteredPfamMappings.length;
       }
 
       let cathDomainCount = 0;
-      for (const [_resourceAcc, data] of Object.entries(cathMappings)) {
+      for (const [_resourceAcc, data] of Object.entries(this.cathMappings)) {
         const domainIds: string[] = [];
         for (const mapping of data.mappings) {
-          const filteredCathMapping = this.filterMappingObserved([mapping], residueListing);
+          const filteredCathMapping = this.filterMappingObserved([mapping], this.residueListing);
           if (filteredCathMapping.length === 0) continue;
           if (domainIds.indexOf(mapping.domain!) === -1) {
             domainIds.push(mapping.domain!);
@@ -223,10 +228,10 @@ export class DomainDataToTable extends DataToTable {
       }
 
       let scopDomainCount = 0;
-      for (const [_resourceAcc, data] of Object.entries(scopMappings)) {
+      for (const [_resourceAcc, data] of Object.entries(this.scopMappings)) {
         const domainIds: string[] = [];
         for (const mapping of data.mappings) {
-          const filteredScopMapping = this.filterMappingObserved([mapping], residueListing);
+          const filteredScopMapping = this.filterMappingObserved([mapping], this.residueListing);
           if (filteredScopMapping.length === 0) continue;
           if (domainIds.indexOf(mapping.scop_id!) === -1) {
             domainIds.push(mapping.scop_id!);

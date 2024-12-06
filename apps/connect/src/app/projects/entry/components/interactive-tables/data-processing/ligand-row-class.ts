@@ -7,6 +7,11 @@ import { ResidueListing } from '../../../data-models/residue-listing.model';
 import { MolstarSelectionObj } from '../../../helpers/molstar-helpers';
 
 export class LigandDataToTable extends DataToTable {
+  // Ligand specific data
+  ligands: Molecule[];
+  modifications: ModifiedResidue[];
+  residueListing: ResidueListing;
+
   molstarHardResetOnSelect = false;
   protvistaForSelection = false;
   topolViewerForSelection = false;
@@ -15,15 +20,18 @@ export class LigandDataToTable extends DataToTable {
   tableRows: WritableSignal<TableRow[]> = signal([]);
   tableFilters: WritableSignal<TableFilter[]> = signal([]);
 
-  generateTableData(pageInformation: any): TableRow[] {
-    const ligands: Molecule[] = pageInformation.molecules.boundLigands;
-    const modifications: ModifiedResidue[] = pageInformation.modifications ? pageInformation.modifications : [];
-    const residueListing: ResidueListing = pageInformation.residueListing;
+  constructor(ligands: Molecule[], modifications: ModifiedResidue[], residueListing: ResidueListing) {
+    super();
+    this.ligands = ligands;
+    this.modifications = modifications;
+    this.residueListing = residueListing;
+  }
 
+  generateTableData(): TableRow[] {
     let rows: TableRow[] = [];
     if (this.tableRows().length === 0) {
       const ligandsTableRows: LigandsRowData[] = [];
-      for (const mol of ligands) {
+      for (const mol of this.ligands) {
         const randomDescription = 'Unannotated';
         ligandsTableRows.push({
           type: 'ligand',
@@ -38,16 +46,16 @@ export class LigandDataToTable extends DataToTable {
           },
           additionalData: {
             source: mol,
-            selections: this.generateMolstarSelectionsLigands(mol, residueListing),
+            selections: this.generateMolstarSelectionsLigands(mol, this.residueListing),
           },
         });
       }
       rows.push(...ligandsTableRows);
 
       const modificationsTableRows: LigandsRowData[] = [];
-      const modificationIds = modifications.map((mod) => mod.chem_comp_id).filter((mod, idx, array) => array.indexOf(mod) === idx);
+      const modificationIds = this.modifications.map((mod) => mod.chem_comp_id).filter((mod, idx, array) => array.indexOf(mod) === idx);
       for (const modId of modificationIds) {
-        const modificationsOfId = modifications.filter((mod) => mod.chem_comp_id === modId);
+        const modificationsOfId = this.modifications.filter((mod) => mod.chem_comp_id === modId);
         const moleculesOfId = modificationsOfId.map((mod) => mod.description).filter((molName, idx, array) => array.indexOf(molName) === idx);
 
         modificationsTableRows.push({
@@ -64,7 +72,7 @@ export class LigandDataToTable extends DataToTable {
           },
           additionalData: {
             source: modificationsOfId,
-            selections: this.generateMolstarSelectionsModifications(modifications),
+            selections: this.generateMolstarSelectionsModifications(this.modifications),
           },
         });
       }
@@ -128,10 +136,7 @@ export class LigandDataToTable extends DataToTable {
     return selections;
   }
 
-  generateTableFilters(pageInformation: any): TableFilter[] {
-    const ligands: Molecule[] = pageInformation.molecules.boundLigands;
-    const modifications: ModifiedResidue[] = pageInformation.modifications ? pageInformation.modifications : [];
-
+  generateTableFilters(): TableFilter[] {
     let newFilters: TableFilter[] = [];
     if (this.tableFilters().length === 0) {
       newFilters.push({
@@ -139,15 +144,15 @@ export class LigandDataToTable extends DataToTable {
         description: `All`,
         types: ['ligand', 'modification'],
       });
-      if (ligands.length > 0) {
-        const word = ligands.length > 1 ? 'ligands' : 'ligand';
+      if (this.ligands.length > 0) {
+        const word = this.ligands.length > 1 ? 'ligands' : 'ligand';
         newFilters.push({
-          description: `${ligands.length} bound ${word}`,
+          description: `${this.ligands.length} bound ${word}`,
           types: ['ligand'],
         });
       }
 
-      const modificationIds = modifications.map((mod) => mod.chem_comp_id).filter((mod, idx, array) => array.indexOf(mod) === idx);
+      const modificationIds = this.modifications.map((mod) => mod.chem_comp_id).filter((mod, idx, array) => array.indexOf(mod) === idx);
 
       if (modificationIds.length > 0) {
         const word = modificationIds.length > 1 ? 'residues' : 'residue';
