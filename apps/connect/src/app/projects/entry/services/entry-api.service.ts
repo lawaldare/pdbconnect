@@ -108,35 +108,6 @@ export class EntryApiService {
     );
   }
 
-  public getEntryPublication(entryId: string): Observable<any> {
-    return this.http.get<any>(`${this.BASE_API}publications/${entryId}`).pipe(
-      map((data) => {
-        const datum = data[entryId][0];
-        const authorList: string[] = [];
-        for (const authorData of datum.author_list) {
-          authorList.push(authorData.full_name!);
-        }
-        if (datum.journal_info.pdb_abbreviation! !== 'To be published') {
-          return {
-            publicationTitle: datum.title,
-            publicationAuthors: authorList,
-            publicationJournal: datum.journal_info.pdb_abbreviation!,
-            publicationVolume: datum.journal_info.volume!,
-            publicationPages: datum.journal_info.pages!,
-            publicationYear: datum.journal_info.year!,
-            publicationPMID: datum.pubmed_id!,
-            publicationDOI: datum.doi!,
-            pdbEntryDOI: `10.2210/pdb${entryId}/pdb`,
-          };
-        }
-        return {
-          publicationTitle: 'To be published',
-          pdbEntryDOI: `10.2210/pdb${entryId}/pdb`,
-        };
-      })
-    );
-  }
-
   public getResidueListing(entryId: string): Observable<ResidueListing> {
     // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/pdb/entry/';
     return this.http.get<any>(`${this.BASE_API}residue_listing/${entryId}`).pipe(map((data) => data[entryId] as ResidueListing));

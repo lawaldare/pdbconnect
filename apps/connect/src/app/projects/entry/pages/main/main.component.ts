@@ -86,6 +86,12 @@ export class EntryMainPageComponent implements OnInit {
 
   public pageData$!: Observable<any>;
 
+  // TODO: Add missing data-models and add proper undefined to data from API endpoints
+  // TODO: pageData becomes apiStatus with string for to-load loaded-none, loading, loaded-exists
+  // TODO: modify child components to get data properly from here
+  // TODO: move CSS of child components so their width/height is relative to CSS in this component
+  // TODO: refactor header and search for PDBe Entry pgs
+
   //getEntrySummary
   public summaryData!: any;
 
@@ -98,9 +104,6 @@ export class EntryMainPageComponent implements OnInit {
   public experimentalDetails!: AnyExperimentDetail[];
   public experimentalMethod!: string;
   public resolutionValues!: number | undefined;
-
-  // getEntryPublication
-  public publication!: any;
 
   // getUniprotMapping
   public uniprotMapping!: UniProtMapping;
@@ -153,8 +156,6 @@ export class EntryMainPageComponent implements OnInit {
 
   // getCarbohydrates
   public carbohydrates!: CarbohydrateMolecule[];
-
-  //TODO: Keep expanding list. Add missing data-models. pageData becomes apiStatus with string for to-load loaded-none, loading, loaded-exists
 
   constructor() {
     effect(async () => {
@@ -259,12 +260,6 @@ export class EntryMainPageComponent implements OnInit {
             resolutionValues: resolutionValues,
             details: response,
           };
-        })
-      ),
-      this.entryAPIService.getEntryPublication(this.entryId()).pipe(
-        map((data) => {
-          this.publication = data;
-          return data;
         })
       ),
       this.entryAPIService.getUniprotMapping(this.entryId()).pipe(
@@ -493,7 +488,6 @@ export class EntryMainPageComponent implements OnInit {
           summary,
           molecules,
           experiment,
-          publication,
           uniprotData,
           interproMapping,
           pfamMapping,
@@ -514,7 +508,7 @@ export class EntryMainPageComponent implements OnInit {
           summary,
           molecules,
           experiment,
-          publication,
+          // publication,
           uniprotData,
           interproMapping,
           pfamMapping,

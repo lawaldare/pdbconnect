@@ -21,41 +21,42 @@
   <div class="info-row">
     <span>Primary Publication</span>
     <article>
-      <p>{{ information().publication.publicationTitle }}</p>
-      @if(information().publication.publicationAuthors){
+      @if (information().primaryPublication.journal_info.pdb_abbreviation! !== 'To be published') {
+      <p>{{ information().primaryPublication.title }}</p>
       <p>
-        @for(authorName of information().publication.publicationAuthors; track authorName; let islast = $last){
+        @for(authorDatum of information().primaryPublication.author_list; track authorDatum; let islast = $last){
         <!-- <a [href]="generateAuthorSearchUrl(authorName)" target="_blank">{{ authorName }}</a> -->
-        <a>{{ authorName }}</a>
+        <a>{{ authorDatum.full_name }}</a>
         <!-- <i class="icon icon-common icon-search"></i> -->
         {{ islast ? '' : ',' }}
         }
       </p>
-      }
       <p>
-        <i>{{ information().publication.publicationJournal }}</i>
-        {{ information().publication.publicationVolume }}
-        {{ information().publication.publicationPage }}
-        {{ information().publication.publicationYear }}
+        <i>{{ information().primaryPublication.journal_info.pdb_abbreviation }}</i>
+        {{ information().primaryPublication.journal_info.volume }}
+        {{ information().primaryPublication.journal_info.pages }}
+        {{ information().primaryPublication.journal_info.year }}
       </p>
-      @if(information().publication.publicationPMID){
+      @if(information().primaryPublication.pubmed_id){
       <p>
         PMID:
-        <!-- <a [href]="'https://europepmc.org/article/MED/' + information().publication.publicationPMID" target="_blank" -->
+        <!-- <a [href]="'https://europepmc.org/article/MED/' + information().primaryPublication.pubmed_id" target="_blank" -->
         <a
-          >{{ information().publication.publicationPMID }}
+          >{{ information().primaryPublication.pubmed_id }}
           <i class="icon icon-link icon-common"></i>
         </a>
       </p>
-      } @if(information().publication.publicationDOI){
+      } @if(information().primaryPublication.doi){
       <p>
         DOI:
-        <!-- <a [href]="'https://doi.org/' + information().publication.publicationDOI" target="_blank" -->
+        <!-- <a [href]="'https://doi.org/' + information().primaryPublication.doi" target="_blank" -->
         <a
-          >{{ information().publication.publicationDOI }}
+          >{{ information().primaryPublication.doi }}
           <i class="icon icon-link icon-common"></i>
         </a>
       </p>
+      } } @else {
+      <p>To be published</p>
       }
     </article>
   </div>
