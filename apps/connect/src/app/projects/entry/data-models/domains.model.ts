@@ -50,3 +50,11 @@ export interface PfamMappings {
     name: string;
   };
 }
+
+export interface InterProMappings {
+  [key: string]: {
+    name: string;
+    mappings: DomainMapping[];
+    identifier: string;
+  };
+}

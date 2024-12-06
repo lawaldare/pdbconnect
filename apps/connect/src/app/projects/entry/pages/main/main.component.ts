@@ -23,7 +23,7 @@ import { ExperimentsValidationTabComponent } from '../../components/experiments-
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
 import { pdbeLogoConfig, pdbeSearchConfig, allTabs, tableTabs } from '../../entry-constant';
 import { Molecule } from '../../data-models/molecule.model';
-import { CathMappings, PfamMappings, ScopMappings } from '../../data-models/domains.model';
+import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../../data-models/domains.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { ResidueListing } from '../../data-models/residue-listing.model';
 import { KeyValidationStats } from '../../data-models/key-validation-stats.model';
@@ -112,7 +112,7 @@ export class EntryMainPageComponent implements OnInit {
   public bestStructuresMappingsByUniProtIds!: { [key: string]: BestStructureMapping[] };
 
   // getInterproMapping
-  public interproMapping!: any;
+  public interproMapping!: InterProMappings;
 
   // getPDBEntryFiles
   public downloadOptions: DownloadOption[] = [];

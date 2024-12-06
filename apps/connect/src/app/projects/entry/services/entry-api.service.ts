@@ -10,13 +10,14 @@ import { KeyValidationStats } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
 import { CitationDetail } from '../data-models/publication.model';
 import { RelatedPublication } from '../data-models/related-publications.model';
-import { PfamMappings, CathMappings, ScopMappings } from '../data-models/domains.model';
+import { PfamMappings, CathMappings, ScopMappings, InterProMappings } from '../data-models/domains.model';
 import { ComplexDetails } from '../data-models/complex-details.model';
 import { AssemblyData } from '../data-models/assembly.model';
 import { PisaAssembly } from '../data-models/pisa-assembly.model';
 import { CarbohydrateMolecule } from '../data-models/carbohydrate-polymer.model';
 import { Molecule } from '../data-models/molecule.model';
 import { EntrySummary, ProcessedSummary } from '../data-models/summary.model';
+import { UniProtMapping } from '../data-models/uniprot-mapping.model';
 
 @Injectable({
   providedIn: 'root',
@@ -64,34 +65,34 @@ export class EntryApiService {
     return this.http.get<Record<string, CitationDetail[]>>(`${this.BASE_API}publications/${entryId}`).pipe(map((data) => data[entryId][0]));
   }
 
-  public getUniprotMapping(entryId: string): Observable<any> {
+  public getUniprotMapping(entryId: string): Observable<UniProtMapping> {
     // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/';
-    return this.http.get<any>(`${this.MAPPINGS_API}uniprot/${entryId}`).pipe(map((data) => data[entryId]['UniProt']));
+    return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.MAPPINGS_API}uniprot/${entryId}`).pipe(map((data) => data[entryId]['UniProt']));
   }
 
-  public getInterproMapping(entryId: string): Observable<any> {
+  public getInterproMapping(entryId: string): Observable<InterProMappings> {
     // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/interpro/';
-    return this.http.get<any>(`${this.MAPPINGS_API}interpro/${entryId}`).pipe(map((data) => data[entryId]['InterPro']));
+    return this.http.get<Record<string, Record<string, InterProMappings>>>(`${this.MAPPINGS_API}interpro/${entryId}`).pipe(map((data) => data[entryId]['InterPro']));
   }
 
   public getPfamMapping(entryId: string): Observable<PfamMappings> {
     // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/pfam/';
-    return this.http.get<any>(`${this.MAPPINGS_API}pfam/${entryId}`).pipe(map((data) => data[entryId]['Pfam']));
+    return this.http.get<Record<string, Record<string, PfamMappings>>>(`${this.MAPPINGS_API}pfam/${entryId}`).pipe(map((data) => data[entryId]['Pfam']));
   }
 
   public getCATHMapping(entryId: string): Observable<CathMappings> {
     // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/cath/';
-    return this.http.get<any>(`${this.MAPPINGS_API}cath/${entryId}`).pipe(map((data) => data[entryId]['CATH']));
+    return this.http.get<Record<string, Record<string, CathMappings>>>(`${this.MAPPINGS_API}cath/${entryId}`).pipe(map((data) => data[entryId]['CATH']));
   }
 
   public getSCOP175Mapping(entryId: string): Observable<ScopMappings> {
     // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/scop/';
-    return this.http.get<any>(`${this.MAPPINGS_API}scop/${entryId}`).pipe(map((data) => data[entryId]['SCOP']));
+    return this.http.get<Record<string, Record<string, ScopMappings>>>(`${this.MAPPINGS_API}scop/${entryId}`).pipe(map((data) => data[entryId]['SCOP']));
   }
 
   public getModifications(entryId: string): Observable<ModifiedResidue[]> {
     // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/pdb/entry/';
-    return this.http.get<any>(`${this.BASE_API}modified_AA_or_NA/${entryId}`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, ModifiedResidue[]>>(`${this.BASE_API}modified_AA_or_NA/${entryId}`).pipe(map((data) => data[entryId]));
   }
 
   public getGalleryMolj(moljDescription: string): Observable<any> {
