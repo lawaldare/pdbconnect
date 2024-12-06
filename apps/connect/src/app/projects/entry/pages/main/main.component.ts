@@ -88,7 +88,6 @@ export class EntryMainPageComponent implements OnInit {
 
   public pageData$!: Observable<any>;
 
-  // TODO: Add missing data-models and add proper undefined to data from API endpoints
   // TODO: pageData becomes apiStatus with string for to-load loaded-none, loading, loaded-exists
   // TODO: modify child components to get data properly from here
   // TODO: move CSS of child components so their width/height is relative to CSS in this component
@@ -144,10 +143,10 @@ export class EntryMainPageComponent implements OnInit {
   public validationXRayRefine?: XRayRefine;
 
   // getPrimaryPublicationAbstract
-  public primaryPublicationAbstract?: CitationDetail;
+  public primaryPublication?: CitationDetail;
 
   // getArticleCitingPDBEntry
-  public articleCitingPDBEntry?: RelatedPublication;
+  public articlesCiting?: RelatedPublication;
 
   // getPreferredAssembly
   public complexDetails!: ComplexDetails[];
@@ -418,21 +417,21 @@ export class EntryMainPageComponent implements OnInit {
       ),
       this.entryAPIService.getPrimaryPublicationAbstract(this.entryId()).pipe(
         map((data) => {
-          this.primaryPublicationAbstract = data;
+          this.primaryPublication = data;
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
-          this.primaryPublicationAbstract = undefined;
+          this.primaryPublication = undefined;
           return of(undefined);
         })
       ),
       this.entryAPIService.getArticleCitingPDBEntry(this.entryId()).pipe(
         map((data) => {
-          this.articleCitingPDBEntry = data;
+          this.articlesCiting = data;
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
-          this.articleCitingPDBEntry = undefined;
+          this.articlesCiting = undefined;
           return of(undefined);
         })
       ),
@@ -510,7 +509,6 @@ export class EntryMainPageComponent implements OnInit {
           summary,
           molecules,
           experiment,
-          // publication,
           uniprotData,
           interproMapping,
           pfamMapping,

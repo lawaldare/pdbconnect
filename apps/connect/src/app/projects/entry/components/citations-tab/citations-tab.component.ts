@@ -29,8 +29,8 @@ export class CitationsTabComponent implements OnInit {
   // private staticEntryId = '7v08'; //'7v08', '3d12', '5tj5', '4zqo'
 
   public readonly entryId = input.required<string>();
-  public readonly primaryPublication = input.required<CitationDetail>();
-  public readonly articlesCiting = input.required<RelatedPublication>();
+  public readonly primaryPublication = input.required<CitationDetail | undefined>();
+  public readonly articlesCiting = input.required<RelatedPublication | undefined>();
 
   public relatedEntries!: string[];
 
@@ -39,11 +39,11 @@ export class CitationsTabComponent implements OnInit {
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
   ngOnInit(): void {
-    if (this.primaryPublication().pubmed_id) {
-      this.getXMLImages(this.primaryPublication().pubmed_id!);
+    if (this.primaryPublication() !== undefined && this.primaryPublication()!.pubmed_id) {
+      this.getXMLImages(this.primaryPublication()!.pubmed_id!);
     }
-    if (this.primaryPublication().associated_entries) {
-      this.setRelatedEntries(this.primaryPublication().associated_entries!);
+    if (this.primaryPublication() !== undefined && this.primaryPublication()!.associated_entries) {
+      this.setRelatedEntries(this.primaryPublication()!.associated_entries!);
     }
   }
 
