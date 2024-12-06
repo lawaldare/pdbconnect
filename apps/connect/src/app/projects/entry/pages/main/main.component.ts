@@ -104,7 +104,7 @@ export class EntryMainPageComponent implements OnInit {
   // getExperiment
   public experimentalDetails!: AnyExperimentDetail[];
   public experimentalMethod!: string;
-  public resolutionValues!: number | undefined;
+  public resolutionValues!: Array<number | undefined>;
 
   // getUniprotMapping
   public uniprotMapping!: UniProtMapping;
@@ -248,7 +248,7 @@ export class EntryMainPageComponent implements OnInit {
           this.experimentalDetails = response;
 
           const experimentalMethodTitle = response.length > 1 ? 'Hybrid' : (response[0].experimental_method as string);
-          const resolutionValues: number | undefined = response.map((datum: AnyExperimentDetail) => {
+          const resolutionValues: Array<number | undefined> = response.map((datum: AnyExperimentDetail) => {
             if ('resolution' in datum) return datum['resolution'];
             else return undefined;
           });
