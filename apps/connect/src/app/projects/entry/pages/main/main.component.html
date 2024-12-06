@@ -33,7 +33,12 @@
       <section class="summary">
         @if (pageData$ | async; as pageData) {
         <!-- inside entry/components/main-information-area -->
-        <pdbc-main-information-area [information]="pageData"></pdbc-main-information-area>
+        <pdbc-main-information-area
+          [summary]="summaryData"
+          [organismScientificNames]="organismScientificNames"
+          [primaryPublication]="primaryPublication"
+          [qualityScores]="summaryQualityScores"
+        ></pdbc-main-information-area>
         }
       </section>
       <section class="explore-3d-tabs">

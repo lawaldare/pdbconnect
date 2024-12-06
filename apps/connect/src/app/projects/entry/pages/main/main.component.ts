@@ -122,7 +122,7 @@ export class EntryMainPageComponent implements OnInit {
   public pfamMapping!: PfamMappings;
 
   // getSummaryQualityScores
-  public summaryQualityScores!: ProcessedQualityScores | Record<string, never>;
+  public summaryQualityScores?: ProcessedQualityScores;
 
   // getCATHMapping
   public cathMapping!: CathMappings;
@@ -350,7 +350,7 @@ export class EntryMainPageComponent implements OnInit {
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
-          this.summaryQualityScores = {};
+          this.summaryQualityScores = undefined;
           return of({});
         })
       ),

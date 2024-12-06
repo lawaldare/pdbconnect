@@ -2,6 +2,9 @@ import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { UtilService } from '@pdbc/core';
 import { StrucQualityGradientsComponent } from '../struc-quality-gradients/struc-quality-gradients.component';
+import { ProcessedSummary } from '../../data-models/summary.model';
+import { CitationDetail } from '../../data-models/publication.model';
+import { ProcessedQualityScores } from '../../data-models/summary-quality-scores.model';
 
 @Component({
   selector: 'pdbc-main-information-area',
@@ -11,7 +14,11 @@ import { StrucQualityGradientsComponent } from '../struc-quality-gradients/struc
   styleUrl: './main-information-area.component.scss',
 })
 export class MainInformationAreaComponent {
-  public readonly information = input.required<any>(); // eslint-disable-line @typescript-eslint/no-explicit-any
+  public readonly summary = input.required<ProcessedSummary>();
+  public readonly organismScientificNames = input.required<string[]>();
+  public readonly primaryPublication = input.required<CitationDetail | undefined>();
+  public readonly qualityScores = input.required<ProcessedQualityScores | undefined>();
+
   public mappedInformation: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
   private readonly util = inject(UtilService);
 
