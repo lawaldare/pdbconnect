@@ -54,7 +54,10 @@ export class ValidationDataFacade {
     protein_sidechains: 'Sidechain rotamer outliers in protein molecules ',
   };
 
-  processValidationKeys(validationStats: KeyValidationStats) {
+  processValidationKeys(validationStats: KeyValidationStats | undefined) {
+    if (validationStats === undefined) {
+      return [];
+    }
     const validKeys = Object.keys(this.validationKeysToText);
     return (Object.entries(validationStats) as [keyof KeyValidationStats, ValidationStat][])
       .filter(([validationKey, validationStat]) => validationStat.num_checked > 0 && validKeys.indexOf(validationKey) > -1)
@@ -62,7 +65,7 @@ export class ValidationDataFacade {
       .sort((a, b) => validKeys.indexOf(a) - validKeys.indexOf(b));
   }
 
-  processExperimentalDetails(experimentalDetails: ExperimentDetail[], xRayRefine: XRayRefine): ParsedExperimentalDetails[] {
+  processExperimentalDetails(experimentalDetails: ExperimentDetail[], xRayRefine: XRayRefine | undefined): ParsedExperimentalDetails[] {
     const result: ParsedExperimentalDetails[] = [];
 
     const hostOrganismNames = experimentalDetails.filter(
@@ -198,7 +201,7 @@ export class ValidationDataFacade {
     return result;
   }
 
-  createXRayDatasetRows(experimentalDetail: ExperimentDetail, xrayInfo: XRayRefine) {
+  createXRayDatasetRows(experimentalDetail: ExperimentDetail, xrayInfo: XRayRefine | undefined) {
     const datasetRows: ValidationXRayRow[] = [];
     if (experimentalDetail.cell) {
       datasetRows.push({
@@ -214,43 +217,45 @@ export class ValidationDataFacade {
         source: 'Depositor',
       });
     }
-    if (xrayInfo.numMillerIndices.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.numMillerIndices.value !== null) {
       datasetRows.push({
         metric: 'Number of reflections',
         value: [`${xrayInfo.numMillerIndices.value!}`],
         source: xrayInfo.numMillerIndices.source,
       });
     }
-    const percFree = xrayInfo['percent-free-reflections'].value || 0;
-    if (percFree > 0) {
-      datasetRows.push({
-        metric: 'Test set size',
-        value: [`${percFree}%`],
-        source: xrayInfo['percent-free-reflections'].source,
-      });
+    if (xrayInfo !== undefined) {
+      const percFree = xrayInfo['percent-free-reflections'].value || 0;
+      if (percFree > 0) {
+        datasetRows.push({
+          metric: 'Test set size',
+          value: [`${percFree}%`],
+          source: xrayInfo['percent-free-reflections'].source,
+        });
+      }
     }
-    if (xrayInfo.DataCompleteness.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.DataCompleteness.value !== null) {
       datasetRows.push({
         metric: 'Data completeness',
         value: [`${xrayInfo.DataCompleteness.value!}%`],
         source: xrayInfo.DataCompleteness.source,
       });
     }
-    if (xrayInfo.EDS_resolution.value !== null && xrayInfo.EDS_resolution_low.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.EDS_resolution.value !== null && xrayInfo.EDS_resolution_low.value !== null) {
       datasetRows.push({
         metric: 'EDS resolution',
         value: [`${xrayInfo.EDS_resolution.value!}`, `${xrayInfo.EDS_resolution_low.value!}`],
         source: xrayInfo.EDS_resolution.source,
       });
     }
-    if (xrayInfo.IoverSigma) {
+    if (xrayInfo !== undefined && xrayInfo.IoverSigma) {
       datasetRows.push({
         metric: '<I/σ(I)>',
         value: [`${xrayInfo.IoverSigma.value!.split('(')[0]}`],
         source: xrayInfo.IoverSigma.source,
       });
     }
-    if (xrayInfo.TwinL && xrayInfo.TwinL2 && xrayInfo.TwinL.value !== null && xrayInfo.TwinL2.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.TwinL && xrayInfo.TwinL2 && xrayInfo.TwinL.value !== null && xrayInfo.TwinL2.value !== null) {
       datasetRows.push({
         metric: 'Twinning statistics',
         value: [`${xrayInfo.TwinL.value!}`, `${xrayInfo.TwinL2.value!}`],
@@ -264,14 +269,14 @@ export class ValidationDataFacade {
         source: 'Depositor',
       });
     }
-    if (xrayInfo.TransNCS.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.TransNCS.value !== null) {
       datasetRows.push({
         metric: 'Possible (pseudo-) translation',
         value: [`${xrayInfo.TransNCS.value!}`],
         source: xrayInfo.TransNCS.source,
       });
     }
-    if (xrayInfo.WilsonBestimate.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.WilsonBestimate.value !== null) {
       datasetRows.push({
         metric: 'Wilson B',
         value: [`${xrayInfo.WilsonBestimate.value!}`],
@@ -281,7 +286,7 @@ export class ValidationDataFacade {
     return datasetRows;
   }
 
-  createXRayRefinementRows(experimentalDetail: ExperimentDetail, xrayInfo: XRayRefine) {
+  createXRayRefinementRows(experimentalDetail: ExperimentDetail, xrayInfo: XRayRefine | undefined) {
     const refinementRows: ValidationXRayRow[] = [];
     if (experimentalDetail.refinement_software) {
       refinementRows.push({
@@ -290,42 +295,42 @@ export class ValidationDataFacade {
         source: 'Depositor',
       });
     }
-    if (xrayInfo.bulk_solvent_b && xrayInfo.bulk_solvent_b.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.bulk_solvent_b && xrayInfo.bulk_solvent_b.value !== null) {
       refinementRows.push({
         metric: 'Bulk solvent B',
         value: [`${xrayInfo.bulk_solvent_b.value!}`],
         source: xrayInfo.bulk_solvent_b.source,
       });
     }
-    if (xrayInfo.bulk_solvent_k && xrayInfo.bulk_solvent_k.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.bulk_solvent_k && xrayInfo.bulk_solvent_k.value !== null) {
       refinementRows.push({
         metric: 'Bulk solvent k',
         value: [`${xrayInfo.bulk_solvent_k.value!}`],
         source: xrayInfo.bulk_solvent_k.source,
       });
     }
-    if (xrayInfo.Fo_Fc_correlation && xrayInfo.Fo_Fc_correlation.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.Fo_Fc_correlation && xrayInfo.Fo_Fc_correlation.value !== null) {
       refinementRows.push({
         metric: 'Fo-Fc correlation',
         value: [`${xrayInfo.Fo_Fc_correlation.value!}`],
         source: xrayInfo.Fo_Fc_correlation.source,
       });
     }
-    if (xrayInfo.DCC_R && xrayInfo.DCC_R.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.DCC_R && xrayInfo.DCC_R.value !== null) {
       refinementRows.push({
         metric: 'R value (DCC)',
         value: [`${xrayInfo.DCC_R.value!}`],
         source: xrayInfo.DCC_R.source,
       });
     }
-    if (xrayInfo.DCC_Rfree && xrayInfo.DCC_Rfree.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.DCC_Rfree && xrayInfo.DCC_Rfree.value !== null) {
       refinementRows.push({
         metric: 'R free (DCC)',
         value: [`${xrayInfo.DCC_Rfree.value!}`],
         source: xrayInfo.DCC_Rfree.source,
       });
     }
-    if (xrayInfo.EDS_R && xrayInfo.EDS_R.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.EDS_R && xrayInfo.EDS_R.value !== null) {
       refinementRows.push({
         metric: 'R value (EDS)',
         value: [`${xrayInfo.EDS_R.value!}`],
@@ -335,7 +340,7 @@ export class ValidationDataFacade {
     return refinementRows;
   }
 
-  generateXRayTablesData(experimentalDetail: ExperimentDetail, xrayInfo: XRayRefine) {
+  generateXRayTablesData(experimentalDetail: ExperimentDetail, xrayInfo: XRayRefine | undefined) {
     const datasetRows: ValidationXRayRow[] = this.createXRayDatasetRows(experimentalDetail, xrayInfo);
     const refinementRows: ValidationXRayRow[] = this.createXRayRefinementRows(experimentalDetail, xrayInfo);
 

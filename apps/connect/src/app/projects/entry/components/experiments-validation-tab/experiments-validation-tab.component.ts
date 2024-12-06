@@ -27,13 +27,13 @@ export class ExperimentsValidationTabComponent implements OnInit {
   public readonly releaseDate = input.required<string>();
   public readonly revisionDate = input.required<string>();
   public readonly experimentalDetails = input.required<ExperimentDetail[]>();
-  public readonly keyValidationStats = input.required<KeyValidationStats>();
+  public readonly keyValidationStats = input.required<KeyValidationStats | undefined>();
   public readonly dataFacade = inject(ValidationDataFacade);
   public readonly tableFacade = inject(ValidationTablesFacade);
 
   public validationKeys?: Array<keyof KeyValidationStats>;
 
-  public readonly xRayRefine = input.required<XRayRefine>();
+  public readonly xRayRefine = input.required<XRayRefine | undefined>();
 
   public hasExperimentalInfo = ['X-ray diffraction', 'Solution NMR', 'Electron Microscopy'];
 

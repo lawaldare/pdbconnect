@@ -156,8 +156,8 @@
       <div class="validation-list">
         @for (validationKey of validationKeys; track validationKey; let i = $index) {
         <article>
-          {{ i + 1 }}. {{ dataFacade.validationKeysToText[validationKey] }} – {{ this.keyValidationStats()[validationKey]['num_outliers'] }} outlier(s) of
-          {{ this.keyValidationStats()[validationKey]['num_checked'] }} ({{ this.keyValidationStats()[validationKey]['percent_outliers'] }} %)
+          {{ i + 1 }}. {{ dataFacade.validationKeysToText[validationKey] }} – {{ keyValidationStats()![validationKey]['num_outliers'] }} outlier(s) of
+          {{ keyValidationStats()![validationKey]['num_checked'] }} ({{ keyValidationStats()![validationKey]['percent_outliers'] }} %)
         </article>
         }
       </div>

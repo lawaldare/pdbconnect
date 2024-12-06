@@ -81,12 +81,12 @@
         <!-- inside entry/components/experiments-validation-tab -->
         <pdbc-experiments-validation-tab
           [entryId]="entryId()"
-          [depositionDate]="pageData.summary.depositionDate"
-          [releaseDate]="pageData.summary.releaseDate"
-          [revisionDate]="pageData.summary.revisionDate"
-          [experimentalDetails]="pageData.experiment.details"
-          [keyValidationStats]="pageData.keyValidationStats"
-          [xRayRefine]="pageData.xRayRefine"
+          [depositionDate]="summaryData.depositionDate"
+          [releaseDate]="summaryData.releaseDate"
+          [revisionDate]="summaryData.revisionDate"
+          [experimentalDetails]="experimentalDetails"
+          [keyValidationStats]="validationKeyStats"
+          [xRayRefine]="validationXRayRefine"
         ></pdbc-experiments-validation-tab>
         } @if(tabName.name === 'Citations') {
         <!-- inside entry/components/citations-tab -->
