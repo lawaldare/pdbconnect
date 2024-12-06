@@ -18,6 +18,7 @@ import { CarbohydrateMolecule } from '../data-models/carbohydrate-polymer.model'
 import { Molecule } from '../data-models/molecule.model';
 import { EntrySummary, ProcessedSummary } from '../data-models/summary.model';
 import { UniProtMapping } from '../data-models/uniprot-mapping.model';
+import { ProcessedQualityScores, SummaryQualityScores } from '../data-models/summary-quality-scores.model';
 
 @Injectable({
   providedIn: 'root',
@@ -163,13 +164,17 @@ export class EntryApiService {
   }
 
   // Record<string, BestStructure[]>
-  public getSummaryQualityScores(entryId: string): Observable<any> {
-    return this.http.get<any>(`${this.VALIDATION_API}summary_quality_scores/entry/${entryId}`).pipe(
+  public getSummaryQualityScores(entryId: string): Observable<ProcessedQualityScores> {
+    return this.http.get<Record<string, SummaryQualityScores>>(`${this.VALIDATION_API}summary_quality_scores/entry/${entryId}`).pipe(
       map((data) => {
         const datum = data[entryId];
+
+        const geometryQuality = datum.geometry_quality ? Math.min(Math.floor(datum.geometry_quality / 20), 4) : undefined;
+        const modelFit = datum.data_quality ? Math.min(Math.floor(datum.data_quality / 20), 4) : undefined;
+
         return {
-          geometry: Math.min(Math.floor(datum.geometry_quality / 20), 4),
-          modelfit: Math.min(Math.floor(datum.data_quality / 20), 4),
+          geometry: geometryQuality,
+          modelfit: modelFit,
         };
       })
     );

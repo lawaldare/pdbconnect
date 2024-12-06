@@ -35,6 +35,7 @@ import { AssemblyData } from '../../data-models/assembly.model';
 import { PisaAssembly } from '../../data-models/pisa-assembly.model';
 import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
 import { ProcessedSummary } from '../../data-models/summary.model';
+import { ProcessedQualityScores } from '../../data-models/summary-quality-scores.model';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 /**
@@ -122,7 +123,7 @@ export class EntryMainPageComponent implements OnInit {
   public pfamMapping!: PfamMappings;
 
   // getSummaryQualityScores
-  public summaryQualityScores!: any;
+  public summaryQualityScores!: ProcessedQualityScores | Record<string, never>;
 
   // getCATHMapping
   public cathMapping!: CathMappings;
