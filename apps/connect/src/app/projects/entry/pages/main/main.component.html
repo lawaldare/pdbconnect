@@ -41,14 +41,14 @@
         <!-- inside entry/components/overview-molstar -->
         <pdbc-overview-molstar
           [entryId]="this.entryId()"
-          [complexDetails]="pageData.complexDetails"
-          [macromolecules]="pageData.molecules.macroMolecules"
-          [ligands]="pageData.molecules.boundLigands"
-          [inputModifications]="pageData.modifications"
-          [residueListing]="pageData.residueListing"
-          [pfamMappings]="pageData.pfamMapping"
-          [cathMappings]="pageData.cathMapping"
-          [scopMappings]="pageData.scopMapping"
+          [complexDetails]="complexDetails"
+          [macromolecules]="macroMolecules"
+          [ligands]="boundLigands"
+          [inputModifications]="modifications"
+          [residueListing]="residueListing"
+          [pfamMappings]="pfamMapping"
+          [cathMappings]="cathMapping"
+          [scopMappings]="scop175Mapping"
         ></pdbc-overview-molstar>
         }
       </section>
@@ -66,8 +66,6 @@
         }
         <div class="grow-width"></div>
       </nav>
-      <!-- TODO: Add common CSS for table tabs here -->
-      <!-- TODO: Check CSS of Macromolecule and Ligands tables to match design -->
       <!-- Tabs, each with related components -->
       <section class="tab-content">
         @for (tabName of allTabs; track tabName) { @if(currentTab() === tabName.name) { @if(tableTabs.indexOf(tabName.name) > -1) {
