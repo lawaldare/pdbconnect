@@ -1,4 +1,4 @@
-@if(summaryData().subcomplexes.length || summaryData().supercomplexes.length){
+@if(subLength() || superLength()){
 <div id="interaction-section">
   <h3>Macromolecular Interactions</h3>
   <p>This section displays the <strong>unique</strong> subcomplexes and/or supercomplexes of the macromolecular complex of interest</p>
@@ -7,7 +7,7 @@
     complex containing all the components of another complex and additional members.
   </lib-tool-tip>
 
-  @if(summaryData().subcomplexes.length){
+  @if(subLength()){
   <section class="subcomplexes">
     <h4>Subcomplexes</h4>
     <div class="card-container">
@@ -26,7 +26,7 @@
     >
     </mat-paginator>
   </section>
-  } @if(summaryData().supercomplexes.length){
+  } @if(superLength()){
   <section class="supercomplexes">
     <h4>Supercomplexes</h4>
     <div class="card-container">

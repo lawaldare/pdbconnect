@@ -190,7 +190,7 @@ export class RelatedLigandsComponent implements OnInit {
 
     this.sameScaffoldTerm.valueChanges
       .pipe(
-        map((searchQuery) => {
+        map((searchQuery: string | null) => {
           if (searchQuery) {
             return this.filterItemsBySearchQuery(searchQuery, this.unfilteredSameScaffoldGrid);
           } else {
@@ -199,14 +199,14 @@ export class RelatedLigandsComponent implements OnInit {
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((data) => {
+      .subscribe((data: any) => {
         this.sameScaffoldGrid = data;
         this.setUpPagination('samescaffold');
       });
 
     this.sameLigandsTerm.valueChanges
       .pipe(
-        map((searchQuery) => {
+        map((searchQuery: string | null) => {
           if (searchQuery) {
             return this.filterItemsBySearchQuery(searchQuery, this.unfilteredSimilarLigandsGrid);
           } else {
@@ -215,14 +215,14 @@ export class RelatedLigandsComponent implements OnInit {
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((data) => {
+      .subscribe((data: any) => {
         this.similarLigandsGrid = data;
         this.setUpPagination('similarligand');
       });
 
     this.stereoisomerTerm.valueChanges
       .pipe(
-        map((searchQuery) => {
+        map((searchQuery: string | null) => {
           if (searchQuery) {
             return this.filterItemsBySearchQuery(searchQuery, this.unfilteredStereoisomers);
           } else {
@@ -231,7 +231,7 @@ export class RelatedLigandsComponent implements OnInit {
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((data) => {
+      .subscribe((data: any) => {
         this.stereoisomersGrid = data;
         this.setUpPagination('stereoisomers');
       });

@@ -6,7 +6,11 @@ import { Symmetry } from '../models/complex-structure.model';
   standalone: true,
 })
 export class ComplexSymmetryPipe implements PipeTransform {
-  transform(value: Symmetry): string {
+  transform(value: Symmetry | undefined): string {
+    if (value === undefined) {
+      return '---';
+    }
+
     return `${value.type} (${value.symbol})`;
   }
 }

@@ -4,13 +4,13 @@ import { ComplexAPIService } from '../../../services/complex-api.service';
 import { ComplexData } from '../../../models/complex-structure.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
-import { ParticipantDirective } from '../../../directives/participants.directive';
 import { MaterialModule, UtilService } from '@pdbc/core';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
   selector: 'pdbc-complex-card',
   standalone: true,
-  imports: [CommonModule, RouterModule, ParticipantDirective, MaterialModule],
+  imports: [CommonModule, RouterModule, NgxSkeletonLoaderModule, MaterialModule],
   templateUrl: './complex-card.component.html',
   styleUrl: './complex-card.component.scss',
 })
