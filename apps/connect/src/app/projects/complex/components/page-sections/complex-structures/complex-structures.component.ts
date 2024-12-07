@@ -39,10 +39,10 @@ export class ComplexStructuresComponent implements OnInit {
       headerName: 'Title',
       field: 'title',
       cellRenderer: TitleRendererComponent,
-      width: 250,
+      width: 200,
     },
     { headerName: 'Exp. method', field: 'experimental_method', width: 170 },
-    { headerName: 'Res. (Å)', field: 'resolution', width: 100 },
+    { headerName: 'Res. (Å)', field: 'resolution', width: 120 },
   ];
 
   public rowData = computed(() => this.summaryData()?.assemblies as Assembly[]);
@@ -62,10 +62,10 @@ export class ComplexStructuresComponent implements OnInit {
   };
   public selectionColumnDef = {
     sortable: true,
-    width: 50,
-    maxWidth: 50,
+    width: 80,
+    maxWidth: 80,
     suppressHeaderMenuButton: false,
-    headerTooltip: 'Checkboxes indicate selection',
+    headerName: 'Show',
   };
 
   ngOnInit(): void {

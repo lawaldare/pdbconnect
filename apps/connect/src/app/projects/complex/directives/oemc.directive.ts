@@ -29,9 +29,13 @@ export class OEMCDirective implements OnChanges {
       const anchor = this.renderer.createElement('a');
       anchor.href = this.util.generateQueryURLForExperimentalMethod(this.complexId(), key);
       anchor.target = '_blank';
-      const text = this.renderer.createText(`${key} (${value})`);
-      this.renderer.appendChild(anchor, text);
+      const firstText = this.renderer.createText(`${key} (`);
+      this.renderer.appendChild(li, firstText);
+      const anchorText = this.renderer.createText(`${value} `);
+      this.renderer.appendChild(anchor, anchorText);
       this.renderer.appendChild(li, anchor);
+      const lastText = this.renderer.createText(`PDB entries)`);
+      this.renderer.appendChild(li, lastText);
       this.renderer.appendChild(orderedList, li);
     }
 
