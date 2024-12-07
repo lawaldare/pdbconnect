@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
-import { Observable, map } from 'rxjs';
+import { Observable, delay, map } from 'rxjs';
 import { ComplexData } from '../models/complex-structure.model';
 
 @Injectable({
@@ -28,6 +28,6 @@ export class ComplexAPIService {
   }
 
   public getPublications(pdbIds: string): Observable<any> {
-    return this.http.post<any>(`${this.AggregatedApiUrl}pdb/entry/publications`, pdbIds);
+    return this.http.post<any>(`${this.AggregatedApiUrl}pdb/entry/publications`, pdbIds).pipe(delay(5000));
   }
 }

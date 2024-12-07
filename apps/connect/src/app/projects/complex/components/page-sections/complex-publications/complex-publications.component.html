@@ -43,4 +43,6 @@
   </section>
 </div>
 
-}
+} @else { @for(row of [1,2,3,4,5]; track row){
+<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '250px', }"></ngx-skeleton-loader>
+} }

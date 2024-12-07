@@ -10,6 +10,8 @@ import { provideEffects } from '@ngrx/effects';
 import { ligandReducer } from './projects/ligands/store/ligand.reducer';
 import { LigandEffects } from './projects/ligands/store/ligand.effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
+import { ComplexEffects } from './projects/complex/store/complex.effects';
+import { complexReducer } from './projects/complex/store/complex.reducer';
 
 export function initializeApp(baseHrefService: BaseHrefService) {
   return () => baseHrefService.setBaseHref();
@@ -21,8 +23,8 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideAnimations(),
     provideAnimationsAsync(),
-    provideEffects([LigandEffects]),
-    provideStore({ ligand: ligandReducer }),
+    provideEffects([LigandEffects, ComplexEffects]),
+    provideStore({ ligand: ligandReducer, complex: complexReducer }),
     provideStoreDevtools({
       maxAge: 25, // Retains last 25 states
       logOnly: !isDevMode(), // Restrict extension to log-only mode

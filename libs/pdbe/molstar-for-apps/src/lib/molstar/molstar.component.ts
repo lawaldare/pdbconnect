@@ -27,6 +27,11 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
     const container = this.viewContainer.nativeElement;
 
     this.molstarViewInstance.render(container, this.molstarConfig());
+    this.molstarViewInstance.events.loadComplete.subscribe((loaded: boolean) => {
+      if (loaded) {
+        // this.molstarViewInstance.plugin.managers.camera.orientAxes();
+      }
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {

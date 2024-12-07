@@ -4,11 +4,11 @@
 <main>
   <div class="container">
     <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" />
-    @if(summaryData){
+    @if(loaded() === status.SUCCESS){
     <article>
       <section class="hero">
-        @if(summaryData.name){
-        <h2 libTruncateText [truncateText]="summaryData.name" [limit]="30"></h2>
+        @if(summaryData()?.name){
+        <h2 libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="30"></h2>
         } @else {
         {{ complexId() }}
         } @if(complexId()){
@@ -16,21 +16,27 @@
         }
       </section>
       <section class="summary">
-        <pdbc-summary [summaryData]="summaryData" />
+        <pdbc-summary />
       </section>
       <section class="structures">
-        <pdbc-complex-structures [assemblies]="summaryData.assemblies" />
+        <pdbc-complex-structures />
       </section>
       <section class="ligands">
         <pdbc-complex-ligands />
       </section>
       <section class="interactions">
-        <pdbc-complex-interactions [summaryData]="summaryData" />
+        <pdbc-complex-interactions />
       </section>
       <section class="publication">
-        <pdbc-complex-publications [assemblies]="summaryData.assemblies" />
+        <pdbc-complex-publications />
       </section>
     </article>
+    } @else if(loaded() === status.LOADING) {
+    <div class="loader">
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '50px', width: '450px' }"></ngx-skeleton-loader>
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '50px', width: '100px' }"></ngx-skeleton-loader>
+      <ngx-skeleton-loader count="4" [theme]="{ 'border-radius': '0', height: '450px' }"></ngx-skeleton-loader>
+    </div>
     }
   </div>
 </main>

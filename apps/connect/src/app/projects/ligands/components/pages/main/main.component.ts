@@ -76,7 +76,7 @@ export class LigandsMainPageComponent implements OnInit {
 
   public ligandId = signal<string>('');
 
-  public status = LoadingState;
+  public readonly status = LoadingState;
 
   private fragments = toSignal(this.globalStore.select(LigandSelectors.fragments));
 
