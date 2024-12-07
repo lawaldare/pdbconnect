@@ -62,17 +62,4 @@ export class ComplexLigandsComponent implements OnInit {
     const endIndex = startIndex + event.pageSize;
     this.ligandsPage.update(() => (this.ligands() ?? []).slice(startIndex, endIndex));
   }
-
-  private sortWithAnnotationsFirst(data: ComplexLigand[]) {
-    return data.sort((a, b) => {
-      const aHasAnnotations = a.annotations && a.annotations.length > 0;
-      const bHasAnnotations = b.annotations && b.annotations.length > 0;
-
-      if (aHasAnnotations && !bHasAnnotations) return -1;
-
-      if (!aHasAnnotations && bHasAnnotations) return 1;
-
-      return 0;
-    });
-  }
 }

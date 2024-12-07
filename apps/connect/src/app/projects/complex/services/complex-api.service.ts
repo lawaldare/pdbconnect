@@ -28,6 +28,6 @@ export class ComplexAPIService {
   }
 
   public getPublications(pdbIds: string): Observable<any> {
-    return this.http.post<any>(`${this.AggregatedApiUrl}pdb/entry/publications`, pdbIds);
+    return this.http.post<any>(`${this.AggregatedApiUrl}pdb/entry/publications`, pdbIds).pipe(delay(5000));
   }
 }
