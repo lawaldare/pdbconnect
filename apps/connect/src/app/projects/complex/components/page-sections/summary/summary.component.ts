@@ -9,7 +9,7 @@ import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ComplexSelectors } from '../../../store/complex.selectors';
-import { map, tap } from 'rxjs';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'pdbc-summary',
@@ -28,8 +28,7 @@ export class SummaryComponent {
           ...data,
           unique_observed_experimental_methods_with_counts: this.countPdbIdExperimentalMethod(data.assemblies),
         };
-      }),
-      tap((data) => console.log('complexData:', data))
+      })
     )
   );
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';

@@ -25,7 +25,7 @@ export class ComplexPublicationsComponent implements OnInit {
 
   public publicationsPageSize = signal<number>(5);
   public publicationsLength = computed(() => this.complexPublications().length);
-  public publicationsPage: Publication[] = [];
+  public publicationsPage: Publication[] | null = null;
   public pageSizeOptions = computed(() => [5, 10, 15, this.publicationsLength()]);
 
   ngOnInit(): void {
@@ -46,7 +46,7 @@ export class ComplexPublicationsComponent implements OnInit {
     });
   }
 
-  private fetchPublications(pdbIds: string): Observable<Publication[]> {
+  private fetchPublications(pdbIds: string): Observable<Publication[] | null> {
     return this.complexAPIService.getPublications(pdbIds).pipe(
       map((publications: Record<string, Publication[]>) => {
         const mappedPublications = Object.values(publications).reduce((acc: Publication[], publication) => {
