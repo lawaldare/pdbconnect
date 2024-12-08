@@ -7,7 +7,7 @@ import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold, StereoIsomer } 
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { forkJoin, mergeMap, map, combineLatest, startWith, filter } from 'rxjs';
+import { forkJoin, mergeMap, map, combineLatest, startWith, filter, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LigandUtilService } from '../../../ligand-util.service';
@@ -120,69 +120,57 @@ export class RelatedLigandsComponent implements OnInit {
           this.sameScaffolds.update(() => relatedLigand['same_scaffold'] || []);
           this.stereoisomers.update(() => relatedLigand['stereoisomers'] || []);
 
-          const validIdsArray = [];
+          const createLigandIdsString = (ligands: any) => ligands.map((ligand: any) => ligand.chem_comp_id).join(',');
 
-          const similarLigandsIds =
-            this.similarLigands()
-              .map((ligand) => ligand.chem_comp_id)
-              .join(',') ?? '';
+          const similarLigandsIds = createLigandIdsString(this.similarLigands());
+          const sameScaffoldIds = createLigandIdsString(this.sameScaffolds());
+          const stereoisomersIds = createLigandIdsString(this.stereoisomers());
 
-          const sameScaffoldIds =
-            this.sameScaffolds()
-              .map((ligand) => ligand.chem_comp_id)
-              .join(',') ?? '';
+          const fetchRequests = [
+            similarLigandsIds ? this.aggregatedApiService.fetchBoundEntries(similarLigandsIds) : of(null),
+            sameScaffoldIds ? this.aggregatedApiService.fetchBoundEntries(sameScaffoldIds) : of(null),
+            stereoisomersIds ? this.aggregatedApiService.fetchBoundEntries(stereoisomersIds) : of(null),
+          ];
 
-          const stereoisomersIds =
-            this.stereoisomers()
-              .map((ligand) => ligand.chem_comp_id)
-              .join(',') ?? '';
-
-          if (similarLigandsIds) {
-            validIdsArray.push(this.aggregatedApiService.fetchBoundEntries(similarLigandsIds));
-          }
-
-          if (sameScaffoldIds) {
-            validIdsArray.push(this.aggregatedApiService.fetchBoundEntries(sameScaffoldIds));
-          }
-
-          if (stereoisomersIds) {
-            validIdsArray.push(this.aggregatedApiService.fetchBoundEntries(stereoisomersIds));
-          }
-
-          return forkJoin(validIdsArray);
+          return forkJoin(fetchRequests);
         }),
-        map(([similarLigandBoundEntriesArray, sameScaffoldBoundEntriesArray, stereoisomersBoundEntriesArray]) => {
-          this.unfilteredSimilarLigandsGrid = this.similarLigands().map((similarLigand) => ({
-            chem_comp_id: similarLigand.chem_comp_id,
-            name: similarLigand.name,
-            similarity_score: similarLigand.similarity_score,
-            substructure_match: similarLigand.substructure_match,
-            bound_entries: similarLigandBoundEntriesArray?.[similarLigand.chem_comp_id],
-          }));
-          this.similarLigandsGrid = this.unfilteredSimilarLigandsGrid;
-          this.setUpPagination('similarligand');
+        map(([similarLigandBoundEntries, sameScaffoldBoundEntries, stereoisomersBoundEntries]) => {
+          if (similarLigandBoundEntries) {
+            this.unfilteredSimilarLigandsGrid = this.similarLigands().map((similarLigand) => ({
+              chem_comp_id: similarLigand.chem_comp_id,
+              name: similarLigand.name,
+              similarity_score: similarLigand.similarity_score,
+              substructure_match: similarLigand.substructure_match,
+              bound_entries: similarLigandBoundEntries?.[similarLigand.chem_comp_id],
+            }));
+            this.similarLigandsGrid = this.unfilteredSimilarLigandsGrid;
+            this.setUpPagination('similarligand');
+          }
 
-          this.unfilteredSameScaffoldGrid = this.sameScaffolds().map((sameScaffolds) => ({
-            chem_comp_id: sameScaffolds.chem_comp_id,
-            name: sameScaffolds.name,
-            similarity_score: sameScaffolds.similarity_score,
-            substructure_match: sameScaffolds.substructure_match,
-            bound_entries: sameScaffoldBoundEntriesArray?.[sameScaffolds.chem_comp_id],
-          }));
-          this.sameScaffoldGrid = this.unfilteredSameScaffoldGrid;
-          this.setUpPagination('samescaffold');
+          if (sameScaffoldBoundEntries) {
+            this.unfilteredSameScaffoldGrid = this.sameScaffolds().map((sameScaffolds) => ({
+              chem_comp_id: sameScaffolds.chem_comp_id,
+              name: sameScaffolds.name,
+              similarity_score: sameScaffolds.similarity_score,
+              substructure_match: sameScaffolds.substructure_match,
+              bound_entries: sameScaffoldBoundEntries?.[sameScaffolds.chem_comp_id],
+            }));
+            this.sameScaffoldGrid = this.unfilteredSameScaffoldGrid;
+            this.setUpPagination('samescaffold');
+          }
 
-          this.unfilteredStereoisomers = this.stereoisomers().map((stereoisomer) => ({
-            chem_comp_id: stereoisomer.chem_comp_id,
-            name: stereoisomer.name,
-            bound_entries: stereoisomersBoundEntriesArray?.[stereoisomer.chem_comp_id],
-          }));
-          this.stereoisomersGrid = this.unfilteredStereoisomers;
-          this.sameScaffoldPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
-          this.similarLigandPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
-          this.stereoisomersPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
-
-          this.setUpPagination('stereoisomers');
+          if (stereoisomersBoundEntries) {
+            this.unfilteredStereoisomers = this.stereoisomers().map((stereoisomer) => ({
+              chem_comp_id: stereoisomer.chem_comp_id,
+              name: stereoisomer.name,
+              bound_entries: stereoisomersBoundEntries?.[stereoisomer.chem_comp_id],
+            }));
+            this.stereoisomersGrid = this.unfilteredStereoisomers;
+            this.sameScaffoldPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
+            this.similarLigandPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
+            this.stereoisomersPageSizeOptions.update((options) => [...options, 5, 10, 15, 20]);
+            this.setUpPagination('stereoisomers');
+          }
         }),
         takeUntilDestroyed(this.destroyRef)
       )
