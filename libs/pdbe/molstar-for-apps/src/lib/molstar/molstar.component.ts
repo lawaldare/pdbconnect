@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, ElementRef, input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 declare let PDBeMolstarPlugin: any;
