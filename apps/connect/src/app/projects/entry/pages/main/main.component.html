@@ -6,7 +6,7 @@
     <header>
       <section class="title-info">
         <h1 class="heading-1">{{ entryId() }}</h1>
-        @if (pageData$ | async; as pageData) {
+        @if (componentLoadedStatus()['titleInfo']) {
         <span>{{ experimentalMethod }}</span>
         @if (resolutionValues.length > 0) { @for (resolutionValue of resolutionValues; track resolutionValue;) { @if (resolutionValue !== undefined) {
         <span>{{ resolutionValue! }}Å</span>
@@ -30,7 +30,7 @@
     <!-- Contains components of the page top: general information and the 3d explorer -->
     <section class="top-info">
       <section class="summary">
-        @if (pageData$ | async; as pageData) {
+        @if (componentLoadedStatus()['mainInfoArea']) {
         <!-- inside entry/components/main-information-area -->
         <pdbc-main-information-area
           [summary]="summaryData"
@@ -41,7 +41,7 @@
         }
       </section>
       <section class="explore-3d-tabs">
-        @if (pageData$ | async; as pageData) {
+        @if (componentLoadedStatus()['overviewMolstar']) {
         <!-- inside entry/components/overview-molstar -->
         <pdbc-overview-molstar
           [entryId]="this.entryId()"
@@ -58,7 +58,6 @@
       </section>
     </section>
     <!--  -->
-    @if (pageData$ | async; as pageData) {
     <section id="detail-tabs" class="details-tabs">
       <!-- Navigation controls between tabs -->
       <nav>
@@ -75,6 +74,7 @@
         @for (tabName of allTabs; track tabName) { @if(currentTab() === tabName.name) { @if(tableTabs.indexOf(tabName.name) > -1) {
         <section class="left-side">
           <!-- inside entry/components/interactive-tables -->
+          @if (componentLoadedStatus()['interactiveTables']) {
           <pdbc-interactive-tables
             [tabName]="getTableName(tabName.name)"
             [complexDetails]="complexDetails"
@@ -91,13 +91,17 @@
             [uniprotMapping]="uniprotMapping"
             [bestStrMapUniProtId]="bestStructuresMappingsByUniProtIds"
           ></pdbc-interactive-tables>
+          }
         </section>
         <section class="right-side">
           <!-- inside entry/components/details-dashboard -->
+          @if (componentLoadedStatus()['detailsDashboard']) {
           <pdbc-details-dashboard [entryId]="entryId()" [tabName]="getTableName(tabName.name)" [macromolecules]="macroMolecules"></pdbc-details-dashboard>
+          }
         </section>
         } @if(tabName.name === 'Experiments') {
         <!-- inside entry/components/experiments-validation-tab -->
+        @if (componentLoadedStatus()['experimentsValidationTab']) {
         <pdbc-experiments-validation-tab
           [entryId]="entryId()"
           [depositionDate]="summaryData.depositionDate"
@@ -107,12 +111,12 @@
           [keyValidationStats]="validationKeyStats"
           [xRayRefine]="validationXRayRefine"
         ></pdbc-experiments-validation-tab>
-        } @if(tabName.name === 'Citations') {
+        } } @if(tabName.name === 'Citations') {
         <!-- inside entry/components/citations-tab -->
+        @if (componentLoadedStatus()['citationsTab']) {
         <pdbc-citations-tab [entryId]="entryId()" [primaryPublication]="primaryPublication" [articlesCiting]="articlesCiting"></pdbc-citations-tab>
-        } } }
+        } } } }
       </section>
     </section>
-    }
   </main>
 </section>

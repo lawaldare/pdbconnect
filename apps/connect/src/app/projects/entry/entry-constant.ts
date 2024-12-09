@@ -57,3 +57,60 @@ export const allTabs = [
   },
 ];
 export const tableTabs = ['Assemblies', 'Macromolecules', 'Ligands', 'Domains'];
+
+export type ApiDataItem =
+  | 'summaryData'
+  | 'macroMolecules'
+  | 'boundLigands'
+  | 'organismScientificNames'
+  | 'experimentalDetails'
+  | 'experimentalMethod'
+  | 'resolutionValues'
+  | 'uniprotMapping'
+  | 'uniprotCountsInPDBe'
+  | 'bestStructuresMappingsByUniProtIds'
+  | 'interproMapping'
+  | 'downloadOptions'
+  | 'viewOptions'
+  | 'pfamMapping'
+  | 'summaryQualityScores'
+  | 'cathMapping'
+  | 'scop175Mapping'
+  | 'modifications'
+  | 'residueListing'
+  | 'validationKeyStats'
+  | 'validationXRayRefine'
+  | 'primaryPublication'
+  | 'articlesCiting'
+  | 'complexDetails'
+  | 'assemblies'
+  | 'pisaAssemblies'
+  | 'carbohydrates';
+
+export const COMPONENT_DEPENDENCIES: Record<string, ApiDataItem[]> = {
+  titleInfo: ['experimentalMethod', 'resolutionValues', 'summaryData'],
+  mainInfoArea: ['summaryData', 'organismScientificNames', 'primaryPublication', 'summaryQualityScores'],
+  overviewMolstar: ['complexDetails', 'macroMolecules', 'boundLigands', 'modifications', 'residueListing', 'pfamMapping', 'cathMapping', 'scop175Mapping'],
+  interactiveTables: [
+    'complexDetails',
+    'assemblies',
+    'pisaAssemblies',
+    'pfamMapping',
+    'cathMapping',
+    'scop175Mapping',
+    'macroMolecules',
+    'residueListing',
+    'boundLigands',
+    'modifications',
+    'carbohydrates',
+    'uniprotMapping',
+    'bestStructuresMappingsByUniProtIds',
+  ],
+  detailsDashboard: ['macroMolecules'],
+  experimentsValidationTab: ['summaryData', 'experimentalDetails', 'validationKeyStats', 'validationXRayRefine'],
+  citationsTab: ['primaryPublication', 'articlesCiting'],
+};
+
+export const INITIAL_API_STATUS = Object.fromEntries(
+  (Object.keys(COMPONENT_DEPENDENCIES).flatMap((key) => COMPONENT_DEPENDENCIES[key]) as ApiDataItem[]).map((item) => [item, 'pending'])
+) as Record<ApiDataItem, 'pending' | 'done'>;

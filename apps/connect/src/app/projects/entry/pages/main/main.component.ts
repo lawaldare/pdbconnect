@@ -1,4 +1,4 @@
-import { Component, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
@@ -21,7 +21,7 @@ import { InteractiveTablesComponent } from '../../components/interactive-tables/
 import { DetailsDashboardComponent } from '../../components/details-dashboard/details-dashboard.component';
 import { ExperimentsValidationTabComponent } from '../../components/experiments-validation-tab/experiments-validation-tab.component';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
-import { pdbeLogoConfig, pdbeSearchConfig, allTabs, tableTabs } from '../../entry-constant';
+import { pdbeLogoConfig, pdbeSearchConfig, allTabs, tableTabs, COMPONENT_DEPENDENCIES, INITIAL_API_STATUS } from '../../entry-constant';
 import { Molecule } from '../../data-models/molecule.model';
 import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../../data-models/domains.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
@@ -88,8 +88,20 @@ export class EntryMainPageComponent implements OnInit {
 
   public pageData$!: Observable<any>;
 
-  // TODO: pageData becomes apiStatus with string for to-load loaded-none, loading, loaded-exists
-  // TODO: modify child components to get data properly from here
+  public apiLoadedStatus = signal(INITIAL_API_STATUS);
+
+  public componentLoadedStatus = computed(() => {
+    const apiStatus = this.apiLoadedStatus();
+    const status: Record<string, boolean> = {};
+
+    Object.entries(COMPONENT_DEPENDENCIES).forEach(([component, dependencies]) => {
+      status[component] = dependencies.every((dep) => apiStatus[dep] === 'done');
+    });
+
+    return status;
+  });
+
+  // TODO: Take into account componentLoadedStatus when tabSwitch is triggered
   // TODO: move CSS of child components so their width/height is relative to CSS in this component
   // TODO: refactor header and search for PDBe Entry pgs
 
@@ -196,6 +208,10 @@ export class EntryMainPageComponent implements OnInit {
       this.entryAPIService.getEntrySummary(this.entryId()).pipe(
         map((data) => {
           this.summaryData = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            summaryData: 'done', // update the specific key dynamically
+          }));
           return data;
         })
       ),
@@ -236,6 +252,13 @@ export class EntryMainPageComponent implements OnInit {
           this.boundLigands = boundLigands;
           this.organismScientificNames = organismNames;
 
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            macroMolecules: 'done', // update the specific key dynamically
+            boundLigands: 'done', // update the specific key dynamically
+            organismScientificNames: 'done', // update the specific key dynamically
+          }));
+
           return {
             macroMolecules: macroMolecules,
             boundLigands: boundLigands,
@@ -255,6 +278,13 @@ export class EntryMainPageComponent implements OnInit {
 
           this.experimentalMethod = experimentalMethodTitle;
           this.resolutionValues = resolutionValues;
+
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            experimentalDetails: 'done', // update the specific key dynamically
+            experimentalMethod: 'done', // update the specific key dynamically
+            resolutionValues: 'done', // update the specific key dynamically
+          }));
 
           return {
             experimentalMethod: experimentalMethodTitle,
@@ -296,6 +326,13 @@ export class EntryMainPageComponent implements OnInit {
               this.uniprotCountsInPDBe = uniprotCountsInPDBe;
               this.bestStructuresMappingsByUniProtIds = bestStructuresMappingsByUniProtIds;
 
+              this.apiLoadedStatus.update((state) => ({
+                ...state, // spread the existing state
+                uniprotMapping: 'done', // update the specific key dynamically
+                uniprotCountsInPDBe: 'done', // update the specific key dynamically
+                bestStructuresMappingsByUniProtIds: 'done', // update the specific key dynamically
+              }));
+
               return {
                 uniprotMapping: data,
                 uniprotCountsInPDBe: uniprotCountsInPDBe,
@@ -310,6 +347,13 @@ export class EntryMainPageComponent implements OnInit {
           this.uniprotCountsInPDBe = {};
           this.bestStructuresMappingsByUniProtIds = {};
 
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            uniprotMapping: 'done', // update the specific key dynamically
+            uniprotCountsInPDBe: 'done', // update the specific key dynamically
+            bestStructuresMappingsByUniProtIds: 'done', // update the specific key dynamically
+          }));
+
           return of({
             uniprotMapping: {},
             uniprotCountsInPDBe: {},
@@ -320,20 +364,36 @@ export class EntryMainPageComponent implements OnInit {
       this.entryAPIService.getInterproMapping(this.entryId()).pipe(
         map((data) => {
           this.interproMapping = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            interproMapping: 'done', // update the specific key dynamically
+          }));
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
           this.interproMapping = {};
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            interproMapping: 'done', // update the specific key dynamically
+          }));
           return of({});
         })
       ),
       this.entryAPIService.getPfamMapping(this.entryId()).pipe(
         map((data) => {
           this.pfamMapping = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            pfamMapping: 'done', // update the specific key dynamically
+          }));
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
           this.pfamMapping = {};
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            pfamMapping: 'done', // update the specific key dynamically
+          }));
           return of({});
         })
       ),
@@ -341,107 +401,192 @@ export class EntryMainPageComponent implements OnInit {
         map((data) => {
           this.downloadOptions = this.processData(data).downloads;
           this.viewOptions = this.processData(data).views;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            downloadOptions: 'done', // update the specific key dynamically
+            viewOptions: 'done', // update the specific key dynamically
+          }));
           return data;
         })
       ),
       this.entryAPIService.getSummaryQualityScores(this.entryId()).pipe(
         map((data) => {
           this.summaryQualityScores = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            summaryQualityScores: 'done', // update the specific key dynamically
+          }));
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
           this.summaryQualityScores = undefined;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            summaryQualityScores: 'done', // update the specific key dynamically
+          }));
           return of({});
         })
       ),
       this.entryAPIService.getCATHMapping(this.entryId()).pipe(
         map((data) => {
           this.cathMapping = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            cathMapping: 'done', // update the specific key dynamically
+          }));
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
           this.cathMapping = {};
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            cathMapping: 'done', // update the specific key dynamically
+          }));
           return of({});
         })
       ),
       this.entryAPIService.getSCOP175Mapping(this.entryId()).pipe(
         map((data) => {
           this.scop175Mapping = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            scop175Mapping: 'done', // update the specific key dynamically
+          }));
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
           this.scop175Mapping = {};
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            scop175Mapping: 'done', // update the specific key dynamically
+          }));
           return of({});
         })
       ),
       this.entryAPIService.getModifications(this.entryId()).pipe(
         map((data) => {
           this.modifications = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            modifications: 'done', // update the specific key dynamically
+          }));
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
           this.modifications = [];
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            modifications: 'done', // update the specific key dynamically
+          }));
           return of([]);
         })
       ),
       this.entryAPIService.getResidueListing(this.entryId()).pipe(
         map((data) => {
           this.residueListing = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            residueListing: 'done', // update the specific key dynamically
+          }));
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
           const emptyListing = { molecules: [] };
           this.residueListing = emptyListing;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            residueListing: 'done', // update the specific key dynamically
+          }));
           return of(emptyListing);
         })
       ),
       this.entryAPIService.getValidationKeyStats(this.entryId()).pipe(
         map((data) => {
           this.validationKeyStats = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            validationKeyStats: 'done', // update the specific key dynamically
+          }));
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
           this.validationKeyStats = undefined;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            validationKeyStats: 'done', // update the specific key dynamically
+          }));
           return of(undefined);
         })
       ),
       this.entryAPIService.getValidationXRayRefine(this.entryId()).pipe(
         map((data) => {
           this.validationXRayRefine = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            validationXRayRefine: 'done', // update the specific key dynamically
+          }));
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
           this.validationXRayRefine = undefined;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            validationXRayRefine: 'done', // update the specific key dynamically
+          }));
           return of(undefined);
         })
       ),
       this.entryAPIService.getPrimaryPublicationAbstract(this.entryId()).pipe(
         map((data) => {
           this.primaryPublication = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            primaryPublication: 'done', // update the specific key dynamically
+          }));
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
           this.primaryPublication = undefined;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            primaryPublication: 'done', // update the specific key dynamically
+          }));
           return of(undefined);
         })
       ),
       this.entryAPIService.getArticleCitingPDBEntry(this.entryId()).pipe(
         map((data) => {
           this.articlesCiting = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            articlesCiting: 'done', // update the specific key dynamically
+          }));
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
           this.articlesCiting = undefined;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            articlesCiting: 'done', // update the specific key dynamically
+          }));
           return of(undefined);
         })
       ),
       this.entryAPIService.getPreferredAssembly(this.entryId()).pipe(
         map((data) => {
           this.complexDetails = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            complexDetails: 'done', // update the specific key dynamically
+          }));
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
           this.complexDetails = [];
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            complexDetails: 'done', // update the specific key dynamically
+          }));
           return of([]);
         })
       ),
@@ -457,6 +602,11 @@ export class EntryMainPageComponent implements OnInit {
             map((pisaAssemblies) => {
               this.assemblies = data;
               this.pisaAssemblies = pisaAssemblies;
+              this.apiLoadedStatus.update((state) => ({
+                ...state, // spread the existing state
+                assemblies: 'done', // update the specific key dynamically
+                pisaAssemblies: 'done', // update the specific key dynamically
+              }));
               return {
                 assemblies: data,
                 pisaAssemblies: pisaAssemblies,
@@ -467,6 +617,11 @@ export class EntryMainPageComponent implements OnInit {
         catchError((_error: HttpErrorResponse) => {
           this.assemblies = [];
           this.pisaAssemblies = [];
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            assemblies: 'done', // update the specific key dynamically
+            pisaAssemblies: 'done', // update the specific key dynamically
+          }));
           return of({
             assemblies: [],
             pisaAssemblies: [],
@@ -476,10 +631,18 @@ export class EntryMainPageComponent implements OnInit {
       this.entryAPIService.getCarbohydrates(this.entryId()).pipe(
         map((data) => {
           this.carbohydrates = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            carbohydrates: 'done', // update the specific key dynamically
+          }));
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
           this.carbohydrates = [];
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            carbohydrates: 'done', // update the specific key dynamically
+          }));
           return of([]);
         })
       ),
