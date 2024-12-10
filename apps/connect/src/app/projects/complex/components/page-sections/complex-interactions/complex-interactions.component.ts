@@ -7,6 +7,7 @@ import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
+import { ComplexActions } from '../../../store/complex.actions';
 
 @Component({
   selector: 'pdbc-complex-interactions',
@@ -34,9 +35,19 @@ export class ComplexInteractionsComponent implements OnInit {
   public subLength = computed(() => this.summaryData()?.subcomplexes.length);
   public superLength = computed(() => this.summaryData()?.supercomplexes.length);
 
+  public navSections = toSignal(this.globalStore.select(ComplexSelectors.navItems));
+
   ngOnInit(): void {
     this.subComplexesPage = (this.summaryData()?.subcomplexes ?? []).slice(0, this.subcomplexesPageSize());
     this.superComplexesPage = (this.summaryData()?.supercomplexes ?? []).slice(0, this.supercomplexesPageSize());
+    if (this.subLength() === 0 && this.superLength() === 0) {
+      this.updateNavItemsWhenNoInteraction();
+    }
+  }
+
+  private updateNavItemsWhenNoInteraction(): void {
+    const tempNavsections = (this.navSections() ?? []).filter((section) => section.sectionId !== 'interaction-section');
+    this.globalStore.dispatch(ComplexActions.setNavItems({ navItems: tempNavsections }));
   }
 
   handlePageEvent(event: PageEvent, filterOn: string) {

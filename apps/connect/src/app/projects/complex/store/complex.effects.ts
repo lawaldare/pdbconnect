@@ -25,6 +25,8 @@ export class ComplexEffects {
 
       if (!aHasAnnotations && bHasAnnotations) return 1;
 
+      if (aHasAnnotations && bHasAnnotations) return b.num_pdb_entries - a.num_pdb_entries;
+
       return 0;
     });
   }
