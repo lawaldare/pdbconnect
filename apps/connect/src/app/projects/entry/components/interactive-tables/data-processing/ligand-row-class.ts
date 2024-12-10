@@ -4,7 +4,7 @@ import { Molecule } from '../../../data-models/molecule.model';
 import { LigandsRowData, TableFilter, TableRow } from '../data-models-and-definitions/row-and-table.model';
 import { DataToTable } from './abstract-base-row-class';
 import { ResidueListing } from '../../../data-models/residue-listing.model';
-import { MolstarResidueInfo, MolstarSelectionObj } from '../../../helpers/molstar-helpers';
+import { MolstarResidueInfo, MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
 
 export class LigandDataToTable extends DataToTable {
   // Ligand specific data

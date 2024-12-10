@@ -67,32 +67,26 @@ export class EntryApiService {
   }
 
   public getUniprotMapping(entryId: string): Observable<UniProtMapping> {
-    // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/';
     return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.MAPPINGS_API}uniprot/${entryId}`).pipe(map((data) => data[entryId]['UniProt']));
   }
 
   public getInterproMapping(entryId: string): Observable<InterProMappings> {
-    // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/interpro/';
     return this.http.get<Record<string, Record<string, InterProMappings>>>(`${this.MAPPINGS_API}interpro/${entryId}`).pipe(map((data) => data[entryId]['InterPro']));
   }
 
   public getPfamMapping(entryId: string): Observable<PfamMappings> {
-    // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/pfam/';
     return this.http.get<Record<string, Record<string, PfamMappings>>>(`${this.MAPPINGS_API}pfam/${entryId}`).pipe(map((data) => data[entryId]['Pfam']));
   }
 
   public getCATHMapping(entryId: string): Observable<CathMappings> {
-    // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/cath/';
     return this.http.get<Record<string, Record<string, CathMappings>>>(`${this.MAPPINGS_API}cath/${entryId}`).pipe(map((data) => data[entryId]['CATH']));
   }
 
   public getSCOP175Mapping(entryId: string): Observable<ScopMappings> {
-    // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/scop/';
     return this.http.get<Record<string, Record<string, ScopMappings>>>(`${this.MAPPINGS_API}scop/${entryId}`).pipe(map((data) => data[entryId]['SCOP']));
   }
 
   public getModifications(entryId: string): Observable<ModifiedResidue[]> {
-    // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/pdb/entry/';
     return this.http.get<Record<string, ModifiedResidue[]>>(`${this.BASE_API}modified_AA_or_NA/${entryId}`).pipe(map((data) => data[entryId]));
   }
 
@@ -102,7 +96,6 @@ export class EntryApiService {
   }
 
   public getBestStructures(uniprotId: string): Observable<any[]> {
-    // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/';
     return this.http.get<any>(`${this.MAPPINGS_API}best_structures/${uniprotId}`).pipe(
       map((data) => {
         // const uniprotData = data[uniprotId];
@@ -112,12 +105,10 @@ export class EntryApiService {
   }
 
   public getResidueListing(entryId: string): Observable<ResidueListing> {
-    // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/pdb/entry/';
     return this.http.get<any>(`${this.BASE_API}residue_listing/${entryId}`).pipe(map((data) => data[entryId] as ResidueListing));
   }
 
   public getPDBEntryFiles(entryId: string): Observable<any> {
-    // const BASE_API = 'https://www.ebi.ac.uk/pdbe/api/pdb/entry/files/';
     return this.http.get<any>(`${this.BASE_API}files/${entryId}`).pipe(map((data) => data[entryId]));
   }
 

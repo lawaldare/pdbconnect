@@ -8,7 +8,7 @@ import {
   focusLoci,
   changeComponentVisibility,
   changeRepresentationVisibility,
-} from '../../helpers/molstar-helpers';
+} from './molstar-helpers';
 import {
   LIGANDS_REPR_HIGHLIGHT,
   LIGANDS_REPR_NONSELECTION_POLYMER,
@@ -19,7 +19,12 @@ import {
   REPR_NONSELECTION_LIGAND,
   REPR_NONSELECTION_POLYMER,
 } from './molstar-repr-objects';
-import { AssembliesRowData, DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../interactive-tables/data-models-and-definitions/row-and-table.model';
+import {
+  AssembliesRowData,
+  DomainsRowData,
+  LigandsRowData,
+  MacromoleculesRowData,
+} from '../../components/interactive-tables/data-models-and-definitions/row-and-table.model';
 
 declare let PDBeMolstarPlugin: any;
 

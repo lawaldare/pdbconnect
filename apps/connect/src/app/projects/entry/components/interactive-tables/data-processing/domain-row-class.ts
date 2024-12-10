@@ -2,7 +2,7 @@ import { signal, WritableSignal } from '@angular/core';
 import { CathMappings, DomainMapping, PfamMappings, ScopMappings } from '../../../data-models/domains.model';
 import { Molecule } from '../../../data-models/molecule.model';
 import { ResidueListing, ResidueOfListing } from '../../../data-models/residue-listing.model';
-import { MolstarResidueInfo, MolstarSelectionObj } from '../../../helpers/molstar-helpers';
+import { MolstarResidueInfo, MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
 import { DomainsBoundaries, TableFilter, TableRow } from '../data-models-and-definitions/row-and-table.model';
 import { DataToTable } from './abstract-base-row-class';
 

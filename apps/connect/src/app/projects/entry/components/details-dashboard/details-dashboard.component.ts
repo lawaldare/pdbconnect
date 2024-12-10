@@ -5,9 +5,9 @@ import { MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
-import { MolstarSelectionObj } from '../../helpers/molstar-helpers';
+import { MolstarSelectionObj } from '../../helpers/molstar/molstar-helpers';
 import { VisualisationsDataProcessing } from './data-processing.facade';
-import { MolstarVisualisationsForTabs } from './molstar-visualisations';
+import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations';
 // import { TableNames } from '../../pages/entry-v4/entry-v4.component';
 import { firstValueFrom, timer } from 'rxjs';
 import {
@@ -77,8 +77,6 @@ export class DetailsDashboardComponent implements OnDestroy {
   public sequenceDetails: SequenceDetail[] = [];
 
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
-  // private molstarViewInstance: any;
-  // private isMolstarRendered = false;
 
   public hasProtvista = false;
   @ViewChild('protvistaContainer') protvistaContainer!: ElementRef;
@@ -117,7 +115,6 @@ export class DetailsDashboardComponent implements OnDestroy {
 
   async ngOnDestroy() {
     if (this.molstarVisualisations.molstarViewInstance) {
-      // safe disposal of molstar instances
       this.molstarVisualisations.molstarViewInstance.plugin.dispose();
       this.renderer.removeChild(this.elementRef.nativeElement, this.molstarVisualisations.molstarViewInstance);
       this.molstarVisualisations.resetAttributesForRendering();
@@ -147,7 +144,7 @@ export class DetailsDashboardComponent implements OnDestroy {
         this.selectionTitle = `${datum.domain} (Accession: ${datum.additionalData.accession})`;
         this.selectionButtonText = 'Compare this domain in other entries';
         this.selectedChains = this.dataProcessing.getDomainChains(datum);
-        this.sequenceDetails = this.dataProcessing.getDomainSequenceDetails(this.macromolecules(), datum);
+        this.sequenceDetails = this.dataProcessing.getDomainSequenceDetails(this.entryId(), this.macromolecules(), datum);
         this.hasProtvista = true;
       } else if (this.tabName() === 'Ligands') {
         datum = datum as LigandsRowData;
@@ -174,7 +171,7 @@ export class DetailsDashboardComponent implements OnDestroy {
         this.dropdownOptionsToMolstar = dropdownResults.dropdownOptionsToMolstar;
         this.dropdownOptions = dropdownResults.dropdownOptions;
         this.dropdownSelected = dropdownResults.dropdownSelected;
-        this.sequenceDetails = this.dataProcessing.getMacromoleculeSequenceDetails(datum, this.dropdownSelected);
+        this.sequenceDetails = this.dataProcessing.getMacromoleculeSequenceDetails(this.entryId(), datum, this.dropdownSelected);
         this.hasTopologyViewer = false;
         if (datum.additionalData.molecule.molecule_type.includes('polypeptide')) {
           this.selectionButtonText = 'Compare this protein in other entries';

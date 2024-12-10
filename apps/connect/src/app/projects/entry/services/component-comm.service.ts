@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { TableRow } from '../components/interactive-tables/data-models-and-definitions/row-and-table.model';
-import { MolstarResidueInfo } from '../helpers/molstar-helpers';
+import { MolstarResidueInfo } from '../helpers/molstar/molstar-helpers';
 
 @Injectable({
   providedIn: 'root',

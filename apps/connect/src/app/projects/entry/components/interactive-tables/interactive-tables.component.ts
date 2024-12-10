@@ -22,7 +22,7 @@ import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
 import { UniProtMapping } from '../../data-models/uniprot-mapping.model';
 import { BestStructureMapping } from '../../data-models/uniprot-best-structures.model';
-import { MolstarResidueInfo } from '../../helpers/molstar-helpers';
+import { MolstarResidueInfo } from '../../helpers/molstar/molstar-helpers';
 
 type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
 

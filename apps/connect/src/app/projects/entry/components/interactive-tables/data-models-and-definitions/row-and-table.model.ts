@@ -1,6 +1,6 @@
 import { ModifiedResidue } from '../../../data-models/modified-residues.model';
 import { Molecule } from '../../../data-models/molecule.model';
-import { MolstarSelectionObj } from '../../../helpers/molstar-helpers';
+import { MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
 
 /**
  * Generic types

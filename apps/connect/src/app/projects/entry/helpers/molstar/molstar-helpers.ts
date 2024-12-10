@@ -22,7 +22,6 @@ import { LociLabelTextParams } from 'molstar/lib//mol-repr/shape/loci/common';
 import { LineParams } from 'molstar/lib//mol-repr/structure/representation/line';
 import { PluginCommands } from 'molstar/lib/mol-plugin/commands';
 import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
-import { ResidueListing } from '../data-models/residue-listing.model';
 
 const CompTypes = ['lig', 'env', 'wide', 'link'] as const;
 
@@ -79,79 +78,6 @@ export function getResidues(viewer: any): MolstarResidueInfo[] {
     }
   }
   return result;
-}
-
-export async function getResiduesAsListing(viewer: any) {
-  const structure = viewer.plugin!.managers.structure.hierarchy.current.structures[0];
-  const entityIdsToAsymIds: { [key: string]: string[] } = {};
-  const residueListing: ResidueListing = {
-    molecules: [],
-  };
-  const residues = await getResidues(structure);
-  for (const resid of residues) {
-    if (!resid.label_entity_id) continue;
-    if (!resid.label_asym_id) continue;
-    const residEntityId = parseInt(resid.label_entity_id);
-    const entityIds = residueListing.molecules.map((entity) => entity.entity_id);
-
-    let entityIdx = entityIds.indexOf(residEntityId);
-    if (entityIdx === -1) {
-      residueListing.molecules.push({
-        entity_id: parseInt(resid.label_entity_id),
-        chains: [],
-      });
-      entityIdx = residueListing.molecules.length - 1;
-    }
-    const asymIds = residueListing.molecules[entityIdx].chains.map((chain) => chain.struct_asym_id);
-    let asymIdx = asymIds.indexOf(resid.label_asym_id);
-    if (asymIdx === -1) {
-      residueListing.molecules[entityIdx].chains.push({
-        chain_id: '',
-        struct_asym_id: '',
-        residues: [],
-      });
-      asymIdx = residueListing.molecules[entityIdx].chains.length - 1;
-    }
-
-    // const asymIdx =
-
-    // check whether residueListing.molecules
-
-    // const entities = residueListing.molecules.filter((entity) => entity.entity_id+'' === resid.label_entity_id);
-    // if (entities.length === 0) {
-    //   residueListing.molecules.push({
-    //     entity_id: parseInt(resid.label_entity_id),
-    //     chains: []
-    //   });
-    //   entityIdx = residueListing.molecules.length-1;
-    // } else {
-    //   entityIdx = residueListing.molecules.map((entity, idx) => idx)
-    // }
-  }
-  //   if (structure === undefined) return [];
-  //   const result: ResidueInfo[] = [];
-  //   for (const unit of structure.units) {
-  //     const h = unit.model.atomicHierarchy;
-  //     let lastIRes = -1;
-  //     for (let i = 0; i < unit.elements.length; i++) {
-  //       const iAtom = unit.elements[i];
-  //       const iChain = h.chainAtomSegments.index[iAtom];
-  //       const iRes = h.residueAtomSegments.index[iAtom];
-  //       if (iRes === lastIRes) continue;
-  //       lastIRes = iRes;
-  //       result.push({
-  //         label_entity_id: getValue(h.chains.label_entity_id, iChain),
-  //         label_asym_id: getValue(h.chains.label_asym_id, iChain),
-  //         auth_asym_id: getValue(h.chains.auth_asym_id, iChain),
-  //         label_seq_id: getValue(h.residues.label_seq_id, iRes),
-  //         auth_seq_id: getValue(h.residues.auth_seq_id, iRes),
-  //         pdbx_PDB_ins_code: getValue(h.residues.pdbx_PDB_ins_code, iRes),
-  //         label_comp_id: getValue(h.atoms.label_comp_id, iAtom),
-  //         auth_comp_id: getValue(h.atoms.auth_comp_id, iAtom),
-  //       });
-  //     }
-  //   }
-  //   return result;
 }
 
 function getValue<T>(column: Column<T>, iRow: number): T | null {

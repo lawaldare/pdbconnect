@@ -6,7 +6,7 @@ import { Molecule } from '../../../data-models/molecule.model';
 import { ResidueListing } from '../../../data-models/residue-listing.model';
 import { UniProtMapping } from '../../../data-models/uniprot-mapping.model';
 import { BestStructureMapping } from '../../../data-models/uniprot-best-structures.model';
-import { MolstarResidueInfo, MolstarSelectionObj } from '../../../helpers/molstar-helpers';
+import { MolstarResidueInfo, MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
 
 interface MacromoleculesChainBoundaries {
   [key: number]: {

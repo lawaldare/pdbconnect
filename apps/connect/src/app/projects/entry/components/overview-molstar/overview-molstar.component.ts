@@ -18,7 +18,7 @@ import {
   addRepresentationToComponent,
   changeRepresentationVisibility,
   getComponentList,
-} from '../../helpers/molstar-helpers';
+} from '../../helpers/molstar/molstar-helpers';
 import { OverviewMolstarFacade } from './overview-molstar-facade';
 import { ResidueListing } from '../../data-models/residue-listing.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';

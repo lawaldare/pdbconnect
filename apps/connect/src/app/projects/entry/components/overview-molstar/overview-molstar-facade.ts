@@ -1,7 +1,7 @@
 import { inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { firstValueFrom, forkJoin, map } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
-import { MolstarResidueInfo, MolstarSelectionObj } from '../../helpers/molstar-helpers';
+import { MolstarResidueInfo, MolstarSelectionObj } from '../../helpers/molstar/molstar-helpers';
 import { ResidueListing } from '../../data-models/residue-listing.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { ComplexDetails } from '../../data-models/complex-details.model';

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Molecule } from '../../data-models/molecule.model';
-import { MolstarSelectionObj } from '../../helpers/molstar-helpers';
+import { MolstarSelectionObj } from '../../helpers/molstar/molstar-helpers';
 import { BoundsByEntityId, SequenceDetail } from './details-dashboard.component';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../interactive-tables/data-models-and-definitions/row-and-table.model';
 
@@ -20,7 +20,7 @@ export class VisualisationsDataProcessing {
     return `Chain${hasPlural} ${uniqueChains.join(', ')}`;
   }
 
-  public getDomainSequenceDetails(macromolecules: Molecule[], datum: DomainsRowData) {
+  public getDomainSequenceDetails(entryId: string, macromolecules: Molecule[], datum: DomainsRowData) {
     const sequenceDetails: SequenceDetail[] = [];
     const boundariesByEntityId = datum.additionalData.boundaries.reduce((obj: BoundsByEntityId, boundary) => {
       obj[boundary.entity] = obj[boundary.entity] ?? [];
@@ -39,7 +39,7 @@ export class VisualisationsDataProcessing {
       const hasPlural = uniqueChainsInBoundaries.length > 1 ? 's' : '';
 
       const sequenceDetail: SequenceDetail = {
-        title: `FASTA Sequence pdb|${entityOfBoundary.molecule_name[0]}; Chain${hasPlural} ${uniqueChainsInBoundaries.join(', ')}; Domain ${domainDescription}`,
+        title: `>FASTA pdb|${entryId}|${entityOfBoundary.molecule_name[0]}; Chain${hasPlural} ${uniqueChainsInBoundaries.join(', ')}; Domain ${domainDescription}`,
         fullSequence: entityOfBoundary.sequence,
         segments: [],
       };
@@ -111,13 +111,13 @@ export class VisualisationsDataProcessing {
     };
   }
 
-  public getMacromoleculeSequenceDetails(datum: MacromoleculesRowData, dropdownSelected: string) {
+  public getMacromoleculeSequenceDetails(entryId: string, datum: MacromoleculesRowData, dropdownSelected: string) {
     const entity = datum.additionalData.molecule;
     const seq = entity.sequence;
     const sequenceDetails: SequenceDetail[] = [];
     if (seq) {
       sequenceDetails.push({
-        title: `FASTA Sequence pdb|${entity.molecule_name[0]}; ${dropdownSelected}`,
+        title: `>FASTA pdb|${entryId}|${entity.molecule_name[0]}; ${dropdownSelected}`,
         fullSequence: seq,
         segments: [{ sequence: seq }],
       });
