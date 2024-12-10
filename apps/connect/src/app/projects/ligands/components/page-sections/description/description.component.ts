@@ -5,7 +5,6 @@ import { GoogleAnalyticsService, MaterialModule, TruncateTextDirective, UtilServ
 import { MatDialog } from '@angular/material/dialog';
 import { BondsTableDialogComponent } from '../../section-components/bonds-table-dialog/bonds-table-dialog.component';
 import { AtomsTableDialogComponent } from '../../section-components/atoms-table-dialog/atoms-table-dialog.component';
-import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { CCDsDirective } from '../../../directives/description-contains-ccds.directive';
 import { RouterModule } from '@angular/router';
 import { LigandSmilesPipe, Smile } from '../../../pipes/ligandsmiles.pipe';
@@ -22,17 +21,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'pdbc-description',
   standalone: true,
-  imports: [
-    CommonModule,
-    TruncateTextDirective,
-    IsPartOfDirective,
-    MaterialModule,
-    LigandSmilesPipe,
-    ToolTipComponent,
-    CCDsDirective,
-    RouterModule,
-    LigandSmilesDirective,
-  ],
+  imports: [CommonModule, TruncateTextDirective, IsPartOfDirective, MaterialModule, CCDsDirective, RouterModule, LigandSmilesDirective],
   templateUrl: './description.component.html',
   styleUrls: ['./description.component.scss'],
   providers: [LigandSmilesPipe],

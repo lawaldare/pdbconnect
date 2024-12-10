@@ -92,7 +92,6 @@ export class LigandsMainPageComponent implements OnInit {
           this.updateNavItemsWhenNoStructure(navItems, structures);
           this.ligandUtilService.redirectLigandPages(description);
           this.ligandId.set(ligandId);
-          // this.isThereStructures.update(() => structures.length > 0);
           this.getAnnotations(structures);
           return this.aggregatedApiService.fetchDepiction(this.ligandId());
         }),

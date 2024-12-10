@@ -3,7 +3,7 @@
 
 <main>
   <div class="container">
-    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections" />
+    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections() ?? []" />
     @if(loaded() === status.SUCCESS){
     <article>
       <section class="hero">

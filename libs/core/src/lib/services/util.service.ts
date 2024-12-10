@@ -66,6 +66,22 @@ export class UtilService {
     return first + encodedURL;
   }
 
+  public generateQueryURLForComplexLigand(complexId: string, ligandId: string) {
+    const ligandIdQuery = { value: ligandId, condition1: 'AND', condition2: 'Equal to' };
+    const complexIdQuery = { value: complexId, condition1: 'AND', condition2: 'Equal to' };
+    const resultState = { tabIndex: 0, paginationIndex: 1, perPage: 10, sortBy: 'Sort by' };
+
+    const payload = { q_compound_id: [ligandIdQuery], q_complex_id: [complexIdQuery], resultState: resultState };
+
+    const urlStringObject = JSON.stringify(payload);
+
+    const encodedURL = encodeURIComponent(urlStringObject);
+
+    const first = 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=';
+
+    return first + encodedURL;
+  }
+
   public cleanUpIds(pdbids: string): any[] {
     return pdbids
       .split(/,| |;|\t|\r?\n/)

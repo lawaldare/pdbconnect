@@ -36,6 +36,8 @@ export class ComplexLigandsComponent {
     })
   );
 
+  public readonly complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
+
   public ligands = toSignal(this.ligands$);
   public ligandsLength = computed(() => this.ligands()?.length);
   public ligandsPageSizeOptions = computed(() => [5, 10, 15]);
