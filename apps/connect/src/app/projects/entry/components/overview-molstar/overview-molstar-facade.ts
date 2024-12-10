@@ -1,7 +1,7 @@
 import { inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { firstValueFrom, forkJoin, map } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
-import { MolstarSelectionObj } from '../../helpers/molstar-helpers';
+import { MolstarResidueInfo, MolstarSelectionObj } from '../../helpers/molstar-helpers';
 import { ResidueListing } from '../../data-models/residue-listing.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { ComplexDetails } from '../../data-models/complex-details.model';
@@ -247,6 +247,8 @@ export class OverviewMolstarFacade {
     for (const resourceName of Object.keys(domainsData)) {
       const resourceData = domainsData[resourceName];
 
+      const uniqueDomains = new Set();
+
       // Ensure resource exists
       this.domainsByEntityAndResource.update((state) => this.ensureNestedStructure(state, [resourceName], {}));
 
@@ -262,6 +264,8 @@ export class OverviewMolstarFacade {
 
           // Count domains for classification
           domainIdxByClassificationAcc[groupId] = (domainIdxByClassificationAcc[groupId] || 0) + 1;
+
+          uniqueDomains.add(groupId);
 
           // Create domain identifiers based on resource
           let domainAcc = '';
@@ -321,14 +325,14 @@ export class OverviewMolstarFacade {
             newState[resourceName][segmentObj['entity_id']][segmentObj['classification_acc']].domains[segmentObj['domain_id']].segments.push(segmentObj);
             return newState;
           });
-
-          // Increment domain count
-          this.domainCountByResource.update((state) => ({
-            ...state,
-            [resourceName]: (state[resourceName] || 0) + 1,
-          }));
         }
       }
+
+      // Set unique accession count
+      this.domainCountByResource.update((state) => ({
+        ...state,
+        [resourceName]: (state[resourceName] || 0) + uniqueDomains.size,
+      }));
     }
   }
 
@@ -406,7 +410,14 @@ export class OverviewMolstarFacade {
     }
   }
 
-  public getSelectionsFromImg(tabView: string, imgName: string, residueListing: ResidueListing, selectedEntity?: Molecule, selectedMods?: ModifiedResidue[]) {
+  // public getSelectionsFromImg(tabView: string, imgName: string, residueListing: ResidueListing, selectedEntity?: Molecule, selectedMods?: ModifiedResidue[]) {
+  public getSelectionsFromImg(
+    tabView: string,
+    imgName: string,
+    molstarResidueInfo: MolstarResidueInfo[],
+    selectedEntity?: Molecule,
+    selectedMods?: ModifiedResidue[]
+  ) {
     let name: string | undefined = undefined;
     const molstarSelections: MolstarSelectionObj[] = [];
 
@@ -421,34 +432,59 @@ export class OverviewMolstarFacade {
       }
     } else if (tabView === 'Ligands') {
       name = selectedEntity!.molecule_name[0];
-      const residueListingEntity = residueListing['molecules'].filter((entity) => entity.entity_id === selectedEntity!.entity_id)[0];
-      const chains = residueListingEntity['chains'].filter((chain) => {
-        return selectedEntity!.in_chains.indexOf(chain.chain_id) > -1 && selectedEntity!.in_struct_asyms.indexOf(chain.struct_asym_id) > -1;
+      // const residueListingEntity = residueListing['molecules'].filter((entity) => entity.entity_id === selectedEntity!.entity_id)[0];
+      // const chains = residueListingEntity['chains'].filter((chain) => {
+      //   return selectedEntity!.in_chains.indexOf(chain.chain_id) > -1 && selectedEntity!.in_struct_asyms.indexOf(chain.struct_asym_id) > -1;
+      // });
+      // for (const chain of chains) {
+      //   const newMolstarSelection: MolstarSelectionObj = {
+      //     entityId: selectedEntity!.entity_id + '',
+      //     authChainId: chain.chain_id,
+      //     residues: [],
+      //   };
+      //   for (const resid of chain['residues']) {
+      //     newMolstarSelection['residues'] = [
+      //       {
+      //         authBegin: resid.author_residue_number + '',
+      //         authBeginIns: resid.author_insertion_code + '',
+      //         authEnd: resid.author_residue_number + '',
+      //         authEndIns: resid.author_insertion_code + '',
+      //       },
+      //     ];
+      //     molstarSelections.push(newMolstarSelection);
+      //   }
+      // }
+      const ligandResidueInfo = molstarResidueInfo.filter((residInfo) => {
+        return (
+          residInfo.label_entity_id &&
+          residInfo.auth_asym_id &&
+          residInfo.label_asym_id &&
+          residInfo.label_entity_id === selectedEntity!.entity_id + '' &&
+          selectedEntity!.in_chains.indexOf(residInfo.auth_asym_id) > -1 &&
+          selectedEntity!.in_struct_asyms.indexOf(residInfo.label_asym_id) > -1
+        );
       });
-      for (const chain of chains) {
-        const newMolstarSelection: MolstarSelectionObj = {
+      const newMolstarSelections: MolstarSelectionObj[] = ligandResidueInfo.map((ligResidInfo) => {
+        return {
           entityId: selectedEntity!.entity_id + '',
-          authChainId: chain.chain_id,
-          residues: [],
-        };
-        for (const resid of chain['residues']) {
-          newMolstarSelection['residues'] = [
+          authChainId: ligResidInfo.auth_asym_id!,
+          residues: [
             {
-              authBegin: resid.author_residue_number + '',
-              authBeginIns: resid.author_insertion_code + '',
-              authEnd: resid.author_residue_number + '',
-              authEndIns: resid.author_insertion_code + '',
+              authBegin: ligResidInfo.auth_seq_id! + '',
+              authBeginIns: ligResidInfo.pdbx_PDB_ins_code || '',
+              authEnd: ligResidInfo.auth_seq_id! + '',
+              authEndIns: ligResidInfo.pdbx_PDB_ins_code || '',
             },
-          ];
-          molstarSelections.push(newMolstarSelection);
-        }
-      }
+          ],
+        };
+      });
+      molstarSelections.push(...newMolstarSelections);
     } else if (tabView === 'Domains') {
       const entityId = parseInt(imgName.split('_')[1]);
       const resource = imgName.split('_')[3];
       const resourceId = imgName.split('_')[4];
 
-      const residueListingEntity = residueListing['molecules'].filter((entity) => entity.entity_id === entityId)[0];
+      // const residueListingEntity = residueListing['molecules'].filter((entity) => entity.entity_id === entityId)[0];
 
       const molstarSelectionObj: MolstarSelectionObj = {
         entityId: entityId + '',
@@ -459,18 +495,33 @@ export class OverviewMolstarFacade {
 
       for (const [_domain, domainData] of Object.entries(domainInfo.domains)) {
         for (const segment of domainData.segments) {
-          const residueListingChain = residueListingEntity['chains'].filter((chain) => chain.chain_id === segment.chain_id)[0];
-          const residuesOfChain = residueListingChain['residues'].sort((a, b) => a.residue_number - b.residue_number);
+          // const residueListingChain = residueListingEntity['chains'].filter((chain) => chain.chain_id === segment.chain_id)[0];
+          // const residuesOfChain = residueListingChain['residues'].sort((a, b) => a.residue_number - b.residue_number);
+
+          const residueListingChain = molstarResidueInfo.filter((residInfo) => {
+            return (
+              residInfo.label_entity_id &&
+              residInfo.auth_asym_id &&
+              residInfo.label_seq_id &&
+              residInfo.auth_seq_id &&
+              residInfo.label_entity_id! === entityId + '' &&
+              residInfo.auth_asym_id! === segment.chain_id
+            );
+          });
+          const residuesOfChain = residueListingChain.sort((a, b) => a.label_seq_id! - b.label_seq_id!);
 
           let firstRes = {
             auth_begin: segment.auth_begin,
             auth_begin_ins: segment.auth_begin_ins,
           };
           if (segment.auth_begin === 'null') {
-            const residuesOfChainAboveStart = residuesOfChain.filter((resid) => resid.residue_number >= segment.resn_begin);
+            // const residuesOfChainAboveStart = residuesOfChain.filter((resid) => resid.residue_number >= segment.resn_begin);
+            const residuesOfChainAboveStart = residuesOfChain.filter((resid) => resid.label_seq_id! >= segment.resn_begin);
             firstRes = {
-              auth_begin: residuesOfChainAboveStart[0].author_residue_number + '',
-              auth_begin_ins: residuesOfChainAboveStart[0].author_insertion_code,
+              // auth_begin: residuesOfChainAboveStart[0].author_residue_number + '',
+              // auth_begin_ins: residuesOfChainAboveStart[0].author_insertion_code,
+              auth_begin: residuesOfChainAboveStart[0].auth_seq_id + '',
+              auth_begin_ins: residuesOfChainAboveStart[0].pdbx_PDB_ins_code || '',
             };
           }
 
@@ -479,12 +530,15 @@ export class OverviewMolstarFacade {
             auth_end_ins: segment.auth_end_ins,
           };
           if (segment.auth_end === 'null') {
-            const residuesOfChainBelowEnd = residuesOfChain.filter((resid) => resid.residue_number <= segment.resn_end);
+            // const residuesOfChainBelowEnd = residuesOfChain.filter((resid) => resid.residue_number <= segment.resn_end);
+            const residuesOfChainBelowEnd = residuesOfChain.filter((resid) => resid.label_seq_id! <= segment.resn_end);
             lastRes = {
               // auth_end: residuesOfChain[residuesOfChain.length-1].author_residue_number+'',
               // auth_end_ins: residuesOfChain[residuesOfChain.length-1].author_insertion_code
-              auth_end: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].author_residue_number + '',
-              auth_end_ins: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].author_insertion_code,
+              // auth_end: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].author_residue_number + '',
+              // auth_end_ins: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].author_insertion_code,
+              auth_end: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].auth_seq_id + '',
+              auth_end_ins: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].pdbx_PDB_ins_code || '',
             };
           }
 

@@ -27,6 +27,7 @@ import { ComplexDetails } from '../../data-models/complex-details.model';
 import { Color } from 'molstar/lib/mol-util/color';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
 
 declare let PDBeMolstarPlugin: any;
 
@@ -48,7 +49,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
   public readonly macromolecules = input.required<Molecule[]>();
   public readonly ligands = input.required<Molecule[]>();
   public readonly inputModifications = input.required<ModifiedResidue[]>();
-  public readonly residueListing = input.required<ResidueListing>();
+  // public readonly residueListing = input.required<ResidueListing>();
   public readonly pfamMappings = input.required<PfamMappings>();
   public readonly cathMappings = input.required<CathMappings>();
   public readonly scopMappings = input.required<ScopMappings>();
@@ -58,6 +59,9 @@ export class OverviewMolstarComponent implements AfterViewInit {
   // data processing facade and it's signals (processed data)
   public readonly facade = inject(OverviewMolstarFacade);
   public readonly signals = inject(ComponentCommunicationService);
+
+  // residue listing information retrieved using molstar
+  private molstarResidueInfo = this.signals.molstarResidueInfo;
 
   public assemblyData = this.facade.assemblyData;
   public moleculesDescription = this.facade.moleculesDescription;
@@ -209,6 +213,14 @@ export class OverviewMolstarComponent implements AfterViewInit {
     await this.loadImg(this.preferredAssemblyImgName);
   }
 
+  private async generateResidueListing() {
+    const data = await getResidues(this.molstarViewInstance);
+    console.log('molstarResidueInfo');
+    console.log(data);
+    this.signals.molstarResidueInfo.set(data);
+    this.signals.molstarResidueInfoLoaded.set(true);
+  }
+
   async ngAfterViewInit() {
     // generate assembly related data
     this.facade.parseComplexDetails(this.complexDetails());
@@ -222,6 +234,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
     // initialise molstar and the image gallery functionality
     await this.initMolstarInstance();
     await this.initMolstarImageGallery();
+    await this.generateResidueListing();
 
     // parse modifications data to match gallery states
     this.facade.parseModifications(this.entryId(), this.inputModifications(), this.imageList);
@@ -353,7 +366,8 @@ export class OverviewMolstarComponent implements AfterViewInit {
     this.tabsStates[tabView].molstarSelectionObjs = [];
 
     if (this.currentTabSelection !== 'Main') {
-      const data = this.facade.getSelectionsFromImg(tabView, imgName, this.residueListing(), entity, selectedMods);
+      // const data = this.facade.getSelectionsFromImg(tabView, imgName, this.residueListing(), entity, selectedMods);
+      const data = this.facade.getSelectionsFromImg(tabView, imgName, this.molstarResidueInfo(), entity, selectedMods);
 
       const molstarSelections = data.selections;
       const firstMolstarSelection = molstarSelections.length > 0 ? molstarSelections[0] : undefined;

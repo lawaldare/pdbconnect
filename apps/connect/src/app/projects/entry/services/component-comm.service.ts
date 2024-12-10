@@ -1,10 +1,14 @@
 import { Injectable, signal } from '@angular/core';
 import { TableRow } from '../components/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { MolstarResidueInfo } from '../helpers/molstar-helpers';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ComponentCommunicationService {
+  public molstarResidueInfoLoaded = signal<boolean>(false);
+  public molstarResidueInfo = signal<MolstarResidueInfo[]>([]);
+
   public currentTab = signal<string>('Assemblies');
   public tabSwitchOrigin = signal<string>('main');
   public tabState = signal<{ [key: string]: string | number }>({

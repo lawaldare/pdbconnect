@@ -80,6 +80,7 @@ export class EntryMainPageComponent implements OnInit {
 
   private route = inject(ActivatedRoute);
   public readonly signals = inject(ComponentCommunicationService);
+
   public currentTab = this.signals.currentTab;
   public tabSwitchOrigin = this.signals.tabSwitchOrigin;
   public previousTab = 'undefined';
@@ -88,13 +89,22 @@ export class EntryMainPageComponent implements OnInit {
 
   public pageData$!: Observable<any>;
 
+  // signal that holds whether an API call is pending or done for all needed APIs
   public apiLoadedStatus = signal(INITIAL_API_STATUS);
 
+  // signals for residue listing information provided by Molstar inside OverviewMolstar component
+  public molstarResidueInfoLoaded = this.signals.molstarResidueInfoLoaded; // boolean
+  public molstarResidueInfo = this.signals.molstarResidueInfo; // residue listing
+
+  // signal that is computed as API calls go from pending to done
+  // for each component it holds the necessary API calls that need status done
   public componentLoadedStatus = computed(() => {
     const apiStatus = this.apiLoadedStatus();
     const status: Record<string, boolean> = {};
 
+    // for each component name and the list of API dependencies in COMPONENT_DEPENDENCIES dictionary
     Object.entries(COMPONENT_DEPENDENCIES).forEach(([component, dependencies]) => {
+      // component load status is updated to true if every needed API dependency has status 'done'
       status[component] = dependencies.every((dep) => apiStatus[dep] === 'done');
     });
 
@@ -145,8 +155,8 @@ export class EntryMainPageComponent implements OnInit {
   // getModifications
   public modifications!: ModifiedResidue[];
 
-  // getResidueListing
-  public residueListing!: ResidueListing;
+  // // getResidueListing
+  // public residueListing!: ResidueListing;
 
   // getValidationKeyStats
   public validationKeyStats?: KeyValidationStats;
@@ -481,25 +491,25 @@ export class EntryMainPageComponent implements OnInit {
           return of([]);
         })
       ),
-      this.entryAPIService.getResidueListing(this.entryId()).pipe(
-        map((data) => {
-          this.residueListing = data;
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            residueListing: 'done', // update the specific key dynamically
-          }));
-          return data;
-        }),
-        catchError((_error: HttpErrorResponse) => {
-          const emptyListing = { molecules: [] };
-          this.residueListing = emptyListing;
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            residueListing: 'done', // update the specific key dynamically
-          }));
-          return of(emptyListing);
-        })
-      ),
+      // this.entryAPIService.getResidueListing(this.entryId()).pipe(
+      //   map((data) => {
+      //     this.residueListing = data;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       residueListing: 'done', // update the specific key dynamically
+      //     }));
+      //     return data;
+      //   }),
+      //   catchError((_error: HttpErrorResponse) => {
+      //     const emptyListing = { molecules: [] };
+      //     this.residueListing = emptyListing;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       residueListing: 'done', // update the specific key dynamically
+      //     }));
+      //     return of(emptyListing);
+      //   })
+      // ),
       this.entryAPIService.getValidationKeyStats(this.entryId()).pipe(
         map((data) => {
           this.validationKeyStats = data;
@@ -660,7 +670,7 @@ export class EntryMainPageComponent implements OnInit {
           cathMapping,
           scopMapping,
           modifications,
-          residueListing,
+          // residueListing,
           keyValidationStats,
           xRayRefine,
           primaryPublication,
@@ -680,7 +690,7 @@ export class EntryMainPageComponent implements OnInit {
           cathMapping,
           scopMapping,
           modifications,
-          residueListing,
+          // residueListing,
           keyValidationStats,
           xRayRefine,
           primaryPublication,

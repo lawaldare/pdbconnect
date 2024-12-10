@@ -6,7 +6,7 @@ import { Molecule } from '../../../data-models/molecule.model';
 import { ResidueListing } from '../../../data-models/residue-listing.model';
 import { UniProtMapping } from '../../../data-models/uniprot-mapping.model';
 import { BestStructureMapping } from '../../../data-models/uniprot-best-structures.model';
-import { MolstarSelectionObj } from '../../../helpers/molstar-helpers';
+import { MolstarResidueInfo, MolstarSelectionObj } from '../../../helpers/molstar-helpers';
 
 interface MacromoleculesChainBoundaries {
   [key: number]: {
@@ -39,7 +39,8 @@ export class MacromoleculeDataToTable extends DataToTable {
   carbohydrates: CarbohydrateMolecule[];
   uniprotMapping: UniProtMapping;
   bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] };
-  residueListing: ResidueListing;
+  // residueListing: ResidueListing;
+  molstarResidueInfo: MolstarResidueInfo[];
 
   molstarHardResetOnSelect = false;
   protvistaForSelection = true;
@@ -54,18 +55,22 @@ export class MacromoleculeDataToTable extends DataToTable {
     uniprotMapping: UniProtMapping,
     bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] },
     macromolecules: Molecule[],
-    residueListing: ResidueListing
+    // residueListing: ResidueListing
+    molstarResidueInfo: MolstarResidueInfo[]
   ) {
     super();
     this.carbohydrates = carbohydrates;
     this.uniprotMapping = uniprotMapping;
     this.bestStructuresMappingsByUniProtId = bestStructuresMappingsByUniProtId;
     this.macromolecules = macromolecules;
-    this.residueListing = residueListing;
+    // this.residueListing = residueListing;
+    this.molstarResidueInfo = molstarResidueInfo;
   }
 
   generateTableData(): TableRow[] {
-    const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIds(this.residueListing);
+    // const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIds(this.residueListing);
+    const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIds(this.macromolecules, this.molstarResidueInfo);
+
     const mappingsByEntityByAccession: EntityUniProtMapping = this.generateUniprotMappings(
       this.uniprotMapping,
       this.bestStructuresMappingsByUniProtId,
@@ -119,25 +124,68 @@ export class MacromoleculeDataToTable extends DataToTable {
     return rows;
   }
 
-  private getStartEndForChainIds(residueListing: ResidueListing) {
+  // used here to get start and end residues of a chain. can maybe be replaced by https://www.ebi.ac.uk/pdbe/api/pdb/entry/polymer_coverage/1trn
+  // if coverage is calculated only using observed residues
+  // private getStartEndForChainIds(residueListing: ResidueListing) {
+  private getStartEndForChainIds(macromolecules: Molecule[], molstarResidueInfo: MolstarResidueInfo[]) {
     const startEndByEntityByChain: MacromoleculesChainBoundaries = {};
 
-    for (const entity of residueListing['molecules']) {
-      for (const chain of entity.chains) {
-        const sortedResidues = chain.residues.sort((a, b) => a.residue_number - b.residue_number);
-        const firstResidNum = sortedResidues[0].author_residue_number;
-        const lastResidNum = sortedResidues[sortedResidues.length - 1].author_residue_number;
-        const firstResidIns = sortedResidues[0].author_insertion_code;
-        const lastResidIns = sortedResidues[sortedResidues.length - 1].author_insertion_code;
-        startEndByEntityByChain[entity.entity_id] = startEndByEntityByChain[entity.entity_id] || {};
-        startEndByEntityByChain[entity.entity_id][chain.chain_id] = startEndByEntityByChain[entity.entity_id][chain.chain_id] || {
+    // Map macromolecules by entity_id for quick lookup
+    const macromoleculesByEntityId = Object.fromEntries(macromolecules.map((mol) => [mol.entity_id, mol]));
+
+    const entitiesForMacromolecules = new Set(Object.keys(macromoleculesByEntityId));
+
+    // Filter and group residues by entity_id and chain_id
+    const residsMacroByEntityIdAndChainId = molstarResidueInfo
+      .filter((resid) => resid.label_entity_id && resid.label_seq_id && entitiesForMacromolecules.has(resid.label_entity_id))
+      .reduce((acc, resid) => {
+        const { label_entity_id, auth_asym_id } = resid;
+        if (!label_entity_id || !auth_asym_id) return acc;
+
+        acc[label_entity_id] = acc[label_entity_id] || {};
+        acc[label_entity_id][auth_asym_id] = acc[label_entity_id][auth_asym_id] || [];
+        acc[label_entity_id][auth_asym_id].push(resid);
+
+        return acc;
+      }, {} as { [entityId: string]: { [chainId: string]: MolstarResidueInfo[] } });
+
+    // Transform grouped residues into start/end data
+    Object.entries(residsMacroByEntityIdAndChainId).forEach(([entityId, chains]) => {
+      startEndByEntityByChain[+entityId] = {};
+
+      Object.entries(chains).forEach(([chainId, residues]) => {
+        const sortedResidues = residues.sort((a, b) => a.label_seq_id! - b.label_seq_id!);
+
+        const firstResidNum = sortedResidues[0].auth_seq_id + '';
+        const lastResidNum = sortedResidues[sortedResidues.length - 1].auth_seq_id + '';
+        const firstResidIns = sortedResidues[0].pdbx_PDB_ins_code || '';
+        const lastResidIns = sortedResidues[sortedResidues.length - 1].pdbx_PDB_ins_code || '';
+
+        startEndByEntityByChain[+entityId][chainId] = {
           start_author_residue_number: firstResidNum,
           end_author_residue_number: lastResidNum,
           start_author_insertion_code: firstResidIns,
           end_author_insertion_code: lastResidIns,
         };
-      }
-    }
+      });
+    });
+
+    // for (const entity of residueListing['molecules']) {
+    //   for (const chain of entity.chains) {
+    //     const sortedResidues = chain.residues.sort((a, b) => a.residue_number - b.residue_number);
+    //     const firstResidNum = sortedResidues[0].author_residue_number;
+    //     const lastResidNum = sortedResidues[sortedResidues.length - 1].author_residue_number;
+    //     const firstResidIns = sortedResidues[0].author_insertion_code;
+    //     const lastResidIns = sortedResidues[sortedResidues.length - 1].author_insertion_code;
+    //     startEndByEntityByChain[entity.entity_id] = startEndByEntityByChain[entity.entity_id] || {};
+    //     startEndByEntityByChain[entity.entity_id][chain.chain_id] = startEndByEntityByChain[entity.entity_id][chain.chain_id] || {
+    //       start_author_residue_number: firstResidNum,
+    //       end_author_residue_number: lastResidNum,
+    //       start_author_insertion_code: firstResidIns,
+    //       end_author_insertion_code: lastResidIns,
+    //     };
+    //   }
+    // }
     return startEndByEntityByChain;
   }
 
@@ -157,17 +205,21 @@ export class MacromoleculeDataToTable extends DataToTable {
           mappingsByEntityByAccession[mappingObj.entity_id][uniprotAcc] = mappingsByEntityByAccession[mappingObj.entity_id][uniprotAcc] ?? [];
 
           const isAuthorStartValid = mappingObj.start.author_residue_number !== null;
+
           const startAuthorResidueNumber = isAuthorStartValid
             ? mappingObj.start.author_residue_number
             : startEndByEntityByChain[mappingObj.entity_id][mappingObj.chain_id]['start_author_residue_number'];
+
           const startAuthorInsertionCode = isAuthorStartValid
             ? mappingObj.start.author_insertion_code
             : startEndByEntityByChain[mappingObj.entity_id][mappingObj.chain_id]['start_author_insertion_code'];
 
           const isAuthorEndValid = mappingObj.end.author_residue_number !== null;
+
           const endAuthorResidueNumber = isAuthorEndValid
             ? mappingObj.end.author_residue_number
             : startEndByEntityByChain[mappingObj.entity_id][mappingObj.chain_id]['end_author_residue_number'];
+
           const endAuthorInsertionCode = isAuthorEndValid
             ? mappingObj.end.author_insertion_code
             : startEndByEntityByChain[mappingObj.entity_id][mappingObj.chain_id]['end_author_insertion_code'];

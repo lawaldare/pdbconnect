@@ -49,7 +49,6 @@
           [macromolecules]="macroMolecules"
           [ligands]="boundLigands"
           [inputModifications]="modifications"
-          [residueListing]="residueListing"
           [pfamMappings]="pfamMapping"
           [cathMappings]="cathMapping"
           [scopMappings]="scop175Mapping"
@@ -74,7 +73,7 @@
         @for (tabName of allTabs; track tabName) { @if(currentTab() === tabName.name) { @if(tableTabs.indexOf(tabName.name) > -1) {
         <section class="left-side">
           <!-- inside entry/components/interactive-tables -->
-          @if (componentLoadedStatus()['interactiveTables']) {
+          @if (componentLoadedStatus()['interactiveTables'] && molstarResidueInfoLoaded()) {
           <pdbc-interactive-tables
             [tabName]="getTableName(tabName.name)"
             [complexDetails]="complexDetails"
@@ -84,7 +83,7 @@
             [cathMappings]="cathMapping"
             [scopMappings]="scop175Mapping"
             [macromolecules]="macroMolecules"
-            [residueListing]="residueListing"
+            [molstarResidueInfo]="molstarResidueInfo()"
             [ligands]="boundLigands"
             [modifications]="modifications"
             [carbohydrates]="carbohydrates"

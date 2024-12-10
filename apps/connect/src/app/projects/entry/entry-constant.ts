@@ -77,7 +77,6 @@ export type ApiDataItem =
   | 'cathMapping'
   | 'scop175Mapping'
   | 'modifications'
-  | 'residueListing'
   | 'validationKeyStats'
   | 'validationXRayRefine'
   | 'primaryPublication'
@@ -90,7 +89,7 @@ export type ApiDataItem =
 export const COMPONENT_DEPENDENCIES: Record<string, ApiDataItem[]> = {
   titleInfo: ['experimentalMethod', 'resolutionValues', 'summaryData'],
   mainInfoArea: ['summaryData', 'organismScientificNames', 'primaryPublication', 'summaryQualityScores'],
-  overviewMolstar: ['complexDetails', 'macroMolecules', 'boundLigands', 'modifications', 'residueListing', 'pfamMapping', 'cathMapping', 'scop175Mapping'],
+  overviewMolstar: ['complexDetails', 'macroMolecules', 'boundLigands', 'modifications', 'pfamMapping', 'cathMapping', 'scop175Mapping'],
   interactiveTables: [
     'complexDetails',
     'assemblies',
@@ -99,7 +98,6 @@ export const COMPONENT_DEPENDENCIES: Record<string, ApiDataItem[]> = {
     'cathMapping',
     'scop175Mapping',
     'macroMolecules',
-    'residueListing',
     'boundLigands',
     'modifications',
     'carbohydrates',

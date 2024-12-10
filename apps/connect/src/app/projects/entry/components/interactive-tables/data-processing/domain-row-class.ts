@@ -2,7 +2,7 @@ import { signal, WritableSignal } from '@angular/core';
 import { CathMappings, DomainMapping, PfamMappings, ScopMappings } from '../../../data-models/domains.model';
 import { Molecule } from '../../../data-models/molecule.model';
 import { ResidueListing, ResidueOfListing } from '../../../data-models/residue-listing.model';
-import { MolstarSelectionObj } from '../../../helpers/molstar-helpers';
+import { MolstarResidueInfo, MolstarSelectionObj } from '../../../helpers/molstar-helpers';
 import { DomainsBoundaries, TableFilter, TableRow } from '../data-models-and-definitions/row-and-table.model';
 import { DataToTable } from './abstract-base-row-class';
 
@@ -12,7 +12,8 @@ export class DomainDataToTable extends DataToTable {
   cathMappings: CathMappings;
   scopMappings: ScopMappings;
   macromolecules: Molecule[];
-  residueListing: ResidueListing;
+  // residueListing: ResidueListing;
+  molstarResidueInfo: MolstarResidueInfo[];
 
   molstarHardResetOnSelect = false;
   protvistaForSelection = true;
@@ -22,45 +23,26 @@ export class DomainDataToTable extends DataToTable {
   tableRows: WritableSignal<TableRow[]> = signal([]);
   tableFilters: WritableSignal<TableFilter[]> = signal([]);
 
-  constructor(pfamMappings: PfamMappings, cathMappings: CathMappings, scopMappings: ScopMappings, macromolecules: Molecule[], residueListing: ResidueListing) {
+  // constructor(pfamMappings: PfamMappings, cathMappings: CathMappings, scopMappings: ScopMappings, macromolecules: Molecule[], residueListing: ResidueListing) {
+  constructor(
+    pfamMappings: PfamMappings,
+    cathMappings: CathMappings,
+    scopMappings: ScopMappings,
+    macromolecules: Molecule[],
+    molstarResidueInfo: MolstarResidueInfo[]
+  ) {
     super();
     this.pfamMappings = pfamMappings;
     this.cathMappings = cathMappings;
     this.scopMappings = scopMappings;
     this.macromolecules = macromolecules;
-    this.residueListing = residueListing;
+    // this.residueListing = residueListing;
+    this.molstarResidueInfo = molstarResidueInfo;
   }
 
   generateTableData(): TableRow[] {
     let rows: TableRow[] = [];
     if (this.tableRows().length === 0) {
-      // parse Pfam domains json structure
-      for (const [resourceAcc, data] of Object.entries(this.pfamMappings)) {
-        const domainDesc = data.description;
-        for (let i = 0; i < data.mappings.length; i++) {
-          const mapping = data.mappings[i];
-          const domain = `${resourceAcc}-${i + 1}`;
-          const moleculeNames = this.macromolecules.filter((mol) => mapping.entity_id === mol.entity_id).map((mol) => mol.molecule_name[0]);
-
-          const segmentData = this.formatSegments([mapping], this.residueListing);
-          if (segmentData.segments.length === 0) continue;
-
-          rows.push({
-            domainName: `${domainDesc} (${resourceAcc})`,
-            resource: 'Pfam',
-            domain: domain,
-            moleculeNames: moleculeNames,
-            segments: segmentData.segments,
-            additionalData: {
-              accession: resourceAcc,
-              selections: [segmentData.molstarSelection],
-              boundaries: segmentData.segmentsBoundaries,
-              segmentsResidNumbers: segmentData.segmentsResidNumber,
-            },
-          });
-        }
-      }
-
       // parse CATH domains json structure
       for (const [resourceAcc, data] of Object.entries(this.cathMappings)) {
         // domain names in CATH are unique 'domain' fields inside mappings
@@ -74,7 +56,9 @@ export class DomainDataToTable extends DataToTable {
 
           const moleculeNames = this.macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => mol.molecule_name[0]);
 
-          const segmentData = this.formatSegments(mappings, this.residueListing);
+          // const segmentData = this.formatSegments(mappings, this.residueListing);
+          const segmentData = this.formatSegments(mappings, this.molstarResidueInfo);
+
           if (segmentData.segments.length === 0) continue;
 
           rows.push({
@@ -106,7 +90,9 @@ export class DomainDataToTable extends DataToTable {
 
           const moleculeNames = this.macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => mol.molecule_name[0]);
 
-          const segmentData = this.formatSegments(mappings, this.residueListing);
+          // const segmentData = this.formatSegments(mappings, this.residueListing);
+          const segmentData = this.formatSegments(mappings, this.molstarResidueInfo);
+
           if (segmentData.segments.length === 0) continue;
 
           rows.push({
@@ -124,6 +110,36 @@ export class DomainDataToTable extends DataToTable {
           });
         }
       }
+
+      // parse Pfam domains json structure
+      for (const [resourceAcc, data] of Object.entries(this.pfamMappings)) {
+        const domainDesc = data.description;
+        for (let i = 0; i < data.mappings.length; i++) {
+          const mapping = data.mappings[i];
+          const domain = `${resourceAcc}-${i + 1}`;
+          const moleculeNames = this.macromolecules.filter((mol) => mapping.entity_id === mol.entity_id).map((mol) => mol.molecule_name[0]);
+
+          // const segmentData = this.formatSegments([mapping], this.residueListing);
+          const segmentData = this.formatSegments([mapping], this.molstarResidueInfo);
+
+          if (segmentData.segments.length === 0) continue;
+
+          rows.push({
+            domainName: `${domainDesc} (${resourceAcc})`,
+            resource: 'Pfam',
+            domain: domain,
+            moleculeNames: moleculeNames,
+            segments: segmentData.segments,
+            additionalData: {
+              accession: resourceAcc,
+              selections: [segmentData.molstarSelection],
+              boundaries: segmentData.segmentsBoundaries,
+              segmentsResidNumbers: segmentData.segmentsResidNumber,
+            },
+          });
+        }
+      }
+
       this.tableRows.set(rows);
     } else {
       rows = [...this.tableRows()];
@@ -131,7 +147,8 @@ export class DomainDataToTable extends DataToTable {
     return rows;
   }
 
-  formatSegments(mappings: DomainMapping[], residueListing: ResidueListing) {
+  // formatSegments(mappings: DomainMapping[], residueListing: ResidueListing) {
+  formatSegments(mappings: DomainMapping[], molstarResidueInfo: MolstarResidueInfo[]) {
     const segments: string[] = [];
     const segmentsResidNumber: string[] = [];
 
@@ -140,13 +157,24 @@ export class DomainDataToTable extends DataToTable {
     };
 
     const segmentsBoundaries: DomainsBoundaries[] = [];
-
     const mappingsByChain = mappings.sort();
     let prevChain = 'undef';
     for (const mapping of mappingsByChain) {
-      const residueListingEntity = residueListing['molecules'].filter((entity) => entity.entity_id === mapping.entity_id)[0];
-      const residueListingChain = residueListingEntity['chains'].filter((chain) => chain.chain_id === mapping.chain_id)[0];
-      const residuesOfChain = residueListingChain['residues'].sort((a, b) => a.residue_number - b.residue_number);
+      // const residueListingEntity = residueListing['molecules'].filter((entity) => entity.entity_id === mapping.entity_id)[0];
+      // const residueListingChain = residueListingEntity['chains'].filter((chain) => chain.chain_id === mapping.chain_id)[0];
+      // const residuesOfChain = residueListingChain['residues'].sort((a, b) => a.residue_number - b.residue_number);
+
+      const residueListingChain = molstarResidueInfo.filter((residInfo) => {
+        return (
+          residInfo.label_entity_id &&
+          residInfo.auth_asym_id &&
+          residInfo.label_seq_id &&
+          residInfo.auth_seq_id &&
+          residInfo.label_entity_id === mapping.entity_id + '' &&
+          residInfo.auth_asym_id === mapping.chain_id
+        );
+      });
+      const residuesOfChain = residueListingChain.sort((a, b) => a.label_seq_id! - b.label_seq_id!);
 
       const chainId = mapping.chain_id !== prevChain ? `${mapping.chain_id}:` : ' ';
       let firstRes = {
@@ -155,12 +183,16 @@ export class DomainDataToTable extends DataToTable {
         author_insertion_code: mapping.start.author_insertion_code,
       };
       if (mapping.start.author_residue_number === null) {
-        const residuesOfChainAboveStart = residuesOfChain.filter((resid) => resid.observed_ratio > 0 && resid.residue_number >= mapping.start.residue_number);
+        // const residuesOfChainAboveStart = residuesOfChain.filter((resid) => resid.observed_ratio > 0 && resid.residue_number >= mapping.start.residue_number);
+        const residuesOfChainAboveStart = residuesOfChain.filter((resid) => resid.label_seq_id! >= mapping.start.residue_number);
         if (residuesOfChainAboveStart.length === 0) continue;
         firstRes = {
-          residue_number: residuesOfChainAboveStart[0].residue_number,
-          author_residue_number: residuesOfChainAboveStart[0].author_residue_number + '',
-          author_insertion_code: residuesOfChainAboveStart[0].author_insertion_code,
+          // residue_number: residuesOfChainAboveStart[0].residue_number,
+          // author_residue_number: residuesOfChainAboveStart[0].author_residue_number + '',
+          // author_insertion_code: residuesOfChainAboveStart[0].author_insertion_code,
+          residue_number: residuesOfChainAboveStart[0].label_seq_id!,
+          author_residue_number: residuesOfChainAboveStart[0].auth_seq_id + '',
+          author_insertion_code: residuesOfChainAboveStart[0].pdbx_PDB_ins_code || '',
         };
       }
       let lastRes = {
@@ -169,12 +201,16 @@ export class DomainDataToTable extends DataToTable {
         author_insertion_code: mapping.end.author_insertion_code,
       };
       if (mapping.end.author_residue_number === null) {
-        const residuesOfChainBelowEnd = residuesOfChain.filter((resid) => resid.observed_ratio > 0 && resid.residue_number <= mapping.end.residue_number);
+        // const residuesOfChainBelowEnd = residuesOfChain.filter((resid) => resid.observed_ratio > 0 && resid.residue_number <= mapping.end.residue_number);
+        const residuesOfChainBelowEnd = residuesOfChain.filter((resid) => resid.label_seq_id! <= mapping.end.residue_number);
         if (residuesOfChainBelowEnd.length === 0) continue;
         lastRes = {
-          residue_number: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].residue_number,
-          author_residue_number: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].author_residue_number + '',
-          author_insertion_code: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].author_insertion_code,
+          // residue_number: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].residue_number,
+          // author_residue_number: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].author_residue_number + '',
+          // author_insertion_code: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].author_insertion_code,
+          residue_number: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].label_seq_id!,
+          author_residue_number: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].auth_seq_id + '',
+          author_insertion_code: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].pdbx_PDB_ins_code || '',
         };
       }
       molstarSelection.residues.push({
@@ -208,17 +244,12 @@ export class DomainDataToTable extends DataToTable {
   generateTableFilters(): TableFilter[] {
     let newFilters: TableFilter[] = [];
     if (this.tableFilters().length === 0) {
-      let pfamDomainCount = 0;
-      for (const [_resourceAcc, data] of Object.entries(this.pfamMappings)) {
-        const filteredPfamMappings = this.filterMappingObserved(data.mappings, this.residueListing);
-        pfamDomainCount += filteredPfamMappings.length;
-      }
-
       let cathDomainCount = 0;
       for (const [_resourceAcc, data] of Object.entries(this.cathMappings)) {
         const domainIds: string[] = [];
         for (const mapping of data.mappings) {
-          const filteredCathMapping = this.filterMappingObserved([mapping], this.residueListing);
+          // const filteredCathMapping = this.filterMappingObserved([mapping], this.residueListing);
+          const filteredCathMapping = this.filterMappingObserved([mapping], this.molstarResidueInfo);
           if (filteredCathMapping.length === 0) continue;
           if (domainIds.indexOf(mapping.domain!) === -1) {
             domainIds.push(mapping.domain!);
@@ -231,7 +262,8 @@ export class DomainDataToTable extends DataToTable {
       for (const [_resourceAcc, data] of Object.entries(this.scopMappings)) {
         const domainIds: string[] = [];
         for (const mapping of data.mappings) {
-          const filteredScopMapping = this.filterMappingObserved([mapping], this.residueListing);
+          // const filteredScopMapping = this.filterMappingObserved([mapping], this.residueListing);
+          const filteredScopMapping = this.filterMappingObserved([mapping], this.molstarResidueInfo);
           if (filteredScopMapping.length === 0) continue;
           if (domainIds.indexOf(mapping.scop_id!) === -1) {
             domainIds.push(mapping.scop_id!);
@@ -240,16 +272,17 @@ export class DomainDataToTable extends DataToTable {
         scopDomainCount += domainIds.length;
       }
 
+      let pfamDomainCount = 0;
+      for (const [_resourceAcc, data] of Object.entries(this.pfamMappings)) {
+        // const filteredPfamMappings = this.filterMappingObserved(data.mappings, this.residueListing);
+        const filteredPfamMappings = this.filterMappingObserved(data.mappings, this.molstarResidueInfo);
+        pfamDomainCount += filteredPfamMappings.length;
+      }
+
       newFilters.push({
-        types: ['Pfam', 'CATH', 'SCOP'],
+        types: ['CATH', 'SCOP', 'Pfam'],
         description: `All (${pfamDomainCount + cathDomainCount + scopDomainCount} domains)`,
       });
-      if (pfamDomainCount > 0) {
-        newFilters.push({
-          types: ['Pfam'],
-          description: `${pfamDomainCount} Pfam`,
-        });
-      }
       if (cathDomainCount > 0) {
         newFilters.push({
           types: ['CATH'],
@@ -262,6 +295,12 @@ export class DomainDataToTable extends DataToTable {
           description: `${scopDomainCount} SCOP 1.75`,
         });
       }
+      if (pfamDomainCount > 0) {
+        newFilters.push({
+          types: ['Pfam'],
+          description: `${pfamDomainCount} Pfam`,
+        });
+      }
       this.tableFilters.set(newFilters);
     } else {
       newFilters = [...this.tableFilters()];
@@ -269,14 +308,28 @@ export class DomainDataToTable extends DataToTable {
     return newFilters;
   }
 
-  filterMappingObserved(domainMappings: DomainMapping[], residueListing: ResidueListing) {
-    const observedMappings: ResidueOfListing[][] = [];
+  // filterMappingObserved(domainMappings: DomainMapping[], residueListing: ResidueListing) {
+  filterMappingObserved(domainMappings: DomainMapping[], molstarResidueInfo: MolstarResidueInfo[]) {
+    // const observedMappings: ResidueOfListing[][] = [];
+    const observedMappings: MolstarResidueInfo[][] = [];
     for (const mapping of domainMappings) {
-      const residueListingEntity = residueListing['molecules'].filter((entity) => entity.entity_id === mapping.entity_id)[0];
-      const residueListingChain = residueListingEntity['chains'].filter((chain) => chain.chain_id === mapping.chain_id)[0];
-      const residuesOfChain = residueListingChain['residues'].sort((a, b) => a.residue_number - b.residue_number);
+      // const residueListingEntity = residueListing['molecules'].filter((entity) => entity.entity_id === mapping.entity_id)[0];
+      // const residueListingChain = residueListingEntity['chains'].filter((chain) => chain.chain_id === mapping.chain_id)[0];
+      // const residuesOfChain = residueListingChain['residues'].sort((a, b) => a.residue_number - b.residue_number);
+      const residueListingChain = molstarResidueInfo.filter((residInfo) => {
+        return (
+          residInfo.label_entity_id &&
+          residInfo.auth_asym_id &&
+          residInfo.label_seq_id &&
+          residInfo.auth_seq_id &&
+          residInfo.label_entity_id === mapping.entity_id + '' &&
+          residInfo.auth_asym_id === mapping.chain_id
+        );
+      });
+      const residuesOfChain = residueListingChain.sort((a, b) => a.label_seq_id! - b.label_seq_id!);
       const residuesOfMappingObserved = residuesOfChain.filter((resid) => {
-        return resid.observed_ratio > 0 && resid.residue_number <= mapping.end.residue_number && resid.residue_number >= mapping.start.residue_number;
+        // return resid.observed_ratio > 0 && resid.residue_number <= mapping.end.residue_number && resid.residue_number >= mapping.start.residue_number;
+        return resid.label_seq_id! <= mapping.end.residue_number && resid.label_seq_id! >= mapping.start.residue_number;
       });
       observedMappings.push(residuesOfMappingObserved);
     }

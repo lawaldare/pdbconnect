@@ -10,20 +10,20 @@
       <!-- <h4 class="heading-4">Details</h4> -->
       @if(isfirst) {
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Deposition date:</span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Deposition date</span>
         <article>{{ depositionDate() }}</article>
       </div>
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Release date:</span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Release date</span>
         <article>{{ releaseDate() }}</article>
       </div>
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Revision date:</span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Revision date</span>
         <article>{{ revisionDate() }}</article>
       </div>
       } @if (experimentalDetail.hasOwnProperty('all_experimental_methods')) {
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)"> Experimental methods: </span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)"> Experimental methods </span>
         <article>
           @for(method of experimentalDetail.all_experimental_methods; track method;) {
           <p>
@@ -34,7 +34,7 @@
       </div>
       } @if (experimentalDetail.hasOwnProperty('expression_host_scientific_names')) {
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)"> Expression system: </span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)"> Expression system </span>
         <article>
           @for(hostOrganismName of experimentalDetail.expression_host_scientific_names; track hostOrganismName; let islast = $last){
           <span>
@@ -48,13 +48,13 @@
       </div>
       } @if (experimentalDetail.hasOwnProperty('xray_em_resolution')) {
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Resolution:</span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Resolution</span>
         <article>{{ experimentalDetail.xray_em_resolution }}Å</article>
       </div>
       } @if (experimentalDetail.hasOwnProperty('xray_r_factor') || experimentalDetail.hasOwnProperty('xray_r_work') ||
       experimentalDetail.hasOwnProperty('xray_r_free') ) {
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Reported R values:</span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Reported R values</span>
         <article class="reported-r-vals">
           <p>
             <span>R:</span>
@@ -88,31 +88,31 @@
       </div>
       } @if (experimentalDetail.hasOwnProperty('xray_beam_source_type')) {
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">X-ray source:</span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">X-ray source</span>
         <article>{{ experimentalDetail.xray_beam_source_type }}Å</article>
       </div>
       } @if (experimentalDetail.hasOwnProperty('nmr_refinement_method') || experimentalDetail.hasOwnProperty('nmr_number_of_deposited_models') ||
       experimentalDetail.hasOwnProperty('nmr_backbone_rmsd_for_largest_domain') || experimentalDetail.hasOwnProperty('nmr_completeness_of_chemical_shift_assignment')
       ) {
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Refinement method:</span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Refinement method</span>
         <article>{{ experimentalDetail.nmr_refinement_method }}</article>
       </div>
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Number of deposited models:</span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Number of deposited models</span>
         <article>{{ experimentalDetail.nmr_number_of_deposited_models }}</article>
       </div>
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Backbone RMSD for the largest domain:</span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Backbone RMSD for the largest domain</span>
         <article>{{ experimentalDetail.nmr_backbone_rmsd_for_largest_domain }}</article>
       </div>
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Chemical shift assignment completeness:</span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Chemical shift assignment completeness</span>
         <article>{{ experimentalDetail.nmr_completeness_of_chemical_shift_assignment }}</article>
       </div>
       } @if (experimentalDetail.hasOwnProperty('nmr_spectrometers')) {
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">NMR spectrometers used:</span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">NMR spectrometers used</span>
         <article>
           @for (nmr_spectrometer of experimentalDetail.nmr_spectrometers; track nmr_spectrometer;) {
           <p>{{ nmr_spectrometer }}</p>
@@ -124,12 +124,12 @@
       <!-- Not in API endpoint: https://www.ebi.ac.uk/pdbe/api/pdb/entry/experiment/7v08 -->
       @if (experimentalDetail.hasOwnProperty('em_resolution_method')) {
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Reconstruction method:</span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Reconstruction method</span>
         <article>{{ experimentalDetail.em_resolution_method }}</article>
       </div>
       } @if (experimentalDetail.hasOwnProperty('em_microscope')) {
       <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Microscope model:</span>
+        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Microscope model</span>
         <article>{{ experimentalDetail.em_microscope }}</article>
       </div>
       }

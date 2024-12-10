@@ -22,6 +22,7 @@ import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
 import { UniProtMapping } from '../../data-models/uniprot-mapping.model';
 import { BestStructureMapping } from '../../data-models/uniprot-best-structures.model';
+import { MolstarResidueInfo } from '../../helpers/molstar-helpers';
 
 type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
 
@@ -59,7 +60,7 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
   public readonly macromolecules = input.required<Molecule[]>();
 
   // For domains, ligands, macromolecules
-  public readonly residueListing = input.required<ResidueListing>();
+  public readonly molstarResidueInfo = input.required<MolstarResidueInfo[]>();
 
   public readonly signals = inject(ComponentCommunicationService);
 
@@ -110,10 +111,11 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
           tempTableData = new AssemblyDataToTable(this.complexDetails(), this.assemblyData(), this.pisaAssemblyData());
         }
         if (tabName === 'Domains') {
-          tempTableData = new DomainDataToTable(this.pfamMappings(), this.cathMappings(), this.scopMappings(), this.macromolecules(), this.residueListing());
+          tempTableData = new DomainDataToTable(this.pfamMappings(), this.cathMappings(), this.scopMappings(), this.macromolecules(), this.molstarResidueInfo());
         }
         if (tabName === 'Ligands') {
-          tempTableData = new LigandDataToTable(this.ligands(), this.modifications(), this.residueListing());
+          // tempTableData = new LigandDataToTable(this.ligands(), this.modifications(), this.residueListing());
+          tempTableData = new LigandDataToTable(this.ligands(), this.modifications(), this.molstarResidueInfo());
         }
         if (tabName === 'Macromolecules') {
           tempTableData = new MacromoleculeDataToTable(
@@ -121,7 +123,8 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
             this.uniprotMapping(),
             this.bestStrMapUniProtId(),
             this.macromolecules(),
-            this.residueListing()
+            // this.residueListing()
+            this.molstarResidueInfo()
           );
         }
         tempTableData!.generateTableData();
@@ -138,18 +141,22 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
       this.tableData = new AssemblyDataToTable(this.complexDetails(), this.assemblyData(), this.pisaAssemblyData());
       this.columnDefinitions = ASSEMBLIES_COL_DEFS;
     } else if (this.tabName() === 'Domains') {
-      this.tableData = new DomainDataToTable(this.pfamMappings(), this.cathMappings(), this.scopMappings(), this.macromolecules(), this.residueListing());
+      // this.tableData = new DomainDataToTable(this.pfamMappings(), this.cathMappings(), this.scopMappings(), this.macromolecules(), this.residueListing());
+      this.tableData = new DomainDataToTable(this.pfamMappings(), this.cathMappings(), this.scopMappings(), this.macromolecules(), this.molstarResidueInfo());
       this.columnDefinitions = DOMAINS_COL_DEFS;
     } else if (this.tabName() === 'Ligands') {
-      this.tableData = new LigandDataToTable(this.ligands(), this.modifications(), this.residueListing());
+      // this.tableData = new LigandDataToTable(this.ligands(), this.modifications(), this.residueListing());
+      this.tableData = new LigandDataToTable(this.ligands(), this.modifications(), this.molstarResidueInfo());
       this.columnDefinitions = LIGANDS_COL_DEFS;
     } else if (this.tabName() === 'Macromolecules') {
+      // TODO: Work on residueListing removal for below
       this.tableData = new MacromoleculeDataToTable(
         this.carbohydrates(),
         this.uniprotMapping(),
         this.bestStrMapUniProtId(),
         this.macromolecules(),
-        this.residueListing()
+        // this.residueListing()
+        this.molstarResidueInfo()
       );
       this.columnDefinitions = MACROMOLECULES_COL_DEFS;
     }
