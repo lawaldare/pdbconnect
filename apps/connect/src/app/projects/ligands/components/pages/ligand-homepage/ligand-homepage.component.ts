@@ -2,7 +2,7 @@ import { AfterViewInit, Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
-import { faqs, headerLogoMenuConfig, ligandHomePageSeaderSearchConfig, quickLinks, slides } from '../../../ligand.constant';
+import { faqs, headerLogoMenuConfig, homePageUrls, ligandHomePageSeaderSearchConfig, quickLinks, slides } from '../../../ligand.constant';
 import { HeaderLogoMenuConfig, MaterialModule } from '@pdbc/core';
 import { UseCasesComponent } from '../../page-sections/use-cases/use-cases.component';
 import Splide from '@splidejs/splide';
@@ -16,7 +16,7 @@ import { Slide } from '../../../data-models/slide';
   styleUrl: './ligand-homepage.component.scss',
 })
 export class LigandHomepageComponent implements AfterViewInit {
-  public readonly headerLogoMenuConfig = { ...headerLogoMenuConfig, isHomePage: true } as HeaderLogoMenuConfig;
+  public readonly headerLogoMenuConfig = { ...headerLogoMenuConfig, urls: homePageUrls } as HeaderLogoMenuConfig;
   public readonly headerSearchConfig = ligandHomePageSeaderSearchConfig;
   public readonly links = signal<{ label: string; url: string }[]>(quickLinks);
   public readonly slides = signal<Slide[]>(slides);

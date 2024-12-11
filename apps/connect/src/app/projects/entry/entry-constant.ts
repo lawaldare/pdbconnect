@@ -4,9 +4,10 @@ export const pdbeLogoConfig = {
   backgroundColor: '#056643',
   logoType: 'PDBe',
   urls: [
-    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
-    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
-    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
+    { name: 'Home', path: 'https://www.ebi.ac.uk/pdbe/', openInNewTab: false },
+    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
+    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
+    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training', openInNewTab: true },
   ],
   menuHighlightColor: '#0a5032',
 };
