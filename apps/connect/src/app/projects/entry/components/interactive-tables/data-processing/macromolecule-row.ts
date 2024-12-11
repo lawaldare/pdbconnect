@@ -3,7 +3,6 @@ import { MacromoleculesResidueRanges, MacromoleculesRowData, TableFilter, TableR
 import { DataToTable } from './abstract-base-row-class';
 import { CarbohydrateMolecule, CarbohydrateResidue } from '../../../data-models/carbohydrate-polymer.model';
 import { Molecule } from '../../../data-models/molecule.model';
-import { ResidueListing } from '../../../data-models/residue-listing.model';
 import { UniProtMapping } from '../../../data-models/uniprot-mapping.model';
 import { BestStructureMapping } from '../../../data-models/uniprot-best-structures.model';
 import { MolstarResidueInfo, MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
@@ -39,7 +38,6 @@ export class MacromoleculeDataToTable extends DataToTable {
   carbohydrates: CarbohydrateMolecule[];
   uniprotMapping: UniProtMapping;
   bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] };
-  // residueListing: ResidueListing;
   molstarResidueInfo: MolstarResidueInfo[];
 
   molstarHardResetOnSelect = false;
@@ -55,7 +53,6 @@ export class MacromoleculeDataToTable extends DataToTable {
     uniprotMapping: UniProtMapping,
     bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] },
     macromolecules: Molecule[],
-    // residueListing: ResidueListing
     molstarResidueInfo: MolstarResidueInfo[]
   ) {
     super();
@@ -63,12 +60,10 @@ export class MacromoleculeDataToTable extends DataToTable {
     this.uniprotMapping = uniprotMapping;
     this.bestStructuresMappingsByUniProtId = bestStructuresMappingsByUniProtId;
     this.macromolecules = macromolecules;
-    // this.residueListing = residueListing;
     this.molstarResidueInfo = molstarResidueInfo;
   }
 
   generateTableData(): TableRow[] {
-    // const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIds(this.residueListing);
     const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIds(this.macromolecules, this.molstarResidueInfo);
 
     const mappingsByEntityByAccession: EntityUniProtMapping = this.generateUniprotMappings(
@@ -124,9 +119,6 @@ export class MacromoleculeDataToTable extends DataToTable {
     return rows;
   }
 
-  // used here to get start and end residues of a chain. can maybe be replaced by https://www.ebi.ac.uk/pdbe/api/pdb/entry/polymer_coverage/1trn
-  // if coverage is calculated only using observed residues
-  // private getStartEndForChainIds(residueListing: ResidueListing) {
   private getStartEndForChainIds(macromolecules: Molecule[], molstarResidueInfo: MolstarResidueInfo[]) {
     const startEndByEntityByChain: MacromoleculesChainBoundaries = {};
 
@@ -169,23 +161,6 @@ export class MacromoleculeDataToTable extends DataToTable {
         };
       });
     });
-
-    // for (const entity of residueListing['molecules']) {
-    //   for (const chain of entity.chains) {
-    //     const sortedResidues = chain.residues.sort((a, b) => a.residue_number - b.residue_number);
-    //     const firstResidNum = sortedResidues[0].author_residue_number;
-    //     const lastResidNum = sortedResidues[sortedResidues.length - 1].author_residue_number;
-    //     const firstResidIns = sortedResidues[0].author_insertion_code;
-    //     const lastResidIns = sortedResidues[sortedResidues.length - 1].author_insertion_code;
-    //     startEndByEntityByChain[entity.entity_id] = startEndByEntityByChain[entity.entity_id] || {};
-    //     startEndByEntityByChain[entity.entity_id][chain.chain_id] = startEndByEntityByChain[entity.entity_id][chain.chain_id] || {
-    //       start_author_residue_number: firstResidNum,
-    //       end_author_residue_number: lastResidNum,
-    //       start_author_insertion_code: firstResidIns,
-    //       end_author_insertion_code: lastResidIns,
-    //     };
-    //   }
-    // }
     return startEndByEntityByChain;
   }
 

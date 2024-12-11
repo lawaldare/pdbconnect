@@ -17,7 +17,6 @@ import { AssemblyData } from '../../data-models/assembly.model';
 import { PisaAssembly } from '../../data-models/pisa-assembly.model';
 import { CathMappings, PfamMappings, ScopMappings } from '../../data-models/domains.model';
 import { Molecule } from '../../data-models/molecule.model';
-import { ResidueListing } from '../../data-models/residue-listing.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
 import { UniProtMapping } from '../../data-models/uniprot-mapping.model';
@@ -114,7 +113,6 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
           tempTableData = new DomainDataToTable(this.pfamMappings(), this.cathMappings(), this.scopMappings(), this.macromolecules(), this.molstarResidueInfo());
         }
         if (tabName === 'Ligands') {
-          // tempTableData = new LigandDataToTable(this.ligands(), this.modifications(), this.residueListing());
           tempTableData = new LigandDataToTable(this.ligands(), this.modifications(), this.molstarResidueInfo());
         }
         if (tabName === 'Macromolecules') {
@@ -123,7 +121,6 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
             this.uniprotMapping(),
             this.bestStrMapUniProtId(),
             this.macromolecules(),
-            // this.residueListing()
             this.molstarResidueInfo()
           );
         }
@@ -141,21 +138,17 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
       this.tableData = new AssemblyDataToTable(this.complexDetails(), this.assemblyData(), this.pisaAssemblyData());
       this.columnDefinitions = ASSEMBLIES_COL_DEFS;
     } else if (this.tabName() === 'Domains') {
-      // this.tableData = new DomainDataToTable(this.pfamMappings(), this.cathMappings(), this.scopMappings(), this.macromolecules(), this.residueListing());
       this.tableData = new DomainDataToTable(this.pfamMappings(), this.cathMappings(), this.scopMappings(), this.macromolecules(), this.molstarResidueInfo());
       this.columnDefinitions = DOMAINS_COL_DEFS;
     } else if (this.tabName() === 'Ligands') {
-      // this.tableData = new LigandDataToTable(this.ligands(), this.modifications(), this.residueListing());
       this.tableData = new LigandDataToTable(this.ligands(), this.modifications(), this.molstarResidueInfo());
       this.columnDefinitions = LIGANDS_COL_DEFS;
     } else if (this.tabName() === 'Macromolecules') {
-      // TODO: Work on residueListing removal for below
       this.tableData = new MacromoleculeDataToTable(
         this.carbohydrates(),
         this.uniprotMapping(),
         this.bestStrMapUniProtId(),
         this.macromolecules(),
-        // this.residueListing()
         this.molstarResidueInfo()
       );
       this.columnDefinitions = MACROMOLECULES_COL_DEFS;

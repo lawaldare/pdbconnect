@@ -40,10 +40,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 /**
  * TODO:
- * - Add Dynamic SCRIPT loading
- * - Lib Search bar component must be flexible for PDBe vs Ligand pages
+ * - Make <SCRIPT> tags loading Dynamic
   // TODO: move CSS of child components so their width/height is relative to CSS in this component
-  // TODO: refactor header and search for PDBe Entry pgs
  */
 @Component({
   selector: 'pdbc-main',
@@ -66,9 +64,6 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
   styleUrls: ['./main.component.scss'],
 })
 export class EntryMainPageComponent implements OnInit {
-  // Properties to control the PDBe logo visibility and style
-  public showPdbeLogoAndSearch = signal(false);
-
   public readonly pdbeLogoConfig = pdbeLogoConfig;
   public readonly pdbeSearchConfig = pdbeSearchConfig;
   public readonly allTabs = allTabs;
@@ -89,7 +84,7 @@ export class EntryMainPageComponent implements OnInit {
 
   private readonly destroyRef = inject(DestroyRef);
 
-  public pageData$!: Observable<any>;
+  // public pageData$!: Observable<any>;
 
   // signal that holds whether an API call is pending or done for all needed APIs
   public apiLoadedStatus = signal(INITIAL_API_STATUS);
@@ -113,69 +108,66 @@ export class EntryMainPageComponent implements OnInit {
     return status;
   });
 
-  //getEntrySummary
+  // API data from getEntrySummary https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/:entryID
   public summaryData!: ProcessedSummary;
 
-  // getEntryMolecules
+  // API data from getEntryMolecules https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/:entryID
   public macroMolecules!: Molecule[];
   public boundLigands!: Molecule[];
   public organismScientificNames!: string[];
 
-  // getExperiment
+  // API data from getExperiment https://www.ebi.ac.uk/pdbe/api/pdb/entry/experiment/:entryID
   public experimentalDetails!: AnyExperimentDetail[];
   public experimentalMethod!: string;
   public resolutionValues!: Array<number | undefined>;
 
-  // getUniprotMapping
+  // API data from getUniprotMapping https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/:entryID
   public uniprotMapping!: UniProtMapping;
   public uniprotCountsInPDBe!: { [key: string]: number };
   public bestStructuresMappingsByUniProtIds!: { [key: string]: BestStructureMapping[] };
 
-  // getInterproMapping
+  // API data from getInterproMapping https://www.ebi.ac.uk/pdbe/api/mappings/interpro/:entryID
   public interproMapping!: InterProMappings;
 
-  // getPDBEntryFiles
+  // API data from getPDBEntryFiles https://www.ebi.ac.uk/pdbe/api/pdb/entry/files/:entryID
   public downloadOptions: DownloadOption[] = [];
   public viewOptions: DownloadOption[] = [];
 
-  // getPfamMapping
+  // API data from getPfamMapping https://www.ebi.ac.uk/pdbe/api/mappings/pfam/:entryID
   public pfamMapping!: PfamMappings;
 
-  // getSummaryQualityScores
+  // API data from getSummaryQualityScores https://www.ebi.ac.uk/pdbe/api/validation/summary_quality_scores/entry/:entryID
   public summaryQualityScores?: ProcessedQualityScores;
 
-  // getCATHMapping
+  // API data from getCATHMapping https://www.ebi.ac.uk/pdbe/api/mappings/cath/:entryID
   public cathMapping!: CathMappings;
 
-  // getSCOP175Mapping
+  // API data from getSCOP175Mapping https://www.ebi.ac.uk/pdbe/api/mappings/scop/:entryID
   public scop175Mapping!: ScopMappings;
 
-  // getModifications
+  // API data from getModifications https://www.ebi.ac.uk/pdbe/api/pdb/entry/modified_AA_or_NA/:entryID
   public modifications!: ModifiedResidue[];
 
-  // // getResidueListing
-  // public residueListing!: ResidueListing;
-
-  // getValidationKeyStats
+  // API data from getValidationKeyStats https://www.ebi.ac.uk/pdbe/api/validation/key_validation_stats/entry/:entryID
   public validationKeyStats?: KeyValidationStats;
 
-  // getValidationXRayRefine
+  // API data from getValidationXRayRefine https://www.ebi.ac.uk/pdbe/api/validation/xray_refine_data_stats/entry/:entryID
   public validationXRayRefine?: XRayRefine;
 
-  // getPrimaryPublicationAbstract
+  // API data from getPrimaryPublicationAbstract https://www.ebi.ac.uk/pdbe/api/pdb/entry/publications/:entryID
   public primaryPublication?: CitationDetail;
 
-  // getArticleCitingPDBEntry
+  // API data from getArticleCitingPDBEntry https://www.ebi.ac.uk/pdbe/api/pdb/entry/related_publications/:entryID
   public articlesCiting?: RelatedPublication;
 
-  // getPreferredAssembly
+  // API data from getPreferredAssembly https://www.ebi.ac.uk/pdbe/aggregated-api/complex/details/:entryID:?id_type=pdb_id
   public complexDetails!: ComplexDetails[];
 
-  // getAssembly
+  // API data from getAssembly https://www.ebi.ac.uk/pdbe/api/pdb/entry/assembly/:entryID and https://www.ebi.ac.uk/pdbe/api/pisa/assembly/:entryID:/:entityId
   public assemblies!: AssemblyData[];
   public pisaAssemblies!: PisaAssembly[];
 
-  // getCarbohydrates
+  // API data from getCarbohydrates https://www.ebi.ac.uk/pdbe/api/pdb/entry/carbohydrate_polymer/:entryID
   public carbohydrates!: CarbohydrateMolecule[];
 
   constructor() {
@@ -208,11 +200,12 @@ export class EntryMainPageComponent implements OnInit {
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((data) => {
-        console.log('data');
-        console.log(data);
-        this.pageData$ = of(data);
-      });
+      .subscribe();
+    // .subscribe((data) => {
+    //   console.log('data');
+    //   console.log(data);
+    //   this.pageData$ = of(data);
+    // });
   }
 
   private setPageData(): Observable<any> {
@@ -493,25 +486,6 @@ export class EntryMainPageComponent implements OnInit {
           return of([]);
         })
       ),
-      // this.entryAPIService.getResidueListing(this.entryId()).pipe(
-      //   map((data) => {
-      //     this.residueListing = data;
-      //     this.apiLoadedStatus.update((state) => ({
-      //       ...state, // spread the existing state
-      //       residueListing: 'done', // update the specific key dynamically
-      //     }));
-      //     return data;
-      //   }),
-      //   catchError((_error: HttpErrorResponse) => {
-      //     const emptyListing = { molecules: [] };
-      //     this.residueListing = emptyListing;
-      //     this.apiLoadedStatus.update((state) => ({
-      //       ...state, // spread the existing state
-      //       residueListing: 'done', // update the specific key dynamically
-      //     }));
-      //     return of(emptyListing);
-      //   })
-      // ),
       this.entryAPIService.getValidationKeyStats(this.entryId()).pipe(
         map((data) => {
           this.validationKeyStats = data;
@@ -672,7 +646,6 @@ export class EntryMainPageComponent implements OnInit {
           cathMapping,
           scopMapping,
           modifications,
-          // residueListing,
           keyValidationStats,
           xRayRefine,
           primaryPublication,
@@ -692,7 +665,6 @@ export class EntryMainPageComponent implements OnInit {
           cathMapping,
           scopMapping,
           modifications,
-          // residueListing,
           keyValidationStats,
           xRayRefine,
           primaryPublication,

@@ -1,7 +1,6 @@
 import { signal, WritableSignal } from '@angular/core';
 import { CathMappings, DomainMapping, PfamMappings, ScopMappings } from '../../../data-models/domains.model';
 import { Molecule } from '../../../data-models/molecule.model';
-import { ResidueListing, ResidueOfListing } from '../../../data-models/residue-listing.model';
 import { MolstarResidueInfo, MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
 import { DomainsBoundaries, TableFilter, TableRow } from '../data-models-and-definitions/row-and-table.model';
 import { DataToTable } from './abstract-base-row-class';
@@ -12,7 +11,6 @@ export class DomainDataToTable extends DataToTable {
   cathMappings: CathMappings;
   scopMappings: ScopMappings;
   macromolecules: Molecule[];
-  // residueListing: ResidueListing;
   molstarResidueInfo: MolstarResidueInfo[];
 
   molstarHardResetOnSelect = false;
@@ -23,7 +21,6 @@ export class DomainDataToTable extends DataToTable {
   tableRows: WritableSignal<TableRow[]> = signal([]);
   tableFilters: WritableSignal<TableFilter[]> = signal([]);
 
-  // constructor(pfamMappings: PfamMappings, cathMappings: CathMappings, scopMappings: ScopMappings, macromolecules: Molecule[], residueListing: ResidueListing) {
   constructor(
     pfamMappings: PfamMappings,
     cathMappings: CathMappings,
@@ -36,7 +33,6 @@ export class DomainDataToTable extends DataToTable {
     this.cathMappings = cathMappings;
     this.scopMappings = scopMappings;
     this.macromolecules = macromolecules;
-    // this.residueListing = residueListing;
     this.molstarResidueInfo = molstarResidueInfo;
   }
 
@@ -56,7 +52,6 @@ export class DomainDataToTable extends DataToTable {
 
           const moleculeNames = this.macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => mol.molecule_name[0]);
 
-          // const segmentData = this.formatSegments(mappings, this.residueListing);
           const segmentData = this.formatSegments(mappings, this.molstarResidueInfo);
 
           if (segmentData.segments.length === 0) continue;
@@ -90,7 +85,6 @@ export class DomainDataToTable extends DataToTable {
 
           const moleculeNames = this.macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => mol.molecule_name[0]);
 
-          // const segmentData = this.formatSegments(mappings, this.residueListing);
           const segmentData = this.formatSegments(mappings, this.molstarResidueInfo);
 
           if (segmentData.segments.length === 0) continue;
@@ -119,7 +113,6 @@ export class DomainDataToTable extends DataToTable {
           const domain = `${resourceAcc}-${i + 1}`;
           const moleculeNames = this.macromolecules.filter((mol) => mapping.entity_id === mol.entity_id).map((mol) => mol.molecule_name[0]);
 
-          // const segmentData = this.formatSegments([mapping], this.residueListing);
           const segmentData = this.formatSegments([mapping], this.molstarResidueInfo);
 
           if (segmentData.segments.length === 0) continue;
@@ -147,7 +140,6 @@ export class DomainDataToTable extends DataToTable {
     return rows;
   }
 
-  // formatSegments(mappings: DomainMapping[], residueListing: ResidueListing) {
   formatSegments(mappings: DomainMapping[], molstarResidueInfo: MolstarResidueInfo[]) {
     const segments: string[] = [];
     const segmentsResidNumber: string[] = [];
@@ -160,10 +152,6 @@ export class DomainDataToTable extends DataToTable {
     const mappingsByChain = mappings.sort();
     let prevChain = 'undef';
     for (const mapping of mappingsByChain) {
-      // const residueListingEntity = residueListing['molecules'].filter((entity) => entity.entity_id === mapping.entity_id)[0];
-      // const residueListingChain = residueListingEntity['chains'].filter((chain) => chain.chain_id === mapping.chain_id)[0];
-      // const residuesOfChain = residueListingChain['residues'].sort((a, b) => a.residue_number - b.residue_number);
-
       const residueListingChain = molstarResidueInfo.filter((residInfo) => {
         return (
           residInfo.label_entity_id &&
@@ -248,7 +236,6 @@ export class DomainDataToTable extends DataToTable {
       for (const [_resourceAcc, data] of Object.entries(this.cathMappings)) {
         const domainIds: string[] = [];
         for (const mapping of data.mappings) {
-          // const filteredCathMapping = this.filterMappingObserved([mapping], this.residueListing);
           const filteredCathMapping = this.filterMappingObserved([mapping], this.molstarResidueInfo);
           if (filteredCathMapping.length === 0) continue;
           if (domainIds.indexOf(mapping.domain!) === -1) {
@@ -262,7 +249,6 @@ export class DomainDataToTable extends DataToTable {
       for (const [_resourceAcc, data] of Object.entries(this.scopMappings)) {
         const domainIds: string[] = [];
         for (const mapping of data.mappings) {
-          // const filteredScopMapping = this.filterMappingObserved([mapping], this.residueListing);
           const filteredScopMapping = this.filterMappingObserved([mapping], this.molstarResidueInfo);
           if (filteredScopMapping.length === 0) continue;
           if (domainIds.indexOf(mapping.scop_id!) === -1) {
@@ -274,7 +260,6 @@ export class DomainDataToTable extends DataToTable {
 
       let pfamDomainCount = 0;
       for (const [_resourceAcc, data] of Object.entries(this.pfamMappings)) {
-        // const filteredPfamMappings = this.filterMappingObserved(data.mappings, this.residueListing);
         const filteredPfamMappings = this.filterMappingObserved(data.mappings, this.molstarResidueInfo);
         pfamDomainCount += filteredPfamMappings.length;
       }
@@ -308,14 +293,9 @@ export class DomainDataToTable extends DataToTable {
     return newFilters;
   }
 
-  // filterMappingObserved(domainMappings: DomainMapping[], residueListing: ResidueListing) {
   filterMappingObserved(domainMappings: DomainMapping[], molstarResidueInfo: MolstarResidueInfo[]) {
-    // const observedMappings: ResidueOfListing[][] = [];
     const observedMappings: MolstarResidueInfo[][] = [];
     for (const mapping of domainMappings) {
-      // const residueListingEntity = residueListing['molecules'].filter((entity) => entity.entity_id === mapping.entity_id)[0];
-      // const residueListingChain = residueListingEntity['chains'].filter((chain) => chain.chain_id === mapping.chain_id)[0];
-      // const residuesOfChain = residueListingChain['residues'].sort((a, b) => a.residue_number - b.residue_number);
       const residueListingChain = molstarResidueInfo.filter((residInfo) => {
         return (
           residInfo.label_entity_id &&
@@ -328,7 +308,6 @@ export class DomainDataToTable extends DataToTable {
       });
       const residuesOfChain = residueListingChain.sort((a, b) => a.label_seq_id! - b.label_seq_id!);
       const residuesOfMappingObserved = residuesOfChain.filter((resid) => {
-        // return resid.observed_ratio > 0 && resid.residue_number <= mapping.end.residue_number && resid.residue_number >= mapping.start.residue_number;
         return resid.label_seq_id! <= mapping.end.residue_number && resid.label_seq_id! >= mapping.start.residue_number;
       });
       observedMappings.push(residuesOfMappingObserved);

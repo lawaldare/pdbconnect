@@ -2,7 +2,6 @@ import { inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { firstValueFrom, forkJoin, map } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
 import { MolstarResidueInfo, MolstarSelectionObj } from '../../helpers/molstar/molstar-helpers';
-import { ResidueListing } from '../../data-models/residue-listing.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { ComplexDetails } from '../../data-models/complex-details.model';
 import { calculateAssemblyComposition } from '../../helpers/assembly-helpers';
@@ -410,7 +409,6 @@ export class OverviewMolstarFacade {
     }
   }
 
-  // public getSelectionsFromImg(tabView: string, imgName: string, residueListing: ResidueListing, selectedEntity?: Molecule, selectedMods?: ModifiedResidue[]) {
   public getSelectionsFromImg(
     tabView: string,
     imgName: string,
@@ -484,8 +482,6 @@ export class OverviewMolstarFacade {
       const resource = imgName.split('_')[3];
       const resourceId = imgName.split('_')[4];
 
-      // const residueListingEntity = residueListing['molecules'].filter((entity) => entity.entity_id === entityId)[0];
-
       const molstarSelectionObj: MolstarSelectionObj = {
         entityId: entityId + '',
         residues: [],
@@ -495,9 +491,6 @@ export class OverviewMolstarFacade {
 
       for (const [_domain, domainData] of Object.entries(domainInfo.domains)) {
         for (const segment of domainData.segments) {
-          // const residueListingChain = residueListingEntity['chains'].filter((chain) => chain.chain_id === segment.chain_id)[0];
-          // const residuesOfChain = residueListingChain['residues'].sort((a, b) => a.residue_number - b.residue_number);
-
           const residueListingChain = molstarResidueInfo.filter((residInfo) => {
             return (
               residInfo.label_entity_id &&

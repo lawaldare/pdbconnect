@@ -5,7 +5,6 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
-import { ResidueListing } from '../data-models/residue-listing.model';
 import { KeyValidationStats } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
 import { CitationDetail } from '../data-models/publication.model';
@@ -102,10 +101,6 @@ export class EntryApiService {
         return data;
       })
     );
-  }
-
-  public getResidueListing(entryId: string): Observable<ResidueListing> {
-    return this.http.get<any>(`${this.BASE_API}residue_listing/${entryId}`).pipe(map((data) => data[entryId] as ResidueListing));
   }
 
   public getPDBEntryFiles(entryId: string): Observable<any> {

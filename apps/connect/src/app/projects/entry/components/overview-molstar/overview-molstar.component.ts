@@ -20,14 +20,12 @@ import {
   getComponentList,
 } from '../../helpers/molstar/molstar-helpers';
 import { OverviewMolstarFacade } from './overview-molstar-facade';
-import { ResidueListing } from '../../data-models/residue-listing.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { CathMappings, PfamMappings, ScopMappings } from '../../data-models/domains.model';
 import { ComplexDetails } from '../../data-models/complex-details.model';
 import { Color } from 'molstar/lib/mol-util/color';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
 
 declare let PDBeMolstarPlugin: any;
 
@@ -49,7 +47,6 @@ export class OverviewMolstarComponent implements AfterViewInit {
   public readonly macromolecules = input.required<Molecule[]>();
   public readonly ligands = input.required<Molecule[]>();
   public readonly inputModifications = input.required<ModifiedResidue[]>();
-  // public readonly residueListing = input.required<ResidueListing>();
   public readonly pfamMappings = input.required<PfamMappings>();
   public readonly cathMappings = input.required<CathMappings>();
   public readonly scopMappings = input.required<ScopMappings>();
@@ -214,9 +211,9 @@ export class OverviewMolstarComponent implements AfterViewInit {
   }
 
   private async generateResidueListing() {
+    // TODO: Take into account that this is only for the preferred assembly so some ligands will bug (merge this with ligand tab Molstar isntance)
+    // TODO: Could be optimized by filtering non macromolecules and non ligands data
     const data = await getResidues(this.molstarViewInstance);
-    console.log('molstarResidueInfo');
-    console.log(data);
     this.signals.molstarResidueInfo.set(data);
     this.signals.molstarResidueInfoLoaded.set(true);
   }
@@ -366,7 +363,6 @@ export class OverviewMolstarComponent implements AfterViewInit {
     this.tabsStates[tabView].molstarSelectionObjs = [];
 
     if (this.currentTabSelection !== 'Main') {
-      // const data = this.facade.getSelectionsFromImg(tabView, imgName, this.residueListing(), entity, selectedMods);
       const data = this.facade.getSelectionsFromImg(tabView, imgName, this.molstarResidueInfo(), entity, selectedMods);
 
       const molstarSelections = data.selections;
