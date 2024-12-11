@@ -2,7 +2,7 @@
   <div class="container">
     @if(headerSearchConfig.isHomepage){
     <form [formGroup]="form" (ngSubmit)="onHomepageSubmit(form)">
-      <input type="text" class="input-field" formControlName="searchTerm" placeholder="View PDBe-KB ligand by PDB ligand ID (CCD/PRD/CLC)" />
+      <input type="text" class="input-field" formControlName="searchTerm" [placeholder]="headerSearchConfig.placeholderText" />
       <button class="vf-button vf-button--search-{{ buttonTheme }}">Explore</button>
       <button class="vf-button vf-button--search-{{ buttonTheme }} mobile">
         <i class="icon icon-common icon-search"></i>
@@ -13,7 +13,7 @@
     </form>
     } @else {
     <form [formGroup]="form" (ngSubmit)="onSubmit(form)">
-      <input type="text" class="input-field" formControlName="searchTerm" placeholder="View PDBe-KB ligand by PDB ligand ID (CCD/PRD/CLC)" />
+      <input type="text" class="input-field" formControlName="searchTerm" [placeholder]="headerSearchConfig.placeholderText" />
       <button class="vf-button vf-button--search-{{ buttonTheme }}">Explore</button>
       <button class="vf-button vf-button--search-{{ buttonTheme }} mobile">
         <i class="icon icon-common icon-search"></i>

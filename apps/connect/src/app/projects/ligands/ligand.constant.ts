@@ -29,6 +29,7 @@ export const headerSearchConfig = {
   ],
   backgroundColor: 'rgba(15, 92, 90, 0.60)',
   type: ThemeType.PDBEKB,
+  placeholderText: 'View PDBe-KB ligand by PDB ligand ID (CCD/PRD/CLC)',
 };
 
 export const ligandHomePageSeaderSearchConfig = {
@@ -42,6 +43,7 @@ export const ligandHomePageSeaderSearchConfig = {
   ],
   backgroundColor: '',
   type: ThemeType.PDBEKB,
+  placeholderText: 'View PDBe-KB ligand by PDB ligand ID (CCD/PRD/CLC)',
   isHomepage: true,
 };
 

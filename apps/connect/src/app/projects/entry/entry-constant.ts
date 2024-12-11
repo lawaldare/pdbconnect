@@ -26,7 +26,7 @@ export const pdbeSearchConfig = {
   backgroundColor: '#007B53',
   hasAdvancedSearch: true,
   buttonText: 'Search',
-
+  placeholderText: 'View PDBe entry by PDB entry ID',
   type: ThemeType.PDBE,
 };
 
