@@ -56,7 +56,10 @@
         }
       </section>
     </section>
-    <!--  -->
+    <!-- Single Molstar component for tabs below -->
+    <div class="molstar-viewer" #molstarViewer></div>
+
+    <!-- Contains components for the bottom tabs: -->
     <section id="detail-tabs" class="details-tabs">
       <!-- Navigation controls between tabs -->
       <nav>
@@ -95,7 +98,12 @@
         <section class="right-side">
           <!-- inside entry/components/details-dashboard -->
           @if (componentLoadedStatus()['detailsDashboard']) {
-          <pdbc-details-dashboard [entryId]="entryId()" [tabName]="getTableName(tabName.name)" [macromolecules]="macroMolecules"></pdbc-details-dashboard>
+          <pdbc-details-dashboard
+            [entryId]="entryId()"
+            [tabName]="getTableName(tabName.name)"
+            [macromolecules]="macroMolecules"
+            [molstarViewerEl]="molstarViewer"
+          ></pdbc-details-dashboard>
           }
         </section>
         } @if(tabName.name === 'Experiments') {

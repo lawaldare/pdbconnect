@@ -51,11 +51,12 @@ export interface SequenceDetail {
   templateUrl: './details-dashboard.component.html',
   styleUrl: './details-dashboard.component.scss',
 })
-export class DetailsDashboardComponent implements OnDestroy {
+export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
   public readonly entryId = input.required<string>();
   public readonly tabName = input.required<TableNames>();
   // public readonly tabName = input.required<string>();
   public readonly macromolecules = input.required<Molecule[]>();
+  public molstarViewerEl = input.required<HTMLElement>(); // Receive the WebGL div from the parent
 
   public readonly signals = inject(ComponentCommunicationService);
   private readonly utilService = inject(UtilService);
@@ -108,17 +109,43 @@ export class DetailsDashboardComponent implements OnDestroy {
       const tabState = this.signals.tabState(); // Access the current state
       if (this.currentState !== tabState[this.tabName()]) {
         this.currentState = tabState[this.tabName()];
+        await this.sendMolstarViewerToParent();
+        await this.getMolstarViewerFromParent();
         await this.onTableRowSelection(tabState[this.tabName()]);
       }
     });
   }
 
-  async ngOnDestroy() {
-    if (this.molstarVisualisations.molstarViewInstance) {
-      this.molstarVisualisations.molstarViewInstance.plugin.dispose();
-      this.renderer.removeChild(this.elementRef.nativeElement, this.molstarVisualisations.molstarViewInstance);
-      this.molstarVisualisations.resetAttributesForRendering();
+  async ngAfterViewInit() {
+    await this.getMolstarViewerFromParent();
+  }
+
+  async getMolstarViewerFromParent() {
+    // Move the WebGL container into the child component
+    this.renderer.appendChild(this.molstarContainer.nativeElement, this.molstarViewerEl());
+    // Add a delay to ensure synchronicity
+    await firstValueFrom(timer(50)); // 100ms delay, adjust as needed
+  }
+
+  async sendMolstarViewerToParent() {
+    // Move the WebGL container back to the parent component
+    const parentElement = this.molstarViewerEl().parentElement;
+    if (parentElement) {
+      this.renderer.appendChild(parentElement, this.molstarViewerEl());
     }
+    // Set first render for next view equal to true
+    this.molstarVisualisations.isFirstViewRender = true;
+    // Add a delay to ensure synchronicity
+    await firstValueFrom(timer(50)); // 100ms delay, adjust as needed
+  }
+
+  async ngOnDestroy() {
+    await this.sendMolstarViewerToParent();
+    // if (this.molstarVisualisations.molstarViewInstance) {
+    //   this.molstarVisualisations.molstarViewInstance.plugin.dispose();
+    //   // this.renderer.removeChild(this.elementRef.nativeElement, this.molstarVisualisations.molstarViewInstance);
+    //   this.molstarVisualisations.resetAttributesForRendering();
+    // }
     // Remove ligand environment if it exists
     await this.destroyLigandEnv();
   }
@@ -207,18 +234,18 @@ export class DetailsDashboardComponent implements OnDestroy {
     let datum = this.currentRowDatum!;
     if (this.tabName() === 'Assemblies') {
       datum = datum as AssembliesRowData;
-      await this.molstarVisualisations.renderMolstarAssemblies(this.entryId(), this.molstarContainer, datum);
+      await this.molstarVisualisations.renderMolstarAssemblies(this.entryId(), this.molstarViewerEl(), datum);
     } else if (this.tabName() === 'Domains') {
       datum = datum as DomainsRowData;
-      await this.molstarVisualisations.renderMolstarDomains(this.entryId(), this.molstarContainer, datum);
+      await this.molstarVisualisations.renderMolstarDomains(this.entryId(), this.molstarViewerEl(), datum);
     } else if (this.tabName() === 'Ligands') {
       datum = datum as LigandsRowData;
       const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
-      await this.molstarVisualisations.renderMolstarLigands(this.entryId(), this.molstarContainer, datum, molstarSelection);
+      await this.molstarVisualisations.renderMolstarLigands(this.entryId(), this.molstarViewerEl(), datum, molstarSelection);
     } else if (this.tabName() === 'Macromolecules') {
       datum = datum as MacromoleculesRowData;
       const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
-      await this.molstarVisualisations.renderMolstarMacromolecules(this.entryId(), this.molstarContainer, datum, molstarSelection);
+      await this.molstarVisualisations.renderMolstarMacromolecules(this.entryId(), this.molstarViewerEl(), datum, molstarSelection);
     }
   }
 

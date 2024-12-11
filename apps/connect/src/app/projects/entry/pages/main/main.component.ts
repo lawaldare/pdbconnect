@@ -25,7 +25,6 @@ import { pdbeLogoConfig, pdbeSearchConfig, allTabs, tableTabs, COMPONENT_DEPENDE
 import { Molecule } from '../../data-models/molecule.model';
 import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../../data-models/domains.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
-import { ResidueListing } from '../../data-models/residue-listing.model';
 import { KeyValidationStats } from '../../data-models/key-validation-stats.model';
 import { XRayRefine } from '../../data-models/x-ray-refine.model';
 import { CitationDetail } from '../../data-models/publication.model';
@@ -36,12 +35,15 @@ import { PisaAssembly } from '../../data-models/pisa-assembly.model';
 import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
 import { ProcessedSummary } from '../../data-models/summary.model';
 import { ProcessedQualityScores } from '../../data-models/summary-quality-scores.model';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 /**
  * TODO:
  * - Add Dynamic SCRIPT loading
  * - Lib Search bar component must be flexible for PDBe vs Ligand pages
+  // TODO: move CSS of child components so their width/height is relative to CSS in this component
+  // TODO: refactor header and search for PDBe Entry pgs
  */
 @Component({
   selector: 'pdbc-main',
@@ -72,14 +74,14 @@ export class EntryMainPageComponent implements OnInit {
   public readonly allTabs = allTabs;
   public readonly tableTabs = tableTabs;
 
-  private readonly entryAPIService = inject(EntryApiService);
-
   public entryId = signal('1trn'); //'7v08', '3d12', '5tj5', '4zqo'
   public showDownloadOptions = signal(false);
   public showViewOptions = signal(false);
 
   private route = inject(ActivatedRoute);
   public readonly signals = inject(ComponentCommunicationService);
+  private readonly entryAPIService = inject(EntryApiService);
+  private _snackBar = inject(MatSnackBar);
 
   public currentTab = this.signals.currentTab;
   public tabSwitchOrigin = this.signals.tabSwitchOrigin;
@@ -110,10 +112,6 @@ export class EntryMainPageComponent implements OnInit {
 
     return status;
   });
-
-  // TODO: Take into account componentLoadedStatus when tabSwitch is triggered
-  // TODO: move CSS of child components so their width/height is relative to CSS in this component
-  // TODO: refactor header and search for PDBe Entry pgs
 
   //getEntrySummary
   public summaryData!: ProcessedSummary;
@@ -186,8 +184,11 @@ export class EntryMainPageComponent implements OnInit {
       const tabState = this.signals.tabState();
 
       if (this.tabSwitchOrigin() !== 'main') {
+        if (this.componentLoadedStatus()['detailsDashboard'] === false) {
+          // this.utilService.openSnackBar('Please wait until page completely loads', 'Dismiss');
+          this._snackBar.open('Please wait until page completely loads', 'Dismiss'), { duration: 3000 };
+        }
         // if (this.currentTab() !== this.previousTab) {
-        console.log('switch!!!!');
         const el = document.getElementById('detail-tabs');
         el!.scrollIntoView();
         this.previousTab = `${this.currentTab()}`;
@@ -197,6 +198,7 @@ export class EntryMainPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.previousTab = `${this.currentTab()}`;
+
     this.route.params
       .pipe(
         switchMap((params) => {
