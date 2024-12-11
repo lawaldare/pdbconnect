@@ -1,9 +1,9 @@
 <div class="struc-quality-gradient-main">
   @if (componentType && renderGradients) { @if (componentType.includes("GeometryFit")) {
   <div class="struc-quality-gradient-img">
-    @if (renderGradients.geometry !== undefined) {
     <div class="val-lane">
       <div class="val-label paragraph-3">Model geometry</div>
+      @if (renderGradients.geometry !== undefined) {
       <span class="val-gradient" [ngClass]="componentType.includes('RdToBl') ? 'val-gradient-rdtobl' : 'val-gradient-rdtogr'">
         <span
           class="val-bucket"
@@ -13,8 +13,11 @@
           }"
         ></span>
       </span>
+      } @else {
+      <article>Not available</article>
+      }
     </div>
-    } @if (renderGradients.basepairs !== undefined) {
+    @if (renderGradients.basepairs !== undefined) {
     <div class="val-lane">
       <div class="val-label paragraph-3">DNA/RNA geometry</div>
       <span class="val-gradient" [ngClass]="componentType.includes('RdToBl') ? 'val-gradient-rdtobl' : 'val-gradient-rdtogr'">
@@ -27,9 +30,10 @@
         ></span>
       </span>
     </div>
-    } @if (renderGradients.modelfit !== undefined) {
+    }
     <div class="val-lane">
       <div class="val-label paragraph-3">Fit model/data</div>
+      @if (renderGradients.modelfit !== undefined) {
       <span class="val-gradient" [ngClass]="componentType.includes('RdToBl') ? 'val-gradient-rdtobl' : 'val-gradient-rdtogr'">
         <span
           class="val-bucket"
@@ -39,8 +43,10 @@
           }"
         ></span>
       </span>
+      } @else {
+      <article>Not available</article>
+      }
     </div>
-    }
   </div>
   } @else if (componentType.includes("Multipercentile")) {
   <svg></svg>
