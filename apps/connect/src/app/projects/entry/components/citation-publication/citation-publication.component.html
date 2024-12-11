@@ -6,7 +6,7 @@
   </a>
 </h4>
 @if(showFirstFive()){
-<ol>
+<ol [start]="this.pageIndex * 10 + 1">
   @for(article of publicationInfo().slice(0,5); track article.pubmed_id){
   <pdbc-citation-article [article]="article"></pdbc-citation-article>
   }
@@ -17,7 +17,7 @@
   <i class="icon icon-common icon-common"></i>
 </button>
 } } @else {
-<ol>
+<ol [start]="this.pageIndex * 10 + 1">
   @for(article of pagedPublicationInfo; track article.pubmed_id){
   <pdbc-citation-article [article]="article"></pdbc-citation-article>
   }

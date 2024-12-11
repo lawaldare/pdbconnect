@@ -59,15 +59,15 @@
   <section class="assembly-section">
     <div class="info-row">
       <span>Accessible surface area</span>
-      <article>{{ getAdditionalData('accessibleSurfaceArea') }}2</article>
+      <article>{{ getAdditionalData('accessibleSurfaceArea') }}<sup>2</sup></article>
     </div>
     <div class="info-row">
       <span>Buried surface area</span>
-      <article>{{ getAdditionalData('buriedSurfaceArea') }}2</article>
+      <article>{{ getAdditionalData('buriedSurfaceArea') }}<sup>2</sup></article>
     </div>
     <div class="info-row">
       <span>Dissociation area</span>
-      <article>{{ getAdditionalData('dissociationArea') }}2</article>
+      <article>{{ getAdditionalData('dissociationArea') }}<sup>2</sup></article>
     </div>
     <div class="info-row">
       <span>Dissociation energy</span>
@@ -84,7 +84,7 @@
   </section>
   } @if (hasProtvista) {
   <section class="protvista-container">
-    <div #protvistaContainer></div>
+    <div id="protvista-pdb-container" #protvistaContainer></div>
   </section>
   }
 </div>

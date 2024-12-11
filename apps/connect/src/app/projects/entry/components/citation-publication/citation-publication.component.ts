@@ -22,6 +22,7 @@ export class CitationPublicationComponent implements OnInit {
   public pageLength = signal(0);
   public pageSize = signal(10);
   public readonly pageSizeOptions = [5, 10, 15, 20];
+  public pageIndex = 0;
 
   ngOnInit(): void {
     this.pageLength.set(this.publicationInfo().length);
@@ -33,9 +34,9 @@ export class CitationPublicationComponent implements OnInit {
   }
 
   public handlePageEvent(event: PageEvent) {
-    const pageIndex = event.pageIndex;
+    this.pageIndex = event.pageIndex;
     this.pageSize.set(event.pageSize);
-    const startIndex = pageIndex * this.pageSize();
+    const startIndex = this.pageIndex * this.pageSize();
     const endIndex = startIndex + this.pageSize();
     this.pagedPublicationInfo = this.publicationInfo().slice(startIndex, endIndex);
   }

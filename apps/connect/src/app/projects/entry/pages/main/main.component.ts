@@ -40,8 +40,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 /**
  * TODO:
+ * - Move CSS of child components so their width/height is relative to CSS in this component
  * - Make <SCRIPT> tags loading Dynamic
-  // TODO: move CSS of child components so their width/height is relative to CSS in this component
  */
 @Component({
   selector: 'pdbc-main',

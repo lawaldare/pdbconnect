@@ -85,7 +85,7 @@ export class MolstarVisualisationsForTabs {
       hideControls: true,
       hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
       landscape: true,
-      subscribeEvents: false,
+      subscribeEvents: true,
       granularity: 'residue',
     };
     if (this.isMolstarRendered === false) {
