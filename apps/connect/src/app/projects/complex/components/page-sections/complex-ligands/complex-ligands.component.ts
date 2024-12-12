@@ -1,12 +1,17 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { tap } from 'rxjs';
+import { filter, take, tap } from 'rxjs';
 import { ComplexLigandGridComponent } from '../../section-components/complex-ligand-grid/complex-ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { Store } from '@ngrx/store';
 import { ComplexSelectors } from '../../../store/complex.selectors';
+import { LigandSelectors } from '../../../../ligands/store/ligand.selectors';
+import { NavSection } from '@pdbc/core';
+import { LigandActions } from '../../../../ligands/store/ligand.actions';
+import { navComplexSections } from '../../../complex.constant';
+import { ComplexActions } from '../../../store/complex.actions';
 
 export interface ComplexLigand {
   ligandId: string;
@@ -24,23 +29,34 @@ export interface ComplexLigand {
   templateUrl: './complex-ligands.component.html',
   styleUrl: './complex-ligands.component.scss',
 })
-export class ComplexLigandsComponent {
+export class ComplexLigandsComponent implements OnInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
 
   public ligandsPage = signal<ComplexLigand[]>([]);
   public ligandsPageSize = signal<number>(5);
 
-  private readonly ligands$ = this.globalStore.select(ComplexSelectors.complexLigands).pipe(
-    tap((ligands) => {
-      this.ligandsPage.update(() => ligands.slice(0, this.ligandsPageSize()));
-    })
-  );
+  private readonly ligands$ = this.globalStore.select(ComplexSelectors.complexLigands);
 
   public readonly complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
 
   public ligands = toSignal(this.ligands$);
+
   public ligandsLength = computed(() => this.ligands()?.length);
   public ligandsPageSizeOptions = computed(() => [5, 10, 15]);
+
+  public navSections = toSignal(this.globalStore.select(ComplexSelectors.navItems));
+
+  ngOnInit(): void {
+    this.ligandsPage.update(() => (this.ligands() ?? []).slice(0, this.ligandsPageSize()));
+    if (!this.ligandsLength() || this.ligandsLength() === 0) {
+      this.updateWhenNoLigands();
+    }
+  }
+
+  private updateWhenNoLigands(): void {
+    const tempNavsections = (this.navSections() ?? []).filter((section) => section.sectionId !== 'ligands-section');
+    this.globalStore.dispatch(ComplexActions.setNavItems({ navItems: tempNavsections }));
+  }
 
   handlePageEvent(event: PageEvent) {
     const startIndex = event.pageIndex * event.pageSize;
