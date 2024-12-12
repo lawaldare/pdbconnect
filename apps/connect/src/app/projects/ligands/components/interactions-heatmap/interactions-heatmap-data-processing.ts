@@ -129,17 +129,25 @@ export function filterData(viewerData: ViewerData) {
   });
 
   const perAtomSum: any = {};
+  const perAminoSum: any = {};
   let newTotal = 0;
+
   const newCountDict = filtered.reduce((newDict: { [key: string]: any }, eachItem) => {
     if (!Object.prototype.hasOwnProperty.call(newDict, eachItem['atomName'])) {
       newDict[eachItem['atomName']] = {};
       perAtomSum[eachItem['atomName']] = 0;
     }
+    if (!Object.prototype.hasOwnProperty.call(perAminoSum, eachItem['aminoAcid'])) {
+      perAminoSum[eachItem['aminoAcid']] = 0;
+    }
+
     if (!Object.prototype.hasOwnProperty.call(newDict[eachItem['atomName']], eachItem['aminoAcid'])) {
       newDict[eachItem['atomName']][eachItem['aminoAcid']] = 0;
     }
     newDict[eachItem['atomName']][eachItem['aminoAcid']] += eachItem['aminoAcidNumber'];
     perAtomSum[eachItem['atomName']] += eachItem['aminoAcidNumber'];
+    perAminoSum[eachItem['aminoAcid']] += eachItem['aminoAcidNumber'];
+
     newTotal += eachItem['aminoAcidNumber'];
     return newDict;
   }, {});
@@ -147,34 +155,27 @@ export function filterData(viewerData: ViewerData) {
     return {
       xValue: i + 1,
       yValue: 'ATM',
-      score: perAtomSum[eachName] / newTotal,
+      score: (perAtomSum[eachName] / newTotal) * 100,
       start: i + 1,
       atomName: eachName,
-      freq: (perAtomSum[eachName] / newTotal).toFixed(2),
-      perc: ((perAtomSum[eachName] / newTotal) * 100.0).toFixed(2),
     };
   });
   for (let i_heatmap = 0; i_heatmap < viewerData['heatmap'].length; i_heatmap++) {
     const element = viewerData['heatmap'][i_heatmap];
-    let perAtomDivide = perAtomSum[element['atomName']];
+    let perAtomDivide = perAminoSum[element['residue']];
     perAtomDivide = perAtomDivide ? perAtomDivide : 0;
-    const toDivide = viewerData['freqType'] === 'Relative' ? perAtomDivide : newTotal;
     let newCount = 0;
-    if (newCountDict[element['atomName']]) {
-      newCount = newCountDict[element['atomName']][element['residue']!];
+    if (Object.prototype.hasOwnProperty.call(newCountDict[element['atomName']], element['residue'])) {
+      newCount = newCountDict[element['atomName']][element['residue']];
       newCount = newCount ? newCount : 0;
     }
-    viewerData['heatmap'][i_heatmap]['score'] = newCount / Math.max(toDivide, 1);
-    viewerData['heatmap'][i_heatmap]['freq'] = (newCount / Math.max(toDivide, 1)).toFixed(2);
-    viewerData['heatmap'][i_heatmap]['perc'] = ((newCount / Math.max(toDivide, 1)) * 100.0).toFixed(2);
+    viewerData['heatmap'][i_heatmap]['score'] = (newCount / Math.max(perAtomDivide, 1)) * 100;
 
-    viewerData['maxFreq'] = Math.max(...viewerData['averages'].map((v: HotmapLigDatum) => v['freq'] as number));
   }
   return viewerData;
 }
 
-export function filterRescaleData(viewerData: ViewerData, rescaleType: string): ViewerData {
-  viewerData['freqType'] = rescaleType;
+export function filterRescaleData(viewerData: ViewerData): ViewerData {
   viewerData = filterData(viewerData);
   viewerData['originalHeatmap'] = JSON.parse(JSON.stringify(viewerData['heatmap']));
   if (viewerData['sortType'] === 'AAProp') {
@@ -259,8 +260,6 @@ export function processInitialData(resultIntDataAcc: LigIntCountsDictionary, ato
         start: i + 1,
         residue: aminoAcid,
         atomName: atomName,
-        freq: 0.0,
-        perc: 0.0,
       });
       dataKeyToIdx[`${atomNum}-${aminoAcid}`] = k;
       k += 1;
@@ -273,7 +272,6 @@ export function processInitialData(resultIntDataAcc: LigIntCountsDictionary, ato
   const toFilter = generatedData['toFilter'];
 
   const initialSortType = 'AAProp';
-  const initialFreqType = 'Relative';
 
   const viewerData: ViewerData = {
     atomNames: atomNamesList,
@@ -285,13 +283,11 @@ export function processInitialData(resultIntDataAcc: LigIntCountsDictionary, ato
     heatmap: processedData,
     originalHeatmap: JSON.parse(JSON.stringify(processedData)),
     sortType: initialSortType,
-    freqType: initialFreqType,
     validFilters: Object.keys(resultIntDataAcc),
     filters: [],
     toFilter: toFilter,
     dataKeyToIdx: dataKeyToIdx,
     totalInteractions: totalInteractions,
-    maxFreq: 0.0,
   };
-  return filterRescaleData(viewerData, viewerData['freqType']);
+  return filterRescaleData(viewerData);
 }

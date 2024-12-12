@@ -9,7 +9,6 @@ export interface ViewerData {
   heatmap: any;
   originalHeatmap: any;
   sortType: string;
-  freqType: string;
   validFilters: string[];
   filters: string[];
   toFilter: {
@@ -20,5 +19,4 @@ export interface ViewerData {
   }[];
   dataKeyToIdx: { [key: string]: number };
   totalInteractions: number;
-  maxFreq: number;
 }

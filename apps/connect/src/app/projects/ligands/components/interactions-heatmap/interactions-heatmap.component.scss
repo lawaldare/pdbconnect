@@ -23,9 +23,9 @@
       font-weight: 600;
       margin-bottom: 0;
 
-      lib-tool-tip {
-        margin-left: 2px;
-      }
+      // lib-tool-tip {
+      //   margin-left: 2px;
+      // }
     }
   }
 }
@@ -36,8 +36,11 @@
   .controls-sort-filter {
     width: 180px;
 
-    .controls-title {
+    .controls-row {
       margin-top: 10px;
+    }
+
+    .controls-title {
       line-height: normal;
       font-size: 16px;
       margin-bottom: 0;
@@ -63,6 +66,7 @@
   #hm-aa-legend {
     width: 30px;
     height: 390px;
+    margin-top: 40px;
 
     .each-aa-box {
       height: 19.5px;
@@ -86,6 +90,12 @@
   font-weight: 700;
   margin-bottom: 8px;
   max-width: 230px;
+
+  lib-tool-tip {
+    margin-left: 2px;
+    width: 15px;
+    height: 15px;
+  }
 }
 
 .interactions-heatmap-legend {

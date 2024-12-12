@@ -14,11 +14,12 @@ import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
 import { navSections } from '../../../ligand.constant';
 import { LigandActions } from '../../../store/ligand.actions';
+import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 
 @Component({
   selector: 'pdbc-interaction',
   standalone: true,
-  imports: [CommonModule, MaterialModule, InteractionsHeatmapComponent],
+  imports: [CommonModule, MaterialModule, InteractionsHeatmapComponent, ToolTipComponent],
   templateUrl: './interaction.component.html',
   styleUrl: './interaction.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
