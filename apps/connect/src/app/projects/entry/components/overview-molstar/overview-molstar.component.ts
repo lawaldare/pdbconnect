@@ -202,12 +202,6 @@ export class OverviewMolstarComponent implements AfterViewInit {
       this.imageList.push(imageObj.filename);
     }
 
-    console.log('this.assemblyData().preferred');
-    console.log(this.assemblyData().preferred);
-
-    console.log('this.imageList');
-    console.log(this.imageList);
-
     const assemblyToUse = this.assemblyData().preferred ? this.assemblyData().preferred : '1';
     this.preferredAssemblyImgName = `${this.entryId().toLowerCase()}_assembly_${assemblyToUse}_chemically_distinct_molecules_front`;
     // this.preferredAssemblyImgName = `${this.entryId().toLowerCase()}_deposited_chemically_distinct_molecules_front`;
@@ -379,12 +373,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
       // const data = this.facade.getSelectionsFromImg(tabView, imgName, this.molstarResidueInfo(), entity, selectedMods);
       const data = this.facade.getSelectionsFromImg(tabView, imgName, this.molstarResiduesForAssembly, entity, selectedMods);
 
-      console.log('this.molstarResiduesForAssembly');
-      console.log(this.molstarResiduesForAssembly);
-
       const molstarSelections = data.selections;
-      console.log('molstarSelections');
-      console.log(molstarSelections);
       const firstMolstarSelection = molstarSelections.length > 0 ? molstarSelections[0] : undefined;
 
       this.tabsStates[tabView].currentMolstarSelectionName = data.name;

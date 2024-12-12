@@ -240,16 +240,13 @@ export class MolstarVisualisationsForTabs {
     };
     if (reloadConfigObj) {
       if (this.isMolstarRendered === false) {
-        console.log('isMolstarRendered false');
         await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
         this.isMolstarRendered = true;
       } else {
-        console.log('isMolstarRendered true');
         await this.updateMolstar(molstarConfigObject);
       }
     }
     if (this.isFirstViewRender === true) {
-      console.log('isFirstViewRender true');
       await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-polymer', REPR_NONSELECTION_POLYMER, true);
       await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-ligand', REPR_NONSELECTION_LIGAND, true);
       await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-non-standard', REPR_NONSELECTION_LIGAND, true);
@@ -260,7 +257,6 @@ export class MolstarVisualisationsForTabs {
       }
       this.isFirstViewRender = false;
     } else {
-      console.log('isFirstViewRender false');
       await removeComponent(this.molstarViewInstance, `structure-component-static-macromolecule`);
     }
     const reprSelection = moleculeType.includes('carbohydrate') ? MACROMOLECULES_REPR_SELECTION_CARB : PROTEIN_REPR_SELECTION;
