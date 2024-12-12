@@ -217,14 +217,14 @@ export class ValidationDataFacade {
         source: 'Depositor',
       });
     }
-    if (xrayInfo !== undefined && xrayInfo.numMillerIndices.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.numMillerIndices && xrayInfo.numMillerIndices.value !== null) {
       datasetRows.push({
         metric: 'Number of reflections',
         value: [`${xrayInfo.numMillerIndices.value!}`],
         source: xrayInfo.numMillerIndices.source,
       });
     }
-    if (xrayInfo !== undefined) {
+    if (xrayInfo !== undefined && xrayInfo['percent-free-reflections']) {
       const percFree = xrayInfo['percent-free-reflections'].value || 0;
       if (percFree > 0) {
         datasetRows.push({
@@ -234,14 +234,20 @@ export class ValidationDataFacade {
         });
       }
     }
-    if (xrayInfo !== undefined && xrayInfo.DataCompleteness.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.DataCompleteness && xrayInfo.DataCompleteness.value !== null) {
       datasetRows.push({
         metric: 'Data completeness',
         value: [`${xrayInfo.DataCompleteness.value!}%`],
         source: xrayInfo.DataCompleteness.source,
       });
     }
-    if (xrayInfo !== undefined && xrayInfo.EDS_resolution.value !== null && xrayInfo.EDS_resolution_low.value !== null) {
+    if (
+      xrayInfo !== undefined &&
+      xrayInfo.EDS_resolution &&
+      xrayInfo.EDS_resolution.value !== null &&
+      xrayInfo.EDS_resolution_low &&
+      xrayInfo.EDS_resolution_low.value !== null
+    ) {
       datasetRows.push({
         metric: 'EDS resolution',
         value: [`${xrayInfo.EDS_resolution.value!}`, `${xrayInfo.EDS_resolution_low.value!}`],
@@ -269,14 +275,14 @@ export class ValidationDataFacade {
         source: 'Depositor',
       });
     }
-    if (xrayInfo !== undefined && xrayInfo.TransNCS.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.TransNCS && xrayInfo.TransNCS.value !== null) {
       datasetRows.push({
         metric: 'Possible (pseudo-) translation',
         value: [`${xrayInfo.TransNCS.value!}`],
         source: xrayInfo.TransNCS.source,
       });
     }
-    if (xrayInfo !== undefined && xrayInfo.WilsonBestimate.value !== null) {
+    if (xrayInfo !== undefined && xrayInfo.WilsonBestimate && xrayInfo.WilsonBestimate.value !== null) {
       datasetRows.push({
         metric: 'Wilson B',
         value: [`${xrayInfo.WilsonBestimate.value!}`],
