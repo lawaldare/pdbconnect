@@ -1,4 +1,4 @@
-import { ElementRef, Injectable, signal, WritableSignal } from '@angular/core';
+import { ElementRef, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import {
   MolstarSelectionObj,
@@ -8,6 +8,7 @@ import {
   focusLoci,
   changeComponentVisibility,
   changeRepresentationVisibility,
+  getResidues,
 } from './molstar-helpers';
 import {
   LIGANDS_REPR_HIGHLIGHT,
@@ -25,6 +26,7 @@ import {
   LigandsRowData,
   MacromoleculesRowData,
 } from '../../components/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { ComponentCommunicationService } from '../../services/component-comm.service';
 
 declare let PDBeMolstarPlugin: any;
 
@@ -53,6 +55,7 @@ export class MolstarVisualisationsForTabs {
   public molstarViewInstance: any;
   private isMolstarRendered = false;
   public isFirstViewRender = true;
+  public readonly signals = inject(ComponentCommunicationService);
 
   public resetAttributesForRendering() {
     this.molstarViewInstance = undefined;
@@ -75,12 +78,10 @@ export class MolstarVisualisationsForTabs {
     await firstValueFrom(this.molstarViewInstance.events.loadComplete);
   }
 
-  public async renderMolstarAssemblies(entryId: string, molstarContainer: HTMLElement, datum: AssembliesRowData) {
-    const assemblyId = datum.assemblyId;
+  public async renderMolstarInitial(entryId: string, molstarContainer: HTMLElement) {
     const molstarConfigObject: MolstarConfigObject = {
       moleculeId: entryId,
       loadMaps: false,
-      assemblyId: assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
       hideControls: true,
       hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
@@ -94,9 +95,35 @@ export class MolstarVisualisationsForTabs {
     } else {
       await this.updateMolstar(molstarConfigObject);
     }
+    const data = await getResidues(this.molstarViewInstance);
+    this.signals.molstarResidueInfo.set(data);
+    this.signals.molstarResidueInfoLoaded.set(true);
   }
 
-  public async renderMolstarDomains(entryId: string, molstarContainer: HTMLElement, datum: DomainsRowData) {
+  public async renderMolstarAssemblies(entryId: string, molstarContainer: HTMLElement, datum: AssembliesRowData, reloadConfigObj: boolean) {
+    const assemblyId = datum.assemblyId;
+    const molstarConfigObject: MolstarConfigObject = {
+      moleculeId: entryId,
+      loadMaps: false,
+      assemblyId: assemblyId,
+      bgColor: { r: 255, g: 255, b: 255 },
+      hideControls: true,
+      hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
+      landscape: true,
+      subscribeEvents: true,
+      granularity: 'residue',
+    };
+    if (reloadConfigObj) {
+      if (this.isMolstarRendered === false) {
+        await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
+        this.isMolstarRendered = true;
+      } else {
+        await this.updateMolstar(molstarConfigObject);
+      }
+    }
+  }
+
+  public async renderMolstarDomains(entryId: string, molstarContainer: HTMLElement, datum: DomainsRowData, reloadConfigObj: boolean) {
     const molstarSelection = datum.additionalData.selections[0];
 
     const molstarConfigObject: MolstarConfigObject = {
@@ -109,12 +136,15 @@ export class MolstarVisualisationsForTabs {
       subscribeEvents: true,
       granularity: 'residue',
     };
-    if (this.isMolstarRendered === false) {
-      // await this.initMolstar(molstarContainer, molstarConfigObject);
-      await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
-      this.isMolstarRendered = true;
-    } else {
-      await this.updateMolstar(molstarConfigObject);
+
+    if (reloadConfigObj) {
+      if (this.isMolstarRendered === false) {
+        // await this.initMolstar(molstarContainer, molstarConfigObject);
+        await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
+        this.isMolstarRendered = true;
+      } else {
+        await this.updateMolstar(molstarConfigObject);
+      }
     }
 
     if (this.isFirstViewRender === true) {
@@ -131,7 +161,13 @@ export class MolstarVisualisationsForTabs {
     await focusLoci(this.molstarViewInstance, molstarSelection);
   }
 
-  public async renderMolstarLigands(entryId: string, molstarContainer: HTMLElement, datum: LigandsRowData, molstarSelection: MolstarSelectionObj) {
+  public async renderMolstarLigands(
+    entryId: string,
+    molstarContainer: HTMLElement,
+    datum: LigandsRowData,
+    molstarSelection: MolstarSelectionObj,
+    reloadConfigObj: boolean
+  ) {
     const entityId = molstarSelection.entityId!;
     const chainId = molstarSelection.authChainId!;
 
@@ -162,11 +198,13 @@ export class MolstarVisualisationsForTabs {
       granularity: 'residue',
     };
 
-    if (this.isMolstarRendered === false) {
-      await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
-      this.isMolstarRendered = true;
-    } else {
-      await this.updateMolstar(molstarConfigObject);
+    if (reloadConfigObj) {
+      if (this.isMolstarRendered === false) {
+        await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
+        this.isMolstarRendered = true;
+      } else {
+        await this.updateMolstar(molstarConfigObject);
+      }
     }
     // to be added?
     // await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-ligand', reprNonSelectionLigand, true);
@@ -181,7 +219,13 @@ export class MolstarVisualisationsForTabs {
     await focusLoci(this.molstarViewInstance, molstarSelection);
   }
 
-  public async renderMolstarMacromolecules(entryId: string, molstarContainer: HTMLElement, datum: MacromoleculesRowData, molstarSelection: MolstarSelectionObj) {
+  public async renderMolstarMacromolecules(
+    entryId: string,
+    molstarContainer: HTMLElement,
+    datum: MacromoleculesRowData,
+    molstarSelection: MolstarSelectionObj,
+    reloadConfigObj: boolean
+  ) {
     const moleculeType = datum.additionalData.molecule.molecule_type;
 
     const molstarConfigObject: MolstarConfigObject = {
@@ -194,13 +238,18 @@ export class MolstarVisualisationsForTabs {
       subscribeEvents: true,
       granularity: 'residue',
     };
-    if (this.isMolstarRendered === false) {
-      await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
-      this.isMolstarRendered = true;
-    } else {
-      await this.updateMolstar(molstarConfigObject);
+    if (reloadConfigObj) {
+      if (this.isMolstarRendered === false) {
+        console.log('isMolstarRendered false');
+        await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
+        this.isMolstarRendered = true;
+      } else {
+        console.log('isMolstarRendered true');
+        await this.updateMolstar(molstarConfigObject);
+      }
     }
     if (this.isFirstViewRender === true) {
+      console.log('isFirstViewRender true');
       await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-polymer', REPR_NONSELECTION_POLYMER, true);
       await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-ligand', REPR_NONSELECTION_LIGAND, true);
       await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-non-standard', REPR_NONSELECTION_LIGAND, true);
@@ -211,6 +260,7 @@ export class MolstarVisualisationsForTabs {
       }
       this.isFirstViewRender = false;
     } else {
+      console.log('isFirstViewRender false');
       await removeComponent(this.molstarViewInstance, `structure-component-static-macromolecule`);
     }
     const reprSelection = moleculeType.includes('carbohydrate') ? MACROMOLECULES_REPR_SELECTION_CARB : PROTEIN_REPR_SELECTION;

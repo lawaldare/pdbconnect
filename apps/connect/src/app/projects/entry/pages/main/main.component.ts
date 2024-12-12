@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
@@ -36,8 +36,18 @@ import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.mod
 import { ProcessedSummary } from '../../data-models/summary.model';
 import { ProcessedQualityScores } from '../../data-models/summary-quality-scores.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
+
+// Some interesting entries:
+// 4aqd carbs
+// 6hr1 fusion
+// 7v08 large em
+// 3irj only carb
+// 3l3t 4 assemblies
+// 1trn interesting domains, modifications
+
 /**
  * TODO:
  * - Move CSS of child components so their width/height is relative to CSS in this component
@@ -63,7 +73,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
 })
-export class EntryMainPageComponent implements OnInit {
+export class EntryMainPageComponent implements AfterViewInit {
   public readonly pdbeLogoConfig = pdbeLogoConfig;
   public readonly pdbeSearchConfig = pdbeSearchConfig;
   public readonly allTabs = allTabs;
@@ -77,12 +87,15 @@ export class EntryMainPageComponent implements OnInit {
   public readonly signals = inject(ComponentCommunicationService);
   private readonly entryAPIService = inject(EntryApiService);
   private _snackBar = inject(MatSnackBar);
+  private molstarVisualisation = inject(MolstarVisualisationsForTabs);
 
   public currentTab = this.signals.currentTab;
   public tabSwitchOrigin = this.signals.tabSwitchOrigin;
   public previousTab = 'undefined';
 
   private readonly destroyRef = inject(DestroyRef);
+
+  @ViewChild('molstarViewer') molstarViewer!: ElementRef;
 
   // public pageData$!: Observable<any>;
 
@@ -188,7 +201,7 @@ export class EntryMainPageComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
+  async ngAfterViewInit() {
     this.previousTab = `${this.currentTab()}`;
 
     this.route.params
@@ -196,6 +209,7 @@ export class EntryMainPageComponent implements OnInit {
         switchMap((params) => {
           const entryId = params['entryId'].toLowerCase();
           this.entryId.set(entryId);
+          this.molstarVisualisation.renderMolstarInitial(this.entryId(), this.molstarViewer.nativeElement);
           return this.setPageData();
         }),
         takeUntilDestroyed(this.destroyRef)

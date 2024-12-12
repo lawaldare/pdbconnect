@@ -57,7 +57,9 @@
       </section>
     </section>
     <!-- Single Molstar component for tabs below -->
-    <div class="molstar-viewer" #molstarViewer></div>
+    <div #molstarParent style="display: none">
+      <div class="molstar-viewer" #molstarViewer></div>
+    </div>
 
     <!-- Contains components for the bottom tabs: -->
     <section id="detail-tabs" class="details-tabs">
@@ -103,6 +105,7 @@
             [tabName]="getTableName(tabName.name)"
             [macromolecules]="macroMolecules"
             [molstarViewerEl]="molstarViewer"
+            [molstarParent]="molstarParent"
           ></pdbc-details-dashboard>
           }
         </section>

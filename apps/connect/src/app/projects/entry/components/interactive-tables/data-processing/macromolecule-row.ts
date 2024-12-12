@@ -65,7 +65,6 @@ export class MacromoleculeDataToTable extends DataToTable {
 
   generateTableData(): TableRow[] {
     const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIds(this.macromolecules, this.molstarResidueInfo);
-
     const mappingsByEntityByAccession: EntityUniProtMapping = this.generateUniprotMappings(
       this.uniprotMapping,
       this.bestStructuresMappingsByUniProtId,
@@ -119,6 +118,8 @@ export class MacromoleculeDataToTable extends DataToTable {
     return rows;
   }
 
+  // TODO: Hide All when single category
+  // TODO: Add status endpoint model and check
   private getStartEndForChainIds(macromolecules: Molecule[], molstarResidueInfo: MolstarResidueInfo[]) {
     const startEndByEntityByChain: MacromoleculesChainBoundaries = {};
 
