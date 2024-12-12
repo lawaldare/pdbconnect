@@ -11,7 +11,7 @@
   <section id="scaffold-section">
     <h4>Same scaffold - {{ sameScaffolds().length }}</h4>
     <div class="search-box">
-      <input type="search" [formControl]="sameScaffoldTerm" placeholder="Search by name or PDB ID" />
+      <input type="search" [formControl]="sameScaffoldTerm" placeholder="Search by ligand name or id" />
       @if(!sameScaffoldTerm.value){
       <i class="icon icon-common icon-search"></i>
       }
@@ -39,7 +39,7 @@
     <h4>Similar ligands - {{ similarLigands().length }}</h4>
     <div class="filter-box">
       <div class="search-box">
-        <input type="search" [formControl]="sameLigandsTerm" placeholder="Search by name or PDB ID" />
+        <input type="search" [formControl]="sameLigandsTerm" placeholder="Search by ligand name or id" />
         @if(!sameLigandsTerm.value){
         <i class="icon icon-common icon-search"></i>
         }
@@ -72,7 +72,7 @@
     <h4>Stereoisomers - {{ stereoisomers().length }}</h4>
     <div class="filter-box">
       <div class="search-box">
-        <input type="search" [formControl]="stereoisomerTerm" placeholder="Search by name or PDB ID" />
+        <input type="search" [formControl]="stereoisomerTerm" placeholder="Search by ligand name or id" />
         @if(!sameLigandsTerm.value){
         <i class="icon icon-common icon-search"></i>
         }

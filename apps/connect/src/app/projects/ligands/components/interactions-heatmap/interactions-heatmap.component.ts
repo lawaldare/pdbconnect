@@ -88,7 +88,7 @@ export class InteractionsHeatmapComponent implements OnChanges {
 
   @HostListener('document:PDB.ligand.showAtom', ['$event']) atomMouseOver(e: CustomEvent) {
     if (e.detail.external === false && this.isMouseHovering === false) {
-      const atomName = e.detail.tooltip.split(' ')[0].split('<span>')[1];
+      const atomName = e.detail.atomName;
       let toSend, atomDatum;
       if (this.atomNamesList?.length) {
         const atomNum = this.atomNamesList.indexOf(atomName) + 1;
@@ -185,11 +185,8 @@ export class InteractionsHeatmapComponent implements OnChanges {
     await this.waitForElm('#heatmap-atoms');
     this.heatmapAtomsElement?.heatmapInstance?.setTooltip((d, x, y, xIndex, yIndex) => {
       const returnHTML = `
-        <b>You are at</b> <br />
-
-        Atom name: <b>${d['atomName']}</b><br />
-        Ligand interactions frequency: <b>${d['freq']}</b><br />
-        (Perc: <b>${d['perc']}%</b>)
+        Ligand atom: <b>${d['atomName']}</b><br />
+        Atom-wise interactions: <b>${d['score'].toFixed(2)}%</b><br />
         `;
       return returnHTML;
     });
@@ -238,12 +235,9 @@ export class InteractionsHeatmapComponent implements OnChanges {
     await this.waitForElm('#heatmap-resids');
     this.heatmapResidsElement?.heatmapInstance?.setTooltip((d, x, y, xIndex, yIndex) => {
       const returnHTML = `
-        <b>You are at</b> <br />
-
-        Atom name: <b>${d['atomName']}</b><br />
-        Residue type: <b>${d['residue']}</b><br />
-        Atom interactions frequency: <b>${d['freq']}</b><br />
-        (Perc: <b>${d['perc']}%</b>)
+        Ligand atom: <b>${d['atomName']}</b><br />
+        Amino acid: <b>${d['residue']}</b><br />
+        Pairwise interactions: <b>${d['score'].toFixed(2)}%</b><br />
         `;
       return returnHTML;
     });
@@ -284,23 +278,21 @@ export class InteractionsHeatmapComponent implements OnChanges {
   }
 
   setAtomsColorScale() {
-    const maxValue = Math.max(...this.viewerData['averages'].map((v: any) => v.freq as number));
-    const colorMin = '#a0bb9e';
-    const colorMax = '#505d50';
-    this.atomDomainMap = [0.0, 0.01, maxValue];
-    this.atomColorMap = ['#FFFFFF', colorMin, colorMax];
+    const score = this.viewerData['averages'].map((v: any) => v.score as number);
+    const maxScore = Math.max(...score);
+    this.atomDomainMap = [0, 0.01, maxScore];
+    this.atomColorMap = ['#ffffff', '#a0bb9e', '#505d50'];
     const atomColorScale = d3.scaleLinear(this.atomDomainMap, this.atomColorMap);
-    this.heatmapAtomsElement?.heatmapInstance?.setColor((d: any) => atomColorScale(d['freq']));
+    this.heatmapAtomsElement?.heatmapInstance?.setColor((d: any) => atomColorScale(d['score']));
   }
 
   setResidsColorScale() {
-    const residMaxValue = 100.0;
-    const residColorMin = '#B99EBB';
-    const residColorMax = '#5D505D';
-    this.residDomainMap = [0.0, 0.01, residMaxValue];
-    this.residColorMap = ['#FFFFFF', residColorMin, residColorMax];
+    const score = this.viewerData['heatmap'].map((v: any) => v.score as number);
+    const maxScore = Math.max(...score);
+    this.residDomainMap = [0, 0.01, maxScore];
+    this.residColorMap = ['#FFFFFF', '#B99EBB', '#2b232b'];
     const residColorScale = d3.scaleLinear(this.residDomainMap, this.residColorMap);
-    this.heatmapResidsElement?.heatmapInstance?.setColor((d: any) => residColorScale(d['perc']));
+    this.heatmapResidsElement?.heatmapInstance?.setColor((d: any) => residColorScale(d['score']));
   }
 
   changeSorting(sortType: string) {
@@ -349,7 +341,7 @@ export class InteractionsHeatmapComponent implements OnChanges {
   }
 
   triggerFiltering() {
-    this.viewerData = filterRescaleData(this.viewerData, this.viewerData['freqType']);
+    this.viewerData = filterRescaleData(this.viewerData);
     this.heatmapResidsElement.setHeatmapData(
       this.viewerData['xDomain'], //xDomain
       this.viewerData['yDomain'], //yDomain
@@ -383,10 +375,8 @@ export class InteractionsHeatmapComponent implements OnChanges {
 
     const contentDiv = document.createElement('div');
     contentDiv.setAttribute('class', 'heatmap-tooltip-content');
-    contentDiv.innerHTML = `<b>You are at</b> <br>
-    Atom name: <b>${atomDatum.atomName}</b><br>
-    Ligand interactions frequency: <b>${atomDatum.freq}</b><br>
-    (Perc: <b>${atomDatum.perc}%</b>)
+    contentDiv.innerHTML = `Ligand atom: <b>${atomDatum.atomName}</b><br>
+    Atom-wise interactions: <b>${atomDatum.score.toFixed(2)}%</b><br>
     `;
     tooltipDiv.appendChild(contentDiv);
     (whereToPlace as HTMLElement).appendChild(tooltipDiv);

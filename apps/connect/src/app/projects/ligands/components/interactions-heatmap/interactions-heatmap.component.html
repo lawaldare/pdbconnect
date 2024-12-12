@@ -2,13 +2,13 @@
   <div class="hm-left-column">
     <div class="hm-left-row" style="height: 40px"></div>
     <div class="hm-left-row" style="height: 40px">
-      <p class="hm-left-title" style="padding-top: 17px">Ligand atoms</p>
+      <p class="hm-left-title" style="padding-top: 8px;">Ligand atoms</p>
     </div>
-    <div class="hm-left-row" style="margin-top: 4px">
+    <!-- <div class="hm-left-row" style="margin-top: 4px">
       <p class="hm-left-title">
         Ligand interactions
         <lib-tool-tip>
-          <p>Relative number of interactions by each ligand atom compared to the total interactions of the ligand</p>
+          <p>Percentage of interactions by ligand atom compared to the total interactions of the ligand</p>
         </lib-tool-tip>
       </p>
     </div>
@@ -16,24 +16,24 @@
       <p class="hm-left-title">
         Amino acids interactions
         <lib-tool-tip>
-          <p>Relative number of interactions between each ligand atom-amino acid pair compared to the total interactions of the amino acid</p>
+          <p>Percentage of interactions between ligand atom-amino acid pair compared to the total interactions of the amino acid</p>
         </lib-tool-tip>
       </p>
-    </div>
+    </div> -->
     <div class="controls-container">
       <div class="controls-sort-filter">
         <div class="controls-row">
-          <p class="controls-title">Sort by:</p>
+          <span class="controls-title">Sort by:</span>
           <mat-radio-button (click)="changeSorting('by_aa_props')" checked>Amino acid properties</mat-radio-button>
-          <mat-radio-button (click)="changeSorting('by_frequency')">Frequency</mat-radio-button>
+          <mat-radio-button (click)="changeSorting('by_frequency')">Interactions</mat-radio-button>
         </div>
         <div class="controls-row">
           @if (viewerData) {
-          <p class="controls-title">
+          <span class="controls-title">
             Filter by: @if (viewerData.filters.length > 0) {
             <button class="vf-button vf-button--link" (click)="clearFilters()">Clear</button>
             }
-          </p>
+          </span>
           }
         </div>
         <div id="hm-int-filters">
@@ -91,7 +91,11 @@
 <div class="interactions-heatmap-legend">
   <div class="legend-row-flex-plots">
     <div class="legend-row-block">
-      <div class="legend-title">Frequency colour scale:</div>
+      <div class="legend-title">Ligand interactions
+        <lib-tool-tip>
+          <p>Percentage of interactions by ligand atom compared to the total interactions of the ligand</p>
+        </lib-tool-tip>
+      </div>
       @if (atomDomainMap && atomColorMap) {
       <div class="legend-category-plot">
         <div
@@ -99,19 +103,32 @@
             marginLeft: '18px',
             width: '200px',
             height: '20px',
-            background: 'linear-gradient(to right,' + atomColorMap[1] + ' 0%,' + atomColorMap[2] + ' 100%)'
+            background: 'linear-gradient(to right,' + atomColorMap[0] + ' 0%,' + atomColorMap[1] + ' 50%,' + atomColorMap[2] + ' 100%)'
           }"
         ></div>
-        <span style="float: left; margin-left: 4px">{{ atomDomainMap[1] }}</span> <span style="float: right">{{ atomDomainMap[2] }}</span>
+        <span style="float: left; margin-left: 4px">{{ atomDomainMap[0] }}%</span> <span style="float: right">{{ atomDomainMap[2].toFixed(2) }}%</span>
       </div>
       }
     </div>
     <div class="legend-row-block">
-      <div class="legend-title">Atom-wise heatmap colour scale:</div>
-      <div class="legend-category-plot">
-        <div style="margin-left: 18px; width: 200px; height: 20px; background: linear-gradient(to right, #fff 0, #b99ebb 0.1%, #5d505d 100%)"></div>
-        <span style="float: left; margin-left: 4px">0%</span> <span style="float: right">100%</span>
+      <div class="legend-title">Amino acid interactions
+        <lib-tool-tip>
+          <p>Percentage of interactions between ligand atom-amino acid pair compared to the total interactions of the amino acid</p>
+        </lib-tool-tip>
       </div>
+      @if (residDomainMap && residColorMap) {
+      <div class="legend-category-plot">
+        <div
+          [ngStyle]="{
+            marginLeft: '18px',
+            width: '200px',
+            height: '20px',
+            background: 'linear-gradient(to right,' + residColorMap[0] + ' 0%,' + residColorMap[1] + ' 50%,' + residColorMap[2] + ' 100%)'
+          }"
+        ></div>
+        <span style="float: left; margin-left: 4px">{{ residDomainMap[0] }}%</span> <span style="float: right">{{ residDomainMap[2].toFixed(2) }}%</span>
+      </div>
+      }
     </div>
   </div>
   <div class="legend-row">

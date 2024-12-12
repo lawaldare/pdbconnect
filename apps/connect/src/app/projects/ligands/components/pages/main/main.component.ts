@@ -43,7 +43,7 @@ import { LigandActions } from '../../../store/ligand.actions';
     LigandSpecificDatabasesComponent,
     DropdownMenuComponent,
     MaterialModule,
-  ],
+],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
 })
