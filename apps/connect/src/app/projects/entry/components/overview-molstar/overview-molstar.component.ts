@@ -18,6 +18,7 @@ import {
   addRepresentationToComponent,
   changeRepresentationVisibility,
   getComponentList,
+  MolstarResidueInfo,
 } from '../../helpers/molstar/molstar-helpers';
 import { OverviewMolstarFacade } from './overview-molstar-facade';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
@@ -59,6 +60,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
 
   // residue listing information retrieved using molstar
   private molstarResidueInfo = this.signals.molstarResidueInfo;
+  private molstarResiduesForAssembly: MolstarResidueInfo[] = [];
 
   public assemblyData = this.facade.assemblyData;
   public moleculesDescription = this.facade.moleculesDescription;
@@ -170,10 +172,13 @@ export class OverviewMolstarComponent implements AfterViewInit {
   private async initMolstarInstance() {
     this.molstarViewInstance = new PDBeMolstarPlugin();
 
+    const assemblyToUse = this.assemblyData().preferred ? this.assemblyData().preferred : '1';
+
     // const containerElementRef = this.molstarContainer.get(); // Unwrap the signal
     const container = this.molstarContainer.nativeElement;
     this.molstarViewInstance.render(container, {
       moleculeId: this.entryId(),
+      assemblyId: assemblyToUse,
       bgColor: { r: 255, g: 255, b: 255 },
       hideControls: true,
       hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
@@ -197,6 +202,12 @@ export class OverviewMolstarComponent implements AfterViewInit {
       this.imageList.push(imageObj.filename);
     }
 
+    console.log('this.assemblyData().preferred');
+    console.log(this.assemblyData().preferred);
+
+    console.log('this.imageList');
+    console.log(this.imageList);
+
     const assemblyToUse = this.assemblyData().preferred ? this.assemblyData().preferred : '1';
     this.preferredAssemblyImgName = `${this.entryId().toLowerCase()}_assembly_${assemblyToUse}_chemically_distinct_molecules_front`;
     // this.preferredAssemblyImgName = `${this.entryId().toLowerCase()}_deposited_chemically_distinct_molecules_front`;
@@ -210,13 +221,13 @@ export class OverviewMolstarComponent implements AfterViewInit {
     await this.loadImg(this.preferredAssemblyImgName);
   }
 
-  private async generateResidueListing() {
-    // TODO: Take into account that this is only for the preferred assembly so some ligands will bug (merge this with ligand tab Molstar isntance)
-    // TODO: Could be optimized by filtering non macromolecules and non ligands data
-    const data = await getResidues(this.molstarViewInstance);
-    this.signals.molstarResidueInfo.set(data);
-    this.signals.molstarResidueInfoLoaded.set(true);
-  }
+  // private async generateResidueListing() {
+  //   // TODO: Take into account that this is only for the preferred assembly so some ligands will bug (merge this with ligand tab Molstar isntance)
+  //   // TODO: Could be optimized by filtering non macromolecules and non ligands data
+  //   const data = await getResidues(this.molstarViewInstance);
+  //   this.signals.molstarResidueInfo.set(data);
+  //   this.signals.molstarResidueInfoLoaded.set(true);
+  // }
 
   async ngAfterViewInit() {
     // generate assembly related data
@@ -231,7 +242,9 @@ export class OverviewMolstarComponent implements AfterViewInit {
     // initialise molstar and the image gallery functionality
     await this.initMolstarInstance();
     await this.initMolstarImageGallery();
-    await this.generateResidueListing();
+    // await this.generateResidueListing();
+
+    this.molstarResiduesForAssembly = getResidues(this.molstarViewInstance);
 
     // parse modifications data to match gallery states
     this.facade.parseModifications(this.entryId(), this.inputModifications(), this.imageList);
@@ -363,9 +376,15 @@ export class OverviewMolstarComponent implements AfterViewInit {
     this.tabsStates[tabView].molstarSelectionObjs = [];
 
     if (this.currentTabSelection !== 'Main') {
-      const data = this.facade.getSelectionsFromImg(tabView, imgName, this.molstarResidueInfo(), entity, selectedMods);
+      // const data = this.facade.getSelectionsFromImg(tabView, imgName, this.molstarResidueInfo(), entity, selectedMods);
+      const data = this.facade.getSelectionsFromImg(tabView, imgName, this.molstarResiduesForAssembly, entity, selectedMods);
+
+      console.log('this.molstarResiduesForAssembly');
+      console.log(this.molstarResiduesForAssembly);
 
       const molstarSelections = data.selections;
+      console.log('molstarSelections');
+      console.log(molstarSelections);
       const firstMolstarSelection = molstarSelections.length > 0 ? molstarSelections[0] : undefined;
 
       this.tabsStates[tabView].currentMolstarSelectionName = data.name;

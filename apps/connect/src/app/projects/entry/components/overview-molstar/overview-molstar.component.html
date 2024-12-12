@@ -46,9 +46,9 @@
   </nav>
   <section class="tab-content">
     <section class="molstar-controls">
+      <!-- Overview Molstar: selection dropdown and zoom controls -->
       @if (currentMolstarSelection) {
       <div>
-        <!-- <span class="molstar-control-txt">Selected: {{currentMolstarSelectionName}}</span> -->
         <span class="molstar-control-txt">Selected:</span>
         <span class="molstar-control-txt-info">
           <mat-form-field appearance="fill">
@@ -61,28 +61,16 @@
             </mat-select>
           </mat-form-field>
         </span>
-        <button class="molstar-control-btn" (click)="switchMolstarZoomed(currentMolstarSelection)">
-          <!-- <i _ngcontent-ng-c3321304204="" class="icon icon-common icon-search-plus"></i> -->
-          Zoom in
-        </button>
-        <button class="molstar-control-btn" (click)="switchMolstarZoomed(undefined)">
-          <!-- <i _ngcontent-ng-c3321304204="" class="icon icon-common icon-search-minus"></i> -->
-          Zoom out
-        </button>
-        <!-- <button class="molstar-control-btn">
-                        <i _ngcontent-ng-c3321304204="" class="icon icon-common icon-caret-left"></i>
-                        Back
-                    </button>
-                    <button class="molstar-control-btn">
-                        Next
-                        <i _ngcontent-ng-c3321304204="" class="icon icon-common icon-caret-right"></i>
-                    </button> -->
+        <button class="molstar-control-btn" (click)="switchMolstarZoomed(currentMolstarSelection)">Zoom in</button>
+        <button class="molstar-control-btn" (click)="switchMolstarZoomed(undefined)">Zoom out</button>
       </div>
       }
+      <!-- Container of rendered molstar instance -->
       <section class="molstar-container" #molstarContainer></section>
     </section>
     <section class="info-controls" #infoControls>
       @if (currentTab === 'Assembly') {
+      <!-- Top left overview Molstar: Assembly tab -->
       <h5>Preferred assembly details</h5>
       @if (assemblyData().name) {
       <div class="info-row">
@@ -118,6 +106,8 @@
         </article>
       </div>
       } @else if (currentTab === 'Macromolecules') {
+      <!-- Top left overview Molstar: Macromolecules tab -->
+      <!-- Title: -->
       <h5>
         @for(moleculeTypeCount of moleculesDescription(); track moleculeTypeCount; let isfirst = $first; let islast = $last) {
         {{ islast && !isfirst ? 'and' : '' }}
@@ -125,6 +115,7 @@
         {{ moleculeTypeCount }}
         } molecule{{ macromolecules().length === 1 ? '' : 's' }}
       </h5>
+      <!-- Macromolecules selection list: -->
       @for (macromolecule of macromolecules(); track macromolecule; let i = $index; ) {
       <div
         class="select-gallery-container valid"
@@ -135,12 +126,16 @@
         <button class="select-entity-btn">{{ macromolecule.molecule_name[0] }}</button>
       </div>
       @if (currentTabSelection === macromolecule.entity_id+'') {
+      <!-- when item is selected, show more details button: -->
       <div class="more-details-btn">
         <div class="color-code-bar" [ngStyle]="{ 'background-color': colorsFromMolj()[macromolecule.entity_id] }"></div>
         <button class="details-btn" (click)="viewDetails()">View more details below</button>
       </div>
       } } } @else if (currentTab === 'Ligands') {
+      <!-- Top left overview Molstar: Ligands tab -->
+      <!-- Title: -->
       <h5>{{ ligands().length }} bound ligand{{ ligands().length === 1 ? '' : 's' }}</h5>
+      <!-- Ligand selection list: -->
       @for (ligand of ligands(); track ligand; let i = $index; ) {
       <div
         class="select-gallery-container valid"
@@ -151,12 +146,14 @@
         <button class="select-entity-btn">{{ ligand.molecule_name[0] }} - {{ ligand.chem_comp_ids[0] }}</button>
       </div>
       @if (currentTabSelection === ligand.entity_id+'') {
+      <!-- when item is selected, show more details button: -->
       <div class="more-details-btn">
         <div class="color-code-bar" [ngStyle]="{ 'background-color': colorsFromMolj()[ligand.entity_id] }"></div>
         <button class="details-btn" (click)="viewDetails()">View more details below</button>
       </div>
       } } } @else if (currentTab === 'Domains') {
-      <!-- Domains dropdown -->
+      <!-- Top left overview Molstar: Domains tab -->
+      <!-- Domain Resource dropdown -->
       <mat-form-field appearance="fill">
         <mat-label>Select Domain Resource</mat-label>
         <mat-select [(ngModel)]="currentDomainResource" (selectionChange)="onDomainSelect($event)">
@@ -165,17 +162,19 @@
           }
         </mat-select>
       </mat-form-field>
-      <!-- Domains dropdown end -->
+      <!-- Domains title: -->
       <h5>
         {{ domainCountByResource()[currentDomainResource] }} unique {{ currentDomainResource }}
         @if(domainCountByResource()[currentDomainResource] > 1){accessions} @else{accession} in this entry
       </h5>
-      <!-- Domains selectable list -->
+      <!-- Domains selection list: -->
       @for (entityId of objectKeys(domainsByEntityAndResource()[currentDomainResource]); track entityId;) {
+      <!-- 1st level: Macromolecule domain is mapped to -->
       <div class="select-gallery-container invalid">
         <div class="color-code-bar" [ngStyle]="{ 'background-color': colorsFromMolj()[entityId] }"></div>
         <button class="select-entity-btn">{{ moleculeNameByEntityId()[entityId] }}</button>
       </div>
+      <!-- 2nd level: Domains of Macromolecule (selectable) -->
       @for (classificationObj of objectValues(domainsByEntityAndResource()[currentDomainResource][entityId]); track classificationObj;) {
       <div
         class="select-gallery-container valid nested-1"
@@ -190,11 +189,15 @@
         <button class="select-entity-btn">↳ {{ classificationObj.description }} ({{ classificationObj.accession }})</button>
       </div>
       @if (currentTabSelection === classificationObj.img) {
+      <!-- when item is selected, show more details button: -->
       <div class="more-details-btn">
         <button class="details-btn" (click)="viewDetails()">View more details below</button>
       </div>
       } } } } @else if (currentTab === 'Modifications') {
+      <!-- Top left overview Molstar: Modifications tab -->
+      <!-- Modifications title: -->
       <h5>{{ modifications().length }} modification{{ modifications().length === 1 ? '' : 's' }}</h5>
+      <!-- Modifications selection list: -->
       @for(modification of modifications(); track modification) {
       <div
         class="select-gallery-container"
@@ -205,6 +208,7 @@
         <button class="select-entity-btn">{{ modification.name }} - {{ modification.chem_comp_id }}</button>
       </div>
       @if (currentTabSelection === modification.img) {
+      <!-- when item is selected, show more details button: -->
       <div class="more-details-btn">
         <div class="color-code-bar" [ngStyle]="{ 'background-color': colorsFromMolj()[modification.chem_comp_id] }"></div>
         <button class="details-btn" (click)="viewDetails()">View more details below</button>

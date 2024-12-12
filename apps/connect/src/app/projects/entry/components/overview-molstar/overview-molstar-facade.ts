@@ -421,7 +421,18 @@ export class OverviewMolstarFacade {
 
     if (tabView === 'Macromolecules') {
       name = selectedEntity!.molecule_name[0];
-      for (const chain of selectedEntity!.in_chains) {
+      const chainsForEntityInAssembly = [
+        ...new Set(
+          molstarResidueInfo
+            .filter((resid) => {
+              return resid.label_entity_id && resid.label_asym_id && resid.label_entity_id === selectedEntity!.entity_id + '';
+            })
+            .map((resid) => resid.label_asym_id!)
+        ),
+      ];
+
+      // for (const chain of selectedEntity!.in_chains) {
+      for (const chain of chainsForEntityInAssembly) {
         molstarSelections.push({
           entityId: selectedEntity!.entity_id + '',
           authChainId: chain,
@@ -547,7 +558,25 @@ export class OverviewMolstarFacade {
       molstarSelections.push(molstarSelectionObj);
     } else if (tabView === 'Modifications') {
       name = selectedMods![0].chem_comp_name;
-      for (const mod of selectedMods!) {
+
+      const modsInAssembly = selectedMods!.filter((mod) => {
+        const modInResidueInfo = molstarResidueInfo.filter((resid) => {
+          const insertionCode = resid.pdbx_PDB_ins_code || '';
+          return (
+            resid.label_entity_id &&
+            resid.label_asym_id &&
+            resid.auth_seq_id &&
+            resid.label_entity_id === mod.entity_id + '' &&
+            resid.label_asym_id === mod.chain_id &&
+            resid.auth_seq_id === mod.author_residue_number &&
+            insertionCode === mod.author_insertion_code
+          );
+        });
+        return modInResidueInfo.length > 0;
+      });
+
+      // for (const mod of selectedMods!) {
+      for (const mod of modsInAssembly) {
         molstarSelections.push({
           entityId: mod.entity_id + '',
           authChainId: mod.chain_id,
