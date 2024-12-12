@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, effect, ElementRef, inject, input, OnDestroy, Renderer2, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, inject, input, OnDestroy, Renderer2, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UtilService } from '@pdbc/core';
 import { MatSelectChange, MatSelectModule } from '@angular/material/select';
@@ -8,7 +8,6 @@ import { FormsModule } from '@angular/forms';
 import { MolstarSelectionObj } from '../../helpers/molstar/molstar-helpers';
 import { VisualisationsDataProcessing } from './data-processing.facade';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations';
-// import { TableNames } from '../../pages/entry-v4/entry-v4.component';
 import { firstValueFrom, timer } from 'rxjs';
 import {
   AssembliesRowData,
@@ -22,8 +21,10 @@ import { ComponentCommunicationService } from '../../services/component-comm.ser
 import { TableNames } from '../../pages/main/main.component';
 import { Molecule } from '../../data-models/molecule.model';
 
+// necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
 
+// these types are used by this file and the facade and related to sequence rendering
 export type BoundsByEntityId = {
   [key: number]: DomainsBoundaries[];
 };
@@ -37,13 +38,6 @@ export interface SequenceDetail {
   }[];
 }
 
-// 4aqd carbs
-// 6hr1 fusion
-// 7v08 large em
-// 3irj only carb
-// 3l3t 4 assemblies
-// 1trn interesting domains, modifications
-
 @Component({
   selector: 'pdbc-details-dashboard',
   standalone: true,
@@ -51,13 +45,17 @@ export interface SequenceDetail {
   templateUrl: './details-dashboard.component.html',
   styleUrl: './details-dashboard.component.scss',
 })
-export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
+export class DetailsDashboardComponent implements OnDestroy {
+  // required inputs
   public readonly entryId = input.required<string>();
   public readonly tabName = input.required<TableNames>();
-  // public readonly tabName = input.required<string>();
   public readonly macromolecules = input.required<Molecule[]>();
-  public molstarViewerEl = input.required<HTMLElement>(); // Receive the WebGL div from the parent
 
+  public molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
+  public molstarParent = input.required<HTMLElement>(); // Parent to send back the molstar global instance
+  private isMolstarRetrieved = false;
+
+  // injected services, data processing facade, molstar helpers
   public readonly signals = inject(ComponentCommunicationService);
   private readonly utilService = inject(UtilService);
   public readonly dataProcessing = inject(VisualisationsDataProcessing);
@@ -65,6 +63,7 @@ export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
   public renderer = inject(Renderer2);
   public elementRef = inject(ElementRef);
 
+  // variables rendered in template
   public currentRowDatum?: TableRow;
   public selectionTitle = 'This is a 3D view area';
   public selectionButtonText?: string;
@@ -77,6 +76,10 @@ export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
   public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
   public sequenceDetails: SequenceDetail[] = [];
 
+  // currently selected row of interactive table
+  private currentState?: number | string;
+
+  // data visualisation components rendering and state variables
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 
   public hasProtvista = false;
@@ -102,50 +105,49 @@ export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
     chainId: '-1',
   };
 
-  private currentState?: number | string;
-
   constructor() {
     effect(async () => {
-      const tabState = this.signals.tabState(); // Access the current state
+      // when a row is selected and updated on the comp comm service we update the dashboard
+      const tabState = this.signals.tabState();
       if (this.currentState !== tabState[this.tabName()]) {
         this.currentState = tabState[this.tabName()];
+
+        // sending and retrieving global molstar instance just to reset some variables currently
         await this.sendMolstarViewerToParent();
         await this.getMolstarViewerFromParent();
+
+        // call row selection function to set variables and trigger visualisation conditional rendering
         await this.onTableRowSelection(tabState[this.tabName()]);
       }
     });
   }
 
-  async ngAfterViewInit() {
-    await this.getMolstarViewerFromParent();
-  }
-
   async getMolstarViewerFromParent() {
-    // Move the WebGL container into the child component
-    this.renderer.appendChild(this.molstarContainer.nativeElement, this.molstarViewerEl());
-    // Add a delay to ensure synchronicity
+    if (this.isMolstarRetrieved === false) {
+      // Move the molstar WebGL container into the child component
+      this.renderer.appendChild(this.molstarContainer.nativeElement, this.molstarViewerEl());
+      // Add a delay to ensure synchronicity
+      this.isMolstarRetrieved = true;
+    }
     await firstValueFrom(timer(50)); // 100ms delay, adjust as needed
   }
 
   async sendMolstarViewerToParent() {
-    // Move the WebGL container back to the parent component
-    const parentElement = this.molstarViewerEl().parentElement;
-    if (parentElement) {
-      this.renderer.appendChild(parentElement, this.molstarViewerEl());
+    // Move the molstar WebGL container back to the parent component
+    if (this.isMolstarRetrieved === true) {
+      this.renderer.appendChild(this.molstarParent(), this.molstarViewerEl());
+      this.isMolstarRetrieved = false;
+      // Set first render for next view equal to true
+      this.molstarVisualisations.isFirstViewRender = true;
     }
-    // Set first render for next view equal to true
-    this.molstarVisualisations.isFirstViewRender = true;
     // Add a delay to ensure synchronicity
     await firstValueFrom(timer(50)); // 100ms delay, adjust as needed
   }
 
   async ngOnDestroy() {
+    // when dashboard is destroyed we send the molstar singleton instance back to global template
     await this.sendMolstarViewerToParent();
-    // if (this.molstarVisualisations.molstarViewInstance) {
-    //   this.molstarVisualisations.molstarViewInstance.plugin.dispose();
-    //   // this.renderer.removeChild(this.elementRef.nativeElement, this.molstarVisualisations.molstarViewInstance);
-    //   this.molstarVisualisations.resetAttributesForRendering();
-    // }
+
     // Remove ligand environment if it exists
     await this.destroyLigandEnv();
   }
@@ -156,8 +158,10 @@ export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
   }
 
   private async onTableRowSelection(tabState: string | number) {
-    const tabData = this.signals.getTabData(this.tabName());
+    // this function is triggered when a selection happens in the interactive-tables component (if there is a row, there will always be a selection)
+    // it sets variables according to what is currently displayed in the dashboard (Assemblies, Domains, Ligands, Macromolecules, etc)
 
+    const tabData = this.signals.getTabData(this.tabName());
     this.selectionTitle = `No ${this.tabName().toLowerCase()} data for this entry`;
     let datum: TableRow | undefined = undefined;
     if (tabData.length > 0 && tabState !== 'Main') {
@@ -170,7 +174,9 @@ export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
         datum = datum as DomainsRowData;
         this.selectionTitle = `${datum.domain} (Accession: ${datum.additionalData.accession})`;
         this.selectionButtonText = 'Compare this domain in other entries';
+        // data processing facade is used to get selectedChains (displayed as text in template)
         this.selectedChains = this.dataProcessing.getDomainChains(datum);
+        // ...and sequence annotated with domain positions
         this.sequenceDetails = this.dataProcessing.getDomainSequenceDetails(this.entryId(), this.macromolecules(), datum);
         this.hasProtvista = true;
       } else if (this.tabName() === 'Ligands') {
@@ -178,27 +184,38 @@ export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
         this.selectionTitle = datum.codeAndName.name;
         this.selectionButtonText = 'Compare this ligand in other entries';
         this.hasDropdown = true;
+
+        // data processing facade is used to get dropdown related information for ligand resid selection
         const dropdownResults = this.dataProcessing.getLigandsDropdownOptions(datum);
         this.dropdownTitle = dropdownResults.dropdownTitle;
         this.dropdownOptionsToMolstar = dropdownResults.dropdownOptionsToMolstar;
         this.dropdownOptions = dropdownResults.dropdownOptions;
         this.dropdownSelected = dropdownResults.dropdownSelected;
-        // this.hasLigandEnv = true;
+
+        // modification is a special case for Ligands table in which lig env viewer is not displayed
         if (datum.type.includes('modification') === false) {
           this.hasLigandEnv = true;
         } else {
-          await this.destroyLigandEnv(); // hasLigandEnv = false must happen after destroying ligand env
+          // if it is a ligand
+          // we await destruction of current ligand env viewer (if there is one) and resetting of loading status vars
+          await this.destroyLigandEnv();
         }
       } else if (this.tabName() === 'Macromolecules') {
         datum = datum as MacromoleculesRowData;
         this.selectionTitle = datum.additionalData.molecule.molecule_name[0];
         this.hasDropdown = true;
+
+        // data processing facade is used to get dropdown related information for macromolecule chain selection
         const dropdownResults = this.dataProcessing.getMacromoleculeDropdownOptions(datum);
         this.dropdownTitle = dropdownResults.dropdownTitle;
         this.dropdownOptionsToMolstar = dropdownResults.dropdownOptionsToMolstar;
         this.dropdownOptions = dropdownResults.dropdownOptions;
         this.dropdownSelected = dropdownResults.dropdownSelected;
+
+        // ... and to get each macromolecule sequence
         this.sequenceDetails = this.dataProcessing.getMacromoleculeSequenceDetails(this.entryId(), datum, this.dropdownSelected);
+
+        // finally we displayed topology viewer only for protein molecules
         this.hasTopologyViewer = false;
         if (datum.additionalData.molecule.molecule_type.includes('polypeptide')) {
           this.selectionButtonText = 'Compare this protein in other entries';
@@ -209,57 +226,78 @@ export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
     }
     if (datum) {
       this.currentRowDatum = datum;
-      await this.initOrRefreshMolstar();
+      // before rendering molstar we get the singleton molstar tab instance from the template (this avoids memory leaks)
+      await this.getMolstarViewerFromParent();
+      // we render molstar with reloading config obj as true
+      await this.renderInMolstar(true);
+      // we call functions for other visualisation components to handle their conditional rendering
       await this.initOrRefreshProtvista();
       await this.initOrRefreshTopologyViewer();
       await this.initOrRefreshLigandEnvViewer();
+    } else {
+      await this.sendMolstarViewerToParent();
     }
   }
 
   public async onDropdownSelect(event: MatSelectChange) {
     this.dropdownSelected = event.value;
-    await this.initOrRefreshMolstar();
+
+    // for ligands when selcetion is switched in the dropdown, we reload molstar config obj
+    let reloadConfigObj = false;
+    if (this.tabName() === 'Ligands') reloadConfigObj = true;
+
+    // all possible rendering functions are called for a dashboard
+    await this.renderInMolstar(reloadConfigObj);
     await this.initOrRefreshProtvista();
     await this.initOrRefreshTopologyViewer();
     await this.initOrRefreshLigandEnvViewer();
   }
 
   public getAdditionalData(name: string) {
+    // this function is used to get specific data shown in Assembly dashboard view
     type AssembliesAddDataKeys = 'accessibleSurfaceArea' | 'buriedSurfaceArea' | 'dissociationArea' | 'dissociationEnergy' | 'dissociationEntropy' | 'symmetryNumber';
     const datum = this.currentRowDatum! as AssembliesRowData;
     return datum.additionalData[name as AssembliesAddDataKeys];
   }
 
-  private async initOrRefreshMolstar() {
+  private async renderInMolstar(reloadConfigObj: boolean) {
     let datum = this.currentRowDatum!;
+    // Different molstar rendering functions are called according to the dashboard type
     if (this.tabName() === 'Assemblies') {
       datum = datum as AssembliesRowData;
-      await this.molstarVisualisations.renderMolstarAssemblies(this.entryId(), this.molstarViewerEl(), datum);
+      await this.molstarVisualisations.renderMolstarAssemblies(this.entryId(), this.molstarViewerEl(), datum, reloadConfigObj);
     } else if (this.tabName() === 'Domains') {
       datum = datum as DomainsRowData;
-      await this.molstarVisualisations.renderMolstarDomains(this.entryId(), this.molstarViewerEl(), datum);
+      await this.molstarVisualisations.renderMolstarDomains(this.entryId(), this.molstarViewerEl(), datum, reloadConfigObj);
     } else if (this.tabName() === 'Ligands') {
       datum = datum as LigandsRowData;
       const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
-      await this.molstarVisualisations.renderMolstarLigands(this.entryId(), this.molstarViewerEl(), datum, molstarSelection);
+      await this.molstarVisualisations.renderMolstarLigands(this.entryId(), this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
     } else if (this.tabName() === 'Macromolecules') {
       datum = datum as MacromoleculesRowData;
       const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
-      await this.molstarVisualisations.renderMolstarMacromolecules(this.entryId(), this.molstarViewerEl(), datum, molstarSelection);
+      await this.molstarVisualisations.renderMolstarMacromolecules(this.entryId(), this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
     }
   }
 
   private async initOrRefreshProtvista() {
+    // stop if this dashboard does not have protvista (initially false and then set in onTableRowSelection according to tabName input)
     if (!this.hasProtvista) return;
     const datum = this.currentRowDatum!;
     let entityId = -1;
+
+    // entityId is retrieved from data passed from the interactive table to this component
     if (this.tabName() === 'Macromolecules') {
       entityId = (datum as MacromoleculesRowData).additionalData.molecule.entity_id;
     } else if (this.tabName() === 'Domains') {
       entityId = (datum as DomainsRowData).additionalData.boundaries[0].entity;
     }
+
+    // stop if no data can be successfully retrieved or no need for update (same entity as before)
     if (entityId === -1 || entityId === this.currentProtvistaEntity) return;
+
     if (this.protvistaIsLoaded === false) {
+      // if this is the first render from protvista, create the element and set all parameters
       this.protvistaInstance = this.renderer.createElement('protvista-pdb');
       this.renderer.setAttribute(this.protvistaInstance, 'entry-id', this.entryId().toLowerCase());
       this.renderer.setAttribute(this.protvistaInstance, 'entity-id', `${entityId}`);
@@ -268,8 +306,10 @@ export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
       const container = this.protvistaContainer.nativeElement;
       this.renderer.appendChild(container, this.protvistaInstance);
       this.currentProtvistaEntity = entityId;
+      // we set isLoaded as true to indicate this has been rendered once
       this.protvistaIsLoaded = true;
     } else {
+      // if this is NOT the first render from protvista, we just set some parameters and call connectedCallback
       this.renderer.setAttribute(this.protvistaInstance, 'entry-id', this.entryId().toLowerCase());
       this.renderer.setAttribute(this.protvistaInstance, 'entity-id', `${entityId}`);
       this.currentProtvistaEntity = entityId;
@@ -278,11 +318,15 @@ export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
   }
 
   private async initOrRefreshTopologyViewer() {
+    // stop if this dashboard does not have topology viewer (initially false and then set in onTableRowSelection according to tabName input)
     if (!this.hasTopologyViewer) return;
+
+    // topology viewer is only currently shown for macromolecules
     const datum = this.currentRowDatum! as MacromoleculesRowData;
     const entityId = (datum as MacromoleculesRowData).additionalData.molecule.entity_id;
     const chainId = this.dropdownSelected?.split('Chain ')[1];
 
+    // topology viewer load or reload in page is simple
     this.topologyViewerInstance = new PdbTopologyViewerPlugin();
     const container = this.topologyViewerContainer.nativeElement;
 
@@ -299,14 +343,20 @@ export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
   }
 
   private async initOrRefreshLigandEnvViewer() {
+    // stop if this dashboard does not have ligand env viewer (initially false and then set in onTableRowSelection according to tabName input)
     if (!this.hasLigandEnv) return;
+
+    // ligand env viewer is only shown for ligands tab. data is retrieved from dropdown
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
     const resId = molstarSelection.residues[0].authBegin;
     const chainId = molstarSelection.authChainId!;
+
+    // stop if ligand already loaded
     if (this.ligandEnvSelection.resId === resId && this.ligandEnvSelection.chainId === chainId) {
       return;
     }
     if (this.ligandEnvLoaded === false) {
+      // on first rendering, create the element properly and set parameters
       this.ligandEnvInstance = this.renderer.createElement('pdb-ligand-env');
       this.renderer.setAttribute(this.ligandEnvInstance, 'pdb-id', this.entryId().toLowerCase());
       this.renderer.setAttribute(this.ligandEnvInstance, 'pdb-res-id', `${resId}`);
@@ -316,6 +366,7 @@ export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
       this.renderer.appendChild(container, this.ligandEnvInstance);
       this.ligandEnvLoaded = true;
     } else {
+      // if rendering NOT for the first time, just set parameters
       this.renderer.setAttribute(this.ligandEnvInstance, 'pdb-res-id', `${resId}`);
       this.renderer.setAttribute(this.ligandEnvInstance, 'pdb-chain-id', `${chainId}`);
       this.ligandEnvInstance.innerHTML = '';
@@ -328,6 +379,7 @@ export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
   }
 
   private async destroyLigandEnv() {
+    // to destroy ligand env we use removeChild and reset all variables related to it's loading status
     if (this.ligandEnvInstance) {
       this.renderer.removeChild(this.elementRef.nativeElement, this.ligandEnvInstance);
       // this.ligandEnvContainer.nativeElement.innerHTML = '';
@@ -339,7 +391,7 @@ export class DetailsDashboardComponent implements AfterViewInit, OnDestroy {
       resId: '-1',
       chainId: '-1',
     };
-    // unfortunately needed so selection happens syncronously
+    // unfortunately needed so destruction happens syncronously
     await firstValueFrom(timer(100));
   }
 }
