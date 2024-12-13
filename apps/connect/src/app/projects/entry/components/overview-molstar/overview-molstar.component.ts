@@ -20,7 +20,7 @@ import {
   getComponentList,
   MolstarResidueInfo,
 } from '../../helpers/molstar/molstar-helpers';
-import { OverviewMolstarFacade } from './overview-molstar-facade';
+import { OverviewMolstarFacade } from './data-processing.facade';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { CathMappings, PfamMappings, ScopMappings } from '../../data-models/domains.model';
 import { ComplexDetails } from '../../data-models/complex-details.model';
@@ -48,9 +48,9 @@ export class OverviewMolstarComponent implements AfterViewInit {
   public readonly macromolecules = input.required<Molecule[]>();
   public readonly ligands = input.required<Molecule[]>();
   public readonly inputModifications = input.required<ModifiedResidue[]>();
-  public readonly pfamMappings = input.required<PfamMappings>();
   public readonly cathMappings = input.required<CathMappings>();
   public readonly scopMappings = input.required<ScopMappings>();
+  public readonly pfamMappings = input.required<PfamMappings>();
 
   public totalDomains = 0;
 
@@ -59,7 +59,6 @@ export class OverviewMolstarComponent implements AfterViewInit {
   public readonly signals = inject(ComponentCommunicationService);
 
   // residue listing information retrieved using molstar
-  private molstarResidueInfo = this.signals.molstarResidueInfo;
   private molstarResiduesForAssembly: MolstarResidueInfo[] = [];
 
   public assemblyData = this.facade.assemblyData;
@@ -215,14 +214,6 @@ export class OverviewMolstarComponent implements AfterViewInit {
     await this.loadImg(this.preferredAssemblyImgName);
   }
 
-  // private async generateResidueListing() {
-  //   // TODO: Take into account that this is only for the preferred assembly so some ligands will bug (merge this with ligand tab Molstar isntance)
-  //   // TODO: Could be optimized by filtering non macromolecules and non ligands data
-  //   const data = await getResidues(this.molstarViewInstance);
-  //   this.signals.molstarResidueInfo.set(data);
-  //   this.signals.molstarResidueInfoLoaded.set(true);
-  // }
-
   async ngAfterViewInit() {
     // generate assembly related data
     this.facade.parseComplexDetails(this.complexDetails());
@@ -236,8 +227,9 @@ export class OverviewMolstarComponent implements AfterViewInit {
     // initialise molstar and the image gallery functionality
     await this.initMolstarInstance();
     await this.initMolstarImageGallery();
-    // await this.generateResidueListing();
 
+    // get list of residues loaded into molstar
+    // TODO: Could be optimized by filtering non macromolecules and non ligands data
     this.molstarResiduesForAssembly = getResidues(this.molstarViewInstance);
 
     // parse modifications data to match gallery states
@@ -294,7 +286,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
     }
   }
 
-  public onDomainSelect(event: MatSelectChange) {
+  public onDomainResourceSelect(event: MatSelectChange) {
     this.currentDomainResource = event.value;
   }
 
@@ -503,7 +495,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
     let tabName = this.currentTab;
     if (tabName === 'Modifications') tabName = 'Ligands';
 
-    const rowData = this.signals.getTabData(tabName);
+    const rowData = this.signals.getTabData(tabName).tableRows();
 
     let rowIdx = -1;
     for (let idx = 0; idx < rowData.length; idx++) {

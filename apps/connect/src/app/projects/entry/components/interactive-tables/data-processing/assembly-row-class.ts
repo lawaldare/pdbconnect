@@ -76,7 +76,7 @@ export class AssemblyDataToTable extends DataToTable {
             dissociationEntropy: `${pisaAssemblyDatum.assembly.entropy} kcal/mol`,
             symmetryNumber: `${pisaAssemblyDatum.assembly.symmetry_number}`,
 
-            //TODO: Add Molstar Selection here
+            //?TODO?: Add Molstar Selection here?
             selections: [],
           },
         });

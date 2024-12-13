@@ -42,15 +42,19 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
 
 // Some interesting entries:
 // 4aqd carbs
-// 6hr1 fusion
+// 6hr1 chimera protein from 4 different organisms (preferred assembly does not have all chains)
 // 7v08 large em
 // 3irj only carb
 // 3l3t 4 assemblies
-// 1trn interesting domains, modifications
+// 1trn interesting varying domain definitions, modifications
 
 /**
  * TODO:
+ * - Add status endpoint model and check
  * - Move CSS of child components so their width/height is relative to CSS in this component
+ * - Prepare experiments and validation to become a tab
+ * - Refactor overview component template for readability
+ * - Refactor overview component code for stable molstar
  * - Make <SCRIPT> tags loading Dynamic
  */
 @Component({

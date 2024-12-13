@@ -118,8 +118,6 @@ export class MacromoleculeDataToTable extends DataToTable {
     return rows;
   }
 
-  // TODO: Hide All when single category
-  // TODO: Add status endpoint model and check
   private getStartEndForChainIds(macromolecules: Molecule[], molstarResidueInfo: MolstarResidueInfo[]) {
     const startEndByEntityByChain: MacromoleculesChainBoundaries = {};
 
@@ -317,7 +315,9 @@ export class MacromoleculeDataToTable extends DataToTable {
           });
         }
       }
-
+      if (newFilters.length === 2) {
+        newFilters.shift();
+      }
       this.tableFilters.set(newFilters);
     } else {
       newFilters = [...this.tableFilters()];

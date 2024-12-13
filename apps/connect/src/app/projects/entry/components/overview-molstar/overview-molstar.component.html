@@ -156,7 +156,7 @@
       <!-- Domain Resource dropdown -->
       <mat-form-field appearance="fill">
         <mat-label>Select Domain Resource</mat-label>
-        <mat-select [(ngModel)]="currentDomainResource" (selectionChange)="onDomainSelect($event)">
+        <mat-select [(ngModel)]="currentDomainResource" (selectionChange)="onDomainResourceSelect($event)">
           @for (resource of objectKeys(domainCountByResource()); track resource;) {
           <mat-option [value]="resource" [disabled]="domainCountByResource()[resource] === 0"> {{ resource }} ({{ domainCountByResource()[resource] }}) </mat-option>
           }

@@ -184,6 +184,9 @@ export class LigandDataToTable extends DataToTable {
           types: ['modification'],
         });
       }
+      if (newFilters.length === 2) {
+        newFilters.shift();
+      }
       this.tableFilters.set(newFilters);
     } else {
       newFilters = [...this.tableFilters()];

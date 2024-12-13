@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import { TableRow } from '../components/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MolstarResidueInfo } from '../helpers/molstar/molstar-helpers';
+import { DataToTable } from '../components/interactive-tables/data-processing/abstract-base-row-class';
 
 @Injectable({
   providedIn: 'root',
@@ -22,14 +22,7 @@ export class ComponentCommunicationService {
 
   public isTabDataGenerated = signal<boolean>(false);
 
-  public tabTableData = signal<{ [key: string]: TableRow[] }>({
-    Assemblies: [],
-    Macromolecules: [],
-    Ligands: [],
-    Domains: [],
-    // 'Experiments': [],
-    // 'Citations': [],
-  });
+  public tabTableData = signal<{ [key: string]: DataToTable }>({});
 
   public tabScrollState = signal<{ [key: string]: number }>({
     Assemblies: 0,
@@ -66,7 +59,7 @@ export class ComponentCommunicationService {
     return this.tabTableData()[tabName];
   }
 
-  setTabData(tabName: string, newState: TableRow[]) {
+  setTabData(tabName: string, newState: DataToTable) {
     this.tabTableData.update((state) => ({
       ...state,
       [tabName]: newState,

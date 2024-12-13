@@ -161,11 +161,11 @@ export class DetailsDashboardComponent implements OnDestroy {
     // this function is triggered when a selection happens in the interactive-tables component (if there is a row, there will always be a selection)
     // it sets variables according to what is currently displayed in the dashboard (Assemblies, Domains, Ligands, Macromolecules, etc)
 
-    const tabData = this.signals.getTabData(this.tabName());
+    const tableRows = this.signals.getTabData(this.tabName()).tableRows();
     this.selectionTitle = `No ${this.tabName().toLowerCase()} data for this entry`;
     let datum: TableRow | undefined = undefined;
-    if (tabData.length > 0 && tabState !== 'Main') {
-      datum = tabData[tabState as number];
+    if (tableRows.length > 0 && tabState !== 'Main') {
+      datum = tableRows[tabState as number];
       if (this.tabName() === 'Assemblies') {
         datum = datum as AssembliesRowData;
         this.selectionTitle = datum.assemblyName;

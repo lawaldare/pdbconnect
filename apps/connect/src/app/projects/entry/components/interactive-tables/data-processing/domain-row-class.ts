@@ -271,20 +271,23 @@ export class DomainDataToTable extends DataToTable {
       if (cathDomainCount > 0) {
         newFilters.push({
           types: ['CATH'],
-          description: `${cathDomainCount} CATH`,
+          description: `${cathDomainCount} CATH domains`,
         });
       }
       if (scopDomainCount > 0) {
         newFilters.push({
           types: ['SCOP'],
-          description: `${scopDomainCount} SCOP 1.75`,
+          description: `${scopDomainCount} SCOP 1.75 domains`,
         });
       }
       if (pfamDomainCount > 0) {
         newFilters.push({
           types: ['Pfam'],
-          description: `${pfamDomainCount} Pfam`,
+          description: `${pfamDomainCount} Pfam domains`,
         });
+      }
+      if (newFilters.length === 2) {
+        newFilters.shift();
       }
       this.tableFilters.set(newFilters);
     } else {
@@ -310,7 +313,9 @@ export class DomainDataToTable extends DataToTable {
       const residuesOfMappingObserved = residuesOfChain.filter((resid) => {
         return resid.label_seq_id! <= mapping.end.residue_number && resid.label_seq_id! >= mapping.start.residue_number;
       });
-      observedMappings.push(residuesOfMappingObserved);
+      if (residuesOfMappingObserved.length > 0) {
+        observedMappings.push(residuesOfMappingObserved);
+      }
     }
     return observedMappings;
   }

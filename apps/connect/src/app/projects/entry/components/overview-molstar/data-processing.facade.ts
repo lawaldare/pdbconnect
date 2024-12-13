@@ -102,23 +102,6 @@ export class OverviewMolstarFacade {
       }
       if (preferredAssemblyId) break;
     }
-    // if (Object.keys(complexDetails).length > 1) {
-    //   const assemblies = complexDetails.assemblies;
-    //   let preferredAssemblyId = undefined;
-    //   for (const assembly of assemblies) {
-    //     if (assembly.preferred_assembly) {
-    //       preferredAssemblyId = assembly.assembly_id;
-    //     }
-    //   }
-    //   const participants = complexDetails.participants;
-
-    //   this.assemblyData.set({
-    //     name: complexDetails.name,
-    //     preferred: preferredAssemblyId,
-    //     composition: calculateAssemblyComposition(participants),
-    //     complexId: complexDetails.pdb_complex_id
-    //   })
-    // }
   }
 
   public generateMoleculeCountText(macromolecules: Molecule[]) {
@@ -156,8 +139,6 @@ export class OverviewMolstarFacade {
       const filteredMacromolecules = macromolecules.filter((mol) => moleculeTypeCondition.moleculeTypes.indexOf(mol.molecule_type) > -1);
       if (filteredMacromolecules.length > 0) {
         // create text descriptions taken from object above (moleculeTypeConditions) for the count of each molecule type
-        // this.moleculesDescription().push(`${filteredMacromolecules.length} ${moleculeTypeCondition.moleculeDescriptionSuffix}`);
-        // this.entryContentsDescription().push(`${filteredMacromolecules.length} ${moleculeTypeCondition.entryContentsDescriptionSuffix} molecule`);
         this.moleculesDescription.update((descriptions) => [
           ...descriptions, // spread the current array
           `${filteredMacromolecules.length} ${moleculeTypeCondition.moleculeDescriptionSuffix}`, // add the new element
@@ -197,11 +178,6 @@ export class OverviewMolstarFacade {
       // add modification to list if does not exist yet
       const previousModifications = this.modifications().map((previousMod) => previousMod.name);
       if (imgString && previousModifications.indexOf(eachModification.chem_comp_name) === -1) {
-        // this.modifications().push({
-        //   "name": eachModification.chem_comp_name,
-        //   "img": imgString[0],
-        //   "chem_comp_id": eachModification.chem_comp_id
-        // });
         this.modifications.update((descriptions) => [
           ...descriptions,
           {
@@ -441,28 +417,6 @@ export class OverviewMolstarFacade {
       }
     } else if (tabView === 'Ligands') {
       name = selectedEntity!.molecule_name[0];
-      // const residueListingEntity = residueListing['molecules'].filter((entity) => entity.entity_id === selectedEntity!.entity_id)[0];
-      // const chains = residueListingEntity['chains'].filter((chain) => {
-      //   return selectedEntity!.in_chains.indexOf(chain.chain_id) > -1 && selectedEntity!.in_struct_asyms.indexOf(chain.struct_asym_id) > -1;
-      // });
-      // for (const chain of chains) {
-      //   const newMolstarSelection: MolstarSelectionObj = {
-      //     entityId: selectedEntity!.entity_id + '',
-      //     authChainId: chain.chain_id,
-      //     residues: [],
-      //   };
-      //   for (const resid of chain['residues']) {
-      //     newMolstarSelection['residues'] = [
-      //       {
-      //         authBegin: resid.author_residue_number + '',
-      //         authBeginIns: resid.author_insertion_code + '',
-      //         authEnd: resid.author_residue_number + '',
-      //         authEndIns: resid.author_insertion_code + '',
-      //       },
-      //     ];
-      //     molstarSelections.push(newMolstarSelection);
-      //   }
-      // }
       const ligandResidueInfo = molstarResidueInfo.filter((residInfo) => {
         return (
           residInfo.label_entity_id &&
@@ -519,11 +473,8 @@ export class OverviewMolstarFacade {
             auth_begin_ins: segment.auth_begin_ins,
           };
           if (segment.auth_begin === 'null') {
-            // const residuesOfChainAboveStart = residuesOfChain.filter((resid) => resid.residue_number >= segment.resn_begin);
             const residuesOfChainAboveStart = residuesOfChain.filter((resid) => resid.label_seq_id! >= segment.resn_begin);
             firstRes = {
-              // auth_begin: residuesOfChainAboveStart[0].author_residue_number + '',
-              // auth_begin_ins: residuesOfChainAboveStart[0].author_insertion_code,
               auth_begin: residuesOfChainAboveStart[0].auth_seq_id + '',
               auth_begin_ins: residuesOfChainAboveStart[0].pdbx_PDB_ins_code || '',
             };
@@ -534,13 +485,8 @@ export class OverviewMolstarFacade {
             auth_end_ins: segment.auth_end_ins,
           };
           if (segment.auth_end === 'null') {
-            // const residuesOfChainBelowEnd = residuesOfChain.filter((resid) => resid.residue_number <= segment.resn_end);
             const residuesOfChainBelowEnd = residuesOfChain.filter((resid) => resid.label_seq_id! <= segment.resn_end);
             lastRes = {
-              // auth_end: residuesOfChain[residuesOfChain.length-1].author_residue_number+'',
-              // auth_end_ins: residuesOfChain[residuesOfChain.length-1].author_insertion_code
-              // auth_end: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].author_residue_number + '',
-              // auth_end_ins: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].author_insertion_code,
               auth_end: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].auth_seq_id + '',
               auth_end_ins: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].pdbx_PDB_ins_code || '',
             };
