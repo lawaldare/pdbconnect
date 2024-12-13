@@ -1,10 +1,10 @@
-@if(ligands()?.length){
+@if(ligands().length){
 <div id="ligands-section">
   <h3>Ligands</h3>
   <p>This section shows ligands observed directly bound to the complex of interest</p>
   <div class="grid-container">
     @for(ligand of ligandsPage(); track ligand.ligandId){
-    <pdbc-complex-ligand-grid [ligand]="ligand" />
+    <pdbc-complex-ligand-grid [ligand]="ligand" [complexId]="complexId() ?? ''" />
     }
   </div>
   <mat-paginator

@@ -2,7 +2,11 @@
 
 <div class="card-container">
   <div class="image-box">
+    @if(complexImageSrc()){
     <img [src]="complexImageSrc()" alt="Complex Image" />
+    }@else {
+    <ngx-skeleton-loader count="4" [theme]="{ 'border-radius': '0', height: '128px', width: '148px' }"></ngx-skeleton-loader>
+    }
   </div>
   <article>
     <a

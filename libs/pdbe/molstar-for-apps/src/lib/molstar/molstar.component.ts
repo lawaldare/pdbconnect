@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, ElementRef, input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 declare let PDBeMolstarPlugin: any;
@@ -27,6 +27,11 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
     const container = this.viewContainer.nativeElement;
 
     this.molstarViewInstance.render(container, this.molstarConfig());
+    this.molstarViewInstance.events.loadComplete.subscribe((loaded: boolean) => {
+      if (loaded) {
+        // this.molstarViewInstance.plugin.managers.camera.orientAxes();
+      }
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {

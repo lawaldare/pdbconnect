@@ -33,10 +33,10 @@ export class MolstarDialogComponent implements AfterViewInit {
   private cells: any[] = [];
 
   public selections: { viewValue: string; value: string }[] = [];
-  public selected = signal('');
-  public selectedControl = computed(() => new FormControl(this.selected(), { nonNullable: true }));
+  public selectedConformer = signal('');
+  public selectedConformerControl = computed(() => new FormControl(this.selectedConformer(), { nonNullable: true }));
 
-  public selectedFrament = signal('');
+  public selectedFrament = signal<Fragment>({} as Fragment);
   public selectedFragmentControl = computed(() => new FormControl(this.selectedFrament(), { nonNullable: true }));
 
   private selectionConfig = {};
@@ -86,7 +86,8 @@ export class MolstarDialogComponent implements AfterViewInit {
           ]
         );
       });
-      this.selectedFrament.set(this.fragments()[0].name);
+      console.log('fragments', this.fragments());
+      this.selectedFrament.set(this.fragments()[0]);
       this.caption.set(this.fragments()[0].caption ?? '');
       this.atoms = this.fragments()[0].atoms.length ? this.fragments()[0].atoms[0] : [];
     } else {
@@ -110,23 +111,51 @@ export class MolstarDialogComponent implements AfterViewInit {
 
     const container = this.viewContainer.nativeElement;
 
-    const entryList = [
-      `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}_ideal.pdb`,
-      `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}_model.pdb`,
-    ];
+    let entryList = [];
+    let selections = [];
 
-    this.selections = [
-      {
-        viewValue: 'Ideal Coordinates',
-        value: entryList[0],
-      },
-      {
-        viewValue: 'Model Coordinates',
-        value: entryList[1],
-      },
-    ];
+    if (this.dialogData.moleculeId.startsWith('CLC')) {
+      entryList = [`https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}_model.pdb`];
+      selections = [
+        {
+          viewValue: 'Ideal Coordinates',
+          value: entryList[0],
+        },
+      ];
+    } else if (this.dialogData.moleculeId.startsWith('PRD')) {
+      const splits = this.dialogData.moleculeId.split('_');
+      const id = `${splits[0]}CC_${splits[1]}`;
+      entryList = [`https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${id}_ideal.pdb`, `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${id}_model.pdb`];
+      selections = [
+        {
+          viewValue: 'Ideal Coordinates',
+          value: entryList[0],
+        },
+        {
+          viewValue: 'Model Coordinates',
+          value: entryList[1],
+        },
+      ];
+    } else {
+      entryList = [
+        `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}_ideal.pdb`,
+        `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}_model.pdb`,
+      ];
+      selections = [
+        {
+          viewValue: 'Ideal Coordinates',
+          value: entryList[0],
+        },
+        {
+          viewValue: 'Model Coordinates',
+          value: entryList[1],
+        },
+      ];
+    }
 
-    this.selected.set(this.selections[0].value);
+    this.selections = selections;
+
+    this.selectedConformer.set(this.selections[0].value);
 
     const molstarParams = {
       moleculeId: this.dialogData.moleculeId,
@@ -136,7 +165,7 @@ export class MolstarDialogComponent implements AfterViewInit {
       visualStyle: 'ball-and-stick',
       bgColor: { r: 255, g: 255, b: 255 },
       customData: {
-        url: this.selected(),
+        url: this.selectedConformer(),
         format: 'pdb',
       },
       landscape: true,
@@ -176,10 +205,11 @@ export class MolstarDialogComponent implements AfterViewInit {
     }
   }
 
-  public onSelectionChange(event: MatSelectChange) {
+  public onConformerChange(event: MatSelectChange) {
+    this.selectedConformer.set(event.value);
     const updateParams = {
       customData: {
-        url: event.value,
+        url: this.selectedConformer(),
         format: 'pdb',
       },
       selection: this.selectionConfig,
@@ -189,7 +219,7 @@ export class MolstarDialogComponent implements AfterViewInit {
   }
 
   public onFragmentChange(event: MatSelectChange) {
-    this.selectedFramentObject = this.fragments().find((fragment) => fragment.name === event.value);
+    this.selectedFramentObject = event.value;
 
     if (this.selectedFramentObject?.caption) {
       this.caption.set(this.selectedFramentObject.caption);
@@ -206,7 +236,7 @@ export class MolstarDialogComponent implements AfterViewInit {
     };
     const updateParams = {
       customData: {
-        url: this.selected(),
+        url: this.selectedConformer(),
         format: 'pdb',
       },
       selection: this.selectionConfig,

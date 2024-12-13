@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { agGridOptionsBase, ExternalLinkRendererComponent } from '@pdbc/core';
-import { GridOptions, ColDef } from 'ag-grid-community';
+import { GridOptions, ColDef, ITextFilterParams } from 'ag-grid-community';
 import { TotalStructureRendererComponent } from '../../cell renderers/total-structure.component';
 import { Chain } from '../../../data-models/structure.model';
 import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
@@ -15,6 +15,24 @@ import { LigandAnnotationRendererComponent } from '../../cell renderers/ligand-a
 export class AgGridStructureService {
   private readonly dialog = inject(MatDialog);
   public ligandId = signal<string>('');
+
+  private readonly organismsFilterParams: ITextFilterParams = {
+    filterOptions: ['contains'],
+    textMatcher: ({ value, filterText }) => {
+      return value.toLowerCase().indexOf(filterText?.toLowerCase()) >= 0;
+    },
+    trimInput: true,
+    debounceMs: 500,
+  };
+
+  private readonly ligandFunctionFilterParams: ITextFilterParams = {
+    filterOptions: ['contains'],
+    textMatcher: ({ value, filterText }) => {
+      return value.toLowerCase().indexOf(filterText?.toLowerCase()) >= 0;
+    },
+    trimInput: true,
+    debounceMs: 500,
+  };
 
   public readonly gridOptions = signal<GridOptions>({
     ...agGridOptionsBase,
@@ -32,6 +50,7 @@ export class AgGridStructureService {
       field: 'uniprot_id',
       cellRenderer: ExternalLinkRendererComponent,
       width: 160,
+      sortable: false,
     },
     {
       headerName: 'Total structures',
@@ -46,7 +65,7 @@ export class AgGridStructureService {
       hide: false,
       width: 150,
       comparator: (a, b): number => a - b,
-      filter: 'agNumberColumnFilter',
+      filter: false,
       sort: 'desc',
       valueFormatter: () => '',
     },
@@ -65,11 +84,12 @@ export class AgGridStructureService {
       field: 'organism',
       cellRenderer: SpeciesRendererComponent,
       comparator: (a, b): number => {
-        return a.scientific_name?.toLocaleLowerCase().localeCompare(b.scientific_name?.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
+        return a?.scientific_name?.toLocaleLowerCase().localeCompare(b?.scientific_name?.toLocaleLowerCase(), 'en', { sensitivity: 'base' });
       },
       filter: 'agTextColumnFilter',
+      filterParams: this.organismsFilterParams,
+      valueFormatter: (p) => p.data.organism?.scientific_name,
       minWidth: 160,
-      valueFormatter: () => '',
     },
     {
       headerName: 'EC number',
@@ -78,14 +98,18 @@ export class AgGridStructureService {
         return params.data.ec_numbers?.join(', ');
       },
       width: 150,
+      filter: false,
+      sortable: false,
     },
     {
       headerName: 'Ligand function',
       field: 'annotations',
-      filter: true,
       cellRenderer: LigandAnnotationRendererComponent,
+      sortable: false,
+      filter: 'agTextColumnFilter',
+      filterParams: this.ligandFunctionFilterParams,
+      valueFormatter: (p) => p.data.annotations?.join(','),
       width: 170,
-      valueFormatter: () => '',
     },
   ]);
 

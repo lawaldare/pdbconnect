@@ -2,7 +2,7 @@
   <div>
     <mat-form-field>
       <mat-label>Select Conformer</mat-label>
-      <mat-select [formControl]="selectedControl()" (selectionChange)="onSelectionChange($event)">
+      <mat-select [formControl]="selectedConformerControl()" (selectionChange)="onConformerChange($event)">
         @for (option of selections; track option) {
         <mat-option [value]="option.value">{{ option.viewValue }}</mat-option>
         }
@@ -13,7 +13,7 @@
       <mat-label>Select Scaffold/Fragment</mat-label>
       <mat-select [formControl]="selectedFragmentControl()" (selectionChange)="onFragmentChange($event)">
         @for (option of fragments(); track option) {
-        <mat-option [value]="option.name">{{ option.name | customCase }}</mat-option>
+        <mat-option [value]="option">{{ option.name | customCase }}</mat-option>
         }
       </mat-select>
     </mat-form-field>

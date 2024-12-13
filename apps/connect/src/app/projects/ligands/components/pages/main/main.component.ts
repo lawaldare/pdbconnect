@@ -43,7 +43,7 @@ import { LigandActions } from '../../../store/ligand.actions';
     LigandSpecificDatabasesComponent,
     DropdownMenuComponent,
     MaterialModule,
-],
+  ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
 })
@@ -76,9 +76,7 @@ export class LigandsMainPageComponent implements OnInit {
 
   public ligandId = signal<string>('');
 
-  public status = LoadingState;
-
-  public isThereStructures = signal<boolean>(true);
+  public readonly status = LoadingState;
 
   private fragments = toSignal(this.globalStore.select(LigandSelectors.fragments));
 
@@ -94,7 +92,6 @@ export class LigandsMainPageComponent implements OnInit {
           this.updateNavItemsWhenNoStructure(navItems, structures);
           this.ligandUtilService.redirectLigandPages(description);
           this.ligandId.set(ligandId);
-          this.isThereStructures.update(() => structures.length > 0);
           this.getAnnotations(structures);
           return this.aggregatedApiService.fetchDepiction(this.ligandId());
         }),

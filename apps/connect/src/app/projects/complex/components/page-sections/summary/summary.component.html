@@ -1,10 +1,10 @@
 <div id="summary-section">
-  @if(summaryData().complex_portal_id){
+  @if(summaryData()?.complex_portal_id){
   <div class="info-row">
     <span class="info-row-title">Complex Portal ID</span>
     <div class="info-row-content">
-      <a [href]="'https://www.ebi.ac.uk/complexportal/complex/' + summaryData().complex_portal_id" target="_blank">
-        {{ summaryData().complex_portal_id }}
+      <a [href]="'https://www.ebi.ac.uk/complexportal/complex/' + summaryData()?.complex_portal_id" target="_blank">
+        {{ summaryData()?.complex_portal_id }}
       </a>
     </div>
   </div>
@@ -12,17 +12,17 @@
   <div class="info-row">
     <span class="info-row-title">Source organism</span>
     <div class="info-row-content">
-      <em>{{ summaryData().source_organism }}</em>
+      <em>{{ summaryData()?.source_organism }}</em>
     </div>
   </div>
   <div class="info-row">
     <span class="info-row-title">Components</span>
-    <div class="info-row-content participants" pdbcParticipant [participants]="summaryData().participants"></div>
+    <div class="info-row-content participants" pdbcParticipant [participants]="summaryData()?.participants ?? []"></div>
   </div>
   <div class="info-row">
     <span class="info-row-title">Oligomeric state</span>
     <div class="info-row-content">
-      {{ summaryData().oligomeric_state }}
+      {{ summaryData()?.oligomeric_state }}
     </div>
   </div>
   <!-- <div class="info-row">
@@ -31,17 +31,17 @@
       {{ summaryData().stoichiometry }}
     </div>
   </div> -->
-  @if(summaryData().symmetry.type){
+  @if(summaryData()?.symmetry?.type){
   <div class="info-row">
     <span class="info-row-title">Global symmetry</span>
     <div class="info-row-content">
-      {{ summaryData().symmetry | symmetry }}
+      {{ summaryData()?.symmetry | symmetry }}
     </div>
   </div>
   }
   <div class="info-row">
     <span class="info-row-title">Experimental methods count</span>
-    <div class="info-row-content" pdbcOEMC [data]="summaryData().observed_experimental_methods_with_counts"></div>
+    <div class="info-row-content" pdbcOEMC [data]="summaryData()?.unique_observed_experimental_methods_with_counts ?? {}" [complexId]="complexId() ?? ''"></div>
   </div>
   <!-- <div class="info-row">
     <span class="info-row-title">Number of assemblies</span>

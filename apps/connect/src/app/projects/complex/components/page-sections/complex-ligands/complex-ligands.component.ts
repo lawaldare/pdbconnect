@@ -1,11 +1,13 @@
-import { Component, computed, inject, OnChanges, signal, SimpleChanges } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ComplexAPIService } from '../../../services/complex-api.service';
-import { ActivatedRoute } from '@angular/router';
-import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { ComplexLigandGridComponent } from '../../section-components/complex-ligand-grid/complex-ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { ComplexStoreState } from '../../../store/complex-store.model';
+import { Store } from '@ngrx/store';
+import { ComplexSelectors } from '../../../store/complex.selectors';
+import { ComplexActions } from '../../../store/complex.actions';
+import { navComplexSections } from '../../../complex.constant';
 
 export interface ComplexLigand {
   ligandId: string;
@@ -23,42 +25,37 @@ export interface ComplexLigand {
   templateUrl: './complex-ligands.component.html',
   styleUrl: './complex-ligands.component.scss',
 })
-export class ComplexLigandsComponent {
-  private readonly complexAPIService = inject(ComplexAPIService);
-
-  private readonly route = inject(ActivatedRoute);
-
-  private readonly ligands$ = this.route.params.pipe(
-    switchMap((params) => {
-      const complexId = params['complexId'].toUpperCase();
-      return this.complexAPIService.getLigandsForComplexPages(complexId).pipe(
-        map((ligands: Record<string, any>) => {
-          return Object.entries(ligands).reduce((acc: ComplexLigand[], [key, value]) => {
-            const mappedObj = {
-              ...value,
-              ligandId: key,
-            };
-            acc.push(mappedObj);
-            return acc.sort((a, b) => b.num_pdb_entries - a.num_pdb_entries);
-          }, []);
-        }),
-        catchError((error) => {
-          console.error('Error fetching complex data:', error);
-          return of([]);
-        })
-      );
-    }),
-    tap((ligands) => {
-      this.ligandsPage.update(() => ligands.slice(0, this.ligandsPageSize()));
-    })
-  );
-
-  public ligands = toSignal(this.ligands$);
-  public ligandsLength = computed(() => this.ligands()?.length);
-  public ligandsPageSize = signal<number>(5);
-  public ligandsPageSizeOptions = computed(() => [5, 10, 15]);
+export class ComplexLigandsComponent implements OnInit {
+  private readonly globalStore = inject(Store<ComplexStoreState>);
 
   public ligandsPage = signal<ComplexLigand[]>([]);
+  public ligandsPageSize = signal<number>(5);
+
+  public readonly complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
+
+  public ligands = signal<ComplexLigand[]>([]);
+
+  public ligandsLength = computed(() => this.ligands()?.length);
+  public ligandsPageSizeOptions = computed(() => [5, 10, 15]);
+
+  public navSections = toSignal(this.globalStore.select(ComplexSelectors.navItems));
+
+  ngOnInit(): void {
+    this.globalStore.select(ComplexSelectors.complexLigands).subscribe((ligands) => {
+      if (ligands.length > 0) {
+        this.ligands.update(() => ligands);
+        this.ligandsPage.update(() => (this.ligands() ?? []).slice(0, this.ligandsPageSize()));
+        this.globalStore.dispatch(ComplexActions.setNavItems({ navItems: navComplexSections }));
+      } else {
+        this.updateWhenNoLigands();
+      }
+    });
+  }
+
+  private updateWhenNoLigands(): void {
+    const tempNavsections = (this.navSections() ?? []).filter((section) => section.sectionId !== 'ligands-section');
+    this.globalStore.dispatch(ComplexActions.setNavItems({ navItems: tempNavsections }));
+  }
 
   handlePageEvent(event: PageEvent) {
     const startIndex = event.pageIndex * event.pageSize;

@@ -1,9 +1,9 @@
-import { AfterViewInit, Component, DestroyRef, ElementRef, inject, input, Renderer2, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, ElementRef, inject, input, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ComplexLigand } from '../../page-sections/complex-ligands/complex-ligands.component';
 import { AggregatedApiService } from '../../../../ligands/services/aggregated-api.service';
 import { RouterModule } from '@angular/router';
-import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { cofactorTooltip, drugTooltip, reactantTooltip } from '../../../../ligands/ligand.constant';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Depiction } from '../../../../ligands/data-models/structure.model';
@@ -17,6 +17,8 @@ import { Depiction } from '../../../../ligands/data-models/structure.model';
 })
 export class ComplexLigandGridComponent implements AfterViewInit {
   public ligand = input.required<ComplexLigand>();
+  public complexId = input.required<string>();
+
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
@@ -26,6 +28,9 @@ export class ComplexLigandGridComponent implements AfterViewInit {
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly renderer = inject(Renderer2);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly util = inject(UtilService);
+
+  public solrUrl = signal<string>('');
 
   public cofactorTooltip = cofactorTooltip;
   public drugTooltip = drugTooltip;
@@ -41,7 +46,6 @@ export class ComplexLigandGridComponent implements AfterViewInit {
         const ligand = this.renderer.createElement('pdb-ligand-env');
         this.renderer.appendChild(imageContainer, ligand);
         this.renderer.setProperty(ligand, 'depiction', depiction);
-        // this.renderer.setProperty(ligand, 'highlightSubstructure', this.ligand.substructure_match);
         this.renderer.setAttribute(ligand, 'depiction-only', '');
         this.ligandEv = ligand;
       });
@@ -49,6 +53,7 @@ export class ComplexLigandGridComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.renderLigandImg();
+    this.solrUrl.set(this.util.generateQueryURLForComplexLigand(this.complexId(), this.ligand().ligandId));
   }
 
   private resetRenderer(): void {

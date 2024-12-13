@@ -16,8 +16,11 @@
       } }
     </p>
     <p class="grid-text">
-      @let numOfChains = ligand().num_chains; @let numOfPDBEntries = ligand().num_pdb_entries; Bound to {{ numOfChains }}
-      {{ numOfChains > 1 ? 'chains' : 'chain' }} in {{ numOfPDBEntries }} {{ numOfPDBEntries > 1 ? 'PDB entries' : 'PDB entry' }}
+      @let numOfPDBEntries = ligand().num_pdb_entries; <strong>Bound in</strong>
+      <a [href]="solrUrl()" target="_blank">
+        {{ numOfPDBEntries }} {{ numOfPDBEntries > 1 ? 'PDB entries' : 'PDB entry' }}
+        <i class="icon icon-link icon-common"></i>
+      </a>
     </p>
   </div>
 </div>
