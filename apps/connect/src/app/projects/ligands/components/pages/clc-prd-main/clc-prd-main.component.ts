@@ -55,7 +55,6 @@ export class ClcPrdMainComponent implements OnInit {
 
   public description = toSignal(this.globalStore.select(LigandSelectors.description));
   public downloadOptions = toSignal(this.globalStore.select(LigandSelectors.downloadOptions));
-  public supercomponents = toSignal(this.globalStore.select(LigandSelectors.supercomponents));
   public descriptionLoaded = computed(() => (Object.keys(this.description() ?? {}).length ? true : false));
 
   public redirectText$ = this.globalStore.select(LigandSelectors.emptyPageText);

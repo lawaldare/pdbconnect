@@ -4,9 +4,7 @@
   @if(description().synonyms){
   <div class="info-row">
     <span class="info-row-title">Synonyms</span>
-    <div class="info-row-content" libTruncateText [truncateText]="description().synonyms" [limit]="60">
-      <!-- {{ description().synonyms }} -->
-    </div>
+    <div class="info-row-content" libTruncateText [truncateText]="description().synonyms" [limit]="60"></div>
   </div>
   }
   <div class="info-row formula-row">
@@ -106,13 +104,6 @@
     <span class="info-row-title">Is part of</span>
     <article class="article-supercomponents">
       <div class="info-row-content supercomponents" libIsPartOf [truncateTexts]="supercomponents()"></div>
-      <!-- <i
-        class="icon icon-common icon-clone"
-        matTooltipClass="description-tooltip"
-        matTooltip="Copy the ID"
-        matTooltipPosition="above"
-        (click)="copy(supercomponents().join(', '), 'List of ids')"
-      ></i> -->
       <div class="supercomponent-actions">
         @if(supercomponents().length > 1){
         <button class="vf-button vf-button--link" (click)="downloadIds()">

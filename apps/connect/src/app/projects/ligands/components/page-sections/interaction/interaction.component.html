@@ -13,11 +13,7 @@
   </button>
   <a href="https://github.com/PDBe-KB/pdbe-kb-manual/wiki/Interaction-statistics" target="_blank">Documentation</a>
   <div class="intx-component-container">
-    <pdbc-interactions-heatmap
-      [ligandId]="ligandId()"
-      (newFilteringEvent)="changeLigandEnvironmentFilters($event)"
-      [interactions]="interaction"
-    ></pdbc-interactions-heatmap>
+    <lib-interactions-heatmap [ligandId]="ligandId()" (newFilteringEvent)="changeLigandEnvironmentFilters($event)" [interactions]="interaction" />
     <div class="ligandEnv-container">
       <div class="ligandEnv-header">
         <h4>
@@ -25,7 +21,6 @@
           <lib-tool-tip>
             <p>Percentage of interactions by ligand atom compared to the total interactions of the ligand</p>
           </lib-tool-tip>
-          <!-- <img src="{{ helpLogoSrc }}" /> -->
         </h4>
       </div>
       <div class="ligandEnv-content">

@@ -1,5 +1,5 @@
-import { HotmapLigDatum, LigIntHeatmapData } from './data-models/lig-int-heatmap-data';
-import { LigIntAPIKeys, LigIntCountsDictionary } from './data-models/lig-int-heatmap-data-api';
+import { HotmapLigDatum } from './data-models/lig-int-heatmap-data';
+import { LigIntCountsDictionary, LigIntAPIKeys } from './data-models/lig-int-heatmap-data-api';
 import { ViewerData } from './data-models/viewer-data';
 
 export const INTX_NAME_STANDARDIZER = {
@@ -170,7 +170,6 @@ export function filterData(viewerData: ViewerData) {
       newCount = newCount ? newCount : 0;
     }
     viewerData['heatmap'][i_heatmap]['score'] = (newCount / Math.max(perAtomDivide, 1)) * 100;
-
   }
   return viewerData;
 }
