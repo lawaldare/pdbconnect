@@ -5,8 +5,11 @@ import { LigandSummary } from '../data-models/description.model';
 import { DescriptionData } from '../services/aggregated-api.service';
 import { RelatedLigand } from '../data-models/related-ligands.model';
 import { LoadingState } from '../enums/loading-state.enum';
+import { environment } from '../../../../environments/environment';
 
 export const LIGAND_STORE_STATE_KEY = 'ligand';
+
+const downloadBaseUrl = `${environment.pdbeBaseUrl}static/files/pdbechem_v2/`;
 
 const initialState: LigandStoreState = {
   ligandId: '',
@@ -68,10 +71,10 @@ export const ligandReducer = createReducer(
   on(LigandActions.setDownloadOptions, (state, action) => ({
     ...state,
     downloadOptions: [
-      { name: 'CIF file', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${state.ligandId}.cif`, downloadable: true },
-      { name: 'Ideal SDF', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${state.ligandId}_ideal.sdf`, downloadable: true },
-      { name: 'Model SDF', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${state.ligandId}_model.sdf`, downloadable: true },
-      { name: 'Model CML', url: `https://wwwdev.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${state.ligandId}_model.cml`, downloadable: true },
+      { name: 'CIF file', url: `${downloadBaseUrl}${state.ligandId}.cif`, downloadable: true },
+      { name: 'Ideal SDF', url: `${downloadBaseUrl}${state.ligandId}_ideal.sdf`, downloadable: true },
+      { name: 'Model SDF', url: `${downloadBaseUrl}${state.ligandId}_model.sdf`, downloadable: true },
+      { name: 'Model CML', url: `${downloadBaseUrl}${state.ligandId}_model.cml`, downloadable: true },
     ],
   })),
   on(LigandActions.setFragments, (state, action) => ({
