@@ -24,12 +24,10 @@ main {
     .summary,
     .structures,
     .interactions,
-    .publications {
-      padding-bottom: 60px;
-    }
-
-    .ligands {
-      margin-top: 70px;
+    .publications,
+    .ligands,
+    .publication {
+      padding-bottom: 20px;
     }
   }
 
