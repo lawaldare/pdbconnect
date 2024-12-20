@@ -5,50 +5,9 @@ import { MolstarResidueInfo, MolstarSelectionObj } from '../../helpers/molstar/m
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { ComplexDetails } from '../../data-models/complex-details.model';
 import { calculateAssemblyComposition } from '../../helpers/assembly-helpers';
-import { CathMappings, PfamMappings, ScopMappings } from '../../data-models/domains.model';
+import { CathMappings, DomainMapping, PfamMappings, ScopMappings } from '../../data-models/domains.model';
 import { EntryApiService } from '../../services/entry-api.service';
-
-export type MappedModification = {
-  name: string;
-  img: string;
-  chem_comp_id: string;
-};
-
-type ParsedDomainsByEntityAndResource = {
-  [key: string]: {
-    [key: string]: ParsedDomainsByEntity;
-  };
-};
-
-type ParsedDomainsByEntity = {
-  // first level: entity ids
-  [key: string]: {
-    accession: string;
-    description: string;
-    domains: {
-      [key: string]: {
-        domainId: string;
-        domainAcc: string;
-        segments: ParsedDomainSegment[];
-      };
-    };
-    img: string;
-  };
-};
-
-type ParsedDomainSegment = {
-  chain_id: string;
-  entity_id: string;
-  classification_acc: string;
-  domain_acc: string;
-  domain_id: string;
-  auth_begin: string;
-  auth_begin_ins: string;
-  auth_end: string;
-  auth_end_ins: string;
-  resn_begin: number;
-  resn_end: number;
-};
+import { formatSegments } from '../../helpers/domain-helpers';
 
 type ParsedComplexDetails = {
   name: string | null | undefined;
@@ -56,6 +15,32 @@ type ParsedComplexDetails = {
   composition: string | null | undefined;
   complexId: string | null | undefined;
 };
+
+interface MolstarNamedSelections {
+  name: string;
+  selection: MolstarSelectionObj;
+}
+
+export interface ListSelectable {
+  id: string;
+  name: string;
+  colors: string[];
+  // TODO: molstarGalleryImg and molstarNamedSelections to be replaced by MolViewSpec objects in the future
+  molstarGalleryImg: string;
+  molstarNamedSelections: MolstarNamedSelections[];
+}
+
+export interface NestedListSelectable {
+  parentId: string; // same as key
+  parentName: string;
+  parentColor: string;
+  nestedSelectables: ListSelectable[];
+}
+
+export interface DataForListViews {
+  // ListSelectable for macromolecules, ligands, modifications, dict of NestedListSelectable for domains
+  [key: string]: ListSelectable[] | { [key: string]: NestedListSelectable[] };
+}
 
 @Injectable({
   providedIn: 'root',
@@ -70,19 +55,425 @@ export class OverviewMolstarFacade {
     complexId: undefined,
   });
 
-  public moleculesDescription: WritableSignal<string[]> = signal([]);
+  public colorsFromMolj: WritableSignal<{ [key: string | number]: string }> = signal({});
+
+  public macromoleculesDescription: WritableSignal<string> = signal('');
   public entryContentsDescription: WritableSignal<string[]> = signal([]);
-  public modifications: WritableSignal<MappedModification[]> = signal([]);
-  public domainsByEntityAndResource: WritableSignal<ParsedDomainsByEntityAndResource> = signal({});
+  public listViewSelectablesByTab: WritableSignal<DataForListViews> = signal({});
+
+  public numLigands = signal(0);
+  public numModifications = signal(0);
   public domainCountByResource: WritableSignal<{ [key: string]: number }> = signal({
     CATH: 0,
     Pfam: 0,
     SCOP: 0,
   });
-  public moleculeNameByEntityId: WritableSignal<{ [key: string]: string }> = signal({});
 
-  // public totalDomains = signal(0);
-  public colorsFromMolj: WritableSignal<{ [key: string | number]: string }> = signal({});
+  public generateListSelectable(
+    entryId: string,
+    macromolecules: Molecule[],
+    ligands: Molecule[],
+    modifications: ModifiedResidue[],
+    cathMappings: CathMappings,
+    pfamMappings: PfamMappings,
+    scopMappings: ScopMappings,
+    imageList: string[],
+    molstarResidueInfo: MolstarResidueInfo[]
+  ) {
+    this.numLigands.set(ligands.length);
+
+    const listViewSelectablesByTab: DataForListViews = {};
+    listViewSelectablesByTab['Assembly'] = [];
+
+    // convert macromolecule objects to listview objects
+    const macromoleculesToListView: ListSelectable[] = [];
+    for (let i = 0; i < macromolecules.length; i++) {
+      const macromolecule = macromolecules[i];
+
+      // check which macromolecule chains exist in molstar assembly
+      const chainsForMacromoleculeInAssembly = [
+        ...new Set(
+          molstarResidueInfo
+            .filter((resid) => {
+              return resid.label_entity_id && resid.label_asym_id && resid.label_entity_id === macromolecule.entity_id + '';
+            })
+            .map((resid) => resid.label_asym_id!)
+        ),
+      ];
+
+      // created molstar selection objects for each chain
+      const molstarNamedSelections: MolstarNamedSelections[] = [];
+      for (const chain of chainsForMacromoleculeInAssembly) {
+        molstarNamedSelections.push({
+          name: `Chain: ${chain}`,
+          selection: {
+            entityId: macromolecule.entity_id + '',
+            authChainId: chain,
+            residues: [],
+          },
+        });
+      }
+
+      const macromoleculeColors = [this.colorsFromMolj()[macromolecule.entity_id]];
+
+      // save listview object with all necessary details to display
+      macromoleculesToListView.push({
+        id: `macromolecule-${i + 1}`,
+        name: macromolecule.molecule_name[0],
+        colors: macromoleculeColors,
+        molstarGalleryImg: `${entryId}_entity_${macromolecule.entity_id}_front`,
+        molstarNamedSelections: molstarNamedSelections,
+      });
+    }
+    listViewSelectablesByTab['Macromolecules'] = macromoleculesToListView;
+
+    // convert ligand objects to listview objects
+    const ligandsToListView: ListSelectable[] = [];
+    for (let j = 0; j < ligands.length; j++) {
+      const ligand = ligands[j];
+
+      // check which ligand residues exist in molstar assembly
+      const ligandResidueInfo = molstarResidueInfo.filter((residInfo) => {
+        return (
+          residInfo.label_entity_id &&
+          residInfo.auth_asym_id &&
+          residInfo.label_asym_id &&
+          residInfo.label_entity_id === ligand.entity_id + '' &&
+          ligand.in_chains.indexOf(residInfo.auth_asym_id) > -1 &&
+          ligand.in_struct_asyms.indexOf(residInfo.label_asym_id) > -1
+        );
+      });
+
+      // created molstar selection objects for each residue
+      const molstarNamedSelections: MolstarNamedSelections[] = ligandResidueInfo.map((ligResidInfo) => {
+        const chain = ligResidInfo.auth_asym_id!;
+        const resNum = ligResidInfo.auth_seq_id! + '';
+        const resIns = ligResidInfo.pdbx_PDB_ins_code || '';
+        return {
+          name: `Chain: ${chain} - Res: ${resNum}${resIns}`,
+          selection: {
+            entityId: ligand.entity_id + '',
+            authChainId: chain,
+            residues: [
+              {
+                authBegin: resNum,
+                authBeginIns: resIns,
+                authEnd: resNum,
+                authEndIns: resIns,
+              },
+            ],
+          },
+        };
+      });
+
+      const ligandColors = [this.colorsFromMolj()[ligand.entity_id]];
+
+      // save listview object with all necessary details to display
+      ligandsToListView.push({
+        id: `ligand-${j + 1}`,
+        name: `${ligand.molecule_name[0]} - ${ligand.chem_comp_ids[0]}`,
+        colors: ligandColors,
+        molstarGalleryImg: `${entryId}_entity_${ligand.entity_id}_front`,
+        molstarNamedSelections: molstarNamedSelections,
+      });
+    }
+    listViewSelectablesByTab['Ligands'] = ligandsToListView;
+
+    // convert domain objects to listview objects
+    const domainsToListViewByResource: { [key: string]: NestedListSelectable[] } = {};
+    domainsToListViewByResource['CATH'] = [];
+    domainsToListViewByResource['SCOP'] = [];
+    domainsToListViewByResource['Pfam'] = [];
+
+    const cathUniqueAccessions = new Set();
+    for (const [resourceAcc, data] of Object.entries(cathMappings)) {
+      // domain names in CATH are unique 'domain' fields inside mappings
+      const domainDesc = data.homology;
+
+      // first get corresponding images for a given accession
+      const imagesForAccession = imageList.filter((img) => img.split('_')[4] === resourceAcc);
+
+      // const domainNames = data.mappings.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+      // if we had images for each domainName:
+      // for (const domainName of domainNames) {
+      // const mappings = data.mappings.filter((mapping) => mapping.domain! === domainName);
+
+      for (const imgName of imagesForAccession) {
+        const entityId = imgName.split('_')[1];
+        const chainId = imgName.split('_')[2];
+        const mappingsForImg = data.mappings.filter((mapping) => mapping.entity_id + '' === entityId && mapping.chain_id === chainId);
+
+        // if no domain with valid image, skip it
+        if (mappingsForImg.length === 0) continue;
+
+        const domainNames = mappingsForImg.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+
+        // get parent macromolecules of a domain
+        const macromoleculeOfDomain = macromolecules
+          .map((mol, idx) => {
+            return {
+              id: `macromolecule-${idx + 1}`,
+              name: mol.molecule_name[0],
+              color: this.colorsFromMolj()[mol.entity_id],
+              entityId: mol.entity_id + '',
+            };
+          })
+          .filter((parsedMol) => parsedMol.entityId === entityId)[0];
+
+        // filter mappings data for this assembly
+        const segmentData = formatSegments(mappingsForImg, molstarResidueInfo);
+
+        // if no observed segments for this domain in the assembly, skip it
+        if (segmentData.segments.length === 0) continue;
+
+        cathUniqueAccessions.add(resourceAcc);
+        const accIdx = [...cathUniqueAccessions].indexOf(resourceAcc) + 1;
+
+        // if macromolecule not yet in list view
+        let parentIdx = domainsToListViewByResource['CATH'].map((data) => data.parentId).indexOf(macromoleculeOfDomain.id);
+        if (parentIdx === -1) {
+          domainsToListViewByResource['CATH'].push({
+            parentId: macromoleculeOfDomain.id,
+            parentName: macromoleculeOfDomain.name,
+            parentColor: macromoleculeOfDomain.color,
+            nestedSelectables: [],
+          });
+          parentIdx = domainsToListViewByResource['CATH'].length - 1;
+        }
+
+        const molstarNamedSelections = [
+          {
+            name: domainNames.join(', '),
+            selection: segmentData.molstarSelection,
+          },
+        ];
+
+        const domainColors = domainNames.map((domainName) => this.colorsFromMolj()[domainName]);
+        domainsToListViewByResource['CATH'][parentIdx].nestedSelectables.push({
+          id: `domain-cath-${accIdx}`,
+          name: `${domainDesc} (${resourceAcc})`,
+          colors: domainColors,
+          molstarGalleryImg: imgName,
+          molstarNamedSelections: molstarNamedSelections,
+        });
+      }
+    }
+    const scopUniqueAccessions = new Set();
+    for (const [resourceAcc, data] of Object.entries(scopMappings)) {
+      // domain names in CATH are unique 'domain' fields inside mappings
+      const domainDesc = data.description;
+
+      // first get corresponding images for a given accession
+      const imagesForAccession = imageList.filter((img) => img.split('_')[4] === resourceAcc);
+
+      // const domainNames = data.mappings.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+      // if we had images for each domainName:
+      // for (const domainName of domainNames) {
+      // const mappings = data.mappings.filter((mapping) => mapping.domain! === domainName);
+
+      for (const imgName of imagesForAccession) {
+        const entityId = imgName.split('_')[1];
+        const chainId = imgName.split('_')[2];
+        const mappingsForImg = data.mappings.filter((mapping) => mapping.entity_id + '' === entityId && mapping.chain_id === chainId);
+
+        // if no domain with valid image, skip it
+        if (mappingsForImg.length === 0) continue;
+
+        const domainNames = mappingsForImg.map((mapping) => mapping.scop_id!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+
+        // get parent macromolecules of a domain
+        const macromoleculeOfDomain = macromolecules
+          .map((mol, idx) => {
+            return {
+              id: `macromolecule-${idx + 1}`,
+              name: mol.molecule_name[0],
+              color: this.colorsFromMolj()[mol.entity_id],
+              entityId: mol.entity_id + '',
+            };
+          })
+          .filter((parsedMol) => parsedMol.entityId === entityId)[0];
+
+        // filter mappings data for this assembly
+        const segmentData = formatSegments(mappingsForImg, molstarResidueInfo);
+
+        // if no observed segments for this domain in the assembly, skip it
+        if (segmentData.segments.length === 0) continue;
+
+        scopUniqueAccessions.add(resourceAcc);
+        const accIdx = [...scopUniqueAccessions].indexOf(resourceAcc) + 1;
+
+        // if macromolecule not yet in list view
+        let parentIdx = domainsToListViewByResource['SCOP'].map((data) => data.parentId).indexOf(macromoleculeOfDomain.id);
+        if (parentIdx === -1) {
+          domainsToListViewByResource['SCOP'].push({
+            parentId: macromoleculeOfDomain.id,
+            parentName: macromoleculeOfDomain.name,
+            parentColor: macromoleculeOfDomain.color,
+            nestedSelectables: [],
+          });
+          parentIdx = domainsToListViewByResource['SCOP'].length - 1;
+        }
+
+        const molstarNamedSelections = [
+          {
+            name: domainNames.join(', '),
+            selection: segmentData.molstarSelection,
+          },
+        ];
+
+        const domainColors = domainNames.map((domainName) => this.colorsFromMolj()[domainName]);
+        domainsToListViewByResource['SCOP'][parentIdx].nestedSelectables.push({
+          id: `domain-scop-${accIdx}`,
+          name: `${domainDesc} (${resourceAcc})`,
+          colors: domainColors,
+          molstarGalleryImg: imgName,
+          molstarNamedSelections: molstarNamedSelections,
+        });
+      }
+    }
+    const pfamUniqueAccessions = new Set();
+    for (const [resourceAcc, data] of Object.entries(pfamMappings)) {
+      const domainDesc = data.description;
+
+      // first get corresponding images for a given accession
+      const imagesForAccession = imageList.filter((img) => img.split('_')[4] === resourceAcc);
+
+      // const domainNames = data.mappings.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+      // if we had images for each domainName:
+      // for (const domainName of domainNames) {
+      // const mappings = data.mappings.filter((mapping) => mapping.domain! === domainName);
+
+      for (const imgName of imagesForAccession) {
+        const entityId = imgName.split('_')[1];
+        const chainId = imgName.split('_')[2];
+        const mappingsForImg = data.mappings.filter((mapping) => mapping.entity_id + '' === entityId && mapping.chain_id === chainId);
+
+        // if no domain with valid image, skip it
+        if (mappingsForImg.length === 0) continue;
+
+        const domainNames = mappingsForImg.map((_mapping, idx) => `${resourceAcc}_${idx + 1}`).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+
+        // get parent macromolecules of a domain
+        const macromoleculeOfDomain = macromolecules
+          .map((mol, idx) => {
+            return {
+              id: `macromolecule-${idx + 1}`,
+              name: mol.molecule_name[0],
+              color: this.colorsFromMolj()[mol.entity_id],
+              entityId: mol.entity_id + '',
+            };
+          })
+          .filter((parsedMol) => parsedMol.entityId === entityId)[0];
+
+        // filter mappings data for this assembly
+        const segmentData = formatSegments(mappingsForImg, molstarResidueInfo);
+
+        // if no observed segments for this domain in the assembly, skip it
+        if (segmentData.segments.length === 0) continue;
+
+        pfamUniqueAccessions.add(resourceAcc);
+        const accIdx = [...pfamUniqueAccessions].indexOf(resourceAcc) + 1;
+
+        // if macromolecule not yet in list view
+        let parentIdx = domainsToListViewByResource['Pfam'].map((data) => data.parentId).indexOf(macromoleculeOfDomain.id);
+        if (parentIdx === -1) {
+          domainsToListViewByResource['Pfam'].push({
+            parentId: macromoleculeOfDomain.id,
+            parentName: macromoleculeOfDomain.name,
+            parentColor: macromoleculeOfDomain.color,
+            nestedSelectables: [],
+          });
+          parentIdx = domainsToListViewByResource['Pfam'].length - 1;
+        }
+
+        const molstarNamedSelections = [
+          {
+            name: domainNames.join(', '),
+            selection: segmentData.molstarSelection,
+          },
+        ];
+
+        const domainColors = domainNames.map((domainName) => this.colorsFromMolj()[domainName]);
+        domainsToListViewByResource['Pfam'][parentIdx].nestedSelectables.push({
+          id: `domain-pfam-${accIdx}`,
+          name: `${domainDesc} (${resourceAcc})`,
+          colors: domainColors,
+          molstarGalleryImg: imgName,
+          molstarNamedSelections: molstarNamedSelections,
+        });
+      }
+    }
+
+    listViewSelectablesByTab['Domains'] = domainsToListViewByResource;
+
+    // convert modification objects to listview objects
+    const modificationsToListView: ListSelectable[] = [];
+
+    // first filter modifcations for current assembly
+    const modsInAssembly = modifications.filter((mod) => {
+      const modInResidueInfo = molstarResidueInfo.filter((resid) => {
+        const insertionCode = resid.pdbx_PDB_ins_code || '';
+        return (
+          resid.label_entity_id &&
+          resid.auth_asym_id &&
+          resid.auth_seq_id &&
+          resid.label_entity_id === mod.entity_id + '' &&
+          resid.auth_asym_id === mod.chain_id &&
+          resid.auth_seq_id === mod.author_residue_number &&
+          insertionCode === mod.author_insertion_code
+        );
+      });
+      return modInResidueInfo.length > 0;
+    });
+
+    // then get unique modifications chem_comp_ids
+    const modificationUniqueIds = modsInAssembly.map((mod) => mod.chem_comp_id).filter((modId, idx, ids) => ids.indexOf(modId) === idx);
+    this.numModifications.set(modificationUniqueIds.length);
+
+    // parse data for each unique id
+    for (let l = 0; l < modificationUniqueIds.length; l++) {
+      const modId = modificationUniqueIds[l];
+      const modificationsOfId = modsInAssembly.filter((mod) => mod.chem_comp_id === modId);
+
+      const modName = modificationsOfId[0].chem_comp_name;
+
+      const molstarNamedSelections = modificationsOfId.map((mod) => {
+        return {
+          name: `Chain: ${mod.chain_id} - Res: ${mod.author_residue_number}${mod.author_insertion_code}`,
+          selection: {
+            entityId: mod.entity_id + '',
+            authChainId: mod.chain_id,
+            residues: [
+              {
+                authBegin: mod.author_residue_number + '',
+                authBeginIns: mod.author_insertion_code + '',
+                authEnd: mod.author_residue_number + '',
+                authEndIns: mod.author_insertion_code + '',
+              },
+            ],
+          },
+        };
+      });
+
+      const modificationColors = [this.colorsFromMolj()[modId]];
+      // save listview object with all necessary details to display
+      modificationsToListView.push({
+        id: `modification-${l + 1}`,
+        name: `${modName} - ${modId}`,
+        colors: modificationColors,
+        molstarGalleryImg: `${entryId}_modres_${modId}_front`,
+        molstarNamedSelections: molstarNamedSelections,
+      });
+    }
+    listViewSelectablesByTab['Modifications'] = modificationsToListView;
+
+    this.domainCountByResource.set({
+      CATH: cathUniqueAccessions.size,
+      SCOP: scopUniqueAccessions.size,
+      Pfam: pfamUniqueAccessions.size,
+    });
+    this.listViewSelectablesByTab.set(listViewSelectablesByTab);
+  }
 
   public parseComplexDetails(complexDetails: ComplexDetails[]) {
     let preferredAssemblyId = undefined;
@@ -105,10 +496,10 @@ export class OverviewMolstarFacade {
   }
 
   public generateMoleculeCountText(macromolecules: Molecule[]) {
-    const moleculeTypeConditions = [
+    let moleculeTypeConditions = [
       {
         moleculeTypes: ['polypeptide(L)', 'polypeptide(R)'],
-        moleculeDescriptionSuffix: 'unique proteins',
+        moleculeDescriptionSuffix: 'unique protein',
         entryContentsDescriptionSuffix: 'distinct polypeptide',
       },
       {
@@ -133,182 +524,37 @@ export class OverviewMolstarFacade {
       },
     ];
 
+    moleculeTypeConditions = moleculeTypeConditions.filter((condition) => {
+      const macromoleculesForCondition = macromolecules.filter((mol) => condition.moleculeTypes.indexOf(mol.molecule_type) > -1);
+      return macromoleculesForCondition.length > 0;
+    });
+
+    let totalMolecules = 0;
+    let macromoleculesDescription = '';
+    const entryContentsDescription: string[] = [];
+
     // for each macromolecule type (protein, dna, rna, dna/rna hybrid, carbohydrate)
-    for (const moleculeTypeCondition of moleculeTypeConditions) {
+    for (let i = 0; i < moleculeTypeConditions.length; i++) {
+      const moleculeTypeCondition = moleculeTypeConditions[i];
       // filter the complete macromolecule list by the type
       const filteredMacromolecules = macromolecules.filter((mol) => moleculeTypeCondition.moleculeTypes.indexOf(mol.molecule_type) > -1);
-      if (filteredMacromolecules.length > 0) {
-        // create text descriptions taken from object above (moleculeTypeConditions) for the count of each molecule type
-        this.moleculesDescription.update((descriptions) => [
-          ...descriptions, // spread the current array
-          `${filteredMacromolecules.length} ${moleculeTypeCondition.moleculeDescriptionSuffix}`, // add the new element
-        ]);
-        this.entryContentsDescription.update((descriptions) => [
-          ...descriptions, // spread the current array
-          `${filteredMacromolecules.length} ${moleculeTypeCondition.entryContentsDescriptionSuffix} molecule`, // add the new element
-        ]);
-        // if count bigger than one, add 's' to molecule
-        if (filteredMacromolecules.length > 1) {
-          // this.entryContentsDescription()[this.entryContentsDescription().length-1] += 's';
-          this.entryContentsDescription.update((descriptions) => {
-            const updatedDescriptions = [...descriptions]; // copy the array
-            updatedDescriptions[updatedDescriptions.length - 1] += 's'; // update the element at index 1
-            return updatedDescriptions;
-          });
-        }
-      }
+
+      // add comma if this is between second and penultimate item
+      if (i > 0 && i < moleculeTypeConditions.length - 1) macromoleculesDescription += ', ';
+
+      // add 'and' if more than one item and this is last item
+      if (i > 0 && i === moleculeTypeConditions.length - 1) macromoleculesDescription += ' and ';
+
+      macromoleculesDescription += `${filteredMacromolecules.length} ${moleculeTypeCondition.moleculeDescriptionSuffix}`;
+      totalMolecules += filteredMacromolecules.length;
+
+      const hasPlural = filteredMacromolecules.length > 1 ? 's' : '';
+      entryContentsDescription.push(`${filteredMacromolecules.length} ${moleculeTypeCondition.entryContentsDescriptionSuffix} molecule${hasPlural}`);
     }
-  }
+    macromoleculesDescription += totalMolecules > 1 ? ' molecules' : ' molecule';
 
-  public mapEntityIdToMoleculeName(allMolecules: Molecule[]) {
-    for (const mol of allMolecules) {
-      // this.moleculeNameByEntityId()[mol.entity_id+''] = mol.molecule_name[0];
-      this.moleculeNameByEntityId.update((state) => ({
-        ...state, // spread the existing state
-        [mol.entity_id + '']: mol.molecule_name[0], // update the specific key dynamically
-      }));
-    }
-  }
-
-  public parseModifications(entryId: string, modifications: ModifiedResidue[], imageList: string[]) {
-    for (const eachModification of modifications) {
-      // generate image string
-      const imgString = imageList.filter((eachImg) => eachImg === `${entryId}_modres_${eachModification.chem_comp_id}_front`);
-
-      // add modification to list if does not exist yet
-      const previousModifications = this.modifications().map((previousMod) => previousMod.name);
-      if (imgString && previousModifications.indexOf(eachModification.chem_comp_name) === -1) {
-        this.modifications.update((descriptions) => [
-          ...descriptions,
-          {
-            name: eachModification.chem_comp_name,
-            img: imgString[0],
-            chem_comp_id: eachModification.chem_comp_id,
-          },
-        ]);
-      }
-    }
-  }
-
-  // Helper function to ensure a nested structure exists and return a new state with updated values.
-  private ensureNestedStructure<T extends Record<string | number, any>>(state: T, path: Array<string | number>, defaultValue: any): T {
-    // first state of signal is copied
-    const newState = { ...state };
-
-    // current level is equal to signal current state
-    let currentLevel: Record<string | number, any> = newState;
-
-    // for each path (list of keys passed to function) we ...
-    for (let i = 0; i < path.length; i++) {
-      const key = path[i];
-
-      // ...check if the path does not exist
-      if (!(key in currentLevel)) {
-        // ... if so we create the path mapping it to a value (passed to function)
-        currentLevel[key] = i === path.length - 1 ? defaultValue : {};
-      }
-
-      // ...finally we keep navigating to path (change currentLevel)
-      currentLevel = currentLevel[key];
-    }
-
-    // updates are also done in state copy which is now returned
-    return newState;
-  }
-
-  public parseMolstarGalleryDomains(entryId: string, imageList: string[], domainsData: { [key: string]: CathMappings | PfamMappings | ScopMappings }) {
-    const domainIdxByClassificationAcc: { [key: string]: number } = {};
-
-    for (const resourceName of Object.keys(domainsData)) {
-      const resourceData = domainsData[resourceName];
-
-      const uniqueDomains = new Set();
-
-      // Ensure resource exists
-      this.domainsByEntityAndResource.update((state) => this.ensureNestedStructure(state, [resourceName], {}));
-
-      for (const [groupId, groupData] of Object.entries(resourceData)) {
-        let classificationDescription = (groupData as any)['description'];
-        const mappings = (groupData as any)['mappings'];
-
-        for (const mapping of mappings) {
-          const domainImg = `${entryId.toLowerCase()}_${mapping.entity_id}_${mapping.chain_id}_${resourceName}_${groupId}`;
-
-          // If the domain image is not in the image list, skip it
-          if (imageList.indexOf(domainImg) === -1) continue;
-
-          // Count domains for classification
-          domainIdxByClassificationAcc[groupId] = (domainIdxByClassificationAcc[groupId] || 0) + 1;
-
-          uniqueDomains.add(groupId);
-
-          // Create domain identifiers based on resource
-          let domainAcc = '';
-          let domainId = '';
-          if (resourceName === 'CATH') {
-            domainAcc = mapping['domain'];
-            domainId = mapping['domain'];
-            classificationDescription = (groupData as any)['homology'];
-          } else if (resourceName === 'SCOP') {
-            domainAcc = mapping['scop_id'];
-            domainId = mapping['scop_id'];
-          } else if (resourceName === 'Pfam') {
-            domainAcc = `${groupId}:${mapping['chain_id']}`;
-            const pfamDomainIdx = domainIdxByClassificationAcc[groupId];
-            domainId = `${groupId}_${pfamDomainIdx}`;
-          }
-
-          const segmentObj: ParsedDomainSegment = {
-            chain_id: mapping['chain_id'],
-            entity_id: mapping['entity_id'],
-            classification_acc: groupId,
-            domain_acc: domainAcc,
-            domain_id: domainId,
-            auth_begin: mapping['start']['author_residue_number'] + '',
-            auth_begin_ins: mapping['start']['author_insertion_code'],
-            auth_end: mapping['end']['author_residue_number'] + '',
-            auth_end_ins: mapping['end']['author_insertion_code'],
-            resn_begin: mapping['start']['residue_number'],
-            resn_end: mapping['start']['residue_number'],
-          };
-
-          // Ensure entity exists
-          this.domainsByEntityAndResource.update((state) => this.ensureNestedStructure(state, [resourceName, segmentObj['entity_id']], {}));
-
-          // Ensure classification exists
-          this.domainsByEntityAndResource.update((state) =>
-            this.ensureNestedStructure(state, [resourceName, segmentObj['entity_id'], segmentObj['classification_acc']], {
-              accession: segmentObj['classification_acc'],
-              description: classificationDescription,
-              img: domainImg,
-              domains: {},
-            })
-          );
-
-          // Ensure domain exists
-          this.domainsByEntityAndResource.update((state) =>
-            this.ensureNestedStructure(state, [resourceName, segmentObj['entity_id'], segmentObj['classification_acc'], 'domains', segmentObj['domain_id']], {
-              domainId: segmentObj['domain_id'],
-              domainAcc: segmentObj['domain_acc'],
-              segments: [],
-            })
-          );
-
-          // Add segment to the domain
-          this.domainsByEntityAndResource.update((state) => {
-            const newState = { ...state };
-            newState[resourceName][segmentObj['entity_id']][segmentObj['classification_acc']].domains[segmentObj['domain_id']].segments.push(segmentObj);
-            return newState;
-          });
-        }
-      }
-
-      // Set unique accession count
-      this.domainCountByResource.update((state) => ({
-        ...state,
-        [resourceName]: (state[resourceName] || 0) + uniqueDomains.size,
-      }));
-    }
+    this.macromoleculesDescription.set(macromoleculesDescription);
+    this.entryContentsDescription.set(entryContentsDescription);
   }
 
   public async getColorsFromMolj(moljDescriptions: string[]) {
@@ -383,163 +629,5 @@ export class OverviewMolstarFacade {
       const color: number = transform.params.colorTheme.params.value;
       return '#' + ('000000' + color.toString(16)).slice(-6);
     }
-  }
-
-  public getSelectionsFromImg(
-    tabView: string,
-    imgName: string,
-    molstarResidueInfo: MolstarResidueInfo[],
-    selectedEntity?: Molecule,
-    selectedMods?: ModifiedResidue[]
-  ) {
-    let name: string | undefined = undefined;
-    const molstarSelections: MolstarSelectionObj[] = [];
-
-    if (tabView === 'Macromolecules') {
-      name = selectedEntity!.molecule_name[0];
-      const chainsForEntityInAssembly = [
-        ...new Set(
-          molstarResidueInfo
-            .filter((resid) => {
-              return resid.label_entity_id && resid.label_asym_id && resid.label_entity_id === selectedEntity!.entity_id + '';
-            })
-            .map((resid) => resid.label_asym_id!)
-        ),
-      ];
-
-      // for (const chain of selectedEntity!.in_chains) {
-      for (const chain of chainsForEntityInAssembly) {
-        molstarSelections.push({
-          entityId: selectedEntity!.entity_id + '',
-          authChainId: chain,
-          residues: [],
-        });
-      }
-    } else if (tabView === 'Ligands') {
-      name = selectedEntity!.molecule_name[0];
-      const ligandResidueInfo = molstarResidueInfo.filter((residInfo) => {
-        return (
-          residInfo.label_entity_id &&
-          residInfo.auth_asym_id &&
-          residInfo.label_asym_id &&
-          residInfo.label_entity_id === selectedEntity!.entity_id + '' &&
-          selectedEntity!.in_chains.indexOf(residInfo.auth_asym_id) > -1 &&
-          selectedEntity!.in_struct_asyms.indexOf(residInfo.label_asym_id) > -1
-        );
-      });
-      const newMolstarSelections: MolstarSelectionObj[] = ligandResidueInfo.map((ligResidInfo) => {
-        return {
-          entityId: selectedEntity!.entity_id + '',
-          authChainId: ligResidInfo.auth_asym_id!,
-          residues: [
-            {
-              authBegin: ligResidInfo.auth_seq_id! + '',
-              authBeginIns: ligResidInfo.pdbx_PDB_ins_code || '',
-              authEnd: ligResidInfo.auth_seq_id! + '',
-              authEndIns: ligResidInfo.pdbx_PDB_ins_code || '',
-            },
-          ],
-        };
-      });
-      molstarSelections.push(...newMolstarSelections);
-    } else if (tabView === 'Domains') {
-      const entityId = parseInt(imgName.split('_')[1]);
-      const resource = imgName.split('_')[3];
-      const resourceId = imgName.split('_')[4];
-
-      const molstarSelectionObj: MolstarSelectionObj = {
-        entityId: entityId + '',
-        residues: [],
-      };
-      const domainInfo = this.domainsByEntityAndResource()[resource][entityId][resourceId];
-      name = domainInfo.description;
-
-      for (const [_domain, domainData] of Object.entries(domainInfo.domains)) {
-        for (const segment of domainData.segments) {
-          const residueListingChain = molstarResidueInfo.filter((residInfo) => {
-            return (
-              residInfo.label_entity_id &&
-              residInfo.auth_asym_id &&
-              residInfo.label_seq_id &&
-              residInfo.auth_seq_id &&
-              residInfo.label_entity_id! === entityId + '' &&
-              residInfo.auth_asym_id! === segment.chain_id
-            );
-          });
-          const residuesOfChain = residueListingChain.sort((a, b) => a.label_seq_id! - b.label_seq_id!);
-
-          let firstRes = {
-            auth_begin: segment.auth_begin,
-            auth_begin_ins: segment.auth_begin_ins,
-          };
-          if (segment.auth_begin === 'null') {
-            const residuesOfChainAboveStart = residuesOfChain.filter((resid) => resid.label_seq_id! >= segment.resn_begin);
-            firstRes = {
-              auth_begin: residuesOfChainAboveStart[0].auth_seq_id + '',
-              auth_begin_ins: residuesOfChainAboveStart[0].pdbx_PDB_ins_code || '',
-            };
-          }
-
-          let lastRes = {
-            auth_end: segment.auth_end,
-            auth_end_ins: segment.auth_end_ins,
-          };
-          if (segment.auth_end === 'null') {
-            const residuesOfChainBelowEnd = residuesOfChain.filter((resid) => resid.label_seq_id! <= segment.resn_end);
-            lastRes = {
-              auth_end: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].auth_seq_id + '',
-              auth_end_ins: residuesOfChainBelowEnd[residuesOfChainBelowEnd.length - 1].pdbx_PDB_ins_code || '',
-            };
-          }
-
-          molstarSelectionObj.residues.push({
-            authBegin: firstRes.auth_begin,
-            authBeginIns: firstRes.auth_begin_ins,
-            authEnd: lastRes.auth_end,
-            authEndIns: lastRes.auth_end_ins,
-            authChainId: segment.chain_id,
-          });
-        }
-      }
-      molstarSelections.push(molstarSelectionObj);
-    } else if (tabView === 'Modifications') {
-      name = selectedMods![0].chem_comp_name;
-
-      const modsInAssembly = selectedMods!.filter((mod) => {
-        const modInResidueInfo = molstarResidueInfo.filter((resid) => {
-          const insertionCode = resid.pdbx_PDB_ins_code || '';
-          return (
-            resid.label_entity_id &&
-            resid.label_asym_id &&
-            resid.auth_seq_id &&
-            resid.label_entity_id === mod.entity_id + '' &&
-            resid.label_asym_id === mod.chain_id &&
-            resid.auth_seq_id === mod.author_residue_number &&
-            insertionCode === mod.author_insertion_code
-          );
-        });
-        return modInResidueInfo.length > 0;
-      });
-
-      // for (const mod of selectedMods!) {
-      for (const mod of modsInAssembly) {
-        molstarSelections.push({
-          entityId: mod.entity_id + '',
-          authChainId: mod.chain_id,
-          residues: [
-            {
-              authBegin: mod.author_residue_number + '',
-              authBeginIns: mod.author_insertion_code + '',
-              authEnd: mod.author_residue_number + '',
-              authEndIns: mod.author_insertion_code + '',
-            },
-          ],
-        });
-      }
-    }
-    return {
-      name: name,
-      selections: molstarSelections,
-    };
   }
 }

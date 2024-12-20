@@ -1,0 +1,99 @@
+<section class="overview-details">
+  <!-- ----------------------------------- -->
+  <!-- ------- Assembly tab selected ------- -->
+  <!-- ----------------------------------- -->
+  @if (currentTab() === 'Assembly') {
+  <!-- Title -->
+  <h5>{{ getTitle() }}</h5>
+  <!-- Extra assembly information -->
+  @if (assemblyData().name) {
+  <div class="info-row">
+    <span>Assembly name</span>
+    <article>
+      <a>{{ assemblyData().name }}</a>
+      <i class="icon icon-common icon-search"></i>
+    </article>
+  </div>
+  } @if (assemblyData().complexId) {
+  <div class="info-row">
+    <span>PDBe Complex ID</span>
+    <article>
+      <a>{{ assemblyData().complexId }}</a>
+      <i class="icon icon-common icon-search"></i>
+    </article>
+  </div>
+  } @if (assemblyData().composition) {
+  <div class="info-row">
+    <span>Assembly composition</span>
+    <article>
+      {{ assemblyData().composition }}
+    </article>
+  </div>
+  }
+  <div class="info-row">
+    <span>Entry contents</span>
+    <article>
+      @for (contentLine of entryContentsDescription(); track contentLine; let islast = $last) {
+      {{ contentLine }}
+      <br />
+      }
+    </article>
+  </div>
+  }
+  <!-- ------------------------------------------------- -->
+  <!-- Macromolecules, Ligands, Modifications tabs selected -->
+  <!-- ------------------------------------------------- -->
+  @if (currentListViewData()) {
+  <!-- Title -->
+  <h5>{{ getTitle() }}</h5>
+  <!-- List of clickable items that trigger Molstar using stateManagement -->
+  @for(listItem of currentListViewData(); track listItem) {
+  <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
+    <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+    <button class="select-entity-btn">{{ listItem.name }}</button>
+  </div>
+  <!-- when item is selected, show more details button: -->
+  @if (isSelected(listItem)) {
+  <div class="more-details-btn">
+    <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+    <button class="details-btn" (click)="viewDetails()">View more details below</button>
+  </div>
+  } } }
+  <!-- ----------------------------------- -->
+  <!-- -------- Domains tab selected -------- -->
+  <!-- ----------------------------------- -->
+  @if (domainsDataByResource()) {
+  <!-- Domain resource select dropdown which changes nested clickble items list -->
+  <mat-form-field appearance="fill">
+    <mat-label>Select Domain Resource</mat-label>
+    <mat-select [(ngModel)]="currentDomainResource" (selectionChange)="onDomainResourceSelect($event)">
+      @for (resource of objectKeys(domainCountByResource()); track resource;) {
+      <mat-option [value]="resource" [disabled]="domainCountByResource()[resource] === 0"> {{ resource }} ({{ domainCountByResource()[resource] }}) </mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <!-- Title -->
+  <h5>{{ getTitle() }}</h5>
+  <!-- List of (Nested) clickable items -->
+  @for(nestedListObj of getDomainsListViewData(); track nestedListObj) {
+  <div class="select-gallery-container invalid">
+    <div class="color-code-bar" [ngStyle]="{ 'background-color': nestedListObj.parentColor }"></div>
+    <button class="select-entity-btn">{{ nestedListObj.parentName }}</button>
+  </div>
+  <!-- List of clickable items that trigger Molstar using stateManagement -->
+  @for(listItem of nestedListObj.nestedSelectables; track listItem) {
+  <div class="select-gallery-container valid nested-1" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
+    <div class="color-code-bars">
+      @for (color of listItem.colors; track color) {
+      <div class="color-code-sqr" [ngStyle]="{ 'background-color': color }"></div>
+      }
+    </div>
+    <button class="select-entity-btn">↳ {{ listItem.name }}</button>
+  </div>
+  <!-- when item is selected, show more details button is displayed: -->
+  @if (isSelected(listItem)) {
+  <div class="more-details-btn">
+    <button class="details-btn" (click)="viewDetails()">View more details below</button>
+  </div>
+  } } } }
+</section>

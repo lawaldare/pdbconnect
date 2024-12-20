@@ -5,10 +5,8 @@ import {
   removeComponent,
   createComponent,
   addRepresentationToComponent,
-  focusLoci,
   changeComponentVisibility,
   changeRepresentationVisibility,
-  getResidues,
 } from './molstar-helpers';
 import {
   LIGANDS_REPR_HIGHLIGHT,
@@ -27,56 +25,58 @@ import {
   MacromoleculesRowData,
 } from '../../components/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { MolstarBaseClass, MolstarConfigObject } from './molstar-base-class';
 
-declare let PDBeMolstarPlugin: any;
+// declare let PDBeMolstarPlugin: any;
 
-export interface MolstarConfigObject {
-  moleculeId?: string;
-  customData?: {
-    url: string;
-    format: string;
-    binary: boolean;
-  };
-  assemblyId?: string;
-  loadMaps?: boolean;
-  bgColor: { r: number; g: number; b: number };
-  hideControls: boolean;
-  hideCanvasControls?: string[];
-  landscape: boolean;
-  subscribeEvents: boolean;
-  granularity?: string;
-}
+// export interface MolstarConfigObject {
+//   moleculeId?: string;
+//   customData?: {
+//     url: string;
+//     format: string;
+//     binary: boolean;
+//   };
+//   assemblyId?: string;
+//   loadMaps?: boolean;
+//   bgColor: { r: number; g: number; b: number };
+//   hideControls: boolean;
+//   hideCanvasControls?: string[];
+//   landscape: boolean;
+//   subscribeEvents: boolean;
+//   granularity?: string;
+// }
 
 @Injectable({
   providedIn: 'root',
 })
-export class MolstarVisualisationsForTabs {
+export class MolstarVisualisationsForTabs extends MolstarBaseClass {
   // public molstarViewInstance: WritableSignal<any> = signal(undefined);
-  public molstarViewInstance: any;
+  // public molstarViewInstance: any;
   private isMolstarRendered = false;
   public isFirstViewRender = true;
   public readonly signals = inject(ComponentCommunicationService);
 
   public resetAttributesForRendering() {
-    this.molstarViewInstance = undefined;
+    // this.molstarViewInstance = undefined;
+    this.molstarViewInstance.set(undefined);
     this.isMolstarRendered = false;
   }
 
-  private async initMolstar(molstarConfigObject: MolstarConfigObject, molstarContainer?: ElementRef, molstarViewer?: HTMLElement) {
-    if (this.molstarViewInstance) {
-      console.error('MOLSTAR INSTANCE EXISTS');
-    }
-    // this.molstarViewInstance().set(new PDBeMolstarPlugin());
-    this.molstarViewInstance = new PDBeMolstarPlugin();
-    const container = molstarViewer ? molstarViewer : molstarContainer!.nativeElement;
-    this.molstarViewInstance.render(container, molstarConfigObject);
-    await firstValueFrom(this.molstarViewInstance.events.loadComplete);
-  }
+  // private async initMolstar(molstarConfigObject: MolstarConfigObject, molstarContainer?: ElementRef, molstarViewer?: HTMLElement) {
+  //   if (this.molstarViewInstance) {
+  //     console.error('MOLSTAR INSTANCE EXISTS');
+  //   }
+  //   // this.molstarViewInstance().set(new PDBeMolstarPlugin());
+  //   this.molstarViewInstance = new PDBeMolstarPlugin();
+  //   const container = molstarViewer ? molstarViewer : molstarContainer!.nativeElement;
+  //   this.molstarViewInstance.render(container, molstarConfigObject);
+  //   await firstValueFrom(this.molstarViewInstance.events.loadComplete);
+  // }
 
-  private async updateMolstar(molstarConfigObject: MolstarConfigObject) {
-    this.molstarViewInstance.visual.update(molstarConfigObject, true);
-    await firstValueFrom(this.molstarViewInstance.events.loadComplete);
-  }
+  // private async updateMolstar(molstarConfigObject: MolstarConfigObject) {
+  //   this.molstarViewInstance.visual.update(molstarConfigObject, true);
+  //   await firstValueFrom(this.molstarViewInstance.events.loadComplete);
+  // }
 
   public async renderMolstarInitial(entryId: string, molstarContainer: HTMLElement) {
     const molstarConfigObject: MolstarConfigObject = {
@@ -93,9 +93,11 @@ export class MolstarVisualisationsForTabs {
       await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
       this.isMolstarRendered = true;
     } else {
-      await this.updateMolstar(molstarConfigObject);
+      console.error('MOLSTAR INSTANCE UPDATE ERROR');
+      // await this.updateMolstar(molstarConfigObject);
     }
-    const data = await getResidues(this.molstarViewInstance);
+    this.parseInstanceResidues();
+    const data = this.residues();
     this.signals.molstarResidueInfo.set(data);
     this.signals.molstarResidueInfoLoaded.set(true);
   }
@@ -115,7 +117,8 @@ export class MolstarVisualisationsForTabs {
     };
     if (reloadConfigObj) {
       if (this.isMolstarRendered === false) {
-        await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
+        console.error('MOLSTAR INSTANCE DOUBLE INIT');
+        // await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
         this.isMolstarRendered = true;
       } else {
         await this.updateMolstar(molstarConfigObject);
@@ -139,8 +142,9 @@ export class MolstarVisualisationsForTabs {
 
     if (reloadConfigObj) {
       if (this.isMolstarRendered === false) {
+        console.error('MOLSTAR INSTANCE DOUBLE INIT');
         // await this.initMolstar(molstarContainer, molstarConfigObject);
-        await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
+        // await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
         this.isMolstarRendered = true;
       } else {
         await this.updateMolstar(molstarConfigObject);
@@ -148,17 +152,17 @@ export class MolstarVisualisationsForTabs {
     }
 
     if (this.isFirstViewRender === true) {
-      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-polymer', REPR_NONSELECTION_POLYMER, true);
-      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-ligand', REPR_NONSELECTION_LIGAND, true);
-      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-non-standard', REPR_NONSELECTION_LIGAND, true);
-      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-branched', REPR_NONSELECTION_BRANCHED, true);
-      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-branched', REPR_NONSELECTION_LIGAND, false);
+      await addRepresentationToComponent(this.molstarViewInstance(), 'structure-component-static-polymer', REPR_NONSELECTION_POLYMER, true);
+      await addRepresentationToComponent(this.molstarViewInstance(), 'structure-component-static-ligand', REPR_NONSELECTION_LIGAND, true);
+      await addRepresentationToComponent(this.molstarViewInstance(), 'structure-component-static-non-standard', REPR_NONSELECTION_LIGAND, true);
+      await addRepresentationToComponent(this.molstarViewInstance(), 'structure-component-static-branched', REPR_NONSELECTION_BRANCHED, true);
+      await addRepresentationToComponent(this.molstarViewInstance(), 'structure-component-static-branched', REPR_NONSELECTION_LIGAND, false);
       this.isFirstViewRender = false;
     } else {
-      await removeComponent(this.molstarViewInstance, `structure-component-static-domains`);
+      await removeComponent(this.molstarViewInstance(), `structure-component-static-domains`);
     }
-    await createComponent(this.molstarViewInstance, `structure-component-static-domains`, molstarSelection, PROTEIN_REPR_SELECTION);
-    await focusLoci(this.molstarViewInstance, molstarSelection);
+    await createComponent(this.molstarViewInstance(), `structure-component-static-domains`, molstarSelection, PROTEIN_REPR_SELECTION);
+    await this.focusLoci(molstarSelection);
   }
 
   public async renderMolstarLigands(
@@ -200,7 +204,8 @@ export class MolstarVisualisationsForTabs {
 
     if (reloadConfigObj) {
       if (this.isMolstarRendered === false) {
-        await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
+        console.error('MOLSTAR INSTANCE DOUBLE INIT');
+        // await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
         this.isMolstarRendered = true;
       } else {
         await this.updateMolstar(molstarConfigObject);
@@ -210,13 +215,13 @@ export class MolstarVisualisationsForTabs {
     // await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-ligand', reprNonSelectionLigand, true);
     // await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-non-standard', reprNonSelectionLigand, true);
 
-    await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-polymer', reprNonSelectionPolymer, true);
-    await changeComponentVisibility(this.molstarViewInstance, 'structure-component-static-ligand', true);
-    await changeComponentVisibility(this.molstarViewInstance, 'structure-component-static-non-standard', true);
-    await changeComponentVisibility(this.molstarViewInstance, 'structure-component-static-branched', true);
-    await createComponent(this.molstarViewInstance, `structure-component-static-${datum.type}`, molstarSelection, LIGANDS_REPR_SELECTION);
-    await createComponent(this.molstarViewInstance, `structure-component-static-${datum.type}-selected`, molstarSelection, LIGANDS_REPR_HIGHLIGHT);
-    await focusLoci(this.molstarViewInstance, molstarSelection);
+    await addRepresentationToComponent(this.molstarViewInstance(), 'structure-component-static-polymer', reprNonSelectionPolymer, true);
+    await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-ligand', true);
+    await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-non-standard', true);
+    await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-branched', true);
+    await createComponent(this.molstarViewInstance(), `structure-component-static-${datum.type}`, molstarSelection, LIGANDS_REPR_SELECTION);
+    await createComponent(this.molstarViewInstance(), `structure-component-static-${datum.type}-selected`, molstarSelection, LIGANDS_REPR_HIGHLIGHT);
+    await this.focusLoci(molstarSelection);
   }
 
   public async renderMolstarMacromolecules(
@@ -240,27 +245,28 @@ export class MolstarVisualisationsForTabs {
     };
     if (reloadConfigObj) {
       if (this.isMolstarRendered === false) {
-        await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
+        console.error('MOLSTAR INSTANCE DOUBLE INIT');
+        // await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
         this.isMolstarRendered = true;
       } else {
         await this.updateMolstar(molstarConfigObject);
       }
     }
     if (this.isFirstViewRender === true) {
-      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-polymer', REPR_NONSELECTION_POLYMER, true);
-      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-ligand', REPR_NONSELECTION_LIGAND, true);
-      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-non-standard', REPR_NONSELECTION_LIGAND, true);
-      await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-branched', REPR_NONSELECTION_BRANCHED, true);
+      await addRepresentationToComponent(this.molstarViewInstance(), 'structure-component-static-polymer', REPR_NONSELECTION_POLYMER, true);
+      await addRepresentationToComponent(this.molstarViewInstance(), 'structure-component-static-ligand', REPR_NONSELECTION_LIGAND, true);
+      await addRepresentationToComponent(this.molstarViewInstance(), 'structure-component-static-non-standard', REPR_NONSELECTION_LIGAND, true);
+      await addRepresentationToComponent(this.molstarViewInstance(), 'structure-component-static-branched', REPR_NONSELECTION_BRANCHED, true);
       // await addRepresentationToComponent(this.molstarViewInstance, 'structure-component-static-branched', REPR_NONSELECTION_LIGAND, false);
       if (moleculeType.includes('carbohydrate')) {
-        await changeRepresentationVisibility(this.molstarViewInstance, 'structure-component-static-branched', false, 0);
+        await changeRepresentationVisibility(this.molstarViewInstance(), 'structure-component-static-branched', false, 0);
       }
       this.isFirstViewRender = false;
     } else {
-      await removeComponent(this.molstarViewInstance, `structure-component-static-macromolecule`);
+      await removeComponent(this.molstarViewInstance(), `structure-component-static-macromolecule`);
     }
     const reprSelection = moleculeType.includes('carbohydrate') ? MACROMOLECULES_REPR_SELECTION_CARB : PROTEIN_REPR_SELECTION;
-    await createComponent(this.molstarViewInstance, `structure-component-static-macromolecule`, molstarSelection, reprSelection);
-    await focusLoci(this.molstarViewInstance, molstarSelection);
+    await createComponent(this.molstarViewInstance(), `structure-component-static-macromolecule`, molstarSelection, reprSelection);
+    await this.focusLoci(molstarSelection);
   }
 }

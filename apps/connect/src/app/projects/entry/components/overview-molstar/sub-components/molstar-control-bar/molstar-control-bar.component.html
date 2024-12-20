@@ -1,0 +1,21 @@
+<!-- Overview Molstar: selection dropdown and zoom controls -->
+<div class="molstar-control-bar">
+  @if (currentMolstarSelection()) {
+  <div>
+    <span class="molstar-control-txt">Selected:</span>
+    <span class="molstar-control-txt-info">
+      <mat-form-field appearance="fill">
+        <mat-select [(ngModel)]="selectedItem" (selectionChange)="onMolstarSelect($event)">
+          @for (eachInfo of selectionList; track eachInfo;) {
+          <mat-option [value]="eachInfo">
+            {{ eachInfo }}
+          </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </span>
+    <button class="molstar-control-btn" (click)="stateManagement.switchMolstarZoomed(currentMolstarSelection())">Zoom in</button>
+    <button class="molstar-control-btn" (click)="stateManagement.switchMolstarZoomed(undefined)">Zoom out</button>
+  </div>
+  }
+</div>

@@ -36,7 +36,7 @@ import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.mod
 import { ProcessedSummary } from '../../data-models/summary.model';
 import { ProcessedQualityScores } from '../../data-models/summary-quality-scores.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations';
+import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 

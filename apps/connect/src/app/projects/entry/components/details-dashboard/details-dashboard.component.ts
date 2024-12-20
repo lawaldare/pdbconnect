@@ -7,7 +7,7 @@ import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { MolstarSelectionObj } from '../../helpers/molstar/molstar-helpers';
 import { VisualisationsDataProcessing } from './data-processing.facade';
-import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations';
+import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { firstValueFrom, timer } from 'rxjs';
 import {
   AssembliesRowData,

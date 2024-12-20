@@ -1,0 +1,15 @@
+<!-- tab-nav.component.html -->
+<nav>
+  @for(tab of tabsConfig; track tab) {
+  <button
+    class="tab-button"
+    [ngClass]="{ active: currentTab() === tab.id, inactive: tabsStates()[tab.id].isInactive }"
+    (click)="stateManagement.switchCurrentTab(tab.id)"
+    [style.width]="tab.width || 'auto'"
+    [style.maxWidth]="tab.width || null"
+  >
+    {{ tab.id }}
+  </button>
+  <div class="vertical-line" [ngClass]="currentTab() === tab.id ? 'active' : ''"></div>
+  }
+</nav>
