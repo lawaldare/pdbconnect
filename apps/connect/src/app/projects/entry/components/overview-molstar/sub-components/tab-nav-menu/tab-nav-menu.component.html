@@ -1,15 +1,16 @@
-<!-- tab-nav.component.html -->
-<nav>
-  @for(tab of tabsConfig; track tab) {
-  <button
-    class="tab-button"
+<!-- tab-nav-menu.component.html -->
+<nav class="tab-nav">
+  @for(tab of tabsConfig(); track tab) {
+  <div
+    class="tab-container"
     [ngClass]="{ active: currentTab() === tab.id, inactive: tabsStates()[tab.id].isInactive }"
     (click)="stateManagement.switchCurrentTab(tab.id)"
-    [style.width]="tab.width || 'auto'"
-    [style.maxWidth]="tab.width || null"
   >
-    {{ tab.id }}
-  </button>
-  <div class="vertical-line" [ngClass]="currentTab() === tab.id ? 'active' : ''"></div>
+    <button class="tab-button">
+      <div class="tab-tag" [ngClass]="tab.tagClass">{{ tab.tagContent }}</div>
+      {{ tab.id }}
+    </button>
+  </div>
+  <div class="vertical-line"></div>
   }
 </nav>

@@ -152,15 +152,26 @@ export class OverviewMolstarComponent implements AfterViewInit {
     // set sections as active if they contain any data mapped to them
     if (this.macromolecules().length > 0) {
       this.stateManagement.updateStatePropertyOfTab('Macromolecules', 'isInactive', false); // this.tabsStates['Macromolecules'].isInactive = false;
+    } else {
+      this.stateManagement.updateTabDisplayConfig('Macromolecules', 'N/A', 'na');
     }
+
     if (this.ligands().length > 0) {
       this.stateManagement.updateStatePropertyOfTab('Ligands', 'isInactive', false); // this.tabsStates['Ligands'].isInactive = false;
+    } else {
+      this.stateManagement.updateTabDisplayConfig('Ligands', 'N/A', 'na');
     }
+
     if (this.totalDomains > 0) {
       this.stateManagement.updateStatePropertyOfTab('Domains', 'isInactive', false); // this.tabsStates['Domains'].isInactive = false;
+    } else {
+      this.stateManagement.updateTabDisplayConfig('Domains', 'N/A', 'na');
     }
+
     if (this.inputModifications().length > 0) {
       this.stateManagement.updateStatePropertyOfTab('Modifications', 'isInactive', false); // this.tabsStates['Modifications'].isInactive = false;
+    } else {
+      this.stateManagement.updateTabDisplayConfig('Modifications', 'N/A', 'na');
     }
   }
 }

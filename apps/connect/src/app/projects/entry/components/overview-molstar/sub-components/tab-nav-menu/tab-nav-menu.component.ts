@@ -11,31 +11,9 @@ import { CommonModule } from '@angular/common';
   styleUrl: './tab-nav-menu.component.scss',
 })
 export class OverviewMolstarTabNavComponent {
-  public tabsConfig = [
-    {
-      id: 'Assembly',
-      width: '101px',
-    },
-    {
-      id: 'Macromolecules',
-      width: '151px',
-    },
-    {
-      id: 'Ligands',
-      width: '88px',
-    },
-    {
-      id: 'Domains',
-      width: '96px',
-    },
-    {
-      id: 'Modifications',
-      width: '118px',
-    },
-  ];
-
   public stateManagement = inject(OverviewStateManagementService);
 
+  public tabsConfig = this.stateManagement.tabsConfig;
   public currentTab = this.stateManagement.currentTab;
   public tabsStates = this.stateManagement.tabsStates;
 }

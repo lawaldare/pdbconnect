@@ -16,6 +16,13 @@ type stateProperties =
   | 'currentMolstarSelection';
 // "molstarSelectionObjs" ;
 
+interface TabConfig {
+  id: string;
+  width: string;
+  tagContent: string;
+  tagClass: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -24,6 +31,40 @@ export class OverviewStateManagementService {
   // some are loaded/used for the template variables above when a tab is switched
   // in function switchCurrentTab
   public currentTab = signal<string>('Assembly');
+
+  public tabsConfig = signal<TabConfig[]>([
+    {
+      id: 'Assembly',
+      width: '101px',
+      tagContent: '',
+      tagClass: 'no-chip',
+    },
+    {
+      id: 'Macromolecules',
+      width: '151px',
+      tagContent: '',
+      tagClass: 'no-chip',
+    },
+    {
+      id: 'Ligands',
+      width: '88px',
+      tagContent: '',
+      tagClass: 'no-chip',
+    },
+    {
+      id: 'Domains',
+      width: '96px',
+      tagContent: '',
+      tagClass: 'no-chip',
+    },
+    {
+      id: 'Modifications',
+      width: '118px',
+      tagContent: '',
+      tagClass: 'no-chip',
+    },
+  ]);
+
   public tabsStates = signal<{
     [key: string]: {
       isInactive: boolean;
@@ -120,6 +161,20 @@ export class OverviewStateManagementService {
         [propertyName]: propertyValue, // Dynamically update the property
       },
     }));
+  }
+
+  public updateTabDisplayConfig(tabName: string, tagContent: string, tagClass: string) {
+    const tabIndex = this.tabsConfig()
+      .map((cfg) => cfg.id)
+      .indexOf(tabName);
+
+    if (tabIndex === -1) return;
+
+    this.tabsConfig.update((configs) => {
+      const updatedConfigs = [...configs]; // Create a shallow copy
+      updatedConfigs[tabIndex] = { ...updatedConfigs[tabIndex], tagContent: tagContent, tagClass: tagClass }; // Modify specific index.
+      return updatedConfigs;
+    });
   }
 
   public async switchCurrentTab(newView: string) {
