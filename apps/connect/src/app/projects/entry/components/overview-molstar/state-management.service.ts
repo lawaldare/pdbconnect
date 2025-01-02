@@ -170,7 +170,7 @@ export class OverviewStateManagementService {
     this.updateStatePropertyOfTab(this.currentTab(), 'imgName', imgName);
 
     const currentMolstarSelection = this.tabsStates()[tabName].currentMolstarSelection;
-    await this.configureMolstarDisplayTemp(currentTabSelection, currentMolstarSelection);
+    await this.configureMolstarDisplayTemp(listViewItem, currentMolstarSelection);
   }
 
   async configureMolstarDisplayTemp(tabSelection: ListSelectable | undefined, currentMolstarSelection: MolstarSelectionObj | undefined) {
