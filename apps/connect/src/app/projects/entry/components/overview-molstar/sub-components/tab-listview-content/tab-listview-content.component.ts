@@ -23,7 +23,7 @@ export class OverviewMolstarTabListViewComponent {
   public readonly objectKeys = Object.keys;
   public readonly objectValues = Object.values;
 
-  private readonly dataProcessing = inject(OverviewMolstarFacade);
+  public readonly dataProcessing = inject(OverviewMolstarFacade);
   private readonly compCommunication = inject(ComponentCommunicationService);
   public readonly stateManagement = inject(OverviewStateManagementService);
 
@@ -43,6 +43,17 @@ export class OverviewMolstarTabListViewComponent {
   //  data used in template for domains
   public domainCountByResource = this.dataProcessing.domainCountByResource;
 
+  // data used in empty state template
+  public relatedEntriesText = '';
+
+  // Create a computed signal for having related entries
+  public hasRelatedEntries = computed(() => {
+    const relatedEntries = this.dataProcessing.relatedEntries();
+    const hasRelatedEntries = relatedEntries.length > 0;
+    if (hasRelatedEntries) this.relatedEntriesText = ' or explore related entries';
+    return hasRelatedEntries;
+  });
+
   // Create a computed signal for current tab selection property
   public currentTabSelection = computed(() => {
     const tabName = this.currentTab();
@@ -50,13 +61,14 @@ export class OverviewMolstarTabListViewComponent {
   });
 
   // Create a computed signal for the specific property
-  public currentListViewData: Signal<ListSelectable[] | undefined> = computed(() => {
+  public currentListViewData: Signal<ListSelectable[]> = computed(() => {
     const tabName = this.currentTab();
     const simpleListTabs = ['Macromolecules', 'Ligands', 'Modifications'];
     if (simpleListTabs.indexOf(tabName) > -1) {
-      return this.listViewSelectablesByTab()[tabName] as ListSelectable[];
+      const listViewItems = this.listViewSelectablesByTab()[tabName] as ListSelectable[];
+      return listViewItems;
     }
-    return undefined;
+    return [];
   });
 
   // Create a computed signal for the specific property

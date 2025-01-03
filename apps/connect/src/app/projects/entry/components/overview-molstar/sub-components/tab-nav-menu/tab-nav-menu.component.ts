@@ -8,7 +8,6 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './tab-nav-menu.component.html',
-  styleUrl: './tab-nav-menu.component.scss',
 })
 export class OverviewMolstarTabNavComponent {
   public stateManagement = inject(OverviewStateManagementService);

@@ -6,6 +6,15 @@
   padding-top: 3px;
 }
 
+.empty-molstar-img {
+  position: absolute;
+  margin-top: 36px;
+  margin-left: 6.5px;
+  width: 467px;
+  height: 408px;
+  z-index: 2;
+}
+
 // remove Molstar border
 ::ng-deep .msp-plugin .msp-layout-standard {
   border: none;

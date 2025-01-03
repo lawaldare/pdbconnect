@@ -87,10 +87,13 @@ export type ApiDataItem =
   | 'pisaAssemblies'
   | 'carbohydrates';
 
+/**
+ * For different components of the page, this lists their API dependencies
+ */
 export const COMPONENT_DEPENDENCIES: Record<string, ApiDataItem[]> = {
   titleInfo: ['experimentalMethod', 'resolutionValues', 'summaryData'],
   mainInfoArea: ['summaryData', 'organismScientificNames', 'primaryPublication', 'summaryQualityScores'],
-  overviewMolstar: ['complexDetails', 'macroMolecules', 'boundLigands', 'modifications', 'pfamMapping', 'cathMapping', 'scop175Mapping'],
+  overviewMolstar: ['complexDetails', 'macroMolecules', 'boundLigands', 'modifications', 'pfamMapping', 'cathMapping', 'scop175Mapping', 'primaryPublication'],
   interactiveTables: [
     'complexDetails',
     'assemblies',

@@ -8,6 +8,7 @@ import { calculateAssemblyComposition } from '../../helpers/assembly-helpers';
 import { CathMappings, DomainMapping, PfamMappings, ScopMappings } from '../../data-models/domains.model';
 import { EntryApiService } from '../../services/entry-api.service';
 import { formatSegments } from '../../helpers/domain-helpers';
+import { CitationDetail } from '../../data-models/publication.model';
 
 type ParsedComplexDetails = {
   name: string | null | undefined;
@@ -47,6 +48,8 @@ export interface DataForListViews {
 })
 export class OverviewMolstarFacade {
   private readonly entryAPIService = inject(EntryApiService);
+
+  public relatedEntries: WritableSignal<string[]> = signal([]);
 
   public assemblyData: WritableSignal<ParsedComplexDetails> = signal({
     name: undefined,
@@ -473,6 +476,14 @@ export class OverviewMolstarFacade {
       Pfam: pfamUniqueAccessions.size,
     });
     this.listViewSelectablesByTab.set(listViewSelectablesByTab);
+  }
+
+  parseRelatedEntries(primaryPublication?: CitationDetail) {
+    let relatedEntries: string[] = [];
+    if (primaryPublication && primaryPublication.associated_entries) {
+      relatedEntries = primaryPublication.associated_entries.split(', ');
+    }
+    this.relatedEntries.set(relatedEntries);
   }
 
   public parseComplexDetails(complexDetails: ComplexDetails[]) {

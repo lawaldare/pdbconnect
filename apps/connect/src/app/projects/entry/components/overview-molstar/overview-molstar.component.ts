@@ -13,6 +13,7 @@ import { MolstarConfigObject } from '../../helpers/molstar/molstar-base-class';
 import { OverviewMolstarControBarComponent } from './sub-components/molstar-control-bar/molstar-control-bar.component';
 import { OverviewMolstarTabNavComponent } from './sub-components/tab-nav-menu/tab-nav-menu.component';
 import { OverviewMolstarTabListViewComponent } from './sub-components/tab-listview-content/tab-listview-content.component';
+import { CitationDetail } from '../../data-models/publication.model';
 
 @Component({
   selector: 'pdbc-overview-molstar',
@@ -35,6 +36,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
   public readonly cathMappings = input.required<CathMappings>();
   public readonly scopMappings = input.required<ScopMappings>();
   public readonly pfamMappings = input.required<PfamMappings>();
+  public readonly primaryPublication = input.required<CitationDetail | undefined>();
 
   public totalDomains = 0;
 
@@ -108,6 +110,9 @@ export class OverviewMolstarComponent implements AfterViewInit {
   async ngAfterViewInit() {
     // set info controls to state management for scroll control
     this.stateManagement.infoControls.set(this.infoControls);
+
+    // generate related entries data
+    this.dataProcessing.parseRelatedEntries(this.primaryPublication());
 
     // generate assembly related data
     this.dataProcessing.parseComplexDetails(this.complexDetails());

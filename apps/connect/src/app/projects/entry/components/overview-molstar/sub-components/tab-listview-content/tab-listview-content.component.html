@@ -2,9 +2,9 @@
   <!-- ----------------------------------- -->
   <!-- ------- Assembly tab selected ------- -->
   <!-- ----------------------------------- -->
-  @if (currentTab() === 'Assembly') {
+  @if (currentTab() === 'Assembly' && stateManagement.isInactive() === false) {
   <!-- Title -->
-  <h5>{{ getTitle() }}</h5>
+  <h5 class="title">{{ getTitle() }}</h5>
   <!-- Extra assembly information -->
   @if (assemblyData().name) {
   <div class="info-row">
@@ -43,9 +43,9 @@
   <!-- ------------------------------------------------- -->
   <!-- Macromolecules, Ligands, Modifications tabs selected -->
   <!-- ------------------------------------------------- -->
-  @if (currentListViewData()) {
+  @if (currentListViewData().length > 0 && stateManagement.isInactive() === false) {
   <!-- Title -->
-  <h5>{{ getTitle() }}</h5>
+  <h5 class="title">{{ getTitle() }}</h5>
   <!-- List of clickable items that trigger Molstar using stateManagement -->
   @for(listItem of currentListViewData(); track listItem) {
   <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
@@ -62,7 +62,7 @@
   <!-- ----------------------------------- -->
   <!-- -------- Domains tab selected -------- -->
   <!-- ----------------------------------- -->
-  @if (domainsDataByResource()) {
+  @if (domainsDataByResource() && stateManagement.isInactive() === false) {
   <!-- Domain resource select dropdown which changes nested clickble items list -->
   <mat-form-field appearance="fill">
     <mat-label>Select Domain Resource</mat-label>
@@ -73,7 +73,7 @@
     </mat-select>
   </mat-form-field>
   <!-- Title -->
-  <h5>{{ getTitle() }}</h5>
+  <h5 class="title">{{ getTitle() }}</h5>
   <!-- List of (Nested) clickable items -->
   @for(nestedListObj of getDomainsListViewData(); track nestedListObj) {
   <div class="select-gallery-container invalid">
@@ -96,4 +96,22 @@
     <button class="details-btn" (click)="viewDetails()">View more details below</button>
   </div>
   } } } }
+  <!-- ----------------------------------- -->
+  <!-- -------- Empty data tab selected -------- -->
+  <!-- ----------------------------------- -->
+  @if (stateManagement.isInactive()) {
+  <!-- TODO: Add empty state for these tabs -->
+  <h5 class="title">No {{ currentTab() }} data available</h5>
+  <p>
+    This entry does not include any information about {{ currentTab().replace('Assembly', 'Assemblies') }}. Find out more about this <a>in our FAQ</a
+    >{{ relatedEntriesText }} for additional details.
+  </p>
+  <!-- <p>Related entries __entry 1, entry 2__</p> -->
+  @if (hasRelatedEntries()) {
+  <p>
+    Related entries @for(relatedEntry of dataProcessing.relatedEntries(); track relatedEntry; let islast = $last) {
+    <a>{{ relatedEntry }}</a>
+    @if(islast === false) {, } }
+  </p>
+  } }
 </section>

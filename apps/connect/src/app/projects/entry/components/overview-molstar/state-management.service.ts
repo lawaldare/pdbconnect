@@ -31,6 +31,7 @@ export class OverviewStateManagementService {
   // some are loaded/used for the template variables above when a tab is switched
   // in function switchCurrentTab
   public currentTab = signal<string>('Assembly');
+  public isInactive = signal<boolean>(false);
 
   public tabsConfig = signal<TabConfig[]>([
     {
@@ -176,9 +177,9 @@ export class OverviewStateManagementService {
       return updatedConfigs;
     });
   }
-
+  // 'assets/img/interfaces_example2.png'
   public async switchCurrentTab(newView: string) {
-    if (this.tabsStates()[newView].isInactive) return;
+    // if (this.tabsStates()[newView].isInactive) return;
 
     // save scroll of current tab
     const previousTab = this.currentTab();
@@ -187,6 +188,7 @@ export class OverviewStateManagementService {
 
     // load last state of new tab
     this.currentTab.set(newView);
+    this.isInactive.set(this.tabsStates()[newView].isInactive);
     const tabToDisplay = this.currentTab();
 
     const currentMolstarSelection = this.tabsStates()[newView].currentMolstarSelection;
