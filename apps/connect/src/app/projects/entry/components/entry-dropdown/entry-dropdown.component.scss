@@ -1,0 +1,36 @@
+button {
+  display: inline-flex;
+  padding: 4px 12px;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--Neutral-300, #d0d0ce);
+  background: var(--Neutral-0, #fff);
+  font-weight: 500;
+  font-size: 16px;
+  font-family: 'IBM Plex Sans', Arial, Helvetica, sans-serif;
+  cursor: pointer;
+}
+
+button.dark {
+  background: var(--Neutral-100, #f3f3f3);
+}
+
+button:hover {
+  background: var(--Neutral-100, #f3f3f3);
+}
+
+button.dark:hover {
+  background: var(--Neutral-200, #e4e4e4);
+}
+
+a {
+  &:hover {
+    text-decoration: unset;
+    background: #d0debb !important;
+  }
+
+  &:focus {
+    box-shadow: none;
+    border: none;
+  }
+}

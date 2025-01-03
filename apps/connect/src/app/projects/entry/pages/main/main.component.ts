@@ -37,6 +37,7 @@ import { ProcessedSummary } from '../../data-models/summary.model';
 import { ProcessedQualityScores } from '../../data-models/summary-quality-scores.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
+import { EntryDropdownComponent } from '../../components/entry-dropdown/entry-dropdown.component';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -73,6 +74,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     DetailsDashboardComponent,
     ExperimentsValidationTabComponent,
     CitationsTabComponent,
+    EntryDropdownComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -770,10 +772,12 @@ export class EntryMainPageComponent implements AfterViewInit {
   }
 
   public onShowDownloadOptions() {
+    console.log('onShowDownloadOptions');
     this.showDownloadOptions.update((value) => !value);
     this.showViewOptions.update((_value) => false);
   }
   public onShowViewOptions() {
+    console.log('showViewOptions');
     this.showViewOptions.update((value) => !value);
     this.showDownloadOptions.update((_value) => false);
   }

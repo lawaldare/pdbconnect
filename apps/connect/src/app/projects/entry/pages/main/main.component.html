@@ -23,8 +23,10 @@
         }
       </section>
       <section class="action-buttons" libClickOutside (clickOutside)="onClickedOutside()">
-        <lib-dropdown-menu [options]="downloadOptions" title="Download files"></lib-dropdown-menu>
-        <lib-dropdown-menu [options]="viewOptions" title="View files"></lib-dropdown-menu>
+        <pdbc-entry-dropdown [downloadable]="true" [islink]="true" [isdark]="false" [options]="downloadOptions" title="Download files"></pdbc-entry-dropdown>
+        <pdbc-entry-dropdown [downloadable]="false" [islink]="true" [isdark]="false" [options]="viewOptions" title="View files"></pdbc-entry-dropdown>
+        <!-- <lib-dropdown-menu [options]="downloadOptions" title="Download files"></lib-dropdown-menu>
+        <lib-dropdown-menu [options]="viewOptions" title="View files"></lib-dropdown-menu> -->
       </section>
     </header>
     <!-- Contains components of the page top: general information and the 3d explorer -->

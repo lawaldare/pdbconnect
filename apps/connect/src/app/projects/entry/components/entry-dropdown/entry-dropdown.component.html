@@ -1,0 +1,18 @@
+<button mat-button [matMenuTriggerFor]="menu" [ngClass]="isdark() ? 'dark' : ''">
+  <span>{{ title() }}</span>
+  <!-- <svg viewBox="0 0 24 24" width="24px" height="24px" focusable="false" aria-hidden="true" class="ng-tns-c1154042729-9">
+    <path d="M7 10l5 5 5-5z" class="ng-tns-c1154042729-9"></path>
+  </svg> -->
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <path d="M7 10.5L12 15.5L17 10.5H7Z" fill="black" />
+  </svg>
+</button>
+<mat-menu #menu="matMenu" class="entry-dropdown-menu">
+  @for(option of options(); track option.url){ @if(downloadable()){
+  <a mat-menu-item [href]="option.url" download>{{ option.name }}</a>
+  } @else if(islink()) {
+  <a mat-menu-item [href]="option.url" target="_blank">{{ option.name }}</a>
+  } @else {
+  <a (click)="optionClicked(option.name)">{{ option.name }}</a>
+  } }
+</mat-menu>
