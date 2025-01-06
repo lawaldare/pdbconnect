@@ -72,6 +72,8 @@ export class OverviewMolstarFacade {
     SCOP: 0,
   });
 
+  public dataParsed = signal(false);
+
   public generateListSelectable(
     entryId: string,
     macromolecules: Molecule[],
@@ -476,6 +478,7 @@ export class OverviewMolstarFacade {
       Pfam: pfamUniqueAccessions.size,
     });
     this.listViewSelectablesByTab.set(listViewSelectablesByTab);
+    this.dataParsed.set(true);
   }
 
   parseRelatedEntries(primaryPublication?: CitationDetail) {

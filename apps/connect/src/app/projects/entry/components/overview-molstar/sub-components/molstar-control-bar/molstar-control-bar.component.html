@@ -2,20 +2,45 @@
 <div class="molstar-control-bar">
   @if (currentMolstarSelection()) {
   <div>
-    <span class="molstar-control-txt">Selected:</span>
-    <span class="molstar-control-txt-info">
-      <mat-form-field appearance="fill">
-        <mat-select [(ngModel)]="selectedItem" (selectionChange)="onMolstarSelect($event)">
-          @for (eachInfo of selectionList; track eachInfo;) {
-          <mat-option [value]="eachInfo">
-            {{ eachInfo }}
-          </mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-    </span>
-    <button class="molstar-control-btn" (click)="stateManagement.switchMolstarZoomed(currentMolstarSelection())">Zoom in</button>
-    <button class="molstar-control-btn" (click)="stateManagement.switchMolstarZoomed(undefined)">Zoom out</button>
+    <div class="selector">
+      <span class="molstar-control-txt">Select:</span>
+      <span class="molstar-control-txt-info">
+        <pdbc-entry-dropdown
+          [downloadable]="false"
+          [islink]="false"
+          [isdark]="true"
+          [issmall]="true"
+          [options]="selectionOptions"
+          [title]="selectedItem"
+          (optionClickedEvent)="onMolstarSelect($event)"
+        >
+        </pdbc-entry-dropdown>
+      </span>
+    </div>
+    <div class="buttons">
+      <button class="small-flat-btn" (click)="stateManagement.switchMolstarZoomed(currentMolstarSelection())">
+        Zoom in
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="19" viewBox="0 0 18 19" fill="none">
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M11.5073 11.9322C11.9252 11.5144 12.2567 11.0183 12.4829 10.4723C12.709 9.92636 12.8255 9.34119 12.8255 8.75023C12.8256 8.15927 12.7092 7.57408 12.4831 7.02809C12.2569 6.4821 11.9255 5.98599 11.5076 5.56809C11.0898 5.15019 10.5937 4.81869 10.0478 4.5925C9.5018 4.36632 8.91663 4.24988 8.32566 4.24985C7.13216 4.24978 5.98751 4.72383 5.14352 5.56772C4.29954 6.4116 3.82535 7.5562 3.82528 8.7497C3.82521 9.94321 4.29926 11.0879 5.14315 11.9318C5.98704 12.7758 7.13163 13.25 8.32513 13.2501C9.51864 13.2502 10.6633 12.7761 11.5073 11.9322ZM12.5678 4.50722C13.6016 5.54077 14.2226 6.91622 14.314 8.37523C14.4054 9.83424 13.961 11.2764 13.0643 12.431L13.0988 12.4625L16.2803 15.644C16.421 15.7846 16.5001 15.9754 16.5002 16.1743C16.5002 16.3733 16.4213 16.5641 16.2806 16.7048C16.14 16.8456 15.9492 16.9247 15.7503 16.9247C15.5513 16.9248 15.3605 16.8458 15.2198 16.7052L12.0375 13.523L12.006 13.4892C10.8002 14.4232 9.28391 14.8629 7.76546 14.7191C6.247 14.5752 4.84032 13.8585 3.83134 12.7147C2.82237 11.5708 2.28682 10.0857 2.33357 8.56115C2.38032 7.03661 3.00586 5.58708 4.08302 4.50722C5.20822 3.38216 6.73423 2.75012 8.3254 2.75012C9.91657 2.75012 11.4426 3.38216 12.5678 4.50722ZM7.57502 5.74997H9.07502V7.99997H11.325V9.49997H9.07502V11.75H7.57502V9.49997H5.32502V7.99997H7.57502V5.74997Z"
+            fill="black"
+          />
+        </svg>
+      </button>
+      <button class="small-flat-btn" (click)="stateManagement.switchMolstarZoomed(undefined)">
+        Zoom out
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="19" viewBox="0 0 18 19" fill="none">
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M11.5073 11.9322C11.9252 11.5144 12.2567 11.0183 12.4829 10.4723C12.709 9.92636 12.8255 9.34119 12.8255 8.75023C12.8256 8.15927 12.7092 7.57408 12.4831 7.02809C12.2569 6.4821 11.9255 5.98599 11.5076 5.56809C11.0898 5.15019 10.5937 4.81869 10.0478 4.5925C9.5018 4.36632 8.91663 4.24988 8.32566 4.24985C7.13216 4.24978 5.98751 4.72383 5.14352 5.56772C4.29954 6.4116 3.82535 7.5562 3.82528 8.7497C3.82521 9.94321 4.29926 11.0879 5.14315 11.9318C5.98703 12.7758 7.13163 13.25 8.32513 13.2501C9.51864 13.2502 10.6633 12.7761 11.5073 11.9322ZM12.5678 4.50722C13.6016 5.54077 14.2226 6.91622 14.314 8.37523C14.4054 9.83424 13.961 11.2764 13.0643 12.431L13.0988 12.4625L16.2803 15.644C16.421 15.7846 16.5001 15.9754 16.5002 16.1743C16.5002 16.3733 16.4213 16.5641 16.2806 16.7048C16.14 16.8456 15.9492 16.9247 15.7503 16.9247C15.5513 16.9248 15.3605 16.8458 15.2198 16.7052L12.0375 13.523L12.006 13.4892C10.8002 14.4232 9.28391 14.8629 7.76546 14.7191C6.247 14.5752 4.84032 13.8585 3.83134 12.7147C2.82237 11.5708 2.28682 10.0857 2.33357 8.56115C2.38032 7.03661 3.00586 5.58708 4.08302 4.50722C5.20822 3.38216 6.73423 2.75012 8.3254 2.75012C9.91657 2.75012 11.4426 3.38216 12.5678 4.50722ZM7.57502 7.99997H9.07502H11.325V9.49997H9.07502L9.00006 9.49994L7.57502 9.49997H5.32502V7.99997H7.57502Z"
+            fill="black"
+          />
+        </svg>
+      </button>
+    </div>
   </div>
   }
 </div>

@@ -52,3 +52,27 @@
   color: #fff;
   background: var(--Brand-900, #0a5032);
 }
+
+.small-flat-btn {
+  display: inline-flex;
+  padding: 4px;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  height: 31px;
+  cursor: pointer;
+  color: var(--Neutral-900, #1a1c1a);
+  background: transparent;
+  border: 1px solid var(--Neutral-300, #d0d0ce);
+
+  /* Extra small bold body text */
+  font-family: 'IBM Plex Sans', Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22.4px; /* 160% */
+}
+
+.small-flat-btn:hover {
+  background: var(--Neutral-200, #e4e4e4);
+}

@@ -4,11 +4,14 @@
   <!-- ----------------------------------- -->
   @if (currentTab() === 'Assembly' && stateManagement.isInactive() === false) {
   <!-- Title -->
-  <h5 class="title">{{ getTitle() }}</h5>
+  <h5 class="title assembly-title entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="preferredAssemblyTooltip" matTooltipPosition="below">
+    {{ getTitle() }}
+  </h5>
+
   <!-- Extra assembly information -->
   @if (assemblyData().name) {
   <div class="info-row">
-    <span>Assembly name</span>
+    <span class="entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="assemblyNameTooltip" matTooltipPosition="below"> Assembly name </span>
     <article>
       <a>{{ assemblyData().name }}</a>
       <i class="icon icon-common icon-search"></i>
@@ -16,7 +19,7 @@
   </div>
   } @if (assemblyData().complexId) {
   <div class="info-row">
-    <span>PDBe Complex ID</span>
+    <span class="entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="complexIdTooltip" matTooltipPosition="below"> PDBe Complex ID </span>
     <article>
       <a>{{ assemblyData().complexId }}</a>
       <i class="icon icon-common icon-search"></i>
@@ -24,7 +27,9 @@
   </div>
   } @if (assemblyData().composition) {
   <div class="info-row">
-    <span>Assembly composition</span>
+    <span class="entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="assemblyCompositionTooltip" matTooltipPosition="below">
+      Assembly composition
+    </span>
     <article>
       {{ assemblyData().composition }}
     </article>
@@ -64,16 +69,28 @@
   <!-- ----------------------------------- -->
   @if (domainsDataByResource() && stateManagement.isInactive() === false) {
   <!-- Domain resource select dropdown which changes nested clickble items list -->
-  <mat-form-field appearance="fill">
+  <!-- <mat-form-field appearance="fill">
     <mat-label>Select Domain Resource</mat-label>
     <mat-select [(ngModel)]="currentDomainResource" (selectionChange)="onDomainResourceSelect($event)">
       @for (resource of objectKeys(domainCountByResource()); track resource;) {
       <mat-option [value]="resource" [disabled]="domainCountByResource()[resource] === 0"> {{ resource }} ({{ domainCountByResource()[resource] }}) </mat-option>
       }
     </mat-select>
-  </mat-form-field>
+  </mat-form-field> -->
+
   <!-- Title -->
-  <h5 class="title">{{ getTitle() }}</h5>
+  <h5 class="title domain-title">{{ getTitle() }}</h5>
+  <!-- Domain resource select dropdown which changes nested clickble items list -->
+  <pdbc-entry-dropdown
+    id="domain-dropdown"
+    [downloadable]="false"
+    [islink]="false"
+    [fullwidth]="true"
+    [options]="domainResourceCounts"
+    [title]="getDomainResourceCountTxt(currentDomainResource)"
+    (optionClickedEvent)="onDomainResourceSelect2($event)"
+  >
+  </pdbc-entry-dropdown>
   <!-- List of (Nested) clickable items -->
   @for(nestedListObj of getDomainsListViewData(); track nestedListObj) {
   <div class="select-gallery-container invalid">
@@ -99,8 +116,7 @@
   <!-- ----------------------------------- -->
   <!-- -------- Empty data tab selected -------- -->
   <!-- ----------------------------------- -->
-  @if (stateManagement.isInactive()) {
-  <!-- TODO: Add empty state for these tabs -->
+  @if (stateManagement.isInactive() && !isDataLoaded()) {
   <h5 class="title">No {{ currentTab() }} data available</h5>
   <p>
     This entry does not include any information about {{ currentTab().replace('Assembly', 'Assemblies') }}. Find out more about this <a>in our FAQ</a

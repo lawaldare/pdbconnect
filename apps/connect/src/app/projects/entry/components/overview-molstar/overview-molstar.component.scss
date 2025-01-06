@@ -25,65 +25,8 @@
   background-color: #fff;
 
   .molstar-controls {
-    div {
-      // height: 40px;
-      // display: flex;
-      // align-items: center;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      margin: 6px 10px 4px;
-      background: #f6f5f3;
-      max-width: 460px;
-
-      .molstar-control-btn {
-        border: #585857 1px solid;
-        background: #f6f5f3;
-        padding: 4px;
-        margin-right: 4px;
-        margin-left: 4px;
-        color: black;
-        font-weight: 500;
-        cursor: pointer;
-        box-shadow: 2px 2px 0 0 #585857;
-        font-size: 12px;
-
-        // border: #3b6fb6 1px solid;
-        // padding: 4px;
-        // margin-right: 4px;
-        // margin-left: 4px;
-        // color: #3b6fb6;
-        // font-weight: 500;
-        // cursor: pointer;
-        // box-shadow: 2px 2px 0 0 #3b6fb6;
-        // font-size: 12px;
-      }
-
-      .molstar-control-txt {
-        // flex-grow: 1;
-        font-size: 14px;
-        margin-left: 8px;
-
-        // color: #3b6fb6;
-        font-weight: 500;
-
-        // max-width: 60%;
-        // margin-left: 10%;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-      }
-
-      .molstar-control-txt-info {
-        font-size: 14px;
-        margin-left: 2px;
-
-        // color: #3b6fb6;
-        font-weight: 500;
-
-        // max-width: 30%;
-      }
-    }
+    padding-top: 4px;
+    padding-left: 4px;
 
     .molstar-container {
       position: relative;

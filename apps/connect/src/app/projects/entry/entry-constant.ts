@@ -70,18 +70,13 @@ These scores are harmonic means of absolute percentiles of geometric metrics (e.
 Sometimes reflections-based metrics are absent due to unavailability of experimental data itself.`;
 
 // Assembly refers to the  ‘quaternary structure’ or the predicted assembly of the macromolecules in the crystal
-export const preferredAssemblyTooltip = `
-Preferred assembly is the smallest assembly containing all polymeric entities`;
+export const preferredAssemblyTooltip = `Preferred assembly is the smallest assembly containing all polymeric entities`;
 
-export const assemblyNameTooltip = `
-Name is the human-readable assigned denomination of a given unique assembly composition in the PDB archive.`;
+export const assemblyNameTooltip = `Name is the human-readable assigned denomination of a given unique assembly composition in the PDB archive.`;
 
-export const complexIdTooltip = `
-Stable identifiers for each unique assembly composition across the PDB archive,
-`;
+export const complexIdTooltip = `Stable identifiers for each unique assembly composition across the PDB archive.`;
 
-export const assemblyCompositionTooltip = `
-Textual description of the assembly composition according to their molecular stoichiometry`;
+export const assemblyCompositionTooltip = `Description of the assembly composition according to their molecular stoichiometry`;
 
 export const validationInfoTooltip = '';
 export const sampleInfoTooltip = '';

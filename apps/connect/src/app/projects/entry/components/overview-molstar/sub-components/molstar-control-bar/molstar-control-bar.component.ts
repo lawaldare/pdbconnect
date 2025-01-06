@@ -5,15 +5,13 @@ import { MolstarSelectionObj } from '../../../../helpers/molstar/molstar-helpers
 import { OverviewMolstarFacade } from '../../data-processing.facade';
 import { MolstarOverviewForTopPage } from '../../../../helpers/molstar/molstar-overview-for-top-page';
 import { CommonModule } from '@angular/common';
-import { MatSelectChange, MatSelectModule } from '@angular/material/select';
-import { MatOptionModule } from '@angular/material/core';
-import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
-import { FormsModule } from '@angular/forms';
+import { EntryDropdownComponent } from '../../../../components/entry-dropdown/entry-dropdown.component';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 
 @Component({
   selector: 'pdbc-overview-molstar-control-bar',
   standalone: true,
-  imports: [CommonModule, MatSelectModule, MatOptionModule, MatFormFieldModule, MatLabel, FormsModule],
+  imports: [CommonModule, EntryDropdownComponent],
   templateUrl: './molstar-control-bar.component.html',
   styleUrl: './molstar-control-bar.component.scss',
 })
@@ -22,8 +20,9 @@ export class OverviewMolstarControBarComponent {
   public readonly dataProcessing = inject(OverviewMolstarFacade);
   public readonly stateManagement = inject(OverviewStateManagementService);
 
-  public selectedItem: string | undefined;
+  public selectedItem = 'Loading...';
   public selectionList: string[] = [];
+  public selectionOptions: DownloadOption[] = [];
 
   public listViewSelectablesByTab = this.dataProcessing.listViewSelectablesByTab;
 
@@ -56,15 +55,23 @@ export class OverviewMolstarControBarComponent {
       this.selectedItem = currentSelection.name;
       this.selectionList = currentListView.molstarNamedSelections.map((eachSelection) => eachSelection.name);
 
+      this.selectionOptions = currentListView.molstarNamedSelections.map((eachSelection, idx) => {
+        return {
+          name: eachSelection.name,
+          url: `${idx + 1}`,
+          downloadable: false,
+        };
+      });
+
       this.stateManagement.switchMolstarZoomed(currentSelection.selection);
     });
   }
 
-  public async onMolstarSelect(event: MatSelectChange) {
+  public async onMolstarSelect(event: string) {
     const currentTabName = this.currentTab();
 
     // get index of dropdown value
-    const idx = this.selectionList.indexOf(event.value);
+    const idx = this.selectionList.indexOf(event);
     this.stateManagement.updateStatePropertyOfTab(currentTabName, 'currentListViewSelectionIdx', idx);
 
     // update current molstar selection obj

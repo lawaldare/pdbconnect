@@ -48,3 +48,13 @@ html {
   /* min height of each dropdown item */
   min-height: 40px !important;
 }
+
+span.mat-mdc-menu-item {
+  cursor: pointer;
+}
+
+span.mat-mdc-menu-item.small > .mat-mdc-menu-content,
+.mat-mdc-menu-content .mat-mdc-menu-item .mat-mdc-menu-item-text {
+  font-size: 14px !important;
+  line-height: 22.4px !important;
+}

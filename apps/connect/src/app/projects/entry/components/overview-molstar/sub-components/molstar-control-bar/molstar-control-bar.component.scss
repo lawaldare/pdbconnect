@@ -1,85 +1,40 @@
 .molstar-control-bar {
+  margin-bottom: 4px;
+
   div {
-    // height: 40px;
-    // display: flex;
-    // align-items: center;
-    height: 36px;
+    padding: 4px;
     display: flex;
-    align-items: center;
-    margin: 6px 10px 4px;
     background: #f6f5f3;
-    max-width: 460px;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-shrink: 0;
+    align-self: stretch;
 
-    .molstar-control-btn {
-      border: #585857 1px solid;
-      background: #f6f5f3;
-      padding: 4px;
-      margin-right: 4px;
-      margin-left: 4px;
-      color: black;
+    .selector {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 0;
+      font-size: 14px;
       font-weight: 500;
-      cursor: pointer;
-      box-shadow: 2px 2px 0 0 #585857;
-      font-size: 12px;
 
-      // border: #3b6fb6 1px solid;
-      // padding: 4px;
-      // margin-right: 4px;
-      // margin-left: 4px;
-      // color: #3b6fb6;
-      // font-weight: 500;
-      // cursor: pointer;
-      // box-shadow: 2px 2px 0 0 #3b6fb6;
-      // font-size: 12px;
+      .molstar-control-txt {
+        margin-left: 8px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      .molstar-control-txt-info {
+        margin-left: 2px;
+      }
     }
 
-    .molstar-control-txt {
-      // flex-grow: 1;
-      font-size: 14px;
-      margin-left: 8px;
-
-      // color: #3b6fb6;
-      font-weight: 500;
-
-      // max-width: 60%;
-      // margin-left: 10%;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-
-    .molstar-control-txt-info {
-      font-size: 14px;
-      margin-left: 2px;
-
-      // color: #3b6fb6;
-      font-weight: 500;
-
-      // max-width: 30%;
+    .buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0;
     }
   }
-
-  .molstar-container {
-    position: relative;
-    height: 480px;
-    width: 480px;
-    z-index: 1;
-  }
-}
-
-mat-form-field {
-  width: 100%;
-  margin-top: 0;
-
-  --mat-select-trigger-text-font: 'IBM Plex Sans';
-  --mat-option-label-text-font: 'IBM Plex Sans';
-  --mat-select-trigger-text-size: 14px;
-  --mat-option-label-text-size: 14px;
-  --mat-select-trigger-text-weight: 500;
-  --mat-option-label-text-weight: 500;
-  --mat-form-field-container-vertical-padding: 4px;
-  --mat-form-field-container-height: 32px;
-  --mdc-filled-text-field-active-indicator-height: 0px;
-
-  height: 32px;
 }

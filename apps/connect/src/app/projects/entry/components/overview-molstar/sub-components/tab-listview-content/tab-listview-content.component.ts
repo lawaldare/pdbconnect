@@ -10,11 +10,15 @@ import { Molecule } from '../../../../data-models/molecule.model';
 import { ComponentCommunicationService } from '../../../../services/component-comm.service';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../../interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
+import { MaterialModule } from '@pdbc/core';
+import { assemblyCompositionTooltip, assemblyNameTooltip, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
+import { EntryDropdownComponent } from '../../../../components/entry-dropdown/entry-dropdown.component';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 
 @Component({
   selector: 'pdbc-overview-tab-listview',
   standalone: true,
-  imports: [CommonModule, MatSelectModule, MatOptionModule, MatFormFieldModule, MatLabel, FormsModule],
+  imports: [CommonModule, MatSelectModule, MatOptionModule, MatFormFieldModule, MatLabel, FormsModule, MaterialModule, EntryDropdownComponent],
   templateUrl: './tab-listview-content.component.html',
   styleUrl: './tab-listview-content.component.scss',
 })
@@ -34,11 +38,16 @@ export class OverviewMolstarTabListViewComponent {
   public numModifications = this.dataProcessing.numModifications;
 
   // data processed for all views
+  public isDataLoaded = this.dataProcessing.dataParsed;
   public listViewSelectablesByTab = this.dataProcessing.listViewSelectablesByTab;
 
   //  data used in template for assembly
   public assemblyData = this.dataProcessing.assemblyData;
   public entryContentsDescription = this.dataProcessing.entryContentsDescription;
+  public preferredAssemblyTooltip = preferredAssemblyTooltip;
+  public assemblyNameTooltip = assemblyNameTooltip;
+  public complexIdTooltip = complexIdTooltip;
+  public assemblyCompositionTooltip = assemblyCompositionTooltip;
 
   //  data used in template for domains
   public domainCountByResource = this.dataProcessing.domainCountByResource;
@@ -80,7 +89,8 @@ export class OverviewMolstarTabListViewComponent {
     return undefined;
   });
 
-  public currentDomainResource = this.tabsStates()['Domains'].currentDomainResource;
+  public currentDomainResource = this.tabsStates()['Domains'].currentDomainResource || 'CATH';
+  public domainResourceCounts: DownloadOption[] = [];
 
   constructor() {
     effect(() => {
@@ -90,8 +100,34 @@ export class OverviewMolstarTabListViewComponent {
       else if (domainCountByResource['Pfam'] > 0) this.currentDomainResource = 'Pfam';
       else if (domainCountByResource['SCOP'] > 0) this.currentDomainResource = 'SCOP';
 
+      this.domainResourceCounts = [];
+
+      this.domainResourceCounts.push({
+        name: this.getDomainResourceCountTxt('CATH'),
+        downloadable: false,
+        url: '1',
+      });
+
+      this.domainResourceCounts.push({
+        name: this.getDomainResourceCountTxt('Pfam'),
+        downloadable: false,
+        url: '2',
+      });
+
+      this.domainResourceCounts.push({
+        name: this.getDomainResourceCountTxt('SCOP'),
+        downloadable: false,
+        url: '3',
+      });
+
       this.stateManagement.updateStatePropertyOfTab('Domains', 'currentDomainResource', this.currentDomainResource);
     });
+  }
+
+  public getDomainResourceCountTxt(domainName: string) {
+    const domainCountByResource = this.domainCountByResource();
+    const plural = domainCountByResource[domainName] > 1 ? 's' : '';
+    return `${domainName} - ${domainCountByResource[domainName]} unique accession${plural}`;
   }
 
   public isSelected(listItem: ListSelectable) {
@@ -101,7 +137,9 @@ export class OverviewMolstarTabListViewComponent {
   public getTitle() {
     let title = '';
     if (this.currentTab() === 'Assembly') {
-      title = 'Preferred assembly details';
+      // title = 'Preferred assembly details';
+      const preferredAssemblyId = this.dataProcessing.assemblyData().preferred;
+      title = `Asssembly ${preferredAssemblyId} (preferred)`;
     }
     if (this.currentTab() === 'Macromolecules') {
       title += this.dataProcessing.macromoleculesDescription();
@@ -111,8 +149,9 @@ export class OverviewMolstarTabListViewComponent {
       title = `${count} bound ligand${count === 1 ? '' : 's'}`;
     }
     if (this.currentTab() === 'Domains') {
-      const count = this.domainCountByResource()[this.currentDomainResource!];
-      return `${count} unique ${this.currentDomainResource!} ${count > 1 ? 'accessions' : 'accession'} in this entry`;
+      // const count = this.domainCountByResource()[this.currentDomainResource!];
+      // return `${count} unique ${this.currentDomainResource!} ${count > 1 ? 'accessions' : 'accession'} in this entry`;
+      return 'Select domain resource';
     }
     if (this.currentTab() === 'Modifications') {
       const count = this.numModifications();
@@ -123,6 +162,11 @@ export class OverviewMolstarTabListViewComponent {
 
   public getDomainsListViewData() {
     return this.domainsDataByResource()![this.currentDomainResource!];
+  }
+
+  public onDomainResourceSelect2(event: string) {
+    this.currentDomainResource = event.split(' - ')[0];
+    this.stateManagement.updateStatePropertyOfTab('Domains', 'currentDomainResource', this.currentDomainResource);
   }
 
   public onDomainResourceSelect(event: MatSelectChange) {

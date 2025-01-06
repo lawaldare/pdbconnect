@@ -9,6 +9,21 @@ button {
   font-size: 16px;
   font-family: 'IBM Plex Sans', Arial, Helvetica, sans-serif;
   cursor: pointer;
+  line-height: 26.6px; /* 166.25% */
+  height: 35px;
+}
+
+button.small {
+  padding: 4px 8px;
+  font-size: 14px;
+  gap: 4px;
+  line-height: 22.4px;
+  height: 32px;
+}
+
+button.fullwidth {
+  width: 100%;
+  justify-content: space-between;
 }
 
 button.dark {

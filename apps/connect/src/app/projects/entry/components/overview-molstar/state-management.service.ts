@@ -179,6 +179,9 @@ export class OverviewStateManagementService {
   }
   // 'assets/img/interfaces_example2.png'
   public async switchCurrentTab(newView: string) {
+    console.log('this.dataProcessing.dataParsed()');
+    console.log(this.dataProcessing.dataParsed());
+    if (this.dataProcessing.dataParsed() === false) return;
     // if (this.tabsStates()[newView].isInactive) return;
 
     // save scroll of current tab
