@@ -48,3 +48,5 @@ Thumbs.db
 app.config.json
 # Local Netlify folder
 .netlify
+
+.early.coverage
