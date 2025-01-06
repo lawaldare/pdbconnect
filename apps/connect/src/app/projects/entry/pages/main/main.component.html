@@ -6,21 +6,23 @@
     <header>
       <section class="title-info">
         <h1 class="heading-1">{{ entryId() }}</h1>
-        @if (componentLoadedStatus()['titleInfo']) {
-        <span>{{ experimentalMethod }}</span>
-        @if (resolutionValues.length > 0) { @for (resolutionValue of resolutionValues; track resolutionValue;) { @if (resolutionValue !== undefined) {
-        <span>{{ resolutionValue! }}Å</span>
-        } }
-        <!-- <span>{{ pageData.experiment.resolutionValue }}Å</span> -->
-        }
-        <span>Released {{ summaryData.releaseDate }}</span>
-        <span>
-          <a
-            >10.2210/pdb{{ entryId() }}/pdb
-            <i class="icon icon-link icon-common"></i>
-          </a>
-        </span>
-        }
+        <div class="information">
+          @if (componentLoadedStatus()['titleInfo']) {
+          <span>{{ experimentalMethod }}</span>
+          @if (resolutionValues.length > 0) { @for (resolutionValue of resolutionValues; track resolutionValue;) { @if (resolutionValue !== undefined) {
+          <span>{{ resolutionValue! }}Å</span>
+          } }
+          <!-- <span>{{ pageData.experiment.resolutionValue }}Å</span> -->
+          }
+          <span>Released {{ summaryData.releaseDate }}</span>
+          <span>
+            <a
+              >10.2210/pdb{{ entryId() }}/pdb
+              <i class="icon icon-link icon-common"></i>
+            </a>
+          </span>
+          }
+        </div>
       </section>
       <section class="action-buttons" libClickOutside (clickOutside)="onClickedOutside()">
         <pdbc-entry-dropdown [downloadable]="true" [islink]="true" [isdark]="false" [options]="downloadOptions" title="Download files"></pdbc-entry-dropdown>

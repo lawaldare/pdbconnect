@@ -59,6 +59,42 @@ export const allTabs = [
 ];
 export const tableTabs = ['Assemblies', 'Macromolecules', 'Ligands', 'Domains'];
 
+/**
+ * Tooltips:
+ */
+
+export const modelQualitySummaryTooltip = `
+Percentile-sliders comparing the quality scores of a model with other models in the archive.
+
+These scores are harmonic means of absolute percentiles of geometric metrics (e.g. ramachandran, clashscore, sidechains) and reflections-based metrics (Rfree, RSRZ).
+Sometimes reflections-based metrics are absent due to unavailability of experimental data itself.`;
+
+// Assembly refers to the  ‘quaternary structure’ or the predicted assembly of the macromolecules in the crystal
+export const preferredAssemblyTooltip = `
+Preferred assembly is the smallest assembly containing all polymeric entities`;
+
+export const assemblyNameTooltip = `
+Name is the human-readable assigned denomination of a given unique assembly composition in the PDB archive.`;
+
+export const complexIdTooltip = `
+Stable identifiers for each unique assembly composition across the PDB archive,
+`;
+
+export const assemblyCompositionTooltip = `
+Textual description of the assembly composition according to their molecular stoichiometry`;
+
+export const validationInfoTooltip = '';
+export const sampleInfoTooltip = '';
+export const expInfoTooltip = '';
+export const depositionDateTooltip = '';
+export const releaseDateTooltip = '';
+export const revisionDateTooltip = '';
+export const nmrSampleTooltip = '';
+export const nmrContentsTooltip = '';
+export const expRawDataTooltip = '';
+
+export const relatedEntriesTooltip = '';
+
 export type ApiDataItem =
   | 'summaryData'
   | 'macroMolecules'

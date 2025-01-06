@@ -5,11 +5,13 @@ import { StrucQualityGradientsComponent } from '../struc-quality-gradients/struc
 import { ProcessedSummary } from '../../data-models/summary.model';
 import { CitationDetail } from '../../data-models/publication.model';
 import { ProcessedQualityScores } from '../../data-models/summary-quality-scores.model';
+import { modelQualitySummaryTooltip } from '../../entry-constant';
+import { MaterialModule } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-main-information-area',
   standalone: true,
-  imports: [CommonModule, StrucQualityGradientsComponent],
+  imports: [CommonModule, StrucQualityGradientsComponent, MaterialModule],
   templateUrl: './main-information-area.component.html',
   styleUrl: './main-information-area.component.scss',
 })
@@ -18,6 +20,8 @@ export class MainInformationAreaComponent {
   public readonly organismScientificNames = input.required<string[]>();
   public readonly primaryPublication = input.required<CitationDetail | undefined>();
   public readonly qualityScores = input.required<ProcessedQualityScores | undefined>();
+
+  public modelQualitySummaryTooltip = modelQualitySummaryTooltip;
 
   public mappedInformation: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
   private readonly util = inject(UtilService);
