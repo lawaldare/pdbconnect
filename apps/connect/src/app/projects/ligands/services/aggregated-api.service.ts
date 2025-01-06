@@ -65,7 +65,7 @@ export interface Bond {
   providedIn: 'root',
 })
 export class AggregatedApiService {
-  private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}aggregated-api/`;
+  private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}api/v2/`;
   private readonly StaticFilesApiUrl = `${environment.pdbeBaseUrl}static/files/pdbechem_v2/`;
   private readonly CompoundApiUrl = `${environment.pdbeBaseUrl}api/pdb/compound/`;
 
