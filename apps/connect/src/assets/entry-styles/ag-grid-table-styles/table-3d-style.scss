@@ -27,13 +27,6 @@ ag-grid-angular.table-3d .ag-row-even {
   border-bottom: 1px solid var(--Neutral-300, #d0d0ce);
 }
 
-// For table header styles
-ag-grid-angular.table-3d .ag-header-cell-text {
-  text-overflow: clip;
-  overflow: visible;
-  white-space: normal;
-}
-
 ag-grid-angular.table-3d .ag-cell {
   white-space: normal;
   word-break: break-word;
@@ -45,8 +38,32 @@ ag-grid-angular.table-3d .ag-header-cell-resize::after {
   visibility: hidden;
 }
 
+/* div containing all header content (wrapper) */
+ag-grid-angular.table-3d .ag-header-cell-comp-wrapper {
+  align-items: flex-start !important;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  height: 55px;
+}
+
+/* div containing .ag-header-cell-label (when no custom components in header) */
+ag-grid-angular .ag-header-group-cell-label,
+.ag-cell-label-container {
+  padding: 0 !important;
+}
+
+/* div containing span with header text content */
 ag-grid-angular.table-3d .ag-header-cell-label {
   font-weight: 500;
+  align-items: flex-start;
+}
+
+/* span with header text content */
+ag-grid-angular.table-3d .ag-header-cell-text {
+  text-overflow: clip;
+  overflow: visible;
+  white-space: normal;
+  line-height: 27.2px !important;
 }
 
 ag-grid-angular.table-3d .ag-ltr .ag-cell {

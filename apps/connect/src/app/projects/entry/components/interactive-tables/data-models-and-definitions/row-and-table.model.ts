@@ -3,7 +3,7 @@ import { Molecule } from '../../../data-models/molecule.model';
 import { MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
 
 /**
- * Generic types
+ * Generic types for all table row data and filters
  */
 
 export type TableRow = AssembliesRowData | MacromoleculesRowData | LigandsRowData | DomainsRowData;
@@ -14,7 +14,7 @@ export interface TableFilter {
 }
 
 /**
- * Assemblies table
+ * Assemblies table row data
  */
 
 export interface AssembliesRowData {
@@ -36,7 +36,7 @@ export interface AssembliesRowData {
 }
 
 /**
- * Macromolecules table
+ * Macromolecules table row data
  */
 
 export interface MacromoleculesName {
@@ -65,7 +65,7 @@ export interface MacromoleculesRowData {
 }
 
 /**
- * Ligands and Environments table
+ * Ligands and Environments table row data
  */
 
 export interface LigandsCodeAndName {
@@ -90,7 +90,7 @@ export interface LigandsRowData {
 }
 
 /**
- * Domains table
+ * Domains table row data
  */
 
 export interface DomainsBoundaries {
@@ -101,7 +101,7 @@ export interface DomainsBoundaries {
 }
 
 export interface DomainsRowData {
-  domainName: string;
+  accessionName: string;
   resource: string;
   domain: string;
   moleculeNames: string[];

@@ -254,7 +254,7 @@ export class OverviewMolstarTabListViewComponent {
         const isSameEntity = domainImgEntity === domainRowEntity;
         const hasChain = rowDatum.segments.join(' ').includes(`${domainImgChain}:`);
         const hasSource = rowDatum.resource.includes(domainImgSource);
-        const hasAccession = rowDatum.domainName.includes(domainImgAccession);
+        const hasAccession = rowDatum.additionalData.accession.includes(domainImgAccession);
 
         // we then check whether the row segments contain the molstar selection segments
         const trimmedSegments = rowDatum.segments.map((domainSegment) => {

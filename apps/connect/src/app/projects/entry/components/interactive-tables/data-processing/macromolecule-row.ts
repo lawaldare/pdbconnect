@@ -275,6 +275,7 @@ export class MacromoleculeDataToTable extends DataToTable {
   public generateTableFilters(): TableFilter[] {
     let newFilters: TableFilter[] = [];
     if (this.tableFilters().length === 0) {
+      // create an all filter for all macromolecular types
       const allTypes = [
         'polypeptide(L)',
         'polypeptide(R)',
@@ -283,6 +284,13 @@ export class MacromoleculeDataToTable extends DataToTable {
         'polydeoxyribonucleotide/polyribonucleotide hybrid',
         'carbohydrate polymer',
       ];
+      const plural = this.macromolecules.length > 1 ? 's' : '';
+      newFilters.push({
+        types: allTypes,
+        description: `All (${this.macromolecules.length} macromolecule${plural})`,
+      });
+
+      // link set of molecule types to their descriptions
       const moleculeTypeConditions = [
         {
           moleculeTypes: ['polypeptide(L)', 'polypeptide(R)'],
@@ -297,16 +305,11 @@ export class MacromoleculeDataToTable extends DataToTable {
           filterDescriptionSuffix: 'carbohydrate',
         },
       ];
-      const plural = this.macromolecules.length > 1 ? 's' : '';
-
-      newFilters.push({
-        types: allTypes,
-        description: `All (${this.macromolecules.length} macromolecule${plural})`,
-      });
-
+      // for each set of molecule types ...
       for (const moleculeTypeCondition of moleculeTypeConditions) {
-        // filter the complete macromolecule list by the type
+        // ... filter the complete macromolecule list by this set of types
         const filteredMacromolecules = this.macromolecules.filter((mol) => moleculeTypeCondition.moleculeTypes.indexOf(mol.molecule_type) > -1);
+        // ... and create a filter based on these set of types and a dynamically generated description
         const plural = filteredMacromolecules.length > 1 ? 's' : '';
         if (filteredMacromolecules.length > 0) {
           newFilters.push({
@@ -315,14 +318,16 @@ export class MacromoleculeDataToTable extends DataToTable {
           });
         }
       }
+      // if filters contain only a single macromolecule type and the 'All' filter...
       if (newFilters.length === 2) {
+        //... remove the all filter
         newFilters.shift();
       }
+      // set filters signal
       this.tableFilters.set(newFilters);
     } else {
       newFilters = [...this.tableFilters()];
     }
-
     return newFilters;
   }
 }

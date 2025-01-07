@@ -277,31 +277,36 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
   }
 
   public applyFilter(obj: TableFilter): void {
-    // function manually triggers table filtering
+    // function enables triggering external table filters
     this.currentTableFilter = obj.types;
     this.gridApi.onFilterChanged();
   }
 
   // Determines whether an external filter is active
-  // NEEDS TO BE ARROW FUNCTION TO KEEP THIS CONTEXT
+  // NEEDS TO BE ARROW FUNCTION TO KEEP CONTEXT OF "this"
   public isExternalFilterPresent = (): boolean => {
     return this.currentTableFilter.length > 0;
   };
 
   // External filter logic: determines if a row passes the external filter
-  // NEEDS TO BE ARROW FUNCTION TO KEEP THIS CONTEXT
+  // NEEDS TO BE ARROW FUNCTION TO KEEP CONTEXT OF "this"
   public doesExternalFilterPass = (node: IRowNode): boolean => {
     if (this.tabName() === 'Assemblies') {
-      return true;
+      // assemblies rows are filtered according to multimericStates
+      return this.currentTableFilter.indexOf(node.data!.multimericStates) > -1;
     } else if (this.tabName() === 'Domains') {
+      // domain rows are filtered according to resource
       return this.currentTableFilter.indexOf(node.data!.resource) > -1;
     } else if (this.tabName() === 'Ligands') {
+      // ligand rows are filtered according to data type
       return this.currentTableFilter.indexOf(node.data.type) > -1;
     } else if (this.tabName() === 'Macromolecules') {
       // const matchingIdx = this.macromolecules()
       //   .map((mol: Molecule, idx: number) => (this.currentTableFilter.includes(mol.molecule_type) ? idx : -1))
       //   .filter((idx: number) => idx > -1);
       // return matchingIdx.includes(this.unsortedTableRows().indexOf(node.data));
+
+      // macromolecule rows are filtered according to molecular type
       return this.currentTableFilter.indexOf(node.data!.additionalData.molecule.molecule_type) > -1;
     }
     return true;

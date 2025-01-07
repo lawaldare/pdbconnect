@@ -1,4 +1,5 @@
 import { ThemeType } from '@pdbc/core';
+import { cofactorTooltip, drugTooltip, reactantTooltip, unannotatedTooltip } from '../ligands/ligand.constant';
 
 export const pdbeLogoConfig = {
   backgroundColor: '#056643',
@@ -59,6 +60,16 @@ export const allTabs = [
 ];
 export const tableTabs = ['Assemblies', 'Macromolecules', 'Ligands', 'Domains'];
 
+export const ligandChipColors: {
+  [key: string]: string;
+} = {
+  Unannotated: '#E4E4E4',
+  'Drug-like': '#D2DE56',
+  'Cofactor-like': '#DBBFE3',
+  'Reactant-like': '#FEE99A',
+  Modification: '#FE9A9A',
+};
+
 /**
  * Tooltips:
  */
@@ -77,6 +88,14 @@ export const assemblyNameTooltip = `Name is the human-readable assigned denomina
 export const complexIdTooltip = `Stable identifiers for each unique assembly composition across the PDB archive.`;
 
 export const assemblyCompositionTooltip = `Description of the assembly composition according to their molecular stoichiometry`;
+
+export const ligandChipTooltips: { [key: string]: string } = {
+  Unannotated: unannotatedTooltip,
+  'Drug-like': drugTooltip,
+  'Cofactor-like': cofactorTooltip,
+  'Reactant-like': reactantTooltip,
+  Modification: 'Modified amino acids or nucleotides in protein, DNA or RNA chains',
+};
 
 export const validationInfoTooltip = '';
 export const sampleInfoTooltip = '';

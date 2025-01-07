@@ -14,14 +14,19 @@ export class AssemblyDataToTable extends DataToTable {
   assemblyData: AssemblyData[];
   pisaAssemblyData: PisaAssembly[];
 
+  // Implementation of Abstract attributes from abstract-base-row-class
   molstarHardResetOnSelect = true;
   protvistaForSelection = false;
   topolViewerForSelection = false;
   ligandEnvViewerForSelection = false;
-  displayFilters = false;
+  displayFilters = true;
+
+  // tableRows is an abstract signal that contains data for each table row
   tableRows: WritableSignal<TableRow[]> = signal([]);
+  // tableFilters is an abstract signal that contains data for each table filter
   tableFilters: WritableSignal<TableFilter[]> = signal([]);
 
+  // when instantiating, set the necessary assembly specific data
   constructor(complexDetails: ComplexDetails[], assemblyData: AssemblyData[], pisaAssemblyData: PisaAssembly[]) {
     super();
     this.complexDetails = complexDetails;
@@ -29,11 +34,15 @@ export class AssemblyDataToTable extends DataToTable {
     this.pisaAssemblyData = pisaAssemblyData;
   }
 
+  // parse the necessary assembly specific data into data for each table row
+  // good pdb examples for assemblies: 1e94 (three assemblies); 3irj (no assemblies)
   generateTableData(): TableRow[] {
     let rows: TableRow[] = [];
 
     if (this.tableRows().length === 0) {
       const assembliesRows: AssembliesRowData[] = [];
+
+      // we first check and get the preferred assembly if it exists
       let preferredAssembly = -1;
       for (const complexDetail of this.complexDetails) {
         for (const assemblyInfo of complexDetail.assemblies) {
@@ -45,15 +54,19 @@ export class AssemblyDataToTable extends DataToTable {
         if (preferredAssembly > -1) break;
       }
 
+      // we then parse each assembly data from the api endpoint
       for (const assemblyDatum of this.assemblyData) {
+        // first we link assembly data to complexDetails data by assembly_id
         const complexDetail = this.complexDetails.filter((eachComplexDetail) => {
           const complexAssemblyIds = eachComplexDetail.assemblies.map((assemblyInfo) => assemblyInfo.assembly_id + '');
           return complexAssemblyIds.indexOf(assemblyDatum.assembly_id) > -1;
         })[0];
+        // ... we do the same for pisa assembly data
         const pisaAssemblyDatum = this.pisaAssemblyData.filter((pisaAssembly) => pisaAssembly.assembly_id === assemblyDatum.assembly_id)[0];
+
+        // ... we then generate some necessary row data by processing fields of the above
         const preferredWord = assemblyDatum.assembly_id === `${preferredAssembly}` ? ' (preferred)' : '';
         let moleculeNames = assemblyDatum.entities.filter((mol) => ALLOWEDTYPES.indexOf(mol.molecule_type) > -1).map((assembly) => assembly.molecule_name[0]);
-
         if (moleculeNames.length > 5) {
           moleculeNames = [`${moleculeNames.length} molecules`];
         }
@@ -61,6 +74,7 @@ export class AssemblyDataToTable extends DataToTable {
         const complexName = complexDetail.name ? complexDetail.name : '';
         const mericity = this.calculateMericity(assemblyDatum.entities);
 
+        // ... and finally push all necessary data for rendering a row
         assembliesRows.push({
           assemblyId: assemblyDatum.assembly_id,
           assemblyName: `Assembly ${assemblyDatum.assembly_id}${preferredWord}`,
@@ -82,6 +96,7 @@ export class AssemblyDataToTable extends DataToTable {
         });
       }
       rows.push(...assembliesRows);
+      // finally set table rows signal
       this.tableRows.set(rows);
     } else {
       rows = [...this.tableRows()];
@@ -89,11 +104,17 @@ export class AssemblyDataToTable extends DataToTable {
     return rows;
   }
 
+  // function migrated from elephant cage for generating a word according to "assembly stoichometry"
+  // obs: this means number of different unique macromolecules in a assembly
   calculateMericity(participants: AssemblyEntity[]) {
+    // 1 - for a given assembly, we filter assembly participants by molecular type
     participants = participants.filter((mol) => {
       return ALLOWEDTYPES.indexOf(mol.molecule_type) > -1;
     });
+
+    // 2 - we count how many different unique participants using their entity_id ...
     const participantTypes: string[] = [];
+    // ... and how many participants in total
     let mericityTotal = 0;
     for (const participant of participants) {
       if (participantTypes.indexOf(participant.entity_id + '') === -1) {
@@ -102,14 +123,19 @@ export class AssemblyDataToTable extends DataToTable {
       }
     }
 
+    // 3 - number of unique participants define a homo or hetero assembly
     let compositionPrefix = 'homo ';
     if (participantTypes.length > 1) {
       compositionPrefix = 'hetero ';
     }
+
+    // 4 - number of total participants define the suffix of the assembly according to MULTIMER_MAPPING
     let compositionSuffix = `${mericityTotal}-mer`;
     if (mericityTotal <= 20) {
       compositionSuffix = MULTIMER_MAPPING[mericityTotal as MULTIMER_MAPPING_KEYS];
     }
+
+    // 5 - finally homo monomer (1 unique entity) is actually called monomeric
     let composition = `${compositionPrefix}${compositionSuffix}`;
     if (composition === 'homo monomer') {
       composition = 'monomeric';
@@ -117,8 +143,44 @@ export class AssemblyDataToTable extends DataToTable {
     return composition;
   }
 
+  // parse the necessary assembly specific data into data filters
   generateTableFilters(): TableFilter[] {
-    this.tableFilters.set([]);
-    return [];
+    let newFilters: TableFilter[] = [];
+    if (this.tableFilters().length === 0) {
+      const mericityCounts: { [key: string]: number } = {};
+
+      // for each assembly, calculate it's mericity...
+      for (const assemblyDatum of this.assemblyData) {
+        const mericity = this.calculateMericity(assemblyDatum.entities);
+
+        // ... and count how many instances of that mericity appear
+        mericityCounts[mericity] = mericityCounts[mericity] || 0;
+        mericityCounts[mericity] += 1;
+      }
+
+      // create an 'All' filter for all mericities
+      newFilters.push({
+        types: Object.keys(mericityCounts),
+        description: `All`,
+      });
+      for (const [mericity, mericityCount] of Object.entries(mericityCounts)) {
+        newFilters.push({
+          types: [mericity],
+          description: `${mericityCount} ${mericity}`,
+        });
+      }
+
+      // if filters contain only a single assembly mericity type and the 'All' filter...
+      if (newFilters.length === 2) {
+        //... remove the all filter
+        newFilters.shift();
+      }
+
+      // finally set filters signal
+      this.tableFilters.set(newFilters);
+    } else {
+      newFilters = [...this.tableFilters()];
+    }
+    return newFilters;
   }
 }

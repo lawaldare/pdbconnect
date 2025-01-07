@@ -10,14 +10,17 @@ import {
   MacromoleculesRowData,
 } from './row-and-table.model';
 import { PDBE_KB_ICON_BASE64 } from './pdbe-kb-icon-base64';
+import { TableHeaderWithTooltipComponent } from '../sub-components/table-header-with-tooltip/table-header-with-tooltip.component';
+import { assemblyCompositionTooltip, complexIdTooltip, ligandChipColors, ligandChipTooltips } from '../../../entry-constant';
+import { TableLigandsAnnotationChipComponent } from '../sub-components/table-ligands-annotation-chip/table-ligands-annotation-chip.component';
 
 /**
- * Assemblies table
+ * Assemblies table column rendering definitions
  */
 
 export const ASSEMBLIES_COL_DEFS: ColDef[] = [
   {
-    headerName: 'Assembly name',
+    headerName: 'Assembly and macromolecule name',
     field: 'assemblyName',
     flex: 1,
     wrapText: true,
@@ -25,9 +28,9 @@ export const ASSEMBLIES_COL_DEFS: ColDef[] = [
     filter: false,
     resizable: false,
     cellRenderer: (params: ValueFormatterParams<AssembliesRowData, string>) => {
-      return `<div class="tbl-col-assembly-name">
-        <b>${params.data!.assemblyName}</b><br/>
-        ${params.data!.complexName}
+      return `<div>
+        <b class="tbl-col-1-assembly" >${params.data!.assemblyName}</b><br/>
+        <span>${params.data!.complexName}</span>
       </div>`;
     },
   },
@@ -40,18 +43,15 @@ export const ASSEMBLIES_COL_DEFS: ColDef[] = [
     filter: false,
     resizable: false,
     cellRenderer: (params: ValueFormatterParams<AssembliesRowData, string>) => {
-      // const iconStyle = `--icon-search-color: #193f90;
-      // width: 12px;
-      // height: 12px;
-      // mask-size: auto 12px;
-      // position: absolute;
-      // z-index: -1;
-      // top: 4px;`
-
       if (params.data!.complexId.length > 0) {
         return `<a>${params.data!.complexId} <i class="icon icon-common icon-search icon-search-small-blue"></i></a>`;
       }
       return '';
+    },
+    headerComponent: TableHeaderWithTooltipComponent,
+    headerComponentParams: {
+      customHeader: 'PDBe Complex ID',
+      customTooltip: complexIdTooltip,
     },
   },
   {
@@ -62,30 +62,24 @@ export const ASSEMBLIES_COL_DEFS: ColDef[] = [
     autoHeight: true,
     filter: false,
     resizable: false,
-  },
-  {
-    headerName: 'More details',
-    flex: 0.8,
-    wrapText: true,
-    autoHeight: true,
-    filter: false,
-    resizable: false,
-    cellRenderer: () => {
-      return `<button class="vf-table-button">View</button>`;
+    headerComponent: TableHeaderWithTooltipComponent,
+    headerComponentParams: {
+      customHeader: 'Multimeric states',
+      customTooltip: assemblyCompositionTooltip,
     },
   },
 ];
 
 /**
- * Macromolecules table
+ * Macromolecules table column rendering definitions
  */
 
 export const MACROMOLECULES_COL_DEFS: ColDef[] = [
   {
-    headerName: 'Molecule name',
+    headerName: 'Molecule name and chain',
     field: 'name',
     // width: 158,
-    flex: 1.58,
+    flex: 1.57,
     wrapText: true,
     autoHeight: true,
     filter: false,
@@ -103,7 +97,7 @@ export const MACROMOLECULES_COL_DEFS: ColDef[] = [
   {
     field: 'length',
     // width: 100,
-    flex: 1,
+    flex: 0.6,
     filter: false,
     resizable: false,
   },
@@ -111,7 +105,8 @@ export const MACROMOLECULES_COL_DEFS: ColDef[] = [
     headerName: 'Residue range',
     field: 'residues',
     // width: 156,
-    flex: 1.56,
+    // flex: 1.56,
+    flex: 1.3,
     wrapText: true,
     autoHeight: true,
     filter: false,
@@ -140,10 +135,11 @@ export const MACROMOLECULES_COL_DEFS: ColDef[] = [
     },
   },
   {
-    headerName: 'Source Organisms',
+    headerName: 'Source organisms',
     field: 'organisms',
     // width: 130,
-    flex: 1.3,
+    // flex: 1.3,
+    flex: 1.4,
     wrapText: true,
     autoHeight: true,
     filter: false,
@@ -164,7 +160,8 @@ export const MACROMOLECULES_COL_DEFS: ColDef[] = [
     headerName: 'Gene names',
     field: 'genes',
     // width: 110,
-    flex: 1.1,
+    // flex: 1.1,
+    flex: 1.4,
     wrapText: true,
     autoHeight: true,
     filter: false,
@@ -179,29 +176,30 @@ export const MACROMOLECULES_COL_DEFS: ColDef[] = [
       return `<div>${rangeString}</div>`;
     },
   },
-  {
-    headerName: 'More details',
-    flex: 0.8,
-    wrapText: true,
-    autoHeight: true,
-    filter: false,
-    resizable: false,
-    cellRenderer: () => {
-      return `<button class="vf-table-button">View</button>`;
-    },
-  },
+  // {
+  //   headerName: 'More details',
+  //   flex: 0.8,
+  //   wrapText: true,
+  //   autoHeight: true,
+  //   filter: false,
+  //   resizable: false,
+  //   cellRenderer: () => {
+  //     return `<button class="vf-table-button">View</button>`;
+  //   },
+  // },
 ];
 
 /**
- * Ligands and Environments table
+ * Ligands and Environments table column rendering definitions
  */
 
 export const LIGANDS_COL_DEFS: ColDef[] = [
   {
     headerName: 'Image',
     field: 'id',
-    width: 107,
-    flex: 1,
+    // width: 107,
+    // flex: 1,
+    flex: 1.1,
     wrapText: true,
     autoHeight: true,
     filter: false,
@@ -213,7 +211,8 @@ export const LIGANDS_COL_DEFS: ColDef[] = [
     headerName: 'Ligand code and name',
     field: 'codeAndName',
     // width: 285,
-    flex: 2.66,
+    // flex: 2.66,
+    flex: 2.72,
     cellRenderer: (params: ValueFormatterParams<LigandsRowData, LigandsCodeAndName>) => {
       const countDiv = `<div class="tbl-col-ligands-count">
         ${params.value!.count} x ${params.node!.data!.id}
@@ -230,62 +229,48 @@ export const LIGANDS_COL_DEFS: ColDef[] = [
     headerName: 'Annotation',
     field: 'annotation',
     // width: 285,
-    flex: 2.66,
+    // flex: 2.66,
+    flex: 2.72,
     wrapText: true,
     autoHeight: true,
-    cellRenderer: (params: ValueFormatterParams<LigandsRowData, LigandsAnnotation>) => {
-      const CHIP_COLORS: {
-        [key: string]: string;
-      } = {
-        Unannotated: '#E4E4E4',
-        'Drug-like': '#D2DE56',
-        'Cofactor-like': '#DBBFE3',
-        'Reactant-like': '#FEE99A',
-        Modification: '#FE9A9A',
+    cellRenderer: TableLigandsAnnotationChipComponent,
+    cellRendererParams: (params: ValueFormatterParams<LigandsRowData, LigandsAnnotation>) => {
+      return {
+        chipTooltip: ligandChipTooltips[params.value!.description],
+        chipText: params.value!.description,
+        bgColor: ligandChipColors[params.value!.description],
       };
-      let annotationClasses = 'tbl-col-ligands-annotation';
-      let hasBackground = '';
-      if (params.value!.isChip) {
-        annotationClasses += ' tbl-col-ligands-chip';
-        // chip color defined here
-        hasBackground += `style="background: ${CHIP_COLORS[params.value!.description]};"`;
-      }
-      return `<div class="${annotationClasses}" ${hasBackground}>
-        ${params.value!.description}
-      </div>`;
-    },
-  },
-  {
-    headerName: 'More details',
-    flex: 0.8,
-    wrapText: true,
-    autoHeight: true,
-    filter: false,
-    resizable: false,
-    cellRenderer: () => {
-      return `<button class="vf-table-button">View</button>`;
     },
   },
 ];
 
 /**
- * Domains table
+ * Domains table column rendering definitions
  */
 
 export const DOMAINS_COL_DEFS: ColDef[] = [
   {
     headerName: 'Accession',
-    field: 'domainName',
-    flex: 1.8,
+    field: 'accessionName',
+    // flex: 1.8,
+    flex: 1.2,
     wrapText: true,
     autoHeight: true,
     filter: false,
     resizable: false,
+    cellRenderer: (params: ValueFormatterParams<DomainsRowData, string>) => {
+      return `
+      <div class="tbl-col-accession-name">
+        <a>${params.data!.additionalData.accession}</a>
+        <span>${params.data!.accessionName}</span>
+      </div>`;
+    },
   },
   {
     headerName: 'Molecule name',
     field: 'moleculeNames',
-    flex: 1.8,
+    // flex: 1.8,
+    flex: 1.2,
     wrapText: true,
     autoHeight: true,
     filter: false,
@@ -301,7 +286,8 @@ export const DOMAINS_COL_DEFS: ColDef[] = [
   {
     headerName: 'Domain',
     field: 'domain',
-    flex: 1.5,
+    // flex: 1.5,
+    flex: 1.2,
     wrapText: true,
     autoHeight: true,
     filter: false,
@@ -310,7 +296,8 @@ export const DOMAINS_COL_DEFS: ColDef[] = [
   {
     headerName: 'Segments',
     field: 'segments',
-    flex: 1.5,
+    // flex: 1.5,
+    flex: 1.2,
     wrapText: true,
     autoHeight: true,
     filter: false,
@@ -326,21 +313,11 @@ export const DOMAINS_COL_DEFS: ColDef[] = [
   {
     headerName: 'Origin',
     field: 'resource',
-    flex: 1,
+    // flex: 1,
+    flex: 1.2,
     wrapText: true,
     autoHeight: true,
     filter: false,
     resizable: false,
-  },
-  {
-    headerName: 'More details',
-    flex: 1,
-    wrapText: true,
-    autoHeight: true,
-    filter: false,
-    resizable: false,
-    cellRenderer: () => {
-      return `<button class="vf-table-button">View</button>`;
-    },
   },
 ];
