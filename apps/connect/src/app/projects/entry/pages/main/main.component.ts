@@ -38,6 +38,7 @@ import { ProcessedQualityScores } from '../../data-models/summary-quality-scores
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { EntryDropdownComponent } from '../../components/entry-dropdown/entry-dropdown.component';
+import { TabConfig } from '../../components/overview-molstar/state-management.service';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -90,13 +91,13 @@ export class EntryMainPageComponent implements AfterViewInit {
   public showViewOptions = signal(false);
 
   private route = inject(ActivatedRoute);
-  public readonly signals = inject(ComponentCommunicationService);
+  public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly entryAPIService = inject(EntryApiService);
   private _snackBar = inject(MatSnackBar);
   private molstarVisualisation = inject(MolstarVisualisationsForTabs);
 
-  public currentTab = this.signals.currentTab;
-  public tabSwitchOrigin = this.signals.tabSwitchOrigin;
+  public currentTab = this.compCommunication.currentTab;
+  public tabSwitchOrigin = this.compCommunication.tabSwitchOrigin;
   public previousTab = 'undefined';
 
   private readonly destroyRef = inject(DestroyRef);
@@ -109,8 +110,8 @@ export class EntryMainPageComponent implements AfterViewInit {
   public apiLoadedStatus = signal(INITIAL_API_STATUS);
 
   // signals for residue listing information provided by Molstar inside OverviewMolstar component
-  public molstarResidueInfoLoaded = this.signals.molstarResidueInfoLoaded; // boolean
-  public molstarResidueInfo = this.signals.molstarResidueInfo; // residue listing
+  public molstarResidueInfoLoaded = this.compCommunication.molstarResidueInfoLoaded; // boolean
+  public molstarResidueInfo = this.compCommunication.molstarResidueInfo; // residue listing
 
   // signal that is computed as API calls go from pending to done
   // for each component it holds the necessary API calls that need status done
@@ -125,6 +126,38 @@ export class EntryMainPageComponent implements AfterViewInit {
     });
 
     return status;
+  });
+
+  // signal that computes whether interactive table tabs have any rows (data) to display
+  public tabsConfig = computed(() => {
+    const tabsConfig: TabConfig[] = [];
+    const tableTabsData = allTabs.filter((tab) => tableTabs.indexOf(tab.name) > -1);
+    for (const tab of tableTabsData) {
+      // an interactive table has data if the data has been loaded and the number of table rows is bigger than 0
+      const hasData = this.compCommunication.isTabDataGenerated() && this.compCommunication.getTabData(tab.name).tableRows().length > 0;
+      tabsConfig.push({
+        id: tab.name,
+        displayName: tab.display,
+        width: '229px',
+        tagContent: hasData ? '' : 'N/A',
+        tagClass: hasData ? 'no-chip' : 'na',
+      });
+    }
+    tabsConfig.push({
+      id: 'Experiments',
+      displayName: 'Experiments and Validation',
+      width: '229px',
+      tagContent: '',
+      tagClass: 'no-chip',
+    });
+    tabsConfig.push({
+      id: 'Citations',
+      displayName: 'Citations',
+      width: '96px',
+      tagContent: '',
+      tagClass: 'no-chip',
+    });
+    return tabsConfig;
   });
 
   // API data from getEntrySummary https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/:entryID
@@ -192,7 +225,7 @@ export class EntryMainPageComponent implements AfterViewInit {
   constructor() {
     effect(async () => {
       // Access the current state
-      const tabState = this.signals.tabState();
+      const tabState = this.compCommunication.tabState();
 
       if (this.tabSwitchOrigin() !== 'main') {
         if (this.componentLoadedStatus()['detailsDashboard'] === false) {
@@ -424,8 +457,8 @@ export class EntryMainPageComponent implements AfterViewInit {
       ),
       this.entryAPIService.getPDBEntryFiles(this.entryId()).pipe(
         map((data) => {
-          this.downloadOptions = this.processData(data).downloads;
-          this.viewOptions = this.processData(data).views;
+          this.downloadOptions = this.processFilesData(data).downloads;
+          this.viewOptions = this.processFilesData(data).views;
           this.apiLoadedStatus.update((state) => ({
             ...state, // spread the existing state
             downloadOptions: 'done', // update the specific key dynamically
@@ -707,7 +740,7 @@ export class EntryMainPageComponent implements AfterViewInit {
     return tabName as TableNames;
   }
 
-  private processData(data: any) {
+  private processFilesData(data: any) {
     const order = ['Archive mmCIF file', 'Updated mmCIF file', 'PDB file', 'Compatible PDB file bundle (tar.gz)', 'FASTA (Entry)', 'Full report (PDF)'];
 
     let downloads: any[] = [];
@@ -771,16 +804,6 @@ export class EntryMainPageComponent implements AfterViewInit {
     return { downloads: downloadsUpdated, views: viewsUpdated };
   }
 
-  public onShowDownloadOptions() {
-    console.log('onShowDownloadOptions');
-    this.showDownloadOptions.update((value) => !value);
-    this.showViewOptions.update((_value) => false);
-  }
-  public onShowViewOptions() {
-    console.log('showViewOptions');
-    this.showViewOptions.update((value) => !value);
-    this.showDownloadOptions.update((_value) => false);
-  }
   public onClickedOutside() {
     this.showViewOptions.set(false);
     this.showDownloadOptions.set(false);

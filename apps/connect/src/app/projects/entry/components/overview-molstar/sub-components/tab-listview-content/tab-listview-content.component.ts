@@ -1,10 +1,6 @@
-import { Component, computed, effect, inject, input, Input, Signal } from '@angular/core';
+import { Component, computed, effect, inject, Signal } from '@angular/core';
 import { OverviewStateManagementService } from '../../state-management.service';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
-import { MatOptionModule } from '@angular/material/core';
-import { MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { ListSelectable, NestedListSelectable, OverviewMolstarFacade } from '../../data-processing.facade';
 import { Molecule } from '../../../../data-models/molecule.model';
 import { ComponentCommunicationService } from '../../../../services/component-comm.service';
@@ -18,7 +14,7 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 @Component({
   selector: 'pdbc-overview-tab-listview',
   standalone: true,
-  imports: [CommonModule, MatSelectModule, MatOptionModule, MatFormFieldModule, MatLabel, FormsModule, MaterialModule, EntryDropdownComponent],
+  imports: [CommonModule, MaterialModule, EntryDropdownComponent],
   templateUrl: './tab-listview-content.component.html',
   styleUrl: './tab-listview-content.component.scss',
 })
@@ -164,13 +160,8 @@ export class OverviewMolstarTabListViewComponent {
     return this.domainsDataByResource()![this.currentDomainResource!];
   }
 
-  public onDomainResourceSelect2(event: string) {
+  public onDomainResourceSelect(event: string) {
     this.currentDomainResource = event.split(' - ')[0];
-    this.stateManagement.updateStatePropertyOfTab('Domains', 'currentDomainResource', this.currentDomainResource);
-  }
-
-  public onDomainResourceSelect(event: MatSelectChange) {
-    this.currentDomainResource = event.value;
     this.stateManagement.updateStatePropertyOfTab('Domains', 'currentDomainResource', this.currentDomainResource);
   }
 

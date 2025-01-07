@@ -16,8 +16,9 @@ type stateProperties =
   | 'currentMolstarSelection';
 // "molstarSelectionObjs" ;
 
-interface TabConfig {
+export interface TabConfig {
   id: string;
+  displayName: string;
   width: string;
   tagContent: string;
   tagClass: string;
@@ -31,35 +32,40 @@ export class OverviewStateManagementService {
   // some are loaded/used for the template variables above when a tab is switched
   // in function switchCurrentTab
   public currentTab = signal<string>('Assembly');
-  public isInactive = signal<boolean>(false);
+  public isInactive = signal<boolean>(true);
 
   public tabsConfig = signal<TabConfig[]>([
     {
       id: 'Assembly',
+      displayName: 'Assembly',
       width: '101px',
       tagContent: '',
       tagClass: 'no-chip',
     },
     {
       id: 'Macromolecules',
+      displayName: 'Macromolecules',
       width: '151px',
       tagContent: '',
       tagClass: 'no-chip',
     },
     {
       id: 'Ligands',
+      displayName: 'Ligands',
       width: '88px',
       tagContent: '',
       tagClass: 'no-chip',
     },
     {
       id: 'Domains',
+      displayName: 'Domains',
       width: '96px',
       tagContent: '',
       tagClass: 'no-chip',
     },
     {
       id: 'Modifications',
+      displayName: 'Modifications',
       width: '118px',
       tagContent: '',
       tagClass: 'no-chip',
@@ -82,7 +88,7 @@ export class OverviewStateManagementService {
     };
   }>({
     Assembly: {
-      isInactive: false,
+      isInactive: true,
       lastScroll: 0,
       imgName: '',
       initialStateImgName: '',
@@ -179,8 +185,6 @@ export class OverviewStateManagementService {
   }
   // 'assets/img/interfaces_example2.png'
   public async switchCurrentTab(newView: string) {
-    console.log('this.dataProcessing.dataParsed()');
-    console.log(this.dataProcessing.dataParsed());
     if (this.dataProcessing.dataParsed() === false) return;
     // if (this.tabsStates()[newView].isInactive) return;
 

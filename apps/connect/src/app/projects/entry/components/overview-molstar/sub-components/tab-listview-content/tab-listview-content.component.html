@@ -68,16 +68,6 @@
   <!-- -------- Domains tab selected -------- -->
   <!-- ----------------------------------- -->
   @if (domainsDataByResource() && stateManagement.isInactive() === false) {
-  <!-- Domain resource select dropdown which changes nested clickble items list -->
-  <!-- <mat-form-field appearance="fill">
-    <mat-label>Select Domain Resource</mat-label>
-    <mat-select [(ngModel)]="currentDomainResource" (selectionChange)="onDomainResourceSelect($event)">
-      @for (resource of objectKeys(domainCountByResource()); track resource;) {
-      <mat-option [value]="resource" [disabled]="domainCountByResource()[resource] === 0"> {{ resource }} ({{ domainCountByResource()[resource] }}) </mat-option>
-      }
-    </mat-select>
-  </mat-form-field> -->
-
   <!-- Title -->
   <h5 class="title domain-title">{{ getTitle() }}</h5>
   <!-- Domain resource select dropdown which changes nested clickble items list -->
@@ -88,7 +78,7 @@
     [fullwidth]="true"
     [options]="domainResourceCounts"
     [title]="getDomainResourceCountTxt(currentDomainResource)"
-    (optionClickedEvent)="onDomainResourceSelect2($event)"
+    (optionClickedEvent)="onDomainResourceSelect($event)"
   >
   </pdbc-entry-dropdown>
   <!-- List of (Nested) clickable items -->
@@ -116,7 +106,7 @@
   <!-- ----------------------------------- -->
   <!-- -------- Empty data tab selected -------- -->
   <!-- ----------------------------------- -->
-  @if (stateManagement.isInactive() && !isDataLoaded()) {
+  @if (stateManagement.isInactive() && isDataLoaded()) {
   <h5 class="title">No {{ currentTab() }} data available</h5>
   <p>
     This entry does not include any information about {{ currentTab().replace('Assembly', 'Assemblies') }}. Find out more about this <a>in our FAQ</a
