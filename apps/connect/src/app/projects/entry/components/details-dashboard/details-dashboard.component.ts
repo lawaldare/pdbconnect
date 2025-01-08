@@ -173,7 +173,7 @@ export class DetailsDashboardComponent implements OnDestroy {
     // it sets variables according to what is currently displayed in the dashboard (Assemblies, Domains, Ligands, Macromolecules, etc)
 
     const tableRows = this.signals.getTabData(this.tabName()).tableRows();
-    this.selectionTitle = `No ${this.tabName().toLowerCase()} data for this entry`;
+    this.selectionTitle = `Loading ${this.tabName().toLowerCase()} data for this entry...`;
     this.selectionIdentifier = 'None';
     let datum: TableRow | undefined = undefined;
     if (tableRows.length > 0 && tabState !== 'Main') {

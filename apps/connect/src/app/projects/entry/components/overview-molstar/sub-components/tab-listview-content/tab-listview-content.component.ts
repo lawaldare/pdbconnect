@@ -89,35 +89,40 @@ export class OverviewMolstarTabListViewComponent {
   public domainResourceCounts: DownloadOption[] = [];
 
   constructor() {
-    effect(() => {
-      const domainCountByResource = this.domainCountByResource();
+    effect(
+      () => {
+        const domainCountByResource = this.domainCountByResource();
 
-      if (domainCountByResource['CATH'] > 0) this.currentDomainResource = 'CATH';
-      else if (domainCountByResource['Pfam'] > 0) this.currentDomainResource = 'Pfam';
-      else if (domainCountByResource['SCOP'] > 0) this.currentDomainResource = 'SCOP';
+        if (domainCountByResource['CATH'] > 0) this.currentDomainResource = 'CATH';
+        else if (domainCountByResource['Pfam'] > 0) this.currentDomainResource = 'Pfam';
+        else if (domainCountByResource['SCOP'] > 0) this.currentDomainResource = 'SCOP';
 
-      this.domainResourceCounts = [];
+        this.domainResourceCounts = [];
 
-      this.domainResourceCounts.push({
-        name: this.getDomainResourceCountTxt('CATH'),
-        downloadable: false,
-        url: '1',
-      });
+        this.domainResourceCounts.push({
+          name: this.getDomainResourceCountTxt('CATH'),
+          downloadable: false,
+          url: '1',
+        });
 
-      this.domainResourceCounts.push({
-        name: this.getDomainResourceCountTxt('Pfam'),
-        downloadable: false,
-        url: '2',
-      });
+        this.domainResourceCounts.push({
+          name: this.getDomainResourceCountTxt('Pfam'),
+          downloadable: false,
+          url: '2',
+        });
 
-      this.domainResourceCounts.push({
-        name: this.getDomainResourceCountTxt('SCOP'),
-        downloadable: false,
-        url: '3',
-      });
+        this.domainResourceCounts.push({
+          name: this.getDomainResourceCountTxt('SCOP'),
+          downloadable: false,
+          url: '3',
+        });
 
-      this.stateManagement.updateStatePropertyOfTab('Domains', 'currentDomainResource', this.currentDomainResource);
-    });
+        this.stateManagement.updateStatePropertyOfTab('Domains', 'currentDomainResource', this.currentDomainResource);
+      },
+      {
+        allowSignalWrites: true, // Enable writing to signals inside effects
+      }
+    );
   }
 
   public getDomainResourceCountTxt(domainName: string) {

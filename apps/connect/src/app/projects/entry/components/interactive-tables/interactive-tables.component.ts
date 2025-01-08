@@ -113,11 +113,11 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // process data is called if table data has not been generated yet
-    if (this.signals.isTabDataGenerated() === false) {
-      // it generates instances of classes to each table type (Assemblies, Domains, Ligands, Macromolecules)
-      // which contain the processed table data, ag-grid rows, filters and functions related to this processing
-      this.processData();
-    }
+    // if (this.signals.isTabDataGenerated() === false) {
+    //   // it generates instances of classes to each table type (Assemblies, Domains, Ligands, Macromolecules)
+    //   // which contain the processed table data, ag-grid rows, filters and functions related to this processing
+    //   this.processData();
+    // }
     const tableData = this.signals.getTabData(this.tabName());
     this.tableData = tableData as DataToTable;
 
@@ -151,38 +151,39 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
     }
   }
 
-  private processData() {
-    // for each table type
-    for (const tabName of ['Assemblies', 'Domains', 'Ligands', 'Macromolecules']) {
-      // we create the instances of the data to table objects, sending API data
-      let tempTableData: DataToTable;
-      if (tabName === 'Assemblies') {
-        tempTableData = new AssemblyDataToTable(this.complexDetails(), this.assemblyData(), this.pisaAssemblyData());
-      } else if (tabName === 'Domains') {
-        tempTableData = new DomainDataToTable(this.pfamMappings(), this.cathMappings(), this.scopMappings(), this.macromolecules(), this.molstarResidueInfo());
-      } else if (tabName === 'Ligands') {
-        tempTableData = new LigandDataToTable(this.ligands(), this.modifications(), this.molstarResidueInfo());
-      } else {
-        // else if (tabName === 'Macromolecules') {
-        tempTableData = new MacromoleculeDataToTable(
-          this.carbohydrates(),
-          this.uniprotMapping(),
-          this.bestStrMapUniProtId(),
-          this.macromolecules(),
-          this.molstarResidueInfo()
-        );
-      }
-      // we call functions to convert ag-grid table rows and filters
-      tempTableData.generateTableData();
-      tempTableData.generateTableFilters();
-      // and save all data in the component communication service
-      this.signals.setTabData(tabName, tempTableData);
-    }
-    // and set that table data has already been generated to avoid re-processing
-    this.signals.isTabDataGenerated.set(true);
-  }
+  // private processData() {
+  //   // for each table type
+  //   for (const tabName of ['Assemblies', 'Domains', 'Ligands', 'Macromolecules']) {
+  //     // we create the instances of the data to table objects, sending API data
+  //     let tempTableData: DataToTable;
+  //     if (tabName === 'Assemblies') {
+  //       tempTableData = new AssemblyDataToTable(this.complexDetails(), this.assemblyData(), this.pisaAssemblyData());
+  //     } else if (tabName === 'Domains') {
+  //       tempTableData = new DomainDataToTable(this.pfamMappings(), this.cathMappings(), this.scopMappings(), this.macromolecules(), this.molstarResidueInfo());
+  //     } else if (tabName === 'Ligands') {
+  //       tempTableData = new LigandDataToTable(this.ligands(), this.modifications(), this.molstarResidueInfo());
+  //     } else {
+  //       // else if (tabName === 'Macromolecules') {
+  //       tempTableData = new MacromoleculeDataToTable(
+  //         this.carbohydrates(),
+  //         this.uniprotMapping(),
+  //         this.bestStrMapUniProtId(),
+  //         this.macromolecules(),
+  //         this.molstarResidueInfo()
+  //       );
+  //     }
+  //     // we call functions to convert ag-grid table rows and filters
+  //     tempTableData.generateTableData();
+  //     tempTableData.generateTableFilters();
+  //     // and save all data in the component communication service
+  //     this.signals.setTabData(tabName, tempTableData);
+  //   }
+  //   // and set that table data has already been generated to avoid re-processing
+  //   this.signals.isTabDataGenerated.set(true);
+  // }
 
   // Function below required to avoid (must have) scroll on the table rows by fixed height
+
   private adjustTableHeightDynamically(): void {
     // Set up an observable to check for the ag-center-cols-container element existance every 100ms
     this.agViewportCheckSubscription = interval(100)
@@ -244,7 +245,7 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
     let selectionState = this.signals.getTabState(this.tabName());
 
     // if this is the first time this is triggered, select the first row
-    if (this.gridApi.getRenderedNodes().length > 0 && selectionState === 'Main') {
+    if (this.gridApi !== undefined && this.gridApi.getRenderedNodes().length > 0 && selectionState === 'Main') {
       this.signals.setTabState(this.tabName(), 0);
       selectionState = 0;
     }

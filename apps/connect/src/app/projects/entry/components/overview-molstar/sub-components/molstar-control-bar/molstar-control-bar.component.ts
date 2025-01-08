@@ -49,21 +49,23 @@ export class OverviewMolstarControBarComponent {
 
   constructor() {
     effect(async () => {
-      const currentListView = this.currentListViewSelectionTemp()!;
-      const currentSelection = currentListView.molstarNamedSelections[this.currentListViewSelectionIdx()];
+      const currentListView = this.currentListViewSelectionTemp();
+      if (currentListView) {
+        const currentSelection = currentListView.molstarNamedSelections[this.currentListViewSelectionIdx()];
 
-      this.selectedItem = currentSelection.name;
-      this.selectionList = currentListView.molstarNamedSelections.map((eachSelection) => eachSelection.name);
+        this.selectedItem = currentSelection.name;
+        this.selectionList = currentListView.molstarNamedSelections.map((eachSelection) => eachSelection.name);
 
-      this.selectionOptions = currentListView.molstarNamedSelections.map((eachSelection, idx) => {
-        return {
-          name: eachSelection.name,
-          url: `${idx + 1}`,
-          downloadable: false,
-        };
-      });
+        this.selectionOptions = currentListView.molstarNamedSelections.map((eachSelection, idx) => {
+          return {
+            name: eachSelection.name,
+            url: `${idx + 1}`,
+            downloadable: false,
+          };
+        });
 
-      this.stateManagement.switchMolstarZoomed(currentSelection.selection);
+        this.stateManagement.switchMolstarZoomed(currentSelection.selection);
+      }
     });
   }
 

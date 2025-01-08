@@ -71,7 +71,7 @@
     <section id="detail-tabs" class="details-tabs">
       <!-- Navigation controls between tabs -->
       <nav class="tab-nav">
-        @for(tab of tabsConfig(); track tab) {
+        @for(tab of tabsInfo().config; track tab) {
         <div class="tab-container" [ngClass]="{ active: currentTab() === tab.id }" (click)="changeCurrentTab(tab.id)">
           <button class="tab-button">
             <div class="tab-tag" [ngClass]="tab.tagClass">{{ tab.tagContent }}</div>
@@ -83,7 +83,9 @@
       </nav>
       <!-- Tabs, each with related components -->
       <section class="tab-content">
-        @for (tabName of allTabs; track tabName) { @if(currentTab() === tabName.name) { @if(tableTabs.indexOf(tabName.name) > -1) {
+        @for (tabName of allTabs; track tabName) { @if(currentTab() === tabName.name) { @if(tableTabs.indexOf(tabName.name) > -1) { @if
+        (tabsInfo().status[tabName.name] === 'has-data') {
+        <!-- if tab data is either not loaded and empty -->
         <section class="left-side">
           <!-- inside entry/components/interactive-tables -->
           @if (componentLoadedStatus()['interactiveTables'] && molstarResidueInfoLoaded()) {
@@ -118,8 +120,12 @@
           ></pdbc-details-dashboard>
           }
         </section>
-        <!-- TODO: Add empty state for tabs here with conditionals above -->
-        } @if(tabName.name === 'Experiments') {
+        } @else if (tabsInfo().status[tabName.name] === 'empty-data') {
+        <!-- else if tab data is loaded but empty -->
+        <section class="empty-details">
+          <h5>No {{ tabName.name }} data available</h5>
+        </section>
+        } } @if(tabName.name === 'Experiments') {
         <!-- inside entry/components/experiments-validation-tab -->
         @if (componentLoadedStatus()['experimentsValidationTab']) {
         <pdbc-experiments-validation-tab

@@ -131,13 +131,46 @@ export class EntryMainPageComponent implements AfterViewInit {
     return status;
   });
 
+  // Use an effect to trigger side effects when status changes
+  _loadRowsEffect = effect(
+    () => {
+      const status = this.componentLoadedStatus();
+
+      if (status['detailsDashboard'] && this.compCommunication.isTabDataGenerated() === false && this.molstarResidueInfoLoaded()) {
+        // Call processInteractiveTablesData only when 'detailsDashboard' is loaded and tab data not generated yet
+        this.dataProcessing.processInteractiveTablesData(
+          this.complexDetails,
+          this.assemblies,
+          this.pisaAssemblies,
+          this.pfamMapping,
+          this.cathMapping,
+          this.scop175Mapping,
+          this.boundLigands,
+          this.modifications,
+          this.carbohydrates,
+          this.uniprotMapping,
+          this.bestStructuresMappingsByUniProtIds,
+          this.macroMolecules,
+          this.molstarResidueInfo()
+        );
+      }
+    },
+    { allowSignalWrites: true }
+  );
+
   // signal that computes whether interactive table tabs have any rows (data) to display
-  public tabsConfig = computed(() => {
+  public tabsInfo = computed(() => {
+    const isTabDataGenerated = this.compCommunication.isTabDataGenerated();
     const tabsConfig: TabConfig[] = [];
+    const tabsStatus: { [key: string]: string } = {};
     const tableTabsData = allTabs.filter((tab) => tableTabs.indexOf(tab.name) > -1);
     for (const tab of tableTabsData) {
       // an interactive table has data if the data has been loaded and the number of table rows is bigger than 0
-      const hasData = this.compCommunication.isTabDataGenerated() && this.compCommunication.getTabData(tab.name).tableRows().length > 0;
+      tabsStatus[tab.name] = isTabDataGenerated ? 'loaded' : 'loading';
+      const dataExists = isTabDataGenerated ? this.compCommunication.getTabData(tab.name).tableRows().length > 0 : false;
+      if (isTabDataGenerated) tabsStatus[tab.name] = dataExists ? 'has-data' : 'empty-data';
+
+      const hasData = isTabDataGenerated && dataExists;
       tabsConfig.push({
         id: tab.name,
         displayName: tab.display,
@@ -160,7 +193,10 @@ export class EntryMainPageComponent implements AfterViewInit {
       tagContent: '',
       tagClass: 'no-chip',
     });
-    return tabsConfig;
+    return {
+      config: tabsConfig,
+      status: tabsStatus,
+    };
   });
 
   // API data from getEntrySummary https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/:entryID
@@ -591,9 +627,6 @@ export class EntryMainPageComponent implements AfterViewInit {
                 proteinPagesSummaryByUniProtIds: 'done',
               }));
 
-              console.log('this.proteinPagesSummaryByUniProtIds');
-              console.log(this.proteinPagesSummaryByUniProtIds);
-
               return {
                 uniprotMapping: data,
                 uniprotCountsInPDBe,
@@ -602,6 +635,26 @@ export class EntryMainPageComponent implements AfterViewInit {
               };
             })
           );
+        }), // TODO: Improve error handling when some observables contain data and others not. Needed for some pages like: 3irj
+        catchError((_error: HttpErrorResponse) => {
+          this.uniprotMapping = {};
+          this.uniprotCountsInPDBe = {};
+          this.bestStructuresMappingsByUniProtIds = {};
+
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            uniprotMapping: 'done', // update the specific key dynamically
+            uniprotCountsInPDBe: 'done', // update the specific key dynamically
+            bestStructuresMappingsByUniProtIds: 'done', // update the specific key dynamically
+            proteinPagesSummaryByUniProtIds: 'done',
+          }));
+
+          return of({
+            uniprotMapping: {},
+            uniprotCountsInPDBe: {},
+            bestStructuresMappingsByUniProtIds: {},
+            proteinPagesSummaryByUniProtIds: {},
+          });
         })
       ),
       this.entryAPIService.getInterproMapping(this.entryId()).pipe(
