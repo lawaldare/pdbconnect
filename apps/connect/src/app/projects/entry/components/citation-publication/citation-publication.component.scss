@@ -1,8 +1,17 @@
-h4 {
+.heading {
   font-size: 16px;
   font-weight: 400;
   color: #54585a;
   line-height: 27.2px;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  a {
+    i {
+      margin-left: 8px;
+    }
+  }
 }
 
 button {

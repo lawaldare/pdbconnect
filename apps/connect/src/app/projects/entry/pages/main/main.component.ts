@@ -131,7 +131,8 @@ export class EntryMainPageComponent implements AfterViewInit {
     return status;
   });
 
-  // Use an effect to trigger side effects when status changes
+  // Use an effect to trigger side effects when componentLoadedStatus status for detailsDashboard changes to true
+  // this happens when all API endpoints required information is loaded
   _loadRowsEffect = effect(
     () => {
       const status = this.componentLoadedStatus();

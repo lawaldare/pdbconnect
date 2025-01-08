@@ -1,5 +1,4 @@
 <div class="citations">
-  <h2 class="heading-2">Citations</h2>
   @if (primaryPublication() !== undefined && articlesCiting() !== undefined) {
   <section class="primary-publication">
     <div class="row" style="margin-left: 0; margin-right: 0; gap: 0">
@@ -37,14 +36,13 @@
       </div>
     </div>
     <!-- @if(this.imageXMLText()){ -->
-    <article #imageContainer (click)="openXMLImagesInNewWindow()"></article>
     <!-- } -->
   </section>
   <section>
     @if(relatedEntries){
-    <div class="">
+    <div class="row" style="margin-left: 0; margin-right: 0; gap: 0">
       <div class="row__left">Related entries</div>
-      <div class="row__right">
+      <div class="row__right hyperlinks">
         @for(entry of relatedEntries; track entry){
         <span class="row__right__entry">
           <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + entry" target="_blank" class="row__right__link"
@@ -59,8 +57,9 @@
   </section>
   <section class="mb-24">
     <div class="">
-      <div class="row__left">Abstract</div>
-      <div class="row__right">
+      <div class="row__left" style="width: 100%; margin-bottom: 12px">Abstract</div>
+      <div class="row__right background-container" [ngClass]="imageXMLText() ? 'has-img' : ''">
+        <article #imageContainer (click)="openXMLImagesInNewWindow()"></article>
         @if(primaryPublication()!.abstract.unassigned ) {
         <p class="row__right__text" [innerHTML]="primaryPublication()!.abstract.unassigned"></p>
         } @else {
