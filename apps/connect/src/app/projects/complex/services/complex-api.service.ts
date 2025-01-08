@@ -10,7 +10,7 @@ import { ComplexData } from '../models/complex-structure.model';
 export class ComplexAPIService {
   private readonly http = inject(HttpClient);
 
-  private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}aggregated-api/`;
+  private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}api/v2/`;
 
   public getSummaryForComplexData(complexId: string): Observable<ComplexData> {
     return this.http.get<ComplexData>(`${this.AggregatedApiUrl}complex/details/${complexId}?id_type=pdb_complex_id`).pipe(
