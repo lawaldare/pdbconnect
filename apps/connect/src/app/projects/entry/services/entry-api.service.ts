@@ -18,6 +18,7 @@ import { Molecule } from '../data-models/molecule.model';
 import { EntrySummary, ProcessedSummary } from '../data-models/summary.model';
 import { UniProtMapping } from '../data-models/uniprot-mapping.model';
 import { ProcessedQualityScores, SummaryQualityScores } from '../data-models/summary-quality-scores.model';
+import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
 
 @Injectable({
   providedIn: 'root',
@@ -169,4 +170,17 @@ export class EntryApiService {
   public getPDBRedoData(entryId: string): Observable<any> {
     return this.http.get<any>(`https://pdb-redo.eu/db/${entryId}/pdbe.json`);
   }
+
+  public getProteinPagesSummaryStats(uniprotId: string): Observable<ProteinSummaryStats> {
+    return this.http.get<Record<string, ProteinSummaryStats>>(`https://www.ebi.ac.uk/pdbe/graph-api/uniprot/summary_stats/${uniprotId}`).pipe(
+      map((data) => {
+        return data[uniprotId];
+      })
+    );
+  }
+
+  // for number of PDB entries (ngroups for given uniprot)
+  // https://www.ebi.ac.uk/pdbe/search/pdb/select?q=uniprot_accession:P0DTC2&wt=json&group=true&group.field=pdb_id&rows=0&group.ngroups=true
+
+  //
 }

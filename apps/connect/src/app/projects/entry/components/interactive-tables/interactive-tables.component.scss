@@ -17,6 +17,10 @@
   cursor: pointer;
 }
 
+.filter-btn.hover {
+  background: var(--Neutral-100, #f3f3f3);
+}
+
 .filter-btn.active {
   color: var(--Brand-900, #0a5032);
   background: var(--Neutral-100, #f3f3f3);

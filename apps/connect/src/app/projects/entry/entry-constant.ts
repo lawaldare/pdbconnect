@@ -80,7 +80,10 @@ Percentile-sliders comparing the quality scores of a model with other models in 
 These scores are harmonic means of absolute percentiles of geometric metrics (e.g. ramachandran, clashscore, sidechains) and reflections-based metrics (Rfree, RSRZ).
 Sometimes reflections-based metrics are absent due to unavailability of experimental data itself.`;
 
-// Assembly refers to the  ‘quaternary structure’ or the predicted assembly of the macromolecules in the crystal
+export const assemblyTooltip = `Assembly refers to ‘quaternary structures’ representing a collection of associated macromolecules and small molecules. 
+
+Preferred assembly is the smallest assembly containing all polymeric entities`;
+
 export const preferredAssemblyTooltip = `Preferred assembly is the smallest assembly containing all polymeric entities`;
 
 export const assemblyNameTooltip = `Name is the human-readable assigned denomination of a given unique assembly composition in the PDB archive.`;
@@ -109,6 +112,42 @@ export const expRawDataTooltip = '';
 
 export const relatedEntriesTooltip = '';
 
+/**
+ * For dashboard details display of statistic links bar
+ */
+
+export const dashboardStatLinks = {
+  Assemblies: [],
+  Macromolecules: [
+    {
+      id: 'pdbs',
+      displayName: 'structures',
+      link: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/',
+      linkSuffix: '/structures',
+    },
+    {
+      id: 'ligands',
+      displayName: 'ligands',
+      link: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/',
+      linkSuffix: '/ligands',
+    },
+    {
+      id: 'similar_proteins',
+      displayName: 'similar proteins',
+      link: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/',
+      linkSuffix: '/similarity',
+    },
+    {
+      id: 'interaction_partners',
+      displayName: 'interactions',
+      link: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/',
+      linkSuffix: '/interactions',
+    },
+  ],
+  Ligands: [],
+  Domains: [],
+};
+
 export type ApiDataItem =
   | 'summaryData'
   | 'macroMolecules'
@@ -120,6 +159,7 @@ export type ApiDataItem =
   | 'uniprotMapping'
   | 'uniprotCountsInPDBe'
   | 'bestStructuresMappingsByUniProtIds'
+  | 'proteinPagesSummaryByUniProtIds'
   | 'interproMapping'
   | 'downloadOptions'
   | 'viewOptions'
@@ -158,7 +198,7 @@ export const COMPONENT_DEPENDENCIES: Record<string, ApiDataItem[]> = {
     'uniprotMapping',
     'bestStructuresMappingsByUniProtIds',
   ],
-  detailsDashboard: ['macroMolecules'],
+  detailsDashboard: ['macroMolecules', 'proteinPagesSummaryByUniProtIds'],
   experimentsValidationTab: ['summaryData', 'experimentalDetails', 'validationKeyStats', 'validationXRayRefine'],
   citationsTab: ['primaryPublication', 'articlesCiting'],
 };

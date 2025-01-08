@@ -112,11 +112,13 @@
             [entryId]="entryId()"
             [tabName]="getTableName(tabName.name)"
             [macromolecules]="macroMolecules"
+            [proteinsStats]="proteinPagesSummaryByUniProtIds"
             [molstarViewerEl]="molstarViewer"
             [molstarParent]="molstarParent"
           ></pdbc-details-dashboard>
           }
         </section>
+        <!-- TODO: Add empty state for tabs here with conditionals above -->
         } @if(tabName.name === 'Experiments') {
         <!-- inside entry/components/experiments-validation-tab -->
         @if (componentLoadedStatus()['experimentsValidationTab']) {

@@ -39,6 +39,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { EntryDropdownComponent } from '../../components/entry-dropdown/entry-dropdown.component';
 import { TabConfig } from '../../components/overview-molstar/state-management.service';
+import { MainDataProcessingFacade } from './data-processing.facade';
+import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -95,6 +97,7 @@ export class EntryMainPageComponent implements AfterViewInit {
   private readonly entryAPIService = inject(EntryApiService);
   private _snackBar = inject(MatSnackBar);
   private molstarVisualisation = inject(MolstarVisualisationsForTabs);
+  private dataProcessing = inject(MainDataProcessingFacade);
 
   public currentTab = this.compCommunication.currentTab;
   public tabSwitchOrigin = this.compCommunication.tabSwitchOrigin;
@@ -177,6 +180,7 @@ export class EntryMainPageComponent implements AfterViewInit {
   public uniprotMapping!: UniProtMapping;
   public uniprotCountsInPDBe!: { [key: string]: number };
   public bestStructuresMappingsByUniProtIds!: { [key: string]: BestStructureMapping[] };
+  public proteinPagesSummaryByUniProtIds!: { [key: string]: ProteinSummaryStats };
 
   // API data from getInterproMapping https://www.ebi.ac.uk/pdbe/api/mappings/interpro/:entryID
   public interproMapping!: InterProMappings;
@@ -292,6 +296,22 @@ export class EntryMainPageComponent implements AfterViewInit {
 
           const boundLigands = molecules.filter((mol) => mol.molecule_type === 'bound');
 
+          // const boundLigandsEntries = boundLigands.map((boundLigand) =>
+          //   this.ligandAggAPIService.fetchBoundEntries(boundLigand.chem_comp_ids[0]).pipe(
+          //     map((result) => ({ [boundLigand.chem_comp_ids[0]]: result })) // Wrap each result in an object with uniprotId as key
+          //   )
+          // );
+          // const boundLigandsInteractions = boundLigands.map((boundLigand) =>
+          //   this.ligandAggAPIService.fetchIntxData(boundLigand.chem_comp_ids[0]).pipe(
+          //     map((result) => ({ [boundLigand.chem_comp_ids[0]]: result })) // Wrap each result in an object with uniprotId as key
+          //   )
+          // );
+          // const boundLigandsRelated = boundLigands.map((boundLigand) =>
+          //   this.ligandAggAPIService.getRelatedLigands(boundLigand.chem_comp_ids[0]).pipe(
+          //     map((result) => ({ [boundLigand.chem_comp_ids[0]]: result })) // Wrap each result in an object with uniprotId as key
+          //   )
+          // );
+
           const organismNames: string[] = [];
 
           // See: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/1trn
@@ -324,6 +344,95 @@ export class EntryMainPageComponent implements AfterViewInit {
           };
         })
       ),
+      // this.entryAPIService.getEntryMolecules(this.entryId()).pipe(
+      //   mergeMap((data) => {
+      //     const molecules = data[this.entryId()];
+
+      //     const macromoleculeSortedTypesArray = [
+      //       'polypeptide(L)',
+      //       'polypeptide(R)',
+      //       'carbohydrate polymer',
+      //       'polyribonucleotide',
+      //       'polydeoxyribonucleotide',
+      //       'polydeoxyribonucleotide/polyribonucleotide hybrid',
+      //     ];
+
+      //     const macroMolecules = molecules
+      //       .filter((mol) => macromoleculeSortedTypesArray.indexOf(mol.molecule_type) > -1)
+      //       .sort((a, b) => macromoleculeSortedTypesArray.indexOf(a.molecule_type) - macromoleculeSortedTypesArray.indexOf(b.molecule_type));
+
+      //     const boundLigands = molecules.filter((mol) => mol.molecule_type === 'bound');
+
+      //     const boundLigandsEntries = boundLigands.map((boundLigand) =>
+      //       this.ligandAggAPIService.fetchBoundEntries(boundLigand.chem_comp_ids[0]).pipe(
+      //         map((result) => ({ [boundLigand.chem_comp_ids[0]]: result })) // Wrap each result in an object with uniprotId as key
+      //       )
+      //     );
+      //     const boundLigandsInteractions = boundLigands.map((boundLigand) =>
+      //       this.ligandAggAPIService.fetchIntxData(boundLigand.chem_comp_ids[0]).pipe(
+      //         map((result) => ({ [boundLigand.chem_comp_ids[0]]: result })) // Wrap each result in an object with uniprotId as key
+      //       )
+      //     );
+      //     const boundLigandsRelated = boundLigands.map((boundLigand) =>
+      //       this.ligandAggAPIService.getRelatedLigands(boundLigand.chem_comp_ids[0]).pipe(
+      //         map((result) => ({ [boundLigand.chem_comp_ids[0]]: result })) // Wrap each result in an object with uniprotId as key
+      //       )
+      //     );
+
+      //     const organismNames: string[] = [];
+
+      //     // See: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/1trn
+      //     // and a more different example at: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/6hr1
+      //     for (const entityDetail of molecules) {
+      //       const sources = entityDetail['source'] ?? [];
+      //       for (const eachSource of sources) {
+      //         const organismName = eachSource['organism_scientific_name'] ?? undefined;
+      //         if (organismName && organismNames.indexOf(organismName) === -1) {
+      //           organismNames.push(organismName);
+      //         }
+      //       }
+      //     }
+
+      //     // Use forkJoin to wait for all observables to complete
+      //     return forkJoin({
+      //       boundLigandsEntries: forkJoin(boundLigandsEntries),
+      //       boundLigandsInteractions: forkJoin(boundLigandsInteractions),
+      //       boundLigandsRelated: forkJoin(boundLigandsRelated),
+      //     }).pipe(
+      //       map(({ boundLigandsEntries, boundLigandsInteractions, boundLigandsRelated }) => {
+
+      //           this.macroMolecules = macroMolecules;
+      //           this.boundLigands = boundLigands;
+      //           this.organismScientificNames = organismNames;
+
+      //           this.apiLoadedStatus.update((state) => ({
+      //             ...state, // spread the existing state
+      //             macroMolecules: 'done', // update the specific key dynamically
+      //             boundLigands: 'done', // update the specific key dynamically
+      //             organismScientificNames: 'done', // update the specific key dynamically
+      //           }));
+
+      //           console.log("boundLigands")
+      //           console.log(boundLigands)
+      //           console.log("boundLigandsEntries")
+      //           console.log(boundLigandsEntries)
+      //           console.log("boundLigandsInteractions")
+      //           console.log(boundLigandsInteractions)
+      //           console.log("boundLigandsRelated")
+      //           console.log(boundLigandsRelated)
+
+      //           return {
+      //             macroMolecules: macroMolecules,
+      //             boundLigands: boundLigands,
+      //             organismScientificNames: organismNames,
+      //             boundLigandsEntries: boundLigandsEntries,
+      //             boundLigandsInteractions: boundLigandsInteractions,
+      //             boundLigandsRelated: boundLigandsRelated
+      //           };
+      //       })
+      //     )
+      //   })
+      // ),
       this.entryAPIService.getExperiment(this.entryId()).pipe(
         map((response) => {
           this.experimentalDetails = response;
@@ -351,72 +460,148 @@ export class EntryMainPageComponent implements AfterViewInit {
           };
         })
       ),
+      // this.entryAPIService.getUniprotMapping(this.entryId()).pipe(
+      //   mergeMap((data: UniProtMapping) => {
+      //     // For each UniProt id we create a bestStructures observable
+      //     const uniprotIds = Object.keys(data);
+      //     const bestStructuresObservables = uniprotIds.map((uniprotId) => this.entryAPIService.getBestStructures(uniprotId));
+
+      //     // Dictionaries needed for views
+      //     const bestStructuresMappingsByUniProtIds: { [key: string]: BestStructureMapping[] } = {};
+      //     const uniprotCountsInPDBe: { [key: string]: number } = {};
+
+      //     // Use forkJoin to wait for all bestStructures observables to complete
+      //     return forkJoin(bestStructuresObservables).pipe(
+      //       map((uniprotDictInList: unknown) => {
+      //         for (const uniprotDict of uniprotDictInList as BestStructureDict[]) {
+      //           const uniprotId = Object.keys(uniprotDict)[0];
+      //           const uniprotData = uniprotDict[uniprotId];
+
+      //           // dictionary uniprotCountsInPDBe is updated for counts of all unique entries which have a UniProt id mapped
+      //           const uniquePDBIds = uniprotData.map((datum) => datum.pdb_id).filter((value, index, array) => array.indexOf(value) === index);
+
+      //           uniprotCountsInPDBe[uniprotId] = uniquePDBIds.length;
+
+      //           // dictionary bestStructuresMappingsByUniProtIds is updated with best structures mappings for this entry
+      //           const uniprotDataFiltered = uniprotDict[uniprotId].filter((datum) => datum.pdb_id === this.entryId());
+
+      //           bestStructuresMappingsByUniProtIds[uniprotId] = bestStructuresMappingsByUniProtIds[uniprotId] ?? [];
+      //           bestStructuresMappingsByUniProtIds[uniprotId].push(...uniprotDataFiltered);
+      //         }
+
+      //         this.uniprotMapping = data;
+      //         this.uniprotCountsInPDBe = uniprotCountsInPDBe;
+      //         this.bestStructuresMappingsByUniProtIds = bestStructuresMappingsByUniProtIds;
+
+      //         this.apiLoadedStatus.update((state) => ({
+      //           ...state, // spread the existing state
+      //           uniprotMapping: 'done', // update the specific key dynamically
+      //           uniprotCountsInPDBe: 'done', // update the specific key dynamically
+      //           bestStructuresMappingsByUniProtIds: 'done', // update the specific key dynamically
+      //         }));
+
+      //         return {
+      //           uniprotMapping: data,
+      //           uniprotCountsInPDBe: uniprotCountsInPDBe,
+      //           bestStructuresMappingsByUniProtIds: bestStructuresMappingsByUniProtIds,
+      //         };
+      //       })
+      //     );
+      //   }),
+      //   // TODO: Improve error handling when some observables contain data and others not
+      //   catchError((_error: HttpErrorResponse) => {
+      //     this.uniprotMapping = {};
+      //     this.uniprotCountsInPDBe = {};
+      //     this.bestStructuresMappingsByUniProtIds = {};
+
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       uniprotMapping: 'done', // update the specific key dynamically
+      //       uniprotCountsInPDBe: 'done', // update the specific key dynamically
+      //       bestStructuresMappingsByUniProtIds: 'done', // update the specific key dynamically
+      //     }));
+
+      //     return of({
+      //       uniprotMapping: {},
+      //       uniprotCountsInPDBe: {},
+      //       bestStructuresMappingsByUniProtIds: {},
+      //     });
+      //   })
+      // ),
       this.entryAPIService.getUniprotMapping(this.entryId()).pipe(
         mergeMap((data: UniProtMapping) => {
-          // For each UniProt id we create a bestStructures observable
+          // For each UniProt id we create observables for bestStructures and proteinPagesSummary
           const uniprotIds = Object.keys(data);
-          const bestStructuresObservables = uniprotIds.map((uniprotId) => this.entryAPIService.getBestStructures(uniprotId));
+          const bestStructuresObservables = uniprotIds.map((uniprotId) =>
+            this.entryAPIService.getBestStructures(uniprotId).pipe(
+              map((result) => ({ [uniprotId]: result })) // Wrap each result in an object with uniprotId as key
+            )
+          );
 
-          // Dictionaries needed for views
-          const bestStructuresMappingsByUniProtIds: { [key: string]: BestStructureMapping[] } = {};
-          const uniprotCountsInPDBe: { [key: string]: number } = {};
+          const proteinPagesSummaryObservables = uniprotIds.map((uniprotId) =>
+            this.entryAPIService.getProteinPagesSummaryStats(uniprotId).pipe(
+              map((result) => ({ [uniprotId]: result })) // Wrap each result in an object with uniprotId as key
+            )
+          );
 
-          // Use forkJoin to wait for all bestStructures observables to complete
-          return forkJoin(bestStructuresObservables).pipe(
-            map((uniprotDictInList: unknown) => {
-              for (const uniprotDict of uniprotDictInList as BestStructureDict[]) {
+          // Use forkJoin to wait for all observables to complete
+          return forkJoin({
+            bestStructures: forkJoin(bestStructuresObservables),
+            proteinPagesSummary: forkJoin(proteinPagesSummaryObservables),
+          }).pipe(
+            map(({ bestStructures, proteinPagesSummary }) => {
+              // Combine results into dictionaries
+              const bestStructuresMappingsByUniProtIds: { [key: string]: BestStructureMapping[] } = {};
+              const uniprotCountsInPDBe: { [key: string]: number } = {};
+              const proteinPagesSummaryByUniProtIds: { [key: string]: ProteinSummaryStats } = {};
+
+              // Process bestStructures results
+              for (const uniprotDict of bestStructures) {
                 const uniprotId = Object.keys(uniprotDict)[0];
-                const uniprotData = uniprotDict[uniprotId];
+                const bestStructureDict = uniprotDict[uniprotId] as unknown as BestStructureDict;
+                const uniprotData = bestStructureDict[uniprotId];
 
-                // dictionary uniprotCountsInPDBe is updated for counts of all unique entries which have a UniProt id mapped
+                // Update uniprotCountsInPDBe with counts of unique PDB ids
                 const uniquePDBIds = uniprotData.map((datum) => datum.pdb_id).filter((value, index, array) => array.indexOf(value) === index);
-
                 uniprotCountsInPDBe[uniprotId] = uniquePDBIds.length;
 
-                // dictionary bestStructuresMappingsByUniProtIds is updated with best structures mappings for this entry
-                const uniprotDataFiltered = uniprotDict[uniprotId].filter((datum) => datum.pdb_id === this.entryId());
-
+                // Update bestStructuresMappingsByUniProtIds with filtered data
+                const uniprotDataFiltered = bestStructureDict[uniprotId].filter((datum) => datum.pdb_id === this.entryId());
                 bestStructuresMappingsByUniProtIds[uniprotId] = bestStructuresMappingsByUniProtIds[uniprotId] ?? [];
                 bestStructuresMappingsByUniProtIds[uniprotId].push(...uniprotDataFiltered);
               }
 
+              // Process proteinPagesSummary results
+              for (const summaryDict of proteinPagesSummary as { [key: string]: ProteinSummaryStats }[]) {
+                const uniprotId = Object.keys(summaryDict)[0];
+                proteinPagesSummaryByUniProtIds[uniprotId] = summaryDict[uniprotId];
+              }
+
+              // Update component properties
               this.uniprotMapping = data;
               this.uniprotCountsInPDBe = uniprotCountsInPDBe;
               this.bestStructuresMappingsByUniProtIds = bestStructuresMappingsByUniProtIds;
+              this.proteinPagesSummaryByUniProtIds = proteinPagesSummaryByUniProtIds;
 
               this.apiLoadedStatus.update((state) => ({
-                ...state, // spread the existing state
-                uniprotMapping: 'done', // update the specific key dynamically
-                uniprotCountsInPDBe: 'done', // update the specific key dynamically
-                bestStructuresMappingsByUniProtIds: 'done', // update the specific key dynamically
+                ...state,
+                uniprotMapping: 'done',
+                uniprotCountsInPDBe: 'done',
+                bestStructuresMappingsByUniProtIds: 'done',
+                proteinPagesSummaryByUniProtIds: 'done',
               }));
+
+              console.log('this.proteinPagesSummaryByUniProtIds');
+              console.log(this.proteinPagesSummaryByUniProtIds);
 
               return {
                 uniprotMapping: data,
-                uniprotCountsInPDBe: uniprotCountsInPDBe,
-                bestStructuresMappingsByUniProtIds: bestStructuresMappingsByUniProtIds,
+                uniprotCountsInPDBe,
+                bestStructuresMappingsByUniProtIds,
+                proteinPagesSummaryByUniProtIds,
               };
             })
           );
-        }),
-        // TODO: Improve error handling when some observables contain data and others not
-        catchError((_error: HttpErrorResponse) => {
-          this.uniprotMapping = {};
-          this.uniprotCountsInPDBe = {};
-          this.bestStructuresMappingsByUniProtIds = {};
-
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            uniprotMapping: 'done', // update the specific key dynamically
-            uniprotCountsInPDBe: 'done', // update the specific key dynamically
-            bestStructuresMappingsByUniProtIds: 'done', // update the specific key dynamically
-          }));
-
-          return of({
-            uniprotMapping: {},
-            uniprotCountsInPDBe: {},
-            bestStructuresMappingsByUniProtIds: {},
-          });
         })
       ),
       this.entryAPIService.getInterproMapping(this.entryId()).pipe(
@@ -457,8 +642,8 @@ export class EntryMainPageComponent implements AfterViewInit {
       ),
       this.entryAPIService.getPDBEntryFiles(this.entryId()).pipe(
         map((data) => {
-          this.downloadOptions = this.processFilesData(data).downloads;
-          this.viewOptions = this.processFilesData(data).views;
+          this.downloadOptions = this.dataProcessing.processFilesData(data).downloads;
+          this.viewOptions = this.dataProcessing.processFilesData(data).views;
           this.apiLoadedStatus.update((state) => ({
             ...state, // spread the existing state
             downloadOptions: 'done', // update the specific key dynamically
@@ -740,69 +925,69 @@ export class EntryMainPageComponent implements AfterViewInit {
     return tabName as TableNames;
   }
 
-  private processFilesData(data: any) {
-    const order = ['Archive mmCIF file', 'Updated mmCIF file', 'PDB file', 'Compatible PDB file bundle (tar.gz)', 'FASTA (Entry)', 'Full report (PDF)'];
+  // private processFilesData(data: any) {
+  //   const order = ['Archive mmCIF file', 'Updated mmCIF file', 'PDB file', 'Compatible PDB file bundle (tar.gz)', 'FASTA (Entry)', 'Full report (PDF)'];
 
-    let downloads: any[] = [];
-    let views: any[] = [];
+  //   let downloads: any[] = [];
+  //   let views: any[] = [];
 
-    Object.keys(data).forEach((key) => {
-      if (data[key].downloads) {
-        downloads = downloads.concat(data[key].downloads);
-      }
-      if (data[key].views) {
-        views = views.concat(data[key].views);
-      }
-    });
+  //   Object.keys(data).forEach((key) => {
+  //     if (data[key].downloads) {
+  //       downloads = downloads.concat(data[key].downloads);
+  //     }
+  //     if (data[key].views) {
+  //       views = views.concat(data[key].views);
+  //     }
+  //   });
 
-    downloads.sort((a, b) => {
-      const indexA = order.indexOf(a.label);
-      const indexB = order.indexOf(b.label);
+  //   downloads.sort((a, b) => {
+  //     const indexA = order.indexOf(a.label);
+  //     const indexB = order.indexOf(b.label);
 
-      if (indexA === -1 && indexB === -1) {
-        return 0;
-      } else if (indexA === -1) {
-        return 1;
-      } else if (indexB === -1) {
-        return -1;
-      } else {
-        return indexA - indexB;
-      }
-    });
+  //     if (indexA === -1 && indexB === -1) {
+  //       return 0;
+  //     } else if (indexA === -1) {
+  //       return 1;
+  //     } else if (indexB === -1) {
+  //       return -1;
+  //     } else {
+  //       return indexA - indexB;
+  //     }
+  //   });
 
-    views.sort((a, b) => {
-      const indexA = order.indexOf(a.label);
-      const indexB = order.indexOf(b.label);
+  //   views.sort((a, b) => {
+  //     const indexA = order.indexOf(a.label);
+  //     const indexB = order.indexOf(b.label);
 
-      if (indexA === -1 && indexB === -1) {
-        return 0;
-      } else if (indexA === -1) {
-        return 1;
-      } else if (indexB === -1) {
-        return -1;
-      } else {
-        return indexA - indexB;
-      }
-    });
+  //     if (indexA === -1 && indexB === -1) {
+  //       return 0;
+  //     } else if (indexA === -1) {
+  //       return 1;
+  //     } else if (indexB === -1) {
+  //       return -1;
+  //     } else {
+  //       return indexA - indexB;
+  //     }
+  //   });
 
-    const downloadsUpdated = downloads.map((d) => {
-      return {
-        name: d.label,
-        url: d.url,
-        downloadable: true,
-      };
-    });
+  //   const downloadsUpdated = downloads.map((d) => {
+  //     return {
+  //       name: d.label,
+  //       url: d.url,
+  //       downloadable: true,
+  //     };
+  //   });
 
-    const viewsUpdated = views.map((d) => {
-      return {
-        name: d.label,
-        url: d.url,
-        downloadable: false,
-      };
-    });
+  //   const viewsUpdated = views.map((d) => {
+  //     return {
+  //       name: d.label,
+  //       url: d.url,
+  //       downloadable: false,
+  //     };
+  //   });
 
-    return { downloads: downloadsUpdated, views: viewsUpdated };
-  }
+  //   return { downloads: downloadsUpdated, views: viewsUpdated };
+  // }
 
   public onClickedOutside() {
     this.showViewOptions.set(false);

@@ -1,6 +1,6 @@
 import { Component, effect, ElementRef, inject, input, OnDestroy, Renderer2, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { UtilService } from '@pdbc/core';
+import { MaterialModule, UtilService } from '@pdbc/core';
 import { MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
@@ -20,6 +20,10 @@ import {
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { TableNames } from '../../pages/main/main.component';
 import { Molecule } from '../../data-models/molecule.model';
+import { assemblyTooltip, dashboardStatLinks } from '../../entry-constant';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+import { EntryDropdownComponent } from '../entry-dropdown/entry-dropdown.component';
+import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -41,7 +45,7 @@ export interface SequenceDetail {
 @Component({
   selector: 'pdbc-details-dashboard',
   standalone: true,
-  imports: [CommonModule, MatSelectModule, MatOptionModule, MatFormFieldModule, MatLabel, FormsModule],
+  imports: [CommonModule, MatSelectModule, MatOptionModule, MatFormFieldModule, MatLabel, FormsModule, EntryDropdownComponent, MaterialModule],
   templateUrl: './details-dashboard.component.html',
   styleUrl: './details-dashboard.component.scss',
 })
@@ -50,6 +54,7 @@ export class DetailsDashboardComponent implements OnDestroy {
   public readonly entryId = input.required<string>();
   public readonly tabName = input.required<TableNames>();
   public readonly macromolecules = input.required<Molecule[]>();
+  public readonly proteinsStats = input.required<{ [key: string]: ProteinSummaryStats }>();
 
   public molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
   public molstarParent = input.required<HTMLElement>(); // Parent to send back the molstar global instance
@@ -66,15 +71,21 @@ export class DetailsDashboardComponent implements OnDestroy {
   // variables rendered in template
   public currentRowDatum?: TableRow;
   public selectionTitle = 'This is a 3D view area';
+  public selectionIdentifier = 'None';
+  public selectionStats!: { [key: string]: any };
+  public selectionTypeText?: string;
   public selectionButtonText?: string;
   public selectionSearchText?: string;
   public hasDropdown = false;
   public selectedChains?: string;
   public dropdownTitle = '';
-  public dropdownSelected?: string;
-  public dropdownOptions?: string[];
+  public dropdownSelected!: string;
+  public dropdownOptions: DownloadOption[] = [];
   public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
   public sequenceDetails: SequenceDetail[] = [];
+  public assemblyTooltip = assemblyTooltip;
+
+  public dashboardStatLinks = dashboardStatLinks;
 
   // currently selected row of interactive table
   private currentState?: number | string;
@@ -163,16 +174,19 @@ export class DetailsDashboardComponent implements OnDestroy {
 
     const tableRows = this.signals.getTabData(this.tabName()).tableRows();
     this.selectionTitle = `No ${this.tabName().toLowerCase()} data for this entry`;
+    this.selectionIdentifier = 'None';
     let datum: TableRow | undefined = undefined;
     if (tableRows.length > 0 && tabState !== 'Main') {
       datum = tableRows[tabState as number];
       if (this.tabName() === 'Assemblies') {
         datum = datum as AssembliesRowData;
         this.selectionTitle = datum.assemblyName;
+        this.selectionTypeText = 'assembly';
         this.selectionButtonText = 'Compare this assembly in other entries';
       } else if (this.tabName() === 'Domains') {
         datum = datum as DomainsRowData;
         this.selectionTitle = `${datum.domain} (Accession: ${datum.additionalData.accession})`;
+        this.selectionTypeText = 'domain';
         this.selectionButtonText = 'Compare this domain in other entries';
         // data processing facade is used to get selectedChains (displayed as text in template)
         this.selectedChains = this.dataProcessing.getDomainChains(datum);
@@ -182,6 +196,7 @@ export class DetailsDashboardComponent implements OnDestroy {
       } else if (this.tabName() === 'Ligands') {
         datum = datum as LigandsRowData;
         this.selectionTitle = datum.codeAndName.name;
+        this.selectionTypeText = 'ligand';
         this.selectionButtonText = 'Compare this ligand in other entries';
         this.hasDropdown = true;
 
@@ -189,7 +204,13 @@ export class DetailsDashboardComponent implements OnDestroy {
         const dropdownResults = this.dataProcessing.getLigandsDropdownOptions(datum);
         this.dropdownTitle = dropdownResults.dropdownTitle;
         this.dropdownOptionsToMolstar = dropdownResults.dropdownOptionsToMolstar;
-        this.dropdownOptions = dropdownResults.dropdownOptions;
+        this.dropdownOptions = dropdownResults.dropdownOptions.map((eachString, idx) => {
+          return {
+            name: eachString,
+            url: `lig-${idx + 1}`,
+            downloadable: false,
+          };
+        });
         this.dropdownSelected = dropdownResults.dropdownSelected;
 
         // modification is a special case for Ligands table in which lig env viewer is not displayed
@@ -209,7 +230,13 @@ export class DetailsDashboardComponent implements OnDestroy {
         const dropdownResults = this.dataProcessing.getMacromoleculeDropdownOptions(datum);
         this.dropdownTitle = dropdownResults.dropdownTitle;
         this.dropdownOptionsToMolstar = dropdownResults.dropdownOptionsToMolstar;
-        this.dropdownOptions = dropdownResults.dropdownOptions;
+        this.dropdownOptions = dropdownResults.dropdownOptions.map((eachString, idx) => {
+          return {
+            name: eachString,
+            url: `macro-${idx + 1}`,
+            downloadable: false,
+          };
+        });
         this.dropdownSelected = dropdownResults.dropdownSelected;
 
         // ... and to get each macromolecule sequence
@@ -219,6 +246,12 @@ export class DetailsDashboardComponent implements OnDestroy {
         this.hasTopologyViewer = false;
         if (datum.additionalData.molecule.molecule_type.includes('polypeptide')) {
           this.selectionButtonText = 'Compare this protein in other entries';
+          this.selectionTypeText = 'protein';
+          // if protein is not chimeric (single uniprotAccession), set this as selectionIdentifier
+          if (datum.additionalData.uniprotAccessions.length === 1) {
+            this.selectionIdentifier = datum.additionalData.uniprotAccessions[0];
+            this.selectionStats = this.proteinsStats();
+          }
           this.hasTopologyViewer = true;
         }
         this.hasProtvista = true;
@@ -239,8 +272,8 @@ export class DetailsDashboardComponent implements OnDestroy {
     }
   }
 
-  public async onDropdownSelect(event: MatSelectChange) {
-    this.dropdownSelected = event.value;
+  public async onDropdownSelect(event: string) {
+    this.dropdownSelected = event;
 
     // for ligands when selcetion is switched in the dropdown, we reload molstar config obj
     let reloadConfigObj = false;
