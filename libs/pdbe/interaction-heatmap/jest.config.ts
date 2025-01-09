@@ -1,9 +1,8 @@
-/* eslint-disable */
 export default {
-  displayName: 'pdbe-chips',
+  displayName: 'interaction-heatmap',
   preset: '../../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
-  coverageDirectory: '../../../coverage/libs/pdbe/chips',
+  coverageDirectory: '../../../coverage/libs/pdbe/interaction-heatmap',
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
       'jest-preset-angular',

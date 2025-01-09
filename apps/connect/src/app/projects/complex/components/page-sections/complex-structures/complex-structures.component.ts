@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Assembly } from '../../../models/complex-structure.model';
 import { AG_Grid_Theme_Class, agGridOptionsBase, MaterialModule } from '@pdbc/core';
@@ -10,6 +10,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
+import { CustomHeaderComponent } from '../../cell renderers/custom-header.component';
 
 @Component({
   selector: 'pdbc-complex-structures',
@@ -21,9 +22,13 @@ import { ComplexSelectors } from '../../../store/complex.selectors';
 export class ComplexStructuresComponent implements OnInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
-  // public assemblies = input.required<Assembly[]>();
   public readonly gridOptions: GridOptions = {
     ...agGridOptionsBase,
+    defaultColDef: {
+      ...agGridOptionsBase.defaultColDef,
+      sortable: false,
+      headerComponentParams: { showHelpIcon: false, tooltipText: '' },
+    },
   };
 
   public readonly themeClass = AG_Grid_Theme_Class;
@@ -33,16 +38,26 @@ export class ComplexStructuresComponent implements OnInit {
       headerName: 'ID',
       field: 'id',
       valueGetter: (params) => `${params.data.pdb_id}_${params.data.assembly_id}`,
-      width: 100,
+      width: 120,
+      headerComponentParams: { showHelpIcon: true, tooltipText: 'Composite index consisting of PDB identifier and assembly identifier.' },
     },
     {
       headerName: 'Title',
       field: 'title',
       cellRenderer: TitleRendererComponent,
-      width: 200,
+      width: 180,
     },
     { headerName: 'Exp. method', field: 'experimental_method', width: 170 },
-    { headerName: 'Res. (Å)', field: 'resolution', width: 120 },
+    {
+      headerName: 'Res. (Å)',
+      field: 'resolution',
+      suppressHeaderFilterButton: true,
+      width: 120,
+      headerComponentParams: {
+        showHelpIcon: true,
+        tooltipText: 'Indicates the level of detail present in the 3D structure. Smaller value means finer details of the structure and higher quality.',
+      },
+    },
   ];
 
   public rowData = computed(() => this.summaryData()?.assemblies as Assembly[]);
@@ -52,6 +67,12 @@ export class ComplexStructuresComponent implements OnInit {
 
   public height = '300px';
   public width = '100%';
+
+  public components: {
+    [p: string]: any;
+  } = {
+    agColumnHeader: CustomHeaderComponent,
+  };
 
   public rowSelection: any = {
     mode: 'singleRow',

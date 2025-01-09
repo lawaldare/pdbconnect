@@ -15,6 +15,8 @@ export class ParticipantDirective implements OnChanges {
     this.init();
   }
 
+  // <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
+
   private init(): void {
     this.resetEnv();
     const orderedList = this.renderer.createElement('ul');
@@ -31,10 +33,19 @@ export class ParticipantDirective implements OnChanges {
 
         const text = ` (${participant.name}, ${participant.stoichiometry} ${participant.stoichiometry > 1 ? 'copies' : 'copy'})`;
         const textTag = this.renderer.createText(text);
+        // this.renderer.setStyle(textTag, 'margin-left', '5px');
 
         const list = this.renderer.createElement('li');
         this.renderer.appendChild(orderedList, list);
 
+        const icon = this.renderer.createElement('i');
+        this.renderer.addClass(icon, 'icon');
+        this.renderer.addClass(icon, 'icon-link');
+        this.renderer.addClass(icon, 'icon-common');
+        this.renderer.setStyle(icon, 'margin-left', '5px');
+        this.renderer.setStyle(icon, 'margin-right', '15px');
+
+        this.renderer.appendChild(anchorTag, icon);
         this.renderer.appendChild(list, anchorTag);
         this.renderer.appendChild(list, textTag);
       } else {

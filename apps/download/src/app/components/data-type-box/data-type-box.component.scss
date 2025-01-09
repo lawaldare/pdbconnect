@@ -16,6 +16,7 @@
 p {
   font-weight: bold;
   margin: 10px 0;
+
   span {
     position: relative;
     display: inline-block;
@@ -27,10 +28,9 @@ button {
 }
 
 .format-box {
-  font-family: Helvetica, Arial, FreeSans, 'Liberation Sans', sans-serif;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgb(255 255 255 / 80%);
   border: 1px solid teal;
-  padding: 20px 20px 1px 20px;
+  padding: 20px 20px 1px;
   margin: 15px;
   margin-top: 30px;
   margin-bottom: 50px;
@@ -55,10 +55,7 @@ button {
   padding: 0.75rem 1.25rem;
   margin-bottom: 1rem;
   border: 1px solid transparent;
-  border-top-color: transparent;
-  border-right-color: transparent;
-  border-bottom-color: transparent;
-  border-left-color: transparent;
+  border-color: transparent;
   border-radius: 0.25rem;
 }
 
@@ -79,8 +76,7 @@ button {
 
 .spinner-wrapper {
   display: flex;
-  justify-items: center;
-  align-items: center;
+  place-items: center center;
 }
 
 :host ::ng-deep .mat-progress-spinner circle,

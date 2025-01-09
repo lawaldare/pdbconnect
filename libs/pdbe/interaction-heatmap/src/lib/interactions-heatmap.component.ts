@@ -4,45 +4,22 @@ import '@nightingale-elements/nightingale-manager';
 import '@nightingale-elements/nightingale-navigation';
 // import "@nightingale-elements/nightingale-sequence-heatmap";
 import { firstValueFrom, map } from 'rxjs';
-import { InteractionsApiService } from './interactons-heatmap.service';
-import { PDBIntxData } from '../../data-models/interaction.model';
-import { LigIntCountsDictionary } from './data-models/lig-int-heatmap-data-api';
-import { filterRescaleData, INTX_NAME_STANDARDIZER, processInitialData, sortAAsByIntFreq, sortAAsByType } from './interactions-heatmap-data-processing';
-import { ViewerData } from './data-models/viewer-data';
 import NightingaleSequenceHeatmap from '@nightingale-elements/nightingale-sequence-heatmap';
 import * as d3 from 'd3';
 import { MatRadioButton } from '@angular/material/radio';
 import { MatCheckbox } from '@angular/material/checkbox';
-import { AminoAcidCode, AminoAcidOneCode, AMINOACIDSIMAGE, CATEGORIESIMAGE, CategoryNames, InteractionNames } from './interactions-heatmap.constant';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
+import { InteractionsApiService } from './interactions-heatmap.service';
+import { ViewerData } from './data-models/viewer-data';
+import { LigIntCountsDictionary } from './data-models/lig-int-heatmap-data-api';
+import { INTX_NAME_STANDARDIZER, processInitialData, sortAAsByIntFreq, sortAAsByType, filterRescaleData } from './interactions-heatmap-data-processing';
+import { AMINOACIDSIMAGE, CATEGORIESIMAGE, AminoAcidOneCode, InteractionNames, CategoryNames, AminoAcidCode, AATHREETOONE } from './interactions-heatmap.constant';
+import { PDBIntxData } from './data-models/interaction.model';
 
 // import NightingaleSequenceHeatmap from '@nightingale-elements/nightingale-sequence-heatmap';
 
-const AATHREETOONE = {
-  ALA: 'A',
-  CYS: 'C',
-  ASP: 'D',
-  GLU: 'E',
-  PHE: 'F',
-  GLY: 'G',
-  HIS: 'H',
-  ILE: 'I',
-  LYS: 'K',
-  LEU: 'L',
-  MET: 'M',
-  ASN: 'N',
-  PRO: 'P',
-  GLN: 'Q',
-  ARG: 'R',
-  SER: 'S',
-  THR: 'T',
-  VAL: 'V',
-  TRP: 'W',
-  TYR: 'Y',
-};
-
 @Component({
-  selector: 'pdbc-interactions-heatmap',
+  selector: 'lib-interactions-heatmap',
   standalone: true,
   imports: [CommonModule, MatRadioButton, MatCheckbox, ToolTipComponent],
   templateUrl: './interactions-heatmap.component.html',

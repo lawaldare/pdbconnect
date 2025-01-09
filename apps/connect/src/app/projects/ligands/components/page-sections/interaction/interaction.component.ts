@@ -3,17 +3,17 @@ import { CommonModule } from '@angular/common';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction, LigandStructure } from '../../../data-models/structure.model';
 import { PDBIntxData } from '../../../data-models/interaction.model';
-import { catchError, EMPTY, forkJoin, map, mergeMap, of, switchMap, take, throwError } from 'rxjs';
+import { catchError, EMPTY, forkJoin, map, mergeMap, switchMap, take, throwError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LigandUtilService } from '../../../ligand-util.service';
-import { InteractionsHeatmapComponent } from '../../../components/interactions-heatmap/interactions-heatmap.component';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
 import { LigandActions } from '../../../store/ligand.actions';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
+import { InteractionsHeatmapComponent } from '@pdbc/interaction-heatmap';
 
 @Component({
   selector: 'pdbc-interaction',
@@ -56,10 +56,10 @@ export class InteractionComponent implements AfterViewInit {
         switchMap((id) => {
           this.ligandId.set(id);
           this.showLigandHeatmap.set(true);
-          this.generateStructureStatistics();
           return forkJoin([this.aggregatedApiService.fetchDepiction(this.ligandId()), this.globalStore.select(LigandSelectors.navItems).pipe(take(1))]);
         }),
         mergeMap(([depiction, navItems]) => {
+          this.generateStructureStatistics();
           this.navItems.update(() => navItems);
           const imageContainer = this.imageContainer.nativeElement;
           this.resetRenderer();
@@ -129,12 +129,11 @@ export class InteractionComponent implements AfterViewInit {
   }
 
   private generateStructureStatistics(): void {
-    this.aggregatedApiService
-      .getLigandStructures(this.ligandId())
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(
-        (structures) => {
-          const numberOfPDBChains = structures.reduce((acc: number, curr: LigandStructure) => {
+    this.globalStore
+      .select(LigandSelectors.structures)
+      .pipe(
+        map((structures) => {
+          const numberOfPDBChains = (structures ?? []).reduce((acc: number, curr: LigandStructure) => {
             if (curr.interacting_chains === null || curr.interacting_chains.length === 0) {
               acc = 0;
               return acc;
@@ -144,14 +143,12 @@ export class InteractionComponent implements AfterViewInit {
             acc += [...new Set(mappedValue)].length;
             return acc;
           }, 0);
-          const instances = structures.reduce((acc: number, curr: LigandStructure) => acc + curr.num_ligand_instances, 0);
+          const instances = (structures ?? []).reduce((acc: number, curr: LigandStructure) => acc + curr.num_ligand_instances, 0);
           this.pdbchains.set(numberOfPDBChains);
-          this.pdbstructures.set(structures.length);
+          this.pdbstructures.set((structures ?? []).length);
           this.ligandInstances.set(instances);
-        },
-        (error) => {
-          console.error('Failed to fetch ligand structures', error);
-        }
-      );
+        })
+      )
+      .subscribe();
   }
 }

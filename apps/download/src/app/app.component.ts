@@ -1,6 +1,5 @@
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { descriptorStructure, descriptorSmallMolecules, descriptorSifts, dataContentSmallMolecules, dataContentStructure, dataContentSifts } from './constants';
-import { DataContentComponent } from './components/data-content/data-content.component';
 import { DataTypeBoxComponent } from './components/data-type-box/data-type-box.component';
 import { VfEbiHeaderComponent } from '@vf-lib/ebi-header';
 import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
@@ -13,16 +12,7 @@ import { DownloadType } from './enums/downloadType.enum';
 
 @Component({
   standalone: true,
-  imports: [
-    VfEbiHeaderComponent,
-    VfEbiFooterComponent,
-    DataContentComponent,
-    DataTypeBoxComponent,
-    PdbeHeaderLogoMenuComponent,
-    MaterialModule,
-    ToolTipComponent,
-    DownloadNavbarComponent,
-  ],
+  imports: [VfEbiHeaderComponent, VfEbiFooterComponent, DataTypeBoxComponent, PdbeHeaderLogoMenuComponent, MaterialModule, ToolTipComponent, DownloadNavbarComponent],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -55,7 +45,7 @@ export class AppComponent {
   @ViewChild('navbar', { read: ElementRef }) navbar!: ElementRef;
 
   @HostListener('window:scroll', ['$event'])
-  private onScroll($event: any): void {
+  private onScroll(): void {
     const navbar = this.navbar.nativeElement;
     const sticky = navbar.offsetTop;
 

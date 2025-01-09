@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createReducer, on } from '@ngrx/store';
 import { LigandStoreState } from './ligand-store.model';
 import { LigandActions } from './ligand.actions';

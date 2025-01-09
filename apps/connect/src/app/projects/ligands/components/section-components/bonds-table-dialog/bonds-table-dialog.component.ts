@@ -46,11 +46,6 @@ export class BondsTableDialogComponent {
 
   public readonly autoSizeStrategy = autoSizeStrategy;
 
-  public rowSelection: any | 'single' | 'multiple' = {
-    mode: 'singleRow',
-    headerCheckbox: false,
-  };
-
   constructor(@Inject(MAT_DIALOG_DATA) public dialogData: any) {}
 
   onGridReady() {

@@ -26,8 +26,6 @@ export class DataTypeBoxComponent implements OnInit {
 
   public chosenformat!: string;
   public pdbid!: string;
-  // public isLoadingEntry = this.downloadService.isLoadingEntry;
-  // public errorEntryText = this.downloadService.errorEntryText;
 
   ngOnInit(): void {
     if (localStorage['pdbIds']) {
