@@ -3,7 +3,7 @@
 
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, map, switchMap, throwError } from 'rxjs';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
 import { KeyValidationStats } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
@@ -17,8 +17,15 @@ import { CarbohydrateMolecule } from '../data-models/carbohydrate-polymer.model'
 import { Molecule } from '../data-models/molecule.model';
 import { EntrySummary, ProcessedSummary } from '../data-models/summary.model';
 import { UniProtMapping } from '../data-models/uniprot-mapping.model';
-import { ProcessedQualityScores, SummaryQualityScores } from '../data-models/summary-quality-scores.model';
+import { PdbRedoQualityScores, ProcessedQualityScores, SummaryQualityScores } from '../data-models/summary-quality-scores.model';
 import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
+import {
+  BMRBExperimentRawData,
+  EMPIARExperimentRawData,
+  IRRMCExperimentRawData,
+  PDBExperimentRawData,
+  SBGRIDExperimentRawData,
+} from '../data-models/experiment-raw-data.model';
 
 @Injectable({
   providedIn: 'root',
@@ -167,10 +174,6 @@ export class EntryApiService {
     );
   }
 
-  public getPDBRedoData(entryId: string): Observable<any> {
-    return this.http.get<any>(`https://pdb-redo.eu/db/${entryId}/pdbe.json`);
-  }
-
   public getProteinPagesSummaryStats(uniprotId: string): Observable<ProteinSummaryStats> {
     return this.http.get<Record<string, ProteinSummaryStats>>(`https://www.ebi.ac.uk/pdbe/graph-api/uniprot/summary_stats/${uniprotId}`).pipe(
       map((data) => {
@@ -179,8 +182,116 @@ export class EntryApiService {
     );
   }
 
-  // for number of PDB entries (ngroups for given uniprot)
-  // https://www.ebi.ac.uk/pdbe/search/pdb/select?q=uniprot_accession:P0DTC2&wt=json&group=true&group.field=pdb_id&rows=0&group.ngroups=true
+  private processRedoData(score: number, rangeUpper: number, rangeLower: number) {
+    const dataRange = rangeUpper - rangeLower;
+    const dataUnitRange = dataRange / 5;
 
-  //
+    let subtractor = 1;
+    for (let i = 4; i > 0; i--) {
+      if (score > rangeUpper - dataUnitRange * subtractor) {
+        return i;
+      }
+      subtractor++;
+    }
+    return 0;
+  }
+
+  public getPDBRedoData(entryId: string): Observable<ProcessedQualityScores> {
+    return this.http.get<PdbRedoQualityScores>(`https://pdb-redo.eu/db/${entryId}/pdbe.json`).pipe(
+      map((data) => {
+        const geometryQuality = this.processRedoData(data.geometry.dzscore, data.geometry['range-upper'], data.geometry['range-lower']);
+        const modelFit = this.processRedoData(data.ddatafit.zdfree, data.geometry['range-upper'], data.geometry['range-lower']);
+
+        const processed: ProcessedQualityScores = {
+          geometry: geometryQuality,
+          modelfit: modelFit,
+        };
+        if (data['base-pairs']) {
+          const basePairs = this.processRedoData(data['base-pairs'].drmsz, data.geometry['range-upper'], data.geometry['range-lower']);
+          processed.basepairs = basePairs;
+        }
+
+        return processed;
+      })
+    );
+  }
+
+  public getExperimentRawDataPDB(entryId: string): Observable<PDBExperimentRawData[]> {
+    // Example with data: https://www.ebi.ac.uk/pdbe/api/pdb/entry/related_experiment_data/5o8b
+    // Example without data: https://www.ebi.ac.uk/pdbe/api/pdb/entry/related_experiment_data/1trn
+    return this.http.get<Record<string, PDBExperimentRawData[]>>(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/related_experiment_data/${entryId}`).pipe(
+      map((data) => {
+        return data[entryId];
+      })
+    );
+  }
+
+  public getExperimentRawDataBMRB(entryId: string): Observable<BMRBExperimentRawData[]> {
+    // examples with data:
+    // https://api.bmrb.io/v2/search/get_bmrb_data_from_pdb_id/2kpn
+    // https://api.bmrb.io/v2/search/get_bmrb_data_from_pdb_id/2m68
+    // https://api.bmrb.io/v2/search/get_bmrb_data_from_pdb_id/2knr
+    // example without data:
+    // https://api.bmrb.io/v2/search/get_bmrb_data_from_pdb_id/1trn
+    return this.http.get<BMRBExperimentRawData[]>(`https://api.bmrb.io/v2/search/get_bmrb_data_from_pdb_id/${entryId}`).pipe(
+      map((data) => data.filter((datum) => datum.match_types.indexOf('Exact') > -1)),
+      switchMap((exactMatchData) => {
+        if (exactMatchData.length > 0) {
+          return [exactMatchData]; // Emit the data as an observable array
+        }
+        // Throw an error that results in terminating the observable
+        return throwError(() => ({
+          status: 400,
+          message: 'No data found for the given entry ID',
+        }));
+      })
+    );
+  }
+
+  public getExperimentRawDataSBGrid(entryId: string): Observable<SBGRIDExperimentRawData> {
+    // example with data:
+    // https://data.sbgrid.org/api/pdbe/5tok
+    // example without data:
+    // https://data.sbgrid.org/api/pdbe/1trn
+    return this.http.get<SBGRIDExperimentRawData>(`https://data.sbgrid.org/api/pdbe/${entryId}`).pipe(
+      switchMap((data) => {
+        if (data.datasets.length > 0) {
+          return [data]; // Emit the data as an observable
+        }
+        // Throw an error if no data is found
+        return throwError(() => ({
+          status: 400,
+          message: 'No data found for the given entry ID',
+        }));
+      })
+    );
+  }
+
+  public getExperimentRawDataIRRMC(entryId: string): Observable<IRRMCExperimentRawData> {
+    // example with data:
+    // https://proteindiffraction.org/api/ebi/4weq/
+    // example without data:
+    // https://proteindiffraction.org/api/ebi/1trn/
+    return this.http.get<IRRMCExperimentRawData>(`https://proteindiffraction.org/api/ebi/${entryId}`);
+  }
+
+  public getExperimentRawDataEMPIAR(entryId: string): Observable<EMPIARExperimentRawData[]> {
+    // Obs: this url NEEDS the final "/"
+    // example with data:
+    // https://www.ebi.ac.uk/empiar/api/pdb_ref/3j7n/
+    // example without data:
+    // https://www.ebi.ac.uk/empiar/api/pdb_ref/1trn/
+    return this.http.get<EMPIARExperimentRawData[]>(`https://www.ebi.ac.uk/empiar/api/pdb_ref/${entryId}/`).pipe(
+      switchMap((data) => {
+        if (data.length > 0) {
+          return [data]; // Emit the data as an observable
+        }
+        // Throw an error if no data is found
+        return throwError(() => ({
+          status: 400,
+          message: 'No data found for the given entry ID',
+        }));
+      })
+    );
+  }
 }

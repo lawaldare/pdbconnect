@@ -30,7 +30,6 @@ type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable |
   standalone: true,
   imports: [CommonModule, AgGridAngular],
   templateUrl: './interactive-tables.component.html',
-  styleUrl: './interactive-tables.component.scss',
 })
 export class InteractiveTablesComponent implements OnInit, OnDestroy {
   public readonly tabName = input.required<TableNames>();

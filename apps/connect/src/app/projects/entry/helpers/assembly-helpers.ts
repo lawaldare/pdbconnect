@@ -1,5 +1,8 @@
 import { ComplexParticipant } from '../data-models/complex-details.model';
 
+/**
+ * Helper functions for manipulating assemblies and generating the assembly composition string
+ */
 export type MULTIMER_MAPPING_KEYS = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20;
 
 export const MULTIMER_MAPPING = {
@@ -26,6 +29,12 @@ export const MULTIMER_MAPPING = {
   20: 'icosamer',
 };
 
+/**
+ * Given a list of macromolecules in a assembly this function calculates the
+ * adequate assembly composition string
+ * @param participants: list of macromolecules and their stoichometry (number for each unique)
+ * @returns composition string
+ */
 export function calculateAssemblyComposition(participants: ComplexParticipant[]) {
   const participantTypes: string[] = [];
   let mericityTotal = 0;

@@ -12,6 +12,12 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EntryDropdownComponent {
+  /**
+   * NOTE
+   * This component is a version of libs/pdbe/dropdown-menu adapted
+   * for functionality of the new entry pages.
+   * Perhaps it should be merged to it in the future
+   */
   public readonly title = input.required<string>();
 
   public readonly options = input.required<DownloadOption[] | undefined>();
@@ -27,6 +33,11 @@ export class EntryDropdownComponent {
 
   public currentSelection = signal<string | undefined>(undefined);
 
+  /**
+   * When a option that is not a link or a downloadable URL is clicked this function is triggered.
+   * It emits a string with the option name to optionClickedEvent that can be listened by parent components
+   * @param optionName
+   */
   public optionClicked(optionName: string) {
     this.currentSelection.set(optionName);
     this.optionClickedEvent.emit(optionName);

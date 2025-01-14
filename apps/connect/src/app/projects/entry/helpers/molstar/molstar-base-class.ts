@@ -8,8 +8,18 @@ import { StructureQuery } from 'molstar/lib/mol-model/structure/query/query';
 import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
 import { StructureSelection, StructureProperties, Structure } from 'molstar/lib/mol-model/structure';
 
+/**
+ * This file contains a base class with helper functions for manipulating Molstar
+ *
+ * Ideally these will be eventually migrated into Molstar
+ */
+
 declare let PDBeMolstarPlugin: any;
 
+/**
+ * This configuration object corresponds to configs used in:
+ * https://github.com/molstar/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin#plugin-parameters-options
+ */
 export interface MolstarConfigObject {
   moleculeId?: string;
   customData?: {
@@ -25,8 +35,12 @@ export interface MolstarConfigObject {
   landscape: boolean;
   subscribeEvents: boolean;
   granularity?: string;
+  validationAnnotation?: boolean;
 }
 
+/**
+ * Helper function useful for parsing Molstar instance residues
+ */
 function getValue<T>(column: Column<T>, iRow: number): T | null {
   if (column.valueKind(iRow) === Column.ValueKind.Present) {
     return column.value(iRow);
@@ -40,6 +54,13 @@ export class MolstarBaseClass {
   public galleryManager = signal<any>(undefined);
   public residues = signal<MolstarResidueInfo[]>([]);
 
+  /**
+   * Function triggers PDBe Molstar visualisation initialization and saves this instance to
+   * molstarViewInstance signal
+   * @param molstarConfigObject
+   * @param molstarContainer
+   * @param molstarViewer
+   */
   public async initMolstar(molstarConfigObject: MolstarConfigObject, molstarContainer?: ElementRef, molstarViewer?: HTMLElement) {
     if (this.molstarViewInstance()) {
       console.error('MOLSTAR INSTANCE EXISTS');
@@ -50,11 +71,21 @@ export class MolstarBaseClass {
     await firstValueFrom(this.molstarViewInstance().events.loadComplete);
   }
 
+  /**
+   * Function triggers PDBe Molstar visualisation update without the need of
+   * destroying and creating a new Molstar instance
+   * @param molstarConfigObject
+   */
   public async updateMolstar(molstarConfigObject: MolstarConfigObject) {
     this.molstarViewInstance().visual.update(molstarConfigObject, true);
     await firstValueFrom(this.molstarViewInstance().events.loadComplete);
   }
 
+  /**
+   * Function allows manually hiding PDBe Molstar buttons that are usually displayed
+   * NOTE:
+   * Should soon be unnecessary in future PDBe Molstar updates
+   */
   public buttonsShowHide() {
     const btnToContent = {
       animation: 'Select Animation',
@@ -70,22 +101,39 @@ export class MolstarBaseClass {
     }
   }
 
+  /**
+   * Function initializes MolstarImageGallery for loading images
+   * NOTE:
+   * Usage of MolstarImageGallery should eventually be replaced by MolViewSpec
+   * @param entryId: PDB entry identifier
+   */
   public async initImageGallery(entryId: string) {
     const galleryManager = await PDBeMolstarPlugin.extensions.StateGallery.StateGalleryManager.create(this.molstarViewInstance().plugin, entryId);
     this.galleryManager.set(galleryManager);
   }
 
+  /**
+   * Function loads image from MolstarImageGallery using image name
+   * @param imgName
+   */
   public async loadImage(imgName: string) {
     if (imgName) {
       await this.galleryManager().load(imgName);
     }
   }
 
+  /**
+   * Function parses which residues are currently present in a Molstar instance
+   * and saves this data in the residues signal
+   * @returns
+   */
   public parseInstanceResidues() {
+    // first we get structure object
     const assemblyRef = this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0].cell.transform.ref;
     const structure = (this.molstarViewInstance().plugin!.state.data.select(assemblyRef)[0].obj as PluginStateObject.Molecule.Structure).data;
     if (structure === undefined) return;
     const result: MolstarResidueInfo[] = [];
+    // we then iterate over elements of this object and retrieve residue data
     for (const unit of structure.units) {
       const h = unit.model.atomicHierarchy;
       let lastIRes = -1;
@@ -110,25 +158,46 @@ export class MolstarBaseClass {
     this.residues.set(result);
   }
 
+  /**
+   * Function triggers Molstar focus (zooming over selection)
+   * @param molstarSelection: MolstarSelectionObj (helpful interface for selecting in Molstar)
+   */
   public async focusLoci(molstarSelection: MolstarSelectionObj) {
     const queryLoci = await this.getViewerLoci(molstarSelection);
     await this.molstarViewInstance().plugin!.managers.camera.focusLoci(queryLoci, { durationMs: 300 });
   }
 
+  /**
+   * Function triggers clearing of Molstar focus (resets camera position)
+   */
   public async unfocusLoci() {
     await this.molstarViewInstance().visual.reset({ camera: true });
   }
 
+  /**
+   * Function triggers Molstar highlight (hovering over selection)
+   * @param molstarSelection: MolstarSelectionObj (helpful interface for selecting in Molstar)
+   * @returns
+   */
   public async highlightLoci(molstarSelection: MolstarSelectionObj) {
     const queryLoci = await this.getViewerLoci(molstarSelection);
     if (Loci.isEmpty(queryLoci)) return;
     this.molstarViewInstance().plugin.managers.interactivity.lociHighlights.highlightOnly({ loci: queryLoci });
   }
 
+  /**
+   * Function triggers clearing of Molstar highlight (hovering over selection)
+   */
   public async clearHighlightLoci() {
     await this.molstarViewInstance().visual.clearHighlight();
   }
 
+  /**
+   * Function allows retrieving a Loci object from a MolstarSelection Obj
+   * This is needed for focusLoci and highlightLoci
+   * @param molstarSelection: MolstarSelectionObj (helpful interface for selecting in Molstar)
+   * @returns Loci object
+   */
   private async getViewerLoci(molstarSelection: MolstarSelectionObj) {
     const residueData = chainEntityResidSelection(molstarSelection);
     const residueQueryLoci = residueData.queryLoci;

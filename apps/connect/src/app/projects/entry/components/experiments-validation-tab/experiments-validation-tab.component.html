@@ -1,278 +1,378 @@
 <div class="experiments-validation">
-  <h2 class="heading-2">Experiments and Validation</h2>
-  @for (experimentalDetail of dataFacade.parsedExperimentalDetails(); track experimentalDetail; let isfirst = $first) {
-  <section class="each-method">
-    <h3 class="heading-3">{{ experimentalDetail.experimental_method }}</h3>
-    @if (experimentalDetail.data_length === 0) {
-    <p>No experiments and validation data available</p>
+  <section class="left-side">
+    @if (currentData() && processedData() && isHybrid()) {
+    <div class="filter-btns-container">
+      @for(expValdata of processedData(); track expValdata) {
+      <button
+        class="filter-btn"
+        [ngClass]="currentData()!.generalInfo.methodName === expValdata.generalInfo.methodName ? 'active' : ''"
+        (click)="setData(expValdata)"
+      >
+        {{ expValdata.generalInfo.methodName }}
+      </button>
+      }
+    </div>
     }
-    <section class="initial-info">
-      <!-- <h4 class="heading-4">Details</h4> -->
-      @if(isfirst) {
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Deposition date</span>
-        <article>{{ depositionDate() }}</article>
-      </div>
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Release date</span>
-        <article>{{ releaseDate() }}</article>
-      </div>
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Revision date</span>
-        <article>{{ revisionDate() }}</article>
-      </div>
-      } @if (experimentalDetail.hasOwnProperty('all_experimental_methods')) {
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)"> Experimental methods </span>
-        <article>
-          @for(method of experimentalDetail.all_experimental_methods; track method;) {
-          <p>
-            {{ method }}
-          </p>
-          }
-        </article>
-      </div>
-      } @if (experimentalDetail.hasOwnProperty('expression_host_scientific_names')) {
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)"> Expression system </span>
-        <article>
-          @for(hostOrganismName of experimentalDetail.expression_host_scientific_names; track hostOrganismName; let islast = $last){
-          <span>
-            <!-- <a [href]="generateHostOrganismSearchUrl(hostOrganism)" target="_blank">{{ hostOrganism }}</a> -->
-            <a>{{ hostOrganismName }}</a>
-          </span>
-          <i class="icon icon-common icon-search"></i>
-          {{ islast ? '' : ',' }}
-          }
-        </article>
-      </div>
-      } @if (experimentalDetail.hasOwnProperty('xray_em_resolution')) {
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Resolution</span>
-        <article>{{ experimentalDetail.xray_em_resolution }}Å</article>
-      </div>
-      } @if (experimentalDetail.hasOwnProperty('xray_r_factor') || experimentalDetail.hasOwnProperty('xray_r_work') ||
-      experimentalDetail.hasOwnProperty('xray_r_free') ) {
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Reported R values</span>
-        <article class="reported-r-vals">
-          <p>
-            <span>R:</span>
-            <span>
-              @if(experimentalDetail.xray_r_factor) {
-              {{ experimentalDetail.xray_r_factor }}
-              } @else { Not available }
-            </span>
-          </p>
-          <p>
-            <span>R</span>
-            <sub class="style-scope summary-box">work </sub>
-            <span>:</span>
-            <span>
-              @if(experimentalDetail.xray_r_work) {
-              {{ experimentalDetail.xray_r_work }}
-              } @else { Not available }
-            </span>
-          </p>
-          <p>
-            <span>R</span>
-            <sub class="style-scope summary-box">free </sub>
-            <span>:</span>
-            <span>
-              @if(experimentalDetail.xray_r_free) {
-              {{ experimentalDetail.xray_r_free }}
-              } @else { Not available }
-            </span>
-          </p>
-        </article>
-      </div>
-      } @if (experimentalDetail.hasOwnProperty('xray_beam_source_type')) {
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">X-ray source</span>
-        <article>{{ experimentalDetail.xray_beam_source_type }}Å</article>
-      </div>
-      } @if (experimentalDetail.hasOwnProperty('nmr_refinement_method') || experimentalDetail.hasOwnProperty('nmr_number_of_deposited_models') ||
-      experimentalDetail.hasOwnProperty('nmr_backbone_rmsd_for_largest_domain') || experimentalDetail.hasOwnProperty('nmr_completeness_of_chemical_shift_assignment')
-      ) {
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Refinement method</span>
-        <article>{{ experimentalDetail.nmr_refinement_method }}</article>
-      </div>
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Number of deposited models</span>
-        <article>{{ experimentalDetail.nmr_number_of_deposited_models }}</article>
-      </div>
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Backbone RMSD for the largest domain</span>
-        <article>{{ experimentalDetail.nmr_backbone_rmsd_for_largest_domain }}</article>
-      </div>
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Chemical shift assignment completeness</span>
-        <article>{{ experimentalDetail.nmr_completeness_of_chemical_shift_assignment }}</article>
-      </div>
-      } @if (experimentalDetail.hasOwnProperty('nmr_spectrometers')) {
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">NMR spectrometers used</span>
-        <article>
-          @for (nmr_spectrometer of experimentalDetail.nmr_spectrometers; track nmr_spectrometer;) {
-          <p>{{ nmr_spectrometer }}</p>
-          }
-        </article>
-      </div>
-      }
-      <!-- TODO: Missing Aggregation -->
-      <!-- Not in API endpoint: https://www.ebi.ac.uk/pdbe/api/pdb/entry/experiment/7v08 -->
-      @if (experimentalDetail.hasOwnProperty('em_resolution_method')) {
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Reconstruction method</span>
-        <article>{{ experimentalDetail.em_resolution_method }}</article>
-      </div>
-      } @if (experimentalDetail.hasOwnProperty('em_microscope')) {
-      <div class="info-row">
-        <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Microscope model</span>
-        <article>{{ experimentalDetail.em_microscope }}</article>
-      </div>
-      }
-    </section>
-
-    @if(isfirst) {
-    <section class="validation-metrics">
-      <h4 class="heading-4">Validation Metrics</h4>
-      @if (noImg === false) {
-      <img
-        class="validation-report-img"
-        [src]="'https://www.ebi.ac.uk/pdbe/entry-files/' + entryId() + '_multipercentile_validation.svg'"
-        alt="Entry percentile scores"
-        (error)="noImg = true"
-      />
-      } @else {
-      <div class="no-validation-report">wwPDB Validation report is not available for this EM entry.</div>
-      } @if(validationKeys ) {
-      <!-- Metric	Description -->
-      <!-- Bond angles in protein, DNA, RNA molecules -->
-      <!-- Bond lengths in protein, DNA, RNA molecules	 -->
-      <!-- Ramachandran outliers in protein molecules	 -->
-      <!-- Sidechain rotamer outliers in protein molecules	 -->
-      <div class="validation-list">
-        @for (validationKey of validationKeys; track validationKey; let i = $index) {
-        <article>
-          {{ i + 1 }}. {{ dataFacade.validationKeysToText[validationKey] }} – {{ keyValidationStats()![validationKey]['num_outliers'] }} outlier(s) of
-          {{ keyValidationStats()![validationKey]['num_checked'] }} ({{ keyValidationStats()![validationKey]['percent_outliers'] }} %)
-        </article>
+    <section class="exp-validation-info">
+      @if (currentData()) {
+      <h4 class="heading-4 title">
+        {{ currentData()!.generalInfo.methodName }}
+        @if (currentData()!.generalInfo.resolution) { • {{ currentData()!.generalInfo.resolution }}
         }
-      </div>
-      } @else {
-      <p>No validation metrics information available</p>
-      }
-    </section>
-    } @if(experimentalDetail.datasetRows.length + experimentalDetail.refinementRows.length + experimentalDetail.samplesRows.length > 0) {
-    <section class="experimental-info">
-      <h4 class="heading-4">Experimental Information</h4>
-      <!-- X-ray :-->
+      </h4>
+      <!-- ------------------- -->
+      <!-- General Info section -->
+      <!-- ------------------- -->
+      <section class="general-info">
+        @if (currentData()!.generalInfo.sourceOrganisms) {
+        <div class="info-row" [ngClass]="currentData()!.generalInfo.methodName.includes('NMR') ? 'big' : ''">
+          <span>Source organism</span>
+          <article>
+            @for(sourceOrganism of sourceOrganisms(); track sourceOrganism;){
+            <div>
+              <!-- <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">{{ sourceOrganism }}</a> -->
+              <a>
+                {{ sourceOrganism }}
+                <i class="icon icon-common icon-search"></i>
+              </a>
+            </div>
+            }
+          </article>
+        </div>
+        }
+        <!-- X-Ray, SAS, (??) Others -->
+        @if (currentData()!.generalInfo.reportedRValues) {
+        <div class="info-row">
+          <span>Reported R values</span>
+          <article>
+            @if (currentData()!.generalInfo.reportedRValues!.rWork) {
+            <div>
+              <span class="rfree-col">Rwork</span>
+              <span>{{ currentData()!.generalInfo.reportedRValues!.rWork! }}</span>
+            </div>
+            } @if (currentData()!.generalInfo.reportedRValues!.rFree) {
+            <div>
+              <span class="rfree-col">Rfree</span>
+              <span>{{ currentData()!.generalInfo.reportedRValues!.rFree! }}</span>
+            </div>
+            }
+          </article>
+        </div>
+        }
+        <!-- NMR exclusive -->
+        @if (currentData()!.generalInfo.refinementMethod) {
+        <div class="info-row big">
+          <span>Refinement method</span>
+          <article>
+            <div>
+              <span> {{ currentData()!.generalInfo.refinementMethod }}</span>
+            </div>
+          </article>
+        </div>
+        } @if (currentData()!.generalInfo.numberDepositedModels) {
+        <div class="info-row big">
+          <span>Number of deposited models</span>
+          <article>
+            <div>
+              <span> {{ currentData()!.generalInfo.numberDepositedModels }}</span>
+            </div>
+          </article>
+        </div>
+        } @if (currentData()!.generalInfo.rmsdLargestDomain) {
+        <div class="info-row big">
+          <span>Backbone RMSD for the largest domain</span>
+          <article>
+            <div>
+              <span> {{ currentData()!.generalInfo.rmsdLargestDomain }}</span>
+            </div>
+          </article>
+        </div>
+        } @if (currentData()!.generalInfo.completenessChemicalShifts) {
+        <div class="info-row big">
+          <span>Completeness of chemical shifts</span>
+          <article>
+            <div>
+              <span> {{ currentData()!.generalInfo.completenessChemicalShifts }}</span>
+            </div>
+          </article>
+        </div>
+        }
+      </section>
 
-      <!-- Dataset statistics -->
-      <!-- table with Metric, Value, Source -->
-      <div class="content">
-        @if(experimentalDetail.datasetRows.length > 0) {
-        <h5 class="heading-5">Dataset statistics</h5>
-        <div class="table-container">
-          <ag-grid-angular
-            style="margin-bottom: 50px; height: fit-content"
-            class="ag-theme-quartz"
-            [rowData]="experimentalDetail.datasetRows"
-            [columnDefs]="tableFacade.xRayDatasetGridDefs"
-            [defaultColDef]="tableFacade.defaultColGridDef"
-            [pagination]="false"
-            [gridOptions]="tableFacade.gridOptions"
+      <!-- ------------------- -->
+      <!-- Validation info section -->
+      <!-- ------------------- -->
+      <section class="validation-info">
+        <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="valInfoTooltip" matTooltipPosition="below">
+          Validation information
+        </h5>
+        @if (noImg === false) {
+        <div class="validation-report-img-container">
+          <img
+            class="validation-report-img"
+            [src]="'https://www.ebi.ac.uk/pdbe/entry-files/' + entryId() + '_multipercentile_validation.svg'"
+            alt="Entry percentile scores"
+            (error)="noImg = true"
           />
         </div>
+        } @if (currentData()!.validationInfo) {
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="currentData()!.validationInfo!"
+          [columnDefs]="tableFacade.validationColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+        } @else {
+        <div class="not-available">Validation information is not available.</div>
         }
-        <!-- Refinement statistics -->
-        <!-- table with Metric, Value, Source -->
-        @if(experimentalDetail.refinementRows.length > 0) {
-        <h5 class="heading-5">Refinement statistics</h5>
-        <div class="table-container">
-          <ag-grid-angular
-            style="margin-bottom: 50px; height: fit-content"
-            class="ag-theme-quartz"
-            [rowData]="experimentalDetail.refinementRows"
-            [columnDefs]="tableFacade.xRayDatasetGridDefs"
-            [defaultColDef]="tableFacade.defaultColGridDef"
-            [pagination]="false"
-            [gridOptions]="tableFacade.gridOptions"
-          />
-        </div>
-        }
+      </section>
 
-        <!-- NMR -->
-        <!-- Samples and spectra -->
-        <!-- table with Sample, Contents, Recorded spectra -->
-        @if(experimentalDetail.samplesRows.length > 0) {
-        <h5 class="heading-5">Samples and spectra</h5>
-        <div class="table-container">
-          <ag-grid-angular
-            style="margin-bottom: 50px; height: fit-content"
-            class="ag-theme-quartz"
-            [rowData]="experimentalDetail.samplesRows"
-            [columnDefs]="tableFacade.nmrSamplesGridDefs"
-            [defaultColDef]="tableFacade.defaultColGridDef"
-            [pagination]="false"
-            [gridOptions]="tableFacade.gridOptions"
-          />
+      <!-- ------------------- -->
+      <!-- Sample info section -->
+      <!-- ------------------- -->
+
+      <section class="sample-info">
+        <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="sampleInfoTooltip" matTooltipPosition="below">
+          Sample information
+        </h5>
+        @if (currentData()!.sampleInfo) { @if (currentData()!.sampleInfo!.sourceOrganisms) {
+        <div class="info-row">
+          <span>Source organisms</span>
+          <article>
+            @for(sourceOrganism of currentData()!.sampleInfo!.sourceOrganisms; track sourceOrganism;){
+            <div>
+              <!-- <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">{{ sourceOrganism }}</a> -->
+              <a>
+                {{ sourceOrganism }}
+                <i class="icon icon-common icon-search"></i>
+              </a>
+            </div>
+            }
+          </article>
+        </div>
+        } @if (currentData()!.sampleInfo!.expressionSystem) {
+        <div class="info-row">
+          <span>Expression system</span>
+          <article>
+            @for(expressionSystem of currentData()!.sampleInfo!.expressionSystem; track expressionSystem;){
+            <div>
+              <!-- <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">{{ sourceOrganism }}</a> -->
+              <a>
+                {{ expressionSystem }}
+                <i class="icon icon-common icon-search"></i>
+              </a>
+            </div>
+            }
+          </article>
+        </div>
+        } @if (currentData()!.sampleInfo!.authorDesc) {
+        <div class="info-row">
+          <span>Author description</span>
+          <article>
+            <div>
+              <span> {{ currentData()!.sampleInfo!.authorDesc }}</span>
+            </div>
+          </article>
+        </div>
+        } } @else {
+        <div class="not-available">Sample information is not available.</div>
+        }
+      </section>
+
+      <!-- ------------------- -->
+      <!-- Experimental info section -->
+      <!-- ------------------- -->
+      <section class="experimental-info">
+        <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="expInfoTooltip" matTooltipPosition="below">
+          Experimental information
+        </h5>
+        <!-- For X-Ray, SAS -->
+        @if (currentData()!.experimentalInfo) { @if (currentData()!.experimentalInfo!.xRayBeamSource) {
+        <div class="info-row" style="margin-top: 12px; margin-bottom: 12px">
+          <span>X-ray source</span>
+          <article>
+            <div>
+              <span> {{ currentData()!.experimentalInfo!.xRayBeamSource }}</span>
+            </div>
+          </article>
+        </div>
+        } @if (currentData()!.experimentalInfo!.xRayDatasetStatsRows) {
+        <div class="table-title">Dataset statistics</div>
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="currentData()!.experimentalInfo!.xRayDatasetStatsRows"
+          [columnDefs]="tableFacade.xRayDatasetColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+        } @if (currentData()!.experimentalInfo!.xRayRefinementStatsRows) {
+        <div class="table-title">Refinement statistics</div>
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="currentData()!.experimentalInfo!.xRayRefinementStatsRows"
+          [columnDefs]="tableFacade.xRayRefinementColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+        }
+        <!-- For EM -->
+        @if (currentData()!.experimentalInfo!.emSpecimenRows) {
+        <div class="table-title" style="margin-bottom: 4px">Specimen preparation</div>
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="currentData()!.experimentalInfo!.emSpecimenRows"
+          [columnDefs]="tableFacade.emSpecimenPrepColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+        } @if (currentData()!.experimentalInfo!.emVitrificationRows) {
+        <div class="table-title">Vitrification</div>
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="currentData()!.experimentalInfo!.emVitrificationRows"
+          [columnDefs]="tableFacade.emVitrificationColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+        } @if (currentData()!.experimentalInfo!.emRefinementStatsRows) {
+        <div class="table-title">Refinement statistics</div>
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="currentData()!.experimentalInfo!.emRefinementStatsRows"
+          [columnDefs]="tableFacade.emRefinementStatsColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+        }
+        <!-- For NMR -->
+        @if (currentData()!.experimentalInfo!.nmrSpectometers) {
+        <div class="info-row">
+          <span>NMR spectrometers used</span>
+          <article>
+            <div>
+              <span> {{ currentData()!.experimentalInfo!.nmrSpectometers }}</span>
+            </div>
+          </article>
+        </div>
+
+        } @if (currentData()!.experimentalInfo!.nmrSampleRows) {
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="currentData()!.experimentalInfo!.nmrSampleRows"
+          [columnDefs]="tableFacade.nmrSampleColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+        } }
+      </section>
+
+      <!-- ---------------------------- -->
+      <!-- Experimental raw data section -->
+      <!-- ---------------------------- -->
+      @if (currentData()!.experimentalRawData) {
+      <section class="exp-raw-data-info">
+        <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="expRawDataTooltip" matTooltipPosition="below">
+          Experimental raw data
+        </h5>
+        @for(table of currentData()!.experimentalRawData!; track table;) {
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="table.tableData"
+          [columnDefs]="tableFacade.expRawAccessionsColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.getGridOptionsExpRaw(table.resourceName)"
+        />
+        <div class="extra-info">
+          <div class="img">
+            @if(table.imgName) {
+            <img [src]="table.imgName" alt="" />
+            }
+          </div>
+          <!-- BMRB exclusive data that sometimes appears -->
+          <div class="links">
+            @if(table.timeDomainLinks) {
+            <div class="time-domain">
+              @for(timeDomainLink of table.timeDomainLinks; track timeDomainLink;) {
+              <a>
+                Access time domain data
+                <i class="icon icon-common icon-link"></i>
+              </a>
+              }
+            </div>
+            } @if(table.extraLinkGroups) {
+            <div class="extra-link">
+              <div class="extra-link-title">Additional data</div>
+              @for(extraLinkGroup of table.extraLinkGroups; track extraLinkGroup;) {
+              <div class="link-list">
+                <div class="name">{{ extraLinkGroup.name }}</div>
+                <div class="group-links">
+                  @for(extraLink of extraLinkGroup.links; track extraLink; let i = $index) {
+                  <a>{{ i + 1 }}</a>
+                  }
+                </div>
+              </div>
+              }
+            </div>
+            }
+          </div>
         </div>
         }
-      </div>
+      </section>
+      }
+
+      <!-- ------------------- -->
+      <!-- Timeline section -->
+      <!-- ------------------- -->
+      <section class="timeline-info">
+        <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="timelineTooltip" matTooltipPosition="below">Timeline</h5>
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="currentData()!.timeline"
+          [columnDefs]="tableFacade.timelineColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+      </section>
+      }
     </section>
-    } @if (experimentalDetail.hasOwnProperty('em_buffer_name') || experimentalDetail.hasOwnProperty('em_buffer_ph') ||
-    experimentalDetail.hasOwnProperty('em_buffer_details') || experimentalDetail.hasOwnProperty('em_vitrification_cryogen') ||
-    experimentalDetail.hasOwnProperty('em_vitrification_temperature') || experimentalDetail.hasOwnProperty('em_vitrification_instrument') ||
-    experimentalDetail.hasOwnProperty('em_vitrification_humidity') || experimentalDetail.hasOwnProperty('em_vitrification_details') ) {
-    <section class="experimental-info">
-      <h4 class="heading-4">Experimental Information</h4>
-      <!-- EM -->
-      <!-- Specimen preparation -->
-      <!-- table with Buffer name, pH, Details -->
-      <div class="content">
-        <h5 class="heading-5">Specimen preparation</h5>
-        <div class="info-row">
-          <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Buffer name</span>
-          <article>{{ experimentalDetail.em_buffer_name || '-' }}</article>
-        </div>
-        <div class="info-row">
-          <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">pH</span>
-          <article>{{ experimentalDetail.em_buffer_ph || '-' }}</article>
-        </div>
-        <div class="info-row">
-          <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Details</span>
-          <article>{{ experimentalDetail.em_buffer_details || '-' }}</article>
-        </div>
-        <!-- Vitrification -->
-        <!-- table with Cryogen,Temperature,Instrument,Humidity,Details -->
-        <h5 class="heading-5">Vitrification</h5>
-        <div class="info-row">
-          <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Cryogen</span>
-          <article>{{ experimentalDetail.em_vitrification_cryogen || '-' }}</article>
-        </div>
-        <div class="info-row">
-          <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Temperature</span>
-          <article>{{ experimentalDetail.em_vitrification_temperature || '-' }}</article>
-        </div>
-        <div class="info-row">
-          <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Instrument</span>
-          <article>{{ experimentalDetail.em_vitrification_instrument || '-' }}</article>
-        </div>
-        <div class="info-row">
-          <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Humidity</span>
-          <article>{{ experimentalDetail.em_vitrification_humidity || '-' }}</article>
-        </div>
-        <div class="info-row">
-          <span [style.maxWidth]="setInfoRowWidth(experimentalDetail.experimental_method)">Details</span>
-          <article>{{ experimentalDetail.em_vitrification_details || '-' }}</article>
-        </div>
-      </div>
-    </section>
-    }
-    <br />
   </section>
-  }
+  <section class="right-side">
+    <div class="sticky-div">
+      <h4 class="heading-4">Validation 3D</h4>
+      <div class="container-3d">
+        <div class="molstar-parent">
+          <div class="molstar-container" #molstarContainer></div>
+        </div>
+      </div>
+      @if (pdbRedoData()) {
+      <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="pdbRedoTooltip" matTooltipPosition="below">PDB-REDO</h5>
+      <div class="pdb-redo">
+        <pdbc-str-quality-gradient [componentType]="'GeometryFit_RdToGr'" [renderGradients]="pdbRedoData()!"></pdbc-str-quality-gradient>
+      </div>
+      <p class="pdb-redo-text">
+        The sliders show the change in model quality between original PDB entry and the PDB-REDO entry. <a>PDB-REDO</a> is an external service, it is not a part of
+        PBDe.
+      </p>
+      }
+    </div>
+  </section>
 </div>

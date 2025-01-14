@@ -23,6 +23,14 @@ import { LineParams } from 'molstar/lib//mol-repr/structure/representation/line'
 import { PluginCommands } from 'molstar/lib/mol-plugin/commands';
 import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
 
+/**
+ * This file contains various helper functions for manipulating Molstar
+ * Some are not being currently used but can still serve as reference for future
+ * developers.
+ *
+ * Ideally it would be nice if those who are being used are eventually migrated into Molstar
+ */
+
 const CompTypes = ['lig', 'env', 'wide', 'link'] as const;
 
 type CompType = (typeof CompTypes)[number];

@@ -100,17 +100,24 @@ export const ligandChipTooltips: { [key: string]: string } = {
   Modification: 'Modified amino acids or nucleotides in protein, DNA or RNA chains',
 };
 
-export const validationInfoTooltip = '';
-export const sampleInfoTooltip = '';
-export const expInfoTooltip = '';
-export const depositionDateTooltip = '';
-export const releaseDateTooltip = '';
-export const revisionDateTooltip = '';
-export const nmrSampleTooltip = '';
-export const nmrContentsTooltip = '';
-export const expRawDataTooltip = '';
+export const validationInfoTooltip =
+  'Quality descriptors for covalent geometry, torsion angles, rotameric conformations and data model fit in protein, DNA and RNA molecules.';
+export const sampleInfoTooltip = 'Information about the sample used in an experiment and its sources';
+export const expInfoTooltip = 'Detailed information about the experiment performed to obtain the current model';
+export const expRawDataTooltip = 'Summary information and links to available unprocessed experimental data from PDB, IRRMC, SBGrid, EMPIAR and BMRB';
+export const timelineTooltip = 'Important dates related to this PDB entry';
 
-export const relatedEntriesTooltip = '';
+export const nmrSampleTooltip = 'Identifier for a sample that has been analyzed using nuclear magnetic resonance (NMR) spectroscopy';
+export const nmrContentsTooltip = 'Detailed description of the NMR sample composition';
+
+export const expEmBufferTooltip = 'The name of the buffer used for the sample in the electron microscopy experiment';
+
+export const depositionDateTooltip = 'Date when the coordinates were deposited to the PDB archive';
+export const releaseDateTooltip = 'Date when the coordinates were released in the PDB archive';
+export const revisionDateTooltip = 'Date of the current version or last minor or major revision of a PDB entry';
+export const pdbRedoTooltip = 'PDB-REDO is a software pipeline that automatically refines, rebuilds, and validates crystallographic structure models in the PDB';
+
+// export const relatedEntriesTooltip = '';
 
 /**
  * For dashboard details display of statistic links bar
@@ -153,6 +160,7 @@ export type ApiDataItem =
   | 'macroMolecules'
   | 'boundLigands'
   | 'organismScientificNames'
+  | 'hasRna'
   | 'experimentalDetails'
   | 'experimentalMethod'
   | 'resolutionValues'
@@ -175,7 +183,13 @@ export type ApiDataItem =
   | 'complexDetails'
   | 'assemblies'
   | 'pisaAssemblies'
-  | 'carbohydrates';
+  | 'carbohydrates'
+  | 'pdbRedoQualityScore'
+  | 'experimentRawDataPDB'
+  | 'experimentRawDataBMRB'
+  | 'experimentRawDataSBGrid'
+  | 'experimentRawDataIRRMC'
+  | 'experimentRawDataEMPIAR';
 
 /**
  * For different components of the page, this lists their API dependencies
@@ -199,7 +213,19 @@ export const COMPONENT_DEPENDENCIES: Record<string, ApiDataItem[]> = {
     'bestStructuresMappingsByUniProtIds',
   ],
   detailsDashboard: ['macroMolecules', 'proteinPagesSummaryByUniProtIds'],
-  experimentsValidationTab: ['summaryData', 'experimentalDetails', 'validationKeyStats', 'validationXRayRefine'],
+  experimentsValidationTab: [
+    'summaryData',
+    'hasRna',
+    'experimentalDetails',
+    'validationKeyStats',
+    'validationXRayRefine',
+    'pdbRedoQualityScore',
+    'experimentRawDataPDB',
+    'experimentRawDataBMRB',
+    'experimentRawDataSBGrid',
+    'experimentRawDataIRRMC',
+    'experimentRawDataEMPIAR',
+  ],
   citationsTab: ['primaryPublication', 'articlesCiting'],
 };
 

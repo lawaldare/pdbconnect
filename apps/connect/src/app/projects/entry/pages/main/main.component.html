@@ -130,12 +130,23 @@
         @if (componentLoadedStatus()['experimentsValidationTab']) {
         <pdbc-experiments-validation-tab
           [entryId]="entryId()"
+          [entryTitle]="summaryData.entryTitle"
+          [sourceOrganisms]="organismScientificNames"
+          [hasRna]="hasRna"
           [depositionDate]="summaryData.depositionDate"
           [releaseDate]="summaryData.releaseDate"
           [revisionDate]="summaryData.revisionDate"
           [experimentalDetails]="experimentalDetails"
           [keyValidationStats]="validationKeyStats"
           [xRayRefine]="validationXRayRefine"
+          [pdbRedoData]="pdbRedoQualityScore"
+          [rawDataPDB]="experimentRawDataPDB"
+          [rawDataBMRB]="experimentRawDataBMRB"
+          [rawDataSBGrid]="experimentRawDataSBGrid"
+          [rawDataIRRMC]="experimentRawDataIRRMC"
+          [rawDataEMPIAR]="experimentRawDataEMPIAR"
+          [molstarViewerEl]="molstarViewer"
+          [molstarParent]="molstarParent"
         ></pdbc-experiments-validation-tab>
         } } @if(tabName.name === 'Citations') {
         <!-- inside entry/components/citations-tab -->

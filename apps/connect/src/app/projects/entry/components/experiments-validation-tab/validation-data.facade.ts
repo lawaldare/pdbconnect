@@ -1,208 +1,232 @@
 import { inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { KeyValidationStats, ValidationStat } from '../../data-models/key-validation-stats.model';
+import { KeyValidationStats } from '../../data-models/key-validation-stats.model';
 import { ExperimentDetail } from '../../data-models/experimental-details.model';
 import { XRayRefine } from '../../data-models/x-ray-refine.model';
-import { ValidationXRayRow, ValidationTablesFacade, ValidationSamplesRow } from './validation-tables.facade';
-
-type ValidationKeysToText = {
-  [K in keyof KeyValidationStats]?: string;
-};
-
-interface ParsedExperimentalDetails {
-  experimental_method: string;
-  data_length: number;
-  all_experimental_methods?: string[];
-  expression_host_scientific_names?: string[];
-  xray_em_resolution?: number;
-  xray_r_factor?: number;
-  xray_r_work?: number;
-  xray_r_free?: number;
-  xray_beam_source_type?: string;
-  nmr_refinement_method?: string;
-  nmr_number_of_deposited_models?: string;
-  nmr_backbone_rmsd_for_largest_domain?: string;
-  nmr_completeness_of_chemical_shift_assignment?: string;
-  nmr_spectrometers?: string[];
-  em_microscope?: string;
-  em_resolution_method?: string;
-  em_buffer_name?: string;
-  em_buffer_ph?: number;
-  em_buffer_details?: string;
-  em_vitrification_cryogen?: string;
-  em_vitrification_temperature?: number;
-  em_vitrification_instrument?: string;
-  em_vitrification_humidity?: string;
-  em_vitrification_details?: string;
-  datasetRows: ValidationXRayRow[];
-  refinementRows: ValidationXRayRow[];
-  samplesRows: ValidationSamplesRow[];
-}
+import { ValidationTablesFacade } from './validation-tables.facade';
+import { ProcessedQualityScores } from '../../data-models/summary-quality-scores.model';
+import {
+  ExperimentalInfoData,
+  ExperimentalRawDatum,
+  ProcessedExperimentalDetails,
+  RValues,
+  SampleInfoData,
+} from './data-models-and-definitions/processed-experimental-details.model';
+import {
+  EMRefinementStatsRow,
+  EMSpecimenPrepRow,
+  EMVitrificationRow,
+  ExperimentRawRow,
+  NMRSampleRow,
+  ValidationInfoRow,
+  XRayStatsRow,
+} from './data-models-and-definitions/table-rows.model';
+import {
+  BMRBExperimentRawData,
+  EMPIARExperimentRawData,
+  IRRMCExperimentRawData,
+  PDBExperimentRawData,
+  SBGRIDExperimentRawData,
+} from '../../data-models/experiment-raw-data.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ValidationDataFacade {
-  //   public ligandTypeFilters: WritableSignal<LigandsFilter[]> = signal([]);
-  public parsedExperimentalDetails: WritableSignal<ParsedExperimentalDetails[]> = signal([]);
-  public readonly tableFacade = inject(ValidationTablesFacade);
-
-  public readonly validationKeysToText: ValidationKeysToText = {
+export class ValidationDataProcessingFacade {
+  public readonly validationKeysToText: { [key: string]: string } = {
     bonds: 'Bond lengths in protein, DNA, RNA molecules',
     angles: 'Bond angles in protein, DNA, RNA molecules',
     RSRZ: 'Electron density fit in protein, DNA, RNA molecules',
     protein_ramachandran: 'Ramachandran outliers in protein molecules',
     protein_sidechains: 'Sidechain rotamer outliers in protein molecules ',
+    rna_pucker: 'RNA nucleotides sugar pucker outliers in RNA molecules',
+    rna_suite: 'Non-rotameric outlier suites in RNA molecules',
   };
 
-  processValidationKeys(validationStats: KeyValidationStats | undefined) {
-    if (validationStats === undefined) {
-      return [];
-    }
-    const validKeys = Object.keys(this.validationKeysToText);
-    return (Object.entries(validationStats) as [keyof KeyValidationStats, ValidationStat][])
-      .filter(([validationKey, validationStat]) => validationStat.num_checked > 0 && validKeys.indexOf(validationKey) > -1)
-      .map(([validationKey, _validationStat]) => validationKey)
-      .sort((a, b) => validKeys.indexOf(a) - validKeys.indexOf(b));
-  }
-
-  processExperimentalDetails(experimentalDetails: ExperimentDetail[], xRayRefine: XRayRefine | undefined): ParsedExperimentalDetails[] {
-    const result: ParsedExperimentalDetails[] = [];
-
-    const hostOrganismNames = experimentalDetails.filter(
-      (detail) =>
-        detail.expression_host_scientific_name &&
-        detail.expression_host_scientific_name.length > 0 &&
-        detail.expression_host_scientific_name[0].scientific_name !== null
-    );
-
-    if (experimentalDetails.length > 1) {
-      const hybridObj: ParsedExperimentalDetails = {
-        experimental_method: 'Hybrid',
-        all_experimental_methods: experimentalDetails.map((detail) => detail.experimental_method),
-        datasetRows: [],
-        refinementRows: [],
-        samplesRows: [],
-        data_length: 1,
-      };
-
-      if (hostOrganismNames.length > 0) {
-        hybridObj.expression_host_scientific_names = hostOrganismNames
-          .map((detail) => detail.expression_host_scientific_name![0].scientific_name!)
-          .filter((name, i, names) => names.indexOf(name) === i);
-        hybridObj.data_length += 1;
-      }
-      result.push(hybridObj);
-    }
+  // function process data from various API endpoints into unified format for template
+  public processData(
+    experimentalDetails: ExperimentDetail[],
+    sourceOrganisms: string[],
+    hasRna: boolean,
+    depositionDate: string,
+    releaseDate: string,
+    revisionDate: string,
+    entryTitle: string,
+    validationStats?: KeyValidationStats,
+    xRayRefine?: XRayRefine,
+    pdbRedoData?: ProcessedQualityScores,
+    experimentRawDataPDB?: PDBExperimentRawData[],
+    experimentRawDataBMRB?: BMRBExperimentRawData[],
+    experimentRawDataIRRMC?: IRRMCExperimentRawData,
+    experimentRawDataEMPIAR?: EMPIARExperimentRawData[],
+    experimentRawDataSBGrid?: SBGRIDExperimentRawData
+  ): ProcessedExperimentalDetails[] {
+    const result: ProcessedExperimentalDetails[] = [];
     for (let i = 0; i < experimentalDetails.length; i++) {
       const experimentalDetail = experimentalDetails[i];
-      const parsedObj: ParsedExperimentalDetails = {
-        experimental_method: experimentalDetail.experimental_method,
-        datasetRows: [],
-        refinementRows: [],
-        samplesRows: [],
-        data_length: 0,
+      const processed: ProcessedExperimentalDetails = {
+        generalInfo: {
+          methodName: experimentalDetail.experimental_method,
+        },
+        timeline: [
+          {
+            depositionDate: depositionDate,
+            releaseDate: releaseDate,
+            revisionDate: revisionDate,
+          },
+        ],
       };
-      if (result.length === 0 && hostOrganismNames.length > 0) {
-        parsedObj.expression_host_scientific_names = hostOrganismNames
-          .map((detail) => detail.expression_host_scientific_name![0].scientific_name!)
-          .filter((name, i, names) => names.indexOf(name) === i);
-        parsedObj.data_length += 1;
-      }
-      if (experimentalDetail.resolution) {
-        parsedObj.xray_em_resolution = experimentalDetail.resolution ?? undefined;
-        parsedObj.data_length += 1;
-      }
-      if (experimentalDetail.r_factor) {
-        parsedObj.xray_r_factor = parseFloat(experimentalDetail.r_factor.toFixed(2)) ?? undefined;
-        parsedObj.data_length += 1;
-      }
+
+      // parse general information data
+
+      /** All methods */
+      if (sourceOrganisms.length > 0) processed.generalInfo.sourceOrganisms = sourceOrganisms;
+      if (pdbRedoData) processed.generalInfo.pdbRedoData = pdbRedoData;
+
+      /** X-Ray, SAS, EM, others (maybe) */
+      if (experimentalDetail.resolution) processed.generalInfo.resolution = `${experimentalDetail.resolution}Å`;
+
+      /** X-Ray, SAS, others (maybe) */
+      const rValues: RValues = {};
       if (experimentalDetail.r_work) {
-        parsedObj.xray_r_work = parseFloat(experimentalDetail.r_work.toFixed(2)) ?? undefined;
-        parsedObj.data_length += 1;
+        rValues.rWork = experimentalDetail.r_work.toFixed(2);
       }
       if (experimentalDetail.r_free) {
-        parsedObj.xray_r_free = parseFloat(experimentalDetail.r_free.toFixed(2)) ?? undefined;
-        parsedObj.data_length += 1;
+        rValues.rFree = experimentalDetail.r_free.toFixed(2);
       }
-      if (
-        experimentalDetail.diffraction_experiment &&
-        experimentalDetail.diffraction_experiment?.length > 0 &&
-        experimentalDetail.diffraction_experiment![0].beam_source_type
-      ) {
-        parsedObj.xray_beam_source_type = experimentalDetail.diffraction_experiment![0].beam_source_type ?? undefined;
-      }
+      if (Object.keys(rValues).length > 0) processed.generalInfo.reportedRValues = rValues;
+
+      /** NMR */
+      const completenessChemicalShifts = experimentalDetail.completeness_of_chemical_shift_assignment;
+      if (completenessChemicalShifts) processed.generalInfo.completenessChemicalShifts = `${completenessChemicalShifts}%`;
+
       if (experimentalDetail.nmr_ensemble_refinement) {
-        let refinementMethod = experimentalDetail.nmr_ensemble_refinement?.refinement_method || undefined;
-        refinementMethod = refinementMethod ? refinementMethod : 'Not available';
+        const refinementMethod = experimentalDetail.nmr_ensemble_refinement?.refinement_method;
+        if (refinementMethod) processed.generalInfo.refinementMethod = `${refinementMethod}`;
 
-        parsedObj.nmr_refinement_method = refinementMethod;
+        const numberDepositedModels = experimentalDetail.nmr_ensemble_refinement?.number_of_deposited_models;
+        if (numberDepositedModels) processed.generalInfo.numberDepositedModels = `${numberDepositedModels}`;
 
-        let numberDepositedModels: number | string | undefined = experimentalDetail.nmr_ensemble_refinement?.number_of_deposited_models || undefined;
-        numberDepositedModels = numberDepositedModels ? numberDepositedModels + '' : 'Not available';
-
-        parsedObj.nmr_number_of_deposited_models = numberDepositedModels;
-
-        let rmsdLargestDomain: number | string | undefined = experimentalDetail.nmr_ensemble_refinement?.backbone_rmsd_for_largest_domain || undefined;
-        rmsdLargestDomain = rmsdLargestDomain ? rmsdLargestDomain + 'Å' : 'Not available';
-
-        parsedObj.nmr_backbone_rmsd_for_largest_domain = rmsdLargestDomain;
-
-        let completenessChemicalShifts: number | string | undefined = experimentalDetail.completeness_of_chemical_shift_assignment || undefined;
-        completenessChemicalShifts = completenessChemicalShifts ? completenessChemicalShifts + '%' : 'Not available';
-
-        parsedObj.nmr_completeness_of_chemical_shift_assignment = completenessChemicalShifts;
-        parsedObj.data_length += 4;
+        const rmsdLargestDomain = experimentalDetail.nmr_ensemble_refinement?.backbone_rmsd_for_largest_domain;
+        if (rmsdLargestDomain) processed.generalInfo.rmsdLargestDomain = `${rmsdLargestDomain}`;
       }
-      if (experimentalDetail.nmr_spectrometer) {
-        parsedObj.nmr_spectrometers = experimentalDetail.nmr_spectrometer.map((obj) => {
-          let toMerge = [obj.manufacturer, obj.model, obj.field_strength];
-          toMerge = toMerge.filter((word) => word !== null);
-          return toMerge.join(' ') || 'Not available';
-        });
-      }
-      if (experimentalDetail.specimen_preparation && experimentalDetail.specimen_preparation?.length > 0) {
-        if (experimentalDetail.specimen_preparation![0].buffer && experimentalDetail.specimen_preparation![0].buffer.length > 0) {
-          parsedObj.em_buffer_name = experimentalDetail.specimen_preparation![0].buffer![0].name || undefined;
-          parsedObj.em_buffer_ph = experimentalDetail.specimen_preparation![0].buffer![0].ph || undefined;
-          parsedObj.em_buffer_details = experimentalDetail.specimen_preparation![0].buffer![0].details || undefined;
-          parsedObj.data_length += 3;
+
+      // parse validation stats data
+      if (validationStats) {
+        const validationInfo: ValidationInfoRow[] = [];
+        for (const [validationKey, validationStat] of Object.entries(validationStats)) {
+          // if nothing was checked, skip
+          if (validationStat.num_checked === 0 || !validationStat.num_checked) continue;
+
+          const percValue = validationStat.percent_outliers ? `(${validationStat.percent_outliers}%)` : '';
+          const validationText = this.validationKeysToText[validationKey];
+
+          // RNA exclusive metrics are only pushed if entry contains RNA molecules (hasRna)
+          const canPush = validationKey.includes('rna') === false || hasRna;
+          if (canPush) {
+            validationInfo.push({
+              metric: validationText,
+              description: `${validationStat.num_outliers} outliers of ${validationStat.num_checked} ${percValue}`,
+            });
+          }
         }
-        if (experimentalDetail.specimen_preparation![0].vitrification && experimentalDetail.specimen_preparation![0].vitrification.length > 0) {
-          parsedObj.em_vitrification_cryogen = experimentalDetail.specimen_preparation![0].vitrification![0].cryogen || undefined;
-          parsedObj.em_vitrification_temperature = experimentalDetail.specimen_preparation![0].vitrification![0].temperature || undefined;
-          parsedObj.em_vitrification_instrument = experimentalDetail.specimen_preparation![0].vitrification![0].instrument || undefined;
-          parsedObj.em_vitrification_humidity = experimentalDetail.specimen_preparation![0].vitrification![0].humidity || undefined;
-          parsedObj.em_vitrification_details = experimentalDetail.specimen_preparation![0].vitrification![0].details || undefined;
-          parsedObj.data_length += 5;
+        if (validationInfo.length > 0) processed.validationInfo = validationInfo;
+      }
+
+      // parse sample stats (sourceOrganisms, expressionSystem, authorDesc)
+      const sampleInfoData: SampleInfoData = {};
+      if (sourceOrganisms.length > 0) sampleInfoData.sourceOrganisms = sourceOrganisms;
+      if (experimentalDetail.expression_host_scientific_name) {
+        const uniqueHostOrganismNames = experimentalDetail.expression_host_scientific_name
+          .filter((eachName) => eachName.scientific_name !== null && eachName.scientific_name !== undefined)
+          .map((eachName) => eachName.scientific_name!)
+          .filter((name, i, names) => names.indexOf(name) === i);
+        if (uniqueHostOrganismNames.length > 0) sampleInfoData.expressionSystem = uniqueHostOrganismNames;
+      }
+      sampleInfoData.authorDesc = entryTitle;
+      if (Object.keys(sampleInfoData).length > 0) {
+        processed.sampleInfo = sampleInfoData;
+      }
+
+      // parse experimental info data (specific to different methods)
+      const experimentalInfoData: ExperimentalInfoData = {};
+      if (
+        experimentalDetail.experimental_method_class === 'x-ray' ||
+        experimentalDetail.experimental_method_class === 'sas' ||
+        experimentalDetail.experimental_method_class === 'other'
+      ) {
+        if (
+          experimentalDetail.diffraction_experiment &&
+          experimentalDetail.diffraction_experiment?.length > 0 &&
+          experimentalDetail.diffraction_experiment![0].beam_source_type
+        ) {
+          experimentalInfoData.xRayBeamSource = experimentalDetail.diffraction_experiment![0].beam_source_type;
+        }
+        const datasetRows: XRayStatsRow[] = this.createXRayDatasetRows(experimentalDetail, xRayRefine);
+        if (datasetRows.length > 0) {
+          experimentalInfoData.xRayDatasetStatsRows = datasetRows;
+        }
+        const refinementRows: XRayStatsRow[] = this.createXRayRefinementRows(experimentalDetail, xRayRefine);
+        if (refinementRows.length > 0) {
+          experimentalInfoData.xRayRefinementStatsRows = refinementRows;
+        }
+      } else if (experimentalDetail.experimental_method_class === 'nmr') {
+        if (experimentalDetail.nmr_spectrometer) {
+          const nmrSpectrometers = experimentalDetail.nmr_spectrometer
+            .map((obj) => {
+              let toMerge = [obj.manufacturer, obj.model, obj.field_strength];
+              toMerge = toMerge.filter((word) => word !== null);
+              return toMerge.join(' ') || undefined;
+            })
+            .filter((desc) => desc !== undefined);
+          if (nmrSpectrometers.length > 0) experimentalInfoData.nmrSpectometers = nmrSpectrometers;
+        }
+        const sampleRows: NMRSampleRow[] = this.createNMRSampleRows(experimentalDetail);
+        if (sampleRows.length > 0) {
+          experimentalInfoData.nmrSampleRows = sampleRows;
+        }
+      } else if (experimentalDetail.experimental_method_class === 'em') {
+        const emSpecimenRows = this.createEMSpecimenRows(experimentalDetail);
+        if (emSpecimenRows.length > 0) {
+          experimentalInfoData.emSpecimenRows = emSpecimenRows;
+        }
+
+        const emVitrificationRows = this.createEMVitrificationRows(experimentalDetail);
+        if (emVitrificationRows.length > 0) {
+          experimentalInfoData.emVitrificationRows = emVitrificationRows;
+        }
+
+        const emRefinementStatsRows = this.createEMRefinementRows(experimentalDetail);
+        if (emRefinementStatsRows.length > 0) {
+          experimentalInfoData.emRefinementStatsRows = emRefinementStatsRows;
         }
       }
-      if (experimentalDetail.imaging && experimentalDetail.imaging?.length > 0) {
-        parsedObj.em_microscope = experimentalDetail.imaging![0].microscope || undefined;
-      }
-      if (experimentalDetail.processing && experimentalDetail.processing.reconstruction && experimentalDetail.processing?.reconstruction?.length > 0) {
-        parsedObj.em_resolution_method = experimentalDetail.processing.reconstruction![0].resolution_method || undefined;
+      if (Object.keys(experimentalInfoData).length > 0) {
+        processed.experimentalInfo = experimentalInfoData;
       }
 
-      if (experimentalDetail.experimental_method === 'X-ray diffraction') {
-        const rows = this.generateXRayTablesData(experimentalDetail, xRayRefine);
-        parsedObj.datasetRows = rows.dataset;
-        parsedObj.refinementRows = rows.refinement;
-        parsedObj.data_length += 2;
-      } else if (experimentalDetail.experimental_method === 'Solution NMR') {
-        const rows = this.generateNMRTablesData(experimentalDetail);
-        parsedObj.samplesRows = rows.sample;
-        parsedObj.data_length += 1;
+      // parse experimental raw data (see docs in component.ts)
+      if (experimentRawDataPDB) {
+        processed.experimentalRawData = this.createExperimentRawDataPDB(experimentRawDataPDB);
       }
-
-      result.push(parsedObj);
+      if (experimentRawDataBMRB) {
+        processed.experimentalRawData = this.createExperimentRawDataBMRB(experimentRawDataBMRB);
+      }
+      if (experimentRawDataIRRMC) {
+        processed.experimentalRawData = this.createExperimentRawDataIRRMC(experimentRawDataIRRMC);
+      }
+      if (experimentRawDataEMPIAR) {
+        processed.experimentalRawData = this.createExperimentRawDataEMPIAR(experimentRawDataEMPIAR);
+      }
+      if (experimentRawDataSBGrid) {
+        processed.experimentalRawData = this.createExperimentRawDataSBGrid(experimentRawDataSBGrid);
+      }
+      result.push(processed);
     }
-
-    this.parsedExperimentalDetails.set(result);
     return result;
   }
 
-  createXRayDatasetRows(experimentalDetail: ExperimentDetail, xrayInfo: XRayRefine | undefined) {
-    const datasetRows: ValidationXRayRow[] = [];
+  createXRayDatasetRows(experimentalDetail: ExperimentDetail, xrayInfo: XRayRefine | undefined): XRayStatsRow[] {
+    const datasetRows: XRayStatsRow[] = [];
     if (experimentalDetail.cell) {
       datasetRows.push({
         metric: 'Cell dimensions',
@@ -292,8 +316,8 @@ export class ValidationDataFacade {
     return datasetRows;
   }
 
-  createXRayRefinementRows(experimentalDetail: ExperimentDetail, xrayInfo: XRayRefine | undefined) {
-    const refinementRows: ValidationXRayRow[] = [];
+  createXRayRefinementRows(experimentalDetail: ExperimentDetail, xrayInfo: XRayRefine | undefined): XRayStatsRow[] {
+    const refinementRows: XRayStatsRow[] = [];
     if (experimentalDetail.refinement_software) {
       refinementRows.push({
         metric: 'Refinement software',
@@ -346,18 +370,8 @@ export class ValidationDataFacade {
     return refinementRows;
   }
 
-  generateXRayTablesData(experimentalDetail: ExperimentDetail, xrayInfo: XRayRefine | undefined) {
-    const datasetRows: ValidationXRayRow[] = this.createXRayDatasetRows(experimentalDetail, xrayInfo);
-    const refinementRows: ValidationXRayRow[] = this.createXRayRefinementRows(experimentalDetail, xrayInfo);
-
-    return {
-      dataset: datasetRows,
-      refinement: refinementRows,
-    };
-  }
-
-  generateNMRTablesData(experimentalDetail: ExperimentDetail) {
-    const sampleRows: ValidationSamplesRow[] = [];
+  createNMRSampleRows(experimentalDetail: ExperimentDetail): NMRSampleRow[] {
+    const sampleRows: NMRSampleRow[] = [];
     for (const nmrExperiment of experimentalDetail.nmr_experiments!) {
       if (nmrExperiment.solution_id === null || nmrExperiment.sample_contents === null) continue;
 
@@ -367,11 +381,233 @@ export class ValidationDataFacade {
       sampleRows.push({
         sample: sampleId,
         contents: [sampleContent],
-        recorded_spectra: recordedSpectra,
+        recordedSpectra: recordedSpectra,
       });
     }
-    return {
-      sample: sampleRows,
+    return sampleRows;
+  }
+
+  createEMSpecimenRows(experimentalDetail: ExperimentDetail): EMSpecimenPrepRow[] {
+    const specimenPrepRows: EMSpecimenPrepRow[] = [];
+    if (experimentalDetail.specimen_preparation && experimentalDetail.specimen_preparation?.length > 0) {
+      const bufferList = experimentalDetail.specimen_preparation![0].buffer;
+      if (bufferList && bufferList.length > 0) {
+        for (const buffer of bufferList) {
+          const bufferName = buffer.name || '-';
+          const pH = buffer.ph || '-';
+          const details = buffer.details || '-';
+
+          specimenPrepRows.push({
+            bufferName: bufferName,
+            ph: `${pH}`,
+            details: details,
+          });
+        }
+      }
+    }
+    return specimenPrepRows;
+  }
+
+  createEMVitrificationRows(experimentalDetail: ExperimentDetail): EMVitrificationRow[] {
+    const vitrificationRows: EMVitrificationRow[] = [];
+    if (experimentalDetail.specimen_preparation && experimentalDetail.specimen_preparation?.length > 0) {
+      const vitrificationList = experimentalDetail.specimen_preparation![0].vitrification;
+      if (vitrificationList && vitrificationList.length > 0) {
+        for (const vitrification of vitrificationList) {
+          const cryogen = vitrification.cryogen || '-';
+          const temperature = vitrification.temperature || '-';
+          const instrument = vitrification.instrument || '-';
+          const humidity = vitrification.humidity || '-';
+          const details = vitrification.details || '-';
+
+          vitrificationRows.push({
+            cryogen: cryogen,
+            temperature: `${temperature}`,
+            instrument: instrument,
+            humidity: humidity,
+            details: details,
+          });
+        }
+      }
+    }
+    return vitrificationRows;
+  }
+
+  createEMRefinementRows(experimentalDetail: ExperimentDetail): EMRefinementStatsRow[] {
+    const refinementStatsRows: EMRefinementStatsRow[] = [];
+    const resolution = experimentalDetail.resolution ? `${experimentalDetail.resolution}Å` : '-';
+    refinementStatsRows.push({
+      solutionMethod: experimentalDetail.experimental_method,
+      resolution: resolution,
+    });
+    return refinementStatsRows;
+  }
+
+  // converts size in bytes to gb
+  sizeInGB(bytes: number) {
+    return (bytes / 1024 / 1024 / 1024).toPrecision(2);
+  }
+
+  createExperimentRawDataPDB(experimentRawDataPDB: PDBExperimentRawData[]): ExperimentalRawDatum[] {
+    const rawData: ExperimentalRawDatum[] = [];
+    for (const eachDatum of experimentRawDataPDB) {
+      const accession = eachDatum.data_reference;
+      const rawDatum: ExperimentalRawDatum = {
+        resourceName: 'Item',
+        tableData: [],
+      };
+      const tableData: ExperimentRawRow[] = [];
+      let datasets = '';
+      if (eachDatum.dataset_type) {
+        datasets += `Type: ${eachDatum.dataset_type}\n`;
+      }
+      if (eachDatum.details) {
+        datasets += `Details: ${eachDatum.details}`;
+      }
+      tableData.push({
+        resource: 'Others',
+        accession: accession,
+        datasets: datasets.length === 0 ? '-' : datasets,
+        totalSize: '-',
+        link: `https://dx.doi.org/${accession}`,
+      });
+      rawDatum.tableData = tableData;
+      rawData.push(rawDatum);
+    }
+    return rawData;
+  }
+
+  createExperimentRawDataBMRB(experimentRawDataBMRB: BMRBExperimentRawData[]): ExperimentalRawDatum[] {
+    // unsure whether there can be multiple Exact hit bmrb accessions mapped to a PDB entry but would not be impressed. so we iterate
+    const rawData: ExperimentalRawDatum[] = [];
+    for (const experimentRaw of experimentRawDataBMRB) {
+      const bmrbAccession = experimentRaw.bmrb_id;
+      const rawDatum: ExperimentalRawDatum = {
+        resourceName: 'BMRB',
+        tableData: [],
+      };
+
+      const extraLinkGroups: {
+        name: string;
+        links: string[];
+      }[] = [];
+      const timeDomainLinks: string[] = [];
+      let imgName: string | undefined;
+
+      const tableData: ExperimentRawRow[] = [];
+      for (const datum of experimentRaw.data) {
+        // Time domain data is pushed to be shown inside table
+        if (datum.data_type === 'Time domain data') {
+          const size = datum.size ? this.sizeInGB(datum.size!) + 'Gb' : '-';
+          tableData.push({
+            resource: 'BMRB',
+            accession: bmrbAccession,
+            datasets: `${datum.data_sets}`,
+            totalSize: size,
+          });
+          imgName = datum.thumbnail_url;
+          timeDomainLinks.push(...datum.urls);
+        }
+        // All remainder data is pushed to extra links
+        else {
+          // we check whether a given data type is already in extra links ...
+          const indexOfName = extraLinkGroups.map((extraLink) => extraLink.name).indexOf(datum.data_type);
+          if (indexOfName === -1) {
+            // ... before creating a new extra link for each data type
+            extraLinkGroups.push({
+              name: datum.data_type,
+              links: datum.urls,
+            });
+          } else {
+            // ... or adding links to an existing extra link
+            extraLinkGroups[indexOfName].links.push(...datum.urls);
+          }
+        }
+      }
+
+      // some cases like (https://api.bmrb.io/v2/search/get_bmrb_data_from_pdb_id/2m68)
+      // have no Time domain data, so we add an empty column to table containing only bmrbAccession
+      if (bmrbAccession && tableData.length === 0) {
+        tableData.push({
+          resource: 'BMRB',
+          accession: bmrbAccession,
+          datasets: '-',
+          totalSize: '-',
+        });
+      }
+      rawDatum.tableData = tableData;
+      if (imgName) rawDatum.imgName = imgName;
+      if (timeDomainLinks.length > 0) rawDatum.timeDomainLinks = timeDomainLinks;
+      if (extraLinkGroups.length > 0) rawDatum.extraLinkGroups = extraLinkGroups;
+      rawData.push(rawDatum);
+    }
+    return rawData;
+  }
+
+  createExperimentRawDataIRRMC(experimentRawDataIRRMC: IRRMCExperimentRawData): ExperimentalRawDatum[] {
+    const rawData: ExperimentalRawDatum[] = [];
+    const rawDatum: ExperimentalRawDatum = {
+      resourceName: 'IRRMC',
+      tableData: [],
     };
+    // data seems flat and one to many accession to pdb entries
+    const tableData: ExperimentRawRow[] = [];
+    tableData.push({
+      resource: 'IRRMC',
+      accession: experimentRawDataIRRMC.name,
+      datasets: `${experimentRawDataIRRMC.number_dataset}`,
+      totalSize: experimentRawDataIRRMC.total_size_gb + 'Gb',
+    });
+    let imgName = experimentRawDataIRRMC.thumbnail_url || undefined;
+    if (imgName && !imgName.includes('https')) imgName = `https://${imgName}`;
+    if (imgName) rawDatum.imgName = imgName;
+    rawDatum.tableData = tableData;
+
+    rawData.push(rawDatum);
+    return rawData;
+  }
+
+  createExperimentRawDataEMPIAR(experimentRawDataEMPIAR: EMPIARExperimentRawData[]): ExperimentalRawDatum[] {
+    const rawData: ExperimentalRawDatum[] = [];
+    for (const experimentRaw of experimentRawDataEMPIAR) {
+      const rawDatum: ExperimentalRawDatum = {
+        resourceName: 'EMPIAR',
+        tableData: [],
+      };
+      const tableData: ExperimentRawRow[] = [];
+      tableData.push({
+        resource: 'EMPIAR',
+        accession: experimentRaw.name,
+        datasets: `${experimentRaw.number_dataset}`,
+        totalSize: experimentRaw.total_size_gb + 'Gb',
+      });
+      const imgName = experimentRaw.thumbnail_url || undefined;
+      if (imgName) rawDatum.imgName = imgName;
+      rawDatum.tableData = tableData;
+      rawData.push(rawDatum);
+    }
+    return rawData;
+  }
+
+  createExperimentRawDataSBGrid(experimentRawDataSBGrid: SBGRIDExperimentRawData): ExperimentalRawDatum[] {
+    const rawData: ExperimentalRawDatum[] = [];
+    for (const experimentRaw of experimentRawDataSBGrid.datasets) {
+      const rawDatum: ExperimentalRawDatum = {
+        resourceName: 'SBGrid',
+        tableData: [],
+      };
+      const tableData: ExperimentRawRow[] = [];
+      tableData.push({
+        resource: 'SBGrid',
+        accession: experimentRaw.data_doi.split('/')[2],
+        datasets: `1`,
+        totalSize: experimentRaw.storage_requirements + 'b',
+      });
+      const imgName = experimentRaw.dataset_thumbnail_url || undefined;
+      if (imgName) rawDatum.imgName = imgName;
+      rawDatum.tableData = tableData;
+      rawData.push(rawDatum);
+    }
+    return rawData;
   }
 }

@@ -41,6 +41,13 @@ import { EntryDropdownComponent } from '../../components/entry-dropdown/entry-dr
 import { TabConfig } from '../../components/overview-molstar/state-management.service';
 import { MainDataProcessingFacade } from './data-processing.facade';
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
+import {
+  BMRBExperimentRawData,
+  EMPIARExperimentRawData,
+  IRRMCExperimentRawData,
+  PDBExperimentRawData,
+  SBGRIDExperimentRawData,
+} from '../../data-models/experiment-raw-data.model';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -54,11 +61,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
 
 /**
  * TODO:
- * - Add status endpoint model and check
- * - Move CSS of child components so their width/height is relative to CSS in this component
- * - Prepare experiments and validation to become a tab
- * - Refactor overview component template for readability
- * - Refactor overview component code for stable molstar
+ * - Add status pages
  * - Make <SCRIPT> tags loading Dynamic
  */
 @Component({
@@ -106,8 +109,6 @@ export class EntryMainPageComponent implements AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
 
   @ViewChild('molstarViewer') molstarViewer!: ElementRef;
-
-  // public pageData$!: Observable<any>;
 
   // signal that holds whether an API call is pending or done for all needed APIs
   public apiLoadedStatus = signal(INITIAL_API_STATUS);
@@ -207,6 +208,7 @@ export class EntryMainPageComponent implements AfterViewInit {
   public macroMolecules!: Molecule[];
   public boundLigands!: Molecule[];
   public organismScientificNames!: string[];
+  public hasRna = false;
 
   // API data from getExperiment https://www.ebi.ac.uk/pdbe/api/pdb/entry/experiment/:entryID
   public experimentalDetails!: AnyExperimentDetail[];
@@ -231,6 +233,9 @@ export class EntryMainPageComponent implements AfterViewInit {
 
   // API data from getSummaryQualityScores https://www.ebi.ac.uk/pdbe/api/validation/summary_quality_scores/entry/:entryID
   public summaryQualityScores?: ProcessedQualityScores;
+
+  // API data from getPDBRedoData
+  public pdbRedoQualityScore?: ProcessedQualityScores;
 
   // API data from getCATHMapping https://www.ebi.ac.uk/pdbe/api/mappings/cath/:entryID
   public cathMapping!: CathMappings;
@@ -262,6 +267,21 @@ export class EntryMainPageComponent implements AfterViewInit {
 
   // API data from getCarbohydrates https://www.ebi.ac.uk/pdbe/api/pdb/entry/carbohydrate_polymer/:entryID
   public carbohydrates!: CarbohydrateMolecule[];
+
+  // API data from getExperimentRawDataBMRB https://api.bmrb.io/v2/search/get_bmrb_data_from_pdb_id/:entryID
+  public experimentRawDataBMRB?: BMRBExperimentRawData[];
+
+  // API data from getExperimentRawDataSBGrid https://data.sbgrid.org/api/pdbe/:entryID
+  public experimentRawDataSBGrid?: SBGRIDExperimentRawData;
+
+  // API data from getExperimentRawDataIRRMC https://proteindiffraction.org/api/ebi/:entryID
+  public experimentRawDataIRRMC?: IRRMCExperimentRawData;
+
+  // API data from getExperimentRawDataEMPIAR https://www.ebi.ac.uk/empiar/api/pdb_ref/:entryID
+  public experimentRawDataEMPIAR?: EMPIARExperimentRawData[];
+
+  // API data from getExperimentRawDataPDB https://www.ebi.ac.uk/pdbe/api/pdb/entry/related_experiment_data/:entryID
+  public experimentRawDataPDB?: PDBExperimentRawData[];
 
   constructor() {
     effect(async () => {
@@ -295,11 +315,6 @@ export class EntryMainPageComponent implements AfterViewInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
-    // .subscribe((data) => {
-    //   console.log('data');
-    //   console.log(data);
-    //   this.pageData$ = of(data);
-    // });
   }
 
   private setPageData(): Observable<any> {
@@ -363,15 +378,19 @@ export class EntryMainPageComponent implements AfterViewInit {
             }
           }
 
+          const hasRna = molecules.filter((mol) => mol.molecule_type.includes('polyribonucleotide')).length > 0;
+
           this.macroMolecules = macroMolecules;
           this.boundLigands = boundLigands;
           this.organismScientificNames = organismNames;
+          this.hasRna = hasRna;
 
           this.apiLoadedStatus.update((state) => ({
             ...state, // spread the existing state
             macroMolecules: 'done', // update the specific key dynamically
             boundLigands: 'done', // update the specific key dynamically
             organismScientificNames: 'done', // update the specific key dynamically
+            hasRna: 'done',
           }));
 
           return {
@@ -476,7 +495,7 @@ export class EntryMainPageComponent implements AfterViewInit {
 
           const experimentalMethodTitle = response.length > 1 ? 'Hybrid' : (response[0].experimental_method as string);
           const resolutionValues: Array<number | undefined> = response.map((datum: AnyExperimentDetail) => {
-            if ('resolution' in datum) return datum['resolution'];
+            if ('resolution' in datum && datum['resolution']) return datum['resolution'];
             else return undefined;
           });
 
@@ -497,74 +516,6 @@ export class EntryMainPageComponent implements AfterViewInit {
           };
         })
       ),
-      // this.entryAPIService.getUniprotMapping(this.entryId()).pipe(
-      //   mergeMap((data: UniProtMapping) => {
-      //     // For each UniProt id we create a bestStructures observable
-      //     const uniprotIds = Object.keys(data);
-      //     const bestStructuresObservables = uniprotIds.map((uniprotId) => this.entryAPIService.getBestStructures(uniprotId));
-
-      //     // Dictionaries needed for views
-      //     const bestStructuresMappingsByUniProtIds: { [key: string]: BestStructureMapping[] } = {};
-      //     const uniprotCountsInPDBe: { [key: string]: number } = {};
-
-      //     // Use forkJoin to wait for all bestStructures observables to complete
-      //     return forkJoin(bestStructuresObservables).pipe(
-      //       map((uniprotDictInList: unknown) => {
-      //         for (const uniprotDict of uniprotDictInList as BestStructureDict[]) {
-      //           const uniprotId = Object.keys(uniprotDict)[0];
-      //           const uniprotData = uniprotDict[uniprotId];
-
-      //           // dictionary uniprotCountsInPDBe is updated for counts of all unique entries which have a UniProt id mapped
-      //           const uniquePDBIds = uniprotData.map((datum) => datum.pdb_id).filter((value, index, array) => array.indexOf(value) === index);
-
-      //           uniprotCountsInPDBe[uniprotId] = uniquePDBIds.length;
-
-      //           // dictionary bestStructuresMappingsByUniProtIds is updated with best structures mappings for this entry
-      //           const uniprotDataFiltered = uniprotDict[uniprotId].filter((datum) => datum.pdb_id === this.entryId());
-
-      //           bestStructuresMappingsByUniProtIds[uniprotId] = bestStructuresMappingsByUniProtIds[uniprotId] ?? [];
-      //           bestStructuresMappingsByUniProtIds[uniprotId].push(...uniprotDataFiltered);
-      //         }
-
-      //         this.uniprotMapping = data;
-      //         this.uniprotCountsInPDBe = uniprotCountsInPDBe;
-      //         this.bestStructuresMappingsByUniProtIds = bestStructuresMappingsByUniProtIds;
-
-      //         this.apiLoadedStatus.update((state) => ({
-      //           ...state, // spread the existing state
-      //           uniprotMapping: 'done', // update the specific key dynamically
-      //           uniprotCountsInPDBe: 'done', // update the specific key dynamically
-      //           bestStructuresMappingsByUniProtIds: 'done', // update the specific key dynamically
-      //         }));
-
-      //         return {
-      //           uniprotMapping: data,
-      //           uniprotCountsInPDBe: uniprotCountsInPDBe,
-      //           bestStructuresMappingsByUniProtIds: bestStructuresMappingsByUniProtIds,
-      //         };
-      //       })
-      //     );
-      //   }),
-      //   // TODO: Improve error handling when some observables contain data and others not
-      //   catchError((_error: HttpErrorResponse) => {
-      //     this.uniprotMapping = {};
-      //     this.uniprotCountsInPDBe = {};
-      //     this.bestStructuresMappingsByUniProtIds = {};
-
-      //     this.apiLoadedStatus.update((state) => ({
-      //       ...state, // spread the existing state
-      //       uniprotMapping: 'done', // update the specific key dynamically
-      //       uniprotCountsInPDBe: 'done', // update the specific key dynamically
-      //       bestStructuresMappingsByUniProtIds: 'done', // update the specific key dynamically
-      //     }));
-
-      //     return of({
-      //       uniprotMapping: {},
-      //       uniprotCountsInPDBe: {},
-      //       bestStructuresMappingsByUniProtIds: {},
-      //     });
-      //   })
-      // ),
       this.entryAPIService.getUniprotMapping(this.entryId()).pipe(
         mergeMap((data: UniProtMapping) => {
           // For each UniProt id we create observables for bestStructures and proteinPagesSummary
@@ -924,6 +875,118 @@ export class EntryMainPageComponent implements AfterViewInit {
           return of([]);
         })
       ),
+      this.entryAPIService.getPDBRedoData(this.entryId()).pipe(
+        map((data) => {
+          console.log('pdbRedoQualityScore done');
+          this.pdbRedoQualityScore = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state,
+            pdbRedoQualityScore: 'done',
+          }));
+          return data;
+        }),
+        catchError((_error: HttpErrorResponse) => {
+          console.log('pdbRedoQualityScore done');
+          this.pdbRedoQualityScore = undefined;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            pdbRedoQualityScore: 'done', // update the specific key dynamically
+          }));
+          return of({});
+        })
+      ),
+      this.entryAPIService.getExperimentRawDataBMRB(this.entryId()).pipe(
+        map((data) => {
+          this.experimentRawDataBMRB = data as BMRBExperimentRawData[];
+          this.apiLoadedStatus.update((state) => ({
+            ...state,
+            experimentRawDataBMRB: 'done',
+          }));
+          return data;
+        }),
+        catchError((_error: HttpErrorResponse) => {
+          this.experimentRawDataBMRB = undefined;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            experimentRawDataBMRB: 'done', // update the specific key dynamically
+          }));
+          return of(undefined);
+        })
+      ),
+      this.entryAPIService.getExperimentRawDataSBGrid(this.entryId()).pipe(
+        map((data) => {
+          this.experimentRawDataSBGrid = data as SBGRIDExperimentRawData;
+          this.apiLoadedStatus.update((state) => ({
+            ...state,
+            experimentRawDataSBGrid: 'done',
+          }));
+          return data;
+        }),
+        catchError((_error: HttpErrorResponse) => {
+          this.experimentRawDataSBGrid = undefined;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            experimentRawDataSBGrid: 'done', // update the specific key dynamically
+          }));
+          return of(undefined);
+        })
+      ),
+      this.entryAPIService.getExperimentRawDataIRRMC(this.entryId()).pipe(
+        map((data) => {
+          this.experimentRawDataIRRMC = data;
+          this.apiLoadedStatus.update((state) => ({
+            ...state,
+            experimentRawDataIRRMC: 'done',
+          }));
+          return data;
+        }),
+        catchError((_error: HttpErrorResponse) => {
+          this.experimentRawDataIRRMC = undefined;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            experimentRawDataIRRMC: 'done', // update the specific key dynamically
+          }));
+          return of(undefined);
+        })
+      ),
+      this.entryAPIService.getExperimentRawDataEMPIAR(this.entryId()).pipe(
+        map((data) => {
+          this.experimentRawDataEMPIAR = data as EMPIARExperimentRawData[];
+          this.apiLoadedStatus.update((state) => ({
+            ...state,
+            experimentRawDataEMPIAR: 'done',
+          }));
+          return data;
+        }),
+        catchError((_error: HttpErrorResponse) => {
+          this.experimentRawDataEMPIAR = undefined;
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            experimentRawDataEMPIAR: 'done', // update the specific key dynamically
+          }));
+          return of(undefined);
+        })
+      ),
+      this.entryAPIService.getExperimentRawDataPDB(this.entryId()).pipe(
+        map((data) => {
+          this.experimentRawDataPDB = data as PDBExperimentRawData[];
+          console.log('experimentRawDataPDB done');
+          this.apiLoadedStatus.update((state) => ({
+            ...state,
+            experimentRawDataPDB: 'done',
+          }));
+          return data;
+        }),
+        catchError((_error: HttpErrorResponse) => {
+          this.experimentRawDataEMPIAR = undefined;
+          console.log('experimentRawDataPDB done');
+          this.apiLoadedStatus.update((state) => ({
+            ...state, // spread the existing state
+            experimentRawDataPDB: 'done', // update the specific key dynamically
+          }));
+          return of(undefined);
+        })
+      ),
     ]).pipe(
       map(
         ([
@@ -945,6 +1008,11 @@ export class EntryMainPageComponent implements AfterViewInit {
           complexDetails,
           assembliesData,
           carbohydratesData,
+          pdbRedoQualityScore,
+          experimentRawDataBMRB,
+          experimentRawDataSBGrid,
+          experimentRawDataIRRMC,
+          experimentRawDataEMPIAR,
         ]) => ({
           summary,
           molecules,
@@ -964,6 +1032,11 @@ export class EntryMainPageComponent implements AfterViewInit {
           complexDetails,
           assembliesData,
           carbohydratesData,
+          pdbRedoQualityScore,
+          experimentRawDataBMRB,
+          experimentRawDataSBGrid,
+          experimentRawDataIRRMC,
+          experimentRawDataEMPIAR,
         })
       )
     );

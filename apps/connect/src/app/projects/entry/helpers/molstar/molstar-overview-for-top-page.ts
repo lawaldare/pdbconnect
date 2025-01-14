@@ -7,10 +7,23 @@ import { Color } from 'molstar/lib/mol-util/color';
   providedIn: 'root',
 })
 export class MolstarOverviewForTopPage extends MolstarBaseClass {
+  /**
+   * Component extends MolstarBaseClass and contains functions for
+   * manipulating Molstar views specific to the overview tabs (page top)
+   */
+
+  /**
+   * When domains are shown in image gallery the whole assembly is hidden.
+   * This function enables the whole assembly to be viewed
+   */
   public async showDomainsWholeAssembly() {
     await changeComponentVisibility(this.molstarViewInstance(), 'whole-entry/polymer', false);
   }
 
+  /**
+   * When ligands are shown in image gallery they are shown as spheres.
+   * This function switches this representation to ball-and-stick
+   */
   public async showLigandsAsSticks(entityId: string, chemCompId: string, colorsFromMolj: { [key: string | number]: string }) {
     const ligandColor = colorsFromMolj[entityId];
     const hexColor = parseInt(ligandColor.replace(/^#/, ''), 16);
@@ -25,7 +38,10 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       await addRepresentationToComponent(this.molstarViewInstance(), componentName, reprNonSelectionLigand, true);
     }
   }
-
+  /**
+   * When modifications are shown in image gallery they are shown as spheres.
+   * This function switches this representation to ball-and-stick
+   */
   public async showModificationsAsSticks(imgName: string, colorsFromMolj: { [key: string | number]: string }) {
     const chemCompId = imgName.split('_')[2];
     const modificationColor = colorsFromMolj[chemCompId];
