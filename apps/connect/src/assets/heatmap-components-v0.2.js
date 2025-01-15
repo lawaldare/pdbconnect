@@ -24999,7 +24999,7 @@ let Y$ = class extends V$ {
       this.getEnd() - this.getStart() > 25 && (t.display = 'flex'),
       yt`<div style="${Wt(
         t
-      )}"><p><span>Please zoom using the vertical tracks </span><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjE5Ij4KICAgIDxyZWN0IHg9IjEiIHk9IjAiIHdpZHRoPSI2cHgiIGhlaWdodD0iMThweCIgc3R5bGU9ImZpbGw6IGRhcmtncmV5OyBzdHJva2U6IGJsYWNrOyBzdHJva2Utd2lkdGg6IDFweDsiPjwvcmVjdD4KPC9zdmc+"><span>(until 25 or fewer atoms) to show ligand atom names</span></p></div><svg class="container"></svg>`
+      )}"><p><span>Please zoom using the vertical tracks </span><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjE5Ij4KICAgIDxyZWN0IHg9IjEiIHk9IjAiIHdpZHRoPSI2cHgiIGhlaWdodD0iMThweCIgc3R5bGU9ImZpbGw6IGRhcmtncmV5OyBzdHJva2U6IGJsYWNrOyBzdHJva2Utd2lkdGg6IDFweDsiPjwvcmVjdD4KPC9zdmc+" alt="handle"><span>(until 25 or fewer atoms) to show ligand atom names</span></p></div><svg class="container"></svg>`
     );
   }
 };

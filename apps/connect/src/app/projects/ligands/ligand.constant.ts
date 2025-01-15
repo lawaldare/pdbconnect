@@ -27,7 +27,7 @@ export const headerSearchConfig = {
     { label: 'CLC_000191', url: '/chemicalCompound/show/CLC_000191' },
     { label: 'PRD_000468', url: '/chemicalCompound/show/PRD_000468' },
   ],
-  backgroundColor: 'rgba(15, 92, 90, 0.60)',
+  backgroundColor: '#085f5ccc',
   type: ThemeType.PDBEKB,
   placeholderText: 'View PDBe-KB ligand by PDB ligand ID (CCD/PRD/CLC)',
 };
