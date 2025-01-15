@@ -5,7 +5,7 @@
   <section>
     @for(publication of publicationsPage; track publication){
     <article>
-      <h5>{{ publication.title }}</h5>
+      <h4>{{ publication.title }}</h4>
       <p>
         @for(author of publication.author_list; track author.full_name; let islast = $last){
         <span> {{ author.full_name }}</span> {{ islast ? '' : ',' }} }

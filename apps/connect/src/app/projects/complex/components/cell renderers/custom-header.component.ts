@@ -17,7 +17,7 @@ export interface ICustomHeaderParams {
     <div>
       <p class="customHeaderLabel">{{ params.displayName }}</p>
       @if(params.showHelpIcon) {
-      <img src="{{ helpLogoSrc }}" class="icon" matTooltipClass="complex-name-tooltip" [matTooltip]="params.tooltipText" matTooltipPosition="below" />
+      <img src="{{ helpLogoSrc }}" class="icon" matTooltipClass="complex-name-tooltip" [matTooltip]="params.tooltipText" matTooltipPosition="below" alt="help icon" />
       } @if(params.enableFilterButton){
       <div #menuButton class="customHeaderMenuButton" (click)="onMenuClicked()">
         <i class="icon icon-common icon-search"></i>
