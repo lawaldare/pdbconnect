@@ -1,9 +1,9 @@
 import { Component, effect, ElementRef, inject, input, OnDestroy, Renderer2, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule, UtilService } from '@pdbc/core';
-import { MatSelectChange, MatSelectModule } from '@angular/material/select';
+import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
-import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { MolstarSelectionObj } from '../../helpers/molstar/molstar-helpers';
 import { VisualisationsDataProcessing } from './data-processing.facade';
@@ -45,7 +45,7 @@ export interface SequenceDetail {
 @Component({
   selector: 'pdbc-details-dashboard',
   standalone: true,
-  imports: [CommonModule, MatSelectModule, MatOptionModule, MatFormFieldModule, MatLabel, FormsModule, EntryDropdownComponent, MaterialModule],
+  imports: [CommonModule, MatSelectModule, MatOptionModule, MatFormFieldModule, FormsModule, EntryDropdownComponent, MaterialModule],
   templateUrl: './details-dashboard.component.html',
   styleUrl: './details-dashboard.component.scss',
 })

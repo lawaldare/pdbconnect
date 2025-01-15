@@ -4,12 +4,11 @@ import { ActivatedRoute } from '@angular/router';
 import { Meta } from '@angular/platform-browser';
 
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
-import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 
 @Component({
   selector: 'pdbc-main',
   standalone: true,
-  imports: [CommonModule, PdbeHeaderLogoMenuComponent, PdbeHeaderSearchComponent],
+  imports: [CommonModule, PdbeHeaderLogoMenuComponent],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
 })

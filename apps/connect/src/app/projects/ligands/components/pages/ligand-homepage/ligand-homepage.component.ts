@@ -4,14 +4,13 @@ import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { faqs, headerLogoMenuConfig, homePageUrls, ligandHomePageSeaderSearchConfig, quickLinks, slides } from '../../../ligand.constant';
 import { HeaderLogoMenuConfig, MaterialModule } from '@pdbc/core';
-import { UseCasesComponent } from '../../page-sections/use-cases/use-cases.component';
 import Splide from '@splidejs/splide';
 import { Slide } from '../../../data-models/slide';
 
 @Component({
   selector: 'pdbc-ligand-homepage',
   standalone: true,
-  imports: [CommonModule, PdbeHeaderLogoMenuComponent, PdbeHeaderSearchComponent, UseCasesComponent, MaterialModule],
+  imports: [CommonModule, PdbeHeaderLogoMenuComponent, PdbeHeaderSearchComponent, MaterialModule],
   templateUrl: './ligand-homepage.component.html',
   styleUrl: './ligand-homepage.component.scss',
 })

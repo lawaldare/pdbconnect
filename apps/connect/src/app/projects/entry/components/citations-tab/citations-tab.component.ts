@@ -1,6 +1,5 @@
-import { AfterViewInit, Component, DestroyRef, ElementRef, inject, input, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, input, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CitationArticleComponent } from '../citation-article/citation-article.component';
 import { CitationPublicationComponent } from '../citation-publication/citation-publication.component';
 import { MaterialModule } from '@pdbc/core';
 import { CitationXmlImagesComponent } from '../citation-xml-images/citation-xml-images.component';
@@ -13,7 +12,7 @@ import { EntryApiService } from '../../services/entry-api.service';
 @Component({
   selector: 'pdbc-citations-tab',
   standalone: true,
-  imports: [CommonModule, CitationArticleComponent, CitationPublicationComponent, MaterialModule, CitationXmlImagesComponent],
+  imports: [CommonModule, CitationPublicationComponent, MaterialModule],
   templateUrl: './citations-tab.component.html',
   styleUrl: './citations-tab.component.scss',
 })

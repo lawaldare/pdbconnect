@@ -1,11 +1,10 @@
-import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
-import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { EntryApiService } from '../../services/entry-api.service';
-import { DownloadOption, DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { catchError, combineLatest, forkJoin, map, mergeMap, Observable, of, switchMap } from 'rxjs';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { AnyExperimentDetail } from '../../data-models/experimental-details.model';
@@ -71,8 +70,6 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     CommonModule,
     PdbeHeaderLogoMenuComponent,
     PdbeHeaderSearchComponent,
-    PdbeNavMenuComponent,
-    DropdownMenuComponent,
     ClickOutsideDirective,
     MainInformationAreaComponent,
     OverviewMolstarComponent,
