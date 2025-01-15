@@ -37,7 +37,7 @@ lint:
   stage: test
   extends: .distributed
   script:
-    - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t lint --parallel=3
+    - npx --no-install nx affected --base=$NX_BASE --head=$NX_HEAD -t lint --parallel=3
   tags:
     - pdbe-shell
 
