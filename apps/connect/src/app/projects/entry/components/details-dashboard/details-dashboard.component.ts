@@ -336,7 +336,7 @@ export class DetailsDashboardComponent implements OnDestroy {
       this.renderer.setAttribute(this.protvistaInstance, 'entity-id', `${entityId}`);
       this.renderer.setAttribute(this.protvistaInstance, 'page-section', '1');
       this.renderer.setAttribute(this.protvistaInstance, 'legends', 'false');
-      this.renderer.setProperty(this.protvistaInstance, 'env', true);
+      this.renderer.setAttribute(this.protvistaInstance, 'env', '');
 
       const container = this.protvistaContainer.nativeElement;
       this.renderer.appendChild(container, this.protvistaInstance);
