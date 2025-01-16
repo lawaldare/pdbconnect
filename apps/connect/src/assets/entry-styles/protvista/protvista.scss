@@ -1,0 +1,49 @@
+.protvista-pdb {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+}
+
+.protvistaRow.expanded > .category-label {
+  background-color: #d0dfbb !important;
+  font-weight: 500;
+}
+
+/* .protvistaRow.expanded:hover > .category-label {
+    background-color: #e7efdd !important;
+} */
+.aggregate-track-content,
+.track-content-single {
+  border-bottom: 1px solid #000 !important;
+}
+
+.category-label {
+  background-color: #fff !important;
+  cursor: pointer;
+  border-bottom: 1px solid #000 !important;
+}
+
+.category-label:hover {
+  background-color: #e7efdd !important;
+}
+
+.track-label {
+  background-color: #e7efdd !important;
+  border-bottom: 1px solid #000 !important;
+  cursor: initial;
+}
+
+.track-content {
+  border-bottom: 1px solid #000 !important;
+}
+
+.pvConservationPlotRow .track-label {
+  vertical-align: top;
+  padding: 0.5em 0.2em;
+}
+
+.pvConservationPlotRow .track-label > div {
+  height: unset !important;
+}
+
+.pvConservationPlotRow .track-label .control {
+  height: unset !important;
+}

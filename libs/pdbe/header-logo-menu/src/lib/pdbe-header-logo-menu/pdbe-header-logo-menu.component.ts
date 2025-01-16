@@ -23,22 +23,9 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
 
   public links!: Link[];
 
-  public readonly defaultLinks = [
-    { name: 'Home', path: 'https://www.ebi.ac.uk/pdbe-srv/pdbechem/', openInNewTab: true },
-    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
-    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
-    { name: 'Training', path: 'https://github.com/PDBeurope/pdbe-notebooks/tree/main/pdbe_ligands_tutorials', openInNewTab: true },
-  ];
-
-  public readonly homepageLinks = [
-    { name: 'Home', path: '/', openInNewTab: false },
-    { name: 'Latest releases', path: '/latest-releases', openInNewTab: false },
-    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
-  ];
-
   ngOnInit() {
     this.headerLogoSrc = this.headerConfig.logoType === 'PDBe' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
-    this.links = this.headerConfig.isHomePage ? this.homepageLinks : this.defaultLinks;
+    this.links = this.headerConfig.urls || [];
   }
 
   public get getHeaderLogoClass(): string {

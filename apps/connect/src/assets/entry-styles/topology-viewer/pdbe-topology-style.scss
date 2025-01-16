@@ -1,0 +1,37 @@
+section.topology-viewer-container > div > div > div:nth-child(2) {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+
+section.topology-viewer-container > div > div > div:nth-child(2) > img {
+  top: 0;
+}
+
+section.topology-viewer-container > div > div > div:nth-child(2) > a {
+  margin-top: 2px;
+}
+
+.menuDesc {
+  white-space: nowrap;
+}
+
+.menuOptions {
+  float: none;
+  margin-left: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.menuSelectbox {
+  height: 28px;
+  font-size: 16px;
+  margin: 0;
+}
+
+.resetIcon {
+  top: 0;
+  right: 12px;
+}

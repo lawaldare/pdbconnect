@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'pdbc-struc-quality-gradients',
+  selector: 'pdbc-str-quality-gradient',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './struc-quality-gradients.component.html',

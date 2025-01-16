@@ -1,0 +1,59 @@
+#information-section {
+  width: 555px;
+  padding: 8px 12px;
+  background: #fff;
+
+  // font-family: 'IBM Plex Sans';
+  line-height: 27.2px;
+}
+
+h4 {
+  margin-bottom: 10px;
+}
+
+.info-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  & > span {
+    // max-width: 126px;
+    max-width: 148px;
+    width: 100%;
+    color: #1a1c1a;
+    font-size: 16px;
+    font-weight: 500;
+    display: block;
+  }
+}
+
+article {
+  i.icon {
+    margin-left: 2px;
+    display: inline-block;
+  }
+
+  i.icon-link::before {
+    --icon-search-color: #3b6fb6;
+
+    content: '';
+    width: 14px;
+    height: 14px;
+    mask-size: auto 14px;
+    position: absolute;
+    z-index: -1;
+    top: 3px;
+  }
+
+  i.icon-search::before {
+    --icon-search-color: #3b6fb6;
+
+    content: '';
+    width: 13px;
+    height: 13px;
+    mask-size: auto 13px;
+    position: absolute;
+    z-index: -1;
+    top: 4px;
+  }
+}

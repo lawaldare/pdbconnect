@@ -9,6 +9,7 @@ export const headerSearchComplexConfig = {
   ],
   backgroundColor: 'rgba(8, 95, 92, 0.79)',
   type: ThemeType.PDBEKB,
+  placeholderText: 'View PDBe-KB complex by PDBe complex ID',
 };
 
 export const navComplexSections = [

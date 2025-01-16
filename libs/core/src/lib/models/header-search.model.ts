@@ -8,4 +8,5 @@ export interface HeaderSearchConfig {
   type?: string;
   examples?: Example[];
   isHomepage?: boolean;
+  placeholderText?: string;
 }

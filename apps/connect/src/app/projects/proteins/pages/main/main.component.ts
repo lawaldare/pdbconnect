@@ -4,12 +4,11 @@ import { ActivatedRoute } from '@angular/router';
 import { Meta } from '@angular/platform-browser';
 
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
-import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 
 @Component({
   selector: 'pdbc-main',
   standalone: true,
-  imports: [CommonModule, PdbeHeaderLogoMenuComponent, PdbeHeaderSearchComponent],
+  imports: [CommonModule, PdbeHeaderLogoMenuComponent],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
 })
@@ -20,9 +19,9 @@ export class ProteinsMainPageComponent {
     backgroundColor: '#085F5C',
     logoType: 'PDBe-KB',
     urls: [
-      { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services' },
-      { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation' },
-      { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training' },
+      { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
+      { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
+      { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training', openInNewTab: true },
     ],
     menuHighlightColor: '#086C68',
   };

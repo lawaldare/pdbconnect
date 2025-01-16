@@ -29,6 +29,7 @@ export const headerSearchConfig = {
   ],
   backgroundColor: 'rgba(15, 92, 90, 0.60)',
   type: ThemeType.PDBEKB,
+  placeholderText: 'View PDBe-KB ligand by PDB ligand ID (CCD/PRD/CLC)',
 };
 
 export const ligandHomePageSeaderSearchConfig = {
@@ -42,6 +43,7 @@ export const ligandHomePageSeaderSearchConfig = {
   ],
   backgroundColor: '',
   type: ThemeType.PDBEKB,
+  placeholderText: 'View PDBe-KB ligand by PDB ligand ID (CCD/PRD/CLC)',
   isHomepage: true,
 };
 
@@ -49,7 +51,19 @@ export const headerLogoMenuConfig = {
   backgroundColor: '#085F5C',
   logoType: 'PDBe-KB',
   headerTitle: 'Ligands',
+  urls: [
+    { name: 'Home', path: 'https://www.ebi.ac.uk/pdbe-srv/pdbechem/', openInNewTab: true },
+    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
+    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
+    { name: 'Training', path: 'https://github.com/PDBeurope/pdbe-notebooks/tree/main/pdbe_ligands_tutorials', openInNewTab: true },
+  ],
 };
+
+export const homePageUrls = [
+  { name: 'Home', path: '/', openInNewTab: false },
+  { name: 'Latest releases', path: '/latest-releases', openInNewTab: false },
+  { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
+];
 
 export const cofactorTooltip = `Ligands are annotated as “cofactor-like” if their PARITY (https://www.sciencedirect.com/science/article/pii/S0969212618300492) similarity to one of the 27 cofactor classes defined in the CoFactor (https://www.ebi.ac.uk/thornton-srv/databases/CoFactor/) database is above a set threshold, and the protein binding to the ligand is an enzyme associated with that cofactor class`;
 export const drugTooltip = `Ligands are annotated as “drug-like” if the  protein binding to them is reported as a pharmacologically active target in the DrugBank database (https://go.drugbank.com/).`;

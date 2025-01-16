@@ -19,8 +19,11 @@
 
 .val-label {
   width: 142px;
-  min-height: 28px;
   line-height: normal;
+}
+
+.val-label.big {
+  width: 151px;
 }
 
 .val-gradient {
