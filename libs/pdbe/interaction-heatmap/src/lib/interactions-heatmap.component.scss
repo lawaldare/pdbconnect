@@ -173,9 +173,12 @@
   line-height: 1;
 }
 
-// nightingale-manager > * {
-//     margin-top: -10px;
-// }
+// Patch for some strange discrepancies in display between localhost and production
+// (display is block in localhost and unset in production)
+nightingale-manager {
+  display: block !important;
+}
+
 nightingale-navigation {
   margin-top: 4px;
 }
