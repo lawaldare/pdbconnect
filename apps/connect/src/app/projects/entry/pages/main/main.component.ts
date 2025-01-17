@@ -319,7 +319,6 @@ export class EntryMainPageComponent implements AfterViewInit {
           );
         }),
         mergeMap((statusCode: StatusCode) => {
-          console.log('statusCode', statusCode);
           this.statusCode.set(statusCode);
           if (statusCode === 'REL') {
             setTimeout(() => {
