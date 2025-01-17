@@ -19,10 +19,6 @@ export class AuthorsStringDirective implements OnChanges {
 
     const authorsArray = authors.split(',').map((author: string) => author.trim());
 
-    console.log('authorsArray', authorsArray);
-
-    // const occurrences = Object.keys(authors);
-
     for (const text of authorsArray) {
       const a = this.renderer.createElement('a');
       a.textContent = authorsArray.indexOf(text) !== authorsArray.length - 1 ? `${text}, ` : `${text}.`;

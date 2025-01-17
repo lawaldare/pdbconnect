@@ -1,25 +1,7 @@
-.root-container {
-  width: 100%;
+@import url('libs/core/src/lib/styles/pdb_connect.scss');
+
+.entry-page-container {
   padding-left: 30px;
-  margin: 16px auto 56px;
-}
-
-@media (width >= 576px) {
-  .root-container {
-    max-width: 540px;
-  }
-}
-
-@media (width >= 768px) {
-  .root-container {
-    max-width: 720px;
-  }
-}
-
-@media (width >= 992px) {
-  .root-container {
-    max-width: 1440px;
-  }
 }
 
 main {
@@ -34,8 +16,6 @@ main {
   .right {
     img {
       width: 507px;
-
-      // height: 367px;
     }
   }
 }
