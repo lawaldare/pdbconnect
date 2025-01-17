@@ -26,6 +26,7 @@ import {
   PDBExperimentRawData,
   SBGRIDExperimentRawData,
 } from '../data-models/experiment-raw-data.model';
+import { EntryStatus } from '../data-models/status.model';
 
 @Injectable({
   providedIn: 'root',
@@ -67,6 +68,10 @@ export class EntryApiService {
 
   public getEntryMolecules(entryId: string): Observable<Record<string, Molecule[]>> {
     return this.http.get<Record<string, Molecule[]>>(`${this.BASE_API}molecules/${entryId}`);
+  }
+
+  public getEntryStatus(entryId: string): Observable<EntryStatus> {
+    return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(map((data) => data[entryId][0]));
   }
 
   public getPrimaryPublicationAbstract(entryId: string): Observable<CitationDetail> {

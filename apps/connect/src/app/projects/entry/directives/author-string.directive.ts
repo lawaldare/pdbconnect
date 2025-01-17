@@ -1,0 +1,35 @@
+/* eslint-disable @angular-eslint/no-input-rename */
+/* eslint-disable @angular-eslint/directive-selector */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-prototype-builtins */
+
+import { Directive, Input, SimpleChanges, OnChanges, ElementRef, inject, Renderer2 } from '@angular/core';
+
+@Directive({
+  selector: '[authorsString]',
+  standalone: true,
+})
+export class AuthorsStringDirective implements OnChanges {
+  @Input() authors!: string;
+  public readonly renderer = inject(Renderer2);
+  public readonly el = inject(ElementRef);
+
+  ngOnChanges(changes: SimpleChanges) {
+    const authors = changes['authors']?.currentValue;
+
+    const authorsArray = authors.split(',').map((author: string) => author.trim());
+
+    console.log('authorsArray', authorsArray);
+
+    // const occurrences = Object.keys(authors);
+
+    for (const text of authorsArray) {
+      const a = this.renderer.createElement('a');
+      a.textContent = authorsArray.indexOf(text) !== authorsArray.length - 1 ? `${text}, ` : `${text}.`;
+      a.href = `https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:${text}`;
+      this.renderer.setAttribute(a, 'target', '_blank');
+      this.renderer.appendChild(this.el.nativeElement, a);
+      this.renderer.setAttribute(a, 'style', 'margin-right:5px;');
+    }
+  }
+}

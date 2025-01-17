@@ -1,6 +1,7 @@
 <pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
 <pdbc-pdbe-header-search id="entry-search" [headerSearchConfig]="pdbeSearchConfig"></pdbc-pdbe-header-search>
-<section class="root-container">
+@if (statusCode() === 'REL') {
+<section class="container">
   <main>
     <!-- Contains header line of page with entry id, experimental method, release data, link, download and view dropdowns -->
     <header>
@@ -157,3 +158,12 @@
     </section>
   </main>
 </section>
+} @else if (statusCode() === 'INITIAL') {
+<section class="container">
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+</section>
+} @else {
+<section class="container">
+  <pdbc-entry-main-alternative [entryStatus]="entryStatus()" />
+</section>
+}

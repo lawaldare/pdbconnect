@@ -5,10 +5,10 @@ import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { EntryApiService } from '../../services/entry-api.service';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { catchError, combineLatest, forkJoin, map, mergeMap, Observable, of, switchMap } from 'rxjs';
+import { catchError, combineLatest, EMPTY, forkJoin, map, mergeMap, Observable, of, switchMap, tap } from 'rxjs';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { AnyExperimentDetail } from '../../data-models/experimental-details.model';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { UniProtMapping } from '../../data-models/uniprot-mapping.model';
 import { BestStructureMapping } from '../../data-models/uniport-best-structures.model';
 import { BestStructureDict } from '../../data-models/uniprot-best-structures.model';
@@ -47,6 +47,9 @@ import {
   PDBExperimentRawData,
   SBGRIDExperimentRawData,
 } from '../../data-models/experiment-raw-data.model';
+import { EntryStatus, StatusCode } from '../../data-models/status.model';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { EntryMainAlternativeComponent } from '../../components/entry-main-alternative/entry-main-alternative.component';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -78,6 +81,8 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     ExperimentsValidationTabComponent,
     CitationsTabComponent,
     EntryDropdownComponent,
+    NgxSkeletonLoaderModule,
+    EntryMainAlternativeComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -134,7 +139,6 @@ export class EntryMainPageComponent implements AfterViewInit {
   _loadRowsEffect = effect(
     () => {
       const status = this.componentLoadedStatus();
-
       if (status['detailsDashboard'] && this.compCommunication.isTabDataGenerated() === false && this.molstarResidueInfoLoaded()) {
         // Call processInteractiveTablesData only when 'detailsDashboard' is loaded and tab data not generated yet
         this.dataProcessing.processInteractiveTablesData(
@@ -280,6 +284,9 @@ export class EntryMainPageComponent implements AfterViewInit {
   // API data from getExperimentRawDataPDB https://www.ebi.ac.uk/pdbe/api/pdb/entry/related_experiment_data/:entryID
   public experimentRawDataPDB?: PDBExperimentRawData[];
 
+  public statusCode = signal<StatusCode>('INITIAL');
+  public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
+
   constructor() {
     effect(async () => {
       // Access the current state
@@ -306,8 +313,23 @@ export class EntryMainPageComponent implements AfterViewInit {
         switchMap((params) => {
           const entryId = params['entryId'].toLowerCase();
           this.entryId.set(entryId);
-          this.molstarVisualisation.renderMolstarInitial(this.entryId(), this.molstarViewer.nativeElement);
-          return this.setPageData();
+          return this.entryAPIService.getEntryStatus(entryId).pipe(
+            tap((status: EntryStatus) => this.entryStatus.set({ ...status, entryId })),
+            map((response: EntryStatus) => response.status_code)
+          );
+        }),
+        mergeMap((statusCode: StatusCode) => {
+          console.log('statusCode', statusCode);
+          this.statusCode.set(statusCode);
+          if (statusCode === 'REL') {
+            setTimeout(() => {
+              this.molstarVisualisation.renderMolstarInitial(this.entryId(), this.molstarViewer.nativeElement);
+            });
+            return this.setPageData();
+          } else {
+            this.statusCode.set(statusCode);
+            return EMPTY;
+          }
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -874,7 +896,6 @@ export class EntryMainPageComponent implements AfterViewInit {
       ),
       this.entryAPIService.getPDBRedoData(this.entryId()).pipe(
         map((data) => {
-          console.log('pdbRedoQualityScore done');
           this.pdbRedoQualityScore = data;
           this.apiLoadedStatus.update((state) => ({
             ...state,
@@ -883,7 +904,6 @@ export class EntryMainPageComponent implements AfterViewInit {
           return data;
         }),
         catchError((_error: HttpErrorResponse) => {
-          console.log('pdbRedoQualityScore done');
           this.pdbRedoQualityScore = undefined;
           this.apiLoadedStatus.update((state) => ({
             ...state, // spread the existing state
@@ -967,7 +987,6 @@ export class EntryMainPageComponent implements AfterViewInit {
       this.entryAPIService.getExperimentRawDataPDB(this.entryId()).pipe(
         map((data) => {
           this.experimentRawDataPDB = data as PDBExperimentRawData[];
-          console.log('experimentRawDataPDB done');
           this.apiLoadedStatus.update((state) => ({
             ...state,
             experimentRawDataPDB: 'done',
@@ -976,7 +995,6 @@ export class EntryMainPageComponent implements AfterViewInit {
         }),
         catchError((_error: HttpErrorResponse) => {
           this.experimentRawDataEMPIAR = undefined;
-          console.log('experimentRawDataPDB done');
           this.apiLoadedStatus.update((state) => ({
             ...state, // spread the existing state
             experimentRawDataPDB: 'done', // update the specific key dynamically
@@ -984,59 +1002,7 @@ export class EntryMainPageComponent implements AfterViewInit {
           return of(undefined);
         })
       ),
-    ]).pipe(
-      map(
-        ([
-          summary,
-          molecules,
-          experiment,
-          uniprotData,
-          interproMapping,
-          pfamMapping,
-          files,
-          qualityScores,
-          cathMapping,
-          scopMapping,
-          modifications,
-          keyValidationStats,
-          xRayRefine,
-          primaryPublication,
-          articlesCiting,
-          complexDetails,
-          assembliesData,
-          carbohydratesData,
-          pdbRedoQualityScore,
-          experimentRawDataBMRB,
-          experimentRawDataSBGrid,
-          experimentRawDataIRRMC,
-          experimentRawDataEMPIAR,
-        ]) => ({
-          summary,
-          molecules,
-          experiment,
-          uniprotData,
-          interproMapping,
-          pfamMapping,
-          files,
-          qualityScores,
-          cathMapping,
-          scopMapping,
-          modifications,
-          keyValidationStats,
-          xRayRefine,
-          primaryPublication,
-          articlesCiting,
-          complexDetails,
-          assembliesData,
-          carbohydratesData,
-          pdbRedoQualityScore,
-          experimentRawDataBMRB,
-          experimentRawDataSBGrid,
-          experimentRawDataIRRMC,
-          experimentRawDataEMPIAR,
-        })
-      )
-    );
+    ]);
   }
 
   public changeCurrentTab(tabName: string) {
