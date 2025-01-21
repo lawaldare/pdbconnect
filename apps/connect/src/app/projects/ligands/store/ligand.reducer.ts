@@ -69,15 +69,20 @@ export const ligandReducer = createReducer(
     ...state,
     loadingState: action.status,
   })),
-  on(LigandActions.setDownloadOptions, (state, action) => ({
-    ...state,
-    downloadOptions: [
-      { name: 'CIF file', url: `${downloadBaseUrl}${state.ligandId}.cif`, downloadable: true },
-      { name: 'Ideal SDF', url: `${downloadBaseUrl}${state.ligandId}_ideal.sdf`, downloadable: true },
-      { name: 'Model SDF', url: `${downloadBaseUrl}${state.ligandId}_model.sdf`, downloadable: true },
-      { name: 'Model CML', url: `${downloadBaseUrl}${state.ligandId}_model.cml`, downloadable: true },
-    ],
-  })),
+  on(LigandActions.setDownloadOptions, (state, action) => {
+    const splits = state.ligandId.split('_');
+    const updatedLigandId = `${splits[0]}CC_${splits[1]}`;
+    const id = state.ligandId.startsWith('PRD') ? updatedLigandId : state.ligandId;
+    return {
+      ...state,
+      downloadOptions: [
+        { name: 'CIF file', url: `${downloadBaseUrl}${id}.cif`, downloadable: true },
+        { name: 'Ideal SDF', url: `${downloadBaseUrl}${id}_ideal.sdf`, downloadable: true },
+        { name: 'Model SDF', url: `${downloadBaseUrl}${id}_model.sdf`, downloadable: true },
+        { name: 'Model CML', url: `${downloadBaseUrl}${id}_model.cml`, downloadable: true },
+      ],
+    };
+  }),
   on(LigandActions.setFragments, (state, action) => ({
     ...state,
     fragments: action.fragments,
