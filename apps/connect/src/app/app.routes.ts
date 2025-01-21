@@ -19,7 +19,7 @@ export const appRoutes: Route[] = [
   {
     path: 'chemicalCompound/show/:ligandId',
     loadComponent: () => import('./projects/ligands/components/pages/ligand-wrapper/ligand-wrapper.component').then((m) => m.LigandWrapperComponent),
-    title: 'PDBe Ligand Pages (PDBeChem)',
+    title: 'PDBe-KB Ligand Pages (PDBeChem)',
   },
   // { path: '**', redirectTo: '', pathMatch: 'full' },
 ];
