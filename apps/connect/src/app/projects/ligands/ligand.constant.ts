@@ -54,7 +54,7 @@ export const headerLogoMenuConfig = {
   urls: [
     { name: 'Home', path: 'https://www.ebi.ac.uk/pdbe-srv/pdbechem/', openInNewTab: true },
     { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
-    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
+    { name: 'Documentation', path: 'https://github.com/PDBe-KB/pdbe-kb-manual/wiki', openInNewTab: true },
     { name: 'Training', path: 'https://github.com/PDBeurope/pdbe-notebooks/tree/main/pdbe_ligands_tutorials', openInNewTab: true },
   ],
 };
@@ -62,7 +62,7 @@ export const headerLogoMenuConfig = {
 export const homePageUrls = [
   { name: 'Home', path: '/', openInNewTab: false },
   { name: 'Latest releases', path: '/latest-releases', openInNewTab: false },
-  { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
+  { name: 'Documentation', path: 'https://github.com/PDBe-KB/pdbe-kb-manual/wiki', openInNewTab: true },
 ];
 
 export const cofactorTooltip = `Ligands are annotated as “cofactor-like” if their PARITY (https://www.sciencedirect.com/science/article/pii/S0969212618300492) similarity to one of the 27 cofactor classes defined in the CoFactor (https://www.ebi.ac.uk/thornton-srv/databases/CoFactor/) database is above a set threshold, and the protein binding to the ligand is an enzyme associated with that cofactor class`;
