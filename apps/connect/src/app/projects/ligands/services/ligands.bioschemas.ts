@@ -1,42 +1,19 @@
-import { DOCUMENT } from '@angular/common';
-import { EnvironmentInjector, inject, Inject, Injectable, Renderer2, runInInjectionContext, Signal } from '@angular/core';
+import { EnvironmentInjector, inject, Injectable, Renderer2, runInInjectionContext } from '@angular/core';
 import { LigandStoreState } from '../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../store/ligand.selectors';
 import { map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { BioschemasService } from '@pdbc/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LigandsBioschemasService {
   private readonly globalStore = inject(Store<LigandStoreState>);
+  private readonly bioschemasService = inject(BioschemasService);
 
-  constructor(@Inject(DOCUMENT) private document: Document, private environmentInjector: EnvironmentInjector) {}
-
-  /**
-   * Set JSON-LD Microdata on the Document Body.
-   *
-   * @param renderer2             The Angular Renderer
-   * @param data                  The data for the JSON-LD script
-   * @returns                     Void
-   */
-  private setJsonLd(renderer: Renderer2, data: any): void {
-    this.removeJsonLdScript(renderer);
-    const script = renderer.createElement('script');
-    script.type = 'application/ld+json';
-    script.textContent = JSON.stringify(data);
-    script.setAttribute('class', 'structured-data');
-
-    renderer.appendChild(this.document.head, script);
-  }
-
-  private removeJsonLdScript(renderer: Renderer2): void {
-    const script = this.document.querySelector('.structured-data');
-    if (script) {
-      renderer.removeChild(this.document.body, script);
-    }
-  }
+  constructor(private environmentInjector: EnvironmentInjector) {}
 
   public buildBioschemasJSON(renderer: Renderer2): void {
     runInInjectionContext(this.environmentInjector, () => {
@@ -86,7 +63,7 @@ export class LigandsBioschemasService {
         }),
       };
 
-      this.setJsonLd(renderer, JSON);
+      this.bioschemasService.setJsonLd(renderer, JSON);
     });
   }
 }
