@@ -66,6 +66,7 @@ export class MainComponent implements OnInit {
           this.globalStore.dispatch(ComplexActions.setCurrentComplexId({ complexId }));
           this.globalStore.dispatch(ComplexActions.getComplexData());
           this.globalStore.dispatch(ComplexActions.getLigandsForComplexes());
+          this.globalStore.dispatch(ComplexActions.getComplexInteractions());
           return of({});
         }),
         takeUntilDestroyed(this.destroyRef)

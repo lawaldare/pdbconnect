@@ -11,10 +11,11 @@
   <section class="subcomplexes">
     <h4>Subcomplexes</h4>
     <div class="card-container">
-      @for(complexId of subComplexesPage; track complexId){
-      <pdbc-complex-card [complexId]="complexId" />
+      @for(complexInteraction of subComplexesPage(); track complexInteraction.pdb_complex_id){
+      <pdbc-complex-card [complexInteraction]="complexInteraction" />
       }
     </div>
+
     <mat-paginator
       class="paginator-container"
       [length]="subcomplexesLength()"
@@ -30,10 +31,11 @@
   <section class="supercomplexes">
     <h4>Supercomplexes</h4>
     <div class="card-container">
-      @for(complexId of superComplexesPage; track complexId){
-      <pdbc-complex-card [complexId]="complexId" />
+      @for(complexInteraction of superComplexesPage(); track complexInteraction.pdb_complex_id){
+      <pdbc-complex-card [complexInteraction]="complexInteraction" />
       }
     </div>
+
     <mat-paginator
       class="paginator-container"
       [length]="supercomplexesLength()"

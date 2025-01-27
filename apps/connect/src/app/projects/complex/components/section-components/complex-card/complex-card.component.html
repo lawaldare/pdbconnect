@@ -1,5 +1,3 @@
-@if(complexData()){
-
 <div class="card-container">
   <div class="image-box">
     @if(complexImageSrc()){
@@ -11,18 +9,17 @@
   <article>
     <a
       matTooltipClass="complex-name-tooltip"
-      [matTooltip]="complexData().name ?? 'Other'"
+      [matTooltip]="complexInteraction().name"
       matTooltipPosition="above"
-      (click)="openComplexPage(complexData().complexId)"
+      (click)="openComplexPage(complexInteraction().pdb_complex_id)"
     >
-      {{ complexData().complexId }}
+      {{ complexInteraction().pdb_complex_id }}
       <i class="icon icon-link icon-common"></i>
     </a>
     <p class="participant">
-      @for(participant of complexData().participants; track participant){
+      @for(participant of complexInteraction().common_participants; track participant){
       <span>{{ participant.accession }} ({{ participant.stoichiometry }}), </span>
       }
     </p>
   </article>
 </div>
-}
