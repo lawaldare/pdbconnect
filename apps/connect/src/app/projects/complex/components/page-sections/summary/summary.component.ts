@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ParticipantDirective } from '../../../directives/participants.directive';
 import { ComplexSymmetryPipe } from '../../../pipes/symmetry.pipe';
-import { Assembly } from '../../../models/complex-structure.model';
+import { Assembly, Participant } from '../../../models/complex-structure.model';
 import { OEMCDirective } from '../../../directives/oemc.directive';
 import { MaterialModule } from '@pdbc/core';
 import { Store } from '@ngrx/store';
@@ -33,6 +33,9 @@ export class SummaryComponent {
   );
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
+  public participants = signal<Participant[]>(this.summaryData()?.participants.slice(0, 4) ?? []);
+  public textIcon = signal<string>('more');
+
   private countPdbIdExperimentalMethod(data: Assembly[]) {
     const methodCounts = {} as any;
 
@@ -55,5 +58,15 @@ export class SummaryComponent {
     }
 
     return result;
+  }
+
+  public viewMore(): void {
+    if (this.textIcon() === 'less') {
+      this.participants.update(() => this.summaryData()?.participants.slice(0, 4) ?? []);
+      this.textIcon.set('more');
+    } else {
+      this.participants.update(() => this.summaryData()?.participants ?? []);
+      this.textIcon.set('less');
+    }
   }
 }
