@@ -1,4 +1,4 @@
-import { Component, inject, input, OnChanges, signal } from '@angular/core';
+import { Component, computed, inject, input, OnChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ComplexInteraction } from '../../../models/complex-structure.model';
 import { RouterModule } from '@angular/router';
@@ -16,6 +16,15 @@ export class ComplexCardComponent implements OnChanges {
   private readonly util = inject(UtilService);
   public complexInteraction = input.required<ComplexInteraction>();
   public complexImageSrc = signal<string>('');
+  public participants = computed(() => {
+    return this.complexInteraction().relationship_type === 'sub-complex'
+      ? this.complexInteraction().common_participants
+      : this.complexInteraction().additional_participants;
+  });
+  public subTitle = computed(() => {
+    return this.complexInteraction().relationship_type === 'sub-complex' ? 'Common' : 'Additional';
+  });
+  public showLess = signal<boolean>(true);
 
   ngOnChanges(): void {
     const link = `https://www.ebi.ac.uk/pdbe/static/entry/${this.complexInteraction().representative_structure.pdb_id}_assembly_${
@@ -26,5 +35,8 @@ export class ComplexCardComponent implements OnChanges {
 
   public openComplexPage(complexId: string): void {
     this.util.redirectToSearchTerm(complexId);
+  }
+  viewMore(): void {
+    this.showLess.update((value) => !value);
   }
 }

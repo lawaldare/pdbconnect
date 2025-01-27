@@ -29,8 +29,23 @@
       }
     }
 
-    p {
+    p,
+    li {
       font-size: 13px;
+      line-height: 22.7px;
+    }
+
+    h4 {
+      font-weight: 400;
+      font-size: 18px;
+    }
+
+    p.view-more {
+      color: #3b6fb6;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 22.7px;
+      cursor: pointer;
     }
   }
 }
