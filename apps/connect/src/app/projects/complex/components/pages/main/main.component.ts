@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
@@ -20,6 +20,7 @@ import { ComplexActions } from '../../../store/complex.actions';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { LoadingState } from '../../../../ligands/enums/loading-state.enum';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { ComplexBioschemasService } from '../../../services/complex.bioschemas';
 
 @Component({
   selector: 'pdbc-main',
@@ -43,6 +44,8 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 export class MainComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly bioschemasService = inject(ComplexBioschemasService);
+  private readonly renderer = inject(Renderer2);
 
   public readonly headerLogoMenuConfig = headerComplexLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchComplexConfig;
@@ -71,6 +74,8 @@ export class MainComponent implements OnInit {
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe();
+      .subscribe(() => {
+        this.bioschemasService.buildBioschemasJSON(this.renderer);
+      });
   }
 }

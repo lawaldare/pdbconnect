@@ -20,14 +20,13 @@ export class BioschemasService {
     script.type = 'application/ld+json';
     script.textContent = JSON.stringify(data);
     script.setAttribute('class', 'structured-data');
-
     renderer.appendChild(this.document.head, script);
   }
 
   private removeJsonLdScript(renderer: Renderer2): void {
     const script = this.document.querySelector('.structured-data');
     if (script) {
-      renderer.removeChild(this.document.body, script);
+      renderer.removeChild(this.document.head, script);
     }
   }
 }

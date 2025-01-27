@@ -47,5 +47,5 @@ export interface ComplexInteraction {
   representative_structure: RepresentativeStructure;
   relationship_type: RelationshipType;
   common_participants: Participant[];
-  additional_participants: any[];
+  additional_participants: Participant[];
 }
