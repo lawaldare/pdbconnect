@@ -60,34 +60,6 @@ export class ParticipantDirective implements OnChanges {
     this.orderedList = orderedList;
   }
 
-  // private addShowMore(text: string): void {
-  //   const showMore = this.renderer.createElement('a');
-  //   this.renderer.setAttribute(showMore, 'href', '#');
-  //   this.renderer.setAttribute(showMore, 'style', 'color: #3B6FB6; border: none; text-decoration: none;');
-  //   this.renderer.listen(showMore, 'click', (event) => this.toggleText(event));
-
-  //   const showMoreText = this.renderer.createText(text);
-  //   this.renderer.appendChild(showMore, showMoreText);
-
-  //   const icon = this.renderer.createElement('i');
-  //   this.renderer.addClass(icon, 'icon');
-  //   this.renderer.addClass(icon, 'icon-common');
-  //   this.renderer.addClass(icon, this.truncated ? 'icon-angle-down' : 'icon-angle-up'); // Toggle the icon classes
-  //   this.renderer.setStyle(icon, 'margin-left', '5px'); // Add some spacing between the text and icon
-
-  //   this.renderer.appendChild(showMore, icon);
-  //   this.renderer.appendChild(this.el.nativeElement, showMore);
-  // }
-
-  // private toggleText(event: Event): void {
-  //   event.preventDefault();
-  //   this.truncated = !this.truncated;
-  //   const displayText = this.truncated ? this.truncatedText : this.fullText;
-  //   const showMoreText = this.truncated ? 'Show more' : 'Show less';
-  //   this.renderer.setProperty(this.el.nativeElement, 'innerText', displayText);
-  //   this.addShowMore(showMoreText);
-  // }
-
   resetEnv(): void {
     if (this.orderedList) {
       this.renderer.removeChild(this.el.nativeElement, this.orderedList);

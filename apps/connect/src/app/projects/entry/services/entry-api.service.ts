@@ -27,14 +27,15 @@ import {
   SBGRIDExperimentRawData,
 } from '../data-models/experiment-raw-data.model';
 import { EntryStatus } from '../data-models/status.model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EntryApiService {
-  private BASE_API = 'https://www.ebi.ac.uk/pdbe/api/pdb/entry/';
-  private MAPPINGS_API = 'https://www.ebi.ac.uk/pdbe/api/mappings/';
-  private VALIDATION_API = 'https://www.ebi.ac.uk/pdbe/api/validation/';
+  private BASE_API = `${environment.pdbeBaseUrl}api/pdb/entry/`;
+  private MAPPINGS_API = `${environment.pdbeBaseUrl}api/mappings/`;
+  private VALIDATION_API = `${environment.pdbeBaseUrl}api/validation/`;
 
   private readonly http = inject(HttpClient);
 
