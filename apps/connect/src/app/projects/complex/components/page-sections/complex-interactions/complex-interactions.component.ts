@@ -31,18 +31,15 @@ export class ComplexInteractionsComponent implements OnInit {
   public subcomplexesPageSizeOptions = computed(() => [5, 10, 20, 50]);
   public supercomplexesPageSizeOptions = computed(() => [5, 10, 20, 50]);
 
-  public subLength = computed(() => this.subcomplexInteractions()?.length);
-  public superLength = computed(() => this.supercomplexInteractions()?.length);
-
   private subPageIndex = signal(0);
   private superPageIndex = signal(0);
 
-  subComplexesPage = computed(() => {
+  public subComplexesPage = computed(() => {
     const start = this.subPageIndex() * this.subcomplexesPageSize();
     const end = start + this.subcomplexesPageSize();
     return (this.subcomplexInteractions() ?? []).slice(start, end);
   });
-  superComplexesPage = computed(() => {
+  public superComplexesPage = computed(() => {
     const start = this.superPageIndex() * this.supercomplexesPageSize();
     const end = start + this.supercomplexesPageSize();
     return (this.supercomplexInteractions() ?? []).slice(start, end);
@@ -51,7 +48,7 @@ export class ComplexInteractionsComponent implements OnInit {
   public navSections = toSignal(this.globalStore.select(ComplexSelectors.navItems));
 
   ngOnInit(): void {
-    if (this.subLength() === 0 && this.superLength() === 0) {
+    if (this.subcomplexesLength() === 0 && this.supercomplexesLength() === 0) {
       this.updateNavItemsWhenNoInteraction();
     }
   }
@@ -61,7 +58,7 @@ export class ComplexInteractionsComponent implements OnInit {
     this.globalStore.dispatch(ComplexActions.setNavItems({ navItems: tempNavsections }));
   }
 
-  handlePageEvent(event: PageEvent, filterOn: string) {
+  public handlePageEvent(event: PageEvent, filterOn: string): void {
     switch (filterOn) {
       case 'subcomplexes': {
         this.subPageIndex.set(event.pageIndex);
