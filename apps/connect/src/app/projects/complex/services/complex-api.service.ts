@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { Observable, delay, map } from 'rxjs';
-import { ComplexData } from '../models/complex-structure.model';
+import { ComplexData, ComplexInteraction } from '../models/complex-structure.model';
 
 @Injectable({
   providedIn: 'root',
@@ -29,5 +29,11 @@ export class ComplexAPIService {
 
   public getPublications(pdbIds: string): Observable<any> {
     return this.http.post<any>(`${this.AggregatedApiUrl}pdb/entry/publications`, pdbIds);
+  }
+
+  public getInteractions(complexId: string): Observable<ComplexInteraction[]> {
+    return this.http
+      .get<Record<string, ComplexInteraction[]>>(`${this.AggregatedApiUrl}complex/interactions/${complexId}`)
+      .pipe(map((response: any) => response[complexId]));
   }
 }

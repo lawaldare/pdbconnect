@@ -8,11 +8,12 @@ import { ComplexSelectors } from '../../../store/complex.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexActions } from '../../../store/complex.actions';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
   selector: 'pdbc-complex-interactions',
   standalone: true,
-  imports: [CommonModule, ToolTipComponent, ComplexCardComponent, MatPaginator],
+  imports: [CommonModule, ToolTipComponent, ComplexCardComponent, MatPaginator, NgxSkeletonLoaderModule],
   templateUrl: './complex-interactions.component.html',
   styleUrl: './complex-interactions.component.scss',
 })
@@ -20,27 +21,34 @@ export class ComplexInteractionsComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   private readonly globalStore = inject(Store<ComplexStoreState>);
-  public summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
+  public subcomplexInteractions = toSignal(this.globalStore.select(ComplexSelectors.subComplexInteractions));
+  public supercomplexInteractions = toSignal(this.globalStore.select(ComplexSelectors.superComplexInteractions));
 
-  public subcomplexesLength = computed(() => this.summaryData()?.subcomplexes.length);
-  public supercomplexesLength = computed(() => this.summaryData()?.supercomplexes.length);
+  public subcomplexesLength = computed(() => this.subcomplexInteractions()?.length);
+  public supercomplexesLength = computed(() => this.supercomplexInteractions()?.length);
   public subcomplexesPageSize = signal<number>(5);
   public supercomplexesPageSize = signal<number>(5);
   public subcomplexesPageSizeOptions = computed(() => [5, 10, 20, 50]);
   public supercomplexesPageSizeOptions = computed(() => [5, 10, 20, 50]);
 
-  public subComplexesPage: string[] = [];
-  public superComplexesPage: string[] = [];
+  private subPageIndex = signal(0);
+  private superPageIndex = signal(0);
 
-  public subLength = computed(() => this.summaryData()?.subcomplexes.length);
-  public superLength = computed(() => this.summaryData()?.supercomplexes.length);
+  public subComplexesPage = computed(() => {
+    const start = this.subPageIndex() * this.subcomplexesPageSize();
+    const end = start + this.subcomplexesPageSize();
+    return (this.subcomplexInteractions() ?? []).slice(start, end);
+  });
+  public superComplexesPage = computed(() => {
+    const start = this.superPageIndex() * this.supercomplexesPageSize();
+    const end = start + this.supercomplexesPageSize();
+    return (this.supercomplexInteractions() ?? []).slice(start, end);
+  });
 
   public navSections = toSignal(this.globalStore.select(ComplexSelectors.navItems));
 
   ngOnInit(): void {
-    this.subComplexesPage = (this.summaryData()?.subcomplexes ?? []).slice(0, this.subcomplexesPageSize());
-    this.superComplexesPage = (this.summaryData()?.supercomplexes ?? []).slice(0, this.supercomplexesPageSize());
-    if (this.subLength() === 0 && this.superLength() === 0) {
+    if (this.subcomplexesLength() === 0 && this.supercomplexesLength() === 0) {
       this.updateNavItemsWhenNoInteraction();
     }
   }
@@ -50,18 +58,14 @@ export class ComplexInteractionsComponent implements OnInit {
     this.globalStore.dispatch(ComplexActions.setNavItems({ navItems: tempNavsections }));
   }
 
-  handlePageEvent(event: PageEvent, filterOn: string) {
+  public handlePageEvent(event: PageEvent, filterOn: string): void {
     switch (filterOn) {
       case 'subcomplexes': {
-        const startIndex = event.pageIndex * event.pageSize;
-        const endIndex = startIndex + event.pageSize;
-        this.subComplexesPage = this.summaryData()?.subcomplexes ?? [].slice(startIndex, endIndex);
+        this.subPageIndex.set(event.pageIndex);
         break;
       }
       case 'supercomplexes': {
-        const startIndex = event.pageIndex * event.pageSize;
-        const endIndex = startIndex + event.pageSize;
-        this.superComplexesPage = this.summaryData()?.supercomplexes ?? [].slice(startIndex, endIndex);
+        this.superPageIndex.set(event.pageIndex);
         break;
       }
     }

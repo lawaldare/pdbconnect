@@ -20,7 +20,6 @@ export class ParticipantDirective implements OnChanges {
   private init(): void {
     this.resetEnv();
     const orderedList = this.renderer.createElement('ul');
-    this.renderer.appendChild(this.el.nativeElement, orderedList);
     for (const participant of this.participants) {
       if (participant.accession_type === 'UniProt') {
         const anchorTag = this.renderer.createElement('a');
@@ -36,7 +35,6 @@ export class ParticipantDirective implements OnChanges {
         // this.renderer.setStyle(textTag, 'margin-left', '5px');
 
         const list = this.renderer.createElement('li');
-        this.renderer.appendChild(orderedList, list);
 
         const icon = this.renderer.createElement('i');
         this.renderer.addClass(icon, 'icon');
@@ -48,6 +46,8 @@ export class ParticipantDirective implements OnChanges {
         this.renderer.appendChild(anchorTag, icon);
         this.renderer.appendChild(list, anchorTag);
         this.renderer.appendChild(list, textTag);
+
+        this.renderer.appendChild(orderedList, list);
       } else {
         const spanTag = this.renderer.createElement('span');
         spanTag.textContent = `${participant.accession} (${participant.name}, ${participant.stoichiometry} ${participant.stoichiometry > 1 ? 'copies' : 'copy'}) `;
@@ -56,6 +56,7 @@ export class ParticipantDirective implements OnChanges {
         this.renderer.appendChild(orderedList, list);
       }
     }
+    this.renderer.appendChild(this.el.nativeElement, orderedList);
     this.orderedList = orderedList;
   }
 

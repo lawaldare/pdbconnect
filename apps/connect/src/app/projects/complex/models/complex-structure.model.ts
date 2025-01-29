@@ -38,3 +38,14 @@ export interface ComplexData {
   supercomplexes: string[];
   complexId: string;
 }
+
+type RelationshipType = 'sub-complex' | 'super-complex';
+
+export interface ComplexInteraction {
+  pdb_complex_id: string;
+  name: string;
+  representative_structure: RepresentativeStructure;
+  relationship_type: RelationshipType;
+  common_participants: Participant[];
+  additional_participants: Participant[];
+}

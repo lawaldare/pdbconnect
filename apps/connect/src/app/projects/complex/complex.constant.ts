@@ -26,4 +26,9 @@ export const headerComplexLogoMenuConfig = {
   backgroundColor: '#085F5C',
   logoType: 'PDBe-KB',
   headerTitle: 'Complex',
+  urls: [
+    { name: 'Home', path: 'https://www.ebi.ac.uk/pdbe-srv/pdbechem/', openInNewTab: true },
+    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
+    { name: 'Documentation', path: 'https://github.com/PDBe-KB/pdbe-kb-manual/wiki', openInNewTab: true },
+  ],
 };

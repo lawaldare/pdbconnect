@@ -1,0 +1,28 @@
+<main class="entry-page-container">
+  <div class="left">
+    <header>
+      <h1>{{ status().entryId }}</h1>
+      <span>{{ status().experimental_method | titlecase }}</span>
+    </header>
+    <section class="hero">
+      <p class="hero__title">{{ status().pageTitle }}</p>
+      <div class="hero__content" [innerHTML]="status().pageContent"></div>
+    </section>
+    <section class="summary">
+      @if(status().title !== 'n/a'){
+      <div class="summary__content">
+        <p class="summary__content__title">Entry title</p>
+        <p class="summary__content__description">{{ status().title }}</p>
+      </div>
+      } @if(status().entry_authors !== 'n/a'){
+      <div class="summary__content">
+        <p class="summary__content__title">Authors</p>
+        <p class="summary__content__description" authorsString [authors]="status().entry_authors"></p>
+      </div>
+      }
+    </section>
+  </div>
+  <div class="right">
+    <img src="assets/img/3d_empty_state.png" alt="empty state image" />
+  </div>
+</main>

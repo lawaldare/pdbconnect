@@ -1,5 +1,3 @@
-@if(complexData()){
-
 <div class="card-container">
   <div class="image-box">
     @if(complexImageSrc()){
@@ -11,18 +9,28 @@
   <article>
     <a
       matTooltipClass="complex-name-tooltip"
-      [matTooltip]="complexData().name ?? 'Other'"
+      [matTooltip]="complexInteraction().name"
       matTooltipPosition="above"
-      (click)="openComplexPage(complexData().complexId)"
+      (click)="openComplexPage(complexInteraction().pdb_complex_id)"
     >
-      {{ complexData().complexId }}
+      {{ complexInteraction().pdb_complex_id }}
       <i class="icon icon-link icon-common"></i>
     </a>
-    <p class="participant">
-      @for(participant of complexData().participants; track participant){
-      <span>{{ participant.accession }} ({{ participant.stoichiometry }}), </span>
+    <div class="participant">
+      <h4>{{ subTitle() }} components</h4>
+      @if(showLess()){ @for(participant of participants().slice(0,4); track participant.accession){
+      <ul style="margin-bottom: 0">
+        <li>{{ participant.accession }} ({{ participant.name }}, {{ participant.stoichiometry }} {{ participant.stoichiometry > 1 ? 'copies' : 'copy' }})</li>
+      </ul>
+      } @if(participants().length > 4){
+      <p role="button" class="view-more" (click)="viewMore()">View more</p>
+      } }@else { @for(participant of participants(); track participant.accession){
+      <ul style="margin-bottom: 0">
+        <li>{{ participant.accession }} ({{ participant.name }}, {{ participant.stoichiometry }} {{ participant.stoichiometry > 1 ? 'copies' : 'copy' }})</li>
+      </ul>
       }
-    </p>
+      <p role="button" class="view-more" (click)="viewMore()">View less</p>
+      }
+    </div>
   </article>
 </div>
-}

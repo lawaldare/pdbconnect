@@ -1,4 +1,4 @@
-@if(subLength() || superLength()){
+@if(subcomplexesLength() || supercomplexesLength()){
 <div id="interaction-section">
   <h3>Complex Interactions</h3>
   <p>This section displays the subcomplexes and/or supercomplexes of the complex of interest</p>
@@ -7,14 +7,15 @@
     complex containing all the components of another complex and additional members.
   </lib-tool-tip>
 
-  @if(subLength()){
+  @if(subcomplexesLength()){
   <section class="subcomplexes">
     <h4>Subcomplexes</h4>
     <div class="card-container">
-      @for(complexId of subComplexesPage; track complexId){
-      <pdbc-complex-card [complexId]="complexId" />
+      @for(complexInteraction of subComplexesPage(); track complexInteraction.pdb_complex_id){
+      <pdbc-complex-card [complexInteraction]="complexInteraction" />
       }
     </div>
+
     <mat-paginator
       class="paginator-container"
       [length]="subcomplexesLength()"
@@ -26,14 +27,15 @@
     >
     </mat-paginator>
   </section>
-  } @if(superLength()){
+  } @if(supercomplexesLength()){
   <section class="supercomplexes">
     <h4>Supercomplexes</h4>
     <div class="card-container">
-      @for(complexId of superComplexesPage; track complexId){
-      <pdbc-complex-card [complexId]="complexId" />
+      @for(complexInteraction of superComplexesPage(); track complexInteraction.pdb_complex_id){
+      <pdbc-complex-card [complexInteraction]="complexInteraction" />
       }
     </div>
+
     <mat-paginator
       class="paginator-container"
       [length]="supercomplexesLength()"

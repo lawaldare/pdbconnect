@@ -86,7 +86,6 @@ export class MolstarDialogComponent implements AfterViewInit {
           ]
         );
       });
-      console.log('fragments', this.fragments());
       this.selectedFrament.set(this.fragments()[0]);
       this.caption.set(this.fragments()[0].caption ?? '');
       this.atoms = this.fragments()[0].atoms.length ? this.fragments()[0].atoms[0] : [];

@@ -1,36 +1,13 @@
-.root-container {
-  margin-top: 16px;
-  width: 100%;
-  margin-right: auto;
-  margin-left: auto;
-}
-
-@media (width >= 576px) {
-  .root-container {
-    max-width: 540px;
-  }
-}
-
-@media (width >= 768px) {
-  .root-container {
-    max-width: 720px;
-  }
-}
-
-@media (width >= 992px) {
-  .root-container {
-    max-width: 1440px;
-  }
-}
+@import url('libs/core/src/lib/styles/pdb_connect.scss');
 
 header {
   display: flex;
   width: 100%;
-  padding-left: 28px;
-  padding-right: 28px;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 13px;
+  padding-left: 20px;
+  padding-right: 20px;
 
   .title-info {
     padding-left: 8px;

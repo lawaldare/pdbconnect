@@ -12,6 +12,8 @@ const initialState: ComplexStoreState = {
   navItems: [],
   loadingState: LoadingState.SUCCESS,
   complexLigands: [],
+  subComplexInteractions: [],
+  superComplexInteractions: [],
 };
 
 export const complexReducer = createReducer(
@@ -23,6 +25,11 @@ export const complexReducer = createReducer(
   on(ComplexActions.getComplexDataSuccess, (state, action) => ({
     ...state,
     complexData: action.complexData,
+  })),
+  on(ComplexActions.getComplexInteractionsSuccess, (state, action) => ({
+    ...state,
+    subComplexInteractions: action.subComplexInteractions,
+    superComplexInteractions: action.superComplexInteractions,
   })),
   on(ComplexActions.getLigandsForComplexesSuccess, (state, action) => ({
     ...state,

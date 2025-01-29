@@ -11,4 +11,6 @@ export const ComplexSelectors = {
   navItems: createSelector(complexStoreState, (state: ComplexStoreState) => state.navItems),
   loadingState: createSelector(complexStoreState, (state: ComplexStoreState) => state.loadingState),
   complexLigands: createSelector(complexStoreState, (state: ComplexStoreState) => state.complexLigands),
+  subComplexInteractions: createSelector(complexStoreState, (state: ComplexStoreState) => state.subComplexInteractions),
+  superComplexInteractions: createSelector(complexStoreState, (state: ComplexStoreState) => state.superComplexInteractions),
 };

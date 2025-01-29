@@ -30,3 +30,26 @@
     max-width: 1440px;
   }
 }
+
+.entry-page-container {
+  width: 100%;
+  margin: 16px auto 56px;
+}
+
+@media (width >= 576px) {
+  .entry-page-container {
+    max-width: 540px;
+  }
+}
+
+@media (width >= 768px) {
+  .entry-page-container {
+    max-width: 720px;
+  }
+}
+
+@media (width >= 992px) {
+  .entry-page-container {
+    max-width: 1440px;
+  }
+}

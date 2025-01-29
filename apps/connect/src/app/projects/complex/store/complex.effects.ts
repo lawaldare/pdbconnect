@@ -9,6 +9,7 @@ import { ComplexActions } from './complex.actions';
 import { ComplexSelectors } from './complex.selectors';
 import { LoadingState } from '../../ligands/enums/loading-state.enum';
 import { ComplexLigand } from '../components/page-sections/complex-ligands/complex-ligands.component';
+import { ComplexInteraction } from '../models/complex-structure.model';
 
 @Injectable()
 export class ComplexEffects {
@@ -45,6 +46,28 @@ export class ComplexEffects {
           catchError(() => {
             this.store.dispatch(ComplexActions.toggleLoader({ status: LoadingState.FAILURE }));
             return of(ComplexActions.getComplexDataFailure());
+          })
+        )
+      )
+    )
+  );
+
+  getComplexInteractions$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ComplexActions.getComplexInteractions),
+      // tap(() => this.store.dispatch(ComplexActions.toggleLoader({ status: LoadingState.LOADING }))),
+      switchMap(() => this.store.select(ComplexSelectors.complexId).pipe(take(1))),
+      mergeMap((id: string) =>
+        this.complexAPIService.getInteractions(id).pipe(
+          mergeMap((interactions: ComplexInteraction[]) => {
+            // return this.store.dispatch(ComplexActions.getComplexDataSuccess({ complexData }));
+            const subComplexInteractions = interactions.filter((interaction) => interaction.relationship_type === 'sub-complex');
+            const superComplexInteractions = interactions.filter((interaction) => interaction.relationship_type === 'super-complex');
+            return of(ComplexActions.getComplexInteractionsSuccess({ subComplexInteractions, superComplexInteractions }));
+          }),
+          catchError(() => {
+            // this.store.dispatch(ComplexActions.toggleLoader({ status: LoadingState.FAILURE }));
+            return of(ComplexActions.getComplexInteractionsFailure());
           })
         )
       )

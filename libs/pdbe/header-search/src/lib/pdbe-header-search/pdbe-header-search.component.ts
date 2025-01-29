@@ -10,13 +10,14 @@ import { RouterModule } from '@angular/router';
 @Component({
   selector: 'pdbc-pdbe-header-search',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './pdbe-header-search.component.html',
   styleUrls: ['./pdbe-header-search.component.scss'],
 })
 export class PdbeHeaderSearchComponent implements OnInit {
   @Input() headerSearchConfig!: HeaderSearchConfig;
   searchTermStream = new Subject<string>();
+  private fb = inject(FormBuilder);
 
   public buttonTheme!: string;
   public chipBg!: string;
@@ -28,8 +29,6 @@ export class PdbeHeaderSearchComponent implements OnInit {
   public readonly dlService = inject(DataLayerService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly utilService = inject(UtilService);
-
-  constructor(private fb: FormBuilder) {}
 
   ngOnInit() {
     this.buttonTheme = this.headerSearchConfig.type === ThemeType.PDBE ? 'pdbe' : 'pdbe-kb';
