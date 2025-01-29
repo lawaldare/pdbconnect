@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, signal, ViewChild } from '@angular/core';
 import { MaterialModule } from '@pdbc/core';
 
 import type { IHeaderAngularComp } from 'ag-grid-angular';
@@ -21,6 +21,10 @@ export interface ICustomHeaderParams {
       } @if(params.enableFilterButton){
       <div #menuButton class="customHeaderMenuButton" (click)="onMenuClicked()">
         <i class="icon icon-common icon-search"></i>
+      </div>
+      } @if(params.enableSorting){
+      <div #sortIconButton class="customHeaderMenuButton" (click)="onSortIconClicked()">
+        <i class="icon icon-common icon-sort-amount-{{ sortingState() }}"></i>
       </div>
       }
     </div>
@@ -46,6 +50,9 @@ export class CustomHeaderComponent implements IHeaderAngularComp {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   @ViewChild('menuButton', { read: ElementRef }) public menuButton!: ElementRef;
+  @ViewChild('sortIconButton', { read: ElementRef }) public sortIconButton!: ElementRef;
+
+  public sortingState = signal<string>('up');
 
   agInit(params: IHeaderParams & ICustomHeaderParams): void {
     this.params = params;
@@ -53,6 +60,16 @@ export class CustomHeaderComponent implements IHeaderAngularComp {
 
   onMenuClicked() {
     this.params.showColumnMenu(this.menuButton.nativeElement);
+  }
+
+  onSortIconClicked() {
+    if (this.sortingState() === 'down') {
+      this.sortingState.set('up');
+      this.params.setSort('asc');
+    } else {
+      this.sortingState.set('down');
+      this.params.setSort('desc');
+    }
   }
 
   refresh(params: IHeaderParams) {

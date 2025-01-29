@@ -7,7 +7,7 @@ export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
   defaultColDef: {
     ...agGridOptionsBase.defaultColDef,
-    sortable: false,
+    // sortable: false,
     headerComponentParams: { showHelpIcon: false, tooltipText: '' },
   },
   rowSelection: {
@@ -27,14 +27,14 @@ export const colDefs: ColDef[] = [
     headerName: 'Title',
     field: 'title',
     cellRenderer: TitleRendererComponent,
-    width: 180,
+    width: 160,
   },
   { headerName: 'Exp. method', field: 'experimental_method', width: 170 },
   {
     headerName: 'Res. (Å)',
     field: 'resolution',
     suppressHeaderFilterButton: true,
-    width: 120,
+    width: 140,
     headerComponentParams: {
       showHelpIcon: true,
       tooltipText: 'Indicates the level of detail present in the 3D structure. Smaller value means finer details of the structure and higher quality.',
@@ -53,7 +53,7 @@ export const initialState: GridState = {
 };
 
 export const selectionColumnDef = {
-  sortable: true,
+  sortable: false,
   width: 80,
   maxWidth: 80,
   suppressHeaderMenuButton: false,
