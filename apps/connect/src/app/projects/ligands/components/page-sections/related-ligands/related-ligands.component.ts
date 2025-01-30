@@ -53,7 +53,6 @@ export class RelatedLigandsComponent implements OnInit {
   public sameScaffoldpageSize = 5;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ligandUtilService = inject(LigandUtilService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);

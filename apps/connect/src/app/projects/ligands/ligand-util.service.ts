@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Fragment, LigandStructure } from './data-models/structure.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
@@ -27,6 +27,8 @@ export class LigandUtilService {
   private readonly router = inject(Router);
   private readonly utilService = inject(UtilService);
   private readonly aggregatedApiService = inject(AggregatedApiService);
+
+  private readonly pdbIdsChunkSize = signal<number>(100);
 
   public filterStructures(data: LigandStructure[], values: StructureFilter): LigandStructure[] {
     let cofactorLike: LigandStructure[] = [];
@@ -122,7 +124,7 @@ export class LigandUtilService {
     if (ligands.length === 0) return of(null);
 
     const chemCompIds = ligands.map((ligand) => ligand.chem_comp_id);
-    const idChunks = this.utilService.breakArrayIntoChunks(chemCompIds, 100);
+    const idChunks = this.utilService.breakArrayIntoChunks(chemCompIds, this.pdbIdsChunkSize());
 
     const batchRequests = idChunks.map((chunk) => {
       const idsParam = chunk.join(',');
