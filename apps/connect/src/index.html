@@ -60,16 +60,27 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
     <!-- EBI CSS -->
-    <link rel="stylesheet" href="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.css" type="text/css" media="all" />
+    <link rel="preload" href="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript>
+      <link rel="stylesheet" href="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.css" />
+    </noscript>
 
     <!-- Mol* CSS -->
-    <link rel="stylesheet" href="https://molstar.org/pdbe-molstar/build/pdbe-molstar.css" type="text/css" media="all" />
+    <!-- <link rel="stylesheet" href="https://molstar.org/pdbe-molstar/build/pdbe-molstar.css" type="text/css" media="all" /> -->
+    <link rel="preload" href="https://molstar.org/pdbe-molstar/build/pdbe-molstar.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript>
+      <link rel="stylesheet" href="https://molstar.org/pdbe-molstar/build/pdbe-molstar.css" />
+    </noscript>
 
     <!-- D3 -->
-    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js" defer></script>
 
     <!-- UI icons -->
-    <link rel="stylesheet" href="https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css" />
+    <!-- <link rel="stylesheet" href="https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css" /> -->
+    <link rel="preload" href="https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript>
+      <link rel="stylesheet" href="https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css" />
+    </noscript>
 
     <!-- Web component polyfill (only loads what it needs) -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs/webcomponents-lite.js" charset="utf-8" defer></script> -->
