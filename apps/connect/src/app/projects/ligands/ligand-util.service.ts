@@ -27,7 +27,6 @@ export class LigandUtilService {
   private readonly router = inject(Router);
   private readonly utilService = inject(UtilService);
   private readonly aggregatedApiService = inject(AggregatedApiService);
-
   private readonly pdbIdsChunkSize = signal<number>(100);
 
   public filterStructures(data: LigandStructure[], values: StructureFilter): LigandStructure[] {
@@ -120,7 +119,7 @@ export class LigandUtilService {
     }
   }
 
-  public createBatchedRequests = (ligands: any[]) => {
+  public createBatchedRequests(ligands: any[]) {
     if (ligands.length === 0) return of(null);
 
     const chemCompIds = ligands.map((ligand) => ligand.chem_comp_id);
@@ -132,5 +131,5 @@ export class LigandUtilService {
     });
 
     return forkJoin(batchRequests).pipe(map((responses) => Object.assign({}, ...responses)));
-  };
+  }
 }

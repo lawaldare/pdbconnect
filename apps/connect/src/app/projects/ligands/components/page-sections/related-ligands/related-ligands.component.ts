@@ -4,7 +4,6 @@ import { Component, OnInit, ViewChild, DestroyRef, inject, signal } from '@angul
 import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold, StereoIsomer } from '../../../data-models/related-ligands.model';
-import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { forkJoin, mergeMap, map, combineLatest, startWith, filter } from 'rxjs';
