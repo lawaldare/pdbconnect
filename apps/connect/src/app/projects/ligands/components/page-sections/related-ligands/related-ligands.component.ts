@@ -7,7 +7,7 @@ import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold, StereoIsomer } 
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { forkJoin, mergeMap, map, combineLatest, startWith, filter, of, catchError } from 'rxjs';
+import { forkJoin, mergeMap, map, combineLatest, startWith, filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LigandUtilService } from '../../../ligand-util.service';
@@ -122,7 +122,6 @@ export class RelatedLigandsComponent implements OnInit {
           this.sameScaffolds.update(() => relatedLigand['same_scaffold'] || []);
           this.stereoisomers.update(() => relatedLigand['stereoisomers'] || []);
 
-          // Generate batched requests for each category
           const similarReq$ = this.ligandUtilService.createBatchedRequests(this.similarLigands());
           const sameScaffoldReq$ = this.ligandUtilService.createBatchedRequests(this.sameScaffolds());
           const stereoisomersReq$ = this.ligandUtilService.createBatchedRequests(this.stereoisomers());
