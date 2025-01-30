@@ -4,10 +4,9 @@ import { Component, OnInit, ViewChild, DestroyRef, inject, signal } from '@angul
 import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold, StereoIsomer } from '../../../data-models/related-ligands.model';
-import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { forkJoin, mergeMap, map, combineLatest, startWith, filter, of } from 'rxjs';
+import { forkJoin, mergeMap, map, combineLatest, startWith, filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LigandUtilService } from '../../../ligand-util.service';
@@ -53,7 +52,6 @@ export class RelatedLigandsComponent implements OnInit {
   public sameScaffoldpageSize = 5;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ligandUtilService = inject(LigandUtilService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
@@ -75,6 +73,8 @@ export class RelatedLigandsComponent implements OnInit {
     border: '1px solid white',
     width: '150px',
   };
+
+  private readonly pdbIdsChunkSize = signal<number>(100);
 
   handlePageEvent(event: PageEvent, filterOn: string) {
     switch (filterOn) {
@@ -120,19 +120,11 @@ export class RelatedLigandsComponent implements OnInit {
           this.sameScaffolds.update(() => relatedLigand['same_scaffold'] || []);
           this.stereoisomers.update(() => relatedLigand['stereoisomers'] || []);
 
-          const createLigandIdsString = (ligands: any) => ligands.map((ligand: any) => ligand.chem_comp_id).join(',');
+          const similarReq$ = this.ligandUtilService.createBatchedRequests(this.similarLigands());
+          const sameScaffoldReq$ = this.ligandUtilService.createBatchedRequests(this.sameScaffolds());
+          const stereoisomersReq$ = this.ligandUtilService.createBatchedRequests(this.stereoisomers());
 
-          const similarLigandsIds = createLigandIdsString(this.similarLigands());
-          const sameScaffoldIds = createLigandIdsString(this.sameScaffolds());
-          const stereoisomersIds = createLigandIdsString(this.stereoisomers());
-
-          const fetchRequests = [
-            similarLigandsIds ? this.aggregatedApiService.fetchBoundEntries(similarLigandsIds) : of(null),
-            sameScaffoldIds ? this.aggregatedApiService.fetchBoundEntries(sameScaffoldIds) : of(null),
-            stereoisomersIds ? this.aggregatedApiService.fetchBoundEntries(stereoisomersIds) : of(null),
-          ];
-
-          return forkJoin(fetchRequests);
+          return forkJoin([similarReq$, sameScaffoldReq$, stereoisomersReq$]);
         }),
         map(([similarLigandBoundEntries, sameScaffoldBoundEntries, stereoisomersBoundEntries]) => {
           if (similarLigandBoundEntries) {
