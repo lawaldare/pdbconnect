@@ -164,4 +164,12 @@ export class UtilService {
   private sortByArrayOrderComparator(lhs: string, rhs: string, sortOrder: any[]) {
     return sortOrder.indexOf(lhs) - sortOrder.indexOf(rhs);
   }
+
+  public breakArrayIntoChunks(array: any[], chunkSize: number): any[][] {
+    const chunks: any[][] = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
+  }
 }

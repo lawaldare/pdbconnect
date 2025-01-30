@@ -4,10 +4,12 @@ import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
 import { LigandActions } from './store/ligand.actions';
 import { LigandReleasedStatus } from './enums/ligand-release.enum';
-import { DescriptionData } from './services/aggregated-api.service';
+import { AggregatedApiService, DescriptionData } from './services/aggregated-api.service';
 import { LigandStoreState } from './store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { Router } from '@angular/router';
+import { UtilService } from '@pdbc/core';
+import { catchError, forkJoin, map, of } from 'rxjs';
 
 export interface StructureFilter {
   cofactorLike: boolean;
@@ -23,6 +25,8 @@ export class LigandUtilService {
   private readonly dialog = inject(MatDialog);
   private readonly globalStore = inject(Store<LigandStoreState>);
   private readonly router = inject(Router);
+  private readonly utilService = inject(UtilService);
+  private readonly aggregatedApiService = inject(AggregatedApiService);
 
   public filterStructures(data: LigandStructure[], values: StructureFilter): LigandStructure[] {
     let cofactorLike: LigandStructure[] = [];
@@ -113,4 +117,18 @@ export class LigandUtilService {
       return;
     }
   }
+
+  public createBatchedRequests = (ligands: any[]) => {
+    if (ligands.length === 0) return of(null);
+
+    const chemCompIds = ligands.map((ligand) => ligand.chem_comp_id);
+    const idChunks = this.utilService.breakArrayIntoChunks(chemCompIds, 100);
+
+    const batchRequests = idChunks.map((chunk) => {
+      const idsParam = chunk.join(',');
+      return this.aggregatedApiService.fetchBoundEntries(idsParam).pipe(catchError(() => of({})));
+    });
+
+    return forkJoin(batchRequests).pipe(map((responses) => Object.assign({}, ...responses)));
+  };
 }

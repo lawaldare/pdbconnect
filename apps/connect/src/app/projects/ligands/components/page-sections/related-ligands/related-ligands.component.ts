@@ -7,7 +7,7 @@ import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold, StereoIsomer } 
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { forkJoin, mergeMap, map, combineLatest, startWith, filter, of } from 'rxjs';
+import { forkJoin, mergeMap, map, combineLatest, startWith, filter, of, catchError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LigandUtilService } from '../../../ligand-util.service';
@@ -76,6 +76,8 @@ export class RelatedLigandsComponent implements OnInit {
     width: '150px',
   };
 
+  private readonly pdbIdsChunkSize = signal<number>(100);
+
   handlePageEvent(event: PageEvent, filterOn: string) {
     switch (filterOn) {
       case 'similar': {
@@ -120,19 +122,12 @@ export class RelatedLigandsComponent implements OnInit {
           this.sameScaffolds.update(() => relatedLigand['same_scaffold'] || []);
           this.stereoisomers.update(() => relatedLigand['stereoisomers'] || []);
 
-          const createLigandIdsString = (ligands: any) => ligands.map((ligand: any) => ligand.chem_comp_id).join(',');
+          // Generate batched requests for each category
+          const similarReq$ = this.ligandUtilService.createBatchedRequests(this.similarLigands());
+          const sameScaffoldReq$ = this.ligandUtilService.createBatchedRequests(this.sameScaffolds());
+          const stereoisomersReq$ = this.ligandUtilService.createBatchedRequests(this.stereoisomers());
 
-          const similarLigandsIds = createLigandIdsString(this.similarLigands());
-          const sameScaffoldIds = createLigandIdsString(this.sameScaffolds());
-          const stereoisomersIds = createLigandIdsString(this.stereoisomers());
-
-          const fetchRequests = [
-            similarLigandsIds ? this.aggregatedApiService.fetchBoundEntries(similarLigandsIds) : of(null),
-            sameScaffoldIds ? this.aggregatedApiService.fetchBoundEntries(sameScaffoldIds) : of(null),
-            stereoisomersIds ? this.aggregatedApiService.fetchBoundEntries(stereoisomersIds) : of(null),
-          ];
-
-          return forkJoin(fetchRequests);
+          return forkJoin([similarReq$, sameScaffoldReq$, stereoisomersReq$]);
         }),
         map(([similarLigandBoundEntries, sameScaffoldBoundEntries, stereoisomersBoundEntries]) => {
           if (similarLigandBoundEntries) {
