@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
@@ -50,6 +50,10 @@ import {
 import { EntryStatus, StatusCode } from '../../data-models/status.model';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { EntryMainAlternativeComponent } from '../../components/entry-main-alternative/entry-main-alternative.component';
+import { Store } from '@ngrx/store';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { EntryActions } from '../../store/entry.actions';
+import { EntrySelectors } from '../../store/entry.selectors';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -87,7 +91,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
 })
-export class EntryMainPageComponent implements AfterViewInit {
+export class EntryMainPageComponent implements AfterViewInit, OnInit {
   public readonly pdbeLogoConfig = pdbeLogoConfig;
   public readonly pdbeSearchConfig = pdbeSearchConfig;
   public readonly allTabs = allTabs;
@@ -287,6 +291,9 @@ export class EntryMainPageComponent implements AfterViewInit {
   public statusCode = signal<StatusCode>('INITIAL');
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
 
+  private readonly globalStore = inject(Store<EntryStoreState>);
+  // public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+
   constructor() {
     effect(async () => {
       // Access the current state
@@ -303,6 +310,49 @@ export class EntryMainPageComponent implements AfterViewInit {
         this.previousTab = `${this.currentTab()}`;
       }
     });
+  }
+
+  ngOnInit(): void {
+    this.route.params
+      .pipe(
+        switchMap((params) => {
+          const entryId = params['entryId'].toLowerCase();
+          this.globalStore.dispatch(EntryActions.setCurrentEntryId({ entryId }));
+          this.globalStore.dispatch(EntryActions.getEntryStatus());
+
+          this.getPageData();
+          return of({});
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
+  }
+
+  private getPageData(): void {
+    this.globalStore.dispatch(EntryActions.getSummaryData());
+    this.globalStore.dispatch(EntryActions.getEntryMolecules());
+    this.globalStore.dispatch(EntryActions.getExperiment());
+    this.globalStore.dispatch(EntryActions.getUniprotMapping());
+    this.globalStore.dispatch(EntryActions.getInterproMapping());
+    this.globalStore.dispatch(EntryActions.getPfamMapping());
+    this.globalStore.dispatch(EntryActions.getDownloadOptions());
+    this.globalStore.dispatch(EntryActions.getSummaryQualityScores());
+    this.globalStore.dispatch(EntryActions.getCathMapping());
+    this.globalStore.dispatch(EntryActions.getScop175Mapping());
+    this.globalStore.dispatch(EntryActions.getModifications());
+    this.globalStore.dispatch(EntryActions.getValidationKeyStats());
+    this.globalStore.dispatch(EntryActions.getValidationXrayRefine());
+    this.globalStore.dispatch(EntryActions.getPrimaryPublication());
+    this.globalStore.dispatch(EntryActions.getArticleCitingPDBEntry());
+    this.globalStore.dispatch(EntryActions.getPreferredAssembly());
+    this.globalStore.dispatch(EntryActions.getAssemblies());
+    this.globalStore.dispatch(EntryActions.getCarbohydrates());
+    this.globalStore.dispatch(EntryActions.getExperimentBMRBRawData());
+    this.globalStore.dispatch(EntryActions.getPDBRedoQualityScores());
+    this.globalStore.dispatch(EntryActions.getExperimentSBGridRawData());
+    this.globalStore.dispatch(EntryActions.getExperimentIRRMCRawData());
+    this.globalStore.dispatch(EntryActions.getExperimentEMPIARRawData());
+    this.globalStore.dispatch(EntryActions.getExperimentPDBRawData());
   }
 
   async ngAfterViewInit() {
@@ -418,95 +468,6 @@ export class EntryMainPageComponent implements AfterViewInit {
           };
         })
       ),
-      // this.entryAPIService.getEntryMolecules(this.entryId()).pipe(
-      //   mergeMap((data) => {
-      //     const molecules = data[this.entryId()];
-
-      //     const macromoleculeSortedTypesArray = [
-      //       'polypeptide(L)',
-      //       'polypeptide(R)',
-      //       'carbohydrate polymer',
-      //       'polyribonucleotide',
-      //       'polydeoxyribonucleotide',
-      //       'polydeoxyribonucleotide/polyribonucleotide hybrid',
-      //     ];
-
-      //     const macroMolecules = molecules
-      //       .filter((mol) => macromoleculeSortedTypesArray.indexOf(mol.molecule_type) > -1)
-      //       .sort((a, b) => macromoleculeSortedTypesArray.indexOf(a.molecule_type) - macromoleculeSortedTypesArray.indexOf(b.molecule_type));
-
-      //     const boundLigands = molecules.filter((mol) => mol.molecule_type === 'bound');
-
-      //     const boundLigandsEntries = boundLigands.map((boundLigand) =>
-      //       this.ligandAggAPIService.fetchBoundEntries(boundLigand.chem_comp_ids[0]).pipe(
-      //         map((result) => ({ [boundLigand.chem_comp_ids[0]]: result })) // Wrap each result in an object with uniprotId as key
-      //       )
-      //     );
-      //     const boundLigandsInteractions = boundLigands.map((boundLigand) =>
-      //       this.ligandAggAPIService.fetchIntxData(boundLigand.chem_comp_ids[0]).pipe(
-      //         map((result) => ({ [boundLigand.chem_comp_ids[0]]: result })) // Wrap each result in an object with uniprotId as key
-      //       )
-      //     );
-      //     const boundLigandsRelated = boundLigands.map((boundLigand) =>
-      //       this.ligandAggAPIService.getRelatedLigands(boundLigand.chem_comp_ids[0]).pipe(
-      //         map((result) => ({ [boundLigand.chem_comp_ids[0]]: result })) // Wrap each result in an object with uniprotId as key
-      //       )
-      //     );
-
-      //     const organismNames: string[] = [];
-
-      //     // See: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/1trn
-      //     // and a more different example at: https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/6hr1
-      //     for (const entityDetail of molecules) {
-      //       const sources = entityDetail['source'] ?? [];
-      //       for (const eachSource of sources) {
-      //         const organismName = eachSource['organism_scientific_name'] ?? undefined;
-      //         if (organismName && organismNames.indexOf(organismName) === -1) {
-      //           organismNames.push(organismName);
-      //         }
-      //       }
-      //     }
-
-      //     // Use forkJoin to wait for all observables to complete
-      //     return forkJoin({
-      //       boundLigandsEntries: forkJoin(boundLigandsEntries),
-      //       boundLigandsInteractions: forkJoin(boundLigandsInteractions),
-      //       boundLigandsRelated: forkJoin(boundLigandsRelated),
-      //     }).pipe(
-      //       map(({ boundLigandsEntries, boundLigandsInteractions, boundLigandsRelated }) => {
-
-      //           this.macroMolecules = macroMolecules;
-      //           this.boundLigands = boundLigands;
-      //           this.organismScientificNames = organismNames;
-
-      //           this.apiLoadedStatus.update((state) => ({
-      //             ...state, // spread the existing state
-      //             macroMolecules: 'done', // update the specific key dynamically
-      //             boundLigands: 'done', // update the specific key dynamically
-      //             organismScientificNames: 'done', // update the specific key dynamically
-      //           }));
-
-      //           console.log("boundLigands")
-      //           console.log(boundLigands)
-      //           console.log("boundLigandsEntries")
-      //           console.log(boundLigandsEntries)
-      //           console.log("boundLigandsInteractions")
-      //           console.log(boundLigandsInteractions)
-      //           console.log("boundLigandsRelated")
-      //           console.log(boundLigandsRelated)
-
-      //           return {
-      //             macroMolecules: macroMolecules,
-      //             boundLigands: boundLigands,
-      //             organismScientificNames: organismNames,
-      //             boundLigandsEntries: boundLigandsEntries,
-      //             boundLigandsInteractions: boundLigandsInteractions,
-      //             boundLigandsRelated: boundLigandsRelated
-      //           };
-      //       })
-      //     )
-      //   })
-      // ),
       this.entryAPIService.getExperiment(this.entryId()).pipe(
         map((response) => {
           this.experimentalDetails = response;

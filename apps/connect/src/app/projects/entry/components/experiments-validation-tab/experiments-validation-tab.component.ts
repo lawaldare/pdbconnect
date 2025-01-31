@@ -113,6 +113,7 @@ export class ExperimentsValidationTabComponent implements OnInit, AfterViewInit,
   async ngOnInit() {
     // when initialized we process data from the endpoints into a unified object used for rendering
     // (processedExpValData)
+    console.log(this.xRayRefine(), this.pdbRedoData(), this.rawDataPDB(), this.rawDataBMRB(), this.rawDataIRRMC(), this.rawDataEMPIAR(), this.rawDataSBGrid());
     const processedExpValData = this.dataFacade.processData(
       this.experimentalDetails(),
       this.sourceOrganisms(),

@@ -7,6 +7,10 @@ import { CitationDetail } from '../../data-models/publication.model';
 import { ProcessedQualityScores } from '../../data-models/summary-quality-scores.model';
 import { modelQualitySummaryTooltip } from '../../entry-constant';
 import { MaterialModule } from '@pdbc/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Store } from '@ngrx/store';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { EntrySelectors } from '../../store/entry.selectors';
 
 @Component({
   selector: 'pdbc-main-information-area',
@@ -25,6 +29,9 @@ export class MainInformationAreaComponent {
 
   public mappedInformation: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
   private readonly util = inject(UtilService);
+
+  private readonly globalStore = inject(Store<EntryStoreState>);
+  // public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
 
   public generateOrganismSearchUrl(term: string): string {
     return this.util.generateQueryURL(term, 'q_organism_name');

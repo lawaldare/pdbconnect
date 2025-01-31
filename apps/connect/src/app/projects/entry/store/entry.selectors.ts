@@ -1,0 +1,45 @@
+import { createFeatureSelector, createSelector } from '@ngrx/store';
+import { ENTRY_STORE_STATE_KEY } from './entry.reducer';
+import { EntryStoreState } from './entry-store.model';
+
+const EntryStoreState = createFeatureSelector<EntryStoreState>(ENTRY_STORE_STATE_KEY);
+
+export const EntrySelectors = {
+  state: EntryStoreState,
+  entryId: createSelector(EntryStoreState, (state: EntryStoreState) => state.entryId),
+  summaryData: createSelector(EntryStoreState, (state: EntryStoreState) => state.summaryData),
+  macroMolecules: createSelector(EntryStoreState, (state: EntryStoreState) => state.macroMolecules),
+  boundLigands: createSelector(EntryStoreState, (state: EntryStoreState) => state.boundLigands),
+  organismScientificNames: createSelector(EntryStoreState, (state: EntryStoreState) => state.organismScientificNames),
+  hasRNA: createSelector(EntryStoreState, (state: EntryStoreState) => state.hasRNA),
+  experimentalDetails: createSelector(EntryStoreState, (state: EntryStoreState) => state.experimentalDetails),
+  resolutionValues: createSelector(EntryStoreState, (state: EntryStoreState) => state.resolutionValues),
+  experimentalMethod: createSelector(EntryStoreState, (state: EntryStoreState) => state.experimentalMethod),
+  uniprotMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.uniprotMapping),
+  uniprotCountsInPDBe: createSelector(EntryStoreState, (state: EntryStoreState) => state.uniprotCountsInPDBe),
+  bestStructuresMappingsByUniProtIds: createSelector(EntryStoreState, (state: EntryStoreState) => state.bestStructuresMappingsByUniProtIds),
+  proteinPagesSummaryByUniProtIds: createSelector(EntryStoreState, (state: EntryStoreState) => state.proteinPagesSummaryByUniProtIds),
+  interproMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.interproMapping),
+  pfamMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.pfamMapping),
+  downloadOptions: createSelector(EntryStoreState, (state: EntryStoreState) => state.downloadOptions),
+  viewOptions: createSelector(EntryStoreState, (state: EntryStoreState) => state.viewOptions),
+  summaryQualityScores: createSelector(EntryStoreState, (state: EntryStoreState) => state.summaryQualityScores),
+  cathMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.cathMapping),
+  scop175Mapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.scop175Mapping),
+  modifications: createSelector(EntryStoreState, (state: EntryStoreState) => state.modifications),
+  validationKeyStats: createSelector(EntryStoreState, (state: EntryStoreState) => state.validationKeyStats),
+  validationXRayRefine: createSelector(EntryStoreState, (state: EntryStoreState) => state.validationXRayRefine),
+  primaryPublication: createSelector(EntryStoreState, (state: EntryStoreState) => state.primaryPublication),
+  articlesCiting: createSelector(EntryStoreState, (state: EntryStoreState) => state.articlesCiting),
+  complexDetails: createSelector(EntryStoreState, (state: EntryStoreState) => state.complexDetails),
+  assemblies: createSelector(EntryStoreState, (state: EntryStoreState) => state.assemblies),
+  pisaAssemblies: createSelector(EntryStoreState, (state: EntryStoreState) => state.pisaAssemblies),
+  carbohydrates: createSelector(EntryStoreState, (state: EntryStoreState) => state.carbohydrates),
+  pdbRedoQualityScores: createSelector(EntryStoreState, (state: EntryStoreState) => state.pdbRedoQualityScores),
+  experimentRawDataBMRB: createSelector(EntryStoreState, (state: EntryStoreState) => state.experimentRawDataBMRB),
+  experimentRawDataSBGrid: createSelector(EntryStoreState, (state: EntryStoreState) => state.experimentRawDataSBGrid),
+  experimentRawDataIRRMC: createSelector(EntryStoreState, (state: EntryStoreState) => state.experimentRawDataIRRMC),
+  experimentRawDataEMPIAR: createSelector(EntryStoreState, (state: EntryStoreState) => state.experimentRawDataEMPIAR),
+  experimentRawDataPDB: createSelector(EntryStoreState, (state: EntryStoreState) => state.experimentRawDataPDB),
+  entryStatus: createSelector(EntryStoreState, (state: EntryStoreState) => state.entryStatus),
+};
