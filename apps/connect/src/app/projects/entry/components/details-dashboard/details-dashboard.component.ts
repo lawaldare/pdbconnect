@@ -24,6 +24,10 @@ import { assemblyTooltip, dashboardStatLinks } from '../../entry-constant';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { EntryDropdownComponent } from '../entry-dropdown/entry-dropdown.component';
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { Store } from '@ngrx/store';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { EntrySelectors } from '../../store/entry.selectors';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -50,29 +54,35 @@ export interface SequenceDetail {
   styleUrl: './details-dashboard.component.scss',
 })
 export class DetailsDashboardComponent implements OnDestroy {
-  // required inputs
-  public readonly entryId = input.required<string>();
-  public readonly tabName = input.required<TableNames>();
-  public readonly macromolecules = input.required<Molecule[]>();
-  public readonly proteinsStats = input.required<{ [key: string]: ProteinSummaryStats }>();
-
-  public molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
-  public molstarParent = input.required<HTMLElement>(); // Parent to send back the molstar global instance
-  private isMolstarRetrieved = false;
-
-  // injected services, data processing facade, molstar helpers
   public readonly signals = inject(ComponentCommunicationService);
   private readonly utilService = inject(UtilService);
   public readonly dataProcessing = inject(VisualisationsDataProcessing);
   public readonly molstarVisualisations = inject(MolstarVisualisationsForTabs);
   public renderer = inject(Renderer2);
   public elementRef = inject(ElementRef);
+  private readonly globalStore = inject(Store<EntryStoreState>);
+
+  // required inputs
+  // public readonly entryId = input.required<string>();
+  public readonly tabName = input.required<TableNames>();
+  // public readonly macromolecules = input.required<Molecule[]>();
+  // public readonly proteinsStats = input.required<{ [key: string]: ProteinSummaryStats }>();
+
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
+  public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
+
+  public molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
+  public molstarParent = input.required<HTMLElement>(); // Parent to send back the molstar global instance
+  private isMolstarRetrieved = false;
+
+  // injected services, data processing facade, molstar helpers
 
   // variables rendered in template
   public currentRowDatum?: TableRow;
   public selectionTitle = 'This is a 3D view area';
   public selectionIdentifier = 'None';
-  public selectionStats!: { [key: string]: any };
+  public selectionStats: { [key: string]: any } | undefined;
   public selectionTypeText?: string;
   public selectionButtonText?: string;
   public selectionSearchText?: string;
@@ -191,7 +201,7 @@ export class DetailsDashboardComponent implements OnDestroy {
         // data processing facade is used to get selectedChains (displayed as text in template)
         this.selectedChains = this.dataProcessing.getDomainChains(datum);
         // ...and sequence annotated with domain positions
-        this.sequenceDetails = this.dataProcessing.getDomainSequenceDetails(this.entryId(), this.macromolecules(), datum);
+        this.sequenceDetails = this.dataProcessing.getDomainSequenceDetails(this.entryId() ?? '', this.macromolecules() ?? [], datum);
         this.hasProtvista = true;
       } else if (this.tabName() === 'Ligands') {
         datum = datum as LigandsRowData;
@@ -240,7 +250,7 @@ export class DetailsDashboardComponent implements OnDestroy {
         this.dropdownSelected = dropdownResults.dropdownSelected;
 
         // ... and to get each macromolecule sequence
-        this.sequenceDetails = this.dataProcessing.getMacromoleculeSequenceDetails(this.entryId(), datum, this.dropdownSelected);
+        this.sequenceDetails = this.dataProcessing.getMacromoleculeSequenceDetails(this.entryId() ?? '', datum, this.dropdownSelected);
 
         // finally we displayed topology viewer only for protein molecules
         this.hasTopologyViewer = false;
@@ -250,7 +260,9 @@ export class DetailsDashboardComponent implements OnDestroy {
           // if protein is not chimeric (single uniprotAccession), set this as selectionIdentifier
           if (datum.additionalData.uniprotAccessions.length === 1) {
             this.selectionIdentifier = datum.additionalData.uniprotAccessions[0];
-            this.selectionStats = this.proteinsStats();
+            if (this.proteinsStats()) {
+              this.selectionStats = this.proteinsStats();
+            }
           }
           this.hasTopologyViewer = true;
         }
@@ -298,18 +310,18 @@ export class DetailsDashboardComponent implements OnDestroy {
     // Different molstar rendering functions are called according to the dashboard type
     if (this.tabName() === 'Assemblies') {
       datum = datum as AssembliesRowData;
-      await this.molstarVisualisations.renderMolstarAssemblies(this.entryId(), this.molstarViewerEl(), datum, reloadConfigObj);
+      await this.molstarVisualisations.renderMolstarAssemblies(this.entryId() ?? '', this.molstarViewerEl(), datum, reloadConfigObj);
     } else if (this.tabName() === 'Domains') {
       datum = datum as DomainsRowData;
-      await this.molstarVisualisations.renderMolstarDomains(this.entryId(), this.molstarViewerEl(), datum, reloadConfigObj);
+      await this.molstarVisualisations.renderMolstarDomains(this.entryId() ?? '', this.molstarViewerEl(), datum, reloadConfigObj);
     } else if (this.tabName() === 'Ligands') {
       datum = datum as LigandsRowData;
       const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
-      await this.molstarVisualisations.renderMolstarLigands(this.entryId(), this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
+      await this.molstarVisualisations.renderMolstarLigands(this.entryId() ?? '', this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
     } else if (this.tabName() === 'Macromolecules') {
       datum = datum as MacromoleculesRowData;
       const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
-      await this.molstarVisualisations.renderMolstarMacromolecules(this.entryId(), this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
+      await this.molstarVisualisations.renderMolstarMacromolecules(this.entryId() ?? '', this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
     }
   }
 
@@ -332,7 +344,7 @@ export class DetailsDashboardComponent implements OnDestroy {
     if (this.protvistaIsLoaded === false) {
       // if this is the first render from protvista, create the element and set all parameters
       this.protvistaInstance = this.renderer.createElement('protvista-pdb');
-      this.renderer.setAttribute(this.protvistaInstance, 'entry-id', this.entryId().toLowerCase());
+      this.renderer.setAttribute(this.protvistaInstance, 'entry-id', this.entryId() ?? ''.toLowerCase());
       this.renderer.setAttribute(this.protvistaInstance, 'entity-id', `${entityId}`);
       this.renderer.setAttribute(this.protvistaInstance, 'page-section', '1');
       this.renderer.setAttribute(this.protvistaInstance, 'legends', 'false');
@@ -345,7 +357,7 @@ export class DetailsDashboardComponent implements OnDestroy {
       this.protvistaIsLoaded = true;
     } else {
       // if this is NOT the first render from protvista, we just set some parameters and call connectedCallback
-      this.renderer.setAttribute(this.protvistaInstance, 'entry-id', this.entryId().toLowerCase());
+      this.renderer.setAttribute(this.protvistaInstance, 'entry-id', this.entryId() ?? ''.toLowerCase());
       this.renderer.setAttribute(this.protvistaInstance, 'entity-id', `${entityId}`);
       this.currentProtvistaEntity = entityId;
       this.protvistaInstance.connectedCallback();
@@ -393,7 +405,7 @@ export class DetailsDashboardComponent implements OnDestroy {
     if (this.ligandEnvLoaded === false) {
       // on first rendering, create the element properly and set parameters
       this.ligandEnvInstance = this.renderer.createElement('pdb-ligand-env');
-      this.renderer.setAttribute(this.ligandEnvInstance, 'pdb-id', this.entryId().toLowerCase());
+      this.renderer.setAttribute(this.ligandEnvInstance, 'pdb-id', this.entryId() ?? ''.toLowerCase());
       this.renderer.setAttribute(this.ligandEnvInstance, 'pdb-res-id', `${resId}`);
       this.renderer.setAttribute(this.ligandEnvInstance, 'pdb-chain-id', `${chainId}`);
       this.renderer.setAttribute(this.ligandEnvInstance, 'environment', `development`);

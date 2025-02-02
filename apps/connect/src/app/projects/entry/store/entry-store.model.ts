@@ -27,7 +27,7 @@ import { EntryStatus } from '../data-models/status.model';
 
 export interface EntryStoreState {
   entryId: string;
-  summaryData: ProcessedSummary;
+  summaryData: ProcessedSummary | undefined;
   macroMolecules: Molecule[];
   boundLigands: Molecule[];
   organismScientificNames: string[];
@@ -35,33 +35,33 @@ export interface EntryStoreState {
   experimentalDetails: AnyExperimentDetail[];
   resolutionValues: (number | undefined)[];
   experimentalMethod: string;
-  uniprotMapping: UniProtMapping;
-  uniprotCountsInPDBe: Record<string, number>;
-  bestStructuresMappingsByUniProtIds: Record<string, BestStructureMapping[]>;
-  proteinPagesSummaryByUniProtIds: Record<string, ProteinSummaryStats>;
-  interproMapping: InterProMappings;
-  pfamMapping: PfamMappings;
+  uniprotMapping: UniProtMapping | undefined;
+  uniprotCountsInPDBe: Record<string, number> | undefined;
+  bestStructuresMappingsByUniProtIds: Record<string, BestStructureMapping[]> | undefined;
+  proteinPagesSummaryByUniProtIds: Record<string, ProteinSummaryStats> | undefined;
+  interproMapping: InterProMappings | undefined;
+  pfamMapping: PfamMappings | undefined;
   downloadOptions: DownloadOption[];
   viewOptions: DownloadOption[];
-  summaryQualityScores: ProcessedQualityScores;
-  cathMapping: CathMappings;
-  scop175Mapping: ScopMappings;
+  summaryQualityScores: ProcessedQualityScores | undefined;
+  cathMapping: CathMappings | undefined;
+  scop175Mapping: ScopMappings | undefined;
   modifications: ModifiedResidue[];
-  validationKeyStats: KeyValidationStats;
-  validationXRayRefine: XRayRefine;
+  validationKeyStats: KeyValidationStats | undefined;
+  validationXRayRefine: XRayRefine | undefined;
   primaryPublication: CitationDetail | undefined;
-  articlesCiting: RelatedPublication;
+  articlesCiting: RelatedPublication | undefined;
   complexDetails: ComplexDetails[] | undefined;
   assemblies: AssemblyData[];
   pisaAssemblies: PisaAssembly[];
   carbohydrates: CarbohydrateMolecule[];
-  pdbRedoQualityScores: ProcessedQualityScores;
+  pdbRedoQualityScores: ProcessedQualityScores | undefined;
   experimentRawDataBMRB: BMRBExperimentRawData[];
-  experimentRawDataSBGrid: SBGRIDExperimentRawData;
-  experimentRawDataIRRMC: IRRMCExperimentRawData;
+  experimentRawDataSBGrid: SBGRIDExperimentRawData | undefined;
+  experimentRawDataIRRMC: IRRMCExperimentRawData | undefined;
   experimentRawDataEMPIAR: EMPIARExperimentRawData[];
   experimentRawDataPDB: PDBExperimentRawData[];
-  entryStatus: EntryStatus;
+  entryStatus: EntryStatus | undefined;
 }
 
 export interface EntryMoleculesData {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { KeyValidationStats } from '../../data-models/key-validation-stats.model';
 import { ExperimentDetail } from '../../data-models/experimental-details.model';
@@ -591,23 +592,27 @@ export class ValidationDataProcessingFacade {
 
   createExperimentRawDataSBGrid(experimentRawDataSBGrid: SBGRIDExperimentRawData): ExperimentalRawDatum[] {
     const rawData: ExperimentalRawDatum[] = [];
-    for (const experimentRaw of experimentRawDataSBGrid.datasets) {
-      const rawDatum: ExperimentalRawDatum = {
-        resourceName: 'SBGrid',
-        tableData: [],
-      };
-      const tableData: ExperimentRawRow[] = [];
-      tableData.push({
-        resource: 'SBGrid',
-        accession: experimentRaw.data_doi.split('/')[2],
-        datasets: `1`,
-        totalSize: experimentRaw.storage_requirements + 'b',
-      });
-      const imgName = experimentRaw.dataset_thumbnail_url || undefined;
-      if (imgName) rawDatum.imgName = imgName;
-      rawDatum.tableData = tableData;
-      rawData.push(rawDatum);
+    if (experimentRawDataSBGrid) {
+      for (const experimentRaw of experimentRawDataSBGrid.datasets) {
+        const rawDatum: ExperimentalRawDatum = {
+          resourceName: 'SBGrid',
+          tableData: [],
+        };
+        const tableData: ExperimentRawRow[] = [];
+        tableData.push({
+          resource: 'SBGrid',
+          accession: experimentRaw.data_doi.split('/')[2],
+          datasets: `1`,
+          totalSize: experimentRaw.storage_requirements + 'b',
+        });
+        const imgName = experimentRaw.dataset_thumbnail_url || undefined;
+        if (imgName) rawDatum.imgName = imgName;
+        rawDatum.tableData = tableData;
+        rawData.push(rawDatum);
+      }
+      return rawData;
+    } else {
+      return rawData;
     }
-    return rawData;
   }
 }

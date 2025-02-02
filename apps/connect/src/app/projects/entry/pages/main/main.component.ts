@@ -5,7 +5,7 @@ import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { EntryApiService } from '../../services/entry-api.service';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { catchError, combineLatest, EMPTY, forkJoin, map, mergeMap, Observable, of, switchMap, tap } from 'rxjs';
+import { catchError, combineLatest, EMPTY, filter, forkJoin, map, mergeMap, Observable, of, switchMap, tap } from 'rxjs';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { AnyExperimentDetail } from '../../data-models/experimental-details.model';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -258,7 +258,7 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
   public validationXRayRefine?: XRayRefine;
 
   // API data from getPrimaryPublicationAbstract https://www.ebi.ac.uk/pdbe/api/pdb/entry/publications/:entryID
-  public primaryPublication?: CitationDetail;
+  // public primaryPublication?: CitationDetail;
 
   // API data from getArticleCitingPDBEntry https://www.ebi.ac.uk/pdbe/api/pdb/entry/related_publications/:entryID
   public articlesCiting?: RelatedPublication;
@@ -297,6 +297,7 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly downloadOptions = toSignal(this.globalStore.select(EntrySelectors.downloadOptions));
   public readonly viewOptions = toSignal(this.globalStore.select(EntrySelectors.viewOptions));
+  public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
 
   constructor() {
     effect(async () => {
@@ -325,6 +326,7 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
           this.globalStore.dispatch(EntryActions.getEntryStatus());
           this.entryId.set(entryId);
           return this.globalStore.select(EntrySelectors.entryStatus).pipe(
+            filter(Boolean),
             tap((status: EntryStatus) => this.entryStatus.set({ ...status, entryId })),
             map((response: EntryStatus) => response.status_code)
           );
@@ -340,8 +342,8 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
             return this.setPageData();
           } else {
             this.statusCode.set(statusCode);
-            return EMPTY;
           }
+          return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -832,114 +834,114 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
           return of([]);
         })
       ),
-      this.entryAPIService.getPDBRedoData(this.entryId()).pipe(
-        map((data) => {
-          this.pdbRedoQualityScore = data;
-          this.apiLoadedStatus.update((state) => ({
-            ...state,
-            pdbRedoQualityScore: 'done',
-          }));
-          return data;
-        }),
-        catchError((_error: HttpErrorResponse) => {
-          this.pdbRedoQualityScore = undefined;
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            pdbRedoQualityScore: 'done', // update the specific key dynamically
-          }));
-          return of({});
-        })
-      ),
-      this.entryAPIService.getExperimentRawDataBMRB(this.entryId()).pipe(
-        map((data) => {
-          this.experimentRawDataBMRB = data as BMRBExperimentRawData[];
-          this.apiLoadedStatus.update((state) => ({
-            ...state,
-            experimentRawDataBMRB: 'done',
-          }));
-          return data;
-        }),
-        catchError((_error: HttpErrorResponse) => {
-          this.experimentRawDataBMRB = undefined;
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            experimentRawDataBMRB: 'done', // update the specific key dynamically
-          }));
-          return of(undefined);
-        })
-      ),
-      this.entryAPIService.getExperimentRawDataSBGrid(this.entryId()).pipe(
-        map((data) => {
-          this.experimentRawDataSBGrid = data as SBGRIDExperimentRawData;
-          this.apiLoadedStatus.update((state) => ({
-            ...state,
-            experimentRawDataSBGrid: 'done',
-          }));
-          return data;
-        }),
-        catchError((_error: HttpErrorResponse) => {
-          this.experimentRawDataSBGrid = undefined;
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            experimentRawDataSBGrid: 'done', // update the specific key dynamically
-          }));
-          return of(undefined);
-        })
-      ),
-      this.entryAPIService.getExperimentRawDataIRRMC(this.entryId()).pipe(
-        map((data) => {
-          this.experimentRawDataIRRMC = data;
-          this.apiLoadedStatus.update((state) => ({
-            ...state,
-            experimentRawDataIRRMC: 'done',
-          }));
-          return data;
-        }),
-        catchError((_error: HttpErrorResponse) => {
-          this.experimentRawDataIRRMC = undefined;
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            experimentRawDataIRRMC: 'done', // update the specific key dynamically
-          }));
-          return of(undefined);
-        })
-      ),
-      this.entryAPIService.getExperimentRawDataEMPIAR(this.entryId()).pipe(
-        map((data) => {
-          this.experimentRawDataEMPIAR = data as EMPIARExperimentRawData[];
-          this.apiLoadedStatus.update((state) => ({
-            ...state,
-            experimentRawDataEMPIAR: 'done',
-          }));
-          return data;
-        }),
-        catchError((_error: HttpErrorResponse) => {
-          this.experimentRawDataEMPIAR = undefined;
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            experimentRawDataEMPIAR: 'done', // update the specific key dynamically
-          }));
-          return of(undefined);
-        })
-      ),
-      this.entryAPIService.getExperimentRawDataPDB(this.entryId()).pipe(
-        map((data) => {
-          this.experimentRawDataPDB = data as PDBExperimentRawData[];
-          this.apiLoadedStatus.update((state) => ({
-            ...state,
-            experimentRawDataPDB: 'done',
-          }));
-          return data;
-        }),
-        catchError((_error: HttpErrorResponse) => {
-          this.experimentRawDataEMPIAR = undefined;
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            experimentRawDataPDB: 'done', // update the specific key dynamically
-          }));
-          return of(undefined);
-        })
-      ),
+      // this.entryAPIService.getPDBRedoData(this.entryId()).pipe(
+      //   map((data) => {
+      //     this.pdbRedoQualityScore = data;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state,
+      //       pdbRedoQualityScore: 'done',
+      //     }));
+      //     return data;
+      //   }),
+      //   catchError((_error: HttpErrorResponse) => {
+      //     this.pdbRedoQualityScore = undefined;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       pdbRedoQualityScore: 'done', // update the specific key dynamically
+      //     }));
+      //     return of({});
+      //   })
+      // ),
+      // this.entryAPIService.getExperimentRawDataBMRB(this.entryId()).pipe(
+      //   map((data) => {
+      //     this.experimentRawDataBMRB = data as BMRBExperimentRawData[];
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state,
+      //       experimentRawDataBMRB: 'done',
+      //     }));
+      //     return data;
+      //   }),
+      //   catchError((_error: HttpErrorResponse) => {
+      //     this.experimentRawDataBMRB = undefined;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       experimentRawDataBMRB: 'done', // update the specific key dynamically
+      //     }));
+      //     return of(undefined);
+      //   })
+      // ),
+      // this.entryAPIService.getExperimentRawDataSBGrid(this.entryId()).pipe(
+      //   map((data) => {
+      //     this.experimentRawDataSBGrid = data as SBGRIDExperimentRawData;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state,
+      //       experimentRawDataSBGrid: 'done',
+      //     }));
+      //     return data;
+      //   }),
+      //   catchError((_error: HttpErrorResponse) => {
+      //     this.experimentRawDataSBGrid = undefined;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       experimentRawDataSBGrid: 'done', // update the specific key dynamically
+      //     }));
+      //     return of(undefined);
+      //   })
+      // ),
+      // this.entryAPIService.getExperimentRawDataIRRMC(this.entryId()).pipe(
+      //   map((data) => {
+      //     this.experimentRawDataIRRMC = data;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state,
+      //       experimentRawDataIRRMC: 'done',
+      //     }));
+      //     return data;
+      //   }),
+      //   catchError((_error: HttpErrorResponse) => {
+      //     this.experimentRawDataIRRMC = undefined;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       experimentRawDataIRRMC: 'done', // update the specific key dynamically
+      //     }));
+      //     return of(undefined);
+      //   })
+      // ),
+      // this.entryAPIService.getExperimentRawDataEMPIAR(this.entryId()).pipe(
+      //   map((data) => {
+      //     this.experimentRawDataEMPIAR = data as EMPIARExperimentRawData[];
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state,
+      //       experimentRawDataEMPIAR: 'done',
+      //     }));
+      //     return data;
+      //   }),
+      //   catchError((_error: HttpErrorResponse) => {
+      //     this.experimentRawDataEMPIAR = undefined;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       experimentRawDataEMPIAR: 'done', // update the specific key dynamically
+      //     }));
+      //     return of(undefined);
+      //   })
+      // ),
+      // this.entryAPIService.getExperimentRawDataPDB(this.entryId()).pipe(
+      //   map((data) => {
+      //     this.experimentRawDataPDB = data as PDBExperimentRawData[];
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state,
+      //       experimentRawDataPDB: 'done',
+      //     }));
+      //     return data;
+      //   }),
+      //   catchError((_error: HttpErrorResponse) => {
+      //     this.experimentRawDataEMPIAR = undefined;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       experimentRawDataPDB: 'done', // update the specific key dynamically
+      //     }));
+      //     return of(undefined);
+      //   })
+      // ),
     ]);
   }
 

@@ -74,37 +74,15 @@
         <!-- if tab data is either not loaded and empty -->
         <section class="left-side">
           <!-- inside entry/components/interactive-tables -->
-          @if (componentLoadedStatus()['interactiveTables'] && molstarResidueInfoLoaded()) {
-          <pdbc-interactive-tables
-            [tabName]="getTableName(tabName.name)"
-            [complexDetails]="complexDetails"
-            [assemblyData]="assemblies"
-            [pisaAssemblyData]="pisaAssemblies"
-            [pfamMappings]="pfamMapping"
-            [cathMappings]="cathMapping"
-            [scopMappings]="scop175Mapping"
-            [macromolecules]="macroMolecules"
-            [molstarResidueInfo]="molstarResidueInfo()"
-            [ligands]="boundLigands"
-            [modifications]="modifications"
-            [carbohydrates]="carbohydrates"
-            [uniprotMapping]="uniprotMapping"
-            [bestStrMapUniProtId]="bestStructuresMappingsByUniProtIds"
-          ></pdbc-interactive-tables>
-          }
+          <!-- @if (componentLoadedStatus()['interactiveTables'] && molstarResidueInfoLoaded()) { -->
+          <pdbc-interactive-tables [tabName]="getTableName(tabName.name)" [bestStrMapUniProtId]="bestStructuresMappingsByUniProtIds"></pdbc-interactive-tables>
+          <!-- } -->
         </section>
         <section class="right-side">
           <!-- inside entry/components/details-dashboard -->
-          @if (componentLoadedStatus()['detailsDashboard']) {
-          <pdbc-details-dashboard
-            [entryId]="entryId()"
-            [tabName]="getTableName(tabName.name)"
-            [macromolecules]="macroMolecules"
-            [proteinsStats]="proteinPagesSummaryByUniProtIds"
-            [molstarViewerEl]="molstarViewer"
-            [molstarParent]="molstarParent"
-          ></pdbc-details-dashboard>
-          }
+          <!-- @if (componentLoadedStatus()['detailsDashboard']) { -->
+          <pdbc-details-dashboard [tabName]="getTableName(tabName.name)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent"></pdbc-details-dashboard>
+          <!-- } -->
         </section>
         } @else if (tabsInfo().status[tabName.name] === 'empty-data') {
         <!-- else if tab data is loaded but empty -->
@@ -113,32 +91,13 @@
         </section>
         } } @if(tabName.name === 'Experiments') {
         <!-- inside entry/components/experiments-validation-tab -->
-        @if (componentLoadedStatus()['experimentsValidationTab']) {
-        <pdbc-experiments-validation-tab
-          [entryId]="entryId()"
-          [entryTitle]="summaryData()?.entryTitle ?? ''"
-          [sourceOrganisms]="organismScientificNames"
-          [hasRna]="hasRna"
-          [depositionDate]="summaryData()?.depositionDate ?? ''"
-          [releaseDate]="summaryData()?.releaseDate ?? ''"
-          [revisionDate]="summaryData()?.revisionDate ?? ''"
-          [experimentalDetails]="experimentalDetails"
-          [keyValidationStats]="validationKeyStats"
-          [xRayRefine]="validationXRayRefine"
-          [pdbRedoData]="pdbRedoQualityScore"
-          [rawDataPDB]="experimentRawDataPDB"
-          [rawDataBMRB]="experimentRawDataBMRB"
-          [rawDataSBGrid]="experimentRawDataSBGrid"
-          [rawDataIRRMC]="experimentRawDataIRRMC"
-          [rawDataEMPIAR]="experimentRawDataEMPIAR"
-          [molstarViewerEl]="molstarViewer"
-          [molstarParent]="molstarParent"
-        ></pdbc-experiments-validation-tab>
-        } } @if(tabName.name === 'Citations') {
+        <!-- @if (componentLoadedStatus()['experimentsValidationTab']) { -->
+        <pdbc-experiments-validation-tab [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent"></pdbc-experiments-validation-tab>
+        <!-- } -->
+        } @if(tabName.name === 'Citations') {
         <!-- inside entry/components/citations-tab -->
-        @if (componentLoadedStatus()['citationsTab']) {
-        <pdbc-citations-tab [entryId]="entryId()" [primaryPublication]="primaryPublication" [articlesCiting]="articlesCiting"></pdbc-citations-tab>
-        } } } }
+        <pdbc-citations-tab [entryId]="entryId()" [primaryPublication]="primaryPublication()" [articlesCiting]="articlesCiting"></pdbc-citations-tab>
+        } } }
       </section>
     </section>
   </main>

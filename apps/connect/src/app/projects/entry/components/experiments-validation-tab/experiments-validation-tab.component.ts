@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, ElementRef, inject, input, OnDestroy, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { AfterViewInit, Component, computed, ElementRef, inject, input, OnDestroy, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ExperimentDetail } from '../../data-models/experimental-details.model';
 import { KeyValidationStats } from '../../data-models/key-validation-stats.model';
@@ -20,6 +21,10 @@ import { MaterialModule } from '@pdbc/core';
 import { firstValueFrom, timer } from 'rxjs';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { StrucQualityGradientsComponent } from '../struc-quality-gradients/struc-quality-gradients.component';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { Store } from '@ngrx/store';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { EntrySelectors } from '../../store/entry.selectors';
 
 /**
  * Examples that should be tested when looking at this component
@@ -57,37 +62,55 @@ import { StrucQualityGradientsComponent } from '../struc-quality-gradients/struc
   styleUrl: './experiments-validation-tab.component.scss',
 })
 export class ExperimentsValidationTabComponent implements OnInit, AfterViewInit, OnDestroy {
+  public readonly renderer = inject(Renderer2);
+  public readonly elementRef = inject(ElementRef);
+  private readonly globalStore = inject(Store<EntryStoreState>);
+  public readonly dataFacade = inject(ValidationDataProcessingFacade);
+  public readonly tableFacade = inject(ValidationTablesFacade);
+  public readonly molstarVisualisations = inject(MolstarVisualisationsForTabs);
   /**
    * API endpoint inputs
    */
-  public readonly entryId = input.required<string>();
-  public readonly entryTitle = input.required<string>();
-  public readonly sourceOrganisms = input.required<string[]>();
-  public readonly hasRna = input.required<boolean>();
-  public readonly depositionDate = input.required<string>();
-  public readonly releaseDate = input.required<string>();
-  public readonly revisionDate = input.required<string>();
-  public readonly experimentalDetails = input.required<ExperimentDetail[]>();
-  public readonly keyValidationStats = input.required<KeyValidationStats | undefined>();
-  public readonly xRayRefine = input.required<XRayRefine | undefined>();
-  public readonly pdbRedoData = input.required<ProcessedQualityScores | undefined>();
-  public readonly rawDataPDB = input.required<PDBExperimentRawData[] | undefined>();
-  public readonly rawDataBMRB = input.required<BMRBExperimentRawData[] | undefined>();
-  public readonly rawDataIRRMC = input.required<IRRMCExperimentRawData | undefined>();
-  public readonly rawDataEMPIAR = input.required<EMPIARExperimentRawData[] | undefined>();
-  public readonly rawDataSBGrid = input.required<SBGRIDExperimentRawData | undefined>();
+  // public readonly entryId = input.required<string>();
+  // public readonly entryTitle = input.required<string>();
+  // public readonly sourceOrganisms = input.required<string[]>();
+  // public readonly hasRna = input.required<boolean>();
+  // public readonly depositionDate = input.required<string>();
+  // public readonly releaseDate = input.required<string>();
+  // public readonly revisionDate = input.required<string>();
+  // public readonly experimentalDetails = input.required<ExperimentDetail[]>();
+  // public readonly keyValidationStats = input.required<KeyValidationStats | undefined>();
+  // public readonly xRayRefine = input.required<XRayRefine | undefined>();
+  // public readonly pdbRedoData = input.required<ProcessedQualityScores | undefined>();
+  // public readonly rawDataPDB = input.required<PDBExperimentRawData[] | undefined>();
+  // public readonly rawDataBMRB = input.required<BMRBExperimentRawData[] | undefined>();
+  // public readonly rawDataIRRMC = input.required<IRRMCExperimentRawData | undefined>();
+  // public readonly rawDataEMPIAR = input.required<EMPIARExperimentRawData[] | undefined>();
+  // public readonly rawDataSBGrid = input.required<SBGRIDExperimentRawData | undefined>();
   public molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
   public molstarParent = input.required<HTMLElement>(); // Parent to send back the molstar global instance
 
-  public renderer = inject(Renderer2);
-  public elementRef = inject(ElementRef);
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+  public readonly entryTitle = computed(() => this.summaryData()?.entryTitle);
+  public readonly sourceOrganisms = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
+  public readonly depositionDate = computed(() => this.summaryData()?.depositionDate);
+  public readonly releaseDate = computed(() => this.summaryData()?.releaseDate);
+  public readonly revisionDate = computed(() => this.summaryData()?.revisionDate);
+  public readonly experimentalDetails = toSignal(this.globalStore.select(EntrySelectors.experimentalDetails));
+  public readonly hasRna = toSignal(this.globalStore.select(EntrySelectors.hasRNA));
+  public readonly keyValidationStats = toSignal(this.globalStore.select(EntrySelectors.validationKeyStats));
+  public readonly xRayRefine = toSignal(this.globalStore.select(EntrySelectors.validationXRayRefine));
+  public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
+  public readonly rawDataPDB = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataPDB));
+  public readonly rawDataBMRB = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataBMRB));
+  public readonly rawDataSBGrid = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataSBGrid));
+  public readonly rawDataIRRMC = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataIRRMC));
+  public readonly rawDataEMPIAR = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataEMPIAR));
 
   /**
    * Processing, table facades and Molstar tab manipulating class
    */
-  public readonly dataFacade = inject(ValidationDataProcessingFacade);
-  public readonly tableFacade = inject(ValidationTablesFacade);
-  public readonly molstarVisualisations = inject(MolstarVisualisationsForTabs);
 
   // javascript functions exposed to template for parsing domains nested data
   public readonly objectKeys = Object.keys;
@@ -113,30 +136,32 @@ export class ExperimentsValidationTabComponent implements OnInit, AfterViewInit,
   async ngOnInit() {
     // when initialized we process data from the endpoints into a unified object used for rendering
     // (processedExpValData)
-    const processedExpValData = this.dataFacade.processData(
-      this.experimentalDetails(),
-      this.sourceOrganisms(),
-      this.hasRna(),
-      this.depositionDate(),
-      this.releaseDate(),
-      this.revisionDate(),
-      this.entryTitle(),
-      this.keyValidationStats(),
-      this.xRayRefine(),
-      this.pdbRedoData(),
-      this.rawDataPDB(),
-      this.rawDataBMRB(),
-      this.rawDataIRRMC(),
-      this.rawDataEMPIAR(),
-      this.rawDataSBGrid()
+    const processedExpValData = await this.dataFacade.processData(
+      this.experimentalDetails()!,
+      this.sourceOrganisms()!,
+      this.hasRna()!,
+      this.depositionDate()!,
+      this.releaseDate()!,
+      this.revisionDate()!,
+      this.entryTitle()!,
+      this.keyValidationStats()!,
+      this.xRayRefine()!,
+      this.pdbRedoData()!,
+      this.rawDataPDB()!,
+      this.rawDataBMRB()!,
+      this.rawDataIRRMC()!,
+      this.rawDataEMPIAR()!,
+      this.rawDataSBGrid()!
     );
+
+    console.log('Processed experimental details:', processedExpValData);
 
     // currently displayed method is the first from the list of processed objects
     this.processedData.set(processedExpValData);
-    this.currentData.set(this.processedData()![0]);
+    this.currentData.set(this.processedData()?.[0]);
 
     // if more than one object exists we set entry to be of hybrid experimental methods (this enables the top filters)
-    if (this.experimentalDetails().length > 1) {
+    if (this.experimentalDetails() ?? [].length > 1) {
       this.isHybrid.set(true);
     }
   }
@@ -145,7 +170,7 @@ export class ExperimentsValidationTabComponent implements OnInit, AfterViewInit,
     // before rendering molstar we get the singleton molstar tab instance from the template (this avoids memory leaks)
     await this.getMolstarViewerFromParent();
     // we render molstar with reloading config obj as true
-    await this.molstarVisualisations.renderMolstarValidation(this.entryId(), this.molstarViewerEl(), true);
+    await this.molstarVisualisations.renderMolstarValidation(this.entryId() ?? '', this.molstarViewerEl(), true);
   }
 
   async getMolstarViewerFromParent() {

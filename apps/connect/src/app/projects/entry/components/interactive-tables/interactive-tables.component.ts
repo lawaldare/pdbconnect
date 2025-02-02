@@ -22,6 +22,10 @@ import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.mod
 import { UniProtMapping } from '../../data-models/uniprot-mapping.model';
 import { BestStructureMapping } from '../../data-models/uniprot-best-structures.model';
 import { MolstarResidueInfo } from '../../helpers/molstar/molstar-helpers';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { Store } from '@ngrx/store';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
 
@@ -32,35 +36,49 @@ type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable |
   templateUrl: './interactive-tables.component.html',
 })
 export class InteractiveTablesComponent implements OnInit, OnDestroy {
+  public readonly signals = inject(ComponentCommunicationService);
+
   public readonly tabName = input.required<TableNames>();
   // public readonly tabName = input.required<string>();
 
   // Data for assemblies table
-  public readonly complexDetails = input.required<ComplexDetails[]>();
-  public readonly assemblyData = input.required<AssemblyData[]>();
-  public readonly pisaAssemblyData = input.required<PisaAssembly[]>();
+  // public readonly complexDetails = input<ComplexDetails[]>();
+  // public readonly assemblyData = input<AssemblyData[]>();
+  // public readonly pisaAssemblyData = input<PisaAssembly[]>();
 
-  // Data for domains table
-  public readonly pfamMappings = input.required<PfamMappings>();
-  public readonly cathMappings = input.required<CathMappings>();
-  public readonly scopMappings = input.required<ScopMappings>();
+  // // Data for domains table
+  // public readonly pfamMappings = input<PfamMappings>();
+  // public readonly cathMappings = input<CathMappings>();
+  // public readonly scopMappings = input<ScopMappings>();
 
-  // Data for ligands table
-  public readonly ligands = input.required<Molecule[]>();
-  public readonly modifications = input.required<ModifiedResidue[]>();
+  // // Data for ligands table
+  // public readonly ligands = input<Molecule[]>();
+  // public readonly modifications = input<ModifiedResidue[]>();
 
-  // Data for macromolecules table
-  public readonly carbohydrates = input.required<CarbohydrateMolecule[]>();
-  public readonly uniprotMapping = input.required<UniProtMapping>();
-  public readonly bestStrMapUniProtId = input.required<{ [key: string]: BestStructureMapping[] }>();
+  // // Data for macromolecules table
+  // public readonly carbohydrates = input<CarbohydrateMolecule[]>();
+  // public readonly uniprotMapping = input<UniProtMapping>();
+  public readonly bestStrMapUniProtId = input<{ [key: string]: BestStructureMapping[] }>();
 
   // Data for macromolecules, domains table
-  public readonly macromolecules = input.required<Molecule[]>();
+  // public readonly macromolecules = input<Molecule[]>();
 
   // Data for domains, ligands, macromolecules tables
-  public readonly molstarResidueInfo = input.required<MolstarResidueInfo[]>();
+  // public readonly molstarResidueInfo = input<MolstarResidueInfo[]>();
+  public molstarResidueInfo = this.signals.molstarResidueInfo;
 
-  public readonly signals = inject(ComponentCommunicationService);
+  private readonly globalStore = inject(Store<EntryStoreState>);
+  public readonly complexDetails = toSignal(this.globalStore.select(EntrySelectors.complexDetails));
+  public readonly assemblyData = toSignal(this.globalStore.select(EntrySelectors.assemblies));
+  public readonly pisaAssemblyData = toSignal(this.globalStore.select(EntrySelectors.pisaAssemblies));
+  public readonly pfamMappings = toSignal(this.globalStore.select(EntrySelectors.pfamMapping));
+  public readonly cathMappings = toSignal(this.globalStore.select(EntrySelectors.cathMapping));
+  public readonly scopMappings = toSignal(this.globalStore.select(EntrySelectors.scop175Mapping));
+  public readonly ligands = toSignal(this.globalStore.select(EntrySelectors.boundLigands));
+  public readonly modifications = toSignal(this.globalStore.select(EntrySelectors.modifications));
+  public readonly carbohydrates = toSignal(this.globalStore.select(EntrySelectors.carbohydrates));
+  public readonly uniprotMapping = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
+  public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
 
   // Signal to track table readiness
   private tableReadySignal = signal(false);
