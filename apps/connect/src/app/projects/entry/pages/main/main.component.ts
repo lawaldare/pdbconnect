@@ -207,7 +207,7 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
   });
 
   // API data from getEntrySummary https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/:entryID
-  public summaryData!: ProcessedSummary;
+  // public summaryData!: ProcessedSummary;
 
   // API data from getEntryMolecules https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/:entryID
   public macroMolecules!: Molecule[];
@@ -217,8 +217,8 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
 
   // API data from getExperiment https://www.ebi.ac.uk/pdbe/api/pdb/entry/experiment/:entryID
   public experimentalDetails!: AnyExperimentDetail[];
-  public experimentalMethod!: string;
-  public resolutionValues!: Array<number | undefined>;
+  // public experimentalMethod!: string;
+  // public resolutionValues!: Array<number | undefined>;
 
   // API data from getUniprotMapping https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/:entryID
   public uniprotMapping!: UniProtMapping;
@@ -292,7 +292,9 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
 
   private readonly globalStore = inject(Store<EntryStoreState>);
-  // public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+  public readonly resolutionValues = toSignal(this.globalStore.select(EntrySelectors.resolutionValues));
+  public readonly experimentalMethod = toSignal(this.globalStore.select(EntrySelectors.experimentalMethod));
+  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
 
   constructor() {
     effect(async () => {
@@ -319,9 +321,25 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
           const entryId = params['entryId'].toLowerCase();
           this.globalStore.dispatch(EntryActions.setCurrentEntryId({ entryId }));
           this.globalStore.dispatch(EntryActions.getEntryStatus());
-
-          this.getPageData();
-          return of({});
+          this.entryId.set(entryId);
+          return this.globalStore.select(EntrySelectors.entryStatus).pipe(
+            tap((status: EntryStatus) => this.entryStatus.set({ ...status, entryId })),
+            map((response: EntryStatus) => response.status_code)
+          );
+          // return of({});
+        }),
+        mergeMap((statusCode: StatusCode) => {
+          this.statusCode.set(statusCode);
+          if (statusCode === 'REL') {
+            setTimeout(() => {
+              this.molstarVisualisation.renderMolstarInitial(this.entryId(), this.molstarViewer.nativeElement);
+            });
+            this.getPageData();
+            return this.setPageData();
+          } else {
+            this.statusCode.set(statusCode);
+            return EMPTY;
+          }
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -357,46 +375,20 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
 
   async ngAfterViewInit() {
     this.previousTab = `${this.currentTab()}`;
-
-    this.route.params
-      .pipe(
-        switchMap((params) => {
-          const entryId = params['entryId'].toLowerCase();
-          this.entryId.set(entryId);
-          return this.entryAPIService.getEntryStatus(entryId).pipe(
-            tap((status: EntryStatus) => this.entryStatus.set({ ...status, entryId })),
-            map((response: EntryStatus) => response.status_code)
-          );
-        }),
-        mergeMap((statusCode: StatusCode) => {
-          this.statusCode.set(statusCode);
-          if (statusCode === 'REL') {
-            setTimeout(() => {
-              this.molstarVisualisation.renderMolstarInitial(this.entryId(), this.molstarViewer.nativeElement);
-            });
-            return this.setPageData();
-          } else {
-            this.statusCode.set(statusCode);
-            return EMPTY;
-          }
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe();
   }
 
   private setPageData(): Observable<any> {
     return combineLatest([
-      this.entryAPIService.getEntrySummary(this.entryId()).pipe(
-        map((data) => {
-          this.summaryData = data;
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            summaryData: 'done', // update the specific key dynamically
-          }));
-          return data;
-        })
-      ),
+      // this.entryAPIService.getEntrySummary(this.entryId()).pipe(
+      //   map((data) => {
+      //     this.summaryData = data;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       summaryData: 'done', // update the specific key dynamically
+      //     }));
+      //     return data;
+      //   })
+      // ),
       this.entryAPIService.getEntryMolecules(this.entryId()).pipe(
         map((data) => {
           const molecules = data[this.entryId()];
@@ -415,22 +407,6 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
             .sort((a, b) => macromoleculeSortedTypesArray.indexOf(a.molecule_type) - macromoleculeSortedTypesArray.indexOf(b.molecule_type));
 
           const boundLigands = molecules.filter((mol) => mol.molecule_type === 'bound');
-
-          // const boundLigandsEntries = boundLigands.map((boundLigand) =>
-          //   this.ligandAggAPIService.fetchBoundEntries(boundLigand.chem_comp_ids[0]).pipe(
-          //     map((result) => ({ [boundLigand.chem_comp_ids[0]]: result })) // Wrap each result in an object with uniprotId as key
-          //   )
-          // );
-          // const boundLigandsInteractions = boundLigands.map((boundLigand) =>
-          //   this.ligandAggAPIService.fetchIntxData(boundLigand.chem_comp_ids[0]).pipe(
-          //     map((result) => ({ [boundLigand.chem_comp_ids[0]]: result })) // Wrap each result in an object with uniprotId as key
-          //   )
-          // );
-          // const boundLigandsRelated = boundLigands.map((boundLigand) =>
-          //   this.ligandAggAPIService.getRelatedLigands(boundLigand.chem_comp_ids[0]).pipe(
-          //     map((result) => ({ [boundLigand.chem_comp_ids[0]]: result })) // Wrap each result in an object with uniprotId as key
-          //   )
-          // );
 
           const organismNames: string[] = [];
 
@@ -468,33 +444,33 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
           };
         })
       ),
-      this.entryAPIService.getExperiment(this.entryId()).pipe(
-        map((response) => {
-          this.experimentalDetails = response;
+      // this.entryAPIService.getExperiment(this.entryId()).pipe(
+      //   map((response) => {
+      //     this.experimentalDetails = response;
 
-          const experimentalMethodTitle = response.length > 1 ? 'Hybrid' : (response[0].experimental_method as string);
-          const resolutionValues: Array<number | undefined> = response.map((datum: AnyExperimentDetail) => {
-            if ('resolution' in datum && datum['resolution']) return datum['resolution'];
-            else return undefined;
-          });
+      //     const experimentalMethodTitle = response.length > 1 ? 'Hybrid' : (response[0].experimental_method as string);
+      //     const resolutionValues: Array<number | undefined> = response.map((datum: AnyExperimentDetail) => {
+      //       if ('resolution' in datum && datum['resolution']) return datum['resolution'];
+      //       else return undefined;
+      //     });
 
-          this.experimentalMethod = experimentalMethodTitle;
-          this.resolutionValues = resolutionValues;
+      //     this.experimentalMethod = experimentalMethodTitle;
+      //     this.resolutionValues = resolutionValues;
 
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            experimentalDetails: 'done', // update the specific key dynamically
-            experimentalMethod: 'done', // update the specific key dynamically
-            resolutionValues: 'done', // update the specific key dynamically
-          }));
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       experimentalDetails: 'done', // update the specific key dynamically
+      //       experimentalMethod: 'done', // update the specific key dynamically
+      //       resolutionValues: 'done', // update the specific key dynamically
+      //     }));
 
-          return {
-            experimentalMethod: experimentalMethodTitle,
-            resolutionValues: resolutionValues,
-            details: response,
-          };
-        })
-      ),
+      //     return {
+      //       experimentalMethod: experimentalMethodTitle,
+      //       resolutionValues: resolutionValues,
+      //       details: response,
+      //     };
+      //   })
+      // ),
       this.entryAPIService.getUniprotMapping(this.entryId()).pipe(
         mergeMap((data: UniProtMapping) => {
           // For each UniProt id we create observables for bestStructures and proteinPagesSummary

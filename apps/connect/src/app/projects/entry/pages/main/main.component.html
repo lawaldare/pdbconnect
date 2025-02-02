@@ -8,21 +8,21 @@
       <section class="title-info">
         <h1 class="heading-1">{{ entryId() }}</h1>
         <div class="information">
-          @if (componentLoadedStatus()['titleInfo']) {
-          <span>{{ experimentalMethod }}</span>
-          @if (resolutionValues.length > 0) { @for (resolutionValue of resolutionValues; track resolutionValue;) { @if (resolutionValue !== undefined) {
-          <span>{{ resolutionValue! }}Å</span>
+          <!-- @if (componentLoadedStatus()['titleInfo']) { -->
+          <span>{{ experimentalMethod() }}</span>
+          @if (resolutionValues()??[].length > 0) { @for (resolutionValue of resolutionValues(); track resolutionValue;) { @if (resolutionValue !== undefined) {
+          <span>{{ resolutionValue }}Å</span>
           } }
           <!-- <span>{{ pageData.experiment.resolutionValue }}Å</span> -->
           }
-          <span>Released {{ summaryData.releaseDate }}</span>
+          <span>Released {{ summaryData()?.releaseDate }}</span>
           <span>
             <a
               >10.2210/pdb{{ entryId() }}/pdb
               <i class="icon icon-link icon-common"></i>
             </a>
           </span>
-          }
+          <!-- } -->
         </div>
       </section>
       <section class="action-buttons" libClickOutside (clickOutside)="onClickedOutside()">
@@ -35,15 +35,15 @@
     <!-- Contains components of the page top: general information and the 3d explorer -->
     <section class="top-info">
       <section class="summary">
-        @if (componentLoadedStatus()['mainInfoArea']) {
+        <!-- @if (summaryData()) { -->
         <!-- inside entry/components/main-information-area -->
         <pdbc-main-information-area
-          [summary]="summaryData"
+          [summary]="summaryData()!"
           [organismScientificNames]="organismScientificNames"
           [primaryPublication]="primaryPublication"
           [qualityScores]="summaryQualityScores"
         ></pdbc-main-information-area>
-        }
+        <!-- } -->
       </section>
       <section class="explore-3d-tabs">
         @if (componentLoadedStatus()['overviewMolstar']) {
@@ -131,12 +131,12 @@
         @if (componentLoadedStatus()['experimentsValidationTab']) {
         <pdbc-experiments-validation-tab
           [entryId]="entryId()"
-          [entryTitle]="summaryData.entryTitle"
+          [entryTitle]="summaryData()?.entryTitle ?? ''"
           [sourceOrganisms]="organismScientificNames"
           [hasRna]="hasRna"
-          [depositionDate]="summaryData.depositionDate"
-          [releaseDate]="summaryData.releaseDate"
-          [revisionDate]="summaryData.revisionDate"
+          [depositionDate]="summaryData()?.depositionDate ?? ''"
+          [releaseDate]="summaryData()?.releaseDate ?? ''"
+          [revisionDate]="summaryData()?.revisionDate ?? ''"
           [experimentalDetails]="experimentalDetails"
           [keyValidationStats]="validationKeyStats"
           [xRayRefine]="validationXRayRefine"
