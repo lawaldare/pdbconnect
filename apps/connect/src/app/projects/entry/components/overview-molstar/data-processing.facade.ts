@@ -481,31 +481,36 @@ export class OverviewMolstarFacade {
     this.dataParsed.set(true);
   }
 
-  parseRelatedEntries(primaryPublication?: CitationDetail) {
-    let relatedEntries: string[] = [];
-    if (primaryPublication && primaryPublication.associated_entries) {
-      relatedEntries = primaryPublication.associated_entries.split(', ');
+  parseRelatedEntries(primaryPublication: CitationDetail | undefined) {
+    if (primaryPublication) {
+      let relatedEntries: string[] = [];
+      if (primaryPublication && primaryPublication.associated_entries) {
+        relatedEntries = primaryPublication.associated_entries.split(', ');
+      }
+      this.relatedEntries.set(relatedEntries);
     }
-    this.relatedEntries.set(relatedEntries);
   }
 
-  public parseComplexDetails(complexDetails: ComplexDetails[]) {
-    let preferredAssemblyId = undefined;
-    for (const complexDetail of complexDetails) {
-      for (const assemblyInfo of complexDetail.assemblies) {
-        if (assemblyInfo.preferred_assembly) {
-          preferredAssemblyId = assemblyInfo.assembly_id;
-          const participants = complexDetail.participants;
-          this.assemblyData.set({
-            name: complexDetail.name,
-            preferred: preferredAssemblyId,
-            composition: calculateAssemblyComposition(participants),
-            complexId: complexDetail.pdb_complex_id,
-          });
-          break;
+  public parseComplexDetails(complexDetails: ComplexDetails[] | undefined) {
+    console.log('complexDetails', complexDetails);
+    if (complexDetails) {
+      let preferredAssemblyId = undefined;
+      for (const complexDetail of complexDetails) {
+        for (const assemblyInfo of complexDetail.assemblies) {
+          if (assemblyInfo.preferred_assembly) {
+            preferredAssemblyId = assemblyInfo.assembly_id;
+            const participants = complexDetail.participants;
+            this.assemblyData.set({
+              name: complexDetail.name,
+              preferred: preferredAssemblyId,
+              composition: calculateAssemblyComposition(participants),
+              complexId: complexDetail.pdb_complex_id,
+            });
+            break;
+          }
         }
+        if (preferredAssemblyId) break;
       }
-      if (preferredAssemblyId) break;
     }
   }
 

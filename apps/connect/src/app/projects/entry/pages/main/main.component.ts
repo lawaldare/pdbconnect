@@ -230,8 +230,8 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
   public interproMapping!: InterProMappings;
 
   // API data from getPDBEntryFiles https://www.ebi.ac.uk/pdbe/api/pdb/entry/files/:entryID
-  public downloadOptions: DownloadOption[] = [];
-  public viewOptions: DownloadOption[] = [];
+  // public downloadOptions: DownloadOption[] = [];
+  // public viewOptions: DownloadOption[] = [];
 
   // API data from getPfamMapping https://www.ebi.ac.uk/pdbe/api/mappings/pfam/:entryID
   public pfamMapping!: PfamMappings;
@@ -295,6 +295,8 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
   public readonly resolutionValues = toSignal(this.globalStore.select(EntrySelectors.resolutionValues));
   public readonly experimentalMethod = toSignal(this.globalStore.select(EntrySelectors.experimentalMethod));
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+  public readonly downloadOptions = toSignal(this.globalStore.select(EntrySelectors.downloadOptions));
+  public readonly viewOptions = toSignal(this.globalStore.select(EntrySelectors.viewOptions));
 
   constructor() {
     effect(async () => {
@@ -600,18 +602,18 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
           return of({});
         })
       ),
-      this.entryAPIService.getPDBEntryFiles(this.entryId()).pipe(
-        map((data) => {
-          this.downloadOptions = this.dataProcessing.processFilesData(data).downloads;
-          this.viewOptions = this.dataProcessing.processFilesData(data).views;
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            downloadOptions: 'done', // update the specific key dynamically
-            viewOptions: 'done', // update the specific key dynamically
-          }));
-          return data;
-        })
-      ),
+      // this.entryAPIService.getPDBEntryFiles(this.entryId()).pipe(
+      //   map((data) => {
+      //     this.downloadOptions = this.dataProcessing.processFilesData(data).downloads;
+      //     this.viewOptions = this.dataProcessing.processFilesData(data).views;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       downloadOptions: 'done', // update the specific key dynamically
+      //       viewOptions: 'done', // update the specific key dynamically
+      //     }));
+      //     return data;
+      //   })
+      // ),
       this.entryAPIService.getSummaryQualityScores(this.entryId()).pipe(
         map((data) => {
           this.summaryQualityScores = data;
@@ -720,24 +722,24 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
           return of(undefined);
         })
       ),
-      this.entryAPIService.getPrimaryPublicationAbstract(this.entryId()).pipe(
-        map((data) => {
-          this.primaryPublication = data;
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            primaryPublication: 'done', // update the specific key dynamically
-          }));
-          return data;
-        }),
-        catchError((_error: HttpErrorResponse) => {
-          this.primaryPublication = undefined;
-          this.apiLoadedStatus.update((state) => ({
-            ...state, // spread the existing state
-            primaryPublication: 'done', // update the specific key dynamically
-          }));
-          return of(undefined);
-        })
-      ),
+      // this.entryAPIService.getPrimaryPublicationAbstract(this.entryId()).pipe(
+      //   map((data) => {
+      //     this.primaryPublication = data;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       primaryPublication: 'done', // update the specific key dynamically
+      //     }));
+      //     return data;
+      //   }),
+      //   catchError((_error: HttpErrorResponse) => {
+      //     this.primaryPublication = undefined;
+      //     this.apiLoadedStatus.update((state) => ({
+      //       ...state, // spread the existing state
+      //       primaryPublication: 'done', // update the specific key dynamically
+      //     }));
+      //     return of(undefined);
+      //   })
+      // ),
       this.entryAPIService.getArticleCitingPDBEntry(this.entryId()).pipe(
         map((data) => {
           this.articlesCiting = data;

@@ -23,7 +23,7 @@ import {
   PDBExperimentRawData,
   SBGRIDExperimentRawData,
 } from '../data-models/experiment-raw-data.model';
-import { EntryStatus, StatusCode } from '../data-models/status.model';
+import { EntryStatus } from '../data-models/status.model';
 
 export interface EntryStoreState {
   entryId: string;
@@ -49,9 +49,9 @@ export interface EntryStoreState {
   modifications: ModifiedResidue[];
   validationKeyStats: KeyValidationStats;
   validationXRayRefine: XRayRefine;
-  primaryPublication: CitationDetail;
+  primaryPublication: CitationDetail | undefined;
   articlesCiting: RelatedPublication;
-  complexDetails: ComplexDetails[];
+  complexDetails: ComplexDetails[] | undefined;
   assemblies: AssemblyData[];
   pisaAssemblies: PisaAssembly[];
   carbohydrates: CarbohydrateMolecule[];

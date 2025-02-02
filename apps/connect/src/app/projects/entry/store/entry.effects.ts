@@ -12,6 +12,7 @@ import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model'
 import { BestStructureMapping } from '../data-models/uniport-best-structures.model';
 import { BestStructureDict } from '../data-models/uniprot-best-structures.model';
 import { MainDataProcessingFacade } from '../pages/main/data-processing.facade';
+import { CitationDetail } from '../data-models/publication.model';
 
 @Injectable()
 export class EntryEffects {
@@ -312,7 +313,10 @@ export class EntryEffects {
       mergeMap((entryId: string) =>
         this.entryAPIService.getPrimaryPublicationAbstract(entryId).pipe(
           map((primaryPublication) => EntryActions.getPrimaryPublicationSuccess({ primaryPublication })),
-          catchError(() => of(EntryActions.getPrimaryPublicationFailure()))
+          catchError(() => {
+            EntryActions.getPrimaryPublicationSuccess({ primaryPublication: {} as CitationDetail });
+            return of(EntryActions.getPrimaryPublicationFailure());
+          })
         )
       )
     )
@@ -338,7 +342,10 @@ export class EntryEffects {
       mergeMap((entryId: string) =>
         this.entryAPIService.getPreferredAssembly(entryId).pipe(
           map((complexDetails) => EntryActions.getPreferredAssemblySuccess({ complexDetails })),
-          catchError(() => of(EntryActions.getPreferredAssemblyFailure()))
+          catchError(() => {
+            EntryActions.getPreferredAssemblySuccess({ complexDetails: [] });
+            return of(EntryActions.getPreferredAssemblyFailure());
+          })
         )
       )
     )

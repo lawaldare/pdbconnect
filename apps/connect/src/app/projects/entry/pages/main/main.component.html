@@ -26,8 +26,8 @@
         </div>
       </section>
       <section class="action-buttons" libClickOutside (clickOutside)="onClickedOutside()">
-        <pdbc-entry-dropdown [downloadable]="true" [islink]="true" [options]="downloadOptions" title="Download files"></pdbc-entry-dropdown>
-        <pdbc-entry-dropdown [downloadable]="false" [islink]="true" [options]="viewOptions" title="View files"></pdbc-entry-dropdown>
+        <pdbc-entry-dropdown [downloadable]="true" [islink]="true" [options]="downloadOptions()" title="Download files"></pdbc-entry-dropdown>
+        <pdbc-entry-dropdown [downloadable]="false" [islink]="true" [options]="viewOptions()" title="View files"></pdbc-entry-dropdown>
         <!-- <lib-dropdown-menu [options]="downloadOptions" title="Download files"></lib-dropdown-menu>
         <lib-dropdown-menu [options]="viewOptions" title="View files"></lib-dropdown-menu> -->
       </section>
@@ -37,29 +37,14 @@
       <section class="summary">
         <!-- @if (summaryData()) { -->
         <!-- inside entry/components/main-information-area -->
-        <pdbc-main-information-area
-          [summary]="summaryData()!"
-          [organismScientificNames]="organismScientificNames"
-          [primaryPublication]="primaryPublication"
-          [qualityScores]="summaryQualityScores"
-        ></pdbc-main-information-area>
+        <pdbc-main-information-area />
         <!-- } -->
       </section>
       <section class="explore-3d-tabs">
-        @if (componentLoadedStatus()['overviewMolstar']) {
+        <!-- @if (componentLoadedStatus()['overviewMolstar']) { -->
         <!-- inside entry/components/overview-molstar -->
-        <pdbc-overview-molstar
-          [entryId]="this.entryId()"
-          [complexDetails]="complexDetails"
-          [macromolecules]="macroMolecules"
-          [ligands]="boundLigands"
-          [inputModifications]="modifications"
-          [pfamMappings]="pfamMapping"
-          [cathMappings]="cathMapping"
-          [scopMappings]="scop175Mapping"
-          [primaryPublication]="primaryPublication"
-        ></pdbc-overview-molstar>
-        }
+        <pdbc-overview-molstar />
+        <!-- } -->
       </section>
     </section>
 

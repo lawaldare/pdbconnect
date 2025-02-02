@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Component, input, Input, ViewChild, ElementRef, AfterViewInit, viewChild, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { first, firstValueFrom, timer } from 'rxjs';
+import { filter, first, firstValueFrom, timer } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
 import { OverviewMolstarFacade } from './data-processing.facade';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
@@ -14,6 +15,10 @@ import { OverviewMolstarControBarComponent } from './sub-components/molstar-cont
 import { OverviewMolstarTabNavComponent } from './sub-components/tab-nav-menu/tab-nav-menu.component';
 import { OverviewMolstarTabListViewComponent } from './sub-components/tab-listview-content/tab-listview-content.component';
 import { CitationDetail } from '../../data-models/publication.model';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { Store } from '@ngrx/store';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'pdbc-overview-molstar',
@@ -28,15 +33,15 @@ export class OverviewMolstarComponent implements AfterViewInit {
   public readonly objectValues = Object.values;
 
   // data inputs from parent component
-  public readonly entryId = input.required<string>();
-  public readonly complexDetails = input.required<ComplexDetails[]>();
-  public readonly macromolecules = input.required<Molecule[]>();
-  public readonly ligands = input.required<Molecule[]>();
-  public readonly inputModifications = input.required<ModifiedResidue[]>();
-  public readonly cathMappings = input.required<CathMappings>();
-  public readonly scopMappings = input.required<ScopMappings>();
-  public readonly pfamMappings = input.required<PfamMappings>();
-  public readonly primaryPublication = input.required<CitationDetail | undefined>();
+  // public readonly entryId = input.required<string>();
+  // public readonly complexDetails = input.required<ComplexDetails[]>();
+  // public readonly macromolecules = input.required<Molecule[]>();
+  // public readonly ligands = input.required<Molecule[]>();
+  // public readonly inputModifications = input.required<ModifiedResidue[]>();
+  // public readonly cathMappings = input.required<CathMappings>();
+  // public readonly scopMappings = input.required<ScopMappings>();
+  // public readonly pfamMappings = input.required<PfamMappings>();
+  // public readonly primaryPublication = input.required<CitationDetail | undefined>();
 
   public totalDomains = 0;
 
@@ -62,6 +67,17 @@ export class OverviewMolstarComponent implements AfterViewInit {
   // name of image displayed on default state ('No selection') for all tabs
   public preferredAssemblyImgName?: string;
 
+  private readonly globalStore = inject(Store<EntryStoreState>);
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly complexDetails = toSignal(this.globalStore.select(EntrySelectors.complexDetails));
+  public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
+  public readonly ligands = toSignal(this.globalStore.select(EntrySelectors.boundLigands));
+  public readonly inputModifications = toSignal(this.globalStore.select(EntrySelectors.modifications));
+  public readonly pfamMappings = toSignal(this.globalStore.select(EntrySelectors.pfamMapping));
+  public readonly cathMappings = toSignal(this.globalStore.select(EntrySelectors.cathMapping));
+  public readonly scopMappings = toSignal(this.globalStore.select(EntrySelectors.scop175Mapping));
+  public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
+
   private async initMolstarInstance() {
     const assemblyToUse = this.assemblyData().preferred ? this.assemblyData().preferred + '' : '1';
 
@@ -86,7 +102,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
   }
 
   private async initMolstarImageGallery() {
-    await this.molstarOverview.initImageGallery(this.entryId());
+    await this.molstarOverview.initImageGallery(this.entryId() ?? '');
 
     for (const imageObj of this.molstarOverview.galleryManager().images) {
       if (imageObj.clean_description.includes('this domain is out of the observed residue ranges!')) {
@@ -96,7 +112,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
     }
 
     const assemblyToUse = this.assemblyData().preferred ? this.assemblyData().preferred : '1';
-    this.preferredAssemblyImgName = `${this.entryId().toLowerCase()}_assembly_${assemblyToUse}_chemically_distinct_molecules_front`;
+    this.preferredAssemblyImgName = `${this.entryId()?.toLowerCase()}_assembly_${assemblyToUse}_chemically_distinct_molecules_front`;
     // this.preferredAssemblyImgName = `${this.entryId().toLowerCase()}_deposited_chemically_distinct_molecules_front`;
     for (const tabName of ['Assembly', 'Macromolecules', 'Ligands', 'Domains', 'Modifications']) {
       this.stateManagement.updateStatePropertyOfTab(tabName, 'initialStateImgName', this.preferredAssemblyImgName);
@@ -115,10 +131,8 @@ export class OverviewMolstarComponent implements AfterViewInit {
     this.dataProcessing.parseRelatedEntries(this.primaryPublication());
 
     // generate assembly related data
-    this.dataProcessing.parseComplexDetails(this.complexDetails());
-
     // generate text strings related to macromolecule types count
-    this.dataProcessing.generateMoleculeCountText(this.macromolecules());
+    this.dataProcessing.generateMoleculeCountText(this.macromolecules() ?? []);
 
     // initialise molstar and the image gallery functionality
     await this.initMolstarInstance();
@@ -142,17 +156,22 @@ export class OverviewMolstarComponent implements AfterViewInit {
     await this.dataProcessing.getColorsFromMolj([this.preferredAssemblyImgName!, ...imagesForDomains, ...modresImg]);
 
     // parse all data into list view or nested list view objects and molstar selection objects
-    this.dataProcessing.generateListSelectable(
-      this.entryId(),
-      this.macromolecules(),
-      this.ligands(),
-      this.inputModifications(),
-      this.cathMappings(),
-      this.pfamMappings(),
-      this.scopMappings(),
-      this.imageList,
-      this.molstarResiduesForAssembly()
-    );
+    if (this.complexDetails()?.length) {
+      this.dataProcessing.parseComplexDetails(this.complexDetails());
+      this.dataProcessing.generateListSelectable(
+        this.entryId()!,
+        this.macromolecules()!,
+        this.ligands()!,
+        this.inputModifications()!,
+        this.cathMappings()!,
+        this.pfamMappings()!,
+        this.scopMappings()!,
+        this.imageList,
+        this.molstarResiduesForAssembly()
+      );
+    }
+
+    console.log('this.dataProcessing', this.dataProcessing.assemblyData());
 
     let firstTab = undefined;
     // set sections as active if they contain any data mapped to them
@@ -163,14 +182,14 @@ export class OverviewMolstarComponent implements AfterViewInit {
       this.stateManagement.updateTabDisplayConfig('Assembly', 'N/A', 'na');
     }
 
-    if (this.macromolecules().length > 0) {
+    if (this.macromolecules()!.length > 0) {
       this.stateManagement.updateStatePropertyOfTab('Macromolecules', 'isInactive', false);
       if (!firstTab) firstTab = 'Macromolecules';
     } else {
       this.stateManagement.updateTabDisplayConfig('Macromolecules', 'N/A', 'na');
     }
 
-    if (this.ligands().length > 0) {
+    if (this.ligands()!.length > 0) {
       this.stateManagement.updateStatePropertyOfTab('Ligands', 'isInactive', false);
       if (!firstTab) firstTab = 'Ligands';
     } else {
@@ -184,7 +203,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
       this.stateManagement.updateTabDisplayConfig('Domains', 'N/A', 'na');
     }
 
-    if (this.inputModifications().length > 0) {
+    if (this.inputModifications()!.length > 0) {
       this.stateManagement.updateStatePropertyOfTab('Modifications', 'isInactive', false);
       if (!firstTab) firstTab = 'Modifications';
     } else {

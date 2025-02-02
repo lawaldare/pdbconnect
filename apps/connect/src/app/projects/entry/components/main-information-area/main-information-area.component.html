@@ -2,7 +2,7 @@
   <div class="info-row">
     <span>Entry title</span>
     <article>
-      {{ summary().entryTitle }}
+      {{ summary()?.entryTitle }}
     </article>
   </div>
   <div class="info-row">
@@ -16,7 +16,7 @@
           <i class="icon icon-common icon-search"></i>
         </a>
       </span>
-      {{ islast ? '' : ',' }} } @if (organismScientificNames().length === 0) {
+      {{ islast ? '' : ',' }} } @if (organismScientificNames()?.length === 0) {
       <span>Not available</span>
       }
     </article>

@@ -20,18 +20,21 @@ import { EntrySelectors } from '../../store/entry.selectors';
   styleUrl: './main-information-area.component.scss',
 })
 export class MainInformationAreaComponent {
-  public readonly summary = input.required<ProcessedSummary>();
-  public readonly organismScientificNames = input.required<string[]>();
-  public readonly primaryPublication = input.required<CitationDetail | undefined>();
-  public readonly qualityScores = input.required<ProcessedQualityScores | undefined>();
+  // public readonly summary = input.required<ProcessedSummary>();
+  // public readonly organismScientificNames = input.required<string[]>();
+  // public readonly primaryPublication = input.required<CitationDetail | undefined>();
+  // public readonly qualityScores = input.required<ProcessedQualityScores | undefined>();
+
+  private readonly globalStore = inject(Store<EntryStoreState>);
+  public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+  public readonly organismScientificNames = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
+  public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
+  public readonly qualityScores = toSignal(this.globalStore.select(EntrySelectors.summaryQualityScores));
 
   public modelQualitySummaryTooltip = modelQualitySummaryTooltip;
 
   public mappedInformation: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
   private readonly util = inject(UtilService);
-
-  private readonly globalStore = inject(Store<EntryStoreState>);
-  // public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
 
   public generateOrganismSearchUrl(term: string): string {
     return this.util.generateQueryURL(term, 'q_organism_name');
