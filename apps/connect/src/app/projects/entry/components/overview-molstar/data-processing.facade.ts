@@ -492,7 +492,6 @@ export class OverviewMolstarFacade {
   }
 
   public parseComplexDetails(complexDetails: ComplexDetails[] | undefined) {
-    console.log('complexDetails', complexDetails);
     if (complexDetails) {
       let preferredAssemblyId = undefined;
       for (const complexDetail of complexDetails) {

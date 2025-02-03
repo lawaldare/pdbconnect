@@ -106,7 +106,7 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
   private readonly entryAPIService = inject(EntryApiService);
   private _snackBar = inject(MatSnackBar);
   private molstarVisualisation = inject(MolstarVisualisationsForTabs);
-  private dataProcessing = inject(MainDataProcessingFacade);
+  public dataProcessing = inject(MainDataProcessingFacade);
 
   public currentTab = this.compCommunication.currentTab;
   public tabSwitchOrigin = this.compCommunication.tabSwitchOrigin;
@@ -144,22 +144,9 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
     () => {
       const status = this.componentLoadedStatus();
       if (status['detailsDashboard'] && this.compCommunication.isTabDataGenerated() === false && this.molstarResidueInfoLoaded()) {
+        this.dataProcessing.setTabName('Assemblies');
         // Call processInteractiveTablesData only when 'detailsDashboard' is loaded and tab data not generated yet
-        this.dataProcessing.processInteractiveTablesData(
-          this.complexDetails,
-          this.assemblies,
-          this.pisaAssemblies,
-          this.pfamMapping,
-          this.cathMapping,
-          this.scop175Mapping,
-          this.boundLigands,
-          this.modifications,
-          this.carbohydrates,
-          this.uniprotMapping,
-          this.bestStructuresMappingsByUniProtIds,
-          this.macroMolecules,
-          this.molstarResidueInfo()
-        );
+        this.processInteractiveTablesData();
       }
     },
     { allowSignalWrites: true }
@@ -298,22 +285,21 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
   public readonly downloadOptions = toSignal(this.globalStore.select(EntrySelectors.downloadOptions));
   public readonly viewOptions = toSignal(this.globalStore.select(EntrySelectors.viewOptions));
   public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
-
+  tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
   constructor() {
     effect(async () => {
       // Access the current state
-      const tabState = this.compCommunication.tabState();
-
-      if (this.tabSwitchOrigin() !== 'main') {
-        if (this.componentLoadedStatus()['detailsDashboard'] === false) {
-          // this.utilService.openSnackBar('Please wait until page completely loads', 'Dismiss');
-          this._snackBar.open('Please wait until page completely loads', 'Dismiss'), { duration: 3000 };
-        }
-        // if (this.currentTab() !== this.previousTab) {
-        const el = document.getElementById('detail-tabs');
-        el!.scrollIntoView();
-        this.previousTab = `${this.currentTab()}`;
-      }
+      // const tabState = this.compCommunication.tabState();
+      // if (this.tabSwitchOrigin() !== 'main') {
+      //   if (this.componentLoadedStatus()['detailsDashboard'] === false) {
+      //     // this.utilService.openSnackBar('Please wait until page completely loads', 'Dismiss');
+      //     this._snackBar.open('Please wait until page completely loads', 'Dismiss'), { duration: 3000 };
+      //   }
+      //   // if (this.currentTab() !== this.previousTab) {
+      //   const el = document.getElementById('detail-tabs');
+      //   el!.scrollIntoView();
+      //   this.previousTab = `${this.currentTab()}`;
+      // }
     });
   }
 
@@ -325,6 +311,7 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
           this.globalStore.dispatch(EntryActions.setCurrentEntryId({ entryId }));
           this.globalStore.dispatch(EntryActions.getEntryStatus());
           this.entryId.set(entryId);
+          // this.processInteractiveTablesData();
           return this.globalStore.select(EntrySelectors.entryStatus).pipe(
             filter(Boolean),
             tap((status: EntryStatus) => this.entryStatus.set({ ...status, entryId })),
@@ -339,6 +326,7 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
               this.molstarVisualisation.renderMolstarInitial(this.entryId(), this.molstarViewer.nativeElement);
             });
             this.getPageData();
+            // this.processInteractiveTablesData();
             return this.setPageData();
           } else {
             this.statusCode.set(statusCode);
@@ -348,6 +336,10 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+  }
+
+  private processInteractiveTablesData(): void {
+    this.dataProcessing.processInteractiveTablesData();
   }
 
   private getPageData(): void {
@@ -375,6 +367,7 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
     this.globalStore.dispatch(EntryActions.getExperimentIRRMCRawData());
     this.globalStore.dispatch(EntryActions.getExperimentEMPIARRawData());
     this.globalStore.dispatch(EntryActions.getExperimentPDBRawData());
+    this.globalStore.dispatch(EntryActions.getUniprotMapping());
   }
 
   async ngAfterViewInit() {

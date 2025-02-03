@@ -69,27 +69,37 @@
       </nav>
       <!-- Tabs, each with related components -->
       <section class="tab-content">
-        @for (tabName of allTabs; track tabName) { @if(currentTab() === tabName.name) { @if(tableTabs.indexOf(tabName.name) > -1) { @if
-        (tabsInfo().status[tabName.name] === 'has-data') {
+        @for (tabName of allTabs; track tabName) { @if(currentTab() === tabName.name) {
+        <!-- @if(tableTabs.indexOf(tabName.name) > -1) { -->
+
+        <!-- @if(tabsInfo().status[tabName.name] === 'has-data') { -->
         <!-- if tab data is either not loaded and empty -->
+        @if(tabName.name !== 'Experiments' && tabName.name !== 'Citations') {
         <section class="left-side">
           <!-- inside entry/components/interactive-tables -->
           <!-- @if (componentLoadedStatus()['interactiveTables'] && molstarResidueInfoLoaded()) { -->
-          <pdbc-interactive-tables [tabName]="getTableName(tabName.name)" [bestStrMapUniProtId]="bestStructuresMappingsByUniProtIds"></pdbc-interactive-tables>
+          @if(tabDataLoaded()){
+          <pdbc-interactive-tables [tabName]="getTableName(tabName.name)"></pdbc-interactive-tables>
+          }
           <!-- } -->
         </section>
         <section class="right-side">
           <!-- inside entry/components/details-dashboard -->
           <!-- @if (componentLoadedStatus()['detailsDashboard']) { -->
+          @if(tabDataLoaded()){
           <pdbc-details-dashboard [tabName]="getTableName(tabName.name)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent"></pdbc-details-dashboard>
+          }
           <!-- } -->
         </section>
-        } @else if (tabsInfo().status[tabName.name] === 'empty-data') {
+        }
+        <!-- } @else if (tabsInfo().status[tabName.name] === 'empty-data') { -->
         <!-- else if tab data is loaded but empty -->
-        <section class="empty-details">
-          <h5>No {{ tabName.name }} data available</h5>
-        </section>
-        } } @if(tabName.name === 'Experiments') {
+        <!-- <section class="empty-details">
+                        <h5>No {{ tabName.name }} data available</h5>
+                      </section> -->
+        <!-- }  -->
+        <!-- }  -->
+        @if(tabName.name === 'Experiments') {
         <!-- inside entry/components/experiments-validation-tab -->
         <!-- @if (componentLoadedStatus()['experimentsValidationTab']) { -->
         <pdbc-experiments-validation-tab [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent"></pdbc-experiments-validation-tab>

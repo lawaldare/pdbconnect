@@ -1,4 +1,5 @@
-import { Component, effect, inject, input, OnDestroy, OnInit, signal } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { Component, computed, effect, inject, input, OnChanges, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 // import { TableNames } from '../../pages/entry-v4/entry-v4.component';
 import { AssemblyDataToTable } from './data-processing/assembly-row-class';
@@ -26,6 +27,7 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 
 type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
 
@@ -35,8 +37,9 @@ type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable |
   imports: [CommonModule, AgGridAngular],
   templateUrl: './interactive-tables.component.html',
 })
-export class InteractiveTablesComponent implements OnInit, OnDestroy {
+export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   public readonly signals = inject(ComponentCommunicationService);
+  public dataProcessing = inject(MainDataProcessingFacade);
 
   public readonly tabName = input.required<TableNames>();
   // public readonly tabName = input.required<string>();
@@ -58,7 +61,7 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
   // // Data for macromolecules table
   // public readonly carbohydrates = input<CarbohydrateMolecule[]>();
   // public readonly uniprotMapping = input<UniProtMapping>();
-  public readonly bestStrMapUniProtId = input<{ [key: string]: BestStructureMapping[] }>();
+  // public readonly bestStrMapUniProtId = input<{ [key: string]: BestStructureMapping[] }>();
 
   // Data for macromolecules, domains table
   // public readonly macromolecules = input<Molecule[]>();
@@ -79,6 +82,7 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
   public readonly carbohydrates = toSignal(this.globalStore.select(EntrySelectors.carbohydrates));
   public readonly uniprotMapping = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
+  public readonly bestStrMapUniProtId = toSignal(this.globalStore.select(EntrySelectors.bestStructuresMappingsByUniProtIds));
 
   // Signal to track table readiness
   private tableReadySignal = signal(false);
@@ -128,15 +132,29 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
     );
   }
 
-  ngOnInit(): void {
+  tabDataLoaded = computed(() => {
+    console.log('tapping');
+    return this.dataProcessing.tabDataLoaded();
+  });
+
+  ngOnChanges(): void {
     // process data is called if table data has not been generated yet
     // if (this.signals.isTabDataGenerated() === false) {
     //   // it generates instances of classes to each table type (Assemblies, Domains, Ligands, Macromolecules)
     //   // which contain the processed table data, ag-grid rows, filters and functions related to this processing
     //   this.processData();
     // }
+
+    // if (this.tabDataLoaded()) {
+    // console.log('Tab data generated:', this.tabName());
+    // const tableData = this.signals.getTabData(this.tabName());
+    // this.tableData = tableData as DataToTable;
+    // console.log('TABNAME', this.tabName());
+    this.dataProcessing.setTabName(this.tabName());
     const tableData = this.signals.getTabData(this.tabName());
     this.tableData = tableData as DataToTable;
+
+    // console.log('Table data loaded:', this.tableData);
 
     // set ag-grid column definitions according to table type
     if (this.tabName() === 'Assemblies') {
@@ -156,6 +174,7 @@ export class InteractiveTablesComponent implements OnInit, OnDestroy {
 
     // Checks for ag-grid table rendering for dynamic height with autoHeight setting
     this.adjustTableHeightDynamically();
+    // }
   }
 
   ngOnDestroy(): void {

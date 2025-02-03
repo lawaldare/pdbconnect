@@ -171,8 +171,6 @@ export class OverviewMolstarComponent implements AfterViewInit {
       );
     }
 
-    console.log('this.dataProcessing', this.dataProcessing.assemblyData());
-
     let firstTab = undefined;
     // set sections as active if they contain any data mapped to them
     if (this.dataProcessing.assemblyData().preferred !== undefined) {
