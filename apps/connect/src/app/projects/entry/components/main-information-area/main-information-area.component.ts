@@ -1,10 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UtilService } from '@pdbc/core';
 import { StrucQualityGradientsComponent } from '../struc-quality-gradients/struc-quality-gradients.component';
-import { ProcessedSummary } from '../../data-models/summary.model';
-import { CitationDetail } from '../../data-models/publication.model';
-import { ProcessedQualityScores } from '../../data-models/summary-quality-scores.model';
 import { modelQualitySummaryTooltip } from '../../entry-constant';
 import { MaterialModule } from '@pdbc/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -20,12 +17,9 @@ import { EntrySelectors } from '../../store/entry.selectors';
   styleUrl: './main-information-area.component.scss',
 })
 export class MainInformationAreaComponent {
-  // public readonly summary = input.required<ProcessedSummary>();
-  // public readonly organismScientificNames = input.required<string[]>();
-  // public readonly primaryPublication = input.required<CitationDetail | undefined>();
-  // public readonly qualityScores = input.required<ProcessedQualityScores | undefined>();
-
   private readonly globalStore = inject(Store<EntryStoreState>);
+  private readonly util = inject(UtilService);
+
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly organismScientificNames = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
   public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
@@ -34,7 +28,6 @@ export class MainInformationAreaComponent {
   public modelQualitySummaryTooltip = modelQualitySummaryTooltip;
 
   public mappedInformation: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
-  private readonly util = inject(UtilService);
 
   public generateOrganismSearchUrl(term: string): string {
     return this.util.generateQueryURL(term, 'q_organism_name');

@@ -3,14 +3,9 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
-import { EntryApiService } from '../../services/entry-api.service';
-import { catchError, combineLatest, EMPTY, filter, forkJoin, map, mergeMap, Observable, of, switchMap, tap } from 'rxjs';
+import { EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { UniProtMapping } from '../../data-models/uniprot-mapping.model';
-import { BestStructureMapping } from '../../data-models/uniport-best-structures.model';
-import { BestStructureDict } from '../../data-models/uniprot-best-structures.model';
-import { HttpErrorResponse } from '@angular/common/http';
 import { ClickOutsideDirective } from '@pdbc/core';
 import { MainInformationAreaComponent } from '../../components/main-information-area/main-information-area.component';
 import { OverviewMolstarComponent } from '../../components/overview-molstar/overview-molstar.component';
@@ -18,14 +13,11 @@ import { InteractiveTablesComponent } from '../../components/interactive-tables/
 import { DetailsDashboardComponent } from '../../components/details-dashboard/details-dashboard.component';
 import { ExperimentsValidationTabComponent } from '../../components/experiments-validation-tab/experiments-validation-tab.component';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
-import { pdbeLogoConfig, pdbeSearchConfig, allTabs, tableTabs, COMPONENT_DEPENDENCIES, INITIAL_API_STATUS } from '../../entry-constant';
+import { pdbeLogoConfig, pdbeSearchConfig, allTabs, tableTabs, INITIAL_API_STATUS } from '../../entry-constant';
 
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { EntryDropdownComponent } from '../../components/entry-dropdown/entry-dropdown.component';
-import { TabConfig } from '../../components/overview-molstar/state-management.service';
 import { MainDataProcessingFacade } from './data-processing.facade';
-import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 
 import { EntryStatus, StatusCode } from '../../data-models/status.model';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
@@ -83,8 +75,6 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
 
   private route = inject(ActivatedRoute);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  private readonly entryAPIService = inject(EntryApiService);
-  private _snackBar = inject(MatSnackBar);
   private molstarVisualisation = inject(MolstarVisualisationsForTabs);
   public dataProcessing = inject(MainDataProcessingFacade);
 
@@ -96,80 +86,19 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
 
   @ViewChild('molstarViewer') molstarViewer!: ElementRef;
 
-  // signal that holds whether an API call is pending or done for all needed APIs
   public apiLoadedStatus = signal(INITIAL_API_STATUS);
 
-  // signals for residue listing information provided by Molstar inside OverviewMolstar component
   public molstarResidueInfoLoaded = this.compCommunication.molstarResidueInfoLoaded; // boolean
   public molstarResidueInfo = this.compCommunication.molstarResidueInfo; // residue listing
 
-  // signal that is computed as API calls go from pending to done
-  // for each component it holds the necessary API calls that need status done
-  public componentLoadedStatus = computed(() => {
-    const apiStatus = this.apiLoadedStatus();
-    const status: Record<string, boolean> = {};
-
-    // for each component name and the list of API dependencies in COMPONENT_DEPENDENCIES dictionary
-    Object.entries(COMPONENT_DEPENDENCIES).forEach(([component, dependencies]) => {
-      // component load status is updated to true if every needed API dependency has status 'done'
-      status[component] = dependencies.every((dep) => apiStatus[dep] === 'done');
-    });
-
-    return status;
-  });
-
-  // Use an effect to trigger side effects when componentLoadedStatus status for detailsDashboard changes to true
-  // this happens when all API endpoints required information is loaded
-  _loadRowsEffect = effect(
-    () => {
-      if (this.compCommunication.isTabDataGenerated() === false && this.molstarResidueInfoLoaded()) {
-        this.dataProcessing.setTabName('Assemblies');
-        this.processInteractiveTablesData();
-      }
-    },
-    { allowSignalWrites: true }
-  );
-
-  // signal that computes whether interactive table tabs have any rows (data) to display
-  public tabsInfo = computed(() => {
-    const isTabDataGenerated = this.compCommunication.isTabDataGenerated();
-    const tabsConfig: TabConfig[] = [];
-    const tabsStatus: { [key: string]: string } = {};
-    const tableTabsData = allTabs.filter((tab) => tableTabs.indexOf(tab.name) > -1);
-    for (const tab of tableTabsData) {
-      // an interactive table has data if the data has been loaded and the number of table rows is bigger than 0
-      tabsStatus[tab.name] = isTabDataGenerated ? 'loaded' : 'loading';
-      const dataExists = isTabDataGenerated ? this.compCommunication.getTabData(tab.name).tableRows().length > 0 : false;
-      if (isTabDataGenerated) tabsStatus[tab.name] = dataExists ? 'has-data' : 'empty-data';
-
-      const hasData = isTabDataGenerated && dataExists;
-      tabsConfig.push({
-        id: tab.name,
-        displayName: tab.display,
-        width: '229px',
-        tagContent: hasData ? '' : 'N/A',
-        tagClass: hasData ? 'no-chip' : 'na',
-      });
+  _loadRowsEffect = effect(() => {
+    if (!this.tabDataLoaded() && this.molstarResidueInfoLoaded()) {
+      this.dataProcessing.setTabName('Assemblies');
+      this.processInteractiveTablesData();
     }
-    tabsConfig.push({
-      id: 'Experiments',
-      displayName: 'Experiments and Validation',
-      width: '229px',
-      tagContent: '',
-      tagClass: 'no-chip',
-    });
-    tabsConfig.push({
-      id: 'Citations',
-      displayName: 'Citations',
-      width: '96px',
-      tagContent: '',
-      tagClass: 'no-chip',
-    });
-    return {
-      config: tabsConfig,
-      status: tabsStatus,
-    };
   });
+
+  public tabsInfo = this.dataProcessing.tabsInfo;
 
   public statusCode = signal<StatusCode>('INITIAL');
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
@@ -184,11 +113,6 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
   ngOnInit(): void {
-    // if (this.compCommunication.isTabDataGenerated() === false && this.molstarResidueInfoLoaded()) {
-    //   this.dataProcessing.setTabName('Assemblies');
-    //   this.processInteractiveTablesData();
-    // }
-
     this.route.params
       .pipe(
         switchMap((params) => {

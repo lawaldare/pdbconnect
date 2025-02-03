@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { DataToTable } from '../../components/interactive-tables/data-processing/abstract-base-row-class';
 import { AssemblyDataToTable } from '../../components/interactive-tables/data-processing/assembly-row-class';
 import { DomainDataToTable } from '../../components/interactive-tables/data-processing/domain-row-class';
@@ -21,6 +21,8 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TableNames } from './main.component';
+import { TabConfig } from '../../components/overview-molstar/state-management.service';
+import { allTabs, tableTabs } from '../../entry-constant';
 
 @Injectable({
   providedIn: 'root',
@@ -165,4 +167,44 @@ export class MainDataProcessingFacade {
 
     return { downloads: downloadsUpdated, views: viewsUpdated };
   }
+
+  public tabsInfo = computed(() => {
+    // const isTabDataGenerated = this.compCommunication.isTabDataGenerated();
+    const tabsConfig: TabConfig[] = [];
+    const tabsStatus: { [key: string]: string } = {};
+    const tableTabsData = allTabs.filter((tab) => tableTabs.indexOf(tab.name) > -1);
+    for (const tab of tableTabsData) {
+      // an interactive table has data if the data has been loaded and the number of table rows is bigger than 0
+      tabsStatus[tab.name] = this.tabDataLoaded() ? 'loaded' : 'loading';
+      const dataExists = this.tabDataLoaded() ? this.compCommunication.getTabData(tab.name).tableRows().length > 0 : false;
+      if (this.tabDataLoaded()) tabsStatus[tab.name] = dataExists ? 'has-data' : 'empty-data';
+
+      const hasData = this.tabDataLoaded() && dataExists;
+      tabsConfig.push({
+        id: tab.name,
+        displayName: tab.display,
+        width: '229px',
+        tagContent: hasData ? '' : 'N/A',
+        tagClass: hasData ? 'no-chip' : 'na',
+      });
+    }
+    tabsConfig.push({
+      id: 'Experiments',
+      displayName: 'Experiments and Validation',
+      width: '229px',
+      tagContent: '',
+      tagClass: 'no-chip',
+    });
+    tabsConfig.push({
+      id: 'Citations',
+      displayName: 'Citations',
+      width: '96px',
+      tagContent: '',
+      tagClass: 'no-chip',
+    });
+    return {
+      config: tabsConfig,
+      status: tabsStatus,
+    };
+  });
 }

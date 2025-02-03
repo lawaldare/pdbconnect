@@ -1,28 +1,17 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Component, computed, effect, inject, input, OnChanges, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, OnChanges, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-// import { TableNames } from '../../pages/entry-v4/entry-v4.component';
 import { AssemblyDataToTable } from './data-processing/assembly-row-class';
 import { DomainDataToTable } from './data-processing/domain-row-class';
 import { LigandDataToTable } from './data-processing/ligand-row-class';
 import { MacromoleculeDataToTable } from './data-processing/macromolecule-row';
 import { TableFilter } from './data-models-and-definitions/row-and-table.model';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridApi, GridReadyEvent, GridOptions, IRowNode, SelectionChangedEvent } from 'ag-grid-community'; // Column Definition Type Interface
+import { ColDef, GridApi, GridReadyEvent, GridOptions, IRowNode, SelectionChangedEvent } from 'ag-grid-community';
 import { ASSEMBLIES_COL_DEFS, DOMAINS_COL_DEFS, LIGANDS_COL_DEFS, MACROMOLECULES_COL_DEFS } from './data-models-and-definitions/column-definition-objects';
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, Observable, Subscription, take, timer } from 'rxjs';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { TableNames } from '../../pages/main/main.component';
-import { ComplexDetails } from '../../data-models/complex-details.model';
-import { AssemblyData } from '../../data-models/assembly.model';
-import { PisaAssembly } from '../../data-models/pisa-assembly.model';
-import { CathMappings, PfamMappings, ScopMappings } from '../../data-models/domains.model';
-import { Molecule } from '../../data-models/molecule.model';
-import { ModifiedResidue } from '../../data-models/modified-residues.model';
-import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
-import { UniProtMapping } from '../../data-models/uniprot-mapping.model';
-import { BestStructureMapping } from '../../data-models/uniprot-best-structures.model';
-import { MolstarResidueInfo } from '../../helpers/molstar/molstar-helpers';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -40,37 +29,11 @@ type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable |
 export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   public readonly signals = inject(ComponentCommunicationService);
   public dataProcessing = inject(MainDataProcessingFacade);
+  private readonly globalStore = inject(Store<EntryStoreState>);
 
   public readonly tabName = input.required<TableNames>();
-  // public readonly tabName = input.required<string>();
-
-  // Data for assemblies table
-  // public readonly complexDetails = input<ComplexDetails[]>();
-  // public readonly assemblyData = input<AssemblyData[]>();
-  // public readonly pisaAssemblyData = input<PisaAssembly[]>();
-
-  // // Data for domains table
-  // public readonly pfamMappings = input<PfamMappings>();
-  // public readonly cathMappings = input<CathMappings>();
-  // public readonly scopMappings = input<ScopMappings>();
-
-  // // Data for ligands table
-  // public readonly ligands = input<Molecule[]>();
-  // public readonly modifications = input<ModifiedResidue[]>();
-
-  // // Data for macromolecules table
-  // public readonly carbohydrates = input<CarbohydrateMolecule[]>();
-  // public readonly uniprotMapping = input<UniProtMapping>();
-  // public readonly bestStrMapUniProtId = input<{ [key: string]: BestStructureMapping[] }>();
-
-  // Data for macromolecules, domains table
-  // public readonly macromolecules = input<Molecule[]>();
-
-  // Data for domains, ligands, macromolecules tables
-  // public readonly molstarResidueInfo = input<MolstarResidueInfo[]>();
   public molstarResidueInfo = this.signals.molstarResidueInfo;
 
-  private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly complexDetails = toSignal(this.globalStore.select(EntrySelectors.complexDetails));
   public readonly assemblyData = toSignal(this.globalStore.select(EntrySelectors.assemblies));
   public readonly pisaAssemblyData = toSignal(this.globalStore.select(EntrySelectors.pisaAssemblies));
@@ -118,42 +81,13 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   private agViewportCheckSubscription!: Subscription;
   private heightObserverSubscription!: Subscription;
 
-  constructor() {
-    // effect(
-    //   async () => {
-    //     // Access the current state
-    //     const tabState = this.signals.tabState(); // can be triggered from overview-molstar component 'View more details'
-    //     if (this.tableReadySignal()) {
-    //       // Wait until tableReadySignal is true
-    //       this.triggerTableSelection();
-    //     }
-    //   },
-    //   { allowSignalWrites: true } // Enable signal writes inside this effect
-    // );
-  }
-
   public tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
   ngOnChanges(): void {
-    // process data is called if table data has not been generated yet
-    // if (this.signals.isTabDataGenerated() === false) {
-    //   // it generates instances of classes to each table type (Assemblies, Domains, Ligands, Macromolecules)
-    //   // which contain the processed table data, ag-grid rows, filters and functions related to this processing
-    //   this.processData();
-    // }
-
-    // if (this.tabDataLoaded()) {
-    // console.log('Tab data generated:', this.tabName());
-    // const tableData = this.signals.getTabData(this.tabName());
-    // this.tableData = tableData as DataToTable;
-    console.log('TABNAME', this.tabName());
     this.dataProcessing.setTabName(this.tabName());
     const tableData = this.signals.getTabData(this.tabName());
     this.tableData = tableData as DataToTable;
 
-    console.log('Table data loaded:', this.tableData);
-
-    // set ag-grid column definitions according to table type
     if (this.tabName() === 'Assemblies') {
       this.columnDefinitions = ASSEMBLIES_COL_DEFS;
     } else if (this.tabName() === 'Domains') {
@@ -164,12 +98,10 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
       this.columnDefinitions = MACROMOLECULES_COL_DEFS;
     }
 
-    // get first filter name
     if (this.tableData!.displayFilters) {
       this.currentTableFilter = this.tableData!.tableFilters()[0].types;
     }
 
-    // Checks for ag-grid table rendering for dynamic height with autoHeight setting
     this.adjustTableHeightDynamically();
     // }
   }
@@ -183,39 +115,6 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
       this.agViewportCheckSubscription.unsubscribe();
     }
   }
-
-  // private processData() {
-  //   // for each table type
-  //   for (const tabName of ['Assemblies', 'Domains', 'Ligands', 'Macromolecules']) {
-  //     // we create the instances of the data to table objects, sending API data
-  //     let tempTableData: DataToTable;
-  //     if (tabName === 'Assemblies') {
-  //       tempTableData = new AssemblyDataToTable(this.complexDetails(), this.assemblyData(), this.pisaAssemblyData());
-  //     } else if (tabName === 'Domains') {
-  //       tempTableData = new DomainDataToTable(this.pfamMappings(), this.cathMappings(), this.scopMappings(), this.macromolecules(), this.molstarResidueInfo());
-  //     } else if (tabName === 'Ligands') {
-  //       tempTableData = new LigandDataToTable(this.ligands(), this.modifications(), this.molstarResidueInfo());
-  //     } else {
-  //       // else if (tabName === 'Macromolecules') {
-  //       tempTableData = new MacromoleculeDataToTable(
-  //         this.carbohydrates(),
-  //         this.uniprotMapping(),
-  //         this.bestStrMapUniProtId(),
-  //         this.macromolecules(),
-  //         this.molstarResidueInfo()
-  //       );
-  //     }
-  //     // we call functions to convert ag-grid table rows and filters
-  //     tempTableData.generateTableData();
-  //     tempTableData.generateTableFilters();
-  //     // and save all data in the component communication service
-  //     this.signals.setTabData(tabName, tempTableData);
-  //   }
-  //   // and set that table data has already been generated to avoid re-processing
-  //   this.signals.isTabDataGenerated.set(true);
-  // }
-
-  // Function below required to avoid (must have) scroll on the table rows by fixed height
 
   private adjustTableHeightDynamically(): void {
     // Set up an observable to check for the ag-center-cols-container element existance every 100ms
