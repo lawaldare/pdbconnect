@@ -119,23 +119,20 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   private heightObserverSubscription!: Subscription;
 
   constructor() {
-    effect(
-      async () => {
-        // Access the current state
-        const tabState = this.signals.tabState(); // can be triggered from overview-molstar component 'View more details'
-        if (this.tableReadySignal()) {
-          // Wait until tableReadySignal is true
-          this.triggerTableSelection();
-        }
-      },
-      { allowSignalWrites: true } // Enable signal writes inside this effect
-    );
+    // effect(
+    //   async () => {
+    //     // Access the current state
+    //     const tabState = this.signals.tabState(); // can be triggered from overview-molstar component 'View more details'
+    //     if (this.tableReadySignal()) {
+    //       // Wait until tableReadySignal is true
+    //       this.triggerTableSelection();
+    //     }
+    //   },
+    //   { allowSignalWrites: true } // Enable signal writes inside this effect
+    // );
   }
 
-  tabDataLoaded = computed(() => {
-    console.log('tapping');
-    return this.dataProcessing.tabDataLoaded();
-  });
+  public tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
   ngOnChanges(): void {
     // process data is called if table data has not been generated yet
@@ -149,12 +146,12 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
     // console.log('Tab data generated:', this.tabName());
     // const tableData = this.signals.getTabData(this.tabName());
     // this.tableData = tableData as DataToTable;
-    // console.log('TABNAME', this.tabName());
+    console.log('TABNAME', this.tabName());
     this.dataProcessing.setTabName(this.tabName());
     const tableData = this.signals.getTabData(this.tabName());
     this.tableData = tableData as DataToTable;
 
-    // console.log('Table data loaded:', this.tableData);
+    console.log('Table data loaded:', this.tableData);
 
     // set ag-grid column definitions according to table type
     if (this.tabName() === 'Assemblies') {

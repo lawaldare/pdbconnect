@@ -85,22 +85,22 @@
       </div>
     </div>
   </section>
-  @if(articlesCiting()!.cited_by.Articles.length){
+  @let entryIdTemplate = entryId() ?? ''; @if(articlesCiting()!.cited_by.Articles.length){
   <div class="article-list-container">
     <h3 class="heading-3">Articles citing the PDB entry</h3>
-    <pdbc-citation-publication [publicationInfo]="articlesCiting()!.cited_by.Articles" [entryId]="entryId()" headerText="cited"></pdbc-citation-publication>
+    <pdbc-citation-publication [publicationInfo]="articlesCiting()!.cited_by.Articles" [entryId]="entryIdTemplate" headerText="cited"></pdbc-citation-publication>
   </div>
   } @if(articlesCiting()!.cited_by.Reviews.length){
   <div class="article-list-container">
     <h3 class="heading-3">Reviews citing the publications</h3>
-    <pdbc-citation-publication [publicationInfo]="articlesCiting()!.cited_by.Reviews" [entryId]="entryId()" headerText="cited"></pdbc-citation-publication>
+    <pdbc-citation-publication [publicationInfo]="articlesCiting()!.cited_by.Reviews" [entryId]="entryIdTemplate" headerText="cited"></pdbc-citation-publication>
   </div>
   } @if(articlesCiting()!.appears_without_citation.Articles.length){
   <div class="article-list-container">
     <h3 class="heading-3">Articles - {{ this.entryId() }} mentioned but not cited</h3>
     <pdbc-citation-publication
       [publicationInfo]="articlesCiting()!.appears_without_citation.Articles"
-      [entryId]="entryId()"
+      [entryId]="entryIdTemplate"
       headerText="mentioned"
     ></pdbc-citation-publication>
   </div>
@@ -109,7 +109,7 @@
   <h3 class="heading-3">Reviews - {{ this.entryId() }} mentioned but not cited</h3>
   <pdbc-citation-publication
     [publicationInfo]="articlesCiting()!.appears_without_citation.Reviews"
-    [entryId]="entryId()"
+    [entryId]="entryIdTemplate"
     headerText="mentioned"
   ></pdbc-citation-publication>
   } }

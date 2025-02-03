@@ -60,6 +60,7 @@ export class MainDataProcessingFacade {
   public processInteractiveTablesData() {
     // molstarResidueInfo: MolstarResidueInfo[] // macromolecules: Molecule[], // bestStrMapUniProtId: { [key: string]: BestStructureMapping[] }, // uniprotMapping: UniProtMapping, // carbohydrates: CarbohydrateMolecule[], // modifications: ModifiedResidue[], // ligands: Molecule[], // scopMappings: ScopMappings, // cathMappings: CathMappings, // pfamMappings: PfamMappings, // pisaAssemblyData: PisaAssembly[], // assemblyData: AssemblyData[], // complexDetails: ComplexDetails[],
     // for each table type
+    console.log(this.complexDetails(), this.assemblyData(), this.pisaAssemblyData());
     for (const tabName of ['Assemblies', 'Domains', 'Ligands', 'Macromolecules']) {
       // we create the instances of the data to table objects, sending API data
       let tempTableData: DataToTable;
@@ -95,7 +96,9 @@ export class MainDataProcessingFacade {
     // and set that table data has already been generated to avoid re-processing
     this.compCommunication.isTabDataGenerated.set(true);
     this.tabDataLoaded.set(true);
+    console.log('Tab data processed and set', this.compCommunication.tabTableData());
     const tableData = this.compCommunication.getTabData(this.tabName());
+    console.log('Tab data loaded:', tableData);
     this.tableData.set(tableData);
   }
 
