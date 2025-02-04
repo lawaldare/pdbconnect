@@ -51,18 +51,22 @@
         }
       </nav>
       <section class="tab-content">
-        @for (tabName of allTabs; track tabName) { @if(currentTab() === tabName.name) { @if(tabName.name !== 'Experiments' && tabName.name !== 'Citations') {
+        @for (tabName of allTabs; track tabName) { @if(currentTab() === tabName.name) { @if(tabName.name !== 'Experiments' && tabName.name !== 'Citations') { @if
+        (tabsInfo().status[tabName.name] === 'has-data') { @if(tabDataLoaded() && molstarResidueInfoLoaded()){
         <section class="left-side">
-          @if(tabDataLoaded()){
           <pdbc-interactive-tables [tabName]="getTableName(tabName.name)" />
-          }
         </section>
         <section class="right-side">
-          @if(tabDataLoaded()){
           <pdbc-details-dashboard [tabName]="getTableName(tabName.name)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
-          }
         </section>
-        } @if(tabName.name === 'Experiments') {
+        } @else {
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+        } } @else {
+        <section class="empty-details">
+          <h5>No {{ tabName.name }} data available</h5>
+        </section>
+
+        } } @if(tabName.name === 'Experiments') {
         <pdbc-experiments-validation-tab [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
         } @if(tabName.name === 'Citations') {
         <pdbc-citations-tab />

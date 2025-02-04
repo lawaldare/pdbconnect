@@ -66,9 +66,9 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
     this.parseInstanceResidues();
     const data = this.residues();
     this.signals.molstarResidueInfo.set(data);
-    this.signals.molstarResidueInfoLoaded.set(true);
     this.dataProcessing.setTabName('Assemblies');
     this.dataProcessing.processInteractiveTablesData();
+    this.signals.molstarResidueInfoLoaded.set(true);
   }
 
   /**
