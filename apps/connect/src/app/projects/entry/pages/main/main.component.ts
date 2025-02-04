@@ -125,7 +125,6 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
           this.statusCode.set(statusCode);
           if (statusCode === 'REL') {
             setTimeout(() => {
-              console.log('Calling renderMolstarInitial');
               this.molstarVisualisation.renderMolstarInitial(this.entryId(), this.molstarViewer.nativeElement);
             });
             this.getPageData();

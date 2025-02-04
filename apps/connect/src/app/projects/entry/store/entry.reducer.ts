@@ -2,13 +2,13 @@
 import { createReducer, on } from '@ngrx/store';
 import { EntryStoreState } from './entry-store.model';
 import { EntryActions } from './entry.actions';
-import { UniProtMapping } from '../data-models/uniprot-mapping.model';
-import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
+// import { UniProtMapping } from '../data-models/uniprot-mapping.model';
+// import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
 import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
 import { KeyValidationStats } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
 import { CitationDetail } from '../data-models/publication.model';
-import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../data-models/domains.model';
+// import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../data-models/domains.model';
 import { ProcessedSummary } from '../data-models/summary.model';
 import { RelatedPublication } from '../data-models/related-publications.model';
 import { IRRMCExperimentRawData, SBGRIDExperimentRawData } from '../data-models/experiment-raw-data.model';
@@ -18,7 +18,7 @@ export const ENTRY_STORE_STATE_KEY = 'entry';
 
 const initialState: EntryStoreState = {
   entryId: '',
-  summaryData: undefined,
+  summaryData: {} as ProcessedSummary,
   macroMolecules: [],
   boundLigands: [],
   organismScientificNames: [],
@@ -26,30 +26,30 @@ const initialState: EntryStoreState = {
   experimentalDetails: [],
   resolutionValues: [],
   experimentalMethod: '',
-  uniprotMapping: undefined,
-  uniprotCountsInPDBe: undefined,
-  bestStructuresMappingsByUniProtIds: undefined,
-  proteinPagesSummaryByUniProtIds: undefined,
-  interproMapping: undefined,
-  pfamMapping: undefined,
+  uniprotMapping: {},
+  uniprotCountsInPDBe: {},
+  bestStructuresMappingsByUniProtIds: {},
+  proteinPagesSummaryByUniProtIds: {},
+  interproMapping: {},
+  pfamMapping: {},
   downloadOptions: [],
   viewOptions: [],
-  summaryQualityScores: undefined,
-  cathMapping: undefined,
-  scop175Mapping: undefined,
+  summaryQualityScores: {} as ProcessedQualityScores,
+  cathMapping: {},
+  scop175Mapping: {},
   modifications: [],
-  validationKeyStats: undefined,
-  validationXRayRefine: undefined,
-  primaryPublication: undefined,
-  articlesCiting: undefined,
-  complexDetails: undefined,
+  validationKeyStats: {} as KeyValidationStats,
+  validationXRayRefine: {} as XRayRefine,
+  primaryPublication: {} as CitationDetail,
+  articlesCiting: {} as RelatedPublication,
+  complexDetails: [],
   assemblies: [],
   pisaAssemblies: [],
   carbohydrates: [],
-  pdbRedoQualityScores: undefined,
+  pdbRedoQualityScores: {} as ProcessedQualityScores,
   experimentRawDataBMRB: [],
-  experimentRawDataSBGrid: undefined,
-  experimentRawDataIRRMC: undefined,
+  experimentRawDataSBGrid: {} as SBGRIDExperimentRawData,
+  experimentRawDataIRRMC: {} as IRRMCExperimentRawData,
   experimentRawDataEMPIAR: [],
   experimentRawDataPDB: [],
   entryStatus: { ...entryStatusDefault },

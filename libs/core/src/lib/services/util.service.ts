@@ -172,4 +172,8 @@ export class UtilService {
     }
     return chunks;
   }
+
+  public isNotEmptyObject(obj: any): boolean {
+    return obj && Object.keys(obj).length > 0;
+  }
 }

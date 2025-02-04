@@ -68,45 +68,14 @@ export class ExperimentsValidationTabComponent implements OnInit, AfterViewInit,
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   public readonly tableFacade = inject(ValidationTablesFacade);
   public readonly molstarVisualisations = inject(MolstarVisualisationsForTabs);
-  /**
-   * API endpoint inputs
-   */
-  // public readonly entryId = input.required<string>();
-  // public readonly entryTitle = input.required<string>();
-  // public readonly sourceOrganisms = input.required<string[]>();
-  // public readonly hasRna = input.required<boolean>();
-  // public readonly depositionDate = input.required<string>();
-  // public readonly releaseDate = input.required<string>();
-  // public readonly revisionDate = input.required<string>();
-  // public readonly experimentalDetails = input.required<ExperimentDetail[]>();
-  // public readonly keyValidationStats = input.required<KeyValidationStats | undefined>();
-  // public readonly xRayRefine = input.required<XRayRefine | undefined>();
-  // public readonly pdbRedoData = input.required<ProcessedQualityScores | undefined>();
-  // public readonly rawDataPDB = input.required<PDBExperimentRawData[] | undefined>();
-  // public readonly rawDataBMRB = input.required<BMRBExperimentRawData[] | undefined>();
-  // public readonly rawDataIRRMC = input.required<IRRMCExperimentRawData | undefined>();
-  // public readonly rawDataEMPIAR = input.required<EMPIARExperimentRawData[] | undefined>();
-  // public readonly rawDataSBGrid = input.required<SBGRIDExperimentRawData | undefined>();
+
   public molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
   public molstarParent = input.required<HTMLElement>(); // Parent to send back the molstar global instance
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
-  public readonly entryTitle = computed(() => this.summaryData()?.entryTitle);
   public readonly sourceOrganisms = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
-  public readonly depositionDate = computed(() => this.summaryData()?.depositionDate);
-  public readonly releaseDate = computed(() => this.summaryData()?.releaseDate);
-  public readonly revisionDate = computed(() => this.summaryData()?.revisionDate);
   public readonly experimentalDetails = toSignal(this.globalStore.select(EntrySelectors.experimentalDetails));
-  public readonly hasRna = toSignal(this.globalStore.select(EntrySelectors.hasRNA));
-  public readonly keyValidationStats = toSignal(this.globalStore.select(EntrySelectors.validationKeyStats));
-  public readonly xRayRefine = toSignal(this.globalStore.select(EntrySelectors.validationXRayRefine));
   public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
-  public readonly rawDataPDB = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataPDB));
-  public readonly rawDataBMRB = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataBMRB));
-  public readonly rawDataSBGrid = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataSBGrid));
-  public readonly rawDataIRRMC = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataIRRMC));
-  public readonly rawDataEMPIAR = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataEMPIAR));
 
   /**
    * Processing, table facades and Molstar tab manipulating class
@@ -136,25 +105,7 @@ export class ExperimentsValidationTabComponent implements OnInit, AfterViewInit,
   async ngOnInit() {
     // when initialized we process data from the endpoints into a unified object used for rendering
     // (processedExpValData)
-    const processedExpValData = await this.dataFacade.processData(
-      this.experimentalDetails()!,
-      this.sourceOrganisms()!,
-      this.hasRna()!,
-      this.depositionDate()!,
-      this.releaseDate()!,
-      this.revisionDate()!,
-      this.entryTitle()!,
-      this.keyValidationStats()!,
-      this.xRayRefine()!,
-      this.pdbRedoData()!,
-      this.rawDataPDB()!,
-      this.rawDataBMRB()!,
-      this.rawDataIRRMC()!,
-      this.rawDataEMPIAR()!,
-      this.rawDataSBGrid()!
-    );
-
-    console.log('Processed experimental details:', processedExpValData);
+    const processedExpValData = await this.dataFacade.processData();
 
     // currently displayed method is the first from the list of processed objects
     this.processedData.set(processedExpValData);

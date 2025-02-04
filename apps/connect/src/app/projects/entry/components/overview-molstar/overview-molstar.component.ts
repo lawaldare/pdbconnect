@@ -50,13 +50,9 @@ export class OverviewMolstarComponent implements AfterViewInit {
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
   public readonly ligands = toSignal(this.globalStore.select(EntrySelectors.boundLigands));
   public readonly inputModifications = toSignal(this.globalStore.select(EntrySelectors.modifications));
-  // public readonly pfamMappings = toSignal(this.globalStore.select(EntrySelectors.pfamMapping));
-  // public readonly cathMappings = toSignal(this.globalStore.select(EntrySelectors.cathMapping));
-  // public readonly scopMappings = toSignal(this.globalStore.select(EntrySelectors.scop175Mapping));
   public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
 
   private async initMolstarInstance() {
-    console.log('Initializing Mol* instance...', this.assemblyData());
     const assemblyToUse = this.assemblyData().preferred ? this.assemblyData().preferred + '' : '1';
 
     const molstarConfigObject: MolstarConfigObject = {

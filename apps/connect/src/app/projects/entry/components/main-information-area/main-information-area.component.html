@@ -21,7 +21,7 @@
       }
     </article>
   </div>
-  @let publication = primaryPublication(); @if (publication) {
+  @let publication = primaryPublication(); @if (publication && util.isNotEmptyObject(publication)) {
   <div class="info-row">
     <span>Primary publication</span>
     <article>

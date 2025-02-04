@@ -75,7 +75,7 @@ export class MainDataProcessingFacade {
         tempTableData = new LigandDataToTable(ligands, modifications!, this.molstarResidueInfo()!);
       } else if (
         tabName === TabNames.Macromolecules &&
-        this.isNotUndefined([carbohydrates, uniprotMapping!, bestStrMapUniProtId, macromolecules!, this.molstarResidueInfo()!])
+        this.isNotUndefined([carbohydrates, uniprotMapping, bestStrMapUniProtId, macromolecules, this.molstarResidueInfo()!])
       ) {
         tempTableData = new MacromoleculeDataToTable(carbohydrates, uniprotMapping!, bestStrMapUniProtId!, macromolecules!, this.molstarResidueInfo()!);
       } else {
@@ -91,7 +91,6 @@ export class MainDataProcessingFacade {
     this.compCommunication.isTabDataGenerated.set(true);
     this.tabDataLoaded.set(true);
     const tableData = this.compCommunication.getTabData(this.tabName());
-    console.log(tableData);
     this.tableData.set(tableData);
   }
 

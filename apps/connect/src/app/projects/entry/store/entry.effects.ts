@@ -13,6 +13,7 @@ import { BestStructureMapping } from '../data-models/uniport-best-structures.mod
 import { BestStructureDict } from '../data-models/uniprot-best-structures.model';
 import { MainDataProcessingFacade } from '../pages/main/data-processing.facade';
 import { CitationDetail } from '../data-models/publication.model';
+import { IRRMCExperimentRawData } from '../data-models/experiment-raw-data.model';
 
 @Injectable()
 export class EntryEffects {
@@ -421,7 +422,10 @@ export class EntryEffects {
       switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
       mergeMap((entryId: string) =>
         this.entryAPIService.getExperimentRawDataIRRMC(entryId).pipe(
-          map((experimentRawDataIRRMC) => EntryActions.getExperimentIRRMCRawDataSuccess({ experimentRawDataIRRMC })),
+          map((experimentRawDataIRRMC) => {
+            const data = experimentRawDataIRRMC === null ? ({} as IRRMCExperimentRawData) : experimentRawDataIRRMC;
+            return EntryActions.getExperimentIRRMCRawDataSuccess({ experimentRawDataIRRMC: data });
+          }),
           catchError(() => of(EntryActions.getExperimentIRRMCRawDataFailure()))
         )
       )

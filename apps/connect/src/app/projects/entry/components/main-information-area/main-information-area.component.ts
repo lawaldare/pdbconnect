@@ -18,7 +18,7 @@ import { EntrySelectors } from '../../store/entry.selectors';
 })
 export class MainInformationAreaComponent {
   private readonly globalStore = inject(Store<EntryStoreState>);
-  private readonly util = inject(UtilService);
+  public readonly util = inject(UtilService);
 
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly organismScientificNames = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));

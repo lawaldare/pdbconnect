@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { inject, Injectable, signal, WritableSignal } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 import { KeyValidationStats } from '../../data-models/key-validation-stats.model';
 import { ExperimentDetail } from '../../data-models/experimental-details.model';
 import { XRayRefine } from '../../data-models/x-ray-refine.model';
-import { ValidationTablesFacade } from './validation-tables.facade';
 import { ProcessedQualityScores } from '../../data-models/summary-quality-scores.model';
 import {
   ExperimentalInfoData,
@@ -28,11 +27,36 @@ import {
   PDBExperimentRawData,
   SBGRIDExperimentRawData,
 } from '../../data-models/experiment-raw-data.model';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { Store } from '@ngrx/store';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { UtilService } from '@pdbc/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ValidationDataProcessingFacade {
+  private readonly globalStore = inject(Store<EntryStoreState>);
+  private readonly util = inject(UtilService);
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+  public readonly entryTitle = computed(() => this.summaryData()?.entryTitle);
+  public readonly sourceOrganisms = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
+  public readonly depositionDate = computed(() => this.summaryData()?.depositionDate);
+  public readonly releaseDate = computed(() => this.summaryData()?.releaseDate);
+  public readonly revisionDate = computed(() => this.summaryData()?.revisionDate);
+  public readonly experimentalDetails = toSignal(this.globalStore.select(EntrySelectors.experimentalDetails));
+  public readonly hasRna = toSignal(this.globalStore.select(EntrySelectors.hasRNA));
+  public readonly keyValidationStats = toSignal(this.globalStore.select(EntrySelectors.validationKeyStats));
+  public readonly xRayRefine = toSignal(this.globalStore.select(EntrySelectors.validationXRayRefine));
+  public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
+  public readonly rawDataPDB = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataPDB));
+  public readonly rawDataBMRB = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataBMRB));
+  public readonly rawDataSBGrid = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataSBGrid));
+  public readonly rawDataIRRMC = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataIRRMC));
+  public readonly rawDataEMPIAR = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataEMPIAR));
+
   public readonly validationKeysToText: { [key: string]: string } = {
     bonds: 'Bond lengths in protein, DNA, RNA molecules',
     angles: 'Bond angles in protein, DNA, RNA molecules',
@@ -44,23 +68,23 @@ export class ValidationDataProcessingFacade {
   };
 
   // function process data from various API endpoints into unified format for template
-  public processData(
-    experimentalDetails: ExperimentDetail[],
-    sourceOrganisms: string[],
-    hasRna: boolean,
-    depositionDate: string,
-    releaseDate: string,
-    revisionDate: string,
-    entryTitle: string,
-    validationStats?: KeyValidationStats,
-    xRayRefine?: XRayRefine,
-    pdbRedoData?: ProcessedQualityScores,
-    experimentRawDataPDB?: PDBExperimentRawData[],
-    experimentRawDataBMRB?: BMRBExperimentRawData[],
-    experimentRawDataIRRMC?: IRRMCExperimentRawData,
-    experimentRawDataEMPIAR?: EMPIARExperimentRawData[],
-    experimentRawDataSBGrid?: SBGRIDExperimentRawData
-  ): ProcessedExperimentalDetails[] {
+  public processData(): ProcessedExperimentalDetails[] {
+    const experimentalDetails: ExperimentDetail[] = this.experimentalDetails() ?? [];
+    const sourceOrganisms = this.sourceOrganisms() ?? [];
+    const hasRna = this.hasRna() ?? false;
+    const depositionDate = this.depositionDate() ?? '';
+    const releaseDate = this.releaseDate() ?? '';
+    const revisionDate = this.revisionDate() ?? '';
+    const entryTitle = this.entryTitle() ?? '';
+    const validationStats = this.util.isNotEmptyObject(this.keyValidationStats()) ? this.keyValidationStats() : undefined;
+    const xRayRefine = this.util.isNotEmptyObject(this.xRayRefine()) ? this.xRayRefine() : undefined;
+    const pdbRedoData = this.util.isNotEmptyObject(this.pdbRedoData()) ? this.pdbRedoData() : undefined;
+    const experimentRawDataPDB = this.rawDataPDB() ?? [];
+    const experimentRawDataBMRB = this.rawDataBMRB() ?? [];
+    const experimentRawDataIRRMC = this.util.isNotEmptyObject(this.rawDataIRRMC()) ? this.rawDataIRRMC() : undefined;
+    const experimentRawDataEMPIAR = this.rawDataEMPIAR() ?? [];
+    const experimentRawDataSBGrid = this.util.isNotEmptyObject(this.rawDataSBGrid()) ? this.rawDataSBGrid() : undefined;
+
     const result: ProcessedExperimentalDetails[] = [];
     for (let i = 0; i < experimentalDetails.length; i++) {
       const experimentalDetail = experimentalDetails[i];

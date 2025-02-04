@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { firstValueFrom, forkJoin, map } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
