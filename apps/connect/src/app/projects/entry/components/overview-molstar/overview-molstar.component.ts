@@ -14,6 +14,7 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { TabNames } from '../../helpers/tab-names.enum';
 
 @Component({
   selector: 'pdbc-overview-molstar',
@@ -32,7 +33,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
   public readonly objectKeys = Object.keys;
   public readonly objectValues = Object.values;
 
-  public totalDomains = 0;
+  private imagesForDomains!: string[];
 
   private molstarResiduesForAssembly = this.molstarOverview.residues;
   public assemblyData = this.dataProcessing.assemblyData;
@@ -49,12 +50,13 @@ export class OverviewMolstarComponent implements AfterViewInit {
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
   public readonly ligands = toSignal(this.globalStore.select(EntrySelectors.boundLigands));
   public readonly inputModifications = toSignal(this.globalStore.select(EntrySelectors.modifications));
-  public readonly pfamMappings = toSignal(this.globalStore.select(EntrySelectors.pfamMapping));
-  public readonly cathMappings = toSignal(this.globalStore.select(EntrySelectors.cathMapping));
-  public readonly scopMappings = toSignal(this.globalStore.select(EntrySelectors.scop175Mapping));
+  // public readonly pfamMappings = toSignal(this.globalStore.select(EntrySelectors.pfamMapping));
+  // public readonly cathMappings = toSignal(this.globalStore.select(EntrySelectors.cathMapping));
+  // public readonly scopMappings = toSignal(this.globalStore.select(EntrySelectors.scop175Mapping));
   public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
 
   private async initMolstarInstance() {
+    console.log('Initializing Mol* instance...', this.assemblyData());
     const assemblyToUse = this.assemblyData().preferred ? this.assemblyData().preferred + '' : '1';
 
     const molstarConfigObject: MolstarConfigObject = {
@@ -88,7 +90,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
 
     const assemblyToUse = this.assemblyData().preferred ? this.assemblyData().preferred : '1';
     this.preferredAssemblyImgName = `${this.entryId()?.toLowerCase()}_assembly_${assemblyToUse}_chemically_distinct_molecules_front`;
-    for (const tabName of ['Assembly', 'Macromolecules', 'Ligands', 'Domains', 'Modifications']) {
+    for (const tabName of [TabNames.Assembly, TabNames.Macromolecules, TabNames.Ligands, TabNames.Domains, TabNames.Modifications]) {
       this.stateManagement.updateStatePropertyOfTab(tabName, 'initialStateImgName', this.preferredAssemblyImgName);
       this.stateManagement.updateStatePropertyOfTab(tabName, 'imgName', this.preferredAssemblyImgName);
     }
@@ -105,72 +107,38 @@ export class OverviewMolstarComponent implements AfterViewInit {
     await this.initMolstarInstance();
     await this.initMolstarImageGallery();
 
-    const imagesForDomains = this.imageList.filter((eachImg) => {
-      return eachImg.includes('CATH') || eachImg.includes('SCOP') || eachImg.includes('Pfam');
-    });
-
-    this.totalDomains = imagesForDomains.length;
+    this.imagesForDomains = this.imageList.filter((img) => /(CATH|SCOP|Pfam)/.test(img));
 
     let modresImg = this.imageList.filter((eachImg) => {
       return eachImg.includes('_modres_');
     });
     if (modresImg.length > 1) modresImg = [modresImg[0]];
 
-    await this.dataProcessing.getColorsFromMolj([this.preferredAssemblyImgName!, ...imagesForDomains, ...modresImg]);
+    await this.dataProcessing.getColorsFromMolj([this.preferredAssemblyImgName!, ...this.imagesForDomains, ...modresImg]);
 
-    if (this.complexDetails()?.length) {
-      this.dataProcessing.parseComplexDetails(this.complexDetails());
-      this.dataProcessing.generateListSelectable(
-        this.entryId()!,
-        this.macromolecules()!,
-        this.ligands()!,
-        this.inputModifications()!,
-        this.cathMappings()!,
-        this.pfamMappings()!,
-        this.scopMappings()!,
-        this.imageList,
-        this.molstarResiduesForAssembly()
-      );
-    }
+    this.processComplexDetails();
+    this.setActiveTab();
+  }
 
-    let firstTab = undefined;
-    // set sections as active if they contain any data mapped to them
-    if (this.dataProcessing.assemblyData().preferred !== undefined) {
-      this.stateManagement.updateStatePropertyOfTab('Assembly', 'isInactive', false);
-      firstTab = 'Assembly';
-    } else {
-      this.stateManagement.updateTabDisplayConfig('Assembly', 'N/A', 'na');
-    }
+  private processComplexDetails() {
+    if (!this.complexDetails()?.length) return;
+    this.dataProcessing.parseComplexDetails(this.complexDetails());
+    this.dataProcessing.generateListSelectable(this.imageList, this.molstarResiduesForAssembly());
+  }
 
-    if (this.macromolecules()!.length > 0) {
-      this.stateManagement.updateStatePropertyOfTab('Macromolecules', 'isInactive', false);
-      if (!firstTab) firstTab = 'Macromolecules';
-    } else {
-      this.stateManagement.updateTabDisplayConfig('Macromolecules', 'N/A', 'na');
-    }
+  private setActiveTab() {
+    const tabMapping = [
+      { name: TabNames.Assembly, check: this.dataProcessing.assemblyData().preferred !== undefined },
+      { name: TabNames.Macromolecules, check: (this.macromolecules() ?? []).length > 0 },
+      { name: TabNames.Ligands, check: (this.ligands() ?? []).length > 0 },
+      { name: TabNames.Domains, check: this.imagesForDomains.length > 0 },
+      { name: TabNames.Modifications, check: (this.inputModifications() ?? []).length > 0 },
+    ];
 
-    if (this.ligands()!.length > 0) {
-      this.stateManagement.updateStatePropertyOfTab('Ligands', 'isInactive', false);
-      if (!firstTab) firstTab = 'Ligands';
-    } else {
-      this.stateManagement.updateTabDisplayConfig('Ligands', 'N/A', 'na');
-    }
-
-    if (this.totalDomains > 0) {
-      this.stateManagement.updateStatePropertyOfTab('Domains', 'isInactive', false);
-      if (!firstTab) firstTab = 'Domains';
-    } else {
-      this.stateManagement.updateTabDisplayConfig('Domains', 'N/A', 'na');
-    }
-
-    if (this.inputModifications()!.length > 0) {
-      this.stateManagement.updateStatePropertyOfTab('Modifications', 'isInactive', false);
-      if (!firstTab) firstTab = 'Modifications';
-    } else {
-      this.stateManagement.updateTabDisplayConfig('Modifications', 'N/A', 'na');
-    }
-    if (!firstTab) firstTab = 'Assembly';
-
-    await this.stateManagement.switchCurrentTab(firstTab);
+    const firstActiveTab = tabMapping.find((tab) => tab.check)?.name || TabNames.Assembly;
+    tabMapping.forEach((tab) => {
+      tab.check ? this.stateManagement.updateStatePropertyOfTab(tab.name, 'isInactive', false) : this.stateManagement.updateTabDisplayConfig(tab.name, 'N/A', 'na');
+    });
+    this.stateManagement.switchCurrentTab(firstActiveTab);
   }
 }

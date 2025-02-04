@@ -9,6 +9,10 @@ import { CathMappings, DomainMapping, PfamMappings, ScopMappings } from '../../d
 import { EntryApiService } from '../../services/entry-api.service';
 import { formatSegments } from '../../helpers/domain-helpers';
 import { CitationDetail } from '../../data-models/publication.model';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { Store } from '@ngrx/store';
 
 type ParsedComplexDetails = {
   name: string | null | undefined;
@@ -48,6 +52,17 @@ export interface DataForListViews {
 })
 export class OverviewMolstarFacade {
   private readonly entryAPIService = inject(EntryApiService);
+  private readonly globalStore = inject(Store<EntryStoreState>);
+
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly complexDetails = toSignal(this.globalStore.select(EntrySelectors.complexDetails));
+  public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
+  public readonly ligands = toSignal(this.globalStore.select(EntrySelectors.boundLigands));
+  public readonly inputModifications = toSignal(this.globalStore.select(EntrySelectors.modifications));
+  public readonly pfamMappings = toSignal(this.globalStore.select(EntrySelectors.pfamMapping));
+  public readonly cathMappings = toSignal(this.globalStore.select(EntrySelectors.cathMapping));
+  public readonly scopMappings = toSignal(this.globalStore.select(EntrySelectors.scop175Mapping));
+  public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
 
   public relatedEntries: WritableSignal<string[]> = signal([]);
 
@@ -74,17 +89,15 @@ export class OverviewMolstarFacade {
 
   public dataParsed = signal(false);
 
-  public generateListSelectable(
-    entryId: string,
-    macromolecules: Molecule[],
-    ligands: Molecule[],
-    modifications: ModifiedResidue[],
-    cathMappings: CathMappings,
-    pfamMappings: PfamMappings,
-    scopMappings: ScopMappings,
-    imageList: string[],
-    molstarResidueInfo: MolstarResidueInfo[]
-  ) {
+  public generateListSelectable(imageList: string[], molstarResidueInfo: MolstarResidueInfo[]) {
+    const entryId = this.entryId() ?? '';
+    const macromolecules = this.macromolecules() ?? [];
+    const modifications = this.inputModifications() ?? [];
+    const cathMappings = this.cathMappings();
+    const pfamMappings = this.pfamMappings();
+    const scopMappings = this.scopMappings();
+    const ligands = this.ligands() ?? [];
+
     this.numLigands.set(ligands.length);
 
     const listViewSelectablesByTab: DataForListViews = {};
@@ -191,224 +204,232 @@ export class OverviewMolstarFacade {
     domainsToListViewByResource['Pfam'] = [];
 
     const cathUniqueAccessions = new Set();
-    for (const [resourceAcc, data] of Object.entries(cathMappings)) {
-      // domain names in CATH are unique 'domain' fields inside mappings
-      const domainDesc = data.homology;
-
-      // first get corresponding images for a given accession
-      const imagesForAccession = imageList.filter((img) => img.split('_')[4] === resourceAcc);
-
-      // const domainNames = data.mappings.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
-      // if we had images for each domainName:
-      // for (const domainName of domainNames) {
-      // const mappings = data.mappings.filter((mapping) => mapping.domain! === domainName);
-
-      for (const imgName of imagesForAccession) {
-        const entityId = imgName.split('_')[1];
-        const chainId = imgName.split('_')[2];
-        const mappingsForImg = data.mappings.filter((mapping) => mapping.entity_id + '' === entityId && mapping.chain_id === chainId);
-
-        // if no domain with valid image, skip it
-        if (mappingsForImg.length === 0) continue;
-
-        const domainNames = mappingsForImg.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
-
-        // get parent macromolecules of a domain
-        const macromoleculeOfDomain = macromolecules
-          .map((mol, idx) => {
-            return {
-              id: `macromolecule-${idx + 1}`,
-              name: mol.molecule_name[0],
-              color: this.colorsFromMolj()[mol.entity_id],
-              entityId: mol.entity_id + '',
-            };
-          })
-          .filter((parsedMol) => parsedMol.entityId === entityId)[0];
-
-        // filter mappings data for this assembly
-        const segmentData = formatSegments(mappingsForImg, molstarResidueInfo);
-
-        // if no observed segments for this domain in the assembly, skip it
-        if (segmentData.segments.length === 0) continue;
-
-        cathUniqueAccessions.add(resourceAcc);
-        const accIdx = [...cathUniqueAccessions].indexOf(resourceAcc) + 1;
-
-        // if macromolecule not yet in list view
-        let parentIdx = domainsToListViewByResource['CATH'].map((data) => data.parentId).indexOf(macromoleculeOfDomain.id);
-        if (parentIdx === -1) {
-          domainsToListViewByResource['CATH'].push({
-            parentId: macromoleculeOfDomain.id,
-            parentName: macromoleculeOfDomain.name,
-            parentColor: macromoleculeOfDomain.color,
-            nestedSelectables: [],
-          });
-          parentIdx = domainsToListViewByResource['CATH'].length - 1;
-        }
-
-        const molstarNamedSelections = [
-          {
-            name: domainNames.join(', '),
-            selection: segmentData.molstarSelection,
-          },
-        ];
-
-        const domainColors = domainNames.map((domainName) => this.colorsFromMolj()[domainName]);
-        domainsToListViewByResource['CATH'][parentIdx].nestedSelectables.push({
-          id: `domain-cath-${accIdx}`,
-          name: `${domainDesc} (${resourceAcc})`,
-          colors: domainColors,
-          molstarGalleryImg: imgName,
-          molstarNamedSelections: molstarNamedSelections,
-        });
-      }
-    }
     const scopUniqueAccessions = new Set();
-    for (const [resourceAcc, data] of Object.entries(scopMappings)) {
-      // domain names in CATH are unique 'domain' fields inside mappings
-      const domainDesc = data.description;
-
-      // first get corresponding images for a given accession
-      const imagesForAccession = imageList.filter((img) => img.split('_')[4] === resourceAcc);
-
-      // const domainNames = data.mappings.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
-      // if we had images for each domainName:
-      // for (const domainName of domainNames) {
-      // const mappings = data.mappings.filter((mapping) => mapping.domain! === domainName);
-
-      for (const imgName of imagesForAccession) {
-        const entityId = imgName.split('_')[1];
-        const chainId = imgName.split('_')[2];
-        const mappingsForImg = data.mappings.filter((mapping) => mapping.entity_id + '' === entityId && mapping.chain_id === chainId);
-
-        // if no domain with valid image, skip it
-        if (mappingsForImg.length === 0) continue;
-
-        const domainNames = mappingsForImg.map((mapping) => mapping.scop_id!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
-
-        // get parent macromolecules of a domain
-        const macromoleculeOfDomain = macromolecules
-          .map((mol, idx) => {
-            return {
-              id: `macromolecule-${idx + 1}`,
-              name: mol.molecule_name[0],
-              color: this.colorsFromMolj()[mol.entity_id],
-              entityId: mol.entity_id + '',
-            };
-          })
-          .filter((parsedMol) => parsedMol.entityId === entityId)[0];
-
-        // filter mappings data for this assembly
-        const segmentData = formatSegments(mappingsForImg, molstarResidueInfo);
-
-        // if no observed segments for this domain in the assembly, skip it
-        if (segmentData.segments.length === 0) continue;
-
-        scopUniqueAccessions.add(resourceAcc);
-        const accIdx = [...scopUniqueAccessions].indexOf(resourceAcc) + 1;
-
-        // if macromolecule not yet in list view
-        let parentIdx = domainsToListViewByResource['SCOP'].map((data) => data.parentId).indexOf(macromoleculeOfDomain.id);
-        if (parentIdx === -1) {
-          domainsToListViewByResource['SCOP'].push({
-            parentId: macromoleculeOfDomain.id,
-            parentName: macromoleculeOfDomain.name,
-            parentColor: macromoleculeOfDomain.color,
-            nestedSelectables: [],
-          });
-          parentIdx = domainsToListViewByResource['SCOP'].length - 1;
-        }
-
-        const molstarNamedSelections = [
-          {
-            name: domainNames.join(', '),
-            selection: segmentData.molstarSelection,
-          },
-        ];
-
-        const domainColors = domainNames.map((domainName) => this.colorsFromMolj()[domainName]);
-        domainsToListViewByResource['SCOP'][parentIdx].nestedSelectables.push({
-          id: `domain-scop-${accIdx}`,
-          name: `${domainDesc} (${resourceAcc})`,
-          colors: domainColors,
-          molstarGalleryImg: imgName,
-          molstarNamedSelections: molstarNamedSelections,
-        });
-      }
-    }
     const pfamUniqueAccessions = new Set();
-    for (const [resourceAcc, data] of Object.entries(pfamMappings)) {
-      const domainDesc = data.description;
 
-      // first get corresponding images for a given accession
-      const imagesForAccession = imageList.filter((img) => img.split('_')[4] === resourceAcc);
+    if (cathMappings) {
+      for (const [resourceAcc, data] of Object.entries(cathMappings)) {
+        // domain names in CATH are unique 'domain' fields inside mappings
+        const domainDesc = data.homology;
 
-      // const domainNames = data.mappings.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
-      // if we had images for each domainName:
-      // for (const domainName of domainNames) {
-      // const mappings = data.mappings.filter((mapping) => mapping.domain! === domainName);
+        // first get corresponding images for a given accession
+        const imagesForAccession = imageList.filter((img) => img.split('_')[4] === resourceAcc);
 
-      for (const imgName of imagesForAccession) {
-        const entityId = imgName.split('_')[1];
-        const chainId = imgName.split('_')[2];
-        const mappingsForImg = data.mappings.filter((mapping) => mapping.entity_id + '' === entityId && mapping.chain_id === chainId);
+        // const domainNames = data.mappings.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+        // if we had images for each domainName:
+        // for (const domainName of domainNames) {
+        // const mappings = data.mappings.filter((mapping) => mapping.domain! === domainName);
 
-        // if no domain with valid image, skip it
-        if (mappingsForImg.length === 0) continue;
+        for (const imgName of imagesForAccession) {
+          const entityId = imgName.split('_')[1];
+          const chainId = imgName.split('_')[2];
+          const mappingsForImg = data.mappings.filter((mapping) => mapping.entity_id + '' === entityId && mapping.chain_id === chainId);
 
-        const domainNames = mappingsForImg.map((_mapping, idx) => `${resourceAcc}_${idx + 1}`).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+          // if no domain with valid image, skip it
+          if (mappingsForImg.length === 0) continue;
 
-        // get parent macromolecules of a domain
-        const macromoleculeOfDomain = macromolecules
-          .map((mol, idx) => {
-            return {
-              id: `macromolecule-${idx + 1}`,
-              name: mol.molecule_name[0],
-              color: this.colorsFromMolj()[mol.entity_id],
-              entityId: mol.entity_id + '',
-            };
-          })
-          .filter((parsedMol) => parsedMol.entityId === entityId)[0];
+          const domainNames = mappingsForImg.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
 
-        // filter mappings data for this assembly
-        const segmentData = formatSegments(mappingsForImg, molstarResidueInfo);
+          // get parent macromolecules of a domain
+          const macromoleculeOfDomain = macromolecules
+            .map((mol, idx) => {
+              return {
+                id: `macromolecule-${idx + 1}`,
+                name: mol.molecule_name[0],
+                color: this.colorsFromMolj()[mol.entity_id],
+                entityId: mol.entity_id + '',
+              };
+            })
+            .filter((parsedMol) => parsedMol.entityId === entityId)[0];
 
-        // if no observed segments for this domain in the assembly, skip it
-        if (segmentData.segments.length === 0) continue;
+          // filter mappings data for this assembly
+          const segmentData = formatSegments(mappingsForImg, molstarResidueInfo);
 
-        pfamUniqueAccessions.add(resourceAcc);
-        const accIdx = [...pfamUniqueAccessions].indexOf(resourceAcc) + 1;
+          // if no observed segments for this domain in the assembly, skip it
+          if (segmentData.segments.length === 0) continue;
 
-        // if macromolecule not yet in list view
-        let parentIdx = domainsToListViewByResource['Pfam'].map((data) => data.parentId).indexOf(macromoleculeOfDomain.id);
-        if (parentIdx === -1) {
-          domainsToListViewByResource['Pfam'].push({
-            parentId: macromoleculeOfDomain.id,
-            parentName: macromoleculeOfDomain.name,
-            parentColor: macromoleculeOfDomain.color,
-            nestedSelectables: [],
+          cathUniqueAccessions.add(resourceAcc);
+          const accIdx = [...cathUniqueAccessions].indexOf(resourceAcc) + 1;
+
+          // if macromolecule not yet in list view
+          let parentIdx = domainsToListViewByResource['CATH'].map((data) => data.parentId).indexOf(macromoleculeOfDomain.id);
+          if (parentIdx === -1) {
+            domainsToListViewByResource['CATH'].push({
+              parentId: macromoleculeOfDomain.id,
+              parentName: macromoleculeOfDomain.name,
+              parentColor: macromoleculeOfDomain.color,
+              nestedSelectables: [],
+            });
+            parentIdx = domainsToListViewByResource['CATH'].length - 1;
+          }
+
+          const molstarNamedSelections = [
+            {
+              name: domainNames.join(', '),
+              selection: segmentData.molstarSelection,
+            },
+          ];
+
+          const domainColors = domainNames.map((domainName) => this.colorsFromMolj()[domainName]);
+          domainsToListViewByResource['CATH'][parentIdx].nestedSelectables.push({
+            id: `domain-cath-${accIdx}`,
+            name: `${domainDesc} (${resourceAcc})`,
+            colors: domainColors,
+            molstarGalleryImg: imgName,
+            molstarNamedSelections: molstarNamedSelections,
           });
-          parentIdx = domainsToListViewByResource['Pfam'].length - 1;
         }
-
-        const molstarNamedSelections = [
-          {
-            name: domainNames.join(', '),
-            selection: segmentData.molstarSelection,
-          },
-        ];
-
-        const domainColors = domainNames.map((domainName) => this.colorsFromMolj()[domainName]);
-        domainsToListViewByResource['Pfam'][parentIdx].nestedSelectables.push({
-          id: `domain-pfam-${accIdx}`,
-          name: `${domainDesc} (${resourceAcc})`,
-          colors: domainColors,
-          molstarGalleryImg: imgName,
-          molstarNamedSelections: molstarNamedSelections,
-        });
       }
     }
 
+    if (scopMappings) {
+      for (const [resourceAcc, data] of Object.entries(scopMappings)) {
+        // domain names in CATH are unique 'domain' fields inside mappings
+        const domainDesc = data.description;
+
+        // first get corresponding images for a given accession
+        const imagesForAccession = imageList.filter((img) => img.split('_')[4] === resourceAcc);
+
+        // const domainNames = data.mappings.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+        // if we had images for each domainName:
+        // for (const domainName of domainNames) {
+        // const mappings = data.mappings.filter((mapping) => mapping.domain! === domainName);
+
+        for (const imgName of imagesForAccession) {
+          const entityId = imgName.split('_')[1];
+          const chainId = imgName.split('_')[2];
+          const mappingsForImg = data.mappings.filter((mapping) => mapping.entity_id + '' === entityId && mapping.chain_id === chainId);
+
+          // if no domain with valid image, skip it
+          if (mappingsForImg.length === 0) continue;
+
+          const domainNames = mappingsForImg.map((mapping) => mapping.scop_id!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+
+          // get parent macromolecules of a domain
+          const macromoleculeOfDomain = macromolecules
+            .map((mol, idx) => {
+              return {
+                id: `macromolecule-${idx + 1}`,
+                name: mol.molecule_name[0],
+                color: this.colorsFromMolj()[mol.entity_id],
+                entityId: mol.entity_id + '',
+              };
+            })
+            .filter((parsedMol) => parsedMol.entityId === entityId)[0];
+
+          // filter mappings data for this assembly
+          const segmentData = formatSegments(mappingsForImg, molstarResidueInfo);
+
+          // if no observed segments for this domain in the assembly, skip it
+          if (segmentData.segments.length === 0) continue;
+
+          scopUniqueAccessions.add(resourceAcc);
+          const accIdx = [...scopUniqueAccessions].indexOf(resourceAcc) + 1;
+
+          // if macromolecule not yet in list view
+          let parentIdx = domainsToListViewByResource['SCOP'].map((data) => data.parentId).indexOf(macromoleculeOfDomain.id);
+          if (parentIdx === -1) {
+            domainsToListViewByResource['SCOP'].push({
+              parentId: macromoleculeOfDomain.id,
+              parentName: macromoleculeOfDomain.name,
+              parentColor: macromoleculeOfDomain.color,
+              nestedSelectables: [],
+            });
+            parentIdx = domainsToListViewByResource['SCOP'].length - 1;
+          }
+
+          const molstarNamedSelections = [
+            {
+              name: domainNames.join(', '),
+              selection: segmentData.molstarSelection,
+            },
+          ];
+
+          const domainColors = domainNames.map((domainName) => this.colorsFromMolj()[domainName]);
+          domainsToListViewByResource['SCOP'][parentIdx].nestedSelectables.push({
+            id: `domain-scop-${accIdx}`,
+            name: `${domainDesc} (${resourceAcc})`,
+            colors: domainColors,
+            molstarGalleryImg: imgName,
+            molstarNamedSelections: molstarNamedSelections,
+          });
+        }
+      }
+    }
+
+    if (pfamMappings) {
+      for (const [resourceAcc, data] of Object.entries(pfamMappings)) {
+        const domainDesc = data.description;
+
+        // first get corresponding images for a given accession
+        const imagesForAccession = imageList.filter((img) => img.split('_')[4] === resourceAcc);
+
+        // const domainNames = data.mappings.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+        // if we had images for each domainName:
+        // for (const domainName of domainNames) {
+        // const mappings = data.mappings.filter((mapping) => mapping.domain! === domainName);
+
+        for (const imgName of imagesForAccession) {
+          const entityId = imgName.split('_')[1];
+          const chainId = imgName.split('_')[2];
+          const mappingsForImg = data.mappings.filter((mapping) => mapping.entity_id + '' === entityId && mapping.chain_id === chainId);
+
+          // if no domain with valid image, skip it
+          if (mappingsForImg.length === 0) continue;
+
+          const domainNames = mappingsForImg.map((_mapping, idx) => `${resourceAcc}_${idx + 1}`).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+
+          // get parent macromolecules of a domain
+          const macromoleculeOfDomain = macromolecules
+            .map((mol, idx) => {
+              return {
+                id: `macromolecule-${idx + 1}`,
+                name: mol.molecule_name[0],
+                color: this.colorsFromMolj()[mol.entity_id],
+                entityId: mol.entity_id + '',
+              };
+            })
+            .filter((parsedMol) => parsedMol.entityId === entityId)[0];
+
+          // filter mappings data for this assembly
+          const segmentData = formatSegments(mappingsForImg, molstarResidueInfo);
+
+          // if no observed segments for this domain in the assembly, skip it
+          if (segmentData.segments.length === 0) continue;
+
+          pfamUniqueAccessions.add(resourceAcc);
+          const accIdx = [...pfamUniqueAccessions].indexOf(resourceAcc) + 1;
+
+          // if macromolecule not yet in list view
+          let parentIdx = domainsToListViewByResource['Pfam'].map((data) => data.parentId).indexOf(macromoleculeOfDomain.id);
+          if (parentIdx === -1) {
+            domainsToListViewByResource['Pfam'].push({
+              parentId: macromoleculeOfDomain.id,
+              parentName: macromoleculeOfDomain.name,
+              parentColor: macromoleculeOfDomain.color,
+              nestedSelectables: [],
+            });
+            parentIdx = domainsToListViewByResource['Pfam'].length - 1;
+          }
+
+          const molstarNamedSelections = [
+            {
+              name: domainNames.join(', '),
+              selection: segmentData.molstarSelection,
+            },
+          ];
+
+          const domainColors = domainNames.map((domainName) => this.colorsFromMolj()[domainName]);
+          domainsToListViewByResource['Pfam'][parentIdx].nestedSelectables.push({
+            id: `domain-pfam-${accIdx}`,
+            name: `${domainDesc} (${resourceAcc})`,
+            colors: domainColors,
+            molstarGalleryImg: imgName,
+            molstarNamedSelections: molstarNamedSelections,
+          });
+        }
+      }
+    }
     listViewSelectablesByTab['Domains'] = domainsToListViewByResource;
 
     // convert modification objects to listview objects

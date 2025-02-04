@@ -25,6 +25,7 @@ import {
 } from '../../components/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarBaseClass, MolstarConfigObject } from './molstar-base-class';
+import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 
 @Injectable({
   providedIn: 'root',
@@ -37,6 +38,7 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
   private isMolstarRendered = false;
   public isFirstViewRender = true;
   public readonly signals = inject(ComponentCommunicationService);
+  public dataProcessing = inject(MainDataProcessingFacade);
 
   /**
    * Function responsible for initial render of molstar instance
@@ -65,6 +67,8 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
     const data = this.residues();
     this.signals.molstarResidueInfo.set(data);
     this.signals.molstarResidueInfoLoaded.set(true);
+    this.dataProcessing.setTabName('Assemblies');
+    this.dataProcessing.processInteractiveTablesData();
   }
 
   /**

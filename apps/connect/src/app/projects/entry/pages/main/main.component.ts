@@ -88,15 +88,8 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
 
   public apiLoadedStatus = signal(INITIAL_API_STATUS);
 
-  public molstarResidueInfoLoaded = this.compCommunication.molstarResidueInfoLoaded; // boolean
+  public molstarResidueInfoLoaded = computed(() => this.compCommunication.molstarResidueInfoLoaded()); // boolean
   public molstarResidueInfo = this.compCommunication.molstarResidueInfo; // residue listing
-
-  _loadRowsEffect = effect(() => {
-    if (!this.tabDataLoaded() && this.molstarResidueInfoLoaded()) {
-      this.dataProcessing.setTabName('Assemblies');
-      this.processInteractiveTablesData();
-    }
-  });
 
   public tabsInfo = this.dataProcessing.tabsInfo;
 
@@ -120,6 +113,7 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
           this.globalStore.dispatch(EntryActions.setCurrentEntryId({ entryId }));
           this.globalStore.dispatch(EntryActions.getEntryStatus());
           this.entryId.set(entryId);
+          // this.getPageData();
           return this.globalStore.select(EntrySelectors.entryStatus).pipe(
             filter(Boolean),
             tap((status: EntryStatus) => this.entryStatus.set({ ...status, entryId })),
@@ -131,6 +125,7 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
           this.statusCode.set(statusCode);
           if (statusCode === 'REL') {
             setTimeout(() => {
+              console.log('Calling renderMolstarInitial');
               this.molstarVisualisation.renderMolstarInitial(this.entryId(), this.molstarViewer.nativeElement);
             });
             this.getPageData();
@@ -145,36 +140,12 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
       .subscribe();
   }
 
-  private processInteractiveTablesData(): void {
-    this.dataProcessing.processInteractiveTablesData();
-  }
+  // private processInteractiveTablesData(): void {
+  //   this.dataProcessing.processInteractiveTablesData();
+  // }
 
   private getPageData(): void {
-    this.globalStore.dispatch(EntryActions.getSummaryData());
-    this.globalStore.dispatch(EntryActions.getEntryMolecules());
-    this.globalStore.dispatch(EntryActions.getExperiment());
-    this.globalStore.dispatch(EntryActions.getUniprotMapping());
-    this.globalStore.dispatch(EntryActions.getInterproMapping());
-    this.globalStore.dispatch(EntryActions.getPfamMapping());
-    this.globalStore.dispatch(EntryActions.getDownloadOptions());
-    this.globalStore.dispatch(EntryActions.getSummaryQualityScores());
-    this.globalStore.dispatch(EntryActions.getCathMapping());
-    this.globalStore.dispatch(EntryActions.getScop175Mapping());
-    this.globalStore.dispatch(EntryActions.getModifications());
-    this.globalStore.dispatch(EntryActions.getValidationKeyStats());
-    this.globalStore.dispatch(EntryActions.getValidationXrayRefine());
-    this.globalStore.dispatch(EntryActions.getPrimaryPublication());
-    this.globalStore.dispatch(EntryActions.getArticleCitingPDBEntry());
-    this.globalStore.dispatch(EntryActions.getPreferredAssembly());
-    this.globalStore.dispatch(EntryActions.getAssemblies());
-    this.globalStore.dispatch(EntryActions.getCarbohydrates());
-    this.globalStore.dispatch(EntryActions.getExperimentBMRBRawData());
-    this.globalStore.dispatch(EntryActions.getPDBRedoQualityScores());
-    this.globalStore.dispatch(EntryActions.getExperimentSBGridRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentIRRMCRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentEMPIARRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentPDBRawData());
-    this.globalStore.dispatch(EntryActions.getUniprotMapping());
+    this.dataProcessing.getPageData();
   }
 
   async ngAfterViewInit() {
