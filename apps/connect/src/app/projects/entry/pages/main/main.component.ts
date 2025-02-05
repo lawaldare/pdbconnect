@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
@@ -113,13 +113,11 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
           this.globalStore.dispatch(EntryActions.setCurrentEntryId({ entryId }));
           this.globalStore.dispatch(EntryActions.getEntryStatus());
           this.entryId.set(entryId);
-          // this.getPageData();
           return this.globalStore.select(EntrySelectors.entryStatus).pipe(
             filter(Boolean),
             tap((status: EntryStatus) => this.entryStatus.set({ ...status, entryId })),
             map((response: EntryStatus) => response.status_code)
           );
-          // return of({});
         }),
         mergeMap((statusCode: StatusCode) => {
           this.statusCode.set(statusCode);
@@ -138,10 +136,6 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
       )
       .subscribe();
   }
-
-  // private processInteractiveTablesData(): void {
-  //   this.dataProcessing.processInteractiveTablesData();
-  // }
 
   private getPageData(): void {
     this.dataProcessing.getPageData();

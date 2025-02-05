@@ -1,5 +1,10 @@
 @import url('libs/core/src/lib/styles/pdb_connect.scss');
 
+ngx-skeleton-loader {
+  width: 100%;
+  margin-top: 10px;
+}
+
 header {
   display: flex;
   width: 100%;

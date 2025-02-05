@@ -77,6 +77,7 @@ export class ImageCarouselComponentFacade {
     // const uniqueFragments = mappedFragments.filter((obj, index, self) => index === self.findIndex((o) => o.name === obj.name));
 
     this.fragments.update(() => mappedFragments);
+    console.log('fragments:', this.fragments());
     this.store.dispatch(LigandActions.setFragments({ fragments: this.fragments() }));
   }
 

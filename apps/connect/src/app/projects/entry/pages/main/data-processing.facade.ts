@@ -34,7 +34,7 @@ export class MainDataProcessingFacade {
   public readonly uniprotMapping = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
   public readonly bestStrMapUniProtId = toSignal(this.globalStore.select(EntrySelectors.bestStructuresMappingsByUniProtIds));
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
-  public molstarResidueInfo = this.compCommunication.molstarResidueInfo;
+  public molstarResidueInfo = computed(() => this.compCommunication.molstarResidueInfo());
 
   public tabDataLoaded = signal<boolean>(false);
   public tableData = signal<DataToTable>({} as DataToTable);
@@ -68,16 +68,22 @@ export class MainDataProcessingFacade {
     for (const tabName of [TabNames.Assemblies, TabNames.Domains, TabNames.Ligands, TabNames.Macromolecules]) {
       let tempTableData: DataToTable;
       if (tabName === TabNames.Assemblies && this.isNotUndefined([complexDetails, assemblyData, pisaAssemblyData])) {
-        tempTableData = new AssemblyDataToTable(complexDetails!, assemblyData, pisaAssemblyData!);
-      } else if (tabName === TabNames.Domains && this.isNotUndefined([pfamMappings, cathMappings, scopMappings, macromolecules, this.molstarResidueInfo()])) {
-        tempTableData = new DomainDataToTable(pfamMappings!, cathMappings!, scopMappings!, macromolecules!, this.molstarResidueInfo()!);
-      } else if (tabName === TabNames.Ligands && this.isNotUndefined([ligands, modifications!, this.molstarResidueInfo()!])) {
-        tempTableData = new LigandDataToTable(ligands, modifications!, this.molstarResidueInfo()!);
+        tempTableData = new AssemblyDataToTable(complexDetails, assemblyData, pisaAssemblyData);
+      } else if (
+        tabName === TabNames.Domains &&
+        pfamMappings &&
+        cathMappings &&
+        scopMappings &&
+        this.isNotUndefined([pfamMappings, cathMappings, scopMappings, macromolecules, this.molstarResidueInfo()])
+      ) {
+        tempTableData = new DomainDataToTable(pfamMappings!, cathMappings!, scopMappings!, macromolecules, this.molstarResidueInfo());
+      } else if (tabName === TabNames.Ligands && this.isNotUndefined([ligands, modifications, this.molstarResidueInfo()])) {
+        tempTableData = new LigandDataToTable(ligands, modifications, this.molstarResidueInfo());
       } else if (
         tabName === TabNames.Macromolecules &&
-        this.isNotUndefined([carbohydrates, uniprotMapping, bestStrMapUniProtId, macromolecules, this.molstarResidueInfo()!])
+        this.isNotUndefined([carbohydrates, uniprotMapping, bestStrMapUniProtId, macromolecules, this.molstarResidueInfo()])
       ) {
-        tempTableData = new MacromoleculeDataToTable(carbohydrates, uniprotMapping!, bestStrMapUniProtId!, macromolecules!, this.molstarResidueInfo()!);
+        tempTableData = new MacromoleculeDataToTable(carbohydrates, uniprotMapping!, bestStrMapUniProtId!, macromolecules, this.molstarResidueInfo());
       } else {
         return;
       }
