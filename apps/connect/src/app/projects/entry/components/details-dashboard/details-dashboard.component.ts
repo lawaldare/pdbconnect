@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Component, effect, ElementRef, inject, input, OnDestroy, Renderer2, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, inject, input, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule, UtilService } from '@pdbc/core';
 import { MatSelectModule } from '@angular/material/select';
@@ -54,7 +54,7 @@ export interface SequenceDetail {
   templateUrl: './details-dashboard.component.html',
   styleUrl: './details-dashboard.component.scss',
 })
-export class DetailsDashboardComponent implements OnDestroy {
+export class DetailsDashboardComponent implements OnDestroy, OnInit {
   public readonly signals = inject(ComponentCommunicationService);
   private readonly utilService = inject(UtilService);
   public readonly dataProcessing = inject(VisualisationsDataProcessing);
@@ -62,6 +62,7 @@ export class DetailsDashboardComponent implements OnDestroy {
   public renderer = inject(Renderer2);
   public elementRef = inject(ElementRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
+  // private molstarVisualisation = inject(MolstarVisualisationsForTabs);
 
   // required inputs
   // public readonly entryId = input.required<string>();
@@ -134,6 +135,8 @@ export class DetailsDashboardComponent implements OnDestroy {
       if (this.currentState !== tabState[this.tabName()]) {
         this.currentState = tabState[this.tabName()];
 
+        // await this.molstarVisualisations.renderMolstarInitial(this.entryId() ?? '', this.molstarContainer.nativeElement);
+
         // sending and retrieving global molstar instance just to reset some variables currently
         await this.sendMolstarViewerToParent();
         await this.getMolstarViewerFromParent();
@@ -142,6 +145,10 @@ export class DetailsDashboardComponent implements OnDestroy {
         await this.onTableRowSelection(tabState[this.tabName()]);
       }
     });
+  }
+
+  async ngOnInit(): Promise<void> {
+    await this.molstarVisualisations.renderMolstarInitial(this.entryId() ?? '', this.molstarContainer?.nativeElement);
   }
 
   async getMolstarViewerFromParent() {
@@ -157,7 +164,7 @@ export class DetailsDashboardComponent implements OnDestroy {
   async sendMolstarViewerToParent() {
     // Move the molstar WebGL container back to the parent component
     if (this.isMolstarRetrieved === true) {
-      this.renderer.appendChild(this.molstarParent(), this.molstarViewerEl());
+      // this.renderer.appendChild(this.molstarParent(), this.molstarViewerEl());
       this.isMolstarRetrieved = false;
       // Set first render for next view equal to true
       this.molstarVisualisations.isFirstViewRender = true;
@@ -307,23 +314,23 @@ export class DetailsDashboardComponent implements OnDestroy {
   }
 
   private async renderInMolstar(reloadConfigObj: boolean) {
-    let datum = this.currentRowDatum!;
+    // let datum = this.currentRowDatum!;
     // Different molstar rendering functions are called according to the dashboard type
-    if (this.tabName() === 'Assemblies') {
-      datum = datum as AssembliesRowData;
-      await this.molstarVisualisations.renderMolstarAssemblies(this.entryId() ?? '', this.molstarViewerEl(), datum, reloadConfigObj);
-    } else if (this.tabName() === 'Domains') {
-      datum = datum as DomainsRowData;
-      await this.molstarVisualisations.renderMolstarDomains(this.entryId() ?? '', this.molstarViewerEl(), datum, reloadConfigObj);
-    } else if (this.tabName() === 'Ligands') {
-      datum = datum as LigandsRowData;
-      const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
-      await this.molstarVisualisations.renderMolstarLigands(this.entryId() ?? '', this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
-    } else if (this.tabName() === 'Macromolecules') {
-      datum = datum as MacromoleculesRowData;
-      const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
-      await this.molstarVisualisations.renderMolstarMacromolecules(this.entryId() ?? '', this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
-    }
+    // if (this.tabName() === 'Assemblies') {
+    //   datum = datum as AssembliesRowData;
+    //   await this.molstarVisualisations.renderMolstarAssemblies(this.entryId() ?? '', this.molstarViewerEl(), datum, reloadConfigObj);
+    // } else if (this.tabName() === 'Domains') {
+    //   datum = datum as DomainsRowData;
+    //   await this.molstarVisualisations.renderMolstarDomains(this.entryId() ?? '', this.molstarViewerEl(), datum, reloadConfigObj);
+    // } else if (this.tabName() === 'Ligands') {
+    //   datum = datum as LigandsRowData;
+    //   const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
+    //   await this.molstarVisualisations.renderMolstarLigands(this.entryId() ?? '', this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
+    // } else if (this.tabName() === 'Macromolecules') {
+    //   datum = datum as MacromoleculesRowData;
+    //   const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
+    //   await this.molstarVisualisations.renderMolstarMacromolecules(this.entryId() ?? '', this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
+    // }
   }
 
   private async initOrRefreshProtvista() {

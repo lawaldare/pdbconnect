@@ -7,12 +7,12 @@ import { MainDataProcessingFacade } from '../../pages/main/data-processing.facad
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
-  selector: 'pdbc-assemblies-tab',
+  selector: 'pdbc-ligands-tab',
   imports: [CommonModule, InteractiveTablesComponent, DetailsDashboardComponent, NgxSkeletonLoaderModule],
-  templateUrl: './assemblies-tab.component.html',
-  styleUrl: './assemblies-tab.component.scss',
+  templateUrl: './ligands-tab.component.html',
+  styleUrl: './ligands-tab.component.scss',
 })
-export class AssembliesTabComponent implements OnInit {
+export class LigandsTabComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
 
@@ -20,6 +20,6 @@ export class AssembliesTabComponent implements OnInit {
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
   ngOnInit(): void {
-    console.log('AssembliesTabComponent initialized');
+    console.log('LigandsTabComponent initialized');
   }
 }

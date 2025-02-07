@@ -1,1 +1,8 @@
-<p>assemblies-tab works!</p>
+<main>
+  @if (tabDataLoaded() && molstarResidueInfoLoaded()) {
+    <pdbc-interactive-tables tabName="Assemblies" />
+    <!-- <pdbc-details-dashboard tabName="Assemblies" /> -->
+  } @else {
+    <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+  }
+</main>

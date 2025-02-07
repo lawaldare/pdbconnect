@@ -27,6 +27,8 @@ import { MatTabChangeEvent } from '@angular/material/tabs';
 import { InformationTabComponent } from '../../components/information-tab/information-tab.component';
 import { AssembliesTabComponent } from '../../components/assemblies-tab/assemblies-tab.component';
 import { DomainsTabComponent } from '../../components/domains-tab/domains-tab.component';
+import { MacromoleculesTabComponent } from '../../components/macromolecules-tab/macromolecules-tab.component';
+import { LigandsTabComponent } from '../../components/ligands-tab/ligands-tab.component';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -60,6 +62,8 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     InformationTabComponent,
     AssembliesTabComponent,
     DomainsTabComponent,
+    MacromoleculesTabComponent,
+    LigandsTabComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],

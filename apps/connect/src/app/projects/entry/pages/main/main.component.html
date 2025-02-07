@@ -7,8 +7,8 @@
         <mat-tab label="Information"> <pdbc-information-tab /> </mat-tab>
         <mat-tab label="Model Quality"> Model Quality </mat-tab>
         <mat-tab label="Assemblies"> <pdbc-assemblies-tab /> </mat-tab>
-        <mat-tab label="Macromolecules"> Macromolecules </mat-tab>
-        <mat-tab label="Ligands and Environments"> Ligands </mat-tab>
+        <mat-tab label="Macromolecules"> <pdbc-macromolecules-tab /> </mat-tab>
+        <mat-tab label="Ligands and Environments"> <pdbc-ligands-tab /> </mat-tab>
         <mat-tab label="Domains"> <pdbc-domains-tab /> </mat-tab>
         <mat-tab label="Citations"> Citations </mat-tab>
       </mat-tab-group>
@@ -73,9 +73,9 @@
                     <section class="left-side">
                       <pdbc-interactive-tables [tabName]="getTableName(tabName.name)" />
                     </section>
-                    <section class="right-side">
+                    <!-- <section class="right-side">
                       <pdbc-details-dashboard [tabName]="getTableName(tabName.name)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
-                    </section>
+                    </section> -->
                   } @else {
                     <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
                   }

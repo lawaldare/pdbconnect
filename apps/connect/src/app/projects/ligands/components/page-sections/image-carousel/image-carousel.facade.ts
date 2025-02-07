@@ -57,7 +57,7 @@ export class ImageCarouselComponentFacade {
   private getSubstructureNamesAndAtoms(data: Fragment[]): void {
     for (const fragment of data) {
       for (const atom of fragment.atoms) {
-        this.substructureNames.update((values) => [...values, `${fragment.name} fragment`]);
+        this.substructureNames.update((values) => [...values, `${fragment.name} ${fragment.name === 'MurckoScaffold' ? '' : 'fragment'}`]);
         this.substructureAtoms.push(atom);
       }
       this.tempFragments.push(fragment);
@@ -77,7 +77,6 @@ export class ImageCarouselComponentFacade {
     // const uniqueFragments = mappedFragments.filter((obj, index, self) => index === self.findIndex((o) => o.name === obj.name));
 
     this.fragments.update(() => mappedFragments);
-    console.log('fragments:', this.fragments());
     this.store.dispatch(LigandActions.setFragments({ fragments: this.fragments() }));
   }
 

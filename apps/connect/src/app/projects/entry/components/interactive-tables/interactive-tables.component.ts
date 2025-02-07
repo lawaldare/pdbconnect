@@ -83,9 +83,16 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
 
   public tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
-  ngOnChanges(): void {
-    this.dataProcessing.setTabName(this.tabName());
+  readonly rowHeight = 50; // Fixed row height
+  readonly headerHeight = 76; // Header height
+  readonly paginationHeight = 48; // Pagination height
+  readonly maxGridHeight = 600; // Maximum table height
+  public gridHeight = '';
+
+  async ngOnChanges(): Promise<void> {
+    // this.dataProcessing.setTabName(this.tabName());
     const tableData = this.signals.getTabData(this.tabName());
+    console.log(tableData, this.tabName());
     this.tableData = tableData as DataToTable;
 
     if (this.tabName() === 'Assemblies') {
@@ -99,10 +106,12 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
     }
 
     if (this.tableData!.displayFilters) {
-      this.currentTableFilter = this.tableData!.tableFilters()[0].types;
+      this.currentTableFilter = this.tableData?.tableFilters()[0].types;
     }
 
-    this.adjustTableHeightDynamically();
+    // await this.triggerTableSelection();
+
+    // this.adjustTableHeightDynamically();
     // }
   }
 
@@ -113,6 +122,20 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
     }
     if (this.agViewportCheckSubscription) {
       this.agViewportCheckSubscription.unsubscribe();
+    }
+  }
+
+  private updateGridHeight(): void {
+    const rowCount = this.tableData?.tableRows().length ?? 0;
+    const calculatedHeight = rowCount * this.rowHeight + this.headerHeight + this.paginationHeight + 40;
+    this.gridHeight = Math.min(calculatedHeight, this.maxGridHeight) + 'px';
+  }
+
+  selectFirstRow(): void {
+    const rowCount = this.tableData?.tableRows().length ?? 0;
+
+    if (this.gridApi && rowCount > 0) {
+      this.gridApi.getDisplayedRowAtIndex(0)?.setSelected(true);
     }
   }
 
@@ -162,6 +185,9 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   public async onTableGridReady(params: GridReadyEvent) {
     // function is triggered on first table ready event
     this.gridApi = params.api;
+
+    this.updateGridHeight();
+    this.selectFirstRow();
 
     // unfortunately needed so selection happens syncronously
     await firstValueFrom(timer(100));
