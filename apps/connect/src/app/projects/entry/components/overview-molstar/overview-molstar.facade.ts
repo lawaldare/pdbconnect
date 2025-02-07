@@ -202,7 +202,6 @@ export class OverviewMolstarFacade {
       }
 
       const macromoleculeColors = [this.colorsFromMolj()[macromolecule.entity_id]];
-      console.log('macromolecule colors:', macromoleculeColors);
 
       // save listview object with all necessary details to display
       macromoleculesToListView.push({

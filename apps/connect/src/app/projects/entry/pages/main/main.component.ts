@@ -6,9 +6,7 @@ import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ClickOutsideDirective, MaterialModule } from '@pdbc/core';
-import { MainInformationAreaComponent } from '../../components/main-information-area/main-information-area.component';
-import { OverviewMolstarComponent } from '../../components/overview-molstar/overview-molstar.component';
+import { MaterialModule } from '@pdbc/core';
 import { InteractiveTablesComponent } from '../../components/interactive-tables/interactive-tables.component';
 import { DetailsDashboardComponent } from '../../components/details-dashboard/details-dashboard.component';
 import { ExperimentsValidationTabComponent } from '../../components/experiments-validation-tab/experiments-validation-tab.component';
@@ -16,7 +14,6 @@ import { CitationsTabComponent } from '../../components/citations-tab/citations-
 import { pdbeLogoConfig, pdbeSearchConfig, allTabs, tableTabs, INITIAL_API_STATUS } from '../../entry-constant';
 
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
-import { EntryDropdownComponent } from '../../components/entry-dropdown/entry-dropdown.component';
 import { MainDataProcessingFacade } from './data-processing.facade';
 
 import { EntryStatus, StatusCode } from '../../data-models/status.model';
@@ -28,6 +25,8 @@ import { EntryActions } from '../../store/entry.actions';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { MatTabChangeEvent } from '@angular/material/tabs';
 import { InformationTabComponent } from '../../components/information-tab/information-tab.component';
+import { AssembliesTabComponent } from '../../components/assemblies-tab/assemblies-tab.component';
+import { DomainsTabComponent } from '../../components/domains-tab/domains-tab.component';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -51,18 +50,16 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     CommonModule,
     PdbeHeaderLogoMenuComponent,
     PdbeHeaderSearchComponent,
-    ClickOutsideDirective,
-    MainInformationAreaComponent,
-    OverviewMolstarComponent,
     InteractiveTablesComponent,
     DetailsDashboardComponent,
     ExperimentsValidationTabComponent,
     CitationsTabComponent,
-    EntryDropdownComponent,
     NgxSkeletonLoaderModule,
     EntryMainAlternativeComponent,
     MaterialModule,
     InformationTabComponent,
+    AssembliesTabComponent,
+    DomainsTabComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
