@@ -6,7 +6,7 @@ import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ClickOutsideDirective } from '@pdbc/core';
+import { ClickOutsideDirective, MaterialModule } from '@pdbc/core';
 import { MainInformationAreaComponent } from '../../components/main-information-area/main-information-area.component';
 import { OverviewMolstarComponent } from '../../components/overview-molstar/overview-molstar.component';
 import { InteractiveTablesComponent } from '../../components/interactive-tables/interactive-tables.component';
@@ -26,6 +26,8 @@ import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntryActions } from '../../store/entry.actions';
 import { EntrySelectors } from '../../store/entry.selectors';
+import { MatTabChangeEvent } from '@angular/material/tabs';
+import { InformationTabComponent } from '../../components/information-tab/information-tab.component';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -59,6 +61,8 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     EntryDropdownComponent,
     NgxSkeletonLoaderModule,
     EntryMainAlternativeComponent,
+    MaterialModule,
+    InformationTabComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -158,5 +162,9 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
   public onClickedOutside() {
     this.showViewOptions.set(false);
     this.showDownloadOptions.set(false);
+  }
+
+  selectTab(event: MatTabChangeEvent) {
+    console.log(event);
   }
 }

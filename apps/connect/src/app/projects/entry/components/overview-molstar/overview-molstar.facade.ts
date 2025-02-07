@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { inject, Injectable, signal, WritableSignal } from '@angular/core';
+import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { firstValueFrom, forkJoin, map } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
 import { MolstarResidueInfo, MolstarSelectionObj } from '../../helpers/molstar/molstar-helpers';
@@ -90,6 +90,74 @@ export class OverviewMolstarFacade {
 
   public dataParsed = signal(false);
 
+  public macromoleculesOverviewData = signal<ListSelectable[]>([]);
+  public ligandsOverviewData = signal<ListSelectable[]>([]);
+  public modificationsOverviewData = signal<ListSelectable[]>([]);
+  public domainsOverviewData = signal<{
+    [key: string]: NestedListSelectable[];
+  }>({});
+
+  public readonly descriptions = computed(() => {
+    let moleculeTypeConditions = [
+      {
+        moleculeTypes: ['polypeptide(L)', 'polypeptide(R)'],
+        moleculeDescriptionSuffix: 'unique protein',
+        entryContentsDescriptionSuffix: 'distinct polypeptide',
+      },
+      {
+        moleculeTypes: ['polydeoxyribonucleotide'],
+        moleculeDescriptionSuffix: 'DNA',
+        entryContentsDescriptionSuffix: 'distinct DNA',
+      },
+      {
+        moleculeTypes: ['polyribonucleotide'],
+        moleculeDescriptionSuffix: 'RNA',
+        entryContentsDescriptionSuffix: 'distinct RNA',
+      },
+      {
+        moleculeTypes: ['polydeoxyribonucleotide/polyribonucleotide hybrid'],
+        moleculeDescriptionSuffix: 'DNA/RNA hybrid',
+        entryContentsDescriptionSuffix: 'distinct DNA/RNA hybrid',
+      },
+      {
+        moleculeTypes: ['carbohydrate polymer'],
+        moleculeDescriptionSuffix: 'carbohydrate',
+        entryContentsDescriptionSuffix: 'distinct carbohydrate polymer',
+      },
+    ];
+
+    moleculeTypeConditions = moleculeTypeConditions.filter((condition) => {
+      const macromoleculesForCondition = (this.macromolecules() ?? []).filter((mol) => condition.moleculeTypes.indexOf(mol.molecule_type) > -1);
+      return macromoleculesForCondition.length > 0;
+    });
+
+    let totalMolecules = 0;
+    let macromoleculesDescription = '';
+    const entryContentsDescription: string[] = [];
+
+    // for each macromolecule type (protein, dna, rna, dna/rna hybrid, carbohydrate)
+    for (let i = 0; i < moleculeTypeConditions.length; i++) {
+      const moleculeTypeCondition = moleculeTypeConditions[i];
+      // filter the complete macromolecule list by the type
+      const filteredMacromolecules = (this.macromolecules() ?? []).filter((mol) => moleculeTypeCondition.moleculeTypes.indexOf(mol.molecule_type) > -1);
+
+      // add comma if this is between second and penultimate item
+      if (i > 0 && i < moleculeTypeConditions.length - 1) macromoleculesDescription += ', ';
+
+      // add 'and' if more than one item and this is last item
+      if (i > 0 && i === moleculeTypeConditions.length - 1) macromoleculesDescription += ' and ';
+
+      macromoleculesDescription += `${filteredMacromolecules.length} ${moleculeTypeCondition.moleculeDescriptionSuffix}`;
+      totalMolecules += filteredMacromolecules.length;
+
+      const hasPlural = filteredMacromolecules.length > 1 ? 's' : '';
+      entryContentsDescription.push(`${filteredMacromolecules.length} ${moleculeTypeCondition.entryContentsDescriptionSuffix} molecule${hasPlural}`);
+    }
+    macromoleculesDescription += totalMolecules > 1 ? ' molecules' : ' molecule';
+
+    return { macromoleculesDescription, entryContentsDescription };
+  });
+
   public generateListSelectable(imageList: string[], molstarResidueInfo: MolstarResidueInfo[]) {
     const entryId = this.entryId() ?? '';
     const macromolecules = this.macromolecules() ?? [];
@@ -134,6 +202,7 @@ export class OverviewMolstarFacade {
       }
 
       const macromoleculeColors = [this.colorsFromMolj()[macromolecule.entity_id]];
+      console.log('macromolecule colors:', macromoleculeColors);
 
       // save listview object with all necessary details to display
       macromoleculesToListView.push({
@@ -145,6 +214,7 @@ export class OverviewMolstarFacade {
       });
     }
     listViewSelectablesByTab['Macromolecules'] = macromoleculesToListView;
+    this.macromoleculesOverviewData.set(macromoleculesToListView);
 
     // convert ligand objects to listview objects
     const ligandsToListView: ListSelectable[] = [];
@@ -197,6 +267,7 @@ export class OverviewMolstarFacade {
       });
     }
     listViewSelectablesByTab['Ligands'] = ligandsToListView;
+    this.ligandsOverviewData.set(ligandsToListView);
 
     // convert domain objects to listview objects
     const domainsToListViewByResource: { [key: string]: NestedListSelectable[] } = {};
@@ -432,6 +503,7 @@ export class OverviewMolstarFacade {
       }
     }
     listViewSelectablesByTab['Domains'] = domainsToListViewByResource;
+    this.domainsOverviewData.set(domainsToListViewByResource);
 
     // convert modification objects to listview objects
     const modificationsToListView: ListSelectable[] = [];
@@ -493,17 +565,20 @@ export class OverviewMolstarFacade {
       });
     }
     listViewSelectablesByTab['Modifications'] = modificationsToListView;
+    this.modificationsOverviewData.set(modificationsToListView);
 
     this.domainCountByResource.set({
       CATH: cathUniqueAccessions.size,
       SCOP: scopUniqueAccessions.size,
       Pfam: pfamUniqueAccessions.size,
     });
+    console.log(this.domainCountByResource());
     this.listViewSelectablesByTab.set(listViewSelectablesByTab);
     this.dataParsed.set(true);
   }
 
-  parseRelatedEntries(primaryPublication: CitationDetail | undefined) {
+  public parseRelatedEntries(): void {
+    const primaryPublication = this.primaryPublication();
     if (primaryPublication) {
       let relatedEntries: string[] = [];
       if (primaryPublication && primaryPublication.associated_entries) {
@@ -513,7 +588,8 @@ export class OverviewMolstarFacade {
     }
   }
 
-  public parseComplexDetails(complexDetails: ComplexDetails[] | undefined) {
+  public parseComplexDetails(): void {
+    const complexDetails = this.complexDetails() ?? [];
     if (complexDetails) {
       let preferredAssemblyId = undefined;
       for (const complexDetail of complexDetails) {
@@ -533,68 +609,6 @@ export class OverviewMolstarFacade {
         if (preferredAssemblyId) break;
       }
     }
-  }
-
-  public generateMoleculeCountText(macromolecules: Molecule[]) {
-    let moleculeTypeConditions = [
-      {
-        moleculeTypes: ['polypeptide(L)', 'polypeptide(R)'],
-        moleculeDescriptionSuffix: 'unique protein',
-        entryContentsDescriptionSuffix: 'distinct polypeptide',
-      },
-      {
-        moleculeTypes: ['polydeoxyribonucleotide'],
-        moleculeDescriptionSuffix: 'DNA',
-        entryContentsDescriptionSuffix: 'distinct DNA',
-      },
-      {
-        moleculeTypes: ['polyribonucleotide'],
-        moleculeDescriptionSuffix: 'RNA',
-        entryContentsDescriptionSuffix: 'distinct RNA',
-      },
-      {
-        moleculeTypes: ['polydeoxyribonucleotide/polyribonucleotide hybrid'],
-        moleculeDescriptionSuffix: 'DNA/RNA hybrid',
-        entryContentsDescriptionSuffix: 'distinct DNA/RNA hybrid',
-      },
-      {
-        moleculeTypes: ['carbohydrate polymer'],
-        moleculeDescriptionSuffix: 'carbohydrate',
-        entryContentsDescriptionSuffix: 'distinct carbohydrate polymer',
-      },
-    ];
-
-    moleculeTypeConditions = moleculeTypeConditions.filter((condition) => {
-      const macromoleculesForCondition = macromolecules.filter((mol) => condition.moleculeTypes.indexOf(mol.molecule_type) > -1);
-      return macromoleculesForCondition.length > 0;
-    });
-
-    let totalMolecules = 0;
-    let macromoleculesDescription = '';
-    const entryContentsDescription: string[] = [];
-
-    // for each macromolecule type (protein, dna, rna, dna/rna hybrid, carbohydrate)
-    for (let i = 0; i < moleculeTypeConditions.length; i++) {
-      const moleculeTypeCondition = moleculeTypeConditions[i];
-      // filter the complete macromolecule list by the type
-      const filteredMacromolecules = macromolecules.filter((mol) => moleculeTypeCondition.moleculeTypes.indexOf(mol.molecule_type) > -1);
-
-      // add comma if this is between second and penultimate item
-      if (i > 0 && i < moleculeTypeConditions.length - 1) macromoleculesDescription += ', ';
-
-      // add 'and' if more than one item and this is last item
-      if (i > 0 && i === moleculeTypeConditions.length - 1) macromoleculesDescription += ' and ';
-
-      macromoleculesDescription += `${filteredMacromolecules.length} ${moleculeTypeCondition.moleculeDescriptionSuffix}`;
-      totalMolecules += filteredMacromolecules.length;
-
-      const hasPlural = filteredMacromolecules.length > 1 ? 's' : '';
-      entryContentsDescription.push(`${filteredMacromolecules.length} ${moleculeTypeCondition.entryContentsDescriptionSuffix} molecule${hasPlural}`);
-    }
-    macromoleculesDescription += totalMolecules > 1 ? ' molecules' : ' molecule';
-
-    this.macromoleculesDescription.set(macromoleculesDescription);
-    this.entryContentsDescription.set(entryContentsDescription);
   }
 
   public async getColorsFromMolj(moljDescriptions: string[]) {

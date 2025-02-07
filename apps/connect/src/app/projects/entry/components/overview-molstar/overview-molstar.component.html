@@ -1,19 +1,38 @@
 <section class="top-structure-section">
   <!-- Overview Tab Nav: Assembly, Macromolecules, Ligands, Domains, Modifications tabs -->
-  <pdbc-overview-tab-nav></pdbc-overview-tab-nav>
-  @if (stateManagement.isInactive()) {
-  <img class="empty-molstar-img" src="assets/img/3d_empty_state.png" />
-  }
+  <!-- <pdbc-overview-tab-nav></pdbc-overview-tab-nav> -->
+  <!-- @if (isOverviewSectionDisplayed()) { -->
+  <!-- <img class="empty-molstar-img" src="assets/img/3d_empty_state.png" /> -->
+  <!-- <div class="loader">
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+    </div> -->
+  <!-- } -->
   <section class="tab-content">
     <section class="molstar-controls">
       <!-- Overview Molstar: selection dropdown and zoom controls, shown only when a listview item is selected -->
+      @if (!isOverviewSectionDisplayed()) {
+        <!-- <img class="empty-molstar-img" src="assets/img/3d_empty_state.png" /> -->
+        <div class="loader">
+          <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+        </div>
+      }
       <pdbc-overview-molstar-control-bar></pdbc-overview-molstar-control-bar>
       <!-- Container of molstar instance -->
-      <section class="molstar-container" [ngStyle]="{ visibility: stateManagement.isInactive() ? 'hidden' : '' }" #molstarContainer></section>
+      <section
+        class="molstar-container"
+        [ngStyle]="{ visibility: isOverviewSectionDisplayed() ? '' : 'hidden', height: isOverviewSectionDisplayed() ? '480px' : 'unset' }"
+        #molstarContainer
+      ></section>
     </section>
     <section class="info-controls" #infoControls>
       <!-- listview items and information rendering based on selected tab in Overview Tab Nav -->
-      <pdbc-overview-tab-listview></pdbc-overview-tab-listview>
+      @if (isOverviewSectionDisplayed()) {
+        <pdbc-overview-tab-listview></pdbc-overview-tab-listview>
+      } @else {
+        <div class="loader">
+          <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+        </div>
+      }
     </section>
   </section>
 </section>

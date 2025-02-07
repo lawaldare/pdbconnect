@@ -1,8 +1,7 @@
 // tab-nav.component.ts
 import { Component, computed, effect, inject } from '@angular/core';
 import { OverviewStateManagementService } from '../../state-management.service';
-import { MolstarSelectionObj } from '../../../../helpers/molstar/molstar-helpers';
-import { OverviewMolstarFacade } from '../../data-processing.facade';
+import { OverviewMolstarFacade } from '../../overview-molstar.facade';
 import { MolstarOverviewForTopPage } from '../../../../helpers/molstar/molstar-overview-for-top-page';
 import { CommonModule } from '@angular/common';
 import { EntryDropdownComponent } from '../../../../components/entry-dropdown/entry-dropdown.component';
@@ -52,10 +51,8 @@ export class OverviewMolstarControBarComponent {
       const currentListView = this.currentListViewSelectionTemp();
       if (currentListView) {
         const currentSelection = currentListView.molstarNamedSelections[this.currentListViewSelectionIdx()];
-
         this.selectedItem = currentSelection.name;
         this.selectionList = currentListView.molstarNamedSelections.map((eachSelection) => eachSelection.name);
-
         this.selectionOptions = currentListView.molstarNamedSelections.map((eachSelection, idx) => {
           return {
             name: eachSelection.name,
@@ -63,10 +60,29 @@ export class OverviewMolstarControBarComponent {
             downloadable: false,
           };
         });
-
         this.stateManagement.switchMolstarZoomed(currentSelection.selection);
       }
     });
+  }
+
+  updateView() {
+    const currentListView = this.currentListViewSelectionTemp();
+    if (currentListView) {
+      const currentSelection = currentListView.molstarNamedSelections[this.currentListViewSelectionIdx()];
+
+      this.selectedItem = currentSelection.name;
+      this.selectionList = currentListView.molstarNamedSelections.map((eachSelection) => eachSelection.name);
+
+      this.selectionOptions = currentListView.molstarNamedSelections.map((eachSelection, idx) => {
+        return {
+          name: eachSelection.name,
+          url: `${idx + 1}`,
+          downloadable: false,
+        };
+      });
+
+      this.stateManagement.switchMolstarZoomed(currentSelection.selection);
+    }
   }
 
   public async onMolstarSelect(event: string) {

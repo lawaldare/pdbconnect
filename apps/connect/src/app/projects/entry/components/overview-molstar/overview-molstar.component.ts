@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Component, ViewChild, ElementRef, AfterViewInit, inject } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { firstValueFrom, timer } from 'rxjs';
-import { OverviewMolstarFacade } from './data-processing.facade';
+import { OverviewMolstarFacade } from './overview-molstar.facade';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { OverviewStateManagementService } from './state-management.service';
 import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
@@ -15,16 +15,17 @@ import { Store } from '@ngrx/store';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TabNames } from '../../helpers/tab-names.enum';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
   selector: 'pdbc-overview-molstar',
   standalone: true,
-  imports: [CommonModule, OverviewMolstarTabNavComponent, OverviewMolstarControBarComponent, OverviewMolstarTabListViewComponent],
+  imports: [CommonModule, OverviewMolstarTabNavComponent, OverviewMolstarControBarComponent, NgxSkeletonLoaderModule, OverviewMolstarTabListViewComponent],
   templateUrl: './overview-molstar.component.html',
   styleUrl: './overview-molstar.component.scss',
 })
 export class OverviewMolstarComponent implements AfterViewInit {
-  public readonly dataProcessing = inject(OverviewMolstarFacade);
+  public readonly overviewMolstarFacade = inject(OverviewMolstarFacade);
   public readonly signals = inject(ComponentCommunicationService);
   public readonly stateManagement = inject(OverviewStateManagementService);
   public readonly molstarOverview = inject(MolstarOverviewForTopPage);
@@ -36,7 +37,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
   private imagesForDomains!: string[];
 
   private molstarResiduesForAssembly = this.molstarOverview.residues;
-  public assemblyData = this.dataProcessing.assemblyData;
+  public assemblyData = this.overviewMolstarFacade.assemblyData;
 
   @ViewChild('infoControls') infoControls!: ElementRef;
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
@@ -44,6 +45,8 @@ export class OverviewMolstarComponent implements AfterViewInit {
   public imageList: string[] = [];
 
   public preferredAssemblyImgName?: string;
+
+  public isOverviewSectionDisplayed = signal(false);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly complexDetails = toSignal(this.globalStore.select(EntrySelectors.complexDetails));
@@ -97,8 +100,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
 
   async ngAfterViewInit() {
     this.stateManagement.infoControls.set(this.infoControls);
-    this.dataProcessing.parseRelatedEntries(this.primaryPublication());
-    this.dataProcessing.generateMoleculeCountText(this.macromolecules() ?? []);
+    this.overviewMolstarFacade.parseRelatedEntries();
 
     await this.initMolstarInstance();
     await this.initMolstarImageGallery();
@@ -110,21 +112,27 @@ export class OverviewMolstarComponent implements AfterViewInit {
     });
     if (modresImg.length > 1) modresImg = [modresImg[0]];
 
-    await this.dataProcessing.getColorsFromMolj([this.preferredAssemblyImgName!, ...this.imagesForDomains, ...modresImg]);
+    await this.overviewMolstarFacade.getColorsFromMolj([this.preferredAssemblyImgName!, ...this.imagesForDomains, ...modresImg]);
 
     this.processComplexDetails();
     this.setActiveTab();
+    // this.stateManagement.switchCurrentTab('Assembly');
+    this.isOverviewSectionDisplayed.set(true);
+
+    // setTimeout(() => {
+    //   this.isOverviewSectionDisplayed.set(true);
+    // }, 600000);
   }
 
   private processComplexDetails() {
     if (!this.complexDetails()?.length) return;
-    this.dataProcessing.parseComplexDetails(this.complexDetails());
-    this.dataProcessing.generateListSelectable(this.imageList, this.molstarResiduesForAssembly());
+    this.overviewMolstarFacade.parseComplexDetails();
+    this.overviewMolstarFacade.generateListSelectable(this.imageList, this.molstarResiduesForAssembly());
   }
 
   private setActiveTab() {
     const tabMapping = [
-      { name: TabNames.Assembly, check: this.dataProcessing.assemblyData().preferred !== undefined },
+      { name: TabNames.Assembly, check: this.overviewMolstarFacade.assemblyData().preferred !== undefined },
       { name: TabNames.Macromolecules, check: (this.macromolecules() ?? []).length > 0 },
       { name: TabNames.Ligands, check: (this.ligands() ?? []).length > 0 },
       { name: TabNames.Domains, check: this.imagesForDomains.length > 0 },

@@ -3,7 +3,17 @@
 @if (statusCode() === 'REL') {
   <section class="entry-page-container">
     <main>
-      <header>
+      <mat-tab-group (selectedTabChange)="selectTab($event)">
+        <mat-tab label="Information"> <pdbc-information-tab /> </mat-tab>
+        <mat-tab label="Model Quality"> Model Quality </mat-tab>
+        <mat-tab label="Assemblies"> Assemblies </mat-tab>
+        <mat-tab label="Macromolecules"> Macromolecules </mat-tab>
+        <mat-tab label="Ligands and Environments"> Ligands </mat-tab>
+        <mat-tab label="Domains"> Domains </mat-tab>
+        <mat-tab label="Citations"> Citations </mat-tab>
+      </mat-tab-group>
+
+      <!-- <header>
         <section class="title-info">
           <h1 class="heading-1">{{ entryId() }}</h1>
           <div class="information">
@@ -28,15 +38,15 @@
           <pdbc-entry-dropdown [downloadable]="true" [islink]="true" [options]="downloadOptions()" title="Download files"></pdbc-entry-dropdown>
           <pdbc-entry-dropdown [downloadable]="false" [islink]="true" [options]="viewOptions()" title="View files"></pdbc-entry-dropdown>
         </section>
-      </header>
-      <section class="top-info">
+      </header> -->
+      <!-- <section class="top-info">
         <section class="summary">
           <pdbc-main-information-area />
         </section>
         <section class="explore-3d-tabs">
           <pdbc-overview-molstar />
         </section>
-      </section>
+      </section> -->
 
       <div #molstarParent style="display: none">
         <div class="molstar-viewer" #molstarViewer></div>

@@ -1,7 +1,7 @@
 import { ElementRef, inject, Injectable, signal } from '@angular/core';
 import { MolstarSelectionObj } from '../../helpers/molstar/molstar-helpers';
 import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
-import { ListSelectable, OverviewMolstarFacade } from './data-processing.facade';
+import { ListSelectable, OverviewMolstarFacade } from './overview-molstar.facade';
 
 type stateProperties =
   | 'isInactive'
@@ -171,6 +171,7 @@ export class OverviewStateManagementService {
   }
 
   public updateTabDisplayConfig(tabName: string, tagContent: string, tagClass: string) {
+    console.log('updateTabDisplayConfig', tabName, tagContent, tagClass);
     const tabIndex = this.tabsConfig()
       .map((cfg) => cfg.id)
       .indexOf(tabName);
@@ -185,6 +186,7 @@ export class OverviewStateManagementService {
   }
   // 'assets/img/interfaces_example2.png'
   public async switchCurrentTab(newView: string) {
+    console.log('switchCurrentTab', newView);
     if (this.dataProcessing.dataParsed() === false) return;
     // if (this.tabsStates()[newView].isInactive) return;
 

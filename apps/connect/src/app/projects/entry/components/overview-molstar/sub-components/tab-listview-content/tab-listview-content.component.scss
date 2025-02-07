@@ -76,13 +76,17 @@ article {
   align-items: center;
   width: 100%;
   border-bottom: 1px solid rgb(206 201 185 / 50%);
+  position: relative;
 
   .color-code-bar {
     height: 100%;
-
-    // width: 6.22px;
+    position: absolute;
     width: 8px;
     background-color: #007b53;
+  }
+
+  button {
+    margin-left: 9px;
   }
 
   .color-code-bars {
@@ -183,4 +187,17 @@ article {
 mat-form-field {
   margin-top: 8px;
   width: 100%;
+}
+
+h5 {
+  margin-bottom: 16px;
+}
+
+::ng-deep pdbc-entry-dropdown#domain-dropdown {
+  button {
+    height: 25px !important;
+    width: 312px !important;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
 }
