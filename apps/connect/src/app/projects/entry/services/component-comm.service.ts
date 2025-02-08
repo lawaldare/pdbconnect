@@ -38,6 +38,7 @@ export class ComponentCommunicationService {
   }
 
   setTabState(tabName: string, newState: string | number) {
+    console.log(`Setting tab state for ${tabName} to ${newState}`);
     this.tabState.update((state) => ({
       ...state, // spread the existing state
       [tabName]: newState, // update the specific key dynamically

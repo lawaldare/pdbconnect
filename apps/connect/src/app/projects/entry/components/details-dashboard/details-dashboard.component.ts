@@ -141,6 +141,7 @@ export class DetailsDashboardComponent implements OnDestroy {
 
         // call row selection function to set variables and trigger visualisation conditional rendering
         await this.onTableRowSelection(tabState[this.tabName()]);
+        console.log('Row selection updated in dashboard');
       }
     });
   }

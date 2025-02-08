@@ -17,6 +17,7 @@
       [columnDefs]="columnDefinitions"
       [defaultColDef]="defaultColumnDefinitions"
       [pagination]="true"
+      (paginationChanged)="triggerTableSelection()"
       [gridOptions]="gridOptions"
       (gridReady)="onTableGridReady($event)"
       [rowSelection]="'single'"

@@ -18,12 +18,7 @@ import { EntryActions } from '../../store/entry.actions';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { MatTabChangeEvent } from '@angular/material/tabs';
 import { InformationTabComponent } from '../../components/information-tab/information-tab.component';
-import { AssembliesTabComponent } from '../../components/assemblies-tab/assemblies-tab.component';
-import { DomainsTabComponent } from '../../components/domains-tab/domains-tab.component';
-import { MacromoleculesTabComponent } from '../../components/macromolecules-tab/macromolecules-tab.component';
-import { LigandsTabComponent } from '../../components/ligands-tab/ligands-tab.component';
 import { ModelQualityTabComponent } from '../../components/model-quality-tab/model-quality-tab.component';
-import { CommonTabComponent } from '../../components/common-tab/common-tab.component';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { InteractiveTablesComponent } from '../../components/interactive-tables/interactive-tables.component';
@@ -56,12 +51,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     EntryMainAlternativeComponent,
     MaterialModule,
     InformationTabComponent,
-    AssembliesTabComponent,
-    DomainsTabComponent,
-    MacromoleculesTabComponent,
-    LigandsTabComponent,
     ModelQualityTabComponent,
-    CommonTabComponent,
     InteractiveTablesComponent,
     DetailsDashboardComponent,
   ],
@@ -87,6 +77,10 @@ export class EntryMainPageComponent implements OnInit {
 
   public readonly commonTabs = ['Assemblies', 'Macromolecules', 'Ligands', 'Domains'];
   private readonly entryId = signal<string>('');
+
+  public currentTab = this.compCommunication.currentTab;
+  public tabSwitchOrigin = this.compCommunication.tabSwitchOrigin;
+  public previousTab = 'undefined';
 
   @ViewChild('molstarViewer') molstarViewer!: ElementRef;
 
@@ -122,6 +116,9 @@ export class EntryMainPageComponent implements OnInit {
   }
 
   selectTab(event: MatTabChangeEvent) {
-    console.log(event);
+    const tabName = event.tab.textLabel;
+    this.previousTab = `${tabName}`;
+    this.tabSwitchOrigin.set('main');
+    this.currentTab.set(tabName);
   }
 }

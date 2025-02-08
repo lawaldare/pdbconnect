@@ -136,6 +136,8 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
     if (this.gridApi && rowCount > 0) {
       this.gridApi.getDisplayedRowAtIndex(0)?.setSelected(true);
     }
+
+    // this.triggerTableSelection();
   }
 
   private adjustTableHeightDynamically(): void {
@@ -197,12 +199,13 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
 
   public triggerTableSelection() {
     // function manually triggers table selection event
+    console.log('Table selection triggered');
 
     // we get selected row number from component communication service
     let selectionState = this.signals.getTabState(this.tabName());
 
     // if this is the first time this is triggered, select the first row
-    if (this.gridApi !== undefined && this.gridApi.getRenderedNodes().length > 0 && selectionState === 'Main') {
+    if (this.gridApi !== undefined && this.gridApi.getRenderedNodes().length > 0) {
       this.signals.setTabState(this.tabName(), 0);
       selectionState = 0;
     }
