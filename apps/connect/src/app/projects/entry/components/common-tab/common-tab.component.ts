@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InteractiveTablesComponent } from '../interactive-tables/interactive-tables.component';
 import { DetailsDashboardComponent } from '../details-dashboard/details-dashboard.component';
@@ -10,14 +10,15 @@ import { Store } from '@ngrx/store';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
+import { TableNames } from '../../pages/main/main.component';
 
 @Component({
-  selector: 'pdbc-ligands-tab',
+  selector: 'pdbc-common-tab',
   imports: [CommonModule, InteractiveTablesComponent, DetailsDashboardComponent, NgxSkeletonLoaderModule],
-  templateUrl: './ligands-tab.component.html',
-  styleUrl: './ligands-tab.component.scss',
+  templateUrl: './common-tab.component.html',
+  styleUrl: './common-tab.component.scss',
 })
-export class LigandsTabComponent implements OnInit {
+export class CommonTabComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   private molstarVisualisation = inject(MolstarVisualisationsForTabs);
@@ -29,9 +30,13 @@ export class LigandsTabComponent implements OnInit {
 
   @ViewChild('molstarViewer') molstarViewer!: ElementRef;
 
+  public readonly tabName = input.required<TableNames>();
+  public molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
+  public molstarParent = input.required<HTMLElement>(); // Parent to send back the molstar global instance
+
   ngOnInit(): void {
     setTimeout(() => {
-      this.molstarVisualisation.renderMolstarInitial(this.entryId() ?? '', this.molstarViewer.nativeElement);
+      // this.molstarVisualisation.renderMolstarInitial(this.entryId() ?? '', this.molstarViewer.nativeElement);
     });
     console.log('LigandsTabComponent initialized');
   }

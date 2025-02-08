@@ -62,7 +62,7 @@ export class MolstarBaseClass {
    * @param molstarViewer
    */
   public async initMolstar(molstarConfigObject: MolstarConfigObject, molstarContainer?: ElementRef, molstarViewer?: HTMLElement) {
-    console.log('Initializing MOLSTAR...');
+    console.log('Initializing MOLSTAR...', molstarConfigObject);
     if (this.molstarViewInstance()) {
       console.error('MOLSTAR INSTANCE EXISTS');
     }

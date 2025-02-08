@@ -6,29 +6,28 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
-import { MolstarSelectionObj } from '../../helpers/molstar/molstar-helpers';
-import { VisualisationsDataProcessing } from './data-processing.facade';
-import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
+
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+import { Store } from '@ngrx/store';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { firstValueFrom, timer } from 'rxjs';
+import { assemblyTooltip, dashboardStatLinks } from '../../../entry-constant';
+import { MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
+import { MolstarVisualisationsForTabs } from '../../../helpers/molstar/molstar-visualisations-for-detail-tabs';
+import { TableNames } from '../../../pages/main/main.component';
+import { ComponentCommunicationService } from '../../../services/component-comm.service';
+import { EntryStoreState } from '../../../store/entry-store.model';
+import { EntrySelectors } from '../../../store/entry.selectors';
+import { EntryDropdownComponent } from '../../entry-dropdown/entry-dropdown.component';
 import {
-  AssembliesRowData,
   DomainsBoundaries,
+  TableRow,
+  AssembliesRowData,
   DomainsRowData,
   LigandsRowData,
   MacromoleculesRowData,
-  TableRow,
-} from '../interactive-tables/data-models-and-definitions/row-and-table.model';
-import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { TableNames } from '../../pages/main/main.component';
-import { Molecule } from '../../data-models/molecule.model';
-import { assemblyTooltip, dashboardStatLinks } from '../../entry-constant';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { EntryDropdownComponent } from '../entry-dropdown/entry-dropdown.component';
-import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
-import { EntryStoreState } from '../../store/entry-store.model';
-import { Store } from '@ngrx/store';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { EntrySelectors } from '../../store/entry.selectors';
+} from '../../interactive-tables/data-models-and-definitions/row-and-table.model';
+import { VisualisationsDataProcessing } from './assemblies-tab-details-tab.facade';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -48,13 +47,13 @@ export interface SequenceDetail {
 }
 
 @Component({
-  selector: 'pdbc-details-dashboard',
+  selector: 'pdbc-assemblies-tab-details-dashboard',
   standalone: true,
   imports: [CommonModule, MatSelectModule, MatOptionModule, MatFormFieldModule, FormsModule, EntryDropdownComponent, MaterialModule],
-  templateUrl: './details-dashboard.component.html',
-  styleUrl: './details-dashboard.component.scss',
+  templateUrl: './assemblies-tab-details-dashboard.component.html',
+  styleUrl: './assemblies-tab-details-dashboard.component.scss',
 })
-export class DetailsDashboardComponent implements OnDestroy {
+export class AssembliesTabDetailsDashboardComponent implements OnDestroy {
   public readonly signals = inject(ComponentCommunicationService);
   private readonly utilService = inject(UtilService);
   public readonly dataProcessing = inject(VisualisationsDataProcessing);
@@ -66,6 +65,7 @@ export class DetailsDashboardComponent implements OnDestroy {
 
   // required inputs
   // public readonly entryId = input.required<string>();
+  public readonly tabName = input.required<TableNames>();
   // public readonly macromolecules = input.required<Molecule[]>();
   // public readonly proteinsStats = input.required<{ [key: string]: ProteinSummaryStats }>();
 
@@ -73,9 +73,8 @@ export class DetailsDashboardComponent implements OnDestroy {
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
   public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
 
-  public readonly tabName = input.required<TableNames>();
-  public readonly molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
-  public readonly molstarParent = input.required<HTMLElement>(); // Parent to send back the molstar global instance
+  public molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
+  public molstarParent = input.required<HTMLElement>(); // Parent to send back the molstar global instance
   private isMolstarRetrieved = false;
 
   // injected services, data processing facade, molstar helpers
@@ -134,6 +133,8 @@ export class DetailsDashboardComponent implements OnDestroy {
       const tabState = this.signals.tabState();
       if (this.currentState !== tabState[this.tabName()]) {
         this.currentState = tabState[this.tabName()];
+
+        // await this.molstarVisualisations.renderMolstarInitial(this.entryId() ?? '', this.molstarContainer.nativeElement);
 
         // sending and retrieving global molstar instance just to reset some variables currently
         await this.sendMolstarViewerToParent();

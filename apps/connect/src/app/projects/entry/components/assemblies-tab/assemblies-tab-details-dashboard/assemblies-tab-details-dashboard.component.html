@@ -1,0 +1,148 @@
+<!-- ------- Title of Dashboard ------- -->
+@if (tabName() !== 'Assemblies') {
+  <h4 [class]="tabName().toLowerCase() + '-title'" [ngClass]="tabName() === 'Ligands' ? 'heading-5' : 'heading-4'">{{ selectionTitle }}</h4>
+} @else {
+  <!-- ------- Title for Assembly dashboard ------- -->
+  <h5 class="heading-5 assembly-title entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="assemblyTooltip" matTooltipPosition="below">
+    {{ selectionTitle }}
+  </h5>
+}
+
+<!-- ------- Top info area of Dashboard ------- -->
+
+<!-- Might come back soon -->
+<!-- <div class="kb-container">
+  @if (selectionButtonText) {
+  <button class="kb-link-button">{{ selectionButtonText }}</button>
+  } @if (selectionSearchText) {
+  {{ selectionSearchText }}
+  }
+</div> -->
+
+<!-- Statistics bar with links -->
+<div class="stats-link-bar">
+  @if (dashboardStatLinks[tabName()].length > 0 && selectionIdentifier !== 'None') {
+    <span>View more about this {{ selectionTypeText }}:</span>
+    @for (displayLink of dashboardStatLinks[tabName()]; track displayLink; let islast = $last) {
+      <a>
+        <!-- [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix" -->
+        {{ selectionStats?.[selectionIdentifier][displayLink.id] }} {{ displayLink.displayName }}
+      </a>
+      {{ islast ? '' : '|' }}
+    }
+  }
+</div>
+
+<div class="chains">
+  @if (selectedChains) {
+    <div class="dropdown-title">{{ selectedChains }}</div>
+  }
+  @if (hasDropdown) {
+    <div class="dropdown-container">
+      <span class="dropdown-title">{{ dropdownTitle }}</span>
+      <pdbc-entry-dropdown
+        [downloadable]="false"
+        [islink]="false"
+        [options]="dropdownOptions"
+        [title]="dropdownSelected"
+        (optionClickedEvent)="onDropdownSelect($event)"
+      >
+      </pdbc-entry-dropdown>
+    </div>
+  }
+</div>
+<!-- ------- If displayed row data has an associated sequence (Macromolecules, Domains) ------- -->
+@if (sequenceDetails.length > 0) {
+  <div class="sequence-container">
+    @for (sequenceDetail of sequenceDetails; track sequenceDetail) {
+      <div class="title">
+        <span class="text">{{ sequenceDetail.title }}</span>
+        <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
+      </div>
+      <div class="sequence">
+        @for (sequenceSegment of sequenceDetail.segments; track sequenceSegment) {
+          <span [style.background]="sequenceSegment.color ? sequenceSegment.color : ''">{{ sequenceSegment.sequence }}</span>
+        }
+      </div>
+    }
+  </div>
+}
+
+<!-- ------- Top area of Dashboard ------- -->
+<div class="top-vis">
+  <!-- ------- Molstar is shown in all dashboards ------- -->
+  <section class="molstar-details-container">
+    <!-- selected state molstar -->
+    <div class="molstar-container" #molstarContainer [ngClass]="hasTopologyViewer || hasLigandEnv ? '' : 'big'"></div>
+  </section>
+  @if (hasLigandEnv) {
+    <!-- ------- Ligand env is shown for ligands ------- -->
+    <section class="lig-env-container">
+      <div class="ligand-env" #ligandEnvContainer></div>
+    </section>
+  }
+  @if (hasTopologyViewer) {
+    <!-- ------- Topology viewer is shown for Macromolecules ------- -->
+    <section class="topology-viewer-container">
+      <div class="topology-container" #topologyViewerContainer></div>
+    </section>
+  }
+</div>
+
+<!-- ------- Bottom area of Dashboard (info text or Protvista) ------- -->
+<div class="bottom-vis">
+  @if (currentRowDatum && tabName() === 'Ligands') {
+    <section class="ligands-info">
+      <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure  derived from the PDB entry.</p>
+      <p>Please note:</p>
+      <ul>
+        <li>
+          Some chain IDs in the tooltip are followed by a number in square brackets. This number corresponds to the operation ID (mmCIF ‘oper_expression’) used to
+          transform the chain.
+        </li>
+        <li>The structure seen in Mol* (3D view) was protonated using <a>ChimeraX</a>.</li>
+        <li>Interactions were calculated using <a>Arpeggio (see details for interaction types)</a>.</li>
+        <li>The colour scheme used is consistent with <a>Clustal X</a>.</li>
+      </ul>
+    </section>
+  }
+  <!-- For Assemblies, bottom area is info text -->
+  @if (currentRowDatum && tabName() === 'Assemblies') {
+    <section class="assembly-section">
+      <div class="assembly-grouped">
+        <div class="info-row">
+          <span>Accessible surface area</span>
+          <article>{{ getAdditionalData('accessibleSurfaceArea') }}<sup>2</sup></article>
+        </div>
+        <div class="info-row">
+          <span>Buried surface area</span>
+          <article>{{ getAdditionalData('buriedSurfaceArea') }}<sup>2</sup></article>
+        </div>
+      </div>
+      <div class="assembly-grouped">
+        <div class="info-row">
+          <span>Dissociation area</span>
+          <article>{{ getAdditionalData('dissociationArea') }}<sup>2</sup></article>
+        </div>
+        <div class="info-row">
+          <span>Dissociation energy</span>
+          <article>{{ getAdditionalData('dissociationEnergy') }}</article>
+        </div>
+        <div class="info-row">
+          <span>Dissociation entropy</span>
+          <article>{{ getAdditionalData('dissociationEntropy') }}</article>
+        </div>
+      </div>
+      <div class="info-row">
+        <span>Symmetry number</span>
+        <article>{{ getAdditionalData('symmetryNumber') }}</article>
+      </div>
+    </section>
+  }
+  @if (hasProtvista) {
+    <!-- For Macromolecules, Domains, bottom area is protvista -->
+    <section class="protvista-container">
+      <div id="protvista-pdb-container" #protvistaContainer></div>
+    </section>
+  }
+</div>

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
@@ -23,6 +23,11 @@ import { DomainsTabComponent } from '../../components/domains-tab/domains-tab.co
 import { MacromoleculesTabComponent } from '../../components/macromolecules-tab/macromolecules-tab.component';
 import { LigandsTabComponent } from '../../components/ligands-tab/ligands-tab.component';
 import { ModelQualityTabComponent } from '../../components/model-quality-tab/model-quality-tab.component';
+import { CommonTabComponent } from '../../components/common-tab/common-tab.component';
+import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
+import { InteractiveTablesComponent } from '../../components/interactive-tables/interactive-tables.component';
+import { DetailsDashboardComponent } from '../../components/details-dashboard/details-dashboard.component';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -56,6 +61,9 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     MacromoleculesTabComponent,
     LigandsTabComponent,
     ModelQualityTabComponent,
+    CommonTabComponent,
+    InteractiveTablesComponent,
+    DetailsDashboardComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -65,6 +73,8 @@ export class EntryMainPageComponent implements OnInit {
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
+  public readonly compCommunication = inject(ComponentCommunicationService);
+  private readonly molstarVisualisation = inject(MolstarVisualisationsForTabs);
 
   public readonly pdbeLogoConfig = pdbeLogoConfig;
   public readonly pdbeSearchConfig = pdbeSearchConfig;
@@ -72,11 +82,20 @@ export class EntryMainPageComponent implements OnInit {
   public statusCode = signal<StatusCode>('INITIAL');
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
 
+  public readonly molstarResidueInfoLoaded = computed(() => this.compCommunication.molstarResidueInfoLoaded());
+  public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
+
+  public readonly commonTabs = ['Assemblies', 'Macromolecules', 'Ligands', 'Domains'];
+  private readonly entryId = signal<string>('');
+
+  @ViewChild('molstarViewer') molstarViewer!: ElementRef;
+
   ngOnInit(): void {
     this.route.params
       .pipe(
         switchMap((params) => {
           const entryId = params['entryId'].toLowerCase();
+          this.entryId.set(entryId);
           this.globalStore.dispatch(EntryActions.setCurrentEntryId({ entryId }));
           this.globalStore.dispatch(EntryActions.getEntryStatus());
           return this.globalStore.select(EntrySelectors.entryStatus).pipe(
@@ -88,6 +107,9 @@ export class EntryMainPageComponent implements OnInit {
         mergeMap((statusCode: StatusCode) => {
           this.statusCode.set(statusCode);
           if (statusCode === 'REL') {
+            setTimeout(() => {
+              this.molstarVisualisation.renderMolstarInitial(this.entryId() ?? '', this.molstarViewer.nativeElement);
+            });
             this.dataProcessing.getPageData();
           } else {
             this.statusCode.set(statusCode);

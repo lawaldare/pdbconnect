@@ -2,7 +2,7 @@
 <pdbc-pdbe-header-search id="entry-search" [headerSearchConfig]="pdbeSearchConfig"></pdbc-pdbe-header-search>
 @if (statusCode() === 'REL') {
   <section class="entry-page-container">
-    <main>
+    <!-- <main>
       <mat-tab-group (selectedTabChange)="selectTab($event)">
         <mat-tab label="Information"> <pdbc-information-tab /> </mat-tab>
         <mat-tab label="Model Quality"> <pdbc-model-quality-tab /> </mat-tab>
@@ -12,6 +12,30 @@
         <mat-tab label="Domains"> <pdbc-domains-tab /> </mat-tab>
         <mat-tab label="Citations"> <pdbc-citations-tab /> </mat-tab>
       </mat-tab-group>
+    </main> -->
+    <main>
+      <mat-tab-group (selectedTabChange)="selectTab($event)">
+        <mat-tab label="Information"> <pdbc-information-tab /> </mat-tab>
+        @for (tab of commonTabs; track tab) {
+          <mat-tab [label]="tab" class="common-tab">
+            @if (tabDataLoaded() && molstarResidueInfoLoaded()) {
+              <!-- <pdbc-common-tab [tabName]="dataProcessing.getTableName(tab)" [molstarParent]="molstarParent" [molstarViewerEl]="molstarViewer" /> -->
+              <section class="common-tab">
+                <pdbc-interactive-tables [tabName]="dataProcessing.getTableName(tab)" [rowHeight]="118" />
+                <pdbc-details-dashboard [tabName]="dataProcessing.getTableName(tab)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
+              </section>
+            } @else {
+              <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+            }
+          </mat-tab>
+        }
+        <mat-tab label="Model Quality"> <pdbc-model-quality-tab /> </mat-tab>
+        <mat-tab label="Citations"> <pdbc-citations-tab /> </mat-tab>
+      </mat-tab-group>
+
+      <div #molstarParent style="display: none">
+        <div class="molstar-viewer" #molstarViewer></div>
+      </div>
     </main>
   </section>
 } @else if (statusCode() === 'INITIAL') {

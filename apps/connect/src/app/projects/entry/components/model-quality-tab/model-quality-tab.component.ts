@@ -30,7 +30,7 @@ export class ModelQualityTabComponent implements OnInit {
 
   ngOnInit(): void {
     setTimeout(() => {
-      this.molstarVisualisation.renderMolstarInitial(this.entryId() ?? '', this.molstarViewer.nativeElement);
+      // this.molstarVisualisation.renderMolstarInitial(this.entryId() ?? '', this.molstarViewer.nativeElement);
     });
   }
 }

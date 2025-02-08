@@ -10,10 +10,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { DetailsDashboardComponent } from '../details-dashboard/details-dashboard.component';
+import { AssembliesTabDetailsDashboardComponent } from './assemblies-tab-details-dashboard/asemblies-tab-details-dashboard.component';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
-  imports: [CommonModule, InteractiveTablesComponent, DetailsDashboardComponent, NgxSkeletonLoaderModule],
+  imports: [CommonModule, InteractiveTablesComponent, AssembliesTabDetailsDashboardComponent, NgxSkeletonLoaderModule],
   templateUrl: './assemblies-tab.component.html',
   styleUrl: './assemblies-tab.component.scss',
 })

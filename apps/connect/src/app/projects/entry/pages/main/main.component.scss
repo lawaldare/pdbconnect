@@ -5,6 +5,20 @@ ngx-skeleton-loader {
   margin-top: 10px;
 }
 
+section.common-tab {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+pdbc-details-dashboard {
+  width: 60%;
+}
+
+pdbc-interactive-tables {
+  width: 39.5%;
+}
+
 header {
   display: flex;
   width: 100%;

@@ -33,5 +33,6 @@ export class DomainsTabComponent implements OnInit {
     setTimeout(() => {
       this.molstarVisualisation.renderMolstarInitial(this.entryId() ?? '', this.molstarViewer.nativeElement);
     });
+    console.log('DomainsTabComponent initialized');
   }
 }

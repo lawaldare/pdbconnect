@@ -53,6 +53,8 @@ export class CitationsTabComponent implements OnInit {
     if (this.primaryPublication() !== undefined && this.primaryPublication()!.associated_entries) {
       this.setRelatedEntries(this.primaryPublication()!.associated_entries!);
     }
+
+    console.log('CitationsTabComponent initialized');
   }
 
   private setRelatedEntries(entries: string): void {

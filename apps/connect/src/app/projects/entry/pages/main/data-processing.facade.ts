@@ -51,6 +51,10 @@ export class MainDataProcessingFacade {
     this.tabName.set(tabName);
   }
 
+  public getTableName(tabName: string) {
+    return tabName as TableNames;
+  }
+
   public processInteractiveTablesData() {
     const macromolecules = this.macromolecules() ?? [];
     const modifications = this.modifications() ?? [];
