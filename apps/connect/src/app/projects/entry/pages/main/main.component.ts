@@ -9,7 +9,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { MaterialModule } from '@pdbc/core';
 import { InteractiveTablesComponent } from '../../components/interactive-tables/interactive-tables.component';
 import { DetailsDashboardComponent } from '../../components/details-dashboard/details-dashboard.component';
-import { ExperimentsValidationTabComponent } from '../../components/experiments-validation-tab/experiments-validation-tab.component';
+import { ExperimentsValidationComponent } from '../../components/experiments-validation/experiments-validation.component';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
 import { pdbeLogoConfig, pdbeSearchConfig, allTabs, tableTabs, INITIAL_API_STATUS } from '../../entry-constant';
 
@@ -29,6 +29,7 @@ import { AssembliesTabComponent } from '../../components/assemblies-tab/assembli
 import { DomainsTabComponent } from '../../components/domains-tab/domains-tab.component';
 import { MacromoleculesTabComponent } from '../../components/macromolecules-tab/macromolecules-tab.component';
 import { LigandsTabComponent } from '../../components/ligands-tab/ligands-tab.component';
+import { ModelQualityTabComponent } from '../../components/model-quality-tab/model-quality-tab.component';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -54,7 +55,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     PdbeHeaderSearchComponent,
     InteractiveTablesComponent,
     DetailsDashboardComponent,
-    ExperimentsValidationTabComponent,
+    ExperimentsValidationComponent,
     CitationsTabComponent,
     NgxSkeletonLoaderModule,
     EntryMainAlternativeComponent,
@@ -64,6 +65,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     DomainsTabComponent,
     MacromoleculesTabComponent,
     LigandsTabComponent,
+    ModelQualityTabComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -127,9 +129,10 @@ export class EntryMainPageComponent implements AfterViewInit, OnInit {
         mergeMap((statusCode: StatusCode) => {
           this.statusCode.set(statusCode);
           if (statusCode === 'REL') {
-            setTimeout(() => {
-              this.molstarVisualisation.renderMolstarInitial(this.entryId(), this.molstarViewer.nativeElement);
-            });
+            // setTimeout(() => {
+            //   this.molstarVisualisation.renderMolstarInitial(this.entryId(), this.molstarViewer.nativeElement);
+            //   console.log('this.molstarVisualisation.renderMolstarInitial is called (1)');
+            // });
             this.getPageData();
             return EMPTY;
           } else {

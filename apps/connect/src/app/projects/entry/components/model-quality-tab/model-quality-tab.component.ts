@@ -2,22 +2,21 @@ import { Component, computed, ElementRef, inject, OnInit, ViewChild } from '@ang
 import { CommonModule } from '@angular/common';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
-import { InteractiveTablesComponent } from '../interactive-tables/interactive-tables.component';
-import { DetailsDashboardComponent } from '../details-dashboard/details-dashboard.component';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
-import { EntrySelectors } from '../../store/entry.selectors';
-import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { ExperimentsValidationComponent } from '../experiments-validation/experiments-validation.component';
 
 @Component({
-  selector: 'pdbc-macromolecules-tab',
-  imports: [CommonModule, InteractiveTablesComponent, DetailsDashboardComponent, NgxSkeletonLoaderModule],
-  templateUrl: './macromolecules-tab.component.html',
-  styleUrl: './macromolecules-tab.component.scss',
+  selector: 'pdbc-model-quality-tab',
+  imports: [CommonModule, ExperimentsValidationComponent, NgxSkeletonLoaderModule],
+  templateUrl: './model-quality-tab.component.html',
+  styleUrl: './model-quality-tab.component.scss',
 })
-export class MacromoleculesTabComponent implements OnInit {
+export class ModelQualityTabComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   private molstarVisualisation = inject(MolstarVisualisationsForTabs);

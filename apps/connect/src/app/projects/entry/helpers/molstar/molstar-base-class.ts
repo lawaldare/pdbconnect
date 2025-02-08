@@ -66,7 +66,7 @@ export class MolstarBaseClass {
       console.error('MOLSTAR INSTANCE EXISTS');
     }
     this.molstarViewInstance.set(new PDBeMolstarPlugin());
-    const container = molstarViewer ? molstarViewer : molstarContainer!.nativeElement;
+    const container = molstarViewer ? molstarViewer : molstarContainer?.nativeElement;
     this.molstarViewInstance().render(container, molstarConfigObject);
     await firstValueFrom(this.molstarViewInstance().events.loadComplete);
   }

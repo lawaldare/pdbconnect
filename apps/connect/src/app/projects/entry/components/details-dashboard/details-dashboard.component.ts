@@ -148,7 +148,8 @@ export class DetailsDashboardComponent implements OnDestroy, OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    await this.molstarVisualisations.renderMolstarInitial(this.entryId() ?? '', this.molstarContainer?.nativeElement);
+    // await this.molstarVisualisations.renderMolstarInitial(this.entryId() ?? '', this.molstarContainer?.nativeElement);
+    console.log('molstar initialised in details-dashboard');
   }
 
   async getMolstarViewerFromParent() {
@@ -164,7 +165,7 @@ export class DetailsDashboardComponent implements OnDestroy, OnInit {
   async sendMolstarViewerToParent() {
     // Move the molstar WebGL container back to the parent component
     if (this.isMolstarRetrieved === true) {
-      // this.renderer.appendChild(this.molstarParent(), this.molstarViewerEl());
+      this.renderer.appendChild(this.molstarParent(), this.molstarViewerEl());
       this.isMolstarRetrieved = false;
       // Set first render for next view equal to true
       this.molstarVisualisations.isFirstViewRender = true;

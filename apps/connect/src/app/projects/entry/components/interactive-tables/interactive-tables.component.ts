@@ -92,7 +92,6 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   async ngOnChanges(): Promise<void> {
     // this.dataProcessing.setTabName(this.tabName());
     const tableData = this.signals.getTabData(this.tabName());
-    console.log(tableData, this.tabName());
     this.tableData = tableData as DataToTable;
 
     if (this.tabName() === 'Assemblies') {

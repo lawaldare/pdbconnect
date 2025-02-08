@@ -55,13 +55,13 @@ import { EntrySelectors } from '../../store/entry.selectors';
  */
 
 @Component({
-  selector: 'pdbc-experiments-validation-tab',
+  selector: 'pdbc-experiments-validation',
   standalone: true,
   imports: [CommonModule, AgGridAngular, MaterialModule, StrucQualityGradientsComponent],
-  templateUrl: './experiments-validation-tab.component.html',
-  styleUrl: './experiments-validation-tab.component.scss',
+  templateUrl: './experiments-validation.component.html',
+  styleUrl: './experiments-validation.component.scss',
 })
-export class ExperimentsValidationTabComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ExperimentsValidationComponent implements OnInit, AfterViewInit, OnDestroy {
   public readonly renderer = inject(Renderer2);
   public readonly elementRef = inject(ElementRef);
   private readonly globalStore = inject(Store<EntryStoreState>);

@@ -163,8 +163,7 @@ article i.icon-search::before {
   margin-right: 8px;
 }
 
-.sticky-div {
-  position: sticky; /* Safari */
+.sticky-div { /* Safari */
   position: sticky;
   top: 0;
 }

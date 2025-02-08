@@ -1,3 +1,25 @@
-body {
+main {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+pdbc-details-dashboard {
+  width: 60%;
+}
+
+pdbc-interactive-tables {
+  width: 39.5%;
+}
+
+ngx-skeleton-loader {
+  width: 100%;
   display: block;
+  height: 400px;
+}
+
+::ng-deep ngx-skeleton-loader {
+  .skeleton-loader {
+    margin-bottom: 0 !important;
+  }
 }

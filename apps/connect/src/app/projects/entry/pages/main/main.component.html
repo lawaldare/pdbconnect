@@ -5,12 +5,12 @@
     <main>
       <mat-tab-group (selectedTabChange)="selectTab($event)">
         <mat-tab label="Information"> <pdbc-information-tab /> </mat-tab>
-        <mat-tab label="Model Quality"> Model Quality </mat-tab>
+        <mat-tab label="Model Quality"> <pdbc-model-quality-tab /> </mat-tab>
         <mat-tab label="Assemblies"> <pdbc-assemblies-tab /> </mat-tab>
         <mat-tab label="Macromolecules"> <pdbc-macromolecules-tab /> </mat-tab>
         <mat-tab label="Ligands and Environments"> <pdbc-ligands-tab /> </mat-tab>
         <mat-tab label="Domains"> <pdbc-domains-tab /> </mat-tab>
-        <mat-tab label="Citations"> Citations </mat-tab>
+        <mat-tab label="Citations"> <pdbc-citations-tab /> </mat-tab>
       </mat-tab-group>
 
       <!-- <header>
@@ -48,12 +48,12 @@
         </section>
       </section> -->
 
-      <div #molstarParent style="display: none">
+      <!-- <div #molstarParent style="display: none">
         <div class="molstar-viewer" #molstarViewer></div>
-      </div>
+      </div> -->
 
       <section id="detail-tabs" class="details-tabs">
-        <nav class="tab-nav">
+        <!-- <nav class="tab-nav">
           @for (tab of tabsInfo().config; track tab) {
             <div class="tab-container" [ngClass]="{ active: currentTab() === tab.id }" (click)="changeCurrentTab(tab.id)">
               <button class="tab-button">
@@ -63,17 +63,17 @@
             </div>
             <div class="vertical-line"></div>
           }
-        </nav>
+        </nav> -->
         <section class="tab-content">
           @for (tabName of allTabs; track tabName) {
             @if (currentTab() === tabName.name) {
               @if (tabName.name !== 'Experiments' && tabName.name !== 'Citations') {
                 @if (tabsInfo().status[tabName.name] === 'has-data') {
                   @if (tabDataLoaded() && molstarResidueInfoLoaded()) {
-                    <section class="left-side">
+                    <!-- <section class="left-side">
                       <pdbc-interactive-tables [tabName]="getTableName(tabName.name)" />
                     </section>
-                    <!-- <section class="right-side">
+                    <section class="right-side">
                       <pdbc-details-dashboard [tabName]="getTableName(tabName.name)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
                     </section> -->
                   } @else {
@@ -85,12 +85,12 @@
                   </section>
                 }
               }
-              @if (tabName.name === 'Experiments') {
+              <!-- @if (tabName.name === 'Experiments') {
                 <pdbc-experiments-validation-tab [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
               }
               @if (tabName.name === 'Citations') {
                 <pdbc-citations-tab />
-              }
+              } -->
             }
           }
         </section>
