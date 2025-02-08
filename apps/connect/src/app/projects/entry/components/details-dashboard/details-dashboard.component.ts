@@ -310,23 +310,23 @@ export class DetailsDashboardComponent implements OnDestroy {
   }
 
   private async renderInMolstar(reloadConfigObj: boolean) {
-    // let datum = this.currentRowDatum!;
-    // Different molstar rendering functions are called according to the dashboard type
-    // if (this.tabName() === 'Assemblies') {
-    //   datum = datum as AssembliesRowData;
-    //   await this.molstarVisualisations.renderMolstarAssemblies(this.entryId() ?? '', this.molstarViewerEl(), datum, reloadConfigObj);
-    // } else if (this.tabName() === 'Domains') {
-    //   datum = datum as DomainsRowData;
-    //   await this.molstarVisualisations.renderMolstarDomains(this.entryId() ?? '', this.molstarViewerEl(), datum, reloadConfigObj);
-    // } else if (this.tabName() === 'Ligands') {
-    //   datum = datum as LigandsRowData;
-    //   const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
-    //   await this.molstarVisualisations.renderMolstarLigands(this.entryId() ?? '', this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
-    // } else if (this.tabName() === 'Macromolecules') {
-    //   datum = datum as MacromoleculesRowData;
-    //   const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
-    //   await this.molstarVisualisations.renderMolstarMacromolecules(this.entryId() ?? '', this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
-    // }
+    let datum = this.currentRowDatum!;
+    //Different molstar rendering functions are called according to the dashboard type
+    if (this.tabName() === 'Assemblies') {
+      datum = datum as AssembliesRowData;
+      await this.molstarVisualisations.renderMolstarAssemblies(this.entryId() ?? '', this.molstarViewerEl(), datum, reloadConfigObj);
+    } else if (this.tabName() === 'Domains') {
+      datum = datum as DomainsRowData;
+      await this.molstarVisualisations.renderMolstarDomains(this.entryId() ?? '', this.molstarViewerEl(), datum, reloadConfigObj);
+    } else if (this.tabName() === 'Ligands') {
+      datum = datum as LigandsRowData;
+      const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
+      await this.molstarVisualisations.renderMolstarLigands(this.entryId() ?? '', this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
+    } else if (this.tabName() === 'Macromolecules') {
+      datum = datum as MacromoleculesRowData;
+      const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
+      await this.molstarVisualisations.renderMolstarMacromolecules(this.entryId() ?? '', this.molstarViewerEl(), datum, molstarSelection, reloadConfigObj);
+    }
   }
 
   private async initOrRefreshProtvista() {
