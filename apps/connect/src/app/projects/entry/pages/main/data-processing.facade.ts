@@ -97,9 +97,7 @@ export class MainDataProcessingFacade {
     this.compCommunication.isTabDataGenerated.set(true);
     this.tabDataLoaded.set(true);
     const tableData = this.compCommunication.getTabData(this.tabName());
-    console.log(tableData, this.tabDataLoaded());
     this.tableData.set(tableData);
-    console.log('this.compCommunication.setTabData(tabName, tempTableData); is called next, tabDataLoaded becomes true (3)');
   }
 
   public processFilesData(data: any) {

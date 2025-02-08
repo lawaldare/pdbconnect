@@ -30,10 +30,8 @@ export class AssembliesTabComponent implements OnInit {
   @ViewChild('molstarViewer') molstarViewer!: ElementRef;
 
   ngOnInit(): void {
-    console.log('AssembliesTabComponent initialized');
     setTimeout(() => {
       this.molstarVisualisation.renderMolstarInitial(this.entryId() ?? '', this.molstarViewer.nativeElement);
-      console.log('this.molstarVisualisation.renderMolstarInitial is called (1)');
     });
   }
 }

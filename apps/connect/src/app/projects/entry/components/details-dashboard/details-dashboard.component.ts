@@ -54,7 +54,7 @@ export interface SequenceDetail {
   templateUrl: './details-dashboard.component.html',
   styleUrl: './details-dashboard.component.scss',
 })
-export class DetailsDashboardComponent implements OnDestroy, OnInit {
+export class DetailsDashboardComponent implements OnDestroy {
   public readonly signals = inject(ComponentCommunicationService);
   private readonly utilService = inject(UtilService);
   public readonly dataProcessing = inject(VisualisationsDataProcessing);
@@ -145,11 +145,6 @@ export class DetailsDashboardComponent implements OnDestroy, OnInit {
         await this.onTableRowSelection(tabState[this.tabName()]);
       }
     });
-  }
-
-  async ngOnInit(): Promise<void> {
-    // await this.molstarVisualisations.renderMolstarInitial(this.entryId() ?? '', this.molstarContainer?.nativeElement);
-    console.log('molstar initialised in details-dashboard');
   }
 
   async getMolstarViewerFromParent() {

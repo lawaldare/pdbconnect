@@ -2,7 +2,7 @@
 import { Component, DestroyRef, ElementRef, inject, input, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CitationPublicationComponent } from '../citation-publication/citation-publication.component';
-import { MaterialModule } from '@pdbc/core';
+import { MaterialModule, UtilService } from '@pdbc/core';
 import { CitationXmlImagesComponent } from '../citation-xml-images/citation-xml-images.component';
 import { MatDialog } from '@angular/material/dialog';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -30,6 +30,7 @@ export class CitationsTabComponent implements OnInit {
   private readonly renderer = inject(Renderer2);
   private readonly dialog = inject(MatDialog);
   private readonly globalStore = inject(Store<EntryStoreState>);
+  public readonly util = inject(UtilService);
 
   // private staticEntryId = '7v08'; //'7v08', '3d12', '5tj5', '4zqo'
 

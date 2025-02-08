@@ -7,9 +7,6 @@ import { EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { MaterialModule } from '@pdbc/core';
-import { InteractiveTablesComponent } from '../../components/interactive-tables/interactive-tables.component';
-import { DetailsDashboardComponent } from '../../components/details-dashboard/details-dashboard.component';
-import { ExperimentsValidationComponent } from '../../components/experiments-validation/experiments-validation.component';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
 import { pdbeLogoConfig, pdbeSearchConfig, allTabs, tableTabs, INITIAL_API_STATUS } from '../../entry-constant';
 
@@ -53,9 +50,6 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     CommonModule,
     PdbeHeaderLogoMenuComponent,
     PdbeHeaderSearchComponent,
-    InteractiveTablesComponent,
-    DetailsDashboardComponent,
-    ExperimentsValidationComponent,
     CitationsTabComponent,
     NgxSkeletonLoaderModule,
     EntryMainAlternativeComponent,

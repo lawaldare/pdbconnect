@@ -129,12 +129,12 @@ export class MolstarBaseClass {
    */
   public parseInstanceResidues() {
     // first we get structure object
-    const assemblyRef = this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0].cell.transform.ref;
-    const structure = (this.molstarViewInstance().plugin!.state.data.select(assemblyRef)[0].obj as PluginStateObject.Molecule.Structure).data;
+    const assemblyRef = this.molstarViewInstance().plugin?.managers?.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
+    const structure = (this.molstarViewInstance().plugin?.state?.data?.select(assemblyRef)[0]?.obj as PluginStateObject.Molecule.Structure)?.data;
     if (structure === undefined) return;
     const result: MolstarResidueInfo[] = [];
     // we then iterate over elements of this object and retrieve residue data
-    for (const unit of structure.units) {
+    for (const unit of structure.units ?? []) {
       const h = unit.model.atomicHierarchy;
       let lastIRes = -1;
       for (let i = 0; i < unit.elements.length; i++) {

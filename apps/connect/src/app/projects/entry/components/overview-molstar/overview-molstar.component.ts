@@ -8,7 +8,6 @@ import { OverviewStateManagementService } from './state-management.service';
 import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
 import { MolstarConfigObject } from '../../helpers/molstar/molstar-base-class';
 import { OverviewMolstarControBarComponent } from './sub-components/molstar-control-bar/molstar-control-bar.component';
-import { OverviewMolstarTabNavComponent } from './sub-components/tab-nav-menu/tab-nav-menu.component';
 import { OverviewMolstarTabListViewComponent } from './sub-components/tab-listview-content/tab-listview-content.component';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
@@ -20,7 +19,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 @Component({
   selector: 'pdbc-overview-molstar',
   standalone: true,
-  imports: [CommonModule, OverviewMolstarTabNavComponent, OverviewMolstarControBarComponent, NgxSkeletonLoaderModule, OverviewMolstarTabListViewComponent],
+  imports: [CommonModule, OverviewMolstarControBarComponent, NgxSkeletonLoaderModule, OverviewMolstarTabListViewComponent],
   templateUrl: './overview-molstar.component.html',
   styleUrl: './overview-molstar.component.scss',
 })

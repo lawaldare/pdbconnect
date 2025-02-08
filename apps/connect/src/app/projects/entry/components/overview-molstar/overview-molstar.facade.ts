@@ -571,7 +571,6 @@ export class OverviewMolstarFacade {
       SCOP: scopUniqueAccessions.size,
       Pfam: pfamUniqueAccessions.size,
     });
-    console.log(this.domainCountByResource());
     this.listViewSelectablesByTab.set(listViewSelectablesByTab);
     this.dataParsed.set(true);
   }

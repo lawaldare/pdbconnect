@@ -171,7 +171,6 @@ export class OverviewStateManagementService {
   }
 
   public updateTabDisplayConfig(tabName: string, tagContent: string, tagClass: string) {
-    console.log('updateTabDisplayConfig', tabName, tagContent, tagClass);
     const tabIndex = this.tabsConfig()
       .map((cfg) => cfg.id)
       .indexOf(tabName);
@@ -186,7 +185,6 @@ export class OverviewStateManagementService {
   }
   // 'assets/img/interfaces_example2.png'
   public async switchCurrentTab(newView: string) {
-    console.log('switchCurrentTab', newView);
     if (this.dataProcessing.dataParsed() === false) return;
     // if (this.tabsStates()[newView].isInactive) return;
 

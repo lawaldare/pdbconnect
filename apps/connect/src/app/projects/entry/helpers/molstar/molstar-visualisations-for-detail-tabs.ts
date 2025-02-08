@@ -56,7 +56,6 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
       subscribeEvents: true,
       granularity: 'residue',
     };
-    console.log(this.isMolstarRendered);
     if (this.isMolstarRendered === false) {
       await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
       this.isMolstarRendered = true;
@@ -69,7 +68,6 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
     this.signals.molstarResidueInfo.set(data);
     this.dataProcessing.setTabName('Assemblies');
     this.dataProcessing.processInteractiveTablesData();
-    console.log('this.dataProcessing.processInteractiveTablesData() is called next, molstarResidueInfoLoaded becomes true (2)');
 
     setTimeout(() => {
       this.signals.molstarResidueInfoLoaded.set(true);

@@ -83,7 +83,7 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
 
   public tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
-  readonly rowHeight = 50; // Fixed row height
+  readonly rowHeight = input(50); // Fixed row height
   readonly headerHeight = 76; // Header height
   readonly paginationHeight = 48; // Pagination height
   readonly maxGridHeight = 600; // Maximum table height
@@ -126,7 +126,7 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
 
   private updateGridHeight(): void {
     const rowCount = this.tableData?.tableRows().length ?? 0;
-    const calculatedHeight = rowCount * this.rowHeight + this.headerHeight + this.paginationHeight + 40;
+    const calculatedHeight = rowCount * this.rowHeight() + this.headerHeight + this.paginationHeight + 40;
     this.gridHeight = Math.min(calculatedHeight, this.maxGridHeight) + 'px';
   }
 
