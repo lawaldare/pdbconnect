@@ -23,8 +23,8 @@ export class OEMCDirective implements OnChanges {
     this.resetEnv();
     const orderedList = this.renderer.createElement('ul');
     this.renderer.appendChild(this.el.nativeElement, orderedList);
-
-    for (const [key, value] of Object.entries(this.data)) {
+    const sortedData = this.sortDescending(Object.entries(this.data));
+    for (const [key, value] of sortedData) {
       const li = this.renderer.createElement('li');
       const anchor = this.renderer.createElement('a');
       anchor.href = this.util.generateQueryURLForExperimentalMethod(this.complexId(), key);
@@ -48,6 +48,10 @@ export class OEMCDirective implements OnChanges {
     }
 
     this.orderedList = orderedList;
+  }
+
+  private sortDescending(arr: any) {
+    return arr.sort((a: any, b: any) => b[1] - a[1]);
   }
 
   resetEnv(): void {

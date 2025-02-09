@@ -29,7 +29,7 @@ export class ComplexCardComponent implements OnChanges {
   ngOnChanges(): void {
     const link = `https://www.ebi.ac.uk/pdbe/static/entry/${this.complexInteraction().representative_structure.pdb_id}_assembly_${
       this.complexInteraction().representative_structure.assembly_id
-    }_chain_front_image-800x800.png`;
+    }_chemically_distinct_molecules_front_image-800x800.png`;
     this.complexImageSrc.set(link);
   }
 

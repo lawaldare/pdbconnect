@@ -1,53 +1,52 @@
-@if(subcomplexesLength() || supercomplexesLength()){
-<div id="interaction-section">
-  <h3>Complex Interactions</h3>
-  <p>This section displays the subcomplexes and/or supercomplexes of the complex of interest</p>
-  <lib-tool-tip minWidth="400px">
-    A subcomplex is defined as a complex where all its components are subset of components in another larger complex. On the other hand, we define a supercomplex as a
-    complex containing all the components of another complex and additional members.
-  </lib-tool-tip>
+@if (subcomplexesLength() || supercomplexesLength()) {
+  <div id="interaction-section">
+    <h3>Subcomplexes and supercomplexes</h3>
+    <p>This section displays the subcomplexes and supercomplexes of the complex of interest in the PDB when available</p>
+    @if (subcomplexesLength()) {
+      <section class="subcomplexes">
+        <h4>Subcomplexes</h4>
+        <lib-tool-tip minWidth="400px">
+          A subcomplex is defined as a complex where all its components are subset of components in another larger complex
+        </lib-tool-tip>
+        <div class="card-container">
+          @for (complexInteraction of subComplexesPage(); track complexInteraction.pdb_complex_id) {
+            <pdbc-complex-card [complexInteraction]="complexInteraction" />
+          }
+        </div>
 
-  @if(subcomplexesLength()){
-  <section class="subcomplexes">
-    <h4>Subcomplexes</h4>
-    <div class="card-container">
-      @for(complexInteraction of subComplexesPage(); track complexInteraction.pdb_complex_id){
-      <pdbc-complex-card [complexInteraction]="complexInteraction" />
-      }
-    </div>
+        <mat-paginator
+          class="paginator-container"
+          [length]="subcomplexesLength()"
+          [pageSize]="subcomplexesPageSize()"
+          [pageSizeOptions]="subcomplexesPageSizeOptions()"
+          (page)="handlePageEvent($event, 'subcomplexes')"
+          showFirstLastButtons
+          aria-label="Select page of subcomplexes"
+        >
+        </mat-paginator>
+      </section>
+    }
+    @if (supercomplexesLength()) {
+      <section class="supercomplexes">
+        <h4>Supercomplexes</h4>
+        <lib-tool-tip minWidth="400px"> A supercomplex is defined as a complex containing all the components of another complex and additional members </lib-tool-tip>
+        <div class="card-container">
+          @for (complexInteraction of superComplexesPage(); track complexInteraction.pdb_complex_id) {
+            <pdbc-complex-card [complexInteraction]="complexInteraction" />
+          }
+        </div>
 
-    <mat-paginator
-      class="paginator-container"
-      [length]="subcomplexesLength()"
-      [pageSize]="subcomplexesPageSize()"
-      [pageSizeOptions]="subcomplexesPageSizeOptions()"
-      (page)="handlePageEvent($event, 'subcomplexes')"
-      showFirstLastButtons
-      aria-label="Select page of subcomplexes"
-    >
-    </mat-paginator>
-  </section>
-  } @if(supercomplexesLength()){
-  <section class="supercomplexes">
-    <h4>Supercomplexes</h4>
-    <div class="card-container">
-      @for(complexInteraction of superComplexesPage(); track complexInteraction.pdb_complex_id){
-      <pdbc-complex-card [complexInteraction]="complexInteraction" />
-      }
-    </div>
-
-    <mat-paginator
-      class="paginator-container"
-      [length]="supercomplexesLength()"
-      [pageSize]="supercomplexesPageSize()"
-      [pageSizeOptions]="supercomplexesPageSizeOptions()"
-      (page)="handlePageEvent($event, 'supercomplexes')"
-      showFirstLastButtons
-      aria-label="Select page of interactions"
-    >
-    </mat-paginator>
-  </section>
-  }
-</div>
-
+        <mat-paginator
+          class="paginator-container"
+          [length]="supercomplexesLength()"
+          [pageSize]="supercomplexesPageSize()"
+          [pageSizeOptions]="supercomplexesPageSizeOptions()"
+          (page)="handlePageEvent($event, 'supercomplexes')"
+          showFirstLastButtons
+          aria-label="Select page of interactions"
+        >
+        </mat-paginator>
+      </section>
+    }
+  </div>
 }

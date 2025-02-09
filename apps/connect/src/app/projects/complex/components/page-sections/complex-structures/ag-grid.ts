@@ -17,10 +17,17 @@ export const gridOptions: GridOptions = {
 
 export const colDefs: ColDef[] = [
   {
-    headerName: 'ID',
-    field: 'id',
-    valueGetter: (params) => `${params.data.pdb_id}_${params.data.assembly_id}`,
+    headerName: 'PDB ID',
+    field: 'pdb_id',
+    // valueGetter: (params) => `${params.data.pdb_id}_${params.data.assembly_id}`,
     width: 120,
+    headerComponentParams: { showHelpIcon: true, tooltipText: 'Composite index consisting of PDB identifier and assembly identifier.' },
+  },
+  {
+    headerName: 'Assembly ID',
+    field: 'assembly_id',
+    // valueGetter: (params) => `${params.data.pdb_id}_${params.data.assembly_id}`,
+    width: 60,
     headerComponentParams: { showHelpIcon: true, tooltipText: 'Composite index consisting of PDB identifier and assembly identifier.' },
   },
   {

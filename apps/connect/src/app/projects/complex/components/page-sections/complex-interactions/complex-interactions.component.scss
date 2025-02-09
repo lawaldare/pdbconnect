@@ -22,5 +22,22 @@
 
   section {
     margin-top: 40px;
+    position: relative;
+
+    lib-tool-tip {
+      top: 5px;
+    }
+  }
+
+  section.subcomplexes {
+    lib-tool-tip {
+      left: 172px;
+    }
+  }
+
+  section.supercomplexes {
+    lib-tool-tip {
+      left: 196px;
+    }
   }
 }
