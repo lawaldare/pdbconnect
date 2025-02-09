@@ -23,6 +23,7 @@ import { ComponentCommunicationService } from '../../services/component-comm.ser
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { InteractiveTablesComponent } from '../../components/interactive-tables/interactive-tables.component';
 import { DetailsDashboardComponent } from '../../components/details-dashboard/details-dashboard.component';
+import { ExperimentsValidationComponent } from '../../components/experiments-validation/experiments-validation.component';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -51,7 +52,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     EntryMainAlternativeComponent,
     MaterialModule,
     InformationTabComponent,
-    ModelQualityTabComponent,
+    ExperimentsValidationComponent,
     InteractiveTablesComponent,
     DetailsDashboardComponent,
   ],

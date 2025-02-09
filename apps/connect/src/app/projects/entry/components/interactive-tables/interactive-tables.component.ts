@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Component, computed, inject, input, OnChanges, OnDestroy, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, OnChanges, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AssemblyDataToTable } from './data-processing/assembly-row-class';
 import { DomainDataToTable } from './data-processing/domain-row-class';
@@ -89,6 +89,22 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   readonly maxGridHeight = 600; // Maximum table height
   public gridHeight = '';
 
+  // constructor() {
+  //   effect(
+  //     async () => {
+  //       // Access the current state
+  //       // const tabState = this.signals.tabState(); // can be triggered from overview-molstar component 'View more details'
+  //       if (this.tableReadySignal()) {
+  //         this.tableReadySignal.set(false);
+  //         // Wait until tableReadySignal is true
+  //         this.triggerTableSelection();
+  //         console.log('Table selection triggered in effect of interactive-tables');
+  //       }
+  //     },
+  //     { allowSignalWrites: true } // Enable signal writes inside this effect
+  //   );
+  // }
+
   async ngOnChanges(): Promise<void> {
     // this.dataProcessing.setTabName(this.tabName());
     const tableData = this.signals.getTabData(this.tabName());
@@ -107,8 +123,6 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
     if (this.tableData!.displayFilters) {
       this.currentTableFilter = this.tableData?.tableFilters()[0].types;
     }
-
-    // await this.triggerTableSelection();
 
     // this.adjustTableHeightDynamically();
     // }
@@ -195,6 +209,7 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
 
     // Mark the table as ready
     this.tableReadySignal.set(true);
+    console.log('Table ready', 'tableReadySignal is true');
   }
 
   public triggerTableSelection() {
