@@ -145,12 +145,10 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   }
 
   selectFirstRow(): void {
-    const rowCount = this.tableData?.tableRows().length ?? 0;
-
-    if (this.gridApi && rowCount > 0) {
-      this.gridApi.getDisplayedRowAtIndex(0)?.setSelected(true);
-    }
-
+    // const rowCount = this.tableData?.tableRows().length ?? 0;
+    // if (this.gridApi && rowCount > 0) {
+    //   this.gridApi.getDisplayedRowAtIndex(0)?.setSelected(true);
+    // }
     // this.triggerTableSelection();
   }
 
@@ -202,14 +200,13 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
     this.gridApi = params.api;
 
     this.updateGridHeight();
-    this.selectFirstRow();
+    // this.selectFirstRow();
 
     // unfortunately needed so selection happens syncronously
     await firstValueFrom(timer(100));
 
     // Mark the table as ready
     this.tableReadySignal.set(true);
-    console.log('Table ready', 'tableReadySignal is true');
   }
 
   public triggerTableSelection() {
@@ -220,7 +217,8 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
     let selectionState = this.signals.getTabState(this.tabName());
 
     // if this is the first time this is triggered, select the first row
-    if (this.gridApi !== undefined && this.gridApi.getRenderedNodes().length > 0) {
+    if (this.gridApi !== undefined && this.gridApi?.getRenderedNodes().length > 0 && selectionState === 'Main') {
+      console.log('INSIDE triggerTableSelection');
       this.signals.setTabState(this.tabName(), 0);
       selectionState = 0;
     }
@@ -228,7 +226,7 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
     // if selection state is not initial value ('Main')
     if (selectionState !== 'Main') {
       // manually look for the node which has to be displayed and trigger it's selection
-      const nodes = this.gridApi.getRenderedNodes();
+      const nodes = this.gridApi?.getRenderedNodes() ?? [];
       for (const node of nodes) {
         if (node.rowIndex === (selectionState as number)) {
           node.setSelected(true); // automatically triggers onTableSelectionChanged
@@ -241,7 +239,7 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
 
   public onTableSelectionChanged(_event: SelectionChangedEvent) {
     // function called on each table selection event
-    const selectedRow = this.gridApi.getSelectedRows(); // Get selected row data
+    const selectedRow = this.gridApi?.getSelectedRows(); // Get selected row data
     if (selectedRow.length > 0) {
       const rowIdx = this.tableData!.tableRows().indexOf(selectedRow[0]);
       this.loadSelectionFromTable(rowIdx);
@@ -249,6 +247,7 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   }
 
   public loadSelectionFromTable(rowIdx: number) {
+    console.log('INSIDE loadSelectionFromTable');
     this.signals.setTabState(this.tabName(), rowIdx);
   }
 

@@ -169,11 +169,13 @@ export class DetailsDashboardComponent implements OnDestroy {
   }
 
   async ngOnDestroy() {
+    console.log('INSIDE ngOnDestroy of details-dashboard');
+
     // when dashboard is destroyed we send the molstar singleton instance back to global template
-    await this.sendMolstarViewerToParent();
+    // await this.sendMolstarViewerToParent();
 
     // Remove ligand environment if it exists
-    await this.destroyLigandEnv();
+    // await this.destroyLigandEnv();
   }
 
   public copySequence(sequenceDetail: SequenceDetail) {
