@@ -18,7 +18,6 @@ import { EntryActions } from '../../store/entry.actions';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { MatTabChangeEvent } from '@angular/material/tabs';
 import { InformationTabComponent } from '../../components/information-tab/information-tab.component';
-import { ModelQualityTabComponent } from '../../components/model-quality-tab/model-quality-tab.component';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { InteractiveTablesComponent } from '../../components/interactive-tables/interactive-tables.component';
@@ -83,6 +82,8 @@ export class EntryMainPageComponent implements OnInit {
   public tabSwitchOrigin = this.compCommunication.tabSwitchOrigin;
   public previousTab = 'undefined';
 
+  public doesTabHasData = signal<boolean>(true);
+
   @ViewChild('molstarViewer') molstarViewer!: ElementRef;
 
   ngOnInit(): void {
@@ -121,5 +122,6 @@ export class EntryMainPageComponent implements OnInit {
     this.previousTab = `${tabName}`;
     this.tabSwitchOrigin.set('main');
     this.currentTab.set(tabName);
+    this.doesTabHasData.set(this.compCommunication.getTabData(tabName)?.tableRows()?.length > 0);
   }
 }

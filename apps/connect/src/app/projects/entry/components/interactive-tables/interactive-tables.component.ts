@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Component, computed, effect, inject, input, OnChanges, OnDestroy, signal } from '@angular/core';
+import { Component, computed, inject, input, OnChanges, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AssemblyDataToTable } from './data-processing/assembly-row-class';
 import { DomainDataToTable } from './data-processing/domain-row-class';
@@ -83,30 +83,13 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
 
   public tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
-  readonly rowHeight = input(50); // Fixed row height
-  readonly headerHeight = 76; // Header height
-  readonly paginationHeight = 48; // Pagination height
-  readonly maxGridHeight = 600; // Maximum table height
+  readonly rowHeight = input(50);
+  readonly headerHeight = 76;
+  readonly paginationHeight = 48;
+  readonly maxGridHeight = 600;
   public gridHeight = '';
 
-  // constructor() {
-  //   effect(
-  //     async () => {
-  //       // Access the current state
-  //       // const tabState = this.signals.tabState(); // can be triggered from overview-molstar component 'View more details'
-  //       if (this.tableReadySignal()) {
-  //         this.tableReadySignal.set(false);
-  //         // Wait until tableReadySignal is true
-  //         this.triggerTableSelection();
-  //         console.log('Table selection triggered in effect of interactive-tables');
-  //       }
-  //     },
-  //     { allowSignalWrites: true } // Enable signal writes inside this effect
-  //   );
-  // }
-
   async ngOnChanges(): Promise<void> {
-    // this.dataProcessing.setTabName(this.tabName());
     const tableData = this.signals.getTabData(this.tabName());
     this.tableData = tableData as DataToTable;
 
@@ -143,15 +126,6 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
     const calculatedHeight = rowCount * this.rowHeight() + this.headerHeight + this.paginationHeight + 40;
     this.gridHeight = Math.min(calculatedHeight, this.maxGridHeight) + 'px';
   }
-
-  selectFirstRow(): void {
-    // const rowCount = this.tableData?.tableRows().length ?? 0;
-    // if (this.gridApi && rowCount > 0) {
-    //   this.gridApi.getDisplayedRowAtIndex(0)?.setSelected(true);
-    // }
-    // this.triggerTableSelection();
-  }
-
   private adjustTableHeightDynamically(): void {
     // Set up an observable to check for the ag-center-cols-container element existance every 100ms
     this.agViewportCheckSubscription = interval(100)
@@ -200,7 +174,6 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
     this.gridApi = params.api;
 
     this.updateGridHeight();
-    // this.selectFirstRow();
 
     // unfortunately needed so selection happens syncronously
     await firstValueFrom(timer(100));
@@ -211,14 +184,12 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
 
   public triggerTableSelection() {
     // function manually triggers table selection event
-    console.log('Table selection triggered');
 
     // we get selected row number from component communication service
     let selectionState = this.signals.getTabState(this.tabName());
 
     // if this is the first time this is triggered, select the first row
     if (this.gridApi !== undefined && this.gridApi?.getRenderedNodes().length > 0 && selectionState === 'Main') {
-      console.log('INSIDE triggerTableSelection');
       this.signals.setTabState(this.tabName(), 0);
       selectionState = 0;
     }
@@ -247,7 +218,6 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   }
 
   public loadSelectionFromTable(rowIdx: number) {
-    console.log('INSIDE loadSelectionFromTable');
     this.signals.setTabState(this.tabName(), rowIdx);
   }
 

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Component, effect, ElementRef, inject, input, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, inject, input, Renderer2, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule, UtilService } from '@pdbc/core';
 import { MatSelectModule } from '@angular/material/select';
@@ -20,11 +20,9 @@ import {
 } from '../interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { TableNames } from '../../pages/main/main.component';
-import { Molecule } from '../../data-models/molecule.model';
 import { assemblyTooltip, dashboardStatLinks } from '../../entry-constant';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { EntryDropdownComponent } from '../entry-dropdown/entry-dropdown.component';
-import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -54,7 +52,7 @@ export interface SequenceDetail {
   templateUrl: './details-dashboard.component.html',
   styleUrl: './details-dashboard.component.scss',
 })
-export class DetailsDashboardComponent implements OnDestroy {
+export class DetailsDashboardComponent {
   public readonly signals = inject(ComponentCommunicationService);
   private readonly utilService = inject(UtilService);
   public readonly dataProcessing = inject(VisualisationsDataProcessing);
@@ -141,7 +139,6 @@ export class DetailsDashboardComponent implements OnDestroy {
 
         // call row selection function to set variables and trigger visualisation conditional rendering
         await this.onTableRowSelection(tabState[this.tabName()]);
-        console.log('Row selection updated in dashboard');
       }
     });
   }
@@ -166,16 +163,6 @@ export class DetailsDashboardComponent implements OnDestroy {
     }
     // Add a delay to ensure synchronicity
     await firstValueFrom(timer(50)); // 100ms delay, adjust as needed
-  }
-
-  async ngOnDestroy() {
-    console.log('INSIDE ngOnDestroy of details-dashboard');
-
-    // when dashboard is destroyed we send the molstar singleton instance back to global template
-    // await this.sendMolstarViewerToParent();
-
-    // Remove ligand environment if it exists
-    // await this.destroyLigandEnv();
   }
 
   public copySequence(sequenceDetail: SequenceDetail) {

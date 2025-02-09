@@ -1,21 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { AfterViewInit, Component, computed, ElementRef, inject, input, OnDestroy, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, input, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ExperimentDetail } from '../../data-models/experimental-details.model';
-import { KeyValidationStats } from '../../data-models/key-validation-stats.model';
-import { XRayRefine } from '../../data-models/x-ray-refine.model';
 import { ValidationDataProcessingFacade } from './validation-data.facade';
 import { ValidationTablesFacade } from './validation-tables.facade';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ProcessedQualityScores } from '../../data-models/summary-quality-scores.model';
-import {
-  BMRBExperimentRawData,
-  EMPIARExperimentRawData,
-  IRRMCExperimentRawData,
-  PDBExperimentRawData,
-  SBGRIDExperimentRawData,
-} from '../../data-models/experiment-raw-data.model';
-import { ProcessedExperimentalDetails, ValidationKeys } from './data-models-and-definitions/processed-experimental-details.model';
+
+import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
 import { expInfoTooltip, expRawDataTooltip, pdbRedoTooltip, sampleInfoTooltip, timelineTooltip, validationInfoTooltip } from '../../entry-constant';
 import { MaterialModule } from '@pdbc/core';
 import { firstValueFrom, timer } from 'rxjs';
@@ -61,7 +51,7 @@ import { EntrySelectors } from '../../store/entry.selectors';
   templateUrl: './experiments-validation.component.html',
   styleUrl: './experiments-validation.component.scss',
 })
-export class ExperimentsValidationComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly renderer = inject(Renderer2);
   public readonly elementRef = inject(ElementRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
@@ -144,11 +134,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit, On
     }
     // Add a delay to ensure synchronicity
     await firstValueFrom(timer(50)); // 100ms delay, adjust as needed
-  }
-
-  async ngOnDestroy() {
-    // when dashboard is destroyed we send the molstar singleton instance back to global template
-    await this.sendMolstarViewerToParent();
   }
 
   /**

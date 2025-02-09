@@ -6,7 +6,7 @@ import { Column } from 'molstar/lib/mol-data/db';
 import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
 import { StructureQuery } from 'molstar/lib/mol-model/structure/query/query';
 import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
-import { StructureSelection, StructureProperties, Structure } from 'molstar/lib/mol-model/structure';
+import { StructureSelection } from 'molstar/lib/mol-model/structure';
 
 /**
  * This file contains a base class with helper functions for manipulating Molstar
@@ -62,7 +62,6 @@ export class MolstarBaseClass {
    * @param molstarViewer
    */
   public async initMolstar(molstarConfigObject: MolstarConfigObject, molstarContainer?: ElementRef, molstarViewer?: HTMLElement) {
-    console.log('Initializing MOLSTAR...', molstarConfigObject);
     if (this.molstarViewInstance()) {
       console.error('MOLSTAR INSTANCE EXISTS');
     }
