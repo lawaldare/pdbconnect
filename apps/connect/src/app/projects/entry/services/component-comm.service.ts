@@ -9,7 +9,7 @@ export class ComponentCommunicationService {
   public molstarResidueInfoLoaded = signal<boolean>(false);
   public molstarResidueInfo = signal<MolstarResidueInfo[]>([]);
 
-  public currentTab = signal<string>('Assemblies');
+  public currentTab = signal<string>('Information');
   public tabSwitchOrigin = signal<string>('main');
   public tabState = signal<{ [key: string]: string | number }>({
     Assemblies: 'Main',

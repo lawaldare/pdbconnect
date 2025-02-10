@@ -107,7 +107,9 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
       this.currentTableFilter = this.tableData?.tableFilters()[0].types;
     }
 
-    // this.adjustTableHeightDynamically();
+    console.log('INTERACTIVE TABLES DATA LOADED:', this.tabName());
+
+    this.adjustTableHeightDynamically();
     // }
   }
 

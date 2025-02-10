@@ -40,6 +40,8 @@ export class MainDataProcessingFacade {
   public tableData = signal<DataToTable>({} as DataToTable);
   private tabName = signal<TableNames>('' as TableNames);
 
+  public readonly routeTabs = ['information', 'model quality', 'assemblies', 'macromolecules', 'ligands', 'domains', 'citations'];
+
   public isNotUndefined(data: any[]) {
     for (const datum of data) {
       if (datum === undefined) return false;

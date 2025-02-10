@@ -153,7 +153,6 @@ export class UtilService {
     const trimmedValue = value.trim();
     const hrefLink = window.location.href;
     const href = hrefLink + 'chemicalCompound/show/' + trimmedValue;
-    console.log(href);
     window.open(href, '_self');
   }
 

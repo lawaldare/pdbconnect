@@ -2,6 +2,7 @@ import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions, GridState } from 'ag-grid-community';
 import { TitleRendererComponent } from '../../cell renderers/structure-title.component';
 import { CustomHeaderComponent } from '../../cell renderers/custom-header.component';
+import { EntryPageExternalLinkRendererComponent } from './entry-page-link.component';
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
@@ -17,18 +18,21 @@ export const gridOptions: GridOptions = {
 
 export const colDefs: ColDef[] = [
   {
-    headerName: 'PDB ID',
+    headerName: 'PDB',
     field: 'pdb_id',
-    // valueGetter: (params) => `${params.data.pdb_id}_${params.data.assembly_id}`,
-    width: 120,
-    headerComponentParams: { showHelpIcon: true, tooltipText: 'Composite index consisting of PDB identifier and assembly identifier.' },
+    cellRenderer: EntryPageExternalLinkRendererComponent,
+    width: 90,
+    headerComponentParams: { tooltipText: 'Composite index consisting of PDB identifier and assembly identifier.' },
+    sortable: false,
   },
   {
-    headerName: 'Assembly ID',
+    headerName: 'Assembly',
     field: 'assembly_id',
     // valueGetter: (params) => `${params.data.pdb_id}_${params.data.assembly_id}`,
-    width: 60,
-    headerComponentParams: { showHelpIcon: true, tooltipText: 'Composite index consisting of PDB identifier and assembly identifier.' },
+    width: 100,
+    headerComponentParams: { tooltipText: 'Composite index consisting of PDB identifier and assembly identifier.' },
+    sortable: false,
+    filter: false,
   },
   {
     headerName: 'Title',

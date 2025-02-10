@@ -1,6 +1,6 @@
 import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
@@ -16,7 +16,7 @@ import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntryActions } from '../../store/entry.actions';
 import { EntrySelectors } from '../../store/entry.selectors';
-import { MatTabChangeEvent } from '@angular/material/tabs';
+import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { InformationTabComponent } from '../../components/information-tab/information-tab.component';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
@@ -66,6 +66,8 @@ export class EntryMainPageComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly molstarVisualisation = inject(MolstarVisualisationsForTabs);
 
+  private readonly router = inject(Router);
+
   public readonly pdbeLogoConfig = pdbeLogoConfig;
   public readonly pdbeSearchConfig = pdbeSearchConfig;
 
@@ -75,7 +77,22 @@ export class EntryMainPageComponent implements OnInit {
   public readonly molstarResidueInfoLoaded = computed(() => this.compCommunication.molstarResidueInfoLoaded());
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
-  public readonly commonTabs = ['Assemblies', 'Macromolecules', 'Ligands', 'Domains'];
+  public readonly commonTabs = computed(() => {
+    const isTabDataGenerated = this.compCommunication.isTabDataGenerated();
+    // const currentTab = this.compCommunication.currentTab();
+    // const dataExists = isTabDataGenerated ? this.compCommunication.getTabData(currentTab).tableRows().length > 0 : false;
+    const tabs = ['Assemblies', 'Macromolecules', 'Ligands', 'Domains'];
+    const mappedCommonTabs = [];
+    for (const tab of tabs) {
+      const dataExists = isTabDataGenerated ? this.compCommunication.getTabData(tab).tableRows().length > 0 : false;
+      const hasData = isTabDataGenerated && dataExists;
+      mappedCommonTabs.push({
+        name: tab,
+        tag: hasData ? '' : 'N/A',
+      });
+    }
+    return mappedCommonTabs;
+  });
   private readonly entryId = signal<string>('');
 
   public currentTab = this.compCommunication.currentTab;
@@ -85,6 +102,18 @@ export class EntryMainPageComponent implements OnInit {
   public doesTabHasData = signal<boolean>(true);
 
   @ViewChild('molstarViewer') molstarViewer!: ElementRef;
+  @ViewChild('tabs') tabGroup!: MatTabGroup;
+
+  selectedTab = 0; // Default tab
+
+  constructor() {
+    this.route.queryParams.subscribe((params) => {
+      const routeTabs = this.dataProcessing.routeTabs;
+      const tabName = params['tab'];
+      const tabIndex = routeTabs?.indexOf(tabName.toLowerCase()) ?? 0;
+      this.selectedTab = tabIndex;
+    });
+  }
 
   ngOnInit(): void {
     this.route.params
@@ -118,10 +147,17 @@ export class EntryMainPageComponent implements OnInit {
   }
 
   selectTab(event: MatTabChangeEvent) {
-    const tabName = event.tab.textLabel;
+    const routeTabs = this.dataProcessing.routeTabs;
+    const tabName = routeTabs[event.index];
     this.previousTab = `${tabName}`;
     this.tabSwitchOrigin.set('main');
     this.currentTab.set(tabName);
-    this.doesTabHasData.set(this.compCommunication.getTabData(tabName)?.tableRows()?.length > 0);
+    setTimeout(() => {
+      this.doesTabHasData.set(this.compCommunication.getTabData(tabName)?.tableRows()?.length > 0);
+    }, 2000);
+    this.router.navigate([], {
+      queryParams: { tab: tabName },
+      queryParamsHandling: 'merge', // to preserve existing params
+    });
   }
 }
