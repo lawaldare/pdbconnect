@@ -62,6 +62,7 @@ export class EntryApiService {
           depositionDate: depositionDateObj,
           releaseDate: releasedDateObj,
           revisionDate: revisionDateObj,
+          assemblies: datum.assemblies,
         };
       })
     );

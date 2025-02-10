@@ -10,6 +10,11 @@ import { MaterialModule } from '@pdbc/core';
 import { assemblyCompositionTooltip, assemblyNameTooltip, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
 import { EntryDropdownComponent } from '../../../../components/entry-dropdown/entry-dropdown.component';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+import { EntryStoreState } from '../../../../store/entry-store.model';
+import { Store } from '@ngrx/store';
+import { EntrySelectors } from '../../../../store/entry.selectors';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'pdbc-overview-tab-listview',
@@ -28,6 +33,7 @@ export class OverviewMolstarTabListViewComponent implements OnInit {
   public readonly overviewMolstarFacade = inject(OverviewMolstarFacade);
   private readonly compCommunication = inject(ComponentCommunicationService);
   public readonly stateManagement = inject(OverviewStateManagementService);
+  private readonly globalStore = inject(Store<EntryStoreState>);
 
   public currentTab = this.stateManagement.currentTab;
   public tabsStates = this.stateManagement.tabsStates;
@@ -59,6 +65,18 @@ export class OverviewMolstarTabListViewComponent implements OnInit {
 
   // data used in empty state template
   public relatedEntriesText = '';
+
+  public assemblies = toSignal(this.globalStore.select(EntrySelectors.summaryData).pipe(map((data) => data?.assemblies)));
+
+  public assembly = computed(() => {
+    const assemblies = this.assemblies() ?? [];
+    if (assemblies.length > 0) {
+      const firstAssembly = assemblies[0];
+      const result = firstAssembly.form + ' ' + firstAssembly.name;
+      return firstAssembly.name === 'monomer' ? 'monomeric' : result;
+    }
+    return '';
+  });
 
   // Create a computed signal for having related entries
   public hasRelatedEntries = computed(() => {

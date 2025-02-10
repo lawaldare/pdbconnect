@@ -50,7 +50,7 @@ export class LigandSpecificDatabasesComponent implements OnInit {
       .select(LigandSelectors.description)
       .pipe(
         map((description) => {
-          this.facade.init(description.crossLinks);
+          this.facade.init(description.crossLinks ?? []);
         }),
         takeUntilDestroyed(this.destroyRef)
       )

@@ -101,4 +101,5 @@ export interface ProcessedSummary {
   depositionDate: string;
   releaseDate: string;
   revisionDate: string;
+  assemblies: Assembly[];
 }

@@ -68,7 +68,6 @@ export class ClcPrdMainComponent implements OnInit {
   public ligandId = signal<string>('');
 
   public status = LoadingState;
-  private navItems!: NavSection[];
 
   ngOnInit(): void {
     combineLatest([
@@ -94,8 +93,6 @@ export class ClcPrdMainComponent implements OnInit {
   }
 
   private updateNavItemsWhenNoStructure(navItems: NavSection[], data: any[][]): void {
-    console.log('Original navItems:', navItems);
-
     if (!navItems) return; // Guard against undefined `navItems`
 
     const sectionMapping: Record<string, number> = {
@@ -108,8 +105,6 @@ export class ClcPrdMainComponent implements OnInit {
       if (dataIndex === undefined) return true;
       return Array.isArray(data[dataIndex]) && data[dataIndex].length > 0;
     });
-
-    this.navItems = filteredNavSections;
 
     this.globalStore.dispatch(LigandActions.setNavItems({ navItems: filteredNavSections }));
   }
