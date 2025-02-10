@@ -92,7 +92,6 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   async ngOnChanges(): Promise<void> {
     const tableData = this.signals.getTabData(this.tabName());
     this.tableData = tableData as DataToTable;
-    console.log('TABLE DATA:', this.tableData.tableRows());
     if (this.tabName() === 'Assemblies') {
       this.columnDefinitions = ASSEMBLIES_COL_DEFS;
     } else if (this.tabName() === 'Domains') {
@@ -107,10 +106,7 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
       this.currentTableFilter = this.tableData?.tableFilters()[0].types;
     }
 
-    console.log('INTERACTIVE TABLES DATA LOADED:', this.tabName());
-
     this.adjustTableHeightDynamically();
-    // }
   }
 
   ngOnDestroy(): void {
