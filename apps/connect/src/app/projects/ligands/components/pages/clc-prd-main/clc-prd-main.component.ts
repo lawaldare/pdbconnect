@@ -63,10 +63,12 @@ export class ClcPrdMainComponent implements OnInit {
   private fragments = toSignal(this.globalStore.select(LigandSelectors.fragments));
 
   public isThereStructures = signal<boolean>(true);
+  public isThereCrossLinks = signal<boolean>(true);
 
   public ligandId = signal<string>('');
 
   public status = LoadingState;
+  private navItems!: NavSection[];
 
   ngOnInit(): void {
     combineLatest([
@@ -74,13 +76,15 @@ export class ClcPrdMainComponent implements OnInit {
       this.globalStore.select(LigandSelectors.structures),
       this.globalStore.select(LigandSelectors.description),
       this.globalStore.select(LigandSelectors.navItems).pipe(take(1)),
+      this.globalStore.select(LigandSelectors.summary),
     ])
       .pipe(
-        map(([ligandId, structures, description, navItems]) => {
-          this.updateNavItemsWhenNoStructure(navItems, structures);
+        map(([ligandId, structures, description, navItems, summary]) => {
+          this.updateNavItemsWhenNoStructure(navItems, [structures, summary.cross_links]);
           this.ligandUtilService.redirectLigandPages(description);
           this.ligandId.set(ligandId);
-          this.isThereStructures.update(() => structures.length > 0);
+          this.isThereStructures.update(() => structures?.length > 0);
+          this.isThereCrossLinks.update(() => summary?.cross_links?.length > 0);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -89,15 +93,25 @@ export class ClcPrdMainComponent implements OnInit {
       });
   }
 
-  private updateNavItemsWhenNoStructure(navItems: NavSection[], structures: LigandStructure[]): void {
-    let tempNavsections = [];
-    if (structures.length === 0) {
-      tempNavsections = navItems.filter((section) => section.sectionId !== 'structures-section');
-      tempNavsections = tempNavsections.filter((section) => section.sectionId !== 'ligand-databases-section');
-    } else {
-      tempNavsections = clcNavSections;
-    }
-    this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
+  private updateNavItemsWhenNoStructure(navItems: NavSection[], data: any[][]): void {
+    console.log('Original navItems:', navItems);
+
+    if (!navItems) return; // Guard against undefined `navItems`
+
+    const sectionMapping: Record<string, number> = {
+      'structures-section': 0,
+      'ligand-databases-section': 1,
+    };
+
+    const filteredNavSections = navItems.filter((section) => {
+      const dataIndex = sectionMapping[section.sectionId];
+      if (dataIndex === undefined) return true;
+      return Array.isArray(data[dataIndex]) && data[dataIndex].length > 0;
+    });
+
+    this.navItems = filteredNavSections;
+
+    this.globalStore.dispatch(LigandActions.setNavItems({ navItems: filteredNavSections }));
   }
 
   private generateSchemaData(): void {
