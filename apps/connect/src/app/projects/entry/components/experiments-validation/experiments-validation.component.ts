@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { AfterViewInit, Component, ElementRef, inject, input, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, input, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ValidationDataProcessingFacade } from './validation-data.facade';
 import { ValidationTablesFacade } from './validation-tables.facade';
@@ -7,13 +7,13 @@ import { AgGridAngular } from 'ag-grid-angular';
 
 import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
 import { expInfoTooltip, expRawDataTooltip, pdbRedoTooltip, sampleInfoTooltip, timelineTooltip, validationInfoTooltip } from '../../entry-constant';
-import { MaterialModule } from '@pdbc/core';
-import { firstValueFrom, timer } from 'rxjs';
+import { MaterialModule, UtilService } from '@pdbc/core';
+import { filter, firstValueFrom, map, timer } from 'rxjs';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { StrucQualityGradientsComponent } from '../struc-quality-gradients/struc-quality-gradients.component';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../store/entry.selectors';
 
 /**
@@ -58,13 +58,14 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   public readonly tableFacade = inject(ValidationTablesFacade);
   public readonly molstarVisualisations = inject(MolstarVisualisationsForTabs);
+  public readonly util = inject(UtilService);
+  private readonly destroyRef = inject(DestroyRef);
 
   public molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
   public molstarParent = input.required<HTMLElement>(); // Parent to send back the molstar global instance
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly sourceOrganisms = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
-  public readonly experimentalDetails = toSignal(this.globalStore.select(EntrySelectors.experimentalDetails));
   public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
 
   /**
@@ -92,19 +93,24 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
   private isMolstarRetrieved = false;
 
-  async ngOnInit() {
-    // when initialized we process data from the endpoints into a unified object used for rendering
-    // (processedExpValData)
-    const processedExpValData = await this.dataFacade.processData();
+  ngOnInit() {
+    this.globalStore
+      .select(EntrySelectors.experimentalDetails)
+      .pipe(
+        filter(Boolean),
+        map((experimentalDetails) => {
+          const processedExpValData = this.dataFacade.processData();
 
-    // currently displayed method is the first from the list of processed objects
-    this.processedData.set(processedExpValData);
-    this.currentData.set(this.processedData()?.[0]);
+          this.processedData.set(processedExpValData);
+          this.currentData.set(this.processedData()?.[0]);
 
-    // if more than one object exists we set entry to be of hybrid experimental methods (this enables the top filters)
-    if (this.experimentalDetails() ?? [].length > 1) {
-      this.isHybrid.set(true);
-    }
+          if (experimentalDetails.length > 1) {
+            this.isHybrid.set(true);
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
   }
 
   async ngAfterViewInit() {
