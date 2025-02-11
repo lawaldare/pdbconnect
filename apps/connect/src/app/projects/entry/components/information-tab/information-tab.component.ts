@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
@@ -14,7 +14,7 @@ import { OverviewMolstarComponent } from '../overview-molstar/overview-molstar.c
   templateUrl: './information-tab.component.html',
   styleUrl: './information-tab.component.scss',
 })
-export class InformationTabComponent implements OnInit {
+export class InformationTabComponent {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly resolutionValues = toSignal(this.globalStore.select(EntrySelectors.resolutionValues));
@@ -22,8 +22,4 @@ export class InformationTabComponent implements OnInit {
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly downloadOptions = toSignal(this.globalStore.select(EntrySelectors.downloadOptions));
   public readonly viewOptions = toSignal(this.globalStore.select(EntrySelectors.viewOptions));
-
-  ngOnInit(): void {
-    console.log('InformationTabComponent initialized');
-  }
 }
