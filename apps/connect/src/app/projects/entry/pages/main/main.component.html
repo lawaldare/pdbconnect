@@ -1,7 +1,7 @@
 <pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
 <pdbc-pdbe-header-search id="entry-search" [headerSearchConfig]="pdbeSearchConfig"></pdbc-pdbe-header-search>
 @if (statusCode() === 'REL') {
-  <section class="entry-page-container">
+  <section class="container">
     <main>
       <mat-tab-group (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTab">
         <mat-tab label="Information"> <pdbc-information-tab /> </mat-tab>
