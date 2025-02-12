@@ -3,10 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Chain, LigandStructure, Polymer } from '../../../data-models/structure.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DownloadFileTypeService, DownloadService, GoogleAnalyticsService, MaterialModule, NavSection, UtilService } from '@pdbc/core';
-import { catchError, map, take, tap } from 'rxjs/operators';
+import { DownloadFileTypeService, DownloadService, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
+import { catchError, map, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
-import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
 import { environment } from '../../../../../../environments/environment';
 import { LigandInteractingChainsNumberPipe } from '../../../pipes/ligandInteractingChainsNumber.pipe';
 import { MatRadioChange } from '@angular/material/radio';
@@ -20,7 +19,6 @@ import { LigandECNumberPipe } from '../../../pipes/ec-numbers.pipe';
 import { cofactorTooltip, drugTooltip, reactantTooltip, unannotatedTooltip } from '../../../ligand.constant';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { AgGridStructureService } from './ag-grid-structure.service';
-import { LigandActions } from '../../../store/ligand.actions';
 
 @Component({
   selector: 'pdbc-structures',
@@ -32,7 +30,6 @@ import { LigandActions } from '../../../store/ligand.actions';
 })
 export class StructuresComponent {
   private readonly destroyRef = inject(DestroyRef);
-  private readonly dialog = inject(MatDialog);
   private readonly chainPipe = inject(LigandInteractingChainsNumberPipe);
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   private readonly downloadService = inject(DownloadService);

@@ -110,7 +110,7 @@ export class EntryMainPageComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       const routeTabs = this.dataProcessing.routeTabs;
       const tabName = params['tab'];
-      const tabIndex = routeTabs?.indexOf(tabName.toLowerCase()) ?? 0;
+      const tabIndex = routeTabs?.indexOf(tabName?.toLowerCase()) ?? 0;
       this.selectedTab = tabIndex;
     });
   }
