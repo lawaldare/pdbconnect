@@ -1,24 +1,36 @@
 <mat-accordion>
-  <mat-expansion-panel [expanded]="true">
+  <mat-expansion-panel>
     <mat-expansion-panel-header>
-      <mat-panel-title> Assembly </mat-panel-title>
+      <mat-panel-title> Preferred assembly </mat-panel-title>
     </mat-expansion-panel-header>
-    <h5 class="title assembly-title entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="preferredAssemblyTooltip" matTooltipPosition="below">
+    <!-- <h5 class="title assembly-title entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="preferredAssemblyTooltip" matTooltipPosition="below">
       Assembly {{ preferredAssemblyId }} (preferred)
-    </h5>
+    </h5> -->
 
     @if (assemblyData().name) {
       <div class="info-row">
-        <span class="entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="assemblyNameTooltip" matTooltipPosition="below"> Assembly name </span>
+        <div class="info-row-header">
+          <h6>Assembly name</h6>
+          <img
+            src="{{ helpLogoSrc }}"
+            class="icon"
+            alt="help icon"
+            matTooltipClass="entry-pgs-tooltip"
+            [matTooltip]="assemblyNameTooltip"
+            matTooltipPosition="below"
+          />
+        </div>
         <article>
-          <a>{{ assemblyData().name }}</a>
-          <i class="icon icon-common icon-search"></i>
+          {{ assemblyData().name }}
         </article>
       </div>
     }
     @if (assemblyData().complexId) {
       <div class="info-row">
-        <span class="entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="complexIdTooltip" matTooltipPosition="below"> PDBe Complex ID </span>
+        <div class="info-row-header">
+          <h6>PDBe Complex ID</h6>
+          <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="complexIdTooltip" matTooltipPosition="below" />
+        </div>
         <article>
           <a>{{ assemblyData().complexId }}</a>
           <i class="icon icon-common icon-search"></i>
@@ -27,16 +39,24 @@
     }
     @if (assemblyData().composition) {
       <div class="info-row">
-        <span class="entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="assemblyCompositionTooltip" matTooltipPosition="below">
-          Assembly composition
-        </span>
+        <div class="info-row-header">
+          <h6>Assembly composition</h6>
+          <img
+            src="{{ helpLogoSrc }}"
+            class="icon"
+            alt="help icon"
+            matTooltipClass="entry-pgs-tooltip"
+            [matTooltip]="assemblyCompositionTooltip"
+            matTooltipPosition="below"
+          />
+        </div>
         <article>
           {{ assembly() }}
         </article>
       </div>
     }
     <div class="info-row">
-      <span>Entry contents</span>
+      <h6>Entry contents</h6>
       <article>
         @for (contentLine of entryContentsDescription; track contentLine; let islast = $last) {
           {{ contentLine }}
@@ -47,46 +67,76 @@
   </mat-expansion-panel>
   <mat-expansion-panel>
     <mat-expansion-panel-header>
-      <mat-panel-title> Macromolecules </mat-panel-title>
+      <mat-panel-title> Macromolecules ({{ macromoleculesOverviewData().length }}) </mat-panel-title>
     </mat-expansion-panel-header>
-    <h5 class="title">{{ macromoleculesDescription }} Assembly {{ preferredAssemblyId }} (preferred)</h5>
-    @for (listItem of macromoleculesOverviewData(); track listItem) {
-      <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
-        <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-        <button class="select-entity-btn">{{ listItem.name }}</button>
-      </div>
-      @if (isSelected(listItem)) {
-        <div class="more-details-btn">
+    @if (macromoleculesOverviewData().length) {
+      @for (listItem of macromoleculesOverviewData(); track listItem) {
+        <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
           <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-          <button class="details-btn" (click)="viewDetails()">View more details below</button>
+          <button class="select-entity-btn">{{ listItem.name }}</button>
         </div>
+        <!-- @if (isSelected(listItem)) {
+          <div class="more-details-btn">
+            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+            <button class="details-btn" (click)="viewDetails()">View more details below</button>
+          </div>
+        } -->
+      }
+    } @else {
+      <p>This entry does not include any information about Ligands.</p>
+      @if (hasRelatedEntries()) {
+        <p>
+          Try exploring related entries for additional details.<br />
+          Related entries
+          @for (relatedEntry of overviewMolstarFacade.relatedEntries(); track relatedEntry; let islast = $last) {
+            <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+            @if (islast === false) {
+              ,
+            }
+          }
+        </p>
       }
     }
   </mat-expansion-panel>
   <mat-expansion-panel>
     <mat-expansion-panel-header>
-      <mat-panel-title> Ligands</mat-panel-title>
+      <mat-panel-title> Ligands ({{ ligandsOverviewData().length }})</mat-panel-title>
     </mat-expansion-panel-header>
-    <h5 class="title">{{ numLigands() }} bound {{ numLigands() === 1 ? 'ligand' : 'ligands' }}</h5>
-    @for (listItem of ligandsOverviewData(); track listItem) {
-      <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
-        <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-        <button class="select-entity-btn">{{ listItem.name }}</button>
-      </div>
-      @if (isSelected(listItem)) {
-        <div class="more-details-btn">
+    @if (ligandsOverviewData().length) {
+      @for (listItem of ligandsOverviewData(); track listItem) {
+        <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
           <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-          <button class="details-btn" (click)="viewDetails()">View more details below</button>
+          <button class="select-entity-btn">{{ listItem.name }}</button>
         </div>
+        <!-- @if (isSelected(listItem)) {
+          <div class="more-details-btn">
+            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+            <button class="details-btn" (click)="viewDetails()">View more details below</button>
+          </div>
+        } -->
+      }
+    } @else {
+      <p>This entry does not include any information about Ligands.</p>
+      @if (hasRelatedEntries()) {
+        <p>
+          Try exploring related entries for additional details.<br />
+          Related entries
+          @for (relatedEntry of overviewMolstarFacade.relatedEntries(); track relatedEntry; let islast = $last) {
+            <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+            @if (islast === false) {
+              ,
+            }
+          }
+        </p>
       }
     }
   </mat-expansion-panel>
   <mat-expansion-panel>
     <mat-expansion-panel-header>
-      <mat-panel-title> Domains </mat-panel-title>
+      <mat-panel-title> Domains ({{ domainCount() }}) </mat-panel-title>
     </mat-expansion-panel-header>
-    @if (domainsDataByResource()) {
-      <h5 class="title domain-title">Select domain resource</h5>
+
+    @if (domainsDataByResource() && domainCount() > 0) {
       <pdbc-entry-dropdown
         id="domain-dropdown"
         [downloadable]="false"
@@ -113,162 +163,62 @@
                 <div class="color-code-sqr" [ngStyle]="{ 'background-color': color }"></div>
               }
             </div>
-            <button class="select-entity-btn">↳ {{ listItem.name }}</button>
+            <button class="select-entity-btn">{{ listItem.name }}</button>
           </div>
-          @if (isSelected(listItem)) {
+          <!-- @if (isSelected(listItem)) {
             <div class="more-details-btn">
               <button class="details-btn" (click)="viewDetails()">View more details below</button>
             </div>
-          }
+          } -->
         }
+      }
+    } @else {
+      <p>This entry does not include any information about Domains.</p>
+      @if (hasRelatedEntries()) {
+        <p>
+          Try exploring related entries for additional details.<br />
+          Related entries
+          @for (relatedEntry of overviewMolstarFacade.relatedEntries(); track relatedEntry; let islast = $last) {
+            <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+            @if (islast === false) {
+              ,
+            }
+          }
+        </p>
       }
     }
   </mat-expansion-panel>
   <mat-expansion-panel>
     <mat-expansion-panel-header>
-      <mat-panel-title> Modifications </mat-panel-title>
+      <mat-panel-title> Modifications ({{ modificationsOverviewData().length }}) </mat-panel-title>
     </mat-expansion-panel-header>
-    <h5 class="title">{{ numModifications() }} {{ numModifications() === 1 ? 'modification' : 'modifications' }}</h5>
-    @for (listItem of modificationsOverviewData(); track listItem) {
-      <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
-        <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-        <button class="select-entity-btn">{{ listItem.name }}</button>
-      </div>
-      @if (isSelected(listItem)) {
-        <div class="more-details-btn">
+    @if (modificationsOverviewData().length) {
+      @for (listItem of modificationsOverviewData(); track listItem) {
+        <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
           <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-          <button class="details-btn" (click)="viewDetails()">View more details below</button>
+          <button class="select-entity-btn">{{ listItem.name }}</button>
         </div>
+        <!-- @if (isSelected(listItem)) {
+          <div class="more-details-btn">
+            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+            <button class="details-btn" (click)="viewDetails()">View more details below</button>
+          </div>
+        } -->
+      }
+    } @else {
+      <p>This entry does not include any information about Modifications.</p>
+      @if (hasRelatedEntries()) {
+        <p>
+          Try exploring related entries for additional details.<br />
+          Related entries
+          @for (relatedEntry of overviewMolstarFacade.relatedEntries(); track relatedEntry; let islast = $last) {
+            <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+            @if (islast === false) {
+              ,
+            }
+          }
+        </p>
       }
     }
   </mat-expansion-panel>
 </mat-accordion>
-
-<!-- <section class="overview-details"> -->
-<!-- ----------------------------------- -->
-<!-- ------- Assembly tab selected ------- -->
-<!-- ----------------------------------- -->
-<!-- @if (currentTab() === 'Assembly' && stateManagement.isInactive() === false) {
-    <h5 class="title assembly-title entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="preferredAssemblyTooltip" matTooltipPosition="below">
-      {{ getTitle() }}
-    </h5>
-
-    @if (assemblyData().name) {
-      <div class="info-row">
-        <span class="entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="assemblyNameTooltip" matTooltipPosition="below"> Assembly name </span>
-        <article>
-          <a>{{ assemblyData().name }}</a>
-          <i class="icon icon-common icon-search"></i>
-        </article>
-      </div>
-    }
-    @if (assemblyData().complexId) {
-      <div class="info-row">
-        <span class="entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="complexIdTooltip" matTooltipPosition="below"> PDBe Complex ID </span>
-        <article>
-          <a>{{ assemblyData().complexId }}</a>
-          <i class="icon icon-common icon-search"></i>
-        </article>
-      </div>
-    }
-    @if (assemblyData().composition) {
-      <div class="info-row">
-        <span class="entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="assemblyCompositionTooltip" matTooltipPosition="below">
-          Assembly composition
-        </span>
-        <article>
-          {{ assemblyData().composition }}
-        </article>
-      </div>
-    }
-    <div class="info-row">
-      <span>Entry contents</span>
-      <article>
-        @for (contentLine of entryContentsDescription; track contentLine; let islast = $last) {
-          {{ contentLine }}
-          <br />
-        }
-      </article>
-    </div>
-  } -->
-<!-- ------------------------------------------------- -->
-<!-- Macromolecules, Ligands, Modifications tabs selected -->
-<!-- ------------------------------------------------- -->
-<!-- @if (currentListViewData().length > 0 && stateManagement.isInactive() === false) {
-    <h5 class="title">{{ getTitle() }}</h5>
-    @for (listItem of currentListViewData(); track listItem) {
-      <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
-        <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-        <button class="select-entity-btn">{{ listItem.name }}</button>
-      </div>
-      @if (isSelected(listItem)) {
-        <div class="more-details-btn">
-          <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-          <button class="details-btn" (click)="viewDetails()">View more details below</button>
-        </div>
-      }
-    }
-  } -->
-<!-- ----------------------------------- -->
-<!-- -------- Domains tab selected -------- -->
-<!-- ----------------------------------- -->
-<!-- @if (domainsDataByResource() && stateManagement.isInactive() === false) {
-    <h5 class="title domain-title">{{ getTitle() }}</h5>
-    <pdbc-entry-dropdown
-      id="domain-dropdown"
-      [downloadable]="false"
-      [islink]="false"
-      [fullwidth]="true"
-      [options]="domainResourceCounts"
-      [title]="getDomainResourceCountTxt(currentDomainResource)"
-      (optionClickedEvent)="onDomainResourceSelect($event)"
-    >
-    </pdbc-entry-dropdown>
-    @for (nestedListObj of getDomainsListViewData(); track nestedListObj) {
-      <div class="select-gallery-container invalid">
-        <div class="color-code-bar" [ngStyle]="{ 'background-color': nestedListObj.parentColor }"></div>
-        <button class="select-entity-btn">{{ nestedListObj.parentName }}</button>
-      </div>
-      @for (listItem of nestedListObj.nestedSelectables; track listItem) {
-        <div
-          class="select-gallery-container valid nested-1"
-          [ngClass]="isSelected(listItem) ? 'active' : ''"
-          (click)="stateManagement.switchTabListSelection(listItem)"
-        >
-          <div class="color-code-bars">
-            @for (color of listItem.colors; track color) {
-              <div class="color-code-sqr" [ngStyle]="{ 'background-color': color }"></div>
-            }
-          </div>
-          <button class="select-entity-btn">↳ {{ listItem.name }}</button>
-        </div>
-        @if (isSelected(listItem)) {
-          <div class="more-details-btn">
-            <button class="details-btn" (click)="viewDetails()">View more details below</button>
-          </div>
-        }
-      }
-    }
-  } -->
-<!-- ----------------------------------- -->
-<!-- -------- Empty data tab selected -------- -->
-<!-- ----------------------------------- -->
-<!-- @if (stateManagement.isInactive() && isDataLoaded()) {
-    <h5 class="title">No {{ currentTab() }} data available</h5>
-    <p>
-      This entry does not include any information about {{ currentTab().replace('Assembly', 'Assemblies') }}. Find out more about this <a>in our FAQ</a
-      >{{ relatedEntriesText }} for additional details.
-    </p>
-    @if (hasRelatedEntries()) {
-      <p>
-        Related entries
-        @for (relatedEntry of dataProcessing.relatedEntries(); track relatedEntry; let islast = $last) {
-          <a>{{ relatedEntry }}</a>
-          @if (islast === false) {
-            ,
-          }
-        }
-      </p>
-    }
-  } -->
-<!-- </section> -->

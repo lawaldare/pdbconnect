@@ -1,7 +1,7 @@
-import { Component, computed, effect, inject, OnInit, signal, Signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, Signal } from '@angular/core';
 import { OverviewStateManagementService } from '../../state-management.service';
 import { CommonModule } from '@angular/common';
-import { ListSelectable, NestedListSelectable, OverviewMolstarFacade } from '../../overview-molstar.facade';
+import { ListSelectable, OverviewMolstarFacade } from '../../overview-molstar.facade';
 import { Molecule } from '../../../../data-models/molecule.model';
 import { ComponentCommunicationService } from '../../../../services/component-comm.service';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../../interactive-tables/data-models-and-definitions/row-and-table.model';
@@ -9,7 +9,6 @@ import { ModifiedResidue } from '../../../../data-models/modified-residues.model
 import { MaterialModule } from '@pdbc/core';
 import { assemblyCompositionTooltip, assemblyNameTooltip, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
 import { EntryDropdownComponent } from '../../../../components/entry-dropdown/entry-dropdown.component';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { EntryStoreState } from '../../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { EntrySelectors } from '../../../../store/entry.selectors';
@@ -27,6 +26,8 @@ export class OverviewMolstarTabListViewComponent implements OnInit {
   // javascript functions exposed to template for parsing domains nested data
   public readonly objectKeys = Object.keys;
   public readonly objectValues = Object.values;
+
+  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   public readonly panelOpenState = signal(false);
 
@@ -107,6 +108,11 @@ export class OverviewMolstarTabListViewComponent implements OnInit {
 
   // Create a computed signal for the specific property
   public domainsDataByResource = computed(() => this.domainsOverviewData());
+
+  public domainCount = computed(() => {
+    const domainCountByResource = this.domainCountByResource();
+    return Object.values(domainCountByResource).reduce((acc, val) => acc + val, 0);
+  });
 
   public currentDomainResource = this.tabsStates()['Domains'].currentDomainResource || 'CATH';
   public domainResourceCounts = computed(() => {

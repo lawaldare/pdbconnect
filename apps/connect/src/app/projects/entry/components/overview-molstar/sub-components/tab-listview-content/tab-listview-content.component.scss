@@ -40,6 +40,17 @@
   gap: 0;
   margin-bottom: 8px;
   flex-direction: column;
+  position: relative;
+
+  &-header {
+    display: flex;
+    align-items: center;
+
+    img {
+      height: 15px;
+      cursor: pointer;
+    }
+  }
 
   & > span {
     // width: 100%;
@@ -52,6 +63,10 @@
 
 //  For assembly tab selected
 article {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 27.2px;
+
   i {
     // margin-left: 5px;
     margin-left: 2px;
@@ -193,10 +208,17 @@ h5 {
   margin-bottom: 16px;
 }
 
+h6 {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 27.2px; /* 170% */
+  margin-bottom: 0;
+}
+
 ::ng-deep pdbc-entry-dropdown#domain-dropdown {
   button {
     height: 25px !important;
-    width: 312px !important;
+    width: 100% !important;
     justify-content: space-between;
     margin-bottom: 10px;
   }

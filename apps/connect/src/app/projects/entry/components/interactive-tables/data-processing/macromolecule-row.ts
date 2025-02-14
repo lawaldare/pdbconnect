@@ -129,16 +129,19 @@ export class MacromoleculeDataToTable extends DataToTable {
     // Filter and group residues by entity_id and chain_id
     const residsMacroByEntityIdAndChainId = molstarResidueInfo
       .filter((resid) => resid.label_entity_id && resid.label_seq_id && entitiesForMacromolecules.has(resid.label_entity_id))
-      .reduce((acc, resid) => {
-        const { label_entity_id, auth_asym_id } = resid;
-        if (!label_entity_id || !auth_asym_id) return acc;
+      .reduce(
+        (acc, resid) => {
+          const { label_entity_id, auth_asym_id } = resid;
+          if (!label_entity_id || !auth_asym_id) return acc;
 
-        acc[label_entity_id] = acc[label_entity_id] || {};
-        acc[label_entity_id][auth_asym_id] = acc[label_entity_id][auth_asym_id] || [];
-        acc[label_entity_id][auth_asym_id].push(resid);
+          acc[label_entity_id] = acc[label_entity_id] || {};
+          acc[label_entity_id][auth_asym_id] = acc[label_entity_id][auth_asym_id] || [];
+          acc[label_entity_id][auth_asym_id].push(resid);
 
-        return acc;
-      }, {} as { [entityId: string]: { [chainId: string]: MolstarResidueInfo[] } });
+          return acc;
+        },
+        {} as { [entityId: string]: { [chainId: string]: MolstarResidueInfo[] } }
+      );
 
     // Transform grouped residues into start/end data
     Object.entries(residsMacroByEntityIdAndChainId).forEach(([entityId, chains]) => {

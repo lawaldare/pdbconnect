@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { firstValueFrom, forkJoin, map } from 'rxjs';
+import { combineLatest, filter, firstValueFrom, forkJoin, map } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
 import { MolstarResidueInfo, MolstarSelectionObj } from '../../helpers/molstar/molstar-helpers';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
@@ -14,6 +14,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
+import { UtilService } from '@pdbc/core';
 
 type ParsedComplexDetails = {
   name: string | null | undefined;
@@ -54,6 +55,7 @@ export interface DataForListViews {
 export class OverviewMolstarFacade {
   private readonly entryAPIService = inject(EntryApiService);
   private readonly globalStore = inject(Store<EntryStoreState>);
+  private readonly util = inject(UtilService);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly complexDetails = toSignal(this.globalStore.select(EntrySelectors.complexDetails));
@@ -63,7 +65,6 @@ export class OverviewMolstarFacade {
   public readonly pfamMappings = toSignal(this.globalStore.select(EntrySelectors.pfamMapping));
   public readonly cathMappings = toSignal(this.globalStore.select(EntrySelectors.cathMapping));
   public readonly scopMappings = toSignal(this.globalStore.select(EntrySelectors.scop175Mapping));
-  public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
 
   public relatedEntries: WritableSignal<string[]> = signal([]);
 
@@ -174,6 +175,7 @@ export class OverviewMolstarFacade {
 
     // convert macromolecule objects to listview objects
     const macromoleculesToListView: ListSelectable[] = [];
+
     for (let i = 0; i < macromolecules.length; i++) {
       const macromolecule = macromolecules[i];
 
@@ -576,14 +578,21 @@ export class OverviewMolstarFacade {
   }
 
   public parseRelatedEntries(): void {
-    const primaryPublication = this.primaryPublication();
-    if (primaryPublication) {
-      let relatedEntries: string[] = [];
-      if (primaryPublication && primaryPublication.associated_entries) {
-        relatedEntries = primaryPublication.associated_entries.split(', ');
-      }
-      this.relatedEntries.set(relatedEntries);
-    }
+    this.globalStore
+      .select(EntrySelectors.primaryPublication)
+      .pipe(
+        filter(Boolean),
+        map((primaryPublication) => {
+          if (primaryPublication) {
+            let relatedEntries: string[] = [];
+            if (primaryPublication && primaryPublication.associated_entries) {
+              relatedEntries = primaryPublication.associated_entries.split(', ');
+            }
+            this.relatedEntries.set(relatedEntries);
+          }
+        })
+      )
+      .subscribe();
   }
 
   public parseComplexDetails(): void {

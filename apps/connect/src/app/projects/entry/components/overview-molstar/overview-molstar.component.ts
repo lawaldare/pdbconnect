@@ -115,16 +115,10 @@ export class OverviewMolstarComponent implements AfterViewInit {
 
     this.processComplexDetails();
     this.setActiveTab();
-    // this.stateManagement.switchCurrentTab('Assembly');
     this.isOverviewSectionDisplayed.set(true);
-
-    // setTimeout(() => {
-    //   this.isOverviewSectionDisplayed.set(true);
-    // }, 600000);
   }
 
   private processComplexDetails() {
-    if (!this.complexDetails()?.length) return;
     this.overviewMolstarFacade.parseComplexDetails();
     this.overviewMolstarFacade.generateListSelectable(this.imageList, this.molstarResiduesForAssembly());
   }

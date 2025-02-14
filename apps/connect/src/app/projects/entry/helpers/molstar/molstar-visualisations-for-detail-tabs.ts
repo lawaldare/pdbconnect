@@ -69,6 +69,7 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
     this.dataProcessing.processInteractiveTablesData();
 
     setTimeout(() => {
+      // this.dataProcessing.processInteractiveTablesData();
       this.signals.molstarResidueInfoLoaded.set(true);
     }, 2000);
   }

@@ -17,7 +17,7 @@ h4 {
   margin-bottom: 12px;
 
   & > span {
-    // max-width: 126px;
+    min-width: 148px;
     max-width: 148px;
     width: 100%;
     color: #1a1c1a;
@@ -55,5 +55,18 @@ article {
     position: absolute;
     z-index: -1;
     top: 4px;
+  }
+
+  .qualify-span {
+    color: var(--Neutral-700, #54585a);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22.5px; /* 160.714% */
+  }
+
+  a {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22.5px;
   }
 }

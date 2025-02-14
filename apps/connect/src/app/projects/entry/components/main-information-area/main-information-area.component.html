@@ -8,79 +8,93 @@
   <div class="info-row">
     <span>Source organism</span>
     <article>
-      @for(sourceOrganism of organismScientificNames(); track sourceOrganism; let islast = $last){
-      <span>
-        <!-- <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">{{ sourceOrganism }}</a> -->
-        <a>
-          {{ sourceOrganism }}
-          <i class="icon icon-common icon-search"></i>
-        </a>
-      </span>
-      {{ islast ? '' : ',' }} } @if (organismScientificNames()?.length === 0) {
-      <span>Not available</span>
-      }
-    </article>
-  </div>
-  @let publication = primaryPublication(); @if (publication && util.isNotEmptyObject(publication)) {
-  <div class="info-row">
-    <span>Primary publication</span>
-    <article>
-      @if (publication.journal_info.pdb_abbreviation! !== 'To be published') {
-      <article>{{ publication.title }}</article>
-      <article>
-        Authors @for(authorDatum of publication.author_list; track authorDatum; let islast = $last){
-        <!-- <a [href]="generateAuthorSearchUrl(authorName)" target="_blank">{{ authorName }}</a> -->
-        <a>{{ authorDatum.full_name }}</a
-        >{{ islast ? '' : ',' }}
-        <!-- <i class="icon icon-common icon-search"></i> -->
-        }
-      </article>
-      <article>
+      @for (sourceOrganism of organismScientificNames(); track sourceOrganism; let islast = $last) {
         <span>
-          <i>{{ publication.journal_info.pdb_abbreviation }}</i>
-          {{ publication.journal_info.volume }}
-          {{ publication.journal_info.pages }}
-          ({{ publication.journal_info.year }})
-        </span>
-        @if(publication.pubmed_id){
-        <span style="white-space: nowrap">
-          PMID:
-          <!-- <a [href]="'https://europepmc.org/article/MED/' + publicationpubmed_id" target="_blank" -->
-          <a
-            >{{ publication.pubmed_id }}
-            <i class="icon icon-link icon-common"></i>
+          <!-- <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">{{ sourceOrganism }}</a> -->
+          <a>
+            {{ sourceOrganism }}
+            <i class="icon icon-common icon-search"></i>
           </a>
         </span>
-        }
-      </article>
-      @if(publication.doi){
-      <article>
-        DOI:
-        <!-- <a [href]="'https://doi.org/' + publicationdoi" target="_blank" -->
-        <a
-          >{{ publication.doi }}
-          <i class="icon icon-link icon-common"></i>
-        </a>
-      </article>
-      } } @else {
-      <article>To be published</article>
+        {{ islast ? '' : ',' }}
+      }
+      @if (organismScientificNames()?.length === 0) {
+        <span>Not available</span>
       }
     </article>
   </div>
-  } @if (qualityScores() !== undefined) {
-  <div class="info-row">
-    <span class="entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="modelQualitySummaryTooltip" matTooltipPosition="below"
-      >PDB model quality summary</span
-    >
-    <article>
-      <pdbc-str-quality-gradient [componentType]="'GeometryFit_RdToBl'" [renderGradients]="qualityScores()!"></pdbc-str-quality-gradient>
+  @if (primaryPublication() && util.isNotEmptyObject(primaryPublication())) {
+    <div class="info-row">
+      <span>Primary publication</span>
+      <article>
+        @if (primaryPublication()?.journal_info?.pdb_abbreviation! !== 'To be published') {
+          <article>{{ primaryPublication()?.title }}</article>
+          <article>
+            @for (authorDatum of primaryPublication()?.author_list; track authorDatum; let islast = $last) {
+              <!-- <a [href]="generateAuthorSearchUrl(authorName)" target="_blank">{{ authorName }}</a> -->
+              <a>{{ authorDatum.full_name }}</a
+              >{{ islast ? '' : ',' }}
+              <!-- <i class="icon icon-common icon-search"></i> -->
+            }
+          </article>
+          <article>
+            <span>
+              <i>{{ primaryPublication()?.journal_info?.pdb_abbreviation }}</i>
+              {{ primaryPublication()?.journal_info?.volume }}
+              {{ primaryPublication()?.journal_info?.pages }}
+              ({{ primaryPublication()?.journal_info?.year }})
+            </span>
+            @if (primaryPublication()?.pubmed_id) {
+              <span style="white-space: nowrap">
+                PMID
+                <!-- <a [href]="'https://europepmc.org/article/MED/' + publicationpubmed_id" target="_blank" -->
+                <a
+                  >{{ primaryPublication()?.pubmed_id }}
+                  <i class="icon icon-link icon-common"></i>
+                </a>
+              </span>
+            }
+          </article>
+          @if (primaryPublication()?.doi) {
+            <article>
+              DOI
+              <!-- <a [href]="'https://doi.org/' + publicationdoi" target="_blank" -->
+              <a
+                >{{ primaryPublication()?.doi }}
+                <i class="icon icon-link icon-common"></i>
+              </a>
+            </article>
+          }
+        } @else {
+          <article>To be published</article>
+        }
+      </article>
+    </div>
+  }
+  @if ((summary()?.relatedStructures ?? []).length) {
+    <div class="info-row">
+      <span>EMDB entry</span>
+      <article>
+        <a [href]="'https://www.ebi.ac.uk/emdb/' + summary()!.relatedStructures[0].accession">{{ summary()!.relatedStructures[0].accession }}</a>
+      </article>
+    </div>
+  }
 
-      <!-- <a [href]="'https://doi.org/' + publication().pdbEntryDOI" target="_blank" -->
-      <!-- <a
+  @if (qualityScores() !== undefined) {
+    <div class="info-row">
+      <span class="entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="modelQualitySummaryTooltip" matTooltipPosition="below"
+        >PDB model quality summary</span
+      >
+      <article>
+        <pdbc-str-quality-gradient [componentType]="'GeometryFit_RdToBl'" [renderGradients]="qualityScores()!"></pdbc-str-quality-gradient>
+        <span class="qualify-span">Percentile-sliders comparing the quality scores of a model with other models in the archive. <a>Learn more</a></span>
+
+        <!-- <a [href]="'https://doi.org/' + publication().pdbEntryDOI" target="_blank" -->
+        <!-- <a
           >{{ publication().pdbEntryDOI }}
           <i class="icon icon-link icon-common"></i>
         </a> -->
-    </article>
-  </div>
+      </article>
+    </div>
   }
 </div>

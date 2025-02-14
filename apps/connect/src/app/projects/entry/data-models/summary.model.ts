@@ -95,6 +95,12 @@ export interface PDBEntrySummary {
   [key: string]: EntrySummary[];
 }
 
+export interface relatedStructure {
+  resource: string;
+  accession: string;
+  relationship: string;
+}
+
 export interface ProcessedSummary {
   entryTitle: string;
   entryAuthors: string;
@@ -102,4 +108,5 @@ export interface ProcessedSummary {
   releaseDate: string;
   revisionDate: string;
   assemblies: Assembly[];
+  relatedStructures: relatedStructure[];
 }

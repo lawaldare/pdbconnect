@@ -12,7 +12,7 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { TableNames } from './main.component';
 import { TabNames } from '../../helpers/tab-names.enum';
 import { EntryActions } from '../../store/entry.actions';
-import { catchError, combineLatest, EMPTY, filter, map } from 'rxjs';
+import { catchError, combineLatest, filter, first, forkJoin, map, of, startWith, switchMap, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -26,7 +26,17 @@ export class MainDataProcessingFacade {
   public tableData = signal<DataToTable>({} as DataToTable);
   private tabName = signal<TableNames>('' as TableNames);
 
-  public readonly routeTabs = ['information', 'model quality', 'assemblies', 'macromolecules', 'ligands', 'domains', 'citations'];
+  // public readonly routeTabs = ['summary', 'model quality', 'assemblies', 'macromolecules', 'ligands and environments', 'domains', 'citations'];
+
+  public readonly routeTabs = [
+    { label: 'Summary', id: 'summary' },
+    { label: 'Model quality', id: 'model-quality' },
+    { label: 'Assemblies', id: 'assemblies' },
+    { label: 'Macromolecules', id: 'macromolecules' },
+    { label: 'Ligands and Environments', id: 'ligands' },
+    { label: 'Domains', id: 'domains' },
+    { label: 'Citations', id: 'citations' },
+  ];
 
   public isNotUndefined(data: any[]) {
     for (const datum of data) {
@@ -44,77 +54,116 @@ export class MainDataProcessingFacade {
   }
 
   public processInteractiveTablesData() {
-    combineLatest([
-      this.globalStore.select(EntrySelectors.complexDetails).pipe(filter(Boolean)),
-      this.globalStore.select(EntrySelectors.assemblies).pipe(filter((c) => c.length > 0)),
-      this.globalStore.select(EntrySelectors.pisaAssemblies).pipe(filter((c) => c.length > 0)),
-      this.globalStore.select(EntrySelectors.pfamMapping).pipe(filter(Boolean)),
-      this.globalStore.select(EntrySelectors.cathMapping).pipe(filter(Boolean)),
-      this.globalStore.select(EntrySelectors.scop175Mapping).pipe(filter(Boolean)),
-      this.globalStore.select(EntrySelectors.boundLigands).pipe(filter(Boolean)),
-      this.globalStore.select(EntrySelectors.modifications).pipe(filter(Boolean)),
-      this.globalStore.select(EntrySelectors.carbohydrates).pipe(filter(Boolean)),
-      this.globalStore.select(EntrySelectors.uniprotMapping).pipe(filter(Boolean)),
-      this.globalStore.select(EntrySelectors.bestStructuresMappingsByUniProtIds).pipe(filter(Boolean)),
-      this.globalStore.select(EntrySelectors.macroMolecules).pipe(filter(Boolean)),
-    ])
+    // Step 1: Load All APIs Initially Using `forkJoin`
+    forkJoin({
+      complexDetails: this.globalStore.select(EntrySelectors.complexDetails).pipe(
+        first(),
+        catchError(() => of(null))
+      ),
+      assemblyData: this.globalStore.select(EntrySelectors.assemblies).pipe(
+        first(),
+        catchError(() => of([]))
+      ),
+      pisaAssemblyData: this.globalStore.select(EntrySelectors.pisaAssemblies).pipe(
+        first(),
+        catchError(() => of([]))
+      ),
+      pfamMappings: this.globalStore.select(EntrySelectors.pfamMapping).pipe(
+        first(),
+        catchError(() => of(null))
+      ),
+      cathMappings: this.globalStore.select(EntrySelectors.cathMapping).pipe(
+        first(),
+        catchError(() => of(null))
+      ),
+      scopMappings: this.globalStore.select(EntrySelectors.scop175Mapping).pipe(
+        first(),
+        catchError(() => of(null))
+      ),
+      ligands: this.globalStore.select(EntrySelectors.boundLigands).pipe(
+        first(),
+        catchError(() => of(null))
+      ),
+      modifications: this.globalStore.select(EntrySelectors.modifications).pipe(
+        first(),
+        catchError(() => of(null))
+      ),
+      carbohydrates: this.globalStore.select(EntrySelectors.carbohydrates).pipe(
+        first(),
+        catchError(() => of(null))
+      ),
+      uniprotMapping: this.globalStore.select(EntrySelectors.uniprotMapping).pipe(
+        first(),
+        catchError(() => of(null))
+      ),
+      bestStrMapUniProtId: this.globalStore.select(EntrySelectors.bestStructuresMappingsByUniProtIds).pipe(
+        first(),
+        catchError(() => of(null))
+      ),
+      macromolecules: this.globalStore.select(EntrySelectors.macroMolecules).pipe(
+        first(),
+        catchError(() => of(null))
+      ),
+    })
       .pipe(
-        map(
-          ([
-            complexDetails,
-            assemblyData,
-            pisaAssemblyData,
-            pfamMappings,
-            cathMappings,
-            scopMappings,
-            ligands,
-            modifications,
-            carbohydrates,
-            uniprotMapping,
-            bestStrMapUniProtId,
-            macromolecules,
-          ]) => {
-            for (const tabName of [TabNames.Assemblies, TabNames.Domains, TabNames.Ligands, TabNames.Macromolecules]) {
-              let tempTableData: DataToTable;
-              if (tabName === TabNames.Assemblies && this.isNotUndefined([complexDetails, assemblyData, pisaAssemblyData])) {
-                tempTableData = new AssemblyDataToTable(complexDetails, assemblyData, pisaAssemblyData);
-              } else if (
-                tabName === TabNames.Domains &&
-                pfamMappings &&
-                cathMappings &&
-                scopMappings &&
-                this.isNotUndefined([pfamMappings, cathMappings, scopMappings, macromolecules, this.molstarResidueInfo()])
-              ) {
-                tempTableData = new DomainDataToTable(pfamMappings!, cathMappings!, scopMappings!, macromolecules, this.molstarResidueInfo());
-              } else if (tabName === TabNames.Ligands && this.isNotUndefined([ligands, modifications, this.molstarResidueInfo()])) {
-                tempTableData = new LigandDataToTable(ligands, modifications, this.molstarResidueInfo());
-              } else if (
-                tabName === TabNames.Macromolecules &&
-                this.isNotUndefined([carbohydrates, uniprotMapping, bestStrMapUniProtId, macromolecules, this.molstarResidueInfo()])
-              ) {
-                tempTableData = new MacromoleculeDataToTable(carbohydrates, uniprotMapping!, bestStrMapUniProtId!, macromolecules, this.molstarResidueInfo());
-              } else {
-                return;
-              }
-
-              tempTableData.generateTableData();
-              tempTableData.generateTableFilters();
-
-              this.compCommunication.setTabData(tabName, tempTableData);
-            }
-
-            this.compCommunication.isTabDataGenerated.set(true);
-            this.tabDataLoaded.set(true);
-            const tableData = this.compCommunication.getTabData(this.tabName());
-            this.tableData.set(tableData);
-          }
-        ),
-        catchError((error) => {
-          console.error('Error processing interactive tables data:', error);
-          return EMPTY;
-        })
+        tap((initialData) => this.processTableData(initialData)),
+        switchMap(() =>
+          combineLatest({
+            complexDetails: this.globalStore.select(EntrySelectors.complexDetails).pipe(catchError(() => of(null))),
+            assemblyData: this.globalStore.select(EntrySelectors.assemblies).pipe(catchError(() => of([]))),
+            pisaAssemblyData: this.globalStore.select(EntrySelectors.pisaAssemblies).pipe(catchError(() => of([]))),
+            pfamMappings: this.globalStore.select(EntrySelectors.pfamMapping).pipe(catchError(() => of(null))),
+            cathMappings: this.globalStore.select(EntrySelectors.cathMapping).pipe(catchError(() => of(null))),
+            scopMappings: this.globalStore.select(EntrySelectors.scop175Mapping).pipe(catchError(() => of(null))),
+            ligands: this.globalStore.select(EntrySelectors.boundLigands).pipe(catchError(() => of(null))),
+            modifications: this.globalStore.select(EntrySelectors.modifications).pipe(catchError(() => of(null))),
+            carbohydrates: this.globalStore.select(EntrySelectors.carbohydrates).pipe(catchError(() => of(null))),
+            uniprotMapping: this.globalStore.select(EntrySelectors.uniprotMapping).pipe(catchError(() => of(null))),
+            bestStrMapUniProtId: this.globalStore.select(EntrySelectors.bestStructuresMappingsByUniProtIds).pipe(catchError(() => of(null))),
+            macromolecules: this.globalStore.select(EntrySelectors.macroMolecules).pipe(catchError(() => of(null))),
+          }).pipe(tap((updatedData) => this.processTableData(updatedData)))
+        )
       )
       .subscribe();
+  }
+
+  // Extracted function to process data
+  private processTableData(data: any) {
+    for (const tabName of [TabNames.Assemblies, TabNames.Domains, TabNames.Ligands, TabNames.Macromolecules]) {
+      let tempTableData: DataToTable;
+
+      if (tabName === TabNames.Assemblies && this.isNotUndefined([data.complexDetails, data.assemblyData, data.pisaAssemblyData])) {
+        tempTableData = new AssemblyDataToTable(data.complexDetails, data.assemblyData, data.pisaAssemblyData);
+      } else if (
+        tabName === TabNames.Domains &&
+        this.isNotUndefined([data.pfamMappings, data.cathMappings, data.scopMappings, data.macromolecules, this.molstarResidueInfo()])
+      ) {
+        tempTableData = new DomainDataToTable(data.pfamMappings!, data.cathMappings!, data.scopMappings!, data.macromolecules, this.molstarResidueInfo());
+      } else if (tabName === TabNames.Ligands && this.isNotUndefined([data.ligands, data.modifications, this.molstarResidueInfo()])) {
+        tempTableData = new LigandDataToTable(data.ligands, data.modifications, this.molstarResidueInfo());
+      } else if (
+        tabName === TabNames.Macromolecules &&
+        this.isNotUndefined([data.carbohydrates, data.uniprotMapping, data.bestStrMapUniProtId, data.macromolecules, this.molstarResidueInfo()])
+      ) {
+        tempTableData = new MacromoleculeDataToTable(
+          data.carbohydrates,
+          data.uniprotMapping!,
+          data.bestStrMapUniProtId!,
+          data.macromolecules,
+          this.molstarResidueInfo()
+        );
+      } else {
+        continue;
+      }
+
+      tempTableData.generateTableData();
+      tempTableData.generateTableFilters();
+      this.compCommunication.setTabData(tabName, tempTableData);
+    }
+
+    this.compCommunication.isTabDataGenerated.set(true);
+    this.tabDataLoaded.set(true);
+    this.tableData.set(this.compCommunication.getTabData(this.tabName()));
   }
 
   public processFilesData(data: any) {
@@ -180,45 +229,6 @@ export class MainDataProcessingFacade {
 
     return { downloads: downloadsUpdated, views: viewsUpdated };
   }
-
-  //   // const isTabDataGenerated = this.compCommunication.isTabDataGenerated();
-  //   const tabsConfig: TabConfig[] = [];
-  //   const tabsStatus: { [key: string]: string } = {};
-  //   const tableTabsData = allTabs.filter((tab) => tableTabs.indexOf(tab.name) > -1);
-  //   for (const tab of tableTabsData) {
-  //     // an interactive table has data if the data has been loaded and the number of table rows is bigger than 0
-  //     tabsStatus[tab.name] = this.tabDataLoaded() ? 'loaded' : 'loading';
-  //     const dataExists = this.tabDataLoaded() ? this.compCommunication.getTabData(tab.name).tableRows().length > 0 : false;
-  //     if (this.tabDataLoaded()) tabsStatus[tab.name] = dataExists ? 'has-data' : 'empty-data';
-
-  //     const hasData = this.tabDataLoaded() && dataExists;
-  //     tabsConfig.push({
-  //       id: tab.name,
-  //       displayName: tab.display,
-  //       width: '229px',
-  //       tagContent: hasData ? '' : 'N/A',
-  //       tagClass: hasData ? 'no-chip' : 'na',
-  //     });
-  //   }
-  //   tabsConfig.push({
-  //     id: 'Experiments',
-  //     displayName: 'Experiments and Validation',
-  //     width: '229px',
-  //     tagContent: '',
-  //     tagClass: 'no-chip',
-  //   });
-  //   tabsConfig.push({
-  //     id: 'Citations',
-  //     displayName: 'Citations',
-  //     width: '96px',
-  //     tagContent: '',
-  //     tagClass: 'no-chip',
-  //   });
-  //   return {
-  //     config: tabsConfig,
-  //     status: tabsStatus,
-  //   };
-  // });
 
   public getPageData(): void {
     this.globalStore.dispatch(EntryActions.getSummaryData());

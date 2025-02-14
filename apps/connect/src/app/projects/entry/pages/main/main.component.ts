@@ -23,6 +23,7 @@ import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visu
 import { InteractiveTablesComponent } from '../../components/interactive-tables/interactive-tables.component';
 import { DetailsDashboardComponent } from '../../components/details-dashboard/details-dashboard.component';
 import { ExperimentsValidationComponent } from '../../components/experiments-validation/experiments-validation.component';
+import { EntryPageHeaderComponent } from '../../components/entry-page-header/entry-page-header.component';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -54,6 +55,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     ExperimentsValidationComponent,
     InteractiveTablesComponent,
     DetailsDashboardComponent,
+    EntryPageHeaderComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -79,16 +81,20 @@ export class EntryMainPageComponent implements OnInit {
 
   public readonly commonTabs = computed(() => {
     const isTabDataGenerated = this.compCommunication.isTabDataGenerated();
-    // const currentTab = this.compCommunication.currentTab();
-    // const dataExists = isTabDataGenerated ? this.compCommunication.getTabData(currentTab).tableRows().length > 0 : false;
-    const tabs = ['Assemblies', 'Macromolecules', 'Ligands', 'Domains'];
+    const tabs = [
+      { label: 'Assemblies', id: 'Assemblies' },
+      { label: 'Macromolecules', id: 'Macromolecules' },
+      { label: 'Ligands and Environments', id: 'Ligands' },
+      { label: 'Domains', id: 'Domains' },
+    ];
     const mappedCommonTabs = [];
     for (const tab of tabs) {
-      const dataExists = isTabDataGenerated ? this.compCommunication.getTabData(tab).tableRows().length > 0 : false;
+      const dataExists = isTabDataGenerated ? this.compCommunication.getTabData(tab.id).tableRows().length > 0 : false;
       const hasData = isTabDataGenerated && dataExists;
       mappedCommonTabs.push({
-        name: tab,
+        name: tab.label,
         tag: hasData ? '' : 'N/A',
+        id: tab.id,
       });
     }
     return mappedCommonTabs;
@@ -104,13 +110,13 @@ export class EntryMainPageComponent implements OnInit {
   @ViewChild('molstarViewer') molstarViewer!: ElementRef;
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
-  selectedTab = 0; // Default tab
+  selectedTab = 0;
 
   constructor() {
     this.route.queryParams.subscribe((params) => {
       const routeTabs = this.dataProcessing.routeTabs;
       const tabName = params['tab'];
-      const tabIndex = routeTabs?.indexOf(tabName?.toLowerCase()) ?? 0;
+      const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.selectedTab = tabIndex;
     });
   }
@@ -148,7 +154,7 @@ export class EntryMainPageComponent implements OnInit {
 
   selectTab(event: MatTabChangeEvent) {
     const routeTabs = this.dataProcessing.routeTabs;
-    const tabName = routeTabs[event.index];
+    const tabName = routeTabs[event.index].id;
     this.previousTab = `${tabName}`;
     this.tabSwitchOrigin.set('main');
     this.currentTab.set(tabName);
@@ -157,7 +163,7 @@ export class EntryMainPageComponent implements OnInit {
     }, 2000);
     this.router.navigate([], {
       queryParams: { tab: tabName },
-      queryParamsHandling: 'merge', // to preserve existing params
+      queryParamsHandling: 'merge',
     });
   }
 }

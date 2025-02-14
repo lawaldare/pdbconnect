@@ -63,6 +63,7 @@ export class EntryApiService {
           releaseDate: releasedDateObj,
           revisionDate: revisionDateObj,
           assemblies: datum.assemblies,
+          relatedStructures: datum.related_structures,
         };
       })
     );

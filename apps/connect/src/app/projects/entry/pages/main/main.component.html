@@ -2,9 +2,10 @@
 <pdbc-pdbe-header-search id="entry-search" [headerSearchConfig]="pdbeSearchConfig"></pdbc-pdbe-header-search>
 @if (statusCode() === 'REL') {
   <section class="container">
+    <pdbc-entry-page-header />
     <main>
       <mat-tab-group (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTab">
-        <mat-tab label="Information"> <pdbc-information-tab /> </mat-tab>
+        <mat-tab label="Summary"> <pdbc-information-tab /> </mat-tab>
         <mat-tab label="Model quality">
           <ng-template matTabContent> <pdbc-experiments-validation [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" /> </ng-template>
         </mat-tab>
@@ -16,13 +17,13 @@
             </ng-template>
             <ng-template matTabContent>
               @if (tabDataLoaded() && molstarResidueInfoLoaded()) {
-                @if (tab.tag === '') {
-                  <section class="common-tab">
-                    <pdbc-interactive-tables [tabName]="dataProcessing.getTableName(tab.name)" [rowHeight]="118" />
-                    <pdbc-details-dashboard [tabName]="dataProcessing.getTableName(tab.name)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
-                  </section>
-                } @else {
+                @if (tab.tag) {
                   <h5>No {{ tab.name }} data available</h5>
+                } @else {
+                  <section class="common-tab">
+                    <pdbc-interactive-tables [tabName]="dataProcessing.getTableName(tab.id)" [rowHeight]="118" />
+                    <pdbc-details-dashboard [tabName]="dataProcessing.getTableName(tab.id)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
+                  </section>
                 }
               } @else {
                 <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>

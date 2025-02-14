@@ -12,6 +12,26 @@ thead {
   }
 }
 
+.mat-expansion-panel-spacing {
+  margin: 0 !important;
+}
+
+.mat-expansion-panel-header-title {
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 28.5px;
+}
+
+.mat-expansion-panel-content {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+}
+
+.mat-expansion-panel-header {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+  padding: 0 10px 0 24px !important;
+  height: 36px !important;
+}
+
 .mat-mdc-menu-panel {
   min-width: 160px !important;
 }
@@ -25,6 +45,7 @@ thead {
   border: 3px solid #f3f3f3;
   border-right: none;
   align-items: center;
+  font-family: 'IBM Plex Sans', sans-serif !important;
 
   span.mdc-tab__content {
     span.mdc-tab__text-label {
@@ -129,10 +150,6 @@ mat-tab-header {
   display: none !important;
 }
 
-.mat-expansion-panel-header {
-  height: 36px !important;
-}
-
 .mat-expansion-panel {
   box-shadow: none !important;
   border-bottom: 1px solid #e5e8ed;
@@ -141,11 +158,5 @@ mat-tab-header {
 .mat-expansion-panel-body {
   max-height: 250px;
   overflow-y: scroll;
-  padding: 16px 0 16px 22px !important;
+  padding: 0 10px 16px 22px !important;
 }
-
-/*
-.mat-expansion-panel-header {
-  padding: 16px 0 !important;
-}
-*/
