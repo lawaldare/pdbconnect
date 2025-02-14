@@ -79,6 +79,10 @@ export class OverviewMolstarTabListViewComponent implements OnInit {
     return '';
   });
 
+  public onOpenAssemblyPanel(tabName: string) {
+    this.stateManagement.switchCurrentTab(tabName);
+  }
+
   // Create a computed signal for having related entries
   public hasRelatedEntries = computed(() => {
     const relatedEntries = this.overviewMolstarFacade.relatedEntries();

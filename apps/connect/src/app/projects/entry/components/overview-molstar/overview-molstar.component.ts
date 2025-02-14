@@ -114,7 +114,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
     await this.overviewMolstarFacade.getColorsFromMolj([this.preferredAssemblyImgName!, ...this.imagesForDomains, ...modresImg]);
 
     this.processComplexDetails();
-    this.setActiveTab();
+    // this.setActiveTab();
     this.isOverviewSectionDisplayed.set(true);
   }
 

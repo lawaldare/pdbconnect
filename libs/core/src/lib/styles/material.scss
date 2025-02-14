@@ -30,6 +30,10 @@ thead {
   font-family: 'IBM Plex Sans', sans-serif !important;
   padding: 0 10px 0 24px !important;
   height: 36px !important;
+
+  &.mat-expanded {
+    background: #f3f3f3 !important;
+  }
 }
 
 .mat-mdc-menu-panel {

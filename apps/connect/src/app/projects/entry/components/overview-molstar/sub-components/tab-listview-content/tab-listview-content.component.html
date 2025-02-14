@@ -1,5 +1,5 @@
 <mat-accordion>
-  <mat-expansion-panel>
+  <mat-expansion-panel (opened)="onOpenAssemblyPanel('Assembly')">
     <mat-expansion-panel-header>
       <mat-panel-title> Preferred assembly </mat-panel-title>
     </mat-expansion-panel-header>
@@ -65,7 +65,7 @@
       </article>
     </div>
   </mat-expansion-panel>
-  <mat-expansion-panel>
+  <mat-expansion-panel (opened)="onOpenAssemblyPanel('Macromolecules')">
     <mat-expansion-panel-header>
       <mat-panel-title> Macromolecules ({{ macromoleculesOverviewData().length }}) </mat-panel-title>
     </mat-expansion-panel-header>
@@ -98,7 +98,7 @@
       }
     }
   </mat-expansion-panel>
-  <mat-expansion-panel>
+  <mat-expansion-panel (opened)="onOpenAssemblyPanel('Ligands')">
     <mat-expansion-panel-header>
       <mat-panel-title> Ligands ({{ ligandsOverviewData().length }})</mat-panel-title>
     </mat-expansion-panel-header>
@@ -131,7 +131,7 @@
       }
     }
   </mat-expansion-panel>
-  <mat-expansion-panel>
+  <mat-expansion-panel (opened)="onOpenAssemblyPanel('Domains')">
     <mat-expansion-panel-header>
       <mat-panel-title> Domains ({{ domainCount() }}) </mat-panel-title>
     </mat-expansion-panel-header>
@@ -188,7 +188,7 @@
       }
     }
   </mat-expansion-panel>
-  <mat-expansion-panel>
+  <mat-expansion-panel (opened)="onOpenAssemblyPanel('Modifications')">
     <mat-expansion-panel-header>
       <mat-panel-title> Modifications ({{ modificationsOverviewData().length }}) </mat-panel-title>
     </mat-expansion-panel-header>

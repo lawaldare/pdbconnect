@@ -82,12 +82,10 @@
 
   @if (qualityScores() !== undefined) {
     <div class="info-row">
-      <span class="entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="modelQualitySummaryTooltip" matTooltipPosition="below"
-        >PDB model quality summary</span
-      >
+      <span>PDB model quality summary</span>
       <article>
         <pdbc-str-quality-gradient [componentType]="'GeometryFit_RdToBl'" [renderGradients]="qualityScores()!"></pdbc-str-quality-gradient>
-        <span class="qualify-span">Percentile-sliders comparing the quality scores of a model with other models in the archive. <a>Learn more</a></span>
+        <span class="qualify-span">Percentile-sliders comparing the quality scores of a model with other models in the archive.</span>
 
         <!-- <a [href]="'https://doi.org/' + publication().pdbEntryDOI" target="_blank" -->
         <!-- <a
