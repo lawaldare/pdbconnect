@@ -172,12 +172,12 @@ export class MacromoleculeDataToTable extends DataToTable {
     startEndByEntityByChain: MacromoleculesChainBoundaries
   ) {
     const mappingsByEntityByAccession: EntityUniProtMapping = {};
-    if (uniprotMapping) {
+    if (this.isNotEmptyObject(uniprotMapping)) {
       for (const [uniprotAcc, mapping] of Object.entries(uniprotMapping)) {
         for (const mappingObj of mapping.mappings) {
-          const bestStructureForChain = bestStructuresMappingsByUniProtIds[uniprotAcc].filter(
-            (bestStructureData) => bestStructureData.chain_id === mappingObj.chain_id
-          )[0];
+          const bestStructureForChain = this.isNotEmptyObject(bestStructuresMappingsByUniProtIds)
+            ? bestStructuresMappingsByUniProtIds[uniprotAcc].filter((bestStructureData) => bestStructureData.chain_id === mappingObj.chain_id)[0]
+            : { coverage: 0 };
           mappingsByEntityByAccession[mappingObj.entity_id] = mappingsByEntityByAccession[mappingObj.entity_id] ?? {};
           mappingsByEntityByAccession[mappingObj.entity_id][uniprotAcc] = mappingsByEntityByAccession[mappingObj.entity_id][uniprotAcc] ?? [];
 
@@ -332,5 +332,9 @@ export class MacromoleculeDataToTable extends DataToTable {
       newFilters = [...this.tableFilters()];
     }
     return newFilters;
+  }
+
+  private isNotEmptyObject(obj: any): boolean {
+    return obj && Object.keys(obj).length > 0;
   }
 }
