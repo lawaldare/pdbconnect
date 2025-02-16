@@ -1,50 +1,45 @@
 <pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
 <pdbc-pdbe-header-search id="entry-search" [headerSearchConfig]="pdbeSearchConfig"></pdbc-pdbe-header-search>
 @if (statusCode() === 'REL') {
-  <section class="container">
-    <pdbc-entry-page-header />
-    <main>
-      <mat-tab-group (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTab">
-        <mat-tab label="Summary"> <pdbc-information-tab /> </mat-tab>
-        <mat-tab label="Model quality">
-          <ng-template matTabContent> <pdbc-experiments-validation [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" /> </ng-template>
-        </mat-tab>
-        @for (tab of commonTabs(); track tab) {
-          <mat-tab class="common-tab">
-            <ng-template mat-tab-label>
-              <span class="tab-tag na">{{ tab.tag }}</span
-              >{{ tab.name }}
-            </ng-template>
-            <ng-template matTabContent>
-              @if (tabDataLoaded() && molstarResidueInfoLoaded()) {
-                @if (tab.tag) {
-                  <h5>No {{ tab.name }} data available</h5>
-                } @else {
-                  <section class="common-tab">
-                    <pdbc-interactive-tables [tabName]="dataProcessing.getTableName(tab.id)" [rowHeight]="118" />
-                    <pdbc-details-dashboard [tabName]="dataProcessing.getTableName(tab.id)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
-                  </section>
-                }
-              } @else {
-                <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
-              }
-            </ng-template>
-          </mat-tab>
-        }
-        <mat-tab label="Citations">
-          <ng-template matTabContent> <pdbc-citations-tab /> </ng-template>
-        </mat-tab>
-      </mat-tab-group>
+<section class="container">
+  <pdbc-entry-page-header />
+  <main>
+    <mat-tab-group (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTab">
+      <mat-tab label="Summary"> <pdbc-summary-tab /> </mat-tab>
+      <mat-tab label="Model quality">
+        <ng-template matTabContent> <pdbc-experiments-validation [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" /> </ng-template>
+      </mat-tab>
+      @for (tab of commonTabs(); track tab) {
+      <mat-tab class="common-tab">
+        <ng-template mat-tab-label> <span class="tab-tag na">{{ tab.tag }}</span>{{ tab.name }} </ng-template>
+        <ng-template matTabContent>
+          @if (tabDataLoaded() && molstarResidueInfoLoaded()) { @if (tab.tag) {
+          <h5>No {{ tab.name }} data available</h5>
+          } @else {
+          <section class="common-tab">
+            <pdbc-interactive-tables [tabName]="dataProcessing.getTableName(tab.id)" [rowHeight]="118" />
+            <pdbc-details-dashboard [tabName]="dataProcessing.getTableName(tab.id)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
+          </section>
+          } } @else {
+          <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+          }
+        </ng-template>
+      </mat-tab>
+      }
+      <mat-tab label="Citations">
+        <ng-template matTabContent> <pdbc-citations-tab /> </ng-template>
+      </mat-tab>
+    </mat-tab-group>
 
-      <div #molstarParent style="display: none">
-        <div class="molstar-viewer" #molstarViewer></div>
-      </div>
-    </main>
-  </section>
+    <div #molstarParent style="display: none">
+      <div class="molstar-viewer" #molstarViewer></div>
+    </div>
+  </main>
+</section>
 } @else if (statusCode() === 'INITIAL') {
-  <section class="entry-page-container">
-    <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
-  </section>
+<section class="entry-page-container">
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+</section>
 } @else {
-  <pdbc-entry-main-alternative [entryStatus]="entryStatus()" />
+<pdbc-entry-main-alternative [entryStatus]="entryStatus()" />
 }

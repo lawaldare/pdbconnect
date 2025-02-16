@@ -114,28 +114,11 @@ export class OverviewMolstarComponent implements AfterViewInit {
     await this.overviewMolstarFacade.getColorsFromMolj([this.preferredAssemblyImgName!, ...this.imagesForDomains, ...modresImg]);
 
     this.processComplexDetails();
-    // this.setActiveTab();
     this.isOverviewSectionDisplayed.set(true);
   }
 
   private processComplexDetails() {
     this.overviewMolstarFacade.parseComplexDetails();
     this.overviewMolstarFacade.generateListSelectable(this.imageList, this.molstarResiduesForAssembly());
-  }
-
-  private setActiveTab() {
-    const tabMapping = [
-      { name: TabNames.Assembly, check: this.overviewMolstarFacade.assemblyData().preferred !== undefined },
-      { name: TabNames.Macromolecules, check: (this.macromolecules() ?? []).length > 0 },
-      { name: TabNames.Ligands, check: (this.ligands() ?? []).length > 0 },
-      { name: TabNames.Domains, check: this.imagesForDomains.length > 0 },
-      { name: TabNames.Modifications, check: (this.inputModifications() ?? []).length > 0 },
-    ];
-
-    const firstActiveTab = tabMapping.find((tab) => tab.check)?.name || TabNames.Assembly;
-    tabMapping.forEach((tab) => {
-      tab.check ? this.stateManagement.updateStatePropertyOfTab(tab.name, 'isInactive', false) : this.stateManagement.updateTabDisplayConfig(tab.name, 'N/A', 'na');
-    });
-    this.stateManagement.switchCurrentTab(firstActiveTab);
   }
 }

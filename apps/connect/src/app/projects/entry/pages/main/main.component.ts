@@ -17,7 +17,7 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { EntryActions } from '../../store/entry.actions';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
-import { InformationTabComponent } from '../../components/information-tab/information-tab.component';
+import { SummaryTabComponent } from '../../components/summary-tab/summary-tab.component';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { InteractiveTablesComponent } from '../../components/interactive-tables/interactive-tables.component';
@@ -34,6 +34,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
 // 3irj only carb
 // 3l3t 4 assemblies
 // 1trn interesting varying domain definitions, modifications
+// 4v99 large chains
 
 /**
  * TODO:
@@ -51,7 +52,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     NgxSkeletonLoaderModule,
     EntryMainAlternativeComponent,
     MaterialModule,
-    InformationTabComponent,
+    SummaryTabComponent,
     ExperimentsValidationComponent,
     InteractiveTablesComponent,
     DetailsDashboardComponent,

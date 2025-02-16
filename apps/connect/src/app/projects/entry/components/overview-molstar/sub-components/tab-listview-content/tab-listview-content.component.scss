@@ -150,7 +150,6 @@ article {
 // .select-gallery-container.valid:hover,
 .select-gallery-container.active {
   background: #f3f3f3;
-  border-bottom: none;
 
   .color-code-bars {
     background: #f3f3f3;
@@ -219,7 +218,6 @@ h6 {
 ::ng-deep pdbc-entry-dropdown#domain-dropdown {
   button {
     height: 25px !important;
-    width: 100% !important;
     justify-content: space-between;
     margin-bottom: 10px;
   }

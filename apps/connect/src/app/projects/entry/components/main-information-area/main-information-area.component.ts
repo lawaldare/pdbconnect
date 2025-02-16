@@ -36,4 +36,8 @@ export class MainInformationAreaComponent {
   public generateAuthorSearchUrl(term: string): string {
     return this.util.generateQueryURL(term, 'all_authors');
   }
+
+  public splitStringByCommas(str: string): string[] {
+    return str.split(',').map((e) => e.trim());
+  }
 }

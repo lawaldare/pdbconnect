@@ -12,7 +12,7 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { TableNames } from './main.component';
 import { TabNames } from '../../helpers/tab-names.enum';
 import { EntryActions } from '../../store/entry.actions';
-import { catchError, combineLatest, filter, first, forkJoin, map, of, startWith, switchMap, tap } from 'rxjs';
+import { catchError, combineLatest, first, forkJoin, of, switchMap, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
