@@ -116,7 +116,7 @@ export class EntryMainPageComponent implements OnInit {
   constructor() {
     this.route.queryParams.subscribe((params) => {
       const routeTabs = this.dataProcessing.routeTabs;
-      const tabName = params['tab'];
+      const tabName = params['activeTab'];
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.selectedTab = tabIndex;
     });
@@ -163,7 +163,7 @@ export class EntryMainPageComponent implements OnInit {
       this.doesTabHasData.set(this.compCommunication.getTabData(tabName)?.tableRows()?.length > 0);
     }, 2000);
     this.router.navigate([], {
-      queryParams: { tab: tabName },
+      queryParams: { activeTab: tabName },
       queryParamsHandling: 'merge',
     });
   }
