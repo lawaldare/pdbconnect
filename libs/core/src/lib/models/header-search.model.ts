@@ -6,7 +6,7 @@ export interface Example {
 export interface HeaderSearchConfig {
   backgroundColor?: string;
   type?: string;
-  examples?: Example[];
+  examples?: string[];
   isHomepage?: boolean;
   placeholderText?: string;
 }

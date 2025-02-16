@@ -1,12 +1,7 @@
 import { ThemeType } from '@pdbc/core';
 
 export const headerSearchComplexConfig = {
-  examples: [
-    { label: 'PDB-CPX-159519', url: '/complex/PDB-CPX-159519' },
-    { label: 'PDB-CPX-137978', url: '/complex/PDB-CPX-137978' },
-    { label: 'PDB-CPX-129080', url: '/complex/PDB-CPX-129080' },
-    { label: 'PDB-CPX-134220', url: '/complex/PDB-CPX-134220' },
-  ],
+  examples: ['PDB-CPX-159519', 'PDB-CPX-137978', 'PDB-CPX-129080', 'PDB-CPX-134220'],
   backgroundColor: 'rgba(8, 95, 92, 0.79)',
   type: ThemeType.PDBEKB,
   placeholderText: 'View PDBe-KB complex by PDBe complex ID',

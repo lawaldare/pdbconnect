@@ -25,8 +25,8 @@
     }
     <section>
       <div class="left">
-        Examples: @for(example of headerSearchConfig.examples; track example.label){
-        <a [ngClass]="chipBg" (click)="openLigand(example.label)">{{ example.label }}</a>
+        Examples: @for(id of headerSearchConfig.examples; track id){
+        <a [ngClass]="chipBg" (click)="openID(id)">{{ id }}</a>
         }
       </div>
       <!-- //TODO:To be implemented later! -->
