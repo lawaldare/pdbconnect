@@ -56,10 +56,11 @@ article {
   }
 
   .qualify-span {
-    color: var(--Neutral-700, #54585a);
+    color: #54585a;
     font-size: 14px;
     font-weight: 400;
-    line-height: 22.5px; /* 160.714% */
+    line-height: 22.5px;
+    display: block;
   }
 
   a {
