@@ -8,8 +8,7 @@
     <article>
       @for (sourceOrganism of organismScientificNames(); track sourceOrganism; let islast = $last) {
       <span>
-        <!-- <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">{{ sourceOrganism }}</a> -->
-        <a>
+        <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">
           {{ sourceOrganism }}
           <i class="icon icon-common icon-search"></i>
         </a>
@@ -27,10 +26,7 @@
       <article>{{ primaryPublication()?.title }}</article>
       <article>
         @for (authorDatum of primaryPublication()?.author_list; track authorDatum; let islast = $last) {
-        <!-- <a [href]="generateAuthorSearchUrl(authorName)" target="_blank">{{ authorName }}</a> -->
-        <a>{{ authorDatum.full_name }}</a>{{ islast ? '' : ',' }}
-        <!-- <i class="icon icon-common icon-search"></i> -->
-        }
+        <a [href]="generateAuthorSearchUrl(authorDatum.full_name ?? '')" target="_blank">{{ authorDatum.full_name }}</a>{{ islast ? '' : ',' }} }
       </article>
       <article>
         <span>
@@ -40,8 +36,7 @@
         @if (primaryPublication()?.pubmed_id) {
         <span style="white-space: nowrap">
           PMID
-          <!-- <a [href]="'https://europepmc.org/article/MED/' + publicationpubmed_id" target="_blank" -->
-          <a
+          <a [href]="'https://europepmc.org/article/MED/' + primaryPublication()?.pubmed_id" target="_blank"
             >{{ primaryPublication()?.pubmed_id }}
             <i class="icon icon-link icon-common"></i>
           </a>
@@ -51,8 +46,7 @@
       @if (primaryPublication()?.doi) {
       <article>
         DOI
-        <!-- <a [href]="'https://doi.org/' + publicationdoi" target="_blank" -->
-        <a
+        <a [href]="'https://doi.org/' +  primaryPublication()?.doi"
           >{{ primaryPublication()?.doi }}
           <i class="icon icon-link icon-common"></i>
         </a>
@@ -82,12 +76,6 @@
     <article>
       <pdbc-str-quality-gradient [componentType]="'GeometryFit_RdToBl'" [renderGradients]="qualityScores()!"></pdbc-str-quality-gradient>
       <span class="qualify-span">Percentile-sliders comparing the quality scores of a model with other models in the archive.</span>
-
-      <!-- <a [href]="'https://doi.org/' + publication().pdbEntryDOI" target="_blank" -->
-      <!-- <a
-          >{{ publication().pdbEntryDOI }}
-          <i class="icon icon-link icon-common"></i>
-        </a> -->
     </article>
   </div>
   }

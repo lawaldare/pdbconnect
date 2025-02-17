@@ -44,17 +44,22 @@ thead {
   padding: 3px !important;
 }
 
-.mdc-tab.mat-mdc-tab {
+.mat-mdc-tab-label-container {
   background: #f3f3f3;
+}
+
+.mdc-tab.mat-mdc-tab {
   border: 3px solid #f3f3f3;
   border-right: none;
   align-items: center;
   font-family: 'IBM Plex Sans', sans-serif !important;
+  padding: 10px 16px;
 
   span.mdc-tab__content {
     span.mdc-tab__text-label {
       color: var(--Neutral-900, #1a1c1a);
       text-align: center;
+      letter-spacing: 0;
 
       /* Paragraph 3 */
       font-size: 16px !important;
@@ -77,7 +82,7 @@ thead {
     }
   }
 
-  &:not(:last-child)::after {
+  &::after {
     content: '';
     position: absolute;
     right: 0;

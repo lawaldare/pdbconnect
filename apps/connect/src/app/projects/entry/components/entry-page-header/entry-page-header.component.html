@@ -3,16 +3,12 @@
     <h1 class="heading-1">{{ entryId() }}</h1>
     <div class="information">
       <span>{{ experimentalMethod() }}</span>
-      @if (resolutionValues() ?? [].length > 0) {
-        @for (resolutionValue of resolutionValues(); track resolutionValue) {
-          @if (resolutionValue !== undefined) {
-            <span>{{ resolutionValue }}Å</span>
-          }
-        }
-      }
+      @if (resolutionValues() ?? [].length > 0) { @for (resolutionValue of resolutionValues(); track resolutionValue) { @if (resolutionValue !== undefined) {
+      <span>{{ resolutionValue }}Å</span>
+      } } }
       <span>Released {{ summaryData()?.releaseDate }}</span>
       <span>
-        <a
+        <a [href]="'https://dx.doi.org/' + entryId()" target="_blank"
           >10.2210/pdb{{ entryId() }}/pdb
           <i class="icon icon-link icon-common"></i>
         </a>
