@@ -20,9 +20,9 @@ import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { SummaryTabComponent } from '../../components/summary-tab/summary-tab.component';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
-import { InteractiveTablesComponent } from '../../components/interactive-tables/interactive-tables.component';
-import { DetailsDashboardComponent } from '../../components/details-dashboard/details-dashboard.component';
-import { ExperimentsValidationComponent } from '../../components/experiments-validation/experiments-validation.component';
+import { InteractiveTablesComponent } from '../../components/shared/interactive-tables/interactive-tables.component';
+import { DetailsDashboardComponent } from '../../components/shared/details-dashboard/details-dashboard.component';
+import { ExperimentsValidationComponent } from '../../components/model-quality-tab/experiments-validation.component';
 import { EntryPageHeaderComponent } from '../../components/entry-page-header/entry-page-header.component';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';

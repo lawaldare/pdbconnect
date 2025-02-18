@@ -33,7 +33,7 @@ import { environment } from '../../../../environments/environment';
   providedIn: 'root',
 })
 export class EntryApiService {
-  private BASE_API = `${environment.pdbeBaseUrl}api/pdb/entry/`;
+  private BASE_API = `${environment.pdbeBaseUrl}api/v2/pdb/entry/`;
   private MAPPINGS_API = `${environment.pdbeBaseUrl}api/mappings/`;
   private VALIDATION_API = `${environment.pdbeBaseUrl}api/validation/`;
 

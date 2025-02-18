@@ -1,4 +1,4 @@
-import { DomainsBoundaries } from '../components/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { DomainsBoundaries } from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { DomainMapping } from '../data-models/domains.model';
 import { MolstarResidueInfo, MolstarSelectionObj } from './molstar/molstar-helpers';
 

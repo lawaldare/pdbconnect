@@ -1,0 +1,54 @@
+<div class="struc-quality-gradient-main">
+  @if (componentType && renderGradients) { @if (componentType.includes('GeometryFit')) {
+  <div class="struc-quality-gradient-img">
+    <div class="val-lane">
+      <div class="val-label paragraph-3" [ngClass]="renderGradients.basepairs ? 'big' : ''">Model geometry</div>
+      @if (renderGradients.geometry !== undefined) {
+      <span class="val-gradient" [ngClass]="componentType.includes('RdToBl') ? 'val-gradient-rdtobl' : 'val-gradient-rdtogr'">
+        <span
+          class="val-bucket"
+          [ngStyle]="{
+                  transform: 'translate(' + calcTranslate(renderGradients.geometry) + 'px)',
+                  width: (gradientWidth - 1) * 0.2 + 'px'
+                }"
+        ></span>
+      </span>
+      } @else {
+      <article>Not available</article>
+      }
+    </div>
+    @if (renderGradients.basepairs !== undefined) {
+    <div class="val-lane">
+      <div class="val-label paragraph-3" [ngClass]="renderGradients.basepairs ? 'big' : ''">DNA/RNA geometry</div>
+      <span class="val-gradient" [ngClass]="componentType.includes('RdToBl') ? 'val-gradient-rdtobl' : 'val-gradient-rdtogr'">
+        <span
+          class="val-bucket"
+          [ngStyle]="{
+                  transform: 'translate(' + calcTranslate(renderGradients.basepairs) + 'px)',
+                  width: (gradientWidth - 1) * 0.2 + 'px'
+                }"
+        ></span>
+      </span>
+    </div>
+    }
+    <div class="val-lane">
+      <div class="val-label paragraph-3" [ngClass]="renderGradients.basepairs ? 'big' : ''">Fit model/data</div>
+      @if (renderGradients.modelfit !== undefined) {
+      <span class="val-gradient" [ngClass]="componentType.includes('RdToBl') ? 'val-gradient-rdtobl' : 'val-gradient-rdtogr'">
+        <span
+          class="val-bucket"
+          [ngStyle]="{
+                  transform: 'translate(' + calcTranslate(renderGradients.modelfit) + 'px)',
+                  width: (gradientWidth - 1) * 0.2 + 'px'
+                }"
+        ></span>
+      </span>
+      } @else {
+      <article>Not available</article>
+      }
+    </div>
+  </div>
+  } @else if (componentType.includes('Multipercentile')) {
+  <svg></svg>
+  } }
+</div>

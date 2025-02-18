@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Component, DestroyRef, ElementRef, inject, input, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CitationPublicationComponent } from '../citation-publication/citation-publication.component';
+import { CitationPublicationComponent } from './sub-components/citation-publication/citation-publication.component';
 import { MaterialModule, UtilService } from '@pdbc/core';
-import { CitationXmlImagesComponent } from '../citation-xml-images/citation-xml-images.component';
+import { CitationXmlImagesComponent } from './sub-components/citation-xml-images/citation-xml-images.component';
 import { MatDialog } from '@angular/material/dialog';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { CitationDetail } from '../../data-models/publication.model';

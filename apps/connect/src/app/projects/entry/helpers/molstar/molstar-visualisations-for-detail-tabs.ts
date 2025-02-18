@@ -22,7 +22,7 @@ import {
   DomainsRowData,
   LigandsRowData,
   MacromoleculesRowData,
-} from '../../components/interactive-tables/data-models-and-definitions/row-and-table.model';
+} from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarBaseClass, MolstarConfigObject } from './molstar-base-class';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';

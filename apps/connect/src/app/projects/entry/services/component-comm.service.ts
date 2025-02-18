@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { MolstarResidueInfo } from '../helpers/molstar/molstar-helpers';
-import { DataToTable } from '../components/interactive-tables/data-processing/abstract-base-row-class';
+import { DataToTable } from '../components/shared/interactive-tables/data-processing/abstract-base-row-class';
 
 @Injectable({
   providedIn: 'root',

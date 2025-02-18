@@ -4,7 +4,7 @@ import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../store/entry.selectors';
-import { EntryDropdownComponent } from '../entry-dropdown/entry-dropdown.component';
+import { EntryDropdownComponent } from './sub-components/entry-dropdown/entry-dropdown.component';
 
 @Component({
   selector: 'pdbc-entry-page-header',

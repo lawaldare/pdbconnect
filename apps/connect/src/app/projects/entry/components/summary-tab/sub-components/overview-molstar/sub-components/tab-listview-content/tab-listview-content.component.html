@@ -1,0 +1,178 @@
+<mat-accordion>
+  <mat-expansion-panel (opened)="onOpenAssemblyPanel('Assembly')">
+    <mat-expansion-panel-header>
+      <mat-panel-title> Preferred assembly </mat-panel-title>
+    </mat-expansion-panel-header>
+    <!-- <h5 class="title assembly-title entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="preferredAssemblyTooltip" matTooltipPosition="below">
+      Assembly {{ preferredAssemblyId }} (preferred)
+    </h5> -->
+
+    @if (assemblyData().name) {
+    <div class="info-row">
+      <div class="info-row-header">
+        <h6>Assembly name</h6>
+        <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="assemblyNameTooltip" matTooltipPosition="below" />
+      </div>
+      <article>{{ assemblyData().name }}</article>
+    </div>
+    } @if (assemblyData().complexId) {
+    <div class="info-row">
+      <div class="info-row-header">
+        <h6>PDBe Complex ID</h6>
+        <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="complexIdTooltip" matTooltipPosition="below" />
+      </div>
+      <article>
+        <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?complex_id:' + assemblyData().complexId" target="_blank">{{ assemblyData().complexId }}</a>
+        <i class="icon icon-common icon-search"></i>
+      </article>
+    </div>
+    } @if (assemblyData().composition) {
+    <div class="info-row">
+      <div class="info-row-header">
+        <h6>Assembly composition</h6>
+        <img
+          src="{{ helpLogoSrc }}"
+          class="icon"
+          alt="help icon"
+          matTooltipClass="entry-pgs-tooltip"
+          [matTooltip]="assemblyCompositionTooltip"
+          matTooltipPosition="below"
+        />
+      </div>
+      <article>{{ assembly() }}</article>
+    </div>
+    }
+    <div class="info-row">
+      <h6>Entry contents</h6>
+      <article>
+        @for (contentLine of entryContentsDescription; track contentLine; let islast = $last) { {{ contentLine }}
+        <br />
+        }
+      </article>
+    </div>
+  </mat-expansion-panel>
+  <mat-expansion-panel (opened)="onOpenAssemblyPanel('Macromolecules')">
+    <mat-expansion-panel-header>
+      <mat-panel-title> Macromolecules ({{ macromoleculesOverviewData().length }}) </mat-panel-title>
+    </mat-expansion-panel-header>
+    @if (macromoleculesOverviewData().length) { @for (listItem of macromoleculesOverviewData(); track listItem) {
+    <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
+      <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+      <button class="select-entity-btn">{{ listItem.name }}</button>
+    </div>
+    <!-- @if (isSelected(listItem)) {
+          <div class="more-details-btn">
+            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+            <button class="details-btn" (click)="viewDetails()">View more details below</button>
+          </div>
+        } -->
+    } } @else {
+    <p>This entry does not include any information about Ligands.</p>
+    @if (hasRelatedEntries()) {
+    <p>
+      Try exploring related entries for additional details.<br />
+      Related entries @for (relatedEntry of overviewMolstarFacade.relatedEntries(); track relatedEntry; let islast = $last) {
+      <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+      @if (islast === false) { , } }
+    </p>
+    } }
+  </mat-expansion-panel>
+  <mat-expansion-panel (opened)="onOpenAssemblyPanel('Ligands')">
+    <mat-expansion-panel-header>
+      <mat-panel-title> Ligands ({{ ligandsOverviewData().length }})</mat-panel-title>
+    </mat-expansion-panel-header>
+    @if (ligandsOverviewData().length) { @for (listItem of ligandsOverviewData(); track listItem) {
+    <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
+      <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+      <button class="select-entity-btn">{{ listItem.name }}</button>
+    </div>
+    <!-- @if (isSelected(listItem)) {
+          <div class="more-details-btn">
+            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+            <button class="details-btn" (click)="viewDetails()">View more details below</button>
+          </div>
+        } -->
+    } } @else {
+    <p>This entry does not include any information about Ligands.</p>
+    @if (hasRelatedEntries()) {
+    <p>
+      Try exploring related entries for additional details.<br />
+      Related entries @for (relatedEntry of overviewMolstarFacade.relatedEntries(); track relatedEntry; let islast = $last) {
+      <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+      @if (islast === false) { , } }
+    </p>
+    } }
+  </mat-expansion-panel>
+  <mat-expansion-panel (opened)="onOpenAssemblyPanel('Domains')">
+    <mat-expansion-panel-header>
+      <mat-panel-title> Domains ({{ domainCount() }}) </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    @if (domainsDataByResource() && domainCount() > 0) {
+    <pdbc-entry-dropdown
+      id="domain-dropdown"
+      [downloadable]="false"
+      [islink]="false"
+      [fullwidth]="false"
+      [options]="domainResourceCounts()"
+      [title]="getDomainResourceCountTxt(currentDomainResource)"
+      (optionClickedEvent)="onDomainResourceSelect($event)"
+    >
+    </pdbc-entry-dropdown>
+    @for (nestedListObj of getDomainsListViewData; track nestedListObj) {
+    <div class="select-gallery-container invalid">
+      <div class="color-code-bar" [ngStyle]="{ 'background-color': nestedListObj.parentColor }"></div>
+      <button class="select-entity-btn">{{ nestedListObj.parentName }}</button>
+    </div>
+    @for (listItem of nestedListObj.nestedSelectables; track listItem) {
+    <div class="select-gallery-container valid nested-1" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
+      <div class="color-code-bars">
+        @for (color of listItem.colors; track color) {
+        <div class="color-code-sqr" [ngStyle]="{ 'background-color': color }"></div>
+        }
+      </div>
+      <button class="select-entity-btn">{{ listItem.name }}</button>
+    </div>
+    <!-- @if (isSelected(listItem)) {
+            <div class="more-details-btn">
+              <button class="details-btn" (click)="viewDetails()">View more details below</button>
+            </div>
+          } -->
+    } } } @else {
+    <p>This entry does not include any information about Domains.</p>
+    @if (hasRelatedEntries()) {
+    <p>
+      Try exploring related entries for additional details.<br />
+      Related entries @for (relatedEntry of overviewMolstarFacade.relatedEntries(); track relatedEntry; let islast = $last) {
+      <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+      @if (islast === false) { , } }
+    </p>
+    } }
+  </mat-expansion-panel>
+  <mat-expansion-panel (opened)="onOpenAssemblyPanel('Modifications')">
+    <mat-expansion-panel-header>
+      <mat-panel-title> Modifications ({{ modificationsOverviewData().length }}) </mat-panel-title>
+    </mat-expansion-panel-header>
+    @if (modificationsOverviewData().length) { @for (listItem of modificationsOverviewData(); track listItem) {
+    <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
+      <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+      <button class="select-entity-btn">{{ listItem.name }}</button>
+    </div>
+    <!-- @if (isSelected(listItem)) {
+          <div class="more-details-btn">
+            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+            <button class="details-btn" (click)="viewDetails()">View more details below</button>
+          </div>
+        } -->
+    } } @else {
+    <p>This entry does not include any information about Modifications.</p>
+    @if (hasRelatedEntries()) {
+    <p>
+      Try exploring related entries for additional details.<br />
+      Related entries @for (relatedEntry of overviewMolstarFacade.relatedEntries(); track relatedEntry; let islast = $last) {
+      <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+      @if (islast === false) { , } }
+    </p>
+    } }
+  </mat-expansion-panel>
+</mat-accordion>

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { DataToTable } from '../../components/interactive-tables/data-processing/abstract-base-row-class';
-import { AssemblyDataToTable } from '../../components/interactive-tables/data-processing/assembly-row-class';
-import { DomainDataToTable } from '../../components/interactive-tables/data-processing/domain-row-class';
-import { LigandDataToTable } from '../../components/interactive-tables/data-processing/ligand-row-class';
-import { MacromoleculeDataToTable } from '../../components/interactive-tables/data-processing/macromolecule-row';
+import { DataToTable } from '../../components/shared/interactive-tables/data-processing/abstract-base-row-class';
+import { AssemblyDataToTable } from '../../components/shared/interactive-tables/data-processing/assembly-row-class';
+import { DomainDataToTable } from '../../components/shared/interactive-tables/data-processing/domain-row-class';
+import { LigandDataToTable } from '../../components/shared/interactive-tables/data-processing/ligand-row-class';
+import { MacromoleculeDataToTable } from '../../components/shared/interactive-tables/data-processing/macromolecule-row';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';

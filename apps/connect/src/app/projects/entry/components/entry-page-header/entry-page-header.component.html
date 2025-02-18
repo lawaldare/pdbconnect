@@ -8,7 +8,7 @@
       } } }
       <span>Released {{ summaryData()?.releaseDate }}</span>
       <span>
-        <a [href]="'https://dx.doi.org/' + entryId()" target="_blank"
+        <a [href]="'https://dx.doi.org/10.2210/pdb' + entryId() + '/pdb'" target="_blank"
           >10.2210/pdb{{ entryId() }}/pdb
           <i class="icon icon-link icon-common"></i>
         </a>
