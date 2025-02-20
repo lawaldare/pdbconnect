@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, input, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, HostListener, inject, input, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ValidationDataProcessingFacade } from './validation-data.facade';
 import { ValidationTablesFacade } from './validation-tables.facade';
@@ -15,6 +15,11 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../store/entry.selectors';
+
+interface ValueLabel {
+  value: string;
+  label: string;
+}
 
 /**
  * Examples that should be tested when looking at this component
@@ -61,6 +66,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly util = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
 
+  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
+
   public molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
   public molstarParent = input.required<HTMLElement>(); // Parent to send back the molstar global instance
 
@@ -93,6 +100,20 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
   private isMolstarRetrieved = false;
 
+  public readonly isSticky = signal<boolean>(false);
+  public readonly validationOptions = [
+    {
+      label: 'Issue count',
+      value: 'issue_count',
+    },
+    {
+      label: 'Specific issue',
+      value: 'specific_issue',
+    },
+  ];
+
+  public selectedValidationOption = signal<ValueLabel>(this.validationOptions[0]);
+
   ngOnInit() {
     this.globalStore
       .select(EntrySelectors.experimentalDetails)
@@ -111,6 +132,21 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onWindowScroll() {
+    const scrollPosition = window.scrollY || document.documentElement.scrollTop;
+    // Check if we've scrolled past the top of the aside
+    if (scrollPosition >= 394) {
+      this.isSticky.set(true);
+    } else {
+      this.isSticky.set(false);
+    }
+  }
+
+  public selectValidationOption(option: ValueLabel) {
+    this.selectedValidationOption.set(option);
   }
 
   async ngAfterViewInit() {

@@ -16,16 +16,33 @@ export interface CustomHeaderParams extends IHeaderParams {
   selector: 'pdbc-table-header-with-tooltip',
   standalone: true,
   imports: [CommonModule, MaterialModule],
-  template: `<span class="entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="tooltipContent" matTooltipPosition="below">
-    {{ headerText }}
-  </span>`,
-  styles: [``],
+  template: `
+    <div class="info-row-header">
+      <span>{{ headerText }}</span>
+      <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="tooltipContent" matTooltipPosition="below" />
+    </div>
+  `,
+  styles: [
+    `
+      .info-row-header {
+        display: flex;
+        align-items: center;
+
+        img {
+          height: 15px;
+          cursor: pointer;
+          margin-left: 2px;
+        }
+      }
+    `,
+  ],
 })
 export class TableHeaderWithTooltipComponent implements IHeaderAngularComp {
   // params come from headerComponentParams in column-definition-objects
   private params!: CustomHeaderParams; // Use the custom interface
   public headerText = '';
   public tooltipContent = '';
+  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   agInit(params: CustomHeaderParams): void {
     this.params = params;
