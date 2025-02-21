@@ -1,0 +1,307 @@
+@import url('libs/core/src/lib/styles/pdb_connect.scss');
+
+section {
+  .container {
+    // height: 130px;
+
+    form {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      position: relative;
+      margin-bottom: 10px;
+
+      button {
+        margin-bottom: 8px !important;
+
+        @media only screen and (width <= 540px) {
+          display: none;
+        }
+
+        &.mobile {
+          display: none;
+
+          @media only screen and (width <= 540px) {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 44px;
+            padding: 8px 16px;
+          }
+        }
+      }
+
+      input {
+        border: 3px solid #d9d9d9;
+        background: #fff;
+        padding: 0 16px;
+        font-size: 19px;
+        line-height: 26.6px;
+        height: 44px;
+        margin-bottom: 8px !important;
+      }
+
+      .icon-times {
+        position: absolute;
+        right: 221px;
+        top: 12px;
+        cursor: pointer;
+      }
+    }
+
+    section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .left {
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+
+        @media only screen and (width <= 768px) {
+          display: none;
+        }
+
+        a {
+          font-size: 16px;
+          line-height: 28px;
+          padding: 0 10px;
+          display: inline-flex;
+          margin-right: 10px;
+          border-radius: 7px;
+          border: none;
+          color: #fff;
+
+          &.pdbe-chip-bg {
+            background: var(--Brand-800, #056643);
+
+            &:hover {
+              background: var(--Brand-900, #0a5032);
+            }
+          }
+
+          &.pdbe-kb-chip-bg {
+            background: #085f5c;
+
+            &:hover {
+              background: #074744;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+button {
+  margin-right: 0 !important;
+}
+
+a *,
+a *::before,
+a *::after {
+  box-sizing: content-box !important;
+  box-sizing: content-box !important;
+  box-sizing: content-box !important;
+}
+
+// .input-field {
+//   width: 100%;
+//   height: 32px;
+//   line-height: 32px;
+//   font-size: 12px;
+// }
+
+.result-container {
+  position: fixed;
+  display: inline-block;
+  background: #fff;
+  z-index: 999;
+  box-shadow:
+    0 -5px 21px -12px rgb(0 0 0 / 20%),
+    0 5px 5px -3px rgb(0 0 0 / 20%),
+    0 8px 10px 1px rgb(0 0 0 / 14%),
+    0 3px 14px 2px rgb(0 0 0 / 12%);
+  margin-top: 2px;
+  margin-bottom: 20px;
+  overflow-y: auto;
+  height: 100%;
+  width: 66%;
+  top: 190px;
+}
+
+.result-card {
+  margin: 5px;
+  padding: 5px;
+  border: solid 1px rgb(115 179 96 / 500%) !important;
+  width: 250px;
+  max-height: 370px;
+  overflow: hidden;
+  box-sizing: content-box !important;
+}
+
+.secondary-result-card-warpper {
+  margin: 5px;
+  padding: 5px;
+  border: solid 1px rgb(115 179 96 / 500%) !important;
+  box-sizing: content-box !important;
+}
+
+.result-card-heading {
+  box-sizing: content-box !important;
+  border: 1px solid rgb(115 179 96) !important;
+  background: rgb(115 179 96 / 100%);
+  color: #fff;
+  height: 20px;
+  padding: 5px 10px;
+  line-height: 20px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
+  flex-basis: auto !important;
+}
+
+.more-result-card-heading {
+  background: rgb(115 179 96 / 100%);
+  color: #fff;
+  height: 20px;
+  padding: 5px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 5px;
+  line-height: 20px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  .show-more-link:hover {
+    color: #fff !important;
+  }
+}
+
+.secondary-result-card-warpper .result-card-body {
+  flex-basis: auto !important;
+}
+
+.result-card-footer {
+  height: 20px;
+  padding: 5px 10px;
+  line-height: 20px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-top: 1px dotted #999;
+  text-align: right;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.secondar-result-card-item,
+.secondar-result-card-item:visited {
+  width: 250px;
+  font-size: 11.5px;
+  margin: 5px;
+  border: solid 1px rgb(115 179 96 / 500%) !important;
+  cursor: pointer;
+  text-decoration: none !important;
+  color: #232323 !important;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+.secondar-result-card-item:hover {
+  text-decoration: none !important;
+  background: rgb(115 179 96 / 20%) !important;
+}
+
+.result-card-item,
+.result-card-item:visited {
+  font-size: 11.5px;
+  border-bottom: 1px dotted #999 !important;
+  cursor: pointer;
+  text-decoration: none !important;
+  color: #232323 !important;
+}
+
+.result-card-item:hover {
+  text-decoration: none !important;
+  background: rgb(115 179 96 / 20%) !important;
+}
+
+.result-card-item:last-child {
+  border-bottom: none !important;
+}
+
+.result-card-item:first-child {
+  margin-top: 5px !important;
+}
+
+.result-card-item-label {
+  // float: left;
+  // width: 75%;
+  // text-align: left;
+  // height: 20px;
+  // line-height: 20px;
+  // padding: 5px 0px 5px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 75%;
+}
+
+.result-card-item-count {
+  // width: 25%;
+  // text-align: right;
+  // height: 20px;
+  // line-height: 20px;
+  // padding: 5px 5px 5px 0px;
+}
+
+.show-more-link,
+.show-more-link:visited {
+  text-decoration: none !important;
+  color: #000 !important;
+  border: none;
+  background: transparent;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.show-more-link:hover {
+  text-decoration: none !important;
+  color: rgb(115 179 96 / 100%) !important;
+}
+
+.result-card-item-count-heading {
+  font-size: 12px;
+  display: inline-block;
+  float: right;
+  border: none;
+  background: transparent;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button.result-card-item-count-heading,
+button.result-card-item-count-heading:hover,
+button.result-card-item-count-heading:active,
+button.result-card-item-count-heading:visited {
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none !important;
+  font-size: 14px;
+  border-bottom: none !important;
+}
+
+.norecords-result-card {
+  margin: 0 5px;
+  padding: 5px;
+  font-size: 14px;
+  color: #666;
+  width: 250px;
+}
+
+.scrollbar-element {
+  max-height: inherit;
+}

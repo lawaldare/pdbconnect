@@ -10,3 +10,23 @@ export interface HeaderSearchConfig {
   isHomepage?: boolean;
   placeholderText?: string;
 }
+
+export interface UISearchConfig {
+  backgroundColor?: string;
+  type?: string;
+  examples?: string[];
+  placeholderText?: string;
+}
+
+export interface APISearchConfig {
+  additionalParams: string;
+  fields: string;
+  group: string;
+  groupLimit: string;
+  redirectOnClick: boolean;
+  resultBoxAlign: string;
+  searchUrl: string;
+  sort: string;
+  view: string;
+  env: string;
+}

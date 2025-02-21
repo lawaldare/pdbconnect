@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
+// import { SearchAppComponent } from '@pdbc/search-app';
+
 import { EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MaterialModule } from '@pdbc/core';
@@ -57,6 +59,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     InteractiveTablesComponent,
     DetailsDashboardComponent,
     EntryPageHeaderComponent,
+    // SearchAppComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -112,6 +115,19 @@ export class EntryMainPageComponent implements OnInit {
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
   selectedTab = 0;
+
+  // public readonly apiSearchConfig = {
+  //   additionalParams: 'rows=20000&json.nl=map&wt=json',
+  //   fields: 'value,num_pdb_entries,var_name',
+  //   group: 'group=true&group.field=category',
+  //   groupLimit: '25',
+  //   redirectOnClick: true,
+  //   resultBoxAlign: 'right',
+  //   searchUrl: 'https://www.ebi.ac.uk/pdbe/search/pdb-autocomplete/select',
+  //   sort: 'category+asc,num_pdb_entries+desc',
+  //   view: 'macromolecules',
+  //   env: 'dev',
+  // };
 
   constructor() {
     this.route.queryParams.subscribe((params) => {

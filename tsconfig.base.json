@@ -19,6 +19,7 @@
       "@pdbc/interaction-heatmap": ["libs/pdbe/interaction-heatmap/src/index.ts"],
       "@pdbc/lib-docs": ["libs/lib-docs/src/index.ts"],
       "@pdbc/notification": ["libs/pdbe/notification/src/index.ts"],
+      "@pdbc/search-app": ["libs/pdbe/search-app/src/index.ts"],
       "@pdbe-lib/dropdown-menu": ["libs/pdbe/dropdown-menu/src/index.ts"],
       "@pdbe-lib/header-logo-menu": ["libs/pdbe/header-logo-menu/src/index.ts"],
       "@pdbe-lib/header-search": ["libs/pdbe/header-search/src/index.ts"],
