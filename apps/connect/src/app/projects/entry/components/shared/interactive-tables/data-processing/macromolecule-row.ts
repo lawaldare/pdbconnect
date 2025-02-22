@@ -83,8 +83,8 @@ export class MacromoleculeDataToTable extends DataToTable {
         let moleculeLength = molecule.length;
         let carbohydrate: CarbohydrateMolecule | undefined = undefined;
         if (molecule.molecule_type.includes('carbohydrate')) {
-          carbohydrate = this.carbohydrates.filter((carb) => carb.entity_id === molecule.entity_id)[0];
-          moleculeLength = carbohydrate.chains[0].residues.length;
+          carbohydrate = this.carbohydrates?.filter((carb) => carb.entity_id === molecule.entity_id)[0];
+          moleculeLength = carbohydrate?.chains[0].residues.length;
         }
 
         const sourceOrganisms = molecule.source ? molecule.source.map((eachSource) => eachSource.organism_scientific_name) : [];
@@ -185,21 +185,21 @@ export class MacromoleculeDataToTable extends DataToTable {
 
           const startAuthorResidueNumber = isAuthorStartValid
             ? mappingObj.start.author_residue_number
-            : startEndByEntityByChain[mappingObj.entity_id][mappingObj.chain_id]['start_author_residue_number'];
+            : startEndByEntityByChain?.[mappingObj.entity_id]?.[mappingObj.chain_id]?.['start_author_residue_number'];
 
           const startAuthorInsertionCode = isAuthorStartValid
             ? mappingObj.start.author_insertion_code
-            : startEndByEntityByChain[mappingObj.entity_id][mappingObj.chain_id]['start_author_insertion_code'];
+            : startEndByEntityByChain?.[mappingObj.entity_id]?.[mappingObj.chain_id]?.['start_author_insertion_code'];
 
           const isAuthorEndValid = mappingObj.end.author_residue_number !== null;
 
           const endAuthorResidueNumber = isAuthorEndValid
             ? mappingObj.end.author_residue_number
-            : startEndByEntityByChain[mappingObj.entity_id][mappingObj.chain_id]['end_author_residue_number'];
+            : startEndByEntityByChain?.[mappingObj.entity_id]?.[mappingObj.chain_id]?.['end_author_residue_number'];
 
           const endAuthorInsertionCode = isAuthorEndValid
             ? mappingObj.end.author_insertion_code
-            : startEndByEntityByChain[mappingObj.entity_id][mappingObj.chain_id]['end_author_insertion_code'];
+            : startEndByEntityByChain?.[mappingObj.entity_id]?.[mappingObj.chain_id]?.['end_author_insertion_code'];
 
           mappingsByEntityByAccession[mappingObj.entity_id][uniprotAcc].push({
             start: `${startAuthorResidueNumber}${startAuthorInsertionCode}`,

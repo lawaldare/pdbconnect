@@ -83,12 +83,12 @@ export class AssemblyDataToTable extends DataToTable {
           complexName: complexName,
           multimericStates: mericity,
           additionalData: {
-            accessibleSurfaceArea: `${pisaAssemblyDatum.assembly.accessible_surface_area} Å`,
-            buriedSurfaceArea: `${pisaAssemblyDatum.assembly.buried_surface_area} Å`,
-            dissociationArea: `${pisaAssemblyDatum.assembly.dissociation_area} Å`,
-            dissociationEnergy: `${pisaAssemblyDatum.assembly.dissociation_energy} kcal/mol`,
-            dissociationEntropy: `${pisaAssemblyDatum.assembly.entropy} kcal/mol`,
-            symmetryNumber: `${pisaAssemblyDatum.assembly.symmetry_number}`,
+            accessibleSurfaceArea: `${pisaAssemblyDatum?.assembly?.accessible_surface_area} Å`,
+            buriedSurfaceArea: `${pisaAssemblyDatum?.assembly?.buried_surface_area} Å`,
+            dissociationArea: `${pisaAssemblyDatum?.assembly?.dissociation_area} Å`,
+            dissociationEnergy: `${pisaAssemblyDatum?.assembly?.dissociation_energy} kcal/mol`,
+            dissociationEntropy: `${pisaAssemblyDatum?.assembly?.entropy} kcal/mol`,
+            symmetryNumber: `${pisaAssemblyDatum?.assembly?.symmetry_number}`,
 
             //?TODO?: Add Molstar Selection here?
             selections: [],

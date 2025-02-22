@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { DataToTable } from '../../components/shared/interactive-tables/data-processing/abstract-base-row-class';
 import { AssemblyDataToTable } from '../../components/shared/interactive-tables/data-processing/assembly-row-class';
 import { DomainDataToTable } from '../../components/shared/interactive-tables/data-processing/domain-row-class';
@@ -12,7 +12,8 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { TableNames } from './main.component';
 import { TabNames } from '../../helpers/tab-names.enum';
 import { EntryActions } from '../../store/entry.actions';
-import { catchError, combineLatest, first, forkJoin, of, switchMap, tap } from 'rxjs';
+import { catchError, combineLatest, EMPTY, mergeMap, of, retry, startWith } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root',
@@ -21,12 +22,11 @@ export class MainDataProcessingFacade {
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public molstarResidueInfo = computed(() => this.compCommunication.molstarResidueInfo());
+  private readonly destroyRef = inject(DestroyRef);
 
   public tabDataLoaded = signal<boolean>(false);
   public tableData = signal<DataToTable>({} as DataToTable);
   private tabName = signal<TableNames>('' as TableNames);
-
-  // public readonly routeTabs = ['summary', 'model quality', 'assemblies', 'macromolecules', 'ligands and environments', 'domains', 'citations'];
 
   public readonly routeTabs = [
     { label: 'Summary', id: 'summary' },
@@ -54,80 +54,37 @@ export class MainDataProcessingFacade {
   }
 
   public processInteractiveTablesData() {
-    // Step 1: Load All APIs Initially Using `forkJoin`
-    forkJoin({
-      complexDetails: this.globalStore.select(EntrySelectors.complexDetails).pipe(
-        first(),
-        catchError(() => of(null))
-      ),
-      assemblyData: this.globalStore.select(EntrySelectors.assemblies).pipe(
-        first(),
-        catchError(() => of([]))
-      ),
-      pisaAssemblyData: this.globalStore.select(EntrySelectors.pisaAssemblies).pipe(
-        first(),
-        catchError(() => of([]))
-      ),
-      pfamMappings: this.globalStore.select(EntrySelectors.pfamMapping).pipe(
-        first(),
-        catchError(() => of(null))
-      ),
-      cathMappings: this.globalStore.select(EntrySelectors.cathMapping).pipe(
-        first(),
-        catchError(() => of(null))
-      ),
-      scopMappings: this.globalStore.select(EntrySelectors.scop175Mapping).pipe(
-        first(),
-        catchError(() => of(null))
-      ),
-      ligands: this.globalStore.select(EntrySelectors.boundLigands).pipe(
-        first(),
-        catchError(() => of(null))
-      ),
-      modifications: this.globalStore.select(EntrySelectors.modifications).pipe(
-        first(),
-        catchError(() => of(null))
-      ),
-      carbohydrates: this.globalStore.select(EntrySelectors.carbohydrates).pipe(
-        first(),
-        catchError(() => of(null))
-      ),
-      uniprotMapping: this.globalStore.select(EntrySelectors.uniprotMapping).pipe(
-        first(),
-        catchError(() => of(null))
-      ),
-      bestStrMapUniProtId: this.globalStore.select(EntrySelectors.bestStructuresMappingsByUniProtIds).pipe(
-        first(),
-        catchError(() => of(null))
-      ),
-      macromolecules: this.globalStore.select(EntrySelectors.macroMolecules).pipe(
-        first(),
-        catchError(() => of(null))
-      ),
+    const createSelectorStream = <T>(selector: any, defaultValue: T) =>
+      this.globalStore.select(selector).pipe(
+        startWith(defaultValue),
+        catchError(() => of(defaultValue))
+      );
+
+    combineLatest({
+      complexDetails: createSelectorStream(EntrySelectors.complexDetails, []),
+      assemblyData: createSelectorStream(EntrySelectors.assemblies, []),
+      pisaAssemblyData: createSelectorStream(EntrySelectors.pisaAssemblies, []),
+      pfamMappings: createSelectorStream(EntrySelectors.pfamMapping, null),
+      cathMappings: createSelectorStream(EntrySelectors.cathMapping, null),
+      scopMappings: createSelectorStream(EntrySelectors.scop175Mapping, null),
+      ligands: createSelectorStream(EntrySelectors.boundLigands, []),
+      modifications: createSelectorStream(EntrySelectors.modifications, []),
+      carbohydrates: createSelectorStream(EntrySelectors.carbohydrates, []),
+      uniprotMapping: createSelectorStream(EntrySelectors.uniprotMapping, null),
+      bestStrMapUniProtId: createSelectorStream(EntrySelectors.bestStructuresMappingsByUniProtIds, []),
+      macromolecules: createSelectorStream(EntrySelectors.macroMolecules, []),
     })
       .pipe(
-        tap((initialData) => this.processTableData(initialData)),
-        switchMap(() =>
-          combineLatest({
-            complexDetails: this.globalStore.select(EntrySelectors.complexDetails).pipe(catchError(() => of(null))),
-            assemblyData: this.globalStore.select(EntrySelectors.assemblies).pipe(catchError(() => of([]))),
-            pisaAssemblyData: this.globalStore.select(EntrySelectors.pisaAssemblies).pipe(catchError(() => of([]))),
-            pfamMappings: this.globalStore.select(EntrySelectors.pfamMapping).pipe(catchError(() => of(null))),
-            cathMappings: this.globalStore.select(EntrySelectors.cathMapping).pipe(catchError(() => of(null))),
-            scopMappings: this.globalStore.select(EntrySelectors.scop175Mapping).pipe(catchError(() => of(null))),
-            ligands: this.globalStore.select(EntrySelectors.boundLigands).pipe(catchError(() => of(null))),
-            modifications: this.globalStore.select(EntrySelectors.modifications).pipe(catchError(() => of(null))),
-            carbohydrates: this.globalStore.select(EntrySelectors.carbohydrates).pipe(catchError(() => of(null))),
-            uniprotMapping: this.globalStore.select(EntrySelectors.uniprotMapping).pipe(catchError(() => of(null))),
-            bestStrMapUniProtId: this.globalStore.select(EntrySelectors.bestStructuresMappingsByUniProtIds).pipe(catchError(() => of(null))),
-            macromolecules: this.globalStore.select(EntrySelectors.macroMolecules).pipe(catchError(() => of(null))),
-          }).pipe(tap((updatedData) => this.processTableData(updatedData)))
-        )
+        retry({ count: 3, delay: 1000 }),
+        mergeMap((data: any) => {
+          this.processTableData(data);
+          return EMPTY;
+        }),
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
   }
 
-  // Extracted function to process data
   private processTableData(data: any) {
     for (const tabName of [TabNames.Assemblies, TabNames.Domains, TabNames.Ligands, TabNames.Macromolecules]) {
       let tempTableData: DataToTable;
