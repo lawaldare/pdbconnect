@@ -258,3 +258,12 @@ article i.icon-search::before {
     line-height: 22.4px; /* 160% */
   }
 }
+
+.mat-mdc-select {
+  width: 30% !important;
+  border: 1px solid #d0d0ce;
+  padding: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22.4px;
+}

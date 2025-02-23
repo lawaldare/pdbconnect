@@ -8,18 +8,23 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
 import { expInfoTooltip, expRawDataTooltip, pdbRedoTooltip, sampleInfoTooltip, timelineTooltip, validationInfoTooltip } from '../../entry-constant';
 import { MaterialModule, UtilService } from '@pdbc/core';
-import { filter, firstValueFrom, map, timer } from 'rxjs';
+import { filter, firstValueFrom, map } from 'rxjs';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../store/entry.selectors';
+import { MolstarConfigObject } from '../../helpers/molstar/molstar-base-class';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatSelectChange } from '@angular/material/select';
 
 interface ValueLabel {
   value: string;
   label: string;
 }
+
+declare let PDBeMolstarPlugin: any;
 
 /**
  * Examples that should be tested when looking at this component
@@ -52,7 +57,7 @@ interface ValueLabel {
 @Component({
   selector: 'pdbc-experiments-validation',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MaterialModule, StrucQualityGradientsComponent],
+  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, StrucQualityGradientsComponent],
   templateUrl: './experiments-validation.component.html',
   styleUrl: './experiments-validation.component.scss',
 })
@@ -80,8 +85,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
    */
 
   // javascript functions exposed to template for parsing domains nested data
-  public readonly objectKeys = Object.keys;
-  public readonly objectValues = Object.values;
+  // public readonly objectKeys = Object.keys;
+  // public readonly objectValues = Object.values;
 
   // used in template
   public currentData = signal<ProcessedExperimentalDetails | undefined>(undefined);
@@ -98,10 +103,11 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public pdbRedoTooltip = pdbRedoTooltip;
   // Molstar components rendering and state variables
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
-  private isMolstarRetrieved = false;
+  // private molstarViewInstance: any;
+  // private isMolstarRetrieved = false;
 
   public readonly isSticky = signal<boolean>(false);
-  public readonly validationOptions = [
+  public readonly validationTypes = [
     {
       label: 'Issue count',
       value: 'issue_count',
@@ -112,7 +118,35 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     },
   ];
 
-  public selectedValidationOption = signal<ValueLabel>(this.validationOptions[0]);
+  public readonly specificIssueKinds = [
+    {
+      label: 'Clashes',
+      value: 'clashes',
+    },
+    {
+      label: 'Sidechain Outliers',
+      value: 'sidechain_outliers',
+    },
+    {
+      label: 'Ramachandran Plots',
+      value: 'ramachandran_plots',
+    },
+    {
+      label: 'Rotamer Outliers',
+      value: 'rotamer_outliers',
+    },
+    {
+      label: 'Cβ Deviations',
+      value: 'cbeta_deviations',
+    },
+    {
+      label: 'Rama-Z',
+      value: 'rama_z',
+    },
+  ];
+
+  public selectedValidationType = signal<ValueLabel>(this.validationTypes[0]);
+  public selectedSpecificIssueKind = new FormControl(this.specificIssueKinds[0].value, { nonNullable: true });
 
   ngOnInit() {
     this.globalStore
@@ -145,38 +179,68 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     }
   }
 
-  public selectValidationOption(option: ValueLabel) {
-    this.selectedValidationOption.set(option);
+  public selectValidationType(option: ValueLabel) {
+    this.selectedValidationType.set(option);
+  }
+
+  public selectSpecificIssueKind(event: MatSelectChange) {
+    this.selectedSpecificIssueKind.setValue(event.value);
+    console.log(this.selectedSpecificIssueKind.value);
   }
 
   async ngAfterViewInit() {
-    // before rendering molstar we get the singleton molstar tab instance from the template (this avoids memory leaks)
-    await this.getMolstarViewerFromParent();
-    // we render molstar with reloading config obj as true
-    await this.molstarVisualisations.renderMolstarValidation(this.entryId() ?? '', this.molstarViewerEl(), true);
+    // await this.getMolstarViewerFromParent();
+    // await this.molstarVisualisations.renderMolstarValidation(this.entryId() ?? '', this.molstarViewerEl(), true);
+
+    const molstarViewInstance = new PDBeMolstarPlugin();
+    const container = this.molstarContainer.nativeElement;
+
+    const molstarConfigObject: MolstarConfigObject = {
+      moleculeId: this.entryId() ?? '',
+      loadMaps: false,
+      bgColor: { r: 255, g: 255, b: 255 },
+      hideControls: true,
+      hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
+      landscape: true,
+      subscribeEvents: true,
+      granularity: 'residue',
+      validationAnnotation: true,
+    };
+
+    molstarViewInstance.render(container, molstarConfigObject);
+    await firstValueFrom(molstarViewInstance.events.loadComplete);
+    const galleryManager = await PDBeMolstarPlugin.extensions.StateGallery.StateGalleryManager.create(molstarViewInstance.plugin, this.entryId() ?? '');
+    let validationImg: string | undefined;
+    const imageList = galleryManager.images;
+    for (const img of imageList) {
+      if (img.filename.includes('_validation')) {
+        validationImg = img.filename;
+      }
+    }
+    if (validationImg) await galleryManager.load(validationImg);
   }
 
-  async getMolstarViewerFromParent() {
-    if (this.isMolstarRetrieved === false) {
-      // Move the molstar WebGL container into the child component
-      this.renderer.appendChild(this.molstarContainer.nativeElement, this.molstarViewerEl());
-      // Add a delay to ensure synchronicity
-      this.isMolstarRetrieved = true;
-    }
-    await firstValueFrom(timer(50)); // 100ms delay, adjust as needed
-  }
+  // async getMolstarViewerFromParent() {
+  //   if (this.isMolstarRetrieved === false) {
+  //     // Move the molstar WebGL container into the child component
+  //     this.renderer.appendChild(this.molstarContainer.nativeElement, this.molstarViewerEl());
+  //     // Add a delay to ensure synchronicity
+  //     this.isMolstarRetrieved = true;
+  //   }
+  //   await firstValueFrom(timer(50)); // 100ms delay, adjust as needed
+  // }
 
-  async sendMolstarViewerToParent() {
-    // Move the molstar WebGL container back to the parent component
-    if (this.isMolstarRetrieved === true) {
-      this.renderer.appendChild(this.molstarParent(), this.molstarViewerEl());
-      this.isMolstarRetrieved = false;
-      // Set first render for next view equal to true
-      this.molstarVisualisations.isFirstViewRender = true;
-    }
-    // Add a delay to ensure synchronicity
-    await firstValueFrom(timer(50)); // 100ms delay, adjust as needed
-  }
+  // async sendMolstarViewerToParent() {
+  //   // Move the molstar WebGL container back to the parent component
+  //   if (this.isMolstarRetrieved === true) {
+  //     this.renderer.appendChild(this.molstarParent(), this.molstarViewerEl());
+  //     this.isMolstarRetrieved = false;
+  //     // Set first render for next view equal to true
+  //     this.molstarVisualisations.isFirstViewRender = true;
+  //   }
+  //   // Add a delay to ensure synchronicity
+  //   await firstValueFrom(timer(50)); // 100ms delay, adjust as needed
+  // }
 
   /**
    * when a filter is clicked we changed the rendered data

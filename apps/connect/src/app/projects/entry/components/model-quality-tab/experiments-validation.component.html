@@ -398,14 +398,21 @@
       <div class="toolbar">
         <span>Highlight in 3D:</span>
         <div class="box">
-          @for(option of validationOptions; track option.value){
-          <button class="validation" [class.active]="option.value === selectedValidationOption().value" (click)="selectValidationOption(option)">
-            @if(option.value === selectedValidationOption().value){
+          @for(option of validationTypes; track option.value){
+          <button class="validation" [class.active]="option.value === selectedValidationType().value" (click)="selectValidationType(option)">
+            @if(option.value === selectedValidationType().value){
             <i class="icon icon-common icon-check"></i>
             } {{option.label}}
           </button>
           }
         </div>
+        @if(selectedValidationType().value === 'specific_issue'){
+        <mat-select [formControl]="selectedSpecificIssueKind" (selectionChange)="selectSpecificIssueKind($event)">
+          @for (option of specificIssueKinds; track option.label) {
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
+          }
+        </mat-select>
+        }
       </div>
       <div class="container-3d">
         <div class="molstar-parent">

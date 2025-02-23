@@ -80,40 +80,40 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
    * @param molstarContainer molstar container HTMLElement, currently not used
    * @param reloadConfigObj true or false for whether configuration object should be reloaded
    */
-  public async renderMolstarValidation(entryId: string, molstarContainer: HTMLElement, reloadConfigObj: boolean) {
-    const molstarConfigObject: MolstarConfigObject = {
-      moleculeId: entryId,
-      loadMaps: false,
-      bgColor: { r: 255, g: 255, b: 255 },
-      hideControls: true,
-      hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
-      landscape: true,
-      subscribeEvents: true,
-      validationAnnotation: true,
-      granularity: 'residue',
-    };
-    if (reloadConfigObj) {
-      if (this.isMolstarRendered()) {
-        await this.updateMolstar(molstarConfigObject);
-      } else {
-        this.isMolstarRendered.set(true);
-        console.error('MOLSTAR INSTANCE DOUBLE INIT');
-      }
-    }
-    // currently validationAnnotation: true is unfortunately not yet working with updateMolstar
-    // this means we have to use the image gallery to display validation annotations
-    await this.initImageGallery(entryId); // so we load it
-    let validationImg: string | undefined;
-    const imageList = this.galleryManager().images;
-    for (const img of imageList) {
-      // and iterate the image list looking for validation image
-      if (img.filename.includes('_validation')) {
-        validationImg = img.filename;
-      }
-    }
-    // if we find it, we load it
-    if (validationImg) await this.loadImage(validationImg);
-  }
+  // public async renderMolstarValidation(entryId: string, molstarContainer: HTMLElement, reloadConfigObj: boolean) {
+  // const molstarConfigObject: MolstarConfigObject = {
+  //   moleculeId: entryId,
+  //   loadMaps: false,
+  //   bgColor: { r: 255, g: 255, b: 255 },
+  //   hideControls: true,
+  //   hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
+  //   landscape: true,
+  //   subscribeEvents: true,
+  //   validationAnnotation: true,
+  //   granularity: 'residue',
+  // };
+  // if (reloadConfigObj) {
+  //   if (this.isMolstarRendered()) {
+  //     await this.updateMolstar(molstarConfigObject);
+  //   } else {
+  //     this.isMolstarRendered.set(true);
+  //     console.error('MOLSTAR INSTANCE DOUBLE INIT');
+  //   }
+  // }
+  // currently validationAnnotation: true is unfortunately not yet working with updateMolstar
+  // this means we have to use the image gallery to display validation annotations
+  // await this.initImageGallery(entryId); // so we load it
+  // let validationImg: string | undefined;
+  // const imageList = this.galleryManager().images;
+  // for (const img of imageList) {
+  // and iterate the image list looking for validation image
+  //   if (img.filename.includes('_validation')) {
+  //     validationImg = img.filename;
+  //   }
+  // }
+  // if we find it, we load it
+  // if (validationImg) await this.loadImage(validationImg);
+  // }
 
   /**
    * Function responsible for manipulating a Molstar instance to render Assemblies
