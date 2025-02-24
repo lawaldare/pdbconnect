@@ -8,7 +8,7 @@
     <mat-tab-group (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTab" mat-stretch-tabs="false" mat-align-tabs="start">
       <mat-tab label="Summary"> <pdbc-summary-tab /> </mat-tab>
       <mat-tab label="Model quality">
-        <ng-template matTabContent> <pdbc-experiments-validation [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" /> </ng-template>
+        <ng-template matTabContent> <pdbc-experiments-validation /> </ng-template>
       </mat-tab>
       @for (tab of commonTabs(); track tab) {
       <mat-tab class="common-tab">

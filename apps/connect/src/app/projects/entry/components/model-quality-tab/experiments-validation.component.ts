@@ -73,20 +73,9 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
-  public molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
-  public molstarParent = input.required<HTMLElement>(); // Parent to send back the molstar global instance
-
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly sourceOrganisms = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
   public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
-
-  /**
-   * Processing, table facades and Molstar tab manipulating class
-   */
-
-  // javascript functions exposed to template for parsing domains nested data
-  // public readonly objectKeys = Object.keys;
-  // public readonly objectValues = Object.values;
 
   // used in template
   public currentData = signal<ProcessedExperimentalDetails | undefined>(undefined);
@@ -101,10 +90,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public expRawDataTooltip = expRawDataTooltip;
   public timelineTooltip = timelineTooltip;
   public pdbRedoTooltip = pdbRedoTooltip;
-  // Molstar components rendering and state variables
+
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
-  // private molstarViewInstance: any;
-  // private isMolstarRetrieved = false;
 
   public readonly isSticky = signal<boolean>(false);
   public readonly validationTypes = [
@@ -185,13 +172,9 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
   public selectSpecificIssueKind(event: MatSelectChange) {
     this.selectedSpecificIssueKind.setValue(event.value);
-    console.log(this.selectedSpecificIssueKind.value);
   }
 
   async ngAfterViewInit() {
-    // await this.getMolstarViewerFromParent();
-    // await this.molstarVisualisations.renderMolstarValidation(this.entryId() ?? '', this.molstarViewerEl(), true);
-
     const molstarViewInstance = new PDBeMolstarPlugin();
     const container = this.molstarContainer.nativeElement;
 
@@ -217,30 +200,10 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
         validationImg = img.filename;
       }
     }
-    if (validationImg) await galleryManager.load(validationImg);
+    if (validationImg) {
+      await galleryManager.load(validationImg);
+    }
   }
-
-  // async getMolstarViewerFromParent() {
-  //   if (this.isMolstarRetrieved === false) {
-  //     // Move the molstar WebGL container into the child component
-  //     this.renderer.appendChild(this.molstarContainer.nativeElement, this.molstarViewerEl());
-  //     // Add a delay to ensure synchronicity
-  //     this.isMolstarRetrieved = true;
-  //   }
-  //   await firstValueFrom(timer(50)); // 100ms delay, adjust as needed
-  // }
-
-  // async sendMolstarViewerToParent() {
-  //   // Move the molstar WebGL container back to the parent component
-  //   if (this.isMolstarRetrieved === true) {
-  //     this.renderer.appendChild(this.molstarParent(), this.molstarViewerEl());
-  //     this.isMolstarRetrieved = false;
-  //     // Set first render for next view equal to true
-  //     this.molstarVisualisations.isFirstViewRender = true;
-  //   }
-  //   // Add a delay to ensure synchronicity
-  //   await firstValueFrom(timer(50)); // 100ms delay, adjust as needed
-  // }
 
   /**
    * when a filter is clicked we changed the rendered data
