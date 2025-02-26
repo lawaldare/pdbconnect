@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { AfterViewInit, Component, DestroyRef, ElementRef, HostListener, inject, input, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, ElementRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ValidationDataProcessingFacade } from './validation-data.facade';
 import { ValidationTablesFacade } from './validation-tables.facade';
@@ -175,11 +175,18 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
 
   async ngAfterViewInit() {
+    await this.initializeMolstarViewer();
+  }
+
+  private async initializeMolstarViewer(): Promise<void> {
     const molstarViewInstance = new PDBeMolstarPlugin();
     const container = this.molstarContainer.nativeElement;
+    const entryId = this.entryId();
+
+    if (!entryId) return;
 
     const molstarConfigObject: MolstarConfigObject = {
-      moleculeId: this.entryId() ?? '',
+      moleculeId: entryId,
       loadMaps: false,
       bgColor: { r: 255, g: 255, b: 255 },
       hideControls: true,
@@ -190,21 +197,36 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       validationAnnotation: true,
     };
 
+    // Render the Molstar viewer
     molstarViewInstance.render(container, molstarConfigObject);
     await firstValueFrom(molstarViewInstance.events.loadComplete);
-    const galleryManager = await PDBeMolstarPlugin.extensions.StateGallery.StateGalleryManager.create(molstarViewInstance.plugin, this.entryId() ?? '');
-    let validationImg: string | undefined;
+
+    // Load validation image if available
+    await this.loadValidationImage(molstarViewInstance, entryId);
+  }
+
+  /**
+   * Load the validation image for the Molstar viewer
+   */
+  private async loadValidationImage(molstarViewInstance: any, entryId: string): Promise<void> {
+    const galleryManager = await PDBeMolstarPlugin.extensions.StateGallery.StateGalleryManager.create(molstarViewInstance.plugin, entryId);
+
     const imageList = galleryManager.images;
+    let validationImg: string | undefined;
+
     for (const img of imageList) {
       if (img.filename.includes('_validation')) {
         validationImg = img.filename;
+        break;
       }
     }
+
     if (validationImg) {
       await galleryManager.load(validationImg);
+    } else {
+      this.noImg = true;
     }
   }
-
   /**
    * when a filter is clicked we changed the rendered data
    */

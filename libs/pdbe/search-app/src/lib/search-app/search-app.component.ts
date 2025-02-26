@@ -106,7 +106,6 @@ export class SearchAppComponent implements OnInit {
       )
       .subscribe(
         (results: ResultGroup[]) => {
-          console.log(results);
           const sortedResults = this.utilService.sortArrayObjectByArrayOrder(results, this.categories, 'groupValue');
           this.resultGroups = sortedResults;
           this.resultPanelOpen.set(true);
@@ -143,7 +142,6 @@ export class SearchAppComponent implements OnInit {
       this.resultPanelStyle['right'] = window.innerWidth - searchBoxDimension.right + 'px';
       this.layoutAlign = 'end';
       this.resultPanelStyle['margin-left'] = '20px';
-      // console.log(searchBoxDimension)
     } else {
       this.resultPanelStyle['max-height'] = window.innerHeight - searchBoxDimension.bottom - 30 + 'px';
       this.resultPanelStyle['left'] = searchBoxDimension.left + 'px';

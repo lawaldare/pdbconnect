@@ -125,7 +125,7 @@ export class EntryMainPageComponent implements OnInit {
   //   resultBoxAlign: 'right',
   //   searchUrl: 'https://www.ebi.ac.uk/pdbe/search/pdb-autocomplete/select',
   //   sort: 'category+asc,num_pdb_entries+desc',
-  //   view: 'macromolecules',
+  //   view: 'entries',
   //   env: 'dev',
   // };
 
