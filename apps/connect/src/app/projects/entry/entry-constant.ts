@@ -14,7 +14,7 @@ export const pdbeLogoConfig = {
 };
 
 export const pdbeSearchConfig = {
-  examples: ['1trn', '1cbs', '7v08', '4v99'],
+  examples: ['1trn', '1cbs', '7v08', '4v99', '4aqd'],
   backgroundColor: '#007B53',
   hasAdvancedSearch: true,
   buttonText: 'Search',

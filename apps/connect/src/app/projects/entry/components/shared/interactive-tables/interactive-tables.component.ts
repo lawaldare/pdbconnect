@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Component, computed, inject, input, OnChanges, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -5,7 +6,7 @@ import { AssemblyDataToTable } from './data-processing/assembly-row-class';
 import { DomainDataToTable } from './data-processing/domain-row-class';
 import { LigandDataToTable } from './data-processing/ligand-row-class';
 import { MacromoleculeDataToTable } from './data-processing/macromolecule-row';
-import { TableFilter } from './data-models-and-definitions/row-and-table.model';
+import { AssembliesRowData, TableFilter } from './data-models-and-definitions/row-and-table.model';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridApi, GridReadyEvent, GridOptions, IRowNode, SelectionChangedEvent } from 'ag-grid-community';
 import { ASSEMBLIES_COL_DEFS, DOMAINS_COL_DEFS, LIGANDS_COL_DEFS, MACROMOLECULES_COL_DEFS } from './data-models-and-definitions/column-definition-objects';
@@ -20,11 +21,17 @@ import { EntrySelectors } from '../../../store/entry.selectors';
 
 type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
 
+export interface Filter {
+  types: string[];
+  description: string;
+}
+
 @Component({
   selector: 'pdbc-interactive-tables',
   standalone: true,
   imports: [CommonModule, AgGridAngular],
   templateUrl: './interactive-tables.component.html',
+  styleUrl: './interactive-tables.component.scss',
 })
 export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   public readonly signals = inject(ComponentCommunicationService);
@@ -50,7 +57,7 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   // Signal to track table readiness
   private tableReadySignal = signal(false);
 
-  public tableData?: DataToTable;
+  public tableData?: any;
   public currentTableFilter: string[] = [];
   public columnDefinitions?: ColDef[];
 
@@ -89,24 +96,56 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   readonly maxGridHeight = 600;
   public gridHeight = '';
 
+  public selectedRowCard = signal<any>({});
+  public filters = signal<Filter[]>([]);
+  public selectedFilter = signal<Filter>({} as Filter);
+  public rowCards = signal<any[]>([]);
+
   async ngOnChanges(): Promise<void> {
     const tableData = this.signals.getTabData(this.tabName());
+    console.log('tabName', this.tabName());
     this.tableData = tableData as DataToTable;
-    if (this.tabName() === 'Assemblies') {
-      this.columnDefinitions = ASSEMBLIES_COL_DEFS;
-    } else if (this.tabName() === 'Domains') {
-      this.columnDefinitions = DOMAINS_COL_DEFS;
-    } else if (this.tabName() === 'Ligands') {
-      this.columnDefinitions = LIGANDS_COL_DEFS;
-    } else if (this.tabName() === 'Macromolecules') {
-      this.columnDefinitions = MACROMOLECULES_COL_DEFS;
-    }
+    console.log('Table Rows:', tableData.tableRows());
+    this.rowCards.update(() => tableData.tableRows());
+    this.selectedRowCard.set(this.tableData.tableRows()[0]);
+    console.log('tableData', tableData, tableData.tableFilters(), tableData.tableRows());
+    console.log('rowCards', this.rowCards());
+    this.filters.update(() =>
+      tableData.tableFilters().map((filter: any) => {
+        return {
+          types: filter.types,
+          description: filter.description.includes('All') ? 'All' : filter.description,
+        };
+      })
+    );
+    this.selectedFilter.set(this.filters()[0]);
+    this.applyFilter(this.selectedFilter());
+    // console.log('tableData', tableData.tableRows());
+    // if (this.tabName() === 'Assemblies') {
+    //   this.columnDefinitions = ASSEMBLIES_COL_DEFS;
+    // } else if (this.tabName() === 'Domains') {
+    //   this.columnDefinitions = DOMAINS_COL_DEFS;
+    // } else if (this.tabName() === 'Ligands') {
+    //   this.columnDefinitions = LIGANDS_COL_DEFS;
+    // } else if (this.tabName() === 'Macromolecules') {
+    //   this.columnDefinitions = MACROMOLECULES_COL_DEFS;
+    // }
 
-    if (this.tableData!.displayFilters) {
-      this.currentTableFilter = this.tableData?.tableFilters()[0].types;
-    }
+    // if (this.tableData!.displayFilters) {
+    //   this.currentTableFilter = this.tableData?.tableFilters()[0].types;
+    // }
 
-    this.adjustTableHeightDynamically();
+    // this.adjustTableHeightDynamically();
+
+    // this.tableReadySignal.set(true);
+
+    this.loadSelectionFromTable(0);
+  }
+
+  onCardClick(card: AssembliesRowData, index: number): void {
+    console.log('card', card, index);
+    this.selectedRowCard.set(card);
+    this.loadSelectionFromTable(index);
   }
 
   ngOnDestroy(): void {
@@ -209,8 +248,10 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   public onTableSelectionChanged(_event: SelectionChangedEvent) {
     // function called on each table selection event
     const selectedRow = this.gridApi?.getSelectedRows(); // Get selected row data
+    // console.log('selectedRow', selectedRow);
     if (selectedRow.length > 0) {
       const rowIdx = this.tableData!.tableRows().indexOf(selectedRow[0]);
+      console.log('rowIdx', rowIdx);
       this.loadSelectionFromTable(rowIdx);
     }
   }
@@ -221,8 +262,14 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
 
   public applyFilter(obj: TableFilter): void {
     // function enables triggering external table filters
-    this.currentTableFilter = obj.types;
-    this.gridApi.onFilterChanged();
+    this.selectedFilter.set(obj);
+    // this.currentTableFilter = obj.types;
+    // this.gridApi.onFilterChanged();
+
+    const filteredRowCards = this.tableData?.tableRows().filter((row: any) => obj.types.includes(row.multimericStates));
+    // this.rowCards.update(() => filteredRowCards);
+    this.selectedRowCard.set(this.rowCards()[0]);
+    this.loadSelectionFromTable(0);
   }
 
   // Determines whether an external filter is active

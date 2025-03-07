@@ -1,0 +1,34 @@
+section {
+  width: 100%;
+
+  p {
+    font-size: 16px;
+    line-height: 27.2px;
+    font-weight: 400;
+  }
+
+  .card {
+    padding: 4px;
+    border-bottom: 1px solid #d0d0ce;
+    border-right: 1px solid #d0d0ce;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    &.selected-card {
+      background-color: #d0debb;
+    }
+
+    &-title {
+      color: var(--Neutral-900, #1a1c1a);
+      font-weight: 500;
+    }
+
+    &-text {
+      color: var(--Neutral-900, #1a1c1a);
+    }
+
+    &:hover {
+      background-color: #e7efdd;
+    }
+  }
+}

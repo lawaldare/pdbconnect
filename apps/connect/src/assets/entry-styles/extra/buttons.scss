@@ -85,16 +85,15 @@
   display: flex;
   margin-bottom: 12px;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .filter-btn {
   color: var(--Neutral-900, #1a1c1a);
-  font-size: 16px;
-  font-style: normal;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 27.2px;
+  line-height: 22.4px;
   padding: 4px 8px;
-  height: 36px;
   cursor: pointer;
 }
 
