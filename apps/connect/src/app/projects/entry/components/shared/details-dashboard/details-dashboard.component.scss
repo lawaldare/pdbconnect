@@ -2,6 +2,14 @@ h4 {
   margin-bottom: 4px;
 }
 
+h5 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 27.3px;
+  margin-bottom: 16px;
+}
+
 .domains-title {
   margin-bottom: 16px;
 }
@@ -140,7 +148,6 @@ h4 {
 }
 
 .molstar-details-container {
-  // flex: 1 0 0;
   flex: 1;
   display: flex;
 }
@@ -226,7 +233,8 @@ h4 {
 }
 
 .assembly-section {
-  margin-top: 4px; // +4 from .top-vis margin bottom
+  width: 511px;
+
   .assembly-grouped {
     margin-bottom: 12px;
   }
@@ -246,4 +254,15 @@ h4 {
     font-weight: 500;
     display: block;
   }
+}
+
+article {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.assemblies-container {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
 }

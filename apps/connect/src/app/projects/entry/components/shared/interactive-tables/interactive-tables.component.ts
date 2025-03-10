@@ -103,13 +103,13 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
 
   async ngOnChanges(): Promise<void> {
     const tableData = this.signals.getTabData(this.tabName());
-    console.log('tabName', this.tabName());
+    // console.log('tabName', this.tabName());
     this.tableData = tableData as DataToTable;
-    console.log('Table Rows:', tableData.tableRows());
+    // console.log('Table Rows:', tableData.tableRows());
     this.rowCards.update(() => tableData.tableRows());
     this.selectedRowCard.set(this.tableData.tableRows()[0]);
-    console.log('tableData', tableData, tableData.tableFilters(), tableData.tableRows());
-    console.log('rowCards', this.rowCards());
+    // console.log('tableData', tableData, tableData.tableFilters(), tableData.tableRows());
+    // console.log('rowCards', this.rowCards());
     this.filters.update(() =>
       tableData.tableFilters().map((filter: any) => {
         return {

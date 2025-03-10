@@ -3,9 +3,9 @@
 <h4 [class]="tabName().toLowerCase() + '-title'" [ngClass]="tabName() === 'Ligands' ? 'heading-5' : 'heading-4'">{{ selectionTitle }}</h4>
 } @else {
 <!-- ------- Title for Assembly dashboard ------- -->
-<h5 class="heading-5 assembly-title entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="assemblyTooltip" matTooltipPosition="below">
+<!-- <h5 class="heading-5 assembly-title entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="assemblyTooltip" matTooltipPosition="below">
   {{ selectionTitle }}
-</h5>
+</h5> -->
 }
 
 <!-- ------- Top info area of Dashboard ------- -->
@@ -31,7 +31,7 @@
   {{ islast ? '' : '|' }} } }
 </div>
 
-<div class="chains">
+<!-- <div class="chains">
   @if (selectedChains) {
   <div class="dropdown-title">{{ selectedChains }}</div>
   } @if (hasDropdown) {
@@ -47,7 +47,7 @@
     </pdbc-entry-dropdown>
   </div>
   }
-</div>
+</div> -->
 <!-- ------- If displayed row data has an associated sequence (Macromolecules, Domains) ------- -->
 @if (sequenceDetails.length > 0) {
 <div class="sequence-container">
@@ -66,24 +66,24 @@
 }
 
 <!-- ------- Top area of Dashboard ------- -->
-<div class="top-vis">
-  <!-- ------- Molstar is shown in all dashboards ------- -->
-  <section class="molstar-details-container">
-    <!-- selected state molstar -->
-    <div class="molstar-container" #molstarContainer [ngClass]="hasTopologyViewer || hasLigandEnv ? '' : 'big'"></div>
-  </section>
-  @if (hasLigandEnv) {
-  <!-- ------- Ligand env is shown for ligands ------- -->
-  <section class="lig-env-container">
+<!-- <div class="top-vis"> -->
+<!-- ------- Molstar is shown in all dashboards ------- -->
+<!-- <section class="molstar-details-container"> -->
+<!-- selected state molstar -->
+<!-- <div class="molstar-container" #molstarContainer [ngClass]="hasTopologyViewer || hasLigandEnv ? '' : 'big'"></div> -->
+<!-- </section> -->
+<!-- @if (hasLigandEnv) { -->
+<!-- ------- Ligand env is shown for ligands ------- -->
+<!-- <section class="lig-env-container">
     <div class="ligand-env" #ligandEnvContainer></div>
-  </section>
-  } @if (hasTopologyViewer) {
-  <!-- ------- Topology viewer is shown for Macromolecules ------- -->
-  <section class="topology-viewer-container">
+  </section> -->
+<!-- } @if (hasTopologyViewer) { -->
+<!-- ------- Topology viewer is shown for Macromolecules ------- -->
+<!-- <section class="topology-viewer-container">
     <div class="topology-container" #topologyViewerContainer></div>
-  </section>
-  }
-</div>
+  </section> -->
+<!-- } -->
+<!-- </div> -->
 
 <!-- ------- Bottom area of Dashboard (info text or Protvista) ------- -->
 <div class="bottom-vis">
@@ -104,7 +104,85 @@
   }
   <!-- For Assemblies, bottom area is info text -->
   @if (currentRowDatum && tabName() === "Assemblies") {
+  <!-- <section class="assembly-section">
+    <div class="assembly-grouped">
+      <div class="info-row">
+        <span>Accessible surface area</span>
+        <article>{{ getAdditionalData('accessibleSurfaceArea') }}<sup>2</sup></article>
+      </div>
+      <div class="info-row">
+        <span>Buried surface area</span>
+        <article>{{ getAdditionalData('buriedSurfaceArea') }}<sup>2</sup></article>
+      </div>
+    </div>
+    <div class="assembly-grouped">
+      <div class="info-row">
+        <span>Dissociation area</span>
+        <article>{{ getAdditionalData('dissociationArea') }}<sup>2</sup></article>
+      </div>
+      <div class="info-row">
+        <span>Dissociation energy</span>
+        <article>{{ getAdditionalData('dissociationEnergy') }}</article>
+      </div>
+      <div class="info-row">
+        <span>Dissociation entropy</span>
+        <article>{{ getAdditionalData('dissociationEntropy') }}</article>
+      </div>
+    </div>
+    <div class="info-row">
+      <span>Symmetry number</span>
+      <article>{{ getAdditionalData('symmetryNumber') }}</article>
+    </div>
+  </section> -->
+  } @if (hasProtvista) {
+  <!-- For Macromolecules, Domains, bottom area is protvista -->
+  <section class="protvista-container">
+    <div id="protvista-pdb-container" #protvistaContainer></div>
+  </section>
+  }
+</div>
+
+@let icon = signals.isSidebarCollapsed() ? 'right' : 'left'; @let text = signals.isSidebarCollapsed() ? 'Show ' + tabName():'Open full-width';
+<button class="vf-button-ghost" (click)="signals.setSidebarState()">
+  <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
+  <span>{{text}}</span>
+</button>
+
+<!-- Assemblies -->
+
+@if(tabName() === 'Assemblies') {
+<h5>{{ selectionTitle }}</h5>
+@let datum = currentRowDatum;
+<section class="assemblies-container">
   <section class="assembly-section">
+    <div class="assembly-grouped">
+      @if(datum?.assemblyName){
+      <div class="info-row">
+        <span>
+          Assembly name
+          <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
+        </span>
+        <article>{{datum?.assemblyName}}</article>
+      </div>
+      }
+      <div class="info-row">
+        <span>
+          Multimeric state
+          <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
+        </span>
+        <article>{{datum?.multimericStates}}</article>
+      </div>
+      <div class="info-row">
+        <span>
+          PDBe complex ID
+          <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
+        </span>
+        <article>
+          <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/complex/' + datum?.complexId" target="_blank">{{datum?.complexId}}</a>
+          <img src="assets/icons/link_search_icon.png" alt="search icon" />
+        </article>
+      </div>
+    </div>
     <div class="assembly-grouped">
       <div class="info-row">
         <span>Accessible surface area</span>
@@ -134,10 +212,38 @@
       <article>{{ getAdditionalData('symmetryNumber') }}</article>
     </div>
   </section>
-  } @if (hasProtvista) {
-  <!-- For Macromolecules, Domains, bottom area is protvista -->
-  <section class="protvista-container">
-    <div id="protvista-pdb-container" #protvistaContainer></div>
+  <section class="molstar-details-container">
+    <div class="molstar-container" #molstarContainer [ngClass]="hasTopologyViewer || hasLigandEnv ? '' : 'big'"></div>
   </section>
-  }
-</div>
+</section>
+}
+
+<!-- Macromolecules -->
+
+@if(tabName() === 'Macromolecules') {
+<!-- <section>
+  <section class="molstar-details-container">
+    <div class="molstar-container" #molstarContainer [ngClass]="hasTopologyViewer || hasLigandEnv ? '' : 'big'"></div>
+  </section>
+</section> -->
+}
+
+<!-- Domains -->
+
+@if(tabName() === 'Domains') {
+<!-- <section>
+  <section class="molstar-details-container">
+    <div class="molstar-container" #molstarContainer [ngClass]="hasTopologyViewer || hasLigandEnv? '' : 'big'"></div>
+  </section>
+</section> -->
+}
+
+<!-- Ligands -->
+
+@if(tabName() === 'Ligands') {
+<!-- <section>
+  <section class="molstar-details-container">
+    <div class="molstar-container" #molstarContainer [ngClass]="hasTopologyViewer || hasLigandEnv? '' : 'big'"></div>
+  </section>
+</section> -->
+}

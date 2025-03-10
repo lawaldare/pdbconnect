@@ -30,6 +30,7 @@ import { AgGridStructureService } from './ag-grid-structure.service';
 })
 export class StructuresComponent {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly dialog = inject(MatDialog);
   private readonly chainPipe = inject(LigandInteractingChainsNumberPipe);
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   private readonly downloadService = inject(DownloadService);
@@ -46,7 +47,6 @@ export class StructuresComponent {
   public reactantTooltip = reactantTooltip;
   public unannotatedTooltip = unannotatedTooltip;
 
-  public dataStatistics = signal<string>('');
   public filter = new FormControl('proteins');
   public ligandId = signal<string>('');
 
@@ -77,6 +77,9 @@ export class StructuresComponent {
 
   public polymersUrl = signal<string>('');
 
+  public numberOfProteins = signal<number>(0);
+  public numberOfPDBStructures = signal<number>(0);
+
   public handlePageEvent(event: PageEvent) {
     const startIndex = event.pageIndex * event.pageSize;
     const endIndex = startIndex + event.pageSize;
@@ -90,6 +93,8 @@ export class StructuresComponent {
       this.globalStore.select(LigandSelectors.ligandId),
       this.globalStore.select(LigandSelectors.structures),
       this.globalStore.select(LigandSelectors.polymers),
+      this.globalStore.select(LigandSelectors.numberOfProteins),
+      this.globalStore.select(LigandSelectors.numberOfPDBStructures),
     ])
       .pipe(
         tap(([ligandId]) => {
@@ -97,15 +102,16 @@ export class StructuresComponent {
           this.agGridService.ligandId.set(ligandId);
           this.polymersUrl.set(this.utilService.generateSortedQueryURL(ligandId, 'modified_compound_id'));
         }),
-        map(([, structures, polymers]) => {
+        map(([, structures, polymers, numberOfProteins, numberOfPDBStructures]) => {
           this.generateStructures(structures);
+          this.numberOfProteins.set(numberOfProteins);
+          this.numberOfPDBStructures.set(numberOfPDBStructures);
           this.proteins.update(() => [...structures]);
           this.structureRowData.update(() => [...this.proteins()]);
           this.polymerRowData.update(() => [...polymers]);
           if (this.structureRowData().length > 0) {
             this.gridApi.setGridOption('loading', false);
           }
-          this.fetchDataStatistics(structures);
           this.structuresPage = this.structureRowData().slice(0, this.structuresPageSize());
           this.unfilteredStructures = this.structureRowData();
         }),
@@ -170,20 +176,6 @@ export class StructuresComponent {
       return acc;
     }, []);
     this.structures.update(() => [...structures]);
-  }
-
-  private fetchDataStatistics(data: LigandStructure[]): void {
-    let proteins = 0;
-    let structures = 0;
-
-    for (const structure of data) {
-      if (structure.uniprot_id) {
-        proteins++;
-      }
-      const total = this.chainPipe.transform(structure.interacting_chains);
-      structures += total;
-    }
-    this.dataStatistics.set(`Found as a bound ligand in ${proteins} distinct proteins and ${structures} PDB Structures. Group data by: `);
   }
 
   public downloadMMCIF() {

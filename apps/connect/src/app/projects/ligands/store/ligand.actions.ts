@@ -30,5 +30,8 @@ export const LigandActions = createActionGroup({
     'Set Empty Page Text': props<{ text: string }>(),
     'Set Fragments': props<{ fragments: Fragment[] }>(),
     'Set Nav Items': props<{ navItems: NavSection[] }>(),
+    'Save Number of Distinct Proteins': props<{ numberOfProteins: number }>(),
+    'Save Number of Distinct PDB Structures': props<{ numberOfPDBStructures: number }>(),
+    'Save Number of Ligand Instances': props<{ numberOfLigandInstances: number }>(),
   },
 });

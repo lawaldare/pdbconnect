@@ -9,6 +9,10 @@ section.common-tab {
   display: flex;
   width: 100%;
   justify-content: space-between;
+
+  &.change-display {
+    display: block !important;
+  }
 }
 
 pdbc-details-dashboard {

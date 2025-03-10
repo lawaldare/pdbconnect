@@ -9,7 +9,7 @@ import { LigandSelectors } from './ligand.selectors';
 import { RelatedLigand } from '../data-models/related-ligands.model';
 import { LoadingState } from '../enums/loading-state.enum';
 import { LigandReleasedStatus } from '../enums/ligand-release.enum';
-import { Polymer } from '../data-models/structure.model';
+import { LigandStructure, Polymer } from '../data-models/structure.model';
 
 @Injectable()
 export class LigandEffects {
@@ -17,13 +17,42 @@ export class LigandEffects {
   private readonly actions$ = inject(Actions);
   private readonly store = inject(Store<LigandStoreState>);
 
+  private generateStructureStatistics(structures: LigandStructure[]): void {
+    const uniquePDBIds = structures.reduce((acc: string[], curr: LigandStructure) => {
+      if (curr.interacting_chains === null || curr.interacting_chains.length === 0) {
+        acc = [];
+        return acc;
+      }
+
+      const mappedValues = curr.interacting_chains.map((val) => val.pdb_id);
+      const uniqueMappedValues = [...new Set(mappedValues)];
+      acc.push(...uniqueMappedValues);
+      return [...new Set(acc)];
+    }, []);
+    const numberOfPDBStructures = uniquePDBIds.length;
+    const numberOfLigandInstances = structures.reduce((acc: number, curr: LigandStructure) => acc + curr.num_ligand_instances, 0);
+    const numberOfProteins = structures.reduce((acc: number, curr: LigandStructure) => {
+      if (curr.uniprot_id) {
+        acc++;
+      }
+      return acc;
+    }, 0);
+
+    this.store.dispatch(LigandActions.saveNumberOfDistinctProteins({ numberOfProteins }));
+    this.store.dispatch(LigandActions.saveNumberOfDistinctPDBStructures({ numberOfPDBStructures }));
+    this.store.dispatch(LigandActions.saveNumberOfLigandInstances({ numberOfLigandInstances }));
+  }
+
   getStructures$ = createEffect(() =>
     this.actions$.pipe(
       ofType(LigandActions.getStructures),
       switchMap(() => this.store.select(LigandSelectors.ligandId).pipe(take(1))),
       mergeMap((id: string) =>
         this.aggregatedApiService.getLigandStructures(id).pipe(
-          map((structures) => LigandActions.getStructuresSuccess({ structures })),
+          map((structures) => {
+            this.generateStructureStatistics(structures);
+            return LigandActions.getStructuresSuccess({ structures });
+          }),
           catchError(() => of(LigandActions.getStructuresFailure()))
         )
       )

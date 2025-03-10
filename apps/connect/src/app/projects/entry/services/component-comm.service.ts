@@ -65,4 +65,10 @@ export class ComponentCommunicationService {
       [tabName]: newState,
     }));
   }
+
+  private sidebarState = signal<boolean>(false);
+  public isSidebarCollapsed = this.sidebarState.asReadonly();
+  public setSidebarState() {
+    this.sidebarState.update((state) => !state);
+  }
 }

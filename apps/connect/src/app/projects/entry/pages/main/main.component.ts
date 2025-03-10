@@ -82,6 +82,7 @@ export class EntryMainPageComponent implements OnInit {
 
   public readonly molstarResidueInfoLoaded = computed(() => this.compCommunication.molstarResidueInfoLoaded());
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
+  public readonly isSidebarCollapsed = computed(() => !this.compCommunication.isSidebarCollapsed());
 
   public readonly commonTabs = computed(() => {
     const isTabDataGenerated = this.compCommunication.isTabDataGenerated();

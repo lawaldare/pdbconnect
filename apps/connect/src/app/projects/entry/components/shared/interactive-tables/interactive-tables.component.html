@@ -1,4 +1,4 @@
-@if (tableData) { @if (tableData.displayFilters) {
+@if (tableData && tabName() !== 'Assemblies') { @if (tableData.displayFilters) {
 <div class="filter-btns-container">
   @for (tableFilter of filters(); track tableFilter) {
   <button class="filter-btn" [class.active]="selectedFilter().description === tableFilter.description" (click)="applyFilter(tableFilter)">

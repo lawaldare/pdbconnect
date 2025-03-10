@@ -1,18 +1,18 @@
-@if(description()){
+@if (description()) {
 <div id="description-section">
   <h3 class="title">Description</h3>
-  @if(description().synonyms){
+  @if (description().synonyms) {
   <div class="info-row">
     <span class="info-row-title">Synonyms</span>
-    <div class="info-row-content" libTruncateText [truncateText]="description().synonyms" [limit]="60"></div>
+    <div class="info-row-content" libTruncateText [truncateText]="description().synonyms" [limit]="60">
+      <!-- {{ description().synonyms }} -->
+    </div>
   </div>
   }
   <div class="info-row formula-row">
     <span class="info-row-title">Formula</span>
     <article>
-      <div class="info-row-content formula">
-        {{ description().formula }}
-      </div>
+      <div class="info-row-content formula">{{ description().formula }}</div>
       <i
         class="icon icon-common icon-clone"
         matTooltipClass="description-tooltip"
@@ -22,9 +22,9 @@
       ></i>
     </article>
   </div>
-  @if(description().inchi){
+  @if (description().inchi) {
   <div class="info-row">
-    <span class="info-row-title">IUPAC InChI</span>
+    <span class="info-row-title">Standard InChI</span>
     <article>
       <div class="info-row-content" libTruncateText [truncateText]="description().inchi" [limit]="120"></div>
       <i
@@ -36,13 +36,11 @@
       ></i>
     </article>
   </div>
-  } @if(description().inchikey){
+  } @if (description().inchikey) {
   <div class="info-row">
-    <span class="info-row-title">IUPAC InChIKey</span>
+    <span class="info-row-title">Standard InChI Key</span>
     <article>
-      <div class="info-row-content">
-        {{ description().inchikey }}
-      </div>
+      <div class="info-row-content">{{ description().inchikey }}</div>
       <i
         class="icon icon-common icon-clone"
         matTooltipClass="description-tooltip"
@@ -52,7 +50,7 @@
       ></i>
     </article>
   </div>
-  } @if(description().smiles && isMainLigandId()){
+  } @if (description().smiles && isMainLigandId()) {
   <div class="info-row">
     <span class="info-row-title">SMILES</span>
     <article>
@@ -66,7 +64,7 @@
       ></i>
     </article>
   </div>
-  } @if(description().smiles && !isMainLigandId()){
+  } @if (description().smiles && !isMainLigandId()) {
   <div class="info-row">
     <span class="info-row-title">SMILES</span>
     <article>
@@ -94,32 +92,39 @@
       ></a>
     </div>
   </div>
-  @if(description().subcomponent_occurrences && !isMainLigandId()){
+  @if (description().subcomponent_occurrences && !isMainLigandId()) {
   <div class="info-row">
     <span class="info-row-title">Contains CCDs</span>
     <div class="info-row-content ccd" ccds [subcomponentOccurrences]="description().subcomponent_occurrences"></div>
   </div>
-  } @if(supercomponents().length && isMainLigandId()){
+  } @if (supercomponents().length && isMainLigandId()) {
   <div class="info-row">
     <span class="info-row-title">Is part of</span>
     <article class="article-supercomponents">
       <div class="info-row-content supercomponents" libIsPartOf [truncateTexts]="supercomponents()"></div>
+      <!-- <i
+          class="icon icon-common icon-clone"
+          matTooltipClass="description-tooltip"
+          matTooltip="Copy the ID"
+          matTooltipPosition="above"
+          (click)="copy(supercomponents().join(', '), 'List of ids')"
+        ></i> -->
       <div class="supercomponent-actions">
-        @if(supercomponents().length > 1){
+        @if (supercomponents().length > 1) {
         <button class="vf-button vf-button--link" (click)="downloadIds()">
           Download list of IDs
           <i class="icon icon-common icon-download"></i>
         </button>
-        } @else { }
+        } @else {}
       </div>
     </article>
   </div>
-  } @if(description().first_observed_in){
+  } @if (description().first_observed_in) {
   <div class="info-row">
     <span class="info-row-title">First observed in</span>
     <article>
       <div class="info-row-content">
-        @for(link of description().first_observed_in; track link; let index = $index){
+        @for (link of description().first_observed_in; track link; let index = $index) {
         <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + link" target="_blank">{{ link }}{{ index < description().first_observed_in.length - 1 ? ', ' : '' }}</a>
         }
       </div>
@@ -132,12 +137,11 @@
       ></i>
     </article>
   </div>
-  } @if(isMainLigandId()){
+  } @if (isMainLigandId()) {
   <div class="action-buttons">
     <button class="vf-button vf-button--primary vf-button--sm" (click)="openDialog('atom')">View Atoms</button>
     <button class="vf-button vf-button--primary vf-button--sm" (click)="openDialog('bond')">View Bonds</button>
   </div>
   }
 </div>
-
 }

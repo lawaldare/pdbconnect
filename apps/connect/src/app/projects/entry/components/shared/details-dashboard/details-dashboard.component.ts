@@ -79,7 +79,7 @@ export class DetailsDashboardComponent {
   // injected services, data processing facade, molstar helpers
 
   // variables rendered in template
-  public currentRowDatum?: TableRow;
+  public currentRowDatum?: any;
   public selectionTitle = 'This is a 3D view area';
   public selectionIdentifier = 'None';
   public selectionStats: { [key: string]: any } | undefined;
@@ -262,6 +262,8 @@ export class DetailsDashboardComponent {
       }
     }
     if (datum) {
+      console.log(datum);
+
       this.currentRowDatum = datum;
       // before rendering molstar we get the singleton molstar tab instance from the template (this avoids memory leaks)
       await this.getMolstarViewerFromParent();
@@ -294,7 +296,7 @@ export class DetailsDashboardComponent {
     // this function is used to get specific data shown in Assembly dashboard view
     type AssembliesAddDataKeys = 'accessibleSurfaceArea' | 'buriedSurfaceArea' | 'dissociationArea' | 'dissociationEnergy' | 'dissociationEntropy' | 'symmetryNumber';
     const datum = this.currentRowDatum! as AssembliesRowData;
-    return datum.additionalData[name as AssembliesAddDataKeys];
+    return datum?.additionalData[name as AssembliesAddDataKeys];
   }
 
   private async renderInMolstar(reloadConfigObj: boolean) {

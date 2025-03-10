@@ -17,7 +17,7 @@
   }
   <section class="filter">
     <div class="group">
-      <p>{{ dataStatistics() }}</p>
+      <p>Found as a bound ligand in {{numberOfProteins()}} distinct proteins and {{numberOfPDBStructures()}} PDB Structures. Group data by:</p>
       <mat-radio-group id="structure-checkbox" aria-label="Select an option" [formControl]="filter" (change)="onChange($event)">
         <mat-radio-button value="proteins">Proteins</mat-radio-button>
         <mat-radio-button value="structures">Structures</mat-radio-button>
@@ -95,13 +95,9 @@
         <div class="list-item-right">
           @if(structure.pdb_id){ @if(ligandId().startsWith('CLC') || ligandId().startsWith('PRD')){ @let id = structure.pdb_id.split('_')[0]; @let href =
           'https://www.ebi.ac.uk/pdbe/entry/pdb/' + id;
-          <a [href]="href" target="_blank">
-            {{ structure }}
-          </a>
+          <a [href]="href" target="_blank"> {{ structure }} </a>
           } @else { @let id = structure.pdb_id.split('_')[0]; @let href = 'https://www.ebi.ac.uk/pdbe/entry/pdb/' + id + '/bound/' + ligandId();
-          <a [href]="href" target="_blank">
-            {{ structure.pdb_id }}
-          </a>
+          <a [href]="href" target="_blank"> {{ structure.pdb_id }} </a>
           }
           <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
           } @else {
