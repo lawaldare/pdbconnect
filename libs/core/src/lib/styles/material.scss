@@ -48,12 +48,26 @@ thead {
   background: #f3f3f3;
 }
 
+.mat-mdc-tab.mdc-tab--active .mdc-tab__ripple::before,
+.mat-mdc-tab.mdc-tab--active .mat-ripple-element,
+.mat-mdc-tab-header-pagination .mat-ripple-element {
+  background-color: transparent !important;
+}
+
 .mdc-tab.mat-mdc-tab {
   border: 3px solid #f3f3f3;
   border-right: none;
   align-items: center;
   font-family: 'IBM Plex Sans', sans-serif !important;
   padding: 10px 16px;
+
+  &:hover .mdc-tab__ripple::before {
+    background-color: transparent !important;
+  }
+
+  &:focus .mat-ripple-element {
+    background-color: transparent !important;
+  }
 
   span.mdc-tab__content {
     span.mdc-tab__text-label {

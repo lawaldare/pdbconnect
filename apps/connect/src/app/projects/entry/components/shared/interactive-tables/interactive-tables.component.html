@@ -46,8 +46,8 @@
 
 @if(tabName() === 'Macromolecules') {
 <section>
-  @for(card of rowCards(); track card; let i = $index) {
-  <div class="card" (click)="onCardClick(card, i)" [class.selected-card]="selectedRowCard().name.molecule === card.name.molecule">
+  @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card; let i = $index) {
+  <div class="card" (click)="onCardClick(card, i)" [class.selected-card]="selectedRowCard()?.name?.molecule === card.name.molecule">
     <p class="card-title">{{card.name.molecule}}</p>
     <p class="card-text">
       @for(chain of card.name.chains; track chain) {
@@ -55,6 +55,13 @@
       }
     </p>
   </div>
+  } @if(rowCards().length > 10){
+  <pagination-controls
+    (pageChange)="onChangePage($event)"
+    (pageBoundsCorrection)="onChangePage($event)"
+    [previousLabel]="'<'"
+    [nextLabel]="'>'"
+  ></pagination-controls>
   }
 </section>
 }

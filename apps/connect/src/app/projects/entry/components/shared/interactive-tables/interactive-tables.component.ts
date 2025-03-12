@@ -18,6 +18,7 @@ import { TableNames } from '../../../pages/main/main.component';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
+import { NgxPaginationModule } from 'ngx-pagination';
 
 type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
 
@@ -29,7 +30,7 @@ export interface Filter {
 @Component({
   selector: 'pdbc-interactive-tables',
   standalone: true,
-  imports: [CommonModule, AgGridAngular],
+  imports: [CommonModule, NgxPaginationModule, AgGridAngular],
   templateUrl: './interactive-tables.component.html',
   styleUrl: './interactive-tables.component.scss',
 })
@@ -100,6 +101,7 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   public filters = signal<Filter[]>([]);
   public selectedFilter = signal<Filter>({} as Filter);
   public rowCards = signal<any[]>([]);
+  public startNumber = signal<number>(1);
 
   async ngOnChanges(): Promise<void> {
     const tableData = this.signals.getTabData(this.tabName());
@@ -119,7 +121,7 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
       })
     );
     this.selectedFilter.set(this.filters()[0]);
-    this.applyFilter(this.selectedFilter());
+    // this.applyFilter(this.selectedFilter());
     // console.log('tableData', tableData.tableRows());
     // if (this.tabName() === 'Assemblies') {
     //   this.columnDefinitions = ASSEMBLIES_COL_DEFS;
@@ -146,6 +148,12 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
     console.log('card', card, index);
     this.selectedRowCard.set(card);
     this.loadSelectionFromTable(index);
+  }
+
+  onChangePage(num: number): void {
+    const p = num * 10 + 1;
+    this.startNumber.set(num);
+    this.selectedRowCard.set(this.tableData.tableRows()[p]);
   }
 
   ngOnDestroy(): void {
@@ -263,11 +271,19 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   public applyFilter(obj: TableFilter): void {
     // function enables triggering external table filters
     this.selectedFilter.set(obj);
+
+    this.startNumber.set(1);
+
+    console.log(obj);
+
     // this.currentTableFilter = obj.types;
     // this.gridApi.onFilterChanged();
 
-    const filteredRowCards = this.tableData?.tableRows().filter((row: any) => obj.types.includes(row.multimericStates));
-    // this.rowCards.update(() => filteredRowCards);
+    const filteredRowCards = this.tableData?.tableRows().filter((row: any) => obj.types.includes(row?.additionalData?.molecule?.molecule_type));
+
+    this.rowCards.update(() => filteredRowCards);
+    console.log(this.rowCards());
+
     this.selectedRowCard.set(this.rowCards()[0]);
     this.loadSelectionFromTable(0);
   }

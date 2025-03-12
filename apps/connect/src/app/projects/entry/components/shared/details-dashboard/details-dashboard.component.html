@@ -1,6 +1,6 @@
 <!-- ------- Title of Dashboard ------- -->
 @if (tabName() !== 'Assemblies') {
-<h4 [class]="tabName().toLowerCase() + '-title'" [ngClass]="tabName() === 'Ligands' ? 'heading-5' : 'heading-4'">{{ selectionTitle }}</h4>
+<!-- <h4 [class]="tabName().toLowerCase() + '-title'" [ngClass]="tabName() === 'Ligands' ? 'heading-5' : 'heading-4'">{{ selectionTitle }}</h4> -->
 } @else {
 <!-- ------- Title for Assembly dashboard ------- -->
 <!-- <h5 class="heading-5 assembly-title entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="assemblyTooltip" matTooltipPosition="below">
@@ -20,16 +20,16 @@
 </div> -->
 
 <!-- Statistics bar with links -->
-<div class="stats-link-bar">
+<!-- <div class="stats-link-bar">
   @if(dashboardStatLinks[tabName()].length > 0 && selectionIdentifier !== 'None') {
   <span>View more about this {{ selectionTypeText }}:</span>
   @for (displayLink of dashboardStatLinks[tabName()]; track displayLink; let islast = $last) {
   <a>
-    <!-- [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix" -->
+    [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix"
     {{ selectionStats?.[selectionIdentifier][displayLink.id] }} {{ displayLink.displayName }}
   </a>
   {{ islast ? '' : '|' }} } }
-</div>
+</div> -->
 
 <!-- <div class="chains">
   @if (selectedChains) {
@@ -49,7 +49,7 @@
   }
 </div> -->
 <!-- ------- If displayed row data has an associated sequence (Macromolecules, Domains) ------- -->
-@if (sequenceDetails.length > 0) {
+<!-- @if (sequenceDetails.length > 0) {
 <div class="sequence-container">
   @for (sequenceDetail of sequenceDetails; track sequenceDetail;) {
   <div class="title">
@@ -61,9 +61,9 @@
     <span [style.background]="sequenceSegment.color ? sequenceSegment.color : ''">{{ sequenceSegment.sequence }}</span>
     }
   </div>
-  }
-</div>
-}
+  } -->
+<!-- </div> -->
+<!-- } -->
 
 <!-- ------- Top area of Dashboard ------- -->
 <!-- <div class="top-vis"> -->
@@ -88,7 +88,7 @@
 <!-- ------- Bottom area of Dashboard (info text or Protvista) ------- -->
 <div class="bottom-vis">
   @if (currentRowDatum && tabName() === "Ligands") {
-  <section class="ligands-info">
+  <!-- <section class="ligands-info">
     <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure  derived from the PDB entry.</p>
     <p>Please note:</p>
     <ul>
@@ -100,7 +100,7 @@
       <li>Interactions were calculated using <a>Arpeggio (see details for interaction types)</a>.</li>
       <li>The colour scheme used is consistent with <a>Clustal X</a>.</li>
     </ul>
-  </section>
+  </section> -->
   }
   <!-- For Assemblies, bottom area is info text -->
   @if (currentRowDatum && tabName() === "Assemblies") {
@@ -136,9 +136,9 @@
   </section> -->
   } @if (hasProtvista) {
   <!-- For Macromolecules, Domains, bottom area is protvista -->
-  <section class="protvista-container">
+  <!-- <section class="protvista-container">
     <div id="protvista-pdb-container" #protvistaContainer></div>
-  </section>
+  </section> -->
   }
 </div>
 
@@ -221,11 +221,119 @@
 <!-- Macromolecules -->
 
 @if(tabName() === 'Macromolecules') {
-<!-- <section>
-  <section class="molstar-details-container">
-    <div class="molstar-container" #molstarContainer [ngClass]="hasTopologyViewer || hasLigandEnv ? '' : 'big'"></div>
+<h5 class="macromolecules-title">{{ selectionTitle }}</h5>
+<div class="stats-link-bar">
+  @if(dashboardStatLinks[tabName()].length > 0 && selectionIdentifier !== 'None') {
+  <span>View more about this {{ selectionTypeText }}:</span>
+  @for (displayLink of dashboardStatLinks[tabName()]; track displayLink; let islast = $last) {
+  <a>
+    <!-- [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix" -->
+    {{ selectionStats?.[selectionIdentifier][displayLink.id] }} {{ displayLink.displayName }}
+  </a>
+  {{ islast ? '' : '|' }} } }
+</div>
+@let datum = currentRowDatum;
+<section class="info">
+  <div class="info-grouped">
+    @let type = datum?.additionalData?.molecule?.molecule_type; @if(type){
+    <div class="info-row">
+      <span> Type </span>
+      <article>{{type | titlecase}}</article>
+    </div>
+    } @if(datum?.organisms.length){
+    <div class="info-row">
+      <span> Source organism </span>
+      <article>
+        <a href="" target="_blank">
+          <em>{{datum?.organisms[0]}}</em>
+          <img src="assets/icons/link_search_icon.png" alt="search icon" style="margin-left: 5px" />
+        </a>
+      </article>
+    </div>
+    } @if(residues().length){
+    <div class="info-row">
+      <span> UniProt mapping </span>
+      <article class="uniport-mapping">
+        @for(residue of residues(); track residue.uniprot){
+        <span
+          >Canonical <a href="" target="_blank">{{residue.uniprot}}</a> <img src="assets/icons/logo.png" alt="icon" /> (residues: {{residue.range}}; coverage:
+          {{residue.coverage}})</span
+        >
+        }
+      </article>
+    </div>
+    }
+  </div>
+  <div class="info-grouped">
+    <div class="info-row">
+      <span> Length </span>
+      <article>{{datum?.length}} amino acids</article>
+    </div>
+    <div class="info-row">
+      <span> Theoretical weight</span>
+      <article>{{datum?.additionalData?.molecule?.weight.toFixed(2)}} KDa</article>
+    </div>
+    @if(datum?.genes.length){
+    <div class="info-row">
+      <span> Gene names </span>
+      <article>
+        @for (gene of datum?.genes; track gene; let islast = $last) {
+        <a href="" target="_blank">{{ gene }}{{ islast ? '' : ',' }}</a> }
+        <br />
+      </article>
+    </div>
+    }
+  </div>
+</section>
+
+<div class="chains">
+  @if(dropdownOptions.length > 1){
+  <div class="dropdown-container">
+    <span class="dropdown-title">{{ dropdownTitle }}</span>
+    <pdbc-entry-dropdown
+      [downloadable]="false"
+      [islink]="false"
+      [options]="dropdownOptions"
+      [title]="dropdownSelected"
+      (optionClickedEvent)="onDropdownSelect($event)"
+    >
+    </pdbc-entry-dropdown>
+  </div>
+  }@else{
+  <p>{{dropdownOptions[0]?.name}}</p>
+  }
+</div>
+@if (sequenceDetails.length > 0) {
+<div class="sequence-container">
+  @for (sequenceDetail of sequenceDetails; track sequenceDetail;) {
+  <div class="title">
+    <span class="text">{{ sequenceDetail.title }}</span>
+    <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
+  </div>
+  <div class="sequence">
+    @for (sequenceSegment of sequenceDetail.segments; track sequenceSegment) {
+    <span [style.background]="sequenceSegment.color ? sequenceSegment.color : ''">{{ sequenceSegment.sequence }}</span>
+    }
+  </div>
+  }
+</div>
+}
+
+<section class="chart-area" [class.collapsed]="signals.isSidebarCollapsed()">
+  @if (hasProtvista) {
+  <section class="protvista-container">
+    <div id="protvista-pdb-container" #protvistaContainer></div>
   </section>
-</section> -->
+  }
+  <section class="molstar-details-container">
+    <div class="molstar-container" #molstarContainer></div>
+  </section>
+  @if(hasTopologyViewer){
+  <section class="topology-viewer-container">
+    <div class="topology-container" #topologyViewerContainer></div>
+  </section>
+  }
+</section>
 }
 
 <!-- Domains -->

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Component, effect, ElementRef, inject, input, Renderer2, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, inject, input, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule, UtilService } from '@pdbc/core';
 import { MatSelectModule } from '@angular/material/select';
@@ -43,6 +43,13 @@ export interface SequenceDetail {
     sequence: string;
     color?: string;
   }[];
+}
+
+export interface Residue {
+  range: string;
+  coverage: string;
+  uniprot: string;
+  chainId: string;
 }
 
 @Component({
@@ -125,6 +132,11 @@ export class DetailsDashboardComponent {
     resId: '-1',
     chainId: '-1',
   };
+
+  private readonly allThereVisuals = ['polypeptide(L)', 'polypeptide(D)'];
+  private readonly onlyTwoVisuals = ['polyribonucleotide', 'polydeoxyribonucleotide'];
+  private readonly onlyMolstarVisuals = ['carbohydrate polymer'];
+  public residues = signal<Residue[]>([]);
 
   constructor() {
     effect(async () => {
@@ -246,7 +258,7 @@ export class DetailsDashboardComponent {
 
         // finally we displayed topology viewer only for protein molecules
         this.hasTopologyViewer = false;
-        if (datum.additionalData.molecule.molecule_type.includes('polypeptide')) {
+        if (this.allThereVisuals.includes(datum.additionalData.molecule.molecule_type)) {
           this.selectionButtonText = 'Compare this protein in other entries';
           this.selectionTypeText = 'protein';
           // if protein is not chimeric (single uniprotAccession), set this as selectionIdentifier
@@ -257,14 +269,25 @@ export class DetailsDashboardComponent {
             }
           }
           this.hasTopologyViewer = true;
+          this.hasProtvista = true;
         }
-        this.hasProtvista = true;
+
+        if (this.onlyTwoVisuals.includes(datum.additionalData.molecule.molecule_type)) {
+          this.hasProtvista = true;
+          this.hasTopologyViewer = false;
+        }
+
+        if (this.onlyMolstarVisuals.includes(datum.additionalData.molecule.molecule_type)) {
+          this.hasProtvista = false;
+          this.hasTopologyViewer = false;
+        }
       }
     }
     if (datum) {
       console.log(datum);
-
       this.currentRowDatum = datum;
+      this.residues.update(() => this.removeDuplicateUniprot(this.currentRowDatum['residues']));
+
       // before rendering molstar we get the singleton molstar tab instance from the template (this avoids memory leaks)
       await this.getMolstarViewerFromParent();
       // we render molstar with reloading config obj as true
@@ -276,6 +299,17 @@ export class DetailsDashboardComponent {
     } else {
       await this.sendMolstarViewerToParent();
     }
+  }
+
+  private removeDuplicateUniprot(data: Residue[]) {
+    const seen = new Set();
+    return data?.filter((item) => {
+      if (seen.has(item.uniprot)) {
+        return false;
+      }
+      seen.add(item.uniprot);
+      return true;
+    });
   }
 
   public async onDropdownSelect(event: string) {

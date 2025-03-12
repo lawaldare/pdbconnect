@@ -95,6 +95,7 @@
   line-height: 22.4px;
   padding: 4px 8px;
   cursor: pointer;
+  background: #f3f3f3;
 }
 
 .filter-btn.hover {
@@ -102,7 +103,8 @@
 }
 
 .filter-btn.active {
-  color: var(--Brand-900, #0a5032);
-  background: var(--Neutral-100, #f3f3f3);
-  text-shadow: 0.5px 0 0.5px #0a5032;
+  color: #0a5032;
+  font-weight: 500;
+  border: 1px solid #e7efdd;
+  background: #d0debb;
 }

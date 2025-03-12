@@ -474,12 +474,12 @@ export class OverviewMolstarFacade {
           const accIdx = [...pfamUniqueAccessions].indexOf(resourceAcc) + 1;
 
           // if macromolecule not yet in list view
-          let parentIdx = domainsToListViewByResource['Pfam'].map((data) => data.parentId).indexOf(macromoleculeOfDomain.id);
+          let parentIdx = domainsToListViewByResource['Pfam'].map((data) => data.parentId).indexOf(macromoleculeOfDomain?.id);
           if (parentIdx === -1) {
             domainsToListViewByResource['Pfam'].push({
-              parentId: macromoleculeOfDomain.id,
-              parentName: macromoleculeOfDomain.name,
-              parentColor: macromoleculeOfDomain.color,
+              parentId: macromoleculeOfDomain?.id,
+              parentName: macromoleculeOfDomain?.name,
+              parentColor: macromoleculeOfDomain?.color,
               nestedSelectables: [],
             });
             parentIdx = domainsToListViewByResource['Pfam'].length - 1;

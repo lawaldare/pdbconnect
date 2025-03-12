@@ -21,6 +21,8 @@ section {
     &-title {
       color: var(--Neutral-900, #1a1c1a);
       font-weight: 500;
+      white-space: normal;
+      word-wrap: break-word;
     }
 
     &-text {

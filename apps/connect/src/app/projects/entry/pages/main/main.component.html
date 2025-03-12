@@ -12,16 +12,16 @@
       </mat-tab>
       @for (tab of commonTabs(); track tab) {
       <mat-tab class="common-tab">
-        <ng-template mat-tab-label> <span class="tab-tag na">{{ tab.tag }}</span>{{ tab.name }} </ng-template>
+        <ng-template mat-tab-label>{{ tab.name }} </ng-template>
+        <!-- <ng-template mat-tab-label> <span class="tab-tag na">{{ tab.tag }}</span>{{ tab.name }} </ng-template> -->
         <ng-template matTabContent>
           @if (tabDataLoaded() && molstarResidueInfoLoaded()) { @if (tab.tag) {
           <h5>No {{ tab.name }} data available</h5>
           } @else {
           <section class="common-tab" [class.change-display]="!isSidebarCollapsed()">
             @if(isSidebarCollapsed()){
-            <pdbc-interactive-tables [tabName]="dataProcessing.getTableName(tab.id)" [rowHeight]="118" />
+            <pdbc-interactive-tables [tabName]="dataProcessing.getTableName(tab.id)" />
             }
-            <!-- <pdbc-interactive-tables [tabName]="dataProcessing.getTableName(tab.id)" [rowHeight]="118" /> -->
             <pdbc-details-dashboard [tabName]="dataProcessing.getTableName(tab.id)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
           </section>
           } } @else {

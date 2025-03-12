@@ -55,8 +55,7 @@
 
       <article>
         Also associated with: @for(entry of entriesArray; track entry; let islast = $last){
-        <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + entry" target="_blank">{{ entry }}</a>
-        {{ islast? '' : ',' }} }
+        <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + entry" target="_blank">{{ entry }}</a>{{ islast? '' : ',' }} }
       </article>
       } } @else {
       <article>To be published</article>
