@@ -219,20 +219,14 @@ h5 {
 }
 
 .ligands-info {
-  margin-top: 12px; // +4 from .top-vis margin bottom
-  color: var(--Neutral-700, #54585a);
-
-  /* Extra small body text */
-  font-family: 'IBM Plex Sans', Arial, Helvetica, sans-serif;
+  margin-top: 16px;
+  color: #54585a;
   font-size: 14px;
-  font-style: normal;
   font-weight: 400;
-  line-height: 22.4px; /* 160% */
+  line-height: 22.4px;
+
   a {
-    /* Extra small body text */
-    font-family: 'IBM Plex Sans', Arial, Helvetica, sans-serif;
     font-size: 14px;
-    font-style: normal;
     font-weight: 400;
     line-height: 22.4px;
   }

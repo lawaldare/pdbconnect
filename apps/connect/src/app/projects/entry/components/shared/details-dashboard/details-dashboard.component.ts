@@ -24,7 +24,7 @@ import { ComponentCommunicationService } from '../../../services/component-comm.
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { EntryDropdownComponent } from '../../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { gridOptions, colDefs, initialState, defaultColDef } from './ag-grid';
+import { gridOptions, colDefs, defaultColDef } from './ag-grid';
 import { AgGridAngular } from 'ag-grid-angular';
 import { SelectionChangedEvent } from 'ag-grid-community';
 
@@ -295,7 +295,6 @@ export class DetailsDashboardComponent {
       }
     }
     if (datum) {
-      console.log(datum);
       this.currentRowDatum = datum;
       this.residues.update(() => this.removeDuplicateUniprot(this.currentRowDatum['residues']));
 
