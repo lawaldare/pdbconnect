@@ -296,7 +296,6 @@ export class DetailsDashboardComponent {
     }
     if (datum) {
       this.currentRowDatum = datum;
-      console.log(datum);
       this.residues.update(() => this.removeDuplicateUniprot(this.currentRowDatum['residues']));
 
       // before rendering molstar we get the singleton molstar tab instance from the template (this avoids memory leaks)
