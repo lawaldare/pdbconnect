@@ -1,10 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Component, effect, ElementRef, inject, input, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, input, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MaterialModule, UtilService } from '@pdbc/core';
-import { MatSelectModule } from '@angular/material/select';
-import { MatOptionModule } from '@angular/material/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { AG_Grid_Theme_Class, MaterialModule, UtilService } from '@pdbc/core';
 import { FormsModule } from '@angular/forms';
 import { DetailsDashboardFacade } from './details-dashboard.facade';
 import { firstValueFrom, timer } from 'rxjs';
@@ -27,6 +24,9 @@ import { ComponentCommunicationService } from '../../../services/component-comm.
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { EntryDropdownComponent } from '../../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
+import { gridOptions, colDefs, initialState, defaultColDef } from './ag-grid';
+import { AgGridAngular } from 'ag-grid-angular';
+import { SelectionChangedEvent } from 'ag-grid-community';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -55,7 +55,7 @@ export interface Residue {
 @Component({
   selector: 'pdbc-details-dashboard',
   standalone: true,
-  imports: [CommonModule, MatSelectModule, MatOptionModule, MatFormFieldModule, FormsModule, EntryDropdownComponent, MaterialModule],
+  imports: [CommonModule, FormsModule, EntryDropdownComponent, MaterialModule, AgGridAngular],
   templateUrl: './details-dashboard.component.html',
   styleUrl: './details-dashboard.component.scss',
 })
@@ -138,6 +138,13 @@ export class DetailsDashboardComponent {
   private readonly onlyMolstarVisuals = ['carbohydrate polymer'];
   public residues = signal<Residue[]>([]);
 
+  public readonly gridOptions = gridOptions;
+  public readonly themeClass = AG_Grid_Theme_Class;
+  public readonly colDefs = colDefs;
+  public readonly defaultColDef = defaultColDef;
+  public rowData = computed(() => []);
+  public paginationPageSizeSelector = signal<number[]>([10, 20]);
+
   constructor() {
     effect(async () => {
       // when a row is selected and updated on the comp comm service we update the dashboard
@@ -153,6 +160,10 @@ export class DetailsDashboardComponent {
         await this.onTableRowSelection(tabState[this.tabName()]);
       }
     });
+  }
+
+  onSelectionChanged(event: SelectionChangedEvent) {
+    const data = event.api.getSelectedNodes()[0].data;
   }
 
   async getMolstarViewerFromParent() {
@@ -199,7 +210,7 @@ export class DetailsDashboardComponent {
         this.selectionButtonText = 'Compare this assembly in other entries';
       } else if (this.tabName() === 'Domains') {
         datum = datum as DomainsRowData;
-        this.selectionTitle = `${datum.domain} (Accession: ${datum.additionalData.accession})`;
+        this.selectionTitle = `${datum.domain} (Accession: ${datum?.additionalData?.accession})`;
         this.selectionTypeText = 'domain';
         this.selectionButtonText = 'Compare this domain in other entries';
         // data processing facade is used to get selectedChains (displayed as text in template)
@@ -216,7 +227,7 @@ export class DetailsDashboardComponent {
 
         // data processing facade is used to get dropdown related information for ligand resid selection
         const dropdownResults = this.detailsDashboardFacade.getLigandsDropdownOptions(datum);
-        this.dropdownTitle = dropdownResults.dropdownTitle;
+        this.dropdownTitle = '';
         this.dropdownOptionsToMolstar = dropdownResults.dropdownOptionsToMolstar;
         this.dropdownOptions = dropdownResults.dropdownOptions.map((eachString, idx) => {
           return {
@@ -237,7 +248,7 @@ export class DetailsDashboardComponent {
         }
       } else if (this.tabName() === 'Macromolecules') {
         datum = datum as MacromoleculesRowData;
-        this.selectionTitle = datum.additionalData.molecule.molecule_name[0];
+        this.selectionTitle = datum?.additionalData?.molecule?.molecule_name[0];
         this.hasDropdown = true;
 
         // data processing facade is used to get dropdown related information for macromolecule chain selection

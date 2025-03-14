@@ -14,6 +14,23 @@ section {
     cursor: pointer;
     transition: all 0.2s ease-in-out;
 
+    &.ligand-card {
+      display: flex;
+      gap: 8px;
+    }
+
+    &.domain-card {
+      p {
+        color: #1a1c1a;
+        font-size: 16px;
+        line-height: 27.2px;
+
+        a {
+          margin-left: 4px;
+        }
+      }
+    }
+
     &.selected-card {
       background-color: #d0debb;
     }

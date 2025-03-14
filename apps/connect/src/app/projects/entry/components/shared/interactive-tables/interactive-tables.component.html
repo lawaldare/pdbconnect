@@ -1,7 +1,7 @@
 @if (tableData && tabName() !== 'Assemblies') { @if (tableData.displayFilters) {
 <div class="filter-btns-container">
   @for (tableFilter of filters(); track tableFilter) {
-  <button class="filter-btn" [class.active]="selectedFilter().description === tableFilter.description" (click)="applyFilter(tableFilter)">
+  <button class="filter-btn" [class.active]="selectedFilter().description === tableFilter.description" (click)="applyFilter(tableFilter, tabName())">
     {{ tableFilter.description }}
   </button>
   }
@@ -33,7 +33,7 @@
 @if(tabName() === 'Assemblies') {
 <section>
   @for(card of rowCards(); track card; let i = $index) {
-  <div class="card" (click)="onCardClick(card, i)" [class.selected-card]="selectedRowCard().assemblyId === card.assemblyId">
+  <div class="card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard().assemblyId === card.assemblyId">
     <p class="card-title">{{card.assemblyName}}</p>
     <p class="card-text">{{card.complexName}}</p>
     <p class="card-text">{{card.multimericStates}}</p>
@@ -47,12 +47,58 @@
 @if(tabName() === 'Macromolecules') {
 <section>
   @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card; let i = $index) {
-  <div class="card" (click)="onCardClick(card, i)" [class.selected-card]="selectedRowCard()?.name?.molecule === card.name.molecule">
+  <div class="card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard()?.name?.molecule === card.name.molecule">
     <p class="card-title">{{card.name.molecule}}</p>
     <p class="card-text">
       @for(chain of card.name.chains; track chain) {
       <span>{{chain}}</span>
       }
+    </p>
+  </div>
+  } @if(rowCards().length > 10){
+  <pagination-controls
+    (pageChange)="onChangePage($event)"
+    (pageBoundsCorrection)="onChangePage($event)"
+    [previousLabel]="'<'"
+    [nextLabel]="'>'"
+  ></pagination-controls>
+  }
+</section>
+}
+
+<!-- Ligands -->
+
+@if(tabName() === 'Ligands') {
+<section>
+  @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card; let i = $index) {
+  <div class="card ligand-card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard()?.id === card.id">
+    <img [src]="'https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/' + card.id +'_100.svg'" alt="" />
+    <div class="card-info">
+      <p class="card-title">{{card.codeAndName.count}} X {{card.id}}</p>
+      <p class="annotation">{{card.annotation.description}}</p>
+    </div>
+  </div>
+  } @if(rowCards().length > 10){
+  <pagination-controls
+    (pageChange)="onChangePage($event)"
+    (pageBoundsCorrection)="onChangePage($event)"
+    [previousLabel]="'<'"
+    [nextLabel]="'>'"
+  ></pagination-controls>
+  }
+</section>
+}
+
+<!-- Domains -->
+
+@if(tabName() === 'Domains') {
+<section>
+  @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card; let i = $index;) {
+  <div class="card domain-card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard()?.domain === card.domain">
+    <p class="domain-card-title"><strong>{{card?.domain}}</strong> (<strong>CATH</strong> <a href="" target="_blank">{{card?.additionalData?.accession}}</a>)</p>
+    <p class="domain-card-chain">
+      Chain @for(chain of card?.segments; track chain; let islast = $last) {
+      <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
     </p>
   </div>
   } @if(rowCards().length > 10){

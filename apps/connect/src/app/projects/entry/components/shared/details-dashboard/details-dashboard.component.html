@@ -338,20 +338,134 @@
 
 <!-- Domains -->
 
-@if(tabName() === 'Domains') {
-<!-- <section>
-  <section class="molstar-details-container">
-    <div class="molstar-container" #molstarContainer [ngClass]="hasTopologyViewer || hasLigandEnv? '' : 'big'"></div>
+@if(tabName() === 'Domains') { @let datum = currentRowDatum;
+
+<h5 class="domain-title"><strong>{{datum?.domain}}</strong> (<strong>CATH</strong> <a href="" target="_blank">{{datum?.additionalData?.accession}}</a>)</h5>
+<section class="domain-info">
+  <div class="info-row">
+    <span>
+      Domain name
+      <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
+    </span>
+    <article>{{datum?.domain}}</article>
+  </div>
+  <div class="info-row">
+    <span> Molecule name </span>
+    <article>{{datum?.accessionName}}</article>
+  </div>
+  <div class="info-row">
+    <span>
+      Author segments
+      <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
+    </span>
+    <article>
+      Chain @for(chain of datum?.segments; track chain; let islast = $last) {
+      <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
+    </article>
+  </div>
+  <div class="info-row">
+    <span>
+      Segments
+      <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
+    </span>
+    <article>
+      Chain @for(chain of datum?.additionalData?.segmentsResidNumbers; track chain; let islast = $last) {
+      <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
+    </article>
+  </div>
+</section>
+<!-- <div class="chains">
+  @if(dropdownOptions.length > 1){
+  <div class="dropdown-container">
+    <span class="dropdown-title">{{ dropdownTitle }}</span>
+    <pdbc-entry-dropdown
+      [downloadable]="false"
+      [islink]="false"
+      [options]="dropdownOptions"
+      [title]="dropdownSelected"
+      (optionClickedEvent)="onDropdownSelect($event)"
+    >
+    </pdbc-entry-dropdown>
+  </div>
+  }@else{
+  <p>{{dropdownOptions[0]?.name}}</p>
+  }
+</div> -->
+@if (sequenceDetails.length > 0) {
+<div class="sequence-container">
+  @for (sequenceDetail of sequenceDetails; track sequenceDetail;) {
+  <div class="title">
+    <span class="text">{{ sequenceDetail.title }}</span>
+    <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
+  </div>
+  <div class="sequence">
+    @for (sequenceSegment of sequenceDetail.segments; track sequenceSegment) {
+    <span [style.background]="sequenceSegment.color ? sequenceSegment.color : ''">{{ sequenceSegment.sequence }}</span>
+    }
+  </div>
+  }
+</div>
+}
+<section class="domain-charts">
+  @if (hasProtvista) {
+  <section class="protvista-container">
+    <div id="protvista-pdb-container" #protvistaContainer></div>
   </section>
-</section> -->
+  }
+  <section class="molstar-details-container">
+    <div class="molstar-container" #molstarContainer></div>
+  </section>
+</section>
 }
 
 <!-- Ligands -->
 
 @if(tabName() === 'Ligands') {
-<!-- <section>
+<h5 class="ligands-title">{{ selectionTitle }}</h5>
+<div class="stats-link-bar">
+  @if(dashboardStatLinks[tabName()].length > 0 && selectionIdentifier !== 'None') {
+  <span>View more about this {{ selectionTypeText }}:</span>
+  @for (displayLink of dashboardStatLinks[tabName()]; track displayLink; let islast = $last) {
+  <a>
+    <!-- [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix" -->
+    {{ selectionStats?.[selectionIdentifier][displayLink.id] }} {{ displayLink.displayName }}
+  </a>
+  {{ islast ? '' : '|' }} } }
+</div>
+<div class="chains">
+  @if(dropdownOptions.length > 1){
+  <div class="dropdown-container">
+    <span class="dropdown-title">{{ dropdownTitle }}</span>
+    <pdbc-entry-dropdown
+      [downloadable]="false"
+      [islink]="false"
+      [options]="dropdownOptions"
+      [title]="dropdownSelected"
+      (optionClickedEvent)="onDropdownSelect($event)"
+    >
+    </pdbc-entry-dropdown>
+  </div>
+  }@else{
+  <p>{{dropdownOptions[0]?.name}}</p>
+  }
+</div>
+<section class="ligand-charts">
   <section class="molstar-details-container">
-    <div class="molstar-container" #molstarContainer [ngClass]="hasTopologyViewer || hasLigandEnv? '' : 'big'"></div>
+    <div class="molstar-container" #molstarContainer></div>
   </section>
-</section> -->
+  <section class="lig-env-container">
+    <div class="ligand-env" #ligandEnvContainer></div>
+  </section>
+  <div class="table">
+    <ag-grid-angular
+      class="ag-theme-quartz"
+      [rowData]="rowData()"
+      [columnDefs]="colDefs"
+      [defaultColDef]="defaultColDef"
+      [gridOptions]="gridOptions"
+      (selectionChanged)="onSelectionChanged($event)"
+      [paginationPageSizeSelector]="paginationPageSizeSelector()"
+    />
+  </div>
+</section>
 }

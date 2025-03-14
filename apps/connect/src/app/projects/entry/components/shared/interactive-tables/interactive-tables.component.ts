@@ -102,16 +102,22 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
   public selectedFilter = signal<Filter>({} as Filter);
   public rowCards = signal<any[]>([]);
   public startNumber = signal<number>(1);
+  private mappedTableRows = signal<any[]>([]);
 
   async ngOnChanges(): Promise<void> {
     const tableData = this.signals.getTabData(this.tabName());
     // console.log('tabName', this.tabName());
     this.tableData = tableData as DataToTable;
     // console.log('Table Rows:', tableData.tableRows());
-    this.rowCards.update(() => tableData.tableRows());
+    const mappedTableRows = tableData.tableRows().map((row, index) => ({
+      ...row,
+      index,
+    }));
+    this.mappedTableRows.update(() => mappedTableRows);
+    this.rowCards.update(() => mappedTableRows);
     this.selectedRowCard.set(this.tableData.tableRows()[0]);
     // console.log('tableData', tableData, tableData.tableFilters(), tableData.tableRows());
-    // console.log('rowCards', this.rowCards());
+    console.log('rowCards', this.rowCards());
     this.filters.update(() =>
       tableData.tableFilters().map((filter: any) => {
         return {
@@ -144,10 +150,10 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
     this.loadSelectionFromTable(0);
   }
 
-  onCardClick(card: AssembliesRowData, index: number): void {
-    console.log('card', card, index);
+  onCardClick(card: any): void {
+    console.log('card', card);
     this.selectedRowCard.set(card);
-    this.loadSelectionFromTable(index);
+    this.loadSelectionFromTable(card.index);
   }
 
   onChangePage(num: number): void {
@@ -268,7 +274,7 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
     this.signals.setTabState(this.tabName(), rowIdx);
   }
 
-  public applyFilter(obj: TableFilter): void {
+  public applyFilter(obj: any, tabName: string): void {
     // function enables triggering external table filters
     this.selectedFilter.set(obj);
 
@@ -278,11 +284,23 @@ export class InteractiveTablesComponent implements OnChanges, OnDestroy {
 
     // this.currentTableFilter = obj.types;
     // this.gridApi.onFilterChanged();
+    if (tabName === 'Macromolecules') {
+      const filteredRowCards = this.mappedTableRows().filter((row: any) => obj.types.includes(row?.additionalData?.molecule?.molecule_type));
+      this.rowCards.update(() => filteredRowCards);
+      console.log(this.rowCards());
+    }
 
-    const filteredRowCards = this.tableData?.tableRows().filter((row: any) => obj.types.includes(row?.additionalData?.molecule?.molecule_type));
+    if (tabName === 'Ligands') {
+      const filteredRowCards = this.mappedTableRows().filter((row: any) => obj.types.includes(row?.type));
+      this.rowCards.update(() => filteredRowCards);
+      console.log(this.rowCards());
+    }
 
-    this.rowCards.update(() => filteredRowCards);
-    console.log(this.rowCards());
+    if (tabName === 'Domains') {
+      const filteredRowCards = this.mappedTableRows().filter((row: any) => obj.types.includes(row?.resource));
+      this.rowCards.update(() => filteredRowCards);
+      console.log(this.rowCards());
+    }
 
     this.selectedRowCard.set(this.rowCards()[0]);
     this.loadSelectionFromTable(0);

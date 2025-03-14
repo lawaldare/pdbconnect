@@ -198,11 +198,11 @@ h5 {
   min-height: 296px;
 }
 
-.lig-env-container {
-  display: flex;
-  height: 334px;
-  align-items: flex-start;
-}
+// .lig-env-container {
+//   display: flex;
+//   height: 334px;
+//   align-items: flex-start;
+// }
 
 .ligand-env {
   // width: 294px;
@@ -253,8 +253,8 @@ h5 {
   // margin-bottom: 4px;
 
   & > span {
-    max-width: 140px;
-    width: 140px;
+    max-width: 145px;
+    width: 145px;
     color: #1a1c1a;
     font-size: 16px;
     font-weight: 500;
@@ -306,4 +306,45 @@ section.info {
   // article {
   //   width: 431px;
   // }
+}
+
+section.ligand-charts {
+  display: flex;
+  gap: 8px;
+
+  .molstar-details-container {
+    width: calc(100% - 732px);
+  }
+
+  .lig-env-container {
+    max-width: 280px;
+    width: 280px;
+  }
+
+  .table {
+    max-width: 452px;
+    width: 452px;
+  }
+}
+
+h5.domain-title {
+  color: #1a1c1a;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 28.5px;
+
+  a {
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 28.5px;
+    margin-left: 2px;
+  }
+}
+
+section.domain-info {
+  margin-bottom: 16px;
+}
+
+section.domain-charts {
+  display: flex;
 }
