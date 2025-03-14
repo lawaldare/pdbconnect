@@ -53,28 +53,30 @@
   </section>
   <section class="mb-24">
     <div class="">
+      @if(isPrimaryPublicationDataAvailable()){
       <div class="row__left" style="width: 100%; margin-bottom: 12px">Abstract</div>
+      }
       <div class="row__right background-container" [ngClass]="imageXMLText() ? 'has-img' : ''">
         <article #imageContainer (click)="openXMLImagesInNewWindow()"></article>
-        @if (primaryPublication()!.abstract.unassigned) {
+        @if (primaryPublication()?.abstract?.unassigned) {
         <p class="row__right__text" [innerHTML]="primaryPublication()!.abstract.unassigned"></p>
         } @else {
         <div style="margin-top: 4px">
-          @if (primaryPublication()!.abstract.background) {
+          @if (primaryPublication()?.abstract?.background) {
           <p class="row__left">Background</p>
-          <p class="row__right__text">{{ primaryPublication()!.abstract.background }}</p>
+          <p class="row__right__text">{{ primaryPublication()?.abstract?.background }}</p>
           } @if (primaryPublication()!.abstract.objective) {
           <p class="row__left">Objective</p>
-          <p class="row__right__text">{{ primaryPublication()!.abstract.objective }}</p>
+          <p class="row__right__text">{{ primaryPublication()?.abstract?.objective }}</p>
           } @if (primaryPublication()!.abstract.methods) {
           <p class="row__left">Methods</p>
-          <p class="row__right__text">{{ primaryPublication()!.abstract.methods }}</p>
+          <p class="row__right__text">{{ primaryPublication()?.abstract?.methods }}</p>
           } @if (primaryPublication()!.abstract.results) {
           <p class="row__left">Results</p>
-          <p class="row__right__text">{{ primaryPublication()!.abstract.results }}</p>
+          <p class="row__right__text">{{ primaryPublication()?.abstract?.results }}</p>
           } @if (primaryPublication()!.abstract.conclusions) {
           <p class="row__left">Conclusions</p>
-          <p class="row__right__text">{{ primaryPublication()!.abstract.conclusions }}</p>
+          <p class="row__right__text">{{ primaryPublication()?.abstract?.conclusions }}</p>
           }
         </div>
         }

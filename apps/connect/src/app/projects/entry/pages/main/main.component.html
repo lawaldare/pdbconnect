@@ -15,15 +15,16 @@
         <ng-template mat-tab-label>{{ tab.name }} </ng-template>
         <!-- <ng-template mat-tab-label> <span class="tab-tag na">{{ tab.tag }}</span>{{ tab.name }} </ng-template> -->
         <ng-template matTabContent>
-          @if (tabDataLoaded() && molstarResidueInfoLoaded()) { @if (tab.tag) {
-          <h5>No {{ tab.name }} data available</h5>
-          } @else {
+          @if (tabDataLoaded() && molstarResidueInfoLoaded()) { @if (tab.hasData) {
           <section class="common-tab" [class.change-display]="!isSidebarCollapsed()">
             @if(isSidebarCollapsed()){
             <pdbc-interactive-tables [tabName]="dataProcessing.getTableName(tab.id)" />
             }
             <pdbc-details-dashboard [tabName]="dataProcessing.getTableName(tab.id)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
           </section>
+          } @else {
+          <h5>No {{ tab.name }} data available</h5>
+
           } } @else {
           <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
           }

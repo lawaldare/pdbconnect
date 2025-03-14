@@ -98,7 +98,7 @@ export class EntryMainPageComponent implements OnInit {
       const hasData = isTabDataGenerated && dataExists;
       mappedCommonTabs.push({
         name: tab.label,
-        tag: hasData ? '' : 'N/A',
+        hasData,
         id: tab.id,
       });
     }

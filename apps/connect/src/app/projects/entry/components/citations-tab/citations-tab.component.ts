@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Component, DestroyRef, ElementRef, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CitationPublicationComponent } from './sub-components/citation-publication/citation-publication.component';
 import { MaterialModule, UtilService } from '@pdbc/core';
@@ -30,6 +30,13 @@ export class CitationsTabComponent implements OnInit {
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId).pipe(filter(Boolean)));
   public readonly articlesCiting = toSignal(this.globalStore.select(EntrySelectors.articlesCiting));
   public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
+
+  public readonly isPrimaryPublicationDataAvailable = computed(() => {
+    const abstract = this.primaryPublication()?.abstract;
+    return (
+      abstract?.background || abstract?.objective || abstract?.methods || abstract?.results || abstract?.conclusions || abstract?.unassigned || abstract?.conclusions
+    );
+  });
 
   public relatedEntries!: string[];
 

@@ -97,6 +97,6 @@ export class InteractiveTablesComponent implements OnChanges {
     }
 
     this.selectedRowCard.set(this.rowCards()[0]);
-    this.loadSelectionFromTable(0);
+    this.loadSelectionFromTable(this.rowCards()[0].index);
   }
 }
