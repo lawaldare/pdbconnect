@@ -33,11 +33,11 @@ export const agGridOptionsBase: GridOptions = {
     wrapText: true,
     autoHeight: true,
   },
-  rowSelection: {
-    mode: 'multiRow',
-    enableClickSelection: false,
-    copySelectedRows: false,
-  },
+  // rowSelection: {
+  //   mode: 'multiRow',
+  //   enableClickSelection: false,
+  //   copySelectedRows: false,
+  // },
   ...agGridRowDefault,
   rowBuffer: 20,
   pagination: true,

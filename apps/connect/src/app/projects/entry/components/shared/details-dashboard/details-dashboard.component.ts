@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Component, computed, effect, ElementRef, inject, input, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, effect, ElementRef, inject, input, linkedSignal, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AG_Grid_Theme_Class, MaterialModule, UtilService } from '@pdbc/core';
-import { FormsModule } from '@angular/forms';
+import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule, UtilService } from '@pdbc/core';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DetailsDashboardFacade } from './details-dashboard.facade';
-import { firstValueFrom, timer } from 'rxjs';
+import { firstValueFrom, map, timer } from 'rxjs';
 import {
   AssembliesRowData,
   DomainsBoundaries,
@@ -15,7 +15,7 @@ import {
 } from '../interactive-tables/data-models-and-definitions/row-and-table.model';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { Store } from '@ngrx/store';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { assemblyTooltip, dashboardStatLinks } from '../../../entry-constant';
 import { MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
 import { MolstarVisualisationsForTabs } from '../../../helpers/molstar/molstar-visualisations-for-detail-tabs';
@@ -27,6 +27,7 @@ import { EntryDropdownComponent } from '../../entry-page-header/sub-components/e
 import { gridOptions, colDefs, defaultColDef } from './ag-grid';
 import { AgGridAngular } from 'ag-grid-angular';
 import { SelectionChangedEvent } from 'ag-grid-community';
+import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -55,11 +56,11 @@ export interface Residue {
 @Component({
   selector: 'pdbc-details-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, EntryDropdownComponent, MaterialModule, AgGridAngular],
+  imports: [CommonModule, FormsModule, EntryDropdownComponent, MaterialModule, AgGridAngular, ReactiveFormsModule],
   templateUrl: './details-dashboard.component.html',
   styleUrl: './details-dashboard.component.scss',
 })
-export class DetailsDashboardComponent {
+export class DetailsDashboardComponent implements OnInit {
   public readonly signals = inject(ComponentCommunicationService);
   private readonly utilService = inject(UtilService);
   public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
@@ -67,16 +68,12 @@ export class DetailsDashboardComponent {
   public renderer = inject(Renderer2);
   public elementRef = inject(ElementRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
-  // private molstarVisualisation = inject(MolstarVisualisationsForTabs);
-
-  // required inputs
-  // public readonly entryId = input.required<string>();
-  // public readonly macromolecules = input.required<Molecule[]>();
-  // public readonly proteinsStats = input.required<{ [key: string]: ProteinSummaryStats }>();
+  private readonly downloadFileTypeService = inject(DownloadFileTypeService);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
   public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
+  public readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
 
   public readonly tabName = input.required<TableNames>();
   public readonly molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
@@ -138,12 +135,18 @@ export class DetailsDashboardComponent {
   private readonly onlyMolstarVisuals = ['carbohydrate polymer'];
   public residues = signal<Residue[]>([]);
 
+  public searchTerm = new FormControl('');
+
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
   public readonly defaultColDef = defaultColDef;
-  public rowData = computed(() => []);
+  public rowData = linkedSignal({
+    source: this.interactions,
+    computation: () => this.interactions(),
+  });
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
     effect(async () => {
@@ -159,6 +162,36 @@ export class DetailsDashboardComponent {
         // call row selection function to set variables and trigger visualisation conditional rendering
         await this.onTableRowSelection(tabState[this.tabName()]);
       }
+    });
+  }
+
+  ngOnInit(): void {
+    this.searchTerm.valueChanges
+      .pipe(
+        map((searchQuery: string | null) => {
+          if (searchQuery) {
+            return this.filterItemsBySearchQuery(searchQuery, this.interactions() ?? []);
+          } else {
+            return this.interactions();
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((data: any) => {
+        this.rowData.update(() => data);
+      });
+  }
+
+  private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
+    return items.filter((item) => {
+      const searchQueryLower = searchQuery.toLocaleLowerCase();
+      const residueName = item.end.chem_comp_id.toString() + '_' + item.end.author_residue_number.toString();
+      const atomName = item.end.atom_names.join(',');
+      const interactionType = item.interaction_details.map((type: keyof typeof INTX_NAME_STANDARDIZER) => INTX_NAME_STANDARDIZER[type]).join(',');
+      const distance = item.distance;
+      const ligandAtom = item.ligand_atoms.join(',');
+      const rowString = residueName + atomName + interactionType + distance + ligandAtom;
+      return rowString.toLocaleLowerCase().indexOf(searchQueryLower) !== -1;
     });
   }
 
@@ -296,6 +329,9 @@ export class DetailsDashboardComponent {
     }
     if (datum) {
       this.currentRowDatum = datum;
+      console.log('Selection datum:', datum);
+      console.log('RowData:', this.rowData());
+
       this.residues.update(() => this.removeDuplicateUniprot(this.currentRowDatum['residues']));
 
       // before rendering molstar we get the singleton molstar tab instance from the template (this avoids memory leaks)
@@ -478,5 +514,20 @@ export class DetailsDashboardComponent {
     };
     // unfortunately needed so destruction happens syncronously
     await firstValueFrom(timer(100));
+  }
+
+  public downloadCSV(): void {
+    const mappedData = this.rowData()?.map((row) => {
+      return {
+        'Residue Name 1': row.end.chem_comp_id + '_' + row.end.author_residue_number,
+        'Atom Name 1': row.end.atom_names.join(','),
+        'Interaction Type': row.interaction_details.map((type) => INTX_NAME_STANDARDIZER[type as keyof typeof INTX_NAME_STANDARDIZER]).join(', '),
+        'Distance (Å)': row.distance,
+        'Ligand Atom': row.ligand_atoms.join(', '),
+      };
+    });
+    if (mappedData && mappedData.length) {
+      this.downloadFileTypeService.downloadCSV(mappedData, 'structures');
+    }
   }
 }

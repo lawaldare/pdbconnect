@@ -307,17 +307,33 @@ section.ligand-charts {
   gap: 8px;
 
   .molstar-details-container {
-    width: calc(100% - 732px);
+    max-width: 360px;
+    height: 296px;
+
+    &.expand {
+      max-width: unset;
+      width: 60%;
+    }
   }
 
   .lig-env-container {
     max-width: 280px;
     width: 280px;
+    height: 239px;
+
+    &.expand {
+      max-width: unset;
+      width: 40%;
+    }
   }
 
   .table {
-    max-width: 452px;
-    width: 452px;
+    width: calc(100% - 640px);
+    height: 322px;
+
+    ::ng-deep span.ag-paging-page-size {
+      display: none !important;
+    }
   }
 }
 
@@ -341,4 +357,43 @@ section.domain-info {
 
 section.domain-charts {
   display: flex;
+}
+
+.table {
+  &-title {
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 28.5px;
+    margin-bottom: 4px;
+  }
+
+  button {
+    margin-bottom: 16px;
+  }
+
+  &-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .search-box {
+      position: relative;
+      width: 166px;
+      font-size: 16px;
+
+      input {
+        border: none;
+        border-bottom: 1px solid var(--Neutral-600, #707372);
+        box-shadow: none;
+        padding-left: 0;
+      }
+
+      .icon-search {
+        position: absolute;
+        right: 5px;
+        top: 12px;
+        color: #707372;
+      }
+    }
+  }
 }

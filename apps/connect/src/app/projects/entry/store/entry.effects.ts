@@ -48,6 +48,19 @@ export class EntryEffects {
     )
   );
 
+  getInteractions$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getInteractions),
+      switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
+      mergeMap((entryId: string) =>
+        this.entryAPIService.getEntryInteractions(entryId).pipe(
+          map((data) => EntryActions.getInteractionsSuccess({ interactions: data.interactions })),
+          catchError(() => of(EntryActions.getInteractionsFailure()))
+        )
+      )
+    )
+  );
+
   getPfamMapping$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getPfamMapping),

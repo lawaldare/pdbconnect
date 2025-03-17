@@ -5,19 +5,7 @@
     <i class="icon icon-link icon-common"></i>
   </a>
 </div>
-@if(showFirstFive()){
-<ol [start]="this.pageIndex * 10 + 1">
-  @for(article of publicationInfo().slice(0,5); track article.pubmed_id){
-  <pdbc-citation-article [article]="article"></pdbc-citation-article>
-  }
-</ol>
-@if(publicationInfo().length > 5){
-<button class="vf-button vf-button--link" (click)="showAllArticles()">
-  See all {{ publicationInfo().length }} papers
-  <i class="icon icon-common icon-common"></i>
-</button>
-} } @else {
-<ol [start]="this.pageIndex * 10 + 1">
+<ol [start]="this.pageIndex * 5 + 1">
   @for(article of pagedPublicationInfo; track article.pubmed_id){
   <pdbc-citation-article [article]="article"></pdbc-citation-article>
   }
@@ -32,9 +20,3 @@
   (page)="handlePageEvent($event)"
 >
 </mat-paginator>
-
-<button class="vf-button vf-button--link" (click)="showAllArticles()">
-  See less papers
-  <i class="icon icon-common icon-common"></i>
-</button>
-}

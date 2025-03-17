@@ -106,6 +106,13 @@
         </a>
       </article>
     </div>
+    } @let expressionSystem = datum?.additionalData?.molecule?.source[0]?.expression_host_scientific_name; @if(expressionSystem){
+    <div class="info-row">
+      <span> Expression System </span>
+      <article>
+        <em>{{expressionSystem}}</em>
+      </article>
+    </div>
     } @if(residues().length){
     <div class="info-row">
       <span> UniProt mapping </span>
@@ -195,7 +202,6 @@
 <!-- Domains -->
 
 @if(tabName() === 'Domains') { @let datum = currentRowDatum;
-
 <h5 class="domain-title"><strong>{{datum?.domain}}</strong> (<strong>CATH</strong> <a href="" target="_blank">{{datum?.additionalData?.accession}}</a>)</h5>
 <section class="domain-info">
   <div class="info-row">
@@ -293,13 +299,27 @@
   }
 </div>
 <section class="ligand-charts">
-  <section class="molstar-details-container">
+  <section class="molstar-details-container" [class.expand]="!rowData()?.length">
     <div class="molstar-container" #molstarContainer></div>
   </section>
-  <section class="lig-env-container">
+  <section class="lig-env-container" [class.expand]="!rowData()?.length">
     <div class="ligand-env" #ligandEnvContainer></div>
   </section>
+  @if(rowData()?.length){
   <div class="table">
+    <p class="table-title">Ligand interactions - {{rowData()?.length}} total</p>
+    <div class="table-toolbar">
+      <button class="vf-button vf-button--link" (click)="downloadCSV()">
+        Download table (csv)
+        <i class="icon icon-common icon-download"></i>
+      </button>
+      <div class="search-box">
+        <input type="search" [formControl]="searchTerm" placeholder="Search the table" />
+        @if(!searchTerm.value){
+        <i class="icon icon-common icon-search"></i>
+        }
+      </div>
+    </div>
     <ag-grid-angular
       class="ag-theme-quartz"
       [rowData]="rowData()"
@@ -310,6 +330,7 @@
       [paginationPageSizeSelector]="paginationPageSizeSelector()"
     />
   </div>
+  }
 </section>
 <section class="ligands-info">
   <p>

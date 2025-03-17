@@ -36,6 +36,7 @@ export class EntryApiService {
   private BASE_API = `${environment.pdbeBaseUrl}api/v2/pdb/entry/`;
   private MAPPINGS_API = `${environment.pdbeBaseUrl}api/mappings/`;
   private VALIDATION_API = `${environment.pdbeBaseUrl}api/validation/`;
+  private GRAPH_API = `${environment.pdbeBaseUrl}graph-api/pdb/`;
 
   private readonly http = inject(HttpClient);
 
@@ -75,6 +76,10 @@ export class EntryApiService {
 
   public getEntryStatus(entryId: string): Observable<EntryStatus> {
     return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(map((data) => data[entryId][0]));
+  }
+
+  public getEntryInteractions(entryId: string): Observable<any> {
+    return this.http.get<Record<string, any[]>>(`${this.GRAPH_API}bound_ligand_interactions/${entryId}/A/200`).pipe(map((data) => data[entryId][0]));
   }
 
   public getPrimaryPublicationAbstract(entryId: string): Observable<CitationDetail> {

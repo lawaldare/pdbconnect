@@ -24,6 +24,7 @@ import {
   SBGRIDExperimentRawData,
 } from '../data-models/experiment-raw-data.model';
 import { EntryStatus } from '../data-models/status.model';
+import { Interaction } from '../data-models/interaction.model';
 
 export interface EntryStoreState {
   entryId: string;
@@ -62,6 +63,7 @@ export interface EntryStoreState {
   experimentRawDataEMPIAR: EMPIARExperimentRawData[];
   experimentRawDataPDB: PDBExperimentRawData[];
   entryStatus: EntryStatus | undefined;
+  interactions: Interaction[];
 }
 
 export interface EntryMoleculesData {

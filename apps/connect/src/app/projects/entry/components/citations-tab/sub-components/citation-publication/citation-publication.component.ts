@@ -20,7 +20,7 @@ export class CitationPublicationComponent implements OnInit {
   public showFirstFive = signal(true);
   public pagedPublicationInfo!: Article[];
   public pageLength = signal(0);
-  public pageSize = signal(10);
+  public pageSize = signal(5);
   public readonly pageSizeOptions = [5, 10, 15, 20];
   public pageIndex = 0;
 

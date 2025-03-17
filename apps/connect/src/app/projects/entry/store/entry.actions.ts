@@ -18,6 +18,7 @@ import {
   SBGRIDExperimentRawData,
 } from '../data-models/experiment-raw-data.model';
 import { EntryStatus } from '../data-models/status.model';
+import { Interaction } from '../data-models/interaction.model';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -98,5 +99,8 @@ export const EntryActions = createActionGroup({
     'Get Entry Status': emptyProps(),
     'Get Entry Status Success': props<{ entryStatus: EntryStatus }>(),
     'Get Entry Status Failure': emptyProps(),
+    'Get Interactions': emptyProps(),
+    'Get Interactions Success': props<{ interactions: Interaction[] }>(),
+    'Get Interactions Failure': emptyProps(),
   },
 });

@@ -42,4 +42,5 @@ export const EntrySelectors = {
   experimentRawDataEMPIAR: createSelector(EntryStoreState, (state: EntryStoreState) => state.experimentRawDataEMPIAR),
   experimentRawDataPDB: createSelector(EntryStoreState, (state: EntryStoreState) => state.experimentRawDataPDB),
   entryStatus: createSelector(EntryStoreState, (state: EntryStoreState) => state.entryStatus),
+  interactions: createSelector(EntryStoreState, (state: EntryStoreState) => state.interactions),
 };
