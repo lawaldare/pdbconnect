@@ -31,6 +31,7 @@ const initialState: EntryStoreState = {
   bestStructuresMappingsByUniProtIds: {},
   proteinPagesSummaryByUniProtIds: {},
   interproMapping: {},
+  isoformsMapping: {},
   pfamMapping: {},
   downloadOptions: [],
   viewOptions: [],
@@ -97,6 +98,10 @@ export const entryReducer = createReducer(
   on(EntryActions.getInterproMappingSuccess, (state, action) => ({
     ...state,
     interproMapping: action.interproMapping,
+  })),
+  on(EntryActions.getIsoformsMappingSuccess, (state, action) => ({
+    ...state,
+    isoformsMapping: action.isoformsMapping,
   })),
   on(EntryActions.getModificationsSuccess, (state, action) => ({
     ...state,

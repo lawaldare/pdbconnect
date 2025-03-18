@@ -90,6 +90,10 @@ export class EntryApiService {
     return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.MAPPINGS_API}uniprot/${entryId}`).pipe(map((data) => data[entryId]['UniProt']));
   }
 
+  public getIsoformsMapping(entryId: string): Observable<UniProtMapping> {
+    return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.MAPPINGS_API}isoforms/${entryId}`).pipe(map((data) => data[entryId]['UniProt']));
+  }
+
   public getInterproMapping(entryId: string): Observable<InterProMappings> {
     return this.http.get<Record<string, Record<string, InterProMappings>>>(`${this.MAPPINGS_API}interpro/${entryId}`).pipe(map((data) => data[entryId]['InterPro']));
   }

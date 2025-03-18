@@ -16,7 +16,7 @@ import {
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { Store } from '@ngrx/store';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { assemblyTooltip, dashboardStatLinks } from '../../../entry-constant';
+import { assemblyTooltip, dashboardStatLinks, resourceUrls } from '../../../entry-constant';
 import { MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
 import { MolstarVisualisationsForTabs } from '../../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { TableNames } from '../../../pages/main/main.component';
@@ -47,10 +47,18 @@ export interface SequenceDetail {
 }
 
 export interface Residue {
+  uniprot: string;
   range: string;
   coverage: string;
-  uniprot: string;
   chainId: string;
+}
+
+export interface MappedResidue {
+  range: string[];
+  coverage: string;
+  chainId: string;
+  uniprot: string;
+  open: boolean;
 }
 
 @Component({
@@ -74,11 +82,14 @@ export class DetailsDashboardComponent implements OnInit {
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
   public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
   public readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
+  public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
 
   public readonly tabName = input.required<TableNames>();
   public readonly molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
   public readonly molstarParent = input.required<HTMLElement>(); // Parent to send back the molstar global instance
   private isMolstarRetrieved = false;
+
+  public readonly resourceUrls = resourceUrls;
 
   // injected services, data processing facade, molstar helpers
 
@@ -133,7 +144,19 @@ export class DetailsDashboardComponent implements OnInit {
   private readonly allThereVisuals = ['polypeptide(L)', 'polypeptide(D)'];
   private readonly onlyTwoVisuals = ['polyribonucleotide', 'polydeoxyribonucleotide'];
   private readonly onlyMolstarVisuals = ['carbohydrate polymer'];
-  public residues = signal<Residue[]>([]);
+  public residues = signal<MappedResidue[]>([]);
+  public bestResidues = computed(() => {
+    const isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
+    const filteredIsoformsMapping: any[] = [];
+
+    isoformsMappingKeys.forEach((uniprot: string) => {
+      if (uniprot.indexOf('-') !== -1) {
+        filteredIsoformsMapping.push({ ...this.isoformsMapping()?.[uniprot], uniprot });
+      }
+    });
+
+    return filteredIsoformsMapping;
+  });
 
   public searchTerm = new FormControl('');
 
@@ -180,6 +203,10 @@ export class DetailsDashboardComponent implements OnInit {
       .subscribe((data: any) => {
         this.rowData.update(() => data);
       });
+  }
+
+  public generateOrganismSearchUrl(term: string): string {
+    return this.utilService.generateQueryURL(term, 'q_organism_name');
   }
 
   private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
@@ -271,6 +298,8 @@ export class DetailsDashboardComponent implements OnInit {
         });
         this.dropdownSelected = dropdownResults.dropdownSelected;
 
+        this.selectionIdentifier = datum.id;
+
         // modification is a special case for Ligands table in which lig env viewer is not displayed
         if (datum.type.includes('modification') === false) {
           this.hasLigandEnv = true;
@@ -310,6 +339,7 @@ export class DetailsDashboardComponent implements OnInit {
             this.selectionIdentifier = datum.additionalData.uniprotAccessions[0];
             if (this.proteinsStats()) {
               this.selectionStats = this.proteinsStats();
+              console.log('ProteinsStats:', this.selectionStats);
             }
           }
           this.hasTopologyViewer = true;
@@ -332,7 +362,9 @@ export class DetailsDashboardComponent implements OnInit {
       console.log('Selection datum:', datum);
       console.log('RowData:', this.rowData());
 
-      this.residues.update(() => this.removeDuplicateUniprot(this.currentRowDatum['residues']));
+      if (this.tabName() === 'Macromolecules') {
+        this.residues.update(() => this.transformCoverageData(this.currentRowDatum['residues']));
+      }
 
       // before rendering molstar we get the singleton molstar tab instance from the template (this avoids memory leaks)
       await this.getMolstarViewerFromParent();
@@ -347,15 +379,32 @@ export class DetailsDashboardComponent implements OnInit {
     }
   }
 
-  private removeDuplicateUniprot(data: Residue[]) {
-    const seen = new Set();
-    return data?.filter((item) => {
-      if (seen.has(item.uniprot)) {
-        return false;
+  private transformCoverageData(data: Residue[]) {
+    const result = [];
+
+    const groupedData: Record<string, any> = {};
+
+    data.forEach((entry) => {
+      const { uniprot, chainId, coverage, range } = entry;
+
+      if (!groupedData[uniprot]) {
+        groupedData[uniprot] = {
+          chainId,
+          coverage,
+          uniprot,
+          open: false,
+          range: [],
+        };
       }
-      seen.add(item.uniprot);
-      return true;
+
+      groupedData[uniprot].range.push(range);
     });
+
+    for (const key in groupedData) {
+      result.push(groupedData[key]);
+    }
+
+    return result;
   }
 
   public async onDropdownSelect(event: string) {

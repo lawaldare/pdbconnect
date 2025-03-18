@@ -74,7 +74,10 @@
 <section>
   @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card; let i = $index;) {
   <div class="card domain-card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard()?.domain === card.domain">
-    <p class="domain-card-title"><strong>{{card?.domain}}</strong> (<strong>CATH</strong> <a href="" target="_blank">{{card?.additionalData?.accession}}</a>)</p>
+    <p class="domain-card-title">
+      <strong>{{card?.domain}}</strong> (<strong>{{card?.resource}}</strong>
+      <a [href]="resourceUrls[card.resource] + card?.additionalData?.accession" target="_blank">{{card?.additionalData?.accession}}</a>)
+    </p>
     <p class="domain-card-chain">
       Chain @for(chain of card?.segments; track chain; let islast = $last) {
       <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }

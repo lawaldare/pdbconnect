@@ -214,5 +214,6 @@ export class MainDataProcessingFacade {
     this.globalStore.dispatch(EntryActions.getExperimentPDBRawData());
     this.globalStore.dispatch(EntryActions.getUniprotMapping());
     this.globalStore.dispatch(EntryActions.getInteractions());
+    this.globalStore.dispatch(EntryActions.getIsoformsMapping());
   }
 }

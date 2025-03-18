@@ -9,6 +9,7 @@ import { MacromoleculeDataToTable } from './data-processing/macromolecule-row';
 import { TableNames } from '../../../pages/main/main.component';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { NgxPaginationModule } from 'ngx-pagination';
+import { resourceUrls } from '../../../entry-constant';
 
 type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
 
@@ -28,6 +29,8 @@ export class InteractiveTablesComponent implements OnChanges {
   public readonly signals = inject(ComponentCommunicationService);
 
   public readonly tabName = input.required<TableNames>();
+
+  public readonly resourceUrls = resourceUrls;
 
   public tableData?: any;
   public currentTableFilter: string[] = [];

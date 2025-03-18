@@ -48,6 +48,19 @@ export class EntryEffects {
     )
   );
 
+  getIsoformsMapping$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getIsoformsMapping),
+      switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
+      mergeMap((entryId: string) =>
+        this.entryAPIService.getIsoformsMapping(entryId).pipe(
+          map((isoformsMapping) => EntryActions.getIsoformsMappingSuccess({ isoformsMapping })),
+          catchError(() => of(EntryActions.getIsoformsMappingFailure()))
+        )
+      )
+    )
+  );
+
   getInteractions$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getInteractions),

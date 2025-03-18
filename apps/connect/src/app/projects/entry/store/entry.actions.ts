@@ -19,6 +19,7 @@ import {
 } from '../data-models/experiment-raw-data.model';
 import { EntryStatus } from '../data-models/status.model';
 import { Interaction } from '../data-models/interaction.model';
+import { UniProtMapping } from '../data-models/uniprot-mapping.model';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -36,6 +37,9 @@ export const EntryActions = createActionGroup({
     'Get UniprotMapping': emptyProps(),
     'Get UniprotMapping Success': props<{ data: UniProtMappingData }>(),
     'Get UniprotMapping Failure': emptyProps(),
+    'Get IsoformsMapping': emptyProps(),
+    'Get IsoformsMapping Success': props<{ isoformsMapping: UniProtMapping }>(),
+    'Get IsoformsMapping Failure': emptyProps(),
     'Get InterproMapping': emptyProps(),
     'Get InterproMapping Success': props<{ interproMapping: InterProMappings }>(),
     'Get InterproMapping Failure': emptyProps(),

@@ -41,6 +41,7 @@ export interface EntryStoreState {
   bestStructuresMappingsByUniProtIds: Record<string, BestStructureMapping[]> | undefined;
   proteinPagesSummaryByUniProtIds: Record<string, ProteinSummaryStats> | undefined;
   interproMapping: InterProMappings | undefined;
+  isoformsMapping: UniProtMapping | undefined;
   pfamMapping: PfamMappings | undefined;
   downloadOptions: DownloadOption[];
   viewOptions: DownloadOption[];

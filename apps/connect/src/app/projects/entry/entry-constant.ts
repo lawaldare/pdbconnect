@@ -142,8 +142,33 @@ export const dashboardStatLinks = {
       linkSuffix: '/interactions',
     },
   ],
-  Ligands: [],
+  Ligands: [
+    {
+      id: 'pdbs',
+      displayName: 'bound structures',
+      link: 'https://www.ebi.ac.uk/pdbe/connect/chemicalCompound/show/',
+      linkSuffix: '#structures-section',
+    },
+    {
+      id: 'ligands',
+      displayName: 'interaction statistics',
+      link: 'https://www.ebi.ac.uk/pdbe/connect/chemicalCompound/show/',
+      linkSuffix: '#interaction-section',
+    },
+    {
+      id: 'similar_proteins',
+      displayName: 'related ligands',
+      link: 'https://www.ebi.ac.uk/pdbe/connect/chemicalCompound/show/',
+      linkSuffix: '#related-ligand-section',
+    },
+  ],
   Domains: [],
+};
+
+export const resourceUrls: any = {
+  CATH: 'https://www.cathdb.info/version/latest/superfamily/',
+  SCOP: 'https://ftp.ebi.ac.uk/pub/databases/pdbe-kb/scop-legacy/',
+  Pfam: 'https://www.ebi.ac.uk/interpro/entry/pfam/',
 };
 
 export type ApiDataItem =
