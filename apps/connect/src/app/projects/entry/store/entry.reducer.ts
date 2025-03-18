@@ -32,6 +32,8 @@ const initialState: EntryStoreState = {
   proteinPagesSummaryByUniProtIds: {},
   interproMapping: {},
   isoformsMapping: {},
+  goMapping: {},
+  ecMapping: {},
   pfamMapping: {},
   downloadOptions: [],
   viewOptions: [],
@@ -74,6 +76,14 @@ export const entryReducer = createReducer(
   on(EntryActions.getPfamMappingSuccess, (state, action) => ({
     ...state,
     pfamMapping: action.pfamMapping,
+  })),
+  on(EntryActions.getGOMappingSuccess, (state, action) => ({
+    ...state,
+    goMapping: action.goMapping,
+  })),
+  on(EntryActions.getECMappingSuccess, (state, action) => ({
+    ...state,
+    ecMapping: action.ecMapping,
   })),
   on(EntryActions.getSummaryDataSuccess, (state, action) => ({
     ...state,

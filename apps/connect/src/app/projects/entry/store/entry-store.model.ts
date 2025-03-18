@@ -5,7 +5,7 @@ import { Molecule } from '../data-models/molecule.model';
 import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
 import { ProcessedSummary } from '../data-models/summary.model';
 import { BestStructureMapping } from '../data-models/uniport-best-structures.model';
-import { UniProtMapping } from '../data-models/uniprot-mapping.model';
+import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
 import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
 import { KeyValidationStats } from '../data-models/key-validation-stats.model';
@@ -42,6 +42,8 @@ export interface EntryStoreState {
   proteinPagesSummaryByUniProtIds: Record<string, ProteinSummaryStats> | undefined;
   interproMapping: InterProMappings | undefined;
   isoformsMapping: UniProtMapping | undefined;
+  goMapping: GOMapping | undefined;
+  ecMapping: ECMapping | undefined;
   pfamMapping: PfamMappings | undefined;
   downloadOptions: DownloadOption[];
   viewOptions: DownloadOption[];

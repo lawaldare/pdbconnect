@@ -16,7 +16,7 @@ import { PisaAssembly } from '../data-models/pisa-assembly.model';
 import { CarbohydrateMolecule } from '../data-models/carbohydrate-polymer.model';
 import { Molecule } from '../data-models/molecule.model';
 import { EntrySummary, ProcessedSummary } from '../data-models/summary.model';
-import { UniProtMapping } from '../data-models/uniprot-mapping.model';
+import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
 import { PdbRedoQualityScores, ProcessedQualityScores, SummaryQualityScores } from '../data-models/summary-quality-scores.model';
 import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
 import {
@@ -92,6 +92,14 @@ export class EntryApiService {
 
   public getIsoformsMapping(entryId: string): Observable<UniProtMapping> {
     return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.MAPPINGS_API}isoforms/${entryId}`).pipe(map((data) => data[entryId]['UniProt']));
+  }
+
+  public getGOMapping(entryId: string): Observable<GOMapping> {
+    return this.http.get<Record<string, Record<string, GOMapping>>>(`${this.MAPPINGS_API}go/${entryId}`).pipe(map((data) => data[entryId]['GO']));
+  }
+
+  public getECMapping(entryId: string): Observable<ECMapping> {
+    return this.http.get<Record<string, Record<string, ECMapping>>>(`${this.MAPPINGS_API}ec/${entryId}`).pipe(map((data) => data[entryId]['EC']));
   }
 
   public getInterproMapping(entryId: string): Observable<InterProMappings> {

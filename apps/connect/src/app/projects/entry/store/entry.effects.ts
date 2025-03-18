@@ -61,6 +61,32 @@ export class EntryEffects {
     )
   );
 
+  getGOMapping$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getGOMapping),
+      switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
+      mergeMap((entryId: string) =>
+        this.entryAPIService.getGOMapping(entryId).pipe(
+          map((goMapping) => EntryActions.getGOMappingSuccess({ goMapping })),
+          catchError(() => of(EntryActions.getGOMappingFailure()))
+        )
+      )
+    )
+  );
+
+  getECMapping$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getECMapping),
+      switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
+      mergeMap((entryId: string) =>
+        this.entryAPIService.getECMapping(entryId).pipe(
+          map((ecMapping) => EntryActions.getECMappingSuccess({ ecMapping })),
+          catchError(() => of(EntryActions.getECMappingFailure()))
+        )
+      )
+    )
+  );
+
   getInteractions$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getInteractions),

@@ -1,0 +1,22 @@
+<div class="toolbar">
+  <p>EC numbers</p>
+  <img src="assets/icons/close.png" alt="close icon" role="button" (click)="dialogRef.close()" />
+</div>
+<section class="ec-info">
+  @for(item of ecMappingdata(); track item.id){
+  <p class="ec-info-title">EC {{item.id}}: {{item.accepted_name}}</p>
+  <div class="ec-info-row">
+    <span class="ec-info-row-title">Reaction catalysed</span>
+    <p class="ec-info-row-description reaction-description">{{item.reaction[0]}}</p>
+  </div>
+  <div class="ec-info-row">
+    <span class="ec-info-row-title">Systematic name</span>
+    <p class="ec-info-row-description">{{item.systematic_name}}</p>
+  </div>
+  <div class="ec-info-row">
+    <span class="ec-info-row-title">Alternative name(s)</span>
+    <p class="ec-info-row-description">{{item.synonyms.join(', ')}}</p>
+  </div>
+
+  }
+</section>

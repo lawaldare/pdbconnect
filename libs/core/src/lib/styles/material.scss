@@ -12,6 +12,12 @@ thead {
   }
 }
 
+.mat-mdc-dialog-panel.entry-Dialog {
+  max-width: 750px !important;
+  width: 750px !important;
+  height: 600px !important;
+}
+
 .mat-expansion-panel-spacing {
   margin: 0 !important;
 }

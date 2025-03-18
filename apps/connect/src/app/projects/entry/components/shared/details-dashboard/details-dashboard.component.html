@@ -5,7 +5,6 @@
 </button>
 
 <!-- Assemblies -->
-
 @if(tabName() === 'Assemblies') {
 <h5>{{ selectionTitle }}</h5>
 @let datum = currentRowDatum;
@@ -75,7 +74,6 @@
 }
 
 <!-- Macromolecules -->
-
 @if(tabName() === 'Macromolecules') {
 <h5 class="macromolecules-title">{{ selectionTitle }}</h5>
 <div class="stats-link-bar">
@@ -161,7 +159,17 @@
         <br />
       </article>
     </div>
-    }
+    @if(goMappings().length){
+    <div class="info-row dialog">
+      <span class="micro-title">GO terms</span>
+      <article><span role="button" (click)="openDialog('go')">View {{goMappings().length}} GO terms</span></article>
+    </div>
+    } @if(ecMappings().length){
+    <div class="info-row dialog">
+      <span class="micro-title">EC numbers</span>
+      <article><span role="button" (click)="openDialog('ec')">View {{ecMappings().length}} EC numbers</span></article>
+    </div>
+    } }
   </div>
 </section>
 
@@ -178,9 +186,9 @@
     >
     </pdbc-entry-dropdown>
   </div>
-  }@else{
-  <p>{{dropdownOptions[0]?.name}}</p>
-  }
+  }@else if(dropdownOptions.length === 1){
+  <p>{{dropdownOptions[0].name}}</p>
+  } @else {}
 </div>
 @if (sequenceDetails.length > 0) {
 <div class="sequence-container">
@@ -216,7 +224,6 @@
 }
 
 <!-- Domains -->
-
 @if(tabName() === 'Domains') { @let datum = currentRowDatum;
 <h5 class="domain-title">
   <strong>{{datum?.domain}}</strong> (<strong>{{datum?.resource}}</strong>
@@ -287,7 +294,6 @@
 }
 
 <!-- Ligands -->
-
 @if(tabName() === 'Ligands') {
 <h5 class="ligands-title">{{ selectionTitle }}</h5>
 <div class="stats-link-bar">

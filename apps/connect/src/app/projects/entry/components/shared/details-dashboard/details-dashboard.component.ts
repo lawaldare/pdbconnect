@@ -28,6 +28,10 @@ import { gridOptions, colDefs, defaultColDef } from './ag-grid';
 import { AgGridAngular } from 'ag-grid-angular';
 import { SelectionChangedEvent } from 'ag-grid-community';
 import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
+import { ComponentType } from '@angular/cdk/overlay';
+import { MatDialog } from '@angular/material/dialog';
+import { EcNumbersComponent } from '../ec-numbers/ec-numbers.component';
+import { GoTermsComponent } from '../go-terms/go-terms.component';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -77,12 +81,17 @@ export class DetailsDashboardComponent implements OnInit {
   public elementRef = inject(ElementRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
+  private readonly dialog = inject(MatDialog);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
   public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
   public readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
   public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
+  public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
+  public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
+  public goMappings = computed(() => Object.keys(this.goMapping() ?? {}));
+  public ecMappings = computed(() => Object.keys(this.ecMapping() ?? {}));
 
   public readonly tabName = input.required<TableNames>();
   public readonly molstarViewerEl = input.required<HTMLElement>(); // Molstar global instance div
@@ -339,7 +348,6 @@ export class DetailsDashboardComponent implements OnInit {
             this.selectionIdentifier = datum.additionalData.uniprotAccessions[0];
             if (this.proteinsStats()) {
               this.selectionStats = this.proteinsStats();
-              console.log('ProteinsStats:', this.selectionStats);
             }
           }
           this.hasTopologyViewer = true;
@@ -359,8 +367,6 @@ export class DetailsDashboardComponent implements OnInit {
     }
     if (datum) {
       this.currentRowDatum = datum;
-      console.log('Selection datum:', datum);
-      console.log('RowData:', this.rowData());
 
       if (this.tabName() === 'Macromolecules') {
         this.residues.update(() => this.transformCoverageData(this.currentRowDatum['residues']));
@@ -405,6 +411,14 @@ export class DetailsDashboardComponent implements OnInit {
     }
 
     return result;
+  }
+
+  public openDialog(type: string) {
+    const component: ComponentType<any> = type === 'ec' ? EcNumbersComponent : GoTermsComponent;
+    this.dialog.open(component, {
+      disableClose: false,
+      panelClass: 'entry-Dialog',
+    });
   }
 
   public async onDropdownSelect(event: string) {
