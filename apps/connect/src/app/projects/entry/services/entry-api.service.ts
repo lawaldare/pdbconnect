@@ -37,6 +37,7 @@ export class EntryApiService {
   private MAPPINGS_API = `${environment.pdbeBaseUrl}api/mappings/`;
   private VALIDATION_API = `${environment.pdbeBaseUrl}api/validation/`;
   private GRAPH_API = `${environment.pdbeBaseUrl}graph-api/pdb/`;
+  private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}api/v2/`;
 
   private readonly http = inject(HttpClient);
 
@@ -165,9 +166,7 @@ export class EntryApiService {
   }
 
   public getPreferredAssembly(entryId: string): Observable<ComplexDetails[]> {
-    return this.http
-      .get<Record<string, ComplexDetails[]>>(`https://www.ebi.ac.uk/pdbe/aggregated-api/complex/details/${entryId}?id_type=pdb_id`)
-      .pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, ComplexDetails[]>>(`${this.AggregatedApiUrl}complex/details/${entryId}?id_type=pdb_id`).pipe(map((data) => data[entryId]));
   }
 
   public getAssembly(entryId: string): Observable<AssemblyData[]> {
