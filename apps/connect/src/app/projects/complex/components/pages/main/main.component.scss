@@ -3,20 +3,7 @@
 main {
   .container {
     .hero {
-      padding: 12px 0 32px;
+      margin-bottom: 30px;
     }
-
-    .summary,
-    .structures,
-    .interactions,
-    .publications,
-    .ligands,
-    .publication {
-      padding-bottom: 20px;
-    }
-  }
-
-  .loader {
-    width: 100%;
   }
 }
