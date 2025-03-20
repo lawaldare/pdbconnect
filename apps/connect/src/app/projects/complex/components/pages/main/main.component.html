@@ -3,14 +3,13 @@
 
 <main>
   <div class="container">
-    <!-- <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections() ?? []" /> -->
     @if(loaded() === status.SUCCESS){
     <article>
       <section class="hero">
         @if(summaryData()?.name){
-        <h2 libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="30"></h2>
-        } @else { {{ complexId() }} } @if(complexId()){
-        <h3>{{ complexId() }}</h3>
+        <h1 class="heading-1" libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="30"></h1>
+        } @if(complexId()){
+        <h4>{{ complexId() }}</h4>
         }
       </section>
       <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)">
@@ -30,21 +29,6 @@
           <pdbc-complex-publications />
         </mat-tab>
       </mat-tab-group>
-      <!-- <section class="summary">
-        <pdbc-summary />
-      </section>
-      <section class="structures">
-        <pdbc-complex-structures />
-      </section>
-      <section class="ligands">
-        <pdbc-complex-ligands />
-      </section>
-      <section class="interactions">
-        <pdbc-complex-interactions />
-      </section>
-      <section class="publication">
-        <pdbc-complex-publications />
-      </section> -->
     </article>
     } @else if(loaded() === status.LOADING) {
     <div class="loader">
