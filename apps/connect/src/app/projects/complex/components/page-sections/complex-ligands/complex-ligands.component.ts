@@ -30,7 +30,7 @@ export interface ComplexLigand {
 export class ComplexLigandsComponent implements OnInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
 
-  public ligandsPageSize = signal<number>(5);
+  public ligandsPageSize = signal<number>(6);
 
   public readonly complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
 
@@ -39,7 +39,7 @@ export class ComplexLigandsComponent implements OnInit {
   public ligandsPage = signal<ComplexLigand[]>([]);
 
   public ligandsLength = signal<number>(0);
-  public ligandsPageSizeOptions = computed(() => [5, 10, 15]);
+  public ligandsPageSizeOptions = computed(() => [6, 12, 18]);
 
   public navSections = toSignal(this.globalStore.select(ComplexSelectors.navItems));
 

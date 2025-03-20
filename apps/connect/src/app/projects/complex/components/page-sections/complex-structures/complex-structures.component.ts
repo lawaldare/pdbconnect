@@ -9,7 +9,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
-import { colDefs, components, gridOptions, initialState, selectionColumnDef } from './ag-grid';
+import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
 
 @Component({
   selector: 'pdbc-complex-structures',
@@ -20,13 +20,12 @@ import { colDefs, components, gridOptions, initialState, selectionColumnDef } fr
 })
 export class ComplexStructuresComponent implements OnInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
-  public summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
+  public readonly summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
-  public readonly components = components;
   public readonly initialState = initialState;
-  public readonly selectionColumnDef = selectionColumnDef;
+  public readonly rowSelection = rowSelection;
 
   public rowData = computed(() => this.summaryData()?.assemblies as Assembly[]);
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
@@ -35,6 +34,12 @@ export class ComplexStructuresComponent implements OnInit {
 
   public height = '300px';
   public width = '100%';
+
+  private selectedRowPDBId = signal<string>('');
+
+  rowClassRules = {
+    'highlight-row': (params: any) => params.data.id === this.selectedRowPDBId(),
+  };
 
   ngOnInit(): void {
     this.config = {
@@ -45,7 +50,7 @@ export class ComplexStructuresComponent implements OnInit {
     };
   }
 
-  onSelectionChanged(event: SelectionChangedEvent) {
+  public onSelectionChanged(event: SelectionChangedEvent) {
     const data = event.api.getSelectedNodes()[0].data;
     const moleculeId = data.pdb_id;
     const assemblyId = data.assembly_id;

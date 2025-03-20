@@ -1,22 +1,20 @@
-#ligands-section {
-  .grid-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px 80px;
-    margin-top: 40px;
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 80px;
+  margin-top: 40px;
 
-    @media screen and (width <= 768px) {
-      grid-template-columns: 1fr;
-    }
+  @media screen and (width <= 768px) {
+    grid-template-columns: 1fr;
   }
+}
 
-  .paginator-container {
-    display: flex;
-    padding: 16px 2px;
-    justify-content: flex-end;
-    align-items: center;
-    align-self: stretch;
-  }
+.paginator-container {
+  display: flex;
+  padding: 16px 2px;
+  justify-content: flex-end;
+  align-items: center;
+  align-self: stretch;
 }
 
 .search-box {
@@ -37,4 +35,9 @@
     top: 12px;
     color: #707372;
   }
+}
+
+h3,
+h4 {
+  margin-bottom: 20px;
 }
