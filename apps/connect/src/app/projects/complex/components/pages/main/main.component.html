@@ -3,19 +3,34 @@
 
 <main>
   <div class="container">
-    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections() ?? []" />
+    <!-- <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections() ?? []" /> -->
     @if(loaded() === status.SUCCESS){
     <article>
       <section class="hero">
         @if(summaryData()?.name){
         <h2 libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="30"></h2>
-        } @else {
-        {{ complexId() }}
-        } @if(complexId()){
+        } @else { {{ complexId() }} } @if(complexId()){
         <h3>{{ complexId() }}</h3>
         }
       </section>
-      <section class="summary">
+      <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)">
+        <mat-tab label="Summary">
+          <ng-template matTabContent> <pdbc-summary /> </ng-template>
+        </mat-tab>
+        <mat-tab label="Structures">
+          <ng-template matTabContent> <pdbc-complex-structures /> </ng-template>
+        </mat-tab>
+        <mat-tab label="Ligands">
+          <ng-template matTabContent> <pdbc-complex-ligands /> </ng-template>
+        </mat-tab>
+        <mat-tab label="Subcomplexes and supercomplexes">
+          <ng-template matTabContent> <pdbc-complex-interactions /> </ng-template>
+        </mat-tab>
+        <mat-tab label="Publications">
+          <pdbc-complex-publications />
+        </mat-tab>
+      </mat-tab-group>
+      <!-- <section class="summary">
         <pdbc-summary />
       </section>
       <section class="structures">
@@ -29,7 +44,7 @@
       </section>
       <section class="publication">
         <pdbc-complex-publications />
-      </section>
+      </section> -->
     </article>
     } @else if(loaded() === status.LOADING) {
     <div class="loader">

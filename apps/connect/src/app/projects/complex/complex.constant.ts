@@ -27,3 +27,11 @@ export const headerComplexLogoMenuConfig = {
     { name: 'Documentation', path: 'https://github.com/PDBe-KB/pdbe-kb-manual/wiki', openInNewTab: true },
   ],
 };
+
+export const complexRouteTabs = [
+  { label: 'Summary', id: 'summary' },
+  { label: 'Structures', id: 'structures' },
+  { label: 'Ligands', id: 'ligands' },
+  { label: 'Subcomplexes and supercomplexes', id: 'subcomplexes-and-supercomplexes' },
+  { label: 'Publications', id: 'publications' },
+];

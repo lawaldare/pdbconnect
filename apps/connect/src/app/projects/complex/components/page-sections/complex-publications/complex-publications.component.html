@@ -12,8 +12,7 @@
       </p>
       <p>
         {{ publication.journal_info.ISO_abbreviation }} <strong>{{ publication.journal_info.volume }}</strong> {{ publication.journal_info.pages }} ({{
-          publication.journal_info.year
-        }})
+        publication.journal_info.year }})
       </p>
       <p>
         PMID:<a [href]="'https://europepmc.org/article/MED/' + publication.pubmed_id" target="_blank">
@@ -46,5 +45,5 @@
   }
 </div>
 } @else {
-<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+<p>No publications data available yet!</p>
 }
