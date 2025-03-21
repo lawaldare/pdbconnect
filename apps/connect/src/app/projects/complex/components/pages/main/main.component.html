@@ -14,7 +14,7 @@
       </section>
       <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)">
         <mat-tab label="Summary">
-          <ng-template matTabContent> <pdbc-summary /> </ng-template>
+          <pdbc-summary />
         </mat-tab>
         <mat-tab label="Structures">
           <ng-template matTabContent> <pdbc-complex-structures /> </ng-template>
