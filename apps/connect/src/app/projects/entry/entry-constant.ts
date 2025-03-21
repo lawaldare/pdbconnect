@@ -14,16 +14,7 @@ export const pdbeLogoConfig = {
 };
 
 export const pdbeSearchConfig = {
-  examples: [
-    {
-      label: 'Haemoglobin',
-      url: 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22text%22:%5B%7B%22value%22:%22hemoglobin%22, %22condition1%22:%22AND%22, %22condition2%22:%22Contains%22%7D%5D, %22resultState%22:%7B%22tabIndex%22:0, %22paginationIndex%22:1, %22perPage%22:%2210%22, %22sortBy%22:%22Sort%20by%22%7D%7D',
-    },
-    {
-      label: 'BRCA1_HUMAN',
-      url: 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22text%22:%5B%7B%22value%22:%22BRCA1_HUMAN%22, %22condition1%22:%22AND%22, %22condition2%22:%22Contains%22%7D%5D, %22resultState%22:%7B%22tabIndex%22:0, %22paginationIndex%22:1, %22perPage%22:%2210%22, %22sortBy%22:%22Sort%20by%22%7D%7D',
-    },
-  ],
+  examples: ['1trn', '1cbs', '7v08', '4v99', '4aqd'],
   backgroundColor: '#007B53',
   hasAdvancedSearch: true,
   buttonText: 'Search',
@@ -80,7 +71,7 @@ Percentile-sliders comparing the quality scores of a model with other models in 
 These scores are harmonic means of absolute percentiles of geometric metrics (e.g. ramachandran, clashscore, sidechains) and reflections-based metrics (Rfree, RSRZ).
 Sometimes reflections-based metrics are absent due to unavailability of experimental data itself.`;
 
-export const assemblyTooltip = `Assembly refers to ‘quaternary structures’ representing a collection of associated macromolecules and small molecules. 
+export const assemblyTooltip = `Assembly refers to ‘quaternary structures’ representing a collection of associated macromolecules and small molecules.
 
 Preferred assembly is the smallest assembly containing all polymeric entities`;
 
@@ -151,8 +142,33 @@ export const dashboardStatLinks = {
       linkSuffix: '/interactions',
     },
   ],
-  Ligands: [],
+  Ligands: [
+    {
+      id: 'pdbs',
+      displayName: 'bound structures',
+      link: 'https://www.ebi.ac.uk/pdbe/connect/chemicalCompound/show/',
+      linkSuffix: '#structures-section',
+    },
+    {
+      id: 'ligands',
+      displayName: 'interaction statistics',
+      link: 'https://www.ebi.ac.uk/pdbe/connect/chemicalCompound/show/',
+      linkSuffix: '#interaction-section',
+    },
+    {
+      id: 'similar_proteins',
+      displayName: 'related ligands',
+      link: 'https://www.ebi.ac.uk/pdbe/connect/chemicalCompound/show/',
+      linkSuffix: '#related-ligand-section',
+    },
+  ],
   Domains: [],
+};
+
+export const resourceUrls: any = {
+  CATH: 'https://www.cathdb.info/version/latest/superfamily/',
+  SCOP: 'https://ftp.ebi.ac.uk/pub/databases/pdbe-kb/scop-legacy/',
+  Pfam: 'https://www.ebi.ac.uk/interpro/entry/pfam/',
 };
 
 export type ApiDataItem =

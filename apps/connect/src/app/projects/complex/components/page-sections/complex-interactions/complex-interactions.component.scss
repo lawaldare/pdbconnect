@@ -1,26 +1,41 @@
-#interaction-section {
-  p {
-    display: inline;
-    margin-bottom: 0;
-    margin-right: 3px;
+p {
+  display: inline;
+  margin-bottom: 0;
+  margin-right: 3px;
+}
+
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 80px;
+
+  @media (width <= 767px) {
+    grid-template-columns: 1fr;
   }
+}
 
-  .card-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px 80px;
+h3,
+h4 {
+  margin-bottom: 20px;
+}
 
-    @media (width <= 767px) {
-      grid-template-columns: 1fr;
-    }
+section {
+  margin-top: 10px;
+  position: relative;
+
+  lib-tool-tip {
+    top: 5px;
   }
+}
 
-  h3,
-  h4 {
-    margin-bottom: 20px;
+section.subcomplexes {
+  lib-tool-tip {
+    left: 172px;
   }
+}
 
-  section {
-    margin-top: 40px;
+section.supercomplexes {
+  lib-tool-tip {
+    left: 196px;
   }
 }

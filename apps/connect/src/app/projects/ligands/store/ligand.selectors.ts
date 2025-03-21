@@ -18,4 +18,7 @@ export const LigandSelectors = {
   fragments: createSelector(LigandStoreState, (state: LigandStoreState) => state.fragments),
   navItems: createSelector(LigandStoreState, (state: LigandStoreState) => state.navItems),
   polymers: createSelector(LigandStoreState, (state: LigandStoreState) => state.polymers),
+  numberOfLigandInstances: createSelector(LigandStoreState, (state: LigandStoreState) => state.numberOfLigandInstances),
+  numberOfPDBStructures: createSelector(LigandStoreState, (state: LigandStoreState) => state.numberOfPDBStructures),
+  numberOfProteins: createSelector(LigandStoreState, (state: LigandStoreState) => state.numberOfProteins),
 };

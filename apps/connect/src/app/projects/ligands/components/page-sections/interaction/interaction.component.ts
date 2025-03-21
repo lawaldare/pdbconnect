@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction, LigandStructure } from '../../../data-models/structure.model';
 import { PDBIntxData } from '../../../data-models/interaction.model';
-import { catchError, EMPTY, forkJoin, map, mergeMap, switchMap, take, throwError } from 'rxjs';
+import { catchError, combineLatest, EMPTY, forkJoin, map, mergeMap, switchMap, take, throwError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -129,26 +129,16 @@ export class InteractionComponent implements AfterViewInit {
   }
 
   private generateStructureStatistics(): void {
-    this.globalStore
-      .select(LigandSelectors.structures)
-      .pipe(
-        map((structures) => {
-          const numberOfPDBChains = (structures ?? []).reduce((acc: number, curr: LigandStructure) => {
-            if (curr.interacting_chains === null || curr.interacting_chains.length === 0) {
-              acc = 0;
-              return acc;
-            }
-
-            const mappedValue = curr.interacting_chains.map((val) => val.pdb_id);
-            acc += [...new Set(mappedValue)].length;
-            return acc;
-          }, 0);
-          const instances = (structures ?? []).reduce((acc: number, curr: LigandStructure) => acc + curr.num_ligand_instances, 0);
-          this.pdbchains.set(numberOfPDBChains);
-          this.pdbstructures.set((structures ?? []).length);
-          this.ligandInstances.set(instances);
-        })
-      )
-      .subscribe();
+    combineLatest([
+      this.globalStore.select(LigandSelectors.numberOfProteins),
+      this.globalStore.select(LigandSelectors.numberOfPDBStructures),
+      this.globalStore.select(LigandSelectors.numberOfLigandInstances),
+    ])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(([numberOfProteins, numberOfPDBStructures, numberOfLigandInstances]) => {
+        this.pdbchains.set(numberOfPDBStructures);
+        this.pdbstructures.set(numberOfProteins);
+        this.ligandInstances.set(numberOfLigandInstances);
+      });
   }
 }

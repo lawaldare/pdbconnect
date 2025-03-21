@@ -7,13 +7,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
-import { catchError, combineLatest, map, Observable, of, tap } from 'rxjs';
-import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { catchError, combineLatest, map, Observable, of } from 'rxjs';
 
 @Component({
   selector: 'pdbc-complex-publications',
   standalone: true,
-  imports: [CommonModule, MatPaginator, NgxSkeletonLoaderModule],
+  imports: [CommonModule, MatPaginator],
   templateUrl: './complex-publications.component.html',
   styleUrl: './complex-publications.component.scss',
 })

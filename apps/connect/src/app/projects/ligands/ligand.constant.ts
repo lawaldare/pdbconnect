@@ -19,28 +19,14 @@ export const clcNavSections = [
 ];
 
 export const headerSearchConfig = {
-  examples: [
-    { label: 'STI', url: '/chemicalCompound/show/STI' },
-    { label: 'GLC', url: '/chemicalCompound/show/GLC' },
-    { label: 'NAG', url: '/chemicalCompound/show/NAG' },
-    { label: 'HEM', url: '/chemicalCompound/show/HEM' },
-    { label: 'CLC_000191', url: '/chemicalCompound/show/CLC_000191' },
-    { label: 'PRD_000468', url: '/chemicalCompound/show/PRD_000468' },
-  ],
+  examples: ['STI', 'GLC', 'NAG', 'HEM', 'CLC_000191', 'PRD_000468'],
   backgroundColor: '#085f5ccc',
   type: ThemeType.PDBEKB,
   placeholderText: 'View PDBe-KB ligand by PDB ligand ID (CCD/PRD/CLC)',
 };
 
 export const ligandHomePageSeaderSearchConfig = {
-  examples: [
-    { label: 'STI', url: '/chemicalCompound/show/STI' },
-    { label: 'GLC', url: '/chemicalCompound/show/GLC' },
-    { label: 'NAG', url: '/chemicalCompound/show/NAG' },
-    { label: 'HEM', url: '/chemicalCompound/show/HEM' },
-    { label: 'CLC_000191', url: '/chemicalCompound/show/CLC_000191' },
-    { label: 'PRD_000204', url: '/chemicalCompound/show/PRD_000204' },
-  ],
+  examples: ['STI', 'GLC', 'NAG', 'HEM', 'CLC_000191', 'PRD_000468'],
   backgroundColor: '',
   type: ThemeType.PDBEKB,
   placeholderText: 'View PDBe-KB ligand by PDB ligand ID (CCD/PRD/CLC)',

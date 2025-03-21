@@ -1,0 +1,22 @@
+<div class="heading">
+  <span>Most {{ headerText() }} displayed.</span>
+  <a [href]="'https://europepmc.org/search?query=(ACCESSION_TYPE:pdb)' + entryId()" target="_blank"
+    >View all in Europe PMC
+    <i class="icon icon-link icon-common"></i>
+  </a>
+</div>
+<ol [start]="this.pageIndex * 5 + 1">
+  @for(article of pagedPublicationInfo; track article.pubmed_id){
+  <pdbc-citation-article [article]="article"></pdbc-citation-article>
+  }
+</ol>
+<mat-paginator
+  class="paginator-container"
+  [length]="pageLength()"
+  [pageSize]="pageSize()"
+  [pageSizeOptions]="pageSizeOptions"
+  aria-label="Select page"
+  showFirstLastButtons
+  (page)="handlePageEvent($event)"
+>
+</mat-paginator>

@@ -10,12 +10,19 @@ section {
   justify-content: space-between;
 
   .table {
-    width: 60%;
+    width: 50%;
     margin-top: 5px;
     height: 500px;
   }
 
   .molstar {
-    width: 40%;
+    width: 50%;
+  }
+}
+
+::ng-deep lib-pdbe-molstar {
+  .container {
+    display: block;
+    height: 400px !important;
   }
 }

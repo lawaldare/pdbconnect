@@ -128,3 +128,33 @@ nightingale-navigation .container .brush .handle {
     }
   }
 }
+
+.ngx-pagination {
+  li {
+    a {
+      color: #1a1c1a;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 22.4px;
+
+      &::after,
+      &::before {
+        display: none !important;
+      }
+
+      &:hover {
+        text-decoration: none !important;
+      }
+    }
+
+    &::after,
+    &::before {
+      display: none !important;
+    }
+  }
+
+  .current {
+    background: #056643 !important;
+    font-size: 14px;
+  }
+}

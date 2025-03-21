@@ -1,0 +1,18 @@
+@import url('libs/core/src/lib/styles/pdb_connect.scss');
+
+.top-info {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 16px;
+
+  section.summary {
+    width: 568px;
+  }
+
+  section.explore-3d-tabs {
+    width: calc(100% - 568px);
+    height: 480px;
+    max-height: 480px;
+  }
+}

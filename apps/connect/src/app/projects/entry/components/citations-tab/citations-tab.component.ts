@@ -1,13 +1,16 @@
-import { Component, DestroyRef, ElementRef, inject, input, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { Component, computed, DestroyRef, ElementRef, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CitationPublicationComponent } from '../citation-publication/citation-publication.component';
-import { MaterialModule } from '@pdbc/core';
-import { CitationXmlImagesComponent } from '../citation-xml-images/citation-xml-images.component';
+import { CitationPublicationComponent } from './sub-components/citation-publication/citation-publication.component';
+import { MaterialModule, UtilService } from '@pdbc/core';
+import { CitationXmlImagesComponent } from './sub-components/citation-xml-images/citation-xml-images.component';
 import { MatDialog } from '@angular/material/dialog';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CitationDetail } from '../../data-models/publication.model';
-import { RelatedPublication } from '../../data-models/related-publications.model';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { EntryApiService } from '../../services/entry-api.service';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { Store } from '@ngrx/store';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'pdbc-citations-tab',
@@ -17,19 +20,23 @@ import { EntryApiService } from '../../services/entry-api.service';
   styleUrl: './citations-tab.component.scss',
 })
 export class CitationsTabComponent implements OnInit {
-  // public readonly sectionOne
-  // public readonly sectionTwo
-
   private readonly entryAPIService = inject(EntryApiService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
   private readonly dialog = inject(MatDialog);
+  private readonly globalStore = inject(Store<EntryStoreState>);
+  public readonly util = inject(UtilService);
 
-  // private staticEntryId = '7v08'; //'7v08', '3d12', '5tj5', '4zqo'
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId).pipe(filter(Boolean)));
+  public readonly articlesCiting = toSignal(this.globalStore.select(EntrySelectors.articlesCiting));
+  public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
 
-  public readonly entryId = input.required<string>();
-  public readonly primaryPublication = input.required<CitationDetail | undefined>();
-  public readonly articlesCiting = input.required<RelatedPublication | undefined>();
+  public readonly isPrimaryPublicationDataAvailable = computed(() => {
+    const abstract = this.primaryPublication()?.abstract;
+    return (
+      abstract?.background || abstract?.objective || abstract?.methods || abstract?.results || abstract?.conclusions || abstract?.unassigned || abstract?.conclusions
+    );
+  });
 
   public relatedEntries!: string[];
 

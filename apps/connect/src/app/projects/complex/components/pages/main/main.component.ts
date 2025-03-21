@@ -1,15 +1,15 @@
-import { Component, DestroyRef, inject, OnInit, Renderer2 } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, Renderer2, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { SummaryComponent } from '../../page-sections/summary/summary.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { of, switchMap } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexStructuresComponent } from '../../page-sections/complex-structures/complex-structures.component';
-import { TruncateTextDirective } from '@pdbc/core';
+import { MaterialModule, TruncateTextDirective } from '@pdbc/core';
 import { headerComplexLogoMenuConfig, headerSearchComplexConfig, navComplexSections } from '../../../complex.constant';
 import { ComplexInteractionsComponent } from '../../page-sections/complex-interactions/complex-interactions.component';
 import { ComplexPublicationsComponent } from '../../page-sections/complex-publications/complex-publications.component';
@@ -21,6 +21,8 @@ import { ComplexSelectors } from '../../../store/complex.selectors';
 import { LoadingState } from '../../../../ligands/enums/loading-state.enum';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ComplexBioschemasService } from '../../../services/complex.bioschemas';
+import { complexRouteTabs } from '../../../complex.constant';
+import { MatTabChangeEvent } from '@angular/material/tabs';
 
 @Component({
   selector: 'pdbc-main',
@@ -29,7 +31,7 @@ import { ComplexBioschemasService } from '../../../services/complex.bioschemas';
     CommonModule,
     PdbeHeaderLogoMenuComponent,
     PdbeHeaderSearchComponent,
-    PdbeNavMenuComponent,
+    // PdbeNavMenuComponent,
     SummaryComponent,
     ComplexStructuresComponent,
     TruncateTextDirective,
@@ -37,12 +39,15 @@ import { ComplexBioschemasService } from '../../../services/complex.bioschemas';
     ComplexPublicationsComponent,
     ComplexLigandsComponent,
     NgxSkeletonLoaderModule,
+    MaterialModule,
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',
 })
 export class MainComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
   private readonly destroyRef = inject(DestroyRef);
   private readonly bioschemasService = inject(ComplexBioschemasService);
   private readonly renderer = inject(Renderer2);
@@ -59,6 +64,16 @@ export class MainComponent implements OnInit {
   public navSections = toSignal(this.globalStore.select(ComplexSelectors.navItems));
 
   public readonly status = LoadingState;
+  public selectedTab = signal<number>(0);
+
+  constructor() {
+    this.route.queryParams.subscribe((params) => {
+      const routeTabs = complexRouteTabs;
+      const tabName = params['activeTab'];
+      const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
+      this.selectedTab.set(tabIndex);
+    });
+  }
 
   ngOnInit(): void {
     this.globalStore.dispatch(ComplexActions.setNavItems({ navItems: this.navSectionsInit }));
@@ -77,5 +92,20 @@ export class MainComponent implements OnInit {
       .subscribe(() => {
         this.bioschemasService.buildBioschemasJSON(this.renderer);
       });
+  }
+
+  selectTab(event: MatTabChangeEvent) {
+    const routeTabs = complexRouteTabs;
+    const tabName = routeTabs[event.index].id;
+    // this.previousTab = `${tabName}`;
+    // this.tabSwitchOrigin.set('main');
+    // this.currentTab.set(tabName);
+    // setTimeout(() => {
+    //   this.doesTabHasData.set(this.compCommunication.getTabData(tabName)?.tableRows()?.length > 0);
+    // }, 2000);
+    this.router.navigate([], {
+      queryParams: { activeTab: tabName },
+      queryParamsHandling: 'merge',
+    });
   }
 }

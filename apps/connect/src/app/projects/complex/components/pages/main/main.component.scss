@@ -2,36 +2,8 @@
 
 main {
   .container {
-    display: flex;
-    gap: 28px;
-
-    @media screen and (width <= 767px) {
-      gap: 0;
-    }
-
     .hero {
-      padding: 12px 0 32px;
+      margin-bottom: 30px;
     }
-
-    pdbc-pdbe-nav-menu {
-      width: 220px;
-    }
-
-    article {
-      width: calc(100% - 248px);
-    }
-
-    .summary,
-    .structures,
-    .interactions,
-    .publications,
-    .ligands,
-    .publication {
-      padding-bottom: 20px;
-    }
-  }
-
-  .loader {
-    width: 100%;
   }
 }

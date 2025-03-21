@@ -3,8 +3,8 @@
 <div id="interaction-section">
   <h3 class="title">Interaction statistics</h3>
   <article>
-    Interaction statistics shows the summary of aggregated protein-ligand interaction data of {{ ligandId() }} from {{ ligandInstances() }} ligand instances in
-    {{ pdbstructures() }} PDB structures and {{ pdbchains() }} PDB chains. The protein-ligand interactions are computed using
+    Interaction statistics shows the summary of aggregated protein-ligand interaction data of {{ ligandId() }} from {{ ligandInstances() }} ligand instances in {{
+    pdbstructures() }} distinct proteins and {{ pdbchains() }} PDB Structures. The protein-ligand interactions are computed using
     <a href="https://github.com/PDBeurope/arpeggio" target="_blank"> PDBe Arpeggio </a>
   </article>
   <button class="vf-button vf-button--link" (click)="downloadInteraction()">

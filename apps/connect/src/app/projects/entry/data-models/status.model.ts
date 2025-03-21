@@ -11,3 +11,14 @@ export interface EntryStatus {
   obsoletes: string[];
   entryId?: string;
 }
+
+export const entryStatusDefault = {
+  title: '',
+  status_code: 'INITIAL' as StatusCode,
+  entry_authors: '',
+  experimental_method: '',
+  experimental_method_class: '',
+  since: '',
+  superceded_by: [],
+  obsoletes: [],
+};

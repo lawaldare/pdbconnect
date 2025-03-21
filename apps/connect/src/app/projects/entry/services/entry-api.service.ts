@@ -16,7 +16,7 @@ import { PisaAssembly } from '../data-models/pisa-assembly.model';
 import { CarbohydrateMolecule } from '../data-models/carbohydrate-polymer.model';
 import { Molecule } from '../data-models/molecule.model';
 import { EntrySummary, ProcessedSummary } from '../data-models/summary.model';
-import { UniProtMapping } from '../data-models/uniprot-mapping.model';
+import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
 import { PdbRedoQualityScores, ProcessedQualityScores, SummaryQualityScores } from '../data-models/summary-quality-scores.model';
 import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
 import {
@@ -33,9 +33,11 @@ import { environment } from '../../../../environments/environment';
   providedIn: 'root',
 })
 export class EntryApiService {
-  private BASE_API = `${environment.pdbeBaseUrl}api/pdb/entry/`;
+  private BASE_API = `${environment.pdbeBaseUrl}api/v2/pdb/entry/`;
   private MAPPINGS_API = `${environment.pdbeBaseUrl}api/mappings/`;
   private VALIDATION_API = `${environment.pdbeBaseUrl}api/validation/`;
+  private GRAPH_API = `${environment.pdbeBaseUrl}graph-api/pdb/`;
+  private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}api/v2/`;
 
   private readonly http = inject(HttpClient);
 
@@ -62,6 +64,8 @@ export class EntryApiService {
           depositionDate: depositionDateObj,
           releaseDate: releasedDateObj,
           revisionDate: revisionDateObj,
+          assemblies: datum.assemblies,
+          relatedStructures: datum.related_structures,
         };
       })
     );
@@ -75,12 +79,28 @@ export class EntryApiService {
     return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(map((data) => data[entryId][0]));
   }
 
+  public getEntryInteractions(entryId: string): Observable<any> {
+    return this.http.get<Record<string, any[]>>(`${this.GRAPH_API}bound_ligand_interactions/${entryId}/A/200`).pipe(map((data) => data[entryId][0]));
+  }
+
   public getPrimaryPublicationAbstract(entryId: string): Observable<CitationDetail> {
     return this.http.get<Record<string, CitationDetail[]>>(`${this.BASE_API}publications/${entryId}`).pipe(map((data) => data[entryId][0]));
   }
 
   public getUniprotMapping(entryId: string): Observable<UniProtMapping> {
     return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.MAPPINGS_API}uniprot/${entryId}`).pipe(map((data) => data[entryId]['UniProt']));
+  }
+
+  public getIsoformsMapping(entryId: string): Observable<UniProtMapping> {
+    return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.MAPPINGS_API}isoforms/${entryId}`).pipe(map((data) => data[entryId]['UniProt']));
+  }
+
+  public getGOMapping(entryId: string): Observable<GOMapping> {
+    return this.http.get<Record<string, Record<string, GOMapping>>>(`${this.MAPPINGS_API}go/${entryId}`).pipe(map((data) => data[entryId]['GO']));
+  }
+
+  public getECMapping(entryId: string): Observable<ECMapping> {
+    return this.http.get<Record<string, Record<string, ECMapping>>>(`${this.MAPPINGS_API}ec/${entryId}`).pipe(map((data) => data[entryId]['EC']));
   }
 
   public getInterproMapping(entryId: string): Observable<InterProMappings> {
@@ -146,9 +166,7 @@ export class EntryApiService {
   }
 
   public getPreferredAssembly(entryId: string): Observable<ComplexDetails[]> {
-    return this.http
-      .get<Record<string, ComplexDetails[]>>(`https://www.ebi.ac.uk/pdbe/aggregated-api/complex/details/${entryId}?id_type=pdb_id`)
-      .pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, ComplexDetails[]>>(`${this.AggregatedApiUrl}complex/details/${entryId}?id_type=pdb_id`).pipe(map((data) => data[entryId]));
   }
 
   public getAssembly(entryId: string): Observable<AssemblyData[]> {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createReducer, on } from '@ngrx/store';
 import { LigandStoreState } from './ligand-store.model';
 import { LigandActions } from './ligand.actions';
@@ -25,6 +24,9 @@ const initialState: LigandStoreState = {
   fragments: [],
   navItems: [],
   polymers: [],
+  numberOfLigandInstances: 0,
+  numberOfPDBStructures: 0,
+  numberOfProteins: 0,
 };
 
 export const ligandReducer = createReducer(
@@ -90,5 +92,17 @@ export const ligandReducer = createReducer(
   on(LigandActions.setNavItems, (state, action) => ({
     ...state,
     navItems: action.navItems,
+  })),
+  on(LigandActions.saveNumberOfLigandInstances, (state, action) => ({
+    ...state,
+    numberOfLigandInstances: action.numberOfLigandInstances,
+  })),
+  on(LigandActions.saveNumberOfDistinctPDBStructures, (state, action) => ({
+    ...state,
+    numberOfPDBStructures: action.numberOfPDBStructures,
+  })),
+  on(LigandActions.saveNumberOfDistinctProteins, (state, action) => ({
+    ...state,
+    numberOfProteins: action.numberOfProteins,
   }))
 );

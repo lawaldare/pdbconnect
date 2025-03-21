@@ -3,10 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Chain, LigandStructure, Polymer } from '../../../data-models/structure.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DownloadFileTypeService, DownloadService, GoogleAnalyticsService, MaterialModule, NavSection, UtilService } from '@pdbc/core';
-import { catchError, map, take, tap } from 'rxjs/operators';
+import { DownloadFileTypeService, DownloadService, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
+import { catchError, map, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
-import { LigandTotalDialogComponent } from '../../section-components/ligand-total-dialog/ligand-total-dialog.component';
 import { environment } from '../../../../../../environments/environment';
 import { LigandInteractingChainsNumberPipe } from '../../../pipes/ligandInteractingChainsNumber.pipe';
 import { MatRadioChange } from '@angular/material/radio';
@@ -20,7 +19,6 @@ import { LigandECNumberPipe } from '../../../pipes/ec-numbers.pipe';
 import { cofactorTooltip, drugTooltip, reactantTooltip, unannotatedTooltip } from '../../../ligand.constant';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { AgGridStructureService } from './ag-grid-structure.service';
-import { LigandActions } from '../../../store/ligand.actions';
 
 @Component({
   selector: 'pdbc-structures',
@@ -49,7 +47,6 @@ export class StructuresComponent {
   public reactantTooltip = reactantTooltip;
   public unannotatedTooltip = unannotatedTooltip;
 
-  public dataStatistics = signal<string>('');
   public filter = new FormControl('proteins');
   public ligandId = signal<string>('');
 
@@ -80,6 +77,9 @@ export class StructuresComponent {
 
   public polymersUrl = signal<string>('');
 
+  public numberOfProteins = signal<number>(0);
+  public numberOfPDBStructures = signal<number>(0);
+
   public handlePageEvent(event: PageEvent) {
     const startIndex = event.pageIndex * event.pageSize;
     const endIndex = startIndex + event.pageSize;
@@ -93,6 +93,8 @@ export class StructuresComponent {
       this.globalStore.select(LigandSelectors.ligandId),
       this.globalStore.select(LigandSelectors.structures),
       this.globalStore.select(LigandSelectors.polymers),
+      this.globalStore.select(LigandSelectors.numberOfProteins),
+      this.globalStore.select(LigandSelectors.numberOfPDBStructures),
     ])
       .pipe(
         tap(([ligandId]) => {
@@ -100,15 +102,16 @@ export class StructuresComponent {
           this.agGridService.ligandId.set(ligandId);
           this.polymersUrl.set(this.utilService.generateSortedQueryURL(ligandId, 'modified_compound_id'));
         }),
-        map(([, structures, polymers]) => {
+        map(([, structures, polymers, numberOfProteins, numberOfPDBStructures]) => {
           this.generateStructures(structures);
+          this.numberOfProteins.set(numberOfProteins);
+          this.numberOfPDBStructures.set(numberOfPDBStructures);
           this.proteins.update(() => [...structures]);
           this.structureRowData.update(() => [...this.proteins()]);
           this.polymerRowData.update(() => [...polymers]);
           if (this.structureRowData().length > 0) {
             this.gridApi.setGridOption('loading', false);
           }
-          this.fetchDataStatistics(structures);
           this.structuresPage = this.structureRowData().slice(0, this.structuresPageSize());
           this.unfilteredStructures = this.structureRowData();
         }),
@@ -173,20 +176,6 @@ export class StructuresComponent {
       return acc;
     }, []);
     this.structures.update(() => [...structures]);
-  }
-
-  private fetchDataStatistics(data: LigandStructure[]): void {
-    let proteins = 0;
-    let structures = 0;
-
-    for (const structure of data) {
-      if (structure.uniprot_id) {
-        proteins++;
-      }
-      const total = this.chainPipe.transform(structure.interacting_chains);
-      structures += total;
-    }
-    this.dataStatistics.set(`Found as a bound ligand in ${proteins} distinct proteins and ${structures} PDB Structures. Group data by: `);
   }
 
   public downloadMMCIF() {

@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import {
   MolstarSelectionObj,
   removeComponent,
@@ -22,9 +22,10 @@ import {
   DomainsRowData,
   LigandsRowData,
   MacromoleculesRowData,
-} from '../../components/interactive-tables/data-models-and-definitions/row-and-table.model';
+} from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarBaseClass, MolstarConfigObject } from './molstar-base-class';
+import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 
 @Injectable({
   providedIn: 'root',
@@ -34,9 +35,10 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
    * Component extends MolstarBaseClass and contains functions for
    * manipulating Molstar views specific to the detail tabs (page bottom)
    */
-  private isMolstarRendered = false;
+  private isMolstarRendered = signal<boolean>(false);
   public isFirstViewRender = true;
   public readonly signals = inject(ComponentCommunicationService);
+  public dataProcessing = inject(MainDataProcessingFacade);
 
   /**
    * Function responsible for initial render of molstar instance
@@ -54,17 +56,22 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
       subscribeEvents: true,
       granularity: 'residue',
     };
-    if (this.isMolstarRendered === false) {
-      await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
-      this.isMolstarRendered = true;
-    } else {
+    if (this.isMolstarRendered()) {
       console.error('MOLSTAR INSTANCE UPDATE ERROR');
-      // await this.updateMolstar(molstarConfigObject);
+    } else {
+      this.isMolstarRendered.set(true);
+      await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
     }
     this.parseInstanceResidues();
     const data = this.residues();
     this.signals.molstarResidueInfo.set(data);
-    this.signals.molstarResidueInfoLoaded.set(true);
+    // this.dataProcessing.setTabName('Assemblies');
+    this.dataProcessing.processInteractiveTablesData();
+
+    setTimeout(() => {
+      // this.dataProcessing.processInteractiveTablesData();
+      this.signals.molstarResidueInfoLoaded.set(true);
+    }, 2000);
   }
 
   /**
@@ -73,41 +80,6 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
    * @param molstarContainer molstar container HTMLElement, currently not used
    * @param reloadConfigObj true or false for whether configuration object should be reloaded
    */
-  public async renderMolstarValidation(entryId: string, molstarContainer: HTMLElement, reloadConfigObj: boolean) {
-    const molstarConfigObject: MolstarConfigObject = {
-      moleculeId: entryId,
-      loadMaps: false,
-      bgColor: { r: 255, g: 255, b: 255 },
-      hideControls: true,
-      hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
-      landscape: true,
-      subscribeEvents: true,
-      validationAnnotation: true,
-      granularity: 'residue',
-    };
-    if (reloadConfigObj) {
-      if (this.isMolstarRendered === false) {
-        console.error('MOLSTAR INSTANCE DOUBLE INIT');
-        // await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
-        this.isMolstarRendered = true;
-      } else {
-        await this.updateMolstar(molstarConfigObject);
-      }
-    }
-    // currently validationAnnotation: true is unfortunately not yet working with updateMolstar
-    // this means we have to use the image gallery to display validation annotations
-    await this.initImageGallery(entryId); // so we load it
-    let validationImg: string | undefined;
-    const imageList = this.galleryManager().images;
-    for (const img of imageList) {
-      // and iterate the image list looking for validation image
-      if (img.filename.includes('_validation')) {
-        validationImg = img.filename;
-      }
-    }
-    // if we find it, we load it
-    if (validationImg) await this.loadImage(validationImg);
-  }
 
   /**
    * Function responsible for manipulating a Molstar instance to render Assemblies
@@ -134,13 +106,13 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
       validationAnnotation: false,
       granularity: 'residue',
     };
+
     if (reloadConfigObj) {
-      if (this.isMolstarRendered === false) {
-        console.error('MOLSTAR INSTANCE DOUBLE INIT');
-        // await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
-        this.isMolstarRendered = true;
-      } else {
+      if (this.isMolstarRendered()) {
         await this.updateMolstar(molstarConfigObject);
+      } else {
+        this.isMolstarRendered.set(true);
+        console.error('MOLSTAR INSTANCE DOUBLE INIT');
       }
     }
   }
@@ -172,13 +144,11 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
     };
 
     if (reloadConfigObj) {
-      if (this.isMolstarRendered === false) {
-        console.error('MOLSTAR INSTANCE DOUBLE INIT');
-        // await this.initMolstar(molstarContainer, molstarConfigObject);
-        // await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
-        this.isMolstarRendered = true;
-      } else {
+      if (this.isMolstarRendered()) {
         await this.updateMolstar(molstarConfigObject);
+      } else {
+        this.isMolstarRendered.set(true);
+        console.error('MOLSTAR INSTANCE DOUBLE INIT');
       }
     }
 
@@ -250,12 +220,11 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
     };
 
     if (reloadConfigObj) {
-      if (this.isMolstarRendered === false) {
-        console.error('MOLSTAR INSTANCE DOUBLE INIT');
-        // await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
-        this.isMolstarRendered = true;
-      } else {
+      if (this.isMolstarRendered()) {
         await this.updateMolstar(molstarConfigObject);
+      } else {
+        this.isMolstarRendered.set(true);
+        console.error('MOLSTAR INSTANCE DOUBLE INIT');
       }
     }
 
@@ -310,13 +279,13 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
       granularity: 'residue',
       validationAnnotation: false,
     };
+
     if (reloadConfigObj) {
-      if (this.isMolstarRendered === false) {
-        console.error('MOLSTAR INSTANCE DOUBLE INIT');
-        // await this.initMolstar(molstarConfigObject, undefined, molstarContainer);
-        this.isMolstarRendered = true;
-      } else {
+      if (this.isMolstarRendered()) {
         await this.updateMolstar(molstarConfigObject);
+      } else {
+        this.isMolstarRendered.set(true);
+        console.error('MOLSTAR INSTANCE DOUBLE INIT');
       }
     }
     // view customization functions called on first rendering

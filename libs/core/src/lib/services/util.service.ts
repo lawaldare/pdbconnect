@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import { inject, Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Clipboard } from '@angular/cdk/clipboard';
@@ -153,12 +154,7 @@ export class UtilService {
     const trimmedValue = value.trim();
     const hrefLink = window.location.href;
     const href = hrefLink + 'chemicalCompound/show/' + trimmedValue;
-    console.log(href);
     window.open(href, '_self');
-  }
-
-  public sortByArrayOrder(arrayToBeSorted: any[], sortOrder: any[]) {
-    return arrayToBeSorted ? [...arrayToBeSorted].sort((a, b) => this.sortByArrayOrderComparator(a.resource, b.resource, sortOrder)) : [];
   }
 
   private sortByArrayOrderComparator(lhs: string, rhs: string, sortOrder: any[]) {
@@ -171,5 +167,39 @@ export class UtilService {
       chunks.push(array.slice(i, i + chunkSize));
     }
     return chunks;
+  }
+
+  public isNotEmptyObject(obj: any): boolean {
+    return obj && Object.keys(obj).length > 0;
+  }
+
+  public escapeValue(value: string): string {
+    // If the field value has a space, colon, quotation mark or forward slash
+    // in it, wrap it in quotes, unless it is a range query or it is already
+    // wrapped in quotes.
+    if (window.location.href.indexOf('text:') < 0) {
+      if (value.match(/[ :\/"]/) && !value.match(/[\[\{]\S+ TO \S+[\]\}]/) && !value.match(/^["\(].*["\)]$/)) {
+        return '"' + value.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+      }
+    } else {
+      // else if it is a text search, don't put quotes around the search term when there is a space
+      if (value.match(/[:\/"]/) && !value.match(/[\[\{]\S+ TO \S+[\]\}]/) && !value.match(/^["\(].*["\)]$/)) {
+        return '"' + value.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+      }
+    }
+    return value;
+  }
+
+  public getLoopCount(totalRecs: number): number[] {
+    const loopCount = new Array(Math.ceil(totalRecs / 10));
+    return loopCount;
+  }
+
+  public sortByArrayOrder(arrayToBeSorted: any[], sortOrder: any[]) {
+    return arrayToBeSorted ? [...arrayToBeSorted].sort((a, b) => this.sortByArrayOrderComparator(a.resource, b.resource, sortOrder)) : [];
+  }
+
+  public sortArrayObjectByArrayOrder(arrayToBeSorted: any[], sortOrder: string[], keyValue: string): any[] {
+    return arrayToBeSorted ? [...arrayToBeSorted].sort((a, b) => this.sortByArrayOrderComparator(a[keyValue], b[keyValue], sortOrder)) : [];
   }
 }

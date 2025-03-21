@@ -6,7 +6,7 @@ import { Column } from 'molstar/lib/mol-data/db';
 import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
 import { StructureQuery } from 'molstar/lib/mol-model/structure/query/query';
 import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
-import { StructureSelection, StructureProperties, Structure } from 'molstar/lib/mol-model/structure';
+import { StructureSelection } from 'molstar/lib/mol-model/structure';
 
 /**
  * This file contains a base class with helper functions for manipulating Molstar
@@ -66,7 +66,7 @@ export class MolstarBaseClass {
       console.error('MOLSTAR INSTANCE EXISTS');
     }
     this.molstarViewInstance.set(new PDBeMolstarPlugin());
-    const container = molstarViewer ? molstarViewer : molstarContainer!.nativeElement;
+    const container = molstarViewer ? molstarViewer : molstarContainer?.nativeElement;
     this.molstarViewInstance().render(container, molstarConfigObject);
     await firstValueFrom(this.molstarViewInstance().events.loadComplete);
   }
@@ -129,12 +129,12 @@ export class MolstarBaseClass {
    */
   public parseInstanceResidues() {
     // first we get structure object
-    const assemblyRef = this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0].cell.transform.ref;
-    const structure = (this.molstarViewInstance().plugin!.state.data.select(assemblyRef)[0].obj as PluginStateObject.Molecule.Structure).data;
+    const assemblyRef = this.molstarViewInstance().plugin?.managers?.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
+    const structure = (this.molstarViewInstance().plugin?.state?.data?.select(assemblyRef)[0]?.obj as PluginStateObject.Molecule.Structure)?.data;
     if (structure === undefined) return;
     const result: MolstarResidueInfo[] = [];
     // we then iterate over elements of this object and retrieve residue data
-    for (const unit of structure.units) {
+    for (const unit of structure.units ?? []) {
       const h = unit.model.atomicHierarchy;
       let lastIRes = -1;
       for (let i = 0; i < unit.elements.length; i++) {

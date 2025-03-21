@@ -1,26 +1,42 @@
-import { inject, Injectable } from '@angular/core';
-import { DataToTable } from '../../components/interactive-tables/data-processing/abstract-base-row-class';
-import { AssemblyDataToTable } from '../../components/interactive-tables/data-processing/assembly-row-class';
-import { DomainDataToTable } from '../../components/interactive-tables/data-processing/domain-row-class';
-import { LigandDataToTable } from '../../components/interactive-tables/data-processing/ligand-row-class';
-import { MacromoleculeDataToTable } from '../../components/interactive-tables/data-processing/macromolecule-row';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { DataToTable } from '../../components/shared/interactive-tables/data-processing/abstract-base-row-class';
+import { AssemblyDataToTable } from '../../components/shared/interactive-tables/data-processing/assembly-row-class';
+import { DomainDataToTable } from '../../components/shared/interactive-tables/data-processing/domain-row-class';
+import { LigandDataToTable } from '../../components/shared/interactive-tables/data-processing/ligand-row-class';
+import { MacromoleculeDataToTable } from '../../components/shared/interactive-tables/data-processing/macromolecule-row';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { ComplexDetails } from '../../data-models/complex-details.model';
-import { AssemblyData } from '../../data-models/assembly.model';
-import { PisaAssembly } from '../../data-models/pisa-assembly.model';
-import { CathMappings, PfamMappings, ScopMappings } from '../../data-models/domains.model';
-import { Molecule } from '../../data-models/molecule.model';
-import { ModifiedResidue } from '../../data-models/modified-residues.model';
-import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
-import { UniProtMapping } from '../../data-models/uniprot-mapping.model';
-import { BestStructureMapping } from '../../data-models/uniport-best-structures.model';
-import { MolstarResidueInfo } from '../../helpers/molstar/molstar-helpers';
+import { Store } from '@ngrx/store';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { TableNames } from './main.component';
+import { TabNames } from '../../helpers/tab-names.enum';
+import { EntryActions } from '../../store/entry.actions';
+import { catchError, combineLatest, EMPTY, mergeMap, of, retry, startWith } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MainDataProcessingFacade {
   public readonly compCommunication = inject(ComponentCommunicationService);
+  private readonly globalStore = inject(Store<EntryStoreState>);
+  public molstarResidueInfo = computed(() => this.compCommunication.molstarResidueInfo());
+  private readonly destroyRef = inject(DestroyRef);
+
+  public tabDataLoaded = signal<boolean>(false);
+  public tableData = signal<DataToTable>({} as DataToTable);
+  private tabName = signal<TableNames>('' as TableNames);
+
+  public readonly routeTabs = [
+    { label: 'Summary', id: 'summary' },
+    { label: 'Model quality', id: 'model-quality' },
+    { label: 'Assemblies', id: 'assemblies' },
+    { label: 'Macromolecules', id: 'macromolecules' },
+    { label: 'Ligands and Environments', id: 'ligands' },
+    { label: 'Domains', id: 'domains' },
+    { label: 'Citations', id: 'citations' },
+  ];
 
   public isNotUndefined(data: any[]) {
     for (const datum of data) {
@@ -29,44 +45,82 @@ export class MainDataProcessingFacade {
     return true;
   }
 
-  public processInteractiveTablesData(
-    complexDetails: ComplexDetails[],
-    assemblyData: AssemblyData[],
-    pisaAssemblyData: PisaAssembly[],
-    pfamMappings: PfamMappings,
-    cathMappings: CathMappings,
-    scopMappings: ScopMappings,
-    ligands: Molecule[],
-    modifications: ModifiedResidue[],
-    carbohydrates: CarbohydrateMolecule[],
-    uniprotMapping: UniProtMapping,
-    bestStrMapUniProtId: { [key: string]: BestStructureMapping[] },
-    macromolecules: Molecule[],
-    molstarResidueInfo: MolstarResidueInfo[]
-  ) {
-    // for each table type
-    for (const tabName of ['Assemblies', 'Domains', 'Ligands', 'Macromolecules']) {
-      // we create the instances of the data to table objects, sending API data
+  public setTabName(tabName: TableNames) {
+    this.tabName.set(tabName);
+  }
+
+  public getTableName(tabName: string) {
+    return tabName as TableNames;
+  }
+
+  public processInteractiveTablesData() {
+    const createSelectorStream = <T>(selector: any, defaultValue: T) =>
+      this.globalStore.select(selector).pipe(
+        startWith(defaultValue),
+        catchError(() => of(defaultValue))
+      );
+
+    combineLatest({
+      complexDetails: createSelectorStream(EntrySelectors.complexDetails, []),
+      assemblyData: createSelectorStream(EntrySelectors.assemblies, []),
+      pisaAssemblyData: createSelectorStream(EntrySelectors.pisaAssemblies, []),
+      pfamMappings: createSelectorStream(EntrySelectors.pfamMapping, null),
+      cathMappings: createSelectorStream(EntrySelectors.cathMapping, null),
+      scopMappings: createSelectorStream(EntrySelectors.scop175Mapping, null),
+      ligands: createSelectorStream(EntrySelectors.boundLigands, []),
+      modifications: createSelectorStream(EntrySelectors.modifications, []),
+      carbohydrates: createSelectorStream(EntrySelectors.carbohydrates, []),
+      uniprotMapping: createSelectorStream(EntrySelectors.uniprotMapping, null),
+      bestStrMapUniProtId: createSelectorStream(EntrySelectors.bestStructuresMappingsByUniProtIds, []),
+      macromolecules: createSelectorStream(EntrySelectors.macroMolecules, []),
+    })
+      .pipe(
+        retry({ count: 3, delay: 1000 }),
+        mergeMap((data: any) => {
+          this.processTableData(data);
+          return EMPTY;
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
+  }
+
+  private processTableData(data: any) {
+    for (const tabName of [TabNames.Assemblies, TabNames.Domains, TabNames.Ligands, TabNames.Macromolecules]) {
       let tempTableData: DataToTable;
-      if (tabName === 'Assemblies' && this.isNotUndefined([complexDetails, assemblyData, pisaAssemblyData])) {
-        tempTableData = new AssemblyDataToTable(complexDetails, assemblyData, pisaAssemblyData);
-      } else if (tabName === 'Domains' && this.isNotUndefined([pfamMappings, cathMappings, scopMappings, macromolecules, molstarResidueInfo])) {
-        tempTableData = new DomainDataToTable(pfamMappings, cathMappings, scopMappings, macromolecules, molstarResidueInfo);
-      } else if (tabName === 'Ligands' && this.isNotUndefined([ligands, modifications, molstarResidueInfo])) {
-        tempTableData = new LigandDataToTable(ligands, modifications, molstarResidueInfo);
-      } else if (tabName === 'Macromolecules' && this.isNotUndefined([carbohydrates, uniprotMapping, bestStrMapUniProtId, macromolecules, molstarResidueInfo])) {
-        tempTableData = new MacromoleculeDataToTable(carbohydrates, uniprotMapping, bestStrMapUniProtId, macromolecules, molstarResidueInfo);
+
+      if (tabName === TabNames.Assemblies && this.isNotUndefined([data.complexDetails, data.assemblyData, data.pisaAssemblyData])) {
+        tempTableData = new AssemblyDataToTable(data.complexDetails, data.assemblyData, data.pisaAssemblyData);
+      } else if (
+        tabName === TabNames.Domains &&
+        this.isNotUndefined([data.pfamMappings, data.cathMappings, data.scopMappings, data.macromolecules, this.molstarResidueInfo()])
+      ) {
+        tempTableData = new DomainDataToTable(data.pfamMappings!, data.cathMappings!, data.scopMappings!, data.macromolecules, this.molstarResidueInfo());
+      } else if (tabName === TabNames.Ligands && this.isNotUndefined([data.ligands, data.modifications, this.molstarResidueInfo()])) {
+        tempTableData = new LigandDataToTable(data.ligands, data.modifications, this.molstarResidueInfo());
+      } else if (
+        tabName === TabNames.Macromolecules &&
+        this.isNotUndefined([data.carbohydrates, data.uniprotMapping, data.bestStrMapUniProtId, data.macromolecules, this.molstarResidueInfo()])
+      ) {
+        tempTableData = new MacromoleculeDataToTable(
+          data.carbohydrates,
+          data.uniprotMapping!,
+          data.bestStrMapUniProtId!,
+          data.macromolecules,
+          this.molstarResidueInfo()
+        );
       } else {
-        return;
+        continue;
       }
-      // we call functions to convert ag-grid table rows and filters
+
       tempTableData.generateTableData();
       tempTableData.generateTableFilters();
-      // and save all data in the component communication service
       this.compCommunication.setTabData(tabName, tempTableData);
     }
-    // and set that table data has already been generated to avoid re-processing
+
     this.compCommunication.isTabDataGenerated.set(true);
+    this.tabDataLoaded.set(true);
+    this.tableData.set(this.compCommunication.getTabData(this.tabName()));
   }
 
   public processFilesData(data: any) {
@@ -131,5 +185,37 @@ export class MainDataProcessingFacade {
     });
 
     return { downloads: downloadsUpdated, views: viewsUpdated };
+  }
+
+  public getPageData(): void {
+    this.globalStore.dispatch(EntryActions.getSummaryData());
+    this.globalStore.dispatch(EntryActions.getEntryMolecules());
+    this.globalStore.dispatch(EntryActions.getExperiment());
+    this.globalStore.dispatch(EntryActions.getUniprotMapping());
+    this.globalStore.dispatch(EntryActions.getInterproMapping());
+    this.globalStore.dispatch(EntryActions.getPfamMapping());
+    this.globalStore.dispatch(EntryActions.getDownloadOptions());
+    this.globalStore.dispatch(EntryActions.getSummaryQualityScores());
+    this.globalStore.dispatch(EntryActions.getCathMapping());
+    this.globalStore.dispatch(EntryActions.getScop175Mapping());
+    this.globalStore.dispatch(EntryActions.getModifications());
+    this.globalStore.dispatch(EntryActions.getValidationKeyStats());
+    this.globalStore.dispatch(EntryActions.getValidationXrayRefine());
+    this.globalStore.dispatch(EntryActions.getPrimaryPublication());
+    this.globalStore.dispatch(EntryActions.getArticleCitingPDBEntry());
+    this.globalStore.dispatch(EntryActions.getPreferredAssembly());
+    this.globalStore.dispatch(EntryActions.getAssemblies());
+    this.globalStore.dispatch(EntryActions.getCarbohydrates());
+    this.globalStore.dispatch(EntryActions.getExperimentBMRBRawData());
+    this.globalStore.dispatch(EntryActions.getPDBRedoQualityScores());
+    this.globalStore.dispatch(EntryActions.getExperimentSBGridRawData());
+    this.globalStore.dispatch(EntryActions.getExperimentIRRMCRawData());
+    this.globalStore.dispatch(EntryActions.getExperimentEMPIARRawData());
+    this.globalStore.dispatch(EntryActions.getExperimentPDBRawData());
+    this.globalStore.dispatch(EntryActions.getUniprotMapping());
+    this.globalStore.dispatch(EntryActions.getInteractions());
+    this.globalStore.dispatch(EntryActions.getIsoformsMapping());
+    this.globalStore.dispatch(EntryActions.getGOMapping());
+    this.globalStore.dispatch(EntryActions.getECMapping());
   }
 }

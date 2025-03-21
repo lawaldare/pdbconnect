@@ -1,17 +1,16 @@
-@if(subcomplexesLength() || supercomplexesLength()){
+@if (subcomplexesLength() || supercomplexesLength()) {
 <div id="interaction-section">
-  <h3>Complex Interactions</h3>
-  <p>This section displays the subcomplexes and/or supercomplexes of the complex of interest</p>
-  <lib-tool-tip minWidth="400px">
-    A subcomplex is defined as a complex where all its components are subset of components in another larger complex. On the other hand, we define a supercomplex as a
-    complex containing all the components of another complex and additional members.
-  </lib-tool-tip>
-
-  @if(subcomplexesLength()){
+  <!-- <h3>Subcomplexes and supercomplexes</h3> -->
+  <p>
+    This section displays the {{subcomplexesLength()}} subcomplexes and {{supercomplexesLength()}} supercomplexes of the complex of interest in the PDB. We list only
+    the common components for subcomplexes and the additional components for supercomplexes.
+  </p>
+  @if (subcomplexesLength()) {
   <section class="subcomplexes">
     <h4>Subcomplexes</h4>
+    <lib-tool-tip minWidth="400px"> A subcomplex is defined as a complex where all its components are subset of components in another larger complex </lib-tool-tip>
     <div class="card-container">
-      @for(complexInteraction of subComplexesPage(); track complexInteraction.pdb_complex_id){
+      @for (complexInteraction of subComplexesPage(); track complexInteraction.pdb_complex_id) {
       <pdbc-complex-card [complexInteraction]="complexInteraction" />
       }
     </div>
@@ -27,11 +26,12 @@
     >
     </mat-paginator>
   </section>
-  } @if(supercomplexesLength()){
+  } @if (supercomplexesLength()) {
   <section class="supercomplexes">
     <h4>Supercomplexes</h4>
+    <lib-tool-tip minWidth="400px"> A supercomplex is defined as a complex containing all the components of another complex and additional members </lib-tool-tip>
     <div class="card-container">
-      @for(complexInteraction of superComplexesPage(); track complexInteraction.pdb_complex_id){
+      @for (complexInteraction of superComplexesPage(); track complexInteraction.pdb_complex_id) {
       <pdbc-complex-card [complexInteraction]="complexInteraction" />
       }
     </div>
@@ -49,5 +49,6 @@
   </section>
   }
 </div>
-
+} @else {
+<h4>No subcomplexes or supercomplexes data available yet!</h4>
 }

@@ -1,0 +1,81 @@
+<div id="information-section" class="information-section">
+  <div class="info-row">
+    <span>Entry title</span>
+    <article>{{ summary()?.entryTitle }}</article>
+  </div>
+  <div class="info-row">
+    <span>Source organism</span>
+    <article>
+      @for (sourceOrganism of organismScientificNames(); track sourceOrganism; let islast = $last) {
+      <span>
+        <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">
+          {{ sourceOrganism }}
+          <i class="icon icon-common icon-search"></i>
+        </a>
+      </span>
+      {{ islast ? '' : ',' }} } @if (organismScientificNames()?.length === 0) {
+      <span>Not available</span>
+      }
+    </article>
+  </div>
+  @if (primaryPublication() && util.isNotEmptyObject(primaryPublication())) {
+  <div class="info-row">
+    <span>Primary publication</span>
+    <article>
+      @if (primaryPublication()?.journal_info?.pdb_abbreviation! !== 'To be published') {
+      <article>{{ primaryPublication()?.title }}</article>
+      <article>
+        @for (authorDatum of primaryPublication()?.author_list; track authorDatum; let islast = $last) {
+        <a [href]="generateAuthorSearchUrl(authorDatum.full_name ?? '')" target="_blank">{{ authorDatum.full_name }}</a>{{ islast ? '' : ',' }} }
+      </article>
+      <article>
+        <span>
+          <i>{{ primaryPublication()?.journal_info?.pdb_abbreviation }}</i>
+          {{ primaryPublication()?.journal_info?.volume }} {{ primaryPublication()?.journal_info?.pages }} ({{ primaryPublication()?.journal_info?.year }})
+        </span>
+        @if (primaryPublication()?.pubmed_id) {
+        <span style="white-space: nowrap">
+          PMID
+          <a [href]="'https://europepmc.org/article/MED/' + primaryPublication()?.pubmed_id" target="_blank"
+            >{{ primaryPublication()?.pubmed_id }}
+            <i class="icon icon-link icon-common"></i>
+          </a>
+        </span>
+        }
+      </article>
+      @if (primaryPublication()?.doi) {
+      <article>
+        DOI
+        <a [href]="'https://doi.org/' + primaryPublication()?.doi" target="_blank"
+          >{{ primaryPublication()?.doi }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </article>
+      } @let entries = primaryPublication()?.associated_entries ?? ''; @if (entries) { @let entriesArray = splitStringByCommas(entries);
+
+      <article>
+        Also associated with: @for(entry of entriesArray; track entry; let islast = $last){
+        <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + entry" target="_blank">{{ entry }}</a>{{ islast? '' : ',' }} }
+      </article>
+      } } @else {
+      <article>To be published</article>
+      }
+    </article>
+  </div>
+  } @if ((summary()?.relatedStructures ?? []).length) {
+  <div class="info-row">
+    <span>EMDB entry</span>
+    <article>
+      <a [href]="'https://www.ebi.ac.uk/emdb/' + summary()!.relatedStructures[0].accession" target="_blank">{{ summary()!.relatedStructures[0].accession }}</a>
+    </article>
+  </div>
+  } @if (qualityScores() !== undefined) {
+  <div class="info-row">
+    <span>PDB model quality summary</span>
+    <article>
+      <pdbc-str-quality-gradient [componentType]="'GeometryFit_RdToBl'" [renderGradients]="qualityScores()!"></pdbc-str-quality-gradient>
+      <span class="qualify-span">Percentile-sliders comparing the quality scores of a model with other models in the archive.</span>
+    </article>
+  </div>
+  }
+</div>

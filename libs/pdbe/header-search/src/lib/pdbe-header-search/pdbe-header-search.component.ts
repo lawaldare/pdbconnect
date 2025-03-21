@@ -55,7 +55,7 @@ export class PdbeHeaderSearchComponent implements OnInit {
     this.utilService.redirectToHomepageSearchTerm(value);
   }
 
-  public openLigand(ligandId: string): void {
+  public openID(ligandId: string): void {
     if (this.headerSearchConfig.isHomepage) {
       this.utilService.redirectToHomepageSearchTerm(ligandId);
     } else {

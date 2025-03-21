@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { ComplexCardComponent } from '../../section-components/complex-card/complex-card.component';
@@ -9,6 +9,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexActions } from '../../../store/complex.actions';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { ComplexInteraction } from '../../../models/complex-structure.model';
 
 @Component({
   selector: 'pdbc-complex-interactions',
@@ -26,23 +27,19 @@ export class ComplexInteractionsComponent implements OnInit {
 
   public subcomplexesLength = computed(() => this.subcomplexInteractions()?.length);
   public supercomplexesLength = computed(() => this.supercomplexInteractions()?.length);
-  public subcomplexesPageSize = signal<number>(5);
-  public supercomplexesPageSize = signal<number>(5);
-  public subcomplexesPageSizeOptions = computed(() => [5, 10, 20, 50]);
-  public supercomplexesPageSizeOptions = computed(() => [5, 10, 20, 50]);
+  public subcomplexesPageSize = signal<number>(6);
+  public supercomplexesPageSize = signal<number>(6);
+  public subcomplexesPageSizeOptions = computed(() => [6, 12, 18]);
+  public supercomplexesPageSizeOptions = computed(() => [6, 12, 18]);
 
-  private subPageIndex = signal(0);
-  private superPageIndex = signal(0);
-
-  public subComplexesPage = computed(() => {
-    const start = this.subPageIndex() * this.subcomplexesPageSize();
-    const end = start + this.subcomplexesPageSize();
-    return (this.subcomplexInteractions() ?? []).slice(start, end);
+  public superComplexesPage = linkedSignal({
+    source: this.supercomplexInteractions,
+    computation: () => (this.supercomplexInteractions() ?? []).slice(0, this.supercomplexesPageSize()),
   });
-  public superComplexesPage = computed(() => {
-    const start = this.superPageIndex() * this.supercomplexesPageSize();
-    const end = start + this.supercomplexesPageSize();
-    return (this.supercomplexInteractions() ?? []).slice(start, end);
+
+  public subComplexesPage = linkedSignal({
+    source: this.subcomplexInteractions,
+    computation: () => (this.subcomplexInteractions() ?? []).slice(0, this.subcomplexesPageSize()),
   });
 
   public navSections = toSignal(this.globalStore.select(ComplexSelectors.navItems));
@@ -61,11 +58,15 @@ export class ComplexInteractionsComponent implements OnInit {
   public handlePageEvent(event: PageEvent, filterOn: string): void {
     switch (filterOn) {
       case 'subcomplexes': {
-        this.subPageIndex.set(event.pageIndex);
+        const startIndex = event.pageIndex * event.pageSize;
+        const endIndex = startIndex + event.pageSize;
+        this.subComplexesPage.update(() => (this.subcomplexInteractions() ?? []).slice(startIndex, endIndex));
         break;
       }
       case 'supercomplexes': {
-        this.superPageIndex.set(event.pageIndex);
+        const startIndex = event.pageIndex * event.pageSize;
+        const endIndex = startIndex + event.pageSize;
+        this.superComplexesPage.update(() => (this.supercomplexInteractions() ?? []).slice(startIndex, endIndex));
         break;
       }
     }

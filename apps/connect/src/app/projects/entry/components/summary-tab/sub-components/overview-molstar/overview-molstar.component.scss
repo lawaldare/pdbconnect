@@ -1,0 +1,49 @@
+@import url('https://cdn.jsdelivr.net/npm/pdbe-molstar@3.2.0/build/pdbe-molstar-light.css');
+
+.top-structure-section {
+  width: 100%;
+}
+
+.empty-molstar-img {
+  position: absolute;
+  margin-top: 36px;
+  margin-left: 6.5px;
+  width: 467px;
+  height: 408px;
+  z-index: 2;
+}
+
+// remove Molstar border
+::ng-deep .msp-plugin .msp-layout-standard {
+  border: none;
+}
+
+.tab-content {
+  display: flex;
+  background-color: #fff;
+  width: 100%;
+
+  .molstar-controls {
+    .molstar-container {
+      position: relative;
+      width: 480px;
+      z-index: 1;
+    }
+  }
+
+  .info-controls {
+    width: calc(100% - 480px);
+  }
+}
+
+ngx-skeleton-loader {
+  width: 100%;
+  display: block;
+  height: 400px;
+}
+
+::ng-deep ngx-skeleton-loader {
+  .skeleton-loader {
+    margin-bottom: 0 !important;
+  }
+}

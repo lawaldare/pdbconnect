@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { MolstarResidueInfo } from '../helpers/molstar/molstar-helpers';
-import { DataToTable } from '../components/interactive-tables/data-processing/abstract-base-row-class';
+import { DataToTable } from '../components/shared/interactive-tables/data-processing/abstract-base-row-class';
 
 @Injectable({
   providedIn: 'root',
@@ -9,7 +9,7 @@ export class ComponentCommunicationService {
   public molstarResidueInfoLoaded = signal<boolean>(false);
   public molstarResidueInfo = signal<MolstarResidueInfo[]>([]);
 
-  public currentTab = signal<string>('Assemblies');
+  public currentTab = signal<string>('Information');
   public tabSwitchOrigin = signal<string>('main');
   public tabState = signal<{ [key: string]: string | number }>({
     Assemblies: 'Main',
@@ -64,5 +64,11 @@ export class ComponentCommunicationService {
       ...state,
       [tabName]: newState,
     }));
+  }
+
+  private sidebarState = signal<boolean>(false);
+  public isSidebarCollapsed = this.sidebarState.asReadonly();
+  public setSidebarState() {
+    this.sidebarState.update((state) => !state);
   }
 }

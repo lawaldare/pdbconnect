@@ -6,6 +6,27 @@ export interface UniProtMapping {
   };
 }
 
+export interface GOMapping {
+  [key: string]: {
+    identifier: string;
+    mappings: UniProtMappingObj[];
+    name: string;
+    category: string;
+    definition: string;
+  };
+}
+
+export interface ECMapping {
+  [key: string]: {
+    reaction: string;
+    systematic_name: string;
+    accepted_name: string;
+    synonyms: string[];
+    mappings: UniProtMappingObj[];
+    identifier: string;
+  };
+}
+
 export interface UniProtMappingObj {
   chain_id: string;
   end: UniProtResidMapping;

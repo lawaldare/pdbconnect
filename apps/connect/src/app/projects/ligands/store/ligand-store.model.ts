@@ -18,4 +18,7 @@ export interface LigandStoreState {
   fragments: Fragment[];
   navItems: NavSection[];
   polymers: Polymer[];
+  numberOfProteins: number;
+  numberOfPDBStructures: number;
+  numberOfLigandInstances: number;
 }

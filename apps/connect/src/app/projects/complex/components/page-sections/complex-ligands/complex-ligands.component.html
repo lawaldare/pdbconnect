@@ -1,9 +1,15 @@
-@if(ligands().length){
+@if (ligands().length) {
 <div id="ligands-section">
-  <h3>Ligands</h3>
-  <p>This section shows ligands observed directly bound to the complex of interest</p>
+  <!-- <h3>Ligands</h3> -->
+  <p>This section shows {{this.ligands().length}} ligands observed directly bound to the complex of interest in the PDB</p>
+  <div class="search-box">
+    <input type="search" [formControl]="searchTerm" placeholder="Search by ligand name or id" />
+    @if (!searchTerm.value) {
+    <i class="icon icon-common icon-search"></i>
+    }
+  </div>
   <div class="grid-container">
-    @for(ligand of ligandsPage(); track ligand.ligandId){
+    @for (ligand of ligandsPage(); track ligand.ligandId) {
     <pdbc-complex-ligand-grid [ligand]="ligand" [complexId]="complexId() ?? ''" />
     }
   </div>
@@ -18,5 +24,6 @@
   >
   </mat-paginator>
 </div>
-
+} @else {
+<h4>No ligands data available yet!</h4>
 }
