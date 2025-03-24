@@ -70,9 +70,10 @@ export class InteractiveTablesComponent implements OnChanges {
   }
 
   onChangePage(num: number): void {
-    const p = num * 10 + 1;
+    const p = (num - 1) * 10;
     this.startNumber.set(num);
-    this.selectedRowCard.set(this.tableData.tableRows()[p]);
+    this.selectedRowCard.set(this.rowCards()[p]);
+    this.loadSelectionFromTable(this.rowCards()[p].index);
   }
 
   public loadSelectionFromTable(rowIdx: number) {

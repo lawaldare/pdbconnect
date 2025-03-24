@@ -239,7 +239,7 @@
   </div>
   <div class="info-row">
     <span> Molecule name </span>
-    <article>{{datum?.accessionName}}</article>
+    <article>{{datum?.moleculeNames[0]}}</article>
   </div>
   <div class="info-row">
     <span>
@@ -263,8 +263,8 @@
   </div>
 </section>
 <div class="chains">
-  Chain @for(boundary of datum?.additionalData?.boundaries; track boundary.chain; let islast = $last){
-  <span>{{boundary.chain}}</span>{{ islast ? '' : ',' }} }
+  Chain @for(chain of datum?.mappedboundaries; track chain; let islast = $last){
+  <span>{{chain}}</span>{{ islast ? '' : ',' }} }
 </div>
 @if (sequenceDetails.length > 0) {
 <div class="sequence-container">

@@ -279,6 +279,9 @@ export class DetailsDashboardComponent implements OnInit {
         this.selectionButtonText = 'Compare this assembly in other entries';
       } else if (this.tabName() === 'Domains') {
         datum = datum as DomainsRowData;
+        const mappedDatum = datum.additionalData.boundaries.map((b) => b.chain);
+        const uniqueChains = [...new Set(mappedDatum)];
+        datum.mappedboundaries = uniqueChains;
         this.selectionTitle = `${datum.domain} (Accession: ${datum?.additionalData?.accession})`;
         this.selectionTypeText = 'domain';
         this.selectionButtonText = 'Compare this domain in other entries';
@@ -367,6 +370,7 @@ export class DetailsDashboardComponent implements OnInit {
     }
     if (datum) {
       this.currentRowDatum = datum;
+      console.log(datum);
 
       if (this.tabName() === 'Macromolecules') {
         this.residues.update(() => this.transformCoverageData(this.currentRowDatum['residues']));

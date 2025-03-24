@@ -112,4 +112,5 @@ export interface DomainsRowData {
     segmentsResidNumbers: string[];
     selections: MolstarSelectionObj[];
   };
+  mappedboundaries?: string[];
 }

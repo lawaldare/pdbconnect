@@ -41,9 +41,9 @@
     </mat-paginator>
   </section>
   } @else {
-  <p>No publication available yet!</p>
+  <p>No publication data available yet!</p>
   }
 </div>
 } @else {
-<p>No publications data available yet!</p>
+<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
 }

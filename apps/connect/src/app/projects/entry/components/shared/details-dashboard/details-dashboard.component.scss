@@ -7,7 +7,7 @@ h5 {
   font-size: 21px;
   font-weight: 500;
   line-height: 27.3px;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
 }
 
 .macromolecules-title {
@@ -68,7 +68,6 @@ h5 {
   .dropdown-container {
     display: flex;
     align-items: baseline;
-    gap: 8px;
 
     .dropdown-title {
       color: var(--Neutral-900, #1a1c1a);

@@ -29,9 +29,8 @@
   <div class="card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard()?.name?.molecule === card.name.molecule">
     <p class="card-title">{{card.name.molecule}}</p>
     <p class="card-text">
-      @for(chain of card.name.chains; track chain) {
-      <span>{{chain}}</span>
-      }
+      @for(chain of card.name.chains; track chain; let islast = $last) {
+      <span>{{chain}}</span>{{ islast ? '' : ',' }} }
     </p>
   </div>
   } @if(rowCards().length > 10){
