@@ -2,8 +2,8 @@ import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, Vi
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
-import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
-// import { SearchAppComponent } from '@pdbc/search-app';
+// import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
+import { SearchAppComponent } from '@pdbc/search-app';
 
 import { EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -26,6 +26,7 @@ import { InteractiveTablesComponent } from '../../components/shared/interactive-
 import { DetailsDashboardComponent } from '../../components/shared/details-dashboard/details-dashboard.component';
 import { ExperimentsValidationComponent } from '../../components/model-quality-tab/experiments-validation.component';
 import { EntryPageHeaderComponent } from '../../components/entry-page-header/entry-page-header.component';
+import { environment } from '../../../../../environments/environment';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -49,7 +50,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
   imports: [
     CommonModule,
     PdbeHeaderLogoMenuComponent,
-    PdbeHeaderSearchComponent,
+    // PdbeHeaderSearchComponent,
     CitationsTabComponent,
     NgxSkeletonLoaderModule,
     EntryMainAlternativeComponent,
@@ -59,7 +60,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     InteractiveTablesComponent,
     DetailsDashboardComponent,
     EntryPageHeaderComponent,
-    // SearchAppComponent,
+    SearchAppComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -117,18 +118,18 @@ export class EntryMainPageComponent implements OnInit {
 
   selectedTab = 0;
 
-  // public readonly apiSearchConfig = {
-  //   additionalParams: 'rows=20000&json.nl=map&wt=json',
-  //   fields: 'value,num_pdb_entries,var_name',
-  //   group: 'group=true&group.field=category',
-  //   groupLimit: '25',
-  //   redirectOnClick: true,
-  //   resultBoxAlign: 'right',
-  //   searchUrl: 'https://www.ebi.ac.uk/pdbe/search/pdb-autocomplete/select',
-  //   sort: 'category+asc,num_pdb_entries+desc',
-  //   view: 'entries',
-  //   env: 'dev',
-  // };
+  public readonly apiSearchConfig = {
+    additionalParams: 'rows=20000&json.nl=map&wt=json',
+    fields: 'value,num_pdb_entries,var_name',
+    group: 'group=true&group.field=category',
+    groupLimit: '25',
+    redirectOnClick: true,
+    resultBoxAlign: 'right',
+    searchUrl: 'https://www.ebi.ac.uk/pdbe/search/pdb-autocomplete/select',
+    sort: 'category+asc,num_pdb_entries+desc',
+    view: 'entries',
+    env: environment.production ? '' : 'dev',
+  };
 
   constructor() {
     this.route.queryParams.subscribe((params) => {

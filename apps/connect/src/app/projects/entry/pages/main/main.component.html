@@ -1,6 +1,6 @@
 <pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
-<pdbc-pdbe-header-search id="entry-search" [headerSearchConfig]="pdbeSearchConfig"></pdbc-pdbe-header-search>
-<!-- <pdb-search-app [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" /> -->
+<!-- <pdbc-pdbe-header-search id="entry-search" [headerSearchConfig]="pdbeSearchConfig"></pdbc-pdbe-header-search> -->
+<pdb-search-app [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" />
 @if (statusCode() === 'REL') {
 <section class="container">
   <pdbc-entry-page-header />
