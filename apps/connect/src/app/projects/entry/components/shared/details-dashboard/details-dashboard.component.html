@@ -11,13 +11,13 @@
 <section class="assemblies-container">
   <section class="assembly-section">
     <div class="assembly-grouped">
-      @if(datum?.assemblyName){
+      @if(datum?.complexName){
       <div class="info-row">
         <span>
           Assembly name
           <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
         </span>
-        <article>{{datum?.assemblyName}}</article>
+        <article>{{datum?.complexName}}</article>
       </div>
       }
       <div class="info-row">
@@ -103,7 +103,7 @@
         </a>
       </article>
     </div>
-    } @let expressionSystem = datum?.additionalData?.molecule?.source[0]?.expression_host_scientific_name; @if(expressionSystem){
+    } @let expressionSystem = datum?.additionalData?.molecule?.source?.[0]?.expression_host_scientific_name; @if(expressionSystem){
     <div class="info-row">
       <span class="micro-title"> Expression System </span>
       <article>

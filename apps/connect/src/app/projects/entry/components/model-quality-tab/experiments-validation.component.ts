@@ -8,7 +8,7 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
 import { expInfoTooltip, expRawDataTooltip, pdbRedoTooltip, sampleInfoTooltip, timelineTooltip, validationInfoTooltip } from '../../entry-constant';
 import { MaterialModule, UtilService } from '@pdbc/core';
-import { filter, firstValueFrom, map } from 'rxjs';
+import { filter, firstValueFrom, map, mergeMap } from 'rxjs';
 import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { EntryStoreState } from '../../store/entry-store.model';
@@ -140,19 +140,18 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       .select(EntrySelectors.experimentalDetails)
       .pipe(
         filter(Boolean),
-        map((experimentalDetails) => {
-          const processedExpValData = this.dataFacade.processData();
-
-          this.processedData.set(processedExpValData);
-          this.currentData.set(this.processedData()?.[0]);
-
+        mergeMap((experimentalDetails) => {
           if (experimentalDetails.length > 1) {
             this.isHybrid.set(true);
           }
+          return this.dataFacade.processData();
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe();
+      .subscribe((processedExpValData) => {
+        this.processedData.set(processedExpValData);
+        this.currentData.set(this.processedData()?.[0]);
+      });
   }
 
   @HostListener('window:scroll', ['$event'])

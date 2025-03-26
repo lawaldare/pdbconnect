@@ -79,7 +79,6 @@ export class MacromoleculeDataToTable extends DataToTable {
         const residueRanges = molecule.molecule_type.includes('polypeptide')
           ? this.getUniProtResidueRanges(molecule.entity_id, molecule.in_chains, mappingsByEntityByAccession)
           : [];
-
         let moleculeLength = molecule.length;
         let carbohydrate: CarbohydrateMolecule | undefined = undefined;
         if (molecule.molecule_type.includes('carbohydrate')) {
@@ -224,21 +223,21 @@ export class MacromoleculeDataToTable extends DataToTable {
     const mappingsByAccession = mappingsByEntityByAccession[entityId];
     for (const [uniprotAcc, datum] of Object.entries(mappingsByAccession)) {
       const filteredDatum = datum.filter((val) => chains.indexOf(val.chainId) > -1);
-      const datumStrings = filteredDatum.map((val) => `${val.start} to ${val.end}`);
+      const datumStrings = filteredDatum.map((val) => `${val.unpStart}-${val.unpEnd}`);
       // TODO: We might need to add chain information when allChainsEqualMappings is false
       const allChainsEqualMappings = datumStrings.every((val) => val === datumStrings[0]);
       // const allEqual = true;
       if (allChainsEqualMappings) {
         residueRanges.push({
           range: datumStrings[0],
-          coverage: (filteredDatum[0].coverage * 100).toFixed(1) + '%',
+          coverage: Math.round(filteredDatum[0].coverage * 100) + '%',
           uniprot: uniprotAcc,
         });
       } else {
         for (const datum of filteredDatum) {
           residueRanges.push({
-            range: `${datum.start} to ${datum.end}`,
-            coverage: (datum.coverage * 100).toFixed(1) + '%',
+            range: `${datum.unpStart}-${datum.unpEnd}`,
+            coverage: Math.round(datum.coverage * 100) + '%',
             uniprot: uniprotAcc,
             chainId: datum.chainId,
           });

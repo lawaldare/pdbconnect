@@ -370,7 +370,6 @@ export class DetailsDashboardComponent implements OnInit {
     }
     if (datum) {
       this.currentRowDatum = datum;
-      console.log(datum);
 
       if (this.tabName() === 'Macromolecules') {
         this.residues.update(() => this.transformCoverageData(this.currentRowDatum['residues']));

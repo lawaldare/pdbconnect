@@ -51,7 +51,7 @@ export class InteractiveTablesComponent implements OnChanges {
     }));
     this.mappedTableRows.update(() => mappedTableRows);
     this.rowCards.update(() => mappedTableRows);
-    this.selectedRowCard.set(this.tableData.tableRows()[0]);
+    this.selectedRowCard.set(this.rowCards()[0]);
     this.filters.update(() =>
       tableData.tableFilters().map((filter: any) => {
         return {

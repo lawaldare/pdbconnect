@@ -12,8 +12,12 @@
       </mat-tab>
       @for (tab of commonTabs(); track tab) {
       <mat-tab class="common-tab">
-        <ng-template mat-tab-label>{{ tab.name }} </ng-template>
-        <!-- <ng-template mat-tab-label> <span class="tab-tag na">{{ tab.tag }}</span>{{ tab.name }} </ng-template> -->
+        <!-- <ng-template mat-tab-label>{{ tab.name }} </ng-template> -->
+        <ng-template mat-tab-label>
+          @if (tabDataLoaded() && molstarResidueInfoLoaded()) { @if(!tab.hasData) {
+          <span class="tab-tag">N/A</span>
+          } } {{ tab.name }}
+        </ng-template>
         <ng-template matTabContent>
           @if (tabDataLoaded() && molstarResidueInfoLoaded()) { @if (tab.hasData) {
           <section class="common-tab" [class.change-display]="!isSidebarCollapsed()">
