@@ -19,8 +19,9 @@ This folder contains temporary builds of modified Nightingale libraries needed f
 ### 3. `pdbe-track-canvas`
 
 - Based on [`@nightingale-elements/nightingale-track-canvas`](https://www.npmjs.com/package/@nightingale-elements/nightingale-track-canvas).
-- Modified to include `FeatureLocation` coloring logic, consistent with PDBe API endpoint conventions.
-- This behavior mirrors coloring logic found in [`@nightingale-elements/nightingale-track`](https://www.npmjs.com/package/@nightingale-elements/nightingale-track).
+- Modified to include `FeatureLocation` coloring logic consistent with PDBe API endpoint formats.
+
+  See [`@nightingale-elements/nightingale-track`](https://www.npmjs.com/package/@nightingale-elements/nightingale-track) for `FeatureLocation` type.
 
 ## Future Cleanup
 
