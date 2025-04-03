@@ -26,6 +26,7 @@
       "@pdbe-lib/header-search": ["libs/pdbe/header-search/src/index.ts"],
       "@pdbe-lib/molstar-for-apps": ["libs/pdbe/molstar-for-apps/src/index.ts"],
       "@pdbe-lib/nav-menu": ["libs/pdbe/nav-menu/src/index.ts"],
+      "@pdbe-lib/pv-nightingale-components": ["libs/pdbe/pv-nightingale-components/src/index.ts"],
       "@pdbe-lib/shared-services": ["libs/pdbe/shared-services/src/index.ts"],
       "@pdbe-lib/styles": ["libs/pdbe/styles/src/index.ts"],
       "@pdbe-lib/swagger-docs": ["libs/pdbe/swagger-docs/src/index.ts"],
