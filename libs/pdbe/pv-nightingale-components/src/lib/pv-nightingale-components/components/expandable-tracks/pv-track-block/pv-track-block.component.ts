@@ -8,6 +8,10 @@ import { PvTooltipService } from '../../../services/pv-tooltip.service';
 import { interval, map, filter, Subscription, take } from 'rxjs';
 import { PvFixedHighlightService } from '../../../services/pv-fixed-highlight.service';
 
+/**
+ * Observation: styles need to be global for this component because of Nightingale constraints
+ * (unless we use ng-deep somehow)
+ */
 @Component({
   selector: 'lib-pv-track-block',
   standalone: true,

@@ -1,0 +1,78 @@
+<div class="conservation-container">
+  <!-- Line Graph Track -->
+  <div class="pv-track-row non-header-track track" [ngClass]="isExpanded() ? 'expanded' : 'collapsed'">
+    <div class="pv-track-label-col hoverable not-empty" (click)="toggleExpanded()">
+      <span class="expand-icon" [ngStyle]="{ display: isExpanded() ? 'none' : '' }">▸</span>
+      <span class="expand-icon" [ngStyle]="{ display: isExpanded() ? '' : 'none' }">▾</span>
+      Conservation
+    </div>
+    <div class="pv-track-container">
+      <nightingale-linegraph-track
+        id="pdbe-pv-conservation-count"
+        [data]="conservationCountData()"
+        class="with-fixed-highlight"
+        width="581"
+        height="50"
+        [length]="sequenceLength"
+        highlight-color="#FFEB3B66"
+        margin-left="0"
+        margin-right="10"
+        [fixedHighlight]="selectionHighlight"
+        use-ctrl-to-zoom
+      ></nightingale-linegraph-track>
+    </div>
+  </div>
+
+  <!-- Sequence Logo Track -->
+  <div class="pv-track-row non-header-track track" [ngStyle]="{ display: isExpanded() ? '' : 'none' }">
+    <div class="pv-track-label-col subtrack variation">
+      <p>
+        <span class="pdbe-pv-colname-tooltip">
+          Amino acid probabilities
+          <a target="_blank" href="https://github.com/PDBe-KB/pdbe-kb-manual/wiki/Sequence-conservation-scores">
+            <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="aaProbsTooltip" matTooltipPosition="below" />
+          </a>
+        </span>
+      </p>
+      <p>Sort columns by:</p>
+      <mat-radio-button (click)="changeConservationSorting('default')" [checked]="conservationSorting() === 'default'"> Amino acid properties </mat-radio-button>
+      <mat-radio-button (click)="changeConservationSorting('probability')" [checked]="conservationSorting() === 'probability'">
+        Highest probabilities
+      </mat-radio-button>
+
+      <div class="legend" style="height: 200px">
+        <p>Amino acid properties</p>
+        <div class="protvista-sc-legend">
+          <div class="protvista-sc-legend"><span class="pv-legend-color" style="background: #15a4a4"></span><span class="pv-legend-text">Aromatic</span></div>
+          <div class="protvista-sc-legend"><span class="pv-legend-color" style="background: #15c015"></span><span class="pv-legend-text">Polar</span></div>
+          <div class="protvista-sc-legend"><span class="pv-legend-color" style="background: #80a0f0"></span><span class="pv-legend-text">Hydrophobic</span></div>
+          <div class="protvista-sc-legend"><span class="pv-legend-color" style="background: #c048c0"></span><span class="pv-legend-text">Negative charge</span></div>
+          <div class="protvista-sc-legend"><span class="pv-legend-color" style="background: #c0c000"></span><span class="pv-legend-text">Proline</span></div>
+          <div class="protvista-sc-legend"><span class="pv-legend-color" style="background: #f01505"></span><span class="pv-legend-text">Positive charge</span></div>
+          <div class="protvista-sc-legend"><span class="pv-legend-color" style="background: #f08080"></span><span class="pv-legend-text">Cysteine</span></div>
+          <div class="protvista-sc-legend"><span class="pv-legend-color" style="background: #f09048"></span><span class="pv-legend-text">Glycine</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="pv-track-container">
+      <nightingale-conservation-track
+        [data]="conservationData()"
+        [length]="sequenceLength"
+        [attr.letter-order]="conservationSorting()"
+        height="350"
+        width="581"
+        font-family="Helvetica,sans-serif"
+        min-font-size="6"
+        fade-font-size="12"
+        max-font-size="24"
+        highlight-event="onmouseover"
+        highlight-color="#FFEB3B66"
+        margin-color="#ffffffdd"
+        margin-left="0"
+        margin-right="10"
+        [fixedHighlight]="selectionHighlight"
+        use-ctrl-to-zoom
+      ></nightingale-conservation-track>
+    </div>
+  </div>
+</div>
