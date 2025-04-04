@@ -1,0 +1,44 @@
+<div class="map-custom-data-panel" [ngStyle]="{ top: panelPosition.top + 'px', left: panelPosition.left + 'px' }">
+  <button class="close-btn" (click)="closePanel()">✖</button>
+
+  <label>Map your custom data</label>
+
+  <div class="info-text">
+    Provide residue ranges to be mapped into tracks. Format should be:
+    <pre class="example-block">
+Track: Important residues
+Residues: 45-60, 102-107, 300-305
+
+Track: More important residues
+Residues: 1, 37, 150
+    </pre>
+  </div>
+  <div class="disclaimer-text">Your custom data is kept only on this page and is never sent to any server.</div>
+  <div class="radio-group">
+    @if (hasUniProtData()) {
+    <label
+      ><input type="radio" [(ngModel)]="numberingScheme" value="residue" />
+      Residue numbering
+      <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="resNumTooltip" matTooltipPosition="below" />
+    </label>
+    <!-- <label><input type="radio" [(ngModel)]="numberingScheme" value="author" /> Author numbering</label> -->
+    <label
+      ><input type="radio" [(ngModel)]="numberingScheme" value="uniprot" />
+      UniProt numbering
+      <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="uniprotNumTooltip" matTooltipPosition="below" />
+    </label>
+    }
+  </div>
+
+  <textarea [(ngModel)]="customRawTrackData" (input)="onInputChange($event)" rows="10" placeholder="{{ sampleTemplate }}"></textarea>
+
+  <div *ngIf="validationErrors.length > 0" class="error-list">
+    <div *ngFor="let err of validationErrors" class="error-item">⚠️ {{ err }}</div>
+  </div>
+  <div *ngIf="validationErrors.length === 0 && customRawTrackData.length > 0" class="error-list" style="color: black">
+    <div class="error-item">✅ data validated successfully</div>
+  </div>
+
+  <button class="add-btn" [disabled]="validationErrors.length > 0 || customRawTrackData.length === 0" (click)="sendToPlot()">Map custom data in plot</button>
+  <button class="add-btn" (click)="clearData()" style="margin-left: 4px">Clear data</button>
+</div>

@@ -1,3 +1,5 @@
+export { MapCustomDataPanelComponent } from './lib/pv-nightingale-components/components/action-modals/pv-map-custom-data-panel/pv-map-custom-data-panel.component';
+export { SearchResiduePanelComponent } from './lib/pv-nightingale-components/components/action-modals/pv-search-residue-panel/pv-search-residue-panel.component';
 export { ConservationTrackBlockComponent } from './lib/pv-nightingale-components/components/expandable-tracks/pv-conservation-block/pv-conservation-track-block.component';
 export { VariationTrackBlockComponent } from './lib/pv-nightingale-components/components/expandable-tracks/pv-variation-block/pv-variation-track-block.component';
 export { TrackBlockComponent } from './lib/pv-nightingale-components/components/expandable-tracks/pv-track-block/pv-track-block.component';
