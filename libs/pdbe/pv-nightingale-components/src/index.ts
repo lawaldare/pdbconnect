@@ -1,5 +1,5 @@
 export { ConservationTrackBlockComponent } from './lib/pv-nightingale-components/components/expandable-tracks/pv-conservation-block/pv-conservation-track-block.component';
-export { VariationTrackBlockComponent } from './lib/pv-nightingale-components/components/expandable-tracks/pv-variation-block/variation-track-block.component';
+export { VariationTrackBlockComponent } from './lib/pv-nightingale-components/components/expandable-tracks/pv-variation-block/pv-variation-track-block.component';
 export { TrackBlockComponent } from './lib/pv-nightingale-components/components/expandable-tracks/pv-track-block/pv-track-block.component';
 export { PvTooltipService } from './lib/pv-nightingale-components/services/pv-tooltip.service';
 export { PvFixedHighlightService } from './lib/pv-nightingale-components/services/pv-fixed-highlight.service';

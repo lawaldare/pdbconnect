@@ -7,7 +7,7 @@ import '@nightingale-elements/nightingale-linegraph-track';
 
 import { APIVariationData } from '../../../models/pv-api-variation-track-data.model';
 import { MaterialModule } from '@pdbc/core';
-import { processEntityVariationDataFromAPI, processEntityVariationLineChartDataFromAPI } from './api-processing';
+import { processEntityVariationDataFromAPI, processEntityVariationLineChartDataFromAPI } from './pv-variation-api-processing';
 
 const PDBE_VARIATION_CONSEQUENCE_FILTERS = [
   {
@@ -79,7 +79,7 @@ const PDBE_VARIATION_PROVENANCE_FILTERS = [
   selector: 'lib-variation-track-block',
   standalone: true,
   imports: [CommonModule, MatCheckbox, MaterialModule],
-  templateUrl: './variation-track-block.component.html',
+  templateUrl: './pv-variation-track-block.component.html',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class VariationTrackBlockComponent {
@@ -96,28 +96,64 @@ export class VariationTrackBlockComponent {
 
   private currentKeywordFilters = signal<string[]>([]);
 
+  /**
+   * Computed angular signal for variationData
+   * Updated when originalVariationData Input signal is true
+   * and on currentKeywordFilters changes
+   *
+   * For isEntryData there is a function (processEntityVariationDataFromAPI) to
+   * convert API data to Nightingale compatible data
+   *
+   */
   readonly variationData = computed(() => {
     const data = this.originalVariationData();
     if (!data || !this.isEntryData) return [];
     return processEntityVariationDataFromAPI(data, this.currentKeywordFilters());
   });
 
+  /**
+   * Computed angular signal for variationCountData
+   * Updated when originalVariationData Input signal is true
+   * and on currentKeywordFilters changes
+   *
+   * For isEntryData there is a function (processEntityVariationLineChartDataFromAPI) to
+   * convert API data to Nightingale compatible data
+   *
+   */
   readonly variationCountData = computed(() => {
     const data = this.originalVariationData();
     if (!data || !this.isEntryData) return [];
     return processEntityVariationLineChartDataFromAPI(data, this.currentKeywordFilters());
   });
 
+  /**
+   * Verifies whether a given filter inside consequenceFilters and provenanceFilters lists
+   * is active (checked) or not according to active keywords
+   * @param filterName
+   * @returns true or false
+   */
   isNotFiltered(filterName: string) {
     return this.currentKeywordFilters().indexOf(filterName) === -1;
   }
 
+  /**
+   * Verifies whether a given filter inside consequenceFilters and provenanceFilters lists
+   * is enabled or not according to its presence in API data keywords
+   * @param filterName
+   * @returns
+   */
   hasAnyVariantsForFilter(filterName: string): boolean {
     const data = this.originalVariationData();
     if (!data) return false;
     return !data.variants.some((v) => v.keywords?.includes(filterName));
   }
 
+  /**
+   * Updates currentKeywordFilters when a given filter inside consequenceFilters and provenanceFilters lists
+   * is changed (checked or unchecked)
+   * This triggers variationData and variationCountData computed signals updates (see above)
+   * @param filterName
+   */
   changeVariantFiltering(filterName: string) {
     const filters = [...this.currentKeywordFilters()];
     const index = filters.indexOf(filterName);
@@ -128,6 +164,9 @@ export class VariationTrackBlockComponent {
     this.currentKeywordFilters.set([...new Set(filters)]);
   }
 
+  /**
+   * When a track is expanded switch the template expansion signal
+   */
   toggleExpansion() {
     this.isExpanded.set(!this.isExpanded());
   }
