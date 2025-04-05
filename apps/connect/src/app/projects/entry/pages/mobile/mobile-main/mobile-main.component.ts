@@ -50,11 +50,12 @@ export class MobileMainComponent {
   }
 
   public selectFooterTab(tabId: MobileTabName) {
-    console.log(tabId);
     this.activeTab.set(tabId);
     this.router.navigate([], {
       queryParams: { activeTab: tabId },
       queryParamsHandling: 'merge',
     });
+    window.scrollTo(0, 0);
+    window.scrollTo({ behavior: 'smooth' });
   }
 }
