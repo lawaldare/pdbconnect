@@ -27,6 +27,7 @@ import { DetailsDashboardComponent } from '../../components/shared/details-dashb
 import { ExperimentsValidationComponent } from '../../components/model-quality-tab/experiments-validation.component';
 import { EntryPageHeaderComponent } from '../../components/entry-page-header/entry-page-header.component';
 import { environment } from '../../../../../environments/environment';
+import { MobileMainComponent } from '../mobile/mobile-main/mobile-main.component';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -61,6 +62,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     DetailsDashboardComponent,
     EntryPageHeaderComponent,
     SearchAppComponent,
+    MobileMainComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -124,7 +126,7 @@ export class EntryMainPageComponent implements OnInit {
     group: 'group=true&group.field=category',
     groupLimit: '25',
     redirectOnClick: true,
-    resultBoxAlign: 'right',
+    resultBoxAlign: 'left',
     searchUrl: 'https://www.ebi.ac.uk/pdbe/search/pdb-autocomplete/select',
     sort: 'category+asc,num_pdb_entries+desc',
     view: 'entries',

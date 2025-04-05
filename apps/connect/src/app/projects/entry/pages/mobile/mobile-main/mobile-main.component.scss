@@ -1,0 +1,49 @@
+.mobile-tabs {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 4;
+  padding: 0 12px;
+  gap: 8px;
+  background: #f3f3f3;
+  height: 63px;
+
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    flex: 1;
+    padding: 8px 0;
+
+    img {
+      height: 24px;
+      width: 24px;
+    }
+
+    span {
+      color: #373a36;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 16.5px;
+    }
+
+    &.active {
+      color: #0a5032;
+      border-top: 2px solid #0a5032;
+
+      .ph-dot {
+        background: #0a5032;
+      }
+    }
+
+    &-dot {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+  }
+}

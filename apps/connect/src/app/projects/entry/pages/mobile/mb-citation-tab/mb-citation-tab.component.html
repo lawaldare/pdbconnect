@@ -1,0 +1,115 @@
+<main>
+  <h2>{{entryId()}}</h2>
+  <p class="entry-title">{{summary().entryTitle}}</p>
+  <nav>
+    <div class="container-border">
+      <div class="nav-title">
+        <h5>In this page</h5>
+        <img src="assets/images/mobile/arrow-{{isFullLinksDisplayed() ? 'up':'down'}}.svg" alt="arrow-up" (click)="toggleNavigationLinks()" />
+      </div>
+      @if(isFullLinksDisplayed()){ @for(link of navigationLinks; track link.id){
+      <a (click)="scrollToSection($event, link.id)">{{link.title}}</a>
+      } } @else {
+      <a (click)="scrollToSection($event, currentNavigationLink().id)">{{currentNavigationLink().title}}</a>
+      }
+    </div>
+  </nav>
+
+  <!-- Primary publication -->
+
+  <h3 id="primary-publication">Primary publication</h3>
+  <p class="publication-title">{{primaryPublication().title}}</p>
+  <div class="authors">
+    @for (author of primaryPublication().author_list; track author.full_name; let islast = $last) {
+    <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a>{{ islast ? '' : ',' }} }
+  </div>
+  <div class="pmid">
+    <span class="pmid-title">PMID </span>
+    <a [href]="'https://europepmc.org/article/MED/' + primaryPublication().pubmed_id" target="_blank"
+      >{{ primaryPublication().pubmed_id }}
+      <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
+    </a>
+  </div>
+  @if(primaryPublication().journal_info){
+  <p class="journal-info">
+    {{ primaryPublication().journal_info.pdb_abbreviation }} {{ primaryPublication().journal_info.volume }} {{ primaryPublication().journal_info.pages }} ({{
+    primaryPublication().journal_info.year}})
+  </p>
+  }
+  <div class="pmid">
+    <span class="pmid-title">DOI </span>
+    <a [href]="'https://doi.org/' + primaryPublication().doi" target="_blank">{{ primaryPublication().doi }} </a>
+  </div>
+  <div>
+    <span class="pmid-title">Also associated with </span>
+    @for (entry of relatedEntries(); track entry; let islast = $last) {
+    <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + entry" target="_blank" class="row__right__link">{{ entry }} </a>{{ islast ? '' : ',' }} }
+  </div>
+  @if(primaryPublication().abstract){ @let background = primaryPublication().abstract.background; @let unassigned = primaryPublication().abstract.unassigned; @let
+  output = background ? background : unassigned;
+  <h4>Publication abstract</h4>
+  <p class="background" [innerHTML]="output"></p>
+  } @if(imageXMLText()){
+  <article #imageContainer></article>
+  }
+
+  <!-- Articles citing the PDB entry -->
+
+  @if(articlesCiting().cited_by){ @let articles = articlesCiting().cited_by.Articles; @if(articles.length > 0){
+  <h3 id="articles-cited">Articles citing the PDB entry</h3>
+  <ol>
+    @if(articles.length > 5){ @let count = isArticlesCitingMuch() ? articles.length : 5; @for(article of articles.slice(0,count); track article.pubmed_id){
+    <pdbc-citation-article [article]="article"></pdbc-citation-article>
+    }
+    <button class="vf-button vf-button--search-pdbe" (click)="toggleArticlesCitingList()">{{isArticlesCitingMuch() ? 'Hide':'Show'}} full list</button>
+    } @else{ @for(article of articles; track article.pubmed_id){
+    <pdbc-citation-article [article]="article"></pdbc-citation-article>
+    } }
+  </ol>
+  } }
+
+  <!-- Reviews citing the PDB entry -->
+
+  @if(articlesCiting().cited_by){ @let reviews = articlesCiting().cited_by.Reviews; @if(reviews.length > 0){
+  <h3 id="reviews-cited">Reviews citing the PDB entry</h3>
+  <ol>
+    @if(reviews.length > 5){ @let count = isReviewsCitingMuch() ? reviews.length : 5; @for(article of reviews.slice(0,count); track article.pubmed_id){
+    <pdbc-citation-article [article]="article"></pdbc-citation-article>
+    }
+    <button class="vf-button vf-button--search-pdbe" (click)="toggleReviewsCitingList()">{{isReviewsCitingMuch() ? 'Hide':'Show'}} full list</button>
+    } @else{ @for(article of reviews; track article.pubmed_id){
+    <pdbc-citation-article [article]="article"></pdbc-citation-article>
+    } }
+  </ol>
+  } }
+
+  <!-- Articles not cited! -->
+
+  @if(articlesCiting().appears_without_citation){ @let articles = articlesCiting().appears_without_citation.Articles; @if(articles.length > 0){
+  <h3 id="articles-not-cited">Articles - {{ this.entryId() }} mentioned but not cited</h3>
+  <ol>
+    @if(articles.length > 5){ @let count = isArticlesNotCitedMuch() ? articles.length : 5; @for(article of articles.slice(0,count); track article.pubmed_id){
+    <pdbc-citation-article [article]="article"></pdbc-citation-article>
+    }
+    <button class="vf-button vf-button--search-pdbe" (click)="toggleArticlesNotCitedList()">{{isArticlesNotCitedMuch() ? 'Hide':'Show'}} full list</button>
+    } @else{ @for(article of articles; track article.pubmed_id){
+    <pdbc-citation-article [article]="article"></pdbc-citation-article>
+    } }
+  </ol>
+  } }
+
+  <!-- Reviews not cited! -->
+
+  @if(articlesCiting().cited_by){ @let reviews = articlesCiting().appears_without_citation.Reviews; @if(reviews.length > 0){
+  <h3 id="reviews-not-cited">Reviews - {{ this.entryId() }} mentioned but not cited</h3>
+  <ol>
+    @if(reviews.length > 5){ @let count = isReviewsNotCitedMuch() ? reviews.length : 5; @for(article of reviews.slice(0,count); track article.pubmed_id){
+    <pdbc-citation-article [article]="article"></pdbc-citation-article>
+    }
+    <button class="vf-button vf-button--search-pdbe" (click)="toggleReviewsNotCitedList()">{{isReviewsNotCitedMuch() ? 'Hide':'Show'}} full list</button>
+    } @else{ @for(article of reviews; track article.pubmed_id){
+    <pdbc-citation-article [article]="article"></pdbc-citation-article>
+    } }
+  </ol>
+  } }
+</main>
