@@ -48,13 +48,7 @@ export class MbCitationTabComponent implements OnInit {
 
   public isFullLinksDisplayed = signal<boolean>(false);
   public currentNavigationLink = signal<NavigationLink>({ id: 'primary-publication', title: 'Primary publication' });
-  public readonly navigationLinks = [
-    { id: 'primary-publication', title: 'Primary publication' },
-    { id: 'articles-cited', title: 'Articles citing the PDB entry' },
-    { id: 'reviews-cited', title: 'Reviews citing the publication' },
-    { id: 'articles-not-cited', title: `Articles -${this.entryId()} mentioned but not cited` },
-    { id: 'reviews-not-cited', title: `Reviews -${this.entryId()} mentioned but not cited` },
-  ];
+  public navigationLinks: NavigationLink[] = [];
 
   @HostListener('window:scroll', [])
   onScroll() {
@@ -87,6 +81,10 @@ export class MbCitationTabComponent implements OnInit {
             this.setRelatedEntries(this.primaryPublication()?.associated_entries ?? '');
           }
 
+          if (this.primaryPublication().title && this.articlesCiting().cited_by && this.articlesCiting().appears_without_citation) {
+            this.setNavigationLinks();
+          }
+
           if (this.primaryPublication() !== undefined && this.primaryPublication().pubmed_id) {
             this.getXMLImages(this.primaryPublication().pubmed_id ?? '');
           }
@@ -94,6 +92,28 @@ export class MbCitationTabComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+  }
+
+  private setNavigationLinks(): void {
+    if (this.primaryPublication().title) {
+      this.navigationLinks.push({ id: 'primary-publication', title: 'Primary publication' });
+    }
+
+    if (this.articlesCiting().cited_by.Articles.length) {
+      this.navigationLinks.push({ id: 'articles-cited', title: 'Articles citing the PDB entry' });
+    }
+
+    if (this.articlesCiting().cited_by.Reviews.length) {
+      this.navigationLinks.push({ id: 'reviews-cited', title: 'Reviews citing the publication' });
+    }
+
+    if (this.articlesCiting().appears_without_citation.Articles.length) {
+      this.navigationLinks.push({ id: 'articles-not-cited', title: 'Articles mentioned but not cited' });
+    }
+
+    if (this.articlesCiting().appears_without_citation.Reviews.length) {
+      this.navigationLinks.push({ id: 'reviews-not-cited', title: 'Reviews mentioned but not cited' });
+    }
   }
 
   public toggleArticlesCitingList(): void {
@@ -173,9 +193,10 @@ export class MbCitationTabComponent implements OnInit {
     event.preventDefault();
     this.isFullLinksDisplayed.set(false);
     const element = document.getElementById(sectionId);
-    if (element) {
+    const toc = document.querySelector('.table-of-contents') as HTMLElement;
+    if (element && toc) {
       const offsetTop = element.offsetTop;
-      window.scrollTo({ top: offsetTop - 320, behavior: 'smooth' });
+      window.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
     }
   }
 }

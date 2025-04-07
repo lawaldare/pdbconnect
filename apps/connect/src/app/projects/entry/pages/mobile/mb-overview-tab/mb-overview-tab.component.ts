@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, HostListener, inject, linkedSignal, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
@@ -11,9 +11,7 @@ import {
   AssembliesRowData,
   LigandsRowData,
   MacromoleculesRowData,
-  TableFilter,
 } from '../../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
-import { DataToTable } from '../../../components/shared/interactive-tables/data-processing/abstract-base-row-class';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { combineLatest, filter, map } from 'rxjs';
 import { CitationDetail } from '../../../data-models/publication.model';
@@ -149,9 +147,10 @@ export class MbOverviewTabComponent implements OnInit {
     event.preventDefault();
     this.isFullLinksDisplayed.set(false);
     const element = document.getElementById(sectionId);
-    if (element) {
+    const toc = document.querySelector('.table-of-contents') as HTMLElement;
+    if (element && toc) {
       const offsetTop = element.offsetTop;
-      window.scrollTo({ top: offsetTop - 350, behavior: 'smooth' });
+      window.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
     }
   }
 
@@ -180,15 +179,6 @@ export class MbOverviewTabComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
-  }
-
-  private updateFilters(data: DataToTable): TableFilter[] {
-    return data.tableFilters().map((filter: any) => {
-      return {
-        types: filter.types,
-        description: filter.description.includes('All') ? 'All' : filter.description,
-      };
-    });
   }
 
   public generateOrganismSearchUrl(term: string): string {
