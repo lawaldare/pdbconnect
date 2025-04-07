@@ -17,6 +17,7 @@
 
   <!-- Primary publication -->
 
+  @if(primaryPublication().title){
   <h3 id="primary-publication">Primary publication</h3>
   <p class="publication-title">{{primaryPublication().title}}</p>
   <div class="authors">
@@ -51,6 +52,9 @@
   <p class="background" [innerHTML]="output"></p>
   } @if(imageXMLText()){
   <article #imageContainer></article>
+  } }@else {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+
   }
 
   <!-- Articles citing the PDB entry -->

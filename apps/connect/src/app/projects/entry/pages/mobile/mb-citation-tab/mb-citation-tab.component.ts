@@ -11,6 +11,7 @@ import { RelatedPublication } from '../../../data-models/related-publications.mo
 import { CitationDetail } from '../../../data-models/publication.model';
 import { EntryApiService } from '../../../services/entry-api.service';
 import { CitationArticleComponent } from '../../../components/citations-tab/sub-components/citation-article/citation-article.component';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 export interface NavigationLink {
   id: string;
@@ -19,7 +20,7 @@ export interface NavigationLink {
 
 @Component({
   selector: 'pdbc-mb-citation-tab',
-  imports: [CommonModule, CitationArticleComponent],
+  imports: [CommonModule, CitationArticleComponent, NgxSkeletonLoaderModule],
   templateUrl: './mb-citation-tab.component.html',
   styleUrl: './mb-citation-tab.component.scss',
 })
@@ -61,7 +62,7 @@ export class MbCitationTabComponent implements OnInit {
       const element = document.getElementById(section.id);
       if (element) {
         const rect = element.getBoundingClientRect();
-        if (rect.top <= 125 && rect.bottom >= 125) {
+        if (rect.top <= 150 && rect.bottom >= 150) {
           this.currentNavigationLink.set(section);
         }
       }
@@ -170,10 +171,11 @@ export class MbCitationTabComponent implements OnInit {
 
   public scrollToSection(event: Event, sectionId: string): void {
     event.preventDefault();
+    this.isFullLinksDisplayed.set(false);
     const element = document.getElementById(sectionId);
     if (element) {
       const offsetTop = element.offsetTop;
-      window.scrollTo({ top: offsetTop - 125, behavior: 'smooth' });
+      window.scrollTo({ top: offsetTop - 320, behavior: 'smooth' });
     }
   }
 }

@@ -14,4 +14,166 @@ main {
     font-weight: 500;
     line-height: 28.5px;
   }
+
+  .structure-overview {
+    .info {
+      display: flex;
+      align-items: start;
+      gap: 8px;
+
+      &__title {
+        color: #1a1c1a;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 27.2px;
+        width: 123px;
+        min-width: 123px;
+        max-width: 123px;
+      }
+
+      &__content {
+        color: #1a1c1a;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 27.2px;
+      }
+    }
+
+    &.assembly {
+      .info__title {
+        width: 128px;
+        min-width: 128px;
+        max-width: 128px;
+      }
+    }
+
+    .assembly-footer-text {
+      color: #54585a;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 22.4px;
+    }
+  }
+
+  ::ng-deep pdbc-str-quality-gradient {
+    .val-label {
+      font-weight: 500;
+    }
+  }
+
+  .qualify-span {
+    color: #54585a;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22.5px;
+  }
+
+  section.macro-row-card {
+    padding: 8px 0;
+    border-bottom: 1px solid rgb(0 0 0 / 12%);
+
+    p.m-title {
+      color: #1a1c1a;
+      font-size: 19px;
+      font-weight: 500;
+      line-height: 26.6px;
+    }
+
+    p.text {
+      color: #1a1c1a;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 27.2px;
+
+      span {
+        display: block;
+        margin-left: 16px;
+      }
+    }
+
+    .uniport-mapping {
+      span {
+        display: block;
+        margin-left: 16px;
+      }
+    }
+  }
+
+  .vf-button--search-pdbe {
+    margin: 12px auto 0;
+    display: block;
+    padding: 8px 16px;
+  }
+
+  .ligand-row-card {
+    display: flex;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgb(0 0 0 / 12%);
+
+    .image-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      img {
+        width: 80px;
+        height: 80px;
+        aspect-ratio: 1/1;
+      }
+
+      p.annotation {
+        color: #1a1c1a;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 16.5px;
+        background: #e4e4e4;
+        padding: 2px;
+      }
+    }
+
+    .card-info {
+      .card-title {
+        color: #1a1c1a;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 27.2px;
+      }
+
+      .card-name {
+        color: #1a1c1a;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 22.4px;
+      }
+    }
+  }
+
+  .related-databases {
+    margin-bottom: 48px;
+
+    .info {
+      display: flex;
+      align-items: start;
+      gap: 8px;
+      margin-bottom: 12px;
+
+      &__title {
+        color: #1a1c1a;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 27.2px;
+        width: 129px;
+        min-width: 129px;
+        max-width: 129px;
+      }
+
+      &__content {
+        color: #1a1c1a;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 27.2px;
+      }
+    }
+  }
 }

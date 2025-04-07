@@ -4,6 +4,7 @@ import { MbOverviewTabComponent } from '../mb-overview-tab/mb-overview-tab.compo
 import { MbMolstarTabComponent } from '../mb-molstar-tab/mb-molstar-tab.component';
 import { MbCitationTabComponent } from '../mb-citation-tab/mb-citation-tab.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MainDataProcessingFacade } from '../../main/data-processing.facade';
 
 export enum MobileTabNames {
   Overview = 'overview',
@@ -22,6 +23,7 @@ type MobileTabName = 'overview' | 'molstar' | 'citation';
 export class MobileMainComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly dataProcessing = inject(MainDataProcessingFacade);
 
   public activeTab = signal<string>('overview');
 
@@ -47,6 +49,7 @@ export class MobileMainComponent {
       const tabId = params['activeTab'];
       this.selectFooterTab(tabId);
     });
+    // this.dataProcessing.processInteractiveTablesData();
   }
 
   public selectFooterTab(tabId: MobileTabName) {

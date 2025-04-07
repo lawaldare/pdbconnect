@@ -1,24 +1,202 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, DestroyRef, HostListener, inject, linkedSignal, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { UtilService } from '@pdbc/core';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
+import { ComponentCommunicationService } from '../../../services/component-comm.service';
+import { MainDataProcessingFacade } from '../../main/data-processing.facade';
+import {
+  AssembliesRowData,
+  LigandsRowData,
+  MacromoleculesRowData,
+  TableFilter,
+} from '../../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { DataToTable } from '../../../components/shared/interactive-tables/data-processing/abstract-base-row-class';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { combineLatest, filter, map } from 'rxjs';
+import { CitationDetail } from '../../../data-models/publication.model';
+import { StrucQualityGradientsComponent } from '../../../components/shared/struc-quality-gradients/struc-quality-gradients.component';
+import { MappedResidue } from '../../../components/shared/details-dashboard/details-dashboard.component';
+import { DetailsDashboardFacade } from '../../../components/shared/details-dashboard/details-dashboard.facade';
+import { NavigationLink } from '../mb-citation-tab/mb-citation-tab.component';
 
 @Component({
   selector: 'pdbc-mb-overview-tab',
-  imports: [CommonModule],
+  imports: [CommonModule, NgxSkeletonLoaderModule, StrucQualityGradientsComponent],
   templateUrl: './mb-overview-tab.component.html',
-  styleUrl: './mb-overview-tab.component.scss',
+  styleUrls: ['../mb-citation-tab/mb-citation-tab.component.scss', './mb-overview-tab.component.scss'],
 })
-export class MbOverviewTabComponent {
+export class MbOverviewTabComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly util = inject(UtilService);
+  public readonly signals = inject(ComponentCommunicationService);
+  public readonly dataProcessing = inject(MainDataProcessingFacade);
+  private readonly destroyRef = inject(DestroyRef);
+  public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
 
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
-  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly organismScientificNames = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
-  public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
   public readonly qualityScores = toSignal(this.globalStore.select(EntrySelectors.summaryQualityScores));
+  public readonly resolutionValues = toSignal(this.globalStore.select(EntrySelectors.resolutionValues));
+  public readonly experimentalMethod = toSignal(this.globalStore.select(EntrySelectors.experimentalMethod));
+  public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
+
+  public readonly macromoleculeInitialCount = signal<number>(5);
+  public readonly ligandInitialCount = signal<number>(5);
+
+  public readonly tabDataLoaded = computed(() => {
+    const isLoaded = this.dataProcessing.tabDataLoaded();
+    return isLoaded;
+  });
+
+  public readonly miniFilters = computed(() => {
+    const isLoaded = this.dataProcessing.tabDataLoaded();
+    if (isLoaded) {
+      const ligandTableData = this.signals.getTabData('Ligands');
+      const macromoleculeTableData = this.signals.getTabData('Macromolecules');
+      return [
+        ...macromoleculeTableData.tableFilters().filter((f) => !f.description.includes('All')),
+        ...ligandTableData.tableFilters().filter((f) => !f.description.includes('All')),
+      ];
+    }
+    return [];
+  });
+
+  public readonly assemblyTableRows = computed(() => {
+    const isLoaded = this.dataProcessing.tabDataLoaded();
+    if (isLoaded) {
+      const tabData = this.signals.getTabData('Assemblies');
+      return tabData.tableRows() as AssembliesRowData[];
+    }
+    return [];
+  });
+
+  public readonly macromoleculeTableRows = computed(() => {
+    const isLoaded = this.dataProcessing.tabDataLoaded();
+    if (isLoaded) {
+      const tabData = this.signals.getTabData('Macromolecules');
+      const datum = tabData.tableRows() as MacromoleculesRowData[];
+      const mappedDatum = datum.map((data) => {
+        return {
+          ...data,
+          mappedResidues: this.detailsDashboardFacade.transformCoverageData(data['residues']),
+        };
+      });
+      return mappedDatum;
+    }
+    return [];
+  });
+
+  public readonly ligandTableRows = computed(() => {
+    const isLoaded = this.dataProcessing.tabDataLoaded();
+    if (isLoaded) {
+      const tabData = this.signals.getTabData('Ligands');
+      return tabData.tableRows() as LigandsRowData[];
+    }
+    return [];
+  });
+
+  public bestResidues = computed(() => {
+    const isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
+    const filteredIsoformsMapping: any[] = [];
+
+    isoformsMappingKeys.forEach((uniprot: string) => {
+      if (uniprot.indexOf('-') !== -1) {
+        filteredIsoformsMapping.push({ ...this.isoformsMapping()?.[uniprot], uniprot });
+      }
+    });
+
+    return filteredIsoformsMapping;
+  });
+
+  public readonly entryId = signal<string>('');
+  public readonly primaryPublication = signal<CitationDetail>({} as CitationDetail);
+  public relatedEntries = signal<string[]>([]);
+  public residues = signal<MappedResidue[]>([]);
+
+  public isFullLinksDisplayed = signal<boolean>(false);
+  public currentNavigationLink = signal<NavigationLink>({ id: 'structure-overview', title: 'Structure overview' });
+  public readonly navigationLinks = [
+    { id: 'structure-overview', title: 'Structure overview' },
+    { id: 'primary-publication', title: 'Primary publication' },
+    { id: 'model-quality-summary', title: 'PDB model quality summary' },
+    { id: 'assembly', title: 'Assembly (preferred)' },
+    { id: 'macromolecules', title: 'Macromolecules' },
+    { id: 'ligands-and-modifications', title: 'Ligands and modifications' },
+    { id: 'related-databases', title: 'Related databases and links' },
+  ];
+
+  @HostListener('window:scroll', [])
+  onScroll() {
+    this.navigationLinks.forEach((section) => {
+      const element = document.getElementById(section.id);
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        if (rect.top <= 150 && rect.bottom >= 150) {
+          this.currentNavigationLink.set(section);
+        }
+      }
+    });
+  }
+
+  public toggleNavigationLinks(): void {
+    this.isFullLinksDisplayed.update((value) => !value);
+  }
+
+  public scrollToSection(event: Event, sectionId: string): void {
+    event.preventDefault();
+    this.isFullLinksDisplayed.set(false);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const offsetTop = element.offsetTop;
+      window.scrollTo({ top: offsetTop - 350, behavior: 'smooth' });
+    }
+  }
+
+  public toggleMacromoleculeList(): void {
+    this.macromoleculeInitialCount.update((prev) => (prev === 5 ? this.macromoleculeTableRows().length : 5));
+  }
+
+  public toggleLigandList(): void {
+    this.ligandInitialCount.update((prev) => (prev === 5 ? this.ligandTableRows().length : 5));
+  }
+
+  ngOnInit(): void {
+    combineLatest([
+      this.globalStore.select(EntrySelectors.primaryPublication).pipe(filter(Boolean)),
+      this.globalStore.select(EntrySelectors.entryId).pipe(filter(Boolean)),
+    ])
+      .pipe(
+        map(([primaryPublication, entryId]) => {
+          this.primaryPublication.set(primaryPublication);
+          this.entryId.set(entryId);
+
+          if (this.primaryPublication() !== undefined && this.primaryPublication().associated_entries) {
+            this.setRelatedEntries(this.primaryPublication()?.associated_entries ?? '');
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
+  }
+
+  private updateFilters(data: DataToTable): TableFilter[] {
+    return data.tableFilters().map((filter: any) => {
+      return {
+        types: filter.types,
+        description: filter.description.includes('All') ? 'All' : filter.description,
+      };
+    });
+  }
+
+  public generateOrganismSearchUrl(term: string): string {
+    return this.util.generateQueryURL(term, 'q_organism_name');
+  }
+
+  private setRelatedEntries(entries: string): void {
+    const mappedEntries = entries?.split(',').map((entry) => entry.trim()) ?? null;
+    this.relatedEntries.update(() => mappedEntries);
+  }
 }

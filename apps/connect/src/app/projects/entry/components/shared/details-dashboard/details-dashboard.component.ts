@@ -50,13 +50,6 @@ export interface SequenceDetail {
   }[];
 }
 
-export interface Residue {
-  uniprot: string;
-  range: string;
-  coverage: string;
-  chainId: string;
-}
-
 export interface MappedResidue {
   range: string[];
   coverage: string;
@@ -372,7 +365,7 @@ export class DetailsDashboardComponent implements OnInit {
       this.currentRowDatum = datum;
 
       if (this.tabName() === 'Macromolecules') {
-        this.residues.update(() => this.transformCoverageData(this.currentRowDatum['residues']));
+        this.residues.update(() => this.detailsDashboardFacade.transformCoverageData(this.currentRowDatum['residues']));
       }
 
       // before rendering molstar we get the singleton molstar tab instance from the template (this avoids memory leaks)
@@ -386,34 +379,6 @@ export class DetailsDashboardComponent implements OnInit {
     } else {
       await this.sendMolstarViewerToParent();
     }
-  }
-
-  private transformCoverageData(data: Residue[]) {
-    const result = [];
-
-    const groupedData: Record<string, any> = {};
-
-    data.forEach((entry) => {
-      const { uniprot, chainId, coverage, range } = entry;
-
-      if (!groupedData[uniprot]) {
-        groupedData[uniprot] = {
-          chainId,
-          coverage,
-          uniprot,
-          open: false,
-          range: [],
-        };
-      }
-
-      groupedData[uniprot].range.push(range);
-    });
-
-    for (const key in groupedData) {
-      result.push(groupedData[key]);
-    }
-
-    return result;
   }
 
   public openDialog(type: string) {

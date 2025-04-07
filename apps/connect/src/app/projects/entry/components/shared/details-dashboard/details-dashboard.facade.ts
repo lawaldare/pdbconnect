@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
-import { BoundsByEntityId, SequenceDetail } from './details-dashboard.component';
-import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../interactive-tables/data-models-and-definitions/row-and-table.model';
+import { BoundsByEntityId, MappedResidue, SequenceDetail } from './details-dashboard.component';
+import {
+  DomainsRowData,
+  LigandsRowData,
+  MacromoleculesResidueRanges,
+  MacromoleculesRowData,
+} from '../interactive-tables/data-models-and-definitions/row-and-table.model';
 import { Molecule } from '../../../data-models/molecule.model';
 import { MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
 
@@ -123,5 +128,33 @@ export class DetailsDashboardFacade {
       });
     }
     return sequenceDetails;
+  }
+
+  public transformCoverageData(data: MacromoleculesResidueRanges[]): MappedResidue[] {
+    const result = [];
+
+    const groupedData: Record<string, any> = {};
+
+    data.forEach((entry) => {
+      const { uniprot, chainId, coverage, range } = entry;
+
+      if (!groupedData[uniprot]) {
+        groupedData[uniprot] = {
+          chainId,
+          coverage,
+          uniprot,
+          open: false,
+          range: [],
+        };
+      }
+
+      groupedData[uniprot].range.push(range);
+    });
+
+    for (const key in groupedData) {
+      result.push(groupedData[key]);
+    }
+
+    return result;
   }
 }
