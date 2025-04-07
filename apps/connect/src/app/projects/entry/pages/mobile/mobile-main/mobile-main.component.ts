@@ -46,7 +46,7 @@ export class MobileMainComponent {
 
   constructor() {
     this.route.queryParams.subscribe((params) => {
-      const tabId = params['activeTab'];
+      const tabId = params['activeTab'] ?? MobileTabNames.Overview;
       this.selectFooterTab(tabId);
     });
     // this.dataProcessing.processInteractiveTablesData();
