@@ -52,10 +52,22 @@ export function processEntityConservationDataFromAPI(apiData: APIConservationDat
 
 export function processEntityConservationLineChartDataFromAPI(apiData: APIConservationData): NightingaleLineData[] {
   const maxConservationScore = Math.max(...apiData.data.conservation_score);
+  const seqLength = apiData.length;
 
-  const valuesList = apiData.data.conservation_score.map((eachScore, idx) => {
-    return { position: idx + 1, value: eachScore };
-  });
+  const valuesList: {
+    position: number;
+    value: number;
+  }[] = [];
+
+  for (let resId = 1; resId <= seqLength; resId++) {
+    const idxOfResId = apiData.data.index.indexOf(resId);
+    if (idxOfResId === -1) {
+      valuesList.push({ position: resId, value: 0 });
+    } else {
+      const score = apiData.data.conservation_score[idxOfResId];
+      valuesList.push({ position: resId, value: score });
+    }
+  }
 
   const lineData: NightingaleLineData = {
     name: 'conservationScore',
