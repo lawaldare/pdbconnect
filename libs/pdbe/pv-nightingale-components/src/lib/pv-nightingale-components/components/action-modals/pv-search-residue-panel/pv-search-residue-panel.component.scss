@@ -1,12 +1,11 @@
 .search-residue-panel {
   position: absolute;
-  z-index: 1005;
+  z-index: 4;
   background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 12px;
   width: 420px;
-  height: 380px;
   max-height: 400px;
   overflow-y: auto;
   font-family: 'IBM Plex Sans', Arial, sans-serif;
