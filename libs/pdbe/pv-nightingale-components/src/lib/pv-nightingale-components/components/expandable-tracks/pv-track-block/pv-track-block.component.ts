@@ -121,9 +121,11 @@ export class TrackBlockComponent implements OnDestroy {
    * (Nightingale constraint see: https://www.npmjs.com/package/@nightingale-elements/nightingale-scrollbox implementation)
    */
   generateSubTrackCanvasString(trackName: string, index: number, subtrack: NightingaleFeature): string {
+    const subtrackLabel = (subtrack as any).label;
+    const subtrackTitle = subtrackLabel ? subtrackLabel : subtrack.accession;
     return `
         <div class="pv-track-row non-header-track">
-          <div class="pv-track-label-col hoverable subtrack dynamic-track" name="${trackName}-${subtrack.accession}"></div>
+          <div class="pv-track-label-col hoverable subtrack dynamic-track" name="${trackName}-${subtrackTitle}"></div>
           <div class="pv-track-container">
             <nightingale-track-canvas
               id="cv-${trackName}-subtrack-${index}"
