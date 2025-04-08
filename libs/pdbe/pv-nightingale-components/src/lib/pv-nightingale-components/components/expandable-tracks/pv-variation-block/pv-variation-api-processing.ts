@@ -2,22 +2,23 @@ import { VariationData, VariationDatum } from '@nightingale-elements/nightingale
 import { APIVariant, APIVariationData } from '../../../models/pv-api-variation-track-data.model';
 import { LineData as NightingaleLineData } from '@nightingale-elements/nightingale-linegraph-track';
 
-export function filterEntityVariationData(apiData: APIVariationData, entryId?: string) {
+export function filterEntityVariationData(apiData: APIVariationData, chainId?: string) {
   const filteredAPIVariants: APIVariant[] = [];
   const parsedVariants: string[] = [];
   for (const apiVariant of apiData.variants) {
-    // filter by other entries
-    const unrelatedVariant = !apiVariant.accession!.includes(entryId || '');
-    if (entryId && unrelatedVariant) continue;
+    // filter by other chains
+    if (chainId && apiVariant.pdbChain && apiVariant.pdbChain !== chainId) continue;
 
     // filter by unique variant accession id
-    if (parsedVariants.indexOf(apiVariant.accession!) > -1) continue;
-    parsedVariants.push(apiVariant.accession!);
+    const accessionId = apiVariant.pdbChain ? `${apiVariant.accession!}_${apiVariant.pdbChain}` : apiVariant.accession!;
+    if (parsedVariants.indexOf(accessionId) > -1) continue;
+    parsedVariants.push(accessionId);
 
     filteredAPIVariants.push(apiVariant);
   }
-  apiData.variants = filteredAPIVariants;
-  return apiData;
+  const newApiData = JSON.parse(JSON.stringify(apiData));
+  newApiData.variants = filteredAPIVariants;
+  return newApiData;
 }
 
 export function processEntityVariationDataFromAPI(apiData: APIVariationData, keywordsToRemove: string[]): VariationData {
@@ -77,6 +78,8 @@ export function processEntityVariationDataFromAPI(apiData: APIVariationData, key
     };
     convertedData.variants.push(convertedVariant);
   }
+  console.log('convertedData');
+  console.log(convertedData);
   return convertedData;
 }
 

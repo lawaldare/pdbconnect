@@ -32,6 +32,7 @@ export interface APIVariant {
   variant?: string;
   xrefNames?: string[];
   keywords?: string[];
+  pdbChain?: string;
   clinicalSignificances?: string;
   polyphenScore?: number;
   siftScore?: number;

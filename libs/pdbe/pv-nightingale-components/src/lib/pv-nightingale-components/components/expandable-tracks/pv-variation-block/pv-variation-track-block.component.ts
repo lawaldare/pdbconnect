@@ -1,11 +1,11 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, Input, Signal, WritableSignal, computed, signal } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, Input, Signal, WritableSignal, computed, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCheckbox } from '@angular/material/checkbox';
 
 import '@nightingale-elements/nightingale-variation';
 import '@nightingale-elements/nightingale-linegraph-track';
 
-import { APIVariationData } from '../../../models/pv-api-variation-track-data.model';
+import { APIVariant, APIVariationData } from '../../../models/pv-api-variation-track-data.model';
 import { MaterialModule } from '@pdbc/core';
 import { filterEntityVariationData, processEntityVariationDataFromAPI, processEntityVariationLineChartDataFromAPI } from './pv-variation-api-processing';
 
@@ -38,7 +38,8 @@ const PDBE_VARIATION_PROVENANCE_FILTERS = [
     displayName: 'ClinVar reviewed',
   },
   {
-    keyword: 'LSS',
+    // keyword: 'LSS',
+    keyword: 'large_scale_studies',
     displayName: 'Large scale studies',
   },
   {
@@ -86,7 +87,15 @@ export class VariationTrackBlockComponent {
   @Input({ required: true }) originalVariationData!: WritableSignal<APIVariationData | undefined>;
   @Input({ required: true }) sequenceLength!: number;
   @Input({ required: true }) selectionHighlight!: string;
-  @Input() accessionId?: string;
+  private readonly _chainId = signal<string | undefined>(undefined);
+
+  @Input()
+  set chainId(value: string | undefined) {
+    this._chainId.set(value);
+  }
+  get chainId(): string | undefined {
+    return this._chainId();
+  }
   @Input() isEntryData = false;
 
   // Local internal state
@@ -96,6 +105,16 @@ export class VariationTrackBlockComponent {
   provenanceFilters = PDBE_VARIATION_PROVENANCE_FILTERS;
 
   private currentKeywordFilters = signal<string[]>([]);
+
+  constructor() {
+    effect(() => {
+      const currentChain = this._chainId();
+      console.log('currentChain', currentChain);
+      if (this._chainId()) {
+        console.log('🔁 chainId changed to:', currentChain);
+      }
+    });
+  }
   /**
    * Computed angular signal for variationData
    * Updated when originalVariationData Input signal is true
@@ -104,8 +123,10 @@ export class VariationTrackBlockComponent {
    */
   readonly uniqueApiVariationData = computed(() => {
     const data = this.originalVariationData();
+    const currentChain = this._chainId();
     if (!data || !this.isEntryData) return data;
-    return filterEntityVariationData(data, this.accessionId);
+    console.log('[uniqueApiVariationData] triggered', { data, currentChain });
+    return filterEntityVariationData(data, currentChain);
   });
 
   /**
@@ -119,8 +140,10 @@ export class VariationTrackBlockComponent {
    */
   readonly variationData = computed(() => {
     const data = this.uniqueApiVariationData();
+    const filters = this.currentKeywordFilters();
     if (!data || !this.isEntryData) return [];
-    return processEntityVariationDataFromAPI(data, this.currentKeywordFilters());
+    console.log('[variationData] triggered', { data, filters });
+    return processEntityVariationDataFromAPI(data, filters);
   });
 
   /**
@@ -134,8 +157,9 @@ export class VariationTrackBlockComponent {
    */
   readonly variationCountData = computed(() => {
     const data = this.uniqueApiVariationData();
+    const filters = this.currentKeywordFilters();
     if (!data || !this.isEntryData) return [];
-    return processEntityVariationLineChartDataFromAPI(data, this.currentKeywordFilters());
+    return processEntityVariationLineChartDataFromAPI(data, filters);
   });
 
   /**
@@ -157,7 +181,7 @@ export class VariationTrackBlockComponent {
   hasAnyVariantsForFilter(filterName: string): boolean {
     const data = this.uniqueApiVariationData();
     if (!data) return false;
-    return !data.variants.some((v) => v.keywords?.includes(filterName));
+    return !data.variants.some((v: APIVariant) => v.keywords?.includes(filterName));
   }
 
   /**
