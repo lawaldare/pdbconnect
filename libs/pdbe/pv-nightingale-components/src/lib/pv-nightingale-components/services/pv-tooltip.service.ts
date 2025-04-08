@@ -12,6 +12,7 @@ export class PvTooltipService {
   private pinnedTooltipFadeOutTimeout: number | null = null;
   private lastScrollTop = 0;
 
+  private relativeElement: HTMLElement | null = null;
   private container: HTMLElement | null = null;
   private scrollContainer: HTMLElement | null = null;
   private renderer!: Renderer2;
@@ -37,6 +38,13 @@ export class PvTooltipService {
     this.highlightService = highlightService;
   }
 
+  /**
+   * Sets the parent container element with position: relative
+   * @param container HTMLElement to serve as the tooltip container
+   */
+  setRelativeElement(relativeElement: HTMLElement) {
+    this.relativeElement = relativeElement;
+  }
   /**
    * Sets the parent container element where tooltips will be appended
    * @param container HTMLElement to serve as the tooltip container
@@ -64,7 +72,7 @@ export class PvTooltipService {
    * tooltips (see: showPinnedTooltip) are possible
    * @param coords Optional absolute screen coordinates for custom tooltip position
    */
-  showManualTooltip(target: HTMLElement, message: string, highlight: string, coords?: { x: number; y: number }) {
+  showManualTooltip(target: HTMLElement, message: string, highlight: string, coords: { x: number; y: number }) {
     if (!this.container) return;
     if (!this.tooltipElement) {
       this.tooltipElement = this.renderer.createElement('div');
@@ -82,9 +90,7 @@ export class PvTooltipService {
     this.tooltipElement!.innerHTML = message;
     this.tooltipElement!.style.opacity = '0';
 
-    const rect = target.getBoundingClientRect();
-    const coordX = coords ? coords.x + 2 : rect.left + window.scrollX + 2;
-    const coordY = coords ? coords.y + 2 : rect.bottom + window.scrollY + 2;
+    const { coordX, coordY } = this.getTooltipCoords(coords);
 
     Object.assign(this.tooltipElement!.style, {
       position: 'absolute',
@@ -132,7 +138,7 @@ export class PvTooltipService {
    * set in showManualTooltip
    * @param coords Optional custom coordinates for positioning
    */
-  showPinnedTooltip(target: HTMLElement, message: string, coords?: { x: number; y: number }) {
+  showPinnedTooltip(target: HTMLElement, message: string, coords: { x: number; y: number }) {
     if (!this.container) return;
     this.pinnedTooltipElement?.remove();
     if (this.pinnedTooltipFadeOutTimeout) {
@@ -149,9 +155,7 @@ export class PvTooltipService {
       ${message}
     `;
 
-    const rect = target.getBoundingClientRect();
-    const coordX = coords ? coords.x + 2 : rect.left + window.scrollX + 2;
-    const coordY = coords ? coords.y + 2 : rect.bottom + window.scrollY + 2;
+    const { coordX, coordY } = this.getTooltipCoords(coords);
 
     this.pinnedTooltipInitialTop = coordY;
     this.pinnedTooltipInitialLeft = coordX;
@@ -178,6 +182,29 @@ export class PvTooltipService {
       this.highlightService.createSelectionHighlight();
       this.highlightService.triggerDynamicFixedHighlight();
     }
+  }
+
+  /**
+   * Refactored tooltip positioning function for both pinned and manual tooltip
+   * taking into account the 'left' and 'top' positioning of the relative element
+   * where the absolute tooltips are to be shown
+   * @param coords mouse x and y coordinates for tooltip position to be calculated
+   * @returns {coordX: number, coordY: number} to applied to tooltip
+   */
+  private getTooltipCoords(coords: { x: number; y: number }) {
+    const hostRect = this.relativeElement!.getBoundingClientRect();
+
+    let coordX = coords.x + 2 - hostRect.left;
+    const coordY = coords.y + 2 - hostRect.top + 6;
+
+    const tooltipWidth = this.tooltipElement!.offsetWidth;
+    const containerWidth = this.scrollContainer!.clientWidth;
+
+    if (coordX + tooltipWidth > containerWidth) {
+      coordX = coordX - tooltipWidth - 10;
+    }
+
+    return { coordX, coordY };
   }
 
   /**

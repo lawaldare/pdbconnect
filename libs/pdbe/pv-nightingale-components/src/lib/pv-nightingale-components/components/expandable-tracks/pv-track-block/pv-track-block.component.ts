@@ -17,6 +17,7 @@ import { PvFixedHighlightService } from '../../../services/pv-fixed-highlight.se
   standalone: true,
   imports: [CommonModule],
   templateUrl: './pv-track-block.component.html',
+  styleUrl: './pv-track-block.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class TrackBlockComponent implements OnDestroy {
@@ -36,6 +37,17 @@ export class TrackBlockComponent implements OnDestroy {
 
   readonly isExpanded = signal(false);
   readonly scrollboxTopOffset = signal('0px');
+
+  private latestMouseX = 0;
+  private latestMouseY = 0;
+  // z-index: 3;
+  // background: white;
+  constructor() {
+    document.addEventListener('mousemove', (event: MouseEvent) => {
+      this.latestMouseX = event.clientX;
+      this.latestMouseY = event.clientY;
+    });
+  }
 
   /**
    * Toggle expansion state of the track block.
@@ -112,19 +124,20 @@ export class TrackBlockComponent implements OnDestroy {
     return `
         <div class="pv-track-row non-header-track">
           <div class="pv-track-label-col hoverable subtrack dynamic-track" name="${trackName}-${subtrack.accession}"></div>
-          <nightingale-track-canvas
-            id="cv-${trackName}-subtrack-${index}"
-            class="with-fixed-highlight"
-            length="${this.sequenceLength}"
-            width="581"
-            height="40"
-            margin-left="0"
-            margin-right="10"
-            layout="non-overlapping"
-            highlight-color="#FFEB3B66"
-            highlight-event="onmouseover"
-            use-ctrl-to-zoom
-          ></nightingale-track-canvas>
+          <div class="pv-track-container">
+            <nightingale-track-canvas
+              id="cv-${trackName}-subtrack-${index}"
+              class="with-fixed-highlight"
+              length="${this.sequenceLength}"
+              height="40"
+              margin-left="0"
+              margin-right="10"
+              layout="non-overlapping"
+              highlight-color="#FFEB3B66"
+              highlight-event="onmouseover"
+              use-ctrl-to-zoom
+            ></nightingale-track-canvas>
+          </div>
         </div>
       `;
   }
@@ -177,7 +190,7 @@ export class TrackBlockComponent implements OnDestroy {
     const tooltipContent = this.isCustomData ? `Custom data track: ${nameAttribute.split(`${trackName}-`)[1]}` : this.tooltips[nameAttribute];
 
     this.renderer.listen(img, 'mouseenter', () => {
-      this.tooltipService.showManualTooltip(img, tooltipContent, '');
+      this.tooltipService.showManualTooltip(img, tooltipContent, '', { x: this.latestMouseX, y: this.latestMouseY });
     });
 
     this.renderer.appendChild(span, img);
