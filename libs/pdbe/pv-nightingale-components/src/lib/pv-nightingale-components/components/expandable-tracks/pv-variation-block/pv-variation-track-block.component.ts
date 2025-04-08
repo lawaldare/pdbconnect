@@ -7,7 +7,7 @@ import '@nightingale-elements/nightingale-linegraph-track';
 
 import { APIVariationData } from '../../../models/pv-api-variation-track-data.model';
 import { MaterialModule } from '@pdbc/core';
-import { processEntityVariationDataFromAPI, processEntityVariationLineChartDataFromAPI } from './pv-variation-api-processing';
+import { filterEntityVariationData, processEntityVariationDataFromAPI, processEntityVariationLineChartDataFromAPI } from './pv-variation-api-processing';
 
 const PDBE_VARIATION_CONSEQUENCE_FILTERS = [
   {
@@ -16,7 +16,7 @@ const PDBE_VARIATION_CONSEQUENCE_FILTERS = [
   },
   {
     keyword: 'predicted',
-    displayName: 'Predicted deleterious/benign',
+    displayName: 'Predicted deleterious or benign',
   },
   {
     keyword: 'likely_benign',
@@ -86,6 +86,7 @@ export class VariationTrackBlockComponent {
   @Input({ required: true }) originalVariationData!: WritableSignal<APIVariationData | undefined>;
   @Input({ required: true }) sequenceLength!: number;
   @Input({ required: true }) selectionHighlight!: string;
+  @Input() accessionId?: string;
   @Input() isEntryData = false;
 
   // Local internal state
@@ -95,6 +96,17 @@ export class VariationTrackBlockComponent {
   provenanceFilters = PDBE_VARIATION_PROVENANCE_FILTERS;
 
   private currentKeywordFilters = signal<string[]>([]);
+  /**
+   * Computed angular signal for variationData
+   * Updated when originalVariationData Input signal is true
+   *
+   * Filters variation data for PDBe Entries with unique variant accessions
+   */
+  readonly uniqueApiVariationData = computed(() => {
+    const data = this.originalVariationData();
+    if (!data || !this.isEntryData) return data;
+    return filterEntityVariationData(data, this.accessionId);
+  });
 
   /**
    * Computed angular signal for variationData
@@ -106,7 +118,7 @@ export class VariationTrackBlockComponent {
    *
    */
   readonly variationData = computed(() => {
-    const data = this.originalVariationData();
+    const data = this.uniqueApiVariationData();
     if (!data || !this.isEntryData) return [];
     return processEntityVariationDataFromAPI(data, this.currentKeywordFilters());
   });
@@ -121,7 +133,7 @@ export class VariationTrackBlockComponent {
    *
    */
   readonly variationCountData = computed(() => {
-    const data = this.originalVariationData();
+    const data = this.uniqueApiVariationData();
     if (!data || !this.isEntryData) return [];
     return processEntityVariationLineChartDataFromAPI(data, this.currentKeywordFilters());
   });
@@ -143,7 +155,7 @@ export class VariationTrackBlockComponent {
    * @returns
    */
   hasAnyVariantsForFilter(filterName: string): boolean {
-    const data = this.originalVariationData();
+    const data = this.uniqueApiVariationData();
     if (!data) return false;
     return !data.variants.some((v) => v.keywords?.includes(filterName));
   }

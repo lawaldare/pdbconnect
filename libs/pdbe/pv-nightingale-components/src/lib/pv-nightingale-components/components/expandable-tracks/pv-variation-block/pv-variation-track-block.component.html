@@ -8,7 +8,6 @@
     <div class="pv-track-container">
       <nightingale-linegraph-track
         [data]="variationCountData()"
-        width="581"
         height="50"
         [length]="sequenceLength"
         margin-left="0"
@@ -46,8 +45,7 @@
     <div class="pv-track-container">
       <nightingale-variation
         [data]="variationData()"
-        width="581"
-        row-height="20"
+        row-height="24"
         [length]="sequenceLength"
         highlight-color="#FFEB3B66"
         margin-left="0"
@@ -55,6 +53,7 @@
         [fixedHighlight]="selectionHighlight"
         use-ctrl-to-zoom
       ></nightingale-variation>
+      <div style="margin-bottom: 150px"></div>
     </div>
   </div>
 </div>

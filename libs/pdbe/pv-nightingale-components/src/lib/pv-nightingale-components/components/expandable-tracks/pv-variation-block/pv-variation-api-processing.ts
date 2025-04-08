@@ -1,6 +1,24 @@
 import { VariationData, VariationDatum } from '@nightingale-elements/nightingale-variation';
-import { APIVariationData } from '../../../models/pv-api-variation-track-data.model';
+import { APIVariant, APIVariationData } from '../../../models/pv-api-variation-track-data.model';
 import { LineData as NightingaleLineData } from '@nightingale-elements/nightingale-linegraph-track';
+
+export function filterEntityVariationData(apiData: APIVariationData, entryId?: string) {
+  const filteredAPIVariants: APIVariant[] = [];
+  const parsedVariants: string[] = [];
+  for (const apiVariant of apiData.variants) {
+    // filter by other entries
+    const unrelatedVariant = !apiVariant.accession!.includes(entryId || '');
+    if (entryId && unrelatedVariant) continue;
+
+    // filter by unique variant accession id
+    if (parsedVariants.indexOf(apiVariant.accession!) > -1) continue;
+    parsedVariants.push(apiVariant.accession!);
+
+    filteredAPIVariants.push(apiVariant);
+  }
+  apiData.variants = filteredAPIVariants;
+  return apiData;
+}
 
 export function processEntityVariationDataFromAPI(apiData: APIVariationData, keywordsToRemove: string[]): VariationData {
   const convertedData: VariationData = {
