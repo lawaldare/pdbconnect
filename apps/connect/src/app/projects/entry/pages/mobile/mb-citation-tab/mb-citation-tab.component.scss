@@ -91,11 +91,37 @@ main {
     font-weight: 500;
     line-height: 27.2px;
     margin-top: 12px;
+
+    &.figures {
+      margin-bottom: 12px;
+    }
   }
 
   article {
-    margin: 0 auto;
-    width: 261px;
-    height: 308px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    figure {
+      width: 261px;
+    }
+
+    span {
+      color: #1a1c1a;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 27.2px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+  }
+
+  span.related-entry-toggle {
+    color: #3b6fb6;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 27.2px;
+    display: block;
+    cursor: pointer;
   }
 }

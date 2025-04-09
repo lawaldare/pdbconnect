@@ -50,6 +50,10 @@ export class MbCitationTabComponent implements OnInit {
   public currentNavigationLink = signal<NavigationLink>({ id: 'primary-publication', title: 'Primary publication' });
   public navigationLinks: NavigationLink[] = [];
 
+  public imagesLink: { title: string; link: string }[] = [];
+
+  public initialCount = signal<number>(5);
+
   @HostListener('window:scroll', [])
   onScroll() {
     this.navigationLinks.forEach((section) => {
@@ -92,6 +96,10 @@ export class MbCitationTabComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+  }
+
+  public toggleRelatedEntriesList(): void {
+    this.initialCount.update((prev) => (prev === 5 ? this.relatedEntries().length : 5));
   }
 
   private setNavigationLinks(): void {
@@ -151,7 +159,6 @@ export class MbCitationTabComponent implements OnInit {
         (error) => {
           if (error.status === 200) {
             this.imageXMLText.set(error.error.text);
-            console.log(this.imageXMLText());
             this.parseAndRenderXML();
           } else {
             this.imageXMLText.set('');
@@ -163,30 +170,28 @@ export class MbCitationTabComponent implements OnInit {
   private parseAndRenderXML() {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(this.imageXMLText(), 'application/xml');
-    const figElement = xmlDoc.querySelector('fig');
+    const figElements = xmlDoc.querySelectorAll('fig');
 
-    if (figElement) {
-      this.renderFigElement(figElement);
-    }
-  }
+    const results: { link: string; title: string }[] = [];
 
-  private renderFigElement(figElement: Element) {
-    const container = this.imageContainer.nativeElement;
-    const figure = this.renderer.createElement('figure');
-    this.renderer.setAttribute(figure, 'id', figElement.getAttribute('id') || '');
-    this.renderer.appendChild(container, figure);
+    figElements.forEach((figElement) => {
+      const graphic = figElement.querySelector('graphic');
+      const element: { link: string; title: string } = { link: '', title: '' };
+      if (graphic) {
+        const link = 'https://europepmc.org' + graphic.getAttribute('href') || '';
+        element.link = link;
+      }
+      const title = figElement.querySelector('title');
+      if (title) {
+        const titleText = title.textContent;
+        element.title = titleText ?? '';
+      }
+      results.push(element);
+    });
 
-    const graphic = figElement.querySelector('graphic');
-    if (graphic) {
-      const img = this.renderer.createElement('img');
-      const cover = this.renderer.createElement('div');
-      this.renderer.addClass(cover, 'image-cover');
-      const href = 'https://europepmc.org' + graphic.getAttribute('href') || '';
-      this.renderer.setAttribute(img, 'src', href);
-      this.renderer.setAttribute(img, 'alt', figElement.querySelector('name')?.textContent || '');
-      this.renderer.appendChild(cover, img);
-      this.renderer.appendChild(figure, cover);
-    }
+    this.imagesLink = [...new Set(results)];
+
+    console.log(this.imagesLink);
   }
 
   public scrollToSection(event: Event, sectionId: string): void {

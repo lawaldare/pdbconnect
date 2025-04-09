@@ -41,17 +41,28 @@
     <span class="pmid-title">DOI </span>
     <a [href]="'https://doi.org/' + primaryPublication().doi" target="_blank">{{ primaryPublication().doi }} </a>
   </div>
+  @if(relatedEntries().length){
   <div>
     <span class="pmid-title">Also associated with </span>
-    @for (entry of relatedEntries(); track entry; let islast = $last) {
+    @for (entry of relatedEntries().slice(0, initialCount()); track entry; let islast = $last) {
     <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + entry" target="_blank" class="row__right__link">{{ entry }} </a>{{ islast ? '' : ',' }} }
   </div>
-  @if(primaryPublication().abstract){ @let background = primaryPublication().abstract.background; @let unassigned = primaryPublication().abstract.unassigned; @let
+  @if(relatedEntries().length > 5){
+  <span role="button" class="related-entry-toggle" (click)="toggleRelatedEntriesList()">{{initialCount() > 5 ? 'Hide' : 'Show all'}} associated entries</span>
+  } } @if(primaryPublication().abstract){ @let background = primaryPublication().abstract.background; @let unassigned = primaryPublication().abstract.unassigned; @let
   output = background ? background : unassigned;
   <h4>Publication abstract</h4>
   <p class="background" [innerHTML]="output"></p>
   } @if(imageXMLText()){
-  <article #imageContainer></article>
+  <h4 class="figures">Publication figures</h4>
+  <article>
+    @for(link of imagesLink; track link; let index = $index){
+    <figure [id]="'Fig' + (index + 1)">
+      <img [src]="link.link" alt="" />
+    </figure>
+    <span class="figure-caption">{{link.title}}</span>
+    }
+  </article>
   } }@else {
   <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
 
@@ -60,7 +71,7 @@
   <!-- Articles citing the PDB entry -->
 
   @if(articlesCiting().cited_by){ @let articles = articlesCiting().cited_by.Articles; @if(articles.length > 0){
-  <h3 id="articles-cited">Articles citing the PDB entry</h3>
+  <h3 id="articles-cited">Articles citing the PDB entry ({{articles.length}})</h3>
   <ol>
     @if(articles.length > 5){ @let count = isArticlesCitingMuch() ? articles.length : 5; @for(article of articles.slice(0,count); track article.pubmed_id){
     <pdbc-citation-article [article]="article"></pdbc-citation-article>
@@ -75,7 +86,7 @@
   <!-- Reviews citing the PDB entry -->
 
   @if(articlesCiting().cited_by){ @let reviews = articlesCiting().cited_by.Reviews; @if(reviews.length > 0){
-  <h3 id="reviews-cited">Reviews citing the PDB entry</h3>
+  <h3 id="reviews-cited">Reviews citing the PDB entry ({{reviews.length}})</h3>
   <ol>
     @if(reviews.length > 5){ @let count = isReviewsCitingMuch() ? reviews.length : 5; @for(article of reviews.slice(0,count); track article.pubmed_id){
     <pdbc-citation-article [article]="article"></pdbc-citation-article>
@@ -90,7 +101,7 @@
   <!-- Articles not cited! -->
 
   @if(articlesCiting().appears_without_citation){ @let articles = articlesCiting().appears_without_citation.Articles; @if(articles.length > 0){
-  <h3 id="articles-not-cited">Articles - {{ this.entryId() }} mentioned but not cited</h3>
+  <h3 id="articles-not-cited">Articles - {{ this.entryId() }} mentioned but not cited ({{articles.length}})</h3>
   <ol>
     @if(articles.length > 5){ @let count = isArticlesNotCitedMuch() ? articles.length : 5; @for(article of articles.slice(0,count); track article.pubmed_id){
     <pdbc-citation-article [article]="article"></pdbc-citation-article>
@@ -105,7 +116,7 @@
   <!-- Reviews not cited! -->
 
   @if(articlesCiting().cited_by){ @let reviews = articlesCiting().appears_without_citation.Reviews; @if(reviews.length > 0){
-  <h3 id="reviews-not-cited">Reviews - {{ this.entryId() }} mentioned but not cited</h3>
+  <h3 id="reviews-not-cited">Reviews - {{ this.entryId() }} mentioned but not cited ({{reviews.length}})</h3>
   <ol>
     @if(reviews.length > 5){ @let count = isReviewsNotCitedMuch() ? reviews.length : 5; @for(article of reviews.slice(0,count); track article.pubmed_id){
     <pdbc-citation-article [article]="article"></pdbc-citation-article>
