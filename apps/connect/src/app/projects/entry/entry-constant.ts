@@ -181,6 +181,8 @@ export const resourceUrls: any = {
   Pfam: 'https://www.ebi.ac.uk/interpro/entry/pfam/',
 };
 
+export const handleBarSrc = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjE5Ij4KICAgIDxyZWN0IHg9IjEiIHk9IjAiIHdpZHRoPSI2cHgiIGhlaWdodD0iMThweCIgc3R5bGU9ImZpbGw6IGRhcmtncmV5OyBzdHJva2U6IGJsYWNrOyBzdHJva2Utd2lkdGg6IDFweDsiPjwvcmVjdD4KPC9zdmc+`;
+
 export type ApiDataItem =
   | 'summaryData'
   | 'macroMolecules'
@@ -258,3 +260,14 @@ export const COMPONENT_DEPENDENCIES: Record<string, ApiDataItem[]> = {
 export const INITIAL_API_STATUS = Object.fromEntries(
   (Object.keys(COMPONENT_DEPENDENCIES).flatMap((key) => COMPONENT_DEPENDENCIES[key]) as ApiDataItem[]).map((item) => [item, 'pending'])
 ) as Record<ApiDataItem, 'pending' | 'done'>;
+
+export const PAUL_TOL_COLORBLIND_SCALE = [
+  '#332288',
+  '#117733',
+  '#44AA99',
+  '#88CCEE',
+  '#DDCC77',
+  '#CC6677',
+  '#AA4499',
+  '#882255'
+];

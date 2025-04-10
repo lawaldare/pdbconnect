@@ -209,7 +209,14 @@
 <section class="chart-area" [class.collapsed]="signals.isSidebarCollapsed()">
   @if (hasProtvista) {
   <section class="protvista-container">
-    <div id="protvista-pdb-container" #protvistaContainer></div>
+    @if(entryId() && currentProtvistaEntity()) {
+    <pdbc-entry-pg-protvista
+      [entryId]="entryId()!"
+      [entityId]="currentProtvistaEntity()!"
+      [chainId]="currentProtvistaChain()!"
+      [externalInteractivity]="true"
+    ></pdbc-entry-pg-protvista>
+    }
   </section>
   }
   <section class="molstar-details-container">
@@ -284,7 +291,14 @@
 <section class="domain-charts">
   @if (hasProtvista) {
   <section class="protvista-container">
-    <div id="protvista-pdb-container" #protvistaContainer></div>
+    @if(entryId() && currentProtvistaEntity()) {
+    <pdbc-entry-pg-protvista
+      [entryId]="entryId()!"
+      [entityId]="currentProtvistaEntity()!"
+      [chainId]="currentProtvistaChain()!"
+      [externalInteractivity]="true"
+    ></pdbc-entry-pg-protvista>
+    }
   </section>
   }
   <section class="molstar-details-container">
