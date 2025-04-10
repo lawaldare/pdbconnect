@@ -3,13 +3,13 @@
     <form [formGroup]="form" (ngSubmit)="onSubmit(form)">
       <input type="text" class="input-field" formControlName="searchTerm" [placeholder]="uiSearchConfig.placeholderText" />
       <button class="vf-button vf-button--search-{{ buttonTheme }}">Explore</button>
-      <button class="vf-button vf-button--search-{{ buttonTheme }} mobile">
-        <i class="icon icon-common icon-search"></i>
-      </button>
       @if(form.controls.searchTerm.value){
       <i class="icon icon-common icon-times" (click)="clearForm()"></i>
       }
     </form>
+    <div class="mobile-form">
+      <input type="search" [formControl]="mobileSearchTerm" [placeholder]="uiSearchConfig.placeholderText" />
+    </div>
     <div class="result-container" [fxShow]="resultPanelOpen()" [ngStyle]="resultPanelHeight()" libClickOutside (clickOutside)="onClickedOutside()">
       <div fxLayout="row" fxLayout="row wrap" [fxLayoutAlign]="layoutAlign" style="height: 100%">
         @for(resultGroup of resultGroups; track resultGroup){
@@ -65,7 +65,7 @@
         }
       </div>
     </div>
-    <section>
+    <section class="chips">
       <div class="left">
         Examples: @for(id of uiSearchConfig.examples; track id){
         <a [ngClass]="chipBg" (click)="openID(id)">{{ id }}</a>

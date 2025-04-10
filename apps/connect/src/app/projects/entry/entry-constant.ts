@@ -13,6 +13,16 @@ export const pdbeLogoConfig = {
   menuHighlightColor: '#0a5032',
 };
 
+export const mobileHeaderConfig = {
+  backgroundColor: '#056643',
+  urls: [
+    { name: 'Home', path: 'https://www.ebi.ac.uk/pdbe/', openInNewTab: false },
+    { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
+    { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
+    { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training', openInNewTab: true },
+  ],
+};
+
 export const pdbeSearchConfig = {
   examples: ['1trn', '1cbs', '7v08', '4v99', '4aqd'],
   backgroundColor: '#007B53',

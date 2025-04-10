@@ -1,0 +1,16 @@
+<section [ngStyle]="{ 'background-color': headerConfig().backgroundColor }">
+  <div class="menu">
+    <img src="/assets/images/mobile/mobile-logo.svg" alt="logo" />
+    <pdb-search-app [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" />
+    <i class="icon icon-common icon-align-justify" (click)="showMobileMenu()"></i>
+  </div>
+  @if(areLinksShowed()){
+  <ul class="nav-links">
+    @for(link of headerConfig().urls; track link.name){
+    <li class="nav-link">
+      <a [href]="link.path" [target]="link.openInNewTab ? '_blank' : '_self'">{{ link.name }}</a>
+    </li>
+    }
+  </ul>
+  }
+</section>

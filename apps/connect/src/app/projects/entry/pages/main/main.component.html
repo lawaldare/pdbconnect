@@ -1,7 +1,6 @@
-<pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
-<!-- <pdbc-pdbe-header-search id="entry-search" [headerSearchConfig]="pdbeSearchConfig"></pdbc-pdbe-header-search> -->
-<pdb-search-app [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" />
 <div class="desktop-view">
+  <pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
+  <pdb-search-app [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" />
   @if (statusCode() === 'REL') {
   <section class="container">
     <pdbc-entry-page-header />
@@ -55,5 +54,6 @@
   }
 </div>
 <div class="mobile-view">
+  <lib-mobile-header [headerConfig]="mobileHeaderConfig" />
   <pdbc-mobile-main />
 </div>

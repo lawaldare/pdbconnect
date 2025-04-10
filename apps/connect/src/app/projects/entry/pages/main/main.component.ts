@@ -9,7 +9,7 @@ import { EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MaterialModule } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
-import { pdbeLogoConfig, pdbeSearchConfig } from '../../entry-constant';
+import { mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig } from '../../entry-constant';
 import { MainDataProcessingFacade } from './data-processing.facade';
 import { EntryStatus, StatusCode } from '../../data-models/status.model';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
@@ -28,6 +28,7 @@ import { ExperimentsValidationComponent } from '../../components/model-quality-t
 import { EntryPageHeaderComponent } from '../../components/entry-page-header/entry-page-header.component';
 import { environment } from '../../../../../environments/environment';
 import { MobileMainComponent } from '../mobile/mobile-main/mobile-main.component';
+import { MobileHeaderComponent } from '@pdbc/mobile-header';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -63,6 +64,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     EntryPageHeaderComponent,
     SearchAppComponent,
     MobileMainComponent,
+    MobileHeaderComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -79,6 +81,7 @@ export class EntryMainPageComponent implements OnInit {
 
   public readonly pdbeLogoConfig = pdbeLogoConfig;
   public readonly pdbeSearchConfig = pdbeSearchConfig;
+  public readonly mobileHeaderConfig = mobileHeaderConfig;
 
   public statusCode = signal<StatusCode>('INITIAL');
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
