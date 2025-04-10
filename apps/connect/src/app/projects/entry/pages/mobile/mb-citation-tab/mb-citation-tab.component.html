@@ -56,9 +56,7 @@
   output = background ? background : unassigned;
   <h4>Publication abstract</h4>
   <p class="background" [innerHTML]="output"></p>
-  }
-
-  <!-- @if(imageXMLText()){ -->
+  } @if(imageUrl()){
   <h4 class="figures">Publication figures</h4>
   <article>
     <figure [id]="'Fig1'">
@@ -66,10 +64,7 @@
     </figure>
   </article>
   <p class="figure-footer">Click on the image to see all figures and captions</p>
-
-  <!-- }  -->
-
-  }@else {
+  } }@else {
   <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
   }
 
