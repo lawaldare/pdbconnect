@@ -1,0 +1,79 @@
+/* ==========================================================================
+   STYLES NOTICE:
+
+   This stylesheet only contains container and layout styles specific to
+   the EntryPgProtvistaComponent.
+
+   Most Nightingale Web Component styles (tracks, tooltips, legends, etc.)
+   needed for this component are defined globally in
+   `/assets/entry-styles/new-protvista.scss`
+   because Nightingale is an external component
+
+   If you need to modify or inspect styles related to:
+   - Nightingale visual tracks (`<nightingale-track>`, etc.)
+   - Tooltips or pinned tooltip elements
+   - Track row layout or highlight behavior
+
+   !!!!!! Please look in: `/assets/entry-styles/new-protvista.scss` !!!!!!
+   ==========================================================================
+*/
+
+:host {
+  position: relative; /* Required for absolute children to position against it */
+  display: block;
+  max-height: inherit;
+  overflow: clip;
+}
+
+.elements-container {
+  width: 100%;
+  min-height: 480px;
+  max-height: 600px;
+  overflow-y: clip;
+
+  .always-on-top {
+    position: relative;
+    top: 0;
+  }
+
+  .scrollable {
+    // max-height: is calculated dynamically on .ts file;
+    overflow-y: auto;
+  }
+}
+
+.navigation-zoom-hint {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 4px;
+  z-index: 2;
+  background: #ffffff;
+  font-size: 13px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  height: 30px;
+  img {
+    scale: 0.9;
+    margin: 2px;
+  }
+  kbd {
+    line-height: 12px;
+    margin: 4px;
+  }
+}
+
+.waiting-txt {
+  position: absolute;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+.spinner {
+  margin-top: 4%;
+}

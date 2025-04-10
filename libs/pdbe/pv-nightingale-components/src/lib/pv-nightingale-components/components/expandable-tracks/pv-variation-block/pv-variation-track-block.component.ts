@@ -106,15 +106,6 @@ export class VariationTrackBlockComponent {
 
   private currentKeywordFilters = signal<string[]>([]);
 
-  constructor() {
-    effect(() => {
-      const currentChain = this._chainId();
-      console.log('currentChain', currentChain);
-      if (this._chainId()) {
-        console.log('🔁 chainId changed to:', currentChain);
-      }
-    });
-  }
   /**
    * Computed angular signal for variationData
    * Updated when originalVariationData Input signal is true
@@ -125,7 +116,6 @@ export class VariationTrackBlockComponent {
     const data = this.originalVariationData();
     const currentChain = this._chainId();
     if (!data || !this.isEntryData) return data;
-    console.log('[uniqueApiVariationData] triggered', { data, currentChain });
     return filterEntityVariationData(data, currentChain);
   });
 
@@ -142,7 +132,6 @@ export class VariationTrackBlockComponent {
     const data = this.uniqueApiVariationData();
     const filters = this.currentKeywordFilters();
     if (!data || !this.isEntryData) return [];
-    console.log('[variationData] triggered', { data, filters });
     return processEntityVariationDataFromAPI(data, filters);
   });
 

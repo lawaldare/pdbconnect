@@ -33,6 +33,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { EcNumbersComponent } from '../ec-numbers/ec-numbers.component';
 import { GoTermsComponent } from '../go-terms/go-terms.component';
 
+import { EntryPgProtvistaComponent } from '../entry-pv-nightingale/entry-pv-nightingale.component';
+
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
 
@@ -61,7 +63,7 @@ export interface MappedResidue {
 @Component({
   selector: 'pdbc-details-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, EntryDropdownComponent, MaterialModule, AgGridAngular, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, EntryDropdownComponent, MaterialModule, AgGridAngular, ReactiveFormsModule, EntryPgProtvistaComponent],
   templateUrl: './details-dashboard.component.html',
   styleUrl: './details-dashboard.component.scss',
 })
@@ -124,7 +126,8 @@ export class DetailsDashboardComponent implements OnInit {
   @ViewChild('protvistaContainer') protvistaContainer!: ElementRef;
   private protvistaInstance: any;
   private protvistaIsLoaded = false;
-  private currentProtvistaEntity = -1;
+  public currentProtvistaEntity = signal<string | undefined>(undefined);
+  public currentProtvistaChain = signal<string | undefined>(undefined);
 
   public hasTopologyViewer = false;
   @ViewChild('topologyViewerContainer') topologyViewerContainer!: ElementRef;
@@ -373,7 +376,7 @@ export class DetailsDashboardComponent implements OnInit {
       // we render molstar with reloading config obj as true
       await this.renderInMolstar(true);
       // we call functions for other visualisation components to handle their conditional rendering
-      await this.initOrRefreshProtvista();
+      this.initOrRefreshProtvista();
       await this.initOrRefreshTopologyViewer();
       await this.initOrRefreshLigandEnvViewer();
     } else {
@@ -398,7 +401,7 @@ export class DetailsDashboardComponent implements OnInit {
 
     // all possible rendering functions are called for a dashboard
     await this.renderInMolstar(reloadConfigObj);
-    await this.initOrRefreshProtvista();
+    this.initOrRefreshProtvista();
     await this.initOrRefreshTopologyViewer();
     await this.initOrRefreshLigandEnvViewer();
   }
@@ -430,43 +433,28 @@ export class DetailsDashboardComponent implements OnInit {
     }
   }
 
-  private async initOrRefreshProtvista() {
+  private initOrRefreshProtvista() {
     // stop if this dashboard does not have protvista (initially false and then set in onTableRowSelection according to tabName input)
     if (!this.hasProtvista) return;
     const datum = this.currentRowDatum!;
     let entityId = -1;
+    let chainId: string | undefined = undefined;
 
     // entityId is retrieved from data passed from the interactive table to this component
     if (this.tabName() === 'Macromolecules') {
       entityId = (datum as MacromoleculesRowData).additionalData.molecule.entity_id;
+      chainId = this.dropdownSelected.split('Chain ')[1];
     } else if (this.tabName() === 'Domains') {
       entityId = (datum as DomainsRowData).additionalData.boundaries[0].entity;
+
+      // if a domain is composed of single chain, we set it for Protvista
+      const chains = (datum as DomainsRowData).additionalData.boundaries.map(boundary => boundary.chain);
+      const allSame = chains.every(chain => chain === chains[0]);
+      if (allSame) chainId = chains[0];
     }
 
-    // stop if no data can be successfully retrieved or no need for update (same entity as before)
-    if (entityId === -1 || entityId === this.currentProtvistaEntity) return;
-
-    if (this.protvistaIsLoaded === false) {
-      // if this is the first render from protvista, create the element and set all parameters
-      this.protvistaInstance = this.renderer.createElement('protvista-pdb');
-      this.renderer.setAttribute(this.protvistaInstance, 'entry-id', this.entryId() ?? ''.toLowerCase());
-      this.renderer.setAttribute(this.protvistaInstance, 'entity-id', `${entityId}`);
-      this.renderer.setAttribute(this.protvistaInstance, 'page-section', '1');
-      this.renderer.setAttribute(this.protvistaInstance, 'legends', 'false');
-      this.renderer.setAttribute(this.protvistaInstance, 'env', '');
-
-      const container = this.protvistaContainer.nativeElement;
-      this.renderer.appendChild(container, this.protvistaInstance);
-      this.currentProtvistaEntity = entityId;
-      // we set isLoaded as true to indicate this has been rendered once
-      this.protvistaIsLoaded = true;
-    } else {
-      // if this is NOT the first render from protvista, we just set some parameters and call connectedCallback
-      this.renderer.setAttribute(this.protvistaInstance, 'entry-id', this.entryId() ?? ''.toLowerCase());
-      this.renderer.setAttribute(this.protvistaInstance, 'entity-id', `${entityId}`);
-      this.currentProtvistaEntity = entityId;
-      this.protvistaInstance.connectedCallback();
-    }
+    this.currentProtvistaEntity.set(`${entityId}`);
+    this.currentProtvistaChain.set(chainId);
   }
 
   private async initOrRefreshTopologyViewer() {

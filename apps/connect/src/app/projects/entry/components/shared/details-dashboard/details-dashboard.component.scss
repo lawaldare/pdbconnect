@@ -213,8 +213,9 @@ h5 {
 .protvista-container {
   width: 100%;
   max-width: 688px;
-  max-height: 371px;
-  overflow-y: scroll;
+  // max-height: 371px;
+  max-height: 600px;
+  // overflow-y: scroll;
 }
 
 .ligands-info {

@@ -4,7 +4,7 @@ import { PvFixedHighlightService } from './pv-fixed-highlight.service';
 @Injectable({ providedIn: 'root' })
 export class PvTooltipService {
   public tooltipElement: HTMLDivElement | null = null;
-  private pinnedTooltipElement: HTMLDivElement | null = null;
+  public pinnedTooltipElement: HTMLDivElement | null = null;
   private pinnedTooltipInitialTop = 0;
   private pinnedTooltipInitialLeft = 0;
   private tooltipVisible = false;

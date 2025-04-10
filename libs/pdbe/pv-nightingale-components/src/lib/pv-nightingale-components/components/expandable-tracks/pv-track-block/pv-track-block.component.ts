@@ -189,7 +189,8 @@ export class TrackBlockComponent implements OnDestroy {
     this.renderer.setAttribute(img, 'src', '/assets/images/help_outline_24px.svg');
     this.renderer.addClass(img, 'icon');
 
-    const tooltipContent = this.isCustomData ? `Custom data track: ${nameAttribute.split(`${trackName}-`)[1]}` : this.tooltips[nameAttribute];
+    const tooltipId = nameAttribute;
+    const tooltipContent = this.isCustomData ? `Custom data track: ${nameAttribute.split(`${trackName}-`)[1]}` : this.tooltips[tooltipId];
 
     this.renderer.listen(img, 'mouseenter', () => {
       this.tooltipService.showManualTooltip(img, tooltipContent, '', { x: this.latestMouseX, y: this.latestMouseY });
