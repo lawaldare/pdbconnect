@@ -4,7 +4,7 @@
   <nav class="table-of-contents">
     <div class="container-border">
       <div class="nav-title">
-        <h5>In this page</h5>
+        <h5>In this citation page</h5>
         <img src="/assets/images/mobile/arrow-{{isFullLinksDisplayed() ? 'up':'down'}}.svg" alt="arrow-up" (click)="toggleNavigationLinks()" />
       </div>
       @if(isFullLinksDisplayed()){ @for(link of navigationLinks; track link.id){
@@ -21,8 +21,11 @@
   <h3 id="primary-publication">Primary publication</h3>
   <p class="publication-title">{{primaryPublication().title}}</p>
   <div class="authors">
-    @for (author of primaryPublication().author_list; track author.full_name; let islast = $last) {
+    @for (author of primaryPublication().author_list.slice(0, initialAuthorCount()); track author.full_name; let islast = $last) {
     <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a>{{ islast ? '' : ',' }} }
+    @if(primaryPublication().author_list.length > 5){
+    <span role="button" class="related-entry-toggle" (click)="toggleAuthorList()">{{initialAuthorCount() > 5 ? 'Hide' : 'Show all'}} authors</span>
+    }
   </div>
   <div class="pmid">
     <span class="pmid-title">PMID </span>
@@ -53,19 +56,21 @@
   output = background ? background : unassigned;
   <h4>Publication abstract</h4>
   <p class="background" [innerHTML]="output"></p>
-  } @if(imageXMLText()){
+  }
+
+  <!-- @if(imageXMLText()){ -->
   <h4 class="figures">Publication figures</h4>
   <article>
-    @for(link of imagesLink; track link; let index = $index){
-    <figure [id]="'Fig' + (index + 1)">
-      <img [src]="link.link" alt="" />
+    <figure [id]="'Fig1'">
+      <img [src]="imageUrl()" alt="" (click)="openXMLImagesInNewWindow()" />
     </figure>
-    <span class="figure-caption">{{link.title}}</span>
-    }
   </article>
-  } }@else {
-  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+  <p class="figure-footer">Click on the image to see all figures and captions</p>
 
+  <!-- }  -->
+
+  }@else {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
   }
 
   <!-- Articles citing the PDB entry -->

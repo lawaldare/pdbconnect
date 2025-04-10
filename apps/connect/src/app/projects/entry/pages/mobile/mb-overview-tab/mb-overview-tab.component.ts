@@ -126,6 +126,9 @@ export class MbOverviewTabComponent implements OnInit {
     { id: 'related-databases', title: 'Related databases and links' },
   ];
 
+  public initialCount = signal<number>(5);
+  public initialAuthorCount = signal<number>(5);
+
   @HostListener('window:scroll', [])
   onScroll() {
     this.navigationLinks.forEach((section) => {
@@ -137,6 +140,14 @@ export class MbOverviewTabComponent implements OnInit {
         }
       }
     });
+  }
+
+  public toggleRelatedEntriesList(): void {
+    this.initialCount.update((prev) => (prev === 5 ? this.relatedEntries().length : 5));
+  }
+
+  public toggleAuthorList(): void {
+    this.initialAuthorCount.update((prev) => (prev === 5 ? this.primaryPublication().author_list.length : 5));
   }
 
   public toggleNavigationLinks(): void {

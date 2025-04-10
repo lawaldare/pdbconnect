@@ -4,7 +4,7 @@
   <nav class="table-of-contents">
     <div class="container-border">
       <div class="nav-title">
-        <h5>In this page</h5>
+        <h5>In this overview page</h5>
         <img src="/assets/images/mobile/arrow-{{isFullLinksDisplayed() ? 'up':'down'}}.svg" alt="arrow-up" (click)="toggleNavigationLinks()" />
       </div>
       @if(isFullLinksDisplayed()){ @for(link of navigationLinks; track link.id){
@@ -63,8 +63,11 @@
   <h3 id="primary-publication">Primary publication</h3>
   <p class="publication-title">{{primaryPublication().title}}</p>
   <div class="authors">
-    @for (author of primaryPublication().author_list; track author.full_name; let islast = $last) {
+    @for (author of primaryPublication().author_list.slice(0, initialAuthorCount()); track author.full_name; let islast = $last) {
     <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a>{{ islast ? '' : ',' }} }
+    @if(primaryPublication().author_list.length > 5){
+    <span role="button" class="related-entry-toggle" (click)="toggleAuthorList()">{{initialAuthorCount() > 5 ? 'Hide' : 'Show all'}} authors</span>
+    }
   </div>
   <div class="pmid">
     <span class="pmid-title">PMID </span>
@@ -86,10 +89,12 @@
   @if(relatedEntries().length){
   <div>
     <span class="pmid-title">Also associated with </span>
-    @for (entry of relatedEntries(); track entry; let islast = $last) {
+    @for (entry of relatedEntries().slice(0, initialCount()); track entry; let islast = $last) {
     <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + entry" target="_blank" class="row__right__link">{{ entry }} </a>{{ islast ? '' : ',' }} }
   </div>
-  } }@else {
+  @if(relatedEntries().length > 5){
+  <span role="button" class="related-entry-toggle" (click)="toggleRelatedEntriesList()">{{initialCount() > 5 ? 'Hide' : 'Show all'}} associated entries</span>
+  } } }@else {
   <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
   }
 

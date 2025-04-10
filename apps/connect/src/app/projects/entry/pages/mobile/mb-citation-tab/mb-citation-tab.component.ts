@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
@@ -12,6 +12,8 @@ import { CitationDetail } from '../../../data-models/publication.model';
 import { EntryApiService } from '../../../services/entry-api.service';
 import { CitationArticleComponent } from '../../../components/citations-tab/sub-components/citation-article/citation-article.component';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { CitationXmlImagesComponent } from '../../../components/citations-tab/sub-components/citation-xml-images/citation-xml-images.component';
+import { MatDialog } from '@angular/material/dialog';
 
 export interface NavigationLink {
   id: string;
@@ -29,7 +31,7 @@ export class MbCitationTabComponent implements OnInit {
   public readonly util = inject(UtilService);
   private readonly entryAPIService = inject(EntryApiService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly renderer = inject(Renderer2);
+  private readonly dialog = inject(MatDialog);
 
   public readonly summary = signal<ProcessedSummary>({} as ProcessedSummary);
   public readonly entryId = signal<string>('');
@@ -50,9 +52,10 @@ export class MbCitationTabComponent implements OnInit {
   public currentNavigationLink = signal<NavigationLink>({ id: 'primary-publication', title: 'Primary publication' });
   public navigationLinks: NavigationLink[] = [];
 
-  public imagesLink: { title: string; link: string }[] = [];
+  public imageUrl = signal('');
 
   public initialCount = signal<number>(5);
+  public initialAuthorCount = signal<number>(5);
 
   @HostListener('window:scroll', [])
   onScroll() {
@@ -100,6 +103,10 @@ export class MbCitationTabComponent implements OnInit {
 
   public toggleRelatedEntriesList(): void {
     this.initialCount.update((prev) => (prev === 5 ? this.relatedEntries().length : 5));
+  }
+
+  public toggleAuthorList(): void {
+    this.initialAuthorCount.update((prev) => (prev === 5 ? this.primaryPublication().author_list.length : 5));
   }
 
   private setNavigationLinks(): void {
@@ -167,31 +174,26 @@ export class MbCitationTabComponent implements OnInit {
       );
   }
 
+  public openXMLImagesInNewWindow(): void {
+    this.dialog.open(CitationXmlImagesComponent, {
+      height: '800px',
+      width: '1200px',
+      data: { entryId: this.entryId(), imageXMLText: this.imageXMLText() },
+    });
+  }
+
   private parseAndRenderXML() {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(this.imageXMLText(), 'application/xml');
-    const figElements = xmlDoc.querySelectorAll('fig');
+    const figElement = xmlDoc.querySelector('fig');
 
-    const results: { link: string; title: string }[] = [];
-
-    figElements.forEach((figElement) => {
+    if (figElement) {
       const graphic = figElement.querySelector('graphic');
-      const element: { link: string; title: string } = { link: '', title: '' };
       if (graphic) {
         const link = 'https://europepmc.org' + graphic.getAttribute('href') || '';
-        element.link = link;
+        this.imageUrl.set(link);
       }
-      const title = figElement.querySelector('title');
-      if (title) {
-        const titleText = title.textContent;
-        element.title = titleText ?? '';
-      }
-      results.push(element);
-    });
-
-    this.imagesLink = [...new Set(results)];
-
-    console.log(this.imagesLink);
+    }
   }
 
   public scrollToSection(event: Event, sectionId: string): void {
