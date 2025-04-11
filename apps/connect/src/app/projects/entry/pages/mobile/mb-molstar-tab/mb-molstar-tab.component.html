@@ -1,1 +1,9 @@
-<p>mb-threed-view-tab works!</p>
+<main>
+  <h1>{{entryId()}}</h1>
+
+  <section class="chips">
+    @for(chip of mobileTabChips; track chip.id){
+    <span class="chip" [class.active]="chip.id === selectedTabName()" (click)="onTabClick(chip)">{{chip.label}}</span>
+    }
+  </section>
+</main>

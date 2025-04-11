@@ -14,6 +14,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSortModule } from '@angular/material/sort';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 
 @NgModule({
   exports: [
@@ -32,6 +33,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
     MatCheckboxModule,
     MatSortModule,
     MatExpansionModule,
+    MatBottomSheetModule,
   ],
 })
 export class MaterialModule {}
