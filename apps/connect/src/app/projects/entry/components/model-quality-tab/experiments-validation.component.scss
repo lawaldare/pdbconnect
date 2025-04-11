@@ -3,7 +3,7 @@
   gap: 20px;
 
   .left-side {
-    width: 696px;
+    width: 50%;
   }
 
   aside {
@@ -15,7 +15,6 @@
         top: 10px;
         position: fixed;
         z-index: 1000;
-        width: 656px;
       }
 
       .toolbar {
@@ -165,6 +164,7 @@ article i.icon-search::before {
     gap: 12px;
     flex: 1 0 0;
     margin-top: 4px;
+    width: 50%;
 
     .img {
       max-width: 200px;
@@ -232,10 +232,17 @@ article i.icon-search::before {
 
     .molstar-container {
       position: relative;
-      width: 407px;
-      min-height: 296px;
+      /*
+        Responsiveness:
+        flex makes things scale according to screen up to:
+        max-width of 100% of container
+        max-height: 40% of screen size
+      */
       flex: 1;
       z-index: 1;
+      aspect-ratio: 1 / 1;
+      max-height: 40vh;
+      max-width: 100%;
     }
   }
 }

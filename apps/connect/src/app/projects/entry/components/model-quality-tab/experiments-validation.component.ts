@@ -82,6 +82,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public processedData = signal<ProcessedExperimentalDetails[] | undefined>(undefined);
   public isHybrid = signal<boolean>(false);
   public noImg = false;
+  public leftSideWidth = '100px';
 
   // tooltip constants
   public valInfoTooltip = validationInfoTooltip;
@@ -165,6 +166,13 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     }
   }
 
+  private updateLeftSideWidth() {
+    const leftSide = document.querySelector('.left-side');
+    if (leftSide) {
+      this.leftSideWidth = `${leftSide.getBoundingClientRect().width}px`;
+    }
+  }
+
   public selectValidationType(option: ValueLabel) {
     this.selectedValidationType.set(option);
   }
@@ -175,6 +183,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
   async ngAfterViewInit() {
     await this.initializeMolstarViewer();
+    this.updateLeftSideWidth();
   }
 
   private async initializeMolstarViewer(): Promise<void> {
