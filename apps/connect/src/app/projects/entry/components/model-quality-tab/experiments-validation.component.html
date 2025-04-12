@@ -314,7 +314,7 @@
       <!-- ---------------------------- -->
       <!-- Experimental raw data section -->
       <!-- ---------------------------- -->
-      @if (currentData()!.experimentalRawData?.length) {
+      @if (currentData()?.experimentalRawData?.length) {
       <section class="exp-raw-data-info">
         <div class="info-row-header">
           <h5>Experimental raw data</h5>
@@ -323,7 +323,7 @@
         <!-- <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="expRawDataTooltip" matTooltipPosition="below">
           Experimental raw data
         </h5> -->
-        @for (table of currentData()!.experimentalRawData!; track table) {
+        @for (table of currentData()?.experimentalRawData; track table) {
         <ag-grid-angular
           style="height: fit-content"
           class="ag-theme-quartz table-exp-val"

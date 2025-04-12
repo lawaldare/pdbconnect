@@ -21,4 +21,73 @@
     }
   </div>
   }
+
+  <!-- Reported R values -->
+
+  @if (currentData()?.generalInfo?.reportedRValues){
+  <h4>Reported R values</h4>
+  <div class="r-values-column">
+    @if (currentData()?.generalInfo?.reportedRValues?.rWork) {
+    <div>
+      <span class="rfree-col">Rwork</span>
+      <span>{{ currentData()?.generalInfo?.reportedRValues?.rWork }}</span>
+    </div>
+    } @if (currentData()?.generalInfo?.reportedRValues?.rFree) {
+    <div>
+      <span class="rfree-col">Rfree</span>
+      <span>{{ currentData()?.generalInfo?.reportedRValues?.rFree }}</span>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Validation information -->
+
+  @if(currentData()?.validationInfo?.length){
+  <h4>Validation information</h4>
+  @for(info of currentData()?.validationInfo; track info.metric; let odd = $odd){
+  <div class="validation-info-row" [class.bg]="odd">
+    <span>{{ info.metric }}</span>
+    <span>{{ info.description }}</span>
+  </div>
+  } }
+
+  <!-- PDB-REDO model quality summary -->
+
+  @if(pdbRedoData()){
+  <h4>PDB-REDO model quality summary</h4>
+  <article>
+    <div class="pdb-redo">
+      <pdbc-str-quality-gradient [componentType]="'GeometryFit_RdToGr'" [renderGradients]="pdbRedoData()"></pdbc-str-quality-gradient>
+    </div>
+    <p class="pdb-redo-text">
+      The sliders show the change in model quality between original PDB entry and the PDB-REDO entry. <a>PDB-REDO</a> is an external service, it is not a part of
+      PBDe.
+    </p>
+  </article>
+  }
+
+  <!-- Experimental raw data -->
+  @if (currentData()?.experimentalRawData?.length) {
+  <h4>Experimental raw data</h4>
+  @for(data of currentData()?.experimentalRawData; track data){ @for(item of data.tableData; track item){
+  <div class="experimental-row">
+    <span class="title">IRRMC accession</span>
+    <span class="content">
+      <a href="" target="_blank">{{ item.resource }} {{item.accession}}</a>
+    </span>
+  </div>
+  <div class="experimental-row">
+    <span class="title">Datasets</span>
+    <span class="content"> {{item.datasets}} </span>
+  </div>
+  <div class="experimental-row">
+    <span class="title">IRRMC accession</span>
+    <span class="content"> {{item.totalSize}} </span>
+  </div>
+  } @if(data.imgName){
+  <div class="extra-info">
+    <img [src]="data.imgName" alt="data image" />
+  </div>
+  } } }
 </section>

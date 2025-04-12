@@ -1,6 +1,6 @@
 import { Component, DestroyRef, inject, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { filter, mergeMap } from 'rxjs';
 import { EntryStoreState } from '../../../store/entry-store.model';
@@ -9,10 +9,11 @@ import { ProcessedExperimentalDetails } from '../../../components/model-quality-
 import { ValidationDataProcessingFacade } from '../../../components/model-quality-tab/validation-data.facade';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MobileFacade } from '../mobile.facade';
+import { StrucQualityGradientsComponent } from '../../../components/shared/struc-quality-gradients/struc-quality-gradients.component';
 
 @Component({
   selector: 'pdbc-mb-model-quality',
-  imports: [CommonModule],
+  imports: [CommonModule, StrucQualityGradientsComponent],
   templateUrl: './mb-model-quality.component.html',
   styleUrl: './mb-model-quality.component.scss',
 })
@@ -23,6 +24,7 @@ export class MbModelQualityComponent implements OnInit {
   private readonly mbFacade = inject(MobileFacade);
 
   public currentData = signal<ProcessedExperimentalDetails | undefined>(undefined);
+  public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
 
   public expanded = signal<boolean>(false);
 
@@ -55,7 +57,6 @@ export class MbModelQualityComponent implements OnInit {
   }
 
   toggleBottomsheetHeight() {
-    // this.bottomSheetRef.
     this.expanded.update((olamide) => !olamide);
     const container = document.querySelector('.custom-bottom-sheet') as HTMLElement;
     if (container) {
