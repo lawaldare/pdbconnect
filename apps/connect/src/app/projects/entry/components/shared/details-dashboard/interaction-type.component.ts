@@ -5,12 +5,12 @@ import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
 
 export const INTX_NAME_STANDARDIZER = {
-  clash: 'Covalent clashes',
+  clash: 'Covalent clash',
   covalent: 'Covalent',
-  vdw_clash: 'Van der Waals clashes',
+  vdw_clash: 'Van der Waals clash',
   vdw: 'Van der Waals',
-  hbond: 'Hydrogen bonds',
-  xbond: 'Halogen bonds',
+  hbond: 'Hydrogen bond',
+  xbond: 'Halogen bond',
   ionic: 'Ionic',
   metal_complex: 'Metal complex',
   aromatic: 'Aromatic',
@@ -25,6 +25,8 @@ export const INTX_NAME_STANDARDIZER = {
   plane_plane: 'Plane-Plane',
   AMIDEAMIDE: 'Amide-Amide',
   AMIDERING: 'Amide-Ring',
+  weak_polar: 'Weak polar',
+  weak_hbond: 'Weak hydrogen bond',
 };
 
 type InteractionType =
@@ -53,8 +55,14 @@ type InteractionType =
   standalone: true,
   imports: [CommonModule, MaterialModule],
   template: `
-    @for (type of value; track type) {
-      <p>{{ type }}</p>
+    @if (value.length > 1) {
+      <ul>
+        @for (type of value; track type) {
+          <li>{{ type }}</li>
+        }
+      </ul>
+    } @else {
+      <p>{{ value[0] }}</p>
     }
   `,
   styleUrls: [],
@@ -72,6 +80,9 @@ export class InteractionTypeRendererComponent implements ICellRendererAngularCom
     return true;
   }
   private generateInteractionType(types: string[]): void {
-    this.value = types.map((type) => INTX_NAME_STANDARDIZER[type as InteractionType]);
+    this.value = types.map((type) => {
+      if (!INTX_NAME_STANDARDIZER[type as InteractionType]) console.log('type: ', type);
+      return INTX_NAME_STANDARDIZER[type as InteractionType];
+    });
   }
 }

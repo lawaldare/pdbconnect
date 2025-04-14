@@ -337,15 +337,9 @@
   }@else {}
 </div>
 <section class="ligand-charts">
-  <section class="molstar-details-container" [class.expand]="!rowData()?.length">
-    <div class="molstar-container" #molstarContainer></div>
-  </section>
-  <section class="lig-env-container" [class.expand]="!rowData()?.length">
-    <div class="ligand-env" #ligandEnvContainer></div>
-  </section>
-  @if(rowData()?.length){
+  @if(interactionsRowData()?.length){
   <div class="table">
-    <p class="table-title">Ligand interactions - {{rowData()?.length}} total</p>
+    <p class="table-title">Ligand interactions - {{interactionsRowData()?.length}} total</p>
     <div class="table-toolbar">
       <button class="vf-button vf-button--link" (click)="downloadCSV()">
         Download table (csv)
@@ -360,7 +354,7 @@
     </div>
     <ag-grid-angular
       class="ag-theme-quartz"
-      [rowData]="rowData()"
+      [rowData]="interactionsRowData()"
       [columnDefs]="colDefs"
       [defaultColDef]="defaultColDef"
       [gridOptions]="gridOptions"
@@ -369,17 +363,22 @@
     />
   </div>
   }
+  <section class="molstar-lig-env" [class.expand]="!interactionsRowData()?.length">
+    <section class="molstar-details-container" [class.expand]="!interactionsRowData()?.length">
+      <div class="molstar-container" #molstarContainer></div>
+    </section>
+    <section class="lig-env-container" [class.expand]="!interactionsRowData()?.length">
+      <div class="ligand-env" #ligandEnvContainer></div>
+    </section>
+  </section>
 </section>
 <section class="ligands-info">
-  <p>
-    The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure derived from <br />
-    the PDB entry.
-  </p>
+  <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure derived from the PDB entry.</p>
   <p>Please note:</p>
   <ul>
     <li>
-      Some chain IDs in the tooltip are followed by a number in square brackets. This number <br />
-      corresponds to the operation ID (mmCIF 'oper_expression') used to transform the chain.
+      Some chain IDs in the tooltip are followed by a number in square brackets. This number corresponds to the operation ID (mmCIF 'oper_expression') used to
+      transform the chain.
     </li>
     <li>
       The structure seen in Mol* (3D view) was protonated using <a href="https://www.cgl.ucsf.edu/chimerax/docs/user/commands/addh.html" target="_blank">ChimeraX</a>.

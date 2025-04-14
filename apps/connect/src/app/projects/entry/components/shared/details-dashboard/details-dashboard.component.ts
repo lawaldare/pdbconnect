@@ -169,7 +169,7 @@ export class DetailsDashboardComponent implements OnInit {
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
   public readonly defaultColDef = defaultColDef;
-  public rowData = linkedSignal({
+  public interactionsRowData = linkedSignal({
     source: this.interactions,
     computation: () => this.interactions(),
   });
@@ -206,7 +206,7 @@ export class DetailsDashboardComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((data: any) => {
-        this.rowData.update(() => data);
+        this.interactionsRowData.update(() => data);
       });
   }
 
@@ -536,13 +536,13 @@ export class DetailsDashboardComponent implements OnInit {
   }
 
   public downloadCSV(): void {
-    const mappedData = this.rowData()?.map((row) => {
+    const mappedData = this.interactionsRowData()?.map((row) => {
       return {
-        'Residue Name 1': row.end.chem_comp_id + '_' + row.end.author_residue_number,
-        'Atom Name 1': row.end.atom_names.join(','),
+        'Ligand Atom': row.ligand_atoms.join(', '),
+        'Residue Name': row.end.chem_comp_id + '_' + row.end.author_residue_number,
+        'Atom Name': row.end.atom_names.join(','),
         'Interaction Type': row.interaction_details.map((type) => INTX_NAME_STANDARDIZER[type as keyof typeof INTX_NAME_STANDARDIZER]).join(', '),
         'Distance (Å)': row.distance,
-        'Ligand Atom': row.ligand_atoms.join(', '),
       };
     });
     if (mappedData && mappedData.length) {
