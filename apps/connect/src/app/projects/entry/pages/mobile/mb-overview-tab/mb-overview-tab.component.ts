@@ -73,13 +73,16 @@ export class MbOverviewTabComponent implements OnInit {
 
   public readonly macromoleculeTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
+    const mappedResiduesList = this.mappedResiduesSignal();
+
     if (isLoaded) {
       const tabData = this.signals.getTabData('Macromolecules');
       const datum = tabData.tableRows() as MacromoleculesRowData[];
-      const mappedDatum = datum.map((data) => {
+      const mappedDatum = datum.map((data, index) => {
         return {
           ...data,
-          mappedResidues: this.detailsDashboardFacade.transformCoverageData(data['residues']),
+          mappedResidues: mappedResiduesList[index] ?? [],
+          organisms: [...new Set(data['organisms'])],
         };
       });
       return mappedDatum;
@@ -113,6 +116,7 @@ export class MbOverviewTabComponent implements OnInit {
   public readonly primaryPublication = signal<CitationDetail>({} as CitationDetail);
   public relatedEntries = signal<string[]>([]);
   public residues = signal<MappedResidue[]>([]);
+  readonly mappedResiduesSignal = signal<MappedResidue[][]>([]);
 
   public isFullLinksDisplayed = signal<boolean>(false);
   public currentNavigationLink = signal<NavigationLink>({ id: 'structure-overview', title: 'Structure overview' });

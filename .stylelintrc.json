@@ -34,7 +34,7 @@
       }
     ],
     "property-no-vendor-prefix": true,
-    "selector-max-id": 0,
+    "selector-max-id": null,
     "selector-type-no-unknown": [
       true,
       {

@@ -57,6 +57,7 @@ const initialState: EntryStoreState = {
   experimentRawDataPDB: [],
   entryStatus: { ...entryStatusDefault },
   interactions: [],
+  symmetry: [],
 };
 
 export const entryReducer = createReducer(
@@ -68,6 +69,10 @@ export const entryReducer = createReducer(
   on(EntryActions.getCathMappingSuccess, (state, action) => ({
     ...state,
     cathMapping: action.cathMapping,
+  })),
+  on(EntryActions.getSymmetrySuccess, (state, action) => ({
+    ...state,
+    symmetry: action.symmetry,
   })),
   on(EntryActions.getInteractionsSuccess, (state, action) => ({
     ...state,

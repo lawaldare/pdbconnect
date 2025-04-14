@@ -62,6 +62,7 @@ export interface MacromoleculesRowData {
     selections: MolstarSelectionObj[];
     uniprotAccessions: string[];
   };
+  mappedResidues?: any[];
 }
 
 /**

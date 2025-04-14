@@ -155,19 +155,19 @@
     <p class="text">UniProt mapping:</p>
     <div class="uniport-mapping">
       @for(residue of row.mappedResidues; track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <= 2){
-      <span>Canonical <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a></span>
+      <span>Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a></span>
       <span> (residues: {{residue.range.join(', ')}}; coverage: {{residue.coverage}}) </span>
       } @else { @if(residue.open){
-      <span> Canonical <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a> </span>
+      <span> Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a> </span>
       <span>(residues: {{range.join(', ')}}; coverage: {{residue.coverage}})</span>
       <span class="residue-action-button" (click)="residue.open = !residue.open">show less</span>
       }@else {
-      <span> Canonical <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a></span>
+      <span> Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a></span>
       residues: {{range.slice(0,2).join(', ')}}...
       <span class="residue-action-button" (click)="residue.open = !residue.open">show all</span>
-      } } } @for(res of bestResidues(); track res.name;){
-      <span>Best match <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + res.uniprot" target="_blank">{{res.uniprot}}</a></span>
-      <span> (residues: {{res.mappings[0].unp_start}} - {{res.mappings[0].unp_end}})</span>
+      } } } @for(residue of bestResidues(); track residue.name;){
+      <span>Best match <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a></span>
+      <span> (residues: {{residue.mappings[0].unp_start}} - {{residue.mappings[0].unp_end}})</span>
       }
     </div>
     }

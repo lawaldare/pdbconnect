@@ -1,1 +1,120 @@
-<p>mb-macromolecule works!</p>
+<section>
+  @if(currentViewState() === viewStates.Detail){
+  <nav>
+    <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
+    <span (click)="goBackToList()">Go to Macromolecules list </span>
+  </nav>
+  } @if(macromoleculeTableRows().length){
+  <header>
+    <h2>
+      {{title()}} @if(currentViewState() === viewStates.List){
+      <span>({{macromoleculeTableRows().length}})</span>
+      }
+    </h2>
+    <div class="controls">
+      <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
+      <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+    </div>
+  </header>
+
+  <!-- 1st Level Overlay -->
+  @if(currentViewState() === viewStates.List){ @for(row of macromoleculeTableRows(); track row.name.molecule){
+  <div class="row" (click)="navigateToDetail(row)">
+    <div class="row__header">
+      <p class="row__header__name">{{row.name.molecule}}</p>
+      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+    </div>
+    <p class="row__content">
+      Chain @for(chain of row.name.chains; track chain; let islast = $last){
+      <span>{{chain[chain.length - 1]}}</span>{{ islast ? '' : ',' }} }
+    </p>
+  </div>
+  } }
+
+  <!-- 2nd Level Overlay -->
+  @if(currentViewState() === viewStates.Detail){
+
+  <mat-tab-group class="mb-macromolecule">
+    <!-- Information Tab -->
+
+    <mat-tab label="Information">
+      <ng-template matTabContent>
+        @if(selectedMacromolecule().additionalData.molecule.in_chains.length){
+        <p class="title">Chains {{selectedMacromolecule().additionalData.molecule.in_chains.join(', ')}}</p>
+        } @if(selectedMacromolecule().additionalData.molecule.molecule_type){
+        <p class="title">Type</p>
+        <p class="content">{{selectedMacromolecule().additionalData.molecule.molecule_type}}</p>
+        } @if(selectedMacromolecule().organisms.length){
+        <p class="title">Source organism</p>
+        <p class="content">
+          @for (sourceOrganism of selectedMacromolecule().organisms; track sourceOrganism) {
+          <span>
+            <em><a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank"> {{ sourceOrganism }} </a></em>
+          </span>
+          }
+        </p>
+        } @let expressionSystem = selectedMacromolecule().additionalData.molecule.source[0].expression_host_scientific_name; @if(expressionSystem){
+        <p class="title">Expression System</p>
+        <p class="content">{{expressionSystem}}</p>
+        } @if(selectedMacromolecule().mappedResidues?.length){
+        <p class="title">UniProt mapping:</p>
+        <p class="content">
+          @for(residue of selectedMacromolecule().mappedResidues; track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <= 2){
+          <span class="uniprot"
+            >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a>
+            <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">
+              View all {{residue?.pdbs | async}} structures
+              <i class="icon icon-link icon-common" style="margin-left: 12px"></i> </a
+          ></span>
+          <span class="uniprot"> (residues: {{residue.range.join(', ')}}; coverage: {{residue.coverage}}) </span>
+          } @else { @if(residue.open){
+          <span class="uniprot">
+            Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a
+            ><a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">
+              View all {{residue?.pdbs | async}} structures
+              <i class="icon icon-link icon-common" style="margin-left: 12px"></i>
+            </a>
+          </span>
+          <span class="uniprot">(residues: {{range.join(', ')}}; coverage: {{residue.coverage}})</span>
+          <span class="unprot residue-action-button" (click)="residue.open = !residue.open">show less</span>
+          }@else {
+          <span class="uniprot">
+            Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a
+            ><a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">
+              View all {{residue?.pdbs | async}} structures
+              <i class="icon icon-link icon-common" style="margin-left: 12px"></i> </a
+          ></span>
+          <span class="uniprot">residues: {{range.slice(0,2).join(', ')}}...</span>
+          <span class="uniprot residue-action-button" (click)="residue.open = !residue.open">show all</span>
+          } } } @for(residue of bestResidues(); track residue.name;){
+          <span class="uniprot"
+            >Best match <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a></span
+          >
+          <span class="uniprot"> (residues: {{residue.mappings[0].unp_start}} - {{residue.mappings[0].unp_end}})</span>
+          }
+        </p>
+        } @if(selectedMacromolecule().additionalData.molecule.length){
+        <p class="title">Length</p>
+        <p class="content">{{selectedMacromolecule().additionalData.molecule.length}} amino acids</p>
+        } @if(selectedMacromolecule().additionalData.molecule.weight){
+        <p class="title">Theoretical weight</p>
+        <p class="content">{{selectedMacromolecule().additionalData.molecule.weight}} KDa</p>
+        }
+      </ng-template>
+    </mat-tab>
+
+    <mat-tab label="Sequence">
+      <ng-template matTabContent> </ng-template>
+    </mat-tab>
+
+    <mat-tab label="Domains">
+      <ng-template matTabContent> </ng-template>
+    </mat-tab>
+
+    <mat-tab label="Function">
+      <ng-template matTabContent> </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+
+  } }
+</section>

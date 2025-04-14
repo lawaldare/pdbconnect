@@ -217,5 +217,6 @@ export class MainDataProcessingFacade {
     this.globalStore.dispatch(EntryActions.getIsoformsMapping());
     this.globalStore.dispatch(EntryActions.getGOMapping());
     this.globalStore.dispatch(EntryActions.getECMapping());
+    this.globalStore.dispatch(EntryActions.getSymmetry());
   }
 }

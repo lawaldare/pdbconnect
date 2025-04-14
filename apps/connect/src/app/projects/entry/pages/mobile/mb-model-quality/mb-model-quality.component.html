@@ -20,6 +20,15 @@
     </div>
     }
   </div>
+  <div class="sub-header">
+    @if(currentData()?.generalInfo?.refinementMethod){
+    <span>{{currentData()?.generalInfo?.refinementMethod}} • </span>
+    } @if(currentData()?.generalInfo?.numberDepositedModels){
+    <span>{{currentData()?.generalInfo?.numberDepositedModels}} deposited models • </span>
+    } @if(currentData()?.generalInfo?.rmsdLargestDomain){
+    <span>Backbone RMSD for the largest domain {{currentData()?.generalInfo?.rmsdLargestDomain}}Å</span>
+    }
+  </div>
   }
 
   <!-- Reported R values -->
@@ -39,6 +48,27 @@
     </div>
     }
   </div>
+  }
+
+  <!-- Refinement method -->
+
+  @if(currentData()?.generalInfo?.refinementMethod){
+  <h4>Refinement method</h4>
+  <p class="content">{{currentData()?.generalInfo?.refinementMethod}}</p>
+  }
+
+  <!-- Deposited models -->
+
+  @if(currentData()?.generalInfo?.numberDepositedModels){
+  <h4>Number of deposited models</h4>
+  <p class="content">{{currentData()?.generalInfo?.numberDepositedModels}} models</p>
+  }
+
+  <!-- Blackbone -->
+
+  @if(currentData()?.generalInfo?.rmsdLargestDomain){
+  <h4>Backbone RMSD for the largest domain</h4>
+  <p class="content">{{currentData()?.generalInfo?.rmsdLargestDomain}}Å</p>
   }
 
   <!-- Validation information -->

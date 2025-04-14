@@ -11,12 +11,12 @@ import { CitationDetail } from '../data-models/publication.model';
 import { RelatedPublication } from '../data-models/related-publications.model';
 import { PfamMappings, CathMappings, ScopMappings, InterProMappings } from '../data-models/domains.model';
 import { ComplexDetails } from '../data-models/complex-details.model';
-import { AssemblyData } from '../data-models/assembly.model';
+import { AssemblyData, Symmetry } from '../data-models/assembly.model';
 import { PisaAssembly } from '../data-models/pisa-assembly.model';
 import { CarbohydrateMolecule } from '../data-models/carbohydrate-polymer.model';
 import { Molecule } from '../data-models/molecule.model';
 import { EntrySummary, ProcessedSummary } from '../data-models/summary.model';
-import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
+import { ECMapping, GOMapping, SummaryStats, UniProtMapping } from '../data-models/uniprot-mapping.model';
 import { PdbRedoQualityScores, ProcessedQualityScores, SummaryQualityScores } from '../data-models/summary-quality-scores.model';
 import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
 import {
@@ -89,6 +89,10 @@ export class EntryApiService {
 
   public getUniprotMapping(entryId: string): Observable<UniProtMapping> {
     return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.MAPPINGS_API}uniprot/${entryId}`).pipe(map((data) => data[entryId]['UniProt']));
+  }
+
+  public getSummaryStats(uniprotId: string): Observable<SummaryStats> {
+    return this.http.get<Record<string, SummaryStats>>(`${environment.pdbeBaseUrl}graph-api/uniprot/summary_stats/${uniprotId}`).pipe(map((data) => data[uniprotId]));
   }
 
   public getIsoformsMapping(entryId: string): Observable<UniProtMapping> {
@@ -171,6 +175,10 @@ export class EntryApiService {
 
   public getAssembly(entryId: string): Observable<AssemblyData[]> {
     return this.http.get<Record<string, AssemblyData[]>>(`${this.BASE_API}assembly/${entryId}`).pipe(map((data) => data[entryId]));
+  }
+
+  public getSymmetry(entryId: string): Observable<Symmetry[]> {
+    return this.http.get<Record<string, Symmetry[]>>(`${this.AggregatedApiUrl}pdb/symmetry/${entryId}`).pipe(map((data) => data[entryId]));
   }
 
   public getPisaAssembly(entryId: string, assemblyId: string): Observable<PisaAssembly> {

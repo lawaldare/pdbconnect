@@ -15,7 +15,7 @@ import { StrucQualityGradientsComponent } from '../../../components/shared/struc
   selector: 'pdbc-mb-model-quality',
   imports: [CommonModule, StrucQualityGradientsComponent],
   templateUrl: './mb-model-quality.component.html',
-  styleUrl: './mb-model-quality.component.scss',
+  styleUrls: ['../common-mb-header.scss', './mb-model-quality.component.scss'],
 })
 export class MbModelQualityComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);

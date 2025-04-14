@@ -14,3 +14,18 @@ export interface AssemblyData {
   polymeric_count: number;
   details: string;
 }
+
+export interface RotationAxis {
+  order: number;
+  start: number[];
+  end: number[];
+}
+
+export interface Symmetry {
+  assembly_id: string;
+  symbol: string;
+  type: string;
+  oligometric_state: string;
+  stoichiometry: string;
+  rotation_axes: RotationAxis[];
+}

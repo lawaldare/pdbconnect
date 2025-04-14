@@ -20,6 +20,7 @@ import {
 import { EntryStatus } from '../data-models/status.model';
 import { Interaction } from '../data-models/interaction.model';
 import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
+import { Symmetry } from '../data-models/assembly.model';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -85,6 +86,9 @@ export const EntryActions = createActionGroup({
     'Get Preferred Assembly': emptyProps(),
     'Get Preferred Assembly Success': props<{ complexDetails: ComplexDetails[] }>(),
     'Get Preferred Assembly Failure': emptyProps(),
+    'Get Symmetry': emptyProps(),
+    'Get Symmetry Success': props<{ symmetry: Symmetry[] }>(),
+    'Get Symmetry Failure': emptyProps(),
     'Get Assemblies': emptyProps(),
     'Get Assemblies Success': props<{ data: AssembliesData }>(),
     'Get Assemblies Failure': emptyProps(),

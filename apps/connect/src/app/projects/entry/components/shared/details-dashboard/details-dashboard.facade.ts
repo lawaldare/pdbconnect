@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { BoundsByEntityId, MappedResidue, SequenceDetail } from './details-dashboard.component';
 import {
   DomainsRowData,
@@ -8,11 +8,17 @@ import {
 } from '../interactive-tables/data-models-and-definitions/row-and-table.model';
 import { Molecule } from '../../../data-models/molecule.model';
 import { MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
+import { EntryApiService } from '../../../services/entry-api.service';
+import { map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DetailsDashboardFacade {
+  public readonly entryApiService = inject(EntryApiService);
+
+  public readonly pdbsUniprotNumbers = signal<Record<string, number>>({});
+
   public getDomainChains(datum: DomainsRowData) {
     let uniqueChains: string[] = [];
     for (const selection of datum.additionalData.selections) {
@@ -131,10 +137,8 @@ export class DetailsDashboardFacade {
   }
 
   public transformCoverageData(data: MacromoleculesResidueRanges[]): MappedResidue[] {
-    const result = [];
-
     const groupedData: Record<string, any> = {};
-
+    const result: MappedResidue[] = [];
     data.forEach((entry) => {
       const { uniprot, chainId, coverage, range } = entry;
 
@@ -145,6 +149,7 @@ export class DetailsDashboardFacade {
           uniprot,
           open: false,
           range: [],
+          pdbs: this.entryApiService.getSummaryStats(uniprot).pipe(map((stats) => stats.pdbs)),
         };
       }
 

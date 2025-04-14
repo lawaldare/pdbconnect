@@ -448,8 +448,8 @@ export class DetailsDashboardComponent implements OnInit {
       entityId = (datum as DomainsRowData).additionalData.boundaries[0].entity;
 
       // if a domain is composed of single chain, we set it for Protvista
-      const chains = (datum as DomainsRowData).additionalData.boundaries.map(boundary => boundary.chain);
-      const allSame = chains.every(chain => chain === chains[0]);
+      const chains = (datum as DomainsRowData).additionalData.boundaries.map((boundary) => boundary.chain);
+      const allSame = chains.every((chain) => chain === chains[0]);
       if (allSame) chainId = chains[0];
     }
 

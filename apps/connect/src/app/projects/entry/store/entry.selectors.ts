@@ -46,4 +46,5 @@ export const EntrySelectors = {
   isoformsMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.isoformsMapping),
   ecMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.ecMapping),
   goMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.goMapping),
+  symmetry: createSelector(EntryStoreState, (state: EntryStoreState) => state.symmetry),
 };

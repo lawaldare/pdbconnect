@@ -74,6 +74,19 @@ export class EntryEffects {
     )
   );
 
+  getSymmetry$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getSymmetry),
+      switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
+      mergeMap((entryId: string) =>
+        this.entryAPIService.getSymmetry(entryId).pipe(
+          map((symmetry) => EntryActions.getSymmetrySuccess({ symmetry })),
+          catchError(() => of(EntryActions.getSymmetryFailure()))
+        )
+      )
+    )
+  );
+
   getECMapping$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getECMapping),

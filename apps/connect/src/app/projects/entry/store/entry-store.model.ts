@@ -14,7 +14,7 @@ import { CitationDetail } from '../data-models/publication.model';
 import { RelatedPublication } from '../data-models/related-publications.model';
 import { ComplexDetails } from '../data-models/complex-details.model';
 import { PisaAssembly } from '../data-models/pisa-assembly.model';
-import { AssemblyData } from '../data-models/assembly.model';
+import { AssemblyData, Symmetry } from '../data-models/assembly.model';
 import { CarbohydrateMolecule } from '../data-models/carbohydrate-polymer.model';
 import {
   BMRBExperimentRawData,
@@ -67,6 +67,7 @@ export interface EntryStoreState {
   experimentRawDataPDB: PDBExperimentRawData[];
   entryStatus: EntryStatus | undefined;
   interactions: Interaction[];
+  symmetry: Symmetry[];
 }
 
 export interface EntryMoleculesData {
