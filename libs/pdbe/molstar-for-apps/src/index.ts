@@ -1,3 +1,14 @@
 export * from './lib/pdbe-molstar-for-apps/pdbe-molstar-for-apps.component';
 export * from './lib/molstar/molstar.component';
 export * from './lib/molstar-dialog/molstar-dialog.component';
+export { MolstarBaseClass, MolstarConfigObject } from './lib/extension-for-pages/molstar-extended-base-class';
+export {
+  removeComponent,
+  createComponent,
+  addRepresentationToComponent,
+  changeComponentVisibility,
+  changeRepresentationVisibility,
+  MolstarResidueInfo,
+  MolstarSelectionObj,
+} from './lib/extension-for-pages/utils/molstar-core-manipulation.util';
+export * from './lib/extension-for-pages/representation-styles-for-3d/molstar-repr-styles-for-entry-pages-3d';

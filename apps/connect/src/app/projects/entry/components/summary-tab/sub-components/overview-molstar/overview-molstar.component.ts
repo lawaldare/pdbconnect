@@ -6,7 +6,7 @@ import { OverviewMolstarFacade } from './overview-molstar.facade';
 import { ComponentCommunicationService } from '../../../../services/component-comm.service';
 import { OverviewStateManagementService } from './state-management.service';
 import { MolstarOverviewForTopPage } from '../../../../helpers/molstar/molstar-overview-for-top-page';
-import { MolstarConfigObject } from '../../../../helpers/molstar/molstar-base-class';
+// import { MolstarConfigObject } from '../../../../helpers/molstar/molstar-base-class';
 import { OverviewMolstarControBarComponent } from './sub-components/molstar-control-bar/molstar-control-bar.component';
 import { OverviewMolstarTabListViewComponent } from './sub-components/tab-listview-content/tab-listview-content.component';
 import { EntryStoreState } from '../../../../store/entry-store.model';
@@ -15,6 +15,7 @@ import { EntrySelectors } from '../../../../store/entry.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TabNames } from '../../../../helpers/tab-names.enum';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { MolstarConfigObject } from '@pdbe-lib/molstar-for-apps';
 
 @Component({
   selector: 'pdbc-overview-molstar',

@@ -4,7 +4,7 @@
 
 import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
 import { Molecule } from '../../../../data-models/molecule.model';
-import { MolstarSelectionObj } from '../../../../helpers/molstar/molstar-helpers';
+import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 
 export type TableRow = AssembliesRowData | MacromoleculesRowData | LigandsRowData | DomainsRowData;
 

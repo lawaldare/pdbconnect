@@ -7,6 +7,8 @@ import '@nightingale-elements/nightingale-sequence';
 import { Feature as NightingaleFeature } from '@nightingale-elements/nightingale-track';
 import { MaterialModule } from '@pdbc/core';
 
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatRadioButton } from '@angular/material/radio';
 import {
   APIConservationData,
   APITrackData,
@@ -49,6 +51,8 @@ const PDBE_ENTITY_TRACK_ENDPOINTS = ['uniprot_mapping', 'chains', 'domains', 'rf
   selector: 'pdbc-entry-pg-protvista',
   imports: [
     CommonModule,
+    MatCheckbox,
+    MatRadioButton,
     MaterialModule,
     SearchResiduePanelComponent,
     MapCustomDataPanelComponent,
@@ -218,7 +222,6 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       this.setSequenceFromTrackData(trackDataArray);
 
       // 3.3 - Convert API data to Nightingale-compatible structures
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const { trackNames, trackList, tooltips, panelResidueData } = processPdbEntityDataToTracks(this.entryId(), this.sequence!, trackDataArray);
 
       // 3.4 - Store processed data into component state

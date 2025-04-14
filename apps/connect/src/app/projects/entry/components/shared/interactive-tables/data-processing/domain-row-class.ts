@@ -4,7 +4,7 @@ import { DataToTable } from './abstract-base-row-class';
 import { PfamMappings, CathMappings, ScopMappings, DomainMapping } from '../../../../data-models/domains.model';
 import { Molecule } from '../../../../data-models/molecule.model';
 import { formatSegments } from '../../../../helpers/domain-helpers';
-import { MolstarResidueInfo } from '../../../../helpers/molstar/molstar-helpers';
+import { MolstarResidueInfo } from '@pdbe-lib/molstar-for-apps';
 
 export class DomainDataToTable extends DataToTable {
   // Domain specific data

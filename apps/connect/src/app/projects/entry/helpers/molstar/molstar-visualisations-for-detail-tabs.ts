@@ -6,7 +6,7 @@ import {
   addRepresentationToComponent,
   changeComponentVisibility,
   changeRepresentationVisibility,
-} from './molstar-helpers';
+} from '@pdbe-lib/molstar-for-apps';
 import {
   LIGANDS_REPR_HIGHLIGHT,
   LIGANDS_REPR_NONSELECTION_POLYMER,
@@ -16,7 +16,7 @@ import {
   REPR_NONSELECTION_BRANCHED,
   REPR_NONSELECTION_LIGAND,
   REPR_NONSELECTION_POLYMER,
-} from './molstar-repr-objects';
+} from '@pdbe-lib/molstar-for-apps';
 import {
   AssembliesRowData,
   DomainsRowData,
@@ -24,8 +24,7 @@ import {
   MacromoleculesRowData,
 } from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { MolstarBaseClass, MolstarConfigObject } from './molstar-base-class';
-import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
+import { MolstarBaseClass, MolstarConfigObject } from '@pdbe-lib/molstar-for-apps';
 
 @Injectable({
   providedIn: 'root',
@@ -38,7 +37,6 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
   private isMolstarRendered = signal<boolean>(false);
   public isFirstViewRender = true;
   public readonly signals = inject(ComponentCommunicationService);
-  public dataProcessing = inject(MainDataProcessingFacade);
 
   /**
    * Function responsible for initial render of molstar instance
@@ -65,11 +63,9 @@ export class MolstarVisualisationsForTabs extends MolstarBaseClass {
     this.parseInstanceResidues();
     const data = this.residues();
     this.signals.molstarResidueInfo.set(data);
-    this.dataProcessing.processInteractiveTablesData();
 
-    setTimeout(() => {
-      this.signals.molstarResidueInfoLoaded.set(true);
-    }, 2000);
+    // molstarResidueInfoLoaded signal is converted into an observable on pages/main/data-processing
+    this.signals.molstarResidueInfoLoaded.set(true);
   }
 
   /**

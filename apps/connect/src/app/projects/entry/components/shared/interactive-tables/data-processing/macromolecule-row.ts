@@ -5,7 +5,7 @@ import { CarbohydrateMolecule, CarbohydrateResidue } from '../../../../data-mode
 import { Molecule } from '../../../../data-models/molecule.model';
 import { BestStructureMapping } from '../../../../data-models/uniport-best-structures.model';
 import { UniProtMapping } from '../../../../data-models/uniprot-mapping.model';
-import { MolstarResidueInfo, MolstarSelectionObj } from '../../../../helpers/molstar/molstar-helpers';
+import { MolstarResidueInfo, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 
 interface MacromoleculesChainBoundaries {
   [key: number]: {

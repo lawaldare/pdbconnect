@@ -1,5 +1,5 @@
 import { ElementRef, inject, Injectable, signal } from '@angular/core';
-import { MolstarSelectionObj } from '../../../../helpers/molstar/molstar-helpers';
+import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { MolstarOverviewForTopPage } from '../../../../helpers/molstar/molstar-overview-for-top-page';
 import { ListSelectable, OverviewMolstarFacade } from './overview-molstar.facade';
 

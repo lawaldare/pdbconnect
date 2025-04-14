@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { MolstarBaseClass } from './molstar-base-class';
-import { addRepresentationToComponent, changeComponentVisibility } from './molstar-helpers';
+import { MolstarBaseClass } from '@pdbe-lib/molstar-for-apps';
+import { addRepresentationToComponent, changeComponentVisibility } from '@pdbe-lib/molstar-for-apps';
 import { Color } from 'molstar/lib/mol-util/color';
 
 @Injectable({

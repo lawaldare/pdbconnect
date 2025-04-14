@@ -17,7 +17,7 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { Store } from '@ngrx/store';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { assemblyTooltip, dashboardStatLinks, resourceUrls } from '../../../entry-constant';
-import { MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
+import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { MolstarVisualisationsForTabs } from '../../../helpers/molstar/molstar-visualisations-for-detail-tabs';
 import { TableNames } from '../../../pages/main/main.component';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
@@ -173,6 +173,7 @@ export class DetailsDashboardComponent implements OnInit {
     source: this.interactions,
     computation: () => this.interactions(),
   });
+
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
   private readonly destroyRef = inject(DestroyRef);
 

@@ -1,7 +1,7 @@
 import { ElementRef } from '@angular/core';
 import { signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { chainEntityResidSelection, MolstarResidueInfo, MolstarSelectionObj } from './molstar-helpers';
+import { chainEntityResidSelection, MolstarResidueInfo, MolstarSelectionObj } from './utils/molstar-core-manipulation.util';
 import { Column } from 'molstar/lib/mol-data/db';
 import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
 import { StructureQuery } from 'molstar/lib/mol-model/structure/query/query';

@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { MolstarResidueInfo } from '../helpers/molstar/molstar-helpers';
+import { MolstarResidueInfo } from '@pdbe-lib/molstar-for-apps';
 import { DataToTable } from '../components/shared/interactive-tables/data-processing/abstract-base-row-class';
 
 @Injectable({

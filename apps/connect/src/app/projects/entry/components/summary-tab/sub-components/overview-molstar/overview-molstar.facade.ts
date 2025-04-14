@@ -2,7 +2,7 @@
 import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { combineLatest, filter, firstValueFrom, forkJoin, map } from 'rxjs';
 import { Molecule } from '../../../../data-models/molecule.model';
-import { MolstarResidueInfo, MolstarSelectionObj } from '../../../../helpers/molstar/molstar-helpers';
+import { MolstarResidueInfo, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
 import { ComplexDetails } from '../../../../data-models/complex-details.model';
 import { calculateAssemblyComposition } from '../../../../helpers/assembly-helpers';

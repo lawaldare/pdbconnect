@@ -1,6 +1,6 @@
 import { DomainsBoundaries } from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { DomainMapping } from '../data-models/domains.model';
-import { MolstarResidueInfo, MolstarSelectionObj } from './molstar/molstar-helpers';
+import { MolstarResidueInfo, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 
 /**
  * This function gets domain mappings in a unified format

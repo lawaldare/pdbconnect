@@ -163,8 +163,10 @@ export class EntryMainPageComponent implements OnInit {
           this.statusCode.set(statusCode);
           if (statusCode === 'REL') {
             setTimeout(() => {
+              console.log('molstar render initial');
               this.molstarVisualisation.renderMolstarInitial(this.entryId() ?? '', this.molstarViewer.nativeElement);
             });
+            this.dataProcessing.processInteractiveTablesData();
             this.dataProcessing.getPageData();
           } else {
             this.statusCode.set(statusCode);

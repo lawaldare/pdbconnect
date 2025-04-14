@@ -3,7 +3,7 @@ import { LigandsRowData, TableFilter, TableRow } from '../data-models-and-defini
 import { DataToTable } from './abstract-base-row-class';
 import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
 import { Molecule } from '../../../../data-models/molecule.model';
-import { MolstarResidueInfo, MolstarSelectionObj } from '../../../../helpers/molstar/molstar-helpers';
+import { MolstarResidueInfo, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 
 export class LigandDataToTable extends DataToTable {
   // Ligand specific data

@@ -15,9 +15,10 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../store/entry.selectors';
-import { MolstarConfigObject } from '../../helpers/molstar/molstar-base-class';
+// import { MolstarConfigObject } from '../../helpers/molstar/molstar-base-class';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
+import { MolstarConfigObject } from '@pdbe-lib/molstar-for-apps';
 
 interface ValueLabel {
   value: string;

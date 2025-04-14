@@ -5,8 +5,24 @@ import { Color } from 'molstar/lib/mol-util/color';
  * in Molstar that are used in different detail tabs (bottom of the page)
  */
 
-// For tabs:
-// DOMAINS, LIGANDS (when modification), MACROMOLECULES
+/**
+ * Used in Summary view component for selected Macromolecules, Domains
+ */
+export const SELECTED_REPR_COL_BY_ENTITY = {
+  type: 'cartoon',
+  color: 'entity-id',
+  colorParams: { overrideWater: true },
+  typeParams: { alpha: 1 },
+};
+
+/**
+ * Used in Model quality tab for ...
+ */
+
+/**
+ * Used in Macromolecules, Ligands (modifications only) and Domains tabs to style the non selected
+ * molecules
+ */
 export const REPR_NONSELECTION_POLYMER = {
   type: 'cartoon',
   color: 'uniform',
@@ -14,8 +30,9 @@ export const REPR_NONSELECTION_POLYMER = {
   typeParams: { alpha: 0.65 },
 };
 
-// For tabs:
-// DOMAINS, MACROMOLECULES
+/**
+ * Used in Macromolecules and Domains tabs to style ligands
+ */
 export const REPR_NONSELECTION_LIGAND = {
   type: 'ball-and-stick',
   color: 'uniform',
@@ -23,16 +40,18 @@ export const REPR_NONSELECTION_LIGAND = {
   typeParams: { alpha: 0.65 },
 };
 
-// For tabs:
-// DOMAINS, MACROMOLECULES
+/**
+ * Used in Macromolecules and Domains tabs to style carbohydrate macromolecules
+ */
 export const REPR_NONSELECTION_BRANCHED = {
   type: 'carbohydrate',
   colorParams: { name: 'carbohydrate-symbol' },
   typeParams: { alpha: 0.65 },
 };
 
-// For tabs:
-// DOMAINS, MACROMOLECULES (when macromolecule is not a carbohydrate)
+/**
+ * Used in Macromolecules and Domains tabs to style non-carbohydrate macromolecules
+ */
 export const PROTEIN_REPR_SELECTION = {
   type: 'cartoon',
   color: 'uniform',
@@ -48,16 +67,18 @@ export const LIGANDS_REPR_NONSELECTION_LIGAND = {
   colorParams: { carbonColor: { name: 'uniform', params: { value: Color(0xfefefe) } } },
 };
 
-// For tabs:
-// LIGANDS & ENV
+/**
+ * Used in Ligands and Environments tab to style ligand
+ */
 export const LIGANDS_REPR_SELECTION = {
   type: 'ball-and-stick',
   color: 'element-symbol',
   colorParams: { carbonColor: { name: 'entity-id', params: {} } },
 };
 
-// For tabs:
-// LIGANDS & ENV
+/**
+ * Used in Ligands and Environments tab to style semi transparent highlight around ligand
+ */
 export const LIGANDS_REPR_HIGHLIGHT = {
   type: 'ball-and-stick',
   color: 'element-symbol',
@@ -75,8 +96,9 @@ export const LIGANDS_REPR_HIGHLIGHT = {
   },
 };
 
-// For tabs:
-// LIGANDS & ENV
+/**
+ * Used in Ligands and Environments tab to style interacting residues
+ */
 export const LIGANDS_REPR_NONSELECTION_POLYMER = {
   type: 'ball-and-stick',
   color: 'element-symbol',
@@ -95,8 +117,9 @@ export const LIGANDS_REPR_NONSELECTION_POLYMER = {
   typeParams: { alpha: 0.65 },
 };
 
-// For tabs:
-// MACROMOLECULES (when macromolecule is a carbohydrate)
+/**
+ * Used in Macromolecules tab when carbohydrate macromolecule is selected
+ */
 export const MACROMOLECULES_REPR_SELECTION_CARB = {
   type: 'ball-and-stick',
   color: 'element-symbol',
