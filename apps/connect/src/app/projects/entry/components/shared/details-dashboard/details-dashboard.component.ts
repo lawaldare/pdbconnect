@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule, UtilService } from '@pdbc/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DetailsDashboardFacade } from './details-dashboard.facade';
-import { firstValueFrom, map, timer } from 'rxjs';
+import { combineLatest, firstValueFrom, map, timer } from 'rxjs';
 import {
   AssembliesRowData,
   DomainsBoundaries,

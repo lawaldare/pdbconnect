@@ -13,15 +13,24 @@ import { DetailsDashboardFacade } from '../../../components/shared/details-dashb
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { EntryApiService } from '../../../services/entry-api.service';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
+import { SequenceDetail } from '../../../components/shared/details-dashboard/details-dashboard.component';
 
 enum ViewState {
   List = 'list',
   Detail = 'detail',
 }
 
+interface GoMapped {
+  names: string[];
+  count: number;
+  category: string;
+}
+
 @Component({
   selector: 'pdbc-mb-macromolecule',
-  imports: [CommonModule, MaterialModule],
+  imports: [CommonModule, MaterialModule, EntryDropdownComponent],
   templateUrl: './mb-macromolecule.component.html',
   styleUrls: ['../common-mb-header.scss', './mb-macromolecule.component.scss'],
 })
@@ -34,11 +43,24 @@ export class MbMacromoleculeComponent {
   public readonly entryApiService = inject(EntryApiService);
 
   public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
+  public readonly cathMapping = toSignal(this.globalStore.select(EntrySelectors.cathMapping));
+  public readonly scop175Mapping = toSignal(this.globalStore.select(EntrySelectors.scop175Mapping));
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly pfamMapping = toSignal(this.globalStore.select(EntrySelectors.pfamMapping));
+  public readonly interproMapping = toSignal(this.globalStore.select(EntrySelectors.interproMapping));
+  public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
+  public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
+
+  private readonly utilService = inject(UtilService);
 
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   public readonly signals = inject(ComponentCommunicationService);
   public expanded = signal<boolean>(false);
   public readonly util = inject(UtilService);
+
+  public dropdownOptions: DownloadOption[] = [];
+  public dropdownSelected!: string;
+  public sequenceDetails: SequenceDetail[] = [];
 
   public readonly macromoleculeTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
@@ -74,12 +96,144 @@ export class MbMacromoleculeComponent {
   public currentViewState = signal<ViewState>(ViewState.List);
   public viewStates = ViewState;
 
-  public selectedMacromolecule = signal<MacromoleculesRowData>({} as MacromoleculesRowData);
+  public selectedMacromolecule = signal<any>({});
 
   public title = this.mbFacade.macromoleculeTitle;
 
-  constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbMacromoleculeComponent>) {
-    console.log('MbMacromoleculeComponent initialized', this.macromoleculeTableRows());
+  public structureDomains = computed(() => {
+    const cath = this.cathMapping() ?? {};
+    const scop = this.scop175Mapping() ?? {};
+    const entityId = this.selectedMacromolecule()?.additionalData?.molecule?.entity_id;
+
+    const mappedResult = [];
+
+    for (const [key, value] of Object.entries(cath)) {
+      if (value.mappings[0].entity_id === entityId) {
+        const obj = {
+          cathId: key,
+          cathTitle: value.homology,
+        };
+        mappedResult.push(obj);
+      }
+    }
+
+    for (const [key, value] of Object.entries(scop)) {
+      if (value.mappings[0].entity_id === entityId) {
+        const obj = {
+          cathId: key,
+          cathTitle: value.identifier,
+        };
+        mappedResult.push(obj);
+      }
+    }
+
+    return mappedResult;
+  });
+
+  public sequenceDomains = computed(() => {
+    const pfam = this.pfamMapping() ?? {};
+    const interpro = this.interproMapping() ?? {};
+    const entityId = this.selectedMacromolecule()?.additionalData?.molecule?.entity_id;
+
+    const mappedResult = [];
+
+    for (const [key, value] of Object.entries(pfam)) {
+      if (value.mappings[0].entity_id === entityId) {
+        const obj = {
+          cathId: key,
+          cathTitle: value.description,
+          identity: 'Pfam',
+        };
+        mappedResult.push(obj);
+      }
+    }
+
+    for (const [key, value] of Object.entries(interpro)) {
+      if (value.mappings[0].entity_id === entityId) {
+        const obj = {
+          cathId: key,
+          cathTitle: value.identifier,
+          identity: 'InterPro',
+        };
+        mappedResult.push(obj);
+      }
+    }
+
+    return mappedResult;
+  });
+
+  public ecFunctions = computed(() => {
+    const ec = this.ecMapping() ?? {};
+    const entityId = this.selectedMacromolecule()?.additionalData?.molecule?.entity_id;
+
+    const mappedResult = [];
+
+    for (const [key, value] of Object.entries(ec)) {
+      if (value.mappings[0].entity_id === entityId) {
+        mappedResult.push({
+          id: key,
+          name: value.accepted_name,
+          reaction: value.reaction,
+          systematic_name: value.systematic_name,
+          synonyms: value.synonyms,
+        });
+      }
+    }
+
+    return mappedResult;
+  });
+
+  public goFunctions = computed(() => {
+    const go = this.goMapping() ?? {};
+    const entityId = this.selectedMacromolecule()?.additionalData?.molecule?.entity_id;
+
+    const grouped = Object.values(go).reduce((acc: GoMapped[], item: any) => {
+      if (item.mappings[0].entity_id === entityId) {
+        if (!acc[item.category]) {
+          acc[item.category] = {
+            names: [],
+            count: 0,
+            category: item.category.replace('_', ' '),
+          };
+        }
+        acc[item.category].names.push(item.name);
+        acc[item.category].count += 1;
+      }
+      return acc;
+    }, {} as any);
+
+    const mappedResult = Object.values(grouped);
+
+    return mappedResult;
+  });
+
+  public initialSynonymsCount = signal<number>(5);
+  public initialGoTermsCount = signal<number>(5);
+
+  constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbMacromoleculeComponent>) {}
+
+  public toggleSynonymsList(total: number) {
+    this.initialSynonymsCount.update((prev) => (prev === 5 ? total : 5));
+  }
+
+  public toggleGoTermsList(total: number) {
+    this.initialGoTermsCount.update((prev) => (prev === 5 ? total : 5));
+  }
+
+  private init(): void {
+    const dropdownResults = this.detailsDashboardFacade.getMacromoleculeDropdownOptions(this.selectedMacromolecule());
+    // this.dropdownTitle = dropdownResults.dropdownTitle;
+    // this.dropdownOptionsToMolstar = dropdownResults.dropdownOptionsToMolstar;
+    this.dropdownOptions = dropdownResults.dropdownOptions.map((eachString, idx) => {
+      return {
+        name: eachString,
+        url: `macro-${idx + 1}`,
+        downloadable: false,
+      };
+    });
+    this.dropdownSelected = dropdownResults.dropdownSelected;
+
+    this.sequenceDetails = this.detailsDashboardFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', this.selectedMacromolecule(), this.dropdownSelected);
   }
 
   toggleBottomsheetHeight() {
@@ -100,6 +254,7 @@ export class MbMacromoleculeComponent {
     this.currentViewState.set(ViewState.Detail);
     this.mbFacade.updateSelectedTitle(data.name.molecule);
     this.selectedMacromolecule.set(data);
+    this.init();
   }
 
   public goBackToList() {
@@ -109,5 +264,24 @@ export class MbMacromoleculeComponent {
 
   public generateOrganismSearchUrl(term: string): string {
     return this.util.generateQueryURL(term, 'q_organism_name');
+  }
+
+  public async onDropdownSelect(event: string) {
+    this.dropdownSelected = event;
+
+    // for ligands when selcetion is switched in the dropdown, we reload molstar config obj
+    // let reloadConfigObj = false;
+    // if (this.tabName() === 'Ligands') reloadConfigObj = true;
+
+    // // all possible rendering functions are called for a dashboard
+    // await this.renderInMolstar(reloadConfigObj);
+    // this.initOrRefreshProtvista();
+    // await this.initOrRefreshTopologyViewer();
+    // await this.initOrRefreshLigandEnvViewer();
+  }
+
+  public copySequence(sequenceDetail: SequenceDetail) {
+    const text = `${sequenceDetail.title}\r\n${sequenceDetail.fullSequence}`;
+    this.utilService.copy(text);
   }
 }

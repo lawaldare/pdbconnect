@@ -159,7 +159,7 @@
         <br />
       </article>
     </div>
-    @if(goMappings().length){
+    } @if(goMappings().length){
     <div class="info-row dialog">
       <span class="micro-title">GO terms</span>
       <article><span role="button" (click)="openDialog('go')">View {{goMappings().length}} GO terms</span></article>
@@ -169,7 +169,7 @@
       <span class="micro-title">EC numbers</span>
       <article><span role="button" (click)="openDialog('ec')">View {{ecMappings().length}} EC numbers</span></article>
     </div>
-    } }
+    }
   </div>
 </section>
 

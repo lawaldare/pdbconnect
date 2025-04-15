@@ -120,4 +120,53 @@ section {
       }
     }
   }
+
+  ::ng-deep .dropdown-container {
+    button {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+
+  .sequence-container {
+    div.title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 4px 0;
+
+      span.text {
+        color: #1a1c1a;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 27.2px;
+      }
+
+      button {
+        color: #3b6fb6;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 22.4px;
+        cursor: pointer;
+      }
+    }
+
+    div.sequence {
+      background: #f3f3f3;
+      padding: 4px;
+      align-self: stretch;
+      color: #000;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 22.4px;
+      word-break: break-word;
+      margin-bottom: 8px;
+    }
+  }
+
+  p[role='button'] {
+    cursor: pointer;
+    color: #3b6fb6 !important;
+  }
 }
