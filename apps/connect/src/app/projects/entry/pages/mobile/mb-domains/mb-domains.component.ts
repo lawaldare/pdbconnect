@@ -83,8 +83,9 @@ export class MbDomainsComponent implements AfterViewInit {
     await this.mbFacade.renderMolstarDomains(this.entryId() ?? '', this.selectedDomain(), true);
   }
 
-  public goBackToList() {
+  public async goBackToList() {
     this.currentViewState.set(ViewState.List);
     this.mbFacade.updateSelectedLigandTitle('Ligands');
+    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
   }
 }
