@@ -84,10 +84,11 @@ export class MbLigandsComponent implements AfterViewInit {
     }
   }
 
-  public closeBottomSheet() {
+  public async closeBottomSheet() {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
+    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
   }
 
   public navigateToDetail(data: LigandsRowData) {
