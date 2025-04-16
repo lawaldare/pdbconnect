@@ -25,12 +25,13 @@ export class MbModelQualityComponent implements OnInit {
 
   public currentData = signal<ProcessedExperimentalDetails | undefined>(undefined);
   public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
 
   public expanded = signal<boolean>(false);
 
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbModelQualityComponent>) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.globalStore
       .select(EntrySelectors.experimentalDetails)
       .pipe(
@@ -48,12 +49,15 @@ export class MbModelQualityComponent implements OnInit {
         // this.processedData.set(processedExpValData);
         this.currentData.set(processedExpValData?.[0]);
       });
+
+    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
   }
 
-  public closeBottomSheet() {
+  public async closeBottomSheet() {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
+    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
   }
 
   toggleBottomsheetHeight() {

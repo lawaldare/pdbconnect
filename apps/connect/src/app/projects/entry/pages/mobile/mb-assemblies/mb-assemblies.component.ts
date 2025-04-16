@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, inject, Optional, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
@@ -19,7 +19,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './mb-assemblies.component.html',
   styleUrls: ['../common-mb-header.scss', './mb-assemblies.component.scss'],
 })
-export class MbAssembliesComponent {
+export class MbAssembliesComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly destroyRef = inject(DestroyRef);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
@@ -30,6 +30,7 @@ export class MbAssembliesComponent {
   public isChecked = signal<boolean>(false);
 
   public readonly symmetry = toSignal(this.globalStore.select(EntrySelectors.symmetry));
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
 
   public readonly assemblyTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
@@ -57,6 +58,10 @@ export class MbAssembliesComponent {
 
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbAssembliesComponent>) {}
 
+  async ngOnInit() {
+    await this.mbFacade.renderMolstarAssemblies(this.entryId() ?? '', this.prefferedAssembly(), true);
+  }
+
   toggleBottomsheetHeight() {
     this.expanded.update((olamide) => !olamide);
     const container = document.querySelector('.custom-bottom-sheet') as HTMLElement;
@@ -65,9 +70,10 @@ export class MbAssembliesComponent {
     }
   }
 
-  public closeBottomSheet() {
+  public async closeBottomSheet() {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
+    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
   }
 }

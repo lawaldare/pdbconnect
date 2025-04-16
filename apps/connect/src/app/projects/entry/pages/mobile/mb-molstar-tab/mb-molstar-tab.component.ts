@@ -1,8 +1,7 @@
-import { Component, inject, OnInit, signal, Type } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, OnInit, Type, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
-import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { BottomSheetComponent } from '../mb-bottom-sheet/bottom-sheet.component';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -13,6 +12,8 @@ import { MbMacromoleculeComponent } from '../mb-macromolecules/mb-macromolecule.
 import { MbLigandsComponent } from '../mb-ligands/mb-ligands.component';
 import { MbDomainsComponent } from '../mb-domains/mb-domains.component';
 import { MobileFacade } from '../mobile.facade';
+import { firstValueFrom } from 'rxjs';
+import { MolstarConfigObject } from '../../../helpers/molstar/molstar-base-class';
 
 export enum MobileTabChips {
   MQuality = 'MQuality',
@@ -22,18 +23,22 @@ export enum MobileTabChips {
   Domains = 'Domains',
 }
 
+declare let PDBeMolstarPlugin: any;
+
 @Component({
   selector: 'pdbc-mb-molstar-tab',
   imports: [CommonModule, MaterialModule],
   templateUrl: './mb-molstar-tab.component.html',
   styleUrl: './mb-molstar-tab.component.scss',
 })
-export class MbMolstarTabComponent implements OnInit {
+export class MbMolstarTabComponent implements AfterViewInit {
   private bottomSheet = inject(MatBottomSheet);
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly mbFacade = inject(MobileFacade);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+
+  @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 
   public readonly mobileTabChips = [
     { label: 'Model Quality', id: MobileTabChips.MQuality },
@@ -46,15 +51,8 @@ export class MbMolstarTabComponent implements OnInit {
   public selectedTabName = this.mbFacade.selectedTabName;
   private selectedComponent = this.mbFacade.selectedComponent;
 
-  ngOnInit(): void {
-    this.openBottomSheet();
-  }
-
-  openBottomSheet(): void {
-    // this.bottomSheet.open(this.selectedComponent(), {
-    //   height: '40%',
-    //   hasBackdrop: false,
-    // });
+  async ngAfterViewInit() {
+    await this.initializeMolstarViewer();
   }
 
   public onTabClick(chip: { label: string; id: string }): void {
@@ -63,8 +61,6 @@ export class MbMolstarTabComponent implements OnInit {
     } else {
       this.mbFacade.updateSelectedTabName(chip.id);
     }
-
-    console.log(this.selectedTabName());
 
     switch (this.selectedTabName()) {
       case MobileTabChips.MQuality:
@@ -98,5 +94,9 @@ export class MbMolstarTabComponent implements OnInit {
     } else {
       this.bottomSheet.dismiss();
     }
+  }
+
+  private async initializeMolstarViewer(): Promise<void> {
+    await this.mbFacade.initializeMolstarViewer(this.molstarContainer, this.entryId() ?? '');
   }
 }

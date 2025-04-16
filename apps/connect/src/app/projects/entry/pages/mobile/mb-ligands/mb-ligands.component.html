@@ -1,1 +1,57 @@
-<p>mb-ligands works!</p>
+<section>
+  @if(currentViewState() === viewStates.Detail){
+  <nav>
+    <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
+    <span (click)="goBackToList()">Go to Ligands list </span>
+  </nav>
+  } @if(LigandTableRows().length){
+  <header>
+    <h2>
+      {{title()}} @if(currentViewState() === viewStates.List){
+      <span>({{LigandTableRows().length}})</span>
+      }
+    </h2>
+    <div class="controls">
+      <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
+      <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+    </div>
+  </header>
+
+  <!-- 1st Level Overlay -->
+  @if(currentViewState() === viewStates.List){ @for(row of LigandTableRows(); track row.id){
+  <div class="row" (click)="navigateToDetail(row)">
+    <div class="row__header">
+      <p class="row__header__name">{{row.codeAndName.count}} X {{row.id}}</p>
+      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+    </div>
+    <p class="row__content">{{row.codeAndName.name | truncate:40}}</p>
+    <span class="row__annotation">{{row.annotation.description}}</span>
+  </div>
+  } }
+
+  <!-- 2nd Level Overlay -->
+  @if(currentViewState() === viewStates.Detail){
+  <span class="row__annotation">{{selectedLigands().annotation.description}}</span>
+  <div class="chains">
+    @if(dropdownOptions.length > 1){
+    <div class="dropdown-container">
+      <!-- <span class="dropdown-title">{{ dropdownTitle }}</span> -->
+      <pdbc-entry-dropdown
+        [downloadable]="false"
+        [islink]="false"
+        [options]="dropdownOptions"
+        [title]="dropdownSelected"
+        (optionClickedEvent)="onDropdownSelect($event)"
+      >
+      </pdbc-entry-dropdown>
+    </div>
+    }@else if(dropdownOptions.length === 1){
+    <p>{{dropdownOptions[0].name}}</p>
+    }@else {}
+  </div>
+  <p class="title">Ligand name</p>
+  <p class="content">{{selectedLigands().codeAndName.name | truncate:40}}</p>
+  <p class="title">Molecular weight</p>
+  <p class="content">{{selectedLigands().additionalData.source.weight}}</p>
+  }}
+</section>

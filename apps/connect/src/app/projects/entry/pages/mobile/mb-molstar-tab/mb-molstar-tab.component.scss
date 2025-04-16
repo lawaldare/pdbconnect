@@ -42,3 +42,23 @@ main {
     }
   }
 }
+
+.container-3d {
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+  margin-bottom: 20px;
+
+  .molstar-parent {
+    display: flex;
+    flex: 1;
+
+    .molstar-container {
+      position: relative;
+      width: 407px;
+      min-height: 296px;
+      flex: 1;
+      z-index: 1;
+    }
+  }
+}
