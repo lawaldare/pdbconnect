@@ -14,8 +14,7 @@ p {
   }
 }
 
-h3,
-h4 {
+h3 {
   margin-bottom: 20px;
 }
 
@@ -23,19 +22,14 @@ section {
   margin-top: 10px;
   position: relative;
 
-  lib-tool-tip {
-    top: 5px;
-  }
-}
+  .title {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 20px;
 
-section.subcomplexes {
-  lib-tool-tip {
-    left: 172px;
-  }
-}
-
-section.supercomplexes {
-  lib-tool-tip {
-    left: 196px;
+    img {
+      cursor: pointer;
+    }
   }
 }

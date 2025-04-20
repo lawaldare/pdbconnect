@@ -1,7 +1,9 @@
 @if (ligands().length) {
 <div id="ligands-section">
   <!-- <h3>Ligands</h3> -->
-  <p>This section shows {{this.ligands().length}} ligands observed directly bound to the complex of interest in the PDB</p>
+  <p>
+    This section shows <strong>{{this.ligands().length}}</strong> ligands observed directly bound to the preferred assemblies representing this complex in the PDB
+  </p>
   <div class="search-box">
     <input type="search" [formControl]="searchTerm" placeholder="Search by ligand name or id" />
     @if (!searchTerm.value) {

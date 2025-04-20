@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ParticipantDirective } from '../../../directives/participants.directive';
 import { ComplexSymmetryPipe } from '../../../pipes/symmetry.pipe';
@@ -10,17 +10,33 @@ import { ComplexStoreState } from '../../../store/complex-store.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { map } from 'rxjs';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 
 @Component({
   selector: 'pdbc-summary',
   standalone: true,
-  imports: [CommonModule, MaterialModule, ParticipantDirective, ComplexSymmetryPipe, OEMCDirective],
+  imports: [CommonModule, MolstarComponent, MaterialModule, ParticipantDirective, ComplexSymmetryPipe, OEMCDirective],
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss'],
 })
-export class SummaryComponent {
+export class SummaryComponent implements OnInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
+  public ligands = toSignal(this.globalStore.select(ComplexSelectors.complexLigands));
+
+  public config!: { moleculeId: string; bgColor: { r: number; g: number; b: number }; assemblyId: number; hideControls: boolean };
+
+  public height = '400px';
+  public width = '100%';
+
+  public mappedLigands = linkedSignal({
+    source: this.ligands,
+    computation: () => {
+      const filteredligands = this.ligands()?.filter((ligand) => ligand.annotations.includes('Cofactor-like'));
+      return filteredligands;
+    },
+  });
+
   public summaryData = toSignal(
     this.globalStore.select(ComplexSelectors.complexData).pipe(
       map((data) => {
@@ -34,7 +50,17 @@ export class SummaryComponent {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   public participants = signal<Participant[]>(this.summaryData()?.participants.slice(0, 4) ?? []);
+  public respresentStructure = computed(() => this.summaryData()?.representative_structure);
   public textIcon = signal<string>('more');
+
+  ngOnInit(): void {
+    this.config = {
+      moleculeId: this.respresentStructure()?.pdb_id ?? '',
+      bgColor: { r: 255, g: 255, b: 255 },
+      assemblyId: Number(this.respresentStructure()?.assembly_id),
+      hideControls: true,
+    };
+  }
 
   private countPdbIdExperimentalMethod(data: Assembly[]) {
     const methodCounts = {} as any;
@@ -68,5 +94,14 @@ export class SummaryComponent {
       this.participants.update(() => this.summaryData()?.participants ?? []);
       this.textIcon.set('less');
     }
+  }
+
+  public openLigandPage(ligandId: string) {
+    const trimmedValue = ligandId.trim();
+    const origin = window.location.origin;
+    const pathname = '/chemicalCompound/show/';
+    const baseHref = window.location.hostname === 'localhost' ? '' : '/pdbe/connect';
+    const href = origin + baseHref + pathname + trimmedValue;
+    window.open(href, '_self');
   }
 }

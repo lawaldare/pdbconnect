@@ -9,7 +9,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
-import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
+import { colDefs, components, gridOptions, initialState, rowSelection } from './ag-grid';
 
 @Component({
   selector: 'pdbc-complex-structures',
@@ -26,13 +26,14 @@ export class ComplexStructuresComponent implements OnInit {
   public readonly colDefs = colDefs;
   public readonly initialState = initialState;
   public readonly rowSelection = rowSelection;
+  public readonly components = components;
 
   public rowData = computed(() => this.summaryData()?.assemblies as Assembly[]);
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
 
   public config!: { moleculeId: string; bgColor: { r: number; g: number; b: number }; assemblyId: number; hideControls: boolean };
 
-  public height = '300px';
+  public height = '400px';
   public width = '100%';
 
   private selectedRowPDBId = signal<string>('');

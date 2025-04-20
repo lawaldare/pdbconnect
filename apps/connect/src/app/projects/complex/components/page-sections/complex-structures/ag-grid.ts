@@ -2,14 +2,15 @@ import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions, GridState } from 'ag-grid-community';
 import { TitleRendererComponent } from '../../cell renderers/structure-title.component';
 import { EntryPageExternalLinkRendererComponent } from './entry-page-link.component';
+import { CustomHeaderComponent } from '../../cell renderers/custom-header.component';
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
-  // defaultColDef: {
-  // ...agGridOptionsBase.defaultColDef,
-  // sortable: false,
-  // headerComponentParams: { showHelpIcon: false, tooltipText: '' },
-  // },
+  defaultColDef: {
+    ...agGridOptionsBase.defaultColDef,
+    // sortable: false,
+    // headerComponentParams: { showHelpIcon: false, tooltipText: '' },
+  },
   // rowSelection: {
   //   mode: 'singleRow',
   // },
@@ -25,11 +26,11 @@ export const colDefs: ColDef[] = [
     sortable: false,
   },
   {
-    headerName: 'Assembly',
+    headerName: 'ID',
     field: 'assembly_id',
     // valueGetter: (params) => `${params.data.pdb_id}_${params.data.assembly_id}`,
-    width: 120,
-    // headerComponentParams: { tooltipText: 'Composite index consisting of PDB identifier and assembly identifier.' },
+    width: 60,
+    headerComponentParams: { showHelpIcon: true, tooltipText: 'Composite index consisting of PDB identifier and assembly identifier.' },
     sortable: false,
     filter: false,
   },
@@ -37,7 +38,7 @@ export const colDefs: ColDef[] = [
     headerName: 'Title',
     field: 'title',
     cellRenderer: TitleRendererComponent,
-    width: 160,
+    width: 240,
   },
   { headerName: 'Exp. method', field: 'experimental_method', width: 170 },
   {
@@ -52,11 +53,11 @@ export const colDefs: ColDef[] = [
   },
 ];
 
-// export const components: {
-//   [p: string]: any;
-// } = {
-//   agColumnHeader: CustomHeaderComponent,
-// };
+export const components: {
+  [p: string]: any;
+} = {
+  agColumnHeader: CustomHeaderComponent,
+};
 
 export const initialState: GridState = {
   rowSelection: ['0'],
