@@ -32,6 +32,7 @@ export const complexRouteTabs = [
   { label: 'Summary', id: 'summary' },
   { label: 'Structures', id: 'structures' },
   { label: 'Ligands', id: 'ligands' },
-  { label: 'Subcomplexes and supercomplexes', id: 'subcomplexes-and-supercomplexes' },
-  { label: 'Publications', id: 'publications' },
+  { label: 'Subcomplexes', id: 'subcomplexes' },
+  { label: 'Supercomplexes', id: 'supercomplexes' },
+  { label: 'Citations', id: 'citations' },
 ];

@@ -98,12 +98,6 @@ export class MainComponent implements OnInit {
   selectTab(event: MatTabChangeEvent) {
     const routeTabs = complexRouteTabs;
     const tabName = routeTabs[event.index].id;
-    // this.previousTab = `${tabName}`;
-    // this.tabSwitchOrigin.set('main');
-    // this.currentTab.set(tabName);
-    // setTimeout(() => {
-    //   this.doesTabHasData.set(this.compCommunication.getTabData(tabName)?.tableRows()?.length > 0);
-    // }, 2000);
     this.router.navigate([], {
       queryParams: { activeTab: tabName },
       queryParamsHandling: 'merge',

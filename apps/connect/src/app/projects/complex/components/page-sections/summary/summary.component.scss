@@ -65,9 +65,11 @@ p.view-more {
 
   .details {
     width: 40%;
+    align-self: flex-start;
   }
 
   .molstar {
     width: calc(60% - 10px);
+    align-self: flex-start;
   }
 }

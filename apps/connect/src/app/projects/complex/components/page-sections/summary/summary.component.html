@@ -44,17 +44,15 @@
     } @if(mappedLigands()?.length){
     <div class="info-row">
       <span class="info-row-title">Cofactor</span>
-      <div class="info-row-content" style="flex-direction: row">
+      <div class="info-row-content" style="display: block">
         @for(ligand of mappedLigands(); track ligand.ligandId; let islast = $last){
         <a
           matTooltipClass="complex-name-tooltip"
           [matTooltip]="ligand.name"
           matTooltipPosition="above"
           (click)="openLigandPage(ligand.ligandId)"
-          style="display: block"
-        >
-          {{ ligand.ligandId }}
-          <!-- <i class="icon icon-link icon-common"></i> --> </a
+          style="display: inline"
+          >{{ ligand.ligandId }}</a
         >{{ islast ? '' : ', ' }} }
       </div>
     </div>
@@ -104,6 +102,7 @@
       } -->
   </section>
   <section class="molstar">
+    <h5>Representative structure for this complex</h5>
     <lib-pdbe-molstar [molstarConfig]="config" [height]="height" [width]="width"></lib-pdbe-molstar>
   </section>
 </div>

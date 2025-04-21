@@ -1,12 +1,12 @@
 @if (supercomplexesLength()) {
 <div id="interaction-section">
   <p>
-    This section displays the {{supercomplexesLength()}} subcomplexes of this complex available in the PDB. A subcomplex is a smaller assembly that contains a subset
-    of the components of this complex. For each subcomplex, only the common components are listed.
+    This section shows <strong>{{supercomplexesLength()}}</strong> supercomplexes of this complex available in the PDB. A supercomplex is a larger assembly that
+    contains this complex along with additional components. For each supercomplex, only the additional components are listed
   </p>
   @if (supercomplexesLength()) {
   <section class="supercomplexes">
-    <div class="title">
+    <!-- <div class="title">
       <h4>Supercomplexes</h4>
       <img
         src="{{ helpLogoSrc }}"
@@ -16,7 +16,7 @@
         [matTooltip]="'A supercomplex is defined as a complex containing all the components of another complex and additional members'"
         matTooltipPosition="above"
       />
-    </div>
+    </div> -->
     <div class="card-container">
       @for (complexInteraction of superComplexesPage(); track complexInteraction.pdb_complex_id) {
       <pdbc-complex-card [complexInteraction]="complexInteraction" />
@@ -37,5 +37,5 @@
   }
 </div>
 } @else {
-<h4>No supercomplexes were identified for this complex</h4>
+<p>No supercomplexes were identified for this complex</p>
 }

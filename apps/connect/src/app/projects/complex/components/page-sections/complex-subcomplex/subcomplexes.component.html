@@ -1,12 +1,12 @@
 @if (subcomplexesLength()) {
 <div id="interaction-section">
   <p>
-    This section displays the {{subcomplexesLength()}} subcomplexes of this complex available in the PDB. A subcomplex is a smaller assembly that contains a subset of
-    the components of this complex. For each subcomplex, only the common components are listed.
+    This section displays the <strong>{{subcomplexesLength()}}</strong> subcomplexes of this complex available in the PDB. A subcomplex is a smaller assembly that
+    contains a subset of the components of this complex. For each subcomplex, only the common components are listed.
   </p>
   @if (subcomplexesLength()) {
   <section class="subcomplexes">
-    <div class="title">
+    <!-- <div class="title">
       <h4>Subcomplexes</h4>
       <img
         src="{{ helpLogoSrc }}"
@@ -16,7 +16,7 @@
         [matTooltip]="'A subcomplex is defined as a complex where all its components are subset of components in another larger complex'"
         matTooltipPosition="above"
       />
-    </div>
+    </div> -->
 
     <!-- <lib-tool-tip minWidth="400px"> A subcomplex is defined as a complex where all its components are subset of components in another larger complex </lib-tool-tip> -->
     <div class="card-container">
@@ -39,5 +39,5 @@
   }
 </div>
 } @else {
-<h4>No subcomplexes were identified for this complex</h4>
+<p>No subcomplexes were identified for this complex</p>
 }
