@@ -108,12 +108,12 @@ function fieldFormatterXRayRow(rowData: XRayStatsRow) {
     return `<span>${newValue}</span>`;
   }
   if (rowData.metric === 'Spacegroup') {
-    let newValue = rowData.value[0];
+    let newValue = `<i>${rowData.value[0]}</i> `;
     for (let i = 1; i < rowData.value.length; i++) {
       const char = rowData.value[i];
-      if (char.length === 1) newValue += ` ${char}`;
+      if (char.length === 1) newValue += `${char}`;
       else if (char.length > 0) {
-        newValue += ` ${char[0]}<sub>${char.slice(1)}</sub>`;
+        newValue += `${char[0]}<sub>${char.slice(1)}</sub>`;
       }
     }
     return `<span>${newValue}</span>`;
