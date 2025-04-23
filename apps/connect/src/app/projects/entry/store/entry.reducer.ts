@@ -58,6 +58,8 @@ const initialState: EntryStoreState = {
   entryStatus: { ...entryStatusDefault },
   interactions: [],
   symmetry: [],
+  polymerCoverage: [],
+  ligandMonomers: [],
 };
 
 export const entryReducer = createReducer(
@@ -195,5 +197,19 @@ export const entryReducer = createReducer(
   on(EntryActions.getEntryStatusSuccess, (state, action) => ({
     ...state,
     entryStatus: action.entryStatus,
-  }))
+  })),
+  on(EntryActions.getEntryPolymerCoverageSuccess, (state, action) => {
+    console.log('[Reducer] Storing Polymer Coverage:', action.polymerCoverage);
+    return {
+      ...state,
+      polymerCoverage: action.polymerCoverage,
+    };
+  }),
+  on(EntryActions.getEntryLigandMonomersSuccess, (state, action) => {
+    console.log('[Reducer] Storing Ligand Monomers:', action.ligandMonomers);
+    return {
+      ...state,
+      ligandMonomers: action.ligandMonomers,
+    };
+  })
 );

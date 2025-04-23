@@ -535,4 +535,30 @@ export class EntryEffects {
       )
     )
   );
+
+  getPolymerCoverage$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getEntryPolymerCoverage),
+      switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
+      mergeMap((entryId: string) =>
+        this.entryAPIService.getPolymerCoverage(entryId).pipe(
+          map((polymerCoverage) => EntryActions.getEntryPolymerCoverageSuccess({ polymerCoverage })),
+          catchError(() => of(EntryActions.getEntryPolymerCoverageFailure()))
+        )
+      )
+    )
+  );
+
+  getLigandMonomers$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getEntryLigandMonomers),
+      switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
+      mergeMap((entryId: string) =>
+        this.entryAPIService.getLigandMonomers(entryId).pipe(
+          map((ligandMonomers) => EntryActions.getEntryLigandMonomersSuccess({ ligandMonomers })),
+          catchError(() => of(EntryActions.getEntryLigandMonomersFailure()))
+        )
+      )
+    )
+  );
 }

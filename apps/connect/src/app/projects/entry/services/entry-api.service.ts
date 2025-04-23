@@ -28,6 +28,8 @@ import {
 } from '../data-models/experiment-raw-data.model';
 import { EntryStatus } from '../data-models/status.model';
 import { environment } from '../../../../environments/environment';
+import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
+import { LigandMonomer } from '../data-models/ligand-monomers.model';
 
 @Injectable({
   providedIn: 'root',
@@ -212,6 +214,14 @@ export class EntryApiService {
         return data[uniprotId];
       })
     );
+  }
+
+  public getPolymerCoverage(entryId: string): Observable<PolymerCoverageMolecule[]> {
+    return this.http.get<Record<string, PolymerCoverageMolecule[]>>(`${this.BASE_API}polymer_coverage/${entryId}`).pipe(map((data) => data[entryId]));
+  }
+
+  public getLigandMonomers(entryId: string): Observable<LigandMonomer[]> {
+    return this.http.get<Record<string, LigandMonomer[]>>(`${this.BASE_API}ligand_monomers/${entryId}`).pipe(map((data) => data[entryId]));
   }
 
   private processRedoData(score: number, rangeUpper: number, rangeLower: number) {

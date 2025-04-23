@@ -21,6 +21,8 @@ import { EntryStatus } from '../data-models/status.model';
 import { Interaction } from '../data-models/interaction.model';
 import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
 import { Symmetry } from '../data-models/assembly.model';
+import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
+import { LigandMonomer } from '../data-models/ligand-monomers.model';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -116,5 +118,11 @@ export const EntryActions = createActionGroup({
     'Get Interactions': emptyProps(),
     'Get Interactions Success': props<{ interactions: Interaction[] }>(),
     'Get Interactions Failure': emptyProps(),
+    'Get Entry Polymer Coverage': emptyProps(),
+    'Get Entry Polymer Coverage Success': props<{ polymerCoverage: PolymerCoverageMolecule[] }>(),
+    'Get Entry Polymer Coverage Failure': emptyProps(),
+    'Get Entry Ligand Monomers': emptyProps(),
+    'Get Entry Ligand Monomers Success': props<{ ligandMonomers: LigandMonomer[] }>(),
+    'Get Entry Ligand Monomers Failure': emptyProps(),
   },
 });

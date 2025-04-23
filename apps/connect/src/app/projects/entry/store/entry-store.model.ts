@@ -25,6 +25,8 @@ import {
 } from '../data-models/experiment-raw-data.model';
 import { EntryStatus } from '../data-models/status.model';
 import { Interaction } from '../data-models/interaction.model';
+import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
+import { LigandMonomer } from '../data-models/ligand-monomers.model';
 
 export interface EntryStoreState {
   entryId: string;
@@ -68,6 +70,8 @@ export interface EntryStoreState {
   entryStatus: EntryStatus | undefined;
   interactions: Interaction[];
   symmetry: Symmetry[];
+  polymerCoverage: PolymerCoverageMolecule[];
+  ligandMonomers: LigandMonomer[];
 }
 
 export interface EntryMoleculesData {

@@ -47,4 +47,6 @@ export const EntrySelectors = {
   ecMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.ecMapping),
   goMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.goMapping),
   symmetry: createSelector(EntryStoreState, (state: EntryStoreState) => state.symmetry),
+  polymerCoverage: createSelector(EntryStoreState, (state: EntryStoreState) => state.polymerCoverage),
+  ligandMonomers: createSelector(EntryStoreState, (state: EntryStoreState) => state.ligandMonomers),
 };
