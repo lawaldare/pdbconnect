@@ -102,7 +102,15 @@
       } -->
   </section>
   <section class="molstar">
-    <h5>Representative structure for this complex</h5>
+    <header>
+      <h5>Representative structure for this complex</h5>
+      <i
+        class="icon icon-common icon-info"
+        matTooltipClass="complex-name-tooltip"
+        [matTooltip]="'This is the representative structure for the complex, selected from all available instances that were solved by X-ray crystallography, based on the highest available resolution'"
+        matTooltipPosition="above"
+      ></i>
+    </header>
     <lib-pdbe-molstar [molstarConfig]="config" [height]="height" [width]="width"></lib-pdbe-molstar>
   </section>
 </div>
