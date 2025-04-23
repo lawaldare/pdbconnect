@@ -1,6 +1,7 @@
 import { DomainsBoundaries, DomainsRowData } from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { DomainMapping } from '../data-models/domains.model';
 import { MolstarResidueInfo, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { ObservedSegments, PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
 
 /**
  * This function gets domain mappings in a unified format
@@ -106,6 +107,100 @@ export function formatSegments(mappings: DomainMapping[], molstarResidueInfo: Mo
     segmentsBoundaries: segmentsBoundaries,
     segments: segments,
     segmentsResidNumber: segmentsResidNumber,
+  };
+}
+
+export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCoverage: PolymerCoverageMolecule[]) {
+  const segments: string[] = [];
+  const segmentsResidNumber: string[] = [];
+  const molstarSelection: MolstarSelectionObj = { residues: [] };
+  const segmentsBoundaries: DomainsBoundaries[] = [];
+
+  // Map PolymerCoverage for quick lookup
+  const coverageMap = new Map<string, ObservedSegments[]>();
+
+  for (const molecule of polymerCoverage) {
+    for (const chain of molecule.chains) {
+      const key = `${molecule.entity_id}_${chain.chain_id}`;
+      coverageMap.set(key, chain.observed);
+    }
+  }
+
+  const mappingsByChain = mappings.sort();
+  let prevChain = 'undef';
+
+  for (const mapping of mappingsByChain) {
+    const key = `${mapping.entity_id}_${mapping.chain_id}`;
+    const observedSegments = coverageMap.get(key) || [];
+
+    if (observedSegments.length === 0) continue;
+
+    let firstRes = {
+      residue_number: mapping.start.residue_number,
+      author_residue_number: mapping.start.author_residue_number?.toString() || '',
+      author_insertion_code: mapping.start.author_insertion_code || '',
+    };
+
+    if (mapping.start.author_residue_number === null) {
+      // Find first observed residue >= start.residue_number
+      const firstObserved = observedSegments.find((seg) => seg.start.residue_number >= mapping.start.residue_number);
+      if (!firstObserved) continue;
+
+      firstRes = {
+        residue_number: firstObserved.start.residue_number,
+        author_residue_number: firstObserved.start.author_residue_number.toString(),
+        author_insertion_code: firstObserved.start.author_insertion_code || '',
+      };
+    }
+
+    let lastRes = {
+      residue_number: mapping.end.residue_number,
+      author_residue_number: mapping.end.author_residue_number?.toString() || '',
+      author_insertion_code: mapping.end.author_insertion_code || '',
+    };
+
+    if (mapping.end.author_residue_number === null) {
+      // Find last observed residue <= end.residue_number
+      const lastObserved = [...observedSegments].reverse().find((seg) => seg.end.residue_number <= mapping.end.residue_number);
+      if (!lastObserved) continue;
+
+      lastRes = {
+        residue_number: lastObserved.end.residue_number,
+        author_residue_number: lastObserved.end.author_residue_number.toString(),
+        author_insertion_code: lastObserved.end.author_insertion_code || '',
+      };
+    }
+
+    const chainIdPrefix = mapping.chain_id !== prevChain ? `${mapping.chain_id}:` : ' ';
+
+    molstarSelection.residues.push({
+      entityId: mapping.entity_id.toString(),
+      authChainId: mapping.chain_id,
+      authBegin: firstRes.author_residue_number,
+      authBeginIns: firstRes.author_insertion_code,
+      authEnd: lastRes.author_residue_number,
+      authEndIns: lastRes.author_insertion_code,
+    });
+
+    segments.push(
+      `${chainIdPrefix} ${firstRes.author_residue_number}${firstRes.author_insertion_code} - ${lastRes.author_residue_number}${lastRes.author_insertion_code}`
+    );
+    segmentsResidNumber.push(`${chainIdPrefix} ${firstRes.residue_number} - ${lastRes.residue_number}`);
+    segmentsBoundaries.push({
+      chain: mapping.chain_id,
+      entity: mapping.entity_id,
+      start: firstRes.residue_number,
+      end: lastRes.residue_number,
+    });
+
+    prevChain = mapping.chain_id;
+  }
+
+  return {
+    molstarSelection,
+    segmentsBoundaries,
+    segments,
+    segmentsResidNumber,
   };
 }
 

@@ -108,9 +108,9 @@ export class MainDataProcessingFacade {
         tempTableData = new AssemblyDataToTable(data.complexDetails, data.assemblyData, data.pisaAssemblyData);
       } else if (
         tabName === TabNames.Domains &&
-        this.isNotUndefined([data.pfamMappings, data.cathMappings, data.scopMappings, data.macromolecules, this.molstarResidueInfo()])
+        this.isNotUndefined([data.pfamMappings, data.cathMappings, data.scopMappings, data.macromolecules, data.polymerCoverage])
       ) {
-        tempTableData = new DomainDataToTable(data.pfamMappings!, data.cathMappings!, data.scopMappings!, data.macromolecules, this.molstarResidueInfo());
+        tempTableData = new DomainDataToTable(data.pfamMappings!, data.cathMappings!, data.scopMappings!, data.macromolecules, data.polymerCoverage);
       } else if (tabName === TabNames.Ligands && this.isNotUndefined([data.ligands, data.modifications, data.ligandMonomers])) {
         tempTableData = new LigandDataToTable(data.ligands, data.modifications, data.ligandMonomers);
       } else if (

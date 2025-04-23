@@ -3,8 +3,8 @@ import { DomainsBoundaries, TableFilter, TableRow } from '../data-models-and-def
 import { DataToTable } from './abstract-base-row-class';
 import { PfamMappings, CathMappings, ScopMappings, DomainMapping } from '../../../../data-models/domains.model';
 import { Molecule } from '../../../../data-models/molecule.model';
-import { formatSegments } from '../../../../helpers/domain-helpers';
-import { MolstarResidueInfo } from '@pdbe-lib/molstar-for-apps';
+import { formatSegments, formatSegmentsWithCoverage } from '../../../../helpers/domain-helpers';
+import { ObservedSegments, PolymerCoverageMolecule } from '../../../../data-models/polymer-coverage.model';
 
 export class DomainDataToTable extends DataToTable {
   // Domain specific data
@@ -12,7 +12,7 @@ export class DomainDataToTable extends DataToTable {
   cathMappings: CathMappings;
   scopMappings: ScopMappings;
   macromolecules: Molecule[];
-  molstarResidueInfo: MolstarResidueInfo[];
+  polymerCoverage: PolymerCoverageMolecule[];
 
   // Implementation of Abstract attributes from abstract-base-row-class
   molstarHardResetOnSelect = false;
@@ -32,14 +32,14 @@ export class DomainDataToTable extends DataToTable {
     cathMappings: CathMappings,
     scopMappings: ScopMappings,
     macromolecules: Molecule[],
-    molstarResidueInfo: MolstarResidueInfo[]
+    polymerCoverage: PolymerCoverageMolecule[]
   ) {
     super();
     this.pfamMappings = pfamMappings;
     this.cathMappings = cathMappings;
     this.scopMappings = scopMappings;
     this.macromolecules = macromolecules;
-    this.molstarResidueInfo = molstarResidueInfo;
+    this.polymerCoverage = polymerCoverage;
   }
 
   // parse the necessary domain specific data into data for each table row
@@ -65,7 +65,8 @@ export class DomainDataToTable extends DataToTable {
           // ... and use the formatSegments function to get:
           // 1 - molstarSelections to each cath domain (molstarSelection)
           // 2 - segment data (chain, starting and ending residues) for each cath domain (segmentsBoundaries)
-          const segmentData = formatSegments(mappings, this.molstarResidueInfo);
+          // const segmentData = formatSegments(mappings, this.molstarResidueInfo);
+          const segmentData = formatSegmentsWithCoverage(mappings, this.polymerCoverage);
 
           // ... formatSegments also uses molstarResidueInfo (residue data parsed from Molstar)
           // to filter domains, only keeping domains which are actually exist in the structure
@@ -118,7 +119,8 @@ export class DomainDataToTable extends DataToTable {
           // ... and use the formatSegments function to get:
           // 1 - molstarSelections to each SCOP 1.75 domain (molstarSelection)
           // 2 - segment data (chain, starting and ending residues) for each SCOP 1.75 domain (segmentsBoundaries)
-          const segmentData = formatSegments(mappings, this.molstarResidueInfo);
+          // const segmentData = formatSegments(mappings, this.molstarResidueInfo);
+          const segmentData = formatSegmentsWithCoverage(mappings, this.polymerCoverage);
 
           // ... formatSegments also uses molstarResidueInfo (residue data parsed from Molstar)
           // to filter domains, only keeping domains which are actually exist in the structure
@@ -169,7 +171,8 @@ export class DomainDataToTable extends DataToTable {
           // ... and use the formatSegments function to get:
           // 1 - molstarSelections to each Pfam domain (molstarSelection)
           // 2 - segment data (chain, starting and ending residues) for each Pfam domain (segmentsBoundaries)
-          const segmentData = formatSegments([mapping], this.molstarResidueInfo);
+          // const segmentData = formatSegments([mapping], this.molstarResidueInfo);
+          const segmentData = formatSegmentsWithCoverage([mapping], this.polymerCoverage);
 
           // ... formatSegments also uses molstarResidueInfo (residue data parsed from Molstar)
           // to filter domains, only keeping domains which are actually exist in the structure
@@ -222,8 +225,10 @@ export class DomainDataToTable extends DataToTable {
         const domainIds: string[] = [];
         for (const mapping of data.mappings) {
           // ... for this we have to check whether the API residues exist in Molstar (this.molstarResidueInfo)
-          const filteredCathMapping = this.filterMappingObserved([mapping], this.molstarResidueInfo);
+          // const filteredCathMapping = this.filterMappingObserved([mapping], this.molstarResidueInfo);
+          const filteredCathMapping = this.filterMappingObservedWithCoverage([mapping], this.polymerCoverage);
           if (filteredCathMapping.length === 0) continue;
+
           if (domainIds.indexOf(mapping.domain!) === -1) {
             domainIds.push(mapping.domain!);
           }
@@ -237,8 +242,10 @@ export class DomainDataToTable extends DataToTable {
         const domainIds: string[] = [];
         for (const mapping of data.mappings) {
           // ... for this we have to check whether the API residues exist in Molstar (this.molstarResidueInfo)
-          const filteredScopMapping = this.filterMappingObserved([mapping], this.molstarResidueInfo);
+          // const filteredScopMapping = this.filterMappingObserved([mapping], this.molstarResidueInfo);
+          const filteredScopMapping = this.filterMappingObservedWithCoverage([mapping], this.polymerCoverage);
           if (filteredScopMapping.length === 0) continue;
+
           if (domainIds.indexOf(mapping.scop_id!) === -1) {
             domainIds.push(mapping.scop_id!);
           }
@@ -250,7 +257,8 @@ export class DomainDataToTable extends DataToTable {
       // for Pfam we also count the number of unique domain accessions that exist
       for (const [_resourceAcc, data] of Object.entries(this.pfamMappings)) {
         // ... for this we have to check whether the API residues exist in Molstar (this.molstarResidueInfo)
-        const filteredPfamMappings = this.filterMappingObserved(data.mappings, this.molstarResidueInfo);
+        // const filteredPfamMappings = this.filterMappingObserved(data.mappings, this.molstarResidueInfo);
+        const filteredPfamMappings = this.filterMappingObservedWithCoverage(data.mappings, this.polymerCoverage);
         pfamDomainCount += filteredPfamMappings.length;
       }
 
@@ -293,30 +301,74 @@ export class DomainDataToTable extends DataToTable {
 
   // helper function for filtering a list of domain mappings according to whether they have at least one
   // residue observed (existing) in Molstar
-  filterMappingObserved(domainMappings: DomainMapping[], molstarResidueInfo: MolstarResidueInfo[]) {
-    const observedMappings: MolstarResidueInfo[][] = [];
-    for (const mapping of domainMappings) {
-      // ... this is done by checking equivalence with molstarResidueInfo for:
-      //  entity_id (label_entity_id in Molstar), chain_id (auth_asym_id in Molstar)
-      //  and residue_number (label_seq_id in Molstar)
-      const residueListingChain = molstarResidueInfo.filter((residInfo) => {
-        return (
-          residInfo.label_entity_id &&
-          residInfo.auth_asym_id &&
-          residInfo.label_seq_id &&
-          residInfo.auth_seq_id &&
-          residInfo.label_entity_id === mapping.entity_id + '' &&
-          residInfo.auth_asym_id === mapping.chain_id
-        );
-      });
-      const residuesOfChain = residueListingChain.sort((a, b) => a.label_seq_id! - b.label_seq_id!);
-      const residuesOfMappingObserved = residuesOfChain.filter((resid) => {
-        return resid.label_seq_id! <= mapping.end.residue_number && resid.label_seq_id! >= mapping.start.residue_number;
-      });
-      if (residuesOfMappingObserved.length > 0) {
-        observedMappings.push(residuesOfMappingObserved);
+  // filterMappingObserved(domainMappings: DomainMapping[], molstarResidueInfo: MolstarResidueInfo[]) {
+  //   const observedMappings: MolstarResidueInfo[][] = [];
+  //   for (const mapping of domainMappings) {
+  //     // ... this is done by checking equivalence with molstarResidueInfo for:
+  //     //  entity_id (label_entity_id in Molstar), chain_id (auth_asym_id in Molstar)
+  //     //  and residue_number (label_seq_id in Molstar)
+  //     const residueListingChain = molstarResidueInfo.filter((residInfo) => {
+  //       return (
+  //         residInfo.label_entity_id &&
+  //         residInfo.auth_asym_id &&
+  //         residInfo.label_seq_id &&
+  //         residInfo.auth_seq_id &&
+  //         residInfo.label_entity_id === mapping.entity_id + '' &&
+  //         residInfo.auth_asym_id === mapping.chain_id
+  //       );
+  //     });
+  //     const residuesOfChain = residueListingChain.sort((a, b) => a.label_seq_id! - b.label_seq_id!);
+  //     const residuesOfMappingObserved = residuesOfChain.filter((resid) => {
+  //       return resid.label_seq_id! <= mapping.end.residue_number && resid.label_seq_id! >= mapping.start.residue_number;
+  //     });
+  //     if (residuesOfMappingObserved.length > 0) {
+  //       observedMappings.push(residuesOfMappingObserved);
+  //     }
+  //   }
+  //   return observedMappings;
+  // }
+
+  filterMappingObservedWithCoverage(domainMappings: DomainMapping[], polymerCoverage: PolymerCoverageMolecule[]): number[] {
+    const observedLengths: number[] = [];
+
+    // Create lookup map for faster access
+    const coverageMap = new Map<string, ObservedSegments[]>();
+
+    for (const molecule of polymerCoverage) {
+      for (const chain of molecule.chains) {
+        const key = `${molecule.entity_id}_${chain.chain_id}`;
+        coverageMap.set(key, chain.observed);
       }
     }
-    return observedMappings;
+
+    for (const mapping of domainMappings) {
+      const key = `${mapping.entity_id}_${mapping.chain_id}`;
+      const observedSegments = coverageMap.get(key) || [];
+
+      // Find observed segments that overlap with the domain mapping
+      const overlappingSegments = observedSegments.filter((segment) => {
+        const observedStart = segment.start.residue_number;
+        const observedEnd = segment.end.residue_number;
+
+        return mapping.start.residue_number <= observedEnd && mapping.end.residue_number >= observedStart;
+      });
+
+      if (overlappingSegments.length > 0) {
+        // Calculate total observed length within the mapping range
+        let totalObserved = 0;
+
+        for (const segment of overlappingSegments) {
+          // Clamp observed segment to domain mapping boundaries
+          const clampedStart = Math.max(segment.start.residue_number, mapping.start.residue_number);
+          const clampedEnd = Math.min(segment.end.residue_number, mapping.end.residue_number);
+
+          totalObserved += clampedEnd - clampedStart + 1;
+        }
+
+        observedLengths.push(totalObserved);
+      }
+    }
+
+    return observedLengths;
   }
 }
