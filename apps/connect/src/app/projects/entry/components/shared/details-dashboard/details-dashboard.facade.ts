@@ -16,20 +16,18 @@ import { map } from 'rxjs';
 })
 export class DetailsDashboardFacade {
   public readonly entryApiService = inject(EntryApiService);
+  
+  // public getDomainChains(datum: DomainsRowData) {
+  //   let uniqueChains: string[] = [];
+  //   for (const selection of datum.additionalData.selections) {
+  //     const uniqueChainsInSelection = selection.residues.map((sel) => sel.authChainId!).filter((ch, idx, chains) => chains.indexOf(ch) === idx);
+  //     uniqueChains.push(...uniqueChainsInSelection);
+  //   }
+  //   uniqueChains = uniqueChains.filter((e, i, self) => i === self.indexOf(e));
 
-  public readonly pdbsUniprotNumbers = signal<Record<string, number>>({});
-
-  public getDomainChains(datum: DomainsRowData) {
-    let uniqueChains: string[] = [];
-    for (const selection of datum.additionalData.selections) {
-      const uniqueChainsInSelection = selection.residues.map((sel) => sel.authChainId!).filter((ch, idx, chains) => chains.indexOf(ch) === idx);
-      uniqueChains.push(...uniqueChainsInSelection);
-    }
-    uniqueChains = uniqueChains.filter((e, i, self) => i === self.indexOf(e));
-
-    const hasPlural = uniqueChains.length > 1 ? 's' : '';
-    return `Chain${hasPlural} ${uniqueChains.join(', ')}`;
-  }
+  //   const hasPlural = uniqueChains.length > 1 ? 's' : '';
+  //   return `Chain${hasPlural} ${uniqueChains.join(', ')}`;
+  // }
 
   public getDomainSequenceDetails(entryId: string, macromolecules: Molecule[], datum: DomainsRowData) {
     const sequenceDetails: SequenceDetail[] = [];
@@ -85,42 +83,42 @@ export class DetailsDashboardFacade {
     return sequenceDetails;
   }
 
-  public getLigandDropdownString(id: string, selectedLigandInstance: MolstarSelectionObj) {
-    return `${id} ${selectedLigandInstance.residues[0].authBegin}${selectedLigandInstance.residues[0].authBeginIns} in chain ${selectedLigandInstance.authChainId}`;
-  }
+  // public getLigandDropdownString(id: string, selectedLigandInstance: MolstarSelectionObj) {
+  //   return `${id} ${selectedLigandInstance.residues[0].authBegin}${selectedLigandInstance.residues[0].authBeginIns} in chain ${selectedLigandInstance.authChainId}`;
+  // }
 
-  public getLigandsDropdownOptions(datum: LigandsRowData) {
-    const dropdownTitle = 'Select displayed ligand';
-    const dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
-    for (const selection of datum.additionalData.selections) {
-      const name = this.getLigandDropdownString(datum.id, selection);
-      dropdownOptionsToMolstar[name] = selection;
-    }
-    const dropdownOptions = [...Object.keys(dropdownOptionsToMolstar)];
-    const dropdownSelected = dropdownOptions[0];
-    return {
-      dropdownTitle: dropdownTitle,
-      dropdownOptionsToMolstar: dropdownOptionsToMolstar,
-      dropdownOptions: dropdownOptions,
-      dropdownSelected: dropdownSelected,
-    };
-  }
+  // public getLigandsDropdownOptions(datum: LigandsRowData) {
+  //   const dropdownTitle = 'Select displayed ligand';
+  //   const dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
+  //   for (const selection of datum.additionalData.selections) {
+  //     const name = this.getLigandDropdownString(datum.id, selection);
+  //     dropdownOptionsToMolstar[name] = selection;
+  //   }
+  //   const dropdownOptions = [...Object.keys(dropdownOptionsToMolstar)];
+  //   const dropdownSelected = dropdownOptions[0];
+  //   return {
+  //     dropdownTitle: dropdownTitle,
+  //     dropdownOptionsToMolstar: dropdownOptionsToMolstar,
+  //     dropdownOptions: dropdownOptions,
+  //     dropdownSelected: dropdownSelected,
+  //   };
+  // }
 
-  public getMacromoleculeDropdownOptions(datum: MacromoleculesRowData) {
-    const dropdownTitle = 'Select displayed chain';
-    const dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
-    for (const selection of datum.additionalData.selections) {
-      dropdownOptionsToMolstar[`Chain ${selection.authChainId!}`] = selection;
-    }
-    const dropdownOptions = [...Object.keys(dropdownOptionsToMolstar)];
-    const dropdownSelected = dropdownOptions[0];
-    return {
-      dropdownTitle: dropdownTitle,
-      dropdownOptionsToMolstar: dropdownOptionsToMolstar,
-      dropdownOptions: dropdownOptions,
-      dropdownSelected: dropdownSelected,
-    };
-  }
+  // public getMacromoleculeDropdownOptions(datum: MacromoleculesRowData) {
+  //   const dropdownTitle = 'Select displayed chain';
+  //   const dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
+  //   for (const selection of datum.additionalData.selections) {
+  //     dropdownOptionsToMolstar[`Chain ${selection.authChainId!}`] = selection;
+  //   }
+  //   const dropdownOptions = [...Object.keys(dropdownOptionsToMolstar)];
+  //   const dropdownSelected = dropdownOptions[0];
+  //   return {
+  //     dropdownTitle: dropdownTitle,
+  //     dropdownOptionsToMolstar: dropdownOptionsToMolstar,
+  //     dropdownOptions: dropdownOptions,
+  //     dropdownSelected: dropdownSelected,
+  //   };
+  // }
 
   public getMacromoleculeSequenceDetails(entryId: string, datum: MacromoleculesRowData, dropdownSelected: string) {
     const entity = datum.additionalData.molecule;

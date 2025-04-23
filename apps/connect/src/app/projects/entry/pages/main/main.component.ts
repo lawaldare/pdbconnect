@@ -21,7 +21,7 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { SummaryTabComponent } from '../../components/summary-tab/summary-tab.component';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
+import { MolstarExtendedForEntryPages } from '../../helpers/molstar/molstar-extended-for-entry-pgs';
 import { InteractiveTablesComponent } from '../../components/shared/interactive-tables/interactive-tables.component';
 import { DetailsDashboardComponent } from '../../components/shared/details-dashboard/details-dashboard.component';
 import { ExperimentsValidationComponent } from '../../components/model-quality-tab/experiments-validation.component';
@@ -75,7 +75,7 @@ export class EntryMainPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  private readonly molstarVisualisation = inject(MolstarVisualisationsForTabs);
+  private readonly molstarVisualisation = inject(MolstarExtendedForEntryPages);
 
   private readonly router = inject(Router);
 

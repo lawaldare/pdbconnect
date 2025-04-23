@@ -29,12 +29,12 @@ import { MolstarBaseClass, MolstarConfigObject } from '@pdbe-lib/molstar-for-app
 @Injectable({
   providedIn: 'root',
 })
-export class MolstarVisualisationsForTabs extends MolstarBaseClass {
+export class MolstarExtendedForEntryPages extends MolstarBaseClass {
   /**
    * Component extends MolstarBaseClass and contains functions for
    * manipulating Molstar views specific to the detail tabs (page bottom)
    */
-  private isMolstarRendered = signal<boolean>(false);
+  public isMolstarRendered = signal<boolean>(false);
   public isFirstViewRender = true;
   public readonly signals = inject(ComponentCommunicationService);
 

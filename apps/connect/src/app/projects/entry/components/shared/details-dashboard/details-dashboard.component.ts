@@ -18,7 +18,7 @@ import { Store } from '@ngrx/store';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { assemblyTooltip, dashboardStatLinks, resourceUrls } from '../../../entry-constant';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
-import { MolstarVisualisationsForTabs } from '../../../helpers/molstar/molstar-visualisations-for-detail-tabs';
+import { MolstarExtendedForEntryPages } from '../../../helpers/molstar/molstar-extended-for-entry-pgs';
 import { TableNames } from '../../../pages/main/main.component';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { EntryStoreState } from '../../../store/entry-store.model';
@@ -34,6 +34,7 @@ import { EcNumbersComponent } from '../ec-numbers/ec-numbers.component';
 import { GoTermsComponent } from '../go-terms/go-terms.component';
 
 import { EntryPgProtvistaComponent } from '../entry-pv-nightingale/entry-pv-nightingale.component';
+import { getDomainChainsAsString, getLigandsDropdownOptions, getMacromoleculeChainDropdownOptions } from '../../../helpers/processed-data-to-controls';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -71,7 +72,7 @@ export class DetailsDashboardComponent implements OnInit {
   public readonly signals = inject(ComponentCommunicationService);
   private readonly utilService = inject(UtilService);
   public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
-  public readonly molstarVisualisations = inject(MolstarVisualisationsForTabs);
+  public readonly molstarVisualisations = inject(MolstarExtendedForEntryPages);
   public renderer = inject(Renderer2);
   public elementRef = inject(ElementRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
@@ -283,7 +284,8 @@ export class DetailsDashboardComponent implements OnInit {
         this.selectionTypeText = 'domain';
         this.selectionButtonText = 'Compare this domain in other entries';
         // data processing facade is used to get selectedChains (displayed as text in template)
-        this.selectedChains = this.detailsDashboardFacade.getDomainChains(datum);
+        // this.selectedChains = this.detailsDashboardFacade.getDomainChains(datum);
+        this.selectedChains = getDomainChainsAsString(datum);
         // ...and sequence annotated with domain positions
         this.sequenceDetails = this.detailsDashboardFacade.getDomainSequenceDetails(this.entryId() ?? '', this.macromolecules() ?? [], datum);
         this.hasProtvista = true;
@@ -295,17 +297,30 @@ export class DetailsDashboardComponent implements OnInit {
         this.hasDropdown = true;
 
         // data processing facade is used to get dropdown related information for ligand resid selection
-        const dropdownResults = this.detailsDashboardFacade.getLigandsDropdownOptions(datum);
+        // const dropdownResults = this.detailsDashboardFacade.getLigandsDropdownOptions(datum);
+
         this.dropdownTitle = '';
-        this.dropdownOptionsToMolstar = dropdownResults.dropdownOptionsToMolstar;
-        this.dropdownOptions = dropdownResults.dropdownOptions.map((eachString, idx) => {
+        this.dropdownOptionsToMolstar = getLigandsDropdownOptions(datum);
+        this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
           return {
             name: eachString,
             url: `lig-${idx + 1}`,
             downloadable: false,
           };
         });
-        this.dropdownSelected = dropdownResults.dropdownSelected;
+        this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+
+        // const dropdownResults = this.detailsDashboardFacade.getLigandsDropdownOptions(datum);
+        // this.dropdownTitle = '';
+        // this.dropdownOptionsToMolstar = dropdownResults.dropdownOptionsToMolstar;
+        // this.dropdownOptions = dropdownResults.dropdownOptions.map((eachString, idx) => {
+        //   return {
+        //     name: eachString,
+        //     url: `lig-${idx + 1}`,
+        //     downloadable: false,
+        //   };
+        // });
+        // this.dropdownSelected = dropdownResults.dropdownSelected;
 
         this.selectionIdentifier = datum.id;
 
@@ -323,17 +338,28 @@ export class DetailsDashboardComponent implements OnInit {
         this.hasDropdown = true;
 
         // data processing facade is used to get dropdown related information for macromolecule chain selection
-        const dropdownResults = this.detailsDashboardFacade.getMacromoleculeDropdownOptions(datum);
-        this.dropdownTitle = dropdownResults.dropdownTitle;
-        this.dropdownOptionsToMolstar = dropdownResults.dropdownOptionsToMolstar;
-        this.dropdownOptions = dropdownResults.dropdownOptions.map((eachString, idx) => {
+        this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(datum);
+        this.dropdownTitle = `Select displayed chain`;
+        this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
           return {
             name: eachString,
             url: `macro-${idx + 1}`,
             downloadable: false,
           };
         });
-        this.dropdownSelected = dropdownResults.dropdownSelected;
+        this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+
+        // const dropdownResults = this.detailsDashboardFacade.getMacromoleculeDropdownOptions(datum);
+        // this.dropdownTitle = dropdownResults.dropdownTitle;
+        // this.dropdownOptionsToMolstar = dropdownResults.dropdownOptionsToMolstar;
+        // this.dropdownOptions = dropdownResults.dropdownOptions.map((eachString, idx) => {
+        //   return {
+        //     name: eachString,
+        //     url: `macro-${idx + 1}`,
+        //     downloadable: false,
+        //   };
+        // });
+        // this.dropdownSelected = dropdownResults.dropdownSelected;
 
         // ... and to get each macromolecule sequence
         this.sequenceDetails = this.detailsDashboardFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', datum, this.dropdownSelected);

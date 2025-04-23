@@ -53,12 +53,18 @@
   </mat-expansion-panel>
   <mat-expansion-panel (opened)="onOpenAssemblyPanel('Macromolecules')">
     <mat-expansion-panel-header>
-      <mat-panel-title> Macromolecules ({{ macromoleculesOverviewData().length }}) </mat-panel-title>
+      <mat-panel-title> Macromolecules ({{ processedMacromolecules().length }}) </mat-panel-title>
     </mat-expansion-panel-header>
-    @if (macromoleculesOverviewData().length) { @for (listItem of macromoleculesOverviewData(); track listItem) {
-    <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
-      <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-      <button class="select-entity-btn">{{ listItem.name }}</button>
+    @if (processedMacromolecules().length) { @for (listItem of processedMacromolecules(); track $index; let macromoleculeIdx = $index) {
+    <div
+      class="select-gallery-container valid"
+      [ngClass]="isSelected(listItem, 'macromolecule') ? 'active' : ''"
+      (click)="selectListItem(listItem, 'macromolecule')"
+      (mouseover)="mouseinListItem(listItem)"
+      (mouseout)="mouseoutListItem()"
+    >
+      <div class="color-code-bar" [ngStyle]="{ 'background-color': getMolstarColor(listItem, 'macromolecule') }"></div>
+      <button class="select-entity-btn">{{ listItem.name.molecule }}</button>
     </div>
     <!-- @if (isSelected(listItem)) {
           <div class="more-details-btn">
@@ -67,11 +73,11 @@
           </div>
         } -->
     } } @else {
-    <p>This entry does not include any information about Ligands.</p>
+    <p>This entry does not include any information about Macromolecules.</p>
     @if (hasRelatedEntries()) {
     <p>
-      Try exploring related entries for additional details.<br />
-      Related entries @for (relatedEntry of overviewMolstarFacade.relatedEntries(); track relatedEntry; let islast = $last) {
+      Try exploring other entries published alongside this one for additional details.<br />
+      Related entries @for (relatedEntry of dataProcessing.relatedEntries(); track relatedEntry; let islast = $last) {
       <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
       @if (islast === false) { , } }
     </p>
@@ -79,12 +85,18 @@
   </mat-expansion-panel>
   <mat-expansion-panel (opened)="onOpenAssemblyPanel('Ligands')">
     <mat-expansion-panel-header>
-      <mat-panel-title> Ligands ({{ ligandsOverviewData().length }})</mat-panel-title>
+      <mat-panel-title> Ligands ({{ processedLigands().length }})</mat-panel-title>
     </mat-expansion-panel-header>
-    @if (ligandsOverviewData().length) { @for (listItem of ligandsOverviewData(); track listItem) {
-    <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
-      <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-      <button class="select-entity-btn">{{ listItem.name }}</button>
+    @if (processedLigands().length) { @for (listItem of processedLigands(); track $index) {
+    <div
+      class="select-gallery-container valid"
+      [ngClass]="isSelected(listItem, 'ligand') ? 'active' : ''"
+      (click)="selectListItem(listItem, 'ligand')"
+      (mouseover)="mouseinListItem(listItem)"
+      (mouseout)="mouseoutListItem()"
+    >
+      <div class="color-code-bar" [ngStyle]="{ 'background-color': getMolstarColor(listItem, 'ligand') }"></div>
+      <button class="select-entity-btn">{{ listItem.codeAndName.name }} - {{ listItem.id }}</button>
     </div>
     <!-- @if (isSelected(listItem)) {
           <div class="more-details-btn">
@@ -96,8 +108,8 @@
     <p>This entry does not include any information about Ligands.</p>
     @if (hasRelatedEntries()) {
     <p>
-      Try exploring related entries for additional details.<br />
-      Related entries @for (relatedEntry of overviewMolstarFacade.relatedEntries(); track relatedEntry; let islast = $last) {
+      Try exploring other entries published alongside this one for additional details.<br />
+      Related entries @for (relatedEntry of dataProcessing.relatedEntries(); track relatedEntry; let islast = $last) {
       <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
       @if (islast === false) { , } }
     </p>
@@ -108,7 +120,7 @@
       <mat-panel-title> Domains ({{ domainCount() }}) </mat-panel-title>
     </mat-expansion-panel-header>
 
-    @if (domainsDataByResource() && domainCount() > 0) {
+    @if (domainCount() > 0) {
     <pdbc-entry-dropdown
       class="domain-dropdown"
       [downloadable]="false"
@@ -119,19 +131,30 @@
       (optionClickedEvent)="onDomainResourceSelect($event)"
     >
     </pdbc-entry-dropdown>
-    @for (nestedListObj of getDomainsListViewData; track nestedListObj) {
+    @for (nestedListObj of getDomainsListViewData; track $index) {
     <div class="select-gallery-container invalid">
-      <div class="color-code-bar" [ngStyle]="{ 'background-color': nestedListObj.parentColor }"></div>
-      <button class="select-entity-btn">{{ nestedListObj.parentName }}</button>
+      <div class="color-code-bar" [ngStyle]="{ 'background-color': getMolstarColor(nestedListObj.macromolecule, 'macromolecule') }"></div>
+      <button class="select-entity-btn">
+        <span>{{ nestedListObj.macromolecule.name.molecule }}</span><br />
+        <span>({{ nestedListObj.domains.length }} domains)</span>
+      </button>
     </div>
-    @for (listItem of nestedListObj.nestedSelectables; track listItem) {
-    <div class="select-gallery-container valid nested-1" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
+    @for (listItem of nestedListObj.domains; track $index) {
+    <div
+      class="select-gallery-container valid nested-1"
+      [ngClass]="isSelected(listItem, 'domain') ? 'active' : ''"
+      (click)="selectListItem(listItem, 'domain')"
+      (mouseover)="mouseinListItem(listItem)"
+      (mouseout)="mouseoutListItem()"
+    >
       <div class="color-code-bars">
-        @for (color of listItem.colors; track color) {
-        <div class="color-code-sqr" [ngStyle]="{ 'background-color': color }"></div>
-        }
+        <div class="color-code-sqr" [ngStyle]="{ 'background-color': getMolstarColor(listItem, 'domain') }"></div>
       </div>
-      <button class="select-entity-btn">{{ listItem.name }}</button>
+      <button class="select-entity-btn">
+        <span>{{ listItem.accessionName }}</span><br />
+        <span>{{ listItem.resource }} {{ listItem.additionalData.accession }}</span><br />
+        <span>{{ listItem.segmentsAsText }}</span>
+      </button>
     </div>
     <!-- @if (isSelected(listItem)) {
             <div class="more-details-btn">
@@ -142,8 +165,8 @@
     <p>This entry does not include any information about Domains.</p>
     @if (hasRelatedEntries()) {
     <p>
-      Try exploring related entries for additional details.<br />
-      Related entries @for (relatedEntry of overviewMolstarFacade.relatedEntries(); track relatedEntry; let islast = $last) {
+      Try exploring other entries published alongside this one for additional details.<br />
+      Related entries @for (relatedEntry of dataProcessing.relatedEntries(); track relatedEntry; let islast = $last) {
       <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
       @if (islast === false) { , } }
     </p>
@@ -151,12 +174,18 @@
   </mat-expansion-panel>
   <mat-expansion-panel (opened)="onOpenAssemblyPanel('Modifications')">
     <mat-expansion-panel-header>
-      <mat-panel-title> Modifications ({{ modificationsOverviewData().length }}) </mat-panel-title>
+      <mat-panel-title> Modifications ({{ processedModifications().length }}) </mat-panel-title>
     </mat-expansion-panel-header>
-    @if (modificationsOverviewData().length) { @for (listItem of modificationsOverviewData(); track listItem) {
-    <div class="select-gallery-container valid" [ngClass]="isSelected(listItem) ? 'active' : ''" (click)="stateManagement.switchTabListSelection(listItem)">
-      <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-      <button class="select-entity-btn">{{ listItem.name }}</button>
+    @if (processedModifications().length) { @for (listItem of processedModifications(); track $index; let modificationIdx = $index) {
+    <div
+      class="select-gallery-container valid"
+      [ngClass]="isSelected(listItem, 'modification') ? 'active' : ''"
+      (click)="selectListItem(listItem, 'modification')"
+      (mouseover)="mouseinListItem(listItem)"
+      (mouseout)="mouseoutListItem()"
+    >
+      <div class="color-code-bar" [ngStyle]="{ 'background-color': getMolstarColor(listItem, 'modification') }"></div>
+      <button class="select-entity-btn">{{ listItem.codeAndName.name }} - {{ listItem.id }}</button>
     </div>
     <!-- @if (isSelected(listItem)) {
           <div class="more-details-btn">
@@ -168,8 +197,8 @@
     <p>This entry does not include any information about Modifications.</p>
     @if (hasRelatedEntries()) {
     <p>
-      Try exploring related entries for additional details.<br />
-      Related entries @for (relatedEntry of overviewMolstarFacade.relatedEntries(); track relatedEntry; let islast = $last) {
+      Try exploring other entries published alongside this one for additional details.<br />
+      Related entries @for (relatedEntry of dataProcessing.relatedEntries(); track relatedEntry; let islast = $last) {
       <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
       @if (islast === false) { , } }
     </p>

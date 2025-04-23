@@ -261,13 +261,58 @@ export const INITIAL_API_STATUS = Object.fromEntries(
   (Object.keys(COMPONENT_DEPENDENCIES).flatMap((key) => COMPONENT_DEPENDENCIES[key]) as ApiDataItem[]).map((item) => [item, 'pending'])
 ) as Record<ApiDataItem, 'pending' | 'done'>;
 
-export const PAUL_TOL_COLORBLIND_SCALE = [
-  '#332288',
-  '#117733',
-  '#44AA99',
-  '#88CCEE',
-  '#DDCC77',
-  '#CC6677',
-  '#AA4499',
-  '#882255'
+// https://web.archive.org/web/20250209115645/https://personal.sron.nl/~pault/
+export const PAUL_TOL_COLORBLIND_SCALE: string[] = ['#332288', '#117733', '#44AA99', '#88CCEE', '#DDCC77', '#CC6677', '#AA4499', '#882255'];
+
+// https://web.archive.org/web/20210108233739/http://jfly.iam.u-tokyo.ac.jp/color/
+export const OKABE_AND_ITO_COLORBLIND_SCALE: string[] = ['#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#999999'];
+
+// https://jacksonlab.agronomy.wisc.edu/2016/05/23/15-level-colorblind-friendly-palette/
+// https://mk.bcgsc.ca/biovis2012/
+export const MARTIN_KRZYWINSKI_COLORBLIND_SCALE: string[] = [
+  '#004949',
+  '#009292',
+  '#FF6DB6',
+  '#FFB6DB',
+  '#006DDB',
+  '#6DB6FF',
+  '#920000',
+  '#924900',
+  '#DB6D00',
+  '#24FF24',
+  '#FFFF6D',
+  '#490092',
+  '#B66DFF',
+  '#B6DBFF',
+  '#000000',
+];
+
+// https://www.nature.com/articles/nmeth.1618
+export const BANG_WONG_COLORBLIND_SCALE: string[] = ['#D55E00', '#0072B2', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#CC79A7', '#000000'];
+
+// https://stackoverflow.com/questions/65013406/how-to-generate-30-distinct-colors-that-are-color-blind-friendly
+export const RCOLORBREWER_COLORBLIND_SCALE: string[] = ['#FC9272', '#AE017E', '#F7F7F7', '#DF65B0', '#EF3B2C', '#74C476', '#E5F5F9', '#1D91C0'];
+/**
+ * https://medium.com/@rjurney/kellys-22-colours-of-maximum-contrast-58edb70c90d1
+ * Tested in:
+ * https://davidmathlogic.com/colorblind/#%23FDFDFD-%231D1D1D-%23EBCE2B-%23702C8C-%23DB6917-%2396CDE6-%23BA1C30-%23C0BD7F-%237F7E80-%235FA641-%234277B6-%23463397-%23E1A11A-%237E1510-%2392AE31-%236F340D-%23D32B1E-%232B3514
+ */
+export const FILTERED_KELLY22_COLORBLIND_SCALE: string[] = [
+  '#ebce2b',
+  '#702c8c',
+  '#db6917',
+  '#96cde6',
+  '#ba1c30',
+  '#c0bd7f',
+  '#7f7e80',
+  '#5fa641',
+  '#1d1d1d',
+  '#4277b6',
+  '#463397',
+  '#e1a11a',
+  '#7e1510',
+  '#92ae31',
+  '#6f340d',
+  '#d32b1e',
+  '#2b3514',
 ];

@@ -1,274 +1,272 @@
-import { ElementRef, inject, Injectable, signal } from '@angular/core';
-import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { ElementRef, inject, Injectable, signal, WritableSignal } from '@angular/core';
+import { COLORBREWER_SET2_COLORS, DEFAULT_SET_25, ELEMENT_COLORS_HEX, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { MolstarOverviewForTopPage } from '../../../../helpers/molstar/molstar-overview-for-top-page';
-import { ListSelectable, OverviewMolstarFacade } from './overview-molstar.facade';
-
-type stateProperties =
-  | 'isInactive'
-  | 'lastScroll'
-  | 'initialStateImgName'
-  | 'currentListViewSelectionIdx'
-  | 'currentListViewSelectionTemp'
-  | 'imgName'
-  // "currentListViewSelection" |
-  | 'currentDomainResource'
-  // "currentMolstarSelectionName" |
-  | 'currentMolstarSelection';
-// "molstarSelectionObjs" ;
-
-export interface TabConfig {
-  id: string;
-  displayName: string;
-  width: string;
-  tagContent: string;
-  tagClass: string;
-}
+import { OverviewMolstarFacade } from './data-processing.facade';
+import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { getLigandEntityId, getMacromoleculeEntityId } from '../../../../helpers/processed-data-to-controls';
+import { BANG_WONG_COLORBLIND_SCALE, FILTERED_KELLY22_COLORBLIND_SCALE } from '../../../../entry-constant';
 
 @Injectable({
   providedIn: 'root',
 })
 export class OverviewStateManagementService {
-  // this is a variable to save tabs states
-  // some are loaded/used for the template variables above when a tab is switched
-  // in function switchCurrentTab
-  public currentTab = signal<string>('Assembly');
-  public isInactive = signal<boolean>(true);
-
-  public tabsConfig = signal<TabConfig[]>([
-    {
-      id: 'Assembly',
-      displayName: 'Assembly',
-      width: '101px',
-      tagContent: '',
-      tagClass: 'no-chip',
-    },
-    {
-      id: 'Macromolecules',
-      displayName: 'Macromolecules',
-      width: '151px',
-      tagContent: '',
-      tagClass: 'no-chip',
-    },
-    {
-      id: 'Ligands',
-      displayName: 'Ligands',
-      width: '88px',
-      tagContent: '',
-      tagClass: 'no-chip',
-    },
-    {
-      id: 'Domains',
-      displayName: 'Domains',
-      width: '96px',
-      tagContent: '',
-      tagClass: 'no-chip',
-    },
-    {
-      id: 'Modifications',
-      displayName: 'Modifications',
-      width: '118px',
-      tagContent: '',
-      tagClass: 'no-chip',
-    },
-  ]);
-
-  public tabsStates = signal<{
-    [key: string]: {
-      isInactive: boolean;
-      lastScroll: number;
-      imgName: string;
-      initialStateImgName: string;
-      // currentListViewSelection: string;
-      currentListViewSelectionIdx: number;
-      currentListViewSelectionTemp?: ListSelectable;
-      currentDomainResource?: string;
-      // currentMolstarSelectionName: string | undefined;
-      currentMolstarSelection: MolstarSelectionObj | undefined;
-      // molstarSelectionObjs: MolstarSelectionObj[];
-    };
-  }>({
-    Assembly: {
-      isInactive: true,
-      lastScroll: 0,
-      imgName: '',
-      initialStateImgName: '',
-      // currentListViewSelection: 'No selection',
-      currentListViewSelectionIdx: 0,
-      currentListViewSelectionTemp: undefined,
-      // currentMolstarSelectionName: undefined,
-      currentMolstarSelection: undefined,
-      // molstarSelectionObjs: [],
-    },
-    Macromolecules: {
-      isInactive: true,
-      lastScroll: 0,
-      imgName: '',
-      initialStateImgName: '',
-      // currentListViewSelection: 'No selection',
-      currentListViewSelectionIdx: 0,
-      currentListViewSelectionTemp: undefined,
-      // currentMolstarSelectionName: undefined,
-      currentMolstarSelection: undefined,
-      // molstarSelectionObjs: [],
-    },
-    Ligands: {
-      isInactive: true,
-      lastScroll: 0,
-      imgName: '',
-      initialStateImgName: '',
-      // currentListViewSelection: 'No selection',
-      currentListViewSelectionIdx: 0,
-      currentListViewSelectionTemp: undefined,
-      // currentMolstarSelectionName: undefined,
-      currentMolstarSelection: undefined,
-      // molstarSelectionObjs: [],
-    },
-    Domains: {
-      isInactive: true,
-      lastScroll: 0,
-      imgName: '',
-      initialStateImgName: '',
-      // currentListViewSelection: 'No selection',
-      currentListViewSelectionIdx: 0,
-      currentListViewSelectionTemp: undefined,
-      // currentMolstarSelectionName: undefined,
-      currentDomainResource: 'CATH',
-      currentMolstarSelection: undefined,
-      // molstarSelectionObjs: [],
-    },
-    Modifications: {
-      isInactive: true,
-      lastScroll: 0,
-      imgName: '',
-      initialStateImgName: '',
-      // currentListViewSelection: 'No selection',
-      currentListViewSelectionIdx: 0,
-      currentListViewSelectionTemp: undefined,
-      // currentMolstarSelectionName: undefined,
-      currentMolstarSelection: undefined,
-      // molstarSelectionObjs: [],
-    },
-  });
-
   public readonly dataProcessing = inject(OverviewMolstarFacade);
   public readonly molstarOverview = inject(MolstarOverviewForTopPage);
   public infoControls = signal<ElementRef | undefined>(undefined);
 
-  public getStatePropertyOfTab(tabName: string, propertyName: string) {
-    if (tabName === 'current') tabName = this.currentTab();
-    return this.tabsStates()[tabName][propertyName as stateProperties];
-  }
+  public currentSelectionIdx: WritableSignal<number> = signal(-1);
+  public currentMolstarSelectionsNames: WritableSignal<string[]> = signal([]);
+  public currentMolstarSelections: WritableSignal<MolstarSelectionObj[]> = signal([]);
 
-  public updateStatePropertyOfTab(tabName: string, propertyName: string, propertyValue: any) {
-    if (tabName === 'current') tabName = this.currentTab();
-    this.tabsStates.update((tabsStates) => ({
-      ...tabsStates,
-      [tabName]: {
-        ...tabsStates[tabName], // Spread the existing state for the specified tab
-        [propertyName]: propertyValue, // Dynamically update the property
-      },
-    }));
-  }
+  public lastMacromoleculeState = 'none';
+  public lastLigandsState = 'none';
+  public lastDomainsState = 'none';
+  public lastModificationsState = 'none';
+  public lastListViewItem?: MacromoleculesRowData | LigandsRowData | DomainsRowData;
+  public listViewItemType?: string;
 
-  public updateTabDisplayConfig(tabName: string, tagContent: string, tagClass: string) {
-    const tabIndex = this.tabsConfig()
-      .map((cfg) => cfg.id)
-      .indexOf(tabName);
-
-    if (tabIndex === -1) return;
-
-    this.tabsConfig.update((configs) => {
-      const updatedConfigs = [...configs]; // Create a shallow copy
-      updatedConfigs[tabIndex] = { ...updatedConfigs[tabIndex], tagContent: tagContent, tagClass: tagClass }; // Modify specific index.
-      return updatedConfigs;
-    });
-  }
   // 'assets/img/interfaces_example2.png'
-  public async switchCurrentTab(newView: string) {
-    if (this.dataProcessing.dataParsed() === false) return;
-    // if (this.tabsStates()[newView].isInactive) return;
+  public async updateMolstarAccordionSelection(newView: string) {
+    if (newView === 'Assembly') {
+      await this.molstarOverview.viewPreferredAssembly();
+      this.currentMolstarSelectionsNames.set([]);
+      this.currentMolstarSelections.set([]);
+      this.currentSelectionIdx.set(-1);
+    } else if (newView === 'Macromolecules') {
+      let macromoleculeIdx: number | undefined = undefined;
+      let selectionIdx: number | undefined = undefined;
+      let macromolecule: MacromoleculesRowData | undefined = undefined;
+      if (this.lastMacromoleculeState !== 'none' && this.lastMacromoleculeState.includes('/')) {
+        macromoleculeIdx = parseInt(this.lastMacromoleculeState.split('/')[1]);
+        selectionIdx = parseInt(this.lastMacromoleculeState.split('/')[2]);
+        macromolecule = this.dataProcessing.processedMacromolecules()[macromoleculeIdx];
+        this.currentSelectionIdx.set(selectionIdx);
+      }
+      const macromoleculesState = await this.molstarOverview.viewMacromolecules(macromolecule, macromoleculeIdx, selectionIdx);
+      this.lastMacromoleculeState = macromoleculesState;
 
-    // save scroll of current tab
-    const previousTab = this.currentTab();
-    const lastScrollTop = this.infoControls()!.nativeElement.scrollTop;
-    this.updateStatePropertyOfTab(previousTab, 'lastScroll', lastScrollTop);
+      const macromoleculeSelections = macromolecule ? macromolecule.additionalData.selections : [];
+      const macromoleculeSelectionsNames = macromolecule ? macromolecule.additionalData.selectionNames : [];
+      this.currentMolstarSelections.set(macromoleculeSelections);
+      this.currentMolstarSelectionsNames.set(macromoleculeSelectionsNames);
+    } else if (newView === 'Ligands') {
+      let ligandsIdx: number | undefined = undefined;
+      let selectionIdx: number | undefined = undefined;
+      let ligand: LigandsRowData | undefined = undefined;
+      if (this.lastLigandsState !== 'none' && this.lastLigandsState.includes('/')) {
+        ligandsIdx = parseInt(this.lastLigandsState.split('/')[1]);
+        selectionIdx = parseInt(this.lastLigandsState.split('/')[2]);
+        ligand = this.dataProcessing.processedLigands()[ligandsIdx];
+        this.currentSelectionIdx.set(selectionIdx);
+      }
+      const ligandsState = await this.molstarOverview.viewLigands(ligand, ligandsIdx, selectionIdx);
+      this.lastLigandsState = ligandsState;
 
-    // load last state of new tab
-    this.currentTab.set(newView);
-    this.isInactive.set(this.tabsStates()[newView].isInactive);
-    const tabToDisplay = this.currentTab();
+      const ligandSelections = ligand ? ligand.additionalData.selections : [];
+      const ligandSelectionNames = ligand ? ligand.additionalData.selectionNames : [];
+      this.currentMolstarSelections.set(ligandSelections);
+      this.currentMolstarSelectionsNames.set(ligandSelectionNames);
+    } else if (newView === 'Domains') {
+      let domainsIdx: number | undefined = undefined;
+      let domain = undefined;
+      let domainColor = undefined;
+      if (this.lastDomainsState !== 'none' && this.lastDomainsState.includes('/')) {
+        domainsIdx = parseInt(this.lastDomainsState.split('/')[1]);
+        domain = this.dataProcessing.processedDomainsAsList()[domainsIdx];
+        domainColor = this.getMolstarColor(domain, 'domain');
+        this.currentSelectionIdx.set(domainsIdx);
+      }
+      const domainsOfResource = this.dataProcessing
+        .processedDomainsAsList()
+        .filter((eachDomain) => eachDomain.resource === this.dataProcessing.currentDomainResource());
+      const domainColors = domainsOfResource.map((eachDomain) => this.getMolstarColor(eachDomain, 'domain'));
+      const domainsState = await this.molstarOverview.viewDomains(domainsOfResource, domainColors, domain, domainColor, domainsIdx);
+      this.lastDomainsState = domainsState;
 
-    const currentMolstarSelection = this.tabsStates()[newView].currentMolstarSelection;
+      // each domain has a single selection
+      this.currentMolstarSelections.set([]);
+      this.currentMolstarSelectionsNames.set([]);
+    } else if (newView === 'Modifications') {
+      let modificationsIdx: number | undefined = undefined;
+      let selectionIdx: number | undefined = undefined;
+      let modification: LigandsRowData | undefined = undefined;
+      if (this.lastModificationsState !== 'none' && this.lastModificationsState.includes('/')) {
+        modificationsIdx = parseInt(this.lastModificationsState.split('/')[1]);
+        selectionIdx = parseInt(this.lastModificationsState.split('/')[2]);
+        modification = this.dataProcessing.processedModifications()[modificationsIdx];
+        this.currentSelectionIdx.set(selectionIdx);
+      }
+      const modificationsState = await this.molstarOverview.viewModifications(modification, modificationsIdx, selectionIdx);
+      this.lastModificationsState = modificationsState;
 
-    // load image gallery saved image state for new tab
-    const imgName = this.tabsStates()[tabToDisplay].imgName;
-    await this.molstarOverview.loadImage(imgName);
-    this.updateStatePropertyOfTab(this.currentTab(), 'imgName', imgName);
+      const modificationSelections = modification ? modification.additionalData.selections : [];
+      const modificationSelectionNames = modification ? modification.additionalData.selectionNames : [];
 
-    // const currentTabSelection = this.tabsStates()[tabToDisplay].currentListViewSelection;
-    // await this.configureMolstarDisplay(currentTabSelection, currentMolstarSelection);
-
-    const currentTabSelection = this.tabsStates()[tabToDisplay].currentListViewSelectionTemp;
-    await this.configureMolstarDisplayTemp(currentTabSelection, currentMolstarSelection);
-
-    // load saved list scroll for new tab
-    this.infoControls()!.nativeElement.scrollTo(0, this.tabsStates()[tabToDisplay].lastScroll);
+      this.currentMolstarSelections.set(modificationSelections);
+      this.currentMolstarSelectionsNames.set(modificationSelectionNames);
+    }
   }
 
-  public async switchTabListSelection(listViewItem: ListSelectable) {
-    const tabName = this.currentTab();
-    const currentTabSelection = this.tabsStates()[tabName].currentListViewSelectionTemp;
+  public async updateMolstarItemSelection(listViewItem: MacromoleculesRowData | LigandsRowData | DomainsRowData | undefined, selectionType: string) {
+    const sameListViewItem = this.lastListViewItem !== undefined && this.lastListViewItem === listViewItem;
 
-    let imgName = this.tabsStates()[tabName].initialStateImgName;
-    if (currentTabSelection && currentTabSelection.id === listViewItem.id) {
-      this.updateStatePropertyOfTab(tabName, 'currentListViewSelectionTemp', undefined);
-      this.updateStatePropertyOfTab(tabName, 'currentMolstarSelection', undefined);
-      // this.updateStatePropertyOfTab(tabName, 'molstarSelectionObjs', []);
-    } else {
-      this.updateStatePropertyOfTab(tabName, 'currentListViewSelectionTemp', listViewItem);
-      this.updateStatePropertyOfTab(tabName, 'currentMolstarSelection', listViewItem.molstarNamedSelections[0].selection);
-      // this.updateStatePropertyOfTab(tabName, 'molstarSelectionObjs', listViewItem.molstarNamedSelections.map((item) => item.selection));
-      imgName = listViewItem.molstarGalleryImg;
+    if (sameListViewItem) {
+      // reset view name so deselection can occur
+      this.molstarOverview.currentViewName = 'none';
+      this.currentSelectionIdx.set(-1);
+      listViewItem = undefined;
     }
-    await this.molstarOverview.loadImage(imgName);
-    this.updateStatePropertyOfTab(this.currentTab(), 'imgName', imgName);
+    this.lastListViewItem = listViewItem;
+    this.listViewItemType = selectionType;
 
-    const currentMolstarSelection = this.tabsStates()[tabName].currentMolstarSelection;
-    await this.configureMolstarDisplayTemp(listViewItem, currentMolstarSelection);
+    // deselect macromolecule if clicked 2 times in a row
+    if (sameListViewItem && selectionType === 'macromolecule') {
+      const macromoleculesState = await this.molstarOverview.viewMacromolecules();
+      this.lastMacromoleculeState = macromoleculesState;
+
+      this.currentMolstarSelections.set([]);
+      this.currentMolstarSelectionsNames.set([]);
+    }
+    // deselect ligand if clicked 2 times in a row
+    else if (sameListViewItem && selectionType === 'ligand') {
+      const ligandsState = await this.molstarOverview.viewLigands();
+      this.lastLigandsState = ligandsState;
+
+      this.currentMolstarSelections.set([]);
+      this.currentMolstarSelectionsNames.set([]);
+    }
+    // deselect domain if clicked 2 times in a row
+    else if (sameListViewItem && selectionType === 'domain') {
+      const domainsOfResource = this.dataProcessing
+        .processedDomainsAsList()
+        .filter((eachDomain) => eachDomain.resource === this.dataProcessing.currentDomainResource());
+      const domainColors = domainsOfResource.map((eachDomain) => this.getMolstarColor(eachDomain, 'domain'));
+      const domainsState = await this.molstarOverview.viewDomains(domainsOfResource, domainColors);
+      this.lastDomainsState = domainsState;
+
+      this.currentMolstarSelections.set([]);
+      this.currentMolstarSelectionsNames.set([]);
+    }
+    // select macromolecule
+    else if (selectionType === 'macromolecule') {
+      let selectionIdx: number | undefined = undefined;
+      const macromolecule = listViewItem as MacromoleculesRowData;
+      const macromoleculeIdx = this.dataProcessing.processedMacromolecules().indexOf(macromolecule);
+      if (this.lastMacromoleculeState !== 'none' && this.lastMacromoleculeState.includes('/')) {
+        const lastMacromoleculeIdx = parseInt(this.lastMacromoleculeState.split('/')[1]);
+        if (lastMacromoleculeIdx === macromoleculeIdx) {
+          selectionIdx = parseInt(this.lastMacromoleculeState.split('/')[2]) || 0;
+        } else {
+          selectionIdx = 0;
+        }
+      }
+      const macromoleculesState = await this.molstarOverview.viewMacromolecules(macromolecule, macromoleculeIdx, selectionIdx);
+      this.lastMacromoleculeState = macromoleculesState;
+      this.currentSelectionIdx.set(parseInt(this.lastMacromoleculeState.split('/')[2]));
+
+      const macromoleculeSelections = macromolecule ? macromolecule.additionalData.selections : [];
+      const macromoleculeSelectionNames = macromolecule ? macromolecule.additionalData.selectionNames : [];
+      this.currentMolstarSelections.set(macromoleculeSelections);
+      this.currentMolstarSelectionsNames.set(macromoleculeSelectionNames);
+    }
+    // select ligand
+    else if (selectionType === 'ligand') {
+      let ligand = listViewItem as LigandsRowData;
+      const ligandsIdx = this.dataProcessing.processedLigands().indexOf(ligand);
+      let selectionIdx: number | undefined = undefined;
+      if (this.lastLigandsState !== 'none' && this.lastLigandsState.includes('/')) {
+        const lastLigandIdx = parseInt(this.lastLigandsState.split('/')[1]);
+        if (lastLigandIdx === ligandsIdx) {
+          selectionIdx = parseInt(this.lastLigandsState.split('/')[2]) || 0;
+        } else {
+          selectionIdx = 0;
+        }
+        ligand = this.dataProcessing.processedLigands()[ligandsIdx];
+      }
+      const ligandsState = await this.molstarOverview.viewLigands(ligand, ligandsIdx, selectionIdx);
+      this.lastLigandsState = ligandsState;
+      this.currentSelectionIdx.set(parseInt(this.lastLigandsState.split('/')[2]));
+
+      const ligandSelections = ligand ? ligand.additionalData.selections : [];
+      const ligandSelectionNames = ligand ? ligand.additionalData.selectionNames : [];
+      this.currentMolstarSelections.set(ligandSelections);
+      this.currentMolstarSelectionsNames.set(ligandSelectionNames);
+    }
+    // select domain
+    else if (selectionType === 'domain') {
+      const domain = listViewItem as DomainsRowData;
+      const domainColor = this.getMolstarColor(domain, 'domain');
+      const domainsIdx = this.dataProcessing.processedDomainsAsList().indexOf(domain);
+      const domainsOfResource = this.dataProcessing
+        .processedDomainsAsList()
+        .filter((eachDomain) => eachDomain.resource === this.dataProcessing.currentDomainResource());
+      const domainColors = domainsOfResource.map((eachDomain) => this.getMolstarColor(eachDomain, 'domain'));
+      const domainsState = await this.molstarOverview.viewDomains(domainsOfResource, domainColors, domain, domainColor, domainsIdx);
+      this.lastDomainsState = domainsState;
+      this.currentSelectionIdx.set(parseInt(this.lastDomainsState.split('/')[2]));
+
+      this.currentMolstarSelections.set([]);
+      this.currentMolstarSelectionsNames.set([]);
+    } else if (selectionType === 'modification') {
+      const modification = listViewItem as LigandsRowData;
+      const modificationsIdx = this.dataProcessing.processedModifications().indexOf(modification);
+      let selectionIdx: number | undefined = undefined;
+      if (this.lastModificationsState !== 'none' && this.lastModificationsState.includes('/')) {
+        const lastModificationIdx = parseInt(this.lastModificationsState.split('/')[1]);
+        if (lastModificationIdx === modificationsIdx) {
+          selectionIdx = parseInt(this.lastModificationsState.split('/')[2]) || 0;
+        } else {
+          selectionIdx = 0;
+        }
+      }
+      const modificationsState = await this.molstarOverview.viewModifications(modification, modificationsIdx, selectionIdx);
+      this.lastModificationsState = modificationsState;
+      this.currentSelectionIdx.set(parseInt(this.lastModificationsState.split('/')[2]));
+
+      const modificationSelections = modification ? modification.additionalData.selections : [];
+      const modificationSelectionNames = modification ? modification.additionalData.selectionNames : [];
+      this.currentMolstarSelections.set(modificationSelections);
+      this.currentMolstarSelectionsNames.set(modificationSelectionNames);
+    }
+    return;
   }
-
-  async configureMolstarDisplayTemp(tabSelection: ListSelectable | undefined, currentMolstarSelection: MolstarSelectionObj | undefined) {
-    const tabName = this.currentTab();
-    // if tab is domains and something is selected, show the whole polymer
-    if (tabName === 'Domains' && tabSelection) {
-      await this.molstarOverview.showDomainsWholeAssembly();
-    }
-    // if tab is ligands and something is selected, show as sticks
-    if (tabName === 'Ligands' && tabSelection) {
-      const chemCompId = tabSelection.name.split(' - ')[1];
-      await this.molstarOverview.showLigandsAsSticks(currentMolstarSelection!.entityId!, chemCompId, this.dataProcessing.colorsFromMolj());
-    }
-    // if tab is modifications and something is selected, show as sticks
-    if (tabName === 'Modifications' && tabSelection) {
-      await this.molstarOverview.showModificationsAsSticks(tabSelection.molstarGalleryImg, this.dataProcessing.colorsFromMolj());
-    }
-
-    // zoom to the saved molstar selection
-    await this.switchMolstarZoomed(currentMolstarSelection);
-  }
-
-  // async loadImg(imgString: string) {
-  //   if (imgString) {
-  //     this.updateStatePropertyOfTab(this.currentTab(), 'imgName', imgString);
-  //     await this.molstarOverview.galleryManager().load(imgString);
-  //   }
-  // }
 
   async switchMolstarZoomed(molstarSelection?: MolstarSelectionObj) {
     if (molstarSelection) {
       await this.molstarOverview.focusLoci(molstarSelection);
     } else {
-      await this.molstarOverview.unfocusLoci();
+      await this.molstarOverview.focusStructure();
     }
+  }
+
+  public getMolstarColor(listItem: MacromoleculesRowData | LigandsRowData | DomainsRowData, selectionType: string) {
+    let colorScale = DEFAULT_SET_25;
+    let idx = -1;
+    if (selectionType === 'macromolecule') {
+      idx = getMacromoleculeEntityId(listItem as MacromoleculesRowData) - 1;
+      colorScale = DEFAULT_SET_25;
+    } else if (selectionType === 'ligand') {
+      const ligand = listItem as LigandsRowData;
+      idx = getLigandEntityId(ligand) - 1;
+      const elementKeys = Object.keys(ELEMENT_COLORS_HEX);
+      if (elementKeys.indexOf(ligand.id) > -1) {
+        return ELEMENT_COLORS_HEX[ligand.id];
+      }
+      colorScale = COLORBREWER_SET2_COLORS;
+    } else if (selectionType === 'modification') {
+      idx = this.dataProcessing.processedModifications().indexOf(listItem as LigandsRowData);
+      colorScale = BANG_WONG_COLORBLIND_SCALE;
+    } else if (selectionType === 'domain') {
+      const uniqueAccessions = [...new Set(this.dataProcessing.processedDomainsAsList().map((domain) => domain.accessionName))];
+
+      // idx = this.processedDomainsAsList().indexOf(listItem as DomainsRowData)
+      const domain = listItem as DomainsRowData;
+      idx = uniqueAccessions.indexOf(domain.accessionName);
+
+      colorScale = FILTERED_KELLY22_COLORBLIND_SCALE;
+    }
+    if (idx === -1) throw 'wrong color idx';
+    const entityColor = colorScale[idx % colorScale.length];
+    return entityColor;
   }
 }

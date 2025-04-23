@@ -9,7 +9,7 @@ import { ProcessedExperimentalDetails } from './data-models-and-definitions/proc
 import { expInfoTooltip, expRawDataTooltip, pdbRedoTooltip, sampleInfoTooltip, timelineTooltip, validationInfoTooltip } from '../../entry-constant';
 import { MaterialModule, UtilService } from '@pdbc/core';
 import { filter, firstValueFrom, map, mergeMap } from 'rxjs';
-import { MolstarVisualisationsForTabs } from '../../helpers/molstar/molstar-visualisations-for-detail-tabs';
+import { MolstarExtendedForEntryPages } from '../../helpers/molstar/molstar-extended-for-entry-pgs';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
@@ -68,7 +68,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   public readonly tableFacade = inject(ValidationTablesFacade);
-  public readonly molstarVisualisations = inject(MolstarVisualisationsForTabs);
+  public readonly molstarVisualisations = inject(MolstarExtendedForEntryPages);
   public readonly util = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
 
