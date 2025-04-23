@@ -32,6 +32,7 @@ export class LigandDataToTable extends DataToTable {
       const ligandsTableRows: LigandsRowData[] = [];
       for (const mol of this.ligands) {
         const randomDescription = 'Unannotated';
+        const ligandMolstarData = this.generateMolstarSelectionsLigands(mol, this.molstarResidueInfo);
         ligandsTableRows.push({
           type: 'ligand',
           id: mol.chem_comp_ids[0],
@@ -45,7 +46,8 @@ export class LigandDataToTable extends DataToTable {
           },
           additionalData: {
             source: mol,
-            selections: this.generateMolstarSelectionsLigands(mol, this.molstarResidueInfo),
+            selections: ligandMolstarData.selections,
+            selectionNames: ligandMolstarData.selectionNames,
           },
         });
       }
@@ -56,6 +58,8 @@ export class LigandDataToTable extends DataToTable {
       for (const modId of modificationIds) {
         const modificationsOfId = this.modifications.filter((mod) => mod.chem_comp_id === modId);
         const moleculesOfId = modificationsOfId.map((mod) => mod.description).filter((molName, idx, array) => array.indexOf(molName) === idx);
+
+        const modificationMolstarData = this.generateMolstarSelectionsModifications(modificationsOfId);
 
         modificationsTableRows.push({
           type: 'modification',
@@ -71,7 +75,8 @@ export class LigandDataToTable extends DataToTable {
           },
           additionalData: {
             source: modificationsOfId,
-            selections: this.generateMolstarSelectionsModifications(this.modifications),
+            selections: modificationMolstarData.selections,
+            selectionNames: modificationMolstarData.selectionNames,
           },
         });
       }
@@ -112,6 +117,7 @@ export class LigandDataToTable extends DataToTable {
     //     selections.push(newMolstarSelection);
     //   }
     // }
+
     const ligandResidueInfo = molstarResidueInfo.filter((residInfo) => {
       return (
         residInfo.label_entity_id &&
@@ -122,7 +128,11 @@ export class LigandDataToTable extends DataToTable {
         ligandEntity.in_struct_asyms.indexOf(residInfo.label_asym_id) > -1
       );
     });
+
+    const selectionNames: string[] = [];
     const selections: MolstarSelectionObj[] = ligandResidueInfo.map((ligResidInfo) => {
+      const resIns = ligResidInfo.pdbx_PDB_ins_code || '';
+      selectionNames.push(`Chain: ${ligResidInfo.auth_asym_id!} - Res: ${ligResidInfo.auth_seq_id!}${resIns}`);
       return {
         entityId: ligandEntity.entity_id + '',
         authChainId: ligResidInfo.auth_asym_id!,
@@ -136,10 +146,11 @@ export class LigandDataToTable extends DataToTable {
         ],
       };
     });
-    return selections;
+    return { selections, selectionNames };
   }
 
   generateMolstarSelectionsModifications(modifications: ModifiedResidue[]) {
+    const selectionNames: string[] = [];
     const selections: MolstarSelectionObj[] = [];
     for (const mod of modifications) {
       const newMolstarSelection: MolstarSelectionObj = {
@@ -155,8 +166,9 @@ export class LigandDataToTable extends DataToTable {
         ],
       };
       selections.push(newMolstarSelection);
+      selectionNames.push(`Chain ${mod.chain_id} -  Res: ${mod.author_residue_number}${mod.author_insertion_code}`);
     }
-    return selections;
+    return { selections, selectionNames };
   }
 
   generateTableFilters(): TableFilter[] {

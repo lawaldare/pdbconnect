@@ -71,6 +71,16 @@ export class DomainDataToTable extends DataToTable {
           // to filter domains, only keeping domains which are actually exist in the structure
           if (segmentData.segments.length === 0) continue;
 
+          const segmentsAsText = segmentData.segments
+            .map((seg, i) => {
+              const isFirstSeg = i === 0;
+              const hasChainId = seg[0] !== ' ';
+              if (hasChainId && isFirstSeg) return `Chain ${seg}`;
+              else if (hasChainId && isFirstSeg === false) return `\nChain ${seg}`;
+              else return seg.replace('  ', ' ');
+            })
+            .join(',');
+
           rows.push({
             // domainName: `${domainDesc} (${resourceAcc})`,
             accessionName: domainDesc,
@@ -78,9 +88,11 @@ export class DomainDataToTable extends DataToTable {
             domain: domainName,
             moleculeNames: moleculeNames,
             segments: segmentData.segments,
+            segmentsAsText: segmentsAsText,
             additionalData: {
               accession: resourceAcc,
               selections: [segmentData.molstarSelection],
+              selectionNames: [`Segments of domain`],
               boundaries: segmentData.segmentsBoundaries,
               segmentsResidNumbers: segmentData.segmentsResidNumber,
             },
@@ -112,6 +124,16 @@ export class DomainDataToTable extends DataToTable {
           // to filter domains, only keeping domains which are actually exist in the structure
           if (segmentData.segments.length === 0) continue;
 
+          const segmentsAsText = segmentData.segments
+            .map((seg, i) => {
+              const isFirstSeg = i === 0;
+              const hasChainId = seg[0] !== ' ';
+              if (hasChainId && isFirstSeg) return `Chain ${seg}`;
+              else if (hasChainId && isFirstSeg === false) return `\nChain ${seg}`;
+              else return seg.replace('  ', ' ');
+            })
+            .join(',');
+
           rows.push({
             // domainName: `${domainDesc} (${resourceAcc})`,
             accessionName: domainDesc,
@@ -119,9 +141,11 @@ export class DomainDataToTable extends DataToTable {
             domain: domainName,
             moleculeNames: moleculeNames,
             segments: segmentData.segments,
+            segmentsAsText: segmentsAsText,
             additionalData: {
               accession: resourceAcc,
               selections: [segmentData.molstarSelection],
+              selectionNames: [`Segments of domain`],
               boundaries: segmentData.segmentsBoundaries,
               segmentsResidNumbers: segmentData.segmentsResidNumber,
             },
@@ -151,6 +175,16 @@ export class DomainDataToTable extends DataToTable {
           // to filter domains, only keeping domains which are actually exist in the structure
           if (segmentData.segments.length === 0) continue;
 
+          const segmentsAsText = segmentData.segments
+            .map((seg, i) => {
+              const isFirstSeg = i === 0;
+              const hasChainId = seg[0] !== ' ';
+              if (hasChainId && isFirstSeg) return `Chain ${seg}`;
+              else if (hasChainId && isFirstSeg === false) return `\nChain ${seg}`;
+              else return seg.replace('  ', ' ');
+            })
+            .join(',');
+
           rows.push({
             // domainName: `${domainDesc} (${resourceAcc})`,
             accessionName: domainDesc,
@@ -158,9 +192,11 @@ export class DomainDataToTable extends DataToTable {
             domain: domain,
             moleculeNames: moleculeNames,
             segments: segmentData.segments,
+            segmentsAsText: segmentsAsText,
             additionalData: {
               accession: resourceAcc,
               selections: [segmentData.molstarSelection],
+              selectionNames: [`Segments of domain`],
               boundaries: segmentData.segmentsBoundaries,
               segmentsResidNumbers: segmentData.segmentsResidNumber,
             },

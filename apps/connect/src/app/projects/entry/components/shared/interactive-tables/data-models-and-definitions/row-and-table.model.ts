@@ -60,6 +60,7 @@ export interface MacromoleculesRowData {
   additionalData: {
     molecule: Molecule;
     selections: MolstarSelectionObj[];
+    selectionNames: string[];
     uniprotAccessions: string[];
   };
   mappedResidues?: any[];
@@ -87,6 +88,7 @@ export interface LigandsRowData {
   additionalData: {
     source: Molecule | ModifiedResidue[];
     selections: MolstarSelectionObj[];
+    selectionNames: string[];
   };
 }
 
@@ -107,11 +109,13 @@ export interface DomainsRowData {
   domain: string;
   moleculeNames: string[];
   segments: string[];
+  segmentsAsText: string;
   additionalData: {
     accession: string;
     boundaries: DomainsBoundaries[];
     segmentsResidNumbers: string[];
     selections: MolstarSelectionObj[];
+    selectionNames: string[];
   };
   mappedboundaries?: string[];
 }

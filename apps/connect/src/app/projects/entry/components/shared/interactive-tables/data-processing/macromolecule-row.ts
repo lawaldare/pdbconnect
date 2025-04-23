@@ -90,7 +90,10 @@ export class MacromoleculeDataToTable extends DataToTable {
 
         const geneNames = molecule.gene_name ? molecule.gene_name : [];
 
-        const molstarSelections: MolstarSelectionObj[] = this.generateMolstarSelectionsMacromolecules(molecule, carbohydrate);
+        const selectionData = this.generateMolstarSelectionsMacromolecules(molecule, carbohydrate);
+
+        const selectionNames = selectionData.selectionNames;
+        const molstarSelections: MolstarSelectionObj[] = selectionData.selections;
 
         macromoleculeRows.push({
           name: {
@@ -104,6 +107,7 @@ export class MacromoleculeDataToTable extends DataToTable {
           additionalData: {
             molecule: molecule,
             selections: molstarSelections,
+            selectionNames: selectionNames,
             uniprotAccessions: residueRanges.map((eachRange) => eachRange.uniprot),
           },
         });
@@ -248,7 +252,8 @@ export class MacromoleculeDataToTable extends DataToTable {
   }
 
   private generateMolstarSelectionsMacromolecules(molecule: Molecule, carbohydrate?: CarbohydrateMolecule) {
-    return molecule.in_chains.map((ch) => {
+    const selectionNames: string[] = [];
+    const selections = molecule.in_chains.map((ch) => {
       const molstarSelection: MolstarSelectionObj = {
         entityId: molecule.entity_id + '',
         authChainId: ch,
@@ -262,16 +267,20 @@ export class MacromoleculeDataToTable extends DataToTable {
         }
         carbohydratesOfChain.map((carbch) => carbch.residues);
         molstarSelection['residues'] = carbohydrateResidues.map((carbResidue) => {
+          const resNum = carbResidue.author_residue_number;
+          const resIns = carbResidue.author_insertion_code;
+          selectionNames.push(`Chain ${ch} } - Res: ${resNum}${resIns}`);
           return {
-            authBegin: carbResidue.author_residue_number + '',
-            authBeginIns: carbResidue.author_insertion_code,
-            authEnd: carbResidue.author_residue_number + '',
-            authEndIns: carbResidue.author_insertion_code,
+            authBegin: resNum + '',
+            authBeginIns: resIns,
+            authEnd: resNum + '',
+            authEndIns: resIns,
           };
         });
-      }
+      } else selectionNames.push(`Chain ${ch}`);
       return molstarSelection;
     });
+    return { selections, selectionNames };
   }
 
   public generateTableFilters(): TableFilter[] {
