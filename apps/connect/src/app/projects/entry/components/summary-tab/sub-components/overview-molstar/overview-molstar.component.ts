@@ -56,23 +56,19 @@ export class OverviewMolstarComponent implements AfterViewInit {
   public readonly inputModifications = toSignal(this.globalStore.select(EntrySelectors.modifications));
   public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
 
-  // effect declared at top level like a field
-  public isDataLoaded = false;
+  public molstarIsInit = signal(false);
 
-  // private readonly _waitForDataLoadAndProcessing = effect(() => {
-  //   if (this.signals.isTabDataGenerated() && this.isDataLoaded === false) {
-  //     const processedMacromolecules = this.signals.getTabData('Macromolecules').tableRows();
-  //     // this.dataProcessing.setProcessedMacromolecules(processedMacromolecules as MacromoleculesRowData[]);
-
-  //     const processedDomains = this.signals.getTabData('Domains').tableRows();
-  //     this.dataProcessing.setProcessedDomains(processedMacromolecules as MacromoleculesRowData[], processedDomains as DomainsRowData[]);
-
-  //     const processedLigands = this.signals.getTabData('Ligands').tableRows();
-  //     this.dataProcessing.setProcessedLigands(processedLigands as LigandsRowData[]);
-  //     this.dataProcessing.setProcessedModifications(processedLigands as LigandsRowData[]);
-  //     this.isDataLoaded = true;
-  //   }
-  // });
+  constructor() {
+    effect(async () => {
+      const macromoleculesData = this.signals.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
+      const ligandsRawData = this.signals.getTabData('Ligands').tableRows() as LigandsRowData[];
+      const ligandsData = ligandsRawData.filter((lig) => lig.type === 'ligand');
+      const modificationsData = ligandsRawData.filter((lig) => lig.type === 'modification');
+      if (this.molstarIsInit() && this.molstarOverview.hasChecked === false) {
+        await this.molstarOverview.checkAndCreateComponents(macromoleculesData, ligandsData, modificationsData);
+      }
+    });
+  }
 
   private async initMolstarInstance() {
     const assemblyToUse = this.assemblyData().preferred ? this.assemblyData().preferred + '' : '1';
@@ -88,11 +84,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
     };
 
     await this.molstarOverview.initMolstar(molstarConfigObject, this.molstarContainer);
-    await this.molstarOverview.checkAndCreateComponents(
-      this.dataProcessing.processedMacromolecules(),
-      this.dataProcessing.processedLigands(),
-      this.dataProcessing.processedModifications()
-    );
+    this.molstarIsInit.set(true);
 
     // ?TODO: Could be optimized by filtering non macromolecules and non ligands data
     this.molstarOverview.parseInstanceResidues();
