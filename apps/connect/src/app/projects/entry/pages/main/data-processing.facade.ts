@@ -12,7 +12,7 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { TableNames } from './main.component';
 import { TabNames } from '../../helpers/tab-names.enum';
 import { EntryActions } from '../../store/entry.actions';
-import { catchError, combineLatest, EMPTY, filter, map, mergeMap, of, retry, startWith, switchMap, take, tap } from 'rxjs';
+import { catchError, combineLatest, EMPTY, filter, first, map, mergeMap, of, retry, startWith, switchMap, take, tap } from 'rxjs';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 
 @Injectable({
@@ -63,8 +63,8 @@ export class MainDataProcessingFacade {
         catchError(() => of(defaultValue))
       );
 
-    // converts the molstarResidueInfoLoaded signal into an observable
-    const molstarResidueInfoLoaded$ = runInInjectionContext(this.injector, () => toObservable(compCommunication.molstarResidueInfoLoaded));
+    // // converts the molstarResidueInfoLoaded signal into an observable
+    // const molstarResidueInfoLoaded$ = runInInjectionContext(this.injector, () => toObservable(compCommunication.molstarResidueInfoLoaded));
 
     combineLatest({
       complexDetails: createSelectorStream(EntrySelectors.complexDetails, []),
@@ -84,16 +84,16 @@ export class MainDataProcessingFacade {
     })
       .pipe(
         retry({ count: 3, delay: 1000 }),
-        switchMap((data: any) =>
-          // converted molstarResidueInfoLoaded signal into observable
-          molstarResidueInfoLoaded$.pipe(
-            // waits until it becomes true (filter)
-            filter((val) => val === true),
-            // ensures it only continues once (take(1))
-            take(1),
-            map(() => data)
-          )
-        ),
+        // switchMap((data: any) =>
+        //   // converted molstarResidueInfoLoaded signal into observable
+        //   molstarResidueInfoLoaded$.pipe(
+        //     // waits until it becomes true (filter)
+        //     filter((val) => val === true),
+        //     // ensures it only continues once (take(1))
+        //     take(1),
+        //     map(() => data)
+        //   )
+        // ),
         tap((data) => this.processTableData(data)),
         takeUntilDestroyed(this.destroyRef)
       )

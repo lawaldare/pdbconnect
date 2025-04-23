@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { filter, map } from 'rxjs';
 import { calculateAssemblyComposition } from '../../../../helpers/assembly-helpers';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -9,6 +9,7 @@ import { Store } from '@ngrx/store';
 import { NestedDomainsData, ParsedComplexDetails } from './data-processing.models';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { getMacromoleculeEntityId, getMacromoleculeOfDomain } from '../../../../helpers/processed-data-to-controls';
+import { ComponentCommunicationService } from '../../../../services/component-comm.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +17,7 @@ import { getMacromoleculeEntityId, getMacromoleculeOfDomain } from '../../../../
 export class OverviewMolstarFacade {
   private readonly globalStore = inject(Store<EntryStoreState>);
 
+  public readonly signals = inject(ComponentCommunicationService);
   public readonly complexDetails = toSignal(this.globalStore.select(EntrySelectors.complexDetails));
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
 
@@ -31,10 +33,15 @@ export class OverviewMolstarFacade {
   public macromoleculesDescription: WritableSignal<string> = signal('');
   public entryContentsDescription: WritableSignal<string[]> = signal([]);
 
-  public processedMacromolecules: WritableSignal<MacromoleculesRowData[]> = signal([]);
-  public setProcessedMacromolecules(data: MacromoleculesRowData[]) {
-    this.processedMacromolecules.set(data);
-  }
+  public processedMacromolecules = computed(() => this.signals.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[]);
+  public processedLigands = computed(() => {
+    const data = this.signals.getTabData('Ligands').tableRows() as LigandsRowData[];
+    return data.filter((datum) => datum.type === 'ligand');
+  });
+  public processedModifications = computed(() => {
+    const data = this.signals.getTabData('Ligands').tableRows() as LigandsRowData[];
+    return data.filter((datum) => datum.type === 'modification');
+  });
 
   public currentDomainResource = signal<string>('CATH');
   public domainCount = signal<number>(0);
@@ -50,77 +57,52 @@ export class OverviewMolstarFacade {
     SCOP: 0,
   });
 
-  public processedDomainsAsList: WritableSignal<DomainsRowData[]> = signal([]);
-  public processedDomains: WritableSignal<NestedDomainsData> = signal([]);
-  public setProcessedDomains(macromoleculesData: MacromoleculesRowData[], domainsData: DomainsRowData[]) {
+  public processedDomainsAsList = computed(() => this.signals.getTabData('Domains').tableRows() as DomainsRowData[]);
+
+  public processedDomains = computed(() => {
+    const macromoleculesData = this.signals.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
+    const domainsData = this.signals.getTabData('Domains').tableRows() as DomainsRowData[];
+
     const nestedMap = new Map<number, { macromolecule: MacromoleculesRowData; domains: DomainsRowData[] }>();
-    const uniqueAccessionsByResource: { [key: string]: string[] } = {};
 
     for (const domain of domainsData) {
-      // Get macromolecule and entity id
       const macromolecule = getMacromoleculeOfDomain(domain, macromoleculesData);
       const entityId = getMacromoleculeEntityId(macromolecule);
 
-      // Create nested domain object containing macromolecule
       if (!nestedMap.has(entityId)) {
-        nestedMap.set(entityId, {
-          macromolecule,
-          domains: [],
-        });
+        nestedMap.set(entityId, { macromolecule, domains: [] });
       }
       nestedMap.get(entityId)!.domains.push(domain);
-
-      // Count total domains
-      this.domainCount.set(this.domainCount() + 1);
-
-      // Count domains by resource
-      const domainResource = domain.resource;
-      const domainCountByResource = this.domainCountByResource();
-      this.domainCountByResource.set({
-        ...domainCountByResource,
-        [domainResource]: (domainCountByResource[domainResource] ?? 0) + 1,
-      });
-
-      // Track unique accessions using a Set
-      const domainAccession = domain.additionalData.accession;
-      if (!uniqueAccessionsByResource[domainResource]) {
-        // uniqueAccessionsByResource.set(domainResource, new Set());
-        uniqueAccessionsByResource[domainResource] = [];
-      }
-
-      // Count unique domains by resource
-      const accessionSet = uniqueAccessionsByResource[domainResource];
-      const hasAccession = accessionSet.indexOf(domainAccession) > -1;
-      if (!hasAccession) {
-        const uniqueDomainCountByResource = this.uniqueDomainCountByResource();
-        this.uniqueDomainCountByResource.set({
-          ...uniqueDomainCountByResource,
-          [domainResource]: (uniqueDomainCountByResource[domainResource] ?? 0) + 1,
-        });
-        uniqueAccessionsByResource[domainResource].push(domainAccession);
-      }
     }
 
-    for (const resource of ['CATH', 'SCOP', 'Pfam']) {
-      if (this.domainCountByResource()[resource] > 0) {
-        this.currentDomainResource.set(resource);
-        break;
+    return Array.from(nestedMap.values());
+  });
+
+  constructor() {
+    effect(() => {
+      const domainsData = this.signals.getTabData('Domains').tableRows() as DomainsRowData[];
+      const domainCount = domainsData.length;
+
+      const countByResource: { [key: string]: number } = { CATH: 0, Pfam: 0, SCOP: 0 };
+      const uniqueByResource: { [key: string]: number } = { CATH: 0, Pfam: 0, SCOP: 0 };
+      const uniqueAccessions: { [key: string]: Set<string> } = { CATH: new Set(), Pfam: new Set(), SCOP: new Set() };
+
+      for (const domain of domainsData) {
+        countByResource[domain.resource]++;
+        uniqueAccessions[domain.resource].add(domain.additionalData.accession);
       }
-    }
 
-    const nestedDomainsData: NestedDomainsData = Array.from(nestedMap.values());
-    this.processedDomains.set(nestedDomainsData);
-    this.processedDomainsAsList.set(domainsData);
-  }
+      for (const key of Object.keys(uniqueByResource)) {
+        uniqueByResource[key] = uniqueAccessions[key].size;
+      }
 
-  public processedLigands: WritableSignal<LigandsRowData[]> = signal([]);
-  public setProcessedLigands(data: LigandsRowData[]) {
-    this.processedLigands.set(data.filter((datum) => datum.type === 'ligand'));
-  }
+      this.domainCount.set(domainCount);
+      this.domainCountByResource.set(countByResource);
+      this.uniqueDomainCountByResource.set(uniqueByResource);
 
-  public processedModifications: WritableSignal<LigandsRowData[]> = signal([]);
-  public setProcessedModifications(data: LigandsRowData[]) {
-    this.processedModifications.set(data.filter((datum) => datum.type === 'modification'));
+      const firstAvailable = ['CATH', 'SCOP', 'Pfam'].find((r) => countByResource[r] > 0);
+      if (firstAvailable) this.currentDomainResource.set(firstAvailable);
+    });
   }
 
   public readonly descriptions = computed(() => {

@@ -36,6 +36,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
    */
   public currentViewName = 'none';
   public addedRepresentationsAndIndexes: { [key: string]: number } = {};
+  public hasChecked = false;
 
   public async checkAndCreateComponents(macromolecules: MacromoleculesRowData[], ligands: LigandsRowData[], modifications: LigandsRowData[]) {
     // get component list
@@ -81,6 +82,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     if (hasModifications && !hasNonStandardComponent) {
       await createStaticComponent(this.molstarViewInstance(), 'non-standard');
     }
+    this.hasChecked = true;
   }
 
   private async cleanView(noGreyout?: boolean) {

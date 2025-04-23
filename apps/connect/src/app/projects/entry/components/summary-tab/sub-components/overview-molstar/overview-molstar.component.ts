@@ -58,20 +58,21 @@ export class OverviewMolstarComponent implements AfterViewInit {
 
   // effect declared at top level like a field
   public isDataLoaded = false;
-  private readonly _waitForDataLoadAndProcessing = effect(() => {
-    if (this.signals.isTabDataGenerated() && this.isDataLoaded === false) {
-      const processedMacromolecules = this.signals.getTabData('Macromolecules').tableRows();
-      this.dataProcessing.setProcessedMacromolecules(processedMacromolecules as MacromoleculesRowData[]);
 
-      const processedDomains = this.signals.getTabData('Domains').tableRows();
-      this.dataProcessing.setProcessedDomains(processedMacromolecules as MacromoleculesRowData[], processedDomains as DomainsRowData[]);
+  // private readonly _waitForDataLoadAndProcessing = effect(() => {
+  //   if (this.signals.isTabDataGenerated() && this.isDataLoaded === false) {
+  //     const processedMacromolecules = this.signals.getTabData('Macromolecules').tableRows();
+  //     // this.dataProcessing.setProcessedMacromolecules(processedMacromolecules as MacromoleculesRowData[]);
 
-      const processedLigands = this.signals.getTabData('Ligands').tableRows();
-      this.dataProcessing.setProcessedLigands(processedLigands as LigandsRowData[]);
-      this.dataProcessing.setProcessedModifications(processedLigands as LigandsRowData[]);
-      this.isDataLoaded = true;
-    }
-  });
+  //     const processedDomains = this.signals.getTabData('Domains').tableRows();
+  //     this.dataProcessing.setProcessedDomains(processedMacromolecules as MacromoleculesRowData[], processedDomains as DomainsRowData[]);
+
+  //     const processedLigands = this.signals.getTabData('Ligands').tableRows();
+  //     this.dataProcessing.setProcessedLigands(processedLigands as LigandsRowData[]);
+  //     this.dataProcessing.setProcessedModifications(processedLigands as LigandsRowData[]);
+  //     this.isDataLoaded = true;
+  //   }
+  // });
 
   private async initMolstarInstance() {
     const assemblyToUse = this.assemblyData().preferred ? this.assemblyData().preferred + '' : '1';

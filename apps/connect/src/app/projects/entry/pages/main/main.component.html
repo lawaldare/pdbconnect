@@ -14,12 +14,12 @@
         <mat-tab class="common-tab">
           <!-- <ng-template mat-tab-label>{{ tab.name }} </ng-template> -->
           <ng-template mat-tab-label>
-            @if (tabDataLoaded() && molstarResidueInfoLoaded()) { @if(!tab.hasData) {
+            @if (tabDataLoaded()) { @if(!tab.hasData) {
             <span class="tab-tag">N/A</span>
             } } {{ tab.name }}
           </ng-template>
           <ng-template matTabContent>
-            @if (tabDataLoaded() && molstarResidueInfoLoaded()) { @if (tab.hasData) {
+            @if (tabDataLoaded()) { @if (tab.hasData) {
             <section class="common-tab" [class.change-display]="!isSidebarCollapsed()">
               @if(isSidebarCollapsed()){
               <pdbc-interactive-tables [tabName]="dataProcessing.getTableName(tab.id)" />
