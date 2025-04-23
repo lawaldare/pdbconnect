@@ -221,7 +221,15 @@ export class EntryApiService {
   }
 
   public getLigandMonomers(entryId: string): Observable<LigandMonomer[]> {
-    return this.http.get<Record<string, LigandMonomer[]>>(`${this.BASE_API}ligand_monomers/${entryId}`).pipe(map((data) => data[entryId]));
+    console.log('getLigandMonomers');
+    console.log(`${this.BASE_API}ligand_monomers/${entryId}`);
+    return this.http.get<Record<string, LigandMonomer[]>>(`${this.BASE_API}ligand_monomers/${entryId}`).pipe(
+      map((data) => {
+        console.log('data');
+        console.log(data);
+        return data[entryId];
+      })
+    );
   }
 
   private processRedoData(score: number, rangeUpper: number, rangeLower: number) {

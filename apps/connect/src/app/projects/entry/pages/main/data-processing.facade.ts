@@ -79,6 +79,7 @@ export class MainDataProcessingFacade {
       uniprotMapping: createSelectorStream(EntrySelectors.uniprotMapping, null),
       bestStrMapUniProtId: createSelectorStream(EntrySelectors.bestStructuresMappingsByUniProtIds, []),
       macromolecules: createSelectorStream(EntrySelectors.macroMolecules, []),
+      ligandMonomers: createSelectorStream(EntrySelectors.ligandMonomers, []),
     })
       .pipe(
         retry({ count: 3, delay: 1000 }),
@@ -109,8 +110,8 @@ export class MainDataProcessingFacade {
         this.isNotUndefined([data.pfamMappings, data.cathMappings, data.scopMappings, data.macromolecules, this.molstarResidueInfo()])
       ) {
         tempTableData = new DomainDataToTable(data.pfamMappings!, data.cathMappings!, data.scopMappings!, data.macromolecules, this.molstarResidueInfo());
-      } else if (tabName === TabNames.Ligands && this.isNotUndefined([data.ligands, data.modifications, this.molstarResidueInfo()])) {
-        tempTableData = new LigandDataToTable(data.ligands, data.modifications, this.molstarResidueInfo());
+      } else if (tabName === TabNames.Ligands && this.isNotUndefined([data.ligands, data.modifications, data.ligandMonomers])) {
+        tempTableData = new LigandDataToTable(data.ligands, data.modifications, data.ligandMonomers);
       } else if (
         tabName === TabNames.Macromolecules &&
         this.isNotUndefined([data.carbohydrates, data.uniprotMapping, data.bestStrMapUniProtId, data.macromolecules, this.molstarResidueInfo()])
@@ -231,5 +232,7 @@ export class MainDataProcessingFacade {
     this.globalStore.dispatch(EntryActions.getGOMapping());
     this.globalStore.dispatch(EntryActions.getECMapping());
     this.globalStore.dispatch(EntryActions.getSymmetry());
+    this.globalStore.dispatch(EntryActions.getEntryLigandMonomers());
+    this.globalStore.dispatch(EntryActions.getEntryPolymerCoverage());
   }
 }
