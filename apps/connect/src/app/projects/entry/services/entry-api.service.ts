@@ -217,16 +217,16 @@ export class EntryApiService {
   }
 
   public getPolymerCoverage(entryId: string): Observable<PolymerCoverageMolecule[]> {
-    return this.http.get<Record<string, PolymerCoverageMolecule[]>>(`${this.BASE_API}polymer_coverage/${entryId}`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, { molecules: PolymerCoverageMolecule[] }>>(`${this.BASE_API}polymer_coverage/${entryId}`).pipe(
+      map((data) => {
+        return data[entryId]['molecules'] || [];
+      })
+    );
   }
 
   public getLigandMonomers(entryId: string): Observable<LigandMonomer[]> {
-    console.log('getLigandMonomers');
-    console.log(`${this.BASE_API}ligand_monomers/${entryId}`);
     return this.http.get<Record<string, LigandMonomer[]>>(`${this.BASE_API}ligand_monomers/${entryId}`).pipe(
       map((data) => {
-        console.log('data');
-        console.log(data);
         return data[entryId];
       })
     );

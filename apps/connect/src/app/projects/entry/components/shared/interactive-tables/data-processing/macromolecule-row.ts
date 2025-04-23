@@ -6,6 +6,7 @@ import { Molecule } from '../../../../data-models/molecule.model';
 import { BestStructureMapping } from '../../../../data-models/uniport-best-structures.model';
 import { UniProtMapping } from '../../../../data-models/uniprot-mapping.model';
 import { MolstarResidueInfo, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { PolymerCoverageMolecule } from '../../../../data-models/polymer-coverage.model';
 
 interface MacromoleculesChainBoundaries {
   [key: number]: {
@@ -38,7 +39,8 @@ export class MacromoleculeDataToTable extends DataToTable {
   carbohydrates: CarbohydrateMolecule[];
   uniprotMapping: UniProtMapping;
   bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] };
-  molstarResidueInfo: MolstarResidueInfo[];
+  // molstarResidueInfo: MolstarResidueInfo[];
+  polymerCoverage: PolymerCoverageMolecule[];
 
   molstarHardResetOnSelect = false;
   protvistaForSelection = true;
@@ -53,18 +55,21 @@ export class MacromoleculeDataToTable extends DataToTable {
     uniprotMapping: UniProtMapping,
     bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] },
     macromolecules: Molecule[],
-    molstarResidueInfo: MolstarResidueInfo[]
+    // molstarResidueInfo: MolstarResidueInfo[],
+    polymerCoverage: PolymerCoverageMolecule[]
   ) {
     super();
     this.carbohydrates = carbohydrates;
     this.uniprotMapping = uniprotMapping;
     this.bestStructuresMappingsByUniProtId = bestStructuresMappingsByUniProtId;
     this.macromolecules = macromolecules;
-    this.molstarResidueInfo = molstarResidueInfo;
+    // this.molstarResidueInfo = molstarResidueInfo;
+    this.polymerCoverage = polymerCoverage;
   }
 
   generateTableData(): TableRow[] {
-    const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIds(this.macromolecules, this.molstarResidueInfo);
+    // const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIds(this.macromolecules, this.molstarResidueInfo);
+    const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIdsFromCoverage(this.macromolecules, this.polymerCoverage);
     const mappingsByEntityByAccession: EntityUniProtMapping = this.generateUniprotMappings(
       this.uniprotMapping,
       this.bestStructuresMappingsByUniProtId,
@@ -166,6 +171,42 @@ export class MacromoleculeDataToTable extends DataToTable {
         };
       });
     });
+    return startEndByEntityByChain;
+  }
+
+  private getStartEndForChainIdsFromCoverage(macromolecules: Molecule[], polymerCoverage: PolymerCoverageMolecule[]) {
+    // Map macromolecules by entity_id for quick lookup
+    const macromoleculesByEntityId = Object.fromEntries(macromolecules.map((mol) => [mol.entity_id, mol]));
+
+    const entitiesForMacromolecules = new Set(Object.keys(macromoleculesByEntityId));
+
+    // filter polymercoverage by entity id
+    const filteredPolymerCoverage = polymerCoverage.filter((polmol) => entitiesForMacromolecules.has(polmol.entity_id + ''));
+
+    const startEndByEntityByChain: MacromoleculesChainBoundaries = {};
+
+    for (const molecule of filteredPolymerCoverage) {
+      const entityId = molecule.entity_id;
+      startEndByEntityByChain[entityId] = {};
+
+      for (const chain of molecule.chains) {
+        const chainId = chain.chain_id;
+
+        if (!chain.observed.length) continue;
+
+        // Assuming observed segments are ordered, take first and last segments
+        const firstSegment = chain.observed[0];
+        const lastSegment = chain.observed[chain.observed.length - 1];
+
+        startEndByEntityByChain[entityId][chainId] = {
+          start_author_residue_number: firstSegment.start.author_residue_number.toString(),
+          end_author_residue_number: lastSegment.end.author_residue_number.toString(),
+          start_author_insertion_code: firstSegment.start.author_insertion_code || '',
+          end_author_insertion_code: lastSegment.end.author_insertion_code || '',
+        };
+      }
+    }
+
     return startEndByEntityByChain;
   }
 

@@ -542,10 +542,7 @@ export class EntryEffects {
       switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
       mergeMap((entryId: string) =>
         this.entryAPIService.getPolymerCoverage(entryId).pipe(
-          map((polymerCoverage) => {
-            console.log('[Effect] Polymer Coverage Data:', polymerCoverage);
-            return EntryActions.getEntryPolymerCoverageSuccess({ polymerCoverage });
-          }),
+          map((polymerCoverage) => EntryActions.getEntryPolymerCoverageSuccess({ polymerCoverage })),
           catchError(() => of(EntryActions.getEntryPolymerCoverageFailure()))
         )
       )

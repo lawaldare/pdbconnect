@@ -80,6 +80,7 @@ export class MainDataProcessingFacade {
       bestStrMapUniProtId: createSelectorStream(EntrySelectors.bestStructuresMappingsByUniProtIds, []),
       macromolecules: createSelectorStream(EntrySelectors.macroMolecules, []),
       ligandMonomers: createSelectorStream(EntrySelectors.ligandMonomers, []),
+      polymerCoverage: createSelectorStream(EntrySelectors.polymerCoverage, []),
     })
       .pipe(
         retry({ count: 3, delay: 1000 }),
@@ -114,15 +115,9 @@ export class MainDataProcessingFacade {
         tempTableData = new LigandDataToTable(data.ligands, data.modifications, data.ligandMonomers);
       } else if (
         tabName === TabNames.Macromolecules &&
-        this.isNotUndefined([data.carbohydrates, data.uniprotMapping, data.bestStrMapUniProtId, data.macromolecules, this.molstarResidueInfo()])
+        this.isNotUndefined([data.carbohydrates, data.uniprotMapping, data.bestStrMapUniProtId, data.macromolecules, data.polymerCoverage])
       ) {
-        tempTableData = new MacromoleculeDataToTable(
-          data.carbohydrates,
-          data.uniprotMapping!,
-          data.bestStrMapUniProtId!,
-          data.macromolecules,
-          this.molstarResidueInfo()
-        );
+        tempTableData = new MacromoleculeDataToTable(data.carbohydrates, data.uniprotMapping!, data.bestStrMapUniProtId!, data.macromolecules, data.polymerCoverage);
       } else {
         continue;
       }

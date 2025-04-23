@@ -198,13 +198,10 @@ export const entryReducer = createReducer(
     ...state,
     entryStatus: action.entryStatus,
   })),
-  on(EntryActions.getEntryPolymerCoverageSuccess, (state, action) => {
-    console.log('[Reducer] Storing Polymer Coverage:', action.polymerCoverage);
-    return {
-      ...state,
-      polymerCoverage: action.polymerCoverage,
-    };
-  }),
+  on(EntryActions.getEntryPolymerCoverageSuccess, (state, action) => ({
+    ...state,
+    polymerCoverage: action.polymerCoverage,
+  })),
   on(EntryActions.getEntryLigandMonomersSuccess, (state, action) => ({
     ...state,
     ligandMonomers: action.ligandMonomers,
