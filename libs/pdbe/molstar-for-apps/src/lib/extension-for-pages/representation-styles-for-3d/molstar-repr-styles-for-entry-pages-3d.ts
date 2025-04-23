@@ -112,23 +112,18 @@ export const UNSELECTED_SPHERES_COLOR_BY_ENTITY_ALPHA = {
   type: 'spacefill',
   color: 'entity-id',
   // color: 'element-symbol',
-  // colorParams: {
-  //   carbonColor: {
-  //     name: "entity-id",
-  //     params: {
-  //       palette: {
-  //         name: "colors",
-  //         params: {
-  //           list: {
-  //             kind: "set",
-  //             colors: COLORBREWER_SET2_COLORS_HEXNUM.map(col => Color(col)),
-  //           }
-  //         }
-  //       }
-  //     }
-  //   },
-  //   overrideWater: true
-  // },
+  colorParams: {
+    palette: {
+      name: 'colors',
+      params: {
+        list: {
+          kind: 'set',
+          colors: COLORBREWER_SET2_COLORS_HEXNUM.map((col) => Color(col)),
+        },
+      },
+    },
+    overrideWater: true,
+  },
   typeParams: { alpha: 0.75 },
 };
 
