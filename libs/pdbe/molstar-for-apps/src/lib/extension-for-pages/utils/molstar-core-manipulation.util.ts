@@ -22,6 +22,7 @@ import { LociLabelTextParams } from 'molstar/lib//mol-repr/shape/loci/common';
 import { LineParams } from 'molstar/lib//mol-repr/structure/representation/line';
 import { PluginCommands } from 'molstar/lib/mol-plugin/commands';
 import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
+import { Color } from 'molstar/lib/mol-util/color';
 
 /**
  * This file contains various helper functions for manipulating Molstar
@@ -46,17 +47,19 @@ export interface MolstarResidueInfo {
   auth_comp_id: string | null;
 }
 
+export type MolstarSelectionObjResid = {
+  entityId?: string;
+  authChainId?: string;
+  authBegin: string;
+  authBeginIns: string;
+  authEnd: string;
+  authEndIns: string;
+};
+
 export type MolstarSelectionObj = {
   entityId?: string;
   authChainId?: string;
-  residues: {
-    entityId?: string;
-    authChainId?: string;
-    authBegin: string;
-    authBeginIns: string;
-    authEnd: string;
-    authEndIns: string;
-  }[];
+  residues: MolstarSelectionObjResid[];
 };
 
 export function getResidues(viewer: any): MolstarResidueInfo[] {
@@ -232,13 +235,11 @@ export async function clearHighlightLoci(viewer: any) {
 
 export async function getComponentList(viewer: any) {
   let structureData = [viewer.plugin!.managers.structure.hierarchy.current.structures[0]];
+  const componentNames: string[] = [];
   for await (const s of structureData) {
     for (const comp of s.components) {
-      const parsedKey = comp.key!.replace('structure-component-', '');
-      console.log('comp.key!');
-      console.log(comp.key!);
-      console.log(comp);
-      console.log('');
+      // const parsedKey = comp.key!.replace('structure-component-', '');
+      componentNames.push(comp.key!);
       // "!1cbs/model-0/props/struct-assembly-1/entities/entity-1"
       // if (comp.key!.includes('/entities/')) {
       //   const entityNumber = comp.key!.split('/entity-')[1];
@@ -251,6 +252,7 @@ export async function getComponentList(viewer: any) {
       // }
     }
   }
+  return componentNames;
 }
 
 export async function changeComponentVisibility(viewer: any, query: string, toHide: boolean) {
@@ -264,20 +266,33 @@ export async function changeComponentVisibility(viewer: any, query: string, toHi
   }
 }
 
-export async function changeRepresentationVisibility(viewer: any, query: string, toHide: boolean, hideIdx: number) {
+export async function changeRepresentationVisibility(viewer: any, query: string, toHide: boolean, hideIdx: number, hideOthers?: boolean) {
   let structureData = [viewer.plugin!.managers.structure.hierarchy.current.structures[0]];
   for await (const s of structureData) {
     for (const comp of s.components) {
       if (comp.key!.includes(query)) {
+        // for each representation of selected component
         for (let i = 0; i < comp.representations.length; i++) {
           const repr = comp.representations[i];
+          // if representation is the one to change visibility
           if (i === hideIdx) {
+            // change visiblity of representation
             setSubtreeVisibility(viewer.state, repr.cell.transform.ref, toHide);
+          }
+          // if other representations and hideOthers is true
+          else if (hideOthers === true) {
+            // hide all other representations
+            setSubtreeVisibility(viewer.state, repr.cell.transform.ref, true);
           }
         }
       }
     }
   }
+}
+
+export async function createStaticComponent(viewer: any, tagName: 'polymer' | 'ligand' | 'ion' | 'branched' | 'non-standard') {
+  const structure = viewer.state.select(viewer.assemblyRef)[0];
+  const component = await viewer.plugin!.builders.structure.tryCreateComponentStatic(structure, tagName);
 }
 
 export async function createComponent(viewer: any, lbl: string, molstarSelection: MolstarSelectionObj, representation: any) {
@@ -323,15 +338,21 @@ export async function addRepresentationToComponent(viewer: any, query: string, r
   for await (const s of structureData) {
     for (const comp of s.components) {
       if (comp.key!.includes(query)) {
+        // if hideOthers is true
         if (hideOthers) {
+          // for each current representation of selected component
           for (const repr of comp.representations) {
             // delete not working
             // const builder = viewer.plugin!.state.data.build()
             // await builder.delete(repr.cell.transform.ref);
+
+            // hide representation
             setSubtreeVisibility(viewer.state, repr.cell.transform.ref, true);
           }
         }
+        // add new representation to component
         await viewer.plugin!.builders.structure.representation.addRepresentation(comp.cell, representation as StructureRepresentationBuiltInProps);
+        return comp.representations.length;
       }
     }
   }
@@ -437,6 +458,11 @@ export function addContact(viewer: any, contactPair: any) {
   if (loci1 && loci2) {
     addCustomInteraction(viewer, loci1, loci2, { color: color });
   }
+}
+
+export function hexColorToMolstar(hexColor: string) {
+  const hexColorAsNum = parseInt(hexColor.slice(1), 16);
+  return Color(hexColorAsNum);
 }
 
 // addContact({

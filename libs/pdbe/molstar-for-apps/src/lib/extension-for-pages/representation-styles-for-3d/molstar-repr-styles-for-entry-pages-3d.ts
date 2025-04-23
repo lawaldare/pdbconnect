@@ -1,4 +1,5 @@
 import { Color } from 'molstar/lib/mol-util/color';
+import { COLORBREWER_SET2_COLORS_HEXNUM, DEFAULT_SET_25_HEXNUM } from './molstar-color-scales';
 
 /**
  * This file contains pre defined representations for different molecule types
@@ -8,16 +9,194 @@ import { Color } from 'molstar/lib/mol-util/color';
 /**
  * Used in Summary view component for selected Macromolecules, Domains
  */
-export const SELECTED_REPR_COL_BY_ENTITY = {
+
+export const SELECTED_CARTOON_COLOR_BY_ENTITY = {
   type: 'cartoon',
   color: 'entity-id',
-  colorParams: { overrideWater: true },
+  // colorParams: {
+  //   palette: {
+  //     name: "colors",
+  //     params: {
+  //       list: {
+  //           kind: "set",
+  //           // colors: MARTIN_KRZYWINSKI_COLORBLIND_SCALE_HEXNUM.map(col => Color(col)),
+  //           colors: DEFAULT_SET_25_HEXNUM.map(col => Color(col)),
+  //       },
+  //     }
+  //   },
+  //   overrideWater: true
+  // },
   typeParams: { alpha: 1 },
 };
 
-/**
- * Used in Model quality tab for ...
- */
+export const SELECTED_CARTOON_CUSTOM_COLOR = {
+  type: 'cartoon',
+  color: 'uniform',
+  colorParams: { value: undefined },
+  typeParams: { alpha: 1 },
+};
+
+export const SELECTED_STICKS_COLOR_BY_ENTITY = {
+  type: 'ball-and-stick',
+  color: 'element-symbol',
+  colorParams: {
+    carbonColor: {
+      name: 'entity-id',
+      params: {
+        palette: {
+          name: 'colors',
+          params: {
+            list: {
+              kind: 'set',
+              colors: COLORBREWER_SET2_COLORS_HEXNUM.map((col) => Color(col)),
+            },
+          },
+        },
+      },
+    },
+    overrideWater: true,
+  },
+  typeParams: { alpha: 1 },
+};
+
+export const SELECTED_STICKS_COLOR_BY_ENTITY_SET25 = {
+  type: 'ball-and-stick',
+  color: 'element-symbol',
+  colorParams: {
+    carbonColor: {
+      name: 'entity-id',
+      // params: {
+      //   palette: {
+      //     name: "colors",
+      //     params: {
+      //       list: {
+      //         kind: "set",
+      //         colors: COLORBREWER_SET2_COLORS_HEXNUM.map(col => Color(col)),
+      //       }
+      //     }
+      //   }
+      // }
+    },
+    overrideWater: true,
+  },
+  typeParams: { alpha: 1 },
+};
+
+// export const SELECTED_CARB_COLORED = {
+//   type: 'ball-and-stick',
+//   color: 'element-symbol',
+//   colorParams: { carbonColor: { name: 'uniform', params: { value: Color(0x82a74f) } } },
+//   typeParams: { alpha: 1 },
+// };
+
+export const UNSELECTED_CARTOON_COLOR_BY_ENTITY_ALPHA = {
+  type: 'cartoon',
+  color: 'entity-id',
+  // colorParams: {
+  //   palette: {
+  //     name: "colors",
+  //     params: {
+  //       list: {
+  //           kind: "set",
+  //           // colors: MARTIN_KRZYWINSKI_COLORBLIND_SCALE_HEXNUM.map(col => Color(col)),
+  //           colors: DEFAULT_SET_25_HEXNUM.map(col => Color(col)),
+  //       },
+  //     }
+  //   },
+  //   overrideWater: true
+  // },
+  typeParams: { alpha: 0.45 },
+};
+
+export const UNSELECTED_SPHERES_COLOR_BY_ENTITY_ALPHA = {
+  type: 'spacefill',
+  color: 'entity-id',
+  // color: 'element-symbol',
+  // colorParams: {
+  //   carbonColor: {
+  //     name: "entity-id",
+  //     params: {
+  //       palette: {
+  //         name: "colors",
+  //         params: {
+  //           list: {
+  //             kind: "set",
+  //             colors: COLORBREWER_SET2_COLORS_HEXNUM.map(col => Color(col)),
+  //           }
+  //         }
+  //       }
+  //     }
+  //   },
+  //   overrideWater: true
+  // },
+  typeParams: { alpha: 0.75 },
+};
+
+export const UNSELECTED_STICKS_COLOR_BY_ENTITY_ALPHA = {
+  type: 'ball-and-stick',
+  color: 'element-symbol',
+  colorParams: {
+    carbonColor: {
+      name: 'entity-id',
+      params: {
+        palette: {
+          name: 'colors',
+          params: {
+            list: {
+              kind: 'set',
+              colors: COLORBREWER_SET2_COLORS_HEXNUM.map((col) => Color(col)),
+            },
+          },
+        },
+      },
+    },
+    overrideWater: true,
+  },
+  typeParams: { alpha: 0.45 },
+};
+
+export const UNSELECTED_STICKS_COLOR_BY_ENTITY_ALPHA_SET25 = {
+  type: 'ball-and-stick',
+  color: 'element-symbol',
+  colorParams: {
+    carbonColor: {
+      name: 'entity-id',
+      // params: {
+      //   palette: {
+      //     name: "colors",
+      //     params: {
+      //       list: {
+      //         kind: "set",
+      //         colors: COLORBREWER_SET2_COLORS_HEXNUM.map(col => Color(col)),
+      //       }
+      //     }
+      //   }
+      // }
+    },
+    overrideWater: true,
+  },
+  typeParams: { alpha: 0.45 },
+};
+
+export const UNSELECTED_CARTOON_GREY_ALPHA = {
+  type: 'cartoon',
+  color: 'uniform',
+  colorParams: { value: Color(0xfefefe) },
+  typeParams: { alpha: 0.65 },
+};
+
+export const UNSELECTED_STICKS_GREY_ALPHA = {
+  type: 'ball-and-stick',
+  color: 'uniform',
+  colorParams: { value: Color(0xfefefe) },
+  typeParams: { alpha: 0.65 },
+};
+
+export const UNSELECTED_CARB_COLORED_ALPHA = {
+  type: 'carbohydrate',
+  colorParams: { name: 'carbohydrate-symbol' },
+  typeParams: { alpha: 0.65 },
+};
 
 /**
  * Used in Macromolecules, Ligands (modifications only) and Domains tabs to style the non selected

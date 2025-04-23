@@ -6,7 +6,7 @@ import { Column } from 'molstar/lib/mol-data/db';
 import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
 import { StructureQuery } from 'molstar/lib/mol-model/structure/query/query';
 import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
-import { StructureSelection } from 'molstar/lib/mol-model/structure';
+import { Structure, StructureSelection } from 'molstar/lib/mol-model/structure';
 
 /**
  * This file contains a base class with helper functions for manipulating Molstar
@@ -53,6 +53,7 @@ export class MolstarBaseClass {
   public molstarViewInstance = signal<any>(undefined);
   public galleryManager = signal<any>(undefined);
   public residues = signal<MolstarResidueInfo[]>([]);
+  public cameraDuration = 1200; // in ms (1200 = 1.2 sec)
 
   /**
    * Function triggers PDBe Molstar visualisation initialization and saves this instance to
@@ -159,12 +160,23 @@ export class MolstarBaseClass {
   }
 
   /**
-   * Function triggers Molstar focus (zooming over selection)
+   * Function triggers Molstar focus on specific selection
    * @param molstarSelection: MolstarSelectionObj (helpful interface for selecting in Molstar)
    */
   public async focusLoci(molstarSelection: MolstarSelectionObj) {
     const queryLoci = await this.getViewerLoci(molstarSelection);
-    await this.molstarViewInstance().plugin!.managers.camera.focusLoci(queryLoci, { durationMs: 300 });
+    await this.molstarViewInstance().plugin!.managers.camera.focusLoci(queryLoci, { durationMs: this.cameraDuration });
+    await new Promise((resolve) => setTimeout(resolve, this.cameraDuration * 0.75));
+  }
+  /**
+   * Function triggers Molstar focus on whole current structure
+   */
+  public async focusStructure() {
+    const assemblyRef = this.molstarViewInstance().plugin?.managers?.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
+    const structure = (this.molstarViewInstance().plugin?.state?.data?.select(assemblyRef)[0]?.obj as PluginStateObject.Molecule.Structure)?.data;
+    const structureLoci = Structure.toStructureElementLoci(structure);
+    await this.molstarViewInstance().plugin!.managers.camera.focusLoci(structureLoci, { durationMs: this.cameraDuration });
+    await new Promise((resolve) => setTimeout(resolve, this.cameraDuration * 0.75));
   }
 
   /**
