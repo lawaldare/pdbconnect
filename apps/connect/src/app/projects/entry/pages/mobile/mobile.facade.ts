@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ElementRef, inject, Injectable, signal, Type } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { MolstarConfigObject } from '../../helpers/molstar/molstar-base-class';
 import { firstValueFrom } from 'rxjs';
 import {
   AssembliesRowData,
@@ -9,27 +8,26 @@ import {
   LigandsRowData,
   MacromoleculesRowData,
 } from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
+import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
+import { StructureQuery, StructureSelection } from 'molstar/lib/mol-model/structure';
 import {
   addRepresentationToComponent,
   chainEntityResidSelection,
   changeComponentVisibility,
   changeRepresentationVisibility,
   createComponent,
-  MolstarSelectionObj,
-} from '../../helpers/molstar/molstar-helpers';
-import {
   LIGANDS_REPR_HIGHLIGHT,
   LIGANDS_REPR_NONSELECTION_POLYMER,
   LIGANDS_REPR_SELECTION,
   MACROMOLECULES_REPR_SELECTION_CARB,
+  MolstarConfigObject,
+  MolstarSelectionObj,
   PROTEIN_REPR_SELECTION,
   REPR_NONSELECTION_BRANCHED,
   REPR_NONSELECTION_LIGAND,
   REPR_NONSELECTION_POLYMER,
-} from '../../helpers/molstar/molstar-repr-objects';
-import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
-import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
-import { StructureQuery, StructureSelection } from 'molstar/lib/mol-model/structure';
+} from '@pdbe-lib/molstar-for-apps';
 
 declare let PDBeMolstarPlugin: any;
 @Injectable({

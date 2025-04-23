@@ -16,7 +16,7 @@ import { EntryApiService } from '../../../services/entry-api.service';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { SequenceDetail } from '../../../components/shared/details-dashboard/details-dashboard.component';
-import { MolstarSelectionObj } from '../../../helpers/molstar/molstar-helpers';
+import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 
 export enum ViewState {
   List = 'list',

@@ -13,7 +13,6 @@ import { MbLigandsComponent } from '../mb-ligands/mb-ligands.component';
 import { MbDomainsComponent } from '../mb-domains/mb-domains.component';
 import { MobileFacade } from '../mobile.facade';
 import { firstValueFrom } from 'rxjs';
-import { MolstarConfigObject } from '../../../helpers/molstar/molstar-base-class';
 
 export enum MobileTabChips {
   MQuality = 'MQuality',
