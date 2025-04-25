@@ -22,7 +22,7 @@ export class MainDataProcessingFacade {
   private injector = inject(Injector);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly globalStore = inject(Store<EntryStoreState>);
-  public molstarResidueInfo = computed(() => this.compCommunication.molstarResidueInfo());
+  // public molstarResidueInfo = computed(() => this.compCommunication.molstarResidueInfo());
   private readonly destroyRef = inject(DestroyRef);
 
   public tabDataLoaded = signal<boolean>(false);
@@ -108,16 +108,51 @@ export class MainDataProcessingFacade {
         tempTableData = new AssemblyDataToTable(data.complexDetails, data.assemblyData, data.pisaAssemblyData);
       } else if (
         tabName === TabNames.Domains &&
-        this.isNotUndefined([data.pfamMappings, data.cathMappings, data.scopMappings, data.macromolecules, data.polymerCoverage])
+        this.isNotUndefined([
+          data.pfamMappings,
+          data.cathMappings,
+          data.scopMappings,
+          data.macromolecules,
+          data.polymerCoverage,
+          data.complexDetails,
+          data.assemblyData,
+        ])
       ) {
-        tempTableData = new DomainDataToTable(data.pfamMappings!, data.cathMappings!, data.scopMappings!, data.macromolecules, data.polymerCoverage);
-      } else if (tabName === TabNames.Ligands && this.isNotUndefined([data.ligands, data.modifications, data.ligandMonomers])) {
-        tempTableData = new LigandDataToTable(data.ligands, data.modifications, data.ligandMonomers);
+        tempTableData = new DomainDataToTable(
+          data.pfamMappings!,
+          data.cathMappings!,
+          data.scopMappings!,
+          data.macromolecules,
+          data.polymerCoverage,
+          data.complexDetails,
+          data.assemblyData
+        );
+      } else if (
+        tabName === TabNames.Ligands &&
+        this.isNotUndefined([data.ligands, data.modifications, data.ligandMonomers, data.complexDetails, data.assemblyData])
+      ) {
+        tempTableData = new LigandDataToTable(data.ligands, data.modifications, data.ligandMonomers, data.complexDetails, data.assemblyData);
       } else if (
         tabName === TabNames.Macromolecules &&
-        this.isNotUndefined([data.carbohydrates, data.uniprotMapping, data.bestStrMapUniProtId, data.macromolecules, data.polymerCoverage])
+        this.isNotUndefined([
+          data.carbohydrates,
+          data.uniprotMapping,
+          data.bestStrMapUniProtId,
+          data.macromolecules,
+          data.polymerCoverage,
+          data.complexDetails,
+          data.assemblyData,
+        ])
       ) {
-        tempTableData = new MacromoleculeDataToTable(data.carbohydrates, data.uniprotMapping!, data.bestStrMapUniProtId!, data.macromolecules, data.polymerCoverage);
+        tempTableData = new MacromoleculeDataToTable(
+          data.carbohydrates,
+          data.uniprotMapping!,
+          data.bestStrMapUniProtId!,
+          data.macromolecules,
+          data.polymerCoverage,
+          data.complexDetails,
+          data.assemblyData
+        );
       } else {
         continue;
       }

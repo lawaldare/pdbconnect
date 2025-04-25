@@ -7,6 +7,8 @@ import { BestStructureMapping } from '../../../../data-models/uniport-best-struc
 import { UniProtMapping } from '../../../../data-models/uniprot-mapping.model';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { PolymerCoverageMolecule } from '../../../../data-models/polymer-coverage.model';
+import { ComplexDetails } from '../../../../data-models/complex-details.model';
+import { AssemblyData, AssemblyEntity } from '../../../../data-models/assembly.model';
 
 interface MacromoleculesChainBoundaries {
   [key: number]: {
@@ -35,11 +37,13 @@ interface EntityUniProtMapping {
 
 export class MacromoleculeDataToTable extends DataToTable {
   // Macromolecule specific data
-  macromolecules: Molecule[];
+  macromolecules: Molecule[] = [];
   carbohydrates: CarbohydrateMolecule[];
   uniprotMapping: UniProtMapping;
   bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] };
   polymerCoverage: PolymerCoverageMolecule[];
+  complexDetails: ComplexDetails[];
+  assemblyData: AssemblyData[];
 
   molstarHardResetOnSelect = false;
   protvistaForSelection = true;
@@ -54,14 +58,67 @@ export class MacromoleculeDataToTable extends DataToTable {
     uniprotMapping: UniProtMapping,
     bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] },
     macromolecules: Molecule[],
-    polymerCoverage: PolymerCoverageMolecule[]
+    polymerCoverage: PolymerCoverageMolecule[],
+    complexDetails: ComplexDetails[],
+    assemblyData: AssemblyData[]
   ) {
     super();
     this.carbohydrates = carbohydrates;
     this.uniprotMapping = uniprotMapping;
     this.bestStructuresMappingsByUniProtId = bestStructuresMappingsByUniProtId;
-    this.macromolecules = macromolecules;
     this.polymerCoverage = polymerCoverage;
+    this.complexDetails = complexDetails;
+    this.assemblyData = assemblyData;
+    const preferredAssembly = this.getPreferredAssembly();
+    if (preferredAssembly) {
+      this.macromolecules = this.filterByPreferredAssembly(macromolecules, preferredAssembly);
+    }
+  }
+
+  getPreferredAssembly() {
+    // we first check and get the preferred assembly if it exists
+    let preferredAssembly = -1;
+    for (const complexDetail of this.complexDetails) {
+      for (const assemblyInfo of complexDetail.assemblies) {
+        if (assemblyInfo.preferred_assembly) {
+          preferredAssembly = assemblyInfo.assembly_id;
+          break;
+        }
+      }
+      if (preferredAssembly > -1) break;
+    }
+    if (preferredAssembly === -1) preferredAssembly = 1;
+
+    const assembly = this.assemblyData.filter((assembly) => parseInt(assembly.assembly_id) === preferredAssembly)[0];
+    return assembly;
+  }
+
+  filterByPreferredAssembly(macromolecules: Molecule[], assembly: AssemblyData): Molecule[] {
+    // Create a quick lookup map for assembly entities by entity_id
+    const assemblyEntitiesMap = new Map<number, AssemblyEntity>();
+
+    for (const entity of assembly.entities) {
+      assemblyEntitiesMap.set(entity.entity_id, entity);
+    }
+
+    // Filter macromolecules based on entity_id presence in assembly
+    return (
+      macromolecules
+        .filter((molecule) => assemblyEntitiesMap.has(molecule.entity_id))
+        .map((molecule) => {
+          const assemblyEntity = assemblyEntitiesMap.get(molecule.entity_id)!;
+
+          // Filter the in_chains to only include those present in the assembly entity
+          const filteredChains = molecule.in_struct_asyms.filter((chainId) => assemblyEntity.in_chains.includes(chainId));
+
+          return {
+            ...molecule,
+            in_struct_asyms: filteredChains,
+          };
+        })
+        // Optionally, remove molecules where no chains remain after filtering
+        .filter((molecule) => molecule.in_struct_asyms.length > 0)
+    );
   }
 
   generateTableData(): TableRow[] {

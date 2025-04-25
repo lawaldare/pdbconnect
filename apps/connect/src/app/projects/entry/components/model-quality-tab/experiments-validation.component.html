@@ -406,9 +406,9 @@
           </button>
           }
         </div>
-        @if(selectedValidationType().value === 'specific_issue'){
-        <mat-select [formControl]="selectedSpecificIssueKind" (selectionChange)="selectSpecificIssueKind($event)">
-          @for (option of specificIssueKinds; track option.label) {
+        @if(selectedSpecificIssueKind() && selectedValidationType().value === 'specific_issue'){
+        <mat-select [formControl]="selectedSpecificIssueKind()!" (selectionChange)="selectSpecificIssueKind($event)">
+          @for (option of specificIssueKinds(); track option.label) {
           <mat-option [value]="option.value">{{ option.label }}</mat-option>
           }
         </mat-select>
@@ -416,7 +416,27 @@
       </div>
       <div class="container-3d">
         <div class="molstar-parent">
-          <div class="molstar-container" #molstarContainer></div>
+          <div id="model-quality-molstar-container" class="molstar-container" [style.display]="processedWidth() ? '' : 'none'" #molstarContainer></div>
+          <div class="molstar-container" [style.display]="processedWidth() ? 'none' : ''">
+            <svg style="width: 50%; margin-left: 25%; margin-top: 15%" class="spinner" viewBox="0 0 200 200">
+              <style>
+                .spinner-path {
+                  stroke-dasharray: 339 226;
+                  stroke-dashoffset: 0;
+                  animation: spinner linear infinite 2s;
+                }
+                @keyframes spinner {
+                  0% {
+                    stroke-dashoffset: 565;
+                  }
+                  100% {
+                    stroke-dashoffset: 0;
+                  }
+                }
+              </style>
+              <path class="spinner-path" fill="transparent" stroke="#72B260" stroke-width="20" d="M 100 10 A 90 90 0 1 1 100 190 A 90 90 0 1 1 100 10"></path>
+            </svg>
+          </div>
         </div>
       </div>
     </div>

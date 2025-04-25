@@ -2,7 +2,6 @@
 import { Component, computed, effect, inject } from '@angular/core';
 import { OverviewStateManagementService } from '../../state-management.service';
 import { OverviewMolstarFacade } from '../../data-processing.facade';
-import { MolstarOverviewForTopPage } from '../../../../../../helpers/molstar/molstar-overview-for-top-page';
 import { CommonModule } from '@angular/common';
 import { EntryDropdownComponent } from '../../../../../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
@@ -15,7 +14,6 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
   styleUrl: './molstar-control-bar.component.scss',
 })
 export class OverviewMolstarControBarComponent {
-  public readonly molstarOverview = inject(MolstarOverviewForTopPage);
   public readonly dataProcessing = inject(OverviewMolstarFacade);
   public readonly stateManagement = inject(OverviewStateManagementService);
 

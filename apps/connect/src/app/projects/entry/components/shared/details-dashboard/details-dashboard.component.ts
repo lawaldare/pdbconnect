@@ -24,10 +24,10 @@ import { ComponentCommunicationService } from '../../../services/component-comm.
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { EntryDropdownComponent } from '../../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { gridOptions, colDefs, defaultColDef } from './ag-grid';
+import { gridOptions, colDefs, defaultColDef } from '../../ligands-tab/ag-grid';
 import { AgGridAngular } from 'ag-grid-angular';
 import { SelectionChangedEvent } from 'ag-grid-community';
-import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
+import { INTX_NAME_STANDARDIZER } from '../../ligands-tab/interaction-type.component';
 import { ComponentType } from '@angular/cdk/overlay';
 import { MatDialog } from '@angular/material/dialog';
 import { EcNumbersComponent } from '../ec-numbers/ec-numbers.component';

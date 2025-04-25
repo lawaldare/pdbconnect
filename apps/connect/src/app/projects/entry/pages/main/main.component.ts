@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
@@ -21,7 +21,6 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { SummaryTabComponent } from '../../components/summary-tab/summary-tab.component';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { MolstarExtendedForEntryPages } from '../../helpers/molstar/molstar-extended-for-entry-pgs';
 import { InteractiveTablesComponent } from '../../components/shared/interactive-tables/interactive-tables.component';
 import { DetailsDashboardComponent } from '../../components/shared/details-dashboard/details-dashboard.component';
 import { ExperimentsValidationComponent } from '../../components/model-quality-tab/experiments-validation.component';
@@ -29,6 +28,11 @@ import { EntryPageHeaderComponent } from '../../components/entry-page-header/ent
 import { environment } from '../../../../../environments/environment';
 import { MobileMainComponent } from '../mobile/mobile-main/mobile-main.component';
 import { MobileHeaderComponent } from '@pdbc/mobile-header';
+import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
+import { AssembliesTabComponent } from '../../components/assemblies-tab/assemblies-tab.component';
+import { MacromoleculesTabComponent } from '../../components/macromolecules-tab/macromolecules-tab.component';
+import { LigandsTabComponent } from '../../components/ligands-tab/ligands-tab.component';
+import { DomainsTabComponent } from '../../components/domains-tab/domains-tab.component';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -65,6 +69,10 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     SearchAppComponent,
     MobileMainComponent,
     MobileHeaderComponent,
+    AssembliesTabComponent,
+    MacromoleculesTabComponent,
+    LigandsTabComponent,
+    DomainsTabComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -75,9 +83,10 @@ export class EntryMainPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  private readonly molstarVisualisation = inject(MolstarExtendedForEntryPages);
+  private readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
 
   private readonly router = inject(Router);
+  private readonly renderer = inject(Renderer2);
 
   public readonly pdbeLogoConfig = pdbeLogoConfig;
   public readonly pdbeSearchConfig = pdbeSearchConfig;
@@ -85,6 +94,7 @@ export class EntryMainPageComponent implements OnInit {
 
   public statusCode = signal<StatusCode>('INITIAL');
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
+  public molstarFirstRenderStarted = signal(false);
 
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
   public readonly isSidebarCollapsed = computed(() => !this.compCommunication.isSidebarCollapsed());
@@ -117,7 +127,7 @@ export class EntryMainPageComponent implements OnInit {
 
   public doesTabHasData = signal<boolean>(true);
 
-  @ViewChild('molstarViewer') molstarViewer!: ElementRef;
+  // @ViewChild('molstarViewer') molstarViewer!: ElementRef;
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
   selectedTab = 0;
@@ -139,8 +149,21 @@ export class EntryMainPageComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       const routeTabs = this.dataProcessing.routeTabs;
       const tabName = params['activeTab'];
+      this.currentTab.set(tabName);
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.selectedTab = tabIndex;
+    });
+    effect(async () => {
+      if (this.statusCode() === 'REL' && this.molstarFirstRenderStarted() == false) {
+        const molstarElement = document.getElementById('molstar-element');
+        this.molstarVisualisation.entryId = this.entryId();
+        this.molstarVisualisation.setRenderer(this.renderer);
+        this.molstarVisualisation.molstarViewerElement = molstarElement as HTMLElement;
+
+        this.molstarFirstRenderStarted.set(true);
+        await this.molstarVisualisation.renderMolstarInitial();
+        this.compCommunication.molstarFirstRenderFinished.set(true);
+      }
     });
   }
 
@@ -158,13 +181,9 @@ export class EntryMainPageComponent implements OnInit {
             map((response: EntryStatus) => response.status_code)
           );
         }),
-        mergeMap((statusCode: StatusCode) => {
+        mergeMap(async (statusCode: StatusCode) => {
           this.statusCode.set(statusCode);
           if (statusCode === 'REL') {
-            setTimeout(() => {
-              console.log('molstar render initial');
-              this.molstarVisualisation.renderMolstarInitial(this.entryId() ?? '', this.molstarViewer.nativeElement);
-            });
             this.dataProcessing.processInteractiveTablesData();
             this.dataProcessing.getPageData();
           } else {
@@ -177,7 +196,7 @@ export class EntryMainPageComponent implements OnInit {
       .subscribe();
   }
 
-  selectTab(event: MatTabChangeEvent) {
+  async selectTab(event: MatTabChangeEvent) {
     const routeTabs = this.dataProcessing.routeTabs;
     const tabName = routeTabs[event.index].id;
     this.previousTab = `${tabName}`;

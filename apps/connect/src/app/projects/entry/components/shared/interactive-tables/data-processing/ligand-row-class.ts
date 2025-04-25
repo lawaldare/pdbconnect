@@ -5,12 +5,16 @@ import { ModifiedResidue } from '../../../../data-models/modified-residues.model
 import { Molecule } from '../../../../data-models/molecule.model';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { LigandMonomer } from '../../../../data-models/ligand-monomers.model';
+import { ComplexDetails } from '../../../../data-models/complex-details.model';
+import { AssemblyData } from '../../../../data-models/assembly.model';
 
 export class LigandDataToTable extends DataToTable {
   // Ligand specific data
-  ligands: Molecule[];
-  modifications: ModifiedResidue[];
-  ligandMonomers: LigandMonomer[];
+  ligands: Molecule[] = [];
+  modifications: ModifiedResidue[] = [];
+  ligandMonomers: LigandMonomer[] = [];
+  complexDetails: ComplexDetails[];
+  assemblyData: AssemblyData[];
 
   molstarHardResetOnSelect = false;
   protvistaForSelection = false;
@@ -20,11 +24,68 @@ export class LigandDataToTable extends DataToTable {
   tableRows: WritableSignal<TableRow[]> = signal([]);
   tableFilters: WritableSignal<TableFilter[]> = signal([]);
 
-  constructor(ligands: Molecule[], modifications: ModifiedResidue[], ligandMonomers: LigandMonomer[]) {
+  constructor(
+    ligands: Molecule[],
+    modifications: ModifiedResidue[],
+    ligandMonomers: LigandMonomer[],
+    complexDetails: ComplexDetails[],
+    assemblyData: AssemblyData[]
+  ) {
     super();
-    this.ligands = ligands;
-    this.modifications = modifications;
-    this.ligandMonomers = ligandMonomers;
+    this.complexDetails = complexDetails;
+    this.assemblyData = assemblyData;
+    const preferredAssembly = this.getPreferredAssembly();
+    if (preferredAssembly) {
+      this.ligands = this.filterLigandsByAssembly(ligands, preferredAssembly);
+      this.modifications = this.filterModificationsByAssembly(modifications, preferredAssembly);
+      this.ligandMonomers = this.filterLigandMonomersByAssembly(ligandMonomers, preferredAssembly);
+    }
+  }
+
+  getPreferredAssembly() {
+    // we first check and get the preferred assembly if it exists
+    let preferredAssembly = -1;
+    for (const complexDetail of this.complexDetails) {
+      for (const assemblyInfo of complexDetail.assemblies) {
+        if (assemblyInfo.preferred_assembly) {
+          preferredAssembly = assemblyInfo.assembly_id;
+          break;
+        }
+      }
+      if (preferredAssembly > -1) break;
+    }
+    if (preferredAssembly === -1) preferredAssembly = 1;
+
+    const assembly = this.assemblyData.filter((assembly) => parseInt(assembly.assembly_id) === preferredAssembly)[0];
+    return assembly;
+  }
+
+  private filterLigandsByAssembly(ligands: Molecule[], assembly: AssemblyData): Molecule[] {
+    const entityMap = new Map(assembly.entities.map((e) => [e.entity_id, e.in_chains]));
+
+    return ligands
+      .filter((lig) => entityMap.has(lig.entity_id))
+      .map((lig) => ({
+        ...lig,
+        in_struct_asyms: lig.in_struct_asyms.filter((chain) => entityMap.get(lig.entity_id)!.includes(chain)),
+      }))
+      .filter((lig) => lig.in_struct_asyms.length > 0);
+  }
+
+  private filterModificationsByAssembly(modifications: ModifiedResidue[], assembly: AssemblyData): ModifiedResidue[] {
+    const entityMap = new Map(assembly.entities.map((e) => [e.entity_id, e.in_chains]));
+
+    return modifications.filter((mod) => {
+      return entityMap.has(mod.entity_id) && entityMap.get(mod.entity_id)!.includes(mod.struct_asym_id);
+    });
+  }
+
+  private filterLigandMonomersByAssembly(ligandMonomers: LigandMonomer[], assembly: AssemblyData): LigandMonomer[] {
+    const entityMap = new Map(assembly.entities.map((e) => [e.entity_id, e.in_chains]));
+
+    return ligandMonomers.filter((monomer) => {
+      return entityMap.has(monomer.entity_id) && entityMap.get(monomer.entity_id)!.includes(monomer.struct_asym_id);
+    });
   }
 
   generateTableData(): TableRow[] {

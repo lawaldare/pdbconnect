@@ -5,14 +5,18 @@ import { PfamMappings, CathMappings, ScopMappings, DomainMapping } from '../../.
 import { Molecule } from '../../../../data-models/molecule.model';
 import { formatSegments, formatSegmentsWithCoverage } from '../../../../helpers/domain-helpers';
 import { ObservedSegments, PolymerCoverageMolecule } from '../../../../data-models/polymer-coverage.model';
+import { AssemblyData, AssemblyEntity } from '../../../../data-models/assembly.model';
+import { ComplexDetails } from '../../../../data-models/complex-details.model';
 
 export class DomainDataToTable extends DataToTable {
   // Domain specific data
   pfamMappings: PfamMappings;
   cathMappings: CathMappings;
   scopMappings: ScopMappings;
-  macromolecules: Molecule[];
-  polymerCoverage: PolymerCoverageMolecule[];
+  macromolecules: Molecule[] = [];
+  polymerCoverage: PolymerCoverageMolecule[] = [];
+  complexDetails: ComplexDetails[];
+  assemblyData: AssemblyData[];
 
   // Implementation of Abstract attributes from abstract-base-row-class
   molstarHardResetOnSelect = false;
@@ -32,14 +36,85 @@ export class DomainDataToTable extends DataToTable {
     cathMappings: CathMappings,
     scopMappings: ScopMappings,
     macromolecules: Molecule[],
-    polymerCoverage: PolymerCoverageMolecule[]
+    polymerCoverage: PolymerCoverageMolecule[],
+    complexDetails: ComplexDetails[],
+    assemblyData: AssemblyData[]
   ) {
     super();
     this.pfamMappings = pfamMappings;
     this.cathMappings = cathMappings;
     this.scopMappings = scopMappings;
-    this.macromolecules = macromolecules;
-    this.polymerCoverage = polymerCoverage;
+    this.complexDetails = complexDetails;
+    this.assemblyData = assemblyData;
+    const preferredAssembly = this.getPreferredAssembly();
+    if (preferredAssembly) {
+      this.macromolecules = this.filterByPreferredAssembly(macromolecules, preferredAssembly);
+      this.polymerCoverage = this.filterPolymerCoverageByAssembly(polymerCoverage, preferredAssembly);
+    }
+  }
+
+  getPreferredAssembly() {
+    // we first check and get the preferred assembly if it exists
+    let preferredAssembly = -1;
+    for (const complexDetail of this.complexDetails) {
+      for (const assemblyInfo of complexDetail.assemblies) {
+        if (assemblyInfo.preferred_assembly) {
+          preferredAssembly = assemblyInfo.assembly_id;
+          break;
+        }
+      }
+      if (preferredAssembly > -1) break;
+    }
+    if (preferredAssembly === -1) preferredAssembly = 1;
+    const assembly = this.assemblyData.filter((assembly) => parseInt(assembly.assembly_id) === preferredAssembly)[0];
+    return assembly;
+  }
+
+  filterByPreferredAssembly(macromolecules: Molecule[], assembly: AssemblyData): Molecule[] {
+    // Create a quick lookup map for assembly entities by entity_id
+    const assemblyEntitiesMap = new Map<number, AssemblyEntity>();
+
+    for (const entity of assembly.entities) {
+      assemblyEntitiesMap.set(entity.entity_id, entity);
+    }
+
+    // Filter macromolecules based on entity_id presence in assembly
+    return (
+      macromolecules
+        .filter((molecule) => assemblyEntitiesMap.has(molecule.entity_id))
+        .map((molecule) => {
+          const assemblyEntity = assemblyEntitiesMap.get(molecule.entity_id)!;
+
+          // Filter the in_chains to only include those present in the assembly entity
+          const filteredChains = molecule.in_struct_asyms.filter((chainId) => assemblyEntity.in_chains.includes(chainId));
+
+          return {
+            ...molecule,
+            in_struct_asyms: filteredChains,
+          };
+        })
+        // Optionally, remove molecules where no chains remain after filtering
+        .filter((molecule) => molecule.in_struct_asyms.length > 0)
+    );
+  }
+
+  filterPolymerCoverageByAssembly(polymerCoverage: PolymerCoverageMolecule[], assembly: AssemblyData): PolymerCoverageMolecule[] {
+    const assemblyEntitiesMap = new Map<number, AssemblyEntity>();
+    for (const entity of assembly.entities) {
+      assemblyEntitiesMap.set(entity.entity_id, entity);
+    }
+
+    return polymerCoverage
+      .filter((polymer) => assemblyEntitiesMap.has(polymer.entity_id))
+      .map((polymer) => {
+        const assemblyEntity = assemblyEntitiesMap.get(polymer.entity_id)!;
+        const filteredChains = polymer.chains.filter((chain) => assemblyEntity.in_chains.includes(chain.struct_asym_id));
+        return {
+          ...polymer,
+          chains: filteredChains,
+        };
+      })
+      .filter((polymer) => polymer.chains.length > 0);
   }
 
   // parse the necessary domain specific data into data for each table row

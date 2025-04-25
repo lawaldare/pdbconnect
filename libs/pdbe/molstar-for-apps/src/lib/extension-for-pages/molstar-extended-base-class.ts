@@ -82,6 +82,14 @@ export class MolstarBaseClass {
     await firstValueFrom(this.molstarViewInstance().events.loadComplete);
   }
 
+  public async initOrUpdateMolstar(molstarConfigObject: MolstarConfigObject, molstarContainer?: ElementRef, molstarViewer?: HTMLElement) {
+    if (this.molstarViewInstance()) {
+      this.updateMolstar(molstarConfigObject);
+    } else {
+      this.initMolstar(molstarConfigObject, molstarContainer, molstarViewer);
+    }
+  }
+
   /**
    * Function allows manually hiding PDBe Molstar buttons that are usually displayed
    * NOTE:
@@ -166,7 +174,6 @@ export class MolstarBaseClass {
   public async focusLoci(molstarSelection: MolstarSelectionObj) {
     const queryLoci = await this.getViewerLoci(molstarSelection);
     await this.molstarViewInstance().plugin!.managers.camera.focusLoci(queryLoci, { durationMs: this.cameraDuration });
-    await new Promise((resolve) => setTimeout(resolve, this.cameraDuration * 0.75));
   }
   /**
    * Function triggers Molstar focus on whole current structure
@@ -176,7 +183,6 @@ export class MolstarBaseClass {
     const structure = (this.molstarViewInstance().plugin?.state?.data?.select(assemblyRef)[0]?.obj as PluginStateObject.Molecule.Structure)?.data;
     const structureLoci = Structure.toStructureElementLoci(structure);
     await this.molstarViewInstance().plugin!.managers.camera.focusLoci(structureLoci, { durationMs: this.cameraDuration });
-    await new Promise((resolve) => setTimeout(resolve, this.cameraDuration * 0.75));
   }
 
   /**

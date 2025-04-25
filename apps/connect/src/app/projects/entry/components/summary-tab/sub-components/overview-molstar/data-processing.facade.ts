@@ -33,12 +33,21 @@ export class OverviewMolstarFacade {
   public macromoleculesDescription: WritableSignal<string> = signal('');
   public entryContentsDescription: WritableSignal<string[]> = signal([]);
 
-  public processedMacromolecules = computed(() => this.signals.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[]);
+  public processedMacromolecules = computed(() => {
+    const hasMacromoleculesData = Object.keys(this.signals.tabTableData()).indexOf('Macromolecules') > -1;
+    if (!hasMacromoleculesData) return [];
+    return this.signals.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
+  });
+
   public processedLigands = computed(() => {
+    const hasLigandsData = Object.keys(this.signals.tabTableData()).indexOf('Ligands') > -1;
+    if (!hasLigandsData) return [];
     const data = this.signals.getTabData('Ligands').tableRows() as LigandsRowData[];
     return data.filter((datum) => datum.type === 'ligand');
   });
   public processedModifications = computed(() => {
+    const hasLigandsData = Object.keys(this.signals.tabTableData()).indexOf('Ligands') > -1;
+    if (!hasLigandsData) return [];
     const data = this.signals.getTabData('Ligands').tableRows() as LigandsRowData[];
     return data.filter((datum) => datum.type === 'modification');
   });
@@ -57,9 +66,17 @@ export class OverviewMolstarFacade {
     SCOP: 0,
   });
 
-  public processedDomainsAsList = computed(() => this.signals.getTabData('Domains').tableRows() as DomainsRowData[]);
+  public processedDomainsAsList = computed(() => {
+    const hasDomainsData = Object.keys(this.signals.tabTableData()).indexOf('Domains') > -1;
+    if (!hasDomainsData) return [];
+    return this.signals.getTabData('Domains').tableRows() as DomainsRowData[];
+  });
 
   public processedDomains = computed(() => {
+    const hasMacromoleculesData = Object.keys(this.signals.tabTableData()).indexOf('Macromolecules') > -1;
+    const hasDomainsData = Object.keys(this.signals.tabTableData()).indexOf('Domains') > -1;
+    if (!hasMacromoleculesData && !hasDomainsData) return [];
+
     const macromoleculesData = this.signals.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
     const domainsData = this.signals.getTabData('Domains').tableRows() as DomainsRowData[];
 
@@ -80,28 +97,31 @@ export class OverviewMolstarFacade {
 
   constructor() {
     effect(() => {
-      const domainsData = this.signals.getTabData('Domains').tableRows() as DomainsRowData[];
-      const domainCount = domainsData.length;
+      const hasDomainsData = Object.keys(this.signals.tabTableData()).indexOf('Domains') > -1;
+      if (hasDomainsData) {
+        const domainsData = this.signals.getTabData('Domains').tableRows() as DomainsRowData[];
+        const domainCount = domainsData.length;
 
-      const countByResource: { [key: string]: number } = { CATH: 0, Pfam: 0, SCOP: 0 };
-      const uniqueByResource: { [key: string]: number } = { CATH: 0, Pfam: 0, SCOP: 0 };
-      const uniqueAccessions: { [key: string]: Set<string> } = { CATH: new Set(), Pfam: new Set(), SCOP: new Set() };
+        const countByResource: { [key: string]: number } = { CATH: 0, Pfam: 0, SCOP: 0 };
+        const uniqueByResource: { [key: string]: number } = { CATH: 0, Pfam: 0, SCOP: 0 };
+        const uniqueAccessions: { [key: string]: Set<string> } = { CATH: new Set(), Pfam: new Set(), SCOP: new Set() };
 
-      for (const domain of domainsData) {
-        countByResource[domain.resource]++;
-        uniqueAccessions[domain.resource].add(domain.additionalData.accession);
+        for (const domain of domainsData) {
+          countByResource[domain.resource]++;
+          uniqueAccessions[domain.resource].add(domain.additionalData.accession);
+        }
+
+        for (const key of Object.keys(uniqueByResource)) {
+          uniqueByResource[key] = uniqueAccessions[key].size;
+        }
+
+        this.domainCount.set(domainCount);
+        this.domainCountByResource.set(countByResource);
+        this.uniqueDomainCountByResource.set(uniqueByResource);
+
+        const firstAvailable = ['CATH', 'SCOP', 'Pfam'].find((r) => countByResource[r] > 0);
+        if (firstAvailable) this.currentDomainResource.set(firstAvailable);
       }
-
-      for (const key of Object.keys(uniqueByResource)) {
-        uniqueByResource[key] = uniqueAccessions[key].size;
-      }
-
-      this.domainCount.set(domainCount);
-      this.domainCountByResource.set(countByResource);
-      this.uniqueDomainCountByResource.set(uniqueByResource);
-
-      const firstAvailable = ['CATH', 'SCOP', 'Pfam'].find((r) => countByResource[r] > 0);
-      if (firstAvailable) this.currentDomainResource.set(firstAvailable);
     });
   }
 

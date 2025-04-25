@@ -62,10 +62,10 @@ export class MolstarExtendedForEntryPages extends MolstarBaseClass {
     }
     this.parseInstanceResidues();
     const data = this.residues();
-    this.signals.molstarResidueInfo.set(data);
+    // this.signals.molstarResidueInfo.set(data);
 
-    // molstarResidueInfoLoaded signal is converted into an observable on pages/main/data-processing
-    this.signals.molstarResidueInfoLoaded.set(true);
+    // // molstarResidueInfoLoaded signal is converted into an observable on pages/main/data-processing
+    // this.signals.molstarResidueInfoLoaded.set(true);
   }
 
   /**

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Renderer2 } from '@angular/core';
 import {
   getComponentList,
   changeRepresentationVisibility,
@@ -21,10 +21,111 @@ import {
   SELECTED_CARTOON_CUSTOM_COLOR,
   hexColorToMolstar,
   UNSELECTED_SPHERES_COLOR_BY_ENTITY_ALPHA,
+  MolstarConfigObject,
+  createNewPolymerComponent,
+  REPR_NONSELECTION_POLYMER,
+  LIGANDS_REPR_NONSELECTION_POLYMER,
+  LIGANDS_REPR_SELECTION,
+  LIGANDS_REPR_HIGHLIGHT,
 } from '@pdbe-lib/molstar-for-apps';
 import { addRepresentationToComponent, changeComponentVisibility } from '@pdbe-lib/molstar-for-apps';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { groupDomainSelectionsByAccession } from '../domain-helpers';
+import { firstValueFrom, interval, map, takeWhile, timeout } from 'rxjs';
+
+/**
+ * Usage:
+ * const config = MOLSTAR_CONFIG_FACTORIES['OVERVIEW']({
+ *   entryId: this.entryId(),
+ *   assemblyId: assemblyToUse,
+ * });
+ */
+export const MOLSTAR_CONFIG_FACTORIES: {
+  [key: string]: (params: { entryId?: string; assemblyId?: string; symmetryView?: boolean; urlToDownload?: string }) => MolstarConfigObject;
+} = {
+  INITIAL: ({ entryId }) => ({
+    moleculeId: entryId!,
+    loadMaps: false,
+    bgColor: { r: 255, g: 255, b: 255 },
+    hideControls: true,
+    hideCanvasControls: [],
+    landscape: true,
+    subscribeEvents: true,
+    granularity: 'residue',
+  }),
+  OVERVIEW: ({ entryId, assemblyId }) => ({
+    moleculeId: entryId!,
+    assemblyId: assemblyId!,
+    bgColor: { r: 255, g: 255, b: 255 },
+    hideControls: true,
+    hideCanvasControls: [],
+    landscape: true,
+    subscribeEvents: false,
+  }),
+  MODEL_QUALITY: ({ entryId }) => ({
+    moleculeId: entryId!,
+    loadMaps: false,
+    bgColor: { r: 255, g: 255, b: 255 },
+    hideControls: true,
+    hideCanvasControls: [],
+    landscape: true,
+    subscribeEvents: true,
+    granularity: 'residue',
+  }),
+  ASSEMBLIES: ({ entryId, assemblyId, symmetryView }) => ({
+    moleculeId: entryId!,
+    loadMaps: false,
+    assemblyId: assemblyId!,
+    bgColor: { r: 255, g: 255, b: 255 },
+    hideControls: true,
+    hideCanvasControls: [],
+    landscape: true,
+    subscribeEvents: true,
+    validationAnnotation: false,
+    symmetryAnnotation: symmetryView,
+    granularity: 'residue',
+  }),
+  MACROMOLECULES: ({ entryId, assemblyId }) => ({
+    moleculeId: entryId!,
+    bgColor: { r: 255, g: 255, b: 255 },
+    loadMaps: false,
+    assemblyId: assemblyId!,
+    hideControls: true,
+    hideCanvasControls: [],
+    landscape: true,
+    subscribeEvents: true,
+    granularity: 'residue',
+    validationAnnotation: false,
+  }),
+  LIGANDS: ({ urlToDownload }) => ({
+    customData: {
+      url: urlToDownload!,
+      format: 'cif',
+      binary: true,
+    },
+    loadMaps: true,
+    bgColor: { r: 255, g: 255, b: 255 },
+    hideControls: true,
+    hideCanvasControls: [],
+    landscape: true,
+    subscribeEvents: true,
+    granularity: 'residue',
+    validationAnnotation: false,
+  }),
+  DOMAINS: ({ entryId, assemblyId }) => ({
+    moleculeId: entryId,
+    loadMaps: false,
+    assemblyId: assemblyId,
+    bgColor: { r: 255, g: 255, b: 255 },
+    hideControls: true,
+    hideCanvasControls: [],
+    // hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
+    landscape: true,
+    subscribeEvents: true,
+    validationAnnotation: false,
+    granularity: 'residue',
+  }),
+};
 
 @Injectable({
   providedIn: 'root',
@@ -34,9 +135,94 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
    * Component extends MolstarBaseClass and contains functions for
    * manipulating Molstar views specific to the overview tabs (page top)
    */
+
+  public entryId?: string;
+  public preferredAssemblyId?: string;
+  public currentMolstarContainer?: string;
+  public molstarViewerElement?: HTMLElement;
+  private renderer?: Renderer2;
+
+  public setRenderer(renderer: Renderer2) {
+    this.renderer = renderer;
+  }
+
   public currentViewName = 'none';
   public addedRepresentationsAndIndexes: { [key: string]: number } = {};
-  public hasChecked = false;
+  public hasCheckedComponents = false;
+  private overviewDomainsCycleTimeout: ReturnType<typeof setTimeout> | null = null;
+  private overviewDomainsCycleIndex = 0;
+  public currentConfigName?: string;
+
+  public async enforceMolstarInContainer(containerName: string) {
+    if (this.currentMolstarContainer === containerName) return;
+    const containerElement = document.querySelector(`#${containerName}-molstar-container`);
+    if (!containerElement) {
+      throw 'Mol*: Container element does not exist';
+    }
+    if (!this.molstarViewerElement) {
+      throw 'Mol*: Element does not exist';
+    }
+    await this.sendMolstarToContainer(containerName, containerElement as HTMLElement);
+  }
+
+  private async sendMolstarToContainer(containerName: string, containerElement: HTMLElement) {
+    if (!this.renderer) {
+      throw 'Mol*: Renderer2 not set';
+    }
+    if (!containerElement) {
+      throw 'Mol*: Container element does not exist';
+    }
+    if (!this.molstarViewerElement) {
+      throw 'Mol*: Element does not exist';
+    }
+
+    const molstarElement = document.getElementById('molstar-element');
+
+    const canvasExists = () => !!containerElement.querySelector('div.msp-viewport > canvas');
+
+    // Step 1: Check if canvas already exists
+    if (!canvasExists()) {
+      // Move the molstar WebGL container into the child component
+      this.renderer.appendChild(containerElement, this.molstarViewerElement);
+
+      // Step 2: Wait until canvas appears (poll every 100ms, max 3 seconds)
+      try {
+        await firstValueFrom(
+          interval(100).pipe(
+            map(() => canvasExists()),
+            takeWhile((exists) => !exists, true), // Continue until exists === true
+            timeout(3000)
+          )
+        );
+        // console.log('Canvas detected inside .msp-viewport!');
+        this.currentMolstarContainer = containerName;
+      } catch (err) {
+        console.error('Timeout: Canvas did not appear within 3 seconds.');
+        throw err;
+      }
+    } else {
+      console.log('Canvas already exists, no action needed.');
+    }
+  }
+
+  public async renderMolstarInitial() {
+    const config = MOLSTAR_CONFIG_FACTORIES['INITIAL']({
+      entryId: this.entryId!,
+    });
+    await this.enforceConfigLoaded('INITIAL', config);
+  }
+
+  public async enforceConfigLoaded(configName: string, config: MolstarConfigObject, forceReset?: boolean) {
+    if (!forceReset && this.currentConfigName === configName) return;
+    if (this.molstarViewInstance()) {
+      this.addedRepresentationsAndIndexes = {};
+      await this.updateMolstar(config);
+    } else {
+      this.addedRepresentationsAndIndexes = {};
+      await this.initMolstar(config, undefined, this.molstarViewerElement!);
+    }
+    this.currentConfigName = configName;
+  }
 
   public async checkAndCreateComponents(macromolecules: MacromoleculesRowData[], ligands: LigandsRowData[], modifications: LigandsRowData[]) {
     // get component list
@@ -82,14 +268,17 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     if (hasModifications && !hasNonStandardComponent) {
       await createStaticComponent(this.molstarViewInstance(), 'non-standard');
     }
-    this.hasChecked = true;
+    this.hasCheckedComponents = true;
   }
 
-  private async cleanView(noGreyout?: boolean) {
+  private async cleanView(noGreyout?: boolean, noResetView?: boolean) {
+    this.closeVolumeInfo();
+
     noGreyout = noGreyout ? noGreyout : false;
+    noResetView = noResetView ? noResetView : false;
 
     // Cancel previous timeout loop
-    this.stopDomainCycle();
+    this.stopOverviewDomainCycle();
 
     // greyout everything
     if (!noGreyout) await this.greyoutEverything();
@@ -97,10 +286,15 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     // erase temporary component
     await removeComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary');
 
+    if (noResetView) return;
+
     // reset camera to focus whole structure if sub selection or sub-sub selection
     if (this.currentViewName.includes('/')) {
       await this.focusStructure();
+      // partial wait so slow unfocus can execute before next camera focus
+      await new Promise((resolve) => setTimeout(resolve, this.cameraDuration * 0.75));
     } else {
+      // direct unfocus
       await this.unfocusLoci();
     }
   }
@@ -117,8 +311,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
   private async viewRepresentationByName(componentName: string, representationName: string, representation: any, doNotHideOthers?: boolean) {
     // TODO: Check if component does not exist and create it if necessary using selections
-    getComponentList(this.molstarViewInstance());
-
+    const complist = await getComponentList(this.molstarViewInstance());
     // if representation does not exist
     if (Object.keys(this.addedRepresentationsAndIndexes).indexOf(representationName) === -1) {
       // create new representation and hide all previous others by default
@@ -135,34 +328,86 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     }
   }
 
-  public async viewPreferredAssembly() {
-    if (!this.currentViewName.includes('Preferred Assembly')) {
-      await this.showPreferredAssembly();
-      this.currentViewName = 'Preferred Assembly';
+  public async checkOverviewReady() {
+    if (!this.entryId || !this.preferredAssemblyId) {
+      throw 'Mol*: Unset entry id or preferred assembly id';
     }
+    await this.enforceMolstarInContainer('overview');
+    const config = MOLSTAR_CONFIG_FACTORIES['OVERVIEW']({
+      entryId: this.entryId!,
+      assemblyId: this.preferredAssemblyId!,
+    });
+    await this.enforceConfigLoaded('OVERVIEW', config);
   }
 
-  private async showPreferredAssembly() {
-    // greyout everything but macromolecules
-    await this.showAllMacromolecules();
+  public async checkModelQualityReady() {
+    if (!this.entryId) {
+      throw 'Mol*: Unset entry id';
+    }
+    await this.enforceMolstarInContainer('model-quality');
+    const config = MOLSTAR_CONFIG_FACTORIES['MODEL_QUALITY']({
+      entryId: this.entryId!,
+    });
+    await this.enforceConfigLoaded('MODEL_QUALITY', config);
+  }
 
+  public async checkAssembliesReady(assemblyId: string, symmetryView: boolean) {
+    if (!this.entryId) {
+      throw 'Mol*: Unset entry id';
+    }
+    await this.enforceMolstarInContainer('assemblies');
+    const config = MOLSTAR_CONFIG_FACTORIES['ASSEMBLIES']({
+      entryId: this.entryId!,
+      assemblyId: assemblyId,
+      symmetryView: symmetryView,
+    });
+    await this.enforceConfigLoaded('ASSEMBLIES', config);
+  }
+
+  public async checkMacromoleculesReady() {
+    if (!this.entryId || !this.preferredAssemblyId) {
+      throw 'Mol*: Unset entry id or preferred assembly id';
+    }
+    await this.enforceMolstarInContainer('macromolecules');
+    const config = MOLSTAR_CONFIG_FACTORIES['MACROMOLECULES']({
+      entryId: this.entryId!,
+      assemblyId: this.preferredAssemblyId!,
+    });
+    await this.enforceConfigLoaded('MACROMOLECULES', config);
+  }
+
+  public async checkLigandsReady(urlToDownload: string, forceReset: boolean) {
+    if (!urlToDownload) {
+      throw 'Mol*: Unset urlToDownload';
+    }
+    await this.enforceMolstarInContainer('ligands');
+    const config = MOLSTAR_CONFIG_FACTORIES['LIGANDS']({
+      urlToDownload: urlToDownload,
+    });
+    await this.enforceConfigLoaded('LIGANDS', config, forceReset);
+  }
+
+  public async checkDomainsReady() {
+    if (!this.entryId || !this.preferredAssemblyId) {
+      throw 'Mol*: Unset entry id or preferred assembly id';
+    }
+    await this.enforceMolstarInContainer('domains');
+    const config = MOLSTAR_CONFIG_FACTORIES['DOMAINS']({
+      entryId: this.entryId!,
+      assemblyId: this.preferredAssemblyId!,
+    });
+    await this.enforceConfigLoaded('DOMAINS', config);
+  }
+
+  public async renderOverviewPreferredAssembly() {
+    // greyout everything but macromolecules
+    await this.renderOverviewMacromolecules();
     // TODO: Show symmetry view if possible
   }
 
-  public async viewMacromolecules(macromolecule?: MacromoleculesRowData, macromoleculeIdx?: number, chainIndex?: number) {
-    if (!this.currentViewName.includes('Macromolecules')) {
-      await this.showAllMacromolecules();
-      this.currentViewName = 'Macromolecules';
-    }
-    if (macromolecule !== undefined && macromoleculeIdx !== undefined) {
-      if (chainIndex === undefined) chainIndex = 0;
-      await this.showSpecificMacromolecule(macromolecule, macromoleculeIdx, chainIndex);
-      this.currentViewName = `Macromolecules/${macromoleculeIdx}/${chainIndex}`;
-    }
-    return this.currentViewName;
-  }
+  public async renderOverviewMacromolecules() {
+    // await this.checkOverviewReady();
 
-  private async showAllMacromolecules() {
     // clean up view
     await this.cleanView();
 
@@ -173,7 +418,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.viewRepresentationByName('structure-component-static-polymer', 'polymeric-cartoon-by-entityid', SELECTED_CARTOON_COLOR_BY_ENTITY);
   }
 
-  private async showSpecificMacromolecule(macromolecule: MacromoleculesRowData, macromoleculeIdx: number, chainIndex: number) {
+  public async renderOverviewSpecificMacromolecule(macromolecule: MacromoleculesRowData, macromoleculeIdx: number, chainIndex: number) {
+    // await this.checkOverviewReady();
     // TODO: create specific component for macromolecule that is deleted on updates
     const selection = macromolecule.additionalData.selections[chainIndex];
 
@@ -195,21 +441,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.focusLoci(selection);
   }
 
-  public async viewLigands(ligand?: LigandsRowData, ligandIdx?: number, ligandResidueIndex?: number) {
-    if (!this.currentViewName.includes('Ligands')) {
-      await this.showAllLigands();
-      this.currentViewName = 'Ligands';
-    }
-    if (ligand !== undefined) {
-      if (ligandIdx === undefined) throw 'ligandIdx required';
-      if (ligandResidueIndex === undefined) ligandResidueIndex = 0;
-      await this.showSpecificLigand(ligand, ligandIdx, ligandResidueIndex);
-      this.currentViewName = `Ligands/${ligandIdx}/${ligandResidueIndex}`;
-    }
-    return this.currentViewName;
-  }
-
-  private async showAllLigands() {
+  public async renderOverviewLigands() {
+    // await this.checkOverviewReady();
     // clean up view
     await this.cleanView();
 
@@ -224,7 +457,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.viewRepresentationByName('structure-component-static-ion', 'ion-sticks-by-element', SELECTED_STICKS_COLOR_BY_ENTITY, false);
   }
 
-  private async showSpecificLigand(ligand: LigandsRowData, ligandIdx: number, ligandResidueIndex: number) {
+  public async renderOverviewSpecificLigand(ligand: LigandsRowData, ligandIdx: number, ligandResidueIndex: number) {
+    // await this.checkOverviewReady();
     const selection = ligand.additionalData.selections[ligandResidueIndex];
 
     // clean up view
@@ -241,24 +475,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.focusLoci(selection);
   }
 
-  public async viewDomains(domainsOfResource: DomainsRowData[], domainColors: string[], domain?: DomainsRowData, domainColor?: string, domainIdx?: number) {
-    if (!this.currentViewName.includes('Domains')) {
-      await this.showAllDomains(domainsOfResource, domainColors);
-      this.currentViewName = 'Domains';
-    }
-    if (domain !== undefined) {
-      if (domainColor === undefined) throw 'domainColor required';
-      if (domainIdx === undefined) throw 'domainIdx required';
-      await this.showSpecificDomain(domain, domainColor, domainIdx);
-      this.currentViewName = `Domains/${domainIdx}`;
-    }
-    return this.currentViewName;
-  }
-
-  private domainCycleTimeout: ReturnType<typeof setTimeout> | null = null;
-  private domainCycleIndex = 0;
-
-  private async showAllDomains(domainsOfResource: DomainsRowData[], domainColors: string[]) {
+  public async renderOverviewDomains(domainsOfResource: DomainsRowData[], domainColors: string[]) {
+    // await this.checkOverviewReady();
     // clean up view
     await this.cleanView();
 
@@ -299,12 +517,12 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       return;
     }
 
-    this.domainCycleIndex = 0;
+    this.overviewDomainsCycleIndex = 0;
 
     const loop = async () => {
-      const mergedSelection = mergedSelections[this.domainCycleIndex];
-      const selections = selectionsByAccession[this.domainCycleIndex];
-      const color = Object.values(domainColorsByAccession)[this.domainCycleIndex];
+      const mergedSelection = mergedSelections[this.overviewDomainsCycleIndex];
+      const selections = selectionsByAccession[this.overviewDomainsCycleIndex];
+      const color = Object.values(domainColorsByAccession)[this.overviewDomainsCycleIndex];
 
       const domainRepresentation = SELECTED_CARTOON_CUSTOM_COLOR as any;
       domainRepresentation.colorParams.value = hexColorToMolstar(color);
@@ -319,27 +537,28 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
       await this.focusLoci(mergedSelection);
 
-      this.domainCycleIndex++;
+      this.overviewDomainsCycleIndex++;
 
-      if (this.domainCycleIndex === mergedSelections.length) {
-        this.domainCycleIndex = 0;
+      if (this.overviewDomainsCycleIndex === mergedSelections.length) {
+        this.overviewDomainsCycleIndex = 0;
       }
 
-      this.domainCycleTimeout = setTimeout(loop, 2500); // Schedule next
+      this.overviewDomainsCycleTimeout = setTimeout(loop, 2500); // Schedule next
     };
 
     loop(); // Start the loop
   }
 
-  private stopDomainCycle() {
-    if (this.domainCycleTimeout) {
-      clearTimeout(this.domainCycleTimeout);
-      this.domainCycleTimeout = null;
+  private stopOverviewDomainCycle() {
+    if (this.overviewDomainsCycleTimeout) {
+      clearTimeout(this.overviewDomainsCycleTimeout);
+      this.overviewDomainsCycleTimeout = null;
     }
-    this.domainCycleIndex = 0;
+    this.overviewDomainsCycleIndex = 0;
   }
 
-  private async showSpecificDomain(domain: DomainsRowData, domainColor: string, domainIdx: number) {
+  public async renderOverviewSpecificDomain(domain: DomainsRowData, domainColor: string, domainIdx: number) {
+    // await this.checkOverviewReady();
     const selection = domain.additionalData.selections[0];
 
     // clean up view
@@ -350,25 +569,12 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
     await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', selection, domainRepresentation);
 
-    // focus camera on modification
+    // focus camera on domain
     await this.focusLoci(selection);
   }
 
-  public async viewModifications(modification?: LigandsRowData, modificationIdx?: number, modificationResidueIndex?: number) {
-    if (!this.currentViewName.includes('Modifications')) {
-      await this.showAllModifications();
-      this.currentViewName = 'Modifications';
-    }
-    if (modification !== undefined) {
-      if (modificationIdx === undefined) throw 'modificationIdx required';
-      if (modificationResidueIndex === undefined) modificationResidueIndex = 0;
-      await this.showSpecificModification(modification, modificationIdx, modificationResidueIndex);
-      this.currentViewName = `Modifications/${modificationIdx}/${modificationResidueIndex}`;
-    }
-    return this.currentViewName;
-  }
-
-  private async showAllModifications() {
+  public async renderOverviewModifications() {
+    // await this.checkOverviewReady();
     // clean up view
     await this.cleanView();
 
@@ -376,7 +582,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.viewRepresentationByName('structure-component-static-non-standard', 'non-standard-sticks-colored', SELECTED_STICKS_COLOR_BY_ENTITY_SET25);
   }
 
-  private async showSpecificModification(modification: LigandsRowData, modificationIdx: number, modificationResidueIndex: number) {
+  public async renderOverviewSpecificModification(modification: LigandsRowData, modificationIdx: number, modificationResidueIndex: number) {
+    // await this.checkOverviewReady();
     const selection = modification.additionalData.selections[modificationResidueIndex];
 
     // clean up view
@@ -396,47 +603,112 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.focusLoci(selection);
   }
 
-  // /**
-  //  * When domains are shown in image gallery the whole assembly is hidden.
-  //  * This function enables the whole assembly to be viewed
-  //  */
-  // public async showDomainsWholeAssembly() {
-  //   await changeComponentVisibility(this.molstarViewInstance(), 'whole-entry/polymer', false);
-  // }
+  public async renderModelQualityAllIssues(
+    residuesWith1Outlier: MolstarSelectionObj,
+    residuesWith2Outliers: MolstarSelectionObj,
+    residuesWith3OrMoreOutliers: MolstarSelectionObj
+  ) {
+    await this.cleanView();
 
-  // /**
-  //  * When ligands are shown in image gallery they are shown as spheres.
-  //  * This function switches this representation to ball-and-stick
-  //  */
-  // public async showLigandsAsSticks(entityId: string, chemCompId: string, colorsFromMolj: { [key: string | number]: string }) {
-  //   const ligandColor = colorsFromMolj[entityId];
-  //   const hexColor = parseInt(ligandColor.replace(/^#/, ''), 16);
+    const residue0Representation = JSON.parse(JSON.stringify(SELECTED_CARTOON_CUSTOM_COLOR));
+    residue0Representation.colorParams.value = hexColorToMolstar('#A9ABAA');
+    residue0Representation.typeParams.alpha = 0.5;
 
-  //   if (chemCompId.length === 3) {
-  //     const reprNonSelectionLigand = {
-  //       type: 'ball-and-stick',
-  //       color: 'element-symbol',
-  //       colorParams: { carbonColor: { name: 'uniform', params: { value: Color(hexColor) } } },
-  //     };
-  //     const componentName = `/entities/entity-${entityId}`;
-  //     await addRepresentationToComponent(this.molstarViewInstance(), componentName, reprNonSelectionLigand, true);
-  //   }
-  // }
-  // /**
-  //  * When modifications are shown in image gallery they are shown as spheres.
-  //  * This function switches this representation to ball-and-stick
-  //  */
-  // public async showModificationsAsSticks(imgName: string, colorsFromMolj: { [key: string | number]: string }) {
-  //   const chemCompId = imgName.split('_')[2];
-  //   const modificationColor = colorsFromMolj[chemCompId];
-  //   const hexColor = parseInt(modificationColor.replace(/^#/, ''), 16);
+    const residue1Representation = JSON.parse(JSON.stringify(SELECTED_CARTOON_CUSTOM_COLOR));
+    residue1Representation.colorParams.value = hexColorToMolstar('#E5E501');
 
-  //   const reprNonSelectionLigand = {
-  //     type: 'ball-and-stick',
-  //     color: 'element-symbol',
-  //     colorParams: { carbonColor: { name: 'uniform', params: { value: Color(hexColor) } } },
-  //   };
-  //   const componentName = `/modified-residues/${chemCompId}`;
-  //   await addRepresentationToComponent(this.molstarViewInstance(), componentName, reprNonSelectionLigand, true);
-  // }
+    const residue2Representation = JSON.parse(JSON.stringify(SELECTED_CARTOON_CUSTOM_COLOR));
+    residue2Representation.colorParams.value = hexColorToMolstar('#DA6E03');
+
+    const residue3Representation = JSON.parse(JSON.stringify(SELECTED_CARTOON_CUSTOM_COLOR));
+    residue3Representation.colorParams.value = hexColorToMolstar('#B2182B');
+
+    // await this.viewRepresentationByName('structure-component-static-polymer', 'polymeric-cartoon-grey', residue0Representation);
+    await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', residuesWith1Outlier, residue1Representation);
+    await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary-1', residuesWith2Outliers, residue2Representation);
+    await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary-2', residuesWith3OrMoreOutliers, residue3Representation);
+    await createNewPolymerComponent(this.molstarViewInstance(), 'model-quality-polymer', residue0Representation);
+  }
+
+  public async renderModelQualitySpecificIssue(residuesForSpecificOutlier: MolstarSelectionObj) {
+    await this.cleanView();
+
+    const residue0Representation = JSON.parse(JSON.stringify(SELECTED_CARTOON_CUSTOM_COLOR));
+    residue0Representation.colorParams.value = hexColorToMolstar('#A9ABAA');
+    residue0Representation.typeParams.alpha = 0.5;
+
+    const residueSpecificRepresentation = JSON.parse(JSON.stringify(SELECTED_CARTOON_CUSTOM_COLOR));
+    residueSpecificRepresentation.colorParams.value = hexColorToMolstar('#B2182B');
+
+    await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', residuesForSpecificOutlier, residueSpecificRepresentation);
+
+    await createNewPolymerComponent(this.molstarViewInstance(), 'model-quality-polymer', residue0Representation);
+  }
+
+  /**
+   * Function closes Molstar modal that says:
+   * "Streaming enabled, click on a residue or an atom to view the data."
+   * when Ligands and Environments are open with Volume Streaming enabled
+   */
+  public closeVolumeInfo() {
+    const volumeInfoSelector =
+      'div.msp-layout-hide-top.msp-layout-hide-left.msp-layout-hide-right.msp-layout-hide-bottom > div > div > div.msp-highlight-toast-wrapper > div > div > div.msp-toast-hide > button';
+    const volumeInfoEl = document.querySelector(volumeInfoSelector);
+    if (volumeInfoEl) {
+      (<HTMLElement>volumeInfoEl).click();
+    }
+  }
+
+  public async renderTabsAssemblies() {
+    // might change in future
+    await this.renderOverviewMacromolecules();
+  }
+
+  public async renderTabsMacromolecules(macromolecule: MacromoleculesRowData, selection: MolstarSelectionObj) {
+    await this.cleanView();
+
+    if (macromolecule.additionalData.molecule.molecule_type !== 'carbohydrate polymer') {
+      // create temporary component for macromolecule
+      await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', selection, SELECTED_CARTOON_COLOR_BY_ENTITY);
+    } else {
+      // create temporary component for macromolecule (carbohydrate)
+      await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', selection, SELECTED_STICKS_COLOR_BY_ENTITY);
+    }
+
+    // focus camera on macromolecule
+    await this.focusLoci(selection);
+  }
+
+  public async renderTabsLigands(ligand: LigandsRowData, molstarSelection: MolstarSelectionObj) {
+    // no need to clean up view if url used
+    // await this.cleanView();
+    const reprNonSelectionPolymer = ligand.type === 'ligand' ? LIGANDS_REPR_NONSELECTION_POLYMER : REPR_NONSELECTION_POLYMER;
+
+    // set representations of anything other than selected ligand to non selection
+    // await addRepresentationToComponent(this.molstarViewInstance(), 'structure-component-static-polymer', reprNonSelectionPolymer, true);
+    await this.viewRepresentationByName('structure-component-static-polymer', 'polymer-for-ligand-view', reprNonSelectionPolymer);
+
+    await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-ligand', true);
+    await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-ion', true);
+    await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-non-standard', true);
+    await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-branched', true);
+
+    // finally create ligand component with selected representation
+    await createComponent(this.molstarViewInstance(), `structure-component-dynamic-temporary`, molstarSelection, LIGANDS_REPR_SELECTION);
+    await createComponent(this.molstarViewInstance(), `structure-component-dynamic-temporary-1`, molstarSelection, LIGANDS_REPR_HIGHLIGHT);
+    // focus camera on ligand
+    await this.focusLoci(molstarSelection);
+  }
+
+  public async renderTabsDomains(selection: MolstarSelectionObj) {
+    await this.cleanView();
+
+    // const domainRepresentation = SELECTED_CARTOON_CUSTOM_COLOR as any;
+    // domainRepresentation.colorParams.value = hexColorToMolstar(domainColor);
+
+    await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', selection, SELECTED_CARTOON_COLOR_BY_ENTITY);
+
+    // focus camera on domain
+    await this.focusLoci(selection);
+  }
 }

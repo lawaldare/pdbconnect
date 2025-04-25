@@ -1,15 +1,22 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { AfterViewInit, Component, DestroyRef, ElementRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ValidationDataProcessingFacade } from './validation-data.facade';
+import { FlatOutlierResidue, ValidationDataProcessingFacade } from './validation-data.facade';
 import { ValidationTablesFacade } from './validation-tables.facade';
 import { AgGridAngular } from 'ag-grid-angular';
 
 import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
-import { expInfoTooltip, expRawDataTooltip, pdbRedoTooltip, sampleInfoTooltip, timelineTooltip, validationInfoTooltip } from '../../entry-constant';
+import {
+  expInfoTooltip,
+  expRawDataTooltip,
+  OUTLIER_TYPE_LABELS,
+  pdbRedoTooltip,
+  sampleInfoTooltip,
+  timelineTooltip,
+  validationInfoTooltip,
+} from '../../entry-constant';
 import { MaterialModule, UtilService } from '@pdbc/core';
 import { filter, firstValueFrom, map, mergeMap } from 'rxjs';
-import { MolstarExtendedForEntryPages } from '../../helpers/molstar/molstar-extended-for-entry-pgs';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
@@ -18,7 +25,12 @@ import { EntrySelectors } from '../../store/entry.selectors';
 // import { MolstarConfigObject } from '../../helpers/molstar/molstar-base-class';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
-import { MolstarConfigObject } from '@pdbe-lib/molstar-for-apps';
+import { MolstarConfigObject, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { EntryActions } from '../../store/entry.actions';
+import { OutlierResidues } from '../../data-models/residuewise-outliers.model';
+import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
+import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 
 interface ValueLabel {
   value: string;
@@ -68,22 +80,26 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   public readonly tableFacade = inject(ValidationTablesFacade);
-  public readonly molstarVisualisations = inject(MolstarExtendedForEntryPages);
+  public readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
   public readonly util = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
+  public readonly compCommunication = inject(ComponentCommunicationService);
 
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly sourceOrganisms = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
   public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
+  public residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
 
   // used in template
   public currentData = signal<ProcessedExperimentalDetails | undefined>(undefined);
   public processedData = signal<ProcessedExperimentalDetails[] | undefined>(undefined);
-  public isHybrid = signal<boolean>(false);
+  public isHybrid = signal(false);
   public noImg = false;
-  public leftSideWidth = '100px';
+
+  public leftSideWidth = '400px';
+  public processedWidth = signal(false);
 
   // tooltip constants
   public valInfoTooltip = validationInfoTooltip;
@@ -107,37 +123,94 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     },
   ];
 
-  public readonly specificIssueKinds = [
-    {
-      label: 'Clashes',
-      value: 'clashes',
-    },
-    {
-      label: 'Sidechain Outliers',
-      value: 'sidechain_outliers',
-    },
-    {
-      label: 'Ramachandran Plots',
-      value: 'ramachandran_plots',
-    },
-    {
-      label: 'Rotamer Outliers',
-      value: 'rotamer_outliers',
-    },
-    {
-      label: 'Cβ Deviations',
-      value: 'cbeta_deviations',
-    },
-    {
-      label: 'Rama-Z',
-      value: 'rama_z',
-    },
-  ];
+  public readonly specificIssueKinds = signal<{ label: string; value: string }[]>([]);
 
   public selectedValidationType = signal<ValueLabel>(this.validationTypes[0]);
-  public selectedSpecificIssueKind = new FormControl(this.specificIssueKinds[0].value, { nonNullable: true });
+  public selectedSpecificIssueKindValue = signal<ValueLabel | undefined>(undefined);
+
+  public selectedSpecificIssueKind = computed(() => {
+    if (this.specificIssueKinds().length === 0) return undefined;
+    return new FormControl(this.specificIssueKinds()[0].value, { nonNullable: true });
+  });
+
+  // public molstarSelectionsByOutlierType = signal<Record<string, MolstarSelectionObj>| undefined>(undefined);
+  // public residuesWith1Outlier = signal<MolstarSelectionObj| undefined>(undefined);
+  // public residuesWith2Outliers = signal<MolstarSelectionObj| undefined>(undefined);
+  // public residuesWith3OrMoreOutliers = signal<MolstarSelectionObj| undefined>(undefined);
+
+  // Signal for dynamic model index (default to 1)
+  public modelIdx = signal<number>(1);
+
+  public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
+  public molstarModelQualityRendered = signal(false);
+
+  constructor() {
+    effect(async () => {
+      const _currentTab = this.compCommunication.currentTab();
+      const selectedValidationType = this.selectedValidationType();
+      const selectedSpecificIssueKind = this.selectedSpecificIssueKind();
+      const selectedSpecificIssueKindValue = this.selectedSpecificIssueKindValue();
+      const outliers = this.residueWiseOutliers();
+      const currentModelIdx = this.modelIdx();
+      const hasMacromoleculesData = Object.keys(this.compCommunication.tabTableData()).indexOf('Macromolecules') > -1;
+      const hasLigandsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Ligands') > -1;
+
+      const hasFinishedFirstRender = this.molstarFirstRenderFinished();
+
+      const isIssueCountSelected = selectedValidationType.value === 'issue_count';
+
+      let displayName = 'Model Quality-All issues';
+      if (!isIssueCountSelected) {
+        displayName = `Model Quality-Specific issue-${selectedSpecificIssueKindValue}`;
+      }
+
+      if (!outliers || outliers.length === 0) return;
+      const { uniqueOutlierTypes, molstarSelectionsByOutlierType, residuesWith1Outlier, residuesWith2Outliers, residuesWith3OrMoreOutliers } =
+        this.dataFacade.createResidueWiseOutliersMolstar(outliers, currentModelIdx);
+
+      // Only update if necessary
+      if (this.specificIssueKinds().length === 0) {
+        this.specificIssueKinds.set(
+          [...uniqueOutlierTypes].map((eachType) => ({
+            label: OUTLIER_TYPE_LABELS[eachType],
+            value: eachType,
+          }))
+        );
+      }
+
+      // safety guards for multiple triggering or not ready triggering
+      if (!hasMacromoleculesData) return;
+      if (!hasLigandsData) return;
+      if (!hasFinishedFirstRender) return;
+      if (this.molstarVisualisation.currentViewName === displayName) return;
+
+      this.molstarVisualisation.currentViewName = displayName;
+      const previousConfig = this.molstarVisualisation.currentConfigName + '';
+      const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
+      const ligandsRawData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
+      const ligandsData = ligandsRawData.filter((lig) => lig.type === 'ligand');
+      const modificationsData = ligandsRawData.filter((lig) => lig.type === 'modification');
+
+      this.molstarModelQualityRendered.set(true);
+
+      await this.molstarVisualisation.checkModelQualityReady();
+
+      const newConfig = this.molstarVisualisation.currentConfigName + '';
+
+      await this.molstarVisualisation.checkAndCreateComponents(macromoleculesData, ligandsData, modificationsData);
+      if (selectedValidationType.value === 'issue_count') {
+        await this.molstarVisualisation.renderModelQualityAllIssues(residuesWith1Outlier, residuesWith2Outliers, residuesWith3OrMoreOutliers);
+      } else {
+        const issue = selectedSpecificIssueKind!.value;
+        const issueResidues = molstarSelectionsByOutlierType[issue];
+        await this.molstarVisualisation.renderModelQualitySpecificIssue(issueResidues);
+      }
+    });
+  }
 
   ngOnInit() {
+    this.globalStore.dispatch(EntryActions.getEntryResidueWiseOutliers());
+
     this.globalStore
       .select(EntrySelectors.experimentalDetails)
       .pipe(
@@ -167,11 +240,17 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     }
   }
 
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.updateLeftSideWidth();
+  }
+
   private updateLeftSideWidth() {
     const leftSide = document.querySelector('.left-side');
     if (leftSide) {
       this.leftSideWidth = `${leftSide.getBoundingClientRect().width}px`;
     }
+    this.processedWidth.set(true);
   }
 
   public selectValidationType(option: ValueLabel) {
@@ -179,63 +258,15 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
 
   public selectSpecificIssueKind(event: MatSelectChange) {
-    this.selectedSpecificIssueKind.setValue(event.value);
+    if (!this.selectedSpecificIssueKind()) return;
+    this.selectedSpecificIssueKind()!.setValue(event.value);
+    this.selectedSpecificIssueKindValue.set(event.value); // trigger effect
   }
 
   async ngAfterViewInit() {
-    await this.initializeMolstarViewer();
     this.updateLeftSideWidth();
   }
 
-  private async initializeMolstarViewer(): Promise<void> {
-    const molstarViewInstance = new PDBeMolstarPlugin();
-    const container = this.molstarContainer.nativeElement;
-    const entryId = this.entryId();
-
-    if (!entryId) return;
-
-    const molstarConfigObject: MolstarConfigObject = {
-      moleculeId: entryId,
-      loadMaps: false,
-      bgColor: { r: 255, g: 255, b: 255 },
-      hideControls: true,
-      hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
-      landscape: true,
-      subscribeEvents: true,
-      granularity: 'residue',
-      validationAnnotation: true,
-    };
-
-    // Render the Molstar viewer
-    molstarViewInstance.render(container, molstarConfigObject);
-    await firstValueFrom(molstarViewInstance.events.loadComplete);
-
-    // Load validation image if available
-    await this.loadValidationImage(molstarViewInstance, entryId);
-  }
-
-  /**
-   * Load the validation image for the Molstar viewer
-   */
-  private async loadValidationImage(molstarViewInstance: any, entryId: string): Promise<void> {
-    const galleryManager = await PDBeMolstarPlugin.extensions.StateGallery.StateGalleryManager.create(molstarViewInstance.plugin, entryId);
-
-    const imageList = galleryManager.images;
-    let validationImg: string | undefined;
-
-    for (const img of imageList) {
-      if (img.filename.includes('_validation')) {
-        validationImg = img.filename;
-        break;
-      }
-    }
-
-    if (validationImg) {
-      await galleryManager.load(validationImg);
-    } else {
-      this.noImg = true;
-    }
-  }
   /**
    * when a filter is clicked we changed the rendered data
    */

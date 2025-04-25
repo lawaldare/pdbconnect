@@ -24,7 +24,16 @@
               @if(isSidebarCollapsed()){
               <pdbc-interactive-tables [tabName]="dataProcessing.getTableName(tab.id)" />
               }
-              <pdbc-details-dashboard [tabName]="dataProcessing.getTableName(tab.id)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
+              <!-- <pdbc-details-dashboard [tabName]="dataProcessing.getTableName(tab.id)" /> -->
+              @if (tab.id === 'Assemblies') {
+              <pdbc-assemblies-tab />
+              } @if (tab.id === 'Macromolecules') {
+              <pdbc-macromolecules-tab />
+              } @if (tab.id === 'Ligands') {
+              <pdbc-ligands-tab />
+              } @if (tab.id === 'Domains') {
+              <pdbc-domains-tab />
+              }
             </section>
             } @else {
             <h5>No {{ tab.name }} data available</h5>
@@ -39,10 +48,6 @@
           <ng-template matTabContent> <pdbc-citations-tab /> </ng-template>
         </mat-tab>
       </mat-tab-group>
-
-      <div #molstarParent style="display: none">
-        <div class="molstar-viewer" #molstarViewer></div>
-      </div>
     </main>
   </section>
   } @else if (statusCode() === 'INITIAL') {
@@ -56,4 +61,7 @@
 <div class="mobile-view">
   <lib-mobile-header [headerConfig]="mobileHeaderConfig" />
   <pdbc-mobile-main />
+</div>
+<div id="parent-molstar-container" #molstarParent>
+  <div id="molstar-element" class="molstar-viewer" #molstarViewer></div>
 </div>

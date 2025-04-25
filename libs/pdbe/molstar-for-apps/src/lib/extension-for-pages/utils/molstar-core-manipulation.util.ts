@@ -23,6 +23,7 @@ import { LineParams } from 'molstar/lib//mol-repr/structure/representation/line'
 import { PluginCommands } from 'molstar/lib/mol-plugin/commands';
 import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
 import { Color } from 'molstar/lib/mol-util/color';
+import { StructureSelectionCategory, StructureSelectionQuery } from 'molstar/lib/mol-plugin-state/helpers/structure-selection-query';
 
 /**
  * This file contains various helper functions for manipulating Molstar
@@ -293,6 +294,34 @@ export async function changeRepresentationVisibility(viewer: any, query: string,
 export async function createStaticComponent(viewer: any, tagName: 'polymer' | 'ligand' | 'ion' | 'branched' | 'non-standard') {
   const structure = viewer.state.select(viewer.assemblyRef)[0];
   const component = await viewer.plugin!.builders.structure.tryCreateComponentStatic(structure, tagName);
+}
+
+export async function createNewPolymerComponent(viewer: any, lbl: string, representation: any) {
+  const structure = viewer.state.select(viewer.assemblyRef)[0];
+
+  const polymer = StructureSelectionQuery(
+    'Polymer',
+    MS.struct.modifier.union([
+      MS.struct.generator.atomGroups({
+        'entity-test': MS.core.logic.and([
+          MS.core.rel.eq([MS.ammp('entityType'), 'polymer']),
+          MS.core.str.match([MS.re('(polypeptide|cyclic-pseudo-peptide|peptide-like|nucleotide|peptide nucleic acid)', 'i'), MS.ammp('entitySubtype')]),
+        ]),
+      }),
+    ]),
+    { category: StructureSelectionCategory.Type }
+  );
+
+  const vis = await viewer.plugin!.builders.structure.tryCreateComponentFromSelection(structure, polymer, lbl, { label: lbl });
+  if (vis) {
+    // create representation and add to molstar
+    const reprObj = await viewer.plugin!.builders.structure.representation.addRepresentation(vis, representation as StructureRepresentationBuiltInProps);
+    return {
+      status: true,
+      reprObj: reprObj,
+    };
+  }
+  return false;
 }
 
 export async function createComponent(viewer: any, lbl: string, molstarSelection: MolstarSelectionObj, representation: any) {

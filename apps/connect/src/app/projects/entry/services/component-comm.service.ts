@@ -6,8 +6,7 @@ import { DataToTable } from '../components/shared/interactive-tables/data-proces
   providedIn: 'root',
 })
 export class ComponentCommunicationService {
-  public molstarResidueInfoLoaded = signal<boolean>(false);
-  public molstarResidueInfo = signal<MolstarResidueInfo[]>([]);
+  public molstarFirstRenderFinished = signal(false);
 
   public currentTab = signal<string>('Information');
   public tabSwitchOrigin = signal<string>('main');

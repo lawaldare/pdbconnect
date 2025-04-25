@@ -120,7 +120,7 @@ export class OverviewMolstarTabListViewComponent {
   });
 
   public lastSelection: {
-    [key: string]: MacromoleculesRowData | LigandsRowData | DomainsRowData;
+    [key: string]: MacromoleculesRowData | LigandsRowData | DomainsRowData | undefined;
   } = {};
 
   public getDomainResourceCountTxt(domainName: string) {
@@ -130,7 +130,11 @@ export class OverviewMolstarTabListViewComponent {
   }
 
   public async selectListItem(listItem: MacromoleculesRowData | LigandsRowData | DomainsRowData, selectionType: string) {
-    this.lastSelection[selectionType] = listItem;
+    if (listItem === this.lastSelection[selectionType]) {
+      this.lastSelection[selectionType] = undefined;
+    } else {
+      this.lastSelection[selectionType] = listItem;
+    }
     await this.stateManagement.updateMolstarItemSelection(listItem, selectionType);
   }
 

@@ -15,6 +15,22 @@ section.common-tab {
   }
 }
 
+pdbc-assemblies-tab {
+  width: calc(100% - 268px);
+}
+
+pdbc-macromolecules-tab {
+  width: calc(100% - 268px);
+}
+
+pdbc-ligands-tab {
+  width: calc(100% - 268px);
+}
+
+pdbc-domains-tab {
+  width: calc(100% - 268px);
+}
+
 pdbc-details-dashboard {
   width: calc(100% - 268px);
 }
@@ -50,4 +66,10 @@ section.container {
   @media (width <= 768px) {
     display: block;
   }
+}
+
+#parent-molstar-container {
+  visibility: hidden;
+  position: absolute;
+  left: -9999px;
 }
