@@ -56,15 +56,14 @@ export class OverviewMolstarComponent implements AfterViewInit {
 
   constructor() {
     effect(async () => {
-      const _currentTab = this.compCommunication.currentTab();
+      const currentTab = this.compCommunication.currentTab();
       const hasMacromoleculesData = Object.keys(this.compCommunication.tabTableData()).indexOf('Macromolecules') > -1;
       const hasLigandsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Ligands') > -1;
       if (this.assemblyData() && this.molstarVisualisation.preferredAssemblyId === undefined) {
         const assemblyToUse = this.assemblyData().preferred ? this.assemblyData().preferred + '' : '1';
         this.molstarVisualisation.preferredAssemblyId = assemblyToUse;
       }
-
-      if (_currentTab !== 'summary') return;
+      if (currentTab !== 'summary' && currentTab !== 'overview') return;
       if (!hasMacromoleculesData) return;
       if (!hasLigandsData) return;
       if (!this.molstarFirstRenderFinished()) return;
