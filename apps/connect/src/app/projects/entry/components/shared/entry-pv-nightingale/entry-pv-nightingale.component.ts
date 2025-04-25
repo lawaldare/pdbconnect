@@ -335,7 +335,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     const observables = PDBE_ENTITY_TRACK_ENDPOINTS.map((endpoint) =>
       this.apiService.getPdbeEntityTrackData(this.entryId(), this.entityId(), endpoint).pipe(
         catchError((error) => {
-          console.error(`❌ Error fetching data for endpoint ${endpoint}:`, error);
+          // console.error(`❌ Error fetching data for endpoint ${endpoint}:`, error);
           return of(null); // 1.1 Return a default/fallback value to keep forkJoin working
         }),
         take(1) // 1.2 take only the first response and unsubscribe
@@ -345,7 +345,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     // 2 - Setup conservation endpoint observable
     const conservationObservable = this.apiService.getPdbeConservationTrackData(this.entryId(), this.entityId()).pipe(
       catchError((error) => {
-        console.error(`❌ Error fetching Conservation data:`, error);
+        // console.error(`❌ Error fetching Conservation data:`, error);
         this.loadedConservationAPIData.set(true); // 2.1 still mark as "loaded" to avoid blocking
         return of(null);
       }),
@@ -355,7 +355,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     // 3 - Setup variation endpoint observable
     const variationObservable = this.apiService.getPdbeVariationTrackData(this.entryId(), this.entityId()).pipe(
       catchError((error) => {
-        console.error(`❌ Error fetching Variation data:`, error);
+        // console.error(`❌ Error fetching Variation data:`, error);
         this.loadedVariationAPIData.set(true);
         return of(null);
       }),
@@ -380,7 +380,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       // 6.1 Use firstValueFrom to await forkJoin result
       trackDataArray = await firstValueFrom(forkJoin(observables));
     } catch (error) {
-      console.error('❌ Unexpected error while fetching track data:', error);
+      // console.error('❌ Unexpected error while fetching track data:', error);
     }
     return trackDataArray;
   }

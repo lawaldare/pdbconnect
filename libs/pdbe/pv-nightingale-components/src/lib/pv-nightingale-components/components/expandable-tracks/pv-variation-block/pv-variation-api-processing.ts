@@ -78,8 +78,6 @@ export function processEntityVariationDataFromAPI(apiData: APIVariationData, key
     };
     convertedData.variants.push(convertedVariant);
   }
-  console.log('convertedData');
-  console.log(convertedData);
   return convertedData;
 }
 
