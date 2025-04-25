@@ -27,6 +27,7 @@ import { EntryStatus } from '../data-models/status.model';
 import { Interaction } from '../data-models/interaction.model';
 import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
 import { LigandMonomer } from '../data-models/ligand-monomers.model';
+import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
 
 export interface EntryStoreState {
   entryId: string;
@@ -72,6 +73,7 @@ export interface EntryStoreState {
   symmetry: Symmetry[];
   polymerCoverage: PolymerCoverageMolecule[];
   ligandMonomers: LigandMonomer[];
+  residueWiseOutliers: ResidueWiseOutliersMolecule[];
 }
 
 export interface EntryMoleculesData {

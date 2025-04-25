@@ -30,6 +30,7 @@ import { EntryStatus } from '../data-models/status.model';
 import { environment } from '../../../../environments/environment';
 import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
 import { LigandMonomer } from '../data-models/ligand-monomers.model';
+import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
 
 @Injectable({
   providedIn: 'root',
@@ -228,6 +229,14 @@ export class EntryApiService {
     return this.http.get<Record<string, LigandMonomer[]>>(`${this.BASE_API}ligand_monomers/${entryId}`).pipe(
       map((data) => {
         return data[entryId];
+      })
+    );
+  }
+
+  public getResidueWiseOutliers(entryId: string): Observable<ResidueWiseOutliersMolecule[]> {
+    return this.http.get<Record<string, { molecules: ResidueWiseOutliersMolecule[] }>>(`${this.VALIDATION_API}residuewise_outlier_summary/entry/${entryId}`).pipe(
+      map((data) => {
+        return data[entryId]['molecules'] || [];
       })
     );
   }

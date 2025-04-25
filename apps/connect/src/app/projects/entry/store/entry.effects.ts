@@ -561,4 +561,17 @@ export class EntryEffects {
       )
     )
   );
+
+  getResidueWiseOutliers$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getEntryResidueWiseOutliers),
+      switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
+      mergeMap((entryId: string) =>
+        this.entryAPIService.getResidueWiseOutliers(entryId).pipe(
+          map((residueWiseOutliers) => EntryActions.getEntryResidueWiseOutliersSuccess({ residueWiseOutliers })),
+          catchError(() => of(EntryActions.getEntryResidueWiseOutliersFailure()))
+        )
+      )
+    )
+  );
 }

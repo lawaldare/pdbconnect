@@ -60,6 +60,7 @@ const initialState: EntryStoreState = {
   symmetry: [],
   polymerCoverage: [],
   ligandMonomers: [],
+  residueWiseOutliers: [],
 };
 
 export const entryReducer = createReducer(
@@ -205,5 +206,9 @@ export const entryReducer = createReducer(
   on(EntryActions.getEntryLigandMonomersSuccess, (state, action) => ({
     ...state,
     ligandMonomers: action.ligandMonomers,
+  })),
+  on(EntryActions.getEntryResidueWiseOutliersSuccess, (state, action) => ({
+    ...state,
+    residueWiseOutliers: action.residueWiseOutliers,
   }))
 );

@@ -23,6 +23,7 @@ import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-map
 import { Symmetry } from '../data-models/assembly.model';
 import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
 import { LigandMonomer } from '../data-models/ligand-monomers.model';
+import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -124,5 +125,8 @@ export const EntryActions = createActionGroup({
     'Get Entry Ligand Monomers': emptyProps(),
     'Get Entry Ligand Monomers Success': props<{ ligandMonomers: LigandMonomer[] }>(),
     'Get Entry Ligand Monomers Failure': emptyProps(),
+    'Get Entry Residue Wise Outliers': emptyProps(),
+    'Get Entry Residue Wise Outliers Success': props<{ residueWiseOutliers: ResidueWiseOutliersMolecule[] }>(),
+    'Get Entry Residue Wise Outliers Failure': emptyProps(),
   },
 });

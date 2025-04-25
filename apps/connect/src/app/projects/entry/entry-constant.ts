@@ -261,6 +261,20 @@ export const INITIAL_API_STATUS = Object.fromEntries(
   (Object.keys(COMPONENT_DEPENDENCIES).flatMap((key) => COMPONENT_DEPENDENCIES[key]) as ApiDataItem[]).map((item) => [item, 'pending'])
 ) as Record<ApiDataItem, 'pending' | 'done'>;
 
+export const OUTLIER_TYPE_LABELS: Record<string, string> = {
+  bond_angles: 'Bond Angles',
+  bond_lengths: 'Bond Lengths',
+  chirals: 'Chirality Issues',
+  planes: 'Planarity Deviations',
+  clashes: 'Clashes',
+  symm_clashes: 'Symmetry Clashes',
+  sidechain_outliers: 'Sidechain Outliers',
+  ramachandran_outliers: 'Ramachandran Outliers',
+  RSRZ: 'RSRZ Outliers',
+  suite_outliers: 'RNA-Suite Outliers',
+  pucker_outliers: 'RNA Pucker Outliers',
+};
+
 // https://web.archive.org/web/20250209115645/https://personal.sron.nl/~pault/
 export const PAUL_TOL_COLORBLIND_SCALE: string[] = ['#332288', '#117733', '#44AA99', '#88CCEE', '#DDCC77', '#CC6677', '#AA4499', '#882255'];
 
