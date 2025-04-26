@@ -153,17 +153,19 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   private overviewDomainsCycleIndex = 0;
   public currentConfigName?: string;
 
-  public async enforceMolstarInContainer(containerName: string) {
-    if (this.currentMolstarContainer === containerName) return;
-    const containerElement = document.querySelector(`#${containerName}-molstar-container`);
-    console.log(containerElement);
-    if (!containerElement) {
-      throw 'Mol*: Container element does not exist';
-    }
-    if (!this.molstarViewerElement) {
-      throw 'Mol*: Element does not exist';
-    }
-    await this.sendMolstarToContainer(containerName, containerElement as HTMLElement);
+  public enforceMolstarInContainer(containerName: string) {
+    setTimeout(async () => {
+      if (this.currentMolstarContainer === containerName) return;
+      const containerElement = document.querySelector(`#${containerName}-molstar-container`);
+      console.log(containerElement);
+      if (!containerElement) {
+        throw 'Mol*: Container element does not exist';
+      }
+      if (!this.molstarViewerElement) {
+        throw 'Mol*: Element does not exist';
+      }
+      await this.sendMolstarToContainer(containerName, containerElement as HTMLElement);
+    }, 500); // Ensure Angular digest cycle has completed before proceeding
   }
 
   private async sendMolstarToContainer(containerName: string, containerElement: HTMLElement) {
