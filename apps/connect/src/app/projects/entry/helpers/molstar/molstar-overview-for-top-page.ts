@@ -156,6 +156,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   public async enforceMolstarInContainer(containerName: string) {
     if (this.currentMolstarContainer === containerName) return;
     const containerElement = document.querySelector(`#${containerName}-molstar-container`);
+    console.log(containerElement);
     if (!containerElement) {
       throw 'Mol*: Container element does not exist';
     }
@@ -166,6 +167,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   private async sendMolstarToContainer(containerName: string, containerElement: HTMLElement) {
+    console.log(containerElement);
     if (!this.renderer) {
       throw 'Mol*: Renderer2 not set';
     }

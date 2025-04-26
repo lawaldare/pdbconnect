@@ -1,28 +1,42 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { AssembliesRowData, LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
+import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
+import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, InteractiveTablesComponent, NgxSkeletonLoaderModule],
   templateUrl: './assemblies-tab.component.html',
   styleUrl: './assemblies-tab.component.scss',
 })
 export class AssembliesTabComponent {
   public readonly compCommunication = inject(ComponentCommunicationService);
+  public readonly dataProcessing = inject(MainDataProcessingFacade);
+
   public molstarVisualisation = inject(MolstarOverviewForTopPage);
   public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
 
+  public readonly isSidebarDisplayed = signal<boolean>(true);
+  public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
+
+  public readonly assemblyTableRows = computed(() => {
+    const isLoaded = this.dataProcessing.tabDataLoaded();
+    if (isLoaded) {
+      const tabData = this.compCommunication.getTabData('Assemblies');
+      return tabData.tableRows() as AssembliesRowData[];
+    }
+    return [];
+  });
+
   public currentAssemblyDatum = computed(() => {
-    const selectedIdx = this.compCommunication.tabState()['Assemblies'];
-    const hasAssembliesData = Object.keys(this.compCommunication.tabTableData()).indexOf('Assemblies') > -1;
-    if (selectedIdx === 'Main') return;
-    if (!hasAssembliesData) return;
-    const assemblies = this.compCommunication.getTabData('Assemblies').tableRows() as AssembliesRowData[];
-    return assemblies[selectedIdx as number];
+    let selectedIdx = this.compCommunication.tabState()['Assemblies'] ?? 0;
+    if (selectedIdx === 'Main') selectedIdx = 0;
+    return this.assemblyTableRows()[selectedIdx as number];
   });
 
   constructor() {
@@ -61,5 +75,9 @@ export class AssembliesTabComponent {
     // this function is used to get specific data shown in Assembly dashboard view
     type AssembliesAddDataKeys = 'accessibleSurfaceArea' | 'buriedSurfaceArea' | 'dissociationArea' | 'dissociationEnergy' | 'dissociationEntropy' | 'symmetryNumber';
     return this.currentAssemblyDatum()?.additionalData[name as AssembliesAddDataKeys];
+  }
+
+  public toggleSidebar() {
+    this.isSidebarDisplayed.update((prev) => !prev);
   }
 }

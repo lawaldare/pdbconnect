@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, effect, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
@@ -21,8 +21,6 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { SummaryTabComponent } from '../../components/summary-tab/summary-tab.component';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { InteractiveTablesComponent } from '../../components/shared/interactive-tables/interactive-tables.component';
-import { DetailsDashboardComponent } from '../../components/shared/details-dashboard/details-dashboard.component';
 import { ExperimentsValidationComponent } from '../../components/model-quality-tab/experiments-validation.component';
 import { EntryPageHeaderComponent } from '../../components/entry-page-header/entry-page-header.component';
 import { environment } from '../../../../../environments/environment';
@@ -63,8 +61,6 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     MaterialModule,
     SummaryTabComponent,
     ExperimentsValidationComponent,
-    InteractiveTablesComponent,
-    DetailsDashboardComponent,
     EntryPageHeaderComponent,
     SearchAppComponent,
     MobileMainComponent,
@@ -96,29 +92,29 @@ export class EntryMainPageComponent implements OnInit {
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
   public molstarFirstRenderStarted = signal(false);
 
-  public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
-  public readonly isSidebarCollapsed = computed(() => !this.compCommunication.isSidebarCollapsed());
+  // public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
+  // public readonly isSidebarCollapsed = computed(() => !this.compCommunication.isSidebarCollapsed());
 
-  public readonly commonTabs = computed(() => {
-    const isTabDataGenerated = this.compCommunication.isTabDataGenerated();
-    const tabs = [
-      { label: 'Assemblies', id: 'Assemblies' },
-      { label: 'Macromolecules', id: 'Macromolecules' },
-      { label: 'Ligands and Environments', id: 'Ligands' },
-      { label: 'Domains', id: 'Domains' },
-    ];
-    const mappedCommonTabs = [];
-    for (const tab of tabs) {
-      const dataExists = isTabDataGenerated ? this.compCommunication.getTabData(tab.id).tableRows().length > 0 : false;
-      const hasData = isTabDataGenerated && dataExists;
-      mappedCommonTabs.push({
-        name: tab.label,
-        hasData,
-        id: tab.id,
-      });
-    }
-    return mappedCommonTabs;
-  });
+  // public readonly commonTabs = computed(() => {
+  //   const isTabDataGenerated = this.compCommunication.isTabDataGenerated();
+  //   const tabs = [
+  //     { label: 'Assemblies', id: 'Assemblies' },
+  //     { label: 'Macromolecules', id: 'Macromolecules' },
+  //     { label: 'Ligands and Environments', id: 'Ligands' },
+  //     { label: 'Domains', id: 'Domains' },
+  //   ];
+  //   const mappedCommonTabs = [];
+  //   for (const tab of tabs) {
+  //     const dataExists = isTabDataGenerated ? this.compCommunication.getTabData(tab.id).tableRows().length > 0 : false;
+  //     const hasData = isTabDataGenerated && dataExists;
+  //     mappedCommonTabs.push({
+  //       name: tab.label,
+  //       hasData,
+  //       id: tab.id,
+  //     });
+  //   }
+  //   return mappedCommonTabs;
+  // });
   private readonly entryId = signal<string>('');
 
   public currentTab = this.compCommunication.currentTab;

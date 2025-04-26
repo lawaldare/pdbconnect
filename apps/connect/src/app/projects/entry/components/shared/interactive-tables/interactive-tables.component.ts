@@ -77,6 +77,7 @@ export class InteractiveTablesComponent implements OnChanges {
   }
 
   public loadSelectionFromTable(rowIdx: number) {
+    console.log('loadSelectionFromTable', rowIdx);
     this.signals.setTabState(this.tabName(), rowIdx);
   }
 

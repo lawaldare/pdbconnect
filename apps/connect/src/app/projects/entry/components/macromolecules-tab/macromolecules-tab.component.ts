@@ -20,6 +20,10 @@ import { ComponentType } from '@angular/cdk/overlay';
 import { EcNumbersComponent } from '../shared/ec-numbers/ec-numbers.component';
 import { GoTermsComponent } from '../shared/go-terms/go-terms.component';
 import { MatDialog } from '@angular/material/dialog';
+import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
+import { DetailsDashboardFacade } from '../shared/details-dashboard/details-dashboard.facade';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -44,7 +48,16 @@ export interface MappedResidue {
 @Component({
   selector: 'pdbc-macromolecules-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, EntryDropdownComponent, MaterialModule, ReactiveFormsModule, EntryPgProtvistaComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    EntryDropdownComponent,
+    MaterialModule,
+    ReactiveFormsModule,
+    InteractiveTablesComponent,
+    NgxSkeletonLoaderModule,
+    EntryPgProtvistaComponent,
+  ],
   templateUrl: './macromolecules-tab.component.html',
   styleUrl: './macromolecules-tab.component.scss',
 })
@@ -53,6 +66,11 @@ export class MacromoleculesTabComponent {
   private readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly dialog = inject(MatDialog);
+  public readonly dataProcessing = inject(MainDataProcessingFacade);
+  public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
+
+  public readonly isSidebarDisplayed = signal<boolean>(true);
+  public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
   public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
 
@@ -86,8 +104,6 @@ export class MacromoleculesTabComponent {
     return filteredIsoformsMapping;
   });
 
-  public residues = signal<MappedResidue[]>([]);
-
   private readonly allThereVisuals = ['polypeptide(L)', 'polypeptide(D)'];
   private readonly onlyTwoVisuals = ['polyribonucleotide', 'polydeoxyribonucleotide'];
   private readonly onlyMolstarVisuals = ['carbohydrate polymer'];
@@ -105,13 +121,28 @@ export class MacromoleculesTabComponent {
   public selectionIdentifier = 'None';
   public selectionTypeText?: string;
 
+  public readonly macromoleculeTableRows = computed(() => {
+    const isLoaded = this.dataProcessing.tabDataLoaded();
+
+    if (isLoaded) {
+      const tabData = this.compCommunication.getTabData('Macromolecules');
+      const datum = tabData.tableRows() as MacromoleculesRowData[];
+      const mappedDatum = datum.map((data) => {
+        return {
+          ...data,
+          mappedResidues: this.detailsDashboardFacade.transformCoverageData(data.residues),
+          organisms: [...new Set(data['organisms'])],
+        };
+      });
+      return mappedDatum;
+    }
+    return [];
+  });
+
   public currentMacromoleculeDatum = computed(() => {
-    const selectedIdx = this.compCommunication.tabState()['Macromolecules'];
-    const hasMacromoleculesData = Object.keys(this.compCommunication.tabTableData()).indexOf('Macromolecules') > -1;
-    if (selectedIdx === 'Main') return undefined;
-    if (!hasMacromoleculesData) return undefined;
-    const macromolecules = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
-    return macromolecules[selectedIdx as number];
+    let selectedIdx = this.compCommunication.tabState()['Macromolecules'] ?? 0;
+    if (selectedIdx === 'Main') selectedIdx = 0;
+    return this.macromoleculeTableRows()[selectedIdx as number];
   });
 
   constructor() {
@@ -142,7 +173,6 @@ export class MacromoleculesTabComponent {
       this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
 
       this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', datum, this.dropdownSelected);
-      this.residues.update(() => this.macromoleculesFacade.transformCoverageData(datum['residues']));
 
       // finally we displayed topology viewer only for protein molecules
       this.hasTopologyViewer = false;
@@ -190,6 +220,10 @@ export class MacromoleculesTabComponent {
       disableClose: false,
       panelClass: 'entry-Dialog',
     });
+  }
+
+  public toggleSidebar() {
+    this.isSidebarDisplayed.update((prev) => !prev);
   }
 
   public copySequence(sequenceDetail: SequenceDetail) {

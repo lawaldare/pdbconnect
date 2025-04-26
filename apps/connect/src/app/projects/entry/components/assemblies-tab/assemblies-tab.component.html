@@ -1,72 +1,85 @@
-@let icon = compCommunication.isSidebarCollapsed() ? 'right' : 'left'; @let text = compCommunication.isSidebarCollapsed() ? 'Show ' + 'Assemblies':'Open full-width';
-<button class="vf-button-ghost" (click)="compCommunication.setSidebarState()">
-  <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
-  <span>{{text}}</span>
-</button>
+@if (tabDataLoaded()){ @if(assemblyTableRows().length){
+<main [class.change-display]="!isSidebarDisplayed()">
+  @if(isSidebarDisplayed()){
+  <pdbc-interactive-tables tabName="Assemblies" />
+  }
+  <div class="tab-content">
+    @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Assemblies';
+    <button class="vf-button-ghost" (click)="toggleSidebar()">
+      <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
+      <span>{{text}}</span>
+    </button>
 
-<!-- Assemblies -->
-@let datum = currentAssemblyDatum();
-<h5>{{ datum?.assemblyName }}</h5>
-<section class="assemblies-container">
-  <section class="assembly-section">
-    <div class="assembly-grouped">
-      @if(datum?.complexName){
-      <div class="info-row">
-        <span>
-          Assembly name
-          <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
-        </span>
-        <article>{{datum?.complexName}}</article>
-      </div>
-      }
-      <div class="info-row">
-        <span>
-          Multimeric state
-          <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
-        </span>
-        <article>{{datum?.multimericStates}}</article>
-      </div>
-      <div class="info-row">
-        <span>
-          PDBe complex ID
-          <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
-        </span>
-        <article>
-          <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/complex/' + datum?.complexId" target="_blank">{{datum?.complexId}}</a>
-          <img src="assets/icons/link_search_icon.png" alt="search icon" />
-        </article>
-      </div>
-    </div>
-    <div class="assembly-grouped">
-      <div class="info-row">
-        <span>Accessible surface area</span>
-        <article>{{ getAdditionalData('accessibleSurfaceArea') }}<sup>2</sup></article>
-      </div>
-      <div class="info-row">
-        <span>Buried surface area</span>
-        <article>{{ getAdditionalData('buriedSurfaceArea') }}<sup>2</sup></article>
-      </div>
-    </div>
-    <div class="assembly-grouped">
-      <div class="info-row">
-        <span>Dissociation area</span>
-        <article>{{ getAdditionalData('dissociationArea') }}<sup>2</sup></article>
-      </div>
-      <div class="info-row">
-        <span>Dissociation energy</span>
-        <article>{{ getAdditionalData('dissociationEnergy') }}</article>
-      </div>
-      <div class="info-row">
-        <span>Dissociation entropy</span>
-        <article>{{ getAdditionalData('dissociationEntropy') }}</article>
-      </div>
-    </div>
-    <div class="info-row">
-      <span>Symmetry number</span>
-      <article>{{ getAdditionalData('symmetryNumber') }}</article>
-    </div>
-  </section>
-  <section class="molstar-details-container">
-    <div id="assemblies-molstar-container" class="molstar-container"></div>
-  </section>
-</section>
+    <!-- Assemblies -->
+    @let datum = currentAssemblyDatum();
+    <h5>{{ datum?.assemblyName }}</h5>
+    <section class="assemblies-container">
+      <section class="assembly-section">
+        <div class="assembly-grouped">
+          @if(datum?.complexName){
+          <div class="info-row">
+            <span>
+              Assembly name
+              <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
+            </span>
+            <article>{{datum?.complexName}}</article>
+          </div>
+          }
+          <div class="info-row">
+            <span>
+              Multimeric state
+              <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
+            </span>
+            <article>{{datum?.multimericStates}}</article>
+          </div>
+          <div class="info-row">
+            <span>
+              PDBe complex ID
+              <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
+            </span>
+            <article>
+              <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/complex/' + datum?.complexId" target="_blank">{{datum?.complexId}}</a>
+              <img src="assets/icons/link_search_icon.png" alt="search icon" />
+            </article>
+          </div>
+        </div>
+        <div class="assembly-grouped">
+          <div class="info-row">
+            <span>Accessible surface area</span>
+            <article>{{ getAdditionalData('accessibleSurfaceArea') }}<sup>2</sup></article>
+          </div>
+          <div class="info-row">
+            <span>Buried surface area</span>
+            <article>{{ getAdditionalData('buriedSurfaceArea') }}<sup>2</sup></article>
+          </div>
+        </div>
+        <div class="assembly-grouped">
+          <div class="info-row">
+            <span>Dissociation area</span>
+            <article>{{ getAdditionalData('dissociationArea') }}<sup>2</sup></article>
+          </div>
+          <div class="info-row">
+            <span>Dissociation energy</span>
+            <article>{{ getAdditionalData('dissociationEnergy') }}</article>
+          </div>
+          <div class="info-row">
+            <span>Dissociation entropy</span>
+            <article>{{ getAdditionalData('dissociationEntropy') }}</article>
+          </div>
+        </div>
+        <div class="info-row">
+          <span>Symmetry number</span>
+          <article>{{ getAdditionalData('symmetryNumber') }}</article>
+        </div>
+      </section>
+      <section class="molstar-details-container">
+        <div id="assemblies-molstar-container" class="molstar-container"></div>
+      </section>
+    </section>
+  </div>
+</main>
+} @else {
+<h5>No Assemblies data available</h5>
+} }@else{
+<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+}

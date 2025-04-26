@@ -19,11 +19,23 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { colDefs, defaultColDef, gridOptions } from './ag-grid';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
+import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 
 @Component({
   selector: 'pdbc-ligands-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, EntryDropdownComponent, MaterialModule, AgGridAngular, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    EntryDropdownComponent,
+    InteractiveTablesComponent,
+    NgxSkeletonLoaderModule,
+    MaterialModule,
+    AgGridAngular,
+    ReactiveFormsModule,
+  ],
   templateUrl: './ligands-tab.component.html',
   styleUrl: './ligands-tab.component.scss',
 })
@@ -32,6 +44,8 @@ export class LigandsTabComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public molstarVisualisation = inject(MolstarOverviewForTopPage);
   public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
+
+  public readonly dataProcessing = inject(MainDataProcessingFacade);
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
@@ -43,13 +57,24 @@ export class LigandsTabComponent implements OnInit {
 
   public dashboardStatLinks = dashboardStatLinks;
 
+  public readonly isSidebarDisplayed = signal<boolean>(true);
+  public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
+
+  public readonly ligandTableRows = computed(() => {
+    const isLoaded = this.dataProcessing.tabDataLoaded();
+
+    if (isLoaded) {
+      const tabData = this.compCommunication.getTabData('Ligands');
+      const datum = tabData.tableRows() as LigandsRowData[];
+      return datum;
+    }
+    return [];
+  });
+
   public currentLigandDatum = computed(() => {
-    const selectedIdx = this.compCommunication.tabState()['Ligands'];
-    const hasLigandsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Ligands') > -1;
-    if (selectedIdx === 'Main') return;
-    if (!hasLigandsData) return;
-    const ligands = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
-    return ligands[selectedIdx as number];
+    let selectedIdx = this.compCommunication.tabState()['Ligands'] ?? 0;
+    if (selectedIdx === 'Main') selectedIdx = 0;
+    return this.ligandTableRows()[selectedIdx as number];
   });
 
   public selectionIdentifier = 'None';
@@ -220,6 +245,10 @@ export class LigandsTabComponent implements OnInit {
       resId: resId,
       chainId: chainId,
     };
+  }
+
+  public toggleSidebar() {
+    this.isSidebarDisplayed.update((prev) => !prev);
   }
 
   private async destroyLigandEnv() {

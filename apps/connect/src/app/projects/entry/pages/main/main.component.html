@@ -10,40 +10,18 @@
         <mat-tab label="Model quality">
           <ng-template matTabContent> <pdbc-experiments-validation /> </ng-template>
         </mat-tab>
-        @for (tab of commonTabs(); track tab) {
-        <mat-tab class="common-tab">
-          <!-- <ng-template mat-tab-label>{{ tab.name }} </ng-template> -->
-          <ng-template mat-tab-label>
-            @if (tabDataLoaded()) { @if(!tab.hasData) {
-            <span class="tab-tag">N/A</span>
-            } } {{ tab.name }}
-          </ng-template>
-          <ng-template matTabContent>
-            @if (tabDataLoaded()) { @if (tab.hasData) {
-            <section class="common-tab" [class.change-display]="!isSidebarCollapsed()">
-              @if(isSidebarCollapsed()){
-              <pdbc-interactive-tables [tabName]="dataProcessing.getTableName(tab.id)" />
-              }
-              <!-- <pdbc-details-dashboard [tabName]="dataProcessing.getTableName(tab.id)" /> -->
-              @if (tab.id === 'Assemblies') {
-              <pdbc-assemblies-tab />
-              } @if (tab.id === 'Macromolecules') {
-              <pdbc-macromolecules-tab />
-              } @if (tab.id === 'Ligands') {
-              <pdbc-ligands-tab />
-              } @if (tab.id === 'Domains') {
-              <pdbc-domains-tab />
-              }
-            </section>
-            } @else {
-            <h5>No {{ tab.name }} data available</h5>
-
-            } } @else {
-            <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
-            }
-          </ng-template>
+        <mat-tab label="Assemblies">
+          <ng-template matTabContent> <pdbc-assemblies-tab /> </ng-template>
         </mat-tab>
-        }
+        <mat-tab label="Macromolecules">
+          <ng-template matTabContent> <pdbc-macromolecules-tab /> </ng-template>
+        </mat-tab>
+        <mat-tab label="Ligands and Environments">
+          <ng-template matTabContent> <pdbc-ligands-tab /> </ng-template>
+        </mat-tab>
+        <mat-tab label="Domains">
+          <ng-template matTabContent> <pdbc-domains-tab /> </ng-template>
+        </mat-tab>
         <mat-tab label="Citations">
           <ng-template matTabContent> <pdbc-citations-tab /> </ng-template>
         </mat-tab>

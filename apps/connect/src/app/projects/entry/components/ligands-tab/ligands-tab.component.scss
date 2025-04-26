@@ -1,3 +1,20 @@
+main {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 16px;
+
+  &.change-display {
+    display: block !important;
+  }
+
+  pdbc-interactive-tables {
+    width: 252px;
+    min-width: 252px;
+    max-width: 252px;
+  }
+}
+
 .stats-link-bar {
   color: #54585a;
   font-size: 14px;

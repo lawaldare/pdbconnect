@@ -17,6 +17,9 @@ import { Store } from '@ngrx/store';
 import { EntryPgProtvistaComponent } from '../shared/entry-pv-nightingale/entry-pv-nightingale.component';
 import { UtilService } from '@pdbc/core';
 import { resourceUrls } from '../../entry-constant';
+import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 
 // these types are used by this file and the facade and related to sequence rendering
 export type BoundsByEntityId = {
@@ -35,7 +38,7 @@ export interface SequenceDetail {
 @Component({
   selector: 'pdbc-domains-tab',
   standalone: true,
-  imports: [CommonModule, EntryPgProtvistaComponent],
+  imports: [CommonModule, EntryPgProtvistaComponent, InteractiveTablesComponent, NgxSkeletonLoaderModule],
   templateUrl: './domains-tab.component.html',
   styleUrl: './domains-tab.component.scss',
 })
@@ -45,6 +48,11 @@ export class DomainsTabComponent {
   private readonly utilService = inject(UtilService);
   public molstarVisualisation = inject(MolstarOverviewForTopPage);
   public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
+
+  public readonly dataProcessing = inject(MainDataProcessingFacade);
+
+  public readonly isSidebarDisplayed = signal<boolean>(true);
+  public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
   public selectedChains?: string;
   public currentProtvistaEntity = signal<string | undefined>(undefined);
@@ -58,13 +66,22 @@ export class DomainsTabComponent {
 
   public readonly resourceUrls = resourceUrls;
 
+  public readonly domainTableRows = computed(() => {
+    const isLoaded = this.dataProcessing.tabDataLoaded();
+
+    if (isLoaded) {
+      const tabData = this.compCommunication.getTabData('Domains');
+      const datum = tabData.tableRows() as DomainsRowData[];
+      // console.log('Domains table rows:', datum);
+      return datum;
+    }
+    return [];
+  });
+
   public currentDomainsDatum = computed(() => {
-    const selectedIdx = this.compCommunication.tabState()['Domains'];
-    const hasDomainsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Domains') > -1;
-    if (selectedIdx === 'Main') return;
-    if (!hasDomainsData) return;
-    const domains = this.compCommunication.getTabData('Domains').tableRows() as DomainsRowData[];
-    return domains[selectedIdx as number];
+    let selectedIdx = this.compCommunication.tabState()['Domains'] ?? 0;
+    if (selectedIdx === 'Main') selectedIdx = 0;
+    return this.domainTableRows()[selectedIdx as number];
   });
 
   constructor() {
@@ -96,6 +113,10 @@ export class DomainsTabComponent {
       await this.renderInMolstar();
       this.initOrRefreshProtvista();
     });
+  }
+
+  public toggleSidebar() {
+    this.isSidebarDisplayed.update((prev) => !prev);
   }
 
   public copySequence(sequenceDetail: SequenceDetail) {

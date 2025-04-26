@@ -1,3 +1,20 @@
+main {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 16px;
+
+  &.change-display {
+    display: block !important;
+  }
+
+  pdbc-interactive-tables {
+    width: 252px;
+    min-width: 252px;
+    max-width: 252px;
+  }
+}
+
 .assemblies-container {
   display: grid;
   grid-template-columns: 2fr 3fr;
