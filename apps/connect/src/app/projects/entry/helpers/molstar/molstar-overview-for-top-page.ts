@@ -157,7 +157,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     setTimeout(async () => {
       if (this.currentMolstarContainer === containerName) return;
       const containerElement = document.querySelector(`#${containerName}-molstar-container`);
-      console.log(containerElement);
       if (!containerElement) {
         throw 'Mol*: Container element does not exist';
       }
