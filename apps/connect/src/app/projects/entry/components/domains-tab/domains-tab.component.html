@@ -13,7 +13,7 @@
     <h5 class="domain-title">
       <strong>{{currentDomainsDatum()?.domain}}</strong> (<strong>{{currentDomainsDatum()?.resource}}</strong>
       <a [href]="resourceUrls[currentDomainsDatum().resource] + currentDomainsDatum()?.additionalData?.accession" target="_blank"
-        >{{currentDomainsDatum()!.additionalData?.accession}}</a
+        >{{currentDomainsDatum()?.additionalData?.accession}}</a
       >)
     </h5>
     <section class="domain-info">
@@ -22,11 +22,11 @@
           Domain name
           <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
         </span>
-        <article>{{currentDomainsDatum()!.domain}}</article>
+        <article>{{currentDomainsDatum()?.domain}}</article>
       </div>
       <div class="info-row">
         <span> Molecule name </span>
-        <article>{{currentDomainsDatum()!.moleculeNames[0]}}</article>
+        <article>{{currentDomainsDatum()?.moleculeNames[0]}}</article>
       </div>
       <div class="info-row">
         <span>
@@ -34,7 +34,7 @@
           <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
         </span>
         <article>
-          Chain @for(chain of currentDomainsDatum()!.segments; track chain; let islast = $last) {
+          Chain @for(chain of currentDomainsDatum()?.segments; track chain; let islast = $last) {
           <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
         </article>
       </div>
@@ -44,13 +44,13 @@
           <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
         </span>
         <article>
-          Chain @for(chain of currentDomainsDatum()!.additionalData?.segmentsResidNumbers; track chain; let islast = $last) {
+          Chain @for(chain of currentDomainsDatum()?.additionalData?.segmentsResidNumbers; track chain; let islast = $last) {
           <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
         </article>
       </div>
     </section>
     <div class="chains">
-      Chain @for(chain of currentDomainsDatum()!.mappedboundaries; track chain; let islast = $last){
+      Chain @for(chain of currentDomainsDatum()?.mappedboundaries; track chain; let islast = $last){
       <span>{{chain}}</span>{{ islast ? '' : ',' }} }
     </div>
     @if (sequenceDetails.length > 0) {

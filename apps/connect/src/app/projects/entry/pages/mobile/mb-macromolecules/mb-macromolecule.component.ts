@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, DestroyRef, inject, Optional, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, inject, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
@@ -17,6 +17,7 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { SequenceDetail } from '../../../components/shared/details-dashboard/details-dashboard.component';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
 
 export enum ViewState {
   List = 'list',
@@ -35,7 +36,7 @@ interface GoMapped {
   templateUrl: './mb-macromolecule.component.html',
   styleUrls: ['../common-mb-header.scss', './mb-macromolecule.component.scss'],
 })
-export class MbMacromoleculeComponent implements AfterViewInit {
+export class MbMacromoleculeComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly destroyRef = inject(DestroyRef);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
@@ -53,6 +54,7 @@ export class MbMacromoleculeComponent implements AfterViewInit {
   public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
 
   private readonly utilService = inject(UtilService);
+  public readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
 
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   public readonly signals = inject(ComponentCommunicationService);
@@ -214,8 +216,9 @@ export class MbMacromoleculeComponent implements AfterViewInit {
   public initialGoTermsCount = signal<number>(5);
 
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbMacromoleculeComponent>) {}
-  async ngAfterViewInit() {
-    this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
+
+  async ngOnInit() {
+    await this.molstarVisualisation.renderMobileMolstarInitial();
   }
 
   public toggleSynonymsList(total: number) {
@@ -241,11 +244,15 @@ export class MbMacromoleculeComponent implements AfterViewInit {
 
     this.sequenceDetails = this.detailsDashboardFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', this.selectedMacromolecule(), this.dropdownSelected);
 
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    await this.mbFacade.renderMolstarMacromolecules(this.entryId() ?? '', this.selectedMacromolecule(), molstarSelection, true);
+    await this.initMolstar();
   }
 
-  toggleBottomsheetHeight() {
+  private async initMolstar() {
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    await this.molstarVisualisation.renderTabsMacromolecules(this.selectedMacromolecule(), molstarSelection);
+  }
+
+  public toggleBottomsheetHeight() {
     this.expanded.update((olamide) => !olamide);
     const container = document.querySelector('.custom-bottom-sheet') as HTMLElement;
     if (container) {
@@ -257,7 +264,7 @@ export class MbMacromoleculeComponent implements AfterViewInit {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
-    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
+    await this.molstarVisualisation.renderMobileMolstarInitial();
   }
 
   public navigateToDetail(data: MacromoleculesRowData) {
@@ -270,7 +277,7 @@ export class MbMacromoleculeComponent implements AfterViewInit {
   public async goBackToList() {
     this.currentViewState.set(ViewState.List);
     this.mbFacade.updateSelectedTitle('Macromolecules');
-    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
+    await this.molstarVisualisation.renderMobileMolstarInitial();
   }
 
   public generateOrganismSearchUrl(term: string): string {
@@ -279,8 +286,7 @@ export class MbMacromoleculeComponent implements AfterViewInit {
 
   public async onDropdownSelect(event: string) {
     this.dropdownSelected = event;
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    await this.mbFacade.renderMolstarMacromolecules(this.entryId() ?? '', this.selectedMacromolecule(), molstarSelection, true);
+    await this.initMolstar();
   }
 
   public copySequence(sequenceDetail: SequenceDetail) {

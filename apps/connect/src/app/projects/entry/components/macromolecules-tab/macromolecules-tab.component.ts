@@ -126,7 +126,7 @@ export class MacromoleculesTabComponent {
 
     if (isLoaded) {
       const tabData = this.compCommunication.getTabData('Macromolecules');
-      const datum = tabData.tableRows() as MacromoleculesRowData[];
+      const datum = tabData.tableRows() as any[];
       const mappedDatum = datum.map((data) => {
         return {
           ...data,
@@ -160,7 +160,7 @@ export class MacromoleculesTabComponent {
       if (!hasLigandsData) return;
       if (!this.currentMacromoleculeDatum()) return;
 
-      const datum = this.currentMacromoleculeDatum()!;
+      const datum = this.currentMacromoleculeDatum();
 
       this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(datum);
       this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
@@ -198,7 +198,7 @@ export class MacromoleculesTabComponent {
         this.hasProtvista = false;
         this.hasTopologyViewer = false;
       }
-
+      console.log('molstarFirstRenderFinished', molstarFirstRenderFinished);
       await this.renderVisualisations();
     });
   }
@@ -238,14 +238,14 @@ export class MacromoleculesTabComponent {
   }
 
   private async renderInMolstar() {
-    const datum = this.currentMacromoleculeDatum()!;
+    const datum = this.currentMacromoleculeDatum();
 
     const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
     const ligandsRawData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
     const ligandsData = ligandsRawData.filter((lig) => lig.type === 'ligand');
     const modificationsData = ligandsRawData.filter((lig) => lig.type === 'modification');
 
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
     // if Macromolecules config not loaded, load it
     if (!this.molstarVisualisation.currentViewName.includes('Tab-Macromolecules')) {
@@ -259,7 +259,7 @@ export class MacromoleculesTabComponent {
   private initOrRefreshProtvista() {
     // stop if this dashboard does not have protvista (initially false and then set in onTableRowSelection according to tabName input)
     if (!this.hasProtvista) return;
-    const datum = this.currentMacromoleculeDatum()!;
+    const datum = this.currentMacromoleculeDatum();
     const entityId = datum.additionalData.molecule.entity_id;
     const chainId = this.dropdownSelected.split('Chain ')[1];
 

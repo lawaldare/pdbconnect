@@ -36,6 +36,7 @@ export interface MolstarConfigObject {
   subscribeEvents: boolean;
   granularity?: string;
   validationAnnotation?: boolean;
+  symmetryAnnotation?: boolean;
 }
 
 /**
@@ -173,7 +174,7 @@ export class MolstarBaseClass {
    */
   public async focusLoci(molstarSelection: MolstarSelectionObj) {
     const queryLoci = await this.getViewerLoci(molstarSelection);
-    await this.molstarViewInstance().plugin!.managers.camera.focusLoci(queryLoci, { durationMs: this.cameraDuration });
+    await this.molstarViewInstance()?.plugin?.managers?.camera?.focusLoci(queryLoci, { durationMs: this.cameraDuration });
   }
   /**
    * Function triggers Molstar focus on whole current structure
@@ -182,7 +183,7 @@ export class MolstarBaseClass {
     const assemblyRef = this.molstarViewInstance().plugin?.managers?.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
     const structure = (this.molstarViewInstance().plugin?.state?.data?.select(assemblyRef)[0]?.obj as PluginStateObject.Molecule.Structure)?.data;
     const structureLoci = Structure.toStructureElementLoci(structure);
-    await this.molstarViewInstance().plugin!.managers.camera.focusLoci(structureLoci, { durationMs: this.cameraDuration });
+    await this.molstarViewInstance()?.plugin?.managers?.camera?.focusLoci(structureLoci, { durationMs: this.cameraDuration });
   }
 
   /**

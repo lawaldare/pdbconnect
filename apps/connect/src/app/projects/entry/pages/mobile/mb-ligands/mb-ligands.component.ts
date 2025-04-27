@@ -15,6 +15,7 @@ import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
 
 @Component({
   selector: 'pdbc-mb-ligands',
@@ -30,6 +31,7 @@ export class MbLigandsComponent implements AfterViewInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
 
   public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
 
@@ -56,7 +58,7 @@ export class MbLigandsComponent implements AfterViewInit {
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbLigandsComponent>) {}
 
   async ngAfterViewInit() {
-    this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
+    await this.molstarVisualisation.renderMobileMolstarInitial();
   }
 
   private async init() {
@@ -72,11 +74,15 @@ export class MbLigandsComponent implements AfterViewInit {
     });
     this.dropdownSelected = dropdownResults.dropdownSelected;
 
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    await this.mbFacade.renderMolstarLigands(this.entryId() ?? '', this.selectedLigands(), molstarSelection, true);
+    await this.initMolstar();
   }
 
-  toggleBottomsheetHeight() {
+  private async initMolstar() {
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    await this.molstarVisualisation.renderTabsLigands(this.selectedLigands(), molstarSelection);
+  }
+
+  public toggleBottomsheetHeight() {
     this.expanded.update((olamide) => !olamide);
     const container = document.querySelector('.custom-bottom-sheet') as HTMLElement;
     if (container) {
@@ -88,7 +94,7 @@ export class MbLigandsComponent implements AfterViewInit {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
-    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
+    await this.molstarVisualisation.renderMobileMolstarInitial();
   }
 
   public navigateToDetail(data: LigandsRowData) {
@@ -102,12 +108,11 @@ export class MbLigandsComponent implements AfterViewInit {
   public async goBackToList() {
     this.currentViewState.set(ViewState.List);
     this.mbFacade.updateSelectedLigandTitle('Ligands');
-    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
+    await this.molstarVisualisation.renderMobileMolstarInitial();
   }
 
   public async onDropdownSelect(event: string) {
     this.dropdownSelected = event;
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    await this.mbFacade.renderMolstarLigands(this.entryId() ?? '', this.selectedLigands(), molstarSelection, true);
+    await this.initMolstar();
   }
 }

@@ -65,7 +65,7 @@ export class LigandsTabComponent implements OnInit {
 
     if (isLoaded) {
       const tabData = this.compCommunication.getTabData('Ligands');
-      const datum = tabData.tableRows() as LigandsRowData[];
+      const datum = tabData.tableRows() as any[];
       return datum;
     }
     return [];
@@ -125,7 +125,7 @@ export class LigandsTabComponent implements OnInit {
       if (!hasLigandsData) return;
       if (!this.currentLigandDatum()) return;
 
-      const datum = this.currentLigandDatum()!;
+      const datum = this.currentLigandDatum();
 
       this.dropdownOptionsToMolstar = getLigandsDropdownOptions(datum);
       this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
@@ -171,18 +171,18 @@ export class LigandsTabComponent implements OnInit {
   }
 
   private async renderInMolstar() {
-    const datum = this.currentLigandDatum()!;
+    const datum = this.currentLigandDatum();
 
     const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
     const ligandsRawData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
     const ligandsData = ligandsRawData.filter((lig) => lig.type === 'ligand');
     const modificationsData = ligandsRawData.filter((lig) => lig.type === 'modification');
 
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
     // retrieve necessary data for composing ligands and environments URL
-    const entityId = molstarSelection.entityId!;
-    const chainId = molstarSelection.authChainId!;
+    const entityId = molstarSelection.entityId;
+    const chainId = molstarSelection.authChainId;
 
     // create URL according to whether a modification or a ligand is selected
     let urlToDownload = '';
@@ -216,9 +216,9 @@ export class LigandsTabComponent implements OnInit {
     if (!this.hasLigandEnv) return;
 
     // ligand env viewer is only shown for ligands tab. data is retrieved from dropdown
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected!];
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     const resId = molstarSelection.residues[0].authBegin;
-    const chainId = molstarSelection.authChainId!;
+    const chainId = molstarSelection.authChainId;
 
     // stop if ligand already loaded
     if (this.ligandEnvSelection.resId === resId && this.ligandEnvSelection.chainId === chainId) {
@@ -243,7 +243,7 @@ export class LigandsTabComponent implements OnInit {
     }
     this.ligandEnvSelection = {
       resId: resId,
-      chainId: chainId,
+      chainId: chainId ?? '',
     };
   }
 

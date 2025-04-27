@@ -7,13 +7,10 @@ import '@nightingale-elements/nightingale-sequence';
 import { Feature as NightingaleFeature } from '@nightingale-elements/nightingale-track';
 import { MaterialModule } from '@pdbc/core';
 
-import { MatCheckbox } from '@angular/material/checkbox';
-import { MatRadioButton } from '@angular/material/radio';
 import {
   APIConservationData,
   APITrackData,
   APITrackFragment,
-  APITrackItem,
   APIVariationData,
   ConservationTrackBlockComponent,
   MapCustomDataPanelComponent,
@@ -51,8 +48,6 @@ const PDBE_ENTITY_TRACK_ENDPOINTS = ['uniprot_mapping', 'chains', 'domains', 'rf
   selector: 'pdbc-entry-pg-protvista',
   imports: [
     CommonModule,
-    MatCheckbox,
-    MatRadioButton,
     MaterialModule,
     SearchResiduePanelComponent,
     MapCustomDataPanelComponent,

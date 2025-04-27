@@ -13,6 +13,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
+import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
 
 @Component({
   selector: 'pdbc-mb-domains',
@@ -28,6 +29,7 @@ export class MbDomainsComponent implements AfterViewInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
 
   public readonly resourceUrls = resourceUrls;
 
@@ -54,7 +56,7 @@ export class MbDomainsComponent implements AfterViewInit {
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbDomainsComponent>) {}
 
   async ngAfterViewInit() {
-    this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
+    await this.molstarVisualisation.renderMobileMolstarInitial();
   }
 
   toggleBottomsheetHeight() {
@@ -69,7 +71,7 @@ export class MbDomainsComponent implements AfterViewInit {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
-    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
+    await this.molstarVisualisation.renderMobileMolstarInitial();
   }
 
   public navigateToDetail(data: DomainsRowData) {
@@ -80,12 +82,13 @@ export class MbDomainsComponent implements AfterViewInit {
   }
 
   private async init(): Promise<void> {
-    await this.mbFacade.renderMolstarDomains(this.entryId() ?? '', this.selectedDomain(), true);
+    const selection = this.selectedDomain().additionalData.selections[0];
+    await this.molstarVisualisation.renderTabsDomains(selection);
   }
 
   public async goBackToList() {
     this.currentViewState.set(ViewState.List);
-    this.mbFacade.updateSelectedLigandTitle('Ligands');
-    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
+    this.mbFacade.updateSelectedDomainTitle('Domains');
+    await this.molstarVisualisation.renderMobileMolstarInitial();
   }
 }

@@ -90,7 +90,7 @@ export class EntryMainPageComponent implements OnInit {
 
   public statusCode = signal<StatusCode>('INITIAL');
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
-  public molstarFirstRenderStarted = signal(false);
+  private molstarFirstRenderStarted = signal(false);
 
   // public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
   // public readonly isSidebarCollapsed = computed(() => !this.compCommunication.isSidebarCollapsed());

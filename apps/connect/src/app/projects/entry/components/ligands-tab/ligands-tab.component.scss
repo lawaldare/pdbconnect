@@ -13,6 +13,10 @@ main {
     min-width: 252px;
     max-width: 252px;
   }
+
+  .tab-content {
+    width: calc(100% - 268px);
+  }
 }
 
 .stats-link-bar {

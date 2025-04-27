@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, inject, OnInit, Type, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, OnInit, Renderer2, signal, Type, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
@@ -13,6 +13,8 @@ import { MbLigandsComponent } from '../mb-ligands/mb-ligands.component';
 import { MbDomainsComponent } from '../mb-domains/mb-domains.component';
 import { MobileFacade } from '../mobile.facade';
 import { firstValueFrom } from 'rxjs';
+import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
+import { ComponentCommunicationService } from '../../../services/component-comm.service';
 
 export enum MobileTabChips {
   MQuality = 'MQuality',
@@ -38,6 +40,11 @@ export class MbMolstarTabComponent implements AfterViewInit {
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
 
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
+
+  private molstarFirstRenderStarted = signal(false);
+  private readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+  private readonly renderer = inject(Renderer2);
+  public readonly compCommunication = inject(ComponentCommunicationService);
 
   public readonly mobileTabChips = [
     { label: 'Model Quality', id: MobileTabChips.MQuality },
@@ -96,6 +103,16 @@ export class MbMolstarTabComponent implements AfterViewInit {
   }
 
   private async initializeMolstarViewer(): Promise<void> {
-    await this.mbFacade.initializeMolstarViewer(this.molstarContainer, this.entryId() ?? '');
+    // await this.mbFacade.initializeMolstarViewer(this.molstarContainer, this.entryId() ?? '');
+    if (!this.molstarFirstRenderStarted()) {
+      const molstarElement = document.getElementById('molstar-element');
+      this.molstarVisualisation.entryId = this.entryId();
+      this.molstarVisualisation.setRenderer(this.renderer);
+      this.molstarVisualisation.molstarViewerElement = molstarElement as HTMLElement;
+
+      this.molstarFirstRenderStarted.set(true);
+      await this.molstarVisualisation.renderMolstarInitial();
+      this.compCommunication.molstarFirstRenderFinished.set(true);
+    }
   }
 }

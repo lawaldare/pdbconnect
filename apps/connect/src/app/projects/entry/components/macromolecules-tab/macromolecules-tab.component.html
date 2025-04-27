@@ -11,7 +11,7 @@
     </button>
 
     @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum().additionalData?.molecule?.molecule_name?.length) {
-    <h5>{{ currentMacromoleculeDatum()!.additionalData.molecule.molecule_name[0] }}</h5>
+    <h5>{{ currentMacromoleculeDatum()?.additionalData.molecule.molecule_name[0] }}</h5>
     }
     <div class="stats-link-bar">
       @if(dashboardStatLinks['Macromolecules'].length > 0 && selectionIdentifier !== 'None') {
@@ -34,7 +34,7 @@
           <span class="micro-title"> Source organism </span>
           <article>
             <a [href]="generateOrganismSearchUrl(currentMacromoleculeDatum().organisms[0])" target="_blank">
-              <em>{{currentMacromoleculeDatum()!.organisms[0]}}</em>
+              <em>{{currentMacromoleculeDatum()?.organisms[0]}}</em>
               <img src="assets/icons/link_search_icon.png" alt="search icon" style="margin-left: 5px" />
             </a>
           </article>
@@ -85,11 +85,11 @@
         </div>
         <div class="info-row">
           <span class="micro-title"> Theoretical weight</span>
-          @if(currentMacromoleculeDatum()!.additionalData?.molecule?.weight !== undefined) {
-          <article>{{ currentMacromoleculeDatum()!.additionalData.molecule.weight.toFixed(2) }} KDa</article>
+          @if(currentMacromoleculeDatum()?.additionalData?.molecule?.weight !== undefined) {
+          <article>{{ currentMacromoleculeDatum()?.additionalData.molecule.weight.toFixed(2) }} KDa</article>
           }
         </div>
-        @if(currentMacromoleculeDatum()!.genes.length){
+        @if(currentMacromoleculeDatum()?.genes.length){
         <div class="info-row">
           <span class="micro-title"> Gene names </span>
           <article>

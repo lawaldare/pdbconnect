@@ -71,7 +71,7 @@ export class DomainsTabComponent {
 
     if (isLoaded) {
       const tabData = this.compCommunication.getTabData('Domains');
-      const datum = tabData.tableRows() as DomainsRowData[];
+      const datum = tabData.tableRows() as any[];
       // console.log('Domains table rows:', datum);
       return datum;
     }
@@ -99,9 +99,9 @@ export class DomainsTabComponent {
       if (!hasLigandsData) return;
       if (!this.currentDomainsDatum()) return;
 
-      const datum = this.currentDomainsDatum()!;
+      const datum = this.currentDomainsDatum();
 
-      const mappedDatum = datum.additionalData.boundaries.map((b) => b.chain);
+      const mappedDatum = datum.additionalData.boundaries.map((b: any) => b.chain);
       const uniqueChains = [...new Set(mappedDatum)];
       datum.mappedboundaries = uniqueChains;
       // data processing facade is used to get selectedChains (displayed as text in template)
@@ -125,7 +125,7 @@ export class DomainsTabComponent {
   }
 
   private async renderInMolstar() {
-    const datum = this.currentDomainsDatum()!;
+    const datum = this.currentDomainsDatum();
 
     const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
     const ligandsRawData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
@@ -143,7 +143,7 @@ export class DomainsTabComponent {
 
   private initOrRefreshProtvista() {
     // stop if this dashboard does not have protvista (initially false and then set in onTableRowSelection according to tabName input)
-    const datum = this.currentDomainsDatum()!;
+    const datum = this.currentDomainsDatum();
     const entityId = datum.additionalData.boundaries[0].entity;
     let chainId: string | undefined = undefined;
 

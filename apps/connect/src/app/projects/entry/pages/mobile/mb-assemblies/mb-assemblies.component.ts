@@ -12,6 +12,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { MaterialModule } from '@pdbc/core';
 import { FormsModule } from '@angular/forms';
+import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
 
 @Component({
   selector: 'pdbc-mb-assemblies',
@@ -31,6 +32,8 @@ export class MbAssembliesComponent implements OnInit {
 
   public readonly symmetry = toSignal(this.globalStore.select(EntrySelectors.symmetry));
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+
+  public readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
 
   public readonly assemblyTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
@@ -59,7 +62,7 @@ export class MbAssembliesComponent implements OnInit {
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbAssembliesComponent>) {}
 
   async ngOnInit() {
-    await this.mbFacade.renderMolstarAssemblies(this.entryId() ?? '', this.prefferedAssembly(), true);
+    await this.molstarVisualisation.renderTabsAssemblies();
   }
 
   toggleBottomsheetHeight() {
@@ -74,6 +77,6 @@ export class MbAssembliesComponent implements OnInit {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
-    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
+    await this.molstarVisualisation.renderMobileMolstarInitial();
   }
 }

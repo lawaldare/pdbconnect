@@ -153,7 +153,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   private overviewDomainsCycleIndex = 0;
   public currentConfigName?: string;
 
-  public enforceMolstarInContainer(containerName: string) {
+  private enforceMolstarInContainer(containerName: string) {
     setTimeout(async () => {
       if (this.currentMolstarContainer === containerName) return;
       const containerElement = document.querySelector(`#${containerName}-molstar-container`);
@@ -168,7 +168,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   private async sendMolstarToContainer(containerName: string, containerElement: HTMLElement) {
-    console.log(containerElement);
     if (!this.renderer) {
       throw 'Mol*: Renderer2 not set';
     }
@@ -213,6 +212,11 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       entryId: this.entryId!,
     });
     await this.enforceConfigLoaded('INITIAL', config);
+  }
+
+  public async renderMobileMolstarInitial() {
+    await this.cleanView();
+    await this.unfocusLoci();
   }
 
   public async enforceConfigLoaded(configName: string, config: MolstarConfigObject, forceReset?: boolean) {
@@ -292,14 +296,14 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     if (noResetView) return;
 
     // reset camera to focus whole structure if sub selection or sub-sub selection
-    if (this.currentViewName.includes('/')) {
-      await this.focusStructure();
-      // partial wait so slow unfocus can execute before next camera focus
-      await new Promise((resolve) => setTimeout(resolve, this.cameraDuration * 0.75));
-    } else {
-      // direct unfocus
-      await this.unfocusLoci();
-    }
+    // if (this.currentViewName.includes('/')) {
+    await this.focusStructure();
+    // partial wait so slow unfocus can execute before next camera focus
+    await new Promise((resolve) => setTimeout(resolve, this.cameraDuration * 0.75));
+    // } else {
+    //   // direct unfocus
+    //   await this.unfocusLoci();
+    // }
   }
 
   private async greyoutEverything() {

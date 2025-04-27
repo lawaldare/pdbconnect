@@ -10,6 +10,7 @@ import { ValidationDataProcessingFacade } from '../../../components/model-qualit
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MobileFacade } from '../mobile.facade';
 import { StrucQualityGradientsComponent } from '../../../components/shared/struc-quality-gradients/struc-quality-gradients.component';
+import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
 
 @Component({
   selector: 'pdbc-mb-model-quality',
@@ -26,6 +27,7 @@ export class MbModelQualityComponent implements OnInit {
   public currentData = signal<ProcessedExperimentalDetails | undefined>(undefined);
   public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  private readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
 
   public expanded = signal<boolean>(false);
 
@@ -46,18 +48,17 @@ export class MbModelQualityComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((processedExpValData) => {
-        // this.processedData.set(processedExpValData);
         this.currentData.set(processedExpValData?.[0]);
       });
 
-    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
+    await this.molstarVisualisation.renderMobileMolstarInitial();
   }
 
   public async closeBottomSheet() {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
-    await this.mbFacade.renderMolstarMQ(this.entryId() ?? '', true);
+    await this.molstarVisualisation.renderMobileMolstarInitial();
   }
 
   toggleBottomsheetHeight() {
