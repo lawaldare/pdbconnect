@@ -236,6 +236,10 @@ export async function clearHighlightLoci(viewer: any) {
 
 export async function getComponentList(viewer: any) {
   let structureData = [viewer.plugin!.managers.structure.hierarchy.current.structures[0]];
+  if (structureData[0] === undefined) {
+    console.warn('WARNING: No Mol* structure data set yet. Was this called too early?');
+    return [];
+  }
   const componentNames: string[] = [];
   for await (const s of structureData) {
     for (const comp of s.components) {

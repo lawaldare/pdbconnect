@@ -69,7 +69,7 @@ export class MolstarBaseClass {
     }
     this.molstarViewInstance.set(new PDBeMolstarPlugin());
     const container = molstarViewer ? molstarViewer : molstarContainer?.nativeElement;
-    this.molstarViewInstance().render(container, molstarConfigObject);
+    await this.molstarViewInstance().render(container, molstarConfigObject);
     await firstValueFrom(this.molstarViewInstance().events.loadComplete);
   }
 
@@ -231,5 +231,49 @@ export class MolstarBaseClass {
       }
     }
     return queryLoci;
+  }
+
+  public async waitForCondition(checkFn: () => boolean, interval = 2000, timeout = 120000): Promise<void> {
+    const startTime = Date.now();
+
+    return new Promise((resolve, reject) => {
+      const check = () => {
+        if (checkFn()) {
+          resolve();
+        } else if (Date.now() - startTime > timeout) {
+          reject(new Error('Timeout waiting for condition'));
+        } else {
+          setTimeout(check, interval);
+        }
+      };
+      check();
+    });
+  }
+
+  async getComponentList() {
+    try {
+      await this.waitForCondition(() => {
+        return this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0] !== undefined;
+      });
+      // console.log('Molstar structure loaded successfully!');
+      // console.log("this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0]")
+      // console.log(this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0])
+      await new Promise((resolve) => setTimeout(resolve, 10000)); // wait ten seconds to be sure
+    } catch (err) {
+      console.error('Failed to load Molstar structure within 2 minutes:', err);
+    }
+
+    const structureData = [this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0]];
+    if (structureData[0] === undefined) {
+      console.warn('WARNING: No Mol* structure data set yet. Was this called too early?');
+      return [];
+    }
+    const componentNames: string[] = [];
+    for await (const s of structureData) {
+      for (const comp of s.components) {
+        componentNames.push(comp.key!);
+      }
+    }
+    return componentNames;
   }
 }

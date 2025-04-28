@@ -61,6 +61,10 @@ export class AssemblyDataToTable extends DataToTable {
           const complexAssemblyIds = eachComplexDetail.assemblies.map((assemblyInfo) => assemblyInfo.assembly_id + '');
           return complexAssemblyIds.indexOf(assemblyDatum.assembly_id) > -1;
         })[0];
+        if (complexDetail === undefined) {
+          console.warn('WARNING: Assembly complex detail data is undefined, skipping...');
+          continue;
+        }
         // ... we do the same for pisa assembly data
         const pisaAssemblyDatum = this.pisaAssemblyData.filter((pisaAssembly) => pisaAssembly.assembly_id === assemblyDatum.assembly_id)[0];
 

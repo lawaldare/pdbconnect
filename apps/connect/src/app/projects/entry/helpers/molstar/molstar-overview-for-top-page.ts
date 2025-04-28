@@ -244,7 +244,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
   public async checkAndCreateComponents(macromolecules: MacromoleculesRowData[], ligands: LigandsRowData[], modifications: LigandsRowData[]) {
     // get component list
-    const componentList = await getComponentList(this.molstarViewInstance());
+    const componentList = await this.getComponentList();
 
     // check whether polymers exist and create if not
     const hasMacromolecules = macromolecules.length > 0;
@@ -328,8 +328,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   private async viewRepresentationByName(componentName: string, representationName: string, representation: any, doNotHideOthers?: boolean) {
-    // TODO: Check if component does not exist and create it if necessary using selections
-    const complist = await getComponentList(this.molstarViewInstance());
     // if representation does not exist
     if (Object.keys(this.addedRepresentationsAndIndexes).indexOf(representationName) === -1) {
       // create new representation and hide all previous others by default
