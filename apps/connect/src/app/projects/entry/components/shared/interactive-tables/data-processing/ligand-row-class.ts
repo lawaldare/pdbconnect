@@ -65,10 +65,25 @@ export class LigandDataToTable extends DataToTable {
 
     return ligands
       .filter((lig) => entityMap.has(lig.entity_id))
-      .map((lig) => ({
-        ...lig,
-        in_struct_asyms: lig.in_struct_asyms.filter((chain) => entityMap.get(lig.entity_id)!.includes(chain)),
-      }))
+      .map((lig) => {
+        const allowedAsyms = entityMap.get(lig.entity_id)!;
+
+        const filteredInStructAsyms: string[] = [];
+        const filteredInChains: string[] = [];
+
+        lig.in_struct_asyms.forEach((asymId, idx) => {
+          if (allowedAsyms.includes(asymId)) {
+            filteredInStructAsyms.push(asymId);
+            filteredInChains.push(lig.in_chains[idx]);
+          }
+        });
+
+        return {
+          ...lig,
+          in_struct_asyms: filteredInStructAsyms,
+          in_chains: filteredInChains,
+        };
+      })
       .filter((lig) => lig.in_struct_asyms.length > 0);
   }
 

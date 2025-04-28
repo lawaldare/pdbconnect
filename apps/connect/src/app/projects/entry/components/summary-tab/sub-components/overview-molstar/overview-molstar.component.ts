@@ -50,7 +50,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
   public readonly inputModifications = toSignal(this.globalStore.select(EntrySelectors.modifications));
   public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
 
-  public assemblyData = computed(() => this.dataProcessing.assemblyData());
+  public assemblyData = computed(() => this.dataProcessing.preferredAssemblyData());
   public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
   public molstarOverviewRendered = signal(false);
 
@@ -60,7 +60,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
       const hasMacromoleculesData = Object.keys(this.compCommunication.tabTableData()).indexOf('Macromolecules') > -1;
       const hasLigandsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Ligands') > -1;
       if (this.assemblyData() && this.molstarVisualisation.preferredAssemblyId === undefined) {
-        const assemblyToUse = this.assemblyData().preferred ? this.assemblyData().preferred + '' : '1';
+        const assemblyToUse = this.assemblyData()!.preferred ? this.assemblyData()!.preferred + '' : '1';
         this.molstarVisualisation.preferredAssemblyId = assemblyToUse;
       }
       if (currentTab !== 'summary' && currentTab !== 'overview') return;
@@ -95,9 +95,5 @@ export class OverviewMolstarComponent implements AfterViewInit {
   async ngAfterViewInit() {
     this.stateManagement.infoControls.set(this.infoControls);
     this.dataProcessing.parseRelatedEntries();
-
-    // await this.initMolstarInstance();
-
-    this.dataProcessing.parseComplexDetails();
   }
 }
