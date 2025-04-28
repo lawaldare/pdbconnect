@@ -86,11 +86,20 @@ export class DomainDataToTable extends DataToTable {
           const assemblyEntity = assemblyEntitiesMap.get(molecule.entity_id)!;
 
           // Filter the in_chains to only include those present in the assembly entity
-          const filteredChains = molecule.in_struct_asyms.filter((chainId) => assemblyEntity.in_chains.includes(chainId));
+          const filteredInStructAsyms: string[] = [];
+          const filteredInChains: string[] = [];
+
+          molecule.in_struct_asyms.forEach((asymId, idx) => {
+            if (assemblyEntity.in_chains.includes(asymId)) {
+              filteredInStructAsyms.push(asymId);
+              filteredInChains.push(molecule.in_chains[idx]); // Keep the corresponding chain
+            }
+          });
 
           return {
             ...molecule,
-            in_struct_asyms: filteredChains,
+            in_struct_asyms: filteredInStructAsyms,
+            in_chains: filteredInChains,
           };
         })
         // Optionally, remove molecules where no chains remain after filtering

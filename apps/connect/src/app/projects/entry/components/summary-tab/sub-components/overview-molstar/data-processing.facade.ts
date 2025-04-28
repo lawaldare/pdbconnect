@@ -18,17 +18,11 @@ export class OverviewMolstarFacade {
   private readonly globalStore = inject(Store<EntryStoreState>);
 
   public readonly signals = inject(ComponentCommunicationService);
+  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly complexDetails = toSignal(this.globalStore.select(EntrySelectors.complexDetails));
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
 
   public relatedEntries: WritableSignal<string[]> = signal([]);
-
-  public assemblyData: WritableSignal<ParsedComplexDetails> = signal({
-    name: undefined,
-    preferred: undefined,
-    composition: undefined,
-    complexId: undefined,
-  });
 
   public macromoleculesDescription: WritableSignal<string> = signal('');
   public entryContentsDescription: WritableSignal<string[]> = signal([]);
@@ -204,26 +198,39 @@ export class OverviewMolstarFacade {
       .subscribe();
   }
 
-  public parseComplexDetails(): void {
-    const complexDetails = this.complexDetails() ?? [];
-    if (complexDetails) {
+  public preferredAssemblyData = computed(() => {
+    const summaryData = this.summaryData();
+    const complexDetails = this.complexDetails();
+    if (summaryData && complexDetails) {
       let preferredAssemblyId = undefined;
+
       for (const complexDetail of complexDetails) {
         for (const assemblyInfo of complexDetail.assemblies) {
           if (assemblyInfo.preferred_assembly) {
             preferredAssemblyId = assemblyInfo.assembly_id;
-            const participants = complexDetail.participants;
-            this.assemblyData.set({
+            const summaryAssembly =
+              summaryData.assemblies.filter((summaryAssembly) => {
+                return summaryAssembly.assembly_id === assemblyInfo.assembly_id + '';
+              })[0] || undefined;
+
+            let composition = undefined;
+            if (summaryAssembly) {
+              composition = summaryAssembly.form + ' ' + summaryAssembly.name;
+              composition = summaryAssembly.name === 'monomer' ? 'monomeric' : composition;
+            }
+
+            return {
               name: complexDetail.name,
               preferred: preferredAssemblyId,
-              composition: calculateAssemblyComposition(participants),
+              composition: composition,
               complexId: complexDetail.pdb_complex_id,
-            });
+            };
             break;
           }
         }
         if (preferredAssemblyId) break;
       }
     }
-  }
+    return undefined;
+  });
 }

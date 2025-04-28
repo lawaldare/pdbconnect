@@ -7,26 +7,26 @@
       Assembly {{ preferredAssemblyId }} (preferred)
     </h5> -->
 
-    @if (assemblyData().name) {
+    @if (assemblyData()?.name) {
     <div class="info-row">
       <div class="info-row-header">
         <h6>Assembly name</h6>
         <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="assemblyNameTooltip" matTooltipPosition="below" />
       </div>
-      <article>{{ assemblyData().name }}</article>
+      <article>{{ assemblyData()?.name }}</article>
     </div>
-    } @if (assemblyData().complexId) {
+    } @if (assemblyData()?.complexId) {
     <div class="info-row">
       <div class="info-row-header">
         <h6>PDBe Complex ID</h6>
         <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="complexIdTooltip" matTooltipPosition="below" />
       </div>
       <article>
-        <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?complex_id:' + assemblyData().complexId" target="_blank">{{ assemblyData().complexId }}</a>
+        <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?complex_id:' + assemblyData()?.complexId" target="_blank">{{ assemblyData()?.complexId }}</a>
         <i class="icon icon-common icon-search"></i>
       </article>
     </div>
-    } @if (assemblyData().composition) {
+    } @if (assemblyData()?.composition) {
     <div class="info-row">
       <div class="info-row-header">
         <h6>Assembly composition</h6>
