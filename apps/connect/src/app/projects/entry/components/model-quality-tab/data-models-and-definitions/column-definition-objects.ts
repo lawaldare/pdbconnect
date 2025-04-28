@@ -21,11 +21,6 @@ export const VALIDATION_COLUMN_DEFS: ColDef[] = [
     autoHeaderHeight: true,
     filter: false,
     resizable: false,
-    headerComponent: TableHeaderWithTooltipComponent,
-    headerComponentParams: {
-      customHeader: 'Metric',
-      customTooltip: validationInfoTooltip,
-    },
   },
   {
     headerName: 'Description',
