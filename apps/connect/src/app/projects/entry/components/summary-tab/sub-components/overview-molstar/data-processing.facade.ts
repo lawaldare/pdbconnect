@@ -204,10 +204,14 @@ export class OverviewMolstarFacade {
     if (summaryData && complexDetails) {
       let preferredAssemblyId = undefined;
 
+      const hasAssemblies = Object.keys(summaryData).indexOf('assemblies') > -1;
+      if (!hasAssemblies) return undefined;
+
       for (const complexDetail of complexDetails) {
         for (const assemblyInfo of complexDetail.assemblies) {
           if (assemblyInfo.preferred_assembly) {
             preferredAssemblyId = assemblyInfo.assembly_id;
+
             const summaryAssembly =
               summaryData.assemblies.filter((summaryAssembly) => {
                 return summaryAssembly.assembly_id === assemblyInfo.assembly_id + '';

@@ -60,8 +60,19 @@ export class LigandDataToTable extends DataToTable {
     return assembly;
   }
 
+  private getNormalizedEntityMap(assembly: AssemblyData): Map<number, string[]> {
+    const map = new Map<number, string[]>();
+
+    for (const entity of assembly.entities) {
+      const normalizedChains = entity.in_chains.map((chain) => chain.split('-')[0]);
+      map.set(entity.entity_id, normalizedChains);
+    }
+
+    return map;
+  }
+
   private filterLigandsByAssembly(ligands: Molecule[], assembly: AssemblyData): Molecule[] {
-    const entityMap = new Map(assembly.entities.map((e) => [e.entity_id, e.in_chains]));
+    const entityMap = this.getNormalizedEntityMap(assembly);
 
     return ligands
       .filter((lig) => entityMap.has(lig.entity_id))
@@ -88,7 +99,7 @@ export class LigandDataToTable extends DataToTable {
   }
 
   private filterModificationsByAssembly(modifications: ModifiedResidue[], assembly: AssemblyData): ModifiedResidue[] {
-    const entityMap = new Map(assembly.entities.map((e) => [e.entity_id, e.in_chains]));
+    const entityMap = this.getNormalizedEntityMap(assembly);
 
     return modifications.filter((mod) => {
       return entityMap.has(mod.entity_id) && entityMap.get(mod.entity_id)!.includes(mod.struct_asym_id);
@@ -96,7 +107,7 @@ export class LigandDataToTable extends DataToTable {
   }
 
   private filterLigandMonomersByAssembly(ligandMonomers: LigandMonomer[], assembly: AssemblyData): LigandMonomer[] {
-    const entityMap = new Map(assembly.entities.map((e) => [e.entity_id, e.in_chains]));
+    const entityMap = this.getNormalizedEntityMap(assembly);
 
     return ligandMonomers.filter((monomer) => {
       return entityMap.has(monomer.entity_id) && entityMap.get(monomer.entity_id)!.includes(monomer.struct_asym_id);
@@ -223,6 +234,10 @@ export class LigandDataToTable extends DataToTable {
         ],
       };
     });
+
+    if (filteredLigandMonomers.length === 0) {
+      console.warn(`WARNING: No selections could be generated for ligand: ${ligandEntity.chem_comp_ids[0]}  (${ligandEntity.entity_id})`);
+    }
     return { selections, selectionNames };
   }
 
