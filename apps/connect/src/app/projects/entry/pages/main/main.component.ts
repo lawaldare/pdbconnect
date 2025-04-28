@@ -150,7 +150,7 @@ export class EntryMainPageComponent implements OnInit {
       this.selectedTab = tabIndex;
     });
     effect(async () => {
-      if (this.statusCode() === 'REL' && !this.molstarFirstRenderStarted() && this.selectedTab > 0) {
+      if (this.statusCode() === 'REL' && !this.molstarFirstRenderStarted()) {
         const molstarElement = document.getElementById('molstar-element');
         this.molstarVisualisation.entryId = this.entryId();
         this.molstarVisualisation.setRenderer(this.renderer);
