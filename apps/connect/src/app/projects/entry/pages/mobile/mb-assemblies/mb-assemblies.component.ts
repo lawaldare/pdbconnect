@@ -77,6 +77,6 @@ export class MbAssembliesComponent implements OnInit {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
-    await this.molstarVisualisation.renderMobileMolstarInitial();
+    await this.molstarVisualisation.resetMobileMolstarInitial();
   }
 }

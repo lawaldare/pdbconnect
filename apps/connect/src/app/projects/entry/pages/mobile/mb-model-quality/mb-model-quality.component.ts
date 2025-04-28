@@ -51,14 +51,14 @@ export class MbModelQualityComponent implements OnInit {
         this.currentData.set(processedExpValData?.[0]);
       });
 
-    await this.molstarVisualisation.renderMobileMolstarInitial();
+    await this.molstarVisualisation.resetMobileMolstarInitial();
   }
 
   public async closeBottomSheet() {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
-    await this.molstarVisualisation.renderMobileMolstarInitial();
+    await this.molstarVisualisation.resetMobileMolstarInitial();
   }
 
   toggleBottomsheetHeight() {

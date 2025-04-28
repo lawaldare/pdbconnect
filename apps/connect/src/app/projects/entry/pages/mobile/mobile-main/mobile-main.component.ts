@@ -4,6 +4,7 @@ import { MbOverviewTabComponent } from '../mb-overview-tab/mb-overview-tab.compo
 import { MbMolstarTabComponent } from '../mb-molstar-tab/mb-molstar-tab.component';
 import { MbCitationTabComponent } from '../mb-citation-tab/mb-citation-tab.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MobileFacade } from '../mobile.facade';
 
 export enum MobileTabNames {
   Overview = 'overview',
@@ -24,6 +25,8 @@ export class MobileMainComponent {
   private readonly route = inject(ActivatedRoute);
 
   public activeTab = signal<string>('overview');
+
+  private readonly mbFacade = inject(MobileFacade);
 
   public readonly mbTabNames = MobileTabNames;
 
@@ -51,6 +54,7 @@ export class MobileMainComponent {
 
   public selectFooterTab(tabId: MobileTabName) {
     this.activeTab.set(tabId);
+    this.mbFacade.updateSelectedMobileTabName(tabId);
     this.router.navigate([], {
       queryParams: { activeTab: tabId },
       queryParamsHandling: 'merge',

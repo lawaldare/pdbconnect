@@ -214,9 +214,20 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.enforceConfigLoaded('INITIAL', config);
   }
 
-  public async renderMobileMolstarInitial() {
+  public async resetMobileMolstarInitial() {
     await this.cleanView();
     await this.unfocusLoci();
+  }
+
+  public async renderMobileMolstarInitial() {
+    const config = MOLSTAR_CONFIG_FACTORIES['INITIAL']({
+      entryId: this.entryId,
+    });
+
+    this.molstarViewInstance.set(undefined);
+
+    this.addedRepresentationsAndIndexes = {};
+    await this.initMolstar(config, undefined, this.molstarViewerElement);
   }
 
   public async enforceConfigLoaded(configName: string, config: MolstarConfigObject, forceReset?: boolean) {
@@ -226,7 +237,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       await this.updateMolstar(config);
     } else {
       this.addedRepresentationsAndIndexes = {};
-      await this.initMolstar(config, undefined, this.molstarViewerElement!);
+      await this.initMolstar(config, undefined, this.molstarViewerElement);
     }
     this.currentConfigName = configName;
   }
