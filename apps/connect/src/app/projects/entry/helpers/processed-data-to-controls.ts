@@ -14,7 +14,7 @@ export function getMacromoleculeChainDropdownOptions(datum: MacromoleculesRowDat
 }
 
 export function getLigandEntityId(datum: LigandsRowData) {
-  return parseInt(datum.additionalData.selections[0].entityId!);
+  return parseInt(datum.additionalData?.selections[0]?.entityId ?? '');
 }
 
 function convertLigandDatumToString(id: string, selectedLigandInstance: MolstarSelectionObj) {
@@ -22,6 +22,7 @@ function convertLigandDatumToString(id: string, selectedLigandInstance: MolstarS
 }
 
 export function getLigandsDropdownOptions(datum: LigandsRowData) {
+  console.log('getLigandsDropdownOptions', datum);
   const dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
   for (const selection of datum.additionalData.selections) {
     const name = convertLigandDatumToString(datum.id, selection);

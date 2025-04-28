@@ -41,7 +41,6 @@ export class AssembliesTabComponent {
 
   constructor() {
     effect(async () => {
-      console.log('Assemblies tab component: Assemblies tab data loaded');
       const molstarFirstRenderFinished = this.molstarFirstRenderFinished();
 
       const hasMacromoleculesData = Object.keys(this.compCommunication.tabTableData()).indexOf('Macromolecules') > -1;

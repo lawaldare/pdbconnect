@@ -180,18 +180,24 @@ export class LigandsTabComponent implements OnInit {
 
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
-    // retrieve necessary data for composing ligands and environments URL
-    const entityId = molstarSelection.entityId;
-    const chainId = molstarSelection.authChainId;
+    console.log(this.dropdownOptionsToMolstar);
+    console.log(molstarSelection);
 
-    // create URL according to whether a modification or a ligand is selected
     let urlToDownload = '';
-    if (datum.type === 'modification') {
-      urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${this.entryId()}/atoms?label_entity_id=${entityId}&auth_asym_id=${chainId}&encoding=bcif`;
-    } else {
-      const authSeqId = molstarSelection.residues[0].authBegin;
-      const authInsCode = molstarSelection.residues[0].authBeginIns;
-      urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${this.entryId()}/residueSurroundings?auth_seq_id=${authSeqId}&pdbx_PDB_ins_code=${authInsCode}&auth_asym_id=${chainId}&radius=10&encoding=bcif`;
+
+    if (molstarSelection) {
+      // retrieve necessary data for composing ligands and environments URL
+      const entityId = molstarSelection.entityId;
+      const chainId = molstarSelection.authChainId;
+
+      // create URL according to whether a modification or a ligand is selected
+      if (datum.type === 'modification') {
+        urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${this.entryId()}/atoms?label_entity_id=${entityId}&auth_asym_id=${chainId}&encoding=bcif`;
+      } else {
+        const authSeqId = molstarSelection.residues[0].authBegin;
+        const authInsCode = molstarSelection.residues[0].authBeginIns;
+        urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${this.entryId()}/residueSurroundings?auth_seq_id=${authSeqId}&pdbx_PDB_ins_code=${authInsCode}&auth_asym_id=${chainId}&radius=10&encoding=bcif`;
+      }
     }
 
     // since URL based force Ligands config reload
