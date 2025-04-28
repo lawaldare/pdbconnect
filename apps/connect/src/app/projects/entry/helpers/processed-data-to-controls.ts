@@ -22,7 +22,6 @@ function convertLigandDatumToString(id: string, selectedLigandInstance: MolstarS
 }
 
 export function getLigandsDropdownOptions(datum: LigandsRowData) {
-  console.log('getLigandsDropdownOptions', datum);
   const dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
   for (const selection of datum.additionalData.selections) {
     const name = convertLigandDatumToString(datum.id, selection);

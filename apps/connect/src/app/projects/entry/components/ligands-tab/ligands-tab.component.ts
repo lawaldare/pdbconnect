@@ -180,9 +180,6 @@ export class LigandsTabComponent implements OnInit {
 
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
-    console.log(this.dropdownOptionsToMolstar);
-    console.log(molstarSelection);
-
     let urlToDownload = '';
 
     if (molstarSelection) {
