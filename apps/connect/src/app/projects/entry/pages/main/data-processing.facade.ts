@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { computed, DestroyRef, inject, Injectable, Injector, runInInjectionContext, signal } from '@angular/core';
+import { DestroyRef, inject, Injectable, Injector, signal } from '@angular/core';
 import { DataToTable } from '../../components/shared/interactive-tables/data-processing/abstract-base-row-class';
 import { AssemblyDataToTable } from '../../components/shared/interactive-tables/data-processing/assembly-row-class';
 import { DomainDataToTable } from '../../components/shared/interactive-tables/data-processing/domain-row-class';
@@ -12,8 +12,8 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { TableNames } from './main.component';
 import { TabNames } from '../../helpers/tab-names.enum';
 import { EntryActions } from '../../store/entry.actions';
-import { catchError, combineLatest, EMPTY, filter, first, map, mergeMap, of, retry, startWith, switchMap, take, tap } from 'rxjs';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { catchError, combineLatest, of, retry, startWith, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +22,6 @@ export class MainDataProcessingFacade {
   private injector = inject(Injector);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly globalStore = inject(Store<EntryStoreState>);
-  // public molstarResidueInfo = computed(() => this.compCommunication.molstarResidueInfo());
   private readonly destroyRef = inject(DestroyRef);
 
   public tabDataLoaded = signal<boolean>(false);
@@ -55,16 +54,11 @@ export class MainDataProcessingFacade {
   }
 
   public processInteractiveTablesData() {
-    const compCommunication = this.compCommunication;
-
     const createSelectorStream = <T>(selector: any, defaultValue: T) =>
       this.globalStore.select(selector).pipe(
         startWith(defaultValue),
         catchError(() => of(defaultValue))
       );
-
-    // // converts the molstarResidueInfoLoaded signal into an observable
-    // const molstarResidueInfoLoaded$ = runInInjectionContext(this.injector, () => toObservable(compCommunication.molstarResidueInfoLoaded));
 
     combineLatest({
       complexDetails: createSelectorStream(EntrySelectors.complexDetails, []),
@@ -84,16 +78,6 @@ export class MainDataProcessingFacade {
     })
       .pipe(
         retry({ count: 3, delay: 1000 }),
-        // switchMap((data: any) =>
-        //   // converted molstarResidueInfoLoaded signal into observable
-        //   molstarResidueInfoLoaded$.pipe(
-        //     // waits until it becomes true (filter)
-        //     filter((val) => val === true),
-        //     // ensures it only continues once (take(1))
-        //     take(1),
-        //     map(() => data)
-        //   )
-        // ),
         tap((data) => this.processTableData(data)),
         takeUntilDestroyed(this.destroyRef)
       )

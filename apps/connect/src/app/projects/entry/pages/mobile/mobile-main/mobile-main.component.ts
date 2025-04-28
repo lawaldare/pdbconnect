@@ -47,14 +47,17 @@ export class MobileMainComponent {
 
   constructor() {
     this.route.queryParams.subscribe((params) => {
-      const tabId = params['activeTab'] ?? MobileTabNames.Overview;
-      this.selectFooterTab(tabId);
+      const tabId = params['activeTab'];
+      const tabIndex = this.mbTabs.findIndex((tab) => tab.id === tabId);
+      if (tabIndex >= 0) {
+        this.activeTab.set(tabId);
+        this.mbFacade.updateSelectedMobileTabName(tabId);
+      }
     });
   }
 
   public selectFooterTab(tabId: MobileTabName) {
     this.activeTab.set(tabId);
-    this.mbFacade.updateSelectedMobileTabName(tabId);
     this.router.navigate([], {
       queryParams: { activeTab: tabId },
       queryParamsHandling: 'merge',
