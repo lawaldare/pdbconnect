@@ -258,7 +258,7 @@ export class MolstarBaseClass {
       // console.log('Molstar structure loaded successfully!');
       // console.log("this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0]")
       // console.log(this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0])
-      await new Promise((resolve) => setTimeout(resolve, 10000)); // wait ten seconds to be sure
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // wait two seconds to be sure
     } catch (err) {
       console.error('Failed to load Molstar structure within 2 minutes:', err);
     }
