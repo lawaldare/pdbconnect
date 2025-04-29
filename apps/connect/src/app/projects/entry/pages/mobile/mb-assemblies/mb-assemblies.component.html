@@ -90,7 +90,7 @@
   }
 
   <!-- Assembly symmetry -->
-  @if(prefferedSymmetry()?.type && !isChecked()){
+  @if(prefferedSymmetry()?.type){
   <article>
     <p>Assembly symmetry</p>
     <p class="content">{{prefferedSymmetry()?.type}} - {{prefferedSymmetry()?.symbol}}</p>
