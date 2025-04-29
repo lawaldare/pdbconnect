@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FlatOutlierResidue, ValidationDataProcessingFacade } from './validation-data.facade';
+import { ValidationDataProcessingFacade } from './validation-data.facade';
 import { ValidationTablesFacade } from './validation-tables.facade';
 import { AgGridAngular } from 'ag-grid-angular';
 
@@ -16,21 +16,19 @@ import {
   validationInfoTooltip,
 } from '../../entry-constant';
 import { MaterialModule, UtilService } from '@pdbc/core';
-import { filter, firstValueFrom, map, mergeMap } from 'rxjs';
+import { filter, mergeMap } from 'rxjs';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../store/entry.selectors';
-// import { MolstarConfigObject } from '../../helpers/molstar/molstar-base-class';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
-import { MolstarConfigObject, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { EntryActions } from '../../store/entry.actions';
-import { OutlierResidues } from '../../data-models/residuewise-outliers.model';
 import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 
 interface ValueLabel {
   value: string;
@@ -70,7 +68,7 @@ declare let PDBeMolstarPlugin: any;
 @Component({
   selector: 'pdbc-experiments-validation',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, StrucQualityGradientsComponent],
+  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, HelpIconWithTooltipComponent, StrucQualityGradientsComponent],
   templateUrl: './experiments-validation.component.html',
   styleUrl: './experiments-validation.component.scss',
 })
@@ -84,8 +82,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly util = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
   public readonly compCommunication = inject(ComponentCommunicationService);
-
-  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly sourceOrganisms = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));

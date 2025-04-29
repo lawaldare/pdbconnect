@@ -19,6 +19,33 @@ main {
   }
 }
 
+.info {
+  display: flex;
+  margin-bottom: 16px;
+
+  .info-row {
+    display: flex;
+    align-items: center;
+
+    span.micro-title {
+      color: #1a1c1a;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 27.2px;
+      width: 140px;
+      min-width: 140px;
+      max-width: 140px;
+    }
+
+    article {
+      color: #1a1c1a;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 27.2px;
+    }
+  }
+}
+
 .stats-link-bar {
   color: #54585a;
   font-size: 14px;

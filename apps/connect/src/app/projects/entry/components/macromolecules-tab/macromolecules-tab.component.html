@@ -13,15 +13,7 @@
     @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum().additionalData?.molecule?.molecule_name?.length) {
     <h5>{{ currentMacromoleculeDatum()?.additionalData.molecule.molecule_name[0] }}</h5>
     }
-    <div class="stats-link-bar">
-      @if(dashboardStatLinks['Macromolecules'].length > 0 && selectionIdentifier !== 'None') {
-      <span>View more about this {{ selectionTypeText }}:</span>
-      @for (displayLink of dashboardStatLinks['Macromolecules']; track displayLink; let islast = $last) {
-      <a [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix" target="_blank">
-        {{ selectionStats?.[selectionIdentifier][displayLink.id] }} {{ displayLink.displayName }}
-      </a>
-      {{ islast ? '' : '|' }} } }
-    </div>
+
     <section class="info">
       <div class="info-grouped" style="width: 55%">
         @let type = currentMacromoleculeDatum().additionalData?.molecule?.molecule_type; @if(type){
@@ -53,25 +45,25 @@
             @for(residue of currentMacromoleculeDatum().mappedResidues; track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <=
             2){
             <span
-              >Canonical <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a>
-              <img src="assets/icons/logo.png" alt="icon" /> (residues: {{residue.range.join(', ')}}; coverage: {{residue.coverage}})</span
+              >Canonical <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a> (residues:
+              {{residue.range.join(', ')}}; coverage: {{residue.coverage}})</span
             >
             } @else { @if(residue.open){
             <div>
               Canonical <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a>
-              <img src="assets/icons/logo.png" alt="icon" /> (residues: {{range.join(', ')}}; coverage: {{residue.coverage}})
+              (residues: {{range.join(', ')}}; coverage: {{residue.coverage}})
               <span class="residue-action-button" (click)="residue.open = !residue.open">show less</span>
             </div>
             }@else {
             <div>
               Canonical <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a>
-              <img src="assets/icons/logo.png" alt="icon" /> residues: {{range.slice(0,2).join(', ')}}...
+              residues: {{range.slice(0,2).join(', ')}}...
               <span class="residue-action-button" (click)="residue.open = !residue.open">show all</span>
             </div>
             } } } @for(res of bestResidues(); track res.name;){
             <span
-              >Best match <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + res.uniprot" target="_blank">{{res.uniprot}}</a>
-              <img src="assets/icons/logo.png" alt="icon" /> (residues: {{res.mappings[0].unp_start}} - {{res.mappings[0].unp_end}})</span
+              >Best match <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + res.uniprot" target="_blank">{{res.uniprot}}</a> (residues:
+              {{res.mappings[0].unp_start}} - {{res.mappings[0].unp_end}})</span
             >
             }
           </article>
@@ -98,10 +90,29 @@
             <br />
           </article>
         </div>
-        } @if(goMappings().length){
+        } @if(isThereGoMappings().length){
         <div class="info-row dialog">
           <span class="micro-title">GO terms</span>
-          <article><span role="button" (click)="openDialog('go')">View {{goMappings().length}} GO terms</span></article>
+          <article>
+            @if(goMappings()?.['Molecular_function']?.length){
+            <span class="article-title">Molecular function</span>
+            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?Molecular_function:' + goMappings()['Molecular_function'][0].name" target="_blank"
+              >{{goMappings()['Molecular_function'][0].name}}</a
+            >
+            } @if(goMappings()?.['Biological_process']?.length){
+            <span class="article-title">Biological process</span>
+            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?Biological_process:' + goMappings()['Biological_process'][0].name" target="_blank"
+              >{{goMappings()['Biological_process'][0].name}}</a
+            >
+            } @if(goMappings()?.['Cellular_component']?.length){
+            <span class="article-title">Cellular component</span>
+            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?Cellular_component:' + goMappings()['Cellular_component'][0].name" target="_blank"
+              >{{goMappings()['Cellular_component'][0].name}}</a
+            >
+            } @if(isCategoryMoreThanOne()){
+            <span role="button" (click)="openDialog('go')">View all {{isThereGoMappings().length}} GO terms</span>
+            }
+          </article>
         </div>
         } @if(ecMappings().length){
         <div class="info-row dialog">
@@ -112,6 +123,15 @@
       </div>
     </section>
     }
+    <div class="stats-link-bar">
+      @if(dashboardStatLinks['Macromolecules'].length > 0 && selectionIdentifier !== 'None') {
+      <span><img src="assets/icons/logo.png" alt="icon" style="margin-right: 2px" />View more about this {{ selectionTypeText }}:</span>
+      @for (displayLink of dashboardStatLinks['Macromolecules']; track displayLink; let islast = $last) {
+      <a [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix" target="_blank">
+        {{ selectionStats?.[selectionIdentifier][displayLink.id] }} {{ displayLink.displayName }}
+      </a>
+      {{ islast ? '' : '|' }} } }
+    </div>
     <div class="chains">
       @if(dropdownOptions.length > 1){
       <div class="dropdown-container">

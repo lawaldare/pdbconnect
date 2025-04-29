@@ -11,9 +11,23 @@
     </button>
 
     <h5 class="ligands-title">{{ currentLigandDatum()?.codeAndName?.name }}</h5>
+    <div class="info">
+      <div class="info-grouped" style="width: 50%">
+        <div class="info-row">
+          <span class="micro-title"> Ligand name </span>
+          <article>{{ currentLigandDatum()?.codeAndName?.name }}</article>
+        </div>
+      </div>
+      <div class="info-grouped" style="width: 40%">
+        <div class="info-row">
+          <span class="micro-title"> Molecular weight </span>
+          <article>{{ currentLigandDatum()?.additionalData?.source?.weight }} KDa</article>
+        </div>
+      </div>
+    </div>
     <div class="stats-link-bar">
       @if(dashboardStatLinks['Ligands'].length > 0 && selectionIdentifier !== 'None') {
-      <span>View more about this ligand:</span>
+      <span><img src="assets/icons/logo.png" alt="icon" style="margin-right: 2px" /> View more about this ligand:</span>
       @for (displayLink of dashboardStatLinks['Ligands']; track displayLink; let islast = $last) {
       <a [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix" target="_blank">
         {{ selectionStats?.[selectionIdentifier][displayLink.id] }} {{ displayLink.displayName }}

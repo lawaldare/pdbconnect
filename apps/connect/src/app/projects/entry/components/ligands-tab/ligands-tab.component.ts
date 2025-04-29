@@ -22,6 +22,7 @@ import { EntryDropdownComponent } from '../entry-page-header/sub-components/entr
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
+import { EntryActions } from '../../store/entry.actions';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -106,7 +107,7 @@ export class LigandsTabComponent implements OnInit {
     source: this.interactions,
     computation: () => this.interactions(),
   });
-  public paginationPageSizeSelector = signal<number[]>([10, 20]);
+  public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
   public selectionStats: { [key: string]: any } | undefined;
 
@@ -179,6 +180,13 @@ export class LigandsTabComponent implements OnInit {
     const modificationsData = ligandsRawData.filter((lig) => lig.type === 'modification');
 
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+
+    this.globalStore.dispatch(
+      EntryActions.getInteractions({
+        chainId: molstarSelection.authChainId ?? '',
+        residueId: molstarSelection.residues[0].authBegin,
+      })
+    );
 
     let urlToDownload = '';
 

@@ -15,11 +15,12 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { EntryPgProtvistaComponent } from '../shared/entry-pv-nightingale/entry-pv-nightingale.component';
-import { UtilService } from '@pdbc/core';
-import { resourceUrls } from '../../entry-constant';
+import { MaterialModule, UtilService } from '@pdbc/core';
+import { entryDomainsTooltips, resourceUrls } from '../../entry-constant';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 
 // these types are used by this file and the facade and related to sequence rendering
 export type BoundsByEntityId = {
@@ -38,7 +39,7 @@ export interface SequenceDetail {
 @Component({
   selector: 'pdbc-domains-tab',
   standalone: true,
-  imports: [CommonModule, EntryPgProtvistaComponent, InteractiveTablesComponent, NgxSkeletonLoaderModule],
+  imports: [CommonModule, EntryPgProtvistaComponent, InteractiveTablesComponent, NgxSkeletonLoaderModule, HelpIconWithTooltipComponent],
   templateUrl: './domains-tab.component.html',
   styleUrl: './domains-tab.component.scss',
 })
@@ -65,6 +66,7 @@ export class DomainsTabComponent {
   public sequenceDetails: SequenceDetail[] = [];
 
   public readonly resourceUrls = resourceUrls;
+  public readonly entryDomainsTooltips = entryDomainsTooltips;
 
   public readonly domainTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();

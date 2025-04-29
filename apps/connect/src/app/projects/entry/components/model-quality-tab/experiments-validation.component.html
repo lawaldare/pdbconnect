@@ -102,7 +102,7 @@
       <section class="validation-info">
         <div class="info-row-header">
           <h5>Validation information</h5>
-          <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="valInfoTooltip" matTooltipPosition="below" />
+          <lib-help-icon-with-tooltip [tooltipText]="valInfoTooltip" />
         </div>
         @if (noImg === false) {
         <div class="validation-report-img-container">
@@ -136,7 +136,7 @@
       <section class="pdb-redo-data">
         <div class="info-row-header">
           <h5>PDB-REDO</h5>
-          <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="pdbRedoTooltip" matTooltipPosition="below" />
+          <lib-help-icon-with-tooltip [tooltipText]="pdbRedoTooltip" />
         </div>
         <div class="info-row">
           <span>PDB-REDO model quality summary</span>
@@ -163,7 +163,7 @@
         </h5> -->
         <div class="info-row-header">
           <h5>Sample information</h5>
-          <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="sampleInfoTooltip" matTooltipPosition="below" />
+          <lib-help-icon-with-tooltip [tooltipText]="sampleInfoTooltip" />
         </div>
         @if (currentData()!.sampleInfo) { @if (currentData()!.sampleInfo!.authorDesc) {
         <div class="info-row">
@@ -218,7 +218,7 @@
         </h5> -->
         <div class="info-row-header">
           <h5>Experimental information</h5>
-          <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="expInfoTooltip" matTooltipPosition="below" />
+          <lib-help-icon-with-tooltip [tooltipText]="expInfoTooltip" />
         </div>
         <!-- For X-Ray, SAS -->
         @if (currentData()!.experimentalInfo) { @if (currentData()!.experimentalInfo!.xRayBeamSource) {
@@ -318,7 +318,7 @@
       <section class="exp-raw-data-info">
         <div class="info-row-header">
           <h5>Experimental raw data</h5>
-          <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="expRawDataTooltip" matTooltipPosition="below" />
+          <lib-help-icon-with-tooltip [tooltipText]="expRawDataTooltip" />
         </div>
         <!-- <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="expRawDataTooltip" matTooltipPosition="below">
           Experimental raw data
@@ -375,10 +375,9 @@
       <!-- Timeline section -->
       <!-- ------------------- -->
       <section class="timeline-info">
-        <!-- <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="timelineTooltip" matTooltipPosition="below">Timeline</h5> -->
         <div class="info-row-header">
           <h5>Timeline</h5>
-          <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="timelineTooltip" matTooltipPosition="below" />
+          <lib-help-icon-with-tooltip [tooltipText]="timelineTooltip" />
         </div>
         <ag-grid-angular
           style="height: fit-content"

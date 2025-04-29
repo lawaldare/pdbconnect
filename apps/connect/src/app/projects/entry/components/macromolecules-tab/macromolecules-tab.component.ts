@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
@@ -89,7 +89,32 @@ export class MacromoleculesTabComponent {
   public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
 
   public selectionStats: { [key: string]: any } | undefined;
-  public goMappings = computed(() => Object.keys(this.goMapping() ?? {}));
+  // public goMappings = computed(() => Object.keys(this.goMapping() ?? {}));
+
+  public isThereGoMappings = computed(() => Object.keys(this.goMapping() ?? {}));
+  public goMappings = linkedSignal({
+    source: this.goMapping,
+    computation: () => {
+      const mappedData = this.getMappedGOMapping.reduce((acc: any[], curr: any) => {
+        if (acc[curr.category]) {
+          acc[curr.category].push(curr);
+        } else {
+          acc[curr.category] = [curr];
+        }
+        return acc;
+      }, {});
+      return mappedData;
+    },
+  });
+
+  public readonly isCategoryMoreThanOne = computed(() => {
+    return (
+      this.goMappings()?.['Biological_process']?.length > 1 ||
+      this.goMappings()?.['Molecular_function']?.length > 1 ||
+      this.goMappings()?.['Cellular_component']?.length > 1
+    );
+  });
+
   public ecMappings = computed(() => Object.keys(this.ecMapping() ?? {}));
   public bestResidues = computed(() => {
     const isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
@@ -198,9 +223,15 @@ export class MacromoleculesTabComponent {
         this.hasProtvista = false;
         this.hasTopologyViewer = false;
       }
-      console.log('molstarFirstRenderFinished', molstarFirstRenderFinished);
       await this.renderVisualisations();
     });
+  }
+
+  get getMappedGOMapping() {
+    return Object.entries(this.goMapping() ?? {}).reduce((acc: any[], [id, item]) => {
+      acc.push({ ...item, id });
+      return acc;
+    }, []);
   }
 
   public generateOrganismSearchUrl(term: string): string {

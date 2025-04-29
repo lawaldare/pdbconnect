@@ -1,9 +1,9 @@
 @if (tabDataLoaded()){ @if(assemblyTableRows().length){
-<main [class.change-display]="!isSidebarDisplayed()">
+<main>
   @if(isSidebarDisplayed()){
   <pdbc-interactive-tables tabName="Assemblies" />
   }
-  <div class="tab-content">
+  <div class="tab-content" [class.change-display]="!isSidebarDisplayed()">
     @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Assemblies';
     <button class="vf-button-ghost" (click)="toggleSidebar()">
       <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
@@ -20,7 +20,7 @@
           <div class="info-row">
             <span>
               Assembly name
-              <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
+              <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.assemblyName" />
             </span>
             <article>{{datum?.complexName}}</article>
           </div>
@@ -28,14 +28,14 @@
           <div class="info-row">
             <span>
               Multimeric state
-              <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
+              <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.multimericState" />
             </span>
             <article>{{datum?.multimericStates}}</article>
           </div>
           <div class="info-row">
             <span>
               PDBe complex ID
-              <img src="assets/icons/help_icon.png" alt="help icon" style="margin-bottom: 2px" />
+              <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.pdbeComplexId" />
             </span>
             <article>
               <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/complex/' + datum?.complexId" target="_blank">{{datum?.complexId}}</a>
@@ -45,11 +45,17 @@
         </div>
         <div class="assembly-grouped">
           <div class="info-row">
-            <span>Accessible surface area</span>
+            <span>
+              Accessible surface area
+              <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.accessbileSurfaceArea" />
+            </span>
             <article>{{ getAdditionalData('accessibleSurfaceArea') }}<sup>2</sup></article>
           </div>
           <div class="info-row">
-            <span>Buried surface area</span>
+            <span>
+              Buried surface area
+              <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.buriedSurfaceArea" />
+            </span>
             <article>{{ getAdditionalData('buriedSurfaceArea') }}<sup>2</sup></article>
           </div>
         </div>
@@ -59,17 +65,34 @@
             <article>{{ getAdditionalData('dissociationArea') }}<sup>2</sup></article>
           </div>
           <div class="info-row">
-            <span>Dissociation energy</span>
+            <span>
+              Dissociation energy (ΔGdiss)
+              <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.dissociationEnergy" />
+            </span>
             <article>{{ getAdditionalData('dissociationEnergy') }}</article>
           </div>
           <div class="info-row">
-            <span>Dissociation entropy</span>
+            <span>
+              Dissociation entropy (TΔSdiss)
+              <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.dissociationEntropy" />
+            </span>
             <article>{{ getAdditionalData('dissociationEntropy') }}</article>
           </div>
         </div>
-        <div class="info-row">
-          <span>Symmetry number</span>
-          <article>{{ getAdditionalData('symmetryNumber') }}</article>
+        <div class="assembly-grouped">
+          @if(prefferedSymmetry()?.type){
+          <div class="info-row">
+            <span>
+              Assembly symmetry
+              <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.assemblySymmetry" />
+            </span>
+            <article>{{prefferedSymmetry()?.type}} - {{prefferedSymmetry()?.symbol}}</article>
+          </div>
+          }
+          <div class="info-row">
+            <span>Number of interfaces</span>
+            <article>{{ getAdditionalData('interfaceCount') }}</article>
+          </div>
         </div>
       </section>
       <section class="molstar-details-container">

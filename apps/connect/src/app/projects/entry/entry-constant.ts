@@ -333,3 +333,28 @@ export const FILTERED_KELLY22_COLORBLIND_SCALE: string[] = [
   '#d32b1e',
   '#2b3514',
 ];
+
+export const entryAssembliesTooltips = {
+  assemblyName: 'The assembly name is a descriptive label assigned to a specific molecular arrangement in the PDB archive.',
+  multimericState:
+    "This label describes the assembly's composition: the prefix (homo- or hetero-) indicates whether the macromolecules that make up the assembly are identical or different, and the suffix shows the total number of these macromolecules.",
+  pdbeComplexId: 'Stable identifiers for each unique assembly composition across the PDB archive.',
+  accessbileSurfaceArea: 'Surface area indicates the total solvent-accessible surface area of the assembly, in Å2.',
+  buriedSurfaceArea: "Buried area indicates, in Å2, the total solvent-accessible surface area of the assembly, buried upon formation of all assembly's interfaces.",
+  dissociationEnergy:
+    'Indicates the free energy of assembly dissociation, in kcal/M. The free energy of dissociation corresponds to the free energy difference between dissociated and associated states. Positive values of ΔGdiss indicate that an external driving force should be applied in order to dissociate the assembly, therefore assemblies with ΔGdiss>0 are thermodynamically stable.',
+  dissociationEntropy:
+    'Indicates the rigid-body entropy change at dissociation, in kcal/M. The entropy change corresponds to the lowest free energy way to dissociate the assembly into a set of stable assemblies or monomeric units.',
+  assemblySymmetry:
+    'Point group symmetry for the biological assembly. The symmetry group is calculated using the AnAnaS software. It detects five symmetry groups: cyclic, dihedral, tetrahedral, octahedral and icosahedral.',
+};
+
+export const entryDomainsTooltips = {
+  description: 'Descriptive name of this domain’s classification, as defined in the source database.',
+  sourceDomainAccession: 'Source database and unique classification identifier for a domain.',
+  domainName:
+    'Domain names uniquely identify a domain in a macromolecule. It encodes information like classification hierarchy and source (e.g., PDB ID, chain, domain number) for consistent referencing.',
+  authorSegments:
+    'Author segments refer to the residue numbering as provided by the original authors of the PDB entry. This numbering may differ from canonical or sequential numbering due to biological context, insertions, or historical reasons.',
+  segments: 'Segments represent continuous stretches of a sequence with sequential residue numbering, starting from 1 at the N-terminus.',
+};

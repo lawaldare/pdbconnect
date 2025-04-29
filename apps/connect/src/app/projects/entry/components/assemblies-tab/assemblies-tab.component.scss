@@ -4,10 +4,6 @@ main {
   justify-content: space-between;
   gap: 16px;
 
-  &.change-display {
-    display: block !important;
-  }
-
   pdbc-interactive-tables {
     width: 252px;
     min-width: 252px;
@@ -16,19 +12,26 @@ main {
 
   .tab-content {
     width: calc(100% - 268px);
+
+    &.change-display {
+      width: 100%;
+    }
   }
 }
 
 .assemblies-container {
-  display: grid;
-  grid-template-columns: 2fr 3fr;
-}
+  display: flex;
 
-.assembly-section {
-  width: 511px;
+  .assembly-section {
+    width: 511px;
 
-  .assembly-grouped {
-    margin-bottom: 12px;
+    .assembly-grouped {
+      margin-bottom: 12px;
+    }
+  }
+
+  .molstar-details-container {
+    width: calc(100% - 511px);
   }
 }
 
@@ -39,9 +42,9 @@ main {
   // margin-bottom: 4px;
 
   & > span {
-    max-width: 240px;
-    width: 240px;
-    min-width: 240px;
+    max-width: 250px;
+    width: 250px;
+    min-width: 250px;
     color: #1a1c1a;
     font-size: 16px;
     font-weight: 500;
@@ -81,21 +84,13 @@ article {
 
 .molstar-container {
   position: relative;
-
-  // width: 334px;
-  // height: 334px;
-  // flex: 1 0 0;
   flex: 1;
   width: 337px;
-
-  // height: 296px;
   min-height: 296px;
   z-index: 1;
 }
 
 .molstar-container.big {
-  // width: 668px;
-  // flex: 1 0 0;
   flex: 1;
   width: 682px;
   min-height: 339px;

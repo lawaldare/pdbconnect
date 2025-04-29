@@ -6,20 +6,31 @@ import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overvie
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Store } from '@ngrx/store';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { entryAssembliesTooltips } from '../../entry-constant';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
   standalone: true,
-  imports: [CommonModule, InteractiveTablesComponent, NgxSkeletonLoaderModule],
+  imports: [CommonModule, InteractiveTablesComponent, NgxSkeletonLoaderModule, HelpIconWithTooltipComponent],
   templateUrl: './assemblies-tab.component.html',
   styleUrl: './assemblies-tab.component.scss',
 })
 export class AssembliesTabComponent {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
+  private readonly globalStore = inject(Store<EntryStoreState>);
 
   public molstarVisualisation = inject(MolstarOverviewForTopPage);
   public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
+
+  public readonly symmetry = toSignal(this.globalStore.select(EntrySelectors.symmetry));
+
+  public readonly entryAssembliesTooltips = entryAssembliesTooltips;
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
@@ -37,6 +48,15 @@ export class AssembliesTabComponent {
     let selectedIdx = this.compCommunication.tabState()['Assemblies'] ?? 0;
     if (selectedIdx === 'Main') selectedIdx = 0;
     return this.assemblyTableRows()[selectedIdx as number];
+  });
+
+  public readonly prefferedSymmetry = computed(() => {
+    const symmetries = this.symmetry();
+    if (symmetries) {
+      const preferredSymmetry = symmetries.find((symmetry) => symmetry.assembly_id === '1');
+      return preferredSymmetry;
+    }
+    return undefined;
   });
 
   constructor() {
@@ -73,7 +93,14 @@ export class AssembliesTabComponent {
 
   public getAdditionalData(name: string) {
     // this function is used to get specific data shown in Assembly dashboard view
-    type AssembliesAddDataKeys = 'accessibleSurfaceArea' | 'buriedSurfaceArea' | 'dissociationArea' | 'dissociationEnergy' | 'dissociationEntropy' | 'symmetryNumber';
+    type AssembliesAddDataKeys =
+      | 'accessibleSurfaceArea'
+      | 'buriedSurfaceArea'
+      | 'dissociationArea'
+      | 'dissociationEnergy'
+      | 'dissociationEntropy'
+      | 'symmetryNumber'
+      | 'interfaceCount';
     return this.currentAssemblyDatum()?.additionalData[name as AssembliesAddDataKeys];
   }
 
