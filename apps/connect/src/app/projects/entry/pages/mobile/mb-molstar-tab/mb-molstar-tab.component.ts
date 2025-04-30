@@ -80,12 +80,15 @@ export class MbMolstarTabComponent implements AfterViewInit, OnDestroy {
         this.mbFacade.updateSelectedComponent(MbAssembliesComponent);
         break;
       case MobileTabChips.Macromolecules:
+        this.mbFacade.updateSelectedMacromoleculeTitle('Macromolecules');
         this.mbFacade.updateSelectedComponent(MbMacromoleculeComponent);
         break;
       case MobileTabChips.Ligands:
+        this.mbFacade.updateSelectedLigandTitle('Ligands');
         this.mbFacade.updateSelectedComponent(MbLigandsComponent);
         break;
       case MobileTabChips.Domains:
+        this.mbFacade.updateSelectedDomainTitle('Domains');
         this.mbFacade.updateSelectedComponent(MbDomainsComponent);
         break;
       default:

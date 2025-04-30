@@ -264,19 +264,20 @@ export class MbMacromoleculeComponent implements OnInit {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
+    // this.mbFacade.updateSelectedMacromoleculeTitle('Macromolecules');
     await this.molstarVisualisation.resetMobileMolstarInitial();
   }
 
   public navigateToDetail(data: MacromoleculesRowData) {
     this.currentViewState.set(ViewState.Detail);
-    this.mbFacade.updateSelectedTitle(data.name.molecule);
+    this.mbFacade.updateSelectedMacromoleculeTitle(data.name.molecule);
     this.selectedMacromolecule.set(data);
     this.init();
   }
 
   public async goBackToList() {
     this.currentViewState.set(ViewState.List);
-    this.mbFacade.updateSelectedTitle('Macromolecules');
+    this.mbFacade.updateSelectedMacromoleculeTitle('Macromolecules');
     await this.molstarVisualisation.resetMobileMolstarInitial();
   }
 

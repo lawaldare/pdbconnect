@@ -42,7 +42,7 @@ export class MobileFacade {
     this._selectedComponent.set(component);
   }
 
-  public updateSelectedTitle(title: string) {
+  public updateSelectedMacromoleculeTitle(title: string) {
     this._macromoleculeTitle.set(title);
   }
 

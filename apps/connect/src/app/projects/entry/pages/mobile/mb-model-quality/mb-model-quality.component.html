@@ -1,11 +1,13 @@
 <section>
   @if(currentData()){
   <header>
-    <h2>{{ currentData()!.generalInfo.methodName }} @if (currentData()!.generalInfo.resolution) { • {{ currentData()!.generalInfo.resolution }} }</h2>
-    <div class="controls">
-      <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
-      <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
-    </div>
+    <section class="header">
+      <h2>{{ currentData()!.generalInfo.methodName }} @if (currentData()!.generalInfo.resolution) { • {{ currentData()!.generalInfo.resolution }} }</h2>
+      <div class="controls">
+        <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
+        <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+      </div>
+    </section>
   </header>
   <div class="r-values">
     @if (currentData()?.generalInfo?.reportedRValues?.rWork) {
