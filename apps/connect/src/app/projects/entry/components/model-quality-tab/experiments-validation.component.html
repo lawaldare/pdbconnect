@@ -405,8 +405,8 @@
           </button>
           }
         </div>
-        @if(selectedSpecificIssueKind() && selectedValidationType().value === 'specific_issue'){
-        <mat-select [formControl]="selectedSpecificIssueKind()!" (selectionChange)="selectSpecificIssueKind($event)">
+        @if(selectedValidationType().value === 'specific_issue'){
+        <mat-select [formControl]="selectedSpecificIssueKind" (selectionChange)="selectSpecificIssueKind($event)">
           @for (option of specificIssueKinds(); track option.label) {
           <mat-option [value]="option.value">{{ option.label }}</mat-option>
           }
@@ -437,6 +437,26 @@
             </svg>
           </div>
         </div>
+      </div>
+      <div class="legend">
+        @if(selectedValidationType().value === 'issue_count'){
+        <div class="legend-wrapper">
+          @for(legend of legends; track legend.color){
+          <div class="legend-wrapper-box">
+            <div class="legend-wrapper-box-color" [style.background-color]="legend.color"></div>
+            <p class="legend-wrapper-box-text">{{legend.label}}</p>
+          </div>
+          }
+        </div>
+        <p class="legend-text">Residues are colour-coded according to the number of structural quality criteria for which they contain at least one outlier.</p>
+        } @else {
+        <div class="legend-wrapper">
+          <div class="legend-wrapper-box">
+            <div class="legend-wrapper-box-color" [style.background-color]="'#B2182B'"></div>
+            <p class="legend-wrapper-box-text">Outliers for the specific structural quality criteria selected</p>
+          </div>
+        </div>
+        }
       </div>
     </div>
   </aside>

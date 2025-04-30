@@ -119,15 +119,36 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     },
   ];
 
+  public readonly legends = [
+    {
+      label: '0 outliers',
+      color: '#A9ABAA',
+    },
+    {
+      label: '1 outlier',
+      color: '#E5E501',
+    },
+    {
+      label: '2 outliers',
+      color: '#DA6E03',
+    },
+    {
+      label: '3 and more outliers',
+      color: '#B2182B',
+    },
+  ];
+
   public readonly specificIssueKinds = signal<{ label: string; value: string }[]>([]);
 
   public selectedValidationType = signal<ValueLabel>(this.validationTypes[0]);
   public selectedSpecificIssueKindValue = signal<ValueLabel | undefined>(undefined);
 
-  public selectedSpecificIssueKind = computed(() => {
-    if (this.specificIssueKinds().length === 0) return undefined;
-    return new FormControl(this.specificIssueKinds()[0].value, { nonNullable: true });
-  });
+  public selectedSpecificIssueKind = new FormControl('', { nonNullable: true });
+
+  // public selectedSpecificIssueKind = computed(() => {
+  //   if (this.specificIssueKinds().length === 0) return undefined;
+  //   return new FormControl(this.specificIssueKinds()[0].value, { nonNullable: true });
+  // });
 
   // public molstarSelectionsByOutlierType = signal<Record<string, MolstarSelectionObj>| undefined>(undefined);
   // public residuesWith1Outlier = signal<MolstarSelectionObj| undefined>(undefined);
@@ -144,7 +165,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     effect(async () => {
       const _currentTab = this.compCommunication.currentTab();
       const selectedValidationType = this.selectedValidationType();
-      const selectedSpecificIssueKind = this.selectedSpecificIssueKind();
+      // const selectedSpecificIssueKind = this.selectedSpecificIssueKind();
       const selectedSpecificIssueKindValue = this.selectedSpecificIssueKindValue();
       const outliers = this.residueWiseOutliers();
       const currentModelIdx = this.modelIdx();
@@ -172,6 +193,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
             value: eachType,
           }))
         );
+        this.selectedSpecificIssueKind.setValue(this.specificIssueKinds()[0].value);
       }
 
       // safety guards for multiple triggering or not ready triggering
@@ -181,7 +203,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       if (this.molstarVisualisation.currentViewName === displayName) return;
 
       this.molstarVisualisation.currentViewName = displayName;
-      const previousConfig = this.molstarVisualisation.currentConfigName + '';
+      // const previousConfig = this.molstarVisualisation.currentConfigName + '';
       const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
       const ligandsRawData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
       const ligandsData = ligandsRawData.filter((lig) => lig.type === 'ligand');
@@ -191,13 +213,13 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
       await this.molstarVisualisation.checkModelQualityReady();
 
-      const newConfig = this.molstarVisualisation.currentConfigName + '';
+      // const newConfig = this.molstarVisualisation.currentConfigName + '';
 
       await this.molstarVisualisation.checkAndCreateComponents(macromoleculesData, ligandsData, modificationsData);
       if (selectedValidationType.value === 'issue_count') {
         await this.molstarVisualisation.renderModelQualityAllIssues(residuesWith1Outlier, residuesWith2Outliers, residuesWith3OrMoreOutliers);
       } else {
-        const issue = selectedSpecificIssueKind!.value;
+        const issue = this.selectedSpecificIssueKind.value;
         const issueResidues = molstarSelectionsByOutlierType[issue];
         await this.molstarVisualisation.renderModelQualitySpecificIssue(issueResidues);
       }
@@ -205,8 +227,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.globalStore.dispatch(EntryActions.getEntryResidueWiseOutliers());
-
     this.globalStore
       .select(EntrySelectors.experimentalDetails)
       .pipe(
@@ -254,8 +274,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
 
   public selectSpecificIssueKind(event: MatSelectChange) {
-    if (!this.selectedSpecificIssueKind()) return;
-    this.selectedSpecificIssueKind()!.setValue(event.value);
+    // if (!this.selectedSpecificIssueKind()) return;
+    this.selectedSpecificIssueKind.setValue(event.value);
     this.selectedSpecificIssueKindValue.set(event.value); // trigger effect
   }
 
