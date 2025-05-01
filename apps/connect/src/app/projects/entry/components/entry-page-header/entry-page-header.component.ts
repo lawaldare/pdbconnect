@@ -20,4 +20,8 @@ export class EntryPageHeaderComponent {
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly downloadOptions = toSignal(this.globalStore.select(EntrySelectors.downloadOptions));
   public readonly viewOptions = toSignal(this.globalStore.select(EntrySelectors.viewOptions));
+
+  public openFeedbackForm(): void {
+    window.open('https://docs.google.com/forms/d/e/1FAIpQLSe_cs6jrhCM8I7G8zsbtTQWEOjGmR07tC6aJDTrN62gyQ8e0A/viewform', '_blank');
+  }
 }

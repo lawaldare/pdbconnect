@@ -169,6 +169,10 @@ export class MbOverviewTabComponent implements OnInit {
     }
   }
 
+  public openFeedbackForm(): void {
+    window.open('https://docs.google.com/forms/d/e/1FAIpQLSe_cs6jrhCM8I7G8zsbtTQWEOjGmR07tC6aJDTrN62gyQ8e0A/viewform', '_blank');
+  }
+
   public toggleMacromoleculeList(): void {
     this.macromoleculeInitialCount.update((prev) => (prev === 5 ? this.macromoleculeTableRows().length : 5));
   }
