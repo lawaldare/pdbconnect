@@ -22,6 +22,7 @@ import { EntryDropdownComponent } from '../entry-page-header/sub-components/entr
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
+import { EntryActions } from '../../store/entry.actions';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -106,7 +107,7 @@ export class LigandsTabComponent implements OnInit {
     source: this.interactions,
     computation: () => this.interactions(),
   });
-  public paginationPageSizeSelector = signal<number[]>([10, 20]);
+  public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
   public selectionStats: { [key: string]: any } | undefined;
 
@@ -180,18 +181,28 @@ export class LigandsTabComponent implements OnInit {
 
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
-    // retrieve necessary data for composing ligands and environments URL
-    const entityId = molstarSelection.entityId;
-    const chainId = molstarSelection.authChainId;
+    this.globalStore.dispatch(
+      EntryActions.getInteractions({
+        chainId: molstarSelection.authChainId ?? '',
+        residueId: molstarSelection.residues[0].authBegin,
+      })
+    );
 
-    // create URL according to whether a modification or a ligand is selected
     let urlToDownload = '';
-    if (datum.type === 'modification') {
-      urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${this.entryId()}/atoms?label_entity_id=${entityId}&auth_asym_id=${chainId}&encoding=bcif`;
-    } else {
-      const authSeqId = molstarSelection.residues[0].authBegin;
-      const authInsCode = molstarSelection.residues[0].authBeginIns;
-      urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${this.entryId()}/residueSurroundings?auth_seq_id=${authSeqId}&pdbx_PDB_ins_code=${authInsCode}&auth_asym_id=${chainId}&radius=10&encoding=bcif`;
+
+    if (molstarSelection) {
+      // retrieve necessary data for composing ligands and environments URL
+      const entityId = molstarSelection.entityId;
+      const chainId = molstarSelection.authChainId;
+
+      // create URL according to whether a modification or a ligand is selected
+      if (datum.type === 'modification') {
+        urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${this.entryId()}/atoms?label_entity_id=${entityId}&auth_asym_id=${chainId}&encoding=bcif`;
+      } else {
+        const authSeqId = molstarSelection.residues[0].authBegin;
+        const authInsCode = molstarSelection.residues[0].authBeginIns;
+        urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${this.entryId()}/residueSurroundings?auth_seq_id=${authSeqId}&pdbx_PDB_ins_code=${authInsCode}&auth_asym_id=${chainId}&radius=10&encoding=bcif`;
+      }
     }
 
     // since URL based force Ligands config reload

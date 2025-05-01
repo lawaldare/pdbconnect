@@ -82,8 +82,10 @@ export class EntryApiService {
     return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(map((data) => data[entryId][0]));
   }
 
-  public getEntryInteractions(entryId: string): Observable<any> {
-    return this.http.get<Record<string, any[]>>(`${this.GRAPH_API}bound_ligand_interactions/${entryId}/A/200`).pipe(map((data) => data[entryId][0]));
+  public getEntryInteractions(entryId: string, chainId: string, residueId: string): Observable<any> {
+    return this.http
+      .get<Record<string, any[]>>(`${this.GRAPH_API}bound_ligand_interactions/${entryId}/${chainId}/${residueId}`)
+      .pipe(map((data) => data[entryId][0]));
   }
 
   public getPrimaryPublicationAbstract(entryId: string): Observable<CitationDetail> {

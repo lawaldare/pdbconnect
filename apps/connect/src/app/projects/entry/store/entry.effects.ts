@@ -103,9 +103,11 @@ export class EntryEffects {
   getInteractions$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getInteractions),
-      switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
-      mergeMap((entryId: string) =>
-        this.entryAPIService.getEntryInteractions(entryId).pipe(
+      switchMap((action) => {
+        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
+      }),
+      mergeMap(([action, entryId]) =>
+        this.entryAPIService.getEntryInteractions(entryId, action.chainId, action.residueId).pipe(
           map((data) => EntryActions.getInteractionsSuccess({ interactions: data.interactions })),
           catchError(() => of(EntryActions.getInteractionsFailure()))
         )

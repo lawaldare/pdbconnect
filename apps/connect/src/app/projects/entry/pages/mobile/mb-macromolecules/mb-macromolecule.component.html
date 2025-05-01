@@ -1,20 +1,23 @@
 <section>
-  @if(currentViewState() === viewStates.Detail){
-  <nav>
-    <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
-    <span (click)="goBackToList()">Go to Macromolecules list </span>
-  </nav>
-  } @if(macromoleculeTableRows().length){
+  @if(macromoleculeTableRows().length){
   <header>
-    <h2>
-      {{title()}} @if(currentViewState() === viewStates.List){
-      <span>({{macromoleculeTableRows().length}})</span>
-      }
-    </h2>
-    <div class="controls">
-      <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
-      <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
-    </div>
+    @if(currentViewState() === viewStates.Detail){
+    <nav>
+      <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
+      <span (click)="goBackToList()">Go to Macromolecules list </span>
+    </nav>
+    }
+    <section class="header">
+      <h2>
+        {{title()}} @if(currentViewState() === viewStates.List){
+        <span>({{macromoleculeTableRows().length}})</span>
+        }
+      </h2>
+      <div class="controls">
+        <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
+        <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+      </div>
+    </section>
   </header>
 
   <!-- 1st Level Overlay -->
@@ -188,7 +191,7 @@
         {{initialSynonymsCount() > 5 ? 'Show less' : 'Show all'}}
       </p>
       } } @for(go of goFunctions(); track go.category){
-      <p class="title">GO - {{go.category}} ({{go.count}}):</p>
+      <p class="title" style="margin-top: 12px !important">GO - {{go.category}} ({{go.count}}):</p>
       @for(data of go.names.slice(0, initialGoTermsCount()); track data){
       <a
         [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?' + go.category + ':' + data"

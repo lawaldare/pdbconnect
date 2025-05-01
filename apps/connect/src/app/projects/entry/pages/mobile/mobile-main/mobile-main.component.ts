@@ -4,6 +4,7 @@ import { MbOverviewTabComponent } from '../mb-overview-tab/mb-overview-tab.compo
 import { MbMolstarTabComponent } from '../mb-molstar-tab/mb-molstar-tab.component';
 import { MbCitationTabComponent } from '../mb-citation-tab/mb-citation-tab.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MobileFacade } from '../mobile.facade';
 
 export enum MobileTabNames {
   Overview = 'overview',
@@ -25,6 +26,8 @@ export class MobileMainComponent {
 
   public activeTab = signal<string>('overview');
 
+  private readonly mbFacade = inject(MobileFacade);
+
   public readonly mbTabNames = MobileTabNames;
 
   public readonly mbTabs = [
@@ -44,8 +47,12 @@ export class MobileMainComponent {
 
   constructor() {
     this.route.queryParams.subscribe((params) => {
-      const tabId = params['activeTab'] ?? MobileTabNames.Overview;
-      this.selectFooterTab(tabId);
+      const tabId = params['activeTab'];
+      const tabIndex = this.mbTabs.findIndex((tab) => tab.id === tabId);
+      if (tabIndex >= 0) {
+        this.activeTab.set(tabId);
+        this.mbFacade.updateSelectedMobileTabName(tabId);
+      }
     });
   }
 

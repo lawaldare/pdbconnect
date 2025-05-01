@@ -5,7 +5,7 @@
   <section class="container">
     <pdbc-entry-page-header />
     <main>
-      <mat-tab-group (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTab" mat-stretch-tabs="false" mat-align-tabs="start">
+      <mat-tab-group (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTab()" mat-stretch-tabs="false" mat-align-tabs="start">
         <mat-tab label="Summary"> <pdbc-summary-tab /> </mat-tab>
         <mat-tab label="Model quality">
           <ng-template matTabContent> <pdbc-experiments-validation /> </ng-template>

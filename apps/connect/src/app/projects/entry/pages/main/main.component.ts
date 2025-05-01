@@ -92,29 +92,6 @@ export class EntryMainPageComponent implements OnInit {
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
   private molstarFirstRenderStarted = signal(false);
 
-  // public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
-  // public readonly isSidebarCollapsed = computed(() => !this.compCommunication.isSidebarCollapsed());
-
-  // public readonly commonTabs = computed(() => {
-  //   const isTabDataGenerated = this.compCommunication.isTabDataGenerated();
-  //   const tabs = [
-  //     { label: 'Assemblies', id: 'Assemblies' },
-  //     { label: 'Macromolecules', id: 'Macromolecules' },
-  //     { label: 'Ligands and Environments', id: 'Ligands' },
-  //     { label: 'Domains', id: 'Domains' },
-  //   ];
-  //   const mappedCommonTabs = [];
-  //   for (const tab of tabs) {
-  //     const dataExists = isTabDataGenerated ? this.compCommunication.getTabData(tab.id).tableRows().length > 0 : false;
-  //     const hasData = isTabDataGenerated && dataExists;
-  //     mappedCommonTabs.push({
-  //       name: tab.label,
-  //       hasData,
-  //       id: tab.id,
-  //     });
-  //   }
-  //   return mappedCommonTabs;
-  // });
   private readonly entryId = signal<string>('');
 
   public currentTab = this.compCommunication.currentTab;
@@ -126,7 +103,7 @@ export class EntryMainPageComponent implements OnInit {
   // @ViewChild('molstarViewer') molstarViewer!: ElementRef;
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
-  selectedTab = 0;
+  public selectedTab = signal<number>(0);
 
   public readonly apiSearchConfig = {
     additionalParams: 'rows=20000&json.nl=map&wt=json',
@@ -144,13 +121,13 @@ export class EntryMainPageComponent implements OnInit {
   constructor() {
     this.route.queryParams.subscribe((params) => {
       const routeTabs = this.dataProcessing.routeTabs;
-      const tabName = params['activeTab'];
+      const tabName = params['activeTab'] ?? 'summary';
       this.currentTab.set(tabName);
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
-      this.selectedTab = tabIndex;
+      this.selectedTab.set(tabIndex);
     });
     effect(async () => {
-      if (this.statusCode() === 'REL' && this.molstarFirstRenderStarted() == false) {
+      if (this.statusCode() === 'REL' && !this.molstarFirstRenderStarted() && this.selectedTab() >= 0) {
         const molstarElement = document.getElementById('molstar-element');
         this.molstarVisualisation.entryId = this.entryId();
         this.molstarVisualisation.setRenderer(this.renderer);

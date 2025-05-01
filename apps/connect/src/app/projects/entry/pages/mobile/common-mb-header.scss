@@ -2,26 +2,34 @@ section {
   font-family: 'IBM Plex Sans';
 
   header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    padding: 8px 0;
+    z-index: 100;
 
-    h2 {
-      color: #000;
-      font-size: 19px;
-      font-weight: 500;
-      line-height: 26.6px;
-      width: 80%;
-      max-width: 80%;
-    }
-
-    .controls {
+    section.header {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      align-items: flex-start;
+      justify-content: space-between;
 
-      img {
-        cursor: pointer;
+      h2 {
+        color: #000;
+        font-size: 19px;
+        font-weight: 500;
+        line-height: 26.6px;
+        width: 80%;
+        max-width: 80%;
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        img {
+          cursor: pointer;
+        }
       }
     }
   }

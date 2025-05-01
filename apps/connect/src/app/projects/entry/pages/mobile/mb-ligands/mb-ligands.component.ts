@@ -58,7 +58,7 @@ export class MbLigandsComponent implements AfterViewInit {
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbLigandsComponent>) {}
 
   async ngAfterViewInit() {
-    await this.molstarVisualisation.renderMobileMolstarInitial();
+    await this.molstarVisualisation.resetMobileMolstarInitial();
   }
 
   private async init() {
@@ -94,7 +94,7 @@ export class MbLigandsComponent implements AfterViewInit {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
-    await this.molstarVisualisation.renderMobileMolstarInitial();
+    await this.molstarVisualisation.resetMobileMolstarInitial();
   }
 
   public navigateToDetail(data: LigandsRowData) {
@@ -108,7 +108,7 @@ export class MbLigandsComponent implements AfterViewInit {
   public async goBackToList() {
     this.currentViewState.set(ViewState.List);
     this.mbFacade.updateSelectedLigandTitle('Ligands');
-    await this.molstarVisualisation.renderMobileMolstarInitial();
+    await this.molstarVisualisation.resetMobileMolstarInitial();
   }
 
   public async onDropdownSelect(event: string) {

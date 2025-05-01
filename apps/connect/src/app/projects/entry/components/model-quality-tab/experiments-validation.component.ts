@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FlatOutlierResidue, ValidationDataProcessingFacade } from './validation-data.facade';
+import { ValidationDataProcessingFacade } from './validation-data.facade';
 import { ValidationTablesFacade } from './validation-tables.facade';
 import { AgGridAngular } from 'ag-grid-angular';
 
@@ -16,21 +16,19 @@ import {
   validationInfoTooltip,
 } from '../../entry-constant';
 import { MaterialModule, UtilService } from '@pdbc/core';
-import { filter, firstValueFrom, map, mergeMap } from 'rxjs';
+import { filter, mergeMap } from 'rxjs';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../store/entry.selectors';
-// import { MolstarConfigObject } from '../../helpers/molstar/molstar-base-class';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
-import { MolstarConfigObject, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { EntryActions } from '../../store/entry.actions';
-import { OutlierResidues } from '../../data-models/residuewise-outliers.model';
 import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 
 interface ValueLabel {
   value: string;
@@ -70,7 +68,7 @@ declare let PDBeMolstarPlugin: any;
 @Component({
   selector: 'pdbc-experiments-validation',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, StrucQualityGradientsComponent],
+  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, HelpIconWithTooltipComponent, StrucQualityGradientsComponent],
   templateUrl: './experiments-validation.component.html',
   styleUrl: './experiments-validation.component.scss',
 })
@@ -84,8 +82,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly util = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
   public readonly compCommunication = inject(ComponentCommunicationService);
-
-  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly sourceOrganisms = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
@@ -123,15 +119,36 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     },
   ];
 
+  public readonly legends = [
+    {
+      label: '0 outliers',
+      color: '#A9ABAA',
+    },
+    {
+      label: '1 outlier',
+      color: '#E5E501',
+    },
+    {
+      label: '2 outliers',
+      color: '#DA6E03',
+    },
+    {
+      label: '3 and more outliers',
+      color: '#B2182B',
+    },
+  ];
+
   public readonly specificIssueKinds = signal<{ label: string; value: string }[]>([]);
 
   public selectedValidationType = signal<ValueLabel>(this.validationTypes[0]);
   public selectedSpecificIssueKindValue = signal<ValueLabel | undefined>(undefined);
 
-  public selectedSpecificIssueKind = computed(() => {
-    if (this.specificIssueKinds().length === 0) return undefined;
-    return new FormControl(this.specificIssueKinds()[0].value, { nonNullable: true });
-  });
+  public selectedSpecificIssueKind = new FormControl('', { nonNullable: true });
+
+  // public selectedSpecificIssueKind = computed(() => {
+  //   if (this.specificIssueKinds().length === 0) return undefined;
+  //   return new FormControl(this.specificIssueKinds()[0].value, { nonNullable: true });
+  // });
 
   // public molstarSelectionsByOutlierType = signal<Record<string, MolstarSelectionObj>| undefined>(undefined);
   // public residuesWith1Outlier = signal<MolstarSelectionObj| undefined>(undefined);
@@ -148,7 +165,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     effect(async () => {
       const _currentTab = this.compCommunication.currentTab();
       const selectedValidationType = this.selectedValidationType();
-      const selectedSpecificIssueKind = this.selectedSpecificIssueKind();
+      // const selectedSpecificIssueKind = this.selectedSpecificIssueKind();
       const selectedSpecificIssueKindValue = this.selectedSpecificIssueKindValue();
       const outliers = this.residueWiseOutliers();
       const currentModelIdx = this.modelIdx();
@@ -176,6 +193,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
             value: eachType,
           }))
         );
+        this.selectedSpecificIssueKind.setValue(this.specificIssueKinds()[0].value);
       }
 
       // safety guards for multiple triggering or not ready triggering
@@ -185,7 +203,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       if (this.molstarVisualisation.currentViewName === displayName) return;
 
       this.molstarVisualisation.currentViewName = displayName;
-      const previousConfig = this.molstarVisualisation.currentConfigName + '';
+      // const previousConfig = this.molstarVisualisation.currentConfigName + '';
       const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
       const ligandsRawData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
       const ligandsData = ligandsRawData.filter((lig) => lig.type === 'ligand');
@@ -195,13 +213,13 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
       await this.molstarVisualisation.checkModelQualityReady();
 
-      const newConfig = this.molstarVisualisation.currentConfigName + '';
+      // const newConfig = this.molstarVisualisation.currentConfigName + '';
 
       await this.molstarVisualisation.checkAndCreateComponents(macromoleculesData, ligandsData, modificationsData);
       if (selectedValidationType.value === 'issue_count') {
         await this.molstarVisualisation.renderModelQualityAllIssues(residuesWith1Outlier, residuesWith2Outliers, residuesWith3OrMoreOutliers);
       } else {
-        const issue = selectedSpecificIssueKind!.value;
+        const issue = this.selectedSpecificIssueKind.value;
         const issueResidues = molstarSelectionsByOutlierType[issue];
         await this.molstarVisualisation.renderModelQualitySpecificIssue(issueResidues);
       }
@@ -209,8 +227,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.globalStore.dispatch(EntryActions.getEntryResidueWiseOutliers());
-
     this.globalStore
       .select(EntrySelectors.experimentalDetails)
       .pipe(
@@ -258,8 +274,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
 
   public selectSpecificIssueKind(event: MatSelectChange) {
-    if (!this.selectedSpecificIssueKind()) return;
-    this.selectedSpecificIssueKind()!.setValue(event.value);
+    // if (!this.selectedSpecificIssueKind()) return;
+    this.selectedSpecificIssueKind.setValue(event.value);
     this.selectedSpecificIssueKindValue.set(event.value); // trigger effect
   }
 

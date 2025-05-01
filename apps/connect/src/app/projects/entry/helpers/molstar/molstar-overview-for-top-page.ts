@@ -158,10 +158,12 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       if (this.currentMolstarContainer === containerName) return;
       const containerElement = document.querySelector(`#${containerName}-molstar-container`);
       if (!containerElement) {
-        throw 'Mol*: Container element does not exist';
+        console.warn('Mol*: Container element does not exist');
+        return;
       }
       if (!this.molstarViewerElement) {
-        throw 'Mol*: Element does not exist';
+        console.warn('Mol*: Element does not exist');
+        return;
       }
       await this.sendMolstarToContainer(containerName, containerElement as HTMLElement);
     }, 500); // Ensure Angular digest cycle has completed before proceeding
@@ -169,13 +171,16 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
   private async sendMolstarToContainer(containerName: string, containerElement: HTMLElement) {
     if (!this.renderer) {
-      throw 'Mol*: Renderer2 not set';
+      console.warn('Mol*: Renderer2 not set');
+      return;
     }
     if (!containerElement) {
-      throw 'Mol*: Container element does not exist';
+      console.warn('Mol*: Container element does not exist');
+      return;
     }
     if (!this.molstarViewerElement) {
-      throw 'Mol*: Element does not exist';
+      console.warn('Mol*: Element does not exist');
+      return;
     }
 
     const molstarElement = document.getElementById('molstar-element');
@@ -214,9 +219,20 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.enforceConfigLoaded('INITIAL', config);
   }
 
-  public async renderMobileMolstarInitial() {
+  public async resetMobileMolstarInitial() {
     await this.cleanView();
     await this.unfocusLoci();
+  }
+
+  public async renderMobileMolstarInitial() {
+    const config = MOLSTAR_CONFIG_FACTORIES['INITIAL']({
+      entryId: this.entryId,
+    });
+
+    this.molstarViewInstance.set(undefined);
+
+    this.addedRepresentationsAndIndexes = {};
+    await this.initMolstar(config, undefined, this.molstarViewerElement);
   }
 
   public async enforceConfigLoaded(configName: string, config: MolstarConfigObject, forceReset?: boolean) {
@@ -226,14 +242,14 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       await this.updateMolstar(config);
     } else {
       this.addedRepresentationsAndIndexes = {};
-      await this.initMolstar(config, undefined, this.molstarViewerElement!);
+      await this.initMolstar(config, undefined, this.molstarViewerElement);
     }
     this.currentConfigName = configName;
   }
 
   public async checkAndCreateComponents(macromolecules: MacromoleculesRowData[], ligands: LigandsRowData[], modifications: LigandsRowData[]) {
     // get component list
-    const componentList = await getComponentList(this.molstarViewInstance());
+    const componentList = await this.getComponentList();
 
     // check whether polymers exist and create if not
     const hasMacromolecules = macromolecules.length > 0;
@@ -317,8 +333,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   private async viewRepresentationByName(componentName: string, representationName: string, representation: any, doNotHideOthers?: boolean) {
-    // TODO: Check if component does not exist and create it if necessary using selections
-    const complist = await getComponentList(this.molstarViewInstance());
     // if representation does not exist
     if (Object.keys(this.addedRepresentationsAndIndexes).indexOf(representationName) === -1) {
       // create new representation and hide all previous others by default
@@ -337,7 +351,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
   public async checkOverviewReady() {
     if (!this.entryId || !this.preferredAssemblyId) {
-      throw 'Mol*: Unset entry id or preferred assembly id';
+      console.warn('Mol*: Unset entry id or preferred assembly id');
+      return;
     }
     await this.enforceMolstarInContainer('overview');
     const config = MOLSTAR_CONFIG_FACTORIES['OVERVIEW']({
@@ -349,7 +364,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
   public async checkModelQualityReady() {
     if (!this.entryId) {
-      throw 'Mol*: Unset entry id';
+      console.warn('Mol*: Unset entry id');
+      return;
     }
     await this.enforceMolstarInContainer('model-quality');
     const config = MOLSTAR_CONFIG_FACTORIES['MODEL_QUALITY']({
@@ -360,7 +376,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
   public async checkAssembliesReady(assemblyId: string, symmetryView: boolean) {
     if (!this.entryId) {
-      throw 'Mol*: Unset entry id';
+      console.warn('Mol*: Unset entry id');
+      return;
     }
     await this.enforceMolstarInContainer('assemblies');
     const config = MOLSTAR_CONFIG_FACTORIES['ASSEMBLIES']({
@@ -373,7 +390,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
   public async checkMacromoleculesReady() {
     if (!this.entryId || !this.preferredAssemblyId) {
-      throw 'Mol*: Unset entry id or preferred assembly id';
+      console.warn('Mol*: Unset entry id or preferred assembly id');
+      return;
     }
     await this.enforceMolstarInContainer('macromolecules');
     const config = MOLSTAR_CONFIG_FACTORIES['MACROMOLECULES']({
@@ -385,7 +403,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
   public async checkLigandsReady(urlToDownload: string, forceReset: boolean) {
     if (!urlToDownload) {
-      throw 'Mol*: Unset urlToDownload';
+      console.warn('Mol*: Unset urlToDownload');
+      return;
     }
     await this.enforceMolstarInContainer('ligands');
     const config = MOLSTAR_CONFIG_FACTORIES['LIGANDS']({
@@ -396,7 +415,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
   public async checkDomainsReady() {
     if (!this.entryId || !this.preferredAssemblyId) {
-      throw 'Mol*: Unset entry id or preferred assembly id';
+      console.warn('Mol*: Unset entry id or preferred assembly id');
+      return;
     }
     await this.enforceMolstarInContainer('domains');
     const config = MOLSTAR_CONFIG_FACTORIES['DOMAINS']({

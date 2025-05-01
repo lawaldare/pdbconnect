@@ -4,7 +4,7 @@ import { InteractionTypeRendererComponent } from './interaction-type.component';
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
-  paginationPageSize: 8,
+  paginationPageSize: 5,
 };
 
 export const defaultColDef: ColDef = {

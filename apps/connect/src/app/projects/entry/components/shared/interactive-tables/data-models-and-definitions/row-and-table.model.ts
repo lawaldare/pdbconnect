@@ -31,6 +31,7 @@ export interface AssembliesRowData {
     dissociationEnergy: string;
     dissociationEntropy: string;
     symmetryNumber: string;
+    interfaceCount: string;
     selections: MolstarSelectionObj[];
   };
 }

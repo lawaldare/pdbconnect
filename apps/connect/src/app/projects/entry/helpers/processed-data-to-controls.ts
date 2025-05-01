@@ -14,7 +14,7 @@ export function getMacromoleculeChainDropdownOptions(datum: MacromoleculesRowDat
 }
 
 export function getLigandEntityId(datum: LigandsRowData) {
-  return parseInt(datum.additionalData.selections[0].entityId!);
+  return parseInt(datum.additionalData?.selections[0]?.entityId ?? '');
 }
 
 function convertLigandDatumToString(id: string, selectedLigandInstance: MolstarSelectionObj) {

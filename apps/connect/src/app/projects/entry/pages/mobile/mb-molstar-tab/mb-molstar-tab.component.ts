@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, inject, OnInit, Renderer2, signal, Type, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, inject, OnDestroy, Renderer2, signal, Type, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
@@ -12,9 +12,10 @@ import { MbMacromoleculeComponent } from '../mb-macromolecules/mb-macromolecule.
 import { MbLigandsComponent } from '../mb-ligands/mb-ligands.component';
 import { MbDomainsComponent } from '../mb-domains/mb-domains.component';
 import { MobileFacade } from '../mobile.facade';
-import { firstValueFrom } from 'rxjs';
 import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
+import { MobileTabNames } from '../mobile-main/mobile-main.component';
+import { take } from 'rxjs';
 
 export enum MobileTabChips {
   MQuality = 'MQuality',
@@ -24,20 +25,19 @@ export enum MobileTabChips {
   Domains = 'Domains',
 }
 
-declare let PDBeMolstarPlugin: any;
-
 @Component({
   selector: 'pdbc-mb-molstar-tab',
   imports: [CommonModule, MaterialModule],
   templateUrl: './mb-molstar-tab.component.html',
   styleUrl: './mb-molstar-tab.component.scss',
 })
-export class MbMolstarTabComponent implements AfterViewInit {
+export class MbMolstarTabComponent implements AfterViewInit, OnDestroy {
   private bottomSheet = inject(MatBottomSheet);
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly mbFacade = inject(MobileFacade);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
 
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 
@@ -57,8 +57,12 @@ export class MbMolstarTabComponent implements AfterViewInit {
   public selectedTabName = this.mbFacade.selectedTabName;
   private selectedComponent = this.mbFacade.selectedComponent;
 
-  async ngAfterViewInit() {
-    await this.initializeMolstarViewer();
+  ngAfterViewInit() {
+    this.mbFacade.selectedMobileTabName.pipe(take(1)).subscribe(async (mobileTabName) => {
+      if (mobileTabName === MobileTabNames.Molstar) {
+        await this.initializeMolstarViewer();
+      }
+    });
   }
 
   public onTabClick(chip: { label: string; id: string }): void {
@@ -76,12 +80,15 @@ export class MbMolstarTabComponent implements AfterViewInit {
         this.mbFacade.updateSelectedComponent(MbAssembliesComponent);
         break;
       case MobileTabChips.Macromolecules:
+        this.mbFacade.updateSelectedMacromoleculeTitle('Macromolecules');
         this.mbFacade.updateSelectedComponent(MbMacromoleculeComponent);
         break;
       case MobileTabChips.Ligands:
+        this.mbFacade.updateSelectedLigandTitle('Ligands');
         this.mbFacade.updateSelectedComponent(MbLigandsComponent);
         break;
       case MobileTabChips.Domains:
+        this.mbFacade.updateSelectedDomainTitle('Domains');
         this.mbFacade.updateSelectedComponent(MbDomainsComponent);
         break;
       default:
@@ -103,16 +110,18 @@ export class MbMolstarTabComponent implements AfterViewInit {
   }
 
   private async initializeMolstarViewer(): Promise<void> {
-    // await this.mbFacade.initializeMolstarViewer(this.molstarContainer, this.entryId() ?? '');
-    if (!this.molstarFirstRenderStarted()) {
-      const molstarElement = document.getElementById('molstar-element');
-      this.molstarVisualisation.entryId = this.entryId();
-      this.molstarVisualisation.setRenderer(this.renderer);
-      this.molstarVisualisation.molstarViewerElement = molstarElement as HTMLElement;
+    const molstarElement = document.getElementById('molstar-mobile-element');
+    this.molstarVisualisation.entryId = this.entryId();
+    this.molstarVisualisation.setRenderer(this.renderer);
+    this.molstarVisualisation.molstarViewerElement = molstarElement as HTMLElement;
 
-      this.molstarFirstRenderStarted.set(true);
-      await this.molstarVisualisation.renderMolstarInitial();
-      this.compCommunication.molstarFirstRenderFinished.set(true);
-    }
+    await this.molstarVisualisation.renderMobileMolstarInitial();
+    this.compCommunication.molstarFirstRenderFinished.set(true);
+  }
+
+  ngOnDestroy(): void {
+    this.compCommunication.molstarFirstRenderFinished.set(false);
+    this.molstarFirstRenderStarted.set(false);
+    this.molstarVisualisation.molstarViewerElement = undefined;
   }
 }

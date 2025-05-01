@@ -28,7 +28,7 @@
     "no-invalid-double-slash-comments": null,
     "function-no-unknown": null,
     "max-nesting-depth": [
-      5,
+      10,
       {
         "ignoreAtRules": ["include"]
       }

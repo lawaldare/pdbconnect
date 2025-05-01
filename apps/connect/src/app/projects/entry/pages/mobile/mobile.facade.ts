@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { inject, Injectable, signal, Type } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { MobileTabNames } from './mobile-main/mobile-main.component';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -10,6 +12,9 @@ export class MobileFacade {
 
   private _selectedTabName = signal<string>('');
   public selectedTabName = this._selectedTabName.asReadonly();
+
+  private _selectedMobileTabName$ = new BehaviorSubject<MobileTabNames>(MobileTabNames.Overview);
+  public selectedMobileTabName = this._selectedMobileTabName$.asObservable();
 
   private _selectedComponent = signal<Type<any> | null>(null);
   public selectedComponent = this._selectedComponent.asReadonly();
@@ -29,11 +34,15 @@ export class MobileFacade {
     this._selectedTabName.set(tabName);
   }
 
+  public updateSelectedMobileTabName(tabName: string) {
+    this._selectedMobileTabName$.next(tabName as MobileTabNames);
+  }
+
   public updateSelectedComponent(component: Type<any> | null) {
     this._selectedComponent.set(component);
   }
 
-  public updateSelectedTitle(title: string) {
+  public updateSelectedMacromoleculeTitle(title: string) {
     this._macromoleculeTitle.set(title);
   }
 

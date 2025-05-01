@@ -116,7 +116,7 @@ export const EntryActions = createActionGroup({
     'Get Entry Status': emptyProps(),
     'Get Entry Status Success': props<{ entryStatus: EntryStatus }>(),
     'Get Entry Status Failure': emptyProps(),
-    'Get Interactions': emptyProps(),
+    'Get Interactions': props<{ chainId: string; residueId: string }>(),
     'Get Interactions Success': props<{ interactions: Interaction[] }>(),
     'Get Interactions Failure': emptyProps(),
     'Get Entry Polymer Coverage': emptyProps(),

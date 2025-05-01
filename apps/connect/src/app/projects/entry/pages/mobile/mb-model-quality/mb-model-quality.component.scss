@@ -46,6 +46,8 @@ section {
 
   .validation-info-row {
     display: flex;
+    gap: 4px;
+    margin-bottom: 4px;
 
     &.bg {
       background: #f2f2f3;

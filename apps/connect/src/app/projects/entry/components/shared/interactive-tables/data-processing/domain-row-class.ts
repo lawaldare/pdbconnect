@@ -70,29 +70,36 @@ export class DomainDataToTable extends DataToTable {
     return assembly;
   }
 
-  filterByPreferredAssembly(macromolecules: Molecule[], assembly: AssemblyData): Molecule[] {
-    // Create a quick lookup map for assembly entities by entity_id
-    const assemblyEntitiesMap = new Map<number, AssemblyEntity>();
+  private getNormalizedEntityMap(assembly: AssemblyData): Map<number, string[]> {
+    const map = new Map<number, string[]>();
 
     for (const entity of assembly.entities) {
-      assemblyEntitiesMap.set(entity.entity_id, entity);
+      const normalizedChains = entity.in_chains.map((chain) => chain.split('-')[0]);
+      map.set(entity.entity_id, normalizedChains);
     }
+
+    return map;
+  }
+
+  filterByPreferredAssembly(macromolecules: Molecule[], assembly: AssemblyData): Molecule[] {
+    // Create a quick lookup map for assembly entities by entity_id
+    const assemblyEntitiesMap = this.getNormalizedEntityMap(assembly);
 
     // Filter macromolecules based on entity_id presence in assembly
     return (
       macromolecules
         .filter((molecule) => assemblyEntitiesMap.has(molecule.entity_id))
         .map((molecule) => {
-          const assemblyEntity = assemblyEntitiesMap.get(molecule.entity_id)!;
+          const allowedAsyms = assemblyEntitiesMap.get(molecule.entity_id)!;
 
           // Filter the in_chains to only include those present in the assembly entity
           const filteredInStructAsyms: string[] = [];
           const filteredInChains: string[] = [];
 
           molecule.in_struct_asyms.forEach((asymId, idx) => {
-            if (assemblyEntity.in_chains.includes(asymId)) {
+            if (allowedAsyms.includes(asymId)) {
               filteredInStructAsyms.push(asymId);
-              filteredInChains.push(molecule.in_chains[idx]); // Keep the corresponding chain
+              filteredInChains.push(molecule.in_chains[idx]); // Keep corresponding chain
             }
           });
 
@@ -108,16 +115,13 @@ export class DomainDataToTable extends DataToTable {
   }
 
   filterPolymerCoverageByAssembly(polymerCoverage: PolymerCoverageMolecule[], assembly: AssemblyData): PolymerCoverageMolecule[] {
-    const assemblyEntitiesMap = new Map<number, AssemblyEntity>();
-    for (const entity of assembly.entities) {
-      assemblyEntitiesMap.set(entity.entity_id, entity);
-    }
+    const assemblyEntitiesMap = this.getNormalizedEntityMap(assembly);
 
     return polymerCoverage
       .filter((polymer) => assemblyEntitiesMap.has(polymer.entity_id))
       .map((polymer) => {
-        const assemblyEntity = assemblyEntitiesMap.get(polymer.entity_id)!;
-        const filteredChains = polymer.chains.filter((chain) => assemblyEntity.in_chains.includes(chain.struct_asym_id));
+        const allowedAsyms = assemblyEntitiesMap.get(polymer.entity_id)!;
+        const filteredChains = polymer.chains.filter((chain) => allowedAsyms.includes(chain.struct_asym_id));
         return {
           ...polymer,
           chains: filteredChains,
