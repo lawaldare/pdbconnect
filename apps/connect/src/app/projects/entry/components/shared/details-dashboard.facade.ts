@@ -1,15 +1,36 @@
-import { inject, Injectable, signal } from '@angular/core';
-import { BoundsByEntityId, MappedResidue, SequenceDetail } from './details-dashboard.component';
+import { inject, Injectable } from '@angular/core';
 import {
+  DomainsBoundaries,
   DomainsRowData,
   LigandsRowData,
   MacromoleculesResidueRanges,
   MacromoleculesRowData,
-} from '../interactive-tables/data-models-and-definitions/row-and-table.model';
-import { Molecule } from '../../../data-models/molecule.model';
+} from './interactive-tables/data-models-and-definitions/row-and-table.model';
+import { Molecule } from '../../data-models/molecule.model';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
-import { EntryApiService } from '../../../services/entry-api.service';
+import { EntryApiService } from '../../services/entry-api.service';
 import { map } from 'rxjs';
+
+export type BoundsByEntityId = {
+  [key: number]: DomainsBoundaries[];
+};
+
+export interface SequenceDetail {
+  title: string;
+  fullSequence: string;
+  segments: {
+    sequence: string;
+    color?: string;
+  }[];
+}
+
+export interface MappedResidue {
+  range: string[];
+  coverage: string;
+  chainId: string;
+  uniprot: string;
+  open: boolean;
+}
 
 @Injectable({
   providedIn: 'root',

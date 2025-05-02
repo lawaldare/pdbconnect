@@ -9,7 +9,7 @@ import { ComponentCommunicationService } from '../../../services/component-comm.
 import { TruncatePipe } from '@pdbc/core';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { DetailsDashboardFacade } from '../../../components/shared/details-dashboard/details-dashboard.facade';
+import { DetailsDashboardFacade } from '../../../components/shared/details-dashboard.facade';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../../store/entry-store.model';

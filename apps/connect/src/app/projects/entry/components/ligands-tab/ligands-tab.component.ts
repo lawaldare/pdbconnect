@@ -16,7 +16,7 @@ import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule } from '@p
 import { SelectionChangedEvent } from 'ag-grid-community';
 import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
 import { AgGridAngular } from 'ag-grid-angular';
-import { colDefs, defaultColDef, gridOptions } from './ag-grid';
+import { colDefs, gridOptions } from './ag-grid';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
@@ -96,13 +96,16 @@ export class LigandsTabComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
+  public readonly isInitialInteractionsMoreThanOne = computed(() => {
+    const interaction = this.interactions();
+    return interaction && interaction.length > 1;
+  });
 
   public searchTerm = new FormControl('');
 
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
-  public readonly defaultColDef = defaultColDef;
   public interactionsRowData = linkedSignal({
     source: this.interactions,
     computation: () => this.interactions(),

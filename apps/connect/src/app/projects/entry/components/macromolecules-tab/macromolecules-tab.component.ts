@@ -21,7 +21,7 @@ import { EcNumbersComponent } from '../shared/ec-numbers/ec-numbers.component';
 import { GoTermsComponent } from '../shared/go-terms/go-terms.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
-import { DetailsDashboardFacade } from '../shared/details-dashboard/details-dashboard.facade';
+import { DetailsDashboardFacade } from '../shared/details-dashboard.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 

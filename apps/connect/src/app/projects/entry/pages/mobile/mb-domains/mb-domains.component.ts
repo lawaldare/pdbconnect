@@ -2,7 +2,7 @@ import { AfterViewInit, Component, computed, inject, Optional, signal } from '@a
 import { CommonModule } from '@angular/common';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { DetailsDashboardFacade } from '../../../components/shared/details-dashboard/details-dashboard.facade';
+import { DetailsDashboardFacade } from '../../../components/shared/details-dashboard.facade';
 import { DomainsRowData } from '../../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MainDataProcessingFacade } from '../../main/data-processing.facade';

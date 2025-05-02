@@ -51,7 +51,6 @@
       }@else {}
     </div>
     <section class="ligand-charts">
-      @if(interactionsRowData()?.length){
       <div class="table">
         <p class="table-title">Ligand interactions - {{interactionsRowData()?.length}} total</p>
         <div class="table-toolbar">
@@ -66,22 +65,25 @@
             }
           </div>
         </div>
-        <ag-grid-angular
-          class="ag-theme-quartz"
-          [rowData]="interactionsRowData()"
-          [columnDefs]="colDefs"
-          [defaultColDef]="defaultColDef"
-          [gridOptions]="gridOptions"
-          (selectionChanged)="onSelectionChanged($event)"
-          [paginationPageSizeSelector]="paginationPageSizeSelector()"
-        />
+        <section class="table-wrapper">
+          <ag-grid-angular
+            class="ag-theme-quartz"
+            style="width: 100%; height: 100%"
+            [rowData]="interactionsRowData()"
+            [columnDefs]="colDefs"
+            [gridOptions]="gridOptions"
+            (selectionChanged)="onSelectionChanged($event)"
+            [paginationPageSizeSelector]="paginationPageSizeSelector()"
+            overlayNoRowsTemplate="No ligand interaction found!"
+          />
+        </section>
       </div>
-      }
-      <section class="molstar-lig-env" [class.expand]="!interactionsRowData()?.length">
-        <section class="molstar-details-container" [class.expand]="!interactionsRowData()?.length">
+
+      <section class="molstar-lig-env">
+        <section class="molstar-details-container">
           <div id="ligands-molstar-container" class="molstar-container"></div>
         </section>
-        <section class="lig-env-container" [class.expand]="!interactionsRowData()?.length">
+        <section class="lig-env-container">
           <div class="ligand-env" #ligandEnvContainer></div>
         </section>
       </section>
@@ -112,4 +114,8 @@
   </div>
 </main>
 
-}@else{} }@else{}
+}@else{
+<h5>No Ligands data available</h5>
+} }@else{
+<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+}

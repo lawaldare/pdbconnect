@@ -16,8 +16,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { combineLatest, filter, map } from 'rxjs';
 import { CitationDetail } from '../../../data-models/publication.model';
 import { StrucQualityGradientsComponent } from '../../../components/shared/struc-quality-gradients/struc-quality-gradients.component';
-import { MappedResidue } from '../../../components/shared/details-dashboard/details-dashboard.component';
-import { DetailsDashboardFacade } from '../../../components/shared/details-dashboard/details-dashboard.facade';
+import { DetailsDashboardFacade, MappedResidue } from '../../../components/shared/details-dashboard.facade';
 import { NavigationLink } from '../mb-citation-tab/mb-citation-tab.component';
 
 @Component({

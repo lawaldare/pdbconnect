@@ -9,13 +9,12 @@ import { EntryStoreState } from '../../../store/entry-store.model';
 import { MainDataProcessingFacade } from '../../main/data-processing.facade';
 import { MobileFacade } from '../mobile.facade';
 import { MaterialModule, UtilService } from '@pdbc/core';
-import { DetailsDashboardFacade } from '../../../components/shared/details-dashboard/details-dashboard.facade';
+import { DetailsDashboardFacade, SequenceDetail } from '../../../components/shared/details-dashboard.facade';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { EntryApiService } from '../../../services/entry-api.service';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { SequenceDetail } from '../../../components/shared/details-dashboard/details-dashboard.component';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
 

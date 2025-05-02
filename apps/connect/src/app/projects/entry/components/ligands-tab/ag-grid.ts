@@ -4,17 +4,15 @@ import { InteractionTypeRendererComponent } from './interaction-type.component';
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
-  paginationPageSize: 5,
-};
-
-export const defaultColDef: ColDef = {
-  filter: false,
-  flex: 1,
-  sortable: false,
-  wrapText: true,
-  autoHeight: true,
-  resizable: false,
-  suppressMovable: true,
+  defaultColDef: {
+    filter: false,
+    flex: 1,
+    sortable: false,
+    autoHeight: true,
+    resizable: false,
+    suppressMovable: true,
+  },
+  paginationPageSize: 10,
 };
 
 export const colDefs: ColDef[] = [

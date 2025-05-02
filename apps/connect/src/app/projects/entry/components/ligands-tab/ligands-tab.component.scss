@@ -115,10 +115,10 @@ section.ligand-charts {
     width: 50%;
     flex-direction: column;
 
-    &.expand {
-      width: 100%;
-      flex-direction: row;
-    }
+    // &.expand {
+    //   width: 100%;
+    //   flex-direction: row;
+    // }
 
     .molstar-details-container {
       max-width: 90%;
@@ -126,10 +126,10 @@ section.ligand-charts {
       aspect-ratio: 1 / 1;
       flex: 1;
 
-      &.expand {
-        max-width: unset;
-        width: 50%;
-      }
+      // &.expand {
+      //   max-width: unset;
+      //   width: 50%;
+      // }
 
       .molstar-container {
         position: relative;
@@ -151,11 +151,11 @@ section.ligand-charts {
         width: 50%;
       }
 
-      .ligand-env {
-        /*  !important; required here because of a bug on this external component */
-        width: 100% !important;
-        height: 100% !important;
-      }
+      // .ligand-env {
+      //   /*  !important; required here because of a bug on this external component */
+      //   width: 100% !important;
+      //   height: 100% !important;
+      // }
     }
   }
 
@@ -163,6 +163,8 @@ section.ligand-charts {
     // width: calc(100% - 640px);
     // height: 322px;
     width: 50%;
+    min-width: 50%;
+    max-width: 50%;
     min-height: 400px;
 
     // height: 66vh;
@@ -173,14 +175,14 @@ section.ligand-charts {
     }
 
     /* ag-grid force auto height so it is not set as 100% which breaks design */
-    ::ng-deep .ag-root-wrapper.ag-layout-normal {
-      height: auto;
-    }
+    // ::ng-deep .ag-root-wrapper.ag-layout-normal {
+    //   height: auto;
+    // }
 
-    ::ng-deep .ag-root-wrapper-body.ag-layout-normal {
-      flex: none;
-      height: auto;
-    }
+    // ::ng-deep .ag-root-wrapper-body.ag-layout-normal {
+    //   flex: none;
+    //   height: auto;
+    // }
 
     // ::ng-deep .ag-header-cell-label {
     //   // white-space: pre-wrap !important;
@@ -226,4 +228,8 @@ section.ligand-charts {
       }
     }
   }
+}
+
+section.table-wrapper {
+  height: 500px;
 }
