@@ -68,9 +68,6 @@
             }
           </article>
         </div>
-        }
-      </div>
-      <div class="info-grouped" style="width: 45%">
         <div class="info-row">
           <span class="micro-title"> Length </span>
           <article>{{currentMacromoleculeDatum().length}} amino acids</article>
@@ -81,6 +78,9 @@
           <article>{{ currentMacromoleculeDatum()?.additionalData.molecule.weight.toFixed(2) }} KDa</article>
           }
         </div>
+        }
+      </div>
+      <div class="info-grouped" style="width: 45%">
         @if(currentMacromoleculeDatum()?.genes.length){
         <div class="info-row">
           <span class="micro-title"> Gene names </span>
