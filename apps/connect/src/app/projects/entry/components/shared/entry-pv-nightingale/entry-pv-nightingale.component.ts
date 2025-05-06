@@ -1,6 +1,19 @@
-import { AfterViewInit, Component, computed, CUSTOM_ELEMENTS_SCHEMA, effect, ElementRef, HostListener, inject, input, Renderer2, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  CUSTOM_ELEMENTS_SCHEMA,
+  effect,
+  ElementRef,
+  HostListener,
+  inject,
+  input,
+  NgZone,
+  Renderer2,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { catchError, firstValueFrom, forkJoin, of, take } from 'rxjs';
+import { combineLatest, filter, take } from 'rxjs';
 import '@nightingale-elements/nightingale-manager';
 import '@nightingale-elements/nightingale-navigation';
 import '@nightingale-elements/nightingale-sequence';
@@ -14,6 +27,7 @@ import {
   APIVariationData,
   ConservationTrackBlockComponent,
   MapCustomDataPanelComponent,
+  NestedTrackBlockComponent,
   PanelResidueDatum,
   PvFixedHighlightService,
   PvTooltipService,
@@ -21,12 +35,16 @@ import {
   TrackBlockComponent,
   VariationTrackBlockComponent,
 } from '@pdbe-lib/pv-nightingale-components';
-import { PvDataApiService } from '../../../services/entry-pv-nightingale-api.service';
 
-import { processPdbEntityDataToTracks } from './pv-entry-api-processing';
+import { extractAllTooltips, extractBiophysicalResources, extractDomainResources, extractOtherTracks, sequenceToPanelData } from './pv-entry-api-processing';
 import { handleBarSrc, PAUL_TOL_COLORBLIND_SCALE } from '../../../entry-constant';
 import { PDBMolstarEvent } from './event-models/pdbe-molstar-events.model';
 import { PDBTopolViewerEvent } from './event-models/pdbe-topol-events.model';
+import { EntryActions } from '../../../store/entry.actions';
+import { EntrySelectors } from '../../../store/entry.selectors';
+import { EntryStoreState } from '../../../store/entry-store.model';
+import { Store } from '@ngrx/store';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 /**
  * Helper to decode rawHTML from API endpoints (tooltipContent)
@@ -38,11 +56,20 @@ function decodeHtml(html: string): string {
 }
 
 /**
- * Test cases: 1trn modification, 4v99 high chains; 3jb9 high residues, 102l mutations, 1cbs no variation, 7v08
+ * Test cases:
+ *
+ * 1trn modification,
+ * 4v99 high chains;
+ * 3jb9 high residues;
+ * 102l mutations;
+ * 1cbs no variation;
+ * 7v08 multiple entities with RNA;
  */
-
-// list of endpoints for simple tracks for entryId + entityId
-const PDBE_ENTITY_TRACK_ENDPOINTS = ['uniprot_mapping', 'chains', 'domains', 'rfam', 'secondary_structure', 'binding_sites', 'interfaces', 'annotations'];
+export interface FixedSelectionInput {
+  trackName: string;
+  trackSegments: string; // e.g. "10-20,25-25,50-51"
+  trackTooltip: string;
+}
 
 @Component({
   selector: 'pdbc-entry-pg-protvista',
@@ -52,8 +79,10 @@ const PDBE_ENTITY_TRACK_ENDPOINTS = ['uniprot_mapping', 'chains', 'domains', 'rf
     SearchResiduePanelComponent,
     MapCustomDataPanelComponent,
     TrackBlockComponent,
+    NestedTrackBlockComponent,
     ConservationTrackBlockComponent,
     VariationTrackBlockComponent,
+    NgxSkeletonLoaderModule,
   ],
   templateUrl: './entry-pv-nightingale.component.html',
   styleUrl: './entry-pv-nightingale.component.scss',
@@ -67,14 +96,15 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   public readonly chainId = input<string | undefined>(undefined);
   // to enable Mol*/TopologyViewer events sync
   public readonly externalInteractivity = input<boolean>(false);
-
-  // Debounce timer to prevent excessive component refreshes on entityId changes
-  private entityIdDebounceTimer: any;
+  // for protein specific parsing
+  public readonly isNucleic = input<boolean>(false);
+  // for fixed tracks on top
+  public readonly fixedSelectionInput = input<FixedSelectionInput | undefined>(undefined);
 
   // Inject required Angular services / extra dynamic manipulation
-  private apiService = inject(PvDataApiService);
   public renderer = inject(Renderer2);
   public elementRef = inject(ElementRef);
+  private zone = inject(NgZone);
 
   // State boolean variables indicating API loading and sequence loading
   public readonly loadedTracksAPIData = signal<boolean>(false);
@@ -90,11 +120,55 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   public sequence?: string;
   public sequenceLength?: number;
 
-  // most API data gets converted into track names and list (TrackBlockComponent)
-  public trackNames: string[] = [];
-  public trackList: NightingaleFeature[][] = [];
+  // most API data gets converted into track names and lists (TrackBlockComponent)
+  public uniprotTracks = signal<NightingaleFeature[] | null>([]);
+  public validationTracks = signal<NightingaleFeature[] | null>([]);
+  public rfamTracks = signal<NightingaleFeature[] | null>([]);
+  public secStrTracks = signal<NightingaleFeature[] | null>([]);
+  public ligandBindingTracks = signal<NightingaleFeature[] | null>([]);
+  public interfacesTracks = signal<NightingaleFeature[] | null>([]);
+
+  readonly trackBlocks = computed(() => [
+    { name: 'UniProt', data: this.uniprotTracks() },
+    { name: 'Validation', data: this.validationTracks() },
+    { name: 'Secondary structure', data: this.secStrTracks() },
+    { name: 'Ligand binding sites', data: this.ligandBindingTracks() },
+    { name: 'Interaction interfaces', data: this.interfacesTracks() },
+  ]);
+
   // this also includes custom data from the user
   public customTrackData: NightingaleFeature[] = [];
+
+  // or fixed selections from input
+  public fixedSelectionData = signal<NightingaleFeature[] | null>(null);
+
+  // some API data gets converted into nested track names and lists (NestedTrackBlockComponent)
+  public domainResourcesList = signal<string[]>([]);
+  public domainsByResource = signal<NightingaleFeature[][]>([]);
+
+  public biophysicalResourcesList = signal<string[]>([]);
+  public biophysicalByResource = signal<NightingaleFeature[][]>([]);
+
+  readonly trackNestedBlocks = computed(() => [
+    { name: 'Domains', dataNames: this.domainResourcesList(), data: this.domainsByResource() },
+    { name: 'Biophysical parameters', dataNames: this.biophysicalResourcesList(), data: this.biophysicalByResource() },
+  ]);
+
+  // storage
+  private readonly globalStore = inject(Store<EntryStoreState>);
+
+  private readonly trackUniprotMapping$ = this.globalStore.select(EntrySelectors.entityPvUniprot);
+  private readonly trackChains$ = this.globalStore.select(EntrySelectors.entityPvChains);
+  private readonly trackDomains$ = this.globalStore.select(EntrySelectors.entityPvDomains);
+  private readonly trackRfam$ = this.globalStore.select(EntrySelectors.entityPvRfam);
+  private readonly trackSecondaryStructure$ = this.globalStore.select(EntrySelectors.entityPvSecondaryStructure);
+  private readonly trackBindingSites$ = this.globalStore.select(EntrySelectors.entityPvBindingSites);
+  private readonly trackInterfaces$ = this.globalStore.select(EntrySelectors.entityPvInterfaces);
+  private readonly trackAnnotations$ = this.globalStore.select(EntrySelectors.entityPvAnnotations);
+  private readonly trackConservation$ = this.globalStore.select(EntrySelectors.entityPvConservation);
+  private readonly trackVariation$ = this.globalStore.select(EntrySelectors.entityPvVariation);
+
+  public readonly dataIsParsed = signal<boolean>(false);
 
   // conservation API data has a special track and data types (ConservationTrackBlockComponent)
   // this data is set using signals for automatic processing and rendering on update
@@ -184,14 +258,55 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     // 2 - this effect allows the visualisation to auto reset on entityId change
     effect(() => {
       const current = this.entityId();
-      clearTimeout(this.entityIdDebounceTimer);
-      this.entityIdDebounceTimer = setTimeout(() => {
-        if (current) this.resetVisualization();
-      }, 50);
+
+      this.globalStore.dispatch(EntryActions.clearEntityProtvistaData());
+
+      // wait for DOM to stabilize before reload
+      this.zone.onStable.pipe(take(1)).subscribe(() => {
+        this.resetVisualization();
+      });
+    });
+
+    effect(() => {
+      const fixedInput = this.fixedSelectionInput();
+      this.setupFixedSelectionTrack();
     });
   }
 
-  async ngAfterViewInit() {
+  setupFixedSelectionTrack() {
+    const fixedInput = this.fixedSelectionInput();
+    if (!fixedInput) {
+      this.fixedSelectionData.set(null);
+      return;
+    }
+
+    const features: NightingaleFeature[] = [];
+
+    const { trackName, trackSegments, trackTooltip } = fixedInput;
+
+    const fragments = trackSegments.split(',').map((segment) => {
+      const [startStr, endStr] = segment.trim().split('-');
+      const start = parseInt(startStr);
+      const end = endStr ? parseInt(endStr) : start;
+
+      return {
+        start,
+        end,
+        tooltipContent: trackTooltip,
+      };
+    });
+
+    features.push({
+      accession: trackName,
+      tooltipContent: trackTooltip,
+      locations: [{ fragments }],
+      color: '#444', // optional: you can also allow FixedSelectionInput to provide color if needed
+    });
+
+    this.fixedSelectionData.set(features);
+  }
+
+  setupTooltipServices() {
     // 1 - Setup highlight and tooltip services with this component's root element
     this.highlightService.setParentComponent(this.elementRef.nativeElement);
     this.tooltipService.setRelativeElement(this.elementRef.nativeElement);
@@ -207,29 +322,160 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     this.tooltipService.setScrollContainer(scrollContainer!);
     this.tooltipService.setRenderer(this.renderer);
     this.tooltipService.setHighlightService(this.highlightService);
+  }
 
-    // 3 - Load and render track data if required inputs are present
-    if (this.entryId() && this.entityId()) {
-      // 3.1 - Fetch PDBe track data (domains, chains, secondary structure, etc.)
-      const trackDataArray = await this.fetchPdbeEntityData();
+  getProtvistaData(entityId: string) {
+    // 1 - Dispatch all protvista track fetches
+    this.globalStore.dispatch(EntryActions.getEntryProtvistaUniprotMapping({ entityId }));
+    this.globalStore.dispatch(EntryActions.getEntryProtvistaChains({ entityId }));
+    this.globalStore.dispatch(EntryActions.getEntryProtvistaDomains({ entityId }));
+    this.globalStore.dispatch(EntryActions.getEntryProtvistaRfam({ entityId }));
+    this.globalStore.dispatch(EntryActions.getEntryProtvistaSecondaryStructure({ entityId }));
+    this.globalStore.dispatch(EntryActions.getEntryProtvistaBindingSites({ entityId }));
+    this.globalStore.dispatch(EntryActions.getEntryProtvistaInterfaces({ entityId }));
+    this.globalStore.dispatch(EntryActions.getEntryProtvistaAnnotations({ entityId }));
+    this.globalStore.dispatch(EntryActions.getEntryProtvistaConservation({ entityId }));
+    this.globalStore.dispatch(EntryActions.getEntryProtvistaVariation({ entityId }));
+    this.dataIsParsed.set(false);
+  }
 
-      // 3.2 - Extract sequence and sequenceLength from fetched data
-      this.setSequenceFromTrackData(trackDataArray);
+  allTracksReadyCheck(
+    uniprot: APITrackData | null | undefined,
+    chains: APITrackData | null | undefined,
+    domains: APITrackData | null | undefined,
+    rfam: APITrackData | null | undefined,
+    secondary: APITrackData | null | undefined,
+    binding: APITrackData | null | undefined,
+    interfaces: APITrackData | null | undefined,
+    annotations: APITrackData | null | undefined,
+    conservation: APIConservationData | null | undefined,
+    variation: APIVariationData | null | undefined
+  ) {
+    const allDefined =
+      uniprot !== undefined &&
+      chains !== undefined &&
+      domains !== undefined &&
+      rfam !== undefined &&
+      secondary !== undefined &&
+      binding !== undefined &&
+      interfaces !== undefined &&
+      annotations !== undefined &&
+      conservation !== undefined &&
+      variation !== undefined;
 
-      // 3.3 - Convert API data to Nightingale-compatible structures
-      const { trackNames, trackList, tooltips, panelResidueData } = processPdbEntityDataToTracks(this.entryId(), this.sequence!, trackDataArray);
+    if (allDefined === false) return false;
+    const allContainData =
+      (uniprot === null || Object.keys(uniprot!).length > 0) &&
+      (chains === null || Object.keys(chains!).length > 0) &&
+      (domains === null || Object.keys(domains!).length > 0) &&
+      (rfam === null || Object.keys(rfam!).length > 0) &&
+      (secondary === null || Object.keys(secondary!).length > 0) &&
+      (binding === null || Object.keys(binding!).length > 0) &&
+      (interfaces === null || Object.keys(interfaces!).length > 0) &&
+      (annotations === null || Object.keys(annotations!).length > 0) &&
+      (conservation === null || Object.keys(conservation!).length >= 0) &&
+      (variation === null || Object.keys(variation!).length >= 0);
+    return allContainData;
+  }
 
-      // 3.4 - Store processed data into component state
-      this.trackNames = trackNames;
-      this.trackList = trackList;
-      for (const [k, v] of Object.entries(tooltips)) {
-        this.tooltips[k] = v;
-      }
-      this.panelResidueData = panelResidueData;
+  processProtvistaData() {
+    combineLatest([
+      this.trackUniprotMapping$,
+      this.trackChains$,
+      this.trackDomains$,
+      this.trackRfam$,
+      this.trackSecondaryStructure$,
+      this.trackBindingSites$,
+      this.trackInterfaces$,
+      this.trackAnnotations$,
+      this.trackConservation$,
+      this.trackVariation$,
+    ])
+      .pipe(
+        filter(([uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations, conservation, variation]) =>
+          this.allTracksReadyCheck(uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations, conservation, variation)
+        ),
+        take(1) // only once
+      )
+      .subscribe(([uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations, conservation, variation]) => {
+        const uniprotData = (uniprot as any)?.empty ? null : uniprot;
+        const chainsData = (chains as any)?.empty ? null : chains;
+        const domainsData = (domains as any)?.empty ? null : domains;
+        const rfamData = (rfam as any)?.empty ? null : rfam;
+        const secondaryData = (secondary as any)?.empty ? null : secondary;
+        const bindingData = (binding as any)?.empty ? null : binding;
+        const interfacesData = (interfaces as any)?.empty ? null : interfaces;
+        const annotationsData = (annotations as any)?.empty ? null : annotations;
+        const conservationData = (conservation as any)?.empty ? null : conservation;
+        const variationData = (variation as any)?.empty ? null : variation;
+        // At this point everything is loaded → safe to process
+        const trackDataArray: (APITrackData | null)[] = [uniprotData, chainsData, domainsData, rfamData, secondaryData, bindingData, interfacesData, annotationsData];
 
-      // 3.5 - Mark track API data as loaded to trigger downstream computed signals
-      this.loadedTracksAPIData.set(true);
-    }
+        this.setSequenceFromTrackData(trackDataArray);
+
+        const uniprotTracks = extractOtherTracks('UniProt', uniprotData);
+        this.uniprotTracks.set(uniprotTracks);
+
+        const validationTracks = extractOtherTracks('Validation', chainsData);
+        this.validationTracks.set(validationTracks);
+
+        const secStrTracks = extractOtherTracks('Secondary structure', secondaryData);
+        this.secStrTracks.set(secStrTracks);
+
+        const ligandBindingTracks = extractOtherTracks('Ligand binding sites', bindingData);
+        this.ligandBindingTracks.set(ligandBindingTracks);
+
+        const interfacesTracks = extractOtherTracks('Interaction interfaces', interfacesData);
+        this.interfacesTracks.set(interfacesTracks);
+
+        const tooltips = extractAllTooltips(trackDataArray);
+        const panelResidueData = sequenceToPanelData(this.sequence!, uniprotTracks || undefined, this.isNucleic());
+
+        for (const [k, v] of Object.entries(tooltips)) {
+          this.tooltips[k] = v;
+        }
+        this.panelResidueData = panelResidueData;
+
+        if (domainsData || rfamData) {
+          const domainsProcessed = extractDomainResources(domainsData, rfamData);
+          this.domainResourcesList.set(domainsProcessed.domainResourcesList);
+          this.domainsByResource.set(domainsProcessed.domainsByResource);
+        } else {
+          this.domainResourcesList.set([]);
+          this.domainsByResource.set([]);
+        }
+
+        if (secondaryData) {
+          const biophysicalProcessed = extractBiophysicalResources(secondaryData);
+          this.biophysicalResourcesList.set(biophysicalProcessed.biophysicalResourcesList);
+          this.biophysicalByResource.set(biophysicalProcessed.biophysicalByResource);
+        } else {
+          this.biophysicalResourcesList.set([]);
+          this.biophysicalByResource.set([]);
+        }
+
+        this.loadedTracksAPIData.set(true);
+        if (conservationData && Object.keys(conservationData).length > 0) {
+          this.originalConservationData.set(conservationData);
+        }
+        this.loadedConservationAPIData.set(true);
+        if (variationData && Object.keys(variationData).length > 0) {
+          this.originalVariationData.set(variationData);
+        }
+        this.loadedVariationAPIData.set(true);
+      });
+  }
+
+  reloadVisualisation() {
+    this.setupFixedSelectionTrack();
+    this.setupTooltipServices();
+    const entityId = this.entityId();
+    this.getProtvistaData(entityId);
+    this.processProtvistaData();
+  }
+
+  async ngAfterViewInit() {
+    this.reloadVisualisation();
   }
 
   openSearchPanel() {
@@ -246,9 +492,11 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       const btnRect = btn.getBoundingClientRect();
       // top was previously calculated based on button position
       // const top = btnRect.bottom - hostRect.top + 6;
+      // left was previously calculated based on button position
+      // const left = btnRect.left - hostRect.left;
 
       const top = 0; // fixed to very top of host (absolute position)
-      const left = btnRect.left - hostRect.left;
+      const left = 70;
 
       // 3 - Update panel position state
       this.searchPanelPosition = { top, left };
@@ -273,9 +521,11 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       const btnRect = btn.getBoundingClientRect();
       // top was previously calculated based on button position
       // const top = btnRect.bottom - hostRect.top + 16;
+      // left was previously calculated based on button position
+      // const left = btnRect.left - hostRect.left;
 
       const top = 0; // fixed to very top of host (absolute position)
-      const left = btnRect.left - hostRect.left;
+      const left = 70;
 
       // 3 - Update panel position state
       this.mapPanelPosition = { top, left };
@@ -294,8 +544,17 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     this.sequenceIsLoaded.set(false);
 
     // 2 - Clear all core data and state values
-    this.trackNames = [];
-    this.trackList = [];
+    this.uniprotTracks.set([]);
+    this.validationTracks.set([]);
+    this.rfamTracks.set([]);
+    this.secStrTracks.set([]);
+    this.ligandBindingTracks.set([]);
+    this.interfacesTracks.set([]);
+    this.domainResourcesList.set([]);
+    this.domainsByResource.set([]);
+    this.biophysicalResourcesList.set([]);
+    this.biophysicalByResource.set([]);
+
     this.customTrackData = [];
     this.sequence = undefined;
     this.sequenceLength = undefined;
@@ -312,77 +571,14 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     this.highlightService.triggerDynamicFixedHighlight();
 
     // 5 - Optional: immediately reload visualization after clearing state
-    setTimeout(() => {
-      this.ngAfterViewInit();
-    }, 0);
+    // setTimeout(() => {
+    this.reloadVisualisation();
+    // }, 100);
   }
 
-  /**
-   * For PDBe Entity we:
-   * 1 - retrieve all data from PDBE_ENTITY_TRACK_ENDPOINTS (this function)
-   * 2 - convert data from these endpoints into new Nightingale required format (processPdbEntityDataToTracks)
-   * 3 - retrieve data from Conservation and Variation endpoints when possible
-   * 4 - return raw API response for track endpoints so step 2 can process them
-   * @returns retrieved API data for PDBe Entity trackDataArray: (Record<string, TrackData> | null)[]
-   */
-  async fetchPdbeEntityData() {
-    // 1 - Fetch track data from each endpoint using RxJS observables
-    const observables = PDBE_ENTITY_TRACK_ENDPOINTS.map((endpoint) =>
-      this.apiService.getPdbeEntityTrackData(this.entryId(), this.entityId(), endpoint).pipe(
-        catchError((error) => {
-          // console.error(`❌ Error fetching data for endpoint ${endpoint}:`, error);
-          return of(null); // 1.1 Return a default/fallback value to keep forkJoin working
-        }),
-        take(1) // 1.2 take only the first response and unsubscribe
-      )
-    );
-
-    // 2 - Setup conservation endpoint observable
-    const conservationObservable = this.apiService.getPdbeConservationTrackData(this.entryId(), this.entityId()).pipe(
-      catchError((error) => {
-        // console.error(`❌ Error fetching Conservation data:`, error);
-        this.loadedConservationAPIData.set(true); // 2.1 still mark as "loaded" to avoid blocking
-        return of(null);
-      }),
-      take(1)
-    );
-
-    // 3 - Setup variation endpoint observable
-    const variationObservable = this.apiService.getPdbeVariationTrackData(this.entryId(), this.entityId()).pipe(
-      catchError((error) => {
-        // console.error(`❌ Error fetching Variation data:`, error);
-        this.loadedVariationAPIData.set(true);
-        return of(null);
-      }),
-      take(1)
-    );
-
-    // 4 - Trigger conservation observable independently (no need to block)
-    conservationObservable.subscribe((conservationData) => {
-      if (conservationData) this.originalConservationData.set(conservationData);
-      this.loadedConservationAPIData.set(true);
-    });
-
-    // 5 - Trigger variation observable independently (no need to block)
-    variationObservable.subscribe(async (variationData) => {
-      if (variationData) this.originalVariationData.set(variationData);
-      this.loadedVariationAPIData.set(true);
-    });
-
-    // 6 - Wait for all track endpoints to resolve using forkJoin
-    let trackDataArray: (Record<string, APITrackData> | null)[] = [];
-    try {
-      // 6.1 Use firstValueFrom to await forkJoin result
-      trackDataArray = await firstValueFrom(forkJoin(observables));
-    } catch (error) {
-      // console.error('❌ Unexpected error while fetching track data:', error);
-    }
-    return trackDataArray;
-  }
-
-  setSequenceFromTrackData(trackDataArray: (Record<string, APITrackData> | null)[]) {
+  setSequenceFromTrackData(trackDataArray: (APITrackData | null)[]) {
     // 1 - Extract sequence from all track records (skip nulls)
-    const seqs = trackDataArray.filter((eachTrackDatum) => eachTrackDatum !== null).map((eachTrackDatum) => eachTrackDatum[this.entryId()].sequence);
+    const seqs = trackDataArray.filter((eachTrackDatum) => eachTrackDatum !== null).map((eachTrackDatum) => eachTrackDatum.sequence);
 
     // 2 - Validate if all sequences are equal (warn if not)
     const allEqual = seqs.every((val, i, arr) => val === arr[0]);
@@ -633,10 +829,13 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
         start = fragment.start;
         end = fragment.end;
 
-        // 2.5 - Use fragment color if available
+        // 2.5 - Use fragment or feature color if available
         // (but only for ranges with more than 1 residue)
         if (fragment.color && fragment.start !== fragment.end) {
           color = fragment.color;
+        }
+        if (!color && feature.color && fragment.start !== fragment.end) {
+          color = feature.color;
         }
       }
 

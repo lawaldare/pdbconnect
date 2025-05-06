@@ -3,6 +3,7 @@ export { SearchResiduePanelComponent } from './lib/pv-nightingale-components/com
 export { ConservationTrackBlockComponent } from './lib/pv-nightingale-components/components/expandable-tracks/pv-conservation-block/pv-conservation-track-block.component';
 export { VariationTrackBlockComponent } from './lib/pv-nightingale-components/components/expandable-tracks/pv-variation-block/pv-variation-track-block.component';
 export { TrackBlockComponent } from './lib/pv-nightingale-components/components/expandable-tracks/pv-track-block/pv-track-block.component';
+export { NestedTrackBlockComponent } from './lib/pv-nightingale-components/components/expandable-tracks/pv-nested-track-block/pv-nested-track-block.component';
 export { PvTooltipService } from './lib/pv-nightingale-components/services/pv-tooltip.service';
 export { PvFixedHighlightService } from './lib/pv-nightingale-components/services/pv-fixed-highlight.service';
 export { APITrackData, APITrackDatum, APITrackItem, APITrackFragment } from './lib/pv-nightingale-components/models/pv-api-general-track-data.model';

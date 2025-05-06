@@ -94,12 +94,13 @@
     }
     <section class="domain-charts" [ngClass]="'Domains' !== 'Domains' ? 'hidden-molstar-container' : '' ">
       <section class="protvista-container">
-        @if(entryId() && currentProtvistaEntity()) {
+        @if(entryId() && currentProtvistaEntity() && protvistaDomainSelection()) {
         <pdbc-entry-pg-protvista
           [entryId]="entryId()!"
           [entityId]="currentProtvistaEntity()!"
           [chainId]="currentProtvistaChain()!"
           [externalInteractivity]="true"
+          [fixedSelectionInput]="protvistaDomainSelection()!"
         ></pdbc-entry-pg-protvista>
         }
       </section>

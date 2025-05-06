@@ -13,6 +13,7 @@ import { ProcessedSummary } from '../data-models/summary.model';
 import { RelatedPublication } from '../data-models/related-publications.model';
 import { IRRMCExperimentRawData, SBGRIDExperimentRawData } from '../data-models/experiment-raw-data.model';
 import { entryStatusDefault } from '../data-models/status.model';
+import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
 
 export const ENTRY_STORE_STATE_KEY = 'entry';
 
@@ -61,6 +62,16 @@ const initialState: EntryStoreState = {
   polymerCoverage: [],
   ligandMonomers: [],
   residueWiseOutliers: [],
+  entityPvUniprot: {} as APITrackData,
+  entityPvChains: {} as APITrackData,
+  entityPvDomains: {} as APITrackData,
+  entityPvRfam: {} as APITrackData,
+  entityPvSecondaryStructure: {} as APITrackData,
+  entityPvBindingSites: {} as APITrackData,
+  entityPvInterfaces: {} as APITrackData,
+  entityPvAnnotations: {} as APITrackData,
+  entityPvConservation: {} as APIConservationData,
+  entityPvVariation: {} as APIVariationData,
 };
 
 export const entryReducer = createReducer(
@@ -210,5 +221,58 @@ export const entryReducer = createReducer(
   on(EntryActions.getEntryResidueWiseOutliersSuccess, (state, action) => ({
     ...state,
     residueWiseOutliers: action.residueWiseOutliers,
+  })),
+  on(EntryActions.getEntryProtvistaUniprotMappingSuccess, (state, action) => ({
+    ...state,
+    entityPvUniprot: action.entityPvUniprot,
+  })),
+  on(EntryActions.getEntryProtvistaChainsSuccess, (state, action) => ({
+    ...state,
+    entityPvChains: action.entityPvChains,
+  })),
+  on(EntryActions.getEntryProtvistaDomainsSuccess, (state, action) => ({
+    ...state,
+    entityPvDomains: action.entityPvDomains,
+  })),
+  on(EntryActions.getEntryProtvistaRfamSuccess, (state, action) => ({
+    ...state,
+    entityPvRfam: action.entityPvRfam,
+  })),
+  on(EntryActions.getEntryProtvistaSecondaryStructureSuccess, (state, action) => ({
+    ...state,
+    entityPvSecondaryStructure: action.entityPvSecondaryStructure,
+  })),
+  on(EntryActions.getEntryProtvistaBindingSitesSuccess, (state, action) => ({
+    ...state,
+    entityPvBindingSites: action.entityPvBindingSites,
+  })),
+  on(EntryActions.getEntryProtvistaInterfacesSuccess, (state, action) => ({
+    ...state,
+    entityPvInterfaces: action.entityPvInterfaces,
+  })),
+  on(EntryActions.getEntryProtvistaAnnotationsSuccess, (state, action) => ({
+    ...state,
+    entityPvAnnotations: action.entityPvAnnotations,
+  })),
+  on(EntryActions.getEntryProtvistaConservationSuccess, (state, action) => ({
+    ...state,
+    entityPvConservation: action.entityPvConservation,
+  })),
+  on(EntryActions.getEntryProtvistaVariationSuccess, (state, action) => ({
+    ...state,
+    entityPvVariation: action.entityPvVariation,
+  })),
+  on(EntryActions.clearEntityProtvistaData, (state) => ({
+    ...state,
+    entityPvUniprot: {} as APITrackData,
+    entityPvChains: {} as APITrackData,
+    entityPvDomains: {} as APITrackData,
+    entityPvRfam: {} as APITrackData,
+    entityPvSecondaryStructure: {} as APITrackData,
+    entityPvBindingSites: {} as APITrackData,
+    entityPvInterfaces: {} as APITrackData,
+    entityPvAnnotations: {} as APITrackData,
+    entityPvConservation: {} as APIConservationData,
+    entityPvVariation: {} as APIVariationData,
   }))
 );

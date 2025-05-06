@@ -167,12 +167,13 @@
     <section class="chart-area" [class.collapsed]="compCommunication.isSidebarCollapsed()">
       @if (hasProtvista) {
       <section class="protvista-container">
-        @if(entryId() && currentProtvistaEntity()) {
+        @let molType = currentMacromoleculeDatum().additionalData?.molecule?.molecule_type; @if(entryId() && currentProtvistaEntity() && molType) {
         <pdbc-entry-pg-protvista
           [entryId]="entryId()!"
           [entityId]="currentProtvistaEntity()!"
           [chainId]="currentProtvistaChain()!"
           [externalInteractivity]="true"
+          [isNucleic]="molType.includes('nucleotide')"
         ></pdbc-entry-pg-protvista>
         }
       </section>

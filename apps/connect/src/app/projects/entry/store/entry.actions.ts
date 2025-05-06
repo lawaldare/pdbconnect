@@ -24,6 +24,7 @@ import { Symmetry } from '../data-models/assembly.model';
 import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
 import { LigandMonomer } from '../data-models/ligand-monomers.model';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
+import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -128,5 +129,36 @@ export const EntryActions = createActionGroup({
     'Get Entry Residue Wise Outliers': emptyProps(),
     'Get Entry Residue Wise Outliers Success': props<{ residueWiseOutliers: ResidueWiseOutliersMolecule[] }>(),
     'Get Entry Residue Wise Outliers Failure': emptyProps(),
+    'Get Entry Protvista Uniprot Mapping': props<{ entityId: string }>(),
+    'Get Entry Protvista Uniprot Mapping Success': props<{ entityPvUniprot: APITrackData }>(),
+    'Get Entry Protvista Uniprot Mapping Failure': emptyProps(),
+    'Get Entry Protvista Chains': props<{ entityId: string }>(),
+    'Get Entry Protvista Chains Success': props<{ entityPvChains: APITrackData }>(),
+    'Get Entry Protvista Chains Failure': emptyProps(),
+    'Get Entry Protvista Domains': props<{ entityId: string }>(),
+    'Get Entry Protvista Domains Success': props<{ entityPvDomains: APITrackData }>(),
+    'Get Entry Protvista Domains Failure': emptyProps(),
+    'Get Entry Protvista Rfam': props<{ entityId: string }>(),
+    'Get Entry Protvista Rfam Success': props<{ entityPvRfam: APITrackData }>(),
+    'Get Entry Protvista Rfam Failure': emptyProps(),
+    'Get Entry Protvista Secondary Structure': props<{ entityId: string }>(),
+    'Get Entry Protvista Secondary Structure Success': props<{ entityPvSecondaryStructure: APITrackData }>(),
+    'Get Entry Protvista Secondary Structure Failure': emptyProps(),
+    'Get Entry Protvista Binding Sites': props<{ entityId: string }>(),
+    'Get Entry Protvista Binding Sites Success': props<{ entityPvBindingSites: APITrackData }>(),
+    'Get Entry Protvista Binding Sites Failure': emptyProps(),
+    'Get Entry Protvista Interfaces': props<{ entityId: string }>(),
+    'Get Entry Protvista Interfaces Success': props<{ entityPvInterfaces: APITrackData }>(),
+    'Get Entry Protvista Interfaces Failure': emptyProps(),
+    'Get Entry Protvista Annotations': props<{ entityId: string }>(),
+    'Get Entry Protvista Annotations Success': props<{ entityPvAnnotations: APITrackData }>(),
+    'Get Entry Protvista Annotations Failure': emptyProps(),
+    'Get Entry Protvista Conservation': props<{ entityId: string }>(),
+    'Get Entry Protvista Conservation Success': props<{ entityPvConservation: APIConservationData }>(),
+    'Get Entry Protvista Conservation Failure': emptyProps(),
+    'Get Entry Protvista Variation': props<{ entityId: string }>(),
+    'Get Entry Protvista Variation Success': props<{ entityPvVariation: APIVariationData }>(),
+    'Get Entry Protvista Variation Failure': emptyProps(),
+    'Clear Entity Protvista Data': emptyProps(),
   },
 });

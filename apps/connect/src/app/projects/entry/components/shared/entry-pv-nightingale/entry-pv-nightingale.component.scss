@@ -28,7 +28,7 @@
 .elements-container {
   width: 100%;
   min-height: 480px;
-  max-height: 600px;
+  max-height: 500px;
   overflow-y: clip;
 
   .always-on-top {
@@ -44,8 +44,8 @@
 
 .navigation-zoom-hint {
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   right: 4px;
   z-index: 2;
   background: #ffffff;
@@ -56,10 +56,12 @@
   justify-content: center;
   pointer-events: none;
   height: 30px;
+
   img {
     scale: 0.9;
     margin: 2px;
   }
+
   kbd {
     line-height: 12px;
     margin: 4px;
@@ -74,6 +76,7 @@
   align-items: center;
   justify-content: center;
 }
+
 .spinner {
   margin-top: 4%;
 }

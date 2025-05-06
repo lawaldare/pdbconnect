@@ -1,4 +1,4 @@
-import { Component, Input, ElementRef, Renderer2, signal, OnDestroy, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, Input, ElementRef, Renderer2, signal, OnDestroy, inject, CUSTOM_ELEMENTS_SCHEMA, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Feature as NightingaleFeature } from '@nightingale-elements/nightingale-track';
 import '@pdbe-nightingale-track-canvas';
@@ -22,10 +22,26 @@ import { PvFixedHighlightService } from '../../../services/pv-fixed-highlight.se
 })
 export class TrackBlockComponent implements OnDestroy {
   @Input() trackName!: string;
-  @Input() subtracks: NightingaleFeature[] = [];
+  // @Input() subtracks: NightingaleFeature[] = [];
+
+  private _subtracks: NightingaleFeature[] = [];
+
+  @Input()
+  set subtracks(value: NightingaleFeature[]) {
+    this._subtracks = value;
+    this.mutableSubtracks.set(value.map((v) => ({ ...v })));
+  }
+
+  get subtracks(): NightingaleFeature[] {
+    return this._subtracks;
+  }
+
+  public mutableSubtracks = signal<NightingaleFeature[]>([]);
+
   @Input() tooltips: { [key: string]: string } = {};
   @Input() sequenceLength?: number;
   @Input() isCustomData = false;
+  @Input() isNested = false;
 
   private renderer = inject(Renderer2);
   private elementRef = inject(ElementRef);
@@ -123,9 +139,10 @@ export class TrackBlockComponent implements OnDestroy {
   generateSubTrackCanvasString(trackName: string, index: number, subtrack: NightingaleFeature): string {
     const subtrackLabel = (subtrack as any).label;
     const subtrackTitle = subtrackLabel ? subtrackLabel : subtrack.accession;
+    const nestedClass = this.isNested ? 'nested' : '';
     return `
         <div class="pv-track-row non-header-track">
-          <div class="pv-track-label-col hoverable subtrack dynamic-track" name="${trackName}-${subtrackTitle}"></div>
+          <div class="pv-track-label-col hoverable subtrack dynamic-track ${nestedClass}" name="${trackName}-${subtrackTitle}"></div>
           <div class="pv-track-container">
             <nightingale-track-canvas
               id="cv-${trackName}-subtrack-${index}"

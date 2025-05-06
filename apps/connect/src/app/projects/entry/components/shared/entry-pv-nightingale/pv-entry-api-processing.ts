@@ -27,104 +27,6 @@ const AAS_ONE_TO_THREE: { [key: string]: string } = {
   X: 'Xaa', // Unknown
 };
 
-// list of tracks displayed on Protvista for entryId + entityId
-const PDBE_ENTITY_TRACKS = [
-  'UniProt',
-  'Chains',
-  'Secondary structure',
-  'Ligand binding sites',
-  'Interaction interfaces',
-  'Domains',
-  'CATH domains',
-  'CATH-B domains',
-  'SCOP domains',
-  'Pfam domains',
-  'InterPro annotations',
-  'Rfam',
-  'Flexibility predictions',
-  'Early folding residue predictions',
-  'Sequence conservation',
-  'Variants',
-];
-
-export function processPdbEntityDataToTracks(entryId: string, sequence: string, trackDataArray: (Record<string, APITrackData> | null)[]) {
-  // convert track from raw API data to list of TrackData | null
-  const entryInitData = trackDataArray.map((eachTrackDatum) => {
-    if (eachTrackDatum === null) return null;
-    else return eachTrackDatum[entryId];
-  });
-
-  // now we parse the TrackData | null list to Angular template variables trackNames and trackList
-  let trackNames: string[] = [];
-  let trackList: NightingaleFeature[][] = [];
-  const tooltips: { [key: string]: string } = {};
-
-  // we just iterate over each TrackData and convert track.data to NightingaleFeature[]
-  for (let i = 0; i < entryInitData.length; i++) {
-    const trackData = entryInitData[i];
-    0;
-    if (trackData === null) continue;
-    const dataTracks = trackData.tracks;
-    for (const track of dataTracks) {
-      const tracksToNightingale: NightingaleFeature[] = [...(track.data as unknown as NightingaleFeature[])];
-
-      let currentTrackNames = [track.label];
-      let currentTrackList = [tracksToNightingale];
-
-      if (track.label === 'Domains') {
-        const { newDomainTrackNames, newDomainTrackList } = splitPDBeEntityDomainsAPIData(track);
-        currentTrackNames = newDomainTrackNames;
-        currentTrackList = newDomainTrackList;
-      }
-
-      for (let j = 0; j < currentTrackNames.length; j++) {
-        const eachTrackName = currentTrackNames[j];
-        const eachTrackData = currentTrackList[j];
-        for (const eachTrackDatum of eachTrackData) {
-          const eachTrackDatumProcessed = eachTrackDatum as NightingaleFeature & {label?: string};
-          
-          // const tooltipId = `${eachTrackName}-${eachTrackDatum.accession}`;
-          const tooltipId = `${eachTrackName}-${eachTrackDatumProcessed.label}`;
-          tooltips[tooltipId] = (eachTrackDatum as APITrackItem).labelTooltip;
-        }
-      }
-      trackNames.push(...currentTrackNames);
-      trackList.push(...currentTrackList);
-    }
-  }
-
-  // extra processing for the "Search for residues and Map your data panel is done"
-  const uniprotTrackData = trackList[trackNames.indexOf('UniProt')] || undefined;
-  const panelResidueData = sequenceToPanelData(sequence, uniprotTrackData);
-
-  // we then have to sort and filter tracks according to PDBE_ENTITY_TRACKS constant
-
-  // step 1: Create a map of priority
-  const priorityMap = new Map<string, number>();
-  PDBE_ENTITY_TRACKS.forEach((name, index) => {
-    priorityMap.set(name, index);
-  });
-
-  // step 2: Sort both arrays based on priority
-  const combined = trackNames.map((name, idx) => ({
-    name,
-    obj: trackList[idx],
-  }));
-
-  // step 3: Filter out unwanted tracks, sort valid ones
-  const filteredAndSorted = combined
-    .filter((el) => priorityMap.has(el.name)) // filter step
-    .sort((a, b) => {
-      return priorityMap.get(a.name)! - priorityMap.get(b.name)!;
-    });
-
-  // step 4: Split back
-  trackNames = filteredAndSorted.map((el) => el.name);
-  trackList = filteredAndSorted.map((el) => el.obj);
-
-  return { trackNames, trackList, tooltips, panelResidueData };
-}
-
 function parseDomainTooltipForAccession(textContent: string): string | undefined {
   const regex = /\(([^()]*)\)[^()]*<\/a>/g;
   let match;
@@ -196,10 +98,13 @@ function splitPDBeEntityDomainsAPIData(apiData: APITrackDatum) {
   return { newDomainTrackNames, newDomainTrackList };
 }
 
-function sequenceToPanelData(sequence: string, uniprotData?: NightingaleFeature[]): PanelResidueDatum[] {
+export function sequenceToPanelData(sequence: string, uniprotData?: NightingaleFeature[], isNucleic?: boolean): PanelResidueDatum[] {
   const panelResidueData: PanelResidueDatum[] = sequence.split('').map((eachAa, i) => {
     let resId = `${i + 1}`;
-    let resName = AAS_ONE_TO_THREE[eachAa] || eachAa; // fallback to raw AA
+    let resName = eachAa;
+    if (!isNucleic) {
+      resName = AAS_ONE_TO_THREE[eachAa] || eachAa; // fallback to raw AA
+    }
     let uniprotIdx: string | undefined;
 
     if (uniprotData) {
@@ -269,4 +174,184 @@ function sequenceToPanelData(sequence: string, uniprotData?: NightingaleFeature[
   });
 
   return panelResidueData;
+}
+
+export function extractAllTooltips(trackDataArray: (APITrackData | null)[]) {
+  const tooltips: { [key: string]: string } = {};
+  for (let i = 0; i < trackDataArray.length; i++) {
+    const trackData = trackDataArray[i];
+
+    if (trackData === null) continue;
+    const dataTracks = trackData.tracks;
+    for (const track of dataTracks) {
+      const trackDataCopy = JSON.parse(JSON.stringify(track.data));
+      const tracksToNightingale: NightingaleFeature[] = [...(trackDataCopy as unknown as NightingaleFeature[])];
+
+      let currentTrackNames = [track.label];
+      let currentTrackList = [tracksToNightingale];
+
+      if (track.label === 'Chains') {
+        currentTrackNames = ['Validation'];
+      }
+
+      if (track.label === 'Domains' || track.label === 'Rfam') {
+        const { newDomainTrackNames, newDomainTrackList } = splitPDBeEntityDomainsAPIData(track);
+        currentTrackNames = newDomainTrackNames;
+        currentTrackList = newDomainTrackList;
+      }
+
+      for (let j = 0; j < currentTrackNames.length; j++) {
+        const eachTrackName = currentTrackNames[j];
+        const eachTrackData = currentTrackList[j];
+        for (const eachTrackDatum of eachTrackData) {
+          const eachTrackDatumProcessed = eachTrackDatum as NightingaleFeature & { label?: string };
+
+          // const tooltipId = `${eachTrackName}-${eachTrackDatum.accession}`;
+          const tooltipId = `${eachTrackName}-${eachTrackDatumProcessed.label}`;
+          tooltips[tooltipId] = (eachTrackDatum as APITrackItem).labelTooltip;
+        }
+      }
+    }
+  }
+  return tooltips;
+}
+
+export function extractOtherTracks(trackName: string, trackData: APITrackData | null) {
+  if (trackData === null) return null;
+
+  const trackList: NightingaleFeature[] = [];
+  const dataTracks = trackData.tracks;
+  for (const track of dataTracks) {
+    const trackDataCopy = JSON.parse(JSON.stringify(track.data));
+    const tracksToNightingale: NightingaleFeature[] = [...(trackDataCopy as unknown as NightingaleFeature[])];
+
+    let currentTrackName = track.label;
+    const currentTrackList = tracksToNightingale;
+
+    // rename Chains to Validation
+    if (track.label === 'Chains') {
+      currentTrackName = 'Validation';
+    }
+
+    // has its own processing function
+    if (track.label === 'Flexibility predictions' || track.label === 'Early folding residue predictions') {
+      continue;
+    }
+
+    if (trackName !== currentTrackName) continue;
+
+    trackList.push(...currentTrackList);
+  }
+  return trackList;
+}
+
+export function extractDomainResources(trackDomains: APITrackData | null, trackRfam: APITrackData | null) {
+  const domainResourcesList: string[] = [];
+  const domainsByResource: NightingaleFeature[][] = [];
+
+  if (trackDomains !== null) {
+    const domainTracks = trackDomains.tracks[0]?.data ?? [];
+
+    for (const domainTrack of domainTracks) {
+      const resourceLabel = domainTrack.label; // example: "CATH domains", "SCOP domains", "InterPro annotations"
+
+      const features: NightingaleFeature[] = [];
+
+      const fragmentsByAccession = new Map<string, APITrackFragment[]>();
+      const trackDatumFragments = domainTrack.locations[0]?.fragments ?? [];
+
+      for (const fragment of trackDatumFragments) {
+        const domainAccession = parseDomainTooltipForAccession(fragment.tooltipContent);
+
+        if (domainAccession) {
+          const existingFragments = fragmentsByAccession.get(domainAccession) || [];
+          fragmentsByAccession.set(domainAccession, [...existingFragments, fragment]);
+        }
+      }
+
+      for (const [accession, fragments] of fragmentsByAccession) {
+        features.push({
+          accession,
+          tooltipContent: '',
+          label: accession,
+          labelTooltip: `${domainTrack.accession}: ${accession}`,
+          locations: [{ fragments }],
+        } as NightingaleFeature);
+      }
+
+      domainResourcesList.push(resourceLabel);
+      domainsByResource.push(features);
+    }
+  }
+
+  if (trackRfam !== null) {
+    const rfamTracks = trackRfam.tracks[0]?.data ?? [];
+
+    for (const rfamTrack of rfamTracks) {
+      const resourceLabel = rfamTrack.label;
+      const features: NightingaleFeature[] = [];
+
+      const fragmentsByAccession = new Map<string, APITrackFragment[]>();
+      const trackDatumFragments = rfamTrack.locations[0]?.fragments ?? [];
+
+      for (const fragment of trackDatumFragments) {
+        const domainAccession = parseDomainTooltipForAccession(fragment.tooltipContent);
+
+        if (domainAccession) {
+          const existingFragments = fragmentsByAccession.get(domainAccession) || [];
+          fragmentsByAccession.set(domainAccession, [...existingFragments, fragment]);
+        }
+      }
+
+      for (const [accession, fragments] of fragmentsByAccession) {
+        features.push({
+          accession,
+          tooltipContent: '',
+          label: accession,
+          labelTooltip: `${rfamTrack.accession}: ${accession}`,
+          locations: [{ fragments }],
+        } as NightingaleFeature);
+      }
+      domainResourcesList.push(resourceLabel);
+      domainsByResource.push(features);
+    }
+  }
+
+  return { domainResourcesList, domainsByResource };
+}
+
+export function extractBiophysicalResources(trackBiophysical: APITrackData | null) {
+  const biophysicalResourcesList: string[] = [];
+  const biophysicalByResource: NightingaleFeature[][] = [];
+
+  if (!trackBiophysical) return { biophysicalResourcesList, biophysicalByResource };
+
+  for (const trackDatum of trackBiophysical.tracks) {
+    const resourceLabel = trackDatum.label;
+
+    // ❗️ Skip Secondary structure → it's not biophysical nested
+    if (resourceLabel === 'Secondary structure') continue;
+
+    const trackDatumData = trackDatum.data ?? [];
+    const features: NightingaleFeature[] = [];
+
+    for (const datum of trackDatumData) {
+      const fragments = datum.locations[0]?.fragments ?? [];
+
+      features.push({
+        accession: datum.accession,
+        tooltipContent: datum.tooltipContent ?? '',
+        label: datum.label ?? datum.accession,
+        labelTooltip: datum.labelTooltip ?? datum.accession,
+        locations: [{ fragments }],
+      } as NightingaleFeature);
+    }
+
+    if (features.length > 0) {
+      biophysicalResourcesList.push(resourceLabel);
+      biophysicalByResource.push(features);
+    }
+  }
+
+  return { biophysicalResourcesList, biophysicalByResource };
 }

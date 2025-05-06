@@ -14,10 +14,12 @@ import { BestStructureDict } from '../data-models/uniprot-best-structures.model'
 import { MainDataProcessingFacade } from '../pages/main/data-processing.facade';
 import { CitationDetail } from '../data-models/publication.model';
 import { IRRMCExperimentRawData } from '../data-models/experiment-raw-data.model';
+import { PvDataApiService } from '../services/entry-pv-nightingale-api.service';
 
 @Injectable()
 export class EntryEffects {
   private readonly entryAPIService = inject(EntryApiService);
+  private readonly protvistaAPIService = inject(PvDataApiService);
   private readonly actions$ = inject(Actions);
   private readonly store = inject(Store<EntryStoreState>);
   private dataProcessing = inject(MainDataProcessingFacade);
@@ -572,6 +574,156 @@ export class EntryEffects {
         this.entryAPIService.getResidueWiseOutliers(entryId).pipe(
           map((residueWiseOutliers) => EntryActions.getEntryResidueWiseOutliersSuccess({ residueWiseOutliers })),
           catchError(() => of(EntryActions.getEntryResidueWiseOutliersFailure()))
+        )
+      )
+    )
+  );
+
+  getEntryProtvistaUniprotMapping$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getEntryProtvistaUniprotMapping),
+      switchMap((action) => {
+        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
+      }),
+      mergeMap(([action, entryId]) =>
+        this.protvistaAPIService.getPdbeEntityUniprotMappingTrackData(entryId, action.entityId).pipe(
+          map((data) => EntryActions.getEntryProtvistaUniprotMappingSuccess({ entityPvUniprot: data })),
+          catchError(() => of(EntryActions.getEntryProtvistaUniprotMappingFailure()))
+        )
+      )
+    )
+  );
+
+  getEntryProtvistaChains$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getEntryProtvistaChains),
+      switchMap((action) => {
+        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
+      }),
+      mergeMap(([action, entryId]) =>
+        this.protvistaAPIService.getPdbeEntityChainsTrackData(entryId, action.entityId).pipe(
+          map((data) => EntryActions.getEntryProtvistaChainsSuccess({ entityPvChains: data })),
+          catchError(() => of(EntryActions.getEntryProtvistaChainsFailure()))
+        )
+      )
+    )
+  );
+
+  getEntryProtvistaDomains$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getEntryProtvistaDomains),
+      switchMap((action) => {
+        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
+      }),
+      mergeMap(([action, entryId]) =>
+        this.protvistaAPIService.getPdbeEntityDomainsTrackData(entryId, action.entityId).pipe(
+          map((data) => EntryActions.getEntryProtvistaDomainsSuccess({ entityPvDomains: data })),
+          catchError(() => of(EntryActions.getEntryProtvistaDomainsFailure()))
+        )
+      )
+    )
+  );
+
+  getEntryProtvistaRfam$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getEntryProtvistaRfam),
+      switchMap((action) => {
+        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
+      }),
+      mergeMap(([action, entryId]) =>
+        this.protvistaAPIService.getPdbeEntityRfamTrackData(entryId, action.entityId).pipe(
+          map((data) => EntryActions.getEntryProtvistaRfamSuccess({ entityPvRfam: data })),
+          catchError(() => of(EntryActions.getEntryProtvistaRfamFailure()))
+        )
+      )
+    )
+  );
+
+  getEntryProtvistaSecondaryStructure$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getEntryProtvistaSecondaryStructure),
+      switchMap((action) => {
+        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
+      }),
+      mergeMap(([action, entryId]) =>
+        this.protvistaAPIService.getPdbeEntitySecondaryStructureTrackData(entryId, action.entityId).pipe(
+          map((data) => EntryActions.getEntryProtvistaSecondaryStructureSuccess({ entityPvSecondaryStructure: data })),
+          catchError(() => of(EntryActions.getEntryProtvistaSecondaryStructureFailure()))
+        )
+      )
+    )
+  );
+
+  getEntryProtvistaBindingSites$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getEntryProtvistaBindingSites),
+      switchMap((action) => {
+        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
+      }),
+      mergeMap(([action, entryId]) =>
+        this.protvistaAPIService.getPdbeEntityBindingSitesTrackData(entryId, action.entityId).pipe(
+          map((data) => EntryActions.getEntryProtvistaBindingSitesSuccess({ entityPvBindingSites: data })),
+          catchError(() => of(EntryActions.getEntryProtvistaBindingSitesFailure()))
+        )
+      )
+    )
+  );
+
+  getEntryProtvistaInterfaces$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getEntryProtvistaInterfaces),
+      switchMap((action) => {
+        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
+      }),
+      mergeMap(([action, entryId]) =>
+        this.protvistaAPIService.getPdbeEntityInterfacesTrackData(entryId, action.entityId).pipe(
+          map((data) => EntryActions.getEntryProtvistaInterfacesSuccess({ entityPvInterfaces: data })),
+          catchError(() => of(EntryActions.getEntryProtvistaInterfacesFailure()))
+        )
+      )
+    )
+  );
+
+  getEntryProtvistaAnnotations$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getEntryProtvistaAnnotations),
+      switchMap((action) => {
+        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
+      }),
+      mergeMap(([action, entryId]) =>
+        this.protvistaAPIService.getPdbeEntityAnnotationsTrackData(entryId, action.entityId).pipe(
+          map((data) => EntryActions.getEntryProtvistaAnnotationsSuccess({ entityPvAnnotations: data })),
+          catchError(() => of(EntryActions.getEntryProtvistaAnnotationsFailure()))
+        )
+      )
+    )
+  );
+
+  getEntryProtvistaConservation$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getEntryProtvistaConservation),
+      switchMap((action) => {
+        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
+      }),
+      mergeMap(([action, entryId]) =>
+        this.protvistaAPIService.getPdbeConservationTrackData(entryId, action.entityId).pipe(
+          map((data) => EntryActions.getEntryProtvistaConservationSuccess({ entityPvConservation: data })),
+          catchError(() => of(EntryActions.getEntryProtvistaConservationFailure()))
+        )
+      )
+    )
+  );
+
+  getEntryProtvistaVariation$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getEntryProtvistaVariation),
+      switchMap((action) => {
+        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
+      }),
+      mergeMap(([action, entryId]) =>
+        this.protvistaAPIService.getPdbeVariationTrackData(entryId, action.entityId).pipe(
+          map((data) => EntryActions.getEntryProtvistaVariationSuccess({ entityPvVariation: data })),
+          catchError(() => of(EntryActions.getEntryProtvistaVariationFailure()))
         )
       )
     )

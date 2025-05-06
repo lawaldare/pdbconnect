@@ -35,6 +35,23 @@
   flex-wrap: wrap;
 }
 
+.pv-protvista .pv-track-row.btns {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 4px;
+  margin-left: 4px;
+  margin-top: 6px;
+}
+
+.pv-protvista .pv-track-row.btns p {
+  font-size: 14px;
+  line-height: 30px;
+}
+
+.pv-protvista .pv-track-row.no-data {
+  min-height: 40px;
+}
+
 .pv-protvista .pv-track-col {
   display: flex;
   flex-direction: column;
@@ -51,6 +68,13 @@
   width: 80%;
 }
 
+.pv-protvista .pv-track-container.no-data {
+  display: flex;
+  align-items: center;
+  padding-left: 4px;
+  font-size: 14px;
+}
+
 .pv-protvista .pv-track-label-col {
   width: 20%;
   padding: 4px 6px;
@@ -63,8 +87,17 @@
   cursor: pointer;
 }
 
+.pv-protvista .pv-track-label-col.nested {
+  padding-left: 12px;
+}
+
 .pv-protvista .pv-track-label-col.subtrack {
   padding-left: 12px;
+  cursor: default;
+}
+
+.pv-protvista .pv-track-label-col.nested.subtrack {
+  padding-left: 16px;
   cursor: default;
 }
 
@@ -144,6 +177,7 @@
   max-height: unset;
   border-radius: 0;
 }
+
 .pv-protvista .manual-tooltip a {
   font-size: 16px;
 }
@@ -168,6 +202,7 @@ with extra ajustments for close button */
   margin-right: -6px;
   max-height: 20px;
 }
+
 .pv-protvista .pinned-tooltip .close-btn {
   border: none;
   background: transparent;
@@ -175,6 +210,7 @@ with extra ajustments for close button */
   font-size: 14px;
   color: #888;
 }
+
 .pv-protvista .pinned-tooltip .close-btn:hover {
   color: #000;
 }
@@ -188,9 +224,20 @@ with extra ajustments for close button */
   margin-bottom: 2px;
 }
 
+/* .pv-protvista .pv-link-btn {
+   font-size: 14px;
+   line-height: 18px;
+} */
+
 .pv-protvista .pv-link-btn {
-  font-size: 14px;
   line-height: 18px;
+  padding: 6px 12px;
+  background: #673ab7;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
 }
 
 .pv-protvista .pv-sel-menu-item {
@@ -231,6 +278,6 @@ with extra ajustments for close button */
   margin-left: 2px;
 }
 
-/**.pv-protvista g.highlighted > rect:not(:last-child) {
+/** .pv-protvista g.highlighted > rect:not(:last-child) {
   fill: #ffffff66;
-}*/
+} */

@@ -14,7 +14,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
-import { EntryPgProtvistaComponent } from '../shared/entry-pv-nightingale/entry-pv-nightingale.component';
+import { EntryPgProtvistaComponent, FixedSelectionInput } from '../shared/entry-pv-nightingale/entry-pv-nightingale.component';
 import { MaterialModule, UtilService } from '@pdbc/core';
 import { entryDomainsTooltips, resourceUrls } from '../../entry-constant';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
@@ -58,6 +58,7 @@ export class DomainsTabComponent {
   public selectedChains?: string;
   public currentProtvistaEntity = signal<string | undefined>(undefined);
   public currentProtvistaChain = signal<string | undefined>(undefined);
+  public protvistaDomainSelection = signal<FixedSelectionInput | undefined>(undefined);
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
@@ -145,7 +146,7 @@ export class DomainsTabComponent {
 
   private initOrRefreshProtvista() {
     // stop if this dashboard does not have protvista (initially false and then set in onTableRowSelection according to tabName input)
-    const datum = this.currentDomainsDatum();
+    const datum: DomainsRowData = this.currentDomainsDatum();
     const entityId = datum.additionalData.boundaries[0].entity;
     let chainId: string | undefined = undefined;
 
@@ -154,7 +155,19 @@ export class DomainsTabComponent {
     const allSame = chains.every((chain) => chain === chains[0]);
     if (allSame) chainId = chains[0];
 
+    const segments = datum.additionalData.boundaries
+      .filter((boundary) => boundary.chain === chainId)
+      .map((boundary) => {
+        return `${boundary.start}-${boundary.end}`;
+      })
+      .join(',');
+
     this.currentProtvistaEntity.set(`${entityId}`);
     this.currentProtvistaChain.set(chainId);
+    this.protvistaDomainSelection.set({
+      trackName: 'Current Domain',
+      trackSegments: segments,
+      trackTooltip: 'Current Domain',
+    });
   }
 }

@@ -28,6 +28,7 @@ import { Interaction } from '../data-models/interaction.model';
 import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
 import { LigandMonomer } from '../data-models/ligand-monomers.model';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
+import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
 
 export interface EntryStoreState {
   entryId: string;
@@ -74,6 +75,16 @@ export interface EntryStoreState {
   polymerCoverage: PolymerCoverageMolecule[];
   ligandMonomers: LigandMonomer[];
   residueWiseOutliers: ResidueWiseOutliersMolecule[];
+  entityPvUniprot: APITrackData;
+  entityPvChains: APITrackData;
+  entityPvDomains: APITrackData;
+  entityPvRfam: APITrackData;
+  entityPvSecondaryStructure: APITrackData;
+  entityPvBindingSites: APITrackData;
+  entityPvInterfaces: APITrackData;
+  entityPvAnnotations: APITrackData;
+  entityPvConservation: APIConservationData;
+  entityPvVariation: APIVariationData;
 }
 
 export interface EntryMoleculesData {
