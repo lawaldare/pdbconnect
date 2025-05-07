@@ -365,16 +365,16 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
 
     if (allDefined === false) return false;
     const allContainData =
-      (uniprot === null || Object.keys(uniprot!).length > 0) &&
-      (chains === null || Object.keys(chains!).length > 0) &&
-      (domains === null || Object.keys(domains!).length > 0) &&
-      (rfam === null || Object.keys(rfam!).length > 0) &&
-      (secondary === null || Object.keys(secondary!).length > 0) &&
-      (binding === null || Object.keys(binding!).length > 0) &&
-      (interfaces === null || Object.keys(interfaces!).length > 0) &&
-      (annotations === null || Object.keys(annotations!).length > 0) &&
-      (conservation === null || Object.keys(conservation!).length >= 0) &&
-      (variation === null || Object.keys(variation!).length >= 0);
+      (uniprot === null || Object.keys(uniprot).length > 0) &&
+      (chains === null || Object.keys(chains).length > 0) &&
+      (domains === null || Object.keys(domains).length > 0) &&
+      (rfam === null || Object.keys(rfam).length > 0) &&
+      (secondary === null || Object.keys(secondary).length > 0) &&
+      (binding === null || Object.keys(binding).length > 0) &&
+      (interfaces === null || Object.keys(interfaces).length > 0) &&
+      (annotations === null || Object.keys(annotations).length > 0) &&
+      (conservation === null || Object.keys(conservation).length >= 0) &&
+      (variation === null || Object.keys(variation).length >= 0);
     return allContainData;
   }
 

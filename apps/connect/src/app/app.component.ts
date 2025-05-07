@@ -5,6 +5,7 @@ import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 import { filter } from 'rxjs';
 import { environment } from '../environments/environment';
 import { UtilService } from '@pdbc/core';
+import { ScriptLoaderService } from './script-loader.service';
 
 declare const gtag: any;
 @Component({
@@ -15,7 +16,11 @@ declare const gtag: any;
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  constructor(private _router: Router, private utilService: UtilService) {
+  constructor(
+    private _router: Router,
+    private utilService: UtilService,
+    private scriptLoader: ScriptLoaderService
+  ) {
     this._router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((e: NavigationEnd) => {
       window.scrollTo(0, 0);
       // window.location.reload();
@@ -25,8 +30,12 @@ export class AppComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.init();
+    await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js');
+    await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
+    await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
+    await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.js');
   }
 
   private init(): void {
