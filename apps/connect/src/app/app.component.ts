@@ -4,8 +4,7 @@ import { VfEbiHeaderComponent } from '@vf-lib/ebi-header';
 import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 import { filter } from 'rxjs';
 import { environment } from '../environments/environment';
-import { UtilService } from '@pdbc/core';
-import { ScriptLoaderService } from './script-loader.service';
+import { ScriptLoaderService, UtilService } from '@pdbc/core';
 
 declare const gtag: any;
 @Component({
@@ -35,7 +34,7 @@ export class AppComponent implements OnInit {
     await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js');
     await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
     await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
-    await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.js');
+    await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.js', true);
   }
 
   private init(): void {

@@ -1,5 +1,6 @@
-import { AfterViewInit, Component, ElementRef, input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MolstarPluginService } from '../extension-for-pages/molstart-plugin.service';
 
 declare let PDBeMolstarPlugin: any;
 
@@ -16,13 +17,16 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
   public readonly width = input<string>();
 
   private molstarViewInstance: any;
+  private readonly molstarPluginService = inject(MolstarPluginService);
 
   public isExpanded = false;
 
   @ViewChild('viewContainer') viewContainer!: ElementRef;
 
-  ngAfterViewInit(): void {
-    this.molstarViewInstance = new PDBeMolstarPlugin();
+  async ngAfterViewInit() {
+    await this.molstarPluginService.loadPlugin();
+    const pluginInstance = this.molstarPluginService.createInstance();
+    this.molstarViewInstance = pluginInstance;
 
     const container = this.viewContainer.nativeElement;
 

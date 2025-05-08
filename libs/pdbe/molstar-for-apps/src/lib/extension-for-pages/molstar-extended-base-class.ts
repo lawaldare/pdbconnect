@@ -1,4 +1,4 @@
-import { ElementRef } from '@angular/core';
+import { ElementRef, inject } from '@angular/core';
 import { signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { chainEntityResidSelection, MolstarResidueInfo, MolstarSelectionObj } from './utils/molstar-core-manipulation.util';
@@ -7,6 +7,7 @@ import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
 import { StructureQuery } from 'molstar/lib/mol-model/structure/query/query';
 import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
 import { Structure, StructureSelection } from 'molstar/lib/mol-model/structure';
+import { MolstarPluginService } from './molstart-plugin.service';
 
 /**
  * This file contains a base class with helper functions for manipulating Molstar
@@ -56,6 +57,8 @@ export class MolstarBaseClass {
   public residues = signal<MolstarResidueInfo[]>([]);
   public cameraDuration = 1200; // in ms (1200 = 1.2 sec)
 
+  private readonly molstarPluginService = inject(MolstarPluginService);
+
   /**
    * Function triggers PDBe Molstar visualisation initialization and saves this instance to
    * molstarViewInstance signal
@@ -67,7 +70,9 @@ export class MolstarBaseClass {
     if (this.molstarViewInstance()) {
       console.error('MOLSTAR INSTANCE EXISTS');
     }
-    this.molstarViewInstance.set(new PDBeMolstarPlugin());
+    await this.molstarPluginService.loadPlugin();
+    const pluginInstance = this.molstarPluginService.createInstance();
+    this.molstarViewInstance.set(pluginInstance);
     const container = molstarViewer ? molstarViewer : molstarContainer?.nativeElement;
     await this.molstarViewInstance().render(container, molstarConfigObject);
     await firstValueFrom(this.molstarViewInstance().events.loadComplete);
@@ -120,6 +125,7 @@ export class MolstarBaseClass {
   public async initImageGallery(entryId: string) {
     const galleryManager = await PDBeMolstarPlugin.extensions.StateGallery.StateGalleryManager.create(this.molstarViewInstance().plugin, entryId);
     this.galleryManager.set(galleryManager);
+    console.log('MolstarImageGallery initialized', this.galleryManager());
   }
 
   /**

@@ -21,3 +21,4 @@ export * from './lib/services/google-analytics/window-reference.service';
 export * from './lib/services/google-analytics/google-analytics.service';
 export * from './lib/pipes/capitalize.pipe';
 export * from './lib/pipes/truncate.pipe';
+export * from './lib/services/script-loader.service';

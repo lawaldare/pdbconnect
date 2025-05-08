@@ -1,12 +1,13 @@
-import { AfterViewInit, Component, computed, ElementRef, Inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, inject, Inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { CustomCasePipe } from './custom-case.pipe';
+import { MolstarPluginService } from '../extension-for-pages/molstart-plugin.service';
 
-declare let PDBeMolstarPlugin: any;
+// declare let PDBeMolstarPlugin: any;
 
 export interface Fragment {
   name: string;
@@ -54,7 +55,12 @@ export class MolstarDialogComponent implements AfterViewInit {
 
   @ViewChild('viewContainer') viewContainer!: ElementRef;
 
-  constructor(public dialogRef: MatDialogRef<MolstarDialogComponent>, @Inject(MAT_DIALOG_DATA) public dialogData: any) {
+  private readonly molstarPluginService = inject(MolstarPluginService);
+
+  constructor(
+    public dialogRef: MatDialogRef<MolstarDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public dialogData: any
+  ) {
     if (dialogData.fragments) {
       const id = dialogData.moleculeId.toUpperCase();
       this.showFragmentOptions.set(true);
@@ -105,8 +111,10 @@ export class MolstarDialogComponent implements AfterViewInit {
     };
   }
 
-  ngAfterViewInit(): void {
-    this.molstarViewInstance = new PDBeMolstarPlugin();
+  async ngAfterViewInit() {
+    await this.molstarPluginService.loadPlugin();
+    const pluginInstance = this.molstarPluginService.createInstance();
+    this.molstarViewInstance = pluginInstance;
 
     const container = this.viewContainer.nativeElement;
 
