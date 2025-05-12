@@ -16,6 +16,7 @@ import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-over
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MobileTabNames } from '../mobile-main/mobile-main.component';
 import { take } from 'rxjs';
+import { MolstarStateService } from '../../../services/molstar-state.service';
 
 export enum MobileTabChips {
   MQuality = 'MQuality',
@@ -37,7 +38,7 @@ export class MbMolstarTabComponent implements AfterViewInit, OnDestroy {
   private readonly mbFacade = inject(MobileFacade);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
+  public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
 
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 
@@ -45,6 +46,7 @@ export class MbMolstarTabComponent implements AfterViewInit, OnDestroy {
   private readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
   private readonly renderer = inject(Renderer2);
   public readonly compCommunication = inject(ComponentCommunicationService);
+  public readonly molstarState = inject(MolstarStateService);
 
   public readonly mobileTabChips = [
     { label: 'Model Quality', id: MobileTabChips.MQuality },
@@ -116,11 +118,11 @@ export class MbMolstarTabComponent implements AfterViewInit, OnDestroy {
     this.molstarVisualisation.molstarViewerElement = molstarElement as HTMLElement;
 
     await this.molstarVisualisation.renderMobileMolstarInitial();
-    this.compCommunication.molstarFirstRenderFinished.set(true);
+    this.molstarState.molstarFirstRenderFinished.set(true);
   }
 
   ngOnDestroy(): void {
-    this.compCommunication.molstarFirstRenderFinished.set(false);
+    this.molstarState.molstarFirstRenderFinished.set(false);
     this.molstarFirstRenderStarted.set(false);
     this.molstarVisualisation.molstarViewerElement = undefined;
   }

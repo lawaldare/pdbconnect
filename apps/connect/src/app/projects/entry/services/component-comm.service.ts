@@ -1,12 +1,23 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, Injector, signal } from '@angular/core';
 import { MolstarResidueInfo } from '@pdbe-lib/molstar-for-apps';
 import { DataToTable } from '../components/shared/interactive-tables/data-processing/abstract-base-row-class';
+import { OverviewStateManagementService } from '../components/summary-tab/sub-components/overview-molstar/state-management.service';
+import { MolstarOverviewForTopPage } from '../helpers/molstar/molstar-overview-for-top-page';
+import { OutliersByModelId } from '../pages/main/data-processing.facade';
+import { toSignal } from '@angular/core/rxjs-interop';
+
+export interface PreferredAssemblyData {
+  name: string;
+  preferred: number;
+  composition: string | undefined;
+  complexId: string;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class ComponentCommunicationService {
-  public molstarFirstRenderFinished = signal(false);
+  public preferredAssemblyData = signal<PreferredAssemblyData | undefined>(undefined);
 
   public currentTab = signal<string>('Information');
   public tabSwitchOrigin = signal<string>('main');

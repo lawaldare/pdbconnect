@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, effect, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
@@ -24,6 +24,8 @@ import { MainDataProcessingFacade } from '../../pages/main/data-processing.facad
 import { DetailsDashboardFacade } from '../shared/details-dashboard.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
+import { MolstarStateService } from '../../services/molstar-state.service';
+import { ActionQueueService } from '../../services/action-queue.service';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -68,13 +70,13 @@ export class MacromoleculesTabComponent {
   private readonly dialog = inject(MatDialog);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
+  private readonly actionQueue = inject(ActionQueueService);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
+  public readonly molstarState = inject(MolstarStateService);
 
-  public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
-
-  public molstarVisualisation = inject(MolstarOverviewForTopPage);
+  public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
@@ -167,64 +169,64 @@ export class MacromoleculesTabComponent {
   public currentMacromoleculeDatum = computed(() => {
     let selectedIdx = this.compCommunication.tabState()['Macromolecules'] ?? 0;
     if (selectedIdx === 'Main') selectedIdx = 0;
-    return this.macromoleculeTableRows()[selectedIdx as number];
+
+    const datum = this.macromoleculeTableRows()[selectedIdx as number];
+    if (datum) {
+      this.triggerMacromoleculeUpdateSideEffects(datum);
+    }
+    return datum;
   });
 
-  constructor() {
-    effect(async () => {
-      const molstarFirstRenderFinished = this.molstarFirstRenderFinished();
+  async triggerMacromoleculeUpdateSideEffects(macromolecule: MacromoleculesRowData) {
+    // refreshes dropdown options on new macromolecule
+    this.updateDropdownOptions(macromolecule);
 
-      const hasMacromoleculesData = Object.keys(this.compCommunication.tabTableData()).indexOf('Macromolecules') > -1;
-      const hasLigandsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Ligands') > -1;
+    // updates shown sequence on new macromolecule
+    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
 
-      // do not render dashboard until molstar first page render is finished
-      if (!molstarFirstRenderFinished) return;
+    // updates layout display details on new macromolecule
+    this.updateVisualsDisplayed(macromolecule);
 
-      // do not render dashboard until data necessary to check molstar state not loaded
-      if (!hasMacromoleculesData) return;
-      if (!hasLigandsData) return;
-      if (!this.currentMacromoleculeDatum()) return;
+    // renders necessary visualisations according to display options and data
+    await this.renderVisualisations(macromolecule);
+  }
 
-      const datum = this.currentMacromoleculeDatum();
-
-      this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(datum);
-      this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-        return {
-          name: eachString,
-          url: `macro-${idx + 1}`,
-          downloadable: false,
-        };
-      });
-      this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
-
-      this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', datum, this.dropdownSelected);
-
-      // finally we displayed topology viewer only for protein molecules
-      this.hasTopologyViewer = false;
-      if (this.allThereVisuals.includes(datum.additionalData.molecule.molecule_type)) {
-        this.selectionTypeText = 'protein';
-        // if protein is not chimeric (single uniprotAccession), set this as selectionIdentifier
-        if (datum.additionalData.uniprotAccessions.length === 1) {
-          this.selectionIdentifier = datum.additionalData.uniprotAccessions[0];
-          if (this.proteinsStats()) {
-            this.selectionStats = this.proteinsStats();
-          }
-        }
-        this.hasTopologyViewer = true;
-        this.hasProtvista = true;
-      }
-
-      if (this.onlyTwoVisuals.includes(datum.additionalData.molecule.molecule_type)) {
-        this.hasProtvista = true;
-        this.hasTopologyViewer = false;
-      }
-
-      if (this.onlyMolstarVisuals.includes(datum.additionalData.molecule.molecule_type)) {
-        this.hasProtvista = false;
-        this.hasTopologyViewer = false;
-      }
-      await this.renderVisualisations();
+  updateDropdownOptions(macromolecule: MacromoleculesRowData) {
+    this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(macromolecule);
+    this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
+      return {
+        name: eachString,
+        url: `macro-${idx + 1}`,
+        downloadable: false,
+      };
     });
+    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+  }
+
+  updateVisualsDisplayed(macromolecule: MacromoleculesRowData) {
+    this.hasTopologyViewer = false;
+    if (this.allThereVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
+      this.selectionTypeText = 'protein';
+      // if protein is not chimeric (single uniprotAccession), set this as selectionIdentifier
+      if (macromolecule.additionalData.uniprotAccessions.length === 1) {
+        this.selectionIdentifier = macromolecule.additionalData.uniprotAccessions[0];
+        if (this.proteinsStats()) {
+          this.selectionStats = this.proteinsStats();
+        }
+      }
+      this.hasTopologyViewer = true;
+      this.hasProtvista = true;
+    }
+
+    if (this.onlyTwoVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
+      this.hasProtvista = true;
+      this.hasTopologyViewer = false;
+    }
+
+    if (this.onlyMolstarVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
+      this.hasProtvista = false;
+      this.hasTopologyViewer = false;
+    }
   }
 
   get getMappedGOMapping() {
@@ -242,7 +244,8 @@ export class MacromoleculesTabComponent {
     this.dropdownSelected = event;
 
     // all possible rendering functions are called for a dashboard
-    await this.renderVisualisations();
+    const macromolecule = this.currentMacromoleculeDatum();
+    await this.renderVisualisations(macromolecule);
   }
 
   public openDialog(type: string) {
@@ -262,49 +265,43 @@ export class MacromoleculesTabComponent {
     this.utilService.copy(text);
   }
 
-  private async renderVisualisations() {
-    await this.renderInMolstar();
-    this.initOrRefreshProtvista();
-    await this.initOrRefreshTopologyViewer();
+  private async renderVisualisations(macromolecule: MacromoleculesRowData) {
+    await this.renderInMolstar(macromolecule);
+    await this.initOrRefreshProtvista(macromolecule);
+    await this.initOrRefreshTopologyViewer(macromolecule);
   }
 
-  private async renderInMolstar() {
-    const datum = this.currentMacromoleculeDatum();
-
-    const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
-    const ligandsRawData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
-    const ligandsData = ligandsRawData.filter((lig) => lig.type === 'ligand');
-    const modificationsData = ligandsRawData.filter((lig) => lig.type === 'modification');
-
+  private async renderInMolstar(macromolecule: MacromoleculesRowData) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const shouldSkip = !this.molstarFirstRenderFinished();
 
-    // if Macromolecules config not loaded, load it
-    if (!this.molstarVisualisation.currentViewName.includes('Tab-Macromolecules')) {
-      await this.molstarVisualisation.checkMacromoleculesReady();
-      await this.molstarVisualisation.checkAndCreateComponents(macromoleculesData, ligandsData, modificationsData);
-    }
-    this.molstarVisualisation.currentViewName = `Tab-Macromolecules/${datum.name}`;
-    await this.molstarVisualisation.renderTabsMacromolecules(datum, molstarSelection);
+    this.actionQueue.addAction(
+      'macromolecules tab renderMolstarForMacromolecules',
+      async () => {
+        await this.molstarState.renderMolstarForMacromolecules(macromolecule, molstarSelection);
+      },
+      shouldSkip // skippable
+    );
   }
 
-  private initOrRefreshProtvista() {
+  private async initOrRefreshProtvista(macromolecule: MacromoleculesRowData) {
     // stop if this dashboard does not have protvista (initially false and then set in onTableRowSelection according to tabName input)
     if (!this.hasProtvista) return;
-    const datum = this.currentMacromoleculeDatum();
-    const entityId = datum.additionalData.molecule.entity_id;
+    // const datum = this.currentMacromoleculeDatum();
+    const entityId = macromolecule.additionalData.molecule.entity_id;
     const chainId = this.dropdownSelected.split('Chain ')[1];
 
     this.currentProtvistaEntity.set(`${entityId}`);
     this.currentProtvistaChain.set(chainId);
   }
 
-  private async initOrRefreshTopologyViewer() {
+  private async initOrRefreshTopologyViewer(macromolecule: MacromoleculesRowData) {
     // stop if this dashboard does not have topology viewer (initially false and then set in onTableRowSelection according to tabName input)
     if (!this.hasTopologyViewer) return;
 
     // topology viewer is only currently shown for macromolecules
-    const datum = this.currentMacromoleculeDatum();
-    const entityId = (datum as MacromoleculesRowData).additionalData.molecule.entity_id;
+    // const datum = this.currentMacromoleculeDatum();
+    const entityId = (macromolecule as MacromoleculesRowData).additionalData.molecule.entity_id;
     const chainId = this.dropdownSelected?.split('Chain ')[1];
 
     // topology viewer load or reload in page is simple

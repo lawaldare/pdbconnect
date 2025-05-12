@@ -25,6 +25,8 @@ import { MainDataProcessingFacade } from '../../pages/main/data-processing.facad
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { EntryActions } from '../../store/entry.actions';
+import { MolstarStateService } from '../../services/molstar-state.service';
+import { ActionQueueService } from '../../services/action-queue.service';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -46,8 +48,9 @@ import { EntryActions } from '../../store/entry.actions';
 export class LigandsTabComponent implements OnInit {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  public molstarVisualisation = inject(MolstarOverviewForTopPage);
-  public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
+  public readonly molstarState = inject(MolstarStateService);
+  public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
+  private readonly actionQueue = inject(ActionQueueService);
 
   public readonly dataProcessing = inject(MainDataProcessingFacade);
 
@@ -73,12 +76,6 @@ export class LigandsTabComponent implements OnInit {
       return datum;
     }
     return [];
-  });
-
-  public currentLigandDatum = computed(() => {
-    let selectedIdx = this.compCommunication.tabState()['Ligands'] ?? 0;
-    if (selectedIdx === 'Main') selectedIdx = 0;
-    return this.ligandTableRows()[selectedIdx as number];
   });
 
   public selectionIdentifier = 'None';
@@ -117,47 +114,53 @@ export class LigandsTabComponent implements OnInit {
 
   public selectionStats: { [key: string]: any } | undefined;
 
-  constructor() {
-    effect(async () => {
-      const molstarFirstRenderFinished = this.molstarFirstRenderFinished();
+  public currentLigandDatum = computed(() => {
+    let selectedIdx = this.compCommunication.tabState()['Ligands'] ?? 0;
+    if (selectedIdx === 'Main') selectedIdx = 0;
 
-      const hasMacromoleculesData = Object.keys(this.compCommunication.tabTableData()).indexOf('Macromolecules') > -1;
-      const hasLigandsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Ligands') > -1;
+    const datum = this.ligandTableRows()[selectedIdx as number];
+    if (datum) {
+      this.triggerLigandUpdateSideEffects(datum);
+    }
+    return datum;
+  });
 
-      // do not render dashboard until molstar first page render is finished
-      if (!molstarFirstRenderFinished) return;
+  async triggerLigandUpdateSideEffects(ligand: LigandsRowData) {
+    // update ligand dropdown options
+    this.updateDropdownOptions(ligand);
 
-      // do not render dashboard until data necessary to check molstar state not loaded
-      if (!hasMacromoleculesData) return;
-      if (!hasLigandsData) return;
-      if (!this.currentLigandDatum()) return;
+    // used in template for dashboard stats
+    this.selectionIdentifier = ligand.id;
 
-      const datum = this.currentLigandDatum();
+    // update whether we show the env viewer or not
+    await this.updateVisualsDisplayed(ligand);
 
-      this.dropdownOptionsToMolstar = getLigandsDropdownOptions(datum);
-      this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-        return {
-          name: eachString,
-          url: `lig-${idx + 1}`,
-          downloadable: false,
-        };
-      });
-      this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+    // update visualisations with data
+    await this.renderInMolstar(ligand);
+    await this.initOrRefreshLigandEnvViewer();
+  }
 
-      this.selectionIdentifier = datum.id;
-
-      // modification is a special case for Ligands table in which lig env viewer is not displayed
-      if (datum.type.includes('modification') === false) {
-        this.hasLigandEnv = true;
-      } else {
-        // if it is a ligand
-        // we await destruction of current ligand env viewer (if there is one) and resetting of loading status vars
-        await this.destroyLigandEnv();
-      }
-
-      await this.renderInMolstar();
-      await this.initOrRefreshLigandEnvViewer();
+  updateDropdownOptions(ligand: LigandsRowData) {
+    this.dropdownOptionsToMolstar = getLigandsDropdownOptions(ligand);
+    this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
+      return {
+        name: eachString,
+        url: `lig-${idx + 1}`,
+        downloadable: false,
+      };
     });
+    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+  }
+
+  async updateVisualsDisplayed(ligand: LigandsRowData) {
+    // modification is a special case for Ligands table in which lig env viewer is not displayed
+    if (ligand.type.includes('modification') === false) {
+      this.hasLigandEnv = true;
+    } else {
+      // if it is a ligand
+      // we await destruction of current ligand env viewer (if there is one) and resetting of loading status vars
+      await this.destroyLigandEnv();
+    }
   }
 
   ngOnInit(): void {
@@ -177,14 +180,7 @@ export class LigandsTabComponent implements OnInit {
       });
   }
 
-  private async renderInMolstar() {
-    const datum = this.currentLigandDatum();
-
-    const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
-    const ligandsRawData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
-    const ligandsData = ligandsRawData.filter((lig) => lig.type === 'ligand');
-    const modificationsData = ligandsRawData.filter((lig) => lig.type === 'modification');
-
+  private async renderInMolstar(ligand: LigandsRowData) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
     this.globalStore.dispatch(
@@ -194,37 +190,21 @@ export class LigandsTabComponent implements OnInit {
       })
     );
 
-    let urlToDownload = '';
-
-    if (molstarSelection) {
-      // retrieve necessary data for composing ligands and environments URL
-      const entityId = molstarSelection.entityId;
-      const chainId = molstarSelection.authChainId;
-
-      // create URL according to whether a modification or a ligand is selected
-      if (datum.type === 'modification') {
-        urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${this.entryId()}/atoms?label_entity_id=${entityId}&auth_asym_id=${chainId}&encoding=bcif`;
-      } else {
-        const authSeqId = molstarSelection.residues[0].authBegin;
-        const authInsCode = molstarSelection.residues[0].authBeginIns;
-        urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${this.entryId()}/residueSurroundings?auth_seq_id=${authSeqId}&pdbx_PDB_ins_code=${authInsCode}&auth_asym_id=${chainId}&radius=10&encoding=bcif`;
-      }
-    }
-
-    // since URL based force Ligands config reload
-
-    await this.molstarVisualisation.checkLigandsReady(urlToDownload, true);
-    await this.molstarVisualisation.checkAndCreateComponents(macromoleculesData, ligandsData, modificationsData);
-
-    this.molstarVisualisation.currentViewName = `Tab-Ligands/${datum.id}`;
-    await this.molstarVisualisation.renderTabsLigands(datum, molstarSelection);
+    this.actionQueue.addAction(
+      'ligands tab renderMolstarForLigands',
+      async () => {
+        await this.molstarState.renderMolstarForLigands(this.entryId()!, ligand, molstarSelection);
+      },
+      false // skippable
+    );
   }
 
   public async onDropdownSelect(event: string) {
     this.dropdownSelected = event;
 
     // all possible rendering functions are called for a dashboard
-    await this.renderInMolstar();
+    const ligand = this.currentLigandDatum();
+    await this.renderInMolstar(ligand);
     await this.initOrRefreshLigandEnvViewer();
   }
 

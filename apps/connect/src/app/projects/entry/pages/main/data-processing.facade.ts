@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { DestroyRef, inject, Injectable, Injector, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, Injector, signal } from '@angular/core';
 import { DataToTable } from '../../components/shared/interactive-tables/data-processing/abstract-base-row-class';
 import { AssemblyDataToTable } from '../../components/shared/interactive-tables/data-processing/assembly-row-class';
 import { DomainDataToTable } from '../../components/shared/interactive-tables/data-processing/domain-row-class';
@@ -13,7 +13,24 @@ import { TableNames } from './main.component';
 import { TabNames } from '../../helpers/tab-names.enum';
 import { EntryActions } from '../../store/entry.actions';
 import { catchError, combineLatest, of, retry, startWith, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { ComplexDetails } from '../../data-models/complex-details.model';
+import { ProcessedSummary } from '../../data-models/summary.model';
+import { ResidueWiseOutliersMolecule } from '../../data-models/residuewise-outliers.model';
+import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { FlatOutlierResidue } from '../../components/model-quality-tab/validation-data.facade';
+import { MolstarStateService } from '../../services/molstar-state.service';
+
+export type OutliersByModelId = Record<
+  string,
+  {
+    uniqueOutlierTypes: Set<string>;
+    molstarSelectionsByOutlierType: Record<string, MolstarSelectionObj>;
+    residuesWith1Outlier: MolstarSelectionObj;
+    residuesWith2Outliers: MolstarSelectionObj;
+    residuesWith3OrMoreOutliers: MolstarSelectionObj;
+  }
+>;
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +38,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 export class MainDataProcessingFacade {
   private injector = inject(Injector);
   public readonly compCommunication = inject(ComponentCommunicationService);
+  public readonly molstarState = inject(MolstarStateService);
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -75,6 +93,8 @@ export class MainDataProcessingFacade {
       macromolecules: createSelectorStream(EntrySelectors.macroMolecules, []),
       ligandMonomers: createSelectorStream(EntrySelectors.ligandMonomers, []),
       polymerCoverage: createSelectorStream(EntrySelectors.polymerCoverage, []),
+      residueOutliers: createSelectorStream(EntrySelectors.residueWiseOutliers, []),
+      summaryData: createSelectorStream(EntrySelectors.summaryData, undefined),
     })
       .pipe(
         retry({ count: 3, delay: 1000 }),
@@ -149,6 +169,127 @@ export class MainDataProcessingFacade {
     this.compCommunication.isTabDataGenerated.set(true);
     this.tabDataLoaded.set(true);
     this.tableData.set(this.compCommunication.getTabData(this.tabName()));
+
+    let preferredAssemblyData = undefined;
+    if (this.isNotUndefined([data.complexDetails, data.summaryData])) {
+      preferredAssemblyData = this.processPreferredAssemblyData(data.summaryData, data.complexDetails);
+    }
+    this.compCommunication.preferredAssemblyData.set(preferredAssemblyData);
+
+    let outliersByModelId: OutliersByModelId = {};
+    if (this.isNotUndefined([data.residueOutliers])) {
+      outliersByModelId = this.processResidueOutliersData(data.residueOutliers);
+    }
+    this.molstarState.outliersByModelId.set(outliersByModelId);
+  }
+
+  public processPreferredAssemblyData(summaryData: ProcessedSummary, complexDetails: ComplexDetails[]) {
+    let preferredAssemblyData = undefined;
+    let preferredAssemblyId = undefined;
+
+    const hasAssemblies = Object.keys(summaryData).indexOf('assemblies') > -1;
+    if (!hasAssemblies) return undefined;
+
+    for (const complexDetail of complexDetails) {
+      for (const assemblyInfo of complexDetail.assemblies) {
+        if (assemblyInfo.preferred_assembly) {
+          preferredAssemblyId = assemblyInfo.assembly_id;
+
+          const summaryAssembly =
+            summaryData.assemblies.filter((summaryAssembly) => {
+              return summaryAssembly.assembly_id === assemblyInfo.assembly_id + '';
+            })[0] || undefined;
+
+          let composition = undefined;
+          if (summaryAssembly) {
+            composition = summaryAssembly.form + ' ' + summaryAssembly.name;
+            composition = summaryAssembly.name === 'monomer' ? 'monomeric' : composition;
+          }
+
+          preferredAssemblyData = {
+            name: complexDetail.name,
+            preferred: preferredAssemblyId,
+            composition: composition,
+            complexId: complexDetail.pdb_complex_id,
+          };
+          break;
+        }
+      }
+      if (preferredAssemblyId) break;
+    }
+    return preferredAssemblyData;
+  }
+
+  public processResidueOutliersData(outliers: ResidueWiseOutliersMolecule[]) {
+    const resultByModelId: OutliersByModelId = {};
+
+    for (const molecule of outliers) {
+      for (const chain of molecule.chains) {
+        for (const model of chain.models) {
+          const modelId = model.model_id;
+
+          // Ensure model entry exists in result
+          if (!resultByModelId[modelId]) {
+            resultByModelId[modelId] = {
+              uniqueOutlierTypes: new Set<string>(),
+              molstarSelectionsByOutlierType: {},
+              residuesWith1Outlier: null!,
+              residuesWith2Outliers: null!,
+              residuesWith3OrMoreOutliers: null!,
+            };
+          }
+
+          const flattenedResidues: FlatOutlierResidue[] = [];
+
+          for (const residue of model.residues) {
+            // Collect unique outlier types
+            residue.outlier_types.forEach((type) => resultByModelId[modelId].uniqueOutlierTypes.add(type));
+
+            // Flatten residue
+            flattenedResidues.push({
+              ...residue,
+              entity_id: molecule.entity_id,
+              chain_id: chain.chain_id,
+              struct_asym_id: chain.struct_asym_id,
+            });
+          }
+
+          // For each outlier type, get residues containing that type
+          const residuesByOutlierType: Record<string, FlatOutlierResidue[]> = {};
+          resultByModelId[modelId].uniqueOutlierTypes.forEach((type) => {
+            residuesByOutlierType[type] = flattenedResidues.filter((residue) => residue.outlier_types.includes(type));
+            resultByModelId[modelId].molstarSelectionsByOutlierType[type] = this.flatOutliersToMolstarSelections(residuesByOutlierType[type]);
+          });
+
+          // Group residues based on number of outlier_types
+          const residuesWith1Outlier = flattenedResidues.filter((r) => r.outlier_types.length === 1);
+          const residuesWith2Outliers = flattenedResidues.filter((r) => r.outlier_types.length === 2);
+          const residuesWith3OrMoreOutliers = flattenedResidues.filter((r) => r.outlier_types.length >= 3);
+
+          resultByModelId[modelId].residuesWith1Outlier = this.flatOutliersToMolstarSelections(residuesWith1Outlier);
+          resultByModelId[modelId].residuesWith2Outliers = this.flatOutliersToMolstarSelections(residuesWith2Outliers);
+          resultByModelId[modelId].residuesWith3OrMoreOutliers = this.flatOutliersToMolstarSelections(residuesWith3OrMoreOutliers);
+        }
+      }
+    }
+
+    return resultByModelId;
+  }
+
+  private flatOutliersToMolstarSelections(flattenedResidues: FlatOutlierResidue[]) {
+    const molstarSelectionObj: MolstarSelectionObj = {
+      residues: flattenedResidues.map((eachRes) => {
+        return {
+          entityId: eachRes.entity_id + '',
+          authChainId: eachRes.chain_id,
+          authBegin: eachRes.author_residue_number + '',
+          authBeginIns: eachRes.author_insertion_code || '',
+          authEnd: eachRes.author_residue_number + '',
+          authEndIns: eachRes.author_insertion_code || '',
+        };
+      }),
+    };
+    return molstarSelectionObj;
   }
 
   public processFilesData(data: any) {

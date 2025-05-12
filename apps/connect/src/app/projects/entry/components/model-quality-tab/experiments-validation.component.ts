@@ -29,6 +29,8 @@ import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overvie
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { MolstarStateService } from '../../services/molstar-state.service';
+import { ActionQueueService } from '../../services/action-queue.service';
 
 interface ValueLabel {
   value: string;
@@ -78,7 +80,9 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   public readonly tableFacade = inject(ValidationTablesFacade);
-  public readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+  private readonly actionQueue = inject(ActionQueueService);
+
+  public readonly molstarState = inject(MolstarStateService);
   public readonly util = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
   public readonly compCommunication = inject(ComponentCommunicationService);
@@ -145,84 +149,51 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
   public selectedSpecificIssueKind = new FormControl('', { nonNullable: true });
 
-  // public selectedSpecificIssueKind = computed(() => {
-  //   if (this.specificIssueKinds().length === 0) return undefined;
-  //   return new FormControl(this.specificIssueKinds()[0].value, { nonNullable: true });
-  // });
-
-  // public molstarSelectionsByOutlierType = signal<Record<string, MolstarSelectionObj>| undefined>(undefined);
-  // public residuesWith1Outlier = signal<MolstarSelectionObj| undefined>(undefined);
-  // public residuesWith2Outliers = signal<MolstarSelectionObj| undefined>(undefined);
-  // public residuesWith3OrMoreOutliers = signal<MolstarSelectionObj| undefined>(undefined);
-
   // Signal for dynamic model index (default to 1)
-  public modelIdx = signal<number>(1);
+  public modelIdx = signal<string>('1');
 
-  public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
+  public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
   public molstarModelQualityRendered = signal(false);
 
   constructor() {
-    effect(async () => {
-      const _currentTab = this.compCommunication.currentTab();
+    effect(() => {
+      const currentModelIdx = this.molstarState.currentModelId();
+      const allOutliers = this.molstarState.outliersByModelId();
       const selectedValidationType = this.selectedValidationType();
-      // const selectedSpecificIssueKind = this.selectedSpecificIssueKind();
-      const selectedSpecificIssueKindValue = this.selectedSpecificIssueKindValue();
-      const outliers = this.residueWiseOutliers();
-      const currentModelIdx = this.modelIdx();
-      const hasMacromoleculesData = Object.keys(this.compCommunication.tabTableData()).indexOf('Macromolecules') > -1;
-      const hasLigandsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Ligands') > -1;
+      if (!currentModelIdx || !allOutliers) return;
 
-      const hasFinishedFirstRender = this.molstarFirstRenderFinished();
+      const outliers = allOutliers[currentModelIdx];
+      const uniqueOutlierTypes = outliers.uniqueOutlierTypes;
 
-      const isIssueCountSelected = selectedValidationType.value === 'issue_count';
-
-      let displayName = 'Model Quality-All issues';
-      if (!isIssueCountSelected) {
-        displayName = `Model Quality-Specific issue-${selectedSpecificIssueKindValue}`;
-      }
-
-      if (!outliers || outliers.length === 0) return;
-      const { uniqueOutlierTypes, molstarSelectionsByOutlierType, residuesWith1Outlier, residuesWith2Outliers, residuesWith3OrMoreOutliers } =
-        this.dataFacade.createResidueWiseOutliersMolstar(outliers, currentModelIdx);
-
-      // Only update if necessary
-      if (this.specificIssueKinds().length === 0) {
+      if (this.modelIdx() !== currentModelIdx || this.specificIssueKinds().length === 0) {
         this.specificIssueKinds.set(
-          [...uniqueOutlierTypes].map((eachType) => ({
-            label: OUTLIER_TYPE_LABELS[eachType],
-            value: eachType,
+          [...uniqueOutlierTypes].map((type) => ({
+            label: OUTLIER_TYPE_LABELS[type],
+            value: type,
           }))
         );
         this.selectedSpecificIssueKind.setValue(this.specificIssueKinds()[0].value);
+        this.modelIdx.set(currentModelIdx);
       }
 
-      // safety guards for multiple triggering or not ready triggering
-      if (!hasMacromoleculesData) return;
-      if (!hasLigandsData) return;
-      if (!hasFinishedFirstRender) return;
-      if (this.molstarVisualisation.currentViewName === displayName) return;
+      if (!this.molstarFirstRenderFinished()) return;
 
-      this.molstarVisualisation.currentViewName = displayName;
-      // const previousConfig = this.molstarVisualisation.currentConfigName + '';
-      const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
-      const ligandsRawData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
-      const ligandsData = ligandsRawData.filter((lig) => lig.type === 'ligand');
-      const modificationsData = ligandsRawData.filter((lig) => lig.type === 'modification');
+      if (selectedValidationType.value !== this.molstarState.modelQualityValidationType()) {
+        this.molstarState.modelQualityValidationType.set(selectedValidationType.value);
+      }
 
-      this.molstarModelQualityRendered.set(true);
-
-      await this.molstarVisualisation.checkModelQualityReady();
-
-      // const newConfig = this.molstarVisualisation.currentConfigName + '';
-
-      await this.molstarVisualisation.checkAndCreateComponents(macromoleculesData, ligandsData, modificationsData);
-      if (selectedValidationType.value === 'issue_count') {
-        await this.molstarVisualisation.renderModelQualityAllIssues(residuesWith1Outlier, residuesWith2Outliers, residuesWith3OrMoreOutliers);
-      } else {
+      if (selectedValidationType.value !== 'issue_count') {
         const issue = this.selectedSpecificIssueKind.value;
-        const issueResidues = molstarSelectionsByOutlierType[issue];
-        await this.molstarVisualisation.renderModelQualitySpecificIssue(issueResidues);
+        this.molstarState.modelQualitySpecificIssueKind.set(issue);
       }
+
+      this.actionQueue.addAction(
+        'exp&val trigger renderMolstarForModelQuality',
+        async () => {
+          await this.molstarState.renderMolstarForModelQuality();
+        },
+        true
+      );
     });
   }
 

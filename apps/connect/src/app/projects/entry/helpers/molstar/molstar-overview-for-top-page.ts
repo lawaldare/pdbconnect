@@ -31,7 +31,7 @@ import {
 import { addRepresentationToComponent, changeComponentVisibility } from '@pdbe-lib/molstar-for-apps';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { groupDomainSelectionsByAccession } from '../domain-helpers';
-import { firstValueFrom, interval, map, takeWhile, timeout } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, interval, map, takeWhile, timeout } from 'rxjs';
 
 /**
  * Usage:
@@ -138,6 +138,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
   public entryId?: string;
   public preferredAssemblyId?: string;
+  public currentModelId$ = new BehaviorSubject<string>('1');
   public currentMolstarContainer?: string;
   public molstarViewerElement?: HTMLElement;
   private renderer?: Renderer2;
@@ -154,6 +155,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   public currentConfigName?: string;
 
   private enforceMolstarInContainer(containerName: string) {
+    console.log('enforceMolstarInContainer');
     setTimeout(async () => {
       if (this.currentMolstarContainer === containerName) return;
       const containerElement = document.querySelector(`#${containerName}-molstar-container`);
@@ -170,6 +172,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   private async sendMolstarToContainer(containerName: string, containerElement: HTMLElement) {
+    console.log('sendMolstarToContainer');
     if (!this.renderer) {
       console.warn('Mol*: Renderer2 not set');
       return;
@@ -202,6 +205,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
           )
         );
         // console.log('Canvas detected inside .msp-viewport!');
+        console.log(`molstar moved containers from ${this.currentMolstarContainer} to ${containerName}`);
         this.currentMolstarContainer = containerName;
       } catch (err) {
         console.error('Timeout: Canvas did not appear within 3 seconds.');
@@ -244,6 +248,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       this.addedRepresentationsAndIndexes = {};
       await this.initMolstar(config, undefined, this.molstarViewerElement);
     }
+    console.log('configName');
+    console.log(configName);
     this.currentConfigName = configName;
   }
 
@@ -292,6 +298,40 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       await createStaticComponent(this.molstarViewInstance(), 'non-standard');
     }
     this.hasCheckedComponents = true;
+  }
+
+  public async initializeModelIdTracking(noObserver?: boolean) {
+    if (!this.molstarViewerElement) return;
+
+    const topLeftSelector = '.msp-plugin .msp-viewport-top-left-controls';
+
+    const topLeftElement = this.molstarViewerElement.querySelector<HTMLElement>(topLeftSelector);
+    if (!topLeftElement) return;
+
+    const getSpanText = (): string | null => {
+      const spanSelector = '.msp-plugin .msp-viewport-top-left-controls .msp-traj-controls > span';
+      const span = document.querySelector<HTMLSpanElement>(spanSelector);
+      return span?.textContent?.trim() ?? null;
+    };
+
+    const updateCurrentModelId = () => {
+      if (!this.molstarViewerElement) return;
+      const text = getSpanText();
+      const match = text?.match(/Model (\d+) \/ \d+/);
+      if (match && match[1]) {
+        this.currentModelId$.next(match[1]);
+      }
+    };
+
+    // Initial check
+    updateCurrentModelId();
+    if (noObserver) return;
+
+    // 2. (Optional) Watch span text for mutation
+    const observer = new MutationObserver(() => {
+      updateCurrentModelId();
+    });
+    observer.observe(topLeftElement, { characterData: true, childList: true, subtree: true });
   }
 
   private async cleanView(noGreyout?: boolean, noResetView?: boolean) {
@@ -354,7 +394,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       console.warn('Mol*: Unset entry id or preferred assembly id');
       return;
     }
-    await this.enforceMolstarInContainer('overview');
+    this.enforceMolstarInContainer('overview');
     const config = MOLSTAR_CONFIG_FACTORIES['OVERVIEW']({
       entryId: this.entryId!,
       assemblyId: this.preferredAssemblyId!,
@@ -367,7 +407,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       console.warn('Mol*: Unset entry id');
       return;
     }
-    await this.enforceMolstarInContainer('model-quality');
+    this.enforceMolstarInContainer('model-quality');
     const config = MOLSTAR_CONFIG_FACTORIES['MODEL_QUALITY']({
       entryId: this.entryId!,
     });
@@ -379,13 +419,14 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       console.warn('Mol*: Unset entry id');
       return;
     }
-    await this.enforceMolstarInContainer('assemblies');
+    this.enforceMolstarInContainer('assemblies');
     const config = MOLSTAR_CONFIG_FACTORIES['ASSEMBLIES']({
       entryId: this.entryId!,
       assemblyId: assemblyId,
       symmetryView: symmetryView,
     });
-    await this.enforceConfigLoaded('ASSEMBLIES', config);
+    await this.enforceConfigLoaded(`ASSEMBLIES-${assemblyId}`, config);
+    this.initializeModelIdTracking(true);
   }
 
   public async checkMacromoleculesReady() {
@@ -393,7 +434,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       console.warn('Mol*: Unset entry id or preferred assembly id');
       return;
     }
-    await this.enforceMolstarInContainer('macromolecules');
+    this.enforceMolstarInContainer('macromolecules');
     const config = MOLSTAR_CONFIG_FACTORIES['MACROMOLECULES']({
       entryId: this.entryId!,
       assemblyId: this.preferredAssemblyId!,
@@ -406,7 +447,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       console.warn('Mol*: Unset urlToDownload');
       return;
     }
-    await this.enforceMolstarInContainer('ligands');
+    this.enforceMolstarInContainer('ligands');
     const config = MOLSTAR_CONFIG_FACTORIES['LIGANDS']({
       urlToDownload: urlToDownload,
     });
@@ -418,7 +459,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       console.warn('Mol*: Unset entry id or preferred assembly id');
       return;
     }
-    await this.enforceMolstarInContainer('domains');
+    this.enforceMolstarInContainer('domains');
     const config = MOLSTAR_CONFIG_FACTORIES['DOMAINS']({
       entryId: this.entryId!,
       assemblyId: this.preferredAssemblyId!,
@@ -433,8 +474,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   public async renderOverviewMacromolecules() {
-    // await this.checkOverviewReady();
-
     // clean up view
     await this.cleanView();
 
@@ -446,7 +485,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   public async renderOverviewSpecificMacromolecule(macromolecule: MacromoleculesRowData, macromoleculeIdx: number, chainIndex: number) {
-    // await this.checkOverviewReady();
     // TODO: create specific component for macromolecule that is deleted on updates
     const selection = macromolecule.additionalData.selections[chainIndex];
 
@@ -469,7 +507,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   public async renderOverviewLigands() {
-    // await this.checkOverviewReady();
     // clean up view
     await this.cleanView();
 
@@ -485,7 +522,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   public async renderOverviewSpecificLigand(ligand: LigandsRowData, ligandIdx: number, ligandResidueIndex: number) {
-    // await this.checkOverviewReady();
     const selection = ligand.additionalData.selections[ligandResidueIndex];
 
     // clean up view
@@ -503,7 +539,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   public async renderOverviewDomains(domainsOfResource: DomainsRowData[], domainColors: string[]) {
-    // await this.checkOverviewReady();
     // clean up view
     await this.cleanView();
 
@@ -585,7 +620,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   public async renderOverviewSpecificDomain(domain: DomainsRowData, domainColor: string, domainIdx: number) {
-    // await this.checkOverviewReady();
     const selection = domain.additionalData.selections[0];
 
     // clean up view
@@ -601,7 +635,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   public async renderOverviewModifications() {
-    // await this.checkOverviewReady();
     // clean up view
     await this.cleanView();
 
@@ -610,7 +643,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   public async renderOverviewSpecificModification(modification: LigandsRowData, modificationIdx: number, modificationResidueIndex: number) {
-    // await this.checkOverviewReady();
     const selection = modification.additionalData.selections[modificationResidueIndex];
 
     // clean up view

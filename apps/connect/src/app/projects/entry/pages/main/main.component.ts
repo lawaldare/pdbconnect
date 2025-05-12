@@ -1,11 +1,11 @@
-import { Component, DestroyRef, effect, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, NgZone, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 // import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { SearchAppComponent } from '@pdbc/search-app';
 
-import { EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
+import { EMPTY, filter, map, mergeMap, switchMap, take, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MaterialModule } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
@@ -31,6 +31,9 @@ import { AssembliesTabComponent } from '../../components/assemblies-tab/assembli
 import { MacromoleculesTabComponent } from '../../components/macromolecules-tab/macromolecules-tab.component';
 import { LigandsTabComponent } from '../../components/ligands-tab/ligands-tab.component';
 import { DomainsTabComponent } from '../../components/domains-tab/domains-tab.component';
+import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { ActionQueueService } from '../../services/action-queue.service';
+import { MolstarStateService } from '../../services/molstar-state.service';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -79,10 +82,14 @@ export class EntryMainPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
+
   private readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+  public readonly molstarState = inject(MolstarStateService);
+  private readonly actionQueue = inject(ActionQueueService);
 
   private readonly router = inject(Router);
   private readonly renderer = inject(Renderer2);
+  private zone = inject(NgZone);
 
   public readonly pdbeLogoConfig = pdbeLogoConfig;
   public readonly pdbeSearchConfig = pdbeSearchConfig;
@@ -118,6 +125,8 @@ export class EntryMainPageComponent implements OnInit {
     env: environment.production ? '' : 'dev',
   };
 
+  public preferredAssemblyData = computed(() => this.compCommunication.preferredAssemblyData());
+
   constructor() {
     this.route.queryParams.subscribe((params) => {
       const routeTabs = this.dataProcessing.routeTabs;
@@ -127,16 +136,56 @@ export class EntryMainPageComponent implements OnInit {
       this.selectedTab.set(tabIndex);
     });
     effect(async () => {
-      if (this.statusCode() === 'REL' && !this.molstarFirstRenderStarted() && this.selectedTab() >= 0) {
-        const molstarElement = document.getElementById('molstar-element');
-        this.molstarVisualisation.entryId = this.entryId();
-        this.molstarVisualisation.setRenderer(this.renderer);
-        this.molstarVisualisation.molstarViewerElement = molstarElement as HTMLElement;
+      // this effect runs only once because of molstarFirstRenderStarted
+      const hasMacromoleculesData = Object.keys(this.compCommunication.tabTableData()).indexOf('Macromolecules') > -1;
+      const hasLigandsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Ligands') > -1;
+      const hasDomainsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Domains') > -1;
 
-        this.molstarFirstRenderStarted.set(true);
-        await this.molstarVisualisation.renderMolstarInitial();
-        this.compCommunication.molstarFirstRenderFinished.set(true);
-      }
+      if (this.statusCode() !== 'REL') return;
+      if (this.molstarFirstRenderStarted()) return; // protects effect from running twice
+      if (this.selectedTab() < 0) return;
+      if (!hasMacromoleculesData) return;
+      if (!hasLigandsData) return;
+      if (!hasDomainsData) return;
+      if (!this.preferredAssemblyData()) return;
+
+      const molstarElement = document.getElementById('molstar-element');
+      this.molstarVisualisation.entryId = this.entryId();
+      this.molstarVisualisation.setRenderer(this.renderer);
+      this.molstarVisualisation.molstarViewerElement = molstarElement as HTMLElement;
+
+      const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
+      const ligandsRawData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
+      const ligandsData = ligandsRawData.filter((lig) => lig.type === 'ligand');
+      const modificationsData = ligandsRawData.filter((lig) => lig.type === 'modification');
+
+      this.actionQueue.addAction(
+        'init and check molstar',
+        async () => {
+          this.molstarFirstRenderStarted.set(true);
+          await this.molstarVisualisation.renderMolstarInitial();
+          await this.molstarVisualisation.initializeModelIdTracking();
+          // set preferred assembly id data
+          if (this.molstarVisualisation.preferredAssemblyId === undefined) {
+            const assemblyToUse = this.preferredAssemblyData()!.preferred ? this.preferredAssemblyData()!.preferred + '' : '1';
+            this.molstarVisualisation.preferredAssemblyId = assemblyToUse;
+          }
+          await this.molstarVisualisation.checkAndCreateComponents(macromoleculesData, ligandsData, modificationsData);
+          this.molstarVisualisation.initializeModelIdTracking();
+        },
+        false // unskippable
+      );
+
+      const tabName = this.currentTab();
+      this.moveAndRenderMolstar(tabName, false);
+
+      this.actionQueue.addAction(
+        'set unskippable first cycle as finished',
+        async () => {
+          this.molstarState.molstarFirstRenderFinished.set(true);
+        },
+        false // unskippable
+      );
     });
   }
 
@@ -175,6 +224,9 @@ export class EntryMainPageComponent implements OnInit {
     this.previousTab = `${tabName}`;
     this.tabSwitchOrigin.set('main');
     this.currentTab.set(tabName);
+    this.zone.onStable.pipe(take(1)).subscribe(async () => {
+      this.moveAndRenderMolstar(tabName, true);
+    });
     setTimeout(() => {
       this.doesTabHasData.set(this.compCommunication.getTabData(tabName)?.tableRows()?.length > 0);
     }, 2000);
@@ -182,5 +234,83 @@ export class EntryMainPageComponent implements OnInit {
       queryParams: { activeTab: tabName },
       queryParamsHandling: 'merge',
     });
+  }
+
+  moveAndRenderMolstar(tabName: string, skippable: boolean) {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) return;
+
+    if (tabName === 'overview' || tabName === 'summary') {
+      this.actionQueue.addAction(
+        'tab change checkOverviewReady',
+        async () => {
+          await this.molstarState.renderMolstarForOverview(true);
+        },
+        skippable // skippable
+      );
+    }
+    if (tabName === 'model-quality') {
+      this.actionQueue.addAction(
+        'tab change renderMolstarForModelQuality',
+        async () => {
+          await this.molstarState.renderMolstarForModelQuality();
+        },
+        skippable // skippable
+      );
+      //
+    }
+    if (tabName === 'assemblies') {
+      this.actionQueue.addAction(
+        'tab change renderMolstarForModelQuality',
+        async () => {
+          await this.molstarState.renderMolstarForAssemblies();
+        },
+        skippable // skippable
+      );
+    }
+    if (tabName === 'macromolecules') {
+      this.actionQueue.addAction(
+        'tab change renderMolstarForMacromolecules',
+        async () => {
+          const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
+
+          // this is because we always reset to first macromolecule on tab switch (no state kept)
+          const firstMacromolecule = macromoleculesData[0];
+          const firstMolstarSelection = firstMacromolecule.additionalData.selections[0];
+
+          await this.molstarState.renderMolstarForMacromolecules(firstMacromolecule, firstMolstarSelection);
+        },
+        skippable // skippable
+      );
+    }
+    if (tabName === 'ligands') {
+      this.actionQueue.addAction(
+        'tab change renderMolstarForLigands',
+        async () => {
+          const ligandsData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
+
+          // this is because we always reset to first ligand on tab switch (no state kept)
+          const firstLigand = ligandsData[0];
+          const firstMolstarSelection = firstLigand.additionalData.selections[0];
+
+          await this.molstarState.renderMolstarForLigands(this.entryId(), firstLigand, firstMolstarSelection);
+        },
+        skippable // skippable
+      );
+    }
+    if (tabName === 'domains') {
+      this.actionQueue.addAction(
+        'tab change renderMolstarForDomains',
+        async () => {
+          const domainsData = this.compCommunication.getTabData('Domains').tableRows() as DomainsRowData[];
+
+          // this is because we always reset to first domain on tab switch (no state kept)
+          const firstDomain = domainsData[0];
+
+          await this.molstarState.renderMolstarForDomains(firstDomain);
+        },
+        skippable // skippable
+      );
+    }
   }
 }

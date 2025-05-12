@@ -258,13 +258,14 @@ export class MolstarBaseClass {
 
   async getComponentList() {
     try {
+      const isUndefined = this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0];
       await this.waitForCondition(() => {
         return this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0] !== undefined;
       });
-      // console.log('Molstar structure loaded successfully!');
+      console.log('Molstar structure loaded successfully!');
       // console.log("this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0]")
       // console.log(this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0])
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // wait two seconds to be sure
+      if (isUndefined) await new Promise((resolve) => setTimeout(resolve, 2000)); // wait two seconds to be sure
     } catch (err) {
       console.error('Failed to load Molstar structure within 2 minutes:', err);
     }

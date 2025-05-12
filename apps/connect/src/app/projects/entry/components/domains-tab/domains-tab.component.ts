@@ -23,6 +23,8 @@ import { MainDataProcessingFacade } from '../../pages/main/data-processing.facad
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { MolstarStateService } from '../../services/molstar-state.service';
+import { ActionQueueService } from '../../services/action-queue.service';
 
 // these types are used by this file and the facade and related to sequence rendering
 export type BoundsByEntityId = {
@@ -50,7 +52,10 @@ export class DomainsTabComponent {
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly utilService = inject(UtilService);
   public molstarVisualisation = inject(MolstarOverviewForTopPage);
-  public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
+  public readonly molstarState = inject(MolstarStateService);
+  private readonly actionQueue = inject(ActionQueueService);
+
+  public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
 
   public readonly dataProcessing = inject(MainDataProcessingFacade);
 
@@ -77,7 +82,6 @@ export class DomainsTabComponent {
     if (isLoaded) {
       const tabData = this.compCommunication.getTabData('Domains');
       const datum = tabData.tableRows() as any[];
-      // console.log('Domains table rows:', datum);
       return datum;
     }
     return [];
@@ -86,38 +90,27 @@ export class DomainsTabComponent {
   public currentDomainsDatum = computed(() => {
     let selectedIdx = this.compCommunication.tabState()['Domains'] ?? 0;
     if (selectedIdx === 'Main') selectedIdx = 0;
-    return this.domainTableRows()[selectedIdx as number];
+
+    const datum = this.domainTableRows()[selectedIdx as number];
+    if (datum) {
+      this.triggerDomainUpdateSideEffects(datum);
+    }
+    return datum;
   });
 
-  constructor() {
-    effect(async () => {
-      const molstarFirstRenderFinished = this.molstarFirstRenderFinished();
+  async triggerDomainUpdateSideEffects(domain: DomainsRowData) {
+    // update unique chains inside object
+    const mappedDatum = domain.additionalData.boundaries.map((b: any) => b.chain);
+    const uniqueChains = [...new Set(mappedDatum)];
+    domain.mappedboundaries = uniqueChains;
+    this.selectedChains = getDomainChainsAsString(domain);
 
-      const hasMacromoleculesData = Object.keys(this.compCommunication.tabTableData()).indexOf('Macromolecules') > -1;
-      const hasLigandsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Ligands') > -1;
+    // update displayed domain sequence
+    this.sequenceDetails = this.domainsFacade.getDomainSequenceDetails(this.entryId() ?? '', this.macromolecules() ?? [], domain);
 
-      // do not render dashboard until molstar first page render is finished
-      if (!molstarFirstRenderFinished) return;
-
-      // do not render dashboard until data necessary to check molstar state not loaded
-      if (!hasMacromoleculesData) return;
-      if (!hasLigandsData) return;
-      if (!this.currentDomainsDatum()) return;
-
-      const datum = this.currentDomainsDatum();
-
-      const mappedDatum = datum.additionalData.boundaries.map((b: any) => b.chain);
-      const uniqueChains = [...new Set(mappedDatum)];
-      datum.mappedboundaries = uniqueChains;
-      // data processing facade is used to get selectedChains (displayed as text in template)
-      // this.selectedChains = this.detailsDashboardFacade.getDomainChains(datum);
-      this.selectedChains = getDomainChainsAsString(datum);
-      // ...and sequence annotated with domain positions
-      this.sequenceDetails = this.domainsFacade.getDomainSequenceDetails(this.entryId() ?? '', this.macromolecules() ?? [], datum);
-
-      await this.renderInMolstar();
-      this.initOrRefreshProtvista();
-    });
+    // update visualisations with data
+    await this.renderInMolstar(domain);
+    this.initOrRefreshProtvista(domain);
   }
 
   public toggleSidebar() {
@@ -129,35 +122,27 @@ export class DomainsTabComponent {
     this.utilService.copy(text);
   }
 
-  private async renderInMolstar() {
-    const datum = this.currentDomainsDatum();
-
-    const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
-    const ligandsRawData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
-    const ligandsData = ligandsRawData.filter((lig) => lig.type === 'ligand');
-    const modificationsData = ligandsRawData.filter((lig) => lig.type === 'modification');
-
-    // if Domains config not loaded, load it
-    if (!this.molstarVisualisation.currentViewName.includes('Tab-Domains')) {
-      await this.molstarVisualisation.checkDomainsReady();
-      await this.molstarVisualisation.checkAndCreateComponents(macromoleculesData, ligandsData, modificationsData);
-    }
-    this.molstarVisualisation.currentViewName = `Tab-Domains/${datum.domain}_${datum.segmentsAsText}`;
-    await this.molstarVisualisation.renderTabsDomains(datum.additionalData.selections[0]);
+  private async renderInMolstar(domain: DomainsRowData) {
+    this.actionQueue.addAction(
+      'domains tab renderMolstarForDomains',
+      async () => {
+        await this.molstarState.renderMolstarForDomains(domain);
+      },
+      false // skippable
+    );
   }
 
-  private initOrRefreshProtvista() {
+  private initOrRefreshProtvista(domain: DomainsRowData) {
     // stop if this dashboard does not have protvista (initially false and then set in onTableRowSelection according to tabName input)
-    const datum: DomainsRowData = this.currentDomainsDatum();
-    const entityId = datum.additionalData.boundaries[0].entity;
+    const entityId = domain.additionalData.boundaries[0].entity;
     let chainId: string | undefined = undefined;
 
     // if a domain is composed of single chain, we set it for Protvista
-    const chains = (datum as DomainsRowData).additionalData.boundaries.map((boundary) => boundary.chain);
+    const chains = (domain as DomainsRowData).additionalData.boundaries.map((boundary) => boundary.chain);
     const allSame = chains.every((chain) => chain === chains[0]);
     if (allSame) chainId = chains[0];
 
-    const segments = datum.additionalData.boundaries
+    const segments = domain.additionalData.boundaries
       .filter((boundary) => boundary.chain === chainId)
       .map((boundary) => {
         return `${boundary.start}-${boundary.end}`;

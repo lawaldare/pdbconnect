@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { AssembliesRowData, LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
-import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
+import { AssembliesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
@@ -12,6 +11,8 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { entryAssembliesTooltips } from '../../entry-constant';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { MolstarStateService } from '../../services/molstar-state.service';
+import { ActionQueueService } from '../../services/action-queue.service';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
@@ -24,9 +25,10 @@ export class AssembliesTabComponent {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   private readonly globalStore = inject(Store<EntryStoreState>);
+  public readonly molstarState = inject(MolstarStateService);
+  private readonly actionQueue = inject(ActionQueueService);
 
-  public molstarVisualisation = inject(MolstarOverviewForTopPage);
-  public molstarFirstRenderFinished = computed(() => this.compCommunication.molstarFirstRenderFinished());
+  public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
 
   public readonly symmetry = toSignal(this.globalStore.select(EntrySelectors.symmetry));
 
@@ -46,8 +48,17 @@ export class AssembliesTabComponent {
 
   public currentAssemblyDatum = computed(() => {
     let selectedIdx = this.compCommunication.tabState()['Assemblies'] ?? 0;
+    const rows = this.assemblyTableRows();
+
     if (selectedIdx === 'Main') selectedIdx = 0;
-    return this.assemblyTableRows()[selectedIdx as number];
+
+    const datum = this.assemblyTableRows()[selectedIdx as number];
+
+    // could be an effect also
+    if (datum) {
+      this.triggerMolstarSideEffect(datum);
+    }
+    return datum;
   });
 
   public readonly prefferedSymmetry = computed(() => {
@@ -59,36 +70,16 @@ export class AssembliesTabComponent {
     return undefined;
   });
 
-  constructor() {
-    effect(async () => {
-      const molstarFirstRenderFinished = this.molstarFirstRenderFinished();
+  triggerMolstarSideEffect(datum: AssembliesRowData) {
+    const shouldSkip = !this.molstarFirstRenderFinished();
 
-      const hasMacromoleculesData = Object.keys(this.compCommunication.tabTableData()).indexOf('Macromolecules') > -1;
-      const hasLigandsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Ligands') > -1;
-
-      // do not render dashboard until molstar first page render is finished
-      if (!molstarFirstRenderFinished) return;
-
-      // do not render dashboard until data necessary to check molstar state not loaded
-      if (!hasMacromoleculesData) return;
-      if (!hasLigandsData) return;
-      if (!this.currentAssemblyDatum()) return;
-
-      const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
-      const ligandsRawData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
-      const ligandsData = ligandsRawData.filter((lig) => lig.type === 'ligand');
-      const modificationsData = ligandsRawData.filter((lig) => lig.type === 'modification');
-      const datum = this.currentAssemblyDatum()!;
-
-      // if Assemblies config not loaded, load it
-      if (!this.molstarVisualisation.currentViewName.includes('Tab-Assemblies')) {
-        const symmetryView = true;
-        await this.molstarVisualisation.checkAssembliesReady(datum.assemblyId, symmetryView);
-        await this.molstarVisualisation.checkAndCreateComponents(macromoleculesData, ligandsData, modificationsData);
-      }
-      this.molstarVisualisation.currentViewName = `Tab-Assemblies/${datum.assemblyId}`;
-      await this.molstarVisualisation.renderTabsAssemblies();
-    });
+    this.actionQueue.addAction(
+      'assemblies tab renderMolstarForAssemblies',
+      async () => {
+        await this.molstarState.renderMolstarForAssemblies(datum.assemblyId);
+      },
+      shouldSkip
+    );
   }
 
   public getAdditionalData(name: string) {

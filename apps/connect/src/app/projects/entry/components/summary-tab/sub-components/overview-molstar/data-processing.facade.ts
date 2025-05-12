@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { computed, effect, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { filter, map } from 'rxjs';
-import { calculateAssemblyComposition } from '../../../../helpers/assembly-helpers';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../../../store/entry.selectors';
 import { EntryStoreState } from '../../../../store/entry-store.model';
