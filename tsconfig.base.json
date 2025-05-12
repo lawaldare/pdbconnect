@@ -22,6 +22,7 @@
       "@pdbc/lib-docs": ["libs/lib-docs/src/index.ts"],
       "@pdbc/mobile-header": ["libs/pdbe/mobile-header/src/index.ts"],
       "@pdbc/notification": ["libs/pdbe/notification/src/index.ts"],
+      "@pdbc/rich-tooltip": ["libs/pdbe/rich-tooltip/src/index.ts"],
       "@pdbc/search-app": ["libs/pdbe/search-app/src/index.ts"],
       "@pdbe-lib/dropdown-menu": ["libs/pdbe/dropdown-menu/src/index.ts"],
       "@pdbe-lib/header-logo-menu": ["libs/pdbe/header-logo-menu/src/index.ts"],

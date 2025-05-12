@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
@@ -15,7 +17,7 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { EntryPgProtvistaComponent, FixedSelectionInput } from '../shared/entry-pv-nightingale/entry-pv-nightingale.component';
-import { MaterialModule, UtilService } from '@pdbc/core';
+import { UtilService } from '@pdbc/core';
 import { entryDomainsTooltips, resourceUrls } from '../../entry-constant';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';

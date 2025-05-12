@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, effect, ElementRef, inject, linkedSignal, Renderer2, signal, ViewChild, OnInit } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
@@ -12,7 +14,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
-import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
+import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule, TruncateTextDirective } from '@pdbc/core';
 import { SelectionChangedEvent } from 'ag-grid-community';
 import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -36,6 +38,7 @@ import { EntryActions } from '../../store/entry.actions';
     MaterialModule,
     AgGridAngular,
     ReactiveFormsModule,
+    TruncateTextDirective,
   ],
   templateUrl: './ligands-tab.component.html',
   styleUrl: './ligands-tab.component.scss',
@@ -312,5 +315,9 @@ export class LigandsTabComponent implements OnInit {
     if (mappedData && mappedData.length) {
       this.downloadFileTypeService.downloadCSV(mappedData, 'structures');
     }
+  }
+
+  public mapSynonyms(synonyms: any[]): string {
+    return synonyms.map((synonym) => synonym.value).join(', ');
   }
 }

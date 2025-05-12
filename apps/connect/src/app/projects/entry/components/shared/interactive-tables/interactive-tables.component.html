@@ -53,7 +53,13 @@
     <img [src]="'https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/' + card.id +'_100.svg'" alt="" />
     <div class="card-info">
       <p class="card-title">{{card.codeAndName.count}} X {{card.id}}</p>
-      <p class="annotation">{{card.annotation.description}}</p>
+      @if(card.annotations.length){ @for(annotation of card.annotations; track annotation){
+      <p class="annotation" [ngClass]="annotation" [pdbcRichTooltip]="annotationsTooltips[annotation]">{{annotation | titlecase}}</p>
+      } } @if(!card.isModified && card.annotations.length === 0){
+      <p class="annotation unannotated" [pdbcRichTooltip]="annotationsTooltips['unannotated']">Unannotated</p>
+      } @if(card.isModified){
+      <p class="annotation modification">Modification</p>
+      }
     </div>
   </div>
   } @if(rowCards().length > 10){

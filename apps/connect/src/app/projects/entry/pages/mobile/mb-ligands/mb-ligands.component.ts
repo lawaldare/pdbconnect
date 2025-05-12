@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AfterViewInit, Component, computed, inject, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ViewState } from '../mb-macromolecules/mb-macromolecule.component';
@@ -6,7 +7,7 @@ import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { LigandsRowData } from '../../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MainDataProcessingFacade } from '../../main/data-processing.facade';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { TruncatePipe } from '@pdbc/core';
+import { TruncatePipe, TruncateTextDirective } from '@pdbc/core';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { DetailsDashboardFacade } from '../../../components/shared/details-dashboard.facade';
@@ -16,10 +17,13 @@ import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
+import { LigandsTabService } from '../../../components/ligands-tab/ligands-tab.service';
+import { RichTooltipDirective } from '@pdbc/rich-tooltip';
+import { annotationsTooltips } from '../../../entry-constant';
 
 @Component({
   selector: 'pdbc-mb-ligands',
-  imports: [CommonModule, TruncatePipe, EntryDropdownComponent],
+  imports: [CommonModule, TruncatePipe, EntryDropdownComponent, RichTooltipDirective, TruncateTextDirective],
   templateUrl: './mb-ligands.component.html',
   styleUrls: ['../common-mb-header.scss', './mb-ligands.component.scss'],
 })
@@ -32,6 +36,10 @@ export class MbLigandsComponent implements AfterViewInit {
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+
+  public readonly ligandsTabService = inject(LigandsTabService);
+
+  public readonly annotationsTooltips: any = annotationsTooltips;
 
   public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
 
@@ -50,7 +58,12 @@ export class MbLigandsComponent implements AfterViewInit {
     if (isLoaded) {
       const tabData = this.signals.getTabData('Ligands');
       const datum = tabData.tableRows() as LigandsRowData[];
-      return datum;
+      return datum.map((row: any, index) => ({
+        ...row,
+        index,
+        annotations: this.ligandsTabService.ligandMonomers()[row.id] ?? [],
+        isModified: this.ligandsTabService.modifications()?.find((e) => e === row.id) ? true : false,
+      }));
     }
     return [];
   });
@@ -59,6 +72,7 @@ export class MbLigandsComponent implements AfterViewInit {
 
   async ngAfterViewInit() {
     await this.molstarVisualisation.resetMobileMolstarInitial();
+    console.log(this.LigandTableRows());
   }
 
   private async init() {
@@ -75,6 +89,9 @@ export class MbLigandsComponent implements AfterViewInit {
     this.dropdownSelected = dropdownResults.dropdownSelected;
 
     await this.initMolstar();
+  }
+  public mapSynonyms(synonyms: any[]): string {
+    return synonyms.map((synonym) => synonym.value).join(', ');
   }
 
   private async initMolstar() {

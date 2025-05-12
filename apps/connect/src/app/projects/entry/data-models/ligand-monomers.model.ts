@@ -1,3 +1,14 @@
+export interface LigandMonomerAnnotation {
+  type: string;
+  interacting_entity: {
+    entity_id: number;
+    struct_asym_id: string;
+    auth_asym_id: string;
+    best_unp_accession: string;
+    ec_number: number;
+  };
+}
+
 export interface LigandMonomer {
   chain_id: string;
   author_residue_number: number;
@@ -11,4 +22,6 @@ export interface LigandMonomer {
   weight: number;
   carbohydrate_polymer: boolean;
   branch_name: string;
+  bm_id: string;
+  annotations: LigandMonomerAnnotation[];
 }

@@ -9,7 +9,9 @@ import { MacromoleculeDataToTable } from './data-processing/macromolecule-row';
 import { TableNames } from '../../../pages/main/main.component';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { NgxPaginationModule } from 'ngx-pagination';
-import { resourceUrls } from '../../../entry-constant';
+import { annotationsTooltips, resourceUrls } from '../../../entry-constant';
+import { LigandsTabService } from '../../ligands-tab/ligands-tab.service';
+import { RichTooltipDirective } from '@pdbc/rich-tooltip';
 
 type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
 
@@ -21,16 +23,19 @@ export interface Filter {
 @Component({
   selector: 'pdbc-interactive-tables',
   standalone: true,
-  imports: [CommonModule, NgxPaginationModule],
+  imports: [CommonModule, NgxPaginationModule, RichTooltipDirective],
   templateUrl: './interactive-tables.component.html',
   styleUrl: './interactive-tables.component.scss',
 })
 export class InteractiveTablesComponent implements OnChanges {
   public readonly signals = inject(ComponentCommunicationService);
+  public readonly ligandsTabService = inject(LigandsTabService);
 
   public readonly tabName = input.required<TableNames>();
 
   public readonly resourceUrls = resourceUrls;
+
+  public readonly annotationsTooltips: any = annotationsTooltips;
 
   public tableData?: any;
   public currentTableFilter: string[] = [];
@@ -45,9 +50,11 @@ export class InteractiveTablesComponent implements OnChanges {
   async ngOnChanges(): Promise<void> {
     const tableData = this.signals.getTabData(this.tabName());
     this.tableData = tableData as DataToTable;
-    const mappedTableRows = tableData.tableRows().map((row, index) => ({
+    const mappedTableRows = tableData.tableRows().map((row: any, index) => ({
       ...row,
       index,
+      annotations: this.ligandsTabService.ligandMonomers()[row.id] ?? [],
+      isModified: this.ligandsTabService.modifications()?.find((e) => e === row.id) ? true : false,
     }));
     this.mappedTableRows.update(() => mappedTableRows);
     this.rowCards.update(() => mappedTableRows);

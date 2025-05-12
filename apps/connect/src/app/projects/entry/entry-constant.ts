@@ -358,3 +358,10 @@ export const entryDomainsTooltips = {
     'Author segments refer to the residue numbering as provided by the original authors of the PDB entry. This numbering may differ from canonical or sequential numbering due to biological context, insertions, or historical reasons.',
   segments: 'Segments represent continuous stretches of a sequence with sequential residue numbering, starting from 1 at the N-terminus.',
 };
+
+export const annotationsTooltips = {
+  'reactant-like': `Assigned to ligands whose binding proteins are reported in the <a href="https://www.rhea-db.org/" target="_blank">Rhea database</a>, as participating in reactions, with a <a href="https://www.sciencedirect.com/science/article/pii/S0969212618300492" target="_blank">PARITY</a> similarity score to a reaction participant exceeding 0.7.`,
+  'cofactor-like': `Assigned to ligands with a <a href="https://www.sciencedirect.com/science/article/pii/S0969212618300492" target="_blank">PARITY</a> similarity above the threshold for one of the 27 cofactor classes in the <a href="https://www.ebi.ac.uk/thornton-srv/databases/CoFactor/" target="_blank">CoFactor database</a>. The ligand’s binding proteins must also be enzymes associated with that cofactor class.`,
+  'drug-like': `Assigned to ligands whose binding proteins are reported as pharmacologically active targets in the <a href="https://go.drugbank.com/" target="_blank">DrugBank database</a>.`,
+  unannotated: `No annotation is available for the functional role of the ligand.`,
+};

@@ -17,8 +17,23 @@
           <span class="micro-title"> Ligand name </span>
           <article>{{ currentLigandDatum()?.codeAndName?.name }}</article>
         </div>
+        @let boundDetails = currentLigandDatum()?.additionalData?.source?.bound_details ?? undefined; @if(boundDetails && boundDetails?.[0]?.synonyms.length){
+        <div class="info-row">
+          <span class="micro-title"> Synonyms </span>
+          <article libTruncateText [truncateText]="mapSynonyms(boundDetails[0].synonyms)" [limit]="53">
+            <!-- @for(synonym of boundDetails[0].synonyms; track synonym.value; let islast = $last){
+            <span>{{synonym.value }}</span>{{ islast ? '' : ',' }} } -->
+          </article>
+        </div>
+        }
       </div>
       <div class="info-grouped" style="width: 40%">
+        @if(boundDetails && boundDetails.length){
+        <div class="info-row">
+          <span class="micro-title"> Formula </span>
+          <article class="formula">{{ boundDetails[0]?.formula }} KDa</article>
+        </div>
+        }
         <div class="info-row">
           <span class="micro-title"> Molecular weight </span>
           <article>{{ currentLigandDatum()?.additionalData?.source?.weight }} KDa</article>

@@ -48,8 +48,8 @@ section {
       font-size: 12px;
       font-weight: 600;
       line-height: 16.5px;
-      background: #e4e4e4;
       padding: 2px;
+      margin-right: 2px !important;
     }
   }
 
@@ -77,5 +77,13 @@ section {
     font-weight: 400;
     line-height: 27.2px;
     margin-bottom: 12px !important;
+
+    &.formula {
+      max-width: fit-content;
+      padding: 4px 12px;
+      background: var(--Neutral-100, #f3f3f3);
+      font-weight: 500;
+      line-height: 23px;
+    }
   }
 }
