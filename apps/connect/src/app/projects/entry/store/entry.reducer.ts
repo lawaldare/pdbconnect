@@ -5,7 +5,7 @@ import { EntryActions } from './entry.actions';
 // import { UniProtMapping } from '../data-models/uniprot-mapping.model';
 // import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
 import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
-import { KeyValidationStats } from '../data-models/key-validation-stats.model';
+import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
 import { CitationDetail } from '../data-models/publication.model';
 // import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../data-models/domains.model';
@@ -42,6 +42,7 @@ const initialState: EntryStoreState = {
   cathMapping: {},
   scop175Mapping: {},
   modifications: [],
+  modelQualityXray: {} as ModelQualityXray,
   validationKeyStats: {} as KeyValidationStats,
   validationXRayRefine: {} as XRayRefine,
   primaryPublication: {} as CitationDetail,
@@ -123,6 +124,10 @@ export const entryReducer = createReducer(
   on(EntryActions.getValidationKeyStatsSuccess, (state, action) => ({
     ...state,
     validationKeyStats: action.validationKeyStats,
+  })),
+  on(EntryActions.getModelQualityXraySuccess, (state, action) => ({
+    ...state,
+    modelQualityXray: action.modelQualityXray,
   })),
   on(EntryActions.getInterproMappingSuccess, (state, action) => ({
     ...state,

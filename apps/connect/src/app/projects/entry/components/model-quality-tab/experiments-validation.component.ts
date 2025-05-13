@@ -1,5 +1,19 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  ElementRef,
+  HostListener,
+  inject,
+  linkedSignal,
+  OnInit,
+  Renderer2,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ValidationDataProcessingFacade } from './validation-data.facade';
 import { ValidationTablesFacade } from './validation-tables.facade';
@@ -16,7 +30,7 @@ import {
   validationInfoTooltip,
 } from '../../entry-constant';
 import { MaterialModule, UtilService } from '@pdbc/core';
-import { filter, mergeMap } from 'rxjs';
+import { combineLatest, filter, forkJoin, mergeMap, of, take, tap } from 'rxjs';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
@@ -24,20 +38,17 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
-import { EntryActions } from '../../store/entry.actions';
-import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
+import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
+import { MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 
-interface ValueLabel {
+export interface ValueLabel {
   value: string;
   label: string;
 }
-
-declare let PDBeMolstarPlugin: any;
 
 /**
  * Examples that should be tested when looking at this component
@@ -82,6 +93,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly tableFacade = inject(ValidationTablesFacade);
   private readonly actionQueue = inject(ActionQueueService);
 
+  public readonly dataProcessing = inject(MainDataProcessingFacade);
+
   public readonly molstarState = inject(MolstarStateService);
   public readonly util = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
@@ -90,7 +103,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly sourceOrganisms = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
   public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
-  public residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
+  public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
+  public readonly experimentalMethod = toSignal(this.globalStore.select(EntrySelectors.experimentalMethod));
 
   // used in template
   public currentData = signal<ProcessedExperimentalDetails | undefined>(undefined);
@@ -155,6 +169,20 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
   public molstarModelQualityRendered = signal(false);
 
+  public isXray = linkedSignal({
+    source: this.experimentalMethod,
+    computation: (experimentalMethod) => {
+      if (experimentalMethod?.toLowerCase() === 'hybrid') return true;
+      return experimentalMethod?.toLowerCase()?.includes('x-ray');
+    },
+  });
+
+  public experimentalInfoRowData = signal<ValueLabel[]>([]);
+  public crystalInfoRowData = signal<ValueLabel[]>([]);
+  public softwareRowData = signal<ValueLabel[]>([]);
+  public dataQualityRowData = signal<ValueLabel[]>([]);
+  public refinementRowData = signal<ValueLabel[]>([]);
+
   constructor() {
     effect(() => {
       const currentModelIdx = this.molstarState.currentModelId();
@@ -198,21 +226,44 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.globalStore
-      .select(EntrySelectors.experimentalDetails)
+    combineLatest([this.globalStore.select(EntrySelectors.modelQualityXray), this.globalStore.select(EntrySelectors.experimentalDetails)])
       .pipe(
-        filter(Boolean),
-        mergeMap((experimentalDetails) => {
+        mergeMap(([xray, experimentalDetails]) => {
           if (experimentalDetails.length > 1) {
             this.isHybrid.set(true);
           }
-          return this.dataFacade.processData();
+          const processedExpValData$ = this.dataFacade.processData().pipe(take(1));
+          return forkJoin([processedExpValData$, of(xray)]);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((processedExpValData) => {
+      .subscribe(([processedExpValData, xray]) => {
+        if (this.isXray()) {
+          const validationInfo = [...(processedExpValData?.[0].validationInfo ?? [])];
+          validationInfo.push({ metric: 'RMSD bond length [Å]', description: String(xray?.model_quality?.rmsd_bond_length ?? 0) });
+          validationInfo.push({ metric: 'RMSD bond angle [³]', description: String(xray?.model_quality?.rmsd_bond_angle ?? 0) });
+          validationInfo.push({ metric: 'Bulk solvent B [Å²]', description: String(xray?.model_quality?.bulk_solvent_b ?? 0) });
+          validationInfo.push({ metric: 'Bulk solvent k [e-/Å³]', description: String(xray?.model_quality?.bulk_solvent_k ?? 0) });
+          validationInfo.push({ metric: 'Fo-Fc correlation', description: String(xray?.model_quality?.fo_fc_correlation ?? 0) });
+          processedExpValData[0].validationInfo = validationInfo;
+        }
         this.processedData.set(processedExpValData);
         this.currentData.set(this.processedData()?.[0]);
+        this.experimentalInfoRowData.set([
+          {
+            label: 'Source organism',
+            value: this.macromolecule()?.organisms[0] ?? 'Not available',
+          },
+          {
+            label: 'Expression system',
+            value: this.macromolecule()?.additionalData?.molecule?.source?.[0]?.expression_host_scientific_name ?? 'Not available',
+          },
+          ...this.getInfoRowData(xray?.['experimental_info']),
+        ]);
+        this.crystalInfoRowData.set(this.getInfoRowData(xray?.['crystal_info']));
+        this.softwareRowData.set(this.getInfoRowData(xray?.['software']));
+        this.dataQualityRowData.set(this.getInfoRowData(xray?.['data_quality']));
+        this.refinementRowData.set(this.getInfoRowData(xray?.['refinement']));
       });
   }
 
@@ -258,6 +309,31 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
    * when a filter is clicked we changed the rendered data
    */
   setData(data: ProcessedExperimentalDetails) {
+    this.isXray.update((prev) => !prev);
     this.currentData.set(data);
+  }
+
+  public readonly macromolecule = computed(() => {
+    const isLoaded = this.dataProcessing.tabDataLoaded();
+
+    if (isLoaded) {
+      const tabData = this.compCommunication.getTabData('Macromolecules');
+      const datum = tabData.tableRows() as any[];
+      const mappedDatum = datum.map((data) => {
+        return {
+          ...data,
+          organisms: [...new Set(data['organisms'])],
+        };
+      });
+      return mappedDatum[0] as MacromoleculesRowData;
+    }
+    return {} as MacromoleculesRowData;
+  });
+
+  private getInfoRowData(data: Record<string, string>): ValueLabel[] {
+    return Object.entries(data ?? {}).reduce((acc: ValueLabel[], [metric, value]) => {
+      acc.push({ label: metric.charAt(0).toUpperCase() + metric.slice(1).replace(/_/g, ' '), value: value ? value : 'Not available' });
+      return acc;
+    }, []);
   }
 }

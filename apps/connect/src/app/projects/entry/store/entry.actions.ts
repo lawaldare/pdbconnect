@@ -4,7 +4,7 @@ import { AssembliesData, DownloadOptionData, EntryMoleculesData, ExperimentData,
 import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../data-models/domains.model';
 import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
-import { KeyValidationStats } from '../data-models/key-validation-stats.model';
+import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
 import { CitationDetail } from '../data-models/publication.model';
 import { RelatedPublication } from '../data-models/related-publications.model';
@@ -78,6 +78,9 @@ export const EntryActions = createActionGroup({
     'Get Validation Key Stats': emptyProps(),
     'Get Validation Key Stats Success': props<{ validationKeyStats: KeyValidationStats }>(),
     'Get Validation Key Stats Failure': emptyProps(),
+    'Get Model Quality Xray': emptyProps(),
+    'Get Model Quality Xray Success': props<{ modelQualityXray: ModelQualityXray }>(),
+    'Get Model Quality Xray Failure': emptyProps(),
     'Get Validation Xray Refine': emptyProps(),
     'Get Validation Xray Refine Success': props<{ validationXRayRefine: XRayRefine }>(),
     'Get Validation Xray Refine Failure': emptyProps(),

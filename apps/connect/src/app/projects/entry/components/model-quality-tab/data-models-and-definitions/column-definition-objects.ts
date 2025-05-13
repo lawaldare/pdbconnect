@@ -10,6 +10,7 @@ import {
   validationInfoTooltip,
 } from '../../../entry-constant';
 import { ExperimentRawRow, XRayStatsRow } from './table-rows.model';
+import { ExperimentalInfoValueRendererComponent } from './experimental-info-value.component';
 
 export const VALIDATION_COLUMN_DEFS: ColDef[] = [
   {
@@ -25,6 +26,30 @@ export const VALIDATION_COLUMN_DEFS: ColDef[] = [
   {
     headerName: 'Description',
     field: 'description',
+    flex: 1,
+    wrapText: true,
+    autoHeight: true,
+    autoHeaderHeight: true,
+    filter: false,
+    resizable: false,
+  },
+];
+
+export const EXPERIMENTAL_INFO_COLUMN_DEFS: ColDef[] = [
+  {
+    headerName: 'Metric',
+    field: 'label',
+    flex: 1,
+    wrapText: true,
+    autoHeight: true,
+    autoHeaderHeight: true,
+    filter: false,
+    resizable: false,
+  },
+  {
+    headerName: 'Value',
+    field: 'value',
+    cellRenderer: ExperimentalInfoValueRendererComponent,
     flex: 1,
     wrapText: true,
     autoHeight: true,

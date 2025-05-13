@@ -155,7 +155,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   public currentConfigName?: string;
 
   private enforceMolstarInContainer(containerName: string) {
-    console.log('enforceMolstarInContainer');
     setTimeout(async () => {
       if (this.currentMolstarContainer === containerName) return;
       const containerElement = document.querySelector(`#${containerName}-molstar-container`);
@@ -172,7 +171,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   }
 
   private async sendMolstarToContainer(containerName: string, containerElement: HTMLElement) {
-    console.log('sendMolstarToContainer');
     if (!this.renderer) {
       console.warn('Mol*: Renderer2 not set');
       return;
@@ -205,7 +203,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
           )
         );
         // console.log('Canvas detected inside .msp-viewport!');
-        console.log(`molstar moved containers from ${this.currentMolstarContainer} to ${containerName}`);
         this.currentMolstarContainer = containerName;
       } catch (err) {
         console.error('Timeout: Canvas did not appear within 3 seconds.');
@@ -248,8 +245,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       this.addedRepresentationsAndIndexes = {};
       await this.initMolstar(config, undefined, this.molstarViewerElement);
     }
-    console.log('configName');
-    console.log(configName);
     this.currentConfigName = configName;
   }
 

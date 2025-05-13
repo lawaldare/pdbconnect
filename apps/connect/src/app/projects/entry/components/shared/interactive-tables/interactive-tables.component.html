@@ -58,7 +58,7 @@
       } } @if(!card.isModified && card.annotations.length === 0){
       <p class="annotation unannotated" [pdbcRichTooltip]="annotationsTooltips['unannotated']">Unannotated</p>
       } @if(card.isModified){
-      <p class="annotation modification">Modification</p>
+      <p class="annotation modification" [pdbcRichTooltip]="annotationsTooltips['modification']">Modification</p>
       }
     </div>
   </div>

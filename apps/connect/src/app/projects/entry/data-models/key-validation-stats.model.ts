@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface KeyValidationStats {
   bonds: ValidationStat;
   angles: ValidationStat;
@@ -13,4 +14,13 @@ export interface ValidationStat {
   num_checked: number;
   num_outliers: number;
   percent_outliers: string | null | undefined;
+}
+
+export interface ModelQualityXray {
+  model_quality: any;
+  experimental_info: any;
+  crystal_info: any;
+  software: any;
+  data_quality: any;
+  refinement: any;
 }

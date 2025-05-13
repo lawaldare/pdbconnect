@@ -113,18 +113,6 @@
             (error)="noImg = true"
           />
         </div>
-        } @if (currentData()!.validationInfo) {
-        <ag-grid-angular
-          style="height: fit-content"
-          class="ag-theme-quartz table-exp-val"
-          [rowData]="currentData()!.validationInfo!"
-          [columnDefs]="tableFacade.validationColumnDefinitions"
-          [defaultColDef]="tableFacade.defaultColumnDefinitions"
-          [pagination]="false"
-          [gridOptions]="tableFacade.gridOptions"
-        />
-        } @else {
-        <div class="not-available">Validation information is not available.</div>
         }
       </section>
 
@@ -154,13 +142,52 @@
       }
 
       <!-- ------------------- -->
+      <!-- Timeline section -->
+      <!-- ------------------- -->
+      <section class="timeline-info">
+        <div class="info-row-header">
+          <h5>Timeline</h5>
+          <lib-help-icon-with-tooltip [tooltipText]="timelineTooltip" />
+        </div>
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="currentData()!.timeline"
+          [columnDefs]="tableFacade.timelineColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+      </section>
+
+      <!-- ------------------- -->
+      <!-- Model quality section -->
+      <!-- ------------------- -->
+      <section class="model-quality-info">
+        <div class="info-row-header">
+          <h5>Model quality</h5>
+          <lib-help-icon-with-tooltip [tooltipText]="timelineTooltip" />
+        </div>
+        @if (currentData()?.validationInfo) {
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="currentData()!.validationInfo!"
+          [columnDefs]="tableFacade.validationColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+        } @else {
+        <div class="not-available">Validation information is not available.</div>
+        }
+      </section>
+
+      <!-- ------------------- -->
       <!-- Sample info section -->
       <!-- ------------------- -->
-
+      @if(!this.isXray()){
       <section class="sample-info">
-        <!-- <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="sampleInfoTooltip" matTooltipPosition="below">
-          Sample information
-        </h5> -->
         <div class="info-row-header">
           <h5>Sample information</h5>
           <lib-help-icon-with-tooltip [tooltipText]="sampleInfoTooltip" />
@@ -208,18 +235,17 @@
         <div class="not-available">Sample information is not available.</div>
         }
       </section>
+      }
 
       <!-- ------------------- -->
       <!-- Experimental info section -->
       <!-- ------------------- -->
       <section class="experimental-info">
-        <!-- <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="expInfoTooltip" matTooltipPosition="below">
-          Experimental information
-        </h5> -->
         <div class="info-row-header">
           <h5>Experimental information</h5>
           <lib-help-icon-with-tooltip [tooltipText]="expInfoTooltip" />
         </div>
+        @if(!this.isXray()){
         <!-- For X-Ray, SAS -->
         @if (currentData()!.experimentalInfo) { @if (currentData()!.experimentalInfo!.xRayBeamSource) {
         <div class="info-row" style="margin-top: 12px; margin-bottom: 12px">
@@ -308,13 +334,111 @@
           [pagination]="false"
           [gridOptions]="tableFacade.gridOptions"
         />
-        } }
+        } } } @else {
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="experimentalInfoRowData()"
+          [columnDefs]="tableFacade.experimentalInfoColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+        }
       </section>
+
+      <!-- ------------------- -->
+      <!-- Crystal info section -->
+      <!-- ------------------- -->
+
+      @if(isXray()){
+      <section class="crystal-info">
+        <div class="info-row-header">
+          <h5>Crystal Info</h5>
+          <lib-help-icon-with-tooltip [tooltipText]="expInfoTooltip" />
+        </div>
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="crystalInfoRowData()"
+          [columnDefs]="tableFacade.experimentalInfoColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+      </section>
+      }
+
+      <!-- ------------------- -->
+      <!-- Software info section -->
+      <!-- ------------------- -->
+
+      @if(isXray()){
+      <section class="software-info">
+        <div class="info-row-header">
+          <h5>Software</h5>
+          <lib-help-icon-with-tooltip [tooltipText]="expInfoTooltip" />
+        </div>
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="softwareRowData()"
+          [columnDefs]="tableFacade.experimentalInfoColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+      </section>
+      }
+
+      <!-- ------------------- -->
+      <!-- Data Quality section -->
+      <!-- ------------------- -->
+
+      @if(isXray()){
+      <section class="data-quality-info">
+        <div class="info-row-header">
+          <h5>Data quality</h5>
+          <lib-help-icon-with-tooltip [tooltipText]="expInfoTooltip" />
+        </div>
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="dataQualityRowData()"
+          [columnDefs]="tableFacade.experimentalInfoColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+      </section>
+      }
+
+      <!-- ------------------- -->
+      <!-- Refinement section -->
+      <!-- ------------------- -->
+
+      @if(isXray()){
+      <section class="crystal-info">
+        <div class="info-row-header">
+          <h5>Refinement</h5>
+          <lib-help-icon-with-tooltip [tooltipText]="expInfoTooltip" />
+        </div>
+        <ag-grid-angular
+          style="height: fit-content"
+          class="ag-theme-quartz table-exp-val"
+          [rowData]="refinementRowData()"
+          [columnDefs]="tableFacade.experimentalInfoColumnDefinitions"
+          [defaultColDef]="tableFacade.defaultColumnDefinitions"
+          [pagination]="false"
+          [gridOptions]="tableFacade.gridOptions"
+        />
+      </section>
+      }
 
       <!-- ---------------------------- -->
       <!-- Experimental raw data section -->
       <!-- ---------------------------- -->
-      @if (currentData()?.experimentalRawData?.length) {
+      @if (currentData()?.experimentalRawData?.length && !isXray()) {
       <section class="exp-raw-data-info">
         <div class="info-row-header">
           <h5>Experimental raw data</h5>
@@ -369,27 +493,7 @@
         </div>
         }
       </section>
-      }
-
-      <!-- ------------------- -->
-      <!-- Timeline section -->
-      <!-- ------------------- -->
-      <section class="timeline-info">
-        <div class="info-row-header">
-          <h5>Timeline</h5>
-          <lib-help-icon-with-tooltip [tooltipText]="timelineTooltip" />
-        </div>
-        <ag-grid-angular
-          style="height: fit-content"
-          class="ag-theme-quartz table-exp-val"
-          [rowData]="currentData()!.timeline"
-          [columnDefs]="tableFacade.timelineColumnDefinitions"
-          [defaultColDef]="tableFacade.defaultColumnDefinitions"
-          [pagination]="false"
-          [gridOptions]="tableFacade.gridOptions"
-        />
-      </section>
-      }
+      } }
     </section>
   </section>
   <aside>

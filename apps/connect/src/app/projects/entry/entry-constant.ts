@@ -364,4 +364,5 @@ export const annotationsTooltips = {
   'cofactor-like': `Assigned to ligands with a <a href="https://www.sciencedirect.com/science/article/pii/S0969212618300492" target="_blank">PARITY</a> similarity above the threshold for one of the 27 cofactor classes in the <a href="https://www.ebi.ac.uk/thornton-srv/databases/CoFactor/" target="_blank">CoFactor database</a>. The ligand’s binding proteins must also be enzymes associated with that cofactor class.`,
   'drug-like': `Assigned to ligands whose binding proteins are reported as pharmacologically active targets in the <a href="https://go.drugbank.com/" target="_blank">DrugBank database</a>.`,
   unannotated: `No annotation is available for the functional role of the ligand.`,
+  modification: `Chemically modified amino acids or nucleotides within protein, DNA, or RNA chains, these may affect the macromolecule’s structure or function.`,
 };

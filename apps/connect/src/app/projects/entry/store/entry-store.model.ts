@@ -8,7 +8,7 @@ import { BestStructureMapping } from '../data-models/uniport-best-structures.mod
 import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
 import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
-import { KeyValidationStats } from '../data-models/key-validation-stats.model';
+import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
 import { CitationDetail } from '../data-models/publication.model';
 import { RelatedPublication } from '../data-models/related-publications.model';
@@ -56,6 +56,7 @@ export interface EntryStoreState {
   scop175Mapping: ScopMappings | undefined;
   modifications: ModifiedResidue[];
   validationKeyStats: KeyValidationStats | undefined;
+  modelQualityXray: ModelQualityXray | undefined;
   validationXRayRefine: XRayRefine | undefined;
   primaryPublication: CitationDetail | undefined;
   articlesCiting: RelatedPublication | undefined;

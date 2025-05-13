@@ -169,6 +169,19 @@ export class EntryEffects {
     )
   );
 
+  getModelQualityXray$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getModelQualityXray),
+      switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
+      mergeMap((entryId: string) =>
+        this.entryAPIService.getModelQualityXray(entryId).pipe(
+          map((modelQualityXray) => EntryActions.getModelQualityXraySuccess({ modelQualityXray })),
+          catchError(() => of(EntryActions.getModelQualityXrayFailure()))
+        )
+      )
+    )
+  );
+
   getCathMapping$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getCathMapping),

@@ -28,6 +28,7 @@ export const EntrySelectors = {
   scop175Mapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.scop175Mapping),
   modifications: createSelector(EntryStoreState, (state: EntryStoreState) => state.modifications),
   validationKeyStats: createSelector(EntryStoreState, (state: EntryStoreState) => state.validationKeyStats),
+  modelQualityXray: createSelector(EntryStoreState, (state: EntryStoreState) => state.modelQualityXray),
   validationXRayRefine: createSelector(EntryStoreState, (state: EntryStoreState) => state.validationXRayRefine),
   primaryPublication: createSelector(EntryStoreState, (state: EntryStoreState) => state.primaryPublication),
   articlesCiting: createSelector(EntryStoreState, (state: EntryStoreState) => state.articlesCiting),

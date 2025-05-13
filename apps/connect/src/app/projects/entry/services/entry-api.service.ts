@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, map, switchMap, throwError } from 'rxjs';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
-import { KeyValidationStats } from '../data-models/key-validation-stats.model';
+import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
 import { CitationDetail } from '../data-models/publication.model';
 import { RelatedPublication } from '../data-models/related-publications.model';
@@ -168,6 +168,10 @@ export class EntryApiService {
 
   public getValidationKeyStats(entryId: string): Observable<KeyValidationStats> {
     return this.http.get<Record<string, KeyValidationStats>>(`${this.VALIDATION_API}key_validation_stats/entry/${entryId}`).pipe(map((data) => data[entryId]));
+  }
+
+  public getModelQualityXray(entryId: string): Observable<ModelQualityXray> {
+    return this.http.get<Record<string, ModelQualityXray>>(`${this.VALIDATION_API}model_quality_xray/entry/${entryId}`).pipe(map((data) => data[entryId]));
   }
 
   public getValidationXRayRefine(entryId: string): Observable<XRayRefine> {

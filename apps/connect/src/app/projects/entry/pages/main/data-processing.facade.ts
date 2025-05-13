@@ -36,7 +36,6 @@ export type OutliersByModelId = Record<
   providedIn: 'root',
 })
 export class MainDataProcessingFacade {
-  private injector = inject(Injector);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly molstarState = inject(MolstarStateService);
   private readonly globalStore = inject(Store<EntryStoreState>);
@@ -389,5 +388,6 @@ export class MainDataProcessingFacade {
     this.globalStore.dispatch(EntryActions.getEntryLigandMonomers());
     this.globalStore.dispatch(EntryActions.getEntryPolymerCoverage());
     this.globalStore.dispatch(EntryActions.getEntryResidueWiseOutliers());
+    this.globalStore.dispatch(EntryActions.getModelQualityXray());
   }
 }

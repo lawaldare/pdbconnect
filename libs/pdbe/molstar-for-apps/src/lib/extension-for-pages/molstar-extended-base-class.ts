@@ -125,7 +125,6 @@ export class MolstarBaseClass {
   public async initImageGallery(entryId: string) {
     const galleryManager = await PDBeMolstarPlugin.extensions.StateGallery.StateGalleryManager.create(this.molstarViewInstance().plugin, entryId);
     this.galleryManager.set(galleryManager);
-    console.log('MolstarImageGallery initialized', this.galleryManager());
   }
 
   /**
@@ -262,9 +261,6 @@ export class MolstarBaseClass {
       await this.waitForCondition(() => {
         return this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0] !== undefined;
       });
-      console.log('Molstar structure loaded successfully!');
-      // console.log("this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0]")
-      // console.log(this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0])
       if (isUndefined) await new Promise((resolve) => setTimeout(resolve, 2000)); // wait two seconds to be sure
     } catch (err) {
       console.error('Failed to load Molstar structure within 2 minutes:', err);
