@@ -1,5 +1,10 @@
-@if ( !loadedTracksAPIData() || !loadedConservationAPIData() || !loadedVariationAPIData() ) {
+@if ( loadingStatus() === 'loading' ) {
 <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', 'margin-top': '8px' }"></ngx-skeleton-loader>
+} @if ( loadingStatus() === 'invalid') {
+<div class="pv-invalid">
+  <p>Error: Could not load PDBe Track Viewer</p>
+  <p>Please try again later or <a href="https://www.ebi.ac.uk/about/contact/support/PDBe" target="_blank">report this issue</a></p>
+</div>
 }
 <div class="pdbe-protvista" [ngStyle]="{ display: loadedAllData() === true ? '' : 'none' }">
   <!-- Protvista manager for events and attribute management between components -->
@@ -18,13 +23,7 @@
         </div>
         <div class="pv-track-row">
           <!-- Column for controls -->
-          <div class="pv-track-col small">
-            <!-- Control that opens panel for Searching (highlighting) residues -->
-            <!-- <a id="search-residue-btn" class="pv-link-btn" (click)="openSearchPanel()">Find and highlight residues</a> -->
-            <!-- Control that opens panel for user custom data -->
-            <!-- <a id="map-data-btn" class="pv-link-btn" (click)="openMapPanel()">Map your data</a> -->
-            <!-- <a class="pv-link-btn" (click)="resetVisualization()">Reset visualisation</a> -->
-          </div>
+          <div class="pv-track-col small"></div>
           <!-- Column for Navigation & sequence -->
           <div class="pv-track-col">
             <!-- Protvista Navigation bar -->

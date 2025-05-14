@@ -6,6 +6,7 @@
       Variation
     </div>
     <div class="pv-track-container">
+      @if (sequenceLength) {
       <nightingale-linegraph-track
         [data]="variationCountData()"
         height="50"
@@ -16,6 +17,7 @@
         [fixedHighlight]="selectionHighlight"
         use-ctrl-to-zoom
       ></nightingale-linegraph-track>
+      }
     </div>
   </div>
 
@@ -43,6 +45,7 @@
     </div>
 
     <div class="pv-track-container">
+      @if (sequenceLength) {
       <nightingale-variation
         [data]="variationData()"
         row-height="24"
@@ -53,6 +56,7 @@
         [fixedHighlight]="selectionHighlight"
         use-ctrl-to-zoom
       ></nightingale-variation>
+      }
     </div>
   </div>
 </div>

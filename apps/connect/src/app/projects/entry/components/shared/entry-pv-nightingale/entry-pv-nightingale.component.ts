@@ -13,7 +13,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { combineLatest, filter, take } from 'rxjs';
+import { combineLatest, filter, take, tap } from 'rxjs';
 import '@nightingale-elements/nightingale-manager';
 import '@nightingale-elements/nightingale-navigation';
 import '@nightingale-elements/nightingale-sequence';
@@ -112,6 +112,16 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   public readonly loadedVariationAPIData = signal<boolean>(false);
   public readonly sequenceIsLoaded = signal<boolean>(false);
 
+  public readonly loadingStatus = computed(() => {
+    if (this.invalidVisualisation()) {
+      return 'invalid';
+    }
+    if (!this.loadedTracksAPIData() || !this.loadedConservationAPIData() || !this.loadedVariationAPIData()) {
+      return 'loading';
+    }
+    return 'ready';
+  });
+
   public loadedAllData() {
     return this.loadedTracksAPIData() && this.loadedVariationAPIData() && this.loadedConservationAPIData();
   }
@@ -169,6 +179,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   private readonly trackVariation$ = this.globalStore.select(EntrySelectors.entityPvVariation);
 
   public readonly dataIsParsed = signal<boolean>(false);
+  public invalidVisualisation = signal<boolean>(false);
 
   // conservation API data has a special track and data types (ConservationTrackBlockComponent)
   // this data is set using signals for automatic processing and rendering on update
@@ -392,6 +403,18 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       this.trackVariation$,
     ])
       .pipe(
+        tap(([uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations]) => {
+          // detect whether all data sources return undefined, null or an error (at least one needed)
+          const trackSources = [uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations];
+          const allAreNull = trackSources.every((track) => track === null);
+          const allEmpty = trackSources.every((resp) => {
+            const anyResp = resp as any;
+            return anyResp.empty === true;
+          });
+          if (allAreNull || allEmpty) {
+            this.invalidVisualisation.set(true);
+          }
+        }),
         filter(([uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations, conservation, variation]) =>
           this.allTracksReadyCheck(uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations, conservation, variation)
         ),

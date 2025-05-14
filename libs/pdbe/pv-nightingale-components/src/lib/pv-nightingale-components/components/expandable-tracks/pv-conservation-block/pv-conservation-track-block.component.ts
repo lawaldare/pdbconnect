@@ -23,7 +23,7 @@ import { processEntityConservationDataFromAPI, processEntityConservationLineChar
 })
 export class ConservationTrackBlockComponent {
   @Input({ required: true }) originalConservationData!: WritableSignal<APIConservationData | undefined>;
-  @Input({ required: true }) sequenceLength!: number;
+  @Input({ required: true }) sequenceLength?: number;
   @Input({ required: true }) selectionHighlight!: string;
   @Input({ required: true }) helpLogoSrc = '/assets/images/help_outline_24px.svg';
   @Input() isEntryData = false;
