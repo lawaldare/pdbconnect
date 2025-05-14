@@ -20,6 +20,7 @@ import { ResidueWiseOutliersMolecule } from '../../data-models/residuewise-outli
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { FlatOutlierResidue } from '../../components/model-quality-tab/validation-data.facade';
 import { MolstarStateService } from '../../services/molstar-state.service';
+import { Molecule } from '../../data-models/molecule.model';
 
 export type OutliersByModelId = Record<
   string,
@@ -107,8 +108,12 @@ export class MainDataProcessingFacade {
     for (const tabName of [TabNames.Assemblies, TabNames.Domains, TabNames.Ligands, TabNames.Macromolecules]) {
       let tempTableData: DataToTable;
 
-      if (tabName === TabNames.Assemblies && this.isNotUndefined([data.complexDetails, data.assemblyData, data.pisaAssemblyData])) {
-        tempTableData = new AssemblyDataToTable(data.complexDetails, data.assemblyData, data.pisaAssemblyData);
+      if (
+        tabName === TabNames.Assemblies &&
+        this.isNotUndefined([data.summaryData, data.complexDetails, data.assemblyData, data.pisaAssemblyData]) &&
+        Object.keys(data.summaryData).length > 0
+      ) {
+        tempTableData = new AssemblyDataToTable(data.summaryData, data.complexDetails, data.assemblyData, data.pisaAssemblyData);
       } else if (
         tabName === TabNames.Domains &&
         this.isNotUndefined([
@@ -117,9 +122,10 @@ export class MainDataProcessingFacade {
           data.scopMappings,
           data.macromolecules,
           data.polymerCoverage,
-          data.complexDetails,
+          data.summaryData,
           data.assemblyData,
-        ])
+        ]) &&
+        Object.keys(data.summaryData).length > 0
       ) {
         tempTableData = new DomainDataToTable(
           data.pfamMappings!,
@@ -127,14 +133,15 @@ export class MainDataProcessingFacade {
           data.scopMappings!,
           data.macromolecules,
           data.polymerCoverage,
-          data.complexDetails,
+          data.summaryData,
           data.assemblyData
         );
       } else if (
         tabName === TabNames.Ligands &&
-        this.isNotUndefined([data.ligands, data.modifications, data.ligandMonomers, data.complexDetails, data.assemblyData])
+        this.isNotUndefined([data.ligands, data.modifications, data.ligandMonomers, data.summaryData, data.assemblyData]) &&
+        Object.keys(data.summaryData).length > 0
       ) {
-        tempTableData = new LigandDataToTable(data.ligands, data.modifications, data.ligandMonomers, data.complexDetails, data.assemblyData);
+        tempTableData = new LigandDataToTable(data.ligands, data.modifications, data.ligandMonomers, data.summaryData, data.assemblyData);
       } else if (
         tabName === TabNames.Macromolecules &&
         this.isNotUndefined([
@@ -143,9 +150,10 @@ export class MainDataProcessingFacade {
           data.bestStrMapUniProtId,
           data.macromolecules,
           data.polymerCoverage,
-          data.complexDetails,
+          data.summaryData,
           data.assemblyData,
-        ])
+        ]) &&
+        Object.keys(data.summaryData).length > 0
       ) {
         tempTableData = new MacromoleculeDataToTable(
           data.carbohydrates,
@@ -153,7 +161,7 @@ export class MainDataProcessingFacade {
           data.bestStrMapUniProtId!,
           data.macromolecules,
           data.polymerCoverage,
-          data.complexDetails,
+          data.summaryData,
           data.assemblyData
         );
       } else {
@@ -174,6 +182,12 @@ export class MainDataProcessingFacade {
       preferredAssemblyData = this.processPreferredAssemblyData(data.summaryData, data.complexDetails);
     }
     this.compCommunication.preferredAssemblyData.set(preferredAssemblyData);
+
+    let descriptions = undefined;
+    if (this.isNotUndefined([data.macromolecules])) {
+      descriptions = this.processDescriptions(data.macromolecules);
+    }
+    this.compCommunication.descriptions.set(descriptions);
 
     let outliersByModelId: OutliersByModelId = {};
     if (this.isNotUndefined([data.residueOutliers])) {
@@ -217,6 +231,67 @@ export class MainDataProcessingFacade {
       if (preferredAssemblyId) break;
     }
     return preferredAssemblyData;
+  }
+
+  public processDescriptions(macromolecules: Molecule[]) {
+    let moleculeTypeConditions = [
+      {
+        moleculeTypes: ['polypeptide(L)', 'polypeptide(R)'],
+        moleculeDescriptionSuffix: 'unique protein',
+        entryContentsDescriptionSuffix: 'distinct polypeptide',
+      },
+      {
+        moleculeTypes: ['polydeoxyribonucleotide'],
+        moleculeDescriptionSuffix: 'DNA',
+        entryContentsDescriptionSuffix: 'distinct DNA',
+      },
+      {
+        moleculeTypes: ['polyribonucleotide'],
+        moleculeDescriptionSuffix: 'RNA',
+        entryContentsDescriptionSuffix: 'distinct RNA',
+      },
+      {
+        moleculeTypes: ['polydeoxyribonucleotide/polyribonucleotide hybrid'],
+        moleculeDescriptionSuffix: 'DNA/RNA hybrid',
+        entryContentsDescriptionSuffix: 'distinct DNA/RNA hybrid',
+      },
+      {
+        moleculeTypes: ['carbohydrate polymer'],
+        moleculeDescriptionSuffix: 'carbohydrate',
+        entryContentsDescriptionSuffix: 'distinct carbohydrate polymer',
+      },
+    ];
+
+    moleculeTypeConditions = moleculeTypeConditions.filter((condition) => {
+      const macromoleculesForCondition = (macromolecules ?? []).filter((mol) => condition.moleculeTypes.indexOf(mol.molecule_type) > -1);
+      return macromoleculesForCondition.length > 0;
+    });
+
+    let totalMolecules = 0;
+    let macromoleculesDescription = '';
+    const entryContentsDescription: string[] = [];
+
+    // for each macromolecule type (protein, dna, rna, dna/rna hybrid, carbohydrate)
+    for (let i = 0; i < moleculeTypeConditions.length; i++) {
+      const moleculeTypeCondition = moleculeTypeConditions[i];
+      // filter the complete macromolecule list by the type
+      const filteredMacromolecules = (macromolecules ?? []).filter((mol) => moleculeTypeCondition.moleculeTypes.indexOf(mol.molecule_type) > -1);
+
+      // add comma if this is between second and penultimate item
+      if (i > 0 && i < moleculeTypeConditions.length - 1) macromoleculesDescription += ', ';
+
+      // add 'and' if more than one item and this is last item
+      if (i > 0 && i === moleculeTypeConditions.length - 1) macromoleculesDescription += ' and ';
+
+      macromoleculesDescription += `${filteredMacromolecules.length} ${moleculeTypeCondition.moleculeDescriptionSuffix}`;
+      totalMolecules += filteredMacromolecules.length;
+
+      const hasPlural = filteredMacromolecules.length > 1 ? 's' : '';
+      entryContentsDescription.push(`${filteredMacromolecules.length} ${moleculeTypeCondition.entryContentsDescriptionSuffix} molecule${hasPlural}`);
+    }
+    macromoleculesDescription += totalMolecules > 1 ? ' molecules' : ' molecule';
+
+    return { macromoleculesDescription, entryContentsDescription };
   }
 
   public processResidueOutliersData(outliers: ResidueWiseOutliersMolecule[]) {

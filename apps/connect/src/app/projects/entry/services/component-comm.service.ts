@@ -13,11 +13,17 @@ export interface PreferredAssemblyData {
   complexId: string;
 }
 
+export interface EntryDescription {
+  macromoleculesDescription: string;
+  entryContentsDescription: string[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class ComponentCommunicationService {
   public preferredAssemblyData = signal<PreferredAssemblyData | undefined>(undefined);
+  public descriptions = signal<EntryDescription | undefined>(undefined);
 
   public currentTab = signal<string>('Information');
   public tabSwitchOrigin = signal<string>('main');

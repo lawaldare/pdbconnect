@@ -7,8 +7,8 @@ import { BestStructureMapping } from '../../../../data-models/uniport-best-struc
 import { UniProtMapping } from '../../../../data-models/uniprot-mapping.model';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { PolymerCoverageMolecule } from '../../../../data-models/polymer-coverage.model';
-import { ComplexDetails } from '../../../../data-models/complex-details.model';
 import { AssemblyData, AssemblyEntity } from '../../../../data-models/assembly.model';
+import { ProcessedSummary } from '../../../../data-models/summary.model';
 
 interface MacromoleculesChainBoundaries {
   [key: number]: {
@@ -42,7 +42,7 @@ export class MacromoleculeDataToTable extends DataToTable {
   uniprotMapping: UniProtMapping;
   bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] };
   polymerCoverage: PolymerCoverageMolecule[] = [];
-  complexDetails: ComplexDetails[];
+  summaryData: ProcessedSummary;
   assemblyData: AssemblyData[];
 
   molstarHardResetOnSelect = false;
@@ -59,7 +59,7 @@ export class MacromoleculeDataToTable extends DataToTable {
     bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] },
     macromolecules: Molecule[],
     polymerCoverage: PolymerCoverageMolecule[],
-    complexDetails: ComplexDetails[],
+    summaryData: ProcessedSummary,
     assemblyData: AssemblyData[]
   ) {
     super();
@@ -67,7 +67,7 @@ export class MacromoleculeDataToTable extends DataToTable {
     this.uniprotMapping = uniprotMapping;
     this.bestStructuresMappingsByUniProtId = bestStructuresMappingsByUniProtId;
     // this.polymerCoverage = polymerCoverage;
-    this.complexDetails = complexDetails;
+    this.summaryData = summaryData;
     this.assemblyData = assemblyData;
     const preferredAssembly = this.getPreferredAssembly();
     if (preferredAssembly) {
@@ -78,19 +78,14 @@ export class MacromoleculeDataToTable extends DataToTable {
 
   getPreferredAssembly() {
     // we first check and get the preferred assembly if it exists
-    let preferredAssembly = -1;
-    for (const complexDetail of this.complexDetails) {
-      for (const assemblyInfo of complexDetail.assemblies) {
-        if (assemblyInfo.preferred_assembly) {
-          preferredAssembly = assemblyInfo.assembly_id;
-          break;
-        }
-      }
-      if (preferredAssembly > -1) break;
+    let preferredAssemblyId = -1;
+    const preferredAssemblyData = this.summaryData.assemblies.filter((summaryAssembly) => summaryAssembly.preferred === true);
+    if (preferredAssemblyData.length > 0) {
+      preferredAssemblyId = parseInt(preferredAssemblyData[0].assembly_id);
     }
-    if (preferredAssembly === -1) preferredAssembly = 1;
+    if (preferredAssemblyId === -1) preferredAssemblyId = 1;
 
-    const assembly = this.assemblyData.filter((assembly) => parseInt(assembly.assembly_id) === preferredAssembly)[0];
+    const assembly = this.assemblyData.filter((assembly) => parseInt(assembly.assembly_id) === preferredAssemblyId)[0];
     return assembly;
   }
 

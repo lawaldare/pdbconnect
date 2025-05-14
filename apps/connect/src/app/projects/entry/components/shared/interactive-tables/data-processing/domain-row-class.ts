@@ -6,7 +6,7 @@ import { Molecule } from '../../../../data-models/molecule.model';
 import { formatSegments, formatSegmentsWithCoverage } from '../../../../helpers/domain-helpers';
 import { ObservedSegments, PolymerCoverageMolecule } from '../../../../data-models/polymer-coverage.model';
 import { AssemblyData, AssemblyEntity } from '../../../../data-models/assembly.model';
-import { ComplexDetails } from '../../../../data-models/complex-details.model';
+import { ProcessedSummary } from '../../../../data-models/summary.model';
 
 export class DomainDataToTable extends DataToTable {
   // Domain specific data
@@ -15,7 +15,7 @@ export class DomainDataToTable extends DataToTable {
   scopMappings: ScopMappings;
   macromolecules: Molecule[] = [];
   polymerCoverage: PolymerCoverageMolecule[] = [];
-  complexDetails: ComplexDetails[];
+  summaryData: ProcessedSummary;
   assemblyData: AssemblyData[];
 
   // Implementation of Abstract attributes from abstract-base-row-class
@@ -37,14 +37,14 @@ export class DomainDataToTable extends DataToTable {
     scopMappings: ScopMappings,
     macromolecules: Molecule[],
     polymerCoverage: PolymerCoverageMolecule[],
-    complexDetails: ComplexDetails[],
+    summaryData: ProcessedSummary,
     assemblyData: AssemblyData[]
   ) {
     super();
     this.pfamMappings = pfamMappings;
     this.cathMappings = cathMappings;
     this.scopMappings = scopMappings;
-    this.complexDetails = complexDetails;
+    this.summaryData = summaryData;
     this.assemblyData = assemblyData;
     const preferredAssembly = this.getPreferredAssembly();
     if (preferredAssembly) {
@@ -55,18 +55,14 @@ export class DomainDataToTable extends DataToTable {
 
   getPreferredAssembly() {
     // we first check and get the preferred assembly if it exists
-    let preferredAssembly = -1;
-    for (const complexDetail of this.complexDetails) {
-      for (const assemblyInfo of complexDetail.assemblies) {
-        if (assemblyInfo.preferred_assembly) {
-          preferredAssembly = assemblyInfo.assembly_id;
-          break;
-        }
-      }
-      if (preferredAssembly > -1) break;
+    let preferredAssemblyId = -1;
+    const preferredAssemblyData = this.summaryData.assemblies.filter((summaryAssembly) => summaryAssembly.preferred === true);
+    if (preferredAssemblyData.length > 0) {
+      preferredAssemblyId = parseInt(preferredAssemblyData[0].assembly_id);
     }
-    if (preferredAssembly === -1) preferredAssembly = 1;
-    const assembly = this.assemblyData.filter((assembly) => parseInt(assembly.assembly_id) === preferredAssembly)[0];
+    if (preferredAssemblyId === -1) preferredAssemblyId = 1;
+
+    const assembly = this.assemblyData.filter((assembly) => parseInt(assembly.assembly_id) === preferredAssemblyId)[0];
     return assembly;
   }
 

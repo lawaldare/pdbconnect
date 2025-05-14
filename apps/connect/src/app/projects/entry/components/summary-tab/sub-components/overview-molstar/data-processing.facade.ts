@@ -23,9 +23,6 @@ export class OverviewMolstarFacade {
 
   public relatedEntries: WritableSignal<string[]> = signal([]);
 
-  public macromoleculesDescription: WritableSignal<string> = signal('');
-  public entryContentsDescription: WritableSignal<string[]> = signal([]);
-
   public processedMacromolecules = computed(() => {
     const hasMacromoleculesData = Object.keys(this.signals.tabTableData()).indexOf('Macromolecules') > -1;
     if (!hasMacromoleculesData) return [];
@@ -117,67 +114,6 @@ export class OverviewMolstarFacade {
       }
     });
   }
-
-  public readonly descriptions = computed(() => {
-    let moleculeTypeConditions = [
-      {
-        moleculeTypes: ['polypeptide(L)', 'polypeptide(R)'],
-        moleculeDescriptionSuffix: 'unique protein',
-        entryContentsDescriptionSuffix: 'distinct polypeptide',
-      },
-      {
-        moleculeTypes: ['polydeoxyribonucleotide'],
-        moleculeDescriptionSuffix: 'DNA',
-        entryContentsDescriptionSuffix: 'distinct DNA',
-      },
-      {
-        moleculeTypes: ['polyribonucleotide'],
-        moleculeDescriptionSuffix: 'RNA',
-        entryContentsDescriptionSuffix: 'distinct RNA',
-      },
-      {
-        moleculeTypes: ['polydeoxyribonucleotide/polyribonucleotide hybrid'],
-        moleculeDescriptionSuffix: 'DNA/RNA hybrid',
-        entryContentsDescriptionSuffix: 'distinct DNA/RNA hybrid',
-      },
-      {
-        moleculeTypes: ['carbohydrate polymer'],
-        moleculeDescriptionSuffix: 'carbohydrate',
-        entryContentsDescriptionSuffix: 'distinct carbohydrate polymer',
-      },
-    ];
-
-    moleculeTypeConditions = moleculeTypeConditions.filter((condition) => {
-      const macromoleculesForCondition = (this.macromolecules() ?? []).filter((mol) => condition.moleculeTypes.indexOf(mol.molecule_type) > -1);
-      return macromoleculesForCondition.length > 0;
-    });
-
-    let totalMolecules = 0;
-    let macromoleculesDescription = '';
-    const entryContentsDescription: string[] = [];
-
-    // for each macromolecule type (protein, dna, rna, dna/rna hybrid, carbohydrate)
-    for (let i = 0; i < moleculeTypeConditions.length; i++) {
-      const moleculeTypeCondition = moleculeTypeConditions[i];
-      // filter the complete macromolecule list by the type
-      const filteredMacromolecules = (this.macromolecules() ?? []).filter((mol) => moleculeTypeCondition.moleculeTypes.indexOf(mol.molecule_type) > -1);
-
-      // add comma if this is between second and penultimate item
-      if (i > 0 && i < moleculeTypeConditions.length - 1) macromoleculesDescription += ', ';
-
-      // add 'and' if more than one item and this is last item
-      if (i > 0 && i === moleculeTypeConditions.length - 1) macromoleculesDescription += ' and ';
-
-      macromoleculesDescription += `${filteredMacromolecules.length} ${moleculeTypeCondition.moleculeDescriptionSuffix}`;
-      totalMolecules += filteredMacromolecules.length;
-
-      const hasPlural = filteredMacromolecules.length > 1 ? 's' : '';
-      entryContentsDescription.push(`${filteredMacromolecules.length} ${moleculeTypeCondition.entryContentsDescriptionSuffix} molecule${hasPlural}`);
-    }
-    macromoleculesDescription += totalMolecules > 1 ? ' molecules' : ' molecule';
-
-    return { macromoleculesDescription, entryContentsDescription };
-  });
 
   public parseRelatedEntries(): void {
     this.globalStore

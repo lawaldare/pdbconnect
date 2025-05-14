@@ -44,8 +44,8 @@ export class OverviewMolstarTabListViewComponent {
 
   //  data used in template for assembly
   public assemblyData = computed(() => this.dataProcessing.preferredAssemblyData());
-  public entryContentsDescription = this.dataProcessing.descriptions().entryContentsDescription;
-  public macromoleculesDescription = this.dataProcessing.descriptions().macromoleculesDescription;
+  public entryContentsDescription = computed(() => this.compCommunication.descriptions()?.entryContentsDescription);
+  public macromoleculesDescription = computed(() => this.compCommunication.descriptions()?.macromoleculesDescription);
 
   public preferredAssemblyTooltip = preferredAssemblyTooltip;
   public assemblyNameTooltip = assemblyNameTooltip;

@@ -41,15 +41,16 @@
       </div>
       <article>{{ assembly() }}</article>
     </div>
-    }
+    } @if (entryContentsDescription()) {
     <div class="info-row">
       <h6>Entry contents</h6>
       <article>
-        @for (contentLine of entryContentsDescription; track contentLine; let islast = $last) { {{ contentLine }}
+        @for (contentLine of entryContentsDescription(); track contentLine; let islast = $last) { {{ contentLine }}
         <br />
         }
       </article>
     </div>
+    }
   </mat-expansion-panel>
   <mat-expansion-panel (opened)="onOpenAssemblyPanel('Macromolecules')">
     <mat-expansion-panel-header>

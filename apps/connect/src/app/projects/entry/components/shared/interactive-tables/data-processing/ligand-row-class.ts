@@ -5,15 +5,15 @@ import { ModifiedResidue } from '../../../../data-models/modified-residues.model
 import { Molecule } from '../../../../data-models/molecule.model';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { LigandMonomer } from '../../../../data-models/ligand-monomers.model';
-import { ComplexDetails } from '../../../../data-models/complex-details.model';
 import { AssemblyData } from '../../../../data-models/assembly.model';
+import { ProcessedSummary } from '../../../../data-models/summary.model';
 
 export class LigandDataToTable extends DataToTable {
   // Ligand specific data
   ligands: Molecule[] = [];
   modifications: ModifiedResidue[] = [];
   ligandMonomers: LigandMonomer[] = [];
-  complexDetails: ComplexDetails[];
+  summaryData: ProcessedSummary;
   assemblyData: AssemblyData[];
 
   molstarHardResetOnSelect = false;
@@ -24,15 +24,9 @@ export class LigandDataToTable extends DataToTable {
   tableRows: WritableSignal<TableRow[]> = signal([]);
   tableFilters: WritableSignal<TableFilter[]> = signal([]);
 
-  constructor(
-    ligands: Molecule[],
-    modifications: ModifiedResidue[],
-    ligandMonomers: LigandMonomer[],
-    complexDetails: ComplexDetails[],
-    assemblyData: AssemblyData[]
-  ) {
+  constructor(ligands: Molecule[], modifications: ModifiedResidue[], ligandMonomers: LigandMonomer[], summaryData: ProcessedSummary, assemblyData: AssemblyData[]) {
     super();
-    this.complexDetails = complexDetails;
+    this.summaryData = summaryData;
     this.assemblyData = assemblyData;
     const preferredAssembly = this.getPreferredAssembly();
     if (preferredAssembly) {
@@ -44,19 +38,14 @@ export class LigandDataToTable extends DataToTable {
 
   getPreferredAssembly() {
     // we first check and get the preferred assembly if it exists
-    let preferredAssembly = -1;
-    for (const complexDetail of this.complexDetails) {
-      for (const assemblyInfo of complexDetail.assemblies) {
-        if (assemblyInfo.preferred_assembly) {
-          preferredAssembly = assemblyInfo.assembly_id;
-          break;
-        }
-      }
-      if (preferredAssembly > -1) break;
+    let preferredAssemblyId = -1;
+    const preferredAssemblyData = this.summaryData.assemblies.filter((summaryAssembly) => summaryAssembly.preferred === true);
+    if (preferredAssemblyData.length > 0) {
+      preferredAssemblyId = parseInt(preferredAssemblyData[0].assembly_id);
     }
-    if (preferredAssembly === -1) preferredAssembly = 1;
+    if (preferredAssemblyId === -1) preferredAssemblyId = 1;
 
-    const assembly = this.assemblyData.filter((assembly) => parseInt(assembly.assembly_id) === preferredAssembly)[0];
+    const assembly = this.assemblyData.filter((assembly) => parseInt(assembly.assembly_id) === preferredAssemblyId)[0];
     return assembly;
   }
 
