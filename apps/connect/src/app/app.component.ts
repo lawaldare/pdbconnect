@@ -47,6 +47,8 @@ export class AppComponent implements OnInit {
     const gtagBody = document.createTextNode(`
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${environment.googleAnalyticsTag}');
     `);
     gtagEl.appendChild(gtagBody);
     document.body.appendChild(gtagEl);

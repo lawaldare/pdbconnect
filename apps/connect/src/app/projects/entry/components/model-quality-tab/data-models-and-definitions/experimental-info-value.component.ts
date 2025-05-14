@@ -22,6 +22,10 @@ import { UtilService } from '@pdbc/core';
         >
       }
 
+      @case ('Spacegroup name') {
+        <span [innerHTML]="value"></span>
+      }
+
       @default {
         <span>{{ value }}</span>
       }
