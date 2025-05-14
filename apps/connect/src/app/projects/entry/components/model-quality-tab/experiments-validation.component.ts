@@ -179,6 +179,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       if (!currentModelIdx || !allOutliers) return;
 
       const outliers = allOutliers[currentModelIdx];
+      if (!outliers) return;
       const uniqueOutlierTypes = outliers.uniqueOutlierTypes;
 
       if (this.modelIdx() !== currentModelIdx || this.specificIssueKinds().length === 0) {
