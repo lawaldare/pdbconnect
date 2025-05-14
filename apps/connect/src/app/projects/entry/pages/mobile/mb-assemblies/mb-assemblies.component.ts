@@ -44,13 +44,13 @@ export class MbAssembliesComponent implements OnInit {
     return [];
   });
 
-  public readonly prefferedAssembly = computed(() => {
+  public readonly preferredAssembly = computed(() => {
     const assemblies = this.assemblyTableRows();
     const preferredAssembly = assemblies.find((assembly) => assembly.assemblyName.includes('preferred'));
     return preferredAssembly ?? assemblies[0];
   });
 
-  public readonly prefferedSymmetry = computed(() => {
+  public readonly preferredSymmetry = computed(() => {
     const symmetries = this.symmetry();
     if (symmetries) {
       const preferredSymmetry = symmetries.find((symmetry) => symmetry.assembly_id === '1');

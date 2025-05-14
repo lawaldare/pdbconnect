@@ -101,13 +101,24 @@ export const ligandChipTooltips: { [key: string]: string } = {
   Modification: 'Modified amino acids or nucleotides in protein, DNA or RNA chains',
 };
 
-export const validationInfoTooltip =
-  'Quality indicators assess structural deviations from known high-resolution standards. These include clashscore, bond angles/lengths, sidechain rotamer outliers, and RSRZ outliers. They highlight steric clashes, geometric inconsistencies to expected values, and poor model-to-data fit.';
-export const sampleInfoTooltip = 'Information about the biological specimen used in the experiment, including its source';
-export const expInfoTooltip =
-  'Detailed information about the experimental method used to obtain the model, including key parameters such as resolution, data collection methods, and refinement techniques specific to the technique. See the tooltips in the table for more detail of each parameter.';
-export const expRawDataTooltip = 'Summary information and links to available unprocessed experimental data from PDB, IRRMC, SBGrid, EMPIAR and BMRB';
-export const timelineTooltip = 'Important dates related to this PDB entry';
+export const modelQualityTooltips = {
+  validationInfoTooltip:
+    'Quality indicators assess structural deviations from known high-resolution standards. These include clashscore, bond angles/lengths, sidechain rotamer outliers, and RSRZ outliers. They highlight steric clashes, geometric inconsistencies to expected values, and poor model-to-data fit.',
+  sampleInfoTooltip: 'Information about the biological specimen used in the experiment, including its source',
+  expInfoTooltip:
+    'Detailed information about the experimental method used to obtain the model, including key parameters such as resolution, data collection methods, and refinement techniques specific to the technique. See the tooltips in the table for more detail of each parameter.',
+  expRawDataTooltip: 'Summary information and links to available unprocessed experimental data from PDB, IRRMC, SBGrid, EMPIAR and BMRB',
+  timelineTooltip: 'Important dates related to this PDB entry',
+  pdbRedoTooltip:
+    'PDB-REDO is an automated procedure that refines, rebuilds, and validates crystallographic structure models, integrating up-to-date crystallographic software with specialized tools to enhance model accuracy and reliability',
+  modelQualityTooltip:
+    'Evaluates how well the atomic model fits expected geometry and the experimental map, including bond lengths, angles, and density fit metrics.',
+  experimentalInfoTooltip: 'Describes how the structure was determined, including sample origin, data collection conditions, and experimental instrumentation.',
+  crystalInfoTooltip: 'Summarizes crystal properties like symmetry, unit cell, and twinning, which are critical for solving and validating the structure.',
+  softwareTooltip: 'Lists key software and versions used in structure determination to support model transparency and reproducibility.',
+  dataQualityTooltip: 'Shows how complete and consistent the diffraction data is using metrics like resolution, completeness, and signal-to-noise.',
+  refinementTooltip: 'Reports final model accuracy against experimental data, including R-factors, resolution, and refinement method.',
+};
 
 export const nmrSampleTooltip = 'Identifier for a sample that has been analyzed using nuclear magnetic resonance (NMR) spectroscopy';
 export const nmrContentsTooltip =
@@ -118,10 +129,6 @@ export const expEmBufferTooltip = 'The name of the buffer used for the sample in
 export const depositionDateTooltip = 'Date when the coordinates were deposited to the PDB archive';
 export const releaseDateTooltip = 'Date when the coordinates were released in the PDB archive';
 export const revisionDateTooltip = 'Date of the current version or last minor or major revision of a PDB entry';
-export const pdbRedoTooltip =
-  'PDB-REDO is an automated procedure that refines, rebuilds, and validates crystallographic structure models, integrating up-to-date crystallographic software with specialized tools to enhance model accuracy and reliability';
-
-// export const relatedEntriesTooltip = '';
 
 /**
  * For dashboard details display of statistic links bar

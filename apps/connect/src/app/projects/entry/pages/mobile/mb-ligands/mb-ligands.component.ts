@@ -18,12 +18,11 @@ import { EntrySelectors } from '../../../store/entry.selectors';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
 import { LigandsTabService } from '../../../components/ligands-tab/ligands-tab.service';
-import { RichTooltipDirective } from '@pdbc/rich-tooltip';
 import { annotationsTooltips } from '../../../entry-constant';
 
 @Component({
   selector: 'pdbc-mb-ligands',
-  imports: [CommonModule, TruncatePipe, EntryDropdownComponent, RichTooltipDirective, TruncateTextDirective],
+  imports: [CommonModule, TruncatePipe, EntryDropdownComponent, TruncateTextDirective],
   templateUrl: './mb-ligands.component.html',
   styleUrls: ['../common-mb-header.scss', './mb-ligands.component.scss'],
 })

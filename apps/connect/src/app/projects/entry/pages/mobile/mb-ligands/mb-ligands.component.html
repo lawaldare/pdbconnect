@@ -30,9 +30,9 @@
     <p class="row__content">{{row.codeAndName.name | truncate:40}}</p>
     <!-- <span class="row__annotation">{{row.annotation.description}}</span> -->
     @if(row.annotations.length){ @for(annotation of row.annotations; track annotation){
-    <span class="row__annotation" [ngClass]="annotation" [pdbcRichTooltip]="annotationsTooltips[annotation]">{{annotation | titlecase}}</span>
+    <span class="row__annotation" [ngClass]="annotation">{{annotation | titlecase}}</span>
     } } @if(!row.isModified && row.annotations.length === 0){
-    <span class="row__annotation unannotated" [pdbcRichTooltip]="annotationsTooltips['unannotated']">Unannotated</span>
+    <span class="row__annotation unannotated">Unannotated</span>
     } @if(row.isModified){
     <span class="row__annotation modification">Modification</span>
     }
@@ -40,19 +40,16 @@
   } }
 
   <!-- 2nd Level Overlay -->
-  @if(currentViewState() === viewStates.Detail){
-  <!-- <span class="row__annotation">{{selectedLigands().annotation.description}}</span> -->
-  @if(selectedLigands().annotations.length){ @for(annotation of selectedLigands().annotations; track annotation){
-  <span class="row__annotation" [ngClass]="annotation" [pdbcRichTooltip]="annotationsTooltips[annotation]">{{annotation | titlecase}}</span>
+  @if(currentViewState() === viewStates.Detail){ @if(selectedLigands().annotations.length){ @for(annotation of selectedLigands().annotations; track annotation){
+  <span class="row__annotation" [ngClass]="annotation">{{annotation | titlecase}}</span>
   } } @if(!selectedLigands().isModified && selectedLigands().annotations.length === 0){
-  <span class="row__annotation unannotated" [pdbcRichTooltip]="annotationsTooltips['unannotated']">Unannotated</span>
+  <span class="row__annotation unannotated">Unannotated</span>
   } @if(selectedLigands().isModified){
   <span class="row__annotation modification">Modification</span>
   }
   <div class="chains">
     @if(dropdownOptions.length > 1){
     <div class="dropdown-container">
-      <!-- <span class="dropdown-title">{{ dropdownTitle }}</span> -->
       <pdbc-entry-dropdown
         [downloadable]="false"
         [islink]="false"
@@ -73,7 +70,7 @@
   <p class="content" libTruncateText [truncateText]="mapSynonyms(boundDetails[0].synonyms)" [limit]="53"></p>
   } @if(boundDetails && boundDetails.length){
   <p class="title">Formula</p>
-  <p class="content formula">{{ boundDetails[0]?.formula }} KDa</p>
+  <p class="content formula">{{ boundDetails[0]?.formula }}</p>
   }
   <p class="title">Molecular weight</p>
   <p class="content">{{selectedLigands().additionalData.source.weight}} KDa</p>

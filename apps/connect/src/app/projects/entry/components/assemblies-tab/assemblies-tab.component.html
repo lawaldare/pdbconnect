@@ -80,13 +80,13 @@
           </div>
         </div>
         <div class="assembly-grouped">
-          @if(prefferedSymmetry()?.type){
+          @if(preferredSymmetry()?.type){
           <div class="info-row">
             <span>
               Assembly symmetry
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.assemblySymmetry" />
             </span>
-            <article>{{prefferedSymmetry()?.type}} - {{prefferedSymmetry()?.symbol}}</article>
+            <article>{{preferredSymmetry()?.type}} - {{preferredSymmetry()?.symbol}}</article>
           </div>
           }
           <div class="info-row">

@@ -20,15 +20,7 @@ import { ValidationTablesFacade } from './validation-tables.facade';
 import { AgGridAngular } from 'ag-grid-angular';
 
 import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
-import {
-  expInfoTooltip,
-  expRawDataTooltip,
-  OUTLIER_TYPE_LABELS,
-  pdbRedoTooltip,
-  sampleInfoTooltip,
-  timelineTooltip,
-  validationInfoTooltip,
-} from '../../entry-constant';
+import { modelQualityTooltips, OUTLIER_TYPE_LABELS } from '../../entry-constant';
 import { MaterialModule, UtilService } from '@pdbc/core';
 import { combineLatest, filter, forkJoin, mergeMap, of, take, tap } from 'rxjs';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
@@ -116,12 +108,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public processedWidth = signal(false);
 
   // tooltip constants
-  public valInfoTooltip = validationInfoTooltip;
-  public sampleInfoTooltip = sampleInfoTooltip;
-  public expInfoTooltip = expInfoTooltip;
-  public expRawDataTooltip = expRawDataTooltip;
-  public timelineTooltip = timelineTooltip;
-  public pdbRedoTooltip = pdbRedoTooltip;
+  public readonly modelQualityTooltips = modelQualityTooltips;
 
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 

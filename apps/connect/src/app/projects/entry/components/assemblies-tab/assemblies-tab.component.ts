@@ -61,7 +61,7 @@ export class AssembliesTabComponent {
     return datum;
   });
 
-  public readonly prefferedSymmetry = computed(() => {
+  public readonly preferredSymmetry = computed(() => {
     const symmetries = this.symmetry();
     if (symmetries) {
       const preferredSymmetry = symmetries.find((symmetry) => symmetry.assembly_id === '1');

@@ -102,7 +102,7 @@
       <section class="validation-info">
         <div class="info-row-header">
           <h5>Validation information</h5>
-          <lib-help-icon-with-tooltip [tooltipText]="valInfoTooltip" />
+          <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.validationInfoTooltip" />
         </div>
         @if (noImg === false) {
         <div class="validation-report-img-container">
@@ -124,7 +124,7 @@
       <section class="pdb-redo-data">
         <div class="info-row-header">
           <h5>PDB-REDO</h5>
-          <lib-help-icon-with-tooltip [tooltipText]="pdbRedoTooltip" />
+          <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.pdbRedoTooltip" />
         </div>
         <div class="info-row">
           <span>PDB-REDO model quality summary</span>
@@ -147,7 +147,7 @@
       <section class="timeline-info">
         <div class="info-row-header">
           <h5>Timeline</h5>
-          <lib-help-icon-with-tooltip [tooltipText]="timelineTooltip" />
+          <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.timelineTooltip" />
         </div>
         <ag-grid-angular
           style="height: fit-content"
@@ -166,7 +166,7 @@
       <section class="model-quality-info">
         <div class="info-row-header">
           <h5>Model quality</h5>
-          <lib-help-icon-with-tooltip [tooltipText]="timelineTooltip" />
+          <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.modelQualityTooltip" />
         </div>
         @if (currentData()?.validationInfo) {
         <ag-grid-angular
@@ -190,7 +190,7 @@
       <section class="sample-info">
         <div class="info-row-header">
           <h5>Sample information</h5>
-          <lib-help-icon-with-tooltip [tooltipText]="sampleInfoTooltip" />
+          <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.sampleInfoTooltip" />
         </div>
         @if (currentData()!.sampleInfo) { @if (currentData()!.sampleInfo!.authorDesc) {
         <div class="info-row">
@@ -243,7 +243,7 @@
       <section class="experimental-info">
         <div class="info-row-header">
           <h5>Experimental information</h5>
-          <lib-help-icon-with-tooltip [tooltipText]="expInfoTooltip" />
+          <lib-help-icon-with-tooltip [tooltipText]="isXray() ? modelQualityTooltips.experimentalInfoTooltip : modelQualityTooltips.expInfoTooltip" />
         </div>
         @if(!this.isXray()){
         <!-- For X-Ray, SAS -->
@@ -355,7 +355,7 @@
       <section class="crystal-info">
         <div class="info-row-header">
           <h5>Crystal Info</h5>
-          <lib-help-icon-with-tooltip [tooltipText]="expInfoTooltip" />
+          <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.crystalInfoTooltip" />
         </div>
         <ag-grid-angular
           style="height: fit-content"
@@ -377,7 +377,7 @@
       <section class="software-info">
         <div class="info-row-header">
           <h5>Software</h5>
-          <lib-help-icon-with-tooltip [tooltipText]="expInfoTooltip" />
+          <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.softwareTooltip" />
         </div>
         <ag-grid-angular
           style="height: fit-content"
@@ -399,7 +399,7 @@
       <section class="data-quality-info">
         <div class="info-row-header">
           <h5>Data quality</h5>
-          <lib-help-icon-with-tooltip [tooltipText]="expInfoTooltip" />
+          <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.dataQualityTooltip" />
         </div>
         <ag-grid-angular
           style="height: fit-content"
@@ -421,7 +421,7 @@
       <section class="crystal-info">
         <div class="info-row-header">
           <h5>Refinement</h5>
-          <lib-help-icon-with-tooltip [tooltipText]="expInfoTooltip" />
+          <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.refinementTooltip" />
         </div>
         <ag-grid-angular
           style="height: fit-content"
@@ -442,7 +442,7 @@
       <section class="exp-raw-data-info">
         <div class="info-row-header">
           <h5>Experimental raw data</h5>
-          <lib-help-icon-with-tooltip [tooltipText]="expRawDataTooltip" />
+          <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.expRawDataTooltip" />
         </div>
         <!-- <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="expRawDataTooltip" matTooltipPosition="below">
           Experimental raw data
