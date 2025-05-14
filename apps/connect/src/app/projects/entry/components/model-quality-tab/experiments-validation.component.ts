@@ -40,6 +40,7 @@ import { MacromoleculesRowData } from '../shared/interactive-tables/data-models-
 export interface ValueLabel {
   value: string;
   label: string;
+  shell?: string;
 }
 
 /**
@@ -160,7 +161,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     source: this.experimentalMethod,
     computation: (experimentalMethod) => {
       if (experimentalMethod?.toLowerCase() === 'hybrid') return true;
-      return experimentalMethod?.toLowerCase()?.includes('x-ray');
+      return experimentalMethod?.toLowerCase()?.includes('x-ray diffraction');
     },
   });
 
@@ -213,18 +214,22 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    combineLatest([this.globalStore.select(EntrySelectors.modelQualityXray), this.globalStore.select(EntrySelectors.experimentalDetails)])
+    combineLatest([
+      this.globalStore.select(EntrySelectors.modelQualityXray),
+      this.globalStore.select(EntrySelectors.experimentalDetails),
+      this.globalStore.select(EntrySelectors.macroMolecules),
+    ])
       .pipe(
-        mergeMap(([xray, experimentalDetails]) => {
+        mergeMap(([xray, experimentalDetails, macroMolecules]) => {
           if (experimentalDetails.length > 1) {
             this.isHybrid.set(true);
           }
           const processedExpValData$ = this.dataFacade.processData().pipe(take(1));
-          return forkJoin([processedExpValData$, of(xray)]);
+          return forkJoin([processedExpValData$, of(xray), of(macroMolecules)]);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(([processedExpValData, xray]) => {
+      .subscribe(([processedExpValData, xray, macroMolecules]) => {
         if (this.isXray()) {
           const validationInfo = [...(processedExpValData?.[0].validationInfo ?? [])];
           validationInfo.push({ metric: 'RMSD bond length [Å]', description: String(xray?.model_quality?.rmsd_bond_length ?? 0) });
@@ -239,17 +244,17 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
         this.experimentalInfoRowData.set([
           {
             label: 'Source organism',
-            value: this.macromolecule()?.organisms[0] ?? 'Not available',
+            value: macroMolecules?.[0]?.source?.[0]?.organism_scientific_name ?? 'Not available',
           },
           {
             label: 'Expression system',
-            value: this.macromolecule()?.additionalData?.molecule?.source?.[0]?.expression_host_scientific_name ?? 'Not available',
+            value: macroMolecules?.[0]?.source?.[0]?.expression_host_scientific_name ?? 'Not available',
           },
           ...this.getInfoRowData(xray?.['experimental_info']),
         ]);
         this.crystalInfoRowData.set(this.getInfoRowData(xray?.['crystal_info']));
         this.softwareRowData.set(this.getInfoRowData(xray?.['software']));
-        this.dataQualityRowData.set(this.getInfoRowData(xray?.['data_quality']));
+        this.dataQualityRowData.set(this.getDataQualityRowData(xray?.['data_quality']));
         this.refinementRowData.set(this.getInfoRowData(xray?.['refinement']));
       });
   }
@@ -300,27 +305,25 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     this.currentData.set(data);
   }
 
-  public readonly macromolecule = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-
-    if (isLoaded) {
-      const tabData = this.compCommunication.getTabData('Macromolecules');
-      const datum = tabData.tableRows() as any[];
-      const mappedDatum = datum.map((data) => {
-        return {
-          ...data,
-          organisms: [...new Set(data['organisms'])],
-        };
-      });
-      return mappedDatum[0] as MacromoleculesRowData;
-    }
-    return {} as MacromoleculesRowData;
-  });
-
   private getInfoRowData(data: Record<string, string>): ValueLabel[] {
     return Object.entries(data ?? {}).reduce((acc: ValueLabel[], [metric, value]) => {
       acc.push({ label: metric.charAt(0).toUpperCase() + metric.slice(1).replace(/_/g, ' '), value: value ? value : 'Not available' });
       return acc;
     }, []);
+  }
+
+  private getDataQualityRowData(data: Record<string, string>): ValueLabel[] {
+    const result = [];
+    for (const key in data) {
+      if (!key.endsWith('_shell')) {
+        const shellKey = `${key}_shell`;
+        result.push({
+          label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
+          value: data[key] ?? 'Not available',
+          shell: data[shellKey] ?? 'Not available',
+        });
+      }
+    }
+    return result;
   }
 }

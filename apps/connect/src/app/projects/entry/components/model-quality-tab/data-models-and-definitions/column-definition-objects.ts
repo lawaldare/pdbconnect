@@ -3,6 +3,7 @@ import { TableHeaderWithTooltipComponent } from '../../shared/interactive-tables
 import { depositionDateTooltip, expEmBufferTooltip, nmrContentsTooltip, nmrSampleTooltip, releaseDateTooltip, revisionDateTooltip } from '../../../entry-constant';
 import { ExperimentRawRow, XRayStatsRow } from './table-rows.model';
 import { ExperimentalInfoValueRendererComponent } from './experimental-info-value.component';
+import { ExperimentalInfoMetricRendererComponent } from './experimental-info-metric.component';
 
 export const VALIDATION_COLUMN_DEFS: ColDef[] = [
   {
@@ -31,6 +32,7 @@ export const EXPERIMENTAL_INFO_COLUMN_DEFS: ColDef[] = [
   {
     headerName: 'Metric',
     field: 'label',
+    cellRenderer: ExperimentalInfoMetricRendererComponent,
     flex: 1,
     wrapText: true,
     autoHeight: true,
@@ -41,6 +43,41 @@ export const EXPERIMENTAL_INFO_COLUMN_DEFS: ColDef[] = [
   {
     headerName: 'Value',
     field: 'value',
+    cellRenderer: ExperimentalInfoValueRendererComponent,
+    flex: 1,
+    wrapText: true,
+    autoHeight: true,
+    autoHeaderHeight: true,
+    filter: false,
+    resizable: false,
+  },
+];
+export const EXPERIMENTAL_INFO_DATA_QUALITY_COLUMN_DEFS: ColDef[] = [
+  {
+    headerName: 'Metric',
+    field: 'label',
+    cellRenderer: ExperimentalInfoMetricRendererComponent,
+    flex: 1,
+    wrapText: true,
+    autoHeight: true,
+    autoHeaderHeight: true,
+    filter: false,
+    resizable: false,
+  },
+  {
+    headerName: 'Value',
+    field: 'value',
+    cellRenderer: ExperimentalInfoValueRendererComponent,
+    flex: 1,
+    wrapText: true,
+    autoHeight: true,
+    autoHeaderHeight: true,
+    filter: false,
+    resizable: false,
+  },
+  {
+    headerName: 'Outer shell',
+    field: 'shell',
     cellRenderer: ExperimentalInfoValueRendererComponent,
     flex: 1,
     wrapText: true,

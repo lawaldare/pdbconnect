@@ -207,6 +207,7 @@ export class EntryMainPageComponent implements OnInit {
           this.statusCode.set(statusCode);
           if (statusCode === 'REL') {
             this.dataProcessing.processInteractiveTablesData();
+            console.log('I am fucking here');
             this.dataProcessing.getPageData();
           } else {
             this.statusCode.set(statusCode);

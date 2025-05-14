@@ -153,6 +153,8 @@ export class MacromoleculesTabComponent {
 
     if (isLoaded) {
       const tabData = this.compCommunication.getTabData('Macromolecules');
+      console.log('tabData', tabData);
+
       const datum = tabData.tableRows() as any[];
       const mappedDatum = datum.map((data) => {
         return {

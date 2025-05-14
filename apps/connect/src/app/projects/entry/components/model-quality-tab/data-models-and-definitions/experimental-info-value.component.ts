@@ -7,15 +7,24 @@ import { UtilService } from '@pdbc/core';
 @Component({
   standalone: true,
   template: `
-    @if (data().label === 'Source organism') {
-      <a [href]="util.generateQueryURL(value, 'q_organism_name')" target="_blank" style="font-size:14px">
-        {{ value }}
-        <i class="icon icon-link icon-search" style="margin-left: 5px; color:#3b6fb6"></i>
-      </a>
-    } @else if (data().label === 'Expression system') {
-      <em>{{ value }}</em>
-    } @else {
-      {{ value }}
+    @switch (data().label) {
+      @case ('Source organism') {
+        <em
+          ><a [href]="util.generateQueryURL(value, 'q_organism_name')" target="_blank" style="font-size:14px">
+            {{ value }}
+            <!-- <i class="icon icon-search" style="margin-left: 5px; color:#3b6fb6"></i> -->
+          </a></em
+        >
+      }
+      @case ('Expression system') {
+        <span
+          ><em>{{ value }}</em></span
+        >
+      }
+
+      @default {
+        <span>{{ value }}</span>
+      }
     }
   `,
 })
