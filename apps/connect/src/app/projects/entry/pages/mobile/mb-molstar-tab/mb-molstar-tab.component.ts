@@ -1,4 +1,18 @@
-import { AfterViewInit, Component, computed, ElementRef, inject, OnDestroy, Renderer2, signal, Type, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  NgZone,
+  OnDestroy,
+  QueryList,
+  Renderer2,
+  signal,
+  Type,
+  ViewChild,
+  ViewChildren,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
@@ -36,11 +50,13 @@ export class MbMolstarTabComponent implements AfterViewInit, OnDestroy {
   private bottomSheet = inject(MatBottomSheet);
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly mbFacade = inject(MobileFacade);
+  private readonly zone = inject(NgZone);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
 
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
+  @ViewChildren('chipEl') chipElements!: QueryList<ElementRef<HTMLElement>>;
 
   private molstarFirstRenderStarted = signal(false);
   private readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
@@ -72,6 +88,11 @@ export class MbMolstarTabComponent implements AfterViewInit, OnDestroy {
       this.mbFacade.updateSelectedTabName('');
     } else {
       this.mbFacade.updateSelectedTabName(chip.id);
+      // scrolls into view horizontally on mobile without anti pattern
+      this.zone.onStable.pipe(take(1)).subscribe(() => {
+        const chipElement = this.chipElements.find((el) => el.nativeElement.dataset['id'] === chip.id);
+        chipElement?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      });
     }
 
     switch (this.selectedTabName()) {
