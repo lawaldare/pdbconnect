@@ -40,8 +40,21 @@ export class ActionQueueService {
         nextQueue.push(lastSkippable);
       }
 
+      // Step 2: deduplicate by name, keeping only the last occurrence
+      const seen = new Set<string>();
+      const dedupedQueue: QueueItem[] = [];
+
+      for (let i = nextQueue.length - 1; i >= 0; i--) {
+        const item = nextQueue[i];
+        if (!seen.has(item.name)) {
+          seen.add(item.name);
+          dedupedQueue.unshift(item); // insert at front to preserve order
+        }
+      }
+
       // Replace the queue with filtered items
-      this.queue = nextQueue;
+      // this.queue = nextQueue;
+      this.queue = dedupedQueue;
 
       const action = this.queue.shift(); // Remove the next one to process
       if (!action) break;
