@@ -600,6 +600,12 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   }
 
   setSequenceFromTrackData(trackDataArray: (APITrackData | null)[]) {
+    const allAreNull = trackDataArray.every((track) => track === null);
+    if (allAreNull) {
+      console.warn('Missing enough data to start Nightingale components');
+      return;
+    }
+
     // 1 - Extract sequence from all track records (skip nulls)
     const seqs = trackDataArray.filter((eachTrackDatum) => eachTrackDatum !== null).map((eachTrackDatum) => eachTrackDatum.sequence);
 

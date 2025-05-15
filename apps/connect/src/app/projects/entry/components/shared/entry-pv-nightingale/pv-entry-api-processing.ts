@@ -99,6 +99,7 @@ function splitPDBeEntityDomainsAPIData(apiData: APITrackDatum) {
 }
 
 export function sequenceToPanelData(sequence: string, uniprotData?: NightingaleFeature[], isNucleic?: boolean): PanelResidueDatum[] {
+  if (!sequence) return [];
   const panelResidueData: PanelResidueDatum[] = sequence.split('').map((eachAa, i) => {
     let resId = `${i + 1}`;
     let resName = eachAa;

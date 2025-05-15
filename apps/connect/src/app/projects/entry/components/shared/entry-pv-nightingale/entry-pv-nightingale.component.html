@@ -6,7 +6,7 @@
   <p>Please try again later or <a href="https://www.ebi.ac.uk/about/contact/support/PDBe" target="_blank">report this issue</a></p>
 </div>
 }
-<div class="pdbe-protvista" [ngStyle]="{ display: loadedAllData() === true ? '' : 'none' }">
+<div class="pdbe-protvista" [ngStyle]="{ display: loadedAllData() === true && loadingStatus() !== 'invalid' ? '' : 'none' }">
   <!-- Protvista manager for events and attribute management between components -->
   <nightingale-manager>
     <div class="pv-protvista elements-container">
