@@ -26,6 +26,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
+import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -93,9 +94,44 @@ export class MacromoleculesTabComponent {
   public selectionStats: { [key: string]: any } | undefined;
   // public goMappings = computed(() => Object.keys(this.goMapping() ?? {}));
 
-  public isThereGoMappings = computed(() => Object.keys(this.goMapping() ?? {}));
+  public goMappingsForMacromolecule = computed(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    const goMapping = this.goMapping();
+    if (!macromolecule || !goMapping) return {};
+    const entityId = (macromolecule as MacromoleculesRowData).additionalData.molecule.entity_id;
+    const filteredGoMapping = this.filterMappingByEntityId(goMapping, entityId) as GOMapping;
+    return filteredGoMapping;
+  });
+
+  public ecMappingsForMacromolecule = computed(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    const ecMapping = this.ecMapping();
+    if (!macromolecule || !ecMapping) return {};
+    const entityId = (macromolecule as MacromoleculesRowData).additionalData.molecule.entity_id;
+    const filteredEcMapping = this.filterMappingByEntityId(ecMapping, entityId) as ECMapping;
+    return filteredEcMapping;
+  });
+
+  private filterMappingByEntityId(mapping: GOMapping | ECMapping, entityId: number): GOMapping | ECMapping {
+    const filtered: GOMapping | ECMapping = {};
+
+    for (const [id, item] of Object.entries(mapping)) {
+      const relevantMappings = item.mappings.filter((eachMapping: UniProtMappingObj) => eachMapping.entity_id === entityId);
+
+      if (relevantMappings.length > 0) {
+        filtered[id] = {
+          ...item,
+          mappings: relevantMappings, // optional: keep only matching mappings
+        };
+      }
+    }
+
+    return filtered;
+  }
+
+  public isThereGoMappings = computed(() => Object.keys(this.goMappingsForMacromolecule() ?? {}));
   public goMappings = linkedSignal({
-    source: this.goMapping,
+    source: this.goMappingsForMacromolecule,
     computation: () => {
       const mappedData = this.getMappedGOMapping.reduce((acc: any[], curr: any) => {
         if (acc[curr.category]) {
@@ -117,7 +153,7 @@ export class MacromoleculesTabComponent {
     );
   });
 
-  public ecMappings = computed(() => Object.keys(this.ecMapping() ?? {}));
+  public ecMappings = computed(() => Object.keys(this.ecMappingsForMacromolecule() ?? {}));
   public bestResidues = computed(() => {
     const isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
     const filteredIsoformsMapping: any[] = [];
@@ -207,6 +243,7 @@ export class MacromoleculesTabComponent {
 
   updateVisualsDisplayed(macromolecule: MacromoleculesRowData) {
     this.hasTopologyViewer = false;
+    this.selectionIdentifier = 'None';
     if (this.allThereVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
       this.selectionTypeText = 'protein';
       // if protein is not chimeric (single uniprotAccession), set this as selectionIdentifier
@@ -232,7 +269,7 @@ export class MacromoleculesTabComponent {
   }
 
   get getMappedGOMapping() {
-    return Object.entries(this.goMapping() ?? {}).reduce((acc: any[], [id, item]) => {
+    return Object.entries(this.goMappingsForMacromolecule() ?? {}).reduce((acc: any[], [id, item]) => {
       acc.push({ ...item, id });
       return acc;
     }, []);
@@ -251,10 +288,12 @@ export class MacromoleculesTabComponent {
   }
 
   public openDialog(type: string) {
+    const macromolecule = this.currentMacromoleculeDatum() as MacromoleculesRowData;
     const component: ComponentType<any> = type === 'ec' ? EcNumbersComponent : GoTermsComponent;
     this.dialog.open(component, {
       disableClose: false,
       panelClass: 'entry-Dialog',
+      data: { entityId: macromolecule.additionalData.molecule.entity_id },
     });
   }
 
