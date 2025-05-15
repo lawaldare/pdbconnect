@@ -34,6 +34,7 @@ import { DomainsTabComponent } from '../../components/domains-tab/domains-tab.co
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { MolstarStateService } from '../../services/molstar-state.service';
+import Clarity from '@microsoft/clarity'; // assuming using Clarity v1+
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -190,6 +191,13 @@ export class EntryMainPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Start Clarity tracking
+    if (environment.production === false) {
+      Clarity.init('rig9276nz7');
+    }
+    // else {
+    // Clarity.init('yourProjectId'); // Replace with production ID when it's time
+    // }
     this.route.params
       .pipe(
         switchMap((params) => {
@@ -207,7 +215,6 @@ export class EntryMainPageComponent implements OnInit {
           this.statusCode.set(statusCode);
           if (statusCode === 'REL') {
             this.dataProcessing.processInteractiveTablesData();
-            console.log('I am fucking here');
             this.dataProcessing.getPageData();
           } else {
             this.statusCode.set(statusCode);
@@ -235,6 +242,8 @@ export class EntryMainPageComponent implements OnInit {
       queryParams: { activeTab: tabName },
       queryParamsHandling: 'merge',
     });
+    Clarity.event('tab-change');
+    Clarity.event(`tab-access-${tabName}`);
   }
 
   moveAndRenderMolstar(tabName: string, skippable: boolean) {
