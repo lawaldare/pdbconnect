@@ -96,17 +96,17 @@
           <article>
             @if(goMappings()?.['Molecular_function']?.length){
             <span class="article-title">Molecular function</span>
-            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?Molecular_function:' + goMappings()['Molecular_function'][0].name" target="_blank"
+            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?biological_function:' + goMappings()['Molecular_function'][0].name" target="_blank"
               >{{goMappings()['Molecular_function'][0].name}}</a
             >
             } @if(goMappings()?.['Biological_process']?.length){
             <span class="article-title">Biological process</span>
-            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?Biological_process:' + goMappings()['Biological_process'][0].name" target="_blank"
+            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?biological_process:' + goMappings()['Biological_process'][0].name" target="_blank"
               >{{goMappings()['Biological_process'][0].name}}</a
             >
             } @if(goMappings()?.['Cellular_component']?.length){
             <span class="article-title">Cellular component</span>
-            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?Cellular_component:' + goMappings()['Cellular_component'][0].name" target="_blank"
+            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?biological_cell_component:' + goMappings()['Cellular_component'][0].name" target="_blank"
               >{{goMappings()['Cellular_component'][0].name}}</a
             >
             } @if(isCategoryMoreThanOne()){
