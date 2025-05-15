@@ -37,7 +37,10 @@ export class MbAssembliesComponent implements OnInit {
 
   public readonly assemblyTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    if (isLoaded) {
+    const tableData = this.signals.tabTableData();
+    const hasData = Object.keys(tableData).indexOf('Assemblies') !== -1;
+
+    if (isLoaded && hasData) {
       const tabData = this.signals.getTabData('Assemblies');
       return tabData.tableRows() as AssembliesRowData[];
     }

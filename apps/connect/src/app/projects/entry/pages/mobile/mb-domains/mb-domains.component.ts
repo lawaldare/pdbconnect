@@ -44,8 +44,10 @@ export class MbDomainsComponent implements AfterViewInit {
 
   public readonly domainTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
+    const tableData = this.signals.tabTableData();
+    const hasData = Object.keys(tableData).indexOf('Domains') !== -1;
 
-    if (isLoaded) {
+    if (isLoaded && hasData) {
       const tabData = this.signals.getTabData('Domains');
       const datum = tabData.tableRows() as DomainsRowData[];
       return datum;

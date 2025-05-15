@@ -53,8 +53,10 @@ export class MbLigandsComponent implements AfterViewInit {
 
   public readonly LigandTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
+    const tableData = this.signals.tabTableData();
+    const hasData = Object.keys(tableData).indexOf('Ligands') !== -1;
 
-    if (isLoaded) {
+    if (isLoaded && hasData) {
       const tabData = this.signals.getTabData('Ligands');
       const datum = tabData.tableRows() as LigandsRowData[];
       return datum.map((row: any, index) => ({

@@ -71,8 +71,10 @@ export class MbMacromoleculeComponent implements OnInit {
 
   public readonly macromoleculeTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
+    const tableData = this.signals.tabTableData();
+    const hasData = Object.keys(tableData).indexOf('Macromolecules') !== -1;
 
-    if (isLoaded) {
+    if (isLoaded && hasData) {
       const tabData = this.signals.getTabData('Macromolecules');
       const datum = tabData.tableRows() as MacromoleculesRowData[];
       const mappedDatum = datum.map((data) => {

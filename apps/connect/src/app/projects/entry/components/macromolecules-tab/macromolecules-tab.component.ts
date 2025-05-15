@@ -186,10 +186,11 @@ export class MacromoleculesTabComponent {
 
   public readonly macromoleculeTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
+    const tableData = this.compCommunication.tabTableData();
+    const hasData = Object.keys(tableData).indexOf('Macromolecules') !== -1;
 
-    if (isLoaded) {
+    if (isLoaded && hasData) {
       const tabData = this.compCommunication.getTabData('Macromolecules');
-      console.log('tabData', tabData);
 
       const datum = tabData.tableRows() as any[];
       const mappedDatum = datum.map((data) => {

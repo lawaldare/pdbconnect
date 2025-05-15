@@ -39,7 +39,9 @@ export class AssembliesTabComponent {
 
   public readonly assemblyTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    if (isLoaded) {
+    const tableData = this.compCommunication.tabTableData();
+    const hasData = Object.keys(tableData).indexOf('Assemblies') !== -1;
+    if (isLoaded && hasData) {
       const tabData = this.compCommunication.getTabData('Assemblies');
       return tabData.tableRows() as AssembliesRowData[];
     }

@@ -50,7 +50,11 @@ export class MbOverviewTabComponent implements OnInit {
 
   public readonly miniFilters = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    if (isLoaded) {
+    const tableData = this.signals.tabTableData();
+    const tableDataKeys = Object.keys(tableData);
+    const hasData = tableDataKeys.indexOf('Ligands') !== -1 && tableDataKeys.indexOf('Macromolecules') !== -1;
+
+    if (isLoaded && hasData) {
       const ligandTableData = this.signals.getTabData('Ligands');
       const macromoleculeTableData = this.signals.getTabData('Macromolecules');
       return [
@@ -63,7 +67,10 @@ export class MbOverviewTabComponent implements OnInit {
 
   public readonly assemblyTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    if (isLoaded) {
+    const tableData = this.signals.tabTableData();
+    const hasData = Object.keys(tableData).indexOf('Assemblies') !== -1;
+
+    if (isLoaded && hasData) {
       const tabData = this.signals.getTabData('Assemblies');
       return tabData.tableRows() as AssembliesRowData[];
     }
@@ -72,9 +79,11 @@ export class MbOverviewTabComponent implements OnInit {
 
   public readonly macromoleculeTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
+    const tableData = this.signals.tabTableData();
+    const hasData = Object.keys(tableData).indexOf('Macromolecules') !== -1;
     const mappedResiduesList = this.mappedResiduesSignal();
 
-    if (isLoaded) {
+    if (isLoaded && hasData) {
       const tabData = this.signals.getTabData('Macromolecules');
       const datum = tabData.tableRows() as MacromoleculesRowData[];
       const mappedDatum = datum.map((data, index) => {
@@ -91,7 +100,9 @@ export class MbOverviewTabComponent implements OnInit {
 
   public readonly ligandTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    if (isLoaded) {
+    const tableData = this.signals.tabTableData();
+    const hasData = Object.keys(tableData).indexOf('Ligands') !== -1;
+    if (isLoaded && hasData) {
       const tabData = this.signals.getTabData('Ligands');
       return tabData.tableRows() as LigandsRowData[];
     }
