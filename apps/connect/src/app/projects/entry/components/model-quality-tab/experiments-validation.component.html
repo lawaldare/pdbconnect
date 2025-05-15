@@ -498,7 +498,7 @@
   </section>
   <aside>
     <div class="right-side" [class.sticky]="isSticky()" [style.width]="leftSideWidth">
-      <div class="toolbar" [style.display]="hasOutliers() ? '' : 'none'">
+      <div class="toolbar" [style.display]=" hasOutliers() ? '' : 'none'">
         <span>Highlight in 3D:</span>
         <div class="box">
           @for(option of validationTypes; track option.value){

@@ -171,15 +171,29 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public dataQualityRowData = signal<ValueLabel[]>([]);
   public refinementRowData = signal<ValueLabel[]>([]);
 
+  public hasOutliers = computed(() => {
+    const currentModelIdx = this.molstarState.currentModelId();
+    const allOutliers = this.molstarState.outliersByModelId();
+    if (!currentModelIdx || !allOutliers) return false;
+
+    const outliers = allOutliers[currentModelIdx];
+    if (!outliers) return false;
+
+    return true;
+  });
+
   constructor() {
     effect(() => {
       const currentModelIdx = this.molstarState.currentModelId();
       const allOutliers = this.molstarState.outliersByModelId();
       const selectedValidationType = this.selectedValidationType();
+      const selectedSpecificIssueKindValue = this.selectedSpecificIssueKindValue();
+
       if (!currentModelIdx || !allOutliers) return;
 
       const outliers = allOutliers[currentModelIdx];
       if (!outliers) return;
+
       const uniqueOutlierTypes = outliers.uniqueOutlierTypes;
 
       if (this.modelIdx() !== currentModelIdx || this.specificIssueKinds().length === 0) {
@@ -200,7 +214,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       }
 
       if (selectedValidationType.value !== 'issue_count') {
-        const issue = this.selectedSpecificIssueKind.value;
+        const issue = selectedSpecificIssueKindValue?.value || this.selectedSpecificIssueKind.value;
         this.molstarState.modelQualitySpecificIssueKind.set(issue);
       }
 
