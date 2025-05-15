@@ -12,6 +12,7 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { annotationsTooltips, resourceUrls } from '../../../entry-constant';
 import { LigandsTabService } from '../../ligands-tab/ligands-tab.service';
 import { RichTooltipDirective } from '@pdbc/rich-tooltip';
+import { TruncateTextDirective } from '../../../directives/truncate-text.directive';
 
 type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
 
@@ -23,7 +24,7 @@ export interface Filter {
 @Component({
   selector: 'pdbc-interactive-tables',
   standalone: true,
-  imports: [CommonModule, NgxPaginationModule, RichTooltipDirective],
+  imports: [CommonModule, NgxPaginationModule, RichTooltipDirective, TruncateTextDirective],
   templateUrl: './interactive-tables.component.html',
   styleUrl: './interactive-tables.component.scss',
 })

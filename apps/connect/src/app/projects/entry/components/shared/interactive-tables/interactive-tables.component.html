@@ -27,7 +27,7 @@
 <section>
   @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card; let i = $index) {
   <div class="card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard()?.name?.molecule === card.name.molecule">
-    <p class="card-title">{{card.name.molecule}}</p>
+    <p class="card-title" pdbcTruncateText [maxLines]="4" [tooltip]="true">{{card.name.molecule}}</p>
     <p class="card-text">
       @for(chain of card.name.chains; track chain; let islast = $last) {
       <span>{{chain}}</span>{{ islast ? '' : ',' }} }

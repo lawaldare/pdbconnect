@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, DestroyRef, inject, OnInit, Optional, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, OnInit, Optional, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
@@ -17,6 +17,7 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
+import { truncateText } from '../../../helpers/truncate-text';
 
 export enum ViewState {
   List = 'list',
@@ -65,6 +66,8 @@ export class MbMacromoleculeComponent implements OnInit {
   public dropdownOptions: DownloadOption[] = [];
   public dropdownSelected!: string;
   public sequenceDetails: SequenceDetail[] = [];
+
+  @ViewChild('macroMoleculeTitle') macroMoleculeTitle!: ElementRef;
 
   public readonly macromoleculeTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
@@ -269,7 +272,10 @@ export class MbMacromoleculeComponent implements OnInit {
 
   public navigateToDetail(data: MacromoleculesRowData) {
     this.currentViewState.set(ViewState.Detail);
-    this.mbFacade.updateSelectedMacromoleculeTitle(data.name.molecule);
+    const titleElement = this.macroMoleculeTitle.nativeElement;
+    const { bestFit, isTruncated } = truncateText(titleElement, data.name.molecule, 3);
+    const moleculeName = isTruncated ? bestFit : data.name.molecule;
+    this.mbFacade.updateSelectedMacromoleculeTitle(moleculeName);
     this.selectedMacromolecule.set(data);
     this.init();
   }
