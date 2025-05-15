@@ -176,7 +176,7 @@
     </mat-tab>
 
     <!-- Function Tab -->
-    <mat-tab label="Function">
+    <mat-tab label="Function" bodyClass="mb-mm-function">
       @if(ecFunctions().length || goFunctions().length){ @for(ec of ecFunctions(); track ec.id){
       <p class="title">EC {{ec.id}}: {{ec.name}}</p>
       <p class="content">Reaction Catalysed</p>
