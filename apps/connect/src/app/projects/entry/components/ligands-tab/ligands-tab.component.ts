@@ -184,16 +184,19 @@ export class LigandsTabComponent implements OnInit {
 
   private async renderInMolstar(ligand: LigandsRowData) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const entityId = molstarSelection.entityId;
+    const chainId = molstarSelection.authChainId;
+    const residueId = molstarSelection.residues[0].authBegin;
 
     this.globalStore.dispatch(
       EntryActions.getInteractions({
-        chainId: molstarSelection.authChainId ?? '',
-        residueId: molstarSelection.residues[0].authBegin,
+        chainId: chainId ?? '',
+        residueId: residueId,
       })
     );
 
     this.actionQueue.addAction(
-      'ligands tab renderMolstarForLigands',
+      `ligands tab renderMolstarForLigands ${entityId} ${chainId} ${residueId}`,
       async () => {
         await this.molstarState.renderMolstarForLigands(this.entryId()!, ligand, molstarSelection);
       },

@@ -316,9 +316,11 @@ export class MacromoleculesTabComponent {
   private async renderInMolstar(macromolecule: MacromoleculesRowData) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     const shouldSkip = !this.molstarFirstRenderFinished();
+    const entityId = molstarSelection.entityId;
+    const chainId = molstarSelection.authChainId;
 
     this.actionQueue.addAction(
-      'macromolecules tab renderMolstarForMacromolecules',
+      `macromolecules tab renderMolstarForMacromolecules ${entityId} ${chainId}`,
       async () => {
         await this.molstarState.renderMolstarForMacromolecules(macromolecule, molstarSelection);
       },
