@@ -136,6 +136,11 @@ export class MolstarStateService {
     await this.molstarVisualisation.renderTabsLigands(ligand, selection);
   }
 
+  public async renderMolstarInteractions(molstarSelections: any) {
+    if (this.molstarFirstRenderFinished() === false) return;
+    await this.molstarVisualisation.showInteractions(molstarSelections);
+  }
+
   public async renderMolstarForDomains(domain: DomainsRowData) {
     await this.molstarVisualisation.checkDomainsReady();
 

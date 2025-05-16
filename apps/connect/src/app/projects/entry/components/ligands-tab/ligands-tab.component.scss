@@ -239,4 +239,8 @@ section.ligand-charts {
 
 section.table-wrapper {
   height: 500px;
+
+  .ag-theme-quartz {
+    --ag-active-color: #89ae54;
+  }
 }

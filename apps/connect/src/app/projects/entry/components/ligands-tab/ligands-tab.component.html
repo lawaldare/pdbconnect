@@ -88,6 +88,7 @@
             [columnDefs]="colDefs"
             [gridOptions]="gridOptions"
             (selectionChanged)="onSelectionChanged($event)"
+            (cellMouseOver)="onCellMouseOver($event)"
             [paginationPageSizeSelector]="paginationPageSizeSelector()"
             overlayNoRowsTemplate="No ligand interactions found"
           />

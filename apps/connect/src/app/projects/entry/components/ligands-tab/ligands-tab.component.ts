@@ -8,14 +8,14 @@ import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overvie
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
-import { dashboardStatLinks } from '../../entry-constant';
+import { dashboardStatLinks, INTX_NAME_COLORS } from '../../entry-constant';
 import { firstValueFrom, map, timer } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule, TruncateTextDirective } from '@pdbc/core';
-import { SelectionChangedEvent } from 'ag-grid-community';
+import { CellMouseOverEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
 import { AgGridAngular } from 'ag-grid-angular';
 import { colDefs, gridOptions } from './ag-grid';
@@ -27,6 +27,7 @@ import { InteractiveTablesComponent } from '../shared/interactive-tables/interac
 import { EntryActions } from '../../store/entry.actions';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
+import { Interaction } from '../../data-models/interaction.model';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -110,8 +111,13 @@ export class LigandsTabComponent implements OnInit {
   public readonly colDefs = colDefs;
   public interactionsRowData = linkedSignal({
     source: this.interactions,
-    computation: () => this.interactions(),
+    computation: () => {
+      const interactions = this.interactions();
+      this.triggerLigandInteractionsSideEffects(interactions);
+      return this.interactions();
+    },
   });
+
   public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
   public selectionStats: { [key: string]: any } | undefined;
@@ -165,6 +171,68 @@ export class LigandsTabComponent implements OnInit {
     }
   }
 
+  triggerLigandInteractionsSideEffects(interactions: Interaction[] | undefined) {
+    const ligand = this.currentLigandDatum() as LigandsRowData;
+    if (!interactions) return;
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const entityId = molstarSelection.entityId;
+    const chainId = molstarSelection.authChainId;
+    const residueId = molstarSelection.residues[0].authBegin;
+    const resIns = molstarSelection.residues[0].authBeginIns;
+
+    const molstarSelections: any[] = [];
+
+    for (const int of interactions) {
+      const details = int.interaction_details;
+      const tooltipHeader =
+        details.length === 1
+          ? `<strong>${this.formatInteractionType(details[0])} interaction</strong>`
+          : `<strong>Mixed interaction</strong><br>${details.map(this.formatInteractionType).join(', ')}`;
+      const tooltipPartner1 = `<strong>${ligand.id} ${residueId}${resIns?.trim() ?? ''}</strong> | ${int.ligand_atoms.join(', ')}`;
+      const tooltipPartner2 = `<strong>${int.end.chem_comp_id} ${int.end.author_residue_number}${
+        int.end.author_insertion_code?.trim() ?? ''
+      }</strong> | ${int.end.atom_names.join(', ')}`;
+      const tooltip = `${tooltipHeader}<br>${tooltipPartner1} - ${tooltipPartner2}`;
+      const color = details.length === 1 ? INTX_NAME_COLORS[details[0]] : INTX_NAME_COLORS['mixed'];
+
+      molstarSelections.push({
+        start: {
+          auth_asym_id: chainId,
+          auth_seq_id: parseInt(residueId),
+          auth_ins_code_id: this.normalizeInsertionCode(resIns),
+          atoms: int.ligand_atoms,
+        },
+        end: {
+          auth_asym_id: int.end.chain_id,
+          auth_seq_id: int.end.author_residue_number,
+          auth_ins_code_id: this.normalizeInsertionCode(int.end.author_insertion_code),
+          atoms: int.end.atom_names,
+        },
+        color,
+        tooltip,
+      });
+    }
+
+    this.actionQueue.addAction(
+      `renderMolstarInteractions`,
+      async () => {
+        await this.molstarState.renderMolstarInteractions(molstarSelections);
+      },
+      false // skippable
+    );
+  }
+
+  private formatInteractionType(interactionType: string) {
+    if (interactionType === 'mixed') return;
+    const interactionTypeName = INTX_NAME_STANDARDIZER[interactionType as keyof typeof INTX_NAME_STANDARDIZER];
+    return interactionTypeName;
+  }
+
+  private normalizeInsertionCode(insCode: string | undefined) {
+    if (insCode?.trim()) return insCode;
+    else return undefined;
+  }
+
   ngOnInit(): void {
     this.searchTerm.valueChanges
       .pipe(
@@ -177,7 +245,8 @@ export class LigandsTabComponent implements OnInit {
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((data: any) => {
+      .subscribe((data: Interaction[] | undefined) => {
+        this.triggerLigandInteractionsSideEffects(data);
         this.interactionsRowData.update(() => data);
       });
   }
@@ -285,6 +354,11 @@ export class LigandsTabComponent implements OnInit {
 
   onSelectionChanged(event: SelectionChangedEvent) {
     const data = event.api.getSelectedNodes()[0].data;
+  }
+
+  onCellMouseOver(event: CellMouseOverEvent<any>) {
+    const row = event.data; // fully typed
+    // TODO: Add interactivity here somehow (Atom selections?)
   }
 
   public downloadCSV(): void {
