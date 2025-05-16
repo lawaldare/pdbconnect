@@ -196,7 +196,7 @@ export class LigandsTabComponent implements OnInit {
     );
 
     this.actionQueue.addAction(
-      `ligands tab renderMolstarForLigands ${entityId} ${chainId} ${residueId}`,
+      `renderMolstarForLigands-${ligand.id}-${entityId}-${chainId}-${residueId}`,
       async () => {
         await this.molstarState.renderMolstarForLigands(this.entryId()!, ligand, molstarSelection);
       },

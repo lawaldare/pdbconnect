@@ -250,7 +250,7 @@ export class EntryMainPageComponent implements OnInit {
 
     if (tabName === 'overview' || tabName === 'summary') {
       this.actionQueue.addAction(
-        'tab change checkOverviewReady',
+        'tab change renderMolstarForOverview',
         async () => {
           await this.molstarState.renderMolstarForOverview(true);
         },
@@ -269,7 +269,7 @@ export class EntryMainPageComponent implements OnInit {
     }
     if (tabName === 'assemblies') {
       this.actionQueue.addAction(
-        'tab change renderMolstarForModelQuality',
+        'renderMolstarForAssemblies-first-assembly',
         async () => {
           await this.molstarState.renderMolstarForAssemblies();
         },
@@ -278,7 +278,7 @@ export class EntryMainPageComponent implements OnInit {
     }
     if (tabName === 'macromolecules') {
       this.actionQueue.addAction(
-        'tab change renderMolstarForMacromolecules',
+        `renderMolstarForMacromolecules-first-macromolecule`,
         async () => {
           const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
 
@@ -293,7 +293,7 @@ export class EntryMainPageComponent implements OnInit {
     }
     if (tabName === 'ligands') {
       this.actionQueue.addAction(
-        'tab change renderMolstarForLigands',
+        `renderMolstarForLigands-first-ligand`,
         async () => {
           const ligandsData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
 
@@ -308,7 +308,7 @@ export class EntryMainPageComponent implements OnInit {
     }
     if (tabName === 'domains') {
       this.actionQueue.addAction(
-        'tab change renderMolstarForDomains',
+        `renderMolstarForDomains-first-domain`,
         async () => {
           const domainsData = this.compCommunication.getTabData('Domains').tableRows() as DomainsRowData[];
 

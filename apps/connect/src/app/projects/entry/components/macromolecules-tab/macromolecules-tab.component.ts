@@ -320,7 +320,7 @@ export class MacromoleculesTabComponent {
     const chainId = molstarSelection.authChainId;
 
     this.actionQueue.addAction(
-      `macromolecules tab renderMolstarForMacromolecules ${entityId} ${chainId}`,
+      `renderMolstarForMacromolecules-${macromolecule.name.molecule}-${entityId}-${chainId}`,
       async () => {
         await this.molstarState.renderMolstarForMacromolecules(macromolecule, molstarSelection);
       },

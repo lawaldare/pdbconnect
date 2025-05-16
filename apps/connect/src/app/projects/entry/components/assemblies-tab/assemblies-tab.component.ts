@@ -72,13 +72,13 @@ export class AssembliesTabComponent {
     return undefined;
   });
 
-  triggerMolstarSideEffect(datum: AssembliesRowData) {
+  triggerMolstarSideEffect(assembly: AssembliesRowData) {
     const shouldSkip = !this.molstarFirstRenderFinished();
 
     this.actionQueue.addAction(
-      'assemblies tab renderMolstarForAssemblies',
+      `renderMolstarForAssemblies-${assembly.assemblyId}`,
       async () => {
-        await this.molstarState.renderMolstarForAssemblies(datum.assemblyId);
+        await this.molstarState.renderMolstarForAssemblies(assembly.assemblyId);
       },
       shouldSkip
     );

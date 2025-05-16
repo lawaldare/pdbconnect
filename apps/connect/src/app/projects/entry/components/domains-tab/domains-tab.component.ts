@@ -126,7 +126,7 @@ export class DomainsTabComponent {
 
   private async renderInMolstar(domain: DomainsRowData) {
     this.actionQueue.addAction(
-      'domains tab renderMolstarForDomains',
+      `renderMolstarForDomains-${domain.domain}_${domain.segmentsAsText}`,
       async () => {
         await this.molstarState.renderMolstarForDomains(domain);
       },

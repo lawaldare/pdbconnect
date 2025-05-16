@@ -96,6 +96,11 @@
 
       <section class="molstar-lig-env">
         <section class="molstar-details-container">
+          @if (!molstarFirstRenderFinished()) {
+          <div [style.width]="'100%'">
+            <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+          </div>
+          }
           <div id="ligands-molstar-container" class="molstar-container"></div>
         </section>
         <section class="lig-env-container">
