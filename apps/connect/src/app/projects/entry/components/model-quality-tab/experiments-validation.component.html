@@ -133,8 +133,8 @@
               <pdbc-str-quality-gradient [componentType]="'GeometryFit_RdToGr'" [renderGradients]="pdbRedoData()!"></pdbc-str-quality-gradient>
             </div>
             <p class="pdb-redo-text">
-              The sliders show the change in model quality between original PDB entry and the PDB-REDO entry. <a>PDB-REDO</a> is an external service, it is not a part
-              of PBDe.
+              The sliders show the change in model quality between original PDB entry and the PDB-REDO entry.
+              <a target="_blank" [href]="'https://pdb-redo.eu/db/' + entryId()">PDB-REDO</a> is an external service, it is not a part of PBDe.
             </p>
           </article>
         </div>
@@ -438,7 +438,12 @@
       <!-- ---------------------------- -->
       <!-- Experimental raw data section -->
       <!-- ---------------------------- -->
-      @if (currentData()?.experimentalRawData?.length) {
+      @if (!currentData()) {
+      <!-- Loader until we check whether this exists -->
+      <div [style.width]="'100%'">
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+      </div>
+      } @if (currentData()?.experimentalRawData?.length) {
       <section class="exp-raw-data-info">
         <div class="info-row-header">
           <h5>Experimental raw data</h5>
@@ -519,27 +524,12 @@
       </div>
       <div class="container-3d">
         <div class="molstar-parent">
-          <div id="model-quality-molstar-container" class="molstar-container" [style.display]="processedWidth() ? '' : 'none'" #molstarContainer></div>
-          <div class="molstar-container" [style.display]="processedWidth() ? 'none' : ''">
-            <svg style="width: 50%; margin-left: 25%; margin-top: 15%" class="spinner" viewBox="0 0 200 200">
-              <style>
-                .spinner-path {
-                  stroke-dasharray: 339 226;
-                  stroke-dashoffset: 0;
-                  animation: spinner linear infinite 2s;
-                }
-                @keyframes spinner {
-                  0% {
-                    stroke-dashoffset: 565;
-                  }
-                  100% {
-                    stroke-dashoffset: 0;
-                  }
-                }
-              </style>
-              <path class="spinner-path" fill="transparent" stroke="#72B260" stroke-width="20" d="M 100 10 A 90 90 0 1 1 100 190 A 90 90 0 1 1 100 10"></path>
-            </svg>
+          @if (!molstarFirstRenderFinished()) {
+          <div [style.width]="'100%'">
+            <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
           </div>
+          }
+          <div id="model-quality-molstar-container" class="molstar-container" [style.display]="processedWidth() ? '' : 'none'" #molstarContainer></div>
         </div>
       </div>
       <div class="legend">

@@ -22,7 +22,7 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
 import { modelQualityTooltips, OUTLIER_TYPE_LABELS } from '../../entry-constant';
 import { MaterialModule, UtilService } from '@pdbc/core';
-import { combineLatest, filter, forkJoin, mergeMap, of, take, tap } from 'rxjs';
+import { combineLatest, forkJoin, mergeMap, of, take } from 'rxjs';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
@@ -35,7 +35,7 @@ import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
-import { MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 export interface ValueLabel {
   value: string;
@@ -74,7 +74,7 @@ export interface ValueLabel {
 @Component({
   selector: 'pdbc-experiments-validation',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, HelpIconWithTooltipComponent, StrucQualityGradientsComponent],
+  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, HelpIconWithTooltipComponent, StrucQualityGradientsComponent, NgxSkeletonLoaderModule],
   templateUrl: './experiments-validation.component.html',
   styleUrl: './experiments-validation.component.scss',
 })

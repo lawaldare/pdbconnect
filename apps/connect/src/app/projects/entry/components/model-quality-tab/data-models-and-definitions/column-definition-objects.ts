@@ -368,7 +368,7 @@ export const EXP_RAW_ACCESSIONS_COLUMN_DEFS: ColDef[] = [
         link = params.data!.link!;
         linkName = `${params.data!.accession}`;
       }
-      return `<a>${linkName}</a>`;
+      return `<a href="${link}" target="_blank" style="font-size: 14px">${linkName}</a>`;
     },
   },
   {
