@@ -34,7 +34,7 @@ import { DomainsTabComponent } from '../../components/domains-tab/domains-tab.co
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { MolstarStateService } from '../../services/molstar-state.service';
-import Clarity from '@microsoft/clarity'; // assuming using Clarity v1+
+import Clarity from '@microsoft/clarity';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -108,7 +108,6 @@ export class EntryMainPageComponent implements OnInit {
 
   public doesTabHasData = signal<boolean>(true);
 
-  // @ViewChild('molstarViewer') molstarViewer!: ElementRef;
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
   public selectedTab = signal<number>(0);
@@ -143,7 +142,7 @@ export class EntryMainPageComponent implements OnInit {
       const hasDomainsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Domains') > -1;
 
       if (this.statusCode() !== 'REL') return;
-      if (this.molstarFirstRenderStarted()) return; // protects effect from running twice
+      if (this.molstarFirstRenderStarted()) return;
       if (this.selectedTab() < 0) return;
       if (!hasMacromoleculesData) return;
       if (!hasLigandsData) return;
@@ -168,7 +167,7 @@ export class EntryMainPageComponent implements OnInit {
           await this.molstarVisualisation.initializeModelIdTracking();
           // set preferred assembly id data
           if (this.molstarVisualisation.preferredAssemblyId === undefined) {
-            const assemblyToUse = this.preferredAssemblyData()!.preferred ? this.preferredAssemblyData()!.preferred + '' : '1';
+            const assemblyToUse = this.preferredAssemblyData()?.preferred ? this.preferredAssemblyData()?.preferred + '' : '1';
             this.molstarVisualisation.preferredAssemblyId = assemblyToUse;
           }
           await this.molstarVisualisation.checkAndCreateComponents(macromoleculesData, ligandsData, modificationsData);
@@ -191,9 +190,8 @@ export class EntryMainPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Start Clarity tracking
     if (environment.production === false) {
-      Clarity.init('rig9276nz7');
+      Clarity.init(environment.clarityProjectId);
     }
     // else {
     // Clarity.init('yourProjectId'); // Replace with production ID when it's time

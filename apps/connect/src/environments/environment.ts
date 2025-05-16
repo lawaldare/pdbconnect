@@ -3,4 +3,5 @@ export const environment = {
   debug: true,
   pdbeBaseUrl: 'https://wwwdev.ebi.ac.uk/pdbe/',
   googleAnalyticsTag: 'G-V1BCXVELRY',
+  clarityProjectId: 'rig9276nz7',
 };

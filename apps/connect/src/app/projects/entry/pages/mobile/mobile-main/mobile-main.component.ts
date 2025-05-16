@@ -5,8 +5,7 @@ import { MbMolstarTabComponent } from '../mb-molstar-tab/mb-molstar-tab.componen
 import { MbCitationTabComponent } from '../mb-citation-tab/mb-citation-tab.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MobileFacade } from '../mobile.facade';
-import Clarity from '@microsoft/clarity'; // assuming using Clarity v1+
-import { ComponentCommunicationService } from '../../../services/component-comm.service';
+import Clarity from '@microsoft/clarity';
 
 export enum MobileTabNames {
   Overview = 'overview',
@@ -25,9 +24,6 @@ type MobileTabName = 'overview' | 'molstar' | 'citation';
 export class MobileMainComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
-  private readonly signals = inject(ComponentCommunicationService);
-
-  private previousTabId = false;
   public activeTab = signal<string>('overview');
 
   private readonly mbFacade = inject(MobileFacade);
