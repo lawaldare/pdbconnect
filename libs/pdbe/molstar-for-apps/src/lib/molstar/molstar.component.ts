@@ -1,8 +1,6 @@
-import { AfterViewInit, Component, ElementRef, inject, input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, Input, input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MolstarPluginService } from '../extension-for-pages/molstart-plugin.service';
-
-declare let PDBeMolstarPlugin: any;
 
 @Component({
   selector: 'lib-pdbe-molstar',
@@ -12,9 +10,9 @@ declare let PDBeMolstarPlugin: any;
   styleUrl: './molstar.component.scss',
 })
 export class MolstarComponent implements AfterViewInit, OnChanges {
-  public readonly molstarConfig = input.required<any>();
-  public readonly height = input<string>();
-  public readonly width = input<string>();
+  @Input() height = '400px';
+  @Input() width = '100%';
+  @Input({ required: true }) molstarConfig!: any;
 
   private molstarViewInstance: any;
   private readonly molstarPluginService = inject(MolstarPluginService);
@@ -30,7 +28,7 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
 
     const container = this.viewContainer.nativeElement;
 
-    this.molstarViewInstance.render(container, this.molstarConfig());
+    this.molstarViewInstance.render(container, this.molstarConfig);
     this.molstarViewInstance.events.loadComplete.subscribe((loaded: boolean) => {
       if (loaded) {
         // this.molstarViewInstance.plugin.managers.camera.orientAxes();
@@ -39,8 +37,8 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (!changes['molstarConfig'].firstChange) {
-      this.molstarViewInstance.visual.update(this.molstarConfig());
+    if (!changes['molstarConfig']?.firstChange) {
+      this.molstarViewInstance?.visual?.update(this.molstarConfig);
     }
   }
 }

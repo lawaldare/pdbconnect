@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Assembly } from '../../../models/complex-structure.model';
 import { AG_Grid_Theme_Class, MaterialModule } from '@pdbc/core';
@@ -31,10 +31,9 @@ export class ComplexStructuresComponent implements OnInit {
   public rowData = computed(() => this.summaryData()?.assemblies as Assembly[]);
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
 
-  public config!: { moleculeId: string; bgColor: { r: number; g: number; b: number }; assemblyId: number; hideControls: boolean };
+  public config!: any;
 
   public height = '400px';
-  public width = '100%';
 
   private selectedRowPDBId = signal<string>('');
 
@@ -48,6 +47,8 @@ export class ComplexStructuresComponent implements OnInit {
       bgColor: { r: 255, g: 255, b: 255 },
       assemblyId: this.rowData()[0].assembly_id,
       hideControls: true,
+      hideCanvasControls: ['expand', 'animation', 'controlToggle'],
+      landscape: true,
     };
   }
 
