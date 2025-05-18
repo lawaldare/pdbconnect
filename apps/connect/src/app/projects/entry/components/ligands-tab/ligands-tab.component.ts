@@ -28,6 +28,7 @@ import { EntryActions } from '../../store/entry.actions';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { Interaction } from '../../data-models/interaction.model';
+import { interactionsToMolstar } from '../../helpers/interactions-to-molstar';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -175,48 +176,18 @@ export class LigandsTabComponent implements OnInit {
     const ligand = this.currentLigandDatum() as LigandsRowData;
     if (!interactions) return;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const entityId = molstarSelection.entityId;
-    const chainId = molstarSelection.authChainId;
-    const residueId = molstarSelection.residues[0].authBegin;
-    const resIns = molstarSelection.residues[0].authBeginIns;
 
-    const molstarSelections: any[] = [];
-
-    for (const int of interactions) {
-      const details = int.interaction_details;
-      const tooltipHeader =
-        details.length === 1
-          ? `<strong>${this.formatInteractionType(details[0])} interaction</strong>`
-          : `<strong>Mixed interaction</strong><br>${details.map(this.formatInteractionType).join(', ')}`;
-      const tooltipPartner1 = `<strong>${ligand.id} ${residueId}${resIns?.trim() ?? ''}</strong> | ${int.ligand_atoms.join(', ')}`;
-      const tooltipPartner2 = `<strong>${int.end.chem_comp_id} ${int.end.author_residue_number}${
-        int.end.author_insertion_code?.trim() ?? ''
-      }</strong> | ${int.end.atom_names.join(', ')}`;
-      const tooltip = `${tooltipHeader}<br>${tooltipPartner1} - ${tooltipPartner2}`;
-      const color = details.length === 1 ? INTX_NAME_COLORS[details[0]] : INTX_NAME_COLORS['mixed'];
-
-      molstarSelections.push({
-        start: {
-          auth_asym_id: chainId,
-          auth_seq_id: parseInt(residueId),
-          auth_ins_code_id: this.normalizeInsertionCode(resIns),
-          atoms: int.ligand_atoms,
-        },
-        end: {
-          auth_asym_id: int.end.chain_id,
-          auth_seq_id: int.end.author_residue_number,
-          auth_ins_code_id: this.normalizeInsertionCode(int.end.author_insertion_code),
-          atoms: int.end.atom_names,
-        },
-        color,
-        tooltip,
-      });
-    }
+    const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(
+      ligand,
+      molstarSelection,
+      interactions,
+      this.compCommunication.chainToEntityId()
+    );
 
     this.actionQueue.addAction(
       `renderMolstarInteractions`,
       async () => {
-        await this.molstarState.renderMolstarInteractions(molstarSelections);
+        await this.molstarState.renderMolstarInteractions(residuesMolstarSelections, interactionsMolstarSelections);
       },
       false // skippable
     );
@@ -356,17 +327,47 @@ export class LigandsTabComponent implements OnInit {
     const data = event.api.getSelectedNodes()[0].data;
   }
 
-  onCellMouseOver(event: CellMouseOverEvent<any>) {
-    const row = event.data; // fully typed
+  onCellMouseOver(event: CellMouseOverEvent<Interaction>) {
+    const int = event.data; // fully typed
+    if (!int) return;
     // TODO: Add interactivity here somehow (Atom selections?)
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    // const entityId = molstarSelection.entityId;
+    const chainId = molstarSelection.authChainId;
+    const residueId = molstarSelection.residues[0].authBegin;
+    const resIns = molstarSelection.residues[0].authBeginIns;
+
+    const atomSelections = [
+      {
+        auth_asym_id: chainId,
+        auth_seq_id: parseInt(residueId),
+        auth_ins_code_id: this.normalizeInsertionCode(resIns),
+        atoms: int.ligand_atoms,
+      },
+      {
+        auth_asym_id: int.end.chain_id,
+        auth_seq_id: int.end.author_residue_number,
+        auth_ins_code_id: this.normalizeInsertionCode(int.end.author_insertion_code),
+        atoms: int.end.atom_names,
+      },
+    ];
+
+    this.actionQueue.addAction(
+      `zoomMolstarInteraction`,
+      async () => {
+        await this.molstarState.zoomMolstarInteraction(atomSelections);
+      },
+      false // skippable
+    );
   }
 
   public downloadCSV(): void {
     const mappedData = this.interactionsRowData()?.map((row) => {
       return {
-        'Ligand Atom': row.ligand_atoms.join(', '),
-        'Residue Name': row.end.chem_comp_id + '_' + row.end.author_residue_number,
-        'Atom Name': row.end.atom_names.join(','),
+        'Ligand Atoms': row.ligand_atoms.join(', '),
+        'Interacting Molecule': this.getMoleculeName(row.end.chain_id),
+        Residue: row.end.chem_comp_id + '_' + row.end.author_residue_number,
+        Atoms: row.end.atom_names.join(','),
         'Interaction Type': row.interaction_details.map((type) => INTX_NAME_STANDARDIZER[type as keyof typeof INTX_NAME_STANDARDIZER]).join(', '),
         'Distance (Å)': row.distance,
       };
@@ -374,6 +375,25 @@ export class LigandsTabComponent implements OnInit {
     if (mappedData && mappedData.length) {
       this.downloadFileTypeService.downloadCSV(mappedData, 'structures');
     }
+  }
+
+  private getMoleculeName(chainId: string) {
+    const entityId = this.compCommunication.chainToEntityId()[chainId];
+    if (!entityId) return 'Undefined';
+
+    const isLoaded = this.dataProcessing.tabDataLoaded();
+    const tableData = this.compCommunication.tabTableData();
+    const hasData = Object.keys(tableData).indexOf('Macromolecules') !== -1;
+    if (!isLoaded || !hasData) return 'Undefined';
+
+    const tabData = this.compCommunication.getTabData('Macromolecules');
+    const macromolecules = tabData.tableRows() as MacromoleculesRowData[];
+    if (macromolecules.length === 0) return 'Undefined';
+
+    const mols = macromolecules.filter((mol) => mol.additionalData.molecule.entity_id === parseInt(entityId));
+    if (mols.length === 0) return 'Undefined';
+
+    return mols[0].name;
   }
 
   public mapSynonyms(synonyms: any[]): string {

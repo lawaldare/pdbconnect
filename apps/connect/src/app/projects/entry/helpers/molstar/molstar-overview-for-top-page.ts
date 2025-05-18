@@ -41,84 +41,103 @@ import { BehaviorSubject, firstValueFrom, interval, map, takeWhile, timeout } fr
  * });
  */
 export const MOLSTAR_CONFIG_FACTORIES: {
-  [key: string]: (params: { entryId?: string; assemblyId?: string; symmetryView?: boolean; urlToDownload?: string }) => MolstarConfigObject;
+  [key: string]: (params: {
+    entryId?: string;
+    assemblyId?: string;
+    symmetryView?: boolean;
+    urlToDownload?: string;
+    hideCanvControls?: string[];
+  }) => MolstarConfigObject;
 } = {
-  INITIAL: ({ entryId }) => ({
+  INITIAL: ({ entryId, hideCanvControls }) => ({
     moleculeId: entryId!,
     loadMaps: false,
     bgColor: { r: 255, g: 255, b: 255 },
     hideControls: true,
-    hideCanvasControls: [],
+    hideCanvasControls: hideCanvControls ?? [],
     landscape: true,
     subscribeEvents: true,
     granularity: 'residue',
   }),
-  OVERVIEW: ({ entryId, assemblyId }) => ({
+  OVERVIEW: ({ entryId, assemblyId, hideCanvControls }) => ({
     moleculeId: entryId!,
     assemblyId: assemblyId!,
     bgColor: { r: 255, g: 255, b: 255 },
     hideControls: true,
-    hideCanvasControls: [],
+    hideCanvasControls: hideCanvControls ?? [],
     landscape: true,
     subscribeEvents: false,
   }),
-  MODEL_QUALITY: ({ entryId }) => ({
+  MODEL_QUALITY: ({ entryId, hideCanvControls }) => ({
     moleculeId: entryId!,
     loadMaps: false,
     bgColor: { r: 255, g: 255, b: 255 },
     hideControls: true,
-    hideCanvasControls: [],
+    hideCanvasControls: hideCanvControls ?? [],
     landscape: true,
+    validationAnnotation: true,
     subscribeEvents: true,
     granularity: 'residue',
   }),
-  ASSEMBLIES: ({ entryId, assemblyId, symmetryView }) => ({
+  ASSEMBLIES: ({ entryId, assemblyId, symmetryView, hideCanvControls }) => ({
     moleculeId: entryId!,
     loadMaps: false,
     assemblyId: assemblyId!,
     bgColor: { r: 255, g: 255, b: 255 },
     hideControls: true,
-    hideCanvasControls: [],
+    hideCanvasControls: hideCanvControls ?? [],
     landscape: true,
     subscribeEvents: true,
     validationAnnotation: false,
     symmetryAnnotation: symmetryView,
     granularity: 'residue',
   }),
-  MACROMOLECULES: ({ entryId, assemblyId }) => ({
+  MACROMOLECULES: ({ entryId, assemblyId, hideCanvControls }) => ({
     moleculeId: entryId!,
     bgColor: { r: 255, g: 255, b: 255 },
     loadMaps: false,
     assemblyId: assemblyId!,
     hideControls: true,
-    hideCanvasControls: [],
+    hideCanvasControls: hideCanvControls ?? [],
     landscape: true,
     subscribeEvents: true,
     granularity: 'residue',
     validationAnnotation: false,
   }),
-  LIGANDS: ({ urlToDownload }) => ({
-    customData: {
-      url: urlToDownload!,
-      format: 'cif',
-      binary: true,
-    },
-    loadMaps: true,
+  // LIGANDS: ({ urlToDownload }) => ({
+  //   customData: {
+  //     url: urlToDownload!,
+  //     format: 'cif',
+  //     binary: true,
+  //   },
+  //   loadMaps: true,
+  //   bgColor: { r: 255, g: 255, b: 255 },
+  //   hideControls: true,
+  //   hideCanvasControls: [],
+  //   landscape: true,
+  //   subscribeEvents: true,
+  //   granularity: 'element',
+  //   validationAnnotation: false,
+  // }),
+  LIGANDS: ({ entryId, assemblyId, hideCanvControls }) => ({
+    moleculeId: entryId!,
     bgColor: { r: 255, g: 255, b: 255 },
+    loadMaps: false,
+    assemblyId: assemblyId!,
     hideControls: true,
-    hideCanvasControls: [],
+    hideCanvasControls: hideCanvControls ?? [],
     landscape: true,
     subscribeEvents: true,
-    granularity: 'residue',
+    granularity: 'element',
     validationAnnotation: false,
   }),
-  DOMAINS: ({ entryId, assemblyId }) => ({
+  DOMAINS: ({ entryId, assemblyId, hideCanvControls }) => ({
     moleculeId: entryId,
     loadMaps: false,
     assemblyId: assemblyId,
     bgColor: { r: 255, g: 255, b: 255 },
     hideControls: true,
-    hideCanvasControls: [],
+    hideCanvasControls: hideCanvControls ?? [],
     // hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
     landscape: true,
     subscribeEvents: true,
@@ -213,9 +232,12 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     }
   }
 
-  public async renderMolstarInitial() {
+  public async renderMolstarInitial(isMobile?: boolean) {
+    const hideCanvControls = isMobile ? ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'] : [];
+
     const config = MOLSTAR_CONFIG_FACTORIES['INITIAL']({
       entryId: this.entryId!,
+      hideCanvControls: hideCanvControls,
     });
     await this.enforceConfigLoaded('INITIAL', config);
   }
@@ -228,6 +250,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   public async renderMobileMolstarInitial() {
     const config = MOLSTAR_CONFIG_FACTORIES['INITIAL']({
       entryId: this.entryId,
+      hideCanvControls: ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'],
     });
 
     this.molstarViewInstance.set(undefined);
@@ -400,7 +423,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.enforceConfigLoaded('OVERVIEW', config);
   }
 
-  public async checkModelQualityReady() {
+  public async checkModelQualityReady(isMobile?: boolean) {
+    const hideCanvControls = isMobile ? ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'] : [];
     if (!this.entryId) {
       console.warn('Mol*: Unset entry id');
       return;
@@ -408,11 +432,13 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     this.enforceMolstarInContainer('model-quality');
     const config = MOLSTAR_CONFIG_FACTORIES['MODEL_QUALITY']({
       entryId: this.entryId!,
+      hideCanvControls: hideCanvControls,
     });
     await this.enforceConfigLoaded('MODEL_QUALITY', config);
   }
 
-  public async checkAssembliesReady(assemblyId: string, symmetryView: boolean) {
+  public async checkAssembliesReady(assemblyId: string, symmetryView: boolean, isMobile?: boolean) {
+    const hideCanvControls = isMobile ? ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'] : [];
     if (!this.entryId) {
       console.warn('Mol*: Unset entry id');
       return;
@@ -422,6 +448,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       entryId: this.entryId!,
       assemblyId: assemblyId,
       symmetryView: symmetryView,
+      hideCanvControls: hideCanvControls,
     });
     await this.enforceConfigLoaded(`ASSEMBLIES-${assemblyId}`, config);
     this.initializeModelIdTracking(true);
@@ -440,19 +467,32 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.enforceConfigLoaded('MACROMOLECULES', config);
   }
 
-  public async checkLigandsReady(urlToDownload: string, forceReset: boolean) {
-    if (!urlToDownload) {
-      console.warn('Mol*: Unset urlToDownload');
+  public async checkLigandsReady(isMobile?: boolean) {
+    const hideCanvControls = isMobile ? ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'] : [];
+    // public async checkLigandsReady(urlToDownload: string, forceReset: boolean) {
+    // if (!urlToDownload) {
+    //   console.warn('Mol*: Unset urlToDownload');
+    //   return;
+    // }
+    // this.enforceMolstarInContainer('ligands');
+    // const config = MOLSTAR_CONFIG_FACTORIES['LIGANDS']({
+    //   urlToDownload: urlToDownload,
+    // });
+    if (!this.entryId || !this.preferredAssemblyId) {
+      console.warn('Mol*: Unset entry id or preferred assembly id');
       return;
     }
     this.enforceMolstarInContainer('ligands');
     const config = MOLSTAR_CONFIG_FACTORIES['LIGANDS']({
-      urlToDownload: urlToDownload,
+      entryId: this.entryId!,
+      assemblyId: this.preferredAssemblyId!,
+      hideCanvControls: hideCanvControls,
     });
-    await this.enforceConfigLoaded('LIGANDS', config, forceReset);
+    await this.enforceConfigLoaded('LIGANDS', config);
   }
 
-  public async checkDomainsReady() {
+  public async checkDomainsReady(isMobile?: boolean) {
+    const hideCanvControls = isMobile ? ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'] : [];
     if (!this.entryId || !this.preferredAssemblyId) {
       console.warn('Mol*: Unset entry id or preferred assembly id');
       return;
@@ -461,6 +501,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     const config = MOLSTAR_CONFIG_FACTORIES['DOMAINS']({
       entryId: this.entryId!,
       assemblyId: this.preferredAssemblyId!,
+      hideCanvControls: hideCanvControls,
     });
     await this.enforceConfigLoaded('DOMAINS', config);
   }
@@ -738,8 +779,10 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
   public async renderTabsLigands(ligand: LigandsRowData, molstarSelection: MolstarSelectionObj) {
     // no need to clean up view if url used
-    // await this.cleanView();
-    const reprNonSelectionPolymer = ligand.type === 'ligand' ? LIGANDS_REPR_NONSELECTION_POLYMER : REPR_NONSELECTION_POLYMER;
+    await this.cleanView();
+
+    // const reprNonSelectionPolymer = ligand.type === 'ligand' ? LIGANDS_REPR_NONSELECTION_POLYMER : REPR_NONSELECTION_POLYMER;
+    const reprNonSelectionPolymer = UNSELECTED_CARTOON_COLOR_BY_ENTITY_ALPHA;
 
     // set representations of anything other than selected ligand to non selection
     // await addRepresentationToComponent(this.molstarViewInstance(), 'structure-component-static-polymer', reprNonSelectionPolymer, true);
@@ -751,10 +794,17 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-branched', true);
 
     // finally create ligand component with selected representation
-    await createComponent(this.molstarViewInstance(), `structure-component-dynamic-temporary`, molstarSelection, LIGANDS_REPR_SELECTION);
-    await createComponent(this.molstarViewInstance(), `structure-component-dynamic-temporary-1`, molstarSelection, LIGANDS_REPR_HIGHLIGHT);
+    // await createComponent(this.molstarViewInstance(), `structure-component-dynamic-temporary`, molstarSelection, LIGANDS_REPR_SELECTION);
+    await createComponent(this.molstarViewInstance(), `structure-component-dynamic-temporary`, molstarSelection, SELECTED_STICKS_COLOR_BY_ENTITY);
+
+    // await createComponent(this.molstarViewInstance(), `structure-component-dynamic-temporary-1`, molstarSelection, LIGANDS_REPR_HIGHLIGHT);
+
     // focus camera on ligand
     await this.focusLoci(molstarSelection);
+  }
+
+  public async showResiduesAsSticks(selection: MolstarSelectionObj) {
+    await createComponent(this.molstarViewInstance(), `structure-component-dynamic-temporary-resids`, selection, LIGANDS_REPR_NONSELECTION_POLYMER);
   }
 
   public async renderTabsDomains(selection: MolstarSelectionObj) {

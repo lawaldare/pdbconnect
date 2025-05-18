@@ -278,17 +278,21 @@ export const LIGANDS_REPR_NONSELECTION_POLYMER = {
   color: 'element-symbol',
   colorParams: {
     carbonColor: {
-      // name: 'entity-id',
+      name: 'entity-id',
+      params: {},
       // params: {
       //   palette: whiteColorPalette
       // }
-      name: 'uniform',
-      params: {
-        value: Color(0xfefefe),
-      },
+
+      // for all white carbons
+      // name: 'uniform',
+      // params: {
+      //   value: Color(0xfefefe),
+      // },
     },
   },
-  typeParams: { alpha: 0.65 },
+  // typeParams: { alpha: 0.65 },
+  typeParams: { alpha: 0.55 },
 };
 
 /**

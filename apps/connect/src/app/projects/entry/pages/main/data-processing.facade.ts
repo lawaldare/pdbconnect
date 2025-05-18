@@ -184,10 +184,13 @@ export class MainDataProcessingFacade {
     this.compCommunication.preferredAssemblyData.set(preferredAssemblyData);
 
     let descriptions = undefined;
+    let chainToEntityId: { [key: string]: string } = {};
     if (this.isNotUndefined([data.macromolecules])) {
       descriptions = this.processDescriptions(data.macromolecules);
+      chainToEntityId = this.mapChainToEntityId(data.macromolecules);
     }
     this.compCommunication.descriptions.set(descriptions);
+    this.compCommunication.chainToEntityId.set(chainToEntityId);
 
     let outliersByModelId: OutliersByModelId = {};
     if (this.isNotUndefined([data.residueOutliers])) {
@@ -292,6 +295,21 @@ export class MainDataProcessingFacade {
     macromoleculesDescription += totalMolecules > 1 ? ' molecules' : ' molecule';
 
     return { macromoleculesDescription, entryContentsDescription };
+  }
+
+  public mapChainToEntityId(macromolecules: Molecule[]) {
+    const chainToEntityId: { [key: string]: string } = {};
+    for (const macromolecule of macromolecules) {
+      const entityId = macromolecule.entity_id + '';
+      for (const chain of macromolecule.in_chains) {
+        if (chainToEntityId[chain] && chainToEntityId[chain] !== entityId) {
+          const conflictEntityId = chainToEntityId[chain];
+          console.warn(`Error: chain: ${chain} has multiple entity ids (${conflictEntityId}, ${entityId})!`);
+        }
+        chainToEntityId[chain] = entityId;
+      }
+    }
+    return chainToEntityId;
   }
 
   public processResidueOutliersData(outliers: ResidueWiseOutliersMolecule[]) {

@@ -24,6 +24,7 @@ export interface EntryDescription {
 export class ComponentCommunicationService {
   public preferredAssemblyData = signal<PreferredAssemblyData | undefined>(undefined);
   public descriptions = signal<EntryDescription | undefined>(undefined);
+  public chainToEntityId = signal<{ [key: string]: string }>({});
 
   public currentTab = signal<string>('Information');
   public tabSwitchOrigin = signal<string>('main');

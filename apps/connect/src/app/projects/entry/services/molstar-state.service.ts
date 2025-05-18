@@ -111,6 +111,7 @@ export class MolstarStateService {
   }
 
   public async renderMolstarForLigands(entryId: string, ligand: LigandsRowData, selection: MolstarSelectionObj) {
+    await this.molstarVisualisation.checkLigandsReady();
     // retrieve necessary data for composing ligands and environments URL
     let urlToDownload = '';
     const entityId = selection.entityId;
@@ -131,14 +132,29 @@ export class MolstarStateService {
     this.molstarVisualisation.currentViewName = displayName;
 
     // since URL based force Ligands config reload with forceReset: true
-    await this.molstarVisualisation.checkLigandsReady(urlToDownload, true);
+    // await this.molstarVisualisation.checkLigandsReady(urlToDownload, true);
 
     await this.molstarVisualisation.renderTabsLigands(ligand, selection);
   }
 
-  public async renderMolstarInteractions(molstarSelections: any) {
+  public async renderMolstarInteractions(residuesMolstarSelections: MolstarSelectionObj, interactionsMolstarSelection: any) {
     if (this.molstarFirstRenderFinished() === false) return;
-    await this.molstarVisualisation.showInteractions(molstarSelections);
+    await this.molstarVisualisation.showResiduesAsSticks(residuesMolstarSelections);
+    await this.molstarVisualisation.showInteractions(interactionsMolstarSelection);
+  }
+
+  public async zoomMolstarInteraction(
+    atomSelections: {
+      auth_asym_id?: string | undefined;
+      auth_seq_id?: number;
+      auth_ins_code_id?: string | undefined;
+      atoms?: string[];
+    }[]
+  ) {
+    if (this.molstarFirstRenderFinished() === false) return;
+    await this.molstarVisualisation.getComponentCellList();
+    await this.molstarVisualisation.focusLociPDBe(atomSelections);
+    await this.molstarVisualisation.highlightLociPDBe({ data: atomSelections });
   }
 
   public async renderMolstarForDomains(domain: DomainsRowData) {

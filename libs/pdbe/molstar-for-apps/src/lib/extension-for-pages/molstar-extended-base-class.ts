@@ -190,6 +190,11 @@ export class MolstarBaseClass {
     const queryLoci = await this.getViewerLoci(molstarSelection);
     await this.molstarViewInstance()?.plugin?.managers?.camera?.focusLoci(queryLoci, { durationMs: this.cameraDuration });
   }
+
+  public async focusLociPDBe(params: any) {
+    await this.molstarViewInstance().visual.focus(params);
+  }
+
   /**
    * Function triggers Molstar focus on whole current structure
    */
@@ -216,6 +221,10 @@ export class MolstarBaseClass {
     const queryLoci = await this.getViewerLoci(molstarSelection);
     if (Loci.isEmpty(queryLoci)) return;
     this.molstarViewInstance().plugin.managers.interactivity.lociHighlights.highlightOnly({ loci: queryLoci });
+  }
+
+  public async highlightLociPDBe(params: any) {
+    await this.molstarViewInstance().visual.highlight(params);
   }
 
   /**
@@ -285,6 +294,34 @@ export class MolstarBaseClass {
       for (const comp of s.components) {
         componentNames.push(comp.key!);
       }
+    }
+    return componentNames;
+  }
+
+  async getComponentCellList() {
+    const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
+    if (structureData[0] === undefined) {
+      console.warn('WARNING: No Mol* structure data set yet. Was this called too early?');
+      return [];
+    }
+    const componentNames: string[] = [];
+    for await (const s of structureData) {
+      console.log('s');
+      console.log(s);
+      // for (const comp of s.cell) {
+      //   // const parsedKey = comp.key!.replace('structure-component-', '');
+      //   componentNames.push(comp.key!);
+      //   // "!1cbs/model-0/props/struct-assembly-1/entities/entity-1"
+      //   // if (comp.key!.includes('/entities/')) {
+      //   //   const entityNumber = comp.key!.split('/entity-')[1];
+      //   //   console.log("comp.key!")
+      //   //   console.log("entityNumber: ", entityNumber)
+      //   //   const entityColor = comp.representations[0].cell.params.values.colorTheme.params.value;
+      //   //   const entityColorHex = '#' + ('000000' + entityColor.toString(16)).slice(-6);
+      //   //   console.log("entityColor: ", entityColor)
+      //   //   console.log("entityColorHex: ", entityColorHex)
+      //   // }
+      // }
     }
     return componentNames;
   }
