@@ -344,6 +344,9 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     // erase temporary component
     await removeComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary');
 
+    // clear any ligand interactions
+    await this.clearInteractions();
+
     if (noResetView) return;
 
     // reset camera to focus whole structure if sub selection or sub-sub selection

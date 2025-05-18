@@ -127,6 +127,15 @@ export class MolstarBaseClass {
     this.galleryManager.set(galleryManager);
   }
 
+  public async showInteractions(interactions: any) {
+    await this.clearInteractions();
+    await PDBeMolstarPlugin.extensions.Interactions.loadInteractions(this.molstarViewInstance(), { interactions: interactions, structureId: 1 });
+  }
+
+  public async clearInteractions() {
+    await PDBeMolstarPlugin.extensions.Interactions.clearInteractions(this.molstarViewInstance());
+  }
+
   /**
    * Function loads image from MolstarImageGallery using image name
    * @param imgName

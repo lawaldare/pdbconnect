@@ -99,8 +99,10 @@ export class MolstarStateService {
 
   public async renderMolstarForMacromolecules(macromolecule: MacromoleculesRowData, selection: MolstarSelectionObj) {
     await this.molstarVisualisation.checkMacromoleculesReady();
+    const entityId = selection.entityId;
+    const chainId = selection.authChainId;
 
-    const displayName = `Tab-Macromolecules/${macromolecule.name.molecule}`;
+    const displayName = `Tab-Macromolecules/${macromolecule.name.molecule}-${entityId}-${chainId}`;
 
     if (this.molstarVisualisation.currentViewName === displayName) return;
     this.molstarVisualisation.currentViewName = displayName;
@@ -113,6 +115,7 @@ export class MolstarStateService {
     let urlToDownload = '';
     const entityId = selection.entityId;
     const chainId = selection.authChainId;
+    const residueId = selection.residues[0].authBegin;
 
     // create URL according to whether a modification or a ligand is selected
     if (ligand.type === 'modification') {
@@ -122,7 +125,7 @@ export class MolstarStateService {
       const authInsCode = selection.residues[0].authBeginIns;
       urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${entryId}/residueSurroundings?auth_seq_id=${authSeqId}&pdbx_PDB_ins_code=${authInsCode}&auth_asym_id=${chainId}&radius=10&encoding=bcif`;
     }
-    const displayName = `Tab-Ligands/${ligand.id}`;
+    const displayName = `Tab-Ligands/${ligand.id}-${entityId}-${chainId}-${residueId}`;
 
     if (this.molstarVisualisation.currentViewName === displayName) return;
     this.molstarVisualisation.currentViewName = displayName;
@@ -131,6 +134,11 @@ export class MolstarStateService {
     await this.molstarVisualisation.checkLigandsReady(urlToDownload, true);
 
     await this.molstarVisualisation.renderTabsLigands(ligand, selection);
+  }
+
+  public async renderMolstarInteractions(molstarSelections: any) {
+    if (this.molstarFirstRenderFinished() === false) return;
+    await this.molstarVisualisation.showInteractions(molstarSelections);
   }
 
   public async renderMolstarForDomains(domain: DomainsRowData) {

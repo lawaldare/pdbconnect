@@ -45,25 +45,25 @@
             @for(residue of currentMacromoleculeDatum().mappedResidues; track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <=
             2){
             <span
-              >Canonical <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a> (residues:
-              {{residue.range.join(', ')}}; coverage: {{residue.coverage}})</span
+              >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a> (residues: {{residue.range.join(',
+              ')}}; coverage: {{residue.coverage}})</span
             >
             } @else { @if(residue.open){
             <div>
-              Canonical <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a>
+              Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a>
               (residues: {{range.join(', ')}}; coverage: {{residue.coverage}})
               <span class="residue-action-button" (click)="residue.open = !residue.open">show less</span>
             </div>
             }@else {
             <div>
-              Canonical <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a>
+              Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a>
               residues: {{range.slice(0,2).join(', ')}}...
               <span class="residue-action-button" (click)="residue.open = !residue.open">show all</span>
             </div>
             } } } @for(res of bestResidues(); track res.name;){
             <span
-              >Best match <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + res.uniprot" target="_blank">{{res.uniprot}}</a> (residues:
-              {{res.mappings[0].unp_start}} - {{res.mappings[0].unp_end}})</span
+              >Best match <a [href]="'https://www.uniprot.org/uniprotkb/' + res.uniprot" target="_blank">{{res.uniprot}}</a> (residues: {{res.mappings[0].unp_start}}
+              - {{res.mappings[0].unp_end}})</span
             >
             }
           </article>
@@ -96,17 +96,17 @@
           <article>
             @if(goMappings()?.['Molecular_function']?.length){
             <span class="article-title">Molecular function</span>
-            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?Molecular_function:' + goMappings()['Molecular_function'][0].name" target="_blank"
+            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?biological_function:' + goMappings()['Molecular_function'][0].name" target="_blank"
               >{{goMappings()['Molecular_function'][0].name}}</a
             >
             } @if(goMappings()?.['Biological_process']?.length){
             <span class="article-title">Biological process</span>
-            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?Biological_process:' + goMappings()['Biological_process'][0].name" target="_blank"
+            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?biological_process:' + goMappings()['Biological_process'][0].name" target="_blank"
               >{{goMappings()['Biological_process'][0].name}}</a
             >
             } @if(goMappings()?.['Cellular_component']?.length){
             <span class="article-title">Cellular component</span>
-            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?Cellular_component:' + goMappings()['Cellular_component'][0].name" target="_blank"
+            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?biological_cell_component:' + goMappings()['Cellular_component'][0].name" target="_blank"
               >{{goMappings()['Cellular_component'][0].name}}</a
             >
             } @if(isCategoryMoreThanOne()){
@@ -135,7 +135,6 @@
     <div class="chains">
       @if(dropdownOptions.length > 1){
       <div class="dropdown-container">
-        <span class="dropdown-title">Select displayed chain</span>
         <pdbc-entry-dropdown
           [downloadable]="false"
           [islink]="false"
@@ -179,6 +178,11 @@
       </section>
       }
       <section class="molstar-details-container">
+        @if (!molstarFirstRenderFinished()) {
+        <div [style.width]="'100%'">
+          <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+        </div>
+        }
         <div id="macromolecules-molstar-container" class="molstar-container"></div>
       </section>
       @if(hasTopologyViewer){

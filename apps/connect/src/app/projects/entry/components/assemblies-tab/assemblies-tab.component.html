@@ -38,7 +38,7 @@
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.pdbeComplexId" />
             </span>
             <article>
-              <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/complex/' + datum?.complexId" target="_blank">{{datum?.complexId}}</a>
+              <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?complex_id:' + datum?.complexId" target="_blank">{{datum?.complexId}}</a>
               <img src="assets/icons/link_search_icon.png" alt="search icon" />
             </article>
           </div>
@@ -96,6 +96,11 @@
         </div>
       </section>
       <section class="molstar-details-container">
+        @if (!molstarFirstRenderFinished()) {
+        <div [style.width]="'100%'">
+          <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+        </div>
+        }
         <div id="assemblies-molstar-container" class="molstar-container"></div>
       </section>
     </section>
