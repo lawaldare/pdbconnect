@@ -222,7 +222,9 @@ export class MbMacromoleculeComponent implements OnInit {
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbMacromoleculeComponent>) {}
 
   async ngOnInit() {
-    await this.molstarVisualisation.resetMobileMolstarInitial();
+    // await this.molstarVisualisation.resetMobileMolstarInitial();
+    await this.molstarVisualisation.unfocusLoci();
+    await this.molstarVisualisation.renderOverviewMacromolecules();
   }
 
   public toggleSynonymsList(total: number) {
@@ -269,7 +271,9 @@ export class MbMacromoleculeComponent implements OnInit {
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
     // this.mbFacade.updateSelectedMacromoleculeTitle('Macromolecules');
-    await this.molstarVisualisation.resetMobileMolstarInitial();
+    // await this.molstarVisualisation.resetMobileMolstarInitial();
+    await this.molstarVisualisation.unfocusLoci();
+    await this.molstarVisualisation.renderOverviewMacromolecules();
   }
 
   public navigateToDetail(data: MacromoleculesRowData) {
@@ -285,7 +289,9 @@ export class MbMacromoleculeComponent implements OnInit {
   public async goBackToList() {
     this.currentViewState.set(ViewState.List);
     this.mbFacade.updateSelectedMacromoleculeTitle('Macromolecules');
-    await this.molstarVisualisation.resetMobileMolstarInitial();
+    // await this.molstarVisualisation.resetMobileMolstarInitial();
+    await this.molstarVisualisation.unfocusLoci();
+    await this.molstarVisualisation.renderOverviewMacromolecules();
   }
 
   public generateOrganismSearchUrl(term: string): string {
