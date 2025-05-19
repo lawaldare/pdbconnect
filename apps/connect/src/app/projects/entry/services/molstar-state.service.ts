@@ -137,7 +137,7 @@ export class MolstarStateService {
     await this.molstarVisualisation.renderTabsLigands(ligand, selection);
   }
 
-  public async renderMolstarInteractions(residuesMolstarSelections: MolstarSelectionObj, interactionsMolstarSelection: any) {
+  public async renderMolstarInteractions(residuesMolstarSelections: MolstarSelectionObj[], interactionsMolstarSelection: any) {
     if (this.molstarFirstRenderFinished() === false) return;
     await this.molstarVisualisation.showResiduesAsSticks(residuesMolstarSelections);
     await this.molstarVisualisation.showInteractions(interactionsMolstarSelection);
@@ -152,7 +152,6 @@ export class MolstarStateService {
     }[]
   ) {
     if (this.molstarFirstRenderFinished() === false) return;
-    await this.molstarVisualisation.getComponentCellList();
     await this.molstarVisualisation.focusLociPDBe(atomSelections);
     await this.molstarVisualisation.highlightLociPDBe({ data: atomSelections });
   }

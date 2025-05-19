@@ -1,10 +1,9 @@
 import { ElementRef, inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { COLORBREWER_SET2_COLORS, DEFAULT_SET_25, ELEMENT_COLORS_HEX, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { MolstarOverviewForTopPage } from '../../../../helpers/molstar/molstar-overview-for-top-page';
 import { OverviewMolstarFacade } from './data-processing.facade';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
-import { getLigandEntityId, getMacromoleculeEntityId } from '../../../../helpers/processed-data-to-controls';
-import { BANG_WONG_COLORBLIND_SCALE, FILTERED_KELLY22_COLORBLIND_SCALE } from '../../../../entry-constant';
+import { ActionQueueService } from '../../../../services/action-queue.service';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +11,7 @@ import { BANG_WONG_COLORBLIND_SCALE, FILTERED_KELLY22_COLORBLIND_SCALE } from '.
 export class OverviewStateManagementService {
   public readonly dataProcessing = inject(OverviewMolstarFacade);
   public readonly molstarOverview = inject(MolstarOverviewForTopPage);
+  private readonly actionQueue = inject(ActionQueueService);
   public infoControls = signal<ElementRef | undefined>(undefined);
 
   public currentSelectionIdx: WritableSignal<number> = signal(-1);
@@ -31,294 +31,266 @@ export class OverviewStateManagementService {
   public async updateMolstarAccordionSelection(newView: string) {
     this.currentView = newView;
 
+    let lastStateName = '';
+    let accordionType = '';
     if (newView === 'Assembly') {
       // await this.molstarOverview.viewPreferredAssembly();
-      await this.molstarOverview.renderOverviewPreferredAssembly();
+
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewPreferredAssembly`,
+        async () => {
+          await this.molstarOverview.renderOverviewPreferredAssembly();
+        },
+        true // skippable
+      );
       this.molstarOverview.currentViewName = 'Overview-Preferred Assembly';
 
       this.currentSelectionIdx.set(-1);
       this.currentMolstarSelectionsNames.set([]);
       this.currentMolstarSelections.set([]);
     } else if (newView === 'Macromolecules') {
-      let macromoleculeIdx: number | undefined = undefined;
-      let selectionIdx: number | undefined = undefined;
-      let macromolecule: MacromoleculesRowData | undefined = undefined;
-      let macromoleculeSelections: MolstarSelectionObj[] = [];
-      let macromoleculeSelectionsNames: string[] = [];
-
-      if (this.lastMacromoleculeState !== 'none' && this.lastMacromoleculeState.includes('/')) {
-        macromoleculeIdx = parseInt(this.lastMacromoleculeState.split('/')[1]);
-        selectionIdx = parseInt(this.lastMacromoleculeState.split('/')[2]);
-        macromolecule = this.dataProcessing.processedMacromolecules()[macromoleculeIdx];
-        macromoleculeSelections = macromolecule.additionalData.selections;
-        macromoleculeSelectionsNames = macromolecule.additionalData.selectionNames;
-
-        this.currentSelectionIdx.set(selectionIdx);
-        this.currentMolstarSelections.set(macromoleculeSelections);
-        this.currentMolstarSelectionsNames.set(macromoleculeSelectionsNames);
-
-        await this.molstarOverview.renderOverviewSpecificMacromolecule(macromolecule, macromoleculeIdx, selectionIdx);
-        this.lastMacromoleculeState = `Overview-Macromolecules/${macromoleculeIdx}/${selectionIdx}`;
-        this.molstarOverview.currentViewName = `Overview-Macromolecules/${macromoleculeIdx}/${selectionIdx}`;
-      } else {
-        this.currentMolstarSelections.set(macromoleculeSelections);
-        this.currentMolstarSelectionsNames.set(macromoleculeSelectionsNames);
-        await this.molstarOverview.renderOverviewMacromolecules();
-        this.lastMacromoleculeState = 'Overview-Macromolecules';
-        this.molstarOverview.currentViewName = 'Overview-Macromolecules';
-      }
-      // const macromoleculesState = await this.molstarOverview.viewMacromolecules(macromolecule, macromoleculeIdx, selectionIdx);
-      // this.lastMacromoleculeState = macromoleculesState;
+      lastStateName = this.lastMacromoleculeState;
+      accordionType = 'macromolecule';
     } else if (newView === 'Ligands') {
-      let ligandsIdx: number | undefined = undefined;
-      let selectionIdx: number | undefined = undefined;
-      let ligand: LigandsRowData | undefined = undefined;
-      let ligandSelections: MolstarSelectionObj[] = [];
-      let ligandSelectionNames: string[] = [];
-      if (this.lastLigandsState !== 'none' && this.lastLigandsState.includes('/')) {
-        ligandsIdx = parseInt(this.lastLigandsState.split('/')[1]);
-        selectionIdx = parseInt(this.lastLigandsState.split('/')[2]);
-
-        ligand = this.dataProcessing.processedLigands()[ligandsIdx];
-        ligandSelections = ligand.additionalData.selections;
-        ligandSelectionNames = ligand.additionalData.selectionNames;
-
-        this.currentSelectionIdx.set(selectionIdx);
-        this.currentMolstarSelections.set(ligandSelections);
-        this.currentMolstarSelectionsNames.set(ligandSelectionNames);
-
-        await this.molstarOverview.renderOverviewSpecificLigand(ligand, ligandsIdx, selectionIdx);
-        this.lastLigandsState = `Overview-Ligands/${ligandsIdx}/${selectionIdx}`;
-        this.molstarOverview.currentViewName = `Overview-Ligands/${ligandsIdx}/${selectionIdx}`;
-      } else {
-        this.currentMolstarSelections.set(ligandSelections);
-        this.currentMolstarSelectionsNames.set(ligandSelectionNames);
-
-        await this.molstarOverview.renderOverviewLigands();
-        this.lastLigandsState = 'Overview-Ligands';
-        this.molstarOverview.currentViewName = 'Overview-Ligands';
-      }
-      // const ligandsState = await this.molstarOverview.viewLigands(ligand, ligandsIdx, selectionIdx);
-      // this.lastLigandsState = ligandsState;
+      lastStateName = this.lastLigandsState;
+      accordionType = 'ligand';
     } else if (newView === 'Domains') {
-      let domainsIdx: number | undefined = undefined;
-      let domain = undefined;
-      let domainColor = undefined;
-
-      const domainsOfResource = this.dataProcessing
-        .processedDomainsAsList()
-        .filter((eachDomain) => eachDomain.resource === this.dataProcessing.currentDomainResource());
-      const domainColors = domainsOfResource.map((eachDomain) => this.getMolstarColor(eachDomain, 'domain'));
-
-      // each domain has a single selection
-      this.currentMolstarSelections.set([]);
-      this.currentMolstarSelectionsNames.set([]);
-
-      if (this.lastDomainsState !== 'none' && this.lastDomainsState.includes('/')) {
-        domainsIdx = parseInt(this.lastDomainsState.split('/')[1]);
-        domain = this.dataProcessing.processedDomainsAsList()[domainsIdx];
-        domainColor = this.getMolstarColor(domain, 'domain');
-        this.currentSelectionIdx.set(domainsIdx);
-        await this.molstarOverview.renderOverviewSpecificDomain(domain, domainColor, domainsIdx);
-        this.lastDomainsState = `Overview-Domains/${domainsIdx}`;
-        this.molstarOverview.currentViewName = `Overview-Domains/${domainsIdx}`;
-      } else {
-        await this.molstarOverview.renderOverviewDomains(domainsOfResource, domainColors);
-        this.lastDomainsState = 'Overview-Domains';
-        this.molstarOverview.currentViewName = 'Overview-Domains';
-      }
-
-      // const domainsState = await this.molstarOverview.viewDomains(domainsOfResource, domainColors, domain, domainColor, domainsIdx);
-      // this.lastDomainsState = domainsState;
+      lastStateName = this.lastDomainsState;
+      accordionType = 'domain';
     } else if (newView === 'Modifications') {
-      let modificationsIdx: number | undefined = undefined;
-      let selectionIdx: number | undefined = undefined;
-      let modification: LigandsRowData | undefined = undefined;
-      let modificationSelections: MolstarSelectionObj[] = [];
-      let modificationSelectionNames: string[] = [];
-      if (this.lastModificationsState !== 'none' && this.lastModificationsState.includes('/')) {
-        modificationsIdx = parseInt(this.lastModificationsState.split('/')[1]);
-        selectionIdx = parseInt(this.lastModificationsState.split('/')[2]);
-
-        modification = this.dataProcessing.processedModifications()[modificationsIdx];
-        modificationSelections = modification.additionalData.selections;
-        modificationSelectionNames = modification.additionalData.selectionNames;
-
-        this.currentSelectionIdx.set(selectionIdx);
-        this.currentMolstarSelections.set(modificationSelections);
-        this.currentMolstarSelectionsNames.set(modificationSelectionNames);
-        await this.molstarOverview.renderOverviewSpecificModification(modification, modificationsIdx, selectionIdx);
-        this.lastModificationsState = `Overview-Modifications/${modificationsIdx}/${selectionIdx}`;
-        this.molstarOverview.currentViewName = `Overview-Modifications/${modificationsIdx}/${selectionIdx}`;
-      } else {
-        this.currentMolstarSelections.set(modificationSelections);
-        this.currentMolstarSelectionsNames.set(modificationSelectionNames);
-        await this.molstarOverview.renderOverviewModifications();
-        this.lastModificationsState = 'Overview-Modifications';
-        this.molstarOverview.currentViewName = 'Overview-Modifications';
-      }
-      // const modificationsState = await this.molstarOverview.viewModifications(modification, modificationsIdx, selectionIdx);
-      // this.lastModificationsState = modificationsState;
+      lastStateName = this.lastModificationsState;
+      accordionType = 'modification';
+    }
+    // if state string has selection and sub-selection items (separated by '/')
+    if (lastStateName !== 'none' && lastStateName.includes('/')) {
+      // guess selected list view item from last state name
+      await this.renderListViewSelectionState(accordionType, undefined, lastStateName);
+    } else {
+      // show pre-selection 3D state
+      await this.renderPreSelectionState(accordionType);
     }
   }
 
-  public async updateMolstarItemSelection(listViewItem: MacromoleculesRowData | LigandsRowData | DomainsRowData | undefined, selectionType: string) {
+  public async updateMolstarItemSelection(listViewItem: MacromoleculesRowData | LigandsRowData | DomainsRowData | undefined, accordionType: string) {
     const sameListViewItem = this.lastListViewItem !== undefined && this.lastListViewItem === listViewItem;
 
+    // if list view item is deselected (clicked 2 times)
     if (sameListViewItem) {
       // reset view name so deselection can occur
       this.molstarOverview.currentViewName = 'none';
       this.currentSelectionIdx.set(-1);
       listViewItem = undefined;
+
+      // deselect macromolecule, ligand, domain or modification
+      await this.renderPreSelectionState(accordionType);
     }
     this.lastListViewItem = listViewItem;
-    this.listViewItemType = selectionType;
+    this.listViewItemType = accordionType;
 
-    // deselect macromolecule if clicked 2 times in a row
-    if (sameListViewItem && selectionType === 'macromolecule') {
-      this.currentMolstarSelections.set([]);
-      this.currentMolstarSelectionsNames.set([]);
-      // const macromoleculesState = await this.molstarOverview.viewMacromolecules();
-      // this.lastMacromoleculeState = macromoleculesState;
-      await this.molstarOverview.renderOverviewMacromolecules();
-      this.lastMacromoleculeState = 'Overview-Macromolecules';
-      this.molstarOverview.currentViewName = 'Overview-Macromolecules';
-    }
-    // deselect ligand if clicked 2 times in a row
-    else if (sameListViewItem && selectionType === 'ligand') {
-      this.currentMolstarSelections.set([]);
-      this.currentMolstarSelectionsNames.set([]);
-      // const ligandsState = await this.molstarOverview.viewLigands();
-      // this.lastLigandsState = ligandsState;
-      await this.molstarOverview.renderOverviewLigands();
-      this.lastLigandsState = 'Overview-Ligands';
-      this.molstarOverview.currentViewName = 'Overview-Ligands';
-    }
-    // deselect domain if clicked 2 times in a row
-    else if (sameListViewItem && selectionType === 'domain') {
-      this.currentMolstarSelections.set([]);
-      this.currentMolstarSelectionsNames.set([]);
+    // select macromolecule, ligand , domain, modification
+    await this.renderListViewSelectionState(accordionType, listViewItem);
+    return;
+  }
 
-      const domainsOfResource = this.dataProcessing
-        .processedDomainsAsList()
-        .filter((eachDomain) => eachDomain.resource === this.dataProcessing.currentDomainResource());
-      const domainColors = domainsOfResource.map((eachDomain) => this.getMolstarColor(eachDomain, 'domain'));
-      // const domainsState = await this.molstarOverview.viewDomains(domainsOfResource, domainColors);
-      // this.lastDomainsState = domainsState;
-
-      await this.molstarOverview.renderOverviewDomains(domainsOfResource, domainColors);
-      this.lastDomainsState = 'Overview-Domains';
-      this.molstarOverview.currentViewName = 'Overview-Domains';
-    } else if (sameListViewItem && selectionType === 'modification') {
-      this.currentMolstarSelections.set([]);
-      this.currentMolstarSelectionsNames.set([]);
-
-      await this.molstarOverview.renderOverviewModifications();
-      this.lastModificationsState = 'Overview-Modifications';
-      this.molstarOverview.currentViewName = 'Overview-Modifications';
+  private async renderListViewSelectionState(accordionType: string, listViewItem?: MacromoleculesRowData | LigandsRowData | DomainsRowData, stateName?: string) {
+    if (!listViewItem && !stateName) return;
+    if (!listViewItem && stateName) {
+      listViewItem = this.getSelectionFromStateName(accordionType);
     }
 
-    // select macromolecule
-    else if (selectionType === 'macromolecule') {
-      let selectionIdx = 0;
+    const molstarSelections: MolstarSelectionObj[] =
+      accordionType !== 'domain' ? (listViewItem as MacromoleculesRowData | LigandsRowData).additionalData.selections : [];
+    const molstarSelectionsNames: string[] = accordionType !== 'domain' ? (listViewItem as MacromoleculesRowData | LigandsRowData).additionalData.selectionNames : [];
+
+    this.currentMolstarSelections.set(molstarSelections);
+    this.currentMolstarSelectionsNames.set(molstarSelectionsNames);
+
+    if (accordionType === 'macromolecule') {
       const macromolecule = listViewItem as MacromoleculesRowData;
       const macromoleculeIdx = this.dataProcessing.processedMacromolecules().indexOf(macromolecule);
-      if (this.lastMacromoleculeState !== 'none' && this.lastMacromoleculeState.includes('/')) {
-        const lastMacromoleculeIdx = parseInt(this.lastMacromoleculeState.split('/')[1]);
-        if (lastMacromoleculeIdx === macromoleculeIdx) {
-          selectionIdx = parseInt(this.lastMacromoleculeState.split('/')[2]) || 0;
-        }
-      }
 
-      const macromoleculeSelections = macromolecule ? macromolecule.additionalData.selections : [];
-      const macromoleculeSelectionNames = macromolecule ? macromolecule.additionalData.selectionNames : [];
-
+      const selectionIdx = stateName ? parseInt(stateName.split('/')[2]) : this.getLastListItemSubSelection(macromoleculeIdx, this.lastMacromoleculeState);
       this.currentSelectionIdx.set(selectionIdx);
-      this.currentMolstarSelections.set(macromoleculeSelections);
-      this.currentMolstarSelectionsNames.set(macromoleculeSelectionNames);
 
-      await this.molstarOverview.renderOverviewSpecificMacromolecule(macromolecule, macromoleculeIdx, selectionIdx);
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewSpecificMacromolecule`,
+        async () => {
+          await this.molstarOverview.renderOverviewSpecificMacromolecule(macromolecule, macromoleculeIdx, selectionIdx);
+        },
+        true // skippable
+      );
       this.lastMacromoleculeState = `Overview-Macromolecules/${macromoleculeIdx}/${selectionIdx}`;
-      this.molstarOverview.currentViewName = `Overview-Macromolecules/${macromoleculeIdx}/${selectionIdx}`;
-
-      // const macromoleculesState = await this.molstarOverview.viewMacromolecules(macromolecule, macromoleculeIdx, selectionIdx);
-      // this.lastMacromoleculeState = macromoleculesState;
     }
-    // select ligand
-    else if (selectionType === 'ligand') {
-      let ligand = listViewItem as LigandsRowData;
+    if (accordionType === 'ligand') {
+      const ligand = listViewItem as LigandsRowData;
       const ligandsIdx = this.dataProcessing.processedLigands().indexOf(ligand);
-      let selectionIdx = 0;
-      if (this.lastLigandsState !== 'none' && this.lastLigandsState.includes('/')) {
-        const lastLigandIdx = parseInt(this.lastLigandsState.split('/')[1]);
-        if (lastLigandIdx === ligandsIdx) {
-          selectionIdx = parseInt(this.lastLigandsState.split('/')[2]) || 0;
-        }
-        ligand = this.dataProcessing.processedLigands()[ligandsIdx];
-      }
 
-      const ligandSelections = ligand ? ligand.additionalData.selections : [];
-      const ligandSelectionNames = ligand ? ligand.additionalData.selectionNames : [];
-
+      const selectionIdx = stateName ? parseInt(stateName.split('/')[2]) : this.getLastListItemSubSelection(ligandsIdx, this.lastLigandsState);
       this.currentSelectionIdx.set(selectionIdx);
-      this.currentMolstarSelections.set(ligandSelections);
-      this.currentMolstarSelectionsNames.set(ligandSelectionNames);
 
-      await this.molstarOverview.renderOverviewSpecificLigand(ligand, ligandsIdx, selectionIdx);
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewSpecificLigand`,
+        async () => {
+          await this.molstarOverview.renderOverviewSpecificLigand(ligand, ligandsIdx, selectionIdx);
+        },
+        true // skippable
+      );
       this.lastLigandsState = `Overview-Ligands/${ligandsIdx}/${selectionIdx}`;
-      this.molstarOverview.currentViewName = `Overview-Ligands/${ligandsIdx}/${selectionIdx}`;
-
-      // const ligandsState = await this.molstarOverview.viewLigands(ligand, ligandsIdx, selectionIdx);
-      // this.lastLigandsState = ligandsState;
     }
-    // select domain
-    else if (selectionType === 'domain') {
+    if (accordionType === 'domain') {
       const domain = listViewItem as DomainsRowData;
-      const domainColor = this.getMolstarColor(domain, 'domain');
       const domainsIdx = this.dataProcessing.processedDomainsAsList().indexOf(domain);
 
-      // const domainsOfResource = this.dataProcessing
-      //   .processedDomainsAsList()
-      //   .filter((eachDomain) => eachDomain.resource === this.dataProcessing.currentDomainResource());
-      // const domainColors = domainsOfResource.map((eachDomain) => this.getMolstarColor(eachDomain, 'domain'));
-
-      // const domainsState = await this.molstarOverview.viewDomains(domainsOfResource, domainColors, domain, domainColor, domainsIdx);
-      // this.lastDomainsState = domainsState;
-
       this.currentSelectionIdx.set(0);
-      this.currentMolstarSelections.set([]);
-      this.currentMolstarSelectionsNames.set([]);
 
-      await this.molstarOverview.renderOverviewSpecificDomain(domain, domainColor, domainsIdx);
-      this.lastDomainsState = `Overview-Domains/${domainsIdx}`;
-      this.molstarOverview.currentViewName = `Overview-Domains/${domainsIdx}`;
-    } else if (selectionType === 'modification') {
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewSpecificDomain`,
+        async () => {
+          await this.molstarOverview.renderOverviewSpecificDomain(domain);
+        },
+        true // skippable
+      );
+      this.updateAccordionStateName(accordionType, `Overview-Domains/${domainsIdx}`);
+    }
+    if (accordionType === 'modification') {
       const modification = listViewItem as LigandsRowData;
       const modificationsIdx = this.dataProcessing.processedModifications().indexOf(modification);
 
-      let selectionIdx = 0;
-      if (this.lastModificationsState !== 'none' && this.lastModificationsState.includes('/')) {
-        const lastModificationIdx = parseInt(this.lastModificationsState.split('/')[1]);
-        if (lastModificationIdx === modificationsIdx) {
-          selectionIdx = parseInt(this.lastModificationsState.split('/')[2]) || 0;
-        }
-      }
-
-      const modificationSelections = modification ? modification.additionalData.selections : [];
-      const modificationSelectionNames = modification ? modification.additionalData.selectionNames : [];
-
+      const selectionIdx = stateName ? parseInt(stateName.split('/')[2]) : this.getLastListItemSubSelection(modificationsIdx, this.lastModificationsState);
       this.currentSelectionIdx.set(selectionIdx);
-      this.currentMolstarSelections.set(modificationSelections);
-      this.currentMolstarSelectionsNames.set(modificationSelectionNames);
 
-      await this.molstarOverview.renderOverviewSpecificModification(modification, modificationsIdx, selectionIdx);
-      this.lastModificationsState = `Overview-Modifications/${modificationsIdx}/${selectionIdx}`;
-      this.molstarOverview.currentViewName = `Overview-Modifications/${modificationsIdx}/${selectionIdx}`;
-
-      // const modificationsState = await this.molstarOverview.viewModifications(modification, modificationsIdx, selectionIdx);
-      // this.lastModificationsState = modificationsState;
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewSpecificModification`,
+        async () => {
+          await this.molstarOverview.renderOverviewSpecificModification(modification, modificationsIdx, selectionIdx);
+        },
+        true // skippable
+      );
+      this.updateAccordionStateName(accordionType, `Overview-Modifications/${modificationsIdx}/${selectionIdx}`);
     }
-    return;
+  }
+
+  private getSelectionFromStateName(accordionType: string) {
+    if (accordionType === 'macromolecule') {
+      const macromoleculeIdx = parseInt(this.lastMacromoleculeState.split('/')[1]);
+      const macromolecule = this.dataProcessing.processedMacromolecules()[macromoleculeIdx];
+      return macromolecule;
+    }
+    if (accordionType === 'ligand') {
+      const ligandsIdx = parseInt(this.lastLigandsState.split('/')[1]);
+      const ligand = this.dataProcessing.processedLigands()[ligandsIdx];
+      return ligand;
+    }
+    if (accordionType === 'domain') {
+      const domainsIdx = parseInt(this.lastDomainsState.split('/')[1]);
+      const domain = this.dataProcessing.processedDomainsAsList()[domainsIdx];
+      return domain;
+    } else {
+      // same as if (accordionType === 'modification') {
+      const modificationsIdx = parseInt(this.lastModificationsState.split('/')[1]);
+      const modification = this.dataProcessing.processedModifications()[modificationsIdx];
+      return modification;
+    }
+  }
+
+  private getLastListItemSubSelection(listItemSelectionIdx: number, stateName: string) {
+    let subSelectionIdx = 0;
+    // if state has '/' we have selections (specific macromolecule, ligand, etc)
+    // and sub-selections (specific chain or residue in dropdown)
+    if (stateName !== 'none' && stateName.includes('/')) {
+      // selection and sub-selections indexes are split by '/' inside state string
+      const nestedStateIndexes = stateName.split('/');
+
+      const lastListItemSelectionState = parseInt(nestedStateIndexes[1]);
+      const lastListItemSubSelectionState = parseInt(nestedStateIndexes[2]);
+
+      // we only load a sub-selection if last selected state was the same as the currently clicked
+      if (lastListItemSelectionState === listItemSelectionIdx) {
+        subSelectionIdx = lastListItemSubSelectionState || 0;
+      }
+    }
+    return subSelectionIdx;
+  }
+
+  private async renderPreSelectionState(accordionType: string) {
+    // update signals to remove Chain/Residue subselection dropdowns
+    this.currentMolstarSelections.set([]);
+    this.currentMolstarSelectionsNames.set([]);
+
+    if (accordionType === 'macromolecule') {
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewMacromolecules`,
+        async () => {
+          await this.molstarOverview.renderOverviewMacromolecules();
+        },
+        true // skippable
+      );
+
+      // memorize last state by string
+      this.updateAccordionStateName(accordionType, 'Overview-Macromolecules');
+    }
+    if (accordionType === 'ligand') {
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewLigands`,
+        async () => {
+          await this.molstarOverview.renderOverviewLigands();
+        },
+        true // skippable
+      );
+      // memorize last state by string
+      this.updateAccordionStateName(accordionType, 'Overview-Ligands');
+    }
+    if (accordionType === 'domain') {
+      const domainsOfResource = this.dataProcessing
+        .processedDomainsAsList()
+        .filter((eachDomain) => eachDomain.resource === this.dataProcessing.currentDomainResource());
+
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewDomains`,
+        async () => {
+          await this.molstarOverview.renderOverviewDomains(domainsOfResource);
+        },
+        true // skippable
+      );
+      // memorize last state by string
+      this.updateAccordionStateName(accordionType, 'Overview-Domains');
+    }
+    if (accordionType === 'modification') {
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewModifications`,
+        async () => {
+          await this.molstarOverview.renderOverviewModifications();
+        },
+        true // skippable
+      );
+      // memorize last state by string
+      this.updateAccordionStateName(accordionType, 'Overview-Modifications');
+    }
+  }
+
+  private updateAccordionStateName(accordionType: string, newStateName: string) {
+    if (accordionType === 'macromolecule') {
+      this.lastMacromoleculeState = newStateName;
+    }
+    if (accordionType === 'ligand') {
+      this.lastLigandsState = newStateName;
+    }
+    if (accordionType === 'domain') {
+      this.lastDomainsState = newStateName;
+    }
+    if (accordionType === 'modification') {
+      this.lastModificationsState = newStateName;
+    }
+    this.molstarOverview.currentViewName = newStateName;
   }
 
   async switchMolstarZoomed(molstarSelection?: MolstarSelectionObj) {
@@ -327,36 +299,5 @@ export class OverviewStateManagementService {
     } else {
       await this.molstarOverview.focusStructure();
     }
-  }
-
-  public getMolstarColor(listItem: MacromoleculesRowData | LigandsRowData | DomainsRowData, selectionType: string) {
-    let colorScale = DEFAULT_SET_25;
-    let idx = -1;
-    if (selectionType === 'macromolecule') {
-      idx = getMacromoleculeEntityId(listItem as MacromoleculesRowData) - 1;
-      colorScale = DEFAULT_SET_25;
-    } else if (selectionType === 'ligand') {
-      const ligand = listItem as LigandsRowData;
-      idx = getLigandEntityId(ligand) - 1;
-      const elementKeys = Object.keys(ELEMENT_COLORS_HEX);
-      if (elementKeys.indexOf(ligand.id) > -1) {
-        return ELEMENT_COLORS_HEX[ligand.id];
-      }
-      colorScale = COLORBREWER_SET2_COLORS;
-    } else if (selectionType === 'modification') {
-      idx = this.dataProcessing.processedModifications().indexOf(listItem as LigandsRowData);
-      colorScale = BANG_WONG_COLORBLIND_SCALE;
-    } else if (selectionType === 'domain') {
-      const uniqueAccessions = [...new Set(this.dataProcessing.processedDomainsAsList().map((domain) => domain.accessionName))];
-
-      // idx = this.processedDomainsAsList().indexOf(listItem as DomainsRowData)
-      const domain = listItem as DomainsRowData;
-      idx = uniqueAccessions.indexOf(domain.accessionName);
-
-      colorScale = FILTERED_KELLY22_COLORBLIND_SCALE;
-    }
-    if (idx === -1) throw 'wrong color idx';
-    const entityColor = colorScale[idx % colorScale.length];
-    return entityColor;
   }
 }

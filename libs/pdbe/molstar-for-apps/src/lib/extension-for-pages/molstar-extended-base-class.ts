@@ -186,9 +186,12 @@ export class MolstarBaseClass {
    * Function triggers Molstar focus on specific selection
    * @param molstarSelection: MolstarSelectionObj (helpful interface for selecting in Molstar)
    */
-  public async focusLoci(molstarSelection: MolstarSelectionObj) {
+  public async focusLoci(molstarSelection: MolstarSelectionObj, duration?: number) {
+    if (duration === undefined) {
+      duration = this.cameraDuration;
+    }
     const queryLoci = await this.getViewerLoci(molstarSelection);
-    await this.molstarViewInstance()?.plugin?.managers?.camera?.focusLoci(queryLoci, { durationMs: this.cameraDuration });
+    await this.molstarViewInstance()?.plugin?.managers?.camera?.focusLoci(queryLoci, { durationMs: duration });
   }
 
   public async focusLociPDBe(params: any) {

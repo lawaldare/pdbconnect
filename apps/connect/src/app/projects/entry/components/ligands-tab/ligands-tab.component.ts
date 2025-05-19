@@ -28,7 +28,7 @@ import { EntryActions } from '../../store/entry.actions';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { Interaction } from '../../data-models/interaction.model';
-import { interactionsToMolstar } from '../../helpers/interactions-to-molstar';
+import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -176,6 +176,7 @@ export class LigandsTabComponent implements OnInit {
     const ligand = this.currentLigandDatum() as LigandsRowData;
     if (!interactions) return;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    if (!molstarSelection) return;
 
     const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(
       ligand,
@@ -191,17 +192,6 @@ export class LigandsTabComponent implements OnInit {
       },
       false // skippable
     );
-  }
-
-  private formatInteractionType(interactionType: string) {
-    if (interactionType === 'mixed') return;
-    const interactionTypeName = INTX_NAME_STANDARDIZER[interactionType as keyof typeof INTX_NAME_STANDARDIZER];
-    return interactionTypeName;
-  }
-
-  private normalizeInsertionCode(insCode: string | undefined) {
-    if (insCode?.trim()) return insCode;
-    else return undefined;
   }
 
   ngOnInit(): void {
@@ -341,13 +331,13 @@ export class LigandsTabComponent implements OnInit {
       {
         auth_asym_id: chainId,
         auth_seq_id: parseInt(residueId),
-        auth_ins_code_id: this.normalizeInsertionCode(resIns),
+        auth_ins_code_id: normalizeInsertionCode(resIns),
         atoms: int.ligand_atoms,
       },
       {
         auth_asym_id: int.end.chain_id,
         auth_seq_id: int.end.author_residue_number,
-        auth_ins_code_id: this.normalizeInsertionCode(int.end.author_insertion_code),
+        auth_ins_code_id: normalizeInsertionCode(int.end.author_insertion_code),
         atoms: int.end.atom_names,
       },
     ];
@@ -357,7 +347,19 @@ export class LigandsTabComponent implements OnInit {
       async () => {
         await this.molstarState.zoomMolstarInteraction(atomSelections);
       },
-      false // skippable
+      true // skippable
+    );
+  }
+
+  onCellMouseOut() {
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    this.actionQueue.addAction(
+      `zoomOutMolstarInteraction`,
+      async () => {
+        await this.molstarState.molstarVisualisation.focusLoci(molstarSelection, 50);
+        await this.molstarState.molstarVisualisation.clearHighlightLoci();
+      },
+      true // skippable
     );
   }
 
@@ -393,7 +395,7 @@ export class LigandsTabComponent implements OnInit {
     const mols = macromolecules.filter((mol) => mol.additionalData.molecule.entity_id === parseInt(entityId));
     if (mols.length === 0) return 'Undefined';
 
-    return mols[0].name;
+    return mols[0].name.molecule; //.replace(/\s/g, "_");
   }
 
   public mapSynonyms(synonyms: any[]): string {

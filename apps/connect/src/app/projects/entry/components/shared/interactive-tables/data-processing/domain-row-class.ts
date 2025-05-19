@@ -1,5 +1,5 @@
 import { signal, WritableSignal } from '@angular/core';
-import { DomainsBoundaries, TableFilter, TableRow } from '../data-models-and-definitions/row-and-table.model';
+import { DomainsBoundaries, DomainsRowData, TableFilter, TableRow } from '../data-models-and-definitions/row-and-table.model';
 import { DataToTable } from './abstract-base-row-class';
 import { PfamMappings, CathMappings, ScopMappings, DomainMapping } from '../../../../data-models/domains.model';
 import { Molecule } from '../../../../data-models/molecule.model';
@@ -7,6 +7,7 @@ import { formatSegments, formatSegmentsWithCoverage } from '../../../../helpers/
 import { ObservedSegments, PolymerCoverageMolecule } from '../../../../data-models/polymer-coverage.model';
 import { AssemblyData, AssemblyEntity } from '../../../../data-models/assembly.model';
 import { ProcessedSummary } from '../../../../data-models/summary.model';
+import { FILTERED_KELLY22_COLORBLIND_SCALE } from '../../../../entry-constant';
 
 export class DomainDataToTable extends DataToTable {
   // Domain specific data
@@ -130,6 +131,7 @@ export class DomainDataToTable extends DataToTable {
   // good pdb examples for domains: 1trn (CATH, SCOP, Pfam); 3irj (no domains); 7v08 (only Pfam); 5irx (four domains, same accession)
   generateTableData(): TableRow[] {
     let rows: TableRow[] = [];
+    let domainsTableRows: DomainsRowData[] = [];
     if (this.tableRows().length === 0) {
       // first we parse domains from CATH resource
       for (const [resourceAcc, data] of Object.entries(this.cathMappings)) {
@@ -166,7 +168,7 @@ export class DomainDataToTable extends DataToTable {
             })
             .join(',');
 
-          rows.push({
+          domainsTableRows.push({
             // domainName: `${domainDesc} (${resourceAcc})`,
             accessionName: domainDesc,
             resource: 'CATH',
@@ -220,7 +222,7 @@ export class DomainDataToTable extends DataToTable {
             })
             .join(',');
 
-          rows.push({
+          domainsTableRows.push({
             // domainName: `${domainDesc} (${resourceAcc})`,
             accessionName: domainDesc,
             resource: 'SCOP',
@@ -272,7 +274,7 @@ export class DomainDataToTable extends DataToTable {
             })
             .join(',');
 
-          rows.push({
+          domainsTableRows.push({
             // domainName: `${domainDesc} (${resourceAcc})`,
             accessionName: domainDesc,
             resource: 'Pfam',
@@ -291,6 +293,15 @@ export class DomainDataToTable extends DataToTable {
         }
       }
 
+      // add colors by domain accession
+      const uniqueAccessions = [...new Set(domainsTableRows.map((domain) => domain.accessionName))];
+      domainsTableRows = domainsTableRows.map((domain) => {
+        const domainColorIdx = uniqueAccessions.indexOf(domain.accessionName);
+        domain.molstarColorHex = FILTERED_KELLY22_COLORBLIND_SCALE[domainColorIdx % FILTERED_KELLY22_COLORBLIND_SCALE.length];
+        return domain;
+      });
+
+      rows.push(...domainsTableRows);
       this.tableRows.set(rows);
     } else {
       rows = [...this.tableRows()];

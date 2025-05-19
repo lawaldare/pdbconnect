@@ -65,6 +65,7 @@ export interface MacromoleculesRowData {
     uniprotAccessions: string[];
   };
   mappedResidues?: any[];
+  molstarColorHex?: string;
 }
 
 /**
@@ -91,6 +92,7 @@ export interface LigandsRowData {
     selections: MolstarSelectionObj[];
     selectionNames: string[];
   };
+  molstarColorHex?: string;
 }
 
 /**
@@ -119,4 +121,5 @@ export interface DomainsRowData {
     selectionNames: string[];
   };
   mappedboundaries?: string[];
+  molstarColorHex?: string;
 }

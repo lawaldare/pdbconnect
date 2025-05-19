@@ -80,6 +80,7 @@ export class MbLigandsComponent implements AfterViewInit {
     const ligand = this.selectedLigands() as LigandsRowData;
     if (!interactions) return;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    if (!molstarSelection) return;
 
     const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(
       ligand,

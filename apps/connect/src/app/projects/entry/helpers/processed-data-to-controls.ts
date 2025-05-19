@@ -1,20 +1,12 @@
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 
-export function getMacromoleculeEntityId(datum: MacromoleculesRowData) {
-  return datum.additionalData.molecule.entity_id;
-}
-
 export function getMacromoleculeChainDropdownOptions(datum: MacromoleculesRowData) {
   const dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
   for (const selection of datum.additionalData.selections) {
     dropdownOptionsToMolstar[`Chain ${selection.authChainId!}`] = selection;
   }
   return dropdownOptionsToMolstar;
-}
-
-export function getLigandEntityId(datum: LigandsRowData) {
-  return parseInt(datum.additionalData?.selections[0]?.entityId ?? '');
 }
 
 function convertLigandDatumToString(id: string, selectedLigandInstance: MolstarSelectionObj) {

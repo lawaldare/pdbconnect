@@ -89,6 +89,7 @@
             [gridOptions]="gridOptions"
             (selectionChanged)="onSelectionChanged($event)"
             (cellMouseOver)="onCellMouseOver($event)"
+            (cellMouseOut)="onCellMouseOut()"
             [paginationPageSizeSelector]="paginationPageSizeSelector()"
             overlayNoRowsTemplate="No ligand interactions found"
           />

@@ -1,4 +1,4 @@
-import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { MolstarSelectionObj, MolstarSelectionObjResid } from '@pdbe-lib/molstar-for-apps';
 import { INTX_NAME_COLORS } from '../entry-constant';
 import { INTX_NAME_STANDARDIZER } from '../components/ligands-tab/interaction-type.component';
 import { LigandsRowData } from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
@@ -14,7 +14,7 @@ export function interactionsToMolstar(
   const residueId = ligandMolstarSelection.residues[0].authBegin;
   const resIns = ligandMolstarSelection.residues[0].authBeginIns;
 
-  const residuesMolstarSelections: MolstarSelectionObj = { residues: [] };
+  const residuesMolstarSelections: MolstarSelectionObj[] = [];
   const interactionsMolstarSelections: any[] = [];
 
   for (const int of interactions) {
@@ -47,20 +47,35 @@ export function interactionsToMolstar(
       color,
       tooltip,
     });
-    const residObj = {
+    const residObj: MolstarSelectionObjResid = {
       // auth_asym_id: int.end.chain_id,
       // auth_seq_id: int.end.author_residue_number,
       // auth_ins_code_id: this.normalizeInsertionCode(int.end.author_insertion_code),
       entityId: chainToEntityId[int.end.chain_id],
       authChainId: int.end.chain_id,
       authBegin: int.end.author_residue_number + '',
-      authBeginIns: int.end.author_insertion_code,
+      authBeginIns: normalizeInsertionCode(int.end.author_insertion_code) + '' || '',
       authEnd: int.end.author_residue_number + '',
-      authEndIns: int.end.author_insertion_code,
+      authEndIns: normalizeInsertionCode(int.end.author_insertion_code) + '' || '',
     };
-    if (residuesMolstarSelections.residues.indexOf(residObj) === -1) {
-      residuesMolstarSelections.residues.push(residObj);
+
+    const sameResidues = residuesMolstarSelections.filter((sel) => {
+      return (
+        sel.residues[0].entityId === residObj.entityId &&
+        sel.residues[0].authChainId === residObj.authChainId &&
+        sel.residues[0].authBegin === residObj.authBegin &&
+        sel.residues[0].authBeginIns === residObj.authBeginIns
+      );
+    });
+    if (sameResidues.length === 0) {
+      residuesMolstarSelections.push({
+        residues: [residObj],
+      });
     }
+
+    // if (residuesMolstarSelections.residues.indexOf(residObj) === -1) {
+    //   residuesMolstarSelections.residues.push(residObj);
+    // }
   }
 
   return { residuesMolstarSelections, interactionsMolstarSelections };
@@ -72,7 +87,7 @@ function formatInteractionType(interactionType: string) {
   return interactionTypeName;
 }
 
-function normalizeInsertionCode(insCode: string | undefined) {
+export function normalizeInsertionCode(insCode: string | undefined) {
   if (insCode?.trim()) return insCode;
   else return undefined;
 }

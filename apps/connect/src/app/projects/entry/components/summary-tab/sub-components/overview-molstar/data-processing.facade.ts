@@ -5,9 +5,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../../../store/entry.selectors';
 import { EntryStoreState } from '../../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
-import { NestedDomainsData, ParsedComplexDetails } from './data-processing.models';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
-import { getMacromoleculeEntityId, getMacromoleculeOfDomain } from '../../../../helpers/processed-data-to-controls';
+import { getMacromoleculeOfDomain } from '../../../../helpers/processed-data-to-controls';
 import { ComponentCommunicationService } from '../../../../services/component-comm.service';
 
 @Injectable({
@@ -74,7 +73,7 @@ export class OverviewMolstarFacade {
 
     for (const domain of domainsData) {
       const macromolecule = getMacromoleculeOfDomain(domain, macromoleculesData);
-      const entityId = getMacromoleculeEntityId(macromolecule);
+      const entityId = macromolecule.additionalData.molecule.entity_id;
 
       if (!nestedMap.has(entityId)) {
         nestedMap.set(entityId, { macromolecule, domains: [] });

@@ -177,6 +177,4 @@ export class OverviewMolstarTabListViewComponent {
     this.stateManagement.molstarOverview.currentViewName = 'none';
     this.stateManagement.updateMolstarAccordionSelection('Domains');
   }
-
-  getMolstarColor = this.stateManagement.getMolstarColor;
 }

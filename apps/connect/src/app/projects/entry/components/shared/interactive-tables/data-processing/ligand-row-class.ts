@@ -3,10 +3,11 @@ import { LigandsRowData, TableFilter, TableRow } from '../data-models-and-defini
 import { DataToTable } from './abstract-base-row-class';
 import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
 import { Molecule } from '../../../../data-models/molecule.model';
-import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { COLORBREWER_SET2_COLORS, ELEMENT_COLORS_HEX, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { LigandMonomer } from '../../../../data-models/ligand-monomers.model';
 import { AssemblyData } from '../../../../data-models/assembly.model';
 import { ProcessedSummary } from '../../../../data-models/summary.model';
+import { BANG_WONG_COLORBLIND_SCALE } from '../../../../entry-constant';
 
 export class LigandDataToTable extends DataToTable {
   // Ligand specific data
@@ -36,7 +37,7 @@ export class LigandDataToTable extends DataToTable {
     }
   }
 
-  getPreferredAssembly() {
+  private getPreferredAssembly() {
     // we first check and get the preferred assembly if it exists
     let preferredAssemblyId = -1;
     const preferredAssemblyData = this.summaryData.assemblies.filter((summaryAssembly) => summaryAssembly.preferred === true);
@@ -110,6 +111,14 @@ export class LigandDataToTable extends DataToTable {
       for (const mol of this.ligands) {
         const randomDescription = 'Unannotated';
         const ligandMolstarData = this.generateMolstarSelectionsLigands(mol, this.ligandMonomers);
+
+        const colorEntityIdx = mol.entity_id - 1;
+        let ligandColor = COLORBREWER_SET2_COLORS[colorEntityIdx % COLORBREWER_SET2_COLORS.length];
+        const elementKeys = Object.keys(ELEMENT_COLORS_HEX);
+        if (elementKeys.indexOf(mol.chem_comp_ids[0]) > -1) {
+          ligandColor = ELEMENT_COLORS_HEX[mol.chem_comp_ids[0]];
+        }
+
         ligandsTableRows.push({
           type: 'ligand',
           id: mol.chem_comp_ids[0],
@@ -126,18 +135,21 @@ export class LigandDataToTable extends DataToTable {
             selections: ligandMolstarData.selections,
             selectionNames: ligandMolstarData.selectionNames,
           },
+          molstarColorHex: ligandColor,
         });
       }
       rows.push(...ligandsTableRows);
 
       const modificationsTableRows: LigandsRowData[] = [];
       const modificationIds = this.modifications.map((mod) => mod.chem_comp_id).filter((mod, idx, array) => array.indexOf(mod) === idx);
-      for (const modId of modificationIds) {
+      for (let modIdx = 0; modIdx < modificationIds.length; modIdx++) {
+        const modId = modificationIds[modIdx];
         const modificationsOfId = this.modifications.filter((mod) => mod.chem_comp_id === modId);
         const moleculesOfId = modificationsOfId.map((mod) => mod.description).filter((molName, idx, array) => array.indexOf(molName) === idx);
 
         const modificationMolstarData = this.generateMolstarSelectionsModifications(modificationsOfId);
 
+        const modColor = BANG_WONG_COLORBLIND_SCALE[modIdx % BANG_WONG_COLORBLIND_SCALE.length];
         modificationsTableRows.push({
           type: 'modification',
           id: modId,
@@ -155,6 +167,7 @@ export class LigandDataToTable extends DataToTable {
             selections: modificationMolstarData.selections,
             selectionNames: modificationMolstarData.selectionNames,
           },
+          molstarColorHex: modColor,
         });
       }
       rows.push(...modificationsTableRows);

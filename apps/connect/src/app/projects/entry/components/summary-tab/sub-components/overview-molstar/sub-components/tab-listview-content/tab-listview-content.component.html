@@ -64,7 +64,7 @@
       (mouseover)="mouseinListItem(listItem)"
       (mouseout)="mouseoutListItem()"
     >
-      <div class="color-code-bar" [ngStyle]="{ 'background-color': getMolstarColor(listItem, 'macromolecule') }"></div>
+      <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
       <button class="select-entity-btn">{{ listItem.name.molecule }}</button>
     </div>
     <!-- @if (isSelected(listItem)) {
@@ -96,7 +96,7 @@
       (mouseover)="mouseinListItem(listItem)"
       (mouseout)="mouseoutListItem()"
     >
-      <div class="color-code-bar" [ngStyle]="{ 'background-color': getMolstarColor(listItem, 'ligand') }"></div>
+      <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
       <button class="select-entity-btn">{{ listItem.codeAndName.name }} - {{ listItem.id }}</button>
     </div>
     <!-- @if (isSelected(listItem)) {
@@ -134,7 +134,7 @@
     </pdbc-entry-dropdown>
     @for (nestedListObj of getDomainsListViewData; track $index) {
     <div class="select-gallery-container invalid">
-      <div class="color-code-bar" [ngStyle]="{ 'background-color': getMolstarColor(nestedListObj.macromolecule, 'macromolecule') }"></div>
+      <div class="color-code-bar" [ngStyle]="{ 'background-color': nestedListObj.macromolecule.molstarColorHex }"></div>
       <button class="select-entity-btn">
         <span>{{ nestedListObj.macromolecule.name.molecule }}</span><br />
         <span>({{ nestedListObj.domains.length }} domains)</span>
@@ -149,7 +149,7 @@
       (mouseout)="mouseoutListItem()"
     >
       <div class="color-code-bars">
-        <div class="color-code-sqr" [ngStyle]="{ 'background-color': getMolstarColor(listItem, 'domain') }"></div>
+        <div class="color-code-sqr" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
       </div>
       <button class="select-entity-btn">
         <span>{{ listItem.accessionName }}</span><br />
@@ -185,7 +185,7 @@
       (mouseover)="mouseinListItem(listItem)"
       (mouseout)="mouseoutListItem()"
     >
-      <div class="color-code-bar" [ngStyle]="{ 'background-color': getMolstarColor(listItem, 'modification') }"></div>
+      <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
       <button class="select-entity-btn">{{ listItem.codeAndName.name }} - {{ listItem.id }}</button>
     </div>
     <!-- @if (isSelected(listItem)) {

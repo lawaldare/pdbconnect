@@ -122,7 +122,7 @@ export const MOLSTAR_CONFIG_FACTORIES: {
   LIGANDS: ({ entryId, assemblyId, hideCanvControls }) => ({
     moleculeId: entryId!,
     bgColor: { r: 255, g: 255, b: 255 },
-    loadMaps: false,
+    loadMaps: true,
     assemblyId: assemblyId!,
     hideControls: true,
     hideCanvasControls: hideCanvControls ?? [],
@@ -577,7 +577,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.focusLoci(selection);
   }
 
-  public async renderOverviewDomains(domainsOfResource: DomainsRowData[], domainColors: string[]) {
+  public async renderOverviewDomains(domainsOfResource: DomainsRowData[]) {
     // clean up view
     await this.cleanView();
 
@@ -587,6 +587,8 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     //   'polymeric-cartoon-by-entityid-alpha',
     //   UNSELECTED_CARTOON_COLOR_BY_ENTITY_ALPHA
     // );
+
+    const domainColors = domainsOfResource.map((eachDomain) => eachDomain.molstarColorHex!);
 
     const domainColorsByAccession: { [key: string]: string } = {};
     for (let domainIdx = 0; domainIdx < domainsOfResource.length; domainIdx++) {
@@ -658,8 +660,9 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     this.overviewDomainsCycleIndex = 0;
   }
 
-  public async renderOverviewSpecificDomain(domain: DomainsRowData, domainColor: string, domainIdx: number) {
+  public async renderOverviewSpecificDomain(domain: DomainsRowData) {
     const selection = domain.additionalData.selections[0];
+    const domainColor = domain.molstarColorHex!;
 
     // clean up view
     await this.cleanView();
@@ -803,8 +806,16 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.focusLoci(molstarSelection);
   }
 
-  public async showResiduesAsSticks(selection: MolstarSelectionObj) {
-    await createComponent(this.molstarViewInstance(), `structure-component-dynamic-temporary-resids`, selection, LIGANDS_REPR_NONSELECTION_POLYMER);
+  public async showResiduesAsSticks(selections: MolstarSelectionObj[]) {
+    for (let i = 0; i < selections.length; i++) {
+      const selection = selections[i];
+      const comp = await createComponent(
+        this.molstarViewInstance(),
+        `structure-component-dynamic-temporary-resids-${i + 1}`,
+        selection,
+        LIGANDS_REPR_NONSELECTION_POLYMER
+      );
+    }
   }
 
   public async renderTabsDomains(selection: MolstarSelectionObj) {

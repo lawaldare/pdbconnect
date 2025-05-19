@@ -5,7 +5,7 @@ import { CarbohydrateMolecule, CarbohydrateResidue } from '../../../../data-mode
 import { Molecule } from '../../../../data-models/molecule.model';
 import { BestStructureMapping } from '../../../../data-models/uniport-best-structures.model';
 import { UniProtMapping } from '../../../../data-models/uniprot-mapping.model';
-import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { DEFAULT_SET_25, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { PolymerCoverageMolecule } from '../../../../data-models/polymer-coverage.model';
 import { AssemblyData, AssemblyEntity } from '../../../../data-models/assembly.model';
 import { ProcessedSummary } from '../../../../data-models/summary.model';
@@ -100,7 +100,7 @@ export class MacromoleculeDataToTable extends DataToTable {
     return map;
   }
 
-  filterByPreferredAssembly(macromolecules: Molecule[], assembly: AssemblyData): Molecule[] {
+  private filterByPreferredAssembly(macromolecules: Molecule[], assembly: AssemblyData): Molecule[] {
     // Create a quick lookup map for assembly entities by entity_id
     const assemblyEntitiesMap = this.getNormalizedEntityMap(assembly);
 
@@ -133,7 +133,7 @@ export class MacromoleculeDataToTable extends DataToTable {
     );
   }
 
-  filterPolymerCoverageByAssembly(polymerCoverage: PolymerCoverageMolecule[], assembly: AssemblyData): PolymerCoverageMolecule[] {
+  private filterPolymerCoverageByAssembly(polymerCoverage: PolymerCoverageMolecule[], assembly: AssemblyData): PolymerCoverageMolecule[] {
     const assemblyEntitiesMap = this.getNormalizedEntityMap(assembly);
 
     return polymerCoverage
@@ -181,6 +181,8 @@ export class MacromoleculeDataToTable extends DataToTable {
         const selectionNames = selectionData.selectionNames;
         const molstarSelections: MolstarSelectionObj[] = selectionData.selections;
 
+        const colorEntityIdx = molecule.entity_id - 1;
+
         macromoleculeRows.push({
           name: {
             molecule: molecule.molecule_name[0],
@@ -196,6 +198,7 @@ export class MacromoleculeDataToTable extends DataToTable {
             selectionNames: selectionNames,
             uniprotAccessions: residueRanges.map((eachRange) => eachRange.uniprot),
           },
+          molstarColorHex: DEFAULT_SET_25[colorEntityIdx % DEFAULT_SET_25.length],
         });
       }
       rows.push(...macromoleculeRows);
