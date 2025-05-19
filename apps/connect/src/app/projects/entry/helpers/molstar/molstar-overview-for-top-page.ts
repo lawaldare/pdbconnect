@@ -242,11 +242,6 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.enforceConfigLoaded('INITIAL', config);
   }
 
-  public async resetMobileMolstarInitial() {
-    await this.cleanView();
-    await this.unfocusLoci();
-  }
-
   public async renderMobileMolstarInitial() {
     const config = MOLSTAR_CONFIG_FACTORIES['INITIAL']({
       entryId: this.entryId,
@@ -510,6 +505,11 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     // greyout everything but macromolecules
     await this.renderOverviewMacromolecules();
     // TODO: Show symmetry view if possible
+  }
+
+  public async resetMobileMolstarInitial() {
+    await this.unfocusLoci();
+    await this.renderOverviewMacromolecules();
   }
 
   public async renderOverviewMacromolecules() {

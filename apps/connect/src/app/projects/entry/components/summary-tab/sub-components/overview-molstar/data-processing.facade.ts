@@ -73,7 +73,7 @@ export class OverviewMolstarFacade {
 
     for (const domain of domainsData) {
       const macromolecule = getMacromoleculeOfDomain(domain, macromoleculesData);
-      const entityId = macromolecule.additionalData.molecule.entity_id;
+      const entityId = macromolecule?.additionalData?.molecule.entity_id;
 
       if (!nestedMap.has(entityId)) {
         nestedMap.set(entityId, { macromolecule, domains: [] });

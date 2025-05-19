@@ -39,7 +39,7 @@ export class EntryApiService {
   private BASE_API = `${environment.pdbeBaseUrl}api/v2/pdb/entry/`;
   private MAPPINGS_API = `${environment.pdbeBaseUrl}api/mappings/`;
   private VALIDATION_API = `${environment.pdbeBaseUrl}api/validation/`;
-  private GRAPH_API = `${environment.pdbeBaseUrl}graph-api/pdb/`;
+  private GRAPH_API = `https://www.ebi.ac.uk/pdbe/graph-api/pdb/`;
   private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}api/v2/`;
 
   private readonly http = inject(HttpClient);

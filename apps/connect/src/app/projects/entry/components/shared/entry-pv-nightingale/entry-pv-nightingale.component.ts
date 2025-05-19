@@ -508,7 +508,6 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
         filter((hide) => hide === true) // Optional: only act on true
       )
       .subscribe(async () => {
-        console.log('hehrehrhehrhehhheeereeee');
         await this.molstarState.focusLastSelection();
         await this.molstarState.molstarVisualisation.molstarViewInstance().visual.clearSelection();
       });

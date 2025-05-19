@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, OnInit, Optional, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, OnInit, Optional, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
@@ -270,10 +270,7 @@ export class MbMacromoleculeComponent implements OnInit {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
-    // this.mbFacade.updateSelectedMacromoleculeTitle('Macromolecules');
-    // await this.molstarVisualisation.resetMobileMolstarInitial();
-    await this.molstarVisualisation.unfocusLoci();
-    await this.molstarVisualisation.renderOverviewMacromolecules();
+    await this.molstarVisualisation.resetMobileMolstarInitial();
   }
 
   public navigateToDetail(data: MacromoleculesRowData) {
@@ -289,9 +286,7 @@ export class MbMacromoleculeComponent implements OnInit {
   public async goBackToList() {
     this.currentViewState.set(ViewState.List);
     this.mbFacade.updateSelectedMacromoleculeTitle('Macromolecules');
-    // await this.molstarVisualisation.resetMobileMolstarInitial();
-    await this.molstarVisualisation.unfocusLoci();
-    await this.molstarVisualisation.renderOverviewMacromolecules();
+    await this.molstarVisualisation.resetMobileMolstarInitial();
   }
 
   public generateOrganismSearchUrl(term: string): string {

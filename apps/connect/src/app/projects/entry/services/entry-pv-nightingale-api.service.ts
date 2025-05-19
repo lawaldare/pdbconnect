@@ -9,6 +9,7 @@ import { environment } from '../../../../environments/environment';
 })
 export class PvDataApiService {
   private readonly http = inject(HttpClient);
+  private readonly BaseAPI = `https://www.ebi.ac.uk/pdbe/graph-api/`;
 
   /**
    * Endpoints list for entryId + entityId
@@ -30,7 +31,7 @@ export class PvDataApiService {
    * https://www${appUrlEnv}.ebi.ac.uk/pdbe/graph-api/pdbe_pages/protvista/annotations/${entryId}/${entityId}
   //  */
   // public getPdbeEntityTrackData(entryId: string, entityId: string, endpoint: string): Observable<APITrackData> {
-  //   const url = `${environment.pdbeBaseUrl}graph-api/pdbe_pages/protvista/${endpoint}/${entryId}/${entityId}`;
+  //   const url = `${this.BaseAPI}pdbe_pages/protvista/${endpoint}/${entryId}/${entityId}`;
   //   return this.http.get<Record<string, APITrackData>>(url).pipe(
   //     map((data) => data[entryId]),
   //     catchError((_error) => {
@@ -40,7 +41,7 @@ export class PvDataApiService {
   // }
 
   public getPdbeEntityUniprotMappingTrackData(entryId: string, entityId: string): Observable<APITrackData> {
-    const url = `${environment.pdbeBaseUrl}graph-api/pdbe_pages/protvista/uniprot_mapping/${entryId}/${entityId}`;
+    const url = `${this.BaseAPI}pdbe_pages/protvista/uniprot_mapping/${entryId}/${entityId}`;
     return this.http.get<Record<string, APITrackData>>(url).pipe(
       map((data) => data[entryId]),
       catchError((_error) => {
@@ -50,7 +51,7 @@ export class PvDataApiService {
   }
 
   public getPdbeEntityChainsTrackData(entryId: string, entityId: string): Observable<APITrackData> {
-    const url = `${environment.pdbeBaseUrl}graph-api/pdbe_pages/protvista/chains/${entryId}/${entityId}`;
+    const url = `${this.BaseAPI}pdbe_pages/protvista/chains/${entryId}/${entityId}`;
     return this.http.get<Record<string, APITrackData>>(url).pipe(
       map((data) => data[entryId]),
       catchError((_error) => {
@@ -60,7 +61,7 @@ export class PvDataApiService {
   }
 
   public getPdbeEntityDomainsTrackData(entryId: string, entityId: string): Observable<APITrackData> {
-    const url = `${environment.pdbeBaseUrl}graph-api/pdbe_pages/protvista/domains/${entryId}/${entityId}`;
+    const url = `${this.BaseAPI}pdbe_pages/protvista/domains/${entryId}/${entityId}`;
     return this.http.get<Record<string, APITrackData>>(url).pipe(
       map((data) => data[entryId]),
       catchError((_error) => {
@@ -70,7 +71,7 @@ export class PvDataApiService {
   }
 
   public getPdbeEntityRfamTrackData(entryId: string, entityId: string): Observable<APITrackData> {
-    const url = `${environment.pdbeBaseUrl}graph-api/pdbe_pages/protvista/rfam/${entryId}/${entityId}`;
+    const url = `${this.BaseAPI}pdbe_pages/protvista/rfam/${entryId}/${entityId}`;
     return this.http.get<Record<string, APITrackData>>(url).pipe(
       map((data) => data[entryId]),
       catchError((_error) => {
@@ -80,7 +81,7 @@ export class PvDataApiService {
   }
 
   public getPdbeEntitySecondaryStructureTrackData(entryId: string, entityId: string): Observable<APITrackData> {
-    const url = `${environment.pdbeBaseUrl}graph-api/pdbe_pages/protvista/secondary_structure/${entryId}/${entityId}`;
+    const url = `${this.BaseAPI}pdbe_pages/protvista/secondary_structure/${entryId}/${entityId}`;
     return this.http.get<Record<string, APITrackData>>(url).pipe(
       map((data) => data[entryId]),
       catchError((_error) => {
@@ -90,7 +91,7 @@ export class PvDataApiService {
   }
 
   public getPdbeEntityBindingSitesTrackData(entryId: string, entityId: string): Observable<APITrackData> {
-    const url = `${environment.pdbeBaseUrl}graph-api/pdbe_pages/protvista/binding_sites/${entryId}/${entityId}`;
+    const url = `${this.BaseAPI}pdbe_pages/protvista/binding_sites/${entryId}/${entityId}`;
     return this.http.get<Record<string, APITrackData>>(url).pipe(
       map((data) => data[entryId]),
       catchError((_error) => {
@@ -100,7 +101,7 @@ export class PvDataApiService {
   }
 
   public getPdbeEntityInterfacesTrackData(entryId: string, entityId: string): Observable<APITrackData> {
-    const url = `${environment.pdbeBaseUrl}graph-api/pdbe_pages/protvista/interfaces/${entryId}/${entityId}`;
+    const url = `${this.BaseAPI}pdbe_pages/protvista/interfaces/${entryId}/${entityId}`;
     return this.http.get<Record<string, APITrackData>>(url).pipe(
       map((data) => data[entryId]),
       catchError((_error) => {
@@ -110,7 +111,7 @@ export class PvDataApiService {
   }
 
   public getPdbeEntityAnnotationsTrackData(entryId: string, entityId: string): Observable<APITrackData> {
-    const url = `${environment.pdbeBaseUrl}graph-api/pdbe_pages/protvista/annotations/${entryId}/${entityId}`;
+    const url = `${this.BaseAPI}pdbe_pages/protvista/annotations/${entryId}/${entityId}`;
     return this.http.get<Record<string, APITrackData>>(url).pipe(
       map((data) => data[entryId]),
       catchError((_error) => {
@@ -120,12 +121,12 @@ export class PvDataApiService {
   }
 
   public getPdbeConservationTrackData(entryId: string, entityId: string) {
-    const url = `${environment.pdbeBaseUrl}graph-api/pdb/sequence_conservation/${entryId}/${entityId}`;
+    const url = `${this.BaseAPI}pdb/sequence_conservation/${entryId}/${entityId}`;
     return this.http.get<APIConservationData>(url);
   }
 
   public getPdbeVariationTrackData(entryId: string, entityId: string) {
-    const url = `${environment.pdbeBaseUrl}graph-api/pdbe_pages/protvista/variation/${entryId}/${entityId}`;
+    const url = `${this.BaseAPI}pdbe_pages/protvista/variation/${entryId}/${entityId}`;
     return this.http.get<APIVariationData>(url);
   }
 }
