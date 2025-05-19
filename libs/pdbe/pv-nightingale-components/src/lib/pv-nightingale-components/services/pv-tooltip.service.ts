@@ -1,5 +1,6 @@
 import { Injectable, Renderer2 } from '@angular/core';
 import { PvFixedHighlightService } from './pv-fixed-highlight.service';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class PvTooltipService {
@@ -20,6 +21,7 @@ export class PvTooltipService {
   private highlightService?: PvFixedHighlightService;
 
   private messageToHighlight: { [key: string]: string } = {};
+  public hidePinnedEvent$ = new BehaviorSubject<boolean>(false);
 
   /**
    * Function should be called when this service is injected on the Angular component containing
@@ -240,6 +242,7 @@ export class PvTooltipService {
           this.highlightService.createSelectionHighlight();
           this.highlightService.triggerDynamicFixedHighlight();
         }
+        this.hidePinnedEvent$.next(true);
       }, 150);
     }
   }

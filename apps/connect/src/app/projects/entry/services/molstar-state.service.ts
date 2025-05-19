@@ -32,6 +32,8 @@ export class MolstarStateService {
   public modelQualityValidationType = signal<string>('issue_count');
   public modelQualitySpecificIssueKind = signal<string>('');
 
+  private lastMolstarSelection?: MolstarSelectionObj;
+
   // state and data variables for Assemblies
   // state and data variables for Macromolecules
   // state and data variables for Ligands
@@ -97,6 +99,10 @@ export class MolstarStateService {
     await this.molstarVisualisation.renderTabsAssemblies();
   }
 
+  public async focusLastSelection() {
+    if (this.lastMolstarSelection) await this.molstarVisualisation.focusLoci(this.lastMolstarSelection, 50)!;
+  }
+
   public async renderMolstarForMacromolecules(macromolecule: MacromoleculesRowData, selection: MolstarSelectionObj) {
     await this.molstarVisualisation.checkMacromoleculesReady();
     const entityId = selection.entityId;
@@ -106,6 +112,7 @@ export class MolstarStateService {
 
     if (this.molstarVisualisation.currentViewName === displayName) return;
     this.molstarVisualisation.currentViewName = displayName;
+    this.lastMolstarSelection = selection;
 
     await this.molstarVisualisation.renderTabsMacromolecules(macromolecule, selection);
   }
@@ -130,6 +137,7 @@ export class MolstarStateService {
 
     if (this.molstarVisualisation.currentViewName === displayName) return;
     this.molstarVisualisation.currentViewName = displayName;
+    this.lastMolstarSelection = selection;
 
     // since URL based force Ligands config reload with forceReset: true
     // await this.molstarVisualisation.checkLigandsReady(urlToDownload, true);
@@ -163,6 +171,7 @@ export class MolstarStateService {
 
     if (this.molstarVisualisation.currentViewName === displayName) return;
     this.molstarVisualisation.currentViewName = displayName;
+    this.lastMolstarSelection = domain.additionalData.selections[0];
 
     // domains always have single selection
     await this.molstarVisualisation.renderTabsDomains(domain.additionalData.selections[0]);
