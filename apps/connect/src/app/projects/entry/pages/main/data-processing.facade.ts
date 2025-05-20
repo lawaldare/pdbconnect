@@ -312,8 +312,6 @@ export class MainDataProcessingFacade {
         complexId: undefined,
       };
     }
-    console.log('preferredAssemblyData');
-    console.log(preferredAssemblyData);
     this.compCommunication.preferredAssemblyData.set(preferredAssemblyData);
 
     let descriptions = undefined;
