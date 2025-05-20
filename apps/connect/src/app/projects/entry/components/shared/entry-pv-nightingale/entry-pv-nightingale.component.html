@@ -15,7 +15,7 @@
         @if (sequenceIsLoaded()) {
         <!-- Row containing Controls, Navigation, Sequence -->
         <div class="pv-track-row btns">
-          <p>PDBe Track Viewer menu:</p>
+          <img src="/assets/img/PDBe-KB-TrackViewer_logo.png" alt="PDBe-KB Track Viewer" />
           <button id="search-residue-btn" class="pv-link-btn" (click)="openSearchPanel()">Find and highlight residues</button>
           <!-- Control that opens panel for user custom data -->
           <button id="map-data-btn" class="pv-link-btn" (click)="openMapPanel()">Map your data</button>
@@ -91,7 +91,7 @@
             <span class="expand-icon" style="visibility: hidden">▸</span>
             {{ trackBlock.name }}
           </div>
-          <div class="pv-track-container no-data">Data not available for this molecule</div>
+          <div class="pv-track-container no-data">No "{{ trackBlock.name }}" data found for this molecule.</div>
         </div>
         } @else {
         <div>Loading tracks...</div>
@@ -114,7 +114,7 @@
             <span class="expand-icon" style="visibility: hidden">▸</span>
             {{ trackNestedBlock.name }}
           </div>
-          <div class="pv-track-container no-data">Data not available for this molecule</div>
+          <div class="pv-track-container no-data">No "{{ trackNestedBlock.name }}" data found for this molecule.</div>
         </div>
         } @else {
         <div>Loading tracks...</div>
@@ -135,7 +135,7 @@
             <span class="expand-icon" style="visibility: hidden">▸</span>
             Conservation
           </div>
-          <div class="pv-track-container no-data">Data not available for this molecule</div>
+          <div class="pv-track-container no-data">No "Conservation" data found for this molecule.</div>
         </div>
 
         <!-- For special variation track  -->
@@ -152,7 +152,7 @@
             <span class="expand-icon" style="visibility: hidden">▸</span>
             Variation
           </div>
-          <div class="pv-track-container no-data">Data not available for this molecule</div>
+          <div class="pv-track-container no-data">No "Variation" data found for this molecule.</div>
         </div>
 
         <!-- Margin for extra tooltip space -->

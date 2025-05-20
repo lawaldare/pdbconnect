@@ -99,11 +99,14 @@
   }
 
   .add-btn {
+    line-height: 18px;
+    font-family: 'IBM Plex Sans';
+    font-weight: 700;
+    color: #5d3f87;
+    border: 1px solid var(--Purple-800, #5d3f87);
+    background: #fff;
+    box-shadow: 2px 2px 0 0 rgb(93 63 135 / 90%);
     padding: 6px 12px;
-    background: #673ab7;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
     font-size: 14px;
     cursor: pointer;
 
