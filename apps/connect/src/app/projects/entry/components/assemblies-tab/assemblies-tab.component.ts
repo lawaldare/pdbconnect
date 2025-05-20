@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { AssembliesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
@@ -13,6 +13,7 @@ import { entryAssembliesTooltips } from '../../entry-constant';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
+import { PopupWindowService } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
@@ -70,6 +71,16 @@ export class AssembliesTabComponent {
     }
     return undefined;
   });
+
+  @ViewChild('molstarContainer') molstarContainer!: ElementRef;
+  public readonly popService = inject(PopupWindowService);
+
+  popupMolstar(): void {
+    const fullMode = this.popService.isMaximizedOnMac();
+    if (!fullMode) {
+      this.popService.popOut(this.molstarContainer, 'molstar');
+    }
+  }
 
   triggerMolstarSideEffect(assembly: AssembliesRowData) {
     this.actionQueue.addAction(

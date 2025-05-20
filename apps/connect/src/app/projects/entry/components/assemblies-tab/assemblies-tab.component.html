@@ -101,9 +101,10 @@
           <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
         </div>
         }
-        <div id="assemblies-molstar-container" class="molstar-container"></div>
+        <div id="assemblies-molstar-container" #molstarContainer class="molstar-container"></div>
       </section>
     </section>
+    <button class="vf-button vf-button--secondary-pdbe" (click)="popupMolstar()">Popup the molstar</button>
   </div>
 </main>
 } @else {
