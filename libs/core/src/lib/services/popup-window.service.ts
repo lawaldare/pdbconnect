@@ -20,7 +20,7 @@ export class PopupWindowService {
 
   private popIn(popOutWindow: Window | null, innerWrapper: HTMLDivElement, id: string): void {
     const popOutWrapper = this.windowWrapperMap[id]?.popOutWrapper;
-    this.renderer.appendChild(popOutWrapper.nativeElement, innerWrapper);
+    if (popOutWrapper) this.renderer.appendChild(popOutWrapper.nativeElement, innerWrapper);
     if (popOutWindow) {
       this.closeWindow(id);
     }
@@ -46,6 +46,9 @@ export class PopupWindowService {
       this.cloneStylesToPopOutWindow(popOutWindow);
       this.renderer.appendChild(popOutWindow.document.body, innerWrapper);
       // this.cloneScriptsToPopOutWindow(popOutWindow);
+      this.setupEventProxy(popOutWindow, innerWrapper);
+
+      popOutWindow.focus();
       popOutWindow.addEventListener('unload', () => this.popIn(popOutWindow, innerWrapper, id));
     }
   }
@@ -103,15 +106,34 @@ export class PopupWindowService {
     document.head.querySelectorAll('style').forEach((node) => {
       popOutWindow.document.head.appendChild(node.cloneNode(true));
     });
-
-    popOutWindow.document.body.classList.add('om-morpho');
   }
 
   private cloneScriptsToPopOutWindow(popOutWindow: Window): void {
     document.body.querySelectorAll('script').forEach((node) => {
       popOutWindow.document.body.appendChild(node.cloneNode(true));
     });
+  }
 
-    // popOutWindow.document.body.classList.add('om-morpho');
+  private setupEventProxy(win: Window, sourceContainer: HTMLDivElement) {
+    const forwardEvent = (e: Event) => {
+      const cloned = new (e.constructor as any)(e.type, e);
+      document.dispatchEvent(cloned);
+    };
+
+    const events = ['pointerdown', 'pointermove', 'pointerup', 'mousedown', 'mousemove', 'mouseup'];
+    events.forEach((eventType) => {
+      sourceContainer.addEventListener(eventType, forwardEvent, true);
+    });
+  }
+
+  public isMaximizedOnMac(): boolean {
+    const isFullscreen = window.matchMedia('(display-mode: fullscreen)').matches;
+    const isScreenFilled = window.innerWidth >= screen.availWidth - 10 && window.innerHeight >= screen.availHeight - 10;
+    const result = isFullscreen || isScreenFilled;
+    if (result) {
+      alert('Please minimize this window for the best experience!');
+      return true;
+    }
+    return false;
   }
 }
