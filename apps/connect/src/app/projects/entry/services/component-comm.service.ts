@@ -1,16 +1,18 @@
-import { inject, Injectable, Injector, signal } from '@angular/core';
-import { MolstarResidueInfo } from '@pdbe-lib/molstar-for-apps';
+import { computed, Injectable, signal } from '@angular/core';
 import { DataToTable } from '../components/shared/interactive-tables/data-processing/abstract-base-row-class';
-import { OverviewStateManagementService } from '../components/summary-tab/sub-components/overview-molstar/state-management.service';
-import { MolstarOverviewForTopPage } from '../helpers/molstar/molstar-overview-for-top-page';
-import { OutliersByModelId } from '../pages/main/data-processing.facade';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { BehaviorSubject } from 'rxjs';
+import {
+  AssembliesRowData,
+  DomainsRowData,
+  LigandsRowData,
+  MacromoleculesRowData,
+} from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 
 export interface PreferredAssemblyData {
   name: string;
   preferred: number;
   composition: string | undefined;
-  complexId: string;
+  complexId: string | undefined;
 }
 
 export interface EntryDescription {
@@ -37,36 +39,42 @@ export class ComponentCommunicationService {
     // 'Citations': 'Main',
   });
 
-  public isTabDataGenerated = signal<boolean>(false);
+  public isTabDataGenerated = computed(() => {
+    return this.hasProcessedAssemblies() && this.hasProcessedLigands() && this.hasProcessedDomains() && this.hasProcessedMacromolecules();
+  });
 
   public tabTableData = signal<{ [key: string]: DataToTable }>({});
 
-  public tabScrollState = signal<{ [key: string]: number }>({
-    Assemblies: 0,
-    Macromolecules: 0,
-    Ligands: 0,
-    Domains: 0,
-    Experiments: 0,
-    Citations: 0,
-  });
+  public assemblySelection$ = new BehaviorSubject<number | undefined>(undefined);
+  public macromoleculeSelection$ = new BehaviorSubject<number | undefined>(undefined);
+  public ligandSelection$ = new BehaviorSubject<number | undefined>(undefined);
+  public domainSelection$ = new BehaviorSubject<number | undefined>(undefined);
 
-  getTabState(tabName: string) {
-    return this.tabState()[tabName];
-  }
+  public assembliesTableData?: DataToTable;
+  public hasProcessedAssemblies = signal<boolean>(false);
+  public processedAssemblies: AssembliesRowData[] = [];
+
+  public macromoleculesTableData?: DataToTable;
+  public hasProcessedMacromolecules = signal<boolean>(false);
+  public processedMacromolecules: MacromoleculesRowData[] = [];
+
+  public ligandsTableData?: DataToTable;
+  public hasProcessedLigands = signal<boolean>(false);
+  public processedLigandsAndModifications: LigandsRowData[] = [];
+  public processedLigands: LigandsRowData[] = [];
+  public processedModifications: LigandsRowData[] = [];
+
+  public domainsTableData?: DataToTable;
+  public hasPreProcessedDomains = signal<boolean>(false);
+  public hasProcessedDomains = signal<boolean>(false);
+  public processedDomainsAsList: DomainsRowData[] = [];
+  public processedDomains: {
+    macromolecule: MacromoleculesRowData;
+    domains: DomainsRowData[];
+  }[] = [];
 
   setTabState(tabName: string, newState: string | number) {
     this.tabState.update((state) => ({
-      ...state, // spread the existing state
-      [tabName]: newState, // update the specific key dynamically
-    }));
-  }
-
-  getTabScrollState(tabName: string) {
-    return this.tabScrollState()[tabName];
-  }
-
-  setTabScrollState(tabName: string, newState: number) {
-    this.tabScrollState.update((state) => ({
       ...state, // spread the existing state
       [tabName]: newState, // update the specific key dynamically
     }));

@@ -33,8 +33,8 @@ import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/p
 export interface EntryStoreState {
   entryId: string;
   summaryData: ProcessedSummary | undefined;
-  macroMolecules: Molecule[];
-  boundLigands: Molecule[];
+  macroMolecules: Molecule[] | undefined;
+  boundLigands: Molecule[] | undefined;
   organismScientificNames: string[];
   hasRNA: boolean;
   experimentalDetails: AnyExperimentDetail[];
@@ -54,16 +54,16 @@ export interface EntryStoreState {
   summaryQualityScores: ProcessedQualityScores | undefined;
   cathMapping: CathMappings | undefined;
   scop175Mapping: ScopMappings | undefined;
-  modifications: ModifiedResidue[];
+  modifications: ModifiedResidue[] | undefined;
   validationKeyStats: KeyValidationStats | undefined;
   modelQualityXray: ModelQualityXray | undefined;
   validationXRayRefine: XRayRefine | undefined;
   primaryPublication: CitationDetail | undefined;
   articlesCiting: RelatedPublication | undefined;
   complexDetails: ComplexDetails[] | undefined;
-  assemblies: AssemblyData[];
-  pisaAssemblies: PisaAssembly[];
-  carbohydrates: CarbohydrateMolecule[];
+  assemblies: AssemblyData[] | undefined;
+  pisaAssemblies: PisaAssembly[] | undefined;
+  carbohydrates: CarbohydrateMolecule[] | undefined;
   pdbRedoQualityScores: ProcessedQualityScores | undefined;
   experimentRawDataBMRB: BMRBExperimentRawData[];
   experimentRawDataSBGrid: SBGRIDExperimentRawData | undefined;
@@ -73,8 +73,8 @@ export interface EntryStoreState {
   entryStatus: EntryStatus | undefined;
   interactions: Interaction[];
   symmetry: Symmetry[];
-  polymerCoverage: PolymerCoverageMolecule[];
-  ligandMonomers: LigandMonomer[];
+  polymerCoverage: PolymerCoverageMolecule[] | undefined;
+  ligandMonomers: LigandMonomer[] | undefined;
   residueWiseOutliers: ResidueWiseOutliersMolecule[];
   entityPvUniprot: APITrackData;
   entityPvChains: APITrackData;

@@ -37,24 +37,23 @@ export class AssembliesTabComponent {
   public readonly isSidebarDisplayed = signal<boolean>(true);
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
+  public readonly selectedAssemblyIdx = toSignal(this.compCommunication.assemblySelection$);
+
   public readonly assemblyTableRows = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.compCommunication.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Assemblies') !== -1;
-    if (isLoaded && hasData) {
-      const tabData = this.compCommunication.getTabData('Assemblies');
-      return tabData.tableRows() as AssembliesRowData[];
-    }
-    return [];
+    const isLoaded = this.compCommunication.hasProcessedAssemblies();
+    if (!isLoaded) return [];
+    return this.compCommunication.processedAssemblies;
   });
 
+  private previousAssemblyDatumIdx?: number;
   public currentAssemblyDatum = computed(() => {
-    let selectedIdx = this.compCommunication.tabState()['Assemblies'] ?? 0;
+    const selectedIdx = this.selectedAssemblyIdx() ?? 0;
     const rows = this.assemblyTableRows();
+    const datum = rows[selectedIdx];
+    if (!datum) return;
 
-    if (selectedIdx === 'Main') selectedIdx = 0;
-
-    const datum = this.assemblyTableRows()[selectedIdx as number];
+    if (selectedIdx === this.previousAssemblyDatumIdx) return datum;
+    this.previousAssemblyDatumIdx = selectedIdx;
 
     // could be an effect also
     if (datum) {
@@ -73,14 +72,12 @@ export class AssembliesTabComponent {
   });
 
   triggerMolstarSideEffect(assembly: AssembliesRowData) {
-    const shouldSkip = !this.molstarFirstRenderFinished();
-
     this.actionQueue.addAction(
       `renderMolstarForAssemblies-${assembly.assemblyId}`,
       async () => {
         await this.molstarState.renderMolstarForAssemblies(assembly.assemblyId);
       },
-      shouldSkip
+      true
     );
   }
 
@@ -94,7 +91,7 @@ export class AssembliesTabComponent {
       | 'dissociationEntropy'
       | 'symmetryNumber'
       | 'interfaceCount';
-    return this.currentAssemblyDatum()?.additionalData[name as AssembliesAddDataKeys];
+    return this.currentAssemblyDatum()!.additionalData[name as AssembliesAddDataKeys];
   }
 
   public toggleSidebar() {

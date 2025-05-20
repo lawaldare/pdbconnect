@@ -30,36 +30,7 @@ export class OverviewMolstarComponent implements AfterViewInit {
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 
   public isOverviewSectionDisplayed = signal(false);
-
-  public assemblyData = computed(() => this.dataProcessing.preferredAssemblyData());
   public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
-  public molstarOverviewRendered = signal(false);
-
-  constructor() {
-    // effect(async () => {
-    //   const currentTab = this.compCommunication.currentTab();
-    //   if (this.assemblyData() && this.molstarVisualisation.preferredAssemblyId === undefined) {
-    //     const assemblyToUse = this.assemblyData()!.preferred ? this.assemblyData()!.preferred + '' : '1';
-    //     this.molstarVisualisation.preferredAssemblyId = assemblyToUse;
-    //   }
-    //   const hasFinishedFirstRender = this.molstarFirstRenderFinished();
-    //   const isReadyToRender = this.molstarReadyToRender();
-    //   if (currentTab !== 'summary' && currentTab !== 'overview') return;
-    //   if (!hasFinishedFirstRender) return;
-    //   if (!isReadyToRender) return;
-    //   if (this.molstarVisualisation.currentViewName.includes('Overview')) return;
-    //   const newConfig = this.molstarVisualisation.currentConfigName + '';
-    //   if (this.molstarOverviewRendered() == false) {
-    //     this.molstarVisualisation.currentViewName = 'Overview-Preferred Assembly';
-    //     await this.molstarVisualisation.renderOverviewPreferredAssembly();
-    //     this.molstarOverviewRendered.set(true);
-    //   } else if (this.previousMolstarConfig !== newConfig) {
-    //     // if coming from different tab, refresh state
-    //     await this.stateManagement.updateMolstarAccordionSelection(this.stateManagement.currentView);
-    //   }
-    //   this.previousMolstarConfig = this.molstarVisualisation.currentConfigName + '';
-    // });
-  }
 
   async ngAfterViewInit() {
     this.stateManagement.infoControls.set(this.infoControls);

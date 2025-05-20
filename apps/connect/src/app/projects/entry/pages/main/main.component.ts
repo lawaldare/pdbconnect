@@ -137,16 +137,16 @@ export class EntryMainPageComponent implements OnInit {
     });
     effect(async () => {
       // this effect runs only once because of molstarFirstRenderStarted
-      const hasMacromoleculesData = Object.keys(this.compCommunication.tabTableData()).indexOf('Macromolecules') > -1;
-      const hasLigandsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Ligands') > -1;
-      const hasDomainsData = Object.keys(this.compCommunication.tabTableData()).indexOf('Domains') > -1;
+      const hasProcessedMacromoleculesData = this.compCommunication.hasProcessedMacromolecules();
+      const hasProcessedLigandsData = this.compCommunication.hasProcessedLigands();
+      const hasProcessedDomainsData = this.compCommunication.hasProcessedDomains();
 
       if (this.statusCode() !== 'REL') return;
       if (this.molstarFirstRenderStarted()) return;
       if (this.selectedTab() < 0) return;
-      if (!hasMacromoleculesData) return;
-      if (!hasLigandsData) return;
-      if (!hasDomainsData) return;
+      if (!hasProcessedMacromoleculesData) return;
+      if (!hasProcessedLigandsData) return;
+      if (!hasProcessedDomainsData) return;
       if (!this.preferredAssemblyData()) return;
 
       const molstarElement = document.getElementById('molstar-element');
@@ -154,10 +154,9 @@ export class EntryMainPageComponent implements OnInit {
       this.molstarVisualisation.setRenderer(this.renderer);
       this.molstarVisualisation.molstarViewerElement = molstarElement as HTMLElement;
 
-      const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
-      const ligandsRawData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
-      const ligandsData = ligandsRawData.filter((lig) => lig.type === 'ligand');
-      const modificationsData = ligandsRawData.filter((lig) => lig.type === 'modification');
+      const macromoleculesData = this.compCommunication.processedMacromolecules;
+      const ligandsData = this.compCommunication.processedLigands;
+      const modificationsData = this.compCommunication.processedModifications;
 
       this.actionQueue.addAction(
         'init and check molstar',

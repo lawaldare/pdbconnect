@@ -184,16 +184,14 @@ export class MacromoleculesTabComponent {
   public selectionIdentifier = 'None';
   public selectionTypeText?: string;
 
+  public readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$);
+
   public readonly macromoleculeTableRows = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.compCommunication.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Macromolecules') !== -1;
+    const isLoaded = this.compCommunication.hasProcessedAssemblies();
 
-    if (isLoaded && hasData) {
-      const tabData = this.compCommunication.getTabData('Macromolecules');
-
-      const datum = tabData.tableRows() as any[];
-      const mappedDatum = datum.map((data) => {
+    if (isLoaded) {
+      const rows = this.compCommunication.processedMacromolecules;
+      const mappedDatum = rows.map((data) => {
         return {
           ...data,
           mappedResidues: this.detailsDashboardFacade.transformCoverageData(data.residues),
@@ -205,11 +203,16 @@ export class MacromoleculesTabComponent {
     return [];
   });
 
+  private previousDatumIdx?: number;
   public currentMacromoleculeDatum = computed(() => {
-    let selectedIdx = this.compCommunication.tabState()['Macromolecules'] ?? 0;
-    if (selectedIdx === 'Main') selectedIdx = 0;
+    const selectedIdx = this.selectedMacromoleculeIdx() ?? 0;
+    const rows = this.macromoleculeTableRows();
+    const datum = rows[selectedIdx];
+    if (!datum) return;
 
-    const datum = this.macromoleculeTableRows()[selectedIdx as number];
+    if (selectedIdx === this.previousDatumIdx) return datum;
+    this.previousDatumIdx = selectedIdx;
+
     if (datum) {
       this.triggerMacromoleculeUpdateSideEffects(datum);
     }
@@ -285,7 +288,7 @@ export class MacromoleculesTabComponent {
 
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
-    await this.renderVisualisations(macromolecule);
+    if (macromolecule) await this.renderVisualisations(macromolecule);
   }
 
   public openDialog(type: string) {

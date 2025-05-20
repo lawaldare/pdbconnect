@@ -77,24 +77,24 @@ export class DomainsTabComponent {
   public readonly resourceUrls = resourceUrls;
   public readonly entryDomainsTooltips = entryDomainsTooltips;
 
-  public readonly domainTableRows = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.compCommunication.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Domains') !== -1;
+  public readonly selectedDomainIdx = toSignal(this.compCommunication.domainSelection$);
 
-    if (isLoaded && hasData) {
-      const tabData = this.compCommunication.getTabData('Domains');
-      const datum = tabData.tableRows() as any[];
-      return datum;
-    }
-    return [];
+  public readonly domainTableRows = computed(() => {
+    const isLoaded = this.compCommunication.hasProcessedDomains();
+    if (!isLoaded) return [];
+    return this.compCommunication.processedDomainsAsList;
   });
 
+  private previousDatumIdx?: number;
   public currentDomainsDatum = computed(() => {
-    let selectedIdx = this.compCommunication.tabState()['Domains'] ?? 0;
-    if (selectedIdx === 'Main') selectedIdx = 0;
+    const selectedIdx = this.selectedDomainIdx() ?? 0;
+    const rows = this.domainTableRows();
+    const datum = rows[selectedIdx];
+    if (!datum) return;
 
-    const datum = this.domainTableRows()[selectedIdx as number];
+    if (selectedIdx === this.previousDatumIdx) return datum;
+    this.previousDatumIdx = selectedIdx;
+
     if (datum) {
       this.triggerDomainUpdateSideEffects(datum);
     }

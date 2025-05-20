@@ -3,7 +3,7 @@
 
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, map, switchMap, throwError } from 'rxjs';
+import { Observable, catchError, map, of, switchMap, throwError } from 'rxjs';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
 import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
@@ -70,6 +70,9 @@ export class EntryApiService {
           assemblies: datum.assemblies,
           relatedStructures: datum.related_structures,
         };
+      }),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as ProcessedSummary);
       })
     );
   }
@@ -117,19 +120,39 @@ export class EntryApiService {
   }
 
   public getPfamMapping(entryId: string): Observable<PfamMappings> {
-    return this.http.get<Record<string, Record<string, PfamMappings>>>(`${this.MAPPINGS_API}pfam/${entryId}`).pipe(map((data) => data[entryId]['Pfam']));
+    return this.http.get<Record<string, Record<string, PfamMappings>>>(`${this.MAPPINGS_API}pfam/${entryId}`).pipe(
+      map((data) => data[entryId]['Pfam']),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as PfamMappings);
+      })
+    );
   }
 
   public getCATHMapping(entryId: string): Observable<CathMappings> {
-    return this.http.get<Record<string, Record<string, CathMappings>>>(`${this.MAPPINGS_API}cath/${entryId}`).pipe(map((data) => data[entryId]['CATH']));
+    return this.http.get<Record<string, Record<string, CathMappings>>>(`${this.MAPPINGS_API}cath/${entryId}`).pipe(
+      map((data) => data[entryId]['CATH']),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as CathMappings);
+      })
+    );
   }
 
   public getSCOP175Mapping(entryId: string): Observable<ScopMappings> {
-    return this.http.get<Record<string, Record<string, ScopMappings>>>(`${this.MAPPINGS_API}scop/${entryId}`).pipe(map((data) => data[entryId]['SCOP']));
+    return this.http.get<Record<string, Record<string, ScopMappings>>>(`${this.MAPPINGS_API}scop/${entryId}`).pipe(
+      map((data) => data[entryId]['SCOP']),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as ScopMappings);
+      })
+    );
   }
 
   public getModifications(entryId: string): Observable<ModifiedResidue[]> {
-    return this.http.get<Record<string, ModifiedResidue[]>>(`${this.BASE_API}modified_AA_or_NA/${entryId}`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, ModifiedResidue[]>>(`${this.BASE_API}modified_AA_or_NA/${entryId}`).pipe(
+      map((data) => data[entryId]),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as ModifiedResidue[]);
+      })
+    );
   }
 
   public getGalleryMolj(moljDescription: string): Observable<any> {
@@ -179,11 +202,21 @@ export class EntryApiService {
   }
 
   public getPreferredAssembly(entryId: string): Observable<ComplexDetails[]> {
-    return this.http.get<Record<string, ComplexDetails[]>>(`${this.AggregatedApiUrl}complex/details/${entryId}?id_type=pdb_id`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, ComplexDetails[]>>(`${this.AggregatedApiUrl}complex/details/${entryId}?id_type=pdb_id`).pipe(
+      map((data) => data[entryId]),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as ComplexDetails[]);
+      })
+    );
   }
 
   public getAssembly(entryId: string): Observable<AssemblyData[]> {
-    return this.http.get<Record<string, AssemblyData[]>>(`${this.BASE_API}assembly/${entryId}`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, AssemblyData[]>>(`${this.BASE_API}assembly/${entryId}`).pipe(
+      map((data) => data[entryId]),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as AssemblyData[]);
+      })
+    );
   }
 
   public getSymmetry(entryId: string): Observable<Symmetry[]> {
@@ -191,11 +224,21 @@ export class EntryApiService {
   }
 
   public getPisaAssembly(entryId: string, assemblyId: string): Observable<PisaAssembly> {
-    return this.http.get<Record<string, PisaAssembly>>(`https://www.ebi.ac.uk/pdbe/api/pisa/assembly/${entryId}/${assemblyId}`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, PisaAssembly>>(`https://www.ebi.ac.uk/pdbe/api/pisa/assembly/${entryId}/${assemblyId}`).pipe(
+      map((data) => data[entryId]),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as PisaAssembly);
+      })
+    );
   }
 
   public getCarbohydrates(entryId: string): Observable<CarbohydrateMolecule[]> {
-    return this.http.get<Record<string, CarbohydrateMolecule[]>>(`${this.BASE_API}carbohydrate_polymer/${entryId}`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, CarbohydrateMolecule[]>>(`${this.BASE_API}carbohydrate_polymer/${entryId}`).pipe(
+      map((data) => data[entryId]),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as CarbohydrateMolecule[]);
+      })
+    );
   }
 
   // Record<string, BestStructure[]>
@@ -227,6 +270,9 @@ export class EntryApiService {
     return this.http.get<Record<string, { molecules: PolymerCoverageMolecule[] }>>(`${this.BASE_API}polymer_coverage/${entryId}`).pipe(
       map((data) => {
         return data[entryId]['molecules'] || [];
+      }),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as PolymerCoverageMolecule[]);
       })
     );
   }
@@ -235,6 +281,9 @@ export class EntryApiService {
     return this.http.get<Record<string, LigandMonomer[]>>(`${this.BASE_API}ligand_monomers/${entryId}`).pipe(
       map((data) => {
         return data[entryId];
+      }),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as LigandMonomer[]);
       })
     );
   }

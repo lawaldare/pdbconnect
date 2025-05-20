@@ -23,22 +23,21 @@ export class OverviewMolstarFacade {
   public relatedEntries: WritableSignal<string[]> = signal([]);
 
   public processedMacromolecules = computed(() => {
-    const hasMacromoleculesData = Object.keys(this.signals.tabTableData()).indexOf('Macromolecules') > -1;
+    const hasMacromoleculesData = this.signals.hasProcessedMacromolecules();
     if (!hasMacromoleculesData) return [];
-    return this.signals.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
+    return this.signals.processedMacromolecules;
   });
 
   public processedLigands = computed(() => {
-    const hasLigandsData = Object.keys(this.signals.tabTableData()).indexOf('Ligands') > -1;
+    const hasLigandsData = this.signals.hasProcessedLigands();
     if (!hasLigandsData) return [];
-    const data = this.signals.getTabData('Ligands').tableRows() as LigandsRowData[];
-    return data.filter((datum) => datum.type === 'ligand');
+    return this.signals.processedLigands;
   });
+
   public processedModifications = computed(() => {
-    const hasLigandsData = Object.keys(this.signals.tabTableData()).indexOf('Ligands') > -1;
+    const hasLigandsData = this.signals.hasProcessedLigands();
     if (!hasLigandsData) return [];
-    const data = this.signals.getTabData('Ligands').tableRows() as LigandsRowData[];
-    return data.filter((datum) => datum.type === 'modification');
+    return this.signals.processedModifications;
   });
 
   public currentDomainResource = signal<string>('CATH');
@@ -56,39 +55,23 @@ export class OverviewMolstarFacade {
   });
 
   public processedDomainsAsList = computed(() => {
-    const hasDomainsData = Object.keys(this.signals.tabTableData()).indexOf('Domains') > -1;
+    const hasDomainsData = this.signals.hasProcessedDomains();
     if (!hasDomainsData) return [];
-    return this.signals.getTabData('Domains').tableRows() as DomainsRowData[];
+    return this.signals.processedDomainsAsList;
   });
 
   public processedDomains = computed(() => {
-    const hasMacromoleculesData = Object.keys(this.signals.tabTableData()).indexOf('Macromolecules') > -1;
-    const hasDomainsData = Object.keys(this.signals.tabTableData()).indexOf('Domains') > -1;
-    if (!hasMacromoleculesData && !hasDomainsData) return [];
-
-    const macromoleculesData = this.signals.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
-    const domainsData = this.signals.getTabData('Domains').tableRows() as DomainsRowData[];
-
-    const nestedMap = new Map<number, { macromolecule: MacromoleculesRowData; domains: DomainsRowData[] }>();
-
-    for (const domain of domainsData) {
-      const macromolecule = getMacromoleculeOfDomain(domain, macromoleculesData);
-      const entityId = macromolecule?.additionalData?.molecule.entity_id;
-
-      if (!nestedMap.has(entityId)) {
-        nestedMap.set(entityId, { macromolecule, domains: [] });
-      }
-      nestedMap.get(entityId)!.domains.push(domain);
-    }
-
-    return Array.from(nestedMap.values());
+    const hasMacromoleculesData = this.signals.hasProcessedMacromolecules();
+    const hasDomainsData = this.signals.hasProcessedDomains();
+    if (!hasMacromoleculesData || !hasDomainsData) return [];
+    return this.signals.processedDomains;
   });
 
   constructor() {
     effect(() => {
-      const hasDomainsData = Object.keys(this.signals.tabTableData()).indexOf('Domains') > -1;
+      const hasDomainsData = this.signals.hasProcessedDomains();
       if (hasDomainsData) {
-        const domainsData = this.signals.getTabData('Domains').tableRows() as DomainsRowData[];
+        const domainsData = this.signals.processedDomainsAsList;
         const domainCount = domainsData.length;
 
         const countByResource: { [key: string]: number } = { CATH: 0, Pfam: 0, SCOP: 0 };
@@ -131,44 +114,4 @@ export class OverviewMolstarFacade {
       )
       .subscribe();
   }
-
-  public preferredAssemblyData = computed(() => {
-    const summaryData = this.summaryData();
-    const complexDetails = this.complexDetails();
-    if (summaryData && complexDetails) {
-      let preferredAssemblyId = undefined;
-
-      const hasAssemblies = Object.keys(summaryData).indexOf('assemblies') > -1;
-      if (!hasAssemblies) return undefined;
-
-      for (const complexDetail of complexDetails) {
-        for (const assemblyInfo of complexDetail.assemblies) {
-          if (assemblyInfo.preferred_assembly) {
-            preferredAssemblyId = assemblyInfo.assembly_id;
-
-            const summaryAssembly =
-              summaryData.assemblies.filter((summaryAssembly) => {
-                return summaryAssembly.assembly_id === assemblyInfo.assembly_id + '';
-              })[0] || undefined;
-
-            let composition = undefined;
-            if (summaryAssembly) {
-              composition = summaryAssembly.form + ' ' + summaryAssembly.name;
-              composition = summaryAssembly.name === 'monomer' ? 'monomeric' : composition;
-            }
-
-            return {
-              name: complexDetail.name,
-              preferred: preferredAssemblyId,
-              composition: composition,
-              complexId: complexDetail.pdb_complex_id,
-            };
-            break;
-          }
-        }
-        if (preferredAssemblyId) break;
-      }
-    }
-    return undefined;
-  });
 }

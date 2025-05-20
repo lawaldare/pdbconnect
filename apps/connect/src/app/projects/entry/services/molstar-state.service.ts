@@ -55,8 +55,6 @@ export class MolstarStateService {
   }
 
   public async renderMolstarForModelQuality() {
-    await this.molstarVisualisation.checkModelQualityReady();
-
     const issueType = this.modelQualityValidationType();
     const specificIssue = this.modelQualitySpecificIssueKind();
 
@@ -69,6 +67,7 @@ export class MolstarStateService {
     }
     if (this.molstarVisualisation.currentViewName === displayName) return;
     this.molstarVisualisation.currentViewName = displayName;
+    await this.molstarVisualisation.checkModelQualityReady();
 
     if (issueType === 'issue_count') {
       await this.molstarVisualisation.renderModelQualityAllIssues(
@@ -83,6 +82,11 @@ export class MolstarStateService {
 
   public async renderMolstarForAssemblies(assemblyId?: string) {
     if (assemblyId === undefined) assemblyId = '1';
+
+    const displayName = `Tab-Assemblies/${assemblyId}`;
+
+    if (this.molstarVisualisation.currentViewName === displayName) return;
+    this.molstarVisualisation.currentViewName = displayName;
     await this.molstarVisualisation.checkAssembliesReady(assemblyId, true);
 
     // if Assemblies config not loaded, load it
@@ -90,11 +94,6 @@ export class MolstarStateService {
       const symmetryView = true;
       await this.molstarVisualisation.checkAssembliesReady(assemblyId, symmetryView);
     }
-
-    const displayName = `Tab-Assemblies/${assemblyId}`;
-
-    if (this.molstarVisualisation.currentViewName === displayName) return;
-    this.molstarVisualisation.currentViewName = displayName;
 
     await this.molstarVisualisation.renderTabsAssemblies();
   }
@@ -104,7 +103,6 @@ export class MolstarStateService {
   }
 
   public async renderMolstarForMacromolecules(macromolecule: MacromoleculesRowData, selection: MolstarSelectionObj) {
-    await this.molstarVisualisation.checkMacromoleculesReady();
     const entityId = selection.entityId;
     const chainId = selection.authChainId;
 
@@ -113,31 +111,32 @@ export class MolstarStateService {
     if (this.molstarVisualisation.currentViewName === displayName) return;
     this.molstarVisualisation.currentViewName = displayName;
     this.lastMolstarSelection = selection;
+    await this.molstarVisualisation.checkMacromoleculesReady();
 
     await this.molstarVisualisation.renderTabsMacromolecules(macromolecule, selection);
   }
 
   public async renderMolstarForLigands(entryId: string, ligand: LigandsRowData, selection: MolstarSelectionObj) {
-    await this.molstarVisualisation.checkLigandsReady();
     // retrieve necessary data for composing ligands and environments URL
-    let urlToDownload = '';
+    const urlToDownload = '';
     const entityId = selection.entityId;
     const chainId = selection.authChainId;
     const residueId = selection.residues[0].authBegin;
 
-    // create URL according to whether a modification or a ligand is selected
-    if (ligand.type === 'modification') {
-      urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${entryId}/atoms?label_entity_id=${entityId}&auth_asym_id=${chainId}&encoding=bcif`;
-    } else {
-      const authSeqId = selection.residues[0].authBegin;
-      const authInsCode = selection.residues[0].authBeginIns;
-      urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${entryId}/residueSurroundings?auth_seq_id=${authSeqId}&pdbx_PDB_ins_code=${authInsCode}&auth_asym_id=${chainId}&radius=10&encoding=bcif`;
-    }
+    // // create URL according to whether a modification or a ligand is selected
+    // if (ligand.type === 'modification') {
+    //   urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${entryId}/atoms?label_entity_id=${entityId}&auth_asym_id=${chainId}&encoding=bcif`;
+    // } else {
+    //   const authSeqId = selection.residues[0].authBegin;
+    //   const authInsCode = selection.residues[0].authBeginIns;
+    //   urlToDownload = `https://www.ebi.ac.uk/pdbe/model-server/v1/${entryId}/residueSurroundings?auth_seq_id=${authSeqId}&pdbx_PDB_ins_code=${authInsCode}&auth_asym_id=${chainId}&radius=10&encoding=bcif`;
+    // }
     const displayName = `Tab-Ligands/${ligand.id}-${entityId}-${chainId}-${residueId}`;
 
     if (this.molstarVisualisation.currentViewName === displayName) return;
     this.molstarVisualisation.currentViewName = displayName;
     this.lastMolstarSelection = selection;
+    await this.molstarVisualisation.checkLigandsReady();
 
     // since URL based force Ligands config reload with forceReset: true
     // await this.molstarVisualisation.checkLigandsReady(urlToDownload, true);
@@ -165,13 +164,12 @@ export class MolstarStateService {
   }
 
   public async renderMolstarForDomains(domain: DomainsRowData) {
-    await this.molstarVisualisation.checkDomainsReady();
-
     const displayName = `Tab-Domains/${domain.domain}_${domain.segmentsAsText}`;
 
     if (this.molstarVisualisation.currentViewName === displayName) return;
     this.molstarVisualisation.currentViewName = displayName;
     this.lastMolstarSelection = domain.additionalData.selections[0];
+    await this.molstarVisualisation.checkDomainsReady();
 
     // domains always have single selection
     await this.molstarVisualisation.renderTabsDomains(domain.additionalData.selections[0]);

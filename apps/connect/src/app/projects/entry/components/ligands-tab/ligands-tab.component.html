@@ -1,4 +1,4 @@
-@if(tabDataLoaded()){ @if(ligandTableRows().length){
+@if(tabDataLoaded()){ @if(ligandTableRows().length && currentLigandDatum()){
 <main [class.change-display]="!isSidebarDisplayed()">
   @if(isSidebarDisplayed()){
   <pdbc-interactive-tables tabName="Ligands" />
@@ -10,14 +10,14 @@
       <span>{{text}}</span>
     </button>
 
-    <h5 class="ligands-title">{{ currentLigandDatum()?.codeAndName?.name }}</h5>
+    <h5 class="ligands-title">{{ currentLigandDatum()!.codeAndName.name }}</h5>
     <div class="info">
       <div class="info-grouped" style="width: 50%">
         <div class="info-row">
           <span class="micro-title"> Ligand name </span>
-          <article>{{ currentLigandDatum()?.codeAndName?.name }}</article>
+          <article>{{ currentLigandDatum()!.codeAndName.name }}</article>
         </div>
-        @let boundDetails = currentLigandDatum()?.additionalData?.source?.bound_details ?? undefined; @if(boundDetails && boundDetails?.[0]?.synonyms.length){
+        @let boundDetails = ligandBoundDetails() ?? undefined; @if(boundDetails && boundDetails?.[0]?.synonyms.length){
         <div class="info-row">
           <span class="micro-title"> Synonyms </span>
           <article libTruncateText [truncateText]="mapSynonyms(boundDetails[0].synonyms)" [limit]="53">
@@ -33,11 +33,12 @@
           <span class="micro-title"> Formula </span>
           <article class="formula">{{ boundDetails[0]?.formula }}</article>
         </div>
-        }
+        } @if (ligandWeight()) {
         <div class="info-row">
           <span class="micro-title"> Molecular weight </span>
-          <article>{{ currentLigandDatum()?.additionalData?.source?.weight }} KDa</article>
+          <article>{{ ligandWeight() }} KDa</article>
         </div>
+        }
       </div>
     </div>
     <div class="stats-link-bar">
@@ -66,6 +67,7 @@
       }@else {}
     </div>
     <section class="ligand-charts">
+      @if (interactionsRowData()) {
       <div class="table">
         <p class="table-title">Ligand interactions - {{interactionsRowData()?.length}} total</p>
         <div class="table-toolbar">
@@ -95,6 +97,7 @@
           />
         </section>
       </div>
+      }
 
       <section class="molstar-lig-env">
         <section class="molstar-details-container">

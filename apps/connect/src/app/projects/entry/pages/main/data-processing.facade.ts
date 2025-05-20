@@ -21,6 +21,13 @@ import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { FlatOutlierResidue } from '../../components/model-quality-tab/validation-data.facade';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { Molecule } from '../../data-models/molecule.model';
+import {
+  AssembliesRowData,
+  DomainsRowData,
+  LigandsRowData,
+  MacromoleculesRowData,
+} from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { getMacromoleculeOfDomain } from '../../helpers/processed-data-to-controls';
 
 export type OutliersByModelId = Record<
   string,
@@ -42,7 +49,14 @@ export class MainDataProcessingFacade {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly destroyRef = inject(DestroyRef);
 
-  public tabDataLoaded = signal<boolean>(false);
+  public tabDataLoaded = computed(() => {
+    return (
+      this.compCommunication.hasProcessedAssemblies() &&
+      this.compCommunication.hasProcessedLigands() &&
+      this.compCommunication.hasProcessedDomains() &&
+      this.compCommunication.hasProcessedMacromolecules()
+    );
+  });
   public tableData = signal<DataToTable>({} as DataToTable);
   private tabName = signal<TableNames>('' as TableNames);
 
@@ -63,6 +77,19 @@ export class MainDataProcessingFacade {
     return true;
   }
 
+  public isNotEmptyObj(datum: any) {
+    if (datum.empty) return false;
+    return true;
+  }
+
+  public anyIsEmptyObj(data: any[]) {
+    for (const datum of data) {
+      if (datum === undefined) return false;
+      if (datum.empty) return true;
+    }
+    return false;
+  }
+
   public setTabName(tabName: TableNames) {
     this.tabName.set(tabName);
   }
@@ -79,9 +106,9 @@ export class MainDataProcessingFacade {
       );
 
     combineLatest({
-      complexDetails: createSelectorStream(EntrySelectors.complexDetails, []),
-      assemblyData: createSelectorStream(EntrySelectors.assemblies, []),
-      pisaAssemblyData: createSelectorStream(EntrySelectors.pisaAssemblies, []),
+      complexDetails: createSelectorStream(EntrySelectors.complexDetails, undefined),
+      assemblyData: createSelectorStream(EntrySelectors.assemblies, undefined),
+      pisaAssemblyData: createSelectorStream(EntrySelectors.pisaAssemblies, undefined),
       pfamMappings: createSelectorStream(EntrySelectors.pfamMapping, null),
       cathMappings: createSelectorStream(EntrySelectors.cathMapping, null),
       scopMappings: createSelectorStream(EntrySelectors.scop175Mapping, null),
@@ -98,88 +125,192 @@ export class MainDataProcessingFacade {
     })
       .pipe(
         retry({ count: 3, delay: 1000 }),
-        tap((data) => this.processTableData(data)),
+        tap((data) => {
+          if (!this.compCommunication.hasProcessedAssemblies()) {
+            this.processAssembliesData(data);
+          }
+          if (!this.compCommunication.hasPreProcessedDomains()) {
+            this.processDomainsData(data);
+          }
+          if (!this.compCommunication.hasProcessedLigands()) {
+            this.processLigandsData(data);
+          }
+          if (!this.compCommunication.hasProcessedMacromolecules()) {
+            this.processMacromoleculesData(data);
+          }
+          this.processTableData(data);
+        }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
   }
 
-  private processTableData(data: any) {
-    for (const tabName of [TabNames.Assemblies, TabNames.Domains, TabNames.Ligands, TabNames.Macromolecules]) {
-      let tempTableData: DataToTable;
+  private processAssembliesData(data: any) {
+    const tabName = TabNames.Assemblies;
+    if (
+      this.isNotUndefined([data.summaryData, data.complexDetails, data.assemblyData, data.pisaAssemblyData]) &&
+      Object.keys(data.summaryData).length > 0 &&
+      data.complexDetails.length > 0 &&
+      data.assemblyData.length > 0 &&
+      data.pisaAssemblyData.length > 0
+    ) {
+      const tempTableData = new AssemblyDataToTable(data.summaryData, data.complexDetails, data.assemblyData, data.pisaAssemblyData);
+      tempTableData.generateTableData();
+      tempTableData.generateTableFilters();
+      this.compCommunication.setTabData(tabName, tempTableData);
 
-      if (
-        tabName === TabNames.Assemblies &&
-        this.isNotUndefined([data.summaryData, data.complexDetails, data.assemblyData, data.pisaAssemblyData]) &&
-        Object.keys(data.summaryData).length > 0
-      ) {
-        tempTableData = new AssemblyDataToTable(data.summaryData, data.complexDetails, data.assemblyData, data.pisaAssemblyData);
-      } else if (
-        tabName === TabNames.Domains &&
-        this.isNotUndefined([
-          data.pfamMappings,
-          data.cathMappings,
-          data.scopMappings,
-          data.macromolecules,
-          data.polymerCoverage,
-          data.summaryData,
-          data.assemblyData,
-        ]) &&
-        Object.keys(data.summaryData).length > 0
-      ) {
-        tempTableData = new DomainDataToTable(
-          data.pfamMappings!,
-          data.cathMappings!,
-          data.scopMappings!,
-          data.macromolecules,
-          data.polymerCoverage,
-          data.summaryData,
-          data.assemblyData
-        );
-      } else if (
-        tabName === TabNames.Ligands &&
-        this.isNotUndefined([data.ligands, data.modifications, data.ligandMonomers, data.summaryData, data.assemblyData]) &&
-        Object.keys(data.summaryData).length > 0
-      ) {
-        tempTableData = new LigandDataToTable(data.ligands, data.modifications, data.ligandMonomers, data.summaryData, data.assemblyData);
-      } else if (
-        tabName === TabNames.Macromolecules &&
-        this.isNotUndefined([
-          data.carbohydrates,
-          data.uniprotMapping,
-          data.bestStrMapUniProtId,
-          data.macromolecules,
-          data.polymerCoverage,
-          data.summaryData,
-          data.assemblyData,
-        ]) &&
-        Object.keys(data.summaryData).length > 0
-      ) {
-        tempTableData = new MacromoleculeDataToTable(
-          data.carbohydrates,
-          data.uniprotMapping!,
-          data.bestStrMapUniProtId!,
-          data.macromolecules,
-          data.polymerCoverage,
-          data.summaryData,
-          data.assemblyData
-        );
-      } else {
-        continue;
+      const rows = tempTableData.tableRows() as AssembliesRowData[];
+      this.compCommunication.processedAssemblies = rows;
+
+      this.compCommunication.hasProcessedAssemblies.set(true);
+    } else if (this.isNotUndefined([data.summaryData, data.complexDetails, data.assemblyData, data.pisaAssemblyData])) {
+      this.compCommunication.hasProcessedAssemblies.set(true);
+    }
+  }
+
+  private processDomainsData(data: any) {
+    const tabName = TabNames.Domains;
+    if (
+      this.isNotUndefined([
+        data.pfamMappings,
+        data.cathMappings,
+        data.scopMappings,
+        data.macromolecules,
+        data.polymerCoverage,
+        data.summaryData,
+        data.assemblyData,
+      ]) &&
+      Object.keys(data.summaryData).length > 0 &&
+      data.assemblyData.length > 0 &&
+      data.macromolecules.length > 0 &&
+      data.polymerCoverage.length > 0 &&
+      ((Object.keys(data.pfamMappings).length > 0 && this.isNotEmptyObj(data.pfamMappings)) ||
+        (Object.keys(data.cathMappings).length > 0 && this.isNotEmptyObj(data.cathMappings)) ||
+        (Object.keys(data.scopMappings).length > 0 && this.isNotEmptyObj(data.scopMappings)))
+    ) {
+      if (<any>data.pfamMappings.empty === true) data.pfamMappings = {};
+      if (<any>data.cathMappings.empty === true) data.cathMappings = {};
+      if (<any>data.scopMappings.empty === true) data.scopMappings = {};
+      const tempTableData = new DomainDataToTable(
+        data.pfamMappings!,
+        data.cathMappings!,
+        data.scopMappings!,
+        data.macromolecules,
+        data.polymerCoverage,
+        data.summaryData,
+        data.assemblyData
+      );
+      tempTableData.generateTableData();
+      tempTableData.generateTableFilters();
+      this.compCommunication.setTabData(tabName, tempTableData);
+      const rows = tempTableData.tableRows() as DomainsRowData[];
+      this.compCommunication.processedDomainsAsList = rows;
+      this.compCommunication.hasPreProcessedDomains.set(true);
+      if (this.compCommunication.hasProcessedMacromolecules()) {
+        this.processDomainsWithMacromolecules(this.compCommunication.processedMacromolecules, this.compCommunication.processedDomainsAsList);
       }
+    } else if (
+      this.isNotUndefined([data.pfamMappings, data.cathMappings, data.scopMappings, data.macromolecules, data.polymerCoverage, data.summaryData, data.assemblyData])
+    ) {
+      this.compCommunication.hasProcessedDomains.set(true);
+      this.compCommunication.hasPreProcessedDomains.set(true);
+    }
+  }
+
+  private processDomainsWithMacromolecules(macromoleculesData: MacromoleculesRowData[], domainsData: DomainsRowData[]) {
+    const nestedMap = new Map<number, { macromolecule: MacromoleculesRowData; domains: DomainsRowData[] }>();
+
+    for (const domain of domainsData) {
+      const macromolecule = getMacromoleculeOfDomain(domain, macromoleculesData);
+      const entityId = macromolecule?.additionalData?.molecule.entity_id;
+
+      if (!nestedMap.has(entityId)) {
+        nestedMap.set(entityId, { macromolecule, domains: [] });
+      }
+      nestedMap.get(entityId)!.domains.push(domain);
+    }
+
+    this.compCommunication.processedDomains = Array.from(nestedMap.values());
+    this.compCommunication.hasProcessedDomains.set(true);
+  }
+
+  private processLigandsData(data: any) {
+    const tabName = TabNames.Ligands;
+    if (
+      this.isNotUndefined([data.ligands, data.modifications, data.ligandMonomers, data.summaryData, data.assemblyData]) &&
+      Object.keys(data.summaryData).length > 0 &&
+      data.assemblyData.length > 0 &&
+      (data.modifications.length > 0 || (data.ligands.length > 0 && data.ligandMonomers.length > 0))
+    ) {
+      if (<any>data.ligands.empty === true) data.ligands = [];
+      if (<any>data.ligandMonomers.empty === true) data.ligandMonomers = [];
+      if (<any>data.modifications.empty === true) data.modifications = [];
+
+      const tempTableData = new LigandDataToTable(data.ligands, data.modifications, data.ligandMonomers, data.summaryData, data.assemblyData);
 
       tempTableData.generateTableData();
       tempTableData.generateTableFilters();
       this.compCommunication.setTabData(tabName, tempTableData);
+
+      const rows = tempTableData.tableRows() as LigandsRowData[];
+      this.compCommunication.processedLigandsAndModifications = rows;
+      this.compCommunication.processedLigands = rows.filter((row) => row.type === 'ligand');
+      this.compCommunication.processedModifications = rows.filter((row) => row.type === 'modification');
+
+      this.compCommunication.hasProcessedLigands.set(true);
+    } else if (this.isNotUndefined([data.ligands, data.modifications, data.ligandMonomers, data.summaryData, data.assemblyData])) {
+      this.compCommunication.hasProcessedLigands.set(true);
     }
+  }
 
-    this.compCommunication.isTabDataGenerated.set(true);
-    this.tabDataLoaded.set(true);
-    this.tableData.set(this.compCommunication.getTabData(this.tabName()));
+  private processMacromoleculesData(data: any) {
+    const tabName = TabNames.Macromolecules;
+    if (
+      this.isNotUndefined([data.carbohydrates, data.macromolecules, data.polymerCoverage, data.summaryData, data.assemblyData]) &&
+      Object.keys(data.summaryData).length > 0 &&
+      data.macromolecules.length > 0 &&
+      data.assemblyData.length > 0
+    ) {
+      if (<any>data.carbohydrates.empty === true) data.carbohydrates = [];
+      if (<any>data.polymerCoverage.empty === true) data.polymerCoverage = [];
 
+      const tempTableData = new MacromoleculeDataToTable(
+        data.carbohydrates,
+        data.uniprotMapping!,
+        data.bestStrMapUniProtId!,
+        data.macromolecules,
+        data.polymerCoverage,
+        data.summaryData,
+        data.assemblyData
+      );
+
+      tempTableData.generateTableData();
+      tempTableData.generateTableFilters();
+      this.compCommunication.setTabData(tabName, tempTableData);
+
+      const rows = tempTableData.tableRows() as MacromoleculesRowData[];
+      this.compCommunication.processedMacromolecules = rows;
+
+      this.compCommunication.hasProcessedMacromolecules.set(true);
+      if (this.compCommunication.hasPreProcessedDomains()) {
+        this.processDomainsWithMacromolecules(this.compCommunication.processedMacromolecules, this.compCommunication.processedDomainsAsList);
+      }
+    } else if (this.isNotUndefined([data.carbohydrates, data.macromolecules, data.polymerCoverage, data.summaryData, data.assemblyData])) {
+      this.compCommunication.hasProcessedMacromolecules.set(true);
+    }
+  }
+
+  private processTableData(data: any) {
     let preferredAssemblyData = undefined;
-    if (this.isNotUndefined([data.complexDetails, data.summaryData])) {
+    if (this.isNotUndefined([data.complexDetails, data.summaryData]) && Object.keys(data.summaryData).length > 0 && data.complexDetails.length > 0) {
       preferredAssemblyData = this.processPreferredAssemblyData(data.summaryData, data.complexDetails);
+    } else if (this.anyIsEmptyObj([data.complexDetails, data.summaryData])) {
+      preferredAssemblyData = {
+        name: 'Undefined',
+        preferred: 1,
+        composition: undefined,
+        complexId: undefined,
+      };
     }
     this.compCommunication.preferredAssemblyData.set(preferredAssemblyData);
 
