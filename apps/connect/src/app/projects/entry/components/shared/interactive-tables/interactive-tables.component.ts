@@ -54,7 +54,7 @@ export class InteractiveTablesComponent implements OnChanges {
     const mappedTableRows = tableData.tableRows().map((row: any, index) => ({
       ...row,
       index,
-      annotations: this.ligandsTabService.ligandMonomers()[row.id] ?? [],
+      annotations: this.getAnnotations(row.id),
       isModified: this.ligandsTabService.modifications()?.find((e) => e === row.id) ? true : false,
     }));
     this.mappedTableRows.update(() => mappedTableRows);
@@ -70,6 +70,13 @@ export class InteractiveTablesComponent implements OnChanges {
     );
     this.selectedFilter.set(this.filters()[0]);
     this.loadSelectionFromTable(0);
+  }
+
+  private getAnnotations(id: any) {
+    if (!this.ligandsTabService.ligandMonomers()) return [];
+    const item = this.ligandsTabService.ligandMonomers()[id];
+    if (!item) return [];
+    return item;
   }
 
   onCardClick(card: any): void {

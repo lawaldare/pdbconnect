@@ -270,6 +270,9 @@ export class EntryMainPageComponent implements OnInit {
       this.actionQueue.addAction(
         'renderMolstarForAssemblies-first-assembly',
         async () => {
+          const assembliesData = this.compCommunication.processedAssemblies;
+          if (assembliesData.length === 0) return;
+
           await this.molstarState.renderMolstarForAssemblies();
         },
         skippable // skippable
@@ -279,7 +282,8 @@ export class EntryMainPageComponent implements OnInit {
       this.actionQueue.addAction(
         `renderMolstarForMacromolecules-first-macromolecule`,
         async () => {
-          const macromoleculesData = this.compCommunication.getTabData('Macromolecules').tableRows() as MacromoleculesRowData[];
+          const macromoleculesData = this.compCommunication.processedMacromolecules;
+          if (macromoleculesData.length === 0) return;
 
           // this is because we always reset to first macromolecule on tab switch (no state kept)
           const firstMacromolecule = macromoleculesData[0];
@@ -294,7 +298,8 @@ export class EntryMainPageComponent implements OnInit {
       this.actionQueue.addAction(
         `renderMolstarForLigands-first-ligand`,
         async () => {
-          const ligandsData = this.compCommunication.getTabData('Ligands').tableRows() as LigandsRowData[];
+          const ligandsData = this.compCommunication.processedLigandsAndModifications;
+          if (ligandsData.length === 0) return;
 
           // this is because we always reset to first ligand on tab switch (no state kept)
           const firstLigand = ligandsData[0];
@@ -309,7 +314,8 @@ export class EntryMainPageComponent implements OnInit {
       this.actionQueue.addAction(
         `renderMolstarForDomains-first-domain`,
         async () => {
-          const domainsData = this.compCommunication.getTabData('Domains').tableRows() as DomainsRowData[];
+          const domainsData = this.compCommunication.processedDomainsAsList;
+          if (domainsData.length === 0) return;
 
           // this is because we always reset to first domain on tab switch (no state kept)
           const firstDomain = domainsData[0];
