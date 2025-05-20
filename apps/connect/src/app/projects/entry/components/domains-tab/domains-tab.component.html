@@ -11,9 +11,9 @@
     </button>
 
     <h5 class="domain-title">
-      <strong>{{currentDomainsDatum()?.accessionName}}</strong> (<strong>{{currentDomainsDatum()?.resource}}</strong>
-      <a [href]="resourceUrls[currentDomainsDatum().resource] + currentDomainsDatum()?.additionalData?.accession" target="_blank"
-        >{{currentDomainsDatum()?.additionalData?.accession}}</a
+      <strong>{{currentDomainsDatum()!.accessionName}}</strong> (<strong>{{currentDomainsDatum()!.resource}}</strong>
+      <a [href]="resourceUrls[currentDomainsDatum()!.resource] + currentDomainsDatum()!.additionalData.accession" target="_blank"
+        >{{currentDomainsDatum()!.additionalData.accession}}</a
       >)
     </h5>
     <section class="domain-info">
@@ -23,7 +23,7 @@
             Description
             <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.description" />
           </span>
-          <article>{{currentDomainsDatum()?.accessionName}}</article>
+          <article>{{currentDomainsDatum()!.accessionName}}</article>
         </div>
         <div class="info-row">
           <span>
@@ -31,15 +31,15 @@
             <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.sourceDomainAccession" />
           </span>
           <article>
-            {{currentDomainsDatum()?.resource}}
-            <a [href]="resourceUrls[currentDomainsDatum().resource] + currentDomainsDatum()?.additionalData?.accession" target="_blank"
-              >{{currentDomainsDatum()?.additionalData?.accession}}</a
+            {{currentDomainsDatum()!.resource}}
+            <a [href]="resourceUrls[currentDomainsDatum()!.resource] + currentDomainsDatum()!.additionalData.accession" target="_blank"
+              >{{currentDomainsDatum()!.additionalData.accession}}</a
             >
           </article>
         </div>
         <div class="info-row">
           <span> Molecule name </span>
-          <article>{{currentDomainsDatum()?.moleculeNames[0]}}</article>
+          <article>{{currentDomainsDatum()!.moleculeNames[0]}}</article>
         </div>
       </div>
       <div class="domain-info-grouped">
@@ -48,7 +48,7 @@
             Domain name
             <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.domainName" />
           </span>
-          <article>{{currentDomainsDatum()?.domain}}</article>
+          <article>{{currentDomainsDatum()!.domain}}</article>
         </div>
 
         <div class="info-row">
@@ -57,7 +57,7 @@
             <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.authorSegments" />
           </span>
           <article>
-            Chain @for(chain of currentDomainsDatum()?.segments; track chain; let islast = $last) {
+            Chain @for(chain of currentDomainsDatum()!.segments; track chain; let islast = $last) {
             <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
           </article>
         </div>
@@ -67,14 +67,14 @@
             <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.segments" />
           </span>
           <article>
-            Chain @for(chain of currentDomainsDatum()?.additionalData?.segmentsResidNumbers; track chain; let islast = $last) {
+            Chain @for(chain of currentDomainsDatum()!.additionalData.segmentsResidNumbers; track chain; let islast = $last) {
             <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
           </article>
         </div>
       </div>
     </section>
     <div class="chains">
-      Chain @for(chain of currentDomainsDatum()?.mappedboundaries; track chain; let islast = $last){
+      Chain @for(chain of currentDomainsDatum()!.mappedboundaries; track chain; let islast = $last){
       <span>{{chain}}</span>{{ islast ? '' : ',' }} }
     </div>
     @if (sequenceDetails.length > 0) {

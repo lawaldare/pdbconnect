@@ -43,7 +43,7 @@ export class OverviewMolstarTabListViewComponent {
   public processedModifications = this.dataProcessing.processedModifications;
 
   //  data used in template for assembly
-  public assemblyData = computed(() => this.dataProcessing.preferredAssemblyData());
+  public assemblyData = computed(() => this.compCommunication.preferredAssemblyData());
   public entryContentsDescription = computed(() => this.compCommunication.descriptions()?.entryContentsDescription);
   public macromoleculesDescription = computed(() => this.compCommunication.descriptions()?.macromoleculesDescription);
 
@@ -84,7 +84,7 @@ export class OverviewMolstarTabListViewComponent {
     return hasRelatedEntries;
   });
 
-  public preferredAssemblyId = computed(() => this.dataProcessing.preferredAssemblyData()?.preferred);
+  public preferredAssemblyId = computed(() => this.compCommunication.preferredAssemblyData()?.preferred);
 
   public domainCount = this.dataProcessing.domainCount;
   public currentDomainResource = this.dataProcessing.currentDomainResource() || 'CATH';

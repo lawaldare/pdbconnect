@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, effect, ElementRef, inject, linkedSignal, Renderer2, signal, ViewChild, OnInit } from '@angular/core';
+import { Component, computed, DestroyRef, effect, ElementRef, inject, linkedSignal, Renderer2, signal, ViewChild, OnInit, Signal } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
@@ -9,8 +9,8 @@ import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
 import { dashboardStatLinks, INTX_NAME_COLORS } from '../../entry-constant';
-import { firstValueFrom, map, timer } from 'rxjs';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { filter, first, firstValueFrom, map, timer } from 'rxjs';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
@@ -29,6 +29,7 @@ import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { Interaction } from '../../data-models/interaction.model';
 import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar';
+import { Molecule } from '../../data-models/molecule.model';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -52,6 +53,8 @@ export class LigandsTabComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly molstarState = inject(MolstarStateService);
   public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
+  readonly molstarReady$ = toObservable(this.molstarFirstRenderFinished);
+
   private readonly actionQueue = inject(ActionQueueService);
 
   public readonly dataProcessing = inject(MainDataProcessingFacade);
@@ -69,17 +72,28 @@ export class LigandsTabComponent implements OnInit {
   public readonly isSidebarDisplayed = signal<boolean>(true);
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
-  public readonly ligandTableRows = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.compCommunication.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Ligands') !== -1;
+  public readonly selectedLigandIdx = toSignal(this.compCommunication.ligandSelection$);
 
-    if (isLoaded && hasData) {
-      const tabData = this.compCommunication.getTabData('Ligands');
-      const datum = tabData.tableRows() as any[];
-      return datum;
+  public readonly ligandTableRows = computed(() => {
+    const isLoaded = this.compCommunication.hasProcessedLigands();
+    if (!isLoaded) return [];
+    return this.compCommunication.processedLigandsAndModifications;
+  });
+
+  private previousDatumIdx?: number;
+  public currentLigandDatum = computed(() => {
+    const selectedIdx = this.selectedLigandIdx() ?? 0;
+    const rows = this.ligandTableRows();
+    const datum = rows[selectedIdx];
+    if (!datum) return;
+
+    if (selectedIdx === this.previousDatumIdx) return datum;
+    this.previousDatumIdx = selectedIdx;
+
+    if (datum) {
+      this.triggerLigandUpdateSideEffects(datum);
     }
-    return [];
+    return datum;
   });
 
   public selectionIdentifier = 'None';
@@ -99,39 +113,41 @@ export class LigandsTabComponent implements OnInit {
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly interactionsObservable = this.globalStore.select(EntrySelectors.interactions);
   public readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
+
   public readonly isInitialInteractionsMoreThanOne = computed(() => {
     const interaction = this.interactions();
     return interaction && interaction.length > 1;
   });
 
   public searchTerm = new FormControl('');
+  private noTermFiltering = signal<boolean>(false);
 
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
-  public interactionsRowData = linkedSignal({
-    source: this.interactions,
-    computation: () => {
-      const interactions = this.interactions();
-      this.triggerLigandInteractionsSideEffects(interactions);
-      return this.interactions();
-    },
-  });
+
+  public interactionsRowData = signal<Interaction[] | undefined>(undefined);
 
   public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
   public selectionStats: { [key: string]: any } | undefined;
 
-  public currentLigandDatum = computed(() => {
-    let selectedIdx = this.compCommunication.tabState()['Ligands'] ?? 0;
-    if (selectedIdx === 'Main') selectedIdx = 0;
-
-    const datum = this.ligandTableRows()[selectedIdx as number];
-    if (datum) {
-      this.triggerLigandUpdateSideEffects(datum);
+  public ligandWeight = computed(() => {
+    const datum = this.currentLigandDatum();
+    if (datum && datum.type === 'ligand') {
+      return (datum.additionalData.source as Molecule).weight;
     }
-    return datum;
+    return undefined;
+  });
+
+  public ligandBoundDetails = computed(() => {
+    const datum = this.currentLigandDatum();
+    if (datum && datum.type === 'ligand') {
+      return (datum.additionalData.source as any).bound_details;
+    }
+    return undefined;
   });
 
   async triggerLigandUpdateSideEffects(ligand: LigandsRowData) {
@@ -172,11 +188,20 @@ export class LigandsTabComponent implements OnInit {
     }
   }
 
-  triggerLigandInteractionsSideEffects(interactions: Interaction[] | undefined) {
-    const ligand = this.currentLigandDatum() as LigandsRowData;
-    if (!interactions) return;
+  async triggerLigandInteractionsSideEffects(interactions: Interaction[] | undefined) {
+    const ligand = this.currentLigandDatum();
+    if (!ligand) return;
+    if (interactions === undefined) return;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     if (!molstarSelection) return;
+
+    // await until molstar first render is finished
+    await firstValueFrom(
+      this.molstarReady$.pipe(
+        filter((ready) => ready === true),
+        first()
+      )
+    );
 
     const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(
       ligand,
@@ -185,8 +210,12 @@ export class LigandsTabComponent implements OnInit {
       this.compCommunication.chainToEntityId()
     );
 
+    const entityId = molstarSelection.entityId;
+    const chainId = molstarSelection.authChainId;
+    const residueId = molstarSelection.residues[0].authBegin;
+
     this.actionQueue.addAction(
-      `renderMolstarInteractions`,
+      `renderMolstarInteractions-${ligand.id}-${entityId}-${chainId}-${residueId}-${interactions.length}`,
       async () => {
         await this.molstarState.renderMolstarInteractions(residuesMolstarSelections, interactionsMolstarSelections);
       },
@@ -195,28 +224,41 @@ export class LigandsTabComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.interactionsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((interactions) => {
+      // only update if no search term
+      if (!this.searchTerm.value) {
+        this.triggerLigandInteractionsSideEffects(interactions);
+      }
+      this.interactionsRowData.set(interactions);
+    });
+
     this.searchTerm.valueChanges
       .pipe(
         map((searchQuery: string | null) => {
-          if (searchQuery) {
-            return this.filterItemsBySearchQuery(searchQuery, this.interactions() ?? []);
-          } else {
-            return this.interactions();
-          }
+          const interactions = this.interactions() ?? [];
+          return searchQuery ? this.filterItemsBySearchQuery(searchQuery, interactions) : interactions;
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((data: Interaction[] | undefined) => {
-        this.triggerLigandInteractionsSideEffects(data);
-        this.interactionsRowData.update(() => data);
+      .subscribe((filtered: Interaction[] | undefined) => {
+        if (this.noTermFiltering() === false) {
+          this.triggerLigandInteractionsSideEffects(filtered);
+          this.interactionsRowData.set(filtered);
+        }
+        this.noTermFiltering.set(false);
       });
   }
 
   private async renderInMolstar(ligand: LigandsRowData) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+
     const entityId = molstarSelection.entityId;
     const chainId = molstarSelection.authChainId;
     const residueId = molstarSelection.residues[0].authBegin;
+
+    this.noTermFiltering.set(true);
+    this.searchTerm.setValue('');
+    this.interactionsRowData.set([]);
 
     this.globalStore.dispatch(
       EntryActions.getInteractions({
@@ -224,6 +266,9 @@ export class LigandsTabComponent implements OnInit {
         residueId: residueId,
       })
     );
+    if (ligand.type === 'modification') {
+      this.interactionsRowData.set(undefined);
+    }
 
     this.actionQueue.addAction(
       `renderMolstarForLigands-${ligand.id}-${entityId}-${chainId}-${residueId}`,
@@ -238,7 +283,7 @@ export class LigandsTabComponent implements OnInit {
     this.dropdownSelected = event;
 
     // all possible rendering functions are called for a dashboard
-    const ligand = this.currentLigandDatum();
+    const ligand = this.currentLigandDatum()!;
     await this.renderInMolstar(ligand);
     await this.initOrRefreshLigandEnvViewer();
   }

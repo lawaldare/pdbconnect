@@ -105,7 +105,6 @@ export class MbLigandsComponent implements AfterViewInit {
     // await this.molstarVisualisation.resetMobileMolstarInitial();
     await this.molstarVisualisation.unfocusLoci();
     await this.molstarVisualisation.renderOverviewLigands();
-    console.log(this.LigandTableRows());
   }
 
   private async init() {

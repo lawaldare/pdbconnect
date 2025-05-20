@@ -14,6 +14,7 @@ export class LigandsTabService {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly _ligandMonomers$ = this.globalStore.select(EntrySelectors.ligandMonomers).pipe(
     filter(Boolean),
+    filter((ligandMonomers) => !(<any>ligandMonomers).empty),
     map((ligandMonomers) => {
       const result: any = {};
 
@@ -40,6 +41,7 @@ export class LigandsTabService {
   public ligandMonomers = toSignal(this._ligandMonomers$);
   private readonly _modifications$ = this.globalStore.select(EntrySelectors.modifications).pipe(
     filter(Boolean),
+    filter((modifications) => !(<any>modifications).empty),
     map((modifications) => {
       const uniqueIds = new Set();
 

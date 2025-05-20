@@ -29,7 +29,7 @@ export interface Filter {
   styleUrl: './interactive-tables.component.scss',
 })
 export class InteractiveTablesComponent implements OnChanges {
-  public readonly signals = inject(ComponentCommunicationService);
+  public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly ligandsTabService = inject(LigandsTabService);
 
   public readonly tabName = input.required<TableNames>();
@@ -49,7 +49,7 @@ export class InteractiveTablesComponent implements OnChanges {
   private mappedTableRows = signal<any[]>([]);
 
   async ngOnChanges(): Promise<void> {
-    const tableData = this.signals.getTabData(this.tabName());
+    const tableData = this.compCommunication.getTabData(this.tabName());
     this.tableData = tableData as DataToTable;
     const mappedTableRows = tableData.tableRows().map((row: any, index) => ({
       ...row,
@@ -85,7 +85,11 @@ export class InteractiveTablesComponent implements OnChanges {
   }
 
   public loadSelectionFromTable(rowIdx: number) {
-    this.signals.setTabState(this.tabName(), rowIdx);
+    this.compCommunication.setTabState(this.tabName(), rowIdx);
+    if (this.tabName() === 'Assemblies') this.compCommunication.assemblySelection$.next(rowIdx);
+    if (this.tabName() === 'Macromolecules') this.compCommunication.macromoleculeSelection$.next(rowIdx);
+    if (this.tabName() === 'Ligands') this.compCommunication.ligandSelection$.next(rowIdx);
+    if (this.tabName() === 'Domains') this.compCommunication.domainSelection$.next(rowIdx);
   }
 
   public applyFilter(obj: any, tabName: string): void {

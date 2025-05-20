@@ -1,4 +1,4 @@
-@if(tabDataLoaded()){ @if(macromoleculeTableRows().length){
+@if(tabDataLoaded()){ @if(macromoleculeTableRows().length && currentMacromoleculeDatum()){
 <main [class.change-display]="!isSidebarDisplayed()">
   @if(isSidebarDisplayed()){
   <pdbc-interactive-tables tabName="Macromolecules" />
@@ -10,39 +10,39 @@
       <span>{{text}}</span>
     </button>
 
-    @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum().additionalData?.molecule?.molecule_name?.length) {
-    <h5>{{ currentMacromoleculeDatum()?.additionalData.molecule.molecule_name[0] }}</h5>
+    @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum()!.additionalData.molecule.molecule_name.length) {
+    <h5>{{ currentMacromoleculeDatum()!.additionalData.molecule.molecule_name[0] }}</h5>
     }
 
     <section class="info">
       <div class="info-grouped" style="width: 55%">
-        @let type = currentMacromoleculeDatum().additionalData?.molecule?.molecule_type; @if(type){
+        @let type = currentMacromoleculeDatum()!.additionalData.molecule.molecule_type; @if(type){
         <div class="info-row">
           <span class="micro-title"> Type </span>
           <article>{{type | titlecase}}</article>
         </div>
-        } @if(currentMacromoleculeDatum().organisms.length){
+        } @if(currentMacromoleculeDatum()!.organisms.length){
         <div class="info-row">
           <span class="micro-title"> Source organism </span>
           <article>
-            <a [href]="generateOrganismSearchUrl(currentMacromoleculeDatum().organisms[0])" target="_blank">
-              <em>{{currentMacromoleculeDatum()?.organisms[0]}}</em>
+            <a [href]="generateOrganismSearchUrl(currentMacromoleculeDatum()!.organisms[0])" target="_blank">
+              <em>{{currentMacromoleculeDatum()!.organisms[0]}}</em>
               <img src="assets/icons/link_search_icon.png" alt="search icon" style="margin-left: 5px" />
             </a>
           </article>
         </div>
-        } @let expressionSystem = currentMacromoleculeDatum().additionalData?.molecule?.source?.[0]?.expression_host_scientific_name; @if(expressionSystem){
+        } @let expressionSystem = currentMacromoleculeDatum()!.additionalData.molecule.source[0].expression_host_scientific_name; @if(expressionSystem){
         <div class="info-row">
           <span class="micro-title"> Expression System </span>
           <article>
             <em>{{expressionSystem}}</em>
           </article>
         </div>
-        } @if(currentMacromoleculeDatum().mappedResidues.length){
+        } @if(currentMacromoleculeDatum()!.mappedResidues.length){
         <div class="info-row">
           <span class="micro-title"> UniProt mapping </span>
           <article class="uniport-mapping">
-            @for(residue of currentMacromoleculeDatum().mappedResidues; track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <=
+            @for(residue of currentMacromoleculeDatum()!.mappedResidues; track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <=
             2){
             <span
               >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a> (residues: {{residue.range.join(',
@@ -70,22 +70,22 @@
         </div>
         <div class="info-row">
           <span class="micro-title"> Length </span>
-          <article>{{currentMacromoleculeDatum().length}} amino acids</article>
+          <article>{{currentMacromoleculeDatum()!.length}} amino acids</article>
         </div>
         <div class="info-row">
           <span class="micro-title"> Theoretical weight</span>
-          @if(currentMacromoleculeDatum()?.additionalData?.molecule?.weight !== undefined) {
-          <article>{{ currentMacromoleculeDatum()?.additionalData.molecule.weight.toFixed(2) }} KDa</article>
+          @if(currentMacromoleculeDatum()!.additionalData.molecule.weight !== undefined) {
+          <article>{{ currentMacromoleculeDatum()!.additionalData.molecule.weight.toFixed(2) }} KDa</article>
           }
         </div>
         }
       </div>
       <div class="info-grouped" style="width: 45%">
-        @if(currentMacromoleculeDatum()?.genes.length){
+        @if(currentMacromoleculeDatum()!.genes.length){
         <div class="info-row">
           <span class="micro-title"> Gene names </span>
           <article>
-            @for (gene of currentMacromoleculeDatum().genes; track gene; let islast = $last) {
+            @for (gene of currentMacromoleculeDatum()!.genes; track gene; let islast = $last) {
             <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?gene_name:' + gene" target="_blank">{{ gene }}{{ islast ? '' : ',' }}</a> }
             <br />
           </article>
@@ -166,7 +166,7 @@
     <section class="chart-area" [class.collapsed]="compCommunication.isSidebarCollapsed()">
       @if (hasProtvista) {
       <section class="protvista-container">
-        @let molType = currentMacromoleculeDatum().additionalData?.molecule?.molecule_type; @if(entryId() && currentProtvistaEntity() && molType) {
+        @let molType = currentMacromoleculeDatum()!.additionalData.molecule.molecule_type; @if(entryId() && currentProtvistaEntity() && molType) {
         <pdbc-entry-pg-protvista
           [entryId]="entryId()!"
           [entityId]="currentProtvistaEntity()!"

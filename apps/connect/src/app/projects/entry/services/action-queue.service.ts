@@ -14,6 +14,8 @@ export class ActionQueueService {
   private processing = false;
 
   public addAction(name: string, fn: () => Promise<any>, skippable = true) {
+    const actionsInQueue = this.queue.map((act) => act.name);
+    if (actionsInQueue.indexOf(name) > -1) return;
     this.queue.push({ name, fn, skippable });
     this.processNext();
   }
@@ -22,48 +24,50 @@ export class ActionQueueService {
     if (this.processing) return;
     this.processing = true;
 
-    while (this.queue.length > 0) {
-      // Keep all unskippable actions, and only the last skippable
-      const nextQueue: QueueItem[] = [];
-      let lastSkippable: QueueItem | null = null;
+    // Take a snapshot of current queue
+    const currentQueue = [...this.queue];
+    this.queue = []; // Clear immediately to avoid race condition
 
-      for (const item of this.queue) {
-        if (item.skippable) {
-          lastSkippable = item; // Only keep the latest skippable
-        } else {
-          nextQueue.push(item); // Keep all unskippable
-        }
+    // Step 1: Keep all unskippable actions, and only the last skippable
+    const nextQueue: QueueItem[] = [];
+    let lastSkippable: QueueItem | null = null;
+
+    for (const item of currentQueue) {
+      if (item.skippable) {
+        lastSkippable = item;
+      } else {
+        nextQueue.push(item);
       }
+    }
 
-      // If we have a skippable action, add only the last one
-      if (lastSkippable) {
-        nextQueue.push(lastSkippable);
+    if (lastSkippable) {
+      nextQueue.push(lastSkippable);
+    }
+
+    // Step 2: deduplicate by name (keep last)
+    const seen = new Set<string>();
+    const dedupedQueue: QueueItem[] = [];
+
+    for (let i = nextQueue.length - 1; i >= 0; i--) {
+      const item = nextQueue[i];
+      if (!seen.has(item.name)) {
+        seen.add(item.name);
+        dedupedQueue.unshift(item); // maintain order
       }
+    }
 
-      // Step 2: deduplicate by name, keeping only the last occurrence
-      const seen = new Set<string>();
-      const dedupedQueue: QueueItem[] = [];
-
-      for (let i = nextQueue.length - 1; i >= 0; i--) {
-        const item = nextQueue[i];
-        if (!seen.has(item.name)) {
-          seen.add(item.name);
-          dedupedQueue.unshift(item); // insert at front to preserve order
-        }
-      }
-
-      // Replace the queue with filtered items
-      // this.queue = nextQueue;
-      this.queue = dedupedQueue;
-
-      const action = this.queue.shift(); // Remove the next one to process
-      if (!action) break;
-
+    // Step 3: Execute actions
+    for (const action of dedupedQueue) {
       // console.log(`Processing action: ${action.name}`);
       await action.fn();
       // console.log(`Finished action: ${action.name}`);
     }
 
     this.processing = false;
+
+    // In case new items were added to `this.queue` during execution
+    if (this.queue.length > 0) {
+      this.processNext(); // schedule next batch
+    }
   }
 }
