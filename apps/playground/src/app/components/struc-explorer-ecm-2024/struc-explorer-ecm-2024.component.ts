@@ -488,7 +488,7 @@ export class StrucExplorerEcm2024Component implements AfterViewInit {
     //   type: "kb-link",
     //   link: {
     //       txt: `Learn more about ${ccdId} in PDBe-KB`,
-    //       src: `https://wwwdev.ebi.ac.uk/pdbe/connect/ligands/${ccdId}`
+    //       src: `https://wwwdev.ebi.ac.uk/pdbe/ligands/${ccdId}`
     //   }
     // });
     return returnData;

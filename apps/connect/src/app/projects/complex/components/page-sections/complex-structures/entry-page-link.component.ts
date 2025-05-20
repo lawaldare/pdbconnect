@@ -6,7 +6,7 @@ import { Component } from '@angular/core';
   standalone: true,
   template: `
     @if (value) {
-      <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/connect/entry/pdb/' + value" target="_blank">
+      <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + value" target="_blank">
         {{ value }}
         <i class="icon icon-link icon-common" style="margin-left: 5px;"></i>
       </a>
