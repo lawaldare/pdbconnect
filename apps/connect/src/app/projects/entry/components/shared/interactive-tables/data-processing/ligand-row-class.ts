@@ -70,19 +70,19 @@ export class LigandDataToTable extends DataToTable {
         const allowedAsyms = entityMap.get(lig.entity_id)!;
 
         const filteredInStructAsyms: string[] = [];
-        const filteredInChains: string[] = [];
+        // const filteredInChains: string[] = [];
 
         lig.in_struct_asyms.forEach((asymId, idx) => {
           if (allowedAsyms.includes(asymId)) {
             filteredInStructAsyms.push(asymId);
-            filteredInChains.push(lig.in_chains[idx]);
+            // filteredInChains.push(lig.in_chains[idx]);
           }
         });
 
         return {
           ...lig,
           in_struct_asyms: filteredInStructAsyms,
-          in_chains: filteredInChains,
+          // in_chains: filteredInChains,
         };
       })
       .filter((lig) => lig.in_struct_asyms.length > 0);
@@ -111,6 +111,9 @@ export class LigandDataToTable extends DataToTable {
       for (const mol of this.ligands) {
         const randomDescription = 'Unannotated';
         const ligandMolstarData = this.generateMolstarSelectionsLigands(mol, this.ligandMonomers);
+        if (ligandMolstarData.selections.length === 0) {
+          console.warn(`skipping ${mol.chem_comp_ids[0]} due to missing molstar selections`);
+        }
 
         const colorEntityIdx = mol.entity_id - 1;
         let ligandColor = COLORBREWER_SET2_COLORS[colorEntityIdx % COLORBREWER_SET2_COLORS.length];
