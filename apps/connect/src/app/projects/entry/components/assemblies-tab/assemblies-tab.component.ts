@@ -75,10 +75,10 @@ export class AssembliesTabComponent {
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
   public readonly popService = inject(PopupWindowService);
 
-  popupMolstar(): void {
+  public popupMolstar(): void {
     const fullMode = this.popService.isMaximizedOnMac();
     if (!fullMode) {
-      this.popService.popOut(this.molstarContainer, 'molstar');
+      this.popService.popOut(this.molstarContainer, 'assemblies-molstar');
     }
   }
 

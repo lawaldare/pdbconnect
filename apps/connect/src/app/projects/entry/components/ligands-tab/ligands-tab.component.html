@@ -106,13 +106,15 @@
             <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
           </div>
           }
-          <div id="ligands-molstar-container" class="molstar-container"></div>
+          <div id="ligands-molstar-container" class="molstar-container" #molstarContainer></div>
         </section>
         <section class="lig-env-container">
           <div class="ligand-env" #ligandEnvContainer></div>
         </section>
       </section>
     </section>
+    <!-- <button class="vf-button vf-button--secondary-pdbe" (click)="popupMolstar()">Popup the molstar</button> -->
+
     <section class="ligands-info">
       <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure derived from the PDB entry.</p>
       <p>Please note:</p>
