@@ -9,6 +9,8 @@ export class BaseHrefService {
     const pathname = document.location.pathname;
     let baseHref: string;
 
+    console.log('pathname:->', pathname);
+
     if (hostname === 'localhost') {
       baseHref = '/';
     } else if (pathname === '/pdbe-srv/pdbechem/') {
