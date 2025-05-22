@@ -11,6 +11,7 @@ import { LigandActions } from '../../../store/ligand.actions';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { NotificationComponent } from '@pdbc/notification';
+import { ASSET_BASE_PATH, AssetPathService } from '../../../services/asset-path.service';
 
 @Component({
   selector: 'pdbc-ligand-wrapper',
@@ -18,6 +19,7 @@ import { NotificationComponent } from '@pdbc/notification';
   imports: [LigandsMainPageComponent, ClcPrdMainComponent, PdbeHeaderLogoMenuComponent, PdbeHeaderSearchComponent, NotificationComponent],
   templateUrl: './ligand-wrapper.component.html',
   styleUrl: './ligand-wrapper.component.scss',
+  providers: [{ provide: ASSET_BASE_PATH, useValue: '/pdbe/connect/' }, AssetPathService],
 })
 export class LigandWrapperComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

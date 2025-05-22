@@ -35,6 +35,7 @@ import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../com
 import { ActionQueueService } from '../../services/action-queue.service';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import Clarity from '@microsoft/clarity';
+import { ASSET_BASE_PATH, AssetPathService } from '../../../ligands/services/asset-path.service';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -76,6 +77,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
+  providers: [{ provide: ASSET_BASE_PATH, useValue: '/pdbe/entry/' }, AssetPathService],
 })
 export class EntryMainPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

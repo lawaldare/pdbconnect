@@ -23,6 +23,7 @@ import { complexRouteTabs } from '../../../complex.constant';
 import { MatTabChangeEvent } from '@angular/material/tabs';
 import { SuperComplexesComponent } from '../../page-sections/complex-supercomplex/supercomplexes.component';
 import { SubComplexesComponent } from '../../page-sections/complex-subcomplex/subcomplexes.component';
+import { ASSET_BASE_PATH, AssetPathService } from '../../../../ligands/services/asset-path.service';
 
 @Component({
   selector: 'pdbc-main',
@@ -44,6 +45,7 @@ import { SubComplexesComponent } from '../../page-sections/complex-subcomplex/su
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',
+  providers: [{ provide: ASSET_BASE_PATH, useValue: '/pdbe/complex/' }, AssetPathService],
 })
 export class MainComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
