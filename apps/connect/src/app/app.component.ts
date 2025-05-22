@@ -5,6 +5,7 @@ import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 import { filter } from 'rxjs';
 import { environment } from '../environments/environment';
 import { ScriptLoaderService, UtilService } from '@pdbc/core';
+import { LigandsAssetPathService } from './projects/ligands/services/assets-path.service';
 
 declare const gtag: any;
 @Component({
@@ -18,7 +19,8 @@ export class AppComponent implements OnInit {
   constructor(
     private _router: Router,
     private utilService: UtilService,
-    private scriptLoader: ScriptLoaderService
+    private scriptLoader: ScriptLoaderService,
+    private assetPathService: LigandsAssetPathService
   ) {
     this._router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((e: NavigationEnd) => {
       window.scrollTo(0, 0);
@@ -33,8 +35,14 @@ export class AppComponent implements OnInit {
     this.init();
     await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js');
     await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
-    await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
-    await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.js', true);
+    const pathName = window.location.pathname;
+    if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
+      await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-2.0.0-min.js'), true);
+      await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.js'), true);
+    } else {
+      await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
+      await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.js', true);
+    }
   }
 
   private init(): void {
