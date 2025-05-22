@@ -1,5 +1,5 @@
 <div class="citations">
-  @if (util.isNotEmptyObject(primaryPublication()) && util.isNotEmptyObject(articlesCiting())) {
+  @if (util.isNotEmptyObject(primaryPublication())) {
   <section class="primary-publication">
     <div class="row" style="margin-left: 0; margin-right: 0; gap: 0">
       <div class="row__left">Primary publication</div>
@@ -88,17 +88,17 @@
       </div>
     </div>
   </section>
-  @if (articlesCiting()!.cited_by.Articles.length) {
+  @if (articlesCiting()?.cited_by?.Articles?.length) {
   <div class="article-list-container">
     <h3 class="heading-3">Articles citing the PDB entry</h3>
     <pdbc-citation-publication [publicationInfo]="articlesCiting()!.cited_by.Articles" [entryId]="entryId() ?? ''" headerText="cited"></pdbc-citation-publication>
   </div>
-  } @if (articlesCiting()!.cited_by.Reviews.length) {
+  } @if (articlesCiting()?.cited_by?.Reviews?.length) {
   <div class="article-list-container">
     <h3 class="heading-3">Reviews citing the publications</h3>
     <pdbc-citation-publication [publicationInfo]="articlesCiting()!.cited_by.Reviews" [entryId]="entryId() ?? ''" headerText="cited"></pdbc-citation-publication>
   </div>
-  } @if (articlesCiting()!.appears_without_citation.Articles.length) {
+  } @if (articlesCiting()?.appears_without_citation?.Articles?.length) {
   <div class="article-list-container">
     <h3 class="heading-3">Articles - {{ this.entryId() }} mentioned but not cited</h3>
     <pdbc-citation-publication
@@ -107,7 +107,7 @@
       headerText="mentioned"
     ></pdbc-citation-publication>
   </div>
-  } @if (articlesCiting()!.appears_without_citation.Reviews.length) {
+  } @if (articlesCiting()?.appears_without_citation?.Reviews?.length) {
   <h3 class="heading-3">Reviews - {{ this.entryId() }} mentioned but not cited</h3>
   <pdbc-citation-publication
     [publicationInfo]="articlesCiting()!.appears_without_citation.Reviews"
@@ -115,6 +115,6 @@
     headerText="mentioned"
   ></pdbc-citation-publication>
   } } @else {
-  <h5 class="no-data-found">No Citation data found for this entry</h5>
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
   }
 </div>

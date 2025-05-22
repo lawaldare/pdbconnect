@@ -10,12 +10,13 @@ import { EntryApiService } from '../../services/entry-api.service';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { EntrySelectors } from '../../store/entry.selectors';
-import { filter } from 'rxjs';
+import { delay, filter, tap } from 'rxjs';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
   selector: 'pdbc-citations-tab',
   standalone: true,
-  imports: [CommonModule, CitationPublicationComponent, MaterialModule],
+  imports: [CommonModule, CitationPublicationComponent, MaterialModule, NgxSkeletonLoaderModule],
   templateUrl: './citations-tab.component.html',
   styleUrl: './citations-tab.component.scss',
 })
