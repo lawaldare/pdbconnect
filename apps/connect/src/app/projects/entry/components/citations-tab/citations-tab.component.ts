@@ -54,8 +54,6 @@ export class CitationsTabComponent implements OnInit {
     ])
       .pipe(
         map(([primaryPublication, articlesCiting]) => {
-          console.log('Primary Publication:', primaryPublication);
-          console.log('Articles Citing:', articlesCiting);
           this.primaryPublication.set(primaryPublication);
           this.articlesCiting.set(articlesCiting);
           this.getXMLImages(primaryPublication.pubmed_id ?? '');
