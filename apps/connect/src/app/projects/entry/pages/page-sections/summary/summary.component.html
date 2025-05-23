@@ -24,9 +24,7 @@
       <div class="info-row">
         <span class="info-row-title">Experiment type</span>
         <span class="info-row-content">
-          <span class="info-row-content-line" style="white-space: nowrap; display: flex; gap: 12px">
-            {{ experimentType }}
-          </span>
+          <span class="info-row-content-line" style="white-space: nowrap; display: flex; gap: 12px"> {{ experimentType }} </span>
           <span *ngIf="resolutionValue" class="info-row-content-line">{{ resolutionValue }}Å resolution</span>
         </span>
       </div>
@@ -37,9 +35,7 @@
       <div class="info-row">
         <span class="info-row-title">Primary publication</span>
         <span class="info-row-content">
-          <span class="info-row-content-line">
-            {{ publicationTitle }}
-          </span>
+          <span class="info-row-content-line"> {{ publicationTitle }} </span>
           <span class="info-row-content-line">
             <span *ngFor="let publicationOrEntryAuthor of publicationOrEntryAuthors; index as i" class="info-row-content-word">
               <!-- <span *ngIf="i > 0 && i + 1 < publicationOrEntryAuthors.length" class="info-row-content-word">,</span> -->

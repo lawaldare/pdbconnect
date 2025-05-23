@@ -89,6 +89,7 @@ export class MbOverviewTabComponent implements OnInit {
       const mappedDatum = datum.map((data, index) => {
         return {
           ...data,
+          index,
           mappedResidues: mappedResiduesList[index] ?? [],
           organisms: [...new Set(data['organisms'])],
         };

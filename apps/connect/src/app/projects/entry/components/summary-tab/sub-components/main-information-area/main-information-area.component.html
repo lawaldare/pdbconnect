@@ -1,7 +1,7 @@
 <div id="information-section" class="information-section">
   <div class="info-row">
     <span>Entry title</span>
-    <article>{{ summary()?.entryTitle }}</article>
+    <article [innerHTML]="summary()?.entryTitle"></article>
   </div>
   <div class="info-row">
     <span>Source organism</span>
@@ -24,10 +24,16 @@
     <span>Primary publication</span>
     <article>
       @if (primaryPublication()?.journal_info?.pdb_abbreviation! !== 'To be published') {
-      <article>{{ primaryPublication()?.title }}</article>
+      <article [innerHTML]="primaryPublication()?.title"></article>
       <article>
-        @for (authorDatum of primaryPublication()?.author_list; track authorDatum; let islast = $last) {
+        @let authors = primaryPublication()?.author_list ?? []; @for (authorDatum of authors.slice(0, initialAuthorCount()); track authorDatum; let islast = $last) {
         <a [href]="generateAuthorSearchUrl(authorDatum.full_name ?? '')" target="_blank">{{ authorDatum.full_name }}</a>{{ islast ? '' : ',' }} }
+        <div class="control">
+          @if(authors.length > 5){
+          <span role="button" class="related-entry-toggle" (click)="toggleAuthorList()">{{initialAuthorCount() > 5 ? 'Hide' : 'Show all'}} authors</span>
+          <i class="icon icon-common" [ngClass]="initialAuthorCount() > 5 ? 'icon-angle-up' : 'icon-angle-down'"></i>
+          }
+        </div>
       </article>
       <article>
         <span>
@@ -55,8 +61,16 @@
       } @let entries = primaryPublication()?.associated_entries ?? ''; @if (entries) { @let entriesArray = splitStringByCommas(entries);
 
       <article>
-        Also associated with: @for(entry of entriesArray; track entry; let islast = $last){
+        Also associated with: @for(entry of entriesArray.slice(0, initialEntriesCount()); track entry; let islast = $last){
         <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + entry" target="_blank">{{ entry }}</a>{{ islast? '' : ',' }} }
+        <div class="control">
+          @if(entriesArray.length > 5){
+          <span role="button" class="related-entry-toggle" (click)="toggleEntriesList()"
+            >{{initialEntriesCount() > 5 ? 'Show less' : 'Show more'}} associated entries</span
+          >
+          <i class="icon icon-common" [ngClass]="initialEntriesCount() > 5 ? 'icon-angle-up' : 'icon-angle-down'"></i>
+          }
+        </div>
       </article>
       } } @else {
       <article>To be published</article>

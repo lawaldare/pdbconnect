@@ -10,8 +10,10 @@ import { EntryApiService } from '../../services/entry-api.service';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { EntrySelectors } from '../../store/entry.selectors';
-import { filter } from 'rxjs';
+import { combineLatest, filter, map } from 'rxjs';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { CitationDetail } from '../../data-models/publication.model';
+import { RelatedPublication } from '../../data-models/related-publications.model';
 
 @Component({
   selector: 'pdbc-citations-tab',
@@ -29,8 +31,8 @@ export class CitationsTabComponent implements OnInit {
   public readonly util = inject(UtilService);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId).pipe(filter(Boolean)));
-  public readonly articlesCiting = toSignal(this.globalStore.select(EntrySelectors.articlesCiting));
-  public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
+  public readonly articlesCiting = signal({} as RelatedPublication | null);
+  public readonly primaryPublication = signal({} as CitationDetail | null);
 
   public readonly isPrimaryPublicationDataAvailable = computed(() => {
     const abstract = this.primaryPublication()?.abstract;
@@ -46,16 +48,26 @@ export class CitationsTabComponent implements OnInit {
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
   ngOnInit(): void {
-    if (this.primaryPublication() !== undefined && this.primaryPublication()!.pubmed_id) {
-      this.getXMLImages(this.primaryPublication()!.pubmed_id!);
-    }
-    if (this.primaryPublication() !== undefined && this.primaryPublication()!.associated_entries) {
-      this.setRelatedEntries(this.primaryPublication()!.associated_entries!);
-    }
+    combineLatest([
+      this.globalStore.select(EntrySelectors.primaryPublication).pipe(filter(Boolean)),
+      this.globalStore.select(EntrySelectors.articlesCiting).pipe(filter(Boolean)),
+    ])
+      .pipe(
+        map(([primaryPublication, articlesCiting]) => {
+          console.log('Primary Publication:', primaryPublication);
+          console.log('Articles Citing:', articlesCiting);
+          this.primaryPublication.set(primaryPublication);
+          this.articlesCiting.set(articlesCiting);
+          this.getXMLImages(primaryPublication.pubmed_id ?? '');
+          this.setRelatedEntries(primaryPublication.associated_entries ?? '');
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({});
   }
 
   private setRelatedEntries(entries: string): void {
-    this.relatedEntries = entries?.split(',').map((entry) => entry.trim()) ?? null;
+    this.relatedEntries = entries ? entries?.split(',').map((entry) => entry.trim()) : [];
   }
 
   public openXMLImagesInNewWindow(): void {

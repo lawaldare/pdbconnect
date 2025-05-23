@@ -10,13 +10,13 @@
       <span>{{text}}</span>
     </button>
 
-    @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum()!.additionalData.molecule.molecule_name.length) {
+    @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_name?.length) {
     <h5>{{ currentMacromoleculeDatum()!.additionalData.molecule.molecule_name[0] }}</h5>
     }
 
     <section class="info">
       <div class="info-grouped" style="width: 55%">
-        @let type = currentMacromoleculeDatum()!.additionalData.molecule.molecule_type; @if(type){
+        @let type = currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_type; @if(type){
         <div class="info-row">
           <span class="micro-title"> Type </span>
           <article>{{type | titlecase}}</article>
@@ -31,7 +31,7 @@
             </a>
           </article>
         </div>
-        } @let expressionSystem = currentMacromoleculeDatum()!.additionalData.molecule.source[0].expression_host_scientific_name; @if(expressionSystem){
+        } @let expressionSystem = currentMacromoleculeDatum()?.additionalData?.molecule?.source?.[0]?.expression_host_scientific_name; @if(expressionSystem){
         <div class="info-row">
           <span class="micro-title"> Expression System </span>
           <article>
@@ -81,7 +81,7 @@
         }
       </div>
       <div class="info-grouped" style="width: 45%">
-        @if(currentMacromoleculeDatum()!.genes.length){
+        @if(currentMacromoleculeDatum()?.genes?.length){
         <div class="info-row">
           <span class="micro-title"> Gene names </span>
           <article>
