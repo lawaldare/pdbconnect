@@ -9,3 +9,12 @@ export interface HeaderLogoMenuConfig {
     openInNewTab: boolean;
   }[];
 }
+
+export interface MobileHeaderLogoMenuConfig {
+  backgroundColor: string;
+  urls: {
+    name: string;
+    path: string;
+    openInNewTab: boolean;
+  }[];
+}

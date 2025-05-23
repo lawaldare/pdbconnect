@@ -1,0 +1,117 @@
+<section>
+  @if(assemblyTableRows().length){
+  <header>
+    <section class="header">
+      <h2>Assembly (preferred)</h2>
+      <div class="controls">
+        <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
+        <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+      </div>
+    </section>
+  </header>
+  @if(preferredAssembly()){
+  <!-- <p class="sub-header">{{preferredAssembly().multimericStates}}</p> -->
+
+  <!-- <div class="action">
+    <span>Display assembly symmetry</span>
+    <mat-slide-toggle [(ngModel)]="isChecked" />
+  </div> -->
+
+  <!-- Assembly name -->
+
+  @if(preferredAssembly().complexName){
+  <article>
+    <p>Assembly name</p>
+    <p class="content">{{preferredAssembly().complexName}}</p>
+  </article>
+  }
+
+  <!-- Multimeric state -->
+
+  @if(preferredAssembly().multimericStates){
+  <article>
+    <p>Multimeric state</p>
+    <p class="content">{{preferredAssembly().multimericStates}}</p>
+  </article>
+  }
+
+  <!-- PDBe complex ID -->
+
+  @if(preferredAssembly().complexId){
+  <article>
+    <p>PDBe complex ID</p>
+    <p class="content">
+      <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/complex/' + preferredAssembly().complexId" target="_blank">{{preferredAssembly().complexId}}</a>
+    </p>
+  </article>
+  }
+
+  <!-- Accessible surface area -->
+
+  @if(preferredAssembly().additionalData.accessibleSurfaceArea){
+  <article>
+    <p>Accessible surface area</p>
+    <p class="content">{{preferredAssembly().additionalData.accessibleSurfaceArea}}</p>
+  </article>
+  }
+
+  <!-- Buried surface area -->
+
+  @if(preferredAssembly().additionalData.buriedSurfaceArea){
+  <article>
+    <p>Buried surface area</p>
+    <p class="content">{{preferredAssembly().additionalData.buriedSurfaceArea}}</p>
+  </article>
+  }
+
+  <!-- Dissociation area -->
+
+  @if(preferredAssembly().additionalData.dissociationArea){
+  <article>
+    <p>Dissociation area</p>
+    <p class="content">{{preferredAssembly().additionalData.dissociationArea}}</p>
+  </article>
+  }
+
+  <!-- Dissociation energy -->
+
+  @if(preferredAssembly().additionalData.dissociationEnergy){
+  <article>
+    <p>Dissociation energy (ΔGdiss)</p>
+    <p class="content">{{preferredAssembly().additionalData.dissociationEnergy}}</p>
+  </article>
+  }
+
+  <!-- Dissociation entropy -->
+
+  @if(preferredAssembly().additionalData.dissociationEntropy){
+  <article>
+    <p>Dissociation entropy (TΔSdiss)</p>
+    <p class="content">{{preferredAssembly().additionalData.dissociationEntropy}}</p>
+  </article>
+  }
+
+  <!-- Assembly symmetry -->
+  @if(preferredSymmetry()?.type){
+  <article>
+    <p>Assembly symmetry</p>
+    <p class="content">{{preferredSymmetry()?.type}} - {{preferredSymmetry()?.symbol}}</p>
+  </article>
+  }
+
+  <!-- interfaceCount number -->
+
+  @if(preferredAssembly().additionalData.interfaceCount){
+  <article>
+    <p>Number of interfaces</p>
+    <p class="content">{{preferredAssembly().additionalData.interfaceCount}}</p>
+  </article>
+  }
+
+  <footer>
+    This entry contains {{assemblyTableRows().length - 1}} more assemblies with different assembly compositions. Alternative assemblies are available on the desktop
+    version.
+  </footer>
+
+  } }
+</section>

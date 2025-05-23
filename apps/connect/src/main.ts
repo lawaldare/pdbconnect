@@ -1,3 +1,8 @@
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+declare let __webpack_public_path__: string;
+__webpack_public_path__ = (window as any).__app_public_path__ || '/';
+
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';

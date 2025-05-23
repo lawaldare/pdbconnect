@@ -13,8 +13,14 @@
 @import url('./assets/entry-styles/ag-grid-table-styles/all-tables.scss');
 @import url('./assets/entry-styles/topology-viewer/pdbe-topology-style.scss');
 @import url('./assets/entry-styles/lig-env-viewer/pdbe-lig-env-viewer.scss');
-@import url('./assets/entry-styles/protvista/protvista.scss');
+
+/* @import url('./assets/entry-styles/protvista/protvista.scss'); */
+@import url('./assets/entry-styles/protvista/new-protvista.scss');
 @import url('./assets/entry-styles/extra/extra.scss');
+
+@import url('https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.css');
+@import url('https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css');
+@import url('https://molstar.org/pdbe-molstar/build/pdbe-molstar.css');
 
 html,
 body {
@@ -69,6 +75,13 @@ p {
   cursor: pointer;
 }
 
+.modification {
+  background-color: #fe9a9a;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+}
+
 .cofactor-like {
   background-color: #dbbfe3;
   text-decoration: underline dotted;
@@ -92,8 +105,8 @@ p {
 
 // For: https://www.ebi.ac.uk/panda/jira/browse/PDBE-7249
 nightingale-navigation .container .brush .handle {
-  fill: darkgrey;
-  stroke: black;
+  fill: #a9a9a9;
+  stroke: #000000;
   stroke-width: 1px;
   height: 18px;
   y: 0;
@@ -106,7 +119,7 @@ nightingale-navigation .container .brush .handle {
     opacity: 1;
 
     svg {
-      fill: white;
+      fill: #ffffff;
     }
   }
 
@@ -115,7 +128,7 @@ nightingale-navigation .container .brush .handle {
   }
 
   .splide__pagination__page {
-    background: white;
+    background: #ffffff;
     border: 2px solid #b7d1d1;
     opacity: 1;
     height: 15px;
@@ -157,4 +170,8 @@ nightingale-navigation .container .brush .handle {
     background: #056643 !important;
     font-size: 14px;
   }
+}
+
+.custom-bottom-sheet {
+  transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
 }

@@ -5,7 +5,10 @@ import { CarbohydrateMolecule, CarbohydrateResidue } from '../../../../data-mode
 import { Molecule } from '../../../../data-models/molecule.model';
 import { BestStructureMapping } from '../../../../data-models/uniport-best-structures.model';
 import { UniProtMapping } from '../../../../data-models/uniprot-mapping.model';
-import { MolstarResidueInfo, MolstarSelectionObj } from '../../../../helpers/molstar/molstar-helpers';
+import { DEFAULT_SET_25, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { PolymerCoverageMolecule } from '../../../../data-models/polymer-coverage.model';
+import { AssemblyData, AssemblyEntity } from '../../../../data-models/assembly.model';
+import { ProcessedSummary } from '../../../../data-models/summary.model';
 
 interface MacromoleculesChainBoundaries {
   [key: number]: {
@@ -34,11 +37,13 @@ interface EntityUniProtMapping {
 
 export class MacromoleculeDataToTable extends DataToTable {
   // Macromolecule specific data
-  macromolecules: Molecule[];
+  macromolecules: Molecule[] = [];
   carbohydrates: CarbohydrateMolecule[];
   uniprotMapping: UniProtMapping;
   bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] };
-  molstarResidueInfo: MolstarResidueInfo[];
+  polymerCoverage: PolymerCoverageMolecule[] = [];
+  summaryData: ProcessedSummary;
+  assemblyData: AssemblyData[];
 
   molstarHardResetOnSelect = false;
   protvistaForSelection = true;
@@ -53,18 +58,99 @@ export class MacromoleculeDataToTable extends DataToTable {
     uniprotMapping: UniProtMapping,
     bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] },
     macromolecules: Molecule[],
-    molstarResidueInfo: MolstarResidueInfo[]
+    polymerCoverage: PolymerCoverageMolecule[],
+    summaryData: ProcessedSummary,
+    assemblyData: AssemblyData[]
   ) {
     super();
     this.carbohydrates = carbohydrates;
     this.uniprotMapping = uniprotMapping;
     this.bestStructuresMappingsByUniProtId = bestStructuresMappingsByUniProtId;
-    this.macromolecules = macromolecules;
-    this.molstarResidueInfo = molstarResidueInfo;
+    // this.polymerCoverage = polymerCoverage;
+    this.summaryData = summaryData;
+    this.assemblyData = assemblyData;
+    const preferredAssembly = this.getPreferredAssembly();
+    if (preferredAssembly) {
+      this.macromolecules = this.filterByPreferredAssembly(macromolecules, preferredAssembly);
+      this.polymerCoverage = this.filterPolymerCoverageByAssembly(polymerCoverage, preferredAssembly);
+    }
+  }
+
+  getPreferredAssembly() {
+    // we first check and get the preferred assembly if it exists
+    let preferredAssemblyId = -1;
+    const preferredAssemblyData = this.summaryData.assemblies.filter((summaryAssembly) => summaryAssembly.preferred === true);
+    if (preferredAssemblyData.length > 0) {
+      preferredAssemblyId = parseInt(preferredAssemblyData[0].assembly_id);
+    }
+    if (preferredAssemblyId === -1) preferredAssemblyId = 1;
+
+    const assembly = this.assemblyData.filter((assembly) => parseInt(assembly.assembly_id) === preferredAssemblyId)[0];
+    return assembly;
+  }
+
+  private getNormalizedEntityMap(assembly: AssemblyData): Map<number, string[]> {
+    const map = new Map<number, string[]>();
+
+    for (const entity of assembly.entities) {
+      const normalizedChains = entity.in_chains.map((chain) => chain.split('-')[0]);
+      map.set(entity.entity_id, normalizedChains);
+    }
+
+    return map;
+  }
+
+  private filterByPreferredAssembly(macromolecules: Molecule[], assembly: AssemblyData): Molecule[] {
+    // Create a quick lookup map for assembly entities by entity_id
+    const assemblyEntitiesMap = this.getNormalizedEntityMap(assembly);
+
+    // Filter macromolecules based on entity_id presence in assembly
+    return (
+      macromolecules
+        .filter((molecule) => assemblyEntitiesMap.has(molecule.entity_id))
+        .map((molecule) => {
+          const allowedAsyms = assemblyEntitiesMap.get(molecule.entity_id)!;
+
+          // Filter the in_chains to only include those present in the assembly entity
+          const filteredInStructAsyms: string[] = [];
+          const filteredInChains: string[] = [];
+
+          molecule.in_struct_asyms.forEach((asymId, idx) => {
+            if (allowedAsyms.includes(asymId)) {
+              filteredInStructAsyms.push(asymId);
+              filteredInChains.push(molecule.in_chains[idx]); // Keep corresponding chain
+            }
+          });
+
+          return {
+            ...molecule,
+            in_struct_asyms: filteredInStructAsyms,
+            in_chains: filteredInChains,
+          };
+        })
+        // Optionally, remove molecules where no chains remain after filtering
+        .filter((molecule) => molecule.in_struct_asyms.length > 0)
+    );
+  }
+
+  private filterPolymerCoverageByAssembly(polymerCoverage: PolymerCoverageMolecule[], assembly: AssemblyData): PolymerCoverageMolecule[] {
+    const assemblyEntitiesMap = this.getNormalizedEntityMap(assembly);
+
+    return polymerCoverage
+      .filter((polymer) => assemblyEntitiesMap.has(polymer.entity_id))
+      .map((polymer) => {
+        const allowedAsyms = assemblyEntitiesMap.get(polymer.entity_id)!;
+        const filteredChains = polymer.chains.filter((chain) => allowedAsyms.includes(chain.struct_asym_id));
+        return {
+          ...polymer,
+          chains: filteredChains,
+        };
+      })
+      .filter((polymer) => polymer.chains.length > 0);
   }
 
   generateTableData(): TableRow[] {
-    const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIds(this.macromolecules, this.molstarResidueInfo);
+    const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIdsFromCoverage(this.macromolecules, this.polymerCoverage);
     const mappingsByEntityByAccession: EntityUniProtMapping = this.generateUniprotMappings(
       this.uniprotMapping,
       this.bestStructuresMappingsByUniProtId,
@@ -79,7 +165,6 @@ export class MacromoleculeDataToTable extends DataToTable {
         const residueRanges = molecule.molecule_type.includes('polypeptide')
           ? this.getUniProtResidueRanges(molecule.entity_id, molecule.in_chains, mappingsByEntityByAccession)
           : [];
-
         let moleculeLength = molecule.length;
         let carbohydrate: CarbohydrateMolecule | undefined = undefined;
         if (molecule.molecule_type.includes('carbohydrate')) {
@@ -91,7 +176,12 @@ export class MacromoleculeDataToTable extends DataToTable {
 
         const geneNames = molecule.gene_name ? molecule.gene_name : [];
 
-        const molstarSelections: MolstarSelectionObj[] = this.generateMolstarSelectionsMacromolecules(molecule, carbohydrate);
+        const selectionData = this.generateMolstarSelectionsMacromolecules(molecule, carbohydrate);
+
+        const selectionNames = selectionData.selectionNames;
+        const molstarSelections: MolstarSelectionObj[] = selectionData.selections;
+
+        const colorEntityIdx = molecule.entity_id - 1;
 
         macromoleculeRows.push({
           name: {
@@ -105,8 +195,10 @@ export class MacromoleculeDataToTable extends DataToTable {
           additionalData: {
             molecule: molecule,
             selections: molstarSelections,
+            selectionNames: selectionNames,
             uniprotAccessions: residueRanges.map((eachRange) => eachRange.uniprot),
           },
+          molstarColorHex: DEFAULT_SET_25[colorEntityIdx % DEFAULT_SET_25.length],
         });
       }
       rows.push(...macromoleculeRows);
@@ -118,51 +210,39 @@ export class MacromoleculeDataToTable extends DataToTable {
     return rows;
   }
 
-  private getStartEndForChainIds(macromolecules: Molecule[], molstarResidueInfo: MolstarResidueInfo[]) {
-    const startEndByEntityByChain: MacromoleculesChainBoundaries = {};
-
+  private getStartEndForChainIdsFromCoverage(macromolecules: Molecule[], polymerCoverage: PolymerCoverageMolecule[]) {
     // Map macromolecules by entity_id for quick lookup
     const macromoleculesByEntityId = Object.fromEntries(macromolecules.map((mol) => [mol.entity_id, mol]));
 
     const entitiesForMacromolecules = new Set(Object.keys(macromoleculesByEntityId));
 
-    // Filter and group residues by entity_id and chain_id
-    const residsMacroByEntityIdAndChainId = molstarResidueInfo
-      .filter((resid) => resid.label_entity_id && resid.label_seq_id && entitiesForMacromolecules.has(resid.label_entity_id))
-      .reduce(
-        (acc, resid) => {
-          const { label_entity_id, auth_asym_id } = resid;
-          if (!label_entity_id || !auth_asym_id) return acc;
+    // filter polymercoverage by entity id
+    const filteredPolymerCoverage = polymerCoverage.filter((polmol) => entitiesForMacromolecules.has(polmol.entity_id + ''));
 
-          acc[label_entity_id] = acc[label_entity_id] || {};
-          acc[label_entity_id][auth_asym_id] = acc[label_entity_id][auth_asym_id] || [];
-          acc[label_entity_id][auth_asym_id].push(resid);
+    const startEndByEntityByChain: MacromoleculesChainBoundaries = {};
 
-          return acc;
-        },
-        {} as { [entityId: string]: { [chainId: string]: MolstarResidueInfo[] } }
-      );
+    for (const molecule of filteredPolymerCoverage) {
+      const entityId = molecule.entity_id;
+      startEndByEntityByChain[entityId] = {};
 
-    // Transform grouped residues into start/end data
-    Object.entries(residsMacroByEntityIdAndChainId).forEach(([entityId, chains]) => {
-      startEndByEntityByChain[+entityId] = {};
+      for (const chain of molecule.chains) {
+        const chainId = chain.chain_id;
 
-      Object.entries(chains).forEach(([chainId, residues]) => {
-        const sortedResidues = residues.sort((a, b) => a.label_seq_id! - b.label_seq_id!);
+        if (!chain.observed.length) continue;
 
-        const firstResidNum = sortedResidues[0].auth_seq_id + '';
-        const lastResidNum = sortedResidues[sortedResidues.length - 1].auth_seq_id + '';
-        const firstResidIns = sortedResidues[0].pdbx_PDB_ins_code || '';
-        const lastResidIns = sortedResidues[sortedResidues.length - 1].pdbx_PDB_ins_code || '';
+        // Assuming observed segments are ordered, take first and last segments
+        const firstSegment = chain.observed[0];
+        const lastSegment = chain.observed[chain.observed.length - 1];
 
-        startEndByEntityByChain[+entityId][chainId] = {
-          start_author_residue_number: firstResidNum,
-          end_author_residue_number: lastResidNum,
-          start_author_insertion_code: firstResidIns,
-          end_author_insertion_code: lastResidIns,
+        startEndByEntityByChain[entityId][chainId] = {
+          start_author_residue_number: firstSegment.start.author_residue_number.toString(),
+          end_author_residue_number: lastSegment.end.author_residue_number.toString(),
+          start_author_insertion_code: firstSegment.start.author_insertion_code || '',
+          end_author_insertion_code: lastSegment.end.author_insertion_code || '',
         };
-      });
-    });
+      }
+    }
+
     return startEndByEntityByChain;
   }
 
@@ -224,21 +304,21 @@ export class MacromoleculeDataToTable extends DataToTable {
     const mappingsByAccession = mappingsByEntityByAccession[entityId];
     for (const [uniprotAcc, datum] of Object.entries(mappingsByAccession)) {
       const filteredDatum = datum.filter((val) => chains.indexOf(val.chainId) > -1);
-      const datumStrings = filteredDatum.map((val) => `${val.start} to ${val.end}`);
+      const datumStrings = filteredDatum.map((val) => `${val.unpStart}-${val.unpEnd}`);
       // TODO: We might need to add chain information when allChainsEqualMappings is false
       const allChainsEqualMappings = datumStrings.every((val) => val === datumStrings[0]);
       // const allEqual = true;
       if (allChainsEqualMappings) {
         residueRanges.push({
           range: datumStrings[0],
-          coverage: (filteredDatum[0].coverage * 100).toFixed(1) + '%',
+          coverage: Math.round(filteredDatum[0].coverage * 100) + '%',
           uniprot: uniprotAcc,
         });
       } else {
         for (const datum of filteredDatum) {
           residueRanges.push({
-            range: `${datum.start} to ${datum.end}`,
-            coverage: (datum.coverage * 100).toFixed(1) + '%',
+            range: `${datum.unpStart}-${datum.unpEnd}`,
+            coverage: Math.round(datum.coverage * 100) + '%',
             uniprot: uniprotAcc,
             chainId: datum.chainId,
           });
@@ -249,7 +329,8 @@ export class MacromoleculeDataToTable extends DataToTable {
   }
 
   private generateMolstarSelectionsMacromolecules(molecule: Molecule, carbohydrate?: CarbohydrateMolecule) {
-    return molecule.in_chains.map((ch) => {
+    const selectionNames: string[] = [];
+    const selections = molecule.in_chains.map((ch) => {
       const molstarSelection: MolstarSelectionObj = {
         entityId: molecule.entity_id + '',
         authChainId: ch,
@@ -263,16 +344,23 @@ export class MacromoleculeDataToTable extends DataToTable {
         }
         carbohydratesOfChain.map((carbch) => carbch.residues);
         molstarSelection['residues'] = carbohydrateResidues.map((carbResidue) => {
+          const resNum = carbResidue.author_residue_number;
+          const resIns = carbResidue.author_insertion_code;
+          selectionNames.push(`Chain ${ch} } - Res: ${resNum}${resIns}`);
           return {
-            authBegin: carbResidue.author_residue_number + '',
-            authBeginIns: carbResidue.author_insertion_code,
-            authEnd: carbResidue.author_residue_number + '',
-            authEndIns: carbResidue.author_insertion_code,
+            authBegin: resNum + '',
+            authBeginIns: resIns,
+            authEnd: resNum + '',
+            authEndIns: resIns,
           };
         });
-      }
+      } else selectionNames.push(`Chain ${ch}`);
       return molstarSelection;
     });
+    if (selections.length === 0) {
+      console.warn(`WARNING: No selections could be generated for macromolecule: ${molecule.molecule_name[0]} (${molecule.entity_id})`);
+    }
+    return { selections, selectionNames };
   }
 
   public generateTableFilters(): TableFilter[] {

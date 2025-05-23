@@ -1,0 +1,42 @@
+<div class="pv-track-row" [ngClass]="{ 'custom-row': isCustomData }" [ngStyle]="{display: subtracks.length === 0 ? 'none' : ''}">
+  <div class="collapsible">
+    <div class="pv-track-row non-header-track track" [ngClass]="{ expanded: isExpanded(), collapsed: !isExpanded() }" style="align-content: flex-start">
+      <div class="pv-track-label-col hoverable not-empty" [ngClass]="{ 'nested': isNested }" (click)="toggleExpanded()">
+        <span class="expand-icon" [style.display]="!isExpanded() ? '' : 'none'">▸</span>
+        <span class="expand-icon" [style.display]="isExpanded() ? '' : 'none'">▾</span>
+        {{ trackName === 'custom-data' ? 'Custom data' : trackName }}
+      </div>
+      <div class="pv-track-container" [style.display]="!isExpanded() ? '' : 'none'">
+        <nightingale-track-canvas
+          [id]="trackName + '-track'"
+          [data]="mutableSubtracks()"
+          [length]="sequenceLength"
+          height="40"
+          margin-left="0"
+          margin-right="10"
+          layout="non-overlapping"
+          highlight-color="#FFEB3B66"
+          highlight-event="onmouseover"
+          [fixedHighlight]="selectionHighlight()"
+          use-ctrl-to-zoom
+        ></nightingale-track-canvas>
+      </div>
+      <div class="pv-track-container" [style.display]="isExpanded() ? '' : 'none'"></div>
+    </div>
+
+    <!-- Subtrack scrollbox -->
+    <div [style.display]="isExpanded() ? '' : 'none'">
+      <nightingale-scrollbox [id]="trackName + 'scrollbox'">
+        @for (subtrack of mutableSubtracks(); track subtrack; let j = $index) {
+        <nightingale-scrollbox-item
+          [id]="trackName + '-subtrack-' + j"
+          [attr.content-visible]="generateSubTrackCanvasString(trackName, j, subtrack)"
+          [attr.content-hidden]="getLoadingSpinner()"
+          [attr.name]="trackName"
+          [attr.idx]="j"
+        ></nightingale-scrollbox-item>
+        }
+      </nightingale-scrollbox>
+    </div>
+  </div>
+</div>

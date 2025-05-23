@@ -42,3 +42,11 @@ export interface UniProtResidMapping {
   author_residue_number: number;
   residue_number: number;
 }
+
+export interface SummaryStats {
+  pdbs: number;
+  ligands: number;
+  interaction_partners: number;
+  annotations: number;
+  similar_proteins: number;
+}

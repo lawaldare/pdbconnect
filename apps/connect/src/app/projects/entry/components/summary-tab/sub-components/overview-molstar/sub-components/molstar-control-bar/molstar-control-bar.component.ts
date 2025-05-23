@@ -1,8 +1,7 @@
 // tab-nav.component.ts
 import { Component, computed, effect, inject } from '@angular/core';
 import { OverviewStateManagementService } from '../../state-management.service';
-import { OverviewMolstarFacade } from '../../overview-molstar.facade';
-import { MolstarOverviewForTopPage } from '../../../../../../helpers/molstar/molstar-overview-for-top-page';
+import { OverviewMolstarFacade } from '../../data-processing.facade';
 import { CommonModule } from '@angular/common';
 import { EntryDropdownComponent } from '../../../../../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
@@ -15,7 +14,6 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
   styleUrl: './molstar-control-bar.component.scss',
 })
 export class OverviewMolstarControBarComponent {
-  public readonly molstarOverview = inject(MolstarOverviewForTopPage);
   public readonly dataProcessing = inject(OverviewMolstarFacade);
   public readonly stateManagement = inject(OverviewStateManagementService);
 
@@ -23,80 +21,64 @@ export class OverviewMolstarControBarComponent {
   public selectionList: string[] = [];
   public selectionOptions: DownloadOption[] = [];
 
-  public listViewSelectablesByTab = this.dataProcessing.listViewSelectablesByTab;
-
-  public currentTab = this.stateManagement.currentTab;
-  public tabsStates = this.stateManagement.tabsStates;
-
-  // Create a computed signal for a specific property
-  public currentListViewSelectionIdx = computed(() => {
-    const tabName = this.currentTab();
-    return this.tabsStates()[tabName]?.currentListViewSelectionIdx;
-  });
-
-  // Create a computed signal for a specific property
-  public currentListViewSelectionTemp = computed(() => {
-    const tabName = this.currentTab();
-    return this.tabsStates()[tabName]?.currentListViewSelectionTemp;
-  });
+  public stateSelectionIdx = this.stateManagement.currentSelectionIdx;
+  public stateMolstarSelections = this.stateManagement.currentMolstarSelections;
+  public stateMolstarSelectionNames = this.stateManagement.currentMolstarSelectionsNames;
 
   // Create a computed signal for a specific property
   public currentMolstarSelection = computed(() => {
-    const tabName = this.currentTab();
-    return this.tabsStates()[tabName]?.currentMolstarSelection || undefined;
+    const currentIdx = this.stateSelectionIdx();
+    return this.stateMolstarSelections()[currentIdx];
   });
 
   constructor() {
     effect(async () => {
-      const currentListView = this.currentListViewSelectionTemp();
-      if (currentListView) {
-        const currentSelection = currentListView.molstarNamedSelections[this.currentListViewSelectionIdx()];
-        this.selectedItem = currentSelection.name;
-        this.selectionList = currentListView.molstarNamedSelections.map((eachSelection) => eachSelection.name);
-        this.selectionOptions = currentListView.molstarNamedSelections.map((eachSelection, idx) => {
+      if (this.stateMolstarSelections().length > 0) {
+        const currentIdx = this.stateSelectionIdx();
+        this.selectedItem = this.stateMolstarSelectionNames()[currentIdx];
+        this.selectionList = this.stateMolstarSelectionNames();
+        this.selectionOptions = this.stateMolstarSelectionNames().map((selName, idx) => {
           return {
-            name: eachSelection.name,
+            name: selName,
             url: `${idx + 1}`,
             downloadable: false,
           };
         });
-        this.stateManagement.switchMolstarZoomed(currentSelection.selection);
+        this.stateManagement.switchMolstarZoomed(this.currentMolstarSelection());
       }
     });
   }
 
-  updateView() {
-    const currentListView = this.currentListViewSelectionTemp();
-    if (currentListView) {
-      const currentSelection = currentListView.molstarNamedSelections[this.currentListViewSelectionIdx()];
-
-      this.selectedItem = currentSelection.name;
-      this.selectionList = currentListView.molstarNamedSelections.map((eachSelection) => eachSelection.name);
-
-      this.selectionOptions = currentListView.molstarNamedSelections.map((eachSelection, idx) => {
-        return {
-          name: eachSelection.name,
-          url: `${idx + 1}`,
-          downloadable: false,
-        };
-      });
-
-      this.stateManagement.switchMolstarZoomed(currentSelection.selection);
-    }
-  }
-
   public async onMolstarSelect(event: string) {
-    const currentTabName = this.currentTab();
-
     // get index of dropdown value
-    const idx = this.selectionList.indexOf(event);
-    this.stateManagement.updateStatePropertyOfTab(currentTabName, 'currentListViewSelectionIdx', idx);
+    const newSelectionIdx = this.selectionList.indexOf(event);
+    const sameSelectedItem = this.selectedItem === this.selectionList[newSelectionIdx];
+    if (sameSelectedItem) return;
 
-    // update current molstar selection obj
-    const newSelection = this.currentListViewSelectionTemp()!.molstarNamedSelections[idx];
-    this.stateManagement.updateStatePropertyOfTab(currentTabName, 'currentMolstarSelection', newSelection.selection);
+    const listViewItem = this.stateManagement.lastListViewItem!;
+    const listViewItemType = this.stateManagement.listViewItemType!;
 
-    // refresh display of current
-    this.stateManagement.switchMolstarZoomed(this.currentMolstarSelection());
+    let viewName = '';
+    if (listViewItemType === 'macromolecule') {
+      const tabType = this.stateManagement.lastMacromoleculeState.split('/')[0];
+      const macroIdx = this.stateManagement.lastMacromoleculeState.split('/')[1];
+      this.stateManagement.lastMacromoleculeState = `${tabType}/${macroIdx}/${newSelectionIdx}`;
+      viewName = 'Macromolecules';
+    } else if (listViewItemType === 'ligand') {
+      const tabType = this.stateManagement.lastLigandsState.split('/')[0];
+      const ligandIdx = this.stateManagement.lastLigandsState.split('/')[1];
+      this.stateManagement.lastLigandsState = `${tabType}/${ligandIdx}/${newSelectionIdx}`;
+      viewName = 'Ligands';
+    } else if (listViewItemType === 'modification') {
+      const tabType = this.stateManagement.lastModificationsState.split('/')[0];
+      const modIdx = this.stateManagement.lastModificationsState.split('/')[1];
+      this.stateManagement.lastModificationsState = `${tabType}/${modIdx}/${newSelectionIdx}`;
+      viewName = 'Modifications';
+    } else if (listViewItemType === 'domain') {
+      console.error('Domains should not contain sub-selections!');
+    }
+    this.stateManagement.lastListViewItem = undefined;
+    this.stateManagement.updateMolstarItemSelection(listViewItem, listViewItemType);
+    // this.stateManagement.updateMolstarAccordionSelection(viewName);
   }
 }

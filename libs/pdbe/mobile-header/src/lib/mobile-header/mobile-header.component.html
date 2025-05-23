@@ -1,0 +1,18 @@
+<section [ngStyle]="{ 'background-color': headerConfig().backgroundColor }">
+  <div class="menu">
+    <a href="https://www.ebi.ac.uk/pdbe/" target="_blank" style="padding: 0"
+      ><img src="/assets/images/mobile/mobile-logo.svg" alt="logo" style="height: 38px; width: 38px"
+    /></a>
+    <pdb-search-app [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" />
+    <i class="icon icon-common icon-align-justify" (click)="showMobileMenu()" style="font-size: 32px"></i>
+  </div>
+  @if(areLinksShowed()){
+  <ul class="nav-links">
+    @for(link of headerConfig().urls; track link.name){
+    <li class="nav-link">
+      <a [href]="link.path" [target]="link.openInNewTab ? '_blank' : '_self'">{{ link.name }}</a>
+    </li>
+    }
+  </ul>
+  }
+</section>

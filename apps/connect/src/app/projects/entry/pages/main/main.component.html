@@ -1,50 +1,45 @@
-<pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
-<pdbc-pdbe-header-search id="entry-search" [headerSearchConfig]="pdbeSearchConfig"></pdbc-pdbe-header-search>
-<!-- <pdb-search-app [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" /> -->
-@if (statusCode() === 'REL') {
-<section class="container">
-  <pdbc-entry-page-header />
-  <main>
-    <mat-tab-group (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTab" mat-stretch-tabs="false" mat-align-tabs="start">
-      <mat-tab label="Summary"> <pdbc-summary-tab /> </mat-tab>
-      <mat-tab label="Model quality">
-        <ng-template matTabContent> <pdbc-experiments-validation /> </ng-template>
-      </mat-tab>
-      @for (tab of commonTabs(); track tab) {
-      <mat-tab class="common-tab">
-        <ng-template mat-tab-label>{{ tab.name }} </ng-template>
-        <!-- <ng-template mat-tab-label> <span class="tab-tag na">{{ tab.tag }}</span>{{ tab.name }} </ng-template> -->
-        <ng-template matTabContent>
-          @if (tabDataLoaded() && molstarResidueInfoLoaded()) { @if (tab.hasData) {
-          <section class="common-tab" [class.change-display]="!isSidebarCollapsed()">
-            @if(isSidebarCollapsed()){
-            <pdbc-interactive-tables [tabName]="dataProcessing.getTableName(tab.id)" />
-            }
-            <pdbc-details-dashboard [tabName]="dataProcessing.getTableName(tab.id)" [molstarViewerEl]="molstarViewer" [molstarParent]="molstarParent" />
-          </section>
-          } @else {
-          <h5>No {{ tab.name }} data available</h5>
-
-          } } @else {
-          <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
-          }
-        </ng-template>
-      </mat-tab>
-      }
-      <mat-tab label="Citations">
-        <ng-template matTabContent> <pdbc-citations-tab /> </ng-template>
-      </mat-tab>
-    </mat-tab-group>
-
-    <div #molstarParent style="display: none">
-      <div class="molstar-viewer" #molstarViewer></div>
-    </div>
-  </main>
-</section>
-} @else if (statusCode() === 'INITIAL') {
-<section class="entry-page-container">
-  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
-</section>
-} @else {
-<pdbc-entry-main-alternative [entryStatus]="entryStatus()" />
-}
+<div class="desktop-view">
+  <pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
+  <pdb-search-app [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" />
+  @if (statusCode() === 'REL') {
+  <section class="container">
+    <pdbc-entry-page-header />
+    <main>
+      <mat-tab-group (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTab()" mat-stretch-tabs="false" mat-align-tabs="start">
+        <mat-tab label="Summary"> <pdbc-summary-tab /> </mat-tab>
+        <mat-tab label="Model quality">
+          <ng-template matTabContent> <pdbc-experiments-validation /> </ng-template>
+        </mat-tab>
+        <mat-tab label="Assemblies">
+          <ng-template matTabContent> <pdbc-assemblies-tab /> </ng-template>
+        </mat-tab>
+        <mat-tab label="Macromolecules">
+          <ng-template matTabContent> <pdbc-macromolecules-tab /> </ng-template>
+        </mat-tab>
+        <mat-tab label="Ligands and Environments">
+          <ng-template matTabContent> <pdbc-ligands-tab /> </ng-template>
+        </mat-tab>
+        <mat-tab label="Domains">
+          <ng-template matTabContent> <pdbc-domains-tab /> </ng-template>
+        </mat-tab>
+        <mat-tab label="Citations">
+          <ng-template matTabContent> <pdbc-citations-tab /> </ng-template>
+        </mat-tab>
+      </mat-tab-group>
+    </main>
+  </section>
+  } @else if (statusCode() === 'INITIAL') {
+  <section class="entry-page-container">
+    <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+  </section>
+  } @else {
+  <pdbc-entry-main-alternative [entryStatus]="entryStatus()" />
+  }
+</div>
+<div class="mobile-view">
+  <lib-mobile-header [headerConfig]="mobileHeaderConfig" />
+  <pdbc-mobile-main />
+</div>
+<div id="parent-molstar-container" #molstarParent>
+  <div id="molstar-element" class="molstar-viewer" #molstarViewer></div>
+</div>

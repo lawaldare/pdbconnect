@@ -8,11 +8,12 @@ import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { catchError, combineLatest, map, Observable, of } from 'rxjs';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
   selector: 'pdbc-complex-publications',
   standalone: true,
-  imports: [CommonModule, MatPaginator],
+  imports: [CommonModule, MatPaginator, NgxSkeletonLoaderModule],
   templateUrl: './complex-publications.component.html',
   styleUrl: './complex-publications.component.scss',
 })

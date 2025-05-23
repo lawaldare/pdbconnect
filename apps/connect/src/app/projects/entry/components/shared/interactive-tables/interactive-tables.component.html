@@ -27,11 +27,10 @@
 <section>
   @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card; let i = $index) {
   <div class="card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard()?.name?.molecule === card.name.molecule">
-    <p class="card-title">{{card.name.molecule}}</p>
+    <p class="card-title" pdbcTruncateText [maxLines]="4" [tooltip]="true">{{card.name.molecule}}</p>
     <p class="card-text">
-      @for(chain of card.name.chains; track chain) {
-      <span>{{chain}}</span>
-      }
+      @for(chain of card.name.chains; track chain; let islast = $last) {
+      <span>{{chain}}</span>{{ islast ? '' : ',' }} }
     </p>
   </div>
   } @if(rowCards().length > 10){
@@ -54,7 +53,13 @@
     <img [src]="'https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/' + card.id +'_100.svg'" alt="" />
     <div class="card-info">
       <p class="card-title">{{card.codeAndName.count}} X {{card.id}}</p>
-      <p class="annotation">{{card.annotation.description}}</p>
+      @if(card.annotations.length){ @for(annotation of card.annotations; track annotation){
+      <p class="annotation" [ngClass]="annotation" [pdbcRichTooltip]="annotationsTooltips[annotation]">{{annotation | titlecase}}</p>
+      } } @if(!card.isModified && card.annotations.length === 0){
+      <p class="annotation unannotated" [pdbcRichTooltip]="annotationsTooltips['unannotated']">Unannotated</p>
+      } @if(card.isModified){
+      <p class="annotation modification" [pdbcRichTooltip]="annotationsTooltips['modification']">Modification</p>
+      }
     </div>
   </div>
   } @if(rowCards().length > 10){
@@ -75,13 +80,12 @@
   @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card; let i = $index;) {
   <div class="card domain-card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard()?.domain === card.domain">
     <p class="domain-card-title">
-      <strong>{{card?.domain}}</strong> (<strong>{{card?.resource}}</strong>
-      <a [href]="resourceUrls[card.resource] + card?.additionalData?.accession" target="_blank">{{card?.additionalData?.accession}}</a>)
+      <span style="display: block"><strong>{{card?.accessionName}}</strong></span>
+      <span>(<strong>{{card?.resource}}</strong></span>
+      @let id = card?.resource === 'SCOP' ? '' : card?.additionalData?.accession;
+      <a [href]="resourceUrls[card.resource] + id" target="_blank">{{card?.additionalData?.accession}}</a>)
     </p>
-    <p class="domain-card-chain">
-      Chain @for(chain of card?.segments; track chain; let islast = $last) {
-      <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
-    </p>
+    <p class="domain-card-chain">{{card?.segmentsAsText}}</p>
   </div>
   } @if(rowCards().length > 10){
   <pagination-controls

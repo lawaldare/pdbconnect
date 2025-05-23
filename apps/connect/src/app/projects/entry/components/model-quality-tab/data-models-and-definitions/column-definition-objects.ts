@@ -1,15 +1,9 @@
 import { ColDef, ValueFormatterParams } from 'ag-grid-community'; // Column Definition Type Interface
 import { TableHeaderWithTooltipComponent } from '../../shared/interactive-tables/sub-components/table-header-with-tooltip/table-header-with-tooltip.component';
-import {
-  depositionDateTooltip,
-  expEmBufferTooltip,
-  nmrContentsTooltip,
-  nmrSampleTooltip,
-  releaseDateTooltip,
-  revisionDateTooltip,
-  validationInfoTooltip,
-} from '../../../entry-constant';
+import { depositionDateTooltip, expEmBufferTooltip, nmrContentsTooltip, nmrSampleTooltip, releaseDateTooltip, revisionDateTooltip } from '../../../entry-constant';
 import { ExperimentRawRow, XRayStatsRow } from './table-rows.model';
+import { ExperimentalInfoValueRendererComponent } from './experimental-info-value.component';
+import { ExperimentalInfoMetricRendererComponent } from './experimental-info-metric.component';
 
 export const VALIDATION_COLUMN_DEFS: ColDef[] = [
   {
@@ -21,15 +15,70 @@ export const VALIDATION_COLUMN_DEFS: ColDef[] = [
     autoHeaderHeight: true,
     filter: false,
     resizable: false,
-    headerComponent: TableHeaderWithTooltipComponent,
-    headerComponentParams: {
-      customHeader: 'Metric',
-      customTooltip: validationInfoTooltip,
-    },
   },
   {
     headerName: 'Description',
     field: 'description',
+    flex: 1,
+    wrapText: true,
+    autoHeight: true,
+    autoHeaderHeight: true,
+    filter: false,
+    resizable: false,
+  },
+];
+
+export const EXPERIMENTAL_INFO_COLUMN_DEFS: ColDef[] = [
+  {
+    headerName: 'Metric',
+    field: 'label',
+    cellRenderer: ExperimentalInfoMetricRendererComponent,
+    flex: 1,
+    wrapText: true,
+    autoHeight: true,
+    autoHeaderHeight: true,
+    filter: false,
+    resizable: false,
+  },
+  {
+    headerName: 'Value',
+    field: 'value',
+    cellRenderer: ExperimentalInfoValueRendererComponent,
+    flex: 1,
+    wrapText: true,
+    autoHeight: true,
+    autoHeaderHeight: true,
+    filter: false,
+    resizable: false,
+  },
+];
+export const EXPERIMENTAL_INFO_DATA_QUALITY_COLUMN_DEFS: ColDef[] = [
+  {
+    headerName: 'Metric',
+    field: 'label',
+    cellRenderer: ExperimentalInfoMetricRendererComponent,
+    flex: 1,
+    wrapText: true,
+    autoHeight: true,
+    autoHeaderHeight: true,
+    filter: false,
+    resizable: false,
+  },
+  {
+    headerName: 'Value',
+    field: 'value',
+    cellRenderer: ExperimentalInfoValueRendererComponent,
+    flex: 1,
+    wrapText: true,
+    autoHeight: true,
+    autoHeaderHeight: true,
+    filter: false,
+    resizable: false,
+  },
+  {
+    headerName: 'Outer shell',
+    field: 'shell',
+    cellRenderer: ExperimentalInfoValueRendererComponent,
     flex: 1,
     wrapText: true,
     autoHeight: true,
@@ -108,12 +157,12 @@ function fieldFormatterXRayRow(rowData: XRayStatsRow) {
     return `<span>${newValue}</span>`;
   }
   if (rowData.metric === 'Spacegroup') {
-    let newValue = rowData.value[0];
+    let newValue = `<i>${rowData.value[0]}</i> `;
     for (let i = 1; i < rowData.value.length; i++) {
       const char = rowData.value[i];
-      if (char.length === 1) newValue += ` ${char}`;
+      if (char.length === 1) newValue += `${char}`;
       else if (char.length > 0) {
-        newValue += ` ${char[0]}<sub>${char.slice(1)}</sub>`;
+        newValue += `${char[0]}<sub>${char.slice(1)}</sub>`;
       }
     }
     return `<span>${newValue}</span>`;
@@ -319,7 +368,7 @@ export const EXP_RAW_ACCESSIONS_COLUMN_DEFS: ColDef[] = [
         link = params.data!.link!;
         linkName = `${params.data!.accession}`;
       }
-      return `<a>${linkName}</a>`;
+      return `<a href="${link}" target="_blank" style="font-size: 14px">${linkName}</a>`;
     },
   },
   {

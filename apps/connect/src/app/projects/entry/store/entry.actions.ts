@@ -4,7 +4,7 @@ import { AssembliesData, DownloadOptionData, EntryMoleculesData, ExperimentData,
 import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../data-models/domains.model';
 import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
-import { KeyValidationStats } from '../data-models/key-validation-stats.model';
+import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
 import { CitationDetail } from '../data-models/publication.model';
 import { RelatedPublication } from '../data-models/related-publications.model';
@@ -20,6 +20,11 @@ import {
 import { EntryStatus } from '../data-models/status.model';
 import { Interaction } from '../data-models/interaction.model';
 import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
+import { Symmetry } from '../data-models/assembly.model';
+import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
+import { LigandMonomer } from '../data-models/ligand-monomers.model';
+import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
+import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -73,6 +78,9 @@ export const EntryActions = createActionGroup({
     'Get Validation Key Stats': emptyProps(),
     'Get Validation Key Stats Success': props<{ validationKeyStats: KeyValidationStats }>(),
     'Get Validation Key Stats Failure': emptyProps(),
+    'Get Model Quality Xray': emptyProps(),
+    'Get Model Quality Xray Success': props<{ modelQualityXray: ModelQualityXray }>(),
+    'Get Model Quality Xray Failure': emptyProps(),
     'Get Validation Xray Refine': emptyProps(),
     'Get Validation Xray Refine Success': props<{ validationXRayRefine: XRayRefine }>(),
     'Get Validation Xray Refine Failure': emptyProps(),
@@ -85,6 +93,9 @@ export const EntryActions = createActionGroup({
     'Get Preferred Assembly': emptyProps(),
     'Get Preferred Assembly Success': props<{ complexDetails: ComplexDetails[] }>(),
     'Get Preferred Assembly Failure': emptyProps(),
+    'Get Symmetry': emptyProps(),
+    'Get Symmetry Success': props<{ symmetry: Symmetry[] }>(),
+    'Get Symmetry Failure': emptyProps(),
     'Get Assemblies': emptyProps(),
     'Get Assemblies Success': props<{ data: AssembliesData }>(),
     'Get Assemblies Failure': emptyProps(),
@@ -109,8 +120,48 @@ export const EntryActions = createActionGroup({
     'Get Entry Status': emptyProps(),
     'Get Entry Status Success': props<{ entryStatus: EntryStatus }>(),
     'Get Entry Status Failure': emptyProps(),
-    'Get Interactions': emptyProps(),
+    'Get Interactions': props<{ chainId: string; residueId: string }>(),
     'Get Interactions Success': props<{ interactions: Interaction[] }>(),
     'Get Interactions Failure': emptyProps(),
+    'Get Entry Polymer Coverage': emptyProps(),
+    'Get Entry Polymer Coverage Success': props<{ polymerCoverage: PolymerCoverageMolecule[] }>(),
+    'Get Entry Polymer Coverage Failure': emptyProps(),
+    'Get Entry Ligand Monomers': emptyProps(),
+    'Get Entry Ligand Monomers Success': props<{ ligandMonomers: LigandMonomer[] }>(),
+    'Get Entry Ligand Monomers Failure': emptyProps(),
+    'Get Entry Residue Wise Outliers': emptyProps(),
+    'Get Entry Residue Wise Outliers Success': props<{ residueWiseOutliers: ResidueWiseOutliersMolecule[] }>(),
+    'Get Entry Residue Wise Outliers Failure': emptyProps(),
+    'Get Entry Protvista Uniprot Mapping': props<{ entityId: string }>(),
+    'Get Entry Protvista Uniprot Mapping Success': props<{ entityPvUniprot: APITrackData }>(),
+    'Get Entry Protvista Uniprot Mapping Failure': emptyProps(),
+    'Get Entry Protvista Chains': props<{ entityId: string }>(),
+    'Get Entry Protvista Chains Success': props<{ entityPvChains: APITrackData }>(),
+    'Get Entry Protvista Chains Failure': emptyProps(),
+    'Get Entry Protvista Domains': props<{ entityId: string }>(),
+    'Get Entry Protvista Domains Success': props<{ entityPvDomains: APITrackData }>(),
+    'Get Entry Protvista Domains Failure': emptyProps(),
+    'Get Entry Protvista Rfam': props<{ entityId: string }>(),
+    'Get Entry Protvista Rfam Success': props<{ entityPvRfam: APITrackData }>(),
+    'Get Entry Protvista Rfam Failure': emptyProps(),
+    'Get Entry Protvista Secondary Structure': props<{ entityId: string }>(),
+    'Get Entry Protvista Secondary Structure Success': props<{ entityPvSecondaryStructure: APITrackData }>(),
+    'Get Entry Protvista Secondary Structure Failure': emptyProps(),
+    'Get Entry Protvista Binding Sites': props<{ entityId: string }>(),
+    'Get Entry Protvista Binding Sites Success': props<{ entityPvBindingSites: APITrackData }>(),
+    'Get Entry Protvista Binding Sites Failure': emptyProps(),
+    'Get Entry Protvista Interfaces': props<{ entityId: string }>(),
+    'Get Entry Protvista Interfaces Success': props<{ entityPvInterfaces: APITrackData }>(),
+    'Get Entry Protvista Interfaces Failure': emptyProps(),
+    'Get Entry Protvista Annotations': props<{ entityId: string }>(),
+    'Get Entry Protvista Annotations Success': props<{ entityPvAnnotations: APITrackData }>(),
+    'Get Entry Protvista Annotations Failure': emptyProps(),
+    'Get Entry Protvista Conservation': props<{ entityId: string }>(),
+    'Get Entry Protvista Conservation Success': props<{ entityPvConservation: APIConservationData }>(),
+    'Get Entry Protvista Conservation Failure': emptyProps(),
+    'Get Entry Protvista Variation': props<{ entityId: string }>(),
+    'Get Entry Protvista Variation Success': props<{ entityPvVariation: APIVariationData }>(),
+    'Get Entry Protvista Variation Failure': emptyProps(),
+    'Clear Entity Protvista Data': emptyProps(),
   },
 });

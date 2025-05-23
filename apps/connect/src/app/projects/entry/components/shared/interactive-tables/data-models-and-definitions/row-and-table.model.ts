@@ -4,7 +4,7 @@
 
 import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
 import { Molecule } from '../../../../data-models/molecule.model';
-import { MolstarSelectionObj } from '../../../../helpers/molstar/molstar-helpers';
+import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 
 export type TableRow = AssembliesRowData | MacromoleculesRowData | LigandsRowData | DomainsRowData;
 
@@ -31,6 +31,7 @@ export interface AssembliesRowData {
     dissociationEnergy: string;
     dissociationEntropy: string;
     symmetryNumber: string;
+    interfaceCount: string;
     selections: MolstarSelectionObj[];
   };
 }
@@ -60,8 +61,11 @@ export interface MacromoleculesRowData {
   additionalData: {
     molecule: Molecule;
     selections: MolstarSelectionObj[];
+    selectionNames: string[];
     uniprotAccessions: string[];
   };
+  mappedResidues?: any[];
+  molstarColorHex?: string;
 }
 
 /**
@@ -86,7 +90,9 @@ export interface LigandsRowData {
   additionalData: {
     source: Molecule | ModifiedResidue[];
     selections: MolstarSelectionObj[];
+    selectionNames: string[];
   };
+  molstarColorHex?: string;
 }
 
 /**
@@ -106,10 +112,14 @@ export interface DomainsRowData {
   domain: string;
   moleculeNames: string[];
   segments: string[];
+  segmentsAsText: string;
   additionalData: {
     accession: string;
     boundaries: DomainsBoundaries[];
     segmentsResidNumbers: string[];
     selections: MolstarSelectionObj[];
+    selectionNames: string[];
   };
+  mappedboundaries?: string[];
+  molstarColorHex?: string;
 }

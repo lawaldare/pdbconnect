@@ -5,7 +5,7 @@ import { EntryActions } from './entry.actions';
 // import { UniProtMapping } from '../data-models/uniprot-mapping.model';
 // import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
 import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
-import { KeyValidationStats } from '../data-models/key-validation-stats.model';
+import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
 import { CitationDetail } from '../data-models/publication.model';
 // import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../data-models/domains.model';
@@ -13,42 +13,44 @@ import { ProcessedSummary } from '../data-models/summary.model';
 import { RelatedPublication } from '../data-models/related-publications.model';
 import { IRRMCExperimentRawData, SBGRIDExperimentRawData } from '../data-models/experiment-raw-data.model';
 import { entryStatusDefault } from '../data-models/status.model';
+import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
 
 export const ENTRY_STORE_STATE_KEY = 'entry';
 
 const initialState: EntryStoreState = {
   entryId: '',
-  summaryData: {} as ProcessedSummary,
-  macroMolecules: [],
+  summaryData: undefined,
+  macroMolecules: undefined,
   boundLigands: [],
   organismScientificNames: [],
   hasRNA: false,
   experimentalDetails: [],
   resolutionValues: [],
   experimentalMethod: '',
-  uniprotMapping: {},
+  uniprotMapping: undefined,
   uniprotCountsInPDBe: {},
-  bestStructuresMappingsByUniProtIds: {},
+  bestStructuresMappingsByUniProtIds: undefined,
   proteinPagesSummaryByUniProtIds: {},
   interproMapping: {},
   isoformsMapping: {},
   goMapping: {},
   ecMapping: {},
-  pfamMapping: {},
+  pfamMapping: undefined,
   downloadOptions: [],
   viewOptions: [],
   summaryQualityScores: {} as ProcessedQualityScores,
-  cathMapping: {},
-  scop175Mapping: {},
-  modifications: [],
+  cathMapping: undefined,
+  scop175Mapping: undefined,
+  modifications: undefined,
+  modelQualityXray: {} as ModelQualityXray,
   validationKeyStats: {} as KeyValidationStats,
   validationXRayRefine: {} as XRayRefine,
   primaryPublication: {} as CitationDetail,
   articlesCiting: {} as RelatedPublication,
-  complexDetails: [],
-  assemblies: [],
-  pisaAssemblies: [],
-  carbohydrates: [],
+  complexDetails: undefined,
+  assemblies: undefined,
+  pisaAssemblies: undefined,
+  carbohydrates: undefined,
   pdbRedoQualityScores: {} as ProcessedQualityScores,
   experimentRawDataBMRB: [],
   experimentRawDataSBGrid: {} as SBGRIDExperimentRawData,
@@ -57,6 +59,20 @@ const initialState: EntryStoreState = {
   experimentRawDataPDB: [],
   entryStatus: { ...entryStatusDefault },
   interactions: [],
+  symmetry: [],
+  polymerCoverage: undefined,
+  ligandMonomers: undefined,
+  residueWiseOutliers: [],
+  entityPvUniprot: {} as APITrackData,
+  entityPvChains: {} as APITrackData,
+  entityPvDomains: {} as APITrackData,
+  entityPvRfam: {} as APITrackData,
+  entityPvSecondaryStructure: {} as APITrackData,
+  entityPvBindingSites: {} as APITrackData,
+  entityPvInterfaces: {} as APITrackData,
+  entityPvAnnotations: {} as APITrackData,
+  entityPvConservation: {} as APIConservationData,
+  entityPvVariation: {} as APIVariationData,
 };
 
 export const entryReducer = createReducer(
@@ -68,6 +84,10 @@ export const entryReducer = createReducer(
   on(EntryActions.getCathMappingSuccess, (state, action) => ({
     ...state,
     cathMapping: action.cathMapping,
+  })),
+  on(EntryActions.getSymmetrySuccess, (state, action) => ({
+    ...state,
+    symmetry: action.symmetry,
   })),
   on(EntryActions.getInteractionsSuccess, (state, action) => ({
     ...state,
@@ -104,6 +124,10 @@ export const entryReducer = createReducer(
   on(EntryActions.getValidationKeyStatsSuccess, (state, action) => ({
     ...state,
     validationKeyStats: action.validationKeyStats,
+  })),
+  on(EntryActions.getModelQualityXraySuccess, (state, action) => ({
+    ...state,
+    modelQualityXray: action.modelQualityXray,
   })),
   on(EntryActions.getInterproMappingSuccess, (state, action) => ({
     ...state,
@@ -190,5 +214,70 @@ export const entryReducer = createReducer(
   on(EntryActions.getEntryStatusSuccess, (state, action) => ({
     ...state,
     entryStatus: action.entryStatus,
+  })),
+  on(EntryActions.getEntryPolymerCoverageSuccess, (state, action) => ({
+    ...state,
+    polymerCoverage: action.polymerCoverage,
+  })),
+  on(EntryActions.getEntryLigandMonomersSuccess, (state, action) => ({
+    ...state,
+    ligandMonomers: action.ligandMonomers,
+  })),
+  on(EntryActions.getEntryResidueWiseOutliersSuccess, (state, action) => ({
+    ...state,
+    residueWiseOutliers: action.residueWiseOutliers,
+  })),
+  on(EntryActions.getEntryProtvistaUniprotMappingSuccess, (state, action) => ({
+    ...state,
+    entityPvUniprot: action.entityPvUniprot,
+  })),
+  on(EntryActions.getEntryProtvistaChainsSuccess, (state, action) => ({
+    ...state,
+    entityPvChains: action.entityPvChains,
+  })),
+  on(EntryActions.getEntryProtvistaDomainsSuccess, (state, action) => ({
+    ...state,
+    entityPvDomains: action.entityPvDomains,
+  })),
+  on(EntryActions.getEntryProtvistaRfamSuccess, (state, action) => ({
+    ...state,
+    entityPvRfam: action.entityPvRfam,
+  })),
+  on(EntryActions.getEntryProtvistaSecondaryStructureSuccess, (state, action) => ({
+    ...state,
+    entityPvSecondaryStructure: action.entityPvSecondaryStructure,
+  })),
+  on(EntryActions.getEntryProtvistaBindingSitesSuccess, (state, action) => ({
+    ...state,
+    entityPvBindingSites: action.entityPvBindingSites,
+  })),
+  on(EntryActions.getEntryProtvistaInterfacesSuccess, (state, action) => ({
+    ...state,
+    entityPvInterfaces: action.entityPvInterfaces,
+  })),
+  on(EntryActions.getEntryProtvistaAnnotationsSuccess, (state, action) => ({
+    ...state,
+    entityPvAnnotations: action.entityPvAnnotations,
+  })),
+  on(EntryActions.getEntryProtvistaConservationSuccess, (state, action) => ({
+    ...state,
+    entityPvConservation: action.entityPvConservation,
+  })),
+  on(EntryActions.getEntryProtvistaVariationSuccess, (state, action) => ({
+    ...state,
+    entityPvVariation: action.entityPvVariation,
+  })),
+  on(EntryActions.clearEntityProtvistaData, (state) => ({
+    ...state,
+    entityPvUniprot: {} as APITrackData,
+    entityPvChains: {} as APITrackData,
+    entityPvDomains: {} as APITrackData,
+    entityPvRfam: {} as APITrackData,
+    entityPvSecondaryStructure: {} as APITrackData,
+    entityPvBindingSites: {} as APITrackData,
+    entityPvInterfaces: {} as APITrackData,
+    entityPvAnnotations: {} as APITrackData,
+    entityPvConservation: {} as APIConservationData,
+    entityPvVariation: {} as APIVariationData,
   }))
 );

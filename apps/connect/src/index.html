@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -59,49 +59,59 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
+    <script>
+      // This will override __webpack_public_path__ at runtime
+      const hostname = window.location.hostname;
+      window.__app_public_path__ = hostname === 'localhost' ? '/' : '/pdbe/connect/';
+    </script>
+
     <!-- EBI CSS -->
-    <link rel="preload" href="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.css" as="style" onload="this.rel='stylesheet'" />
+    <!-- <link rel="preload" href="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.css" as="style" onload="this.rel='stylesheet'" />
     <noscript>
       <link rel="stylesheet" href="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.css" />
-    </noscript>
+    </noscript> -->
 
     <!-- Mol* CSS -->
     <!-- <link rel="stylesheet" href="https://molstar.org/pdbe-molstar/build/pdbe-molstar.css" type="text/css" media="all" /> -->
-    <link rel="preload" href="https://molstar.org/pdbe-molstar/build/pdbe-molstar.css" as="style" onload="this.rel='stylesheet'" />
+    <!-- <link rel="preload" href="https://molstar.org/pdbe-molstar/build/pdbe-molstar.css" as="style" onload="this.rel='stylesheet'" />
     <noscript>
       <link rel="stylesheet" href="https://molstar.org/pdbe-molstar/build/pdbe-molstar.css" />
-    </noscript>
+    </noscript> -->
 
     <!-- D3 -->
-    <script src="https://d3js.org/d3.v5.min.js" defer></script>
+    <!-- <script src="https://d3js.org/d3.v5.min.js" defer></script> -->
 
     <!-- UI icons -->
     <!-- <link rel="stylesheet" href="https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css" /> -->
-    <link rel="preload" href="https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css" as="style" onload="this.rel='stylesheet'" />
+    <!-- <link rel="preload" href="https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css" as="style" onload="this.rel='stylesheet'" />
     <noscript>
       <link rel="stylesheet" href="https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css" />
-    </noscript>
+    </noscript> -->
 
     <!-- Web component polyfill (only loads what it needs) -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs/webcomponents-lite.js" charset="utf-8" defer></script> -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js" charset="utf-8"></script> -->
 
     <!--PDBe interactions component-->
-    <script type="module" src="./assets/pdb-ligand-env-component-2.0.0-min.js" defer></script>
-    <script type="module" src="./assets/heatmap-components-v0.2.js" defer></script>
+    <!-- <script type="module" src="./assets/pdb-ligand-env-component-2.0.0-min.js" defer></script>
+    <script type="module" src="./assets/heatmap-components-v0.2.js" defer></script> -->
 
     <!-- Entry pages only: -->
     <!-- PDB Topology Viewer library script -->
-    <script type="text/javascript" src="https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js" defer></script>
+    <!-- <script type="text/javascript" src="https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js" defer></script> -->
 
     <!-- PDBe Protvista -->
-    <script src="https://www.ebi.ac.uk/pdbe/pdb-component-library/js/protvista-pdb-3.3.0.js" defer></script>
+    <!-- <script src="https://www.ebi.ac.uk/pdbe/pdb-component-library/js/protvista-pdb-3.3.0.js" defer></script> -->
+
+    <!-- To be removed -->
+    <!-- <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css" /> -->
   </head>
 
   <body>
     <pdbc-root></pdbc-root>
 
     <!-- JS -->
-    <script type="text/javascript" src="https://molstar.org/pdbe-molstar/build/pdbe-molstar-plugin.js" defer></script>
+    <!-- <script type="text/javascript" src="https://molstar.org/pdbe-molstar/build/pdbe-molstar-plugin.js" defer></script> -->
   </body>
 </html>

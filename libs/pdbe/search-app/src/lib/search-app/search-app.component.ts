@@ -2,7 +2,7 @@
 import { Component, DestroyRef, ElementRef, inject, Input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { APISearchConfig, ClickOutsideDirective, DataLayerService, GoogleAnalyticsService, ThemeType, UISearchConfig, UtilService } from '@pdbc/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, mergeMap, of } from 'rxjs';
 import { SearchAppAPIService } from '../services/search-app-api.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -61,6 +61,8 @@ export class SearchAppComponent implements OnInit {
     searchTerm: '',
   });
 
+  public mobileSearchTerm = new FormControl('');
+
   private resultPanelStyle: ResultPanelStyle = { 'max-height': '100%' };
   public layoutAlign = '';
   public resultPanelOpen = signal(false);
@@ -106,6 +108,37 @@ export class SearchAppComponent implements OnInit {
       )
       .subscribe(
         (results: ResultGroup[]) => {
+          const sortedResults = this.utilService.sortArrayObjectByArrayOrder(results, this.categories, 'groupValue');
+          this.resultGroups = sortedResults;
+          this.resultPanelOpen.set(true);
+          if (this.resultGroups.length === 0) {
+            this.resultPanelOpen.set(false);
+          }
+        },
+        (error) => {
+          this.resultGroups = [];
+          this.resultPanelOpen.set(false);
+        }
+      );
+
+    this.mobileSearchTerm.valueChanges
+      .pipe(
+        debounceTime(300), // wait for 300ms pause in events
+        distinctUntilChanged(),
+        mergeMap((value) => {
+          if (value) {
+            this.showPrimaryPanel();
+            return this.searchAPIService.search(this.utilService.escapeValue(value), this.apiSearchConfig);
+          } else {
+            this.hideAllPanels();
+            return of([]);
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(
+        (results: ResultGroup[]) => {
+          console.log(results);
           const sortedResults = this.utilService.sortArrayObjectByArrayOrder(results, this.categories, 'groupValue');
           this.resultGroups = sortedResults;
           this.resultPanelOpen.set(true);

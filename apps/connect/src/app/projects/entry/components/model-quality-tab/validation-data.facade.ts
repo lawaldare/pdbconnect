@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { computed, inject, Injectable } from '@angular/core';
-import { KeyValidationStats } from '../../data-models/key-validation-stats.model';
+import { DestroyRef, inject, Injectable } from '@angular/core';
 import { ExperimentDetail } from '../../data-models/experimental-details.model';
 import { XRayRefine } from '../../data-models/x-ray-refine.model';
-import { ProcessedQualityScores } from '../../data-models/summary-quality-scores.model';
 import {
   ExperimentalInfoData,
   ExperimentalRawDatum,
@@ -29,9 +27,14 @@ import {
 } from '../../data-models/experiment-raw-data.model';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { UtilService } from '@pdbc/core';
+import { startWith, catchError, of, combineLatest, map, retry, mergeMap, Observable } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { OutlierResidues, ResidueWiseOutliersMolecule } from '../../data-models/residuewise-outliers.model';
+import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+
+export type FlatOutlierResidue = OutlierResidues & { entity_id: number; chain_id: string; struct_asym_id: string };
 
 @Injectable({
   providedIn: 'root',
@@ -39,23 +42,7 @@ import { UtilService } from '@pdbc/core';
 export class ValidationDataProcessingFacade {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly util = inject(UtilService);
-  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
-  public readonly entryTitle = computed(() => this.summaryData()?.entryTitle);
-  public readonly sourceOrganisms = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
-  public readonly depositionDate = computed(() => this.summaryData()?.depositionDate);
-  public readonly releaseDate = computed(() => this.summaryData()?.releaseDate);
-  public readonly revisionDate = computed(() => this.summaryData()?.revisionDate);
-  public readonly experimentalDetails = toSignal(this.globalStore.select(EntrySelectors.experimentalDetails));
-  public readonly hasRna = toSignal(this.globalStore.select(EntrySelectors.hasRNA));
-  public readonly keyValidationStats = toSignal(this.globalStore.select(EntrySelectors.validationKeyStats));
-  public readonly xRayRefine = toSignal(this.globalStore.select(EntrySelectors.validationXRayRefine));
-  public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
-  public readonly rawDataPDB = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataPDB));
-  public readonly rawDataBMRB = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataBMRB));
-  public readonly rawDataSBGrid = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataSBGrid));
-  public readonly rawDataIRRMC = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataIRRMC));
-  public readonly rawDataEMPIAR = toSignal(this.globalStore.select(EntrySelectors.experimentRawDataEMPIAR));
+  private readonly destroyRef = inject(DestroyRef);
 
   public readonly validationKeysToText: { [key: string]: string } = {
     bonds: 'Bond lengths in protein, DNA, RNA molecules',
@@ -67,36 +54,53 @@ export class ValidationDataProcessingFacade {
     rna_suite: 'Non-rotameric outlier suites in RNA molecules',
   };
 
-  // function process data from various API endpoints into unified format for template
-  public processData(): ProcessedExperimentalDetails[] {
-    const experimentalDetails: ExperimentDetail[] = this.experimentalDetails() ?? [];
-    const sourceOrganisms = this.sourceOrganisms() ?? [];
-    const hasRna = this.hasRna() ?? false;
-    const depositionDate = this.depositionDate() ?? '';
-    const releaseDate = this.releaseDate() ?? '';
-    const revisionDate = this.revisionDate() ?? '';
-    const entryTitle = this.entryTitle() ?? '';
-    const validationStats = this.util.isNotEmptyObject(this.keyValidationStats()) ? this.keyValidationStats() : undefined;
-    const xRayRefine = this.util.isNotEmptyObject(this.xRayRefine()) ? this.xRayRefine() : undefined;
-    const pdbRedoData = this.util.isNotEmptyObject(this.pdbRedoData()) ? this.pdbRedoData() : undefined;
-    const experimentRawDataPDB = this.rawDataPDB() ?? [];
-    const experimentRawDataBMRB = this.rawDataBMRB() ?? [];
-    const experimentRawDataIRRMC = this.util.isNotEmptyObject(this.rawDataIRRMC()) ? this.rawDataIRRMC() : undefined;
-    const experimentRawDataEMPIAR = this.rawDataEMPIAR() ?? [];
-    const experimentRawDataSBGrid = this.util.isNotEmptyObject(this.rawDataSBGrid()) ? this.rawDataSBGrid() : undefined;
+  public processData(): Observable<ProcessedExperimentalDetails[]> {
+    const createSelectorStream = <T>(selector: any, defaultValue: T) =>
+      this.globalStore.select(selector).pipe(
+        startWith(defaultValue),
+        catchError(() => of(defaultValue))
+      );
 
+    return combineLatest({
+      experimentalDetails: createSelectorStream(EntrySelectors.experimentalDetails, []),
+      sourceOrganisms: createSelectorStream(EntrySelectors.organismScientificNames, []),
+      hasRna: createSelectorStream(EntrySelectors.hasRNA, []),
+      depositionDate: createSelectorStream(EntrySelectors.summaryData, null).pipe(map((data) => data?.depositionDate)),
+      releaseDate: createSelectorStream(EntrySelectors.summaryData, null).pipe(map((data) => data?.releaseDate)),
+      revisionDate: createSelectorStream(EntrySelectors.summaryData, null).pipe(map((data) => data?.revisionDate)),
+      entryTitle: createSelectorStream(EntrySelectors.summaryData, null).pipe(map((data) => data?.entryTitle)),
+      validationStats: createSelectorStream(EntrySelectors.validationKeyStats, undefined).pipe(map((data) => (this.util.isNotEmptyObject(data) ? data : undefined))),
+      xRayRefine: createSelectorStream(EntrySelectors.validationXRayRefine, undefined).pipe(map((data) => (this.util.isNotEmptyObject(data) ? data : undefined))),
+      pdbRedoData: createSelectorStream(EntrySelectors.pdbRedoQualityScores, undefined).pipe(map((data) => (this.util.isNotEmptyObject(data) ? data : undefined))),
+      experimentalRawPDB: createSelectorStream(EntrySelectors.experimentRawDataPDB, []),
+      experimentalRawBMRB: createSelectorStream(EntrySelectors.experimentRawDataBMRB, undefined),
+      experimentRawDataIRRMC: createSelectorStream(EntrySelectors.experimentRawDataIRRMC, undefined).pipe(
+        map((data) => (this.util.isNotEmptyObject(data) ? data : undefined))
+      ),
+      experimentRawDataEMPIAR: createSelectorStream(EntrySelectors.experimentRawDataEMPIAR, []),
+      experimentRawDataSBGrid: createSelectorStream(EntrySelectors.experimentRawDataSBGrid, undefined).pipe(
+        map((data) => (this.util.isNotEmptyObject(data) ? data : undefined))
+      ),
+    }).pipe(
+      retry({ count: 3, delay: 1000 }),
+      mergeMap((data: any) => of(this.processExperimentalValidationData(data))),
+      takeUntilDestroyed(this.destroyRef)
+    );
+  }
+
+  private processExperimentalValidationData(data: any): ProcessedExperimentalDetails[] {
     const result: ProcessedExperimentalDetails[] = [];
-    for (let i = 0; i < experimentalDetails.length; i++) {
-      const experimentalDetail = experimentalDetails[i];
+    for (let i = 0; i < data.experimentalDetails.length; i++) {
+      const experimentalDetail = data.experimentalDetails[i];
       const processed: ProcessedExperimentalDetails = {
         generalInfo: {
           methodName: experimentalDetail.experimental_method,
         },
         timeline: [
           {
-            depositionDate: depositionDate,
-            releaseDate: releaseDate,
-            revisionDate: revisionDate,
+            depositionDate: data.depositionDate,
+            releaseDate: data.releaseDate,
+            revisionDate: data.revisionDate,
           },
         ],
       };
@@ -104,8 +108,8 @@ export class ValidationDataProcessingFacade {
       // parse general information data
 
       /** All methods */
-      if (sourceOrganisms.length > 0) processed.generalInfo.sourceOrganisms = sourceOrganisms;
-      if (pdbRedoData) processed.generalInfo.pdbRedoData = pdbRedoData;
+      if (data.sourceOrganisms.length > 0) processed.generalInfo.sourceOrganisms = data.sourceOrganisms;
+      if (data.pdbRedoData) processed.generalInfo.pdbRedoData = data.pdbRedoData;
 
       /** X-Ray, SAS, EM, others (maybe) */
       if (experimentalDetail.resolution) processed.generalInfo.resolution = `${experimentalDetail.resolution}Å`;
@@ -136,21 +140,22 @@ export class ValidationDataProcessingFacade {
       }
 
       // parse validation stats data
-      if (validationStats) {
+      if (data.validationStats) {
         const validationInfo: ValidationInfoRow[] = [];
-        for (const [validationKey, validationStat] of Object.entries(validationStats)) {
+        for (const [validationKey, validationStat] of Object.entries(data.validationStats)) {
           // if nothing was checked, skip
-          if (validationStat.num_checked === 0 || !validationStat.num_checked) continue;
+          const stat = validationStat as { num_checked: number; percent_outliers?: number; num_outliers?: number };
+          if (stat.num_checked === 0 || !stat.num_checked) continue;
 
-          const percValue = validationStat.percent_outliers ? `(${validationStat.percent_outliers}%)` : '';
+          const percValue = stat.percent_outliers ? `(${stat.percent_outliers}%)` : '';
           const validationText = this.validationKeysToText[validationKey];
 
           // RNA exclusive metrics are only pushed if entry contains RNA molecules (hasRna)
-          const canPush = validationKey.includes('rna') === false || hasRna;
+          const canPush = validationKey.includes('rna') === false || data.hasRna;
           if (canPush) {
             validationInfo.push({
               metric: validationText,
-              description: `${validationStat.num_outliers} outliers of ${validationStat.num_checked} ${percValue}`,
+              description: `${stat.num_outliers} outliers of ${stat.num_checked} ${percValue}`,
             });
           }
         }
@@ -159,15 +164,15 @@ export class ValidationDataProcessingFacade {
 
       // parse sample stats (sourceOrganisms, expressionSystem, authorDesc)
       const sampleInfoData: SampleInfoData = {};
-      if (sourceOrganisms.length > 0) sampleInfoData.sourceOrganisms = sourceOrganisms;
+      if (data.sourceOrganisms.length > 0) sampleInfoData.sourceOrganisms = data.sourceOrganisms;
       if (experimentalDetail.expression_host_scientific_name) {
         const uniqueHostOrganismNames = experimentalDetail.expression_host_scientific_name
-          .filter((eachName) => eachName.scientific_name !== null && eachName.scientific_name !== undefined)
-          .map((eachName) => eachName.scientific_name!)
-          .filter((name, i, names) => names.indexOf(name) === i);
+          .filter((eachName: any) => eachName.scientific_name !== null && eachName.scientific_name !== undefined)
+          .map((eachName: any) => eachName.scientific_name!)
+          .filter((name: any, i: any, names: string | any[]) => names.indexOf(name) === i);
         if (uniqueHostOrganismNames.length > 0) sampleInfoData.expressionSystem = uniqueHostOrganismNames;
       }
-      sampleInfoData.authorDesc = entryTitle;
+      sampleInfoData.authorDesc = data.entryTitle;
       if (Object.keys(sampleInfoData).length > 0) {
         processed.sampleInfo = sampleInfoData;
       }
@@ -186,23 +191,23 @@ export class ValidationDataProcessingFacade {
         ) {
           experimentalInfoData.xRayBeamSource = experimentalDetail.diffraction_experiment![0].beam_source_type;
         }
-        const datasetRows: XRayStatsRow[] = this.createXRayDatasetRows(experimentalDetail, xRayRefine);
+        const datasetRows: XRayStatsRow[] = this.createXRayDatasetRows(experimentalDetail, data.xRayRefine);
         if (datasetRows.length > 0) {
           experimentalInfoData.xRayDatasetStatsRows = datasetRows;
         }
-        const refinementRows: XRayStatsRow[] = this.createXRayRefinementRows(experimentalDetail, xRayRefine);
+        const refinementRows: XRayStatsRow[] = this.createXRayRefinementRows(experimentalDetail, data.xRayRefine);
         if (refinementRows.length > 0) {
           experimentalInfoData.xRayRefinementStatsRows = refinementRows;
         }
       } else if (experimentalDetail.experimental_method_class === 'nmr') {
         if (experimentalDetail.nmr_spectrometer) {
           const nmrSpectrometers = experimentalDetail.nmr_spectrometer
-            .map((obj) => {
+            .map((obj: { manufacturer: any; model: any; field_strength: any }) => {
               let toMerge = [obj.manufacturer, obj.model, obj.field_strength];
               toMerge = toMerge.filter((word) => word !== null);
               return toMerge.join(' ') || undefined;
             })
-            .filter((desc) => desc !== undefined);
+            .filter((desc: undefined) => desc !== undefined);
           if (nmrSpectrometers.length > 0) experimentalInfoData.nmrSpectometers = nmrSpectrometers;
         }
         const sampleRows: NMRSampleRow[] = this.createNMRSampleRows(experimentalDetail);
@@ -230,20 +235,20 @@ export class ValidationDataProcessingFacade {
       }
 
       // parse experimental raw data (see docs in component.ts)
-      if (experimentRawDataPDB) {
-        processed.experimentalRawData = this.createExperimentRawDataPDB(experimentRawDataPDB);
+      if (data.experimentalRawPDB.length) {
+        processed.experimentalRawData = this.createExperimentRawDataPDB(data.experimentalRawPDB);
       }
-      if (experimentRawDataBMRB) {
-        processed.experimentalRawData = this.createExperimentRawDataBMRB(experimentRawDataBMRB);
+      if (data.experimentalRawBMRB.length) {
+        processed.experimentalRawData = this.createExperimentRawDataBMRB(data.experimentalRawBMRB);
       }
-      if (experimentRawDataIRRMC) {
-        processed.experimentalRawData = this.createExperimentRawDataIRRMC(experimentRawDataIRRMC);
+      if (data.experimentRawDataIRRMC) {
+        processed.experimentalRawData = this.createExperimentRawDataIRRMC(data.experimentRawDataIRRMC);
       }
-      if (experimentRawDataEMPIAR) {
-        processed.experimentalRawData = this.createExperimentRawDataEMPIAR(experimentRawDataEMPIAR);
+      if (data.experimentRawDataEMPIAR.length) {
+        processed.experimentalRawData = this.createExperimentRawDataEMPIAR(data.experimentRawDataEMPIAR);
       }
-      if (experimentRawDataSBGrid) {
-        processed.experimentalRawData = this.createExperimentRawDataSBGrid(experimentRawDataSBGrid);
+      if (data.experimentRawDataSBGrid) {
+        processed.experimentalRawData = this.createExperimentRawDataSBGrid(data.experimentRawDataSBGrid);
       }
       result.push(processed);
     }

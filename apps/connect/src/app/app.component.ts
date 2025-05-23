@@ -4,7 +4,8 @@ import { VfEbiHeaderComponent } from '@vf-lib/ebi-header';
 import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 import { filter } from 'rxjs';
 import { environment } from '../environments/environment';
-import { UtilService } from '@pdbc/core';
+import { ScriptLoaderService, UtilService } from '@pdbc/core';
+import { LigandsAssetPathService } from './projects/ligands/services/assets-path.service';
 
 declare const gtag: any;
 @Component({
@@ -15,7 +16,12 @@ declare const gtag: any;
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  constructor(private _router: Router, private utilService: UtilService) {
+  constructor(
+    private _router: Router,
+    private utilService: UtilService,
+    private scriptLoader: ScriptLoaderService,
+    private assetPathService: LigandsAssetPathService
+  ) {
     this._router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((e: NavigationEnd) => {
       window.scrollTo(0, 0);
       // window.location.reload();
@@ -25,8 +31,18 @@ export class AppComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.init();
+    await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js');
+    await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
+    const pathName = window.location.pathname;
+    if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
+      await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-2.0.0-min.js'), true);
+      await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.js'), true);
+    } else {
+      await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
+      await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.js', true);
+    }
   }
 
   private init(): void {
@@ -39,6 +55,8 @@ export class AppComponent implements OnInit {
     const gtagBody = document.createTextNode(`
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${environment.googleAnalyticsTag}');
     `);
     gtagEl.appendChild(gtagBody);
     document.body.appendChild(gtagEl);

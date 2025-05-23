@@ -4,6 +4,10 @@ section {
   .container {
     // height: 130px;
 
+    @media only screen and (width <= 768px) {
+      padding: 0;
+    }
+
     form {
       display: flex;
       align-items: center;
@@ -12,24 +16,12 @@ section {
       position: relative;
       margin-bottom: 10px;
 
+      @media only screen and (width <= 768px) {
+        display: none;
+      }
+
       button {
         margin-bottom: 8px !important;
-
-        @media only screen and (width <= 540px) {
-          display: none;
-        }
-
-        &.mobile {
-          display: none;
-
-          @media only screen and (width <= 540px) {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 44px;
-            padding: 8px 16px;
-          }
-        }
       }
 
       input {
@@ -50,45 +42,57 @@ section {
       }
     }
 
-    section {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    .mobile-form {
+      display: none;
 
-      .left {
-        color: #fff;
-        font-size: 16px;
-        cursor: pointer;
+      input {
+        margin: 0;
+      }
 
-        @media only screen and (width <= 768px) {
-          display: none;
+      @media only screen and (width <= 768px) {
+        display: block;
+      }
+    }
+  }
+}
+
+section.chips {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .left {
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+
+    @media only screen and (width <= 768px) {
+      display: none;
+    }
+
+    a {
+      font-size: 16px;
+      line-height: 28px;
+      padding: 0 10px;
+      display: inline-flex;
+      margin-right: 10px;
+      border-radius: 7px;
+      border: none;
+      color: #fff;
+
+      &.pdbe-chip-bg {
+        background: var(--Brand-800, #056643);
+
+        &:hover {
+          background: var(--Brand-900, #0a5032);
         }
+      }
 
-        a {
-          font-size: 16px;
-          line-height: 28px;
-          padding: 0 10px;
-          display: inline-flex;
-          margin-right: 10px;
-          border-radius: 7px;
-          border: none;
-          color: #fff;
+      &.pdbe-kb-chip-bg {
+        background: #085f5c;
 
-          &.pdbe-chip-bg {
-            background: var(--Brand-800, #056643);
-
-            &:hover {
-              background: var(--Brand-900, #0a5032);
-            }
-          }
-
-          &.pdbe-kb-chip-bg {
-            background: #085f5c;
-
-            &:hover {
-              background: #074744;
-            }
-          }
+        &:hover {
+          background: #074744;
         }
       }
     }

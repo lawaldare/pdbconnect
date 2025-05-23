@@ -1,91 +1,116 @@
-<div id="summary-section">
-  @if(summaryData()?.complex_portal_id){
-  <div class="info-row">
-    <span class="info-row-title">Complex Portal ID</span>
-    <div class="info-row-content">
-      <a [href]="'https://www.ebi.ac.uk/complexportal/complex/' + summaryData()?.complex_portal_id" target="_blank">
-        {{ summaryData()?.complex_portal_id }}
-        <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
-      </a>
+<div class="summary-section">
+  <section class="details">
+    @if(summaryData()?.complex_portal_id){
+    <div class="info-row">
+      <span class="info-row-title">Complex Portal ID</span>
+      <div class="info-row-content">
+        <a [href]="'https://www.ebi.ac.uk/complexportal/complex/' + summaryData()?.complex_portal_id" target="_blank">
+          {{ summaryData()?.complex_portal_id }}
+          <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
+        </a>
+      </div>
     </div>
-  </div>
-  }
-  <div class="info-row">
-    <span class="info-row-title">Source organism</span>
-    <div class="info-row-content">
-      <em>{{ summaryData()?.source_organism }}</em>
+    }
+    <div class="info-row">
+      <span class="info-row-title">Source organism</span>
+      <div class="info-row-content">
+        <em>{{ summaryData()?.source_organism }}</em>
+      </div>
     </div>
-  </div>
-  <div class="info-row">
-    <span class="info-row-title">Components</span>
-    <div class="components">
-      <div class="info-row-content participants" pdbcParticipant [participants]="participants()"></div>
-      @if((summaryData()?.participants ?? []).length > 4){
-      <p role="button" class="view-more" (click)="viewMore()">View {{ textIcon() }}</p>
-      }
+    <div class="info-row">
+      <span class="info-row-title">Components</span>
+      <div class="components">
+        <div class="info-row-content participants" pdbcParticipant [participants]="participants()"></div>
+        @if((summaryData()?.participants ?? []).length > 4){
+        <p role="button" class="view-more" (click)="viewMore()">View {{ textIcon() }}</p>
+        }
+      </div>
     </div>
-  </div>
-  <div class="info-row">
-    <span class="info-row-title">Oligomeric state</span>
-    <div class="info-row-content">
-      {{ summaryData()?.oligomeric_state }}
+    <div class="info-row">
+      <span class="info-row-title">Oligomeric state</span>
+      <div class="info-row-content">{{ summaryData()?.oligomeric_state }}</div>
     </div>
-  </div>
-  <!-- <div class="info-row">
-    <span class="info-row-title">Stoichiometry</span>
-    <div class="info-row-content">
-      {{ summaryData().stoichiometry }}
+    <!-- <div class="info-row">
+        <span class="info-row-title">Stoichiometry</span>
+        <div class="info-row-content">
+          {{ summaryData().stoichiometry }}
+        </div>
+      </div> -->
+    @if(summaryData()?.symmetry?.type){
+    <div class="info-row">
+      <span class="info-row-title">Global symmetry</span>
+      <div class="info-row-content">{{ summaryData()?.symmetry | symmetry }}</div>
     </div>
-  </div> -->
-  @if(summaryData()?.symmetry?.type){
-  <div class="info-row">
-    <span class="info-row-title">Global symmetry</span>
-    <div class="info-row-content">
-      {{ summaryData()?.symmetry | symmetry }}
+    } @if(mappedLigands()?.length){
+    <div class="info-row">
+      <span class="info-row-title">Cofactor</span>
+      <div class="info-row-content" style="display: block">
+        @for(ligand of mappedLigands(); track ligand.ligandId; let islast = $last){
+        <a
+          matTooltipClass="complex-name-tooltip"
+          [matTooltip]="ligand.name"
+          matTooltipPosition="above"
+          (click)="openLigandPage(ligand.ligandId)"
+          style="display: inline"
+          >{{ ligand.ligandId }}</a
+        >{{ islast ? '' : ', ' }} }
+      </div>
     </div>
-  </div>
-  }
-  <div class="info-row">
-    <span class="info-row-title">Experimental methods count</span>
-    <div class="info-row-content" pdbcOEMC [data]="summaryData()?.unique_observed_experimental_methods_with_counts ?? {}" [complexId]="complexId() ?? ''"></div>
-  </div>
-  <!-- <div class="info-row">
-    <span class="info-row-title">Number of assemblies</span>
-    <div class="info-row-content summary-tooltip">
-      <span
+    }
+    <div class="info-row">
+      <span class="info-row-title">Experimental methods count</span>
+      <div class="info-row-content" pdbcOEMC [data]="summaryData()?.unique_observed_experimental_methods_with_counts ?? {}" [complexId]="complexId() ?? ''"></div>
+    </div>
+    <!-- <div class="info-row">
+        <span class="info-row-title">Number of assemblies</span>
+        <div class="info-row-content summary-tooltip">
+          <span
+            matTooltipClass="complex-name-tooltip"
+            matTooltip="Number of assemblies having the same set of components and stoichiometry as the complex of interest."
+            matTooltipPosition="right"
+            >{{ summaryData().assemblies.length }}
+            <img src="{{ helpLogoSrc }}" class="icon" />
+          </span>
+        </div>
+      </div>
+      @let numberOfSubComplexes = summaryData().subcomplexes.length; @if(numberOfSubComplexes){
+      <div class="info-row">
+        <span class="info-row-title">Number of subcomplexes</span>
+        <div class="info-row-content summary-tooltip">
+          <span
+            matTooltipClass="complex-name-tooltip"
+            matTooltip="Number of unique smaller complexes that contain a subset of the components of the complex of interest."
+            matTooltipPosition="right"
+            >{{ numberOfSubComplexes }}
+            <img src="{{ helpLogoSrc }}" class="icon" />
+          </span>
+        </div>
+      </div>
+      } @let numberOfSuperComplexes = summaryData().supercomplexes.length; @if(numberOfSuperComplexes){
+      <div class="info-row">
+        <span class="info-row-title">Number of supercomplexes</span>
+        <div class="info-row-content summary-tooltip">
+          <span
+            matTooltipClass="complex-name-tooltip"
+            matTooltip="Number of unique complexes that contain the components of the complex of interest along with additional members. These supercomplexes represent larger assemblies where the complex interacts with other macromolecules."
+            matTooltipPosition="right"
+            >{{ numberOfSuperComplexes }}
+            <img src="{{ helpLogoSrc }}" class="icon" />
+          </span>
+        </div>
+      </div>
+      } -->
+  </section>
+  <section class="molstar">
+    <header>
+      <h5>Representative structure for this complex</h5>
+      <i
+        class="icon icon-common icon-info"
         matTooltipClass="complex-name-tooltip"
-        matTooltip="Number of assemblies having the same set of components and stoichiometry as the complex of interest."
-        matTooltipPosition="right"
-        >{{ summaryData().assemblies.length }}
-        <img src="{{ helpLogoSrc }}" class="icon" />
-      </span>
-    </div>
-  </div>
-  @let numberOfSubComplexes = summaryData().subcomplexes.length; @if(numberOfSubComplexes){
-  <div class="info-row">
-    <span class="info-row-title">Number of subcomplexes</span>
-    <div class="info-row-content summary-tooltip">
-      <span
-        matTooltipClass="complex-name-tooltip"
-        matTooltip="Number of unique smaller complexes that contain a subset of the components of the complex of interest."
-        matTooltipPosition="right"
-        >{{ numberOfSubComplexes }}
-        <img src="{{ helpLogoSrc }}" class="icon" />
-      </span>
-    </div>
-  </div>
-  } @let numberOfSuperComplexes = summaryData().supercomplexes.length; @if(numberOfSuperComplexes){
-  <div class="info-row">
-    <span class="info-row-title">Number of supercomplexes</span>
-    <div class="info-row-content summary-tooltip">
-      <span
-        matTooltipClass="complex-name-tooltip"
-        matTooltip="Number of unique complexes that contain the components of the complex of interest along with additional members. These supercomplexes represent larger assemblies where the complex interacts with other macromolecules."
-        matTooltipPosition="right"
-        >{{ numberOfSuperComplexes }}
-        <img src="{{ helpLogoSrc }}" class="icon" />
-      </span>
-    </div>
-  </div>
-  } -->
+        [matTooltip]="'This is the representative structure for the complex, selected from all available instances that were solved by X-ray crystallography, based on the highest available resolution'"
+        matTooltipPosition="above"
+      ></i>
+    </header>
+    <lib-pdbe-molstar [molstarConfig]="config" [height]="height" [width]="width"></lib-pdbe-molstar>
+  </section>
 </div>

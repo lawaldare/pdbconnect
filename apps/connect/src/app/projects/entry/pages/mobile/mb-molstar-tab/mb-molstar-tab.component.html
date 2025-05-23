@@ -1,0 +1,15 @@
+<main>
+  <h1>{{entryId()}}</h1>
+
+  <section class="chips">
+    @for(chip of mobileTabChips; track chip.id){
+    <span class="chip" #chipEl [attr.data-id]="chip.id" [class.active]="chip.id === selectedTabName()" (click)="onTabClick(chip)">{{chip.label}}</span>
+    }
+  </section>
+
+  <div class="container-3d">
+    <div class="molstar-parent" id="parent-molstar-container">
+      <div class="molstar-container" #molstarContainer id="molstar-mobile-element"></div>
+    </div>
+  </div>
+</main>

@@ -1,6 +1,6 @@
 <!-- Overview Molstar: selection dropdown and zoom controls -->
 <div class="molstar-control-bar">
-  @if (currentMolstarSelection()) {
+  @if (stateMolstarSelections().length > 0) {
   <div>
     <div class="selector">
       <span class="molstar-control-txt">Select:</span>

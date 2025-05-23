@@ -22,10 +22,13 @@
         <mat-tab label="Ligands">
           <ng-template matTabContent> <pdbc-complex-ligands /> </ng-template>
         </mat-tab>
-        <mat-tab label="Subcomplexes and supercomplexes">
-          <ng-template matTabContent> <pdbc-complex-interactions /> </ng-template>
+        <mat-tab label="Subcomplexes">
+          <ng-template matTabContent> <pdbc-subcomplexes /> </ng-template>
         </mat-tab>
-        <mat-tab label="Publications">
+        <mat-tab label="Supercomplexes">
+          <ng-template matTabContent> <pdbc-supercomplexes /> </ng-template>
+        </mat-tab>
+        <mat-tab label="Citations">
           <pdbc-complex-publications />
         </mat-tab>
       </mat-tab-group>

@@ -1,274 +1,303 @@
-import { ElementRef, inject, Injectable, signal } from '@angular/core';
-import { MolstarSelectionObj } from '../../../../helpers/molstar/molstar-helpers';
+import { ElementRef, inject, Injectable, signal, WritableSignal } from '@angular/core';
+import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { MolstarOverviewForTopPage } from '../../../../helpers/molstar/molstar-overview-for-top-page';
-import { ListSelectable, OverviewMolstarFacade } from './overview-molstar.facade';
-
-type stateProperties =
-  | 'isInactive'
-  | 'lastScroll'
-  | 'initialStateImgName'
-  | 'currentListViewSelectionIdx'
-  | 'currentListViewSelectionTemp'
-  | 'imgName'
-  // "currentListViewSelection" |
-  | 'currentDomainResource'
-  // "currentMolstarSelectionName" |
-  | 'currentMolstarSelection';
-// "molstarSelectionObjs" ;
-
-export interface TabConfig {
-  id: string;
-  displayName: string;
-  width: string;
-  tagContent: string;
-  tagClass: string;
-}
+import { OverviewMolstarFacade } from './data-processing.facade';
+import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { ActionQueueService } from '../../../../services/action-queue.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class OverviewStateManagementService {
-  // this is a variable to save tabs states
-  // some are loaded/used for the template variables above when a tab is switched
-  // in function switchCurrentTab
-  public currentTab = signal<string>('Assembly');
-  public isInactive = signal<boolean>(true);
-
-  public tabsConfig = signal<TabConfig[]>([
-    {
-      id: 'Assembly',
-      displayName: 'Assembly',
-      width: '101px',
-      tagContent: '',
-      tagClass: 'no-chip',
-    },
-    {
-      id: 'Macromolecules',
-      displayName: 'Macromolecules',
-      width: '151px',
-      tagContent: '',
-      tagClass: 'no-chip',
-    },
-    {
-      id: 'Ligands',
-      displayName: 'Ligands',
-      width: '88px',
-      tagContent: '',
-      tagClass: 'no-chip',
-    },
-    {
-      id: 'Domains',
-      displayName: 'Domains',
-      width: '96px',
-      tagContent: '',
-      tagClass: 'no-chip',
-    },
-    {
-      id: 'Modifications',
-      displayName: 'Modifications',
-      width: '118px',
-      tagContent: '',
-      tagClass: 'no-chip',
-    },
-  ]);
-
-  public tabsStates = signal<{
-    [key: string]: {
-      isInactive: boolean;
-      lastScroll: number;
-      imgName: string;
-      initialStateImgName: string;
-      // currentListViewSelection: string;
-      currentListViewSelectionIdx: number;
-      currentListViewSelectionTemp?: ListSelectable;
-      currentDomainResource?: string;
-      // currentMolstarSelectionName: string | undefined;
-      currentMolstarSelection: MolstarSelectionObj | undefined;
-      // molstarSelectionObjs: MolstarSelectionObj[];
-    };
-  }>({
-    Assembly: {
-      isInactive: true,
-      lastScroll: 0,
-      imgName: '',
-      initialStateImgName: '',
-      // currentListViewSelection: 'No selection',
-      currentListViewSelectionIdx: 0,
-      currentListViewSelectionTemp: undefined,
-      // currentMolstarSelectionName: undefined,
-      currentMolstarSelection: undefined,
-      // molstarSelectionObjs: [],
-    },
-    Macromolecules: {
-      isInactive: true,
-      lastScroll: 0,
-      imgName: '',
-      initialStateImgName: '',
-      // currentListViewSelection: 'No selection',
-      currentListViewSelectionIdx: 0,
-      currentListViewSelectionTemp: undefined,
-      // currentMolstarSelectionName: undefined,
-      currentMolstarSelection: undefined,
-      // molstarSelectionObjs: [],
-    },
-    Ligands: {
-      isInactive: true,
-      lastScroll: 0,
-      imgName: '',
-      initialStateImgName: '',
-      // currentListViewSelection: 'No selection',
-      currentListViewSelectionIdx: 0,
-      currentListViewSelectionTemp: undefined,
-      // currentMolstarSelectionName: undefined,
-      currentMolstarSelection: undefined,
-      // molstarSelectionObjs: [],
-    },
-    Domains: {
-      isInactive: true,
-      lastScroll: 0,
-      imgName: '',
-      initialStateImgName: '',
-      // currentListViewSelection: 'No selection',
-      currentListViewSelectionIdx: 0,
-      currentListViewSelectionTemp: undefined,
-      // currentMolstarSelectionName: undefined,
-      currentDomainResource: 'CATH',
-      currentMolstarSelection: undefined,
-      // molstarSelectionObjs: [],
-    },
-    Modifications: {
-      isInactive: true,
-      lastScroll: 0,
-      imgName: '',
-      initialStateImgName: '',
-      // currentListViewSelection: 'No selection',
-      currentListViewSelectionIdx: 0,
-      currentListViewSelectionTemp: undefined,
-      // currentMolstarSelectionName: undefined,
-      currentMolstarSelection: undefined,
-      // molstarSelectionObjs: [],
-    },
-  });
-
   public readonly dataProcessing = inject(OverviewMolstarFacade);
   public readonly molstarOverview = inject(MolstarOverviewForTopPage);
+  private readonly actionQueue = inject(ActionQueueService);
   public infoControls = signal<ElementRef | undefined>(undefined);
 
-  public getStatePropertyOfTab(tabName: string, propertyName: string) {
-    if (tabName === 'current') tabName = this.currentTab();
-    return this.tabsStates()[tabName][propertyName as stateProperties];
-  }
+  public currentSelectionIdx: WritableSignal<number> = signal(-1);
+  public currentMolstarSelectionsNames: WritableSignal<string[]> = signal([]);
+  public currentMolstarSelections: WritableSignal<MolstarSelectionObj[]> = signal([]);
 
-  public updateStatePropertyOfTab(tabName: string, propertyName: string, propertyValue: any) {
-    if (tabName === 'current') tabName = this.currentTab();
-    this.tabsStates.update((tabsStates) => ({
-      ...tabsStates,
-      [tabName]: {
-        ...tabsStates[tabName], // Spread the existing state for the specified tab
-        [propertyName]: propertyValue, // Dynamically update the property
-      },
-    }));
-  }
+  public currentView = 'Assembly';
 
-  public updateTabDisplayConfig(tabName: string, tagContent: string, tagClass: string) {
-    const tabIndex = this.tabsConfig()
-      .map((cfg) => cfg.id)
-      .indexOf(tabName);
+  public lastMacromoleculeState = 'none';
+  public lastLigandsState = 'none';
+  public lastDomainsState = 'none';
+  public lastModificationsState = 'none';
+  public lastListViewItem?: MacromoleculesRowData | LigandsRowData | DomainsRowData;
+  public listViewItemType?: string;
 
-    if (tabIndex === -1) return;
-
-    this.tabsConfig.update((configs) => {
-      const updatedConfigs = [...configs]; // Create a shallow copy
-      updatedConfigs[tabIndex] = { ...updatedConfigs[tabIndex], tagContent: tagContent, tagClass: tagClass }; // Modify specific index.
-      return updatedConfigs;
-    });
-  }
   // 'assets/img/interfaces_example2.png'
-  public async switchCurrentTab(newView: string) {
-    if (this.dataProcessing.dataParsed() === false) return;
-    // if (this.tabsStates()[newView].isInactive) return;
+  public async updateMolstarAccordionSelection(newView: string) {
+    this.currentView = newView;
 
-    // save scroll of current tab
-    const previousTab = this.currentTab();
-    const lastScrollTop = this.infoControls()!.nativeElement.scrollTop;
-    this.updateStatePropertyOfTab(previousTab, 'lastScroll', lastScrollTop);
+    let lastStateName = '';
+    let accordionType = '';
+    if (newView === 'Assembly') {
+      // await this.molstarOverview.viewPreferredAssembly();
 
-    // load last state of new tab
-    this.currentTab.set(newView);
-    this.isInactive.set(this.tabsStates()[newView].isInactive);
-    const tabToDisplay = this.currentTab();
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewPreferredAssembly`,
+        async () => {
+          await this.molstarOverview.renderOverviewPreferredAssembly();
+        },
+        true // skippable
+      );
+      this.molstarOverview.currentViewName = 'Overview-Preferred Assembly';
 
-    const currentMolstarSelection = this.tabsStates()[newView].currentMolstarSelection;
-
-    // load image gallery saved image state for new tab
-    const imgName = this.tabsStates()[tabToDisplay].imgName;
-    await this.molstarOverview.loadImage(imgName);
-    this.updateStatePropertyOfTab(this.currentTab(), 'imgName', imgName);
-
-    // const currentTabSelection = this.tabsStates()[tabToDisplay].currentListViewSelection;
-    // await this.configureMolstarDisplay(currentTabSelection, currentMolstarSelection);
-
-    const currentTabSelection = this.tabsStates()[tabToDisplay].currentListViewSelectionTemp;
-    await this.configureMolstarDisplayTemp(currentTabSelection, currentMolstarSelection);
-
-    // load saved list scroll for new tab
-    this.infoControls()!.nativeElement.scrollTo(0, this.tabsStates()[tabToDisplay].lastScroll);
-  }
-
-  public async switchTabListSelection(listViewItem: ListSelectable) {
-    const tabName = this.currentTab();
-    const currentTabSelection = this.tabsStates()[tabName].currentListViewSelectionTemp;
-
-    let imgName = this.tabsStates()[tabName].initialStateImgName;
-    if (currentTabSelection && currentTabSelection.id === listViewItem.id) {
-      this.updateStatePropertyOfTab(tabName, 'currentListViewSelectionTemp', undefined);
-      this.updateStatePropertyOfTab(tabName, 'currentMolstarSelection', undefined);
-      // this.updateStatePropertyOfTab(tabName, 'molstarSelectionObjs', []);
+      this.currentSelectionIdx.set(-1);
+      this.currentMolstarSelectionsNames.set([]);
+      this.currentMolstarSelections.set([]);
+    } else if (newView === 'Macromolecules') {
+      lastStateName = this.lastMacromoleculeState;
+      accordionType = 'macromolecule';
+    } else if (newView === 'Ligands') {
+      lastStateName = this.lastLigandsState;
+      accordionType = 'ligand';
+    } else if (newView === 'Domains') {
+      lastStateName = this.lastDomainsState;
+      accordionType = 'domain';
+    } else if (newView === 'Modifications') {
+      lastStateName = this.lastModificationsState;
+      accordionType = 'modification';
+    }
+    // if state string has selection and sub-selection items (separated by '/')
+    if (lastStateName !== 'none' && lastStateName.includes('/')) {
+      // guess selected list view item from last state name
+      await this.renderListViewSelectionState(accordionType, undefined, lastStateName);
     } else {
-      this.updateStatePropertyOfTab(tabName, 'currentListViewSelectionTemp', listViewItem);
-      this.updateStatePropertyOfTab(tabName, 'currentMolstarSelection', listViewItem.molstarNamedSelections[0].selection);
-      // this.updateStatePropertyOfTab(tabName, 'molstarSelectionObjs', listViewItem.molstarNamedSelections.map((item) => item.selection));
-      imgName = listViewItem.molstarGalleryImg;
+      // show pre-selection 3D state
+      await this.renderPreSelectionState(accordionType);
     }
-    await this.molstarOverview.loadImage(imgName);
-    this.updateStatePropertyOfTab(this.currentTab(), 'imgName', imgName);
-
-    const currentMolstarSelection = this.tabsStates()[tabName].currentMolstarSelection;
-    await this.configureMolstarDisplayTemp(listViewItem, currentMolstarSelection);
   }
 
-  async configureMolstarDisplayTemp(tabSelection: ListSelectable | undefined, currentMolstarSelection: MolstarSelectionObj | undefined) {
-    const tabName = this.currentTab();
-    // if tab is domains and something is selected, show the whole polymer
-    if (tabName === 'Domains' && tabSelection) {
-      await this.molstarOverview.showDomainsWholeAssembly();
-    }
-    // if tab is ligands and something is selected, show as sticks
-    if (tabName === 'Ligands' && tabSelection) {
-      const chemCompId = tabSelection.name.split(' - ')[1];
-      await this.molstarOverview.showLigandsAsSticks(currentMolstarSelection!.entityId!, chemCompId, this.dataProcessing.colorsFromMolj());
-    }
-    // if tab is modifications and something is selected, show as sticks
-    if (tabName === 'Modifications' && tabSelection) {
-      await this.molstarOverview.showModificationsAsSticks(tabSelection.molstarGalleryImg, this.dataProcessing.colorsFromMolj());
-    }
+  public async updateMolstarItemSelection(listViewItem: MacromoleculesRowData | LigandsRowData | DomainsRowData | undefined, accordionType: string) {
+    const sameListViewItem = this.lastListViewItem !== undefined && this.lastListViewItem === listViewItem;
 
-    // zoom to the saved molstar selection
-    await this.switchMolstarZoomed(currentMolstarSelection);
+    // if list view item is deselected (clicked 2 times)
+    if (sameListViewItem) {
+      // reset view name so deselection can occur
+      this.molstarOverview.currentViewName = 'none';
+      this.currentSelectionIdx.set(-1);
+      listViewItem = undefined;
+
+      // deselect macromolecule, ligand, domain or modification
+      await this.renderPreSelectionState(accordionType);
+    }
+    this.lastListViewItem = listViewItem;
+    this.listViewItemType = accordionType;
+
+    // select macromolecule, ligand , domain, modification
+    await this.renderListViewSelectionState(accordionType, listViewItem);
+    return;
   }
 
-  // async loadImg(imgString: string) {
-  //   if (imgString) {
-  //     this.updateStatePropertyOfTab(this.currentTab(), 'imgName', imgString);
-  //     await this.molstarOverview.galleryManager().load(imgString);
-  //   }
-  // }
+  private async renderListViewSelectionState(accordionType: string, listViewItem?: MacromoleculesRowData | LigandsRowData | DomainsRowData, stateName?: string) {
+    if (!listViewItem && !stateName) return;
+    if (!listViewItem && stateName) {
+      listViewItem = this.getSelectionFromStateName(accordionType);
+    }
+
+    const molstarSelections: MolstarSelectionObj[] =
+      accordionType !== 'domain' ? (listViewItem as MacromoleculesRowData | LigandsRowData).additionalData.selections : [];
+    const molstarSelectionsNames: string[] = accordionType !== 'domain' ? (listViewItem as MacromoleculesRowData | LigandsRowData).additionalData.selectionNames : [];
+
+    this.currentMolstarSelections.set(molstarSelections);
+    this.currentMolstarSelectionsNames.set(molstarSelectionsNames);
+
+    if (accordionType === 'macromolecule') {
+      const macromolecule = listViewItem as MacromoleculesRowData;
+      const macromoleculeIdx = this.dataProcessing.processedMacromolecules().indexOf(macromolecule);
+
+      const selectionIdx = stateName ? parseInt(stateName.split('/')[2]) : this.getLastListItemSubSelection(macromoleculeIdx, this.lastMacromoleculeState);
+      this.currentSelectionIdx.set(selectionIdx);
+
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewSpecificMacromolecule`,
+        async () => {
+          await this.molstarOverview.renderOverviewSpecificMacromolecule(macromolecule, macromoleculeIdx, selectionIdx);
+        },
+        true // skippable
+      );
+      this.lastMacromoleculeState = `Overview-Macromolecules/${macromoleculeIdx}/${selectionIdx}`;
+    }
+    if (accordionType === 'ligand') {
+      const ligand = listViewItem as LigandsRowData;
+      const ligandsIdx = this.dataProcessing.processedLigands().indexOf(ligand);
+
+      const selectionIdx = stateName ? parseInt(stateName.split('/')[2]) : this.getLastListItemSubSelection(ligandsIdx, this.lastLigandsState);
+      this.currentSelectionIdx.set(selectionIdx);
+
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewSpecificLigand`,
+        async () => {
+          await this.molstarOverview.renderOverviewSpecificLigand(ligand, ligandsIdx, selectionIdx);
+        },
+        true // skippable
+      );
+      this.lastLigandsState = `Overview-Ligands/${ligandsIdx}/${selectionIdx}`;
+    }
+    if (accordionType === 'domain') {
+      const domain = listViewItem as DomainsRowData;
+      const domainsIdx = this.dataProcessing.processedDomainsAsList().indexOf(domain);
+
+      this.currentSelectionIdx.set(0);
+
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewSpecificDomain`,
+        async () => {
+          await this.molstarOverview.renderOverviewSpecificDomain(domain);
+        },
+        true // skippable
+      );
+      this.updateAccordionStateName(accordionType, `Overview-Domains/${domainsIdx}`);
+    }
+    if (accordionType === 'modification') {
+      const modification = listViewItem as LigandsRowData;
+      const modificationsIdx = this.dataProcessing.processedModifications().indexOf(modification);
+
+      const selectionIdx = stateName ? parseInt(stateName.split('/')[2]) : this.getLastListItemSubSelection(modificationsIdx, this.lastModificationsState);
+      this.currentSelectionIdx.set(selectionIdx);
+
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewSpecificModification`,
+        async () => {
+          await this.molstarOverview.renderOverviewSpecificModification(modification, modificationsIdx, selectionIdx);
+        },
+        true // skippable
+      );
+      this.updateAccordionStateName(accordionType, `Overview-Modifications/${modificationsIdx}/${selectionIdx}`);
+    }
+  }
+
+  private getSelectionFromStateName(accordionType: string) {
+    if (accordionType === 'macromolecule') {
+      const macromoleculeIdx = parseInt(this.lastMacromoleculeState.split('/')[1]);
+      const macromolecule = this.dataProcessing.processedMacromolecules()[macromoleculeIdx];
+      return macromolecule;
+    }
+    if (accordionType === 'ligand') {
+      const ligandsIdx = parseInt(this.lastLigandsState.split('/')[1]);
+      const ligand = this.dataProcessing.processedLigands()[ligandsIdx];
+      return ligand;
+    }
+    if (accordionType === 'domain') {
+      const domainsIdx = parseInt(this.lastDomainsState.split('/')[1]);
+      const domain = this.dataProcessing.processedDomainsAsList()[domainsIdx];
+      return domain;
+    } else {
+      // same as if (accordionType === 'modification') {
+      const modificationsIdx = parseInt(this.lastModificationsState.split('/')[1]);
+      const modification = this.dataProcessing.processedModifications()[modificationsIdx];
+      return modification;
+    }
+  }
+
+  private getLastListItemSubSelection(listItemSelectionIdx: number, stateName: string) {
+    let subSelectionIdx = 0;
+    // if state has '/' we have selections (specific macromolecule, ligand, etc)
+    // and sub-selections (specific chain or residue in dropdown)
+    if (stateName !== 'none' && stateName.includes('/')) {
+      // selection and sub-selections indexes are split by '/' inside state string
+      const nestedStateIndexes = stateName.split('/');
+
+      const lastListItemSelectionState = parseInt(nestedStateIndexes[1]);
+      const lastListItemSubSelectionState = parseInt(nestedStateIndexes[2]);
+
+      // we only load a sub-selection if last selected state was the same as the currently clicked
+      if (lastListItemSelectionState === listItemSelectionIdx) {
+        subSelectionIdx = lastListItemSubSelectionState || 0;
+      }
+    }
+    return subSelectionIdx;
+  }
+
+  private async renderPreSelectionState(accordionType: string) {
+    // update signals to remove Chain/Residue subselection dropdowns
+    this.currentMolstarSelections.set([]);
+    this.currentMolstarSelectionsNames.set([]);
+
+    if (accordionType === 'macromolecule') {
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewMacromolecules`,
+        async () => {
+          await this.molstarOverview.renderOverviewMacromolecules();
+        },
+        true // skippable
+      );
+
+      // memorize last state by string
+      this.updateAccordionStateName(accordionType, 'Overview-Macromolecules');
+    }
+    if (accordionType === 'ligand') {
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewLigands`,
+        async () => {
+          await this.molstarOverview.renderOverviewLigands();
+        },
+        true // skippable
+      );
+      // memorize last state by string
+      this.updateAccordionStateName(accordionType, 'Overview-Ligands');
+    }
+    if (accordionType === 'domain') {
+      const domainsOfResource = this.dataProcessing
+        .processedDomainsAsList()
+        .filter((eachDomain) => eachDomain.resource === this.dataProcessing.currentDomainResource());
+
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewDomains`,
+        async () => {
+          await this.molstarOverview.renderOverviewDomains(domainsOfResource);
+        },
+        true // skippable
+      );
+      // memorize last state by string
+      this.updateAccordionStateName(accordionType, 'Overview-Domains');
+    }
+    if (accordionType === 'modification') {
+      // trigger molstar update
+      this.actionQueue.addAction(
+        `renderOverviewModifications`,
+        async () => {
+          await this.molstarOverview.renderOverviewModifications();
+        },
+        true // skippable
+      );
+      // memorize last state by string
+      this.updateAccordionStateName(accordionType, 'Overview-Modifications');
+    }
+  }
+
+  private updateAccordionStateName(accordionType: string, newStateName: string) {
+    if (accordionType === 'macromolecule') {
+      this.lastMacromoleculeState = newStateName;
+    }
+    if (accordionType === 'ligand') {
+      this.lastLigandsState = newStateName;
+    }
+    if (accordionType === 'domain') {
+      this.lastDomainsState = newStateName;
+    }
+    if (accordionType === 'modification') {
+      this.lastModificationsState = newStateName;
+    }
+    this.molstarOverview.currentViewName = newStateName;
+  }
 
   async switchMolstarZoomed(molstarSelection?: MolstarSelectionObj) {
     if (molstarSelection) {
       await this.molstarOverview.focusLoci(molstarSelection);
     } else {
-      await this.molstarOverview.unfocusLoci();
+      await this.molstarOverview.focusStructure();
     }
   }
 }

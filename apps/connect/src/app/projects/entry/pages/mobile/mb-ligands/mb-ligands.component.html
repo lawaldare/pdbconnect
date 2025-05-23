@@ -1,0 +1,78 @@
+<section>
+  @if(LigandTableRows().length){
+  <header>
+    @if(currentViewState() === viewStates.Detail){
+    <nav>
+      <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
+      <span (click)="goBackToList()">Go to Ligands list </span>
+    </nav>
+    }
+    <section class="header">
+      <h2>
+        {{title()}} @if(currentViewState() === viewStates.List){
+        <span>({{LigandTableRows().length}})</span>
+        }
+      </h2>
+      <div class="controls">
+        <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
+        <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+      </div>
+    </section>
+  </header>
+
+  <!-- 1st Level Overlay -->
+  @if(currentViewState() === viewStates.List){ @for(row of LigandTableRows(); track row.id){
+  <div class="row" (click)="navigateToDetail(row)">
+    <div class="row__header">
+      <p class="row__header__name">{{row.codeAndName.count}} X {{row.id}}</p>
+      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+    </div>
+    <p class="row__content">{{row.codeAndName.name | truncate:40}}</p>
+    <!-- <span class="row__annotation">{{row.annotation.description}}</span> -->
+    @if(row.annotations.length){ @for(annotation of row.annotations; track annotation){
+    <span class="row__annotation" [ngClass]="annotation">{{annotation | titlecase}}</span>
+    } } @if(!row.isModified && row.annotations.length === 0){
+    <span class="row__annotation unannotated">Unannotated</span>
+    } @if(row.isModified){
+    <span class="row__annotation modification">Modification</span>
+    }
+  </div>
+  } }
+
+  <!-- 2nd Level Overlay -->
+  @if(currentViewState() === viewStates.Detail){ @if(selectedLigands().annotations.length){ @for(annotation of selectedLigands().annotations; track annotation){
+  <span class="row__annotation" [ngClass]="annotation">{{annotation | titlecase}}</span>
+  } } @if(!selectedLigands().isModified && selectedLigands().annotations.length === 0){
+  <span class="row__annotation unannotated">Unannotated</span>
+  } @if(selectedLigands().isModified){
+  <span class="row__annotation modification">Modification</span>
+  }
+  <div class="chains">
+    @if(dropdownOptions.length > 1){
+    <div class="dropdown-container">
+      <pdbc-entry-dropdown
+        [downloadable]="false"
+        [islink]="false"
+        [options]="dropdownOptions"
+        [title]="dropdownSelected"
+        (optionClickedEvent)="onDropdownSelect($event)"
+      >
+      </pdbc-entry-dropdown>
+    </div>
+    }@else if(dropdownOptions.length === 1){
+    <p>{{dropdownOptions[0].name}}</p>
+    }@else {}
+  </div>
+  <p class="title">Ligand name</p>
+  <p class="content">{{selectedLigands().codeAndName.name | truncate:40}}</p>
+  @let boundDetails = selectedLigands()?.additionalData?.source?.bound_details ?? undefined; @if(boundDetails && boundDetails?.[0]?.synonyms.length){
+  <p class="title">Synonyms</p>
+  <p class="content" libTruncateText [truncateText]="mapSynonyms(boundDetails[0].synonyms)" [limit]="53"></p>
+  } @if(boundDetails && boundDetails.length){
+  <p class="title">Formula</p>
+  <p class="content formula">{{ boundDetails[0]?.formula }}</p>
+  }
+  <p class="title">Molecular weight</p>
+  <p class="content">{{selectedLigands().additionalData.source.weight}} KDa</p>
+  }}
+</section>

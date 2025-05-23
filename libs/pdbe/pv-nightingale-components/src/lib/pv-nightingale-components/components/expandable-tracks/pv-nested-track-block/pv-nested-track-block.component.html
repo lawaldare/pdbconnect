@@ -1,0 +1,43 @@
+<div class="pv-track-row" [ngClass]="{ 'custom-row': isCustomData }" [ngStyle]="{display: subtracks.length === 0 ? 'none' : ''}">
+  <div class="collapsible">
+    <div class="pv-track-row non-header-track track" [ngClass]="{ expanded: isExpanded(), collapsed: !isExpanded() }" style="align-content: flex-start">
+      <div class="pv-track-label-col hoverable not-empty" (click)="toggleExpanded()">
+        <span class="expand-icon" [style.display]="!isExpanded() ? '' : 'none'">▸</span>
+        <span class="expand-icon" [style.display]="isExpanded() ? '' : 'none'">▾</span>
+        {{ trackName === 'custom-data' ? 'Custom data' : trackName }}
+      </div>
+      <div class="pv-track-container" [style.display]="!isExpanded() ? '' : 'none'">
+        <nightingale-track-canvas
+          [id]="trackName + '-track'"
+          [data]="allMutableSubtracks()"
+          [length]="sequenceLength"
+          height="40"
+          margin-left="0"
+          margin-right="10"
+          layout="non-overlapping"
+          highlight-color="#FFEB3B66"
+          highlight-event="onmouseover"
+          [fixedHighlight]="selectionHighlight()"
+          use-ctrl-to-zoom
+        ></nightingale-track-canvas>
+      </div>
+      <div class="pv-track-container" [style.display]="isExpanded() ? '' : 'none'"></div>
+    </div>
+
+    <!-- Subtrack scrollbox -->
+    <div [style.display]="isExpanded() ? '' : 'none'">
+      <!-- TODO -->
+      @for (subtracks of mutableSubtracks(); track subtracks; let j = $index) {
+      <lib-pv-track-block
+        [trackName]="subtrackNames[j]"
+        [subtracks]="subtracks"
+        [sequenceLength]="sequenceLength"
+        [selectionHighlight]="selectionHighlight()"
+        [tooltips]="tooltips"
+        [isCustomData]="false"
+        [isNested]="true"
+      ></lib-pv-track-block>
+      }
+    </div>
+  </div>
+</div>

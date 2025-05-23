@@ -11,8 +11,10 @@ export class BaseHrefService {
     if (hostname === 'localhost') {
       baseHref = '/';
     } else {
-      const pathnamesArray = document.location.pathname.split('/');
-      baseHref = `/${pathnamesArray[1]}/${pathnamesArray[2]}/`;
+      const pathname = document.location.pathname;
+      const pathnamesArray = pathname.split('/');
+      const mappedHref = `/${pathnamesArray[1]}/${pathnamesArray[2]}/`;
+      baseHref = mappedHref;
     }
 
     const baseTag = document.querySelector('base');

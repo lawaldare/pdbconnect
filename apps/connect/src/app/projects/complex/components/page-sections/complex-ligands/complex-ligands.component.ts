@@ -55,8 +55,6 @@ export class ComplexLigandsComponent implements OnInit {
         this.ligandsLength.set(this.filteredligands().length);
         this.ligandsPage.update(() => (this.ligands() ?? []).slice(0, this.ligandsPageSize()));
         this.globalStore.dispatch(ComplexActions.setNavItems({ navItems: navComplexSections }));
-      } else {
-        this.updateWhenNoLigands();
       }
     });
 
@@ -76,11 +74,6 @@ export class ComplexLigandsComponent implements OnInit {
         this.ligandsLength.set(this.filteredligands().length);
         this.ligandsPage.update(() => (this.filteredligands() ?? []).slice(0, this.ligandsPageSize()));
       });
-  }
-
-  private updateWhenNoLigands(): void {
-    const tempNavsections = (this.navSections() ?? []).filter((section) => section.sectionId !== 'ligands-section');
-    this.globalStore.dispatch(ComplexActions.setNavItems({ navItems: tempNavsections }));
   }
 
   handlePageEvent(event: PageEvent) {

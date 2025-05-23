@@ -1,0 +1,19 @@
+<section class="mobile-tabs-content">
+  @if(activeTab() === mbTabNames.Overview){
+  <pdbc-mb-overview-tab />
+  } @if(activeTab() === mbTabNames.Molstar){
+  <pdbc-mb-molstar-tab />
+  } @if(activeTab() === mbTabNames.Citation){
+  <pdbc-mb-citation-tab />
+  }
+</section>
+<footer>
+  <div class="mobile-tabs">
+    @for(tab of mbTabs; track tab.id){
+    <div class="tab" (click)="selectFooterTab(tab.id)" [class.active]="activeTab() === tab.id">
+      <img [src]="'/assets/images/mobile/' + (tab.id) + (activeTab() === tab.id ? '-active':'') + '.svg'" alt="overview icon" />
+      <span class="label">{{tab.name}}</span>
+    </div>
+    }
+  </div>
+</footer>

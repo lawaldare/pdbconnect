@@ -7,7 +7,8 @@ import { EntrySelectors } from '../../../store/entry.selectors';
 import { ColDef, GridOptions } from 'ag-grid-community';
 import { AG_Grid_Theme_Class, agGridOptionsBase, autoSizeStrategy } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { UniProtMappingObj } from '../../../data-models/uniprot-mapping.model';
 
 interface Filter {
   id: string;
@@ -24,6 +25,7 @@ interface Filter {
 export class GoTermsComponent {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly dialogRef = inject(MatDialogRef<GoTermsComponent>);
+  public readonly dialogData = inject(MAT_DIALOG_DATA);
 
   public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
 
@@ -51,12 +53,20 @@ export class GoTermsComponent {
 
   public readonly themeClass = AG_Grid_Theme_Class;
 
+  public readonly goSearchCategories: { [key: string]: string } = {
+    Molecular_function: 'biological_function',
+    Cellular_component: 'biological_cell_component',
+    Biological_process: 'biological_process',
+  };
+
   public readonly colDefs: ColDef[] = [
     {
       headerName: 'Name',
       field: 'name',
       cellRenderer: (params: any) =>
-        ` <a href="https://www.ebi.ac.uk/pdbe/entry/search/index?${params.data.category}:${params.data.name}" target="_blank">${params.data.name}
+        ` <a href="https://www.ebi.ac.uk/pdbe/entry/search/index?${this.goSearchCategories[params.data.category]}:${params.data.name}" target="_blank">${
+          params.data.name
+        }
             <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
           </a>`,
     },
@@ -107,7 +117,18 @@ export class GoTermsComponent {
 
   get getMappedGOMapping() {
     return Object.entries(this.goMapping() ?? {}).reduce((acc: any[], [id, item]) => {
-      acc.push({ ...item, id });
+      // Filter mappings by entity_id
+      const filteredMappings = (item.mappings ?? []).filter((m: UniProtMappingObj) => m.entity_id === this.dialogData.entityId);
+
+      // Only include GO terms that have at least one relevant mapping
+      if (filteredMappings.length > 0) {
+        acc.push({
+          ...item,
+          id,
+          mappings: filteredMappings, // optionally keep only the filtered mappings
+        });
+      }
+
       return acc;
     }, []);
   }

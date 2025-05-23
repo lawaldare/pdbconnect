@@ -1,0 +1,124 @@
+@if(tabDataLoaded()){ @if(domainTableRows().length){
+<main [class.change-display]="!isSidebarDisplayed()">
+  @if(isSidebarDisplayed()){
+  <pdbc-interactive-tables tabName="Domains" />
+  }
+  <div class="tab-content">
+    @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Assemblies';
+    <button class="vf-button-ghost" (click)="toggleSidebar()">
+      <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
+      <span>{{text}}</span>
+    </button>
+
+    <h5 class="domain-title">
+      <strong>{{currentDomainsDatum()!.accessionName}}</strong> (<strong>{{currentDomainsDatum()!.resource}}</strong>
+      <a [href]="resourceUrls[currentDomainsDatum()!.resource] + currentDomainsDatum()!.additionalData.accession" target="_blank"
+        >{{currentDomainsDatum()!.additionalData.accession}}</a
+      >)
+    </h5>
+    <section class="domain-info">
+      <div class="domain-info-grouped">
+        <div class="info-row">
+          <span>
+            Description
+            <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.description" />
+          </span>
+          <article>{{currentDomainsDatum()!.accessionName}}</article>
+        </div>
+        <div class="info-row">
+          <span>
+            Source and domain accession
+            <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.sourceDomainAccession" />
+          </span>
+          <article>
+            {{currentDomainsDatum()!.resource}}
+            <a [href]="resourceUrls[currentDomainsDatum()!.resource] + currentDomainsDatum()!.additionalData.accession" target="_blank"
+              >{{currentDomainsDatum()!.additionalData.accession}}</a
+            >
+          </article>
+        </div>
+        <div class="info-row">
+          <span> Molecule name </span>
+          <article>{{currentDomainsDatum()!.moleculeNames[0]}}</article>
+        </div>
+      </div>
+      <div class="domain-info-grouped">
+        <div class="info-row">
+          <span>
+            Domain name
+            <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.domainName" />
+          </span>
+          <article>{{currentDomainsDatum()!.domain}}</article>
+        </div>
+
+        <div class="info-row">
+          <span>
+            Author segments
+            <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.authorSegments" />
+          </span>
+          <article>
+            Chain @for(chain of currentDomainsDatum()!.segments; track chain; let islast = $last) {
+            <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
+          </article>
+        </div>
+        <div class="info-row">
+          <span>
+            Segments
+            <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.segments" />
+          </span>
+          <article>
+            Chain @for(chain of currentDomainsDatum()!.additionalData.segmentsResidNumbers; track chain; let islast = $last) {
+            <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
+          </article>
+        </div>
+      </div>
+    </section>
+    <div class="chains">
+      Chain @for(chain of currentDomainsDatum()!.mappedboundaries; track chain; let islast = $last){
+      <span>{{chain}}</span>{{ islast ? '' : ',' }} }
+    </div>
+    @if (sequenceDetails.length > 0) {
+    <div class="sequence-container">
+      @for (sequenceDetail of sequenceDetails; track sequenceDetail;) {
+      <div class="title">
+        <span class="text">{{ sequenceDetail.title }}</span>
+        <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
+      </div>
+      <div class="sequence">
+        @for (sequenceSegment of sequenceDetail.segments; track sequenceSegment) {
+        <span [style.background]="sequenceSegment.color ? sequenceSegment.color : ''">{{ sequenceSegment.sequence }}</span>
+        }
+      </div>
+      }
+    </div>
+    }
+    <section class="domain-charts" [ngClass]="'Domains' !== 'Domains' ? 'hidden-molstar-container' : '' ">
+      <section class="protvista-container">
+        @if(entryId() && currentProtvistaEntity() && protvistaDomainSelection()) {
+        <pdbc-entry-pg-protvista
+          [entryId]="entryId()!"
+          [entityId]="currentProtvistaEntity()!"
+          [chainId]="currentProtvistaChain()!"
+          [externalInteractivity]="true"
+          [fixedSelectionInput]="protvistaDomainSelection()!"
+        ></pdbc-entry-pg-protvista>
+        }
+      </section>
+      <section class="molstar-details-container">
+        @if (!molstarFirstRenderFinished()) {
+        <div [style.width]="'100%'">
+          <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+        </div>
+        }
+        <div id="domains-molstar-container" #molstarContainer class="molstar-container"></div>
+      </section>
+    </section>
+    <!-- <button class="vf-button vf-button--secondary-pdbe" (click)="popupMolstar()">Popup the molstar</button> -->
+  </div>
+</main>
+
+}@else{
+<h5>No Domains data available</h5>
+} }@else{
+<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+}

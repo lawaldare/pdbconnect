@@ -8,13 +8,13 @@ import { BestStructureMapping } from '../data-models/uniport-best-structures.mod
 import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
 import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
-import { KeyValidationStats } from '../data-models/key-validation-stats.model';
+import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
 import { CitationDetail } from '../data-models/publication.model';
 import { RelatedPublication } from '../data-models/related-publications.model';
 import { ComplexDetails } from '../data-models/complex-details.model';
 import { PisaAssembly } from '../data-models/pisa-assembly.model';
-import { AssemblyData } from '../data-models/assembly.model';
+import { AssemblyData, Symmetry } from '../data-models/assembly.model';
 import { CarbohydrateMolecule } from '../data-models/carbohydrate-polymer.model';
 import {
   BMRBExperimentRawData,
@@ -25,12 +25,16 @@ import {
 } from '../data-models/experiment-raw-data.model';
 import { EntryStatus } from '../data-models/status.model';
 import { Interaction } from '../data-models/interaction.model';
+import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
+import { LigandMonomer } from '../data-models/ligand-monomers.model';
+import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
+import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
 
 export interface EntryStoreState {
   entryId: string;
   summaryData: ProcessedSummary | undefined;
-  macroMolecules: Molecule[];
-  boundLigands: Molecule[];
+  macroMolecules: Molecule[] | undefined;
+  boundLigands: Molecule[] | undefined;
   organismScientificNames: string[];
   hasRNA: boolean;
   experimentalDetails: AnyExperimentDetail[];
@@ -50,15 +54,16 @@ export interface EntryStoreState {
   summaryQualityScores: ProcessedQualityScores | undefined;
   cathMapping: CathMappings | undefined;
   scop175Mapping: ScopMappings | undefined;
-  modifications: ModifiedResidue[];
+  modifications: ModifiedResidue[] | undefined;
   validationKeyStats: KeyValidationStats | undefined;
+  modelQualityXray: ModelQualityXray | undefined;
   validationXRayRefine: XRayRefine | undefined;
   primaryPublication: CitationDetail | undefined;
   articlesCiting: RelatedPublication | undefined;
   complexDetails: ComplexDetails[] | undefined;
-  assemblies: AssemblyData[];
-  pisaAssemblies: PisaAssembly[];
-  carbohydrates: CarbohydrateMolecule[];
+  assemblies: AssemblyData[] | undefined;
+  pisaAssemblies: PisaAssembly[] | undefined;
+  carbohydrates: CarbohydrateMolecule[] | undefined;
   pdbRedoQualityScores: ProcessedQualityScores | undefined;
   experimentRawDataBMRB: BMRBExperimentRawData[];
   experimentRawDataSBGrid: SBGRIDExperimentRawData | undefined;
@@ -67,6 +72,20 @@ export interface EntryStoreState {
   experimentRawDataPDB: PDBExperimentRawData[];
   entryStatus: EntryStatus | undefined;
   interactions: Interaction[];
+  symmetry: Symmetry[];
+  polymerCoverage: PolymerCoverageMolecule[] | undefined;
+  ligandMonomers: LigandMonomer[] | undefined;
+  residueWiseOutliers: ResidueWiseOutliersMolecule[];
+  entityPvUniprot: APITrackData;
+  entityPvChains: APITrackData;
+  entityPvDomains: APITrackData;
+  entityPvRfam: APITrackData;
+  entityPvSecondaryStructure: APITrackData;
+  entityPvBindingSites: APITrackData;
+  entityPvInterfaces: APITrackData;
+  entityPvAnnotations: APITrackData;
+  entityPvConservation: APIConservationData;
+  entityPvVariation: APIVariationData;
 }
 
 export interface EntryMoleculesData {

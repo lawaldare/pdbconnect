@@ -1,0 +1,62 @@
+<div class="variation-container">
+  <div class="pv-track-row non-header-track" [ngClass]="isExpanded() ? 'expanded' : 'collapsed'">
+    <div class="pv-track-label-col hoverable not-empty" (click)="toggleExpansion()">
+      <span class="expand-icon" [ngStyle]="{ display: !isExpanded() ? '' : 'none' }">▸</span>
+      <span class="expand-icon" [ngStyle]="{ display: isExpanded() ? '' : 'none' }">▾</span>
+      Variation
+    </div>
+    <div class="pv-track-container">
+      @if (sequenceLength) {
+      <nightingale-linegraph-track
+        [data]="variationCountData()"
+        height="50"
+        [length]="sequenceLength"
+        margin-left="0"
+        margin-right="10"
+        highlight-color="#FFEB3B66"
+        [fixedHighlight]="selectionHighlight"
+        use-ctrl-to-zoom
+      ></nightingale-linegraph-track>
+      }
+    </div>
+  </div>
+
+  <div class="pv-track-row non-header-track track" [ngStyle]="{ display: isExpanded() ? '' : 'none' }">
+    <div class="pv-track-label-col subtrack variation">
+      <p>Filter by Consequence:</p>
+      <mat-checkbox
+        *ngFor="let filter of consequenceFilters"
+        [disabled]="hasAnyVariantsForFilter(filter.keyword)"
+        [checked]="isNotFiltered(filter.keyword)"
+        (click)="changeVariantFiltering(filter.keyword)"
+      >
+        {{ filter.displayName }}
+      </mat-checkbox>
+
+      <p>Filter by Provenance:</p>
+      <mat-checkbox
+        *ngFor="let filter of provenanceFilters"
+        [disabled]="hasAnyVariantsForFilter(filter.keyword)"
+        [checked]="isNotFiltered(filter.keyword)"
+        (click)="changeVariantFiltering(filter.keyword)"
+      >
+        {{ filter.displayName }}
+      </mat-checkbox>
+    </div>
+
+    <div class="pv-track-container">
+      @if (sequenceLength) {
+      <nightingale-variation
+        [data]="variationData()"
+        row-height="24"
+        [length]="sequenceLength"
+        highlight-color="#FFEB3B66"
+        margin-left="0"
+        margin-right="10"
+        [fixedHighlight]="selectionHighlight"
+        use-ctrl-to-zoom
+      ></nightingale-variation>
+      }
+    </div>
+  </div>
+</div>

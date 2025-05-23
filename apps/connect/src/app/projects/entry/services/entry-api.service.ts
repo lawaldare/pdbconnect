@@ -3,20 +3,20 @@
 
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, map, switchMap, throwError } from 'rxjs';
+import { Observable, catchError, map, of, switchMap, throwError } from 'rxjs';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
-import { KeyValidationStats } from '../data-models/key-validation-stats.model';
+import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
 import { CitationDetail } from '../data-models/publication.model';
 import { RelatedPublication } from '../data-models/related-publications.model';
 import { PfamMappings, CathMappings, ScopMappings, InterProMappings } from '../data-models/domains.model';
 import { ComplexDetails } from '../data-models/complex-details.model';
-import { AssemblyData } from '../data-models/assembly.model';
+import { AssemblyData, Symmetry } from '../data-models/assembly.model';
 import { PisaAssembly } from '../data-models/pisa-assembly.model';
 import { CarbohydrateMolecule } from '../data-models/carbohydrate-polymer.model';
 import { Molecule } from '../data-models/molecule.model';
 import { EntrySummary, ProcessedSummary } from '../data-models/summary.model';
-import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
+import { ECMapping, GOMapping, SummaryStats, UniProtMapping } from '../data-models/uniprot-mapping.model';
 import { PdbRedoQualityScores, ProcessedQualityScores, SummaryQualityScores } from '../data-models/summary-quality-scores.model';
 import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
 import {
@@ -28,6 +28,9 @@ import {
 } from '../data-models/experiment-raw-data.model';
 import { EntryStatus } from '../data-models/status.model';
 import { environment } from '../../../../environments/environment';
+import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
+import { LigandMonomer } from '../data-models/ligand-monomers.model';
+import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
 
 @Injectable({
   providedIn: 'root',
@@ -36,7 +39,7 @@ export class EntryApiService {
   private BASE_API = `${environment.pdbeBaseUrl}api/v2/pdb/entry/`;
   private MAPPINGS_API = `${environment.pdbeBaseUrl}api/mappings/`;
   private VALIDATION_API = `${environment.pdbeBaseUrl}api/validation/`;
-  private GRAPH_API = `${environment.pdbeBaseUrl}graph-api/pdb/`;
+  private GRAPH_API = `https://www.ebi.ac.uk/pdbe/graph-api/pdb/`;
   private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}api/v2/`;
 
   private readonly http = inject(HttpClient);
@@ -67,6 +70,9 @@ export class EntryApiService {
           assemblies: datum.assemblies,
           relatedStructures: datum.related_structures,
         };
+      }),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as ProcessedSummary);
       })
     );
   }
@@ -79,8 +85,10 @@ export class EntryApiService {
     return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(map((data) => data[entryId][0]));
   }
 
-  public getEntryInteractions(entryId: string): Observable<any> {
-    return this.http.get<Record<string, any[]>>(`${this.GRAPH_API}bound_ligand_interactions/${entryId}/A/200`).pipe(map((data) => data[entryId][0]));
+  public getEntryInteractions(entryId: string, chainId: string, residueId: string): Observable<any> {
+    return this.http
+      .get<Record<string, any[]>>(`${this.GRAPH_API}bound_ligand_interactions/${entryId}/${chainId}/${residueId}`)
+      .pipe(map((data) => data[entryId][0]));
   }
 
   public getPrimaryPublicationAbstract(entryId: string): Observable<CitationDetail> {
@@ -89,6 +97,10 @@ export class EntryApiService {
 
   public getUniprotMapping(entryId: string): Observable<UniProtMapping> {
     return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.MAPPINGS_API}uniprot/${entryId}`).pipe(map((data) => data[entryId]['UniProt']));
+  }
+
+  public getSummaryStats(uniprotId: string): Observable<SummaryStats> {
+    return this.http.get<Record<string, SummaryStats>>(`${environment.pdbeBaseUrl}graph-api/uniprot/summary_stats/${uniprotId}`).pipe(map((data) => data[uniprotId]));
   }
 
   public getIsoformsMapping(entryId: string): Observable<UniProtMapping> {
@@ -108,19 +120,39 @@ export class EntryApiService {
   }
 
   public getPfamMapping(entryId: string): Observable<PfamMappings> {
-    return this.http.get<Record<string, Record<string, PfamMappings>>>(`${this.MAPPINGS_API}pfam/${entryId}`).pipe(map((data) => data[entryId]['Pfam']));
+    return this.http.get<Record<string, Record<string, PfamMappings>>>(`${this.MAPPINGS_API}pfam/${entryId}`).pipe(
+      map((data) => data[entryId]['Pfam']),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as PfamMappings);
+      })
+    );
   }
 
   public getCATHMapping(entryId: string): Observable<CathMappings> {
-    return this.http.get<Record<string, Record<string, CathMappings>>>(`${this.MAPPINGS_API}cath/${entryId}`).pipe(map((data) => data[entryId]['CATH']));
+    return this.http.get<Record<string, Record<string, CathMappings>>>(`${this.MAPPINGS_API}cath/${entryId}`).pipe(
+      map((data) => data[entryId]['CATH']),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as CathMappings);
+      })
+    );
   }
 
   public getSCOP175Mapping(entryId: string): Observable<ScopMappings> {
-    return this.http.get<Record<string, Record<string, ScopMappings>>>(`${this.MAPPINGS_API}scop/${entryId}`).pipe(map((data) => data[entryId]['SCOP']));
+    return this.http.get<Record<string, Record<string, ScopMappings>>>(`${this.MAPPINGS_API}scop/${entryId}`).pipe(
+      map((data) => data[entryId]['SCOP']),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as ScopMappings);
+      })
+    );
   }
 
   public getModifications(entryId: string): Observable<ModifiedResidue[]> {
-    return this.http.get<Record<string, ModifiedResidue[]>>(`${this.BASE_API}modified_AA_or_NA/${entryId}`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, ModifiedResidue[]>>(`${this.BASE_API}modified_AA_or_NA/${entryId}`).pipe(
+      map((data) => data[entryId]),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as ModifiedResidue[]);
+      })
+    );
   }
 
   public getGalleryMolj(moljDescription: string): Observable<any> {
@@ -161,24 +193,52 @@ export class EntryApiService {
     return this.http.get<Record<string, KeyValidationStats>>(`${this.VALIDATION_API}key_validation_stats/entry/${entryId}`).pipe(map((data) => data[entryId]));
   }
 
+  public getModelQualityXray(entryId: string): Observable<ModelQualityXray> {
+    return this.http.get<Record<string, ModelQualityXray>>(`${this.VALIDATION_API}model_quality_xray/entry/${entryId}`).pipe(map((data) => data[entryId]));
+  }
+
   public getValidationXRayRefine(entryId: string): Observable<XRayRefine> {
     return this.http.get<Record<string, XRayRefine>>(`${this.VALIDATION_API}xray_refine_data_stats/entry/${entryId}`).pipe(map((data) => data[entryId]));
   }
 
   public getPreferredAssembly(entryId: string): Observable<ComplexDetails[]> {
-    return this.http.get<Record<string, ComplexDetails[]>>(`${this.AggregatedApiUrl}complex/details/${entryId}?id_type=pdb_id`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, ComplexDetails[]>>(`${this.AggregatedApiUrl}complex/details/${entryId}?id_type=pdb_id`).pipe(
+      map((data) => data[entryId]),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as ComplexDetails[]);
+      })
+    );
   }
 
   public getAssembly(entryId: string): Observable<AssemblyData[]> {
-    return this.http.get<Record<string, AssemblyData[]>>(`${this.BASE_API}assembly/${entryId}`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, AssemblyData[]>>(`${this.BASE_API}assembly/${entryId}`).pipe(
+      map((data) => data[entryId]),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as AssemblyData[]);
+      })
+    );
+  }
+
+  public getSymmetry(entryId: string): Observable<Symmetry[]> {
+    return this.http.get<Record<string, Symmetry[]>>(`${this.AggregatedApiUrl}pdb/symmetry/${entryId}`).pipe(map((data) => data[entryId]));
   }
 
   public getPisaAssembly(entryId: string, assemblyId: string): Observable<PisaAssembly> {
-    return this.http.get<Record<string, PisaAssembly>>(`https://www.ebi.ac.uk/pdbe/api/pisa/assembly/${entryId}/${assemblyId}`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, PisaAssembly>>(`https://www.ebi.ac.uk/pdbe/api/pisa/assembly/${entryId}/${assemblyId}`).pipe(
+      map((data) => data[entryId]),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as PisaAssembly);
+      })
+    );
   }
 
   public getCarbohydrates(entryId: string): Observable<CarbohydrateMolecule[]> {
-    return this.http.get<Record<string, CarbohydrateMolecule[]>>(`${this.BASE_API}carbohydrate_polymer/${entryId}`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, CarbohydrateMolecule[]>>(`${this.BASE_API}carbohydrate_polymer/${entryId}`).pipe(
+      map((data) => data[entryId]),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as CarbohydrateMolecule[]);
+      })
+    );
   }
 
   // Record<string, BestStructure[]>
@@ -202,6 +262,36 @@ export class EntryApiService {
     return this.http.get<Record<string, ProteinSummaryStats>>(`https://www.ebi.ac.uk/pdbe/graph-api/uniprot/summary_stats/${uniprotId}`).pipe(
       map((data) => {
         return data[uniprotId];
+      })
+    );
+  }
+
+  public getPolymerCoverage(entryId: string): Observable<PolymerCoverageMolecule[]> {
+    return this.http.get<Record<string, { molecules: PolymerCoverageMolecule[] }>>(`${this.BASE_API}polymer_coverage/${entryId}`).pipe(
+      map((data) => {
+        return data[entryId]['molecules'] || [];
+      }),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as PolymerCoverageMolecule[]);
+      })
+    );
+  }
+
+  public getLigandMonomers(entryId: string): Observable<LigandMonomer[]> {
+    return this.http.get<Record<string, LigandMonomer[]>>(`${this.BASE_API}ligand_monomers/${entryId}`).pipe(
+      map((data) => {
+        return data[entryId];
+      }),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as LigandMonomer[]);
+      })
+    );
+  }
+
+  public getResidueWiseOutliers(entryId: string): Observable<ResidueWiseOutliersMolecule[]> {
+    return this.http.get<Record<string, { molecules: ResidueWiseOutliersMolecule[] }>>(`${this.VALIDATION_API}residuewise_outlier_summary/entry/${entryId}`).pipe(
+      map((data) => {
+        return data[entryId]['molecules'] || [];
       })
     );
   }

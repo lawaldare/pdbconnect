@@ -8,6 +8,7 @@
   font-size: 16px;
   font-weight: 500;
   width: 179px;
+  min-width: 179px;
   max-width: 179px;
 }
 
@@ -38,7 +39,10 @@
     font-size: 16px !important;
     line-height: 27px;
     padding: 10px;
-    box-shadow: 0 5px 5px -3px rgb(0 0 0 / 20%), 0 8px 10px 1px rgb(0 0 0 / 14%), 0 3px 14px 2px rgb(0 0 0 / 12%);
+    box-shadow:
+      0 5px 5px -3px rgb(0 0 0 / 20%),
+      0 8px 10px 1px rgb(0 0 0 / 14%),
+      0 3px 14px 2px rgb(0 0 0 / 12%);
 
     // white-space: nowrap;
     max-width: 400px !important;
@@ -52,4 +56,36 @@ p.view-more {
   font-weight: 500;
   line-height: 22.7px;
   cursor: pointer;
+}
+
+.summary-section {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  .details {
+    width: 40%;
+    align-self: flex-start;
+  }
+
+  .molstar {
+    width: calc(60% - 10px);
+    align-self: flex-start;
+
+    header {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+
+      h5 {
+        margin: 0;
+      }
+
+      .icon {
+        cursor: pointer;
+      }
+    }
+  }
 }

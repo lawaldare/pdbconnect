@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
-import { Observable, delay, map } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ComplexData, ComplexInteraction } from '../models/complex-structure.model';
 
 @Injectable({

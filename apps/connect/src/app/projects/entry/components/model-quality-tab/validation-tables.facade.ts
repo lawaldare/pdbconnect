@@ -9,6 +9,8 @@ import {
   EM_REFINEMENT_STATS_COLUMN_DEFS,
   EXP_RAW_ACCESSIONS_COLUMN_DEFS,
   TIMELINE_COLUMN_DEFS,
+  EXPERIMENTAL_INFO_COLUMN_DEFS,
+  EXPERIMENTAL_INFO_DATA_QUALITY_COLUMN_DEFS,
 } from './data-models-and-definitions/column-definition-objects';
 
 export interface ValidationXRayRow {
@@ -37,6 +39,9 @@ export class ValidationTablesFacade {
   public emRefinementStatsColumnDefinitions = EM_REFINEMENT_STATS_COLUMN_DEFS;
   public expRawAccessionsColumnDefinitions = EXP_RAW_ACCESSIONS_COLUMN_DEFS;
   public timelineColumnDefinitions = TIMELINE_COLUMN_DEFS;
+
+  public experimentalInfoColumnDefinitions = EXPERIMENTAL_INFO_COLUMN_DEFS;
+  public experimentalInfoDataQualityColumnDefinitions = EXPERIMENTAL_INFO_DATA_QUALITY_COLUMN_DEFS;
 
   public defaultColumnDefinitions: ColDef = {
     filter: false,

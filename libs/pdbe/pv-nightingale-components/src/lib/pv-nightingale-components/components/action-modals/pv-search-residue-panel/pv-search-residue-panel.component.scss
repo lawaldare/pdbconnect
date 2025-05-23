@@ -1,0 +1,142 @@
+.search-residue-panel {
+  position: absolute;
+  z-index: 4;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 12px;
+  width: 420px;
+  max-height: 400px;
+  overflow-y: auto;
+  font-family: 'IBM Plex Sans', Arial, sans-serif;
+  box-shadow: 0 5px 12px rgb(0 0 0 / 15%);
+
+  .close-btn {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    float: right;
+    cursor: pointer;
+    color: #666;
+    margin-bottom: 4px;
+
+    &:hover {
+      color: #000;
+    }
+  }
+
+  label {
+    display: block;
+    font-size: 14px;
+    margin-top: 10px;
+    margin-bottom: 4px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  input[type='text'] {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 14px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    outline: none;
+    box-sizing: border-box;
+    margin-bottom: 4px;
+
+    &:focus {
+      border-color: #673ab7;
+    }
+  }
+
+  .autocomplete-list {
+    margin: 0 0 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    list-style: none;
+    padding: 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+
+    li {
+      padding: 8px 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+
+      &:hover {
+        background-color: #f6f6f6;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+
+  .add-btn {
+    line-height: 18px;
+    padding: 6px 12px;
+    font-family: 'IBM Plex Sans';
+    font-weight: 700;
+    color: #5d3f87;
+    border: 1px solid var(--Purple-800, #5d3f87);
+    background: #fff;
+    box-shadow: 2px 2px 0 0 rgb(93 63 135 / 90%);
+    margin-top: 8px;
+    font-size: 14px;
+    cursor: pointer;
+
+    &:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: #fff;
+    }
+  }
+
+  .selected-residues {
+    margin-top: 16px;
+
+    label {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: block;
+      color: #333;
+    }
+
+    .residue-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+
+      .residue-item {
+        position: relative;
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 8px;
+        font-size: 13px;
+        color: #333;
+        line-height: 18px;
+
+        .remove-btn {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          border: none;
+          background: transparent;
+          font-size: 14px;
+          color: #999;
+          cursor: pointer;
+
+          &:hover {
+            color: #000;
+          }
+        }
+      }
+    }
+  }
+}

@@ -15,6 +15,22 @@ section.common-tab {
   }
 }
 
+pdbc-assemblies-tab {
+  width: calc(100% - 268px);
+}
+
+pdbc-macromolecules-tab {
+  width: calc(100% - 268px);
+}
+
+pdbc-ligands-tab {
+  width: calc(100% - 268px);
+}
+
+pdbc-domains-tab {
+  width: calc(100% - 268px);
+}
+
 pdbc-details-dashboard {
   width: calc(100% - 268px);
 }
@@ -23,10 +39,37 @@ pdbc-interactive-tables {
   width: 252px;
 }
 
-// .tab-tag {
-//   margin-right: 10px;
-// }
+.tab-tag {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16.5px;
+  border-radius: 2px;
+  background: #bd103b;
+  margin-right: 4px;
+  padding: 0 2px;
+}
 
 section.container {
   padding: 16px 34px 56px;
+}
+
+.desktop-view {
+  display: block;
+  @media (width <= 768px) {
+    display: none;
+  }
+}
+
+.mobile-view {
+  display: none;
+  @media (width <= 768px) {
+    display: block;
+  }
+}
+
+#parent-molstar-container {
+  visibility: hidden;
+  position: absolute;
+  left: -9999px;
 }

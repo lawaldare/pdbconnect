@@ -305,7 +305,7 @@ export class StructureExplorerService {
                   type: 'kb-link',
                   link: {
                     txt: `Learn more about ${ligandId} in PDBe-KB`,
-                    src: `https://wwwdev.ebi.ac.uk/pdbe/connect/ligands/${ligandId}`,
+                    src: `https://wwwdev.ebi.ac.uk/pdbe/ligands/${ligandId}`,
                   },
                 },
               ],
@@ -764,7 +764,7 @@ export class StructureExplorerService {
                 type: 'kb-link',
                 link: {
                   txt: `Learn more about ${modification.chem_comp_id} in PDBe-KB`,
-                  src: `https://wwwdev.ebi.ac.uk/pdbe/connect/ligands/${modification.chem_comp_id}`,
+                  src: `https://wwwdev.ebi.ac.uk/pdbe/ligands/${modification.chem_comp_id}`,
                 },
               },
             ],
