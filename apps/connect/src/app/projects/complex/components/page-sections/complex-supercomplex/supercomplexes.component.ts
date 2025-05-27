@@ -40,9 +40,9 @@ export class SuperComplexesComponent implements OnInit {
     computation: () => (this.supercomplexInteractions() ?? []).slice(0, this.supercomplexesPageSize()),
   });
 
-  private unfilteredComplexes = linkedSignal({
+  public unfilteredComplexes = linkedSignal({
     source: this.supercomplexInteractions,
-    computation: () => (this.supercomplexInteractions() ?? []).slice(0, this.supercomplexesPageSize()),
+    computation: () => this.supercomplexInteractions() ?? [],
   });
 
   public searchTerm = new FormControl('');

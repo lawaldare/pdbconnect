@@ -35,13 +35,10 @@ export class ComplexLigandsComponent implements OnInit {
   public readonly complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
 
   public ligands = signal<ComplexLigand[]>([]);
-  public filteredligands = signal<ComplexLigand[]>([]);
   public ligandsPage = signal<ComplexLigand[]>([]);
 
   public ligandsLength = signal<number>(0);
   public ligandsPageSizeOptions = computed(() => [6, 12, 18]);
-
-  public navSections = toSignal(this.globalStore.select(ComplexSelectors.navItems));
 
   public searchTerm = new FormControl('');
 
@@ -51,8 +48,7 @@ export class ComplexLigandsComponent implements OnInit {
     this.globalStore.select(ComplexSelectors.complexLigands).subscribe((ligands) => {
       if (ligands.length > 0) {
         this.ligands.update(() => ligands);
-        this.filteredligands.update(() => ligands);
-        this.ligandsLength.set(this.filteredligands().length);
+        this.ligandsLength.set(ligands.length);
         this.ligandsPage.update(() => (this.ligands() ?? []).slice(0, this.ligandsPageSize()));
         this.globalStore.dispatch(ComplexActions.setNavItems({ navItems: navComplexSections }));
       }
@@ -70,9 +66,8 @@ export class ComplexLigandsComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((data: any) => {
-        this.filteredligands.update(() => data);
-        this.ligandsLength.set(this.filteredligands().length);
-        this.ligandsPage.update(() => (this.filteredligands() ?? []).slice(0, this.ligandsPageSize()));
+        this.ligandsLength.set(data.length);
+        this.ligandsPage.update(() => (data ?? []).slice(0, this.ligandsPageSize()));
       });
   }
 

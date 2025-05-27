@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px 80px;
-  margin-top: 40px;
+  margin-top: 10px;
 
   @media screen and (width <= 768px) {
     grid-template-columns: 1fr;
@@ -38,6 +38,7 @@
 }
 
 h3,
-h4 {
-  margin-bottom: 20px;
+h4,
+p {
+  margin-bottom: 20px !important;
 }

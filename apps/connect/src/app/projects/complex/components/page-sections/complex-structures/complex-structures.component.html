@@ -1,7 +1,7 @@
 @if(rowData().length){
 <div id="structures-section">
   <header>
-    <p class="title"><strong>{{rowData().length}} assemblies representing this complex in the PDB</strong></p>
+    <h5 class="title">{{rowData().length}} assemblies representing this complex in the PDB</h5>
     <button class="vf-button vf-button--link" (click)="downloadCSV()">
       Download structures (csv)
       <i class="icon icon-common icon-download"></i>

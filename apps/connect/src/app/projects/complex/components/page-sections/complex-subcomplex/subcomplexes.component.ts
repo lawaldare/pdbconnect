@@ -39,9 +39,9 @@ export class SubComplexesComponent implements OnInit {
     computation: () => (this.subcomplexInteractions() ?? []).slice(0, this.subcomplexesPageSize()),
   });
 
-  private unfilteredComplexes = linkedSignal({
+  public unfilteredComplexes = linkedSignal({
     source: this.subcomplexInteractions,
-    computation: () => (this.subcomplexInteractions() ?? []).slice(0, this.subcomplexesPageSize()),
+    computation: () => this.subcomplexInteractions() ?? [],
   });
 
   public searchTerm = new FormControl('');
