@@ -37,9 +37,7 @@
 
 .pv-protvista .pv-track-row.btns {
   display: flex;
-  gap: 10px;
   margin-bottom: 4px;
-  margin-left: 4px;
   margin-top: 6px;
 }
 
@@ -72,6 +70,12 @@
 
 .pv-protvista .pv-track-container {
   width: 80%;
+}
+
+.pv-protvista .pv-track-container.btns {
+  width: 80%;
+  display: flex;
+  gap: 8px;
 }
 
 .pv-protvista .pv-track-container.no-data {
@@ -241,15 +245,15 @@ with extra ajustments for close button */
   font-size: 14px;
   font-family: 'IBM Plex Sans';
   font-weight: 700;
-  color: #5d3f87;
-  border: 1px solid var(--Purple-800, #5d3f87);
+  color: #0a5032;
+  border: 1px solid var(--Purple-800, #0a5032);
   background: #fff;
-  box-shadow: 2px 2px 0 0 rgb(93 63 135 / 90%);
+  box-shadow: 2px 2px 0 0 #0a5032;
   cursor: pointer;
 }
 
 .pv-protvista .pv-sel-menu-item {
-  border-color: #673ab7;
+  border-color: #0a5032;
   border-width: 1px;
   border-style: solid;
   height: 18px;
@@ -258,7 +262,7 @@ with extra ajustments for close button */
   padding-left: 4px;
   padding-right: 4px;
   font-size: 12px;
-  color: #673ab7;
+  color: #0a5032;
 }
 
 .pv-protvista .pv-sel-menu-item.sel {

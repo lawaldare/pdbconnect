@@ -187,7 +187,7 @@ export class MacromoleculesTabComponent {
   public readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$);
 
   public readonly macromoleculeTableRows = computed(() => {
-    const isLoaded = this.compCommunication.hasProcessedAssemblies();
+    const isLoaded = this.compCommunication.hasProcessedMacromolecules();
 
     if (isLoaded) {
       const rows = this.compCommunication.processedMacromolecules;
