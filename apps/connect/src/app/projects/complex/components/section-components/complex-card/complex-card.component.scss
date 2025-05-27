@@ -29,6 +29,11 @@
       }
     }
 
+    a.pfam-link {
+      font-size: 13px;
+      font-weight: 400;
+    }
+
     p,
     li {
       font-size: 13px;
@@ -57,7 +62,10 @@
     font-size: 16px !important;
     line-height: 27px;
     padding: 10px;
-    box-shadow: 0 5px 5px -3px rgb(0 0 0 / 20%), 0 8px 10px 1px rgb(0 0 0 / 14%), 0 3px 14px 2px rgb(0 0 0 / 12%);
+    box-shadow:
+      0 5px 5px -3px rgb(0 0 0 / 20%),
+      0 8px 10px 1px rgb(0 0 0 / 14%),
+      0 3px 14px 2px rgb(0 0 0 / 12%);
 
     // white-space: nowrap;
     max-width: 400px !important;

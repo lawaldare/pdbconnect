@@ -1,5 +1,6 @@
 import { Directive, ElementRef, Renderer2, Input, OnChanges } from '@angular/core';
 import { Participant } from '../models/complex-structure.model';
+import { environment } from '../../../../environments/environment';
 
 @Directive({
   selector: '[pdbcParticipant]',
@@ -7,9 +8,13 @@ import { Participant } from '../models/complex-structure.model';
 })
 export class ParticipantDirective implements OnChanges {
   @Input() participants!: Participant[];
+  public baseUrl = environment.pdbeBaseUrl;
 
   private orderedList: any;
-  constructor(private el: ElementRef, private renderer: Renderer2) {}
+  constructor(
+    private el: ElementRef,
+    private renderer: Renderer2
+  ) {}
 
   ngOnChanges(): void {
     this.init();
@@ -24,7 +29,7 @@ export class ParticipantDirective implements OnChanges {
       if (participant.accession_type === 'UniProt') {
         const anchorTag = this.renderer.createElement('a');
         anchorTag.textContent = `${participant.accession}`;
-        const proteinLink = `https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/${participant.accession}`;
+        const proteinLink = `${this.baseUrl}pdbe-kb/proteins/${participant.accession}`;
         const rfLink = `https://rfam.org/family/${participant.accession}`;
         const link = participant.accession.startsWith('RF') ? rfLink : proteinLink;
         this.renderer.setAttribute(anchorTag, 'href', link);

@@ -1,22 +1,17 @@
-@if (supercomplexesLength()) {
 <div id="interaction-section">
+  <h5>{{supercomplexesLength()}} supercomplexes</h5>
   <p>
-    This section shows <strong>{{supercomplexesLength()}}</strong> supercomplexes of this complex available in the PDB. A supercomplex is a larger assembly that
-    contains this complex along with additional components. For each supercomplex, only the additional components are listed
+    A supercomplex is a larger assembly that contains all components of this complex, along with additional components. For each supercomplex, only the additional
+    components are listed.
   </p>
+  <div class="search-box">
+    <input type="search" [formControl]="searchTerm" placeholder="Search by component name or accession" />
+    @if (!searchTerm.value) {
+    <i class="icon icon-common icon-search"></i>
+    }
+  </div>
   @if (supercomplexesLength()) {
   <section class="supercomplexes">
-    <!-- <div class="title">
-      <h4>Supercomplexes</h4>
-      <img
-        src="{{ helpLogoSrc }}"
-        class="icon"
-        alt="help icon"
-        matTooltipClass="complex-name-tooltip"
-        [matTooltip]="'A supercomplex is defined as a complex containing all the components of another complex and additional members'"
-        matTooltipPosition="above"
-      />
-    </div> -->
     <div class="card-container">
       @for (complexInteraction of superComplexesPage(); track complexInteraction.pdb_complex_id) {
       <pdbc-complex-card [complexInteraction]="complexInteraction" />
@@ -36,6 +31,3 @@
   </section>
   }
 </div>
-} @else {
-<p>No supercomplexes were identified for this complex</p>
-}

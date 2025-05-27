@@ -145,13 +145,13 @@ export class UtilService {
     this.currentlyActive.set(activeSection);
   }
 
-  public redirectToSearchTerm(value: string): void {
+  public redirectToSearchTerm(value: string, target = '_self'): void {
     const trimmedValue = value.trim();
     const hrefArray = window.location.href.split('/');
     hrefArray.pop();
     hrefArray.push(trimmedValue);
     const href = hrefArray.join('/');
-    window.open(href, '_self');
+    window.open(href, target);
   }
 
   //TODO: Update this method for redirection from latest release page

@@ -1,24 +1,17 @@
-@if (subcomplexesLength()) {
 <div id="interaction-section">
+  <h5>{{subcomplexesLength()}} subcomplexes</h5>
   <p>
-    This section displays the <strong>{{subcomplexesLength()}}</strong> subcomplexes of this complex available in the PDB. A subcomplex is a smaller assembly that
-    contains a subset of the components of this complex. For each subcomplex, only the common components are listed.
+    A subcomplex is a smaller assembly that contains a subset of the components found in this complex. For each subcomplex, only the components shared with this
+    complex are listed.
   </p>
+  <div class="search-box">
+    <input type="search" [formControl]="searchTerm" placeholder="Search by component name or accession" />
+    @if (!searchTerm.value) {
+    <i class="icon icon-common icon-search"></i>
+    }
+  </div>
   @if (subcomplexesLength()) {
   <section class="subcomplexes">
-    <!-- <div class="title">
-      <h4>Subcomplexes</h4>
-      <img
-        src="{{ helpLogoSrc }}"
-        class="icon"
-        alt="help icon"
-        matTooltipClass="complex-name-tooltip"
-        [matTooltip]="'A subcomplex is defined as a complex where all its components are subset of components in another larger complex'"
-        matTooltipPosition="above"
-      />
-    </div> -->
-
-    <!-- <lib-tool-tip minWidth="400px"> A subcomplex is defined as a complex where all its components are subset of components in another larger complex </lib-tool-tip> -->
     <div class="card-container">
       @for (complexInteraction of subComplexesPage(); track complexInteraction.pdb_complex_id) {
       <pdbc-complex-card [complexInteraction]="complexInteraction" />
@@ -38,6 +31,3 @@
   </section>
   }
 </div>
-} @else {
-<p>No subcomplexes were identified for this complex</p>
-}

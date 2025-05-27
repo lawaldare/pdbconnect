@@ -20,7 +20,15 @@
       <h4>{{ subTitle() }} components</h4>
       @if(showLess()){ @for(participant of participants().slice(0,4); track participant.accession){
       <ul style="margin-bottom: 0">
+        @if(participant.accession_type === 'UniProt'){ @let proteinLink = baseUrl + 'pdbe-kb/proteins/' + participant.accession; @let rfLink =
+        'https://rfam.org/family/' + participant.accession; @let link = participant.accession.startsWith('RF') ? rfLink : proteinLink;
+        <li>
+          <a [href]="link" target="_blank" class="pfam-link">{{ participant.accession }}</a> ({{ participant.name }}, {{ participant.stoichiometry }} {{
+          participant.stoichiometry > 1 ? 'copies' : 'copy' }})
+        </li>
+        }@else {
         <li>{{ participant.accession }} ({{ participant.name }}, {{ participant.stoichiometry }} {{ participant.stoichiometry > 1 ? 'copies' : 'copy' }})</li>
+        }
       </ul>
       } @if(participants().length > 4){
       <p role="button" class="view-more" (click)="viewMore()">View more</p>

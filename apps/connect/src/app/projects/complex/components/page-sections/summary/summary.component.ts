@@ -11,6 +11,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { map } from 'rxjs';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { environment } from '../../../../../../environments/environment';
+import { ComplexUtilService } from '../../../services/complex-util.service';
 
 @Component({
   selector: 'pdbc-summary',
@@ -23,6 +25,8 @@ export class SummaryComponent implements OnInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
   public ligands = toSignal(this.globalStore.select(ComplexSelectors.complexLigands));
+
+  private readonly utilService = inject(ComplexUtilService);
 
   public config!: { moleculeId: string; bgColor: { r: number; g: number; b: number }; assemblyId: number; hideControls: boolean };
 
@@ -52,6 +56,7 @@ export class SummaryComponent implements OnInit {
   public participants = signal<Participant[]>(this.summaryData()?.participants.slice(0, 4) ?? []);
   public respresentStructure = computed(() => this.summaryData()?.representative_structure);
   public textIcon = signal<string>('more');
+  public baseUrl = environment.baseUrl;
 
   ngOnInit(): void {
     this.config = {
@@ -97,11 +102,6 @@ export class SummaryComponent implements OnInit {
   }
 
   public openLigandPage(ligandId: string) {
-    const trimmedValue = ligandId.trim();
-    const origin = window.location.origin;
-    const pathname = '/chemicalCompound/show/';
-    const baseHref = window.location.hostname === 'localhost' ? '' : '/pdbe/connect';
-    const href = origin + baseHref + pathname + trimmedValue;
-    window.open(href, '_self');
+    this.utilService.openLigandPage(ligandId);
   }
 }

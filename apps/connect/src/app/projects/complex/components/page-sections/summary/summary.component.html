@@ -4,7 +4,7 @@
     <div class="info-row">
       <span class="info-row-title">Complex Portal ID</span>
       <div class="info-row-content">
-        <a [href]="'https://www.ebi.ac.uk/complexportal/complex/' + summaryData()?.complex_portal_id" target="_blank">
+        <a [href]="baseUrl + 'complexportal/complex/' + summaryData()?.complex_portal_id" target="_blank">
           {{ summaryData()?.complex_portal_id }}
           <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
         </a>
@@ -43,7 +43,7 @@
     </div>
     } @if(mappedLigands()?.length){
     <div class="info-row">
-      <span class="info-row-title">Cofactor</span>
+      <span class="info-row-title">Observed cofactors</span>
       <div class="info-row-content" style="display: block">
         @for(ligand of mappedLigands(); track ligand.ligandId; let islast = $last){
         <a
@@ -58,7 +58,7 @@
     </div>
     }
     <div class="info-row">
-      <span class="info-row-title">Experimental methods count</span>
+      <span class="info-row-title">Experimental methods</span>
       <div class="info-row-content" pdbcOEMC [data]="summaryData()?.unique_observed_experimental_methods_with_counts ?? {}" [complexId]="complexId() ?? ''"></div>
     </div>
     <!-- <div class="info-row">
