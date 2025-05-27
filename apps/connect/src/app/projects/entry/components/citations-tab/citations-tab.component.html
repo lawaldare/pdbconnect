@@ -8,7 +8,7 @@
         <div class="row__right__authors">
           <span class="row__right__authors__title">Authors:</span>
           @for (author of primaryPublication()?.author_list; track author.full_name) {
-          <span> <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a> </span>, }
+          <span> <a [href]="util.baseUrl() + 'entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a> </span>, }
         </div>
         <div class="row__right__pmid">
           <span class="row__right__pmid__info">
@@ -46,7 +46,7 @@
       <div class="row__right hyperlinks">
         @for (entry of relatedEntries; track entry) {
         <span class="row__right__entry">
-          <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + entry" target="_blank" class="row__right__link"
+          <a [href]="util.baseUrl() + 'entry/pdb/' + entry" target="_blank" class="row__right__link"
             >{{ entry }}
             <i class="icon icon-link icon-common"></i>
           </a>

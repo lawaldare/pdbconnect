@@ -66,7 +66,7 @@ export interface MappedResidue {
 })
 export class MacromoleculesTabComponent {
   public readonly macromoleculesFacade = inject(MacromoleculesFacade);
-  private readonly utilService = inject(UtilService);
+  public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly dialog = inject(MatDialog);
   public readonly dataProcessing = inject(MainDataProcessingFacade);

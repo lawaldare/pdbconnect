@@ -3,7 +3,7 @@ import { OverviewStateManagementService } from '../../state-management.service';
 import { CommonModule } from '@angular/common';
 import { OverviewMolstarFacade } from '../../data-processing.facade';
 import { ComponentCommunicationService } from '../../../../../../services/component-comm.service';
-import { MaterialModule } from '@pdbc/core';
+import { MaterialModule, UtilService } from '@pdbc/core';
 import { assemblyCompositionTooltip, assemblyNameTooltip, complexIdTooltip, preferredAssemblyTooltip } from '../../../../../../entry-constant';
 import { EntryDropdownComponent } from '../../../../../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { EntryStoreState } from '../../../../../../store/entry-store.model';
@@ -29,6 +29,8 @@ export class OverviewMolstarTabListViewComponent {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   public readonly panelOpenState = signal(false);
+
+  public readonly util = inject(UtilService);
 
   public readonly dataProcessing = inject(OverviewMolstarFacade);
   private readonly compCommunication = inject(ComponentCommunicationService);

@@ -62,7 +62,7 @@
 
       <article>
         Also associated with: @for(entry of entriesArray.slice(0, initialEntriesCount()); track entry; let islast = $last){
-        <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + entry" target="_blank">{{ entry }}</a>{{ islast? '' : ',' }} }
+        <a [href]="util.baseUrl() +  'entry/pdb/' + entry" target="_blank">{{ entry }}</a>{{ islast? '' : ',' }} }
         <div class="control">
           @if(entriesArray.length > 5){
           <span role="button" class="related-entry-toggle" (click)="toggleEntriesList()"

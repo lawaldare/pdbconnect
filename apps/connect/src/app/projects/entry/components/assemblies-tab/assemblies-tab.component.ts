@@ -13,7 +13,7 @@ import { entryAssembliesTooltips } from '../../entry-constant';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
-import { PopupWindowService } from '@pdbc/core';
+import { PopupWindowService, UtilService } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
@@ -34,6 +34,8 @@ export class AssembliesTabComponent {
   public readonly symmetry = toSignal(this.globalStore.select(EntrySelectors.symmetry));
 
   public readonly entryAssembliesTooltips = entryAssembliesTooltips;
+
+  public readonly util = inject(UtilService);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());

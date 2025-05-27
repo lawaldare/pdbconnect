@@ -14,7 +14,7 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
-import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule, PopupWindowService, TruncateTextDirective } from '@pdbc/core';
+import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule, PopupWindowService, TruncateTextDirective, UtilService } from '@pdbc/core';
 import { CellMouseOverEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -73,6 +73,8 @@ export class LigandsTabComponent implements OnInit {
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
   public readonly selectedLigandIdx = toSignal(this.compCommunication.ligandSelection$);
+
+  public readonly util = inject(UtilService);
 
   public readonly ligandTableRows = computed(() => {
     const isLoaded = this.compCommunication.hasProcessedLigands();
