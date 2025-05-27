@@ -13,7 +13,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { combineLatest, filter, take, tap } from 'rxjs';
+import { combineLatest, filter, Subject, take, tap } from 'rxjs';
 import '@nightingale-elements/nightingale-manager';
 import '@nightingale-elements/nightingale-navigation';
 import '@nightingale-elements/nightingale-sequence';
@@ -162,10 +162,13 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   public biophysicalResourcesList = signal<string[]>([]);
   public biophysicalByResource = signal<NightingaleFeature[][]>([]);
 
-  readonly trackNestedBlocks = computed(() => [
-    { name: 'Domains', dataNames: this.domainResourcesList(), data: this.domainsByResource() },
-    { name: 'Biophysical parameters', dataNames: this.biophysicalResourcesList(), data: this.biophysicalByResource() },
-  ]);
+  readonly trackNestedBlocks = computed(() => {
+    const domainsTrackName = this.isNucleic() ? 'Families' : 'Domains';
+    return [
+      { name: domainsTrackName, dataNames: this.domainResourcesList(), data: this.domainsByResource() },
+      { name: 'Biophysical parameters', dataNames: this.biophysicalResourcesList(), data: this.biophysicalByResource() },
+    ];
+  });
 
   // storage
   private readonly globalStore = inject(Store<EntryStoreState>);
@@ -183,6 +186,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
 
   public readonly dataIsParsed = signal<boolean>(false);
   public invalidVisualisation = signal<boolean>(false);
+  private readonly trackCoreProcessed$ = new Subject<void>();
 
   // conservation API data has a special track and data types (ConservationTrackBlockComponent)
   // this data is set using signals for automatic processing and rendering on update
@@ -361,9 +365,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     secondary: APITrackData | null | undefined,
     binding: APITrackData | null | undefined,
     interfaces: APITrackData | null | undefined,
-    annotations: APITrackData | null | undefined,
-    conservation: APIConservationData | null | undefined,
-    variation: APIVariationData | null | undefined
+    annotations: APITrackData | null | undefined
   ) {
     const allDefined =
       uniprot !== undefined &&
@@ -373,9 +375,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       secondary !== undefined &&
       binding !== undefined &&
       interfaces !== undefined &&
-      annotations !== undefined &&
-      conservation !== undefined &&
-      variation !== undefined;
+      annotations !== undefined;
 
     if (allDefined === false) return false;
     const allContainData =
@@ -386,9 +386,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       (secondary === null || Object.keys(secondary).length > 0) &&
       (binding === null || Object.keys(binding).length > 0) &&
       (interfaces === null || Object.keys(interfaces).length > 0) &&
-      (annotations === null || Object.keys(annotations).length > 0) &&
-      (conservation === null || Object.keys(conservation).length >= 0) &&
-      (variation === null || Object.keys(variation).length >= 0);
+      (annotations === null || Object.keys(annotations).length > 0);
     return allContainData;
   }
 
@@ -402,8 +400,6 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       this.trackBindingSites$,
       this.trackInterfaces$,
       this.trackAnnotations$,
-      this.trackConservation$,
-      this.trackVariation$,
     ])
       .pipe(
         tap(([uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations]) => {
@@ -418,12 +414,12 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
             this.invalidVisualisation.set(true);
           }
         }),
-        filter(([uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations, conservation, variation]) =>
-          this.allTracksReadyCheck(uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations, conservation, variation)
+        filter(([uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations]) =>
+          this.allTracksReadyCheck(uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations)
         ),
         take(1) // only once
       )
-      .subscribe(([uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations, conservation, variation]) => {
+      .subscribe(([uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations]) => {
         const uniprotData = (uniprot as any)?.empty ? null : uniprot;
         const chainsData = (chains as any)?.empty ? null : chains;
         const domainsData = (domains as any)?.empty ? null : domains;
@@ -432,8 +428,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
         const bindingData = (binding as any)?.empty ? null : binding;
         const interfacesData = (interfaces as any)?.empty ? null : interfaces;
         const annotationsData = (annotations as any)?.empty ? null : annotations;
-        const conservationData = (conservation as any)?.empty ? null : conservation;
-        const variationData = (variation as any)?.empty ? null : variation;
+
         // At this point everything is loaded → safe to process
         const trackDataArray: (APITrackData | null)[] = [uniprotData, chainsData, domainsData, rfamData, secondaryData, bindingData, interfacesData, annotationsData];
 
@@ -481,15 +476,20 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
         }
 
         this.loadedTracksAPIData.set(true);
-        if (conservationData && Object.keys(conservationData).length > 0) {
-          this.originalConservationData.set(conservationData);
-        }
-        this.loadedConservationAPIData.set(true);
-        if (variationData && Object.keys(variationData).length > 0) {
-          this.originalVariationData.set(variationData);
-        }
-        this.loadedVariationAPIData.set(true);
+        this.trackCoreProcessed$.next(); // signal that core data is processed
       });
+
+    combineLatest([this.trackCoreProcessed$, this.trackConservation$, this.trackVariation$]).subscribe(([_, conservationData, variationData]) => {
+      let preProcessedConservationData: APIConservationData | undefined = conservationData;
+      if (Object.keys(conservationData).length === 0) preProcessedConservationData = undefined;
+      this.originalConservationData.set(preProcessedConservationData);
+      this.loadedConservationAPIData.set(true);
+
+      let preProcessedVariationData: APIVariationData | undefined = variationData;
+      if (Object.keys(variationData).length === 0) preProcessedVariationData = undefined;
+      this.originalVariationData.set(preProcessedVariationData);
+      this.loadedVariationAPIData.set(true);
+    });
   }
 
   reloadVisualisation() {

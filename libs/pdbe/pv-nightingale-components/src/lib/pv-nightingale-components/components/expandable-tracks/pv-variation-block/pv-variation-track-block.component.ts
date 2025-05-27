@@ -85,7 +85,7 @@ const PDBE_VARIATION_PROVENANCE_FILTERS = [
 })
 export class VariationTrackBlockComponent {
   @Input({ required: true }) originalVariationData!: WritableSignal<APIVariationData | undefined>;
-  @Input({ required: true }) sequenceLength?: number;
+  @Input({ required: true }) sequenceLength!: number;
   @Input({ required: true }) selectionHighlight!: string;
   private readonly _chainId = signal<string | undefined>(undefined);
 

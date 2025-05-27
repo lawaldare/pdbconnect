@@ -37,9 +37,10 @@ export class ConservationTrackBlockComponent {
    *
    */
   readonly conservationData = computed(() => {
-    if (!this.originalConservationData()) return [];
-    if (this.isEntryData) return processEntityConservationDataFromAPI(this.originalConservationData()!);
-    return [];
+    const data = this.originalConservationData();
+    if (!data) return undefined;
+    if (this.isEntryData) return processEntityConservationDataFromAPI(data);
+    return undefined;
   });
 
   /**
@@ -51,8 +52,9 @@ export class ConservationTrackBlockComponent {
    *
    */
   readonly conservationCountData = computed(() => {
-    if (!this.originalConservationData()) return [];
-    if (this.isEntryData) return processEntityConservationLineChartDataFromAPI(this.originalConservationData()!);
+    const data = this.originalConservationData();
+    if (!data) return [];
+    if (this.isEntryData) return processEntityConservationLineChartDataFromAPI(data);
     return [];
   });
 
