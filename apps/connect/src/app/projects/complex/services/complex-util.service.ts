@@ -24,7 +24,6 @@ export class ComplexUtilService {
         .join(',')
         .toLocaleLowerCase();
       const rowString = additionalAccession + commonAccession + additionalName + commonName;
-      console.log('rowString', rowString);
       return rowString.toLocaleLowerCase().indexOf(searchQueryLower) !== -1;
     });
   }
