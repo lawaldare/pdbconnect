@@ -3,7 +3,6 @@ import { MacromoleculesResidueRanges, MacromoleculesRowData, TableFilter, TableR
 import { DataToTable } from './abstract-base-row-class';
 import { CarbohydrateMolecule, CarbohydrateResidue } from '../../../../data-models/carbohydrate-polymer.model';
 import { Molecule } from '../../../../data-models/molecule.model';
-import { BestStructureMapping } from '../../../../data-models/uniport-best-structures.model';
 import { UniProtMapping } from '../../../../data-models/uniprot-mapping.model';
 import { DEFAULT_SET_25, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { PolymerCoverageMolecule } from '../../../../data-models/polymer-coverage.model';
@@ -40,7 +39,6 @@ export class MacromoleculeDataToTable extends DataToTable {
   macromolecules: Molecule[] = [];
   carbohydrates: CarbohydrateMolecule[];
   uniprotMapping: UniProtMapping;
-  bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] };
   polymerCoverage: PolymerCoverageMolecule[] = [];
   summaryData: ProcessedSummary;
   assemblyData: AssemblyData[];
@@ -56,7 +54,6 @@ export class MacromoleculeDataToTable extends DataToTable {
   constructor(
     carbohydrates: CarbohydrateMolecule[],
     uniprotMapping: UniProtMapping,
-    bestStructuresMappingsByUniProtId: { [key: string]: BestStructureMapping[] },
     macromolecules: Molecule[],
     polymerCoverage: PolymerCoverageMolecule[],
     summaryData: ProcessedSummary,
@@ -65,7 +62,6 @@ export class MacromoleculeDataToTable extends DataToTable {
     super();
     this.carbohydrates = carbohydrates;
     this.uniprotMapping = uniprotMapping;
-    this.bestStructuresMappingsByUniProtId = bestStructuresMappingsByUniProtId;
     // this.polymerCoverage = polymerCoverage;
     this.summaryData = summaryData;
     this.assemblyData = assemblyData;
@@ -151,11 +147,7 @@ export class MacromoleculeDataToTable extends DataToTable {
 
   generateTableData(): TableRow[] {
     const startEndByEntityByChain: MacromoleculesChainBoundaries = this.getStartEndForChainIdsFromCoverage(this.macromolecules, this.polymerCoverage);
-    const mappingsByEntityByAccession: EntityUniProtMapping = this.generateUniprotMappings(
-      this.uniprotMapping,
-      this.bestStructuresMappingsByUniProtId,
-      startEndByEntityByChain
-    );
+    const mappingsByEntityByAccession: EntityUniProtMapping = this.generateUniprotMappings(this.uniprotMapping, startEndByEntityByChain);
 
     let rows: TableRow[] = [];
     if (this.tableRows().length === 0) {
@@ -246,18 +238,11 @@ export class MacromoleculeDataToTable extends DataToTable {
     return startEndByEntityByChain;
   }
 
-  private generateUniprotMappings(
-    uniprotMapping: UniProtMapping,
-    bestStructuresMappingsByUniProtIds: { [key: string]: BestStructureMapping[] },
-    startEndByEntityByChain: MacromoleculesChainBoundaries
-  ) {
+  private generateUniprotMappings(uniprotMapping: UniProtMapping, startEndByEntityByChain: MacromoleculesChainBoundaries) {
     const mappingsByEntityByAccession: EntityUniProtMapping = {};
     if (this.isNotEmptyObject(uniprotMapping)) {
       for (const [uniprotAcc, mapping] of Object.entries(uniprotMapping)) {
         for (const mappingObj of mapping.mappings) {
-          const bestStructureForChain = this.isNotEmptyObject(bestStructuresMappingsByUniProtIds)
-            ? bestStructuresMappingsByUniProtIds[uniprotAcc].filter((bestStructureData) => bestStructureData.chain_id === mappingObj.chain_id)[0]
-            : { coverage: 0 };
           mappingsByEntityByAccession[mappingObj.entity_id] = mappingsByEntityByAccession[mappingObj.entity_id] ?? {};
           mappingsByEntityByAccession[mappingObj.entity_id][uniprotAcc] = mappingsByEntityByAccession[mappingObj.entity_id][uniprotAcc] ?? [];
 
@@ -286,7 +271,7 @@ export class MacromoleculeDataToTable extends DataToTable {
             end: `${endAuthorResidueNumber}${endAuthorInsertionCode}`,
             unpStart: `${mappingObj.unp_start}`,
             unpEnd: `${mappingObj.unp_end}`,
-            coverage: bestStructureForChain.coverage,
+            coverage: mappingObj.coverage,
             accession: uniprotAcc,
             chainId: mappingObj.chain_id,
           });

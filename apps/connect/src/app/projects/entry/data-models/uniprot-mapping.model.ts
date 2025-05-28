@@ -35,6 +35,8 @@ export interface UniProtMappingObj {
   struct_asym_id: string;
   unp_end: number;
   unp_start: number;
+  identity: number;
+  coverage: number;
 }
 
 export interface UniProtResidMapping {
