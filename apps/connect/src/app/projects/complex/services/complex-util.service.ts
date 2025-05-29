@@ -36,4 +36,20 @@ export class ComplexUtilService {
     const href = origin + baseHref + pathname + trimmedValue;
     window.open(href, '_blank');
   }
+
+  public findComplexId(data: any[]) {
+    const entries = Object.values(data);
+
+    // If there's only one object, return its pdb_complex_id
+    if (entries.length === 1) {
+      return entries[0].pdb_complex_id;
+    }
+
+    // Otherwise, find the object with preferred_assembly === true
+    for (const obj of entries) {
+      if (obj.preferred_assembly === true) {
+        return obj.pdb_complex_id;
+      }
+    }
+  }
 }

@@ -18,7 +18,10 @@
       </div>
     </div>
     <div class="info-row">
-      <span class="info-row-title"> Components </span>
+      <span class="info-row-title">
+        Components
+        <lib-help-icon-with-tooltip [tooltipText]="complexSummaryTabTooltips.component" />
+      </span>
       <div class="components">
         <div class="info-row-content participants" pdbcParticipant [participants]="participants()"></div>
         @if((summaryData()?.participants ?? []).length > 4){

@@ -1,8 +1,9 @@
 .ag-theme-quartz {
   /* bright green, 10% opacity */
-  --ag-selected-row-background-color: rgb(0 255 0 / 10%);
+  --ag-selected-row-background-color: #d0debb;
   --ag-header-background-color: #fff;
   --ag-border-color: #1a1c1a;
+  --ag-row-hover-color: #e7efdd;
 }
 
 ag-grid-angular {

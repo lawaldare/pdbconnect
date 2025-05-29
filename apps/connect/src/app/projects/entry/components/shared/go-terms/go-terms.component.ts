@@ -75,7 +75,7 @@ export class GoTermsComponent {
       headerName: 'ID Number',
       field: 'id',
       cellRenderer: (params: any) => `
-      <a href="${environment.baseUrl}QuickGO/GTerm?id=${params.data.id}" target="_blank">${params.data.id}
+      <a href="https://www.ebi.ac.uk/QuickGO/GTerm?id=${params.data.id}" target="_blank">${params.data.id}
         <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
       </a>
     `,

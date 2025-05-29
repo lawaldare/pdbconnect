@@ -43,4 +43,6 @@ export const complexSummaryTabTooltips = {
     'Displays the symmetry most often observed for this complex (identified with AnAnaS). PDB assemblies with different or missing symmetry are listed separately.',
   observedCofactors:
     'Lists every unique cofactor bound to the complex. A ligand is marked as a cofactor when it matches a class in the CoFactor database and binds a protein with a recognised enzymatic role.',
+  component:
+    'Shows every macromolecule in the complex with its copy number. Mapped proteins are labelled as Gene name:UniProt accession, and mapped RNAs link to Rfam. Unmapped macromolecules are displayed as type_PDB_entityID (for example, antibody_5mv4_1), where type refers to the molecule class: protein, DNA, RNA, or antibody',
 };
