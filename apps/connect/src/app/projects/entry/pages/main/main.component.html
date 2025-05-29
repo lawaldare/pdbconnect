@@ -1,7 +1,9 @@
 <div class="desktop-view">
   <pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
   <pdb-search-app [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" />
-  @if (statusCode() === 'REL') {
+  @if(showNotificationBanner()) {
+  <lib-notification />
+  } @if (statusCode() === 'REL') {
   <section class="container">
     <pdbc-entry-page-header />
     <main>

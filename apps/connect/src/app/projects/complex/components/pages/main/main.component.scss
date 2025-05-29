@@ -7,3 +7,21 @@ main {
     }
   }
 }
+
+header {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+
+  h1 {
+    display: inline-block;
+    vertical-align: middle;
+
+    &.truncated {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}

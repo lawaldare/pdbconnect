@@ -130,6 +130,8 @@ export const depositionDateTooltip = 'Date when the coordinates were deposited t
 export const releaseDateTooltip = 'Date when the coordinates were released in the PDB archive';
 export const revisionDateTooltip = 'Date of the current version or last minor or major revision of a PDB entry';
 
+const baseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
+
 /**
  * For dashboard details display of statistic links bar
  */
@@ -140,25 +142,25 @@ export const dashboardStatLinks = {
     {
       id: 'pdbs',
       displayName: 'structures',
-      link: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/',
+      link: `${baseUrl}pdbe-kb/proteins/`,
       linkSuffix: '/structures',
     },
     {
       id: 'ligands',
       displayName: 'ligands',
-      link: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/',
+      link: `${baseUrl}pdbe-kb/proteins/`,
       linkSuffix: '/ligands',
     },
     {
       id: 'similar_proteins',
       displayName: 'similar proteins',
-      link: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/',
+      link: `${baseUrl}pdbe-kb/proteins/`,
       linkSuffix: '/similarity',
     },
     {
       id: 'interaction_partners',
       displayName: 'interactions',
-      link: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/',
+      link: `${baseUrl}pdbe-kb/proteins/`,
       linkSuffix: '/interactions',
     },
   ],
@@ -166,26 +168,24 @@ export const dashboardStatLinks = {
     {
       id: 'pdbs',
       displayName: 'bound structures',
-      link: 'https://www.ebi.ac.uk/pdbe/connect/chemicalCompound/show/',
+      link: `${baseUrl}connect/chemicalCompound/show/`,
       linkSuffix: '#structures-section',
     },
     {
       id: 'ligands',
       displayName: 'interaction statistics',
-      link: 'https://www.ebi.ac.uk/pdbe/connect/chemicalCompound/show/',
+      link: `${baseUrl}connect/chemicalCompound/show/`,
       linkSuffix: '#interaction-section',
     },
     {
       id: 'similar_proteins',
       displayName: 'related ligands',
-      link: 'https://www.ebi.ac.uk/pdbe/connect/chemicalCompound/show/',
+      link: `${baseUrl}connect/chemicalCompound/show/`,
       linkSuffix: '#related-ligand-section',
     },
   ],
   Domains: [],
 };
-
-const baseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
 
 export const resourceUrls: any = {
   CATH: 'https://www.cathdb.info/version/latest/superfamily/',

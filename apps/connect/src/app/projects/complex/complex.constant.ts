@@ -36,3 +36,11 @@ export const complexRouteTabs = [
   { label: 'Supercomplexes', id: 'supercomplexes' },
   { label: 'Citations', id: 'citations' },
 ];
+
+export const complexSummaryTabTooltips = {
+  polymerComposition: 'Shows the total number of each polymer type in the complex: protein, RNA, DNA, or hybrid DNA/RNA. Counts come from component stoichiometry.',
+  globalSymmetry:
+    'Displays the symmetry most often observed for this complex (identified with AnAnaS). PDB assemblies with different or missing symmetry are listed separately.',
+  observedCofactors:
+    'Lists every unique cofactor bound to the complex. A ligand is marked as a cofactor when it matches a class in the CoFactor database and binds a protein with a recognised enzymatic role.',
+};

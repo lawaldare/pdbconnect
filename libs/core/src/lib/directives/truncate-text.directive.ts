@@ -11,7 +11,10 @@ export class TruncateTextDirective implements OnInit, OnChanges {
   private fullText = '';
   private truncatedText = '';
 
-  constructor(private el: ElementRef, private renderer: Renderer2) {}
+  constructor(
+    private el: ElementRef,
+    private renderer: Renderer2
+  ) {}
 
   ngOnInit() {
     this.init();
@@ -23,6 +26,7 @@ export class TruncateTextDirective implements OnInit, OnChanges {
 
   private init(): void {
     this.fullText = this.truncateText;
+    console.log(this.fullText.length);
     this.truncatedText = this.truncateText.length > this.limit ? this.truncateText.substring(0, this.limit) + '...' : this.truncateText;
     this.renderer.setProperty(this.el.nativeElement, 'innerText', this.truncatedText);
     if (this.truncateText.trim().length > this.limit) {

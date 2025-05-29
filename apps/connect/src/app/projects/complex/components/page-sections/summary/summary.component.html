@@ -18,7 +18,7 @@
       </div>
     </div>
     <div class="info-row">
-      <span class="info-row-title">Components</span>
+      <span class="info-row-title"> Components </span>
       <div class="components">
         <div class="info-row-content participants" pdbcParticipant [participants]="participants()"></div>
         @if((summaryData()?.participants ?? []).length > 4){
@@ -30,20 +30,31 @@
       <span class="info-row-title">Oligomeric state</span>
       <div class="info-row-content">{{ summaryData()?.oligomeric_state }}</div>
     </div>
-    <!-- <div class="info-row">
-        <span class="info-row-title">Stoichiometry</span>
-        <div class="info-row-content">
-          {{ summaryData().stoichiometry }}
-        </div>
-      </div> -->
-    @if(summaryData()?.symmetry?.type){
+    @if(summaryData()?.polymer_composition){
     <div class="info-row">
-      <span class="info-row-title">Global symmetry</span>
-      <div class="info-row-content">{{ summaryData()?.symmetry | symmetry }}</div>
+      <span class="info-row-title">
+        Polymer composition
+        <lib-help-icon-with-tooltip [tooltipText]="complexSummaryTabTooltips.polymerComposition" />
+      </span>
+      <div class="info-row-content">{{ summaryData()?.polymer_composition }}</div>
+    </div>
+    } @if(summaryData()?.symmetry?.type){
+    <div class="info-row">
+      <span class="info-row-title">
+        Global symmetry
+        <lib-help-icon-with-tooltip [tooltipText]="complexSummaryTabTooltips.globalSymmetry" />
+      </span>
+      <div class="info-row-content">
+        {{ summaryData()?.symmetry | symmetry }} @if(diffSymmetries().length){ There are
+        <span class="diff-symbol" role="button" (click)="openDiffSymmetryDialog()">{{ diffSymmetries().length }}</span> PDB assemblies with different symmetry. }
+      </div>
     </div>
     } @if(mappedLigands()?.length){
     <div class="info-row">
-      <span class="info-row-title">Observed cofactors</span>
+      <span class="info-row-title">
+        Observed cofactors
+        <lib-help-icon-with-tooltip [tooltipText]="complexSummaryTabTooltips.observedCofactors" />
+      </span>
       <div class="info-row-content" style="display: block">
         @for(ligand of mappedLigands(); track ligand.ligandId; let islast = $last){
         <a

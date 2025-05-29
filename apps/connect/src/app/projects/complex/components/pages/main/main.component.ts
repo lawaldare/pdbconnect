@@ -31,7 +31,6 @@ import { SubComplexesComponent } from '../../page-sections/complex-subcomplex/su
     CommonModule,
     PdbeHeaderLogoMenuComponent,
     PdbeHeaderSearchComponent,
-    // PdbeNavMenuComponent,
     SummaryComponent,
     ComplexStructuresComponent,
     TruncateTextDirective,
@@ -95,7 +94,7 @@ export class MainComponent implements OnInit {
       });
   }
 
-  selectTab(event: MatTabChangeEvent) {
+  public selectTab(event: MatTabChangeEvent) {
     const routeTabs = complexRouteTabs;
     const tabName = routeTabs[event.index].id;
     this.router.navigate([], {

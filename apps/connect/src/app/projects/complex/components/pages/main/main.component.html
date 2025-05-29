@@ -7,7 +7,7 @@
     <article>
       <section class="hero">
         @if(summaryData()?.name){
-        <h1 class="heading-1" libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="30"></h1>
+        <h1 class="heading-1" libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="50"></h1>
         } @if(complexId()){
         <h4>{{ complexId() }}</h4>
         }
