@@ -1,16 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { EntryStoreState } from './entry-store.model';
+import { EntryStoreState, UniProtMappingData } from './entry-store.model';
 import { EntryActions } from './entry.actions';
-import { catchError, forkJoin, map, mergeMap, of, switchMap, take } from 'rxjs';
+import { catchError, concatMap, forkJoin, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
 import { EntryApiService } from '../services/entry-api.service';
 import { EntrySelectors } from './entry.selectors';
 import { AnyExperimentDetail } from '../data-models/experimental-details.model';
 import { UniProtMapping } from '../data-models/uniprot-mapping.model';
 import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
-import { BestStructureMapping } from '../data-models/uniport-best-structures.model';
-import { BestStructureDict } from '../data-models/uniprot-best-structures.model';
 import { MainDataProcessingFacade } from '../pages/main/data-processing.facade';
 import { CitationDetail } from '../data-models/publication.model';
 import { IRRMCExperimentRawData } from '../data-models/experiment-raw-data.model';
@@ -313,13 +311,18 @@ export class EntryEffects {
       mergeMap((entryId: string) =>
         this.entryAPIService.getUniprotMapping(entryId).pipe(
           mergeMap((uniprotMapping: UniProtMapping) => {
+            if ((uniprotMapping as any).empty === true) {
+              const emptyUniProtResponse = {
+                uniprotMapping: { empty: true },
+                proteinPagesSummaryByUniProtIds: { empty: true },
+              };
+              return of(
+                EntryActions.getUniprotMappingSuccess({
+                  data: emptyUniProtResponse as unknown as UniProtMappingData,
+                })
+              );
+            }
             const uniprotIds = Object.keys(uniprotMapping);
-            const bestStructuresObservables = uniprotIds.map((uniprotId) =>
-              this.entryAPIService.getBestStructures(uniprotId).pipe(
-                map((result) => ({ [uniprotId]: result })) // Wrap each result in an object with uniprotId as key
-              )
-            );
-
             const proteinPagesSummaryObservables = uniprotIds.map((uniprotId) =>
               this.entryAPIService.getProteinPagesSummaryStats(uniprotId).pipe(
                 map((result) => ({ [uniprotId]: result })) // Wrap each result in an object with uniprotId as key
@@ -327,43 +330,19 @@ export class EntryEffects {
             );
 
             // Use forkJoin to wait for all observables to complete
-            return forkJoin({
-              bestStructures: forkJoin(bestStructuresObservables),
-              proteinPagesSummary: forkJoin(proteinPagesSummaryObservables),
-            }).pipe(
-              map(({ bestStructures, proteinPagesSummary }) => {
+            return forkJoin(proteinPagesSummaryObservables).pipe(
+              map((proteinPagesSummary) => {
                 // Combine results into dictionaries
-                const bestStructuresMappingsByUniProtIds: { [key: string]: BestStructureMapping[] } = {};
-                const uniprotCountsInPDBe: { [key: string]: number } = {};
                 const proteinPagesSummaryByUniProtIds: { [key: string]: ProteinSummaryStats } = {};
-
-                // Process bestStructures results
-                for (const uniprotDict of bestStructures) {
-                  const uniprotId = Object.keys(uniprotDict)[0];
-                  const bestStructureDict = uniprotDict[uniprotId] as unknown as BestStructureDict;
-                  const uniprotData = bestStructureDict[uniprotId];
-
-                  // Update uniprotCountsInPDBe with counts of unique PDB ids
-                  const uniquePDBIds = uniprotData.map((datum) => datum.pdb_id).filter((value, index, array) => array.indexOf(value) === index);
-                  uniprotCountsInPDBe[uniprotId] = uniquePDBIds.length;
-
-                  // Update bestStructuresMappingsByUniProtIds with filtered data
-                  const uniprotDataFiltered = bestStructureDict[uniprotId].filter((datum) => datum.pdb_id === entryId);
-                  bestStructuresMappingsByUniProtIds[uniprotId] = bestStructuresMappingsByUniProtIds[uniprotId] ?? [];
-                  bestStructuresMappingsByUniProtIds[uniprotId].push(...uniprotDataFiltered);
-                }
 
                 // Process proteinPagesSummary results
                 for (const summaryDict of proteinPagesSummary as { [key: string]: ProteinSummaryStats }[]) {
                   const uniprotId = Object.keys(summaryDict)[0];
                   proteinPagesSummaryByUniProtIds[uniprotId] = summaryDict[uniprotId];
                 }
-
                 return EntryActions.getUniprotMappingSuccess({
                   data: {
                     uniprotMapping,
-                    uniprotCountsInPDBe,
-                    bestStructuresMappingsByUniProtIds,
                     proteinPagesSummaryByUniProtIds,
                   },
                 });

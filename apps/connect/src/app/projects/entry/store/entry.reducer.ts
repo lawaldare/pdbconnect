@@ -28,8 +28,6 @@ const initialState: EntryStoreState = {
   resolutionValues: [],
   experimentalMethod: '',
   uniprotMapping: undefined,
-  uniprotCountsInPDBe: {},
-  bestStructuresMappingsByUniProtIds: undefined,
   proteinPagesSummaryByUniProtIds: {},
   interproMapping: {},
   isoformsMapping: {},
@@ -174,8 +172,6 @@ export const entryReducer = createReducer(
   on(EntryActions.getUniprotMappingSuccess, (state, action) => ({
     ...state,
     uniprotMapping: action.data.uniprotMapping,
-    uniprotCountsInPDBe: action.data.uniprotCountsInPDBe,
-    bestStructuresMappingsByUniProtIds: action.data.bestStructuresMappingsByUniProtIds,
     proteinPagesSummaryByUniProtIds: action.data.proteinPagesSummaryByUniProtIds,
   })),
   on(EntryActions.getValidationXrayRefineSuccess, (state, action) => ({

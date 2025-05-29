@@ -116,7 +116,6 @@ export class MainDataProcessingFacade {
       modifications: createSelectorStream(EntrySelectors.modifications, []),
       carbohydrates: createSelectorStream(EntrySelectors.carbohydrates, []),
       uniprotMapping: createSelectorStream(EntrySelectors.uniprotMapping, null),
-      bestStrMapUniProtId: createSelectorStream(EntrySelectors.bestStructuresMappingsByUniProtIds, []),
       macromolecules: createSelectorStream(EntrySelectors.macroMolecules, []),
       ligandMonomers: createSelectorStream(EntrySelectors.ligandMonomers, []),
       polymerCoverage: createSelectorStream(EntrySelectors.polymerCoverage, []),
@@ -147,8 +146,9 @@ export class MainDataProcessingFacade {
 
   private processAssembliesData(data: any) {
     const tabName = TabNames.Assemblies;
+    const hasDataArrived = this.isNotUndefined([data.summaryData, data.complexDetails, data.assemblyData, data.pisaAssemblyData]);
     if (
-      this.isNotUndefined([data.summaryData, data.complexDetails, data.assemblyData, data.pisaAssemblyData]) &&
+      hasDataArrived &&
       Object.keys(data.summaryData).length > 0 &&
       data.complexDetails.length > 0 &&
       data.assemblyData.length > 0 &&
@@ -163,23 +163,25 @@ export class MainDataProcessingFacade {
       this.compCommunication.processedAssemblies = rows;
 
       this.compCommunication.hasProcessedAssemblies.set(true);
-    } else if (this.isNotUndefined([data.summaryData, data.complexDetails, data.assemblyData, data.pisaAssemblyData])) {
+    } else if (hasDataArrived) {
       this.compCommunication.hasProcessedAssemblies.set(true);
     }
   }
 
   private processDomainsData(data: any) {
     const tabName = TabNames.Domains;
+    const hasDataArrived = this.isNotUndefined([
+      data.pfamMappings,
+      data.cathMappings,
+      data.scopMappings,
+      data.macromolecules,
+      data.polymerCoverage,
+      data.summaryData,
+      data.assemblyData,
+    ]);
+
     if (
-      this.isNotUndefined([
-        data.pfamMappings,
-        data.cathMappings,
-        data.scopMappings,
-        data.macromolecules,
-        data.polymerCoverage,
-        data.summaryData,
-        data.assemblyData,
-      ]) &&
+      hasDataArrived &&
       Object.keys(data.summaryData).length > 0 &&
       data.assemblyData.length > 0 &&
       data.macromolecules.length > 0 &&
@@ -209,9 +211,7 @@ export class MainDataProcessingFacade {
       if (this.compCommunication.hasProcessedMacromolecules()) {
         this.processDomainsWithMacromolecules(this.compCommunication.processedMacromolecules, this.compCommunication.processedDomainsAsList);
       }
-    } else if (
-      this.isNotUndefined([data.pfamMappings, data.cathMappings, data.scopMappings, data.macromolecules, data.polymerCoverage, data.summaryData, data.assemblyData])
-    ) {
+    } else if (hasDataArrived) {
       this.compCommunication.hasProcessedDomains.set(true);
       this.compCommunication.hasPreProcessedDomains.set(true);
     }
@@ -236,8 +236,9 @@ export class MainDataProcessingFacade {
 
   private processLigandsData(data: any) {
     const tabName = TabNames.Ligands;
+    const hasDataArrived = this.isNotUndefined([data.ligands, data.modifications, data.ligandMonomers, data.summaryData, data.assemblyData]);
     if (
-      this.isNotUndefined([data.ligands, data.modifications, data.ligandMonomers, data.summaryData, data.assemblyData]) &&
+      hasDataArrived &&
       Object.keys(data.summaryData).length > 0 &&
       data.assemblyData.length > 0 &&
       (data.modifications.length > 0 || (data.ligands.length > 0 && data.ligandMonomers.length > 0))
@@ -258,26 +259,29 @@ export class MainDataProcessingFacade {
       this.compCommunication.processedModifications = rows.filter((row) => row.type === 'modification');
 
       this.compCommunication.hasProcessedLigands.set(true);
-    } else if (this.isNotUndefined([data.ligands, data.modifications, data.ligandMonomers, data.summaryData, data.assemblyData])) {
+    } else if (hasDataArrived) {
       this.compCommunication.hasProcessedLigands.set(true);
     }
   }
 
   private processMacromoleculesData(data: any) {
     const tabName = TabNames.Macromolecules;
-    if (
-      this.isNotUndefined([data.carbohydrates, data.macromolecules, data.polymerCoverage, data.summaryData, data.assemblyData]) &&
-      Object.keys(data.summaryData).length > 0 &&
-      data.macromolecules.length > 0 &&
-      data.assemblyData.length > 0
-    ) {
+    const hasDataArrived = this.isNotUndefined([
+      data.uniprotMapping,
+      data.carbohydrates,
+      data.macromolecules,
+      data.polymerCoverage,
+      data.summaryData,
+      data.assemblyData,
+    ]);
+    if (hasDataArrived && Object.keys(data.summaryData).length > 0 && data.macromolecules.length > 0 && data.assemblyData.length > 0) {
       if (<any>data.carbohydrates.empty === true) data.carbohydrates = [];
       if (<any>data.polymerCoverage.empty === true) data.polymerCoverage = [];
+      if (<any>data.uniprotMapping.empty === true) data.uniprotMapping = {};
 
       const tempTableData = new MacromoleculeDataToTable(
         data.carbohydrates,
-        data.uniprotMapping!,
-        data.bestStrMapUniProtId!,
+        data.uniprotMapping,
         data.macromolecules,
         data.polymerCoverage,
         data.summaryData,
@@ -295,7 +299,7 @@ export class MainDataProcessingFacade {
       if (this.compCommunication.hasPreProcessedDomains()) {
         this.processDomainsWithMacromolecules(this.compCommunication.processedMacromolecules, this.compCommunication.processedDomainsAsList);
       }
-    } else if (this.isNotUndefined([data.carbohydrates, data.macromolecules, data.polymerCoverage, data.summaryData, data.assemblyData])) {
+    } else if (hasDataArrived) {
       this.compCommunication.hasProcessedMacromolecules.set(true);
     }
   }
@@ -583,7 +587,6 @@ export class MainDataProcessingFacade {
     this.globalStore.dispatch(EntryActions.getSummaryData());
     this.globalStore.dispatch(EntryActions.getEntryMolecules());
     this.globalStore.dispatch(EntryActions.getExperiment());
-    this.globalStore.dispatch(EntryActions.getUniprotMapping());
     this.globalStore.dispatch(EntryActions.getInterproMapping());
     this.globalStore.dispatch(EntryActions.getPfamMapping());
     this.globalStore.dispatch(EntryActions.getDownloadOptions());

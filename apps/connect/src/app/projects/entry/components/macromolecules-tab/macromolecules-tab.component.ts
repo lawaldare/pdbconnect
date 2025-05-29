@@ -155,7 +155,17 @@ export class MacromoleculesTabComponent {
 
   public ecMappings = computed(() => Object.keys(this.ecMappingsForMacromolecule() ?? {}));
   public bestResidues = computed(() => {
-    const isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return [];
+
+    const uniprotsAllowed = macromolecule.additionalData.uniprotAccessions;
+
+    let isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
+    isoformsMappingKeys = isoformsMappingKeys.filter((isoform) => {
+      const hasAllowed = uniprotsAllowed.some((uniprot) => isoform.includes(uniprot));
+      return hasAllowed;
+    });
+
     const filteredIsoformsMapping: any[] = [];
 
     isoformsMappingKeys.forEach((uniprot: string) => {
