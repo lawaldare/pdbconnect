@@ -195,6 +195,8 @@ export class EntryMainPageComponent implements OnInit {
     if (environment.production === false) {
       Clarity.init(environment.clarityProjectId);
     }
+
+    this.showNotification();
     // else {
     // Clarity.init('yourProjectId'); // Replace with production ID when it's time
     // }
