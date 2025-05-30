@@ -1,7 +1,7 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
-import { NavSection } from '@pdbc/core';
 import { ComplexData, ComplexInteraction } from '../models/complex-structure.model';
 import { ComplexLigand } from '../components/page-sections/complex-ligands/complex-ligands.component';
+import { PISAAssemblyParam } from '../components/page-sections/complex-pisa/complex-pisa.component';
 
 export const ComplexActions = createActionGroup({
   source: 'Ligands Page',
@@ -16,7 +16,9 @@ export const ComplexActions = createActionGroup({
     'Get ComplexInteractions Success': props<{ subComplexInteractions: ComplexInteraction[]; superComplexInteractions: ComplexInteraction[] }>(),
     'Get ComplexInteractions Failure': emptyProps(),
     'Set Current ComplexId': props<{ complexId: string }>(),
-    'Set Nav Items': props<{ navItems: NavSection[] }>(),
     'Toggle Loader': props<{ status: string }>(),
+    'Get PISA Assemblies Params': emptyProps(),
+    'Get PISA Assemblies Params Success': props<{ pisa: PISAAssemblyParam[] }>(),
+    'Get PISA Assemblies Params Failure': emptyProps(),
   },
 });

@@ -9,7 +9,7 @@ export const COMPLEX_STORE_STATE_KEY = 'complex';
 const initialState: ComplexStoreState = {
   complexId: '',
   complexData: {} as ComplexData,
-  navItems: [],
+  pisa: [],
   loadingState: LoadingState.SUCCESS,
   complexLigands: [],
   subComplexInteractions: [],
@@ -26,6 +26,10 @@ export const complexReducer = createReducer(
     ...state,
     complexData: action.complexData,
   })),
+  on(ComplexActions.getPISAAssembliesParamsSuccess, (state, action) => ({
+    ...state,
+    pisa: action.pisa,
+  })),
   on(ComplexActions.getComplexInteractionsSuccess, (state, action) => ({
     ...state,
     subComplexInteractions: action.subComplexInteractions,
@@ -34,10 +38,6 @@ export const complexReducer = createReducer(
   on(ComplexActions.getLigandsForComplexesSuccess, (state, action) => ({
     ...state,
     complexLigands: action.complexLigands,
-  })),
-  on(ComplexActions.setNavItems, (state, action) => ({
-    ...state,
-    navItems: action.navItems,
   })),
   on(ComplexActions.toggleLoader, (state, action) => ({
     ...state,

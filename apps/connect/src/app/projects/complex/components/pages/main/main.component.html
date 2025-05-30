@@ -2,6 +2,9 @@
 <pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
 
 <main>
+  @if(showNotificationBanner()){
+  <lib-notification />
+  }
   <div class="container">
     @if(loaded() === status.SUCCESS){
     <article>
@@ -19,6 +22,9 @@
         <mat-tab label="Structures">
           <ng-template matTabContent> <pdbc-complex-structures /> </ng-template>
         </mat-tab>
+        <!-- <mat-tab label="PISA-Derived Properties">
+          <ng-template matTabContent> <pdbc-complex-pisa /> </ng-template>
+        </mat-tab> -->
         <mat-tab label="Ligands">
           <ng-template matTabContent> <pdbc-complex-ligands /> </ng-template>
         </mat-tab>

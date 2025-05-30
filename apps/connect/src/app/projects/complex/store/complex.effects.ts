@@ -10,6 +10,7 @@ import { ComplexSelectors } from './complex.selectors';
 import { LoadingState } from '../../ligands/enums/loading-state.enum';
 import { ComplexLigand } from '../components/page-sections/complex-ligands/complex-ligands.component';
 import { ComplexInteraction } from '../models/complex-structure.model';
+import { PISAAssemblyParam } from '../components/page-sections/complex-pisa/complex-pisa.component';
 
 @Injectable()
 export class ComplexEffects {
@@ -89,8 +90,31 @@ export class ComplexEffects {
               acc.push(mappedObj);
               return this.sortWithAnnotationsFirst(acc);
             }, []);
-            // this.store.dispatch(ComplexActions.getLigandsForComplexesSuccess({ complexLigands }));
             return of(ComplexActions.getLigandsForComplexesSuccess({ complexLigands }));
+          }),
+          catchError(() => of(ComplexActions.getLigandsForComplexesFailure()))
+        )
+      )
+    )
+  );
+
+  getPisaAssembliesParams$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ComplexActions.getPISAAssembliesParams),
+      switchMap(() => this.store.select(ComplexSelectors.complexId).pipe(take(1))),
+      mergeMap((id: string) =>
+        this.complexAPIService.getPisaAssembliesParams(id).pipe(
+          mergeMap((response: Record<string, any>) => {
+            const pisa = Object.entries(response['data']).reduce((acc: PISAAssemblyParam[], [key, value]: [string, any]) => {
+              const mappedObj = {
+                ...value,
+                pdb_id: key.split('_')[0],
+                assembly_id: key.split('_')[1],
+              };
+              acc.push(mappedObj);
+              return acc;
+            }, []);
+            return of(ComplexActions.getPISAAssembliesParamsSuccess({ pisa }));
           }),
           catchError(() => of(ComplexActions.getLigandsForComplexesFailure()))
         )

@@ -26,7 +26,7 @@ export class ParticipantDirective implements OnChanges {
     this.resetEnv();
     const orderedList = this.renderer.createElement('ul');
     for (const participant of this.participants) {
-      if (participant.accession_type === 'UniProt') {
+      if (participant.accession_type === 'UniProt' || participant.accession_type === 'Rfam') {
         const anchorTag = this.renderer.createElement('a');
         anchorTag.textContent = `${participant.accession}`;
         const proteinLink = `${this.baseUrl}pdbe-kb/proteins/${participant.accession}`;

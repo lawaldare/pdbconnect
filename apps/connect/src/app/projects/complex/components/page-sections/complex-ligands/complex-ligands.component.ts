@@ -50,7 +50,6 @@ export class ComplexLigandsComponent implements OnInit {
         this.ligands.update(() => ligands);
         this.ligandsLength.set(ligands.length);
         this.ligandsPage.update(() => (this.ligands() ?? []).slice(0, this.ligandsPageSize()));
-        this.globalStore.dispatch(ComplexActions.setNavItems({ navItems: navComplexSections }));
       }
     });
 

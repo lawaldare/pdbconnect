@@ -31,6 +31,10 @@ export class ComplexAPIService {
     return this.http.get<any>(`${this.AggregatedApiUrl}pdb/entry/complex_summary_stats/${pdbId}`).pipe(map((response: any) => response[pdbId]));
   }
 
+  public getPisaAssembliesParams(complexId: string): Observable<any> {
+    return this.http.get<any>(`${this.AggregatedApiUrl}complex/pisa_assemblies_params/${complexId}`).pipe(map((response: any) => response[complexId]));
+  }
+
   public getPublications(pdbIds: string): Observable<any> {
     return this.http.post<any>(`${this.AggregatedApiUrl}pdb/entry/publications`, pdbIds);
   }

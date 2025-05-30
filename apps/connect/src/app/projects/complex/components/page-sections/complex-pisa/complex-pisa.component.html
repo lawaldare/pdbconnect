@@ -1,0 +1,36 @@
+@if(rowData()?.length){
+<div id="pisa-section">
+  <!-- <header>
+    <h5 class="title">{{rowData().length}} assemblies representing this complex in the PDB</h5>
+    <button class="vf-button vf-button--link" (click)="downloadCSV()">
+      Download structures (csv)
+      <i class="icon icon-common icon-download"></i>
+    </button>
+    <button class="vf-button vf-button--link" (click)="downloadMMCIF()">
+      Download coordinates (mmCIF)
+      <i class="icon icon-common icon-download"></i>
+    </button>
+  </header> -->
+  <p>
+    The table below lists the various assembly properties calculated by the <a href="https://www.ebi.ac.uk/pdbe/pisa/" target="_blank">PISA</a> program for all
+    instances of this complex. When the page loads, the slider and histogram visualizations automatically initialize with data from the first row, providing an
+    immediate overview of the range and distribution of those properties. To explore other assemblies, simply click a different row to compare that assembly’s
+    properties with the rest of the instances.
+  </p>
+  <section class="table">
+    <ag-grid-angular
+      class="ag-theme-quartz"
+      [rowData]="rowData()"
+      [columnDefs]="colDefs"
+      [gridOptions]="gridOptions"
+      (selectionChanged)="onSelectionChanged($event)"
+      [paginationPageSizeSelector]="paginationPageSizeSelector()"
+      [rowSelection]="rowSelection"
+      [initialState]="initialState"
+    />
+  </section>
+</div>
+
+} @else {
+<h4>No structures data available yet!</h4>
+}

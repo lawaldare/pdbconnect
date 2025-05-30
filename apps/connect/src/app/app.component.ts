@@ -33,7 +33,7 @@ export class AppComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.init();
-    await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js');
+    await this.scriptLoader.loadScript('https://d3js.org/d3.v6.min.js');
     await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
     const pathName = window.location.pathname;
     if (pathName.includes(`/pdbe-srv/pdbechem/`)) {

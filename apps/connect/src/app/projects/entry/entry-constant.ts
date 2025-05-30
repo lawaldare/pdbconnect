@@ -131,6 +131,7 @@ export const releaseDateTooltip = 'Date when the coordinates were released in th
 export const revisionDateTooltip = 'Date of the current version or last minor or major revision of a PDB entry';
 
 const baseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
+const ligandBaseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe-srv/pdbechem/' : 'https://wwwdev.ebi.ac.uk/pdbe-srv/pdbechem/';
 
 /**
  * For dashboard details display of statistic links bar
@@ -168,19 +169,19 @@ export const dashboardStatLinks = {
     {
       id: 'pdbs',
       displayName: 'bound structures',
-      link: `${baseUrl}connect/chemicalCompound/show/`,
+      link: `${ligandBaseUrl}chemicalCompound/show/`,
       linkSuffix: '#structures-section',
     },
     {
       id: 'ligands',
       displayName: 'interaction statistics',
-      link: `${baseUrl}connect/chemicalCompound/show/`,
+      link: `${ligandBaseUrl}chemicalCompound/show/`,
       linkSuffix: '#interaction-section',
     },
     {
       id: 'similar_proteins',
       displayName: 'related ligands',
-      link: `${baseUrl}connect/chemicalCompound/show/`,
+      link: `${ligandBaseUrl}chemicalCompound/show/`,
       linkSuffix: '#related-ligand-section',
     },
   ],
