@@ -1,14 +1,16 @@
-import * as d3 from 'https://cdn.skypack.dev/d3@6';
-import { fmt2, formatLabel } from './utils.js';
-import { PARAMS } from './params.js';
+// import * as d3 from 'https://cdn.skypack.dev/d3@6';
+import * as d3 from 'd3';
+import { fmt2, formatLabel } from '../../../complex.constant';
 
 const W = 550;
 const H = 34;
 const pad = { l: 75, r: 25 };
 
-export function drawSliders(rows, selectedId) {
+export const PARAMS = ['accessible_surface_area', 'buried_surface_area', 'solvation_energy_gain', 'dissociation_energy', 'dissociation_entropy'];
+
+export function drawSliders(rows, selectedId, selector) {
   const datum = rows.find((r) => r[0] === selectedId)?.[1] ?? rows[0][1];
-  const wrap = d3.select('#sliders').html(''); // clear old
+  const wrap = d3.select(selector).html(''); // clear old
 
   const ext = Object.fromEntries(PARAMS.map((k) => [k, d3.extent(rows.map((r) => r[1][k]))]));
 

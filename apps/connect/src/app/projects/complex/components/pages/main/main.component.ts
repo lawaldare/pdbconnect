@@ -117,4 +117,8 @@ export class MainComponent implements OnInit {
       this.showNotificationBanner.set(false);
     }
   }
+
+  public openFeedbackForm(): void {
+    window.open('https://docs.google.com/forms/d/e/1FAIpQLSeSy9zqhqm5n46GtjKizNKOipoRgmj9juweopKUHY2lQc-dyQ/viewform', '_blank');
+  }
 }

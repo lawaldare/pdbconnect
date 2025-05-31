@@ -3,7 +3,8 @@
   "include": [
     "src/**/*.ts",
     "../../libs/pdbe/molstar-for-apps/src/lib/extension-for-pages/molstart-plugin.service.ts",
-    "../../libs/core/src/lib/services/script-loader.service.ts"
+    "../../libs/core/src/lib/services/script-loader.service.ts",
+    "src/app/projects/complex/components/page-sections/complex-pisa/histogram.js"
   ],
   "compilerOptions": {
     "types": ["jest", "node"]

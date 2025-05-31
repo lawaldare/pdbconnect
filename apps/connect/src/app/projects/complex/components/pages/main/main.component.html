@@ -15,6 +15,10 @@
         <h4>{{ complexId() }}</h4>
         }
       </section>
+      <section class="feedback">
+        <p>Tell us what you think of the new PDBe-KB Complex pages</p>
+        <button class="vf-button vf-button--search-pdbe" role="link" (click)="openFeedbackForm()">Share your feedback</button>
+      </section>
       <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)">
         <mat-tab label="Summary">
           <pdbc-summary />
@@ -22,9 +26,9 @@
         <mat-tab label="Structures">
           <ng-template matTabContent> <pdbc-complex-structures /> </ng-template>
         </mat-tab>
-        <!-- <mat-tab label="PISA-Derived Properties">
+        <mat-tab label="PISA-Derived Properties">
           <ng-template matTabContent> <pdbc-complex-pisa /> </ng-template>
-        </mat-tab> -->
+        </mat-tab>
         <mat-tab label="Ligands">
           <ng-template matTabContent> <pdbc-complex-ligands /> </ng-template>
         </mat-tab>

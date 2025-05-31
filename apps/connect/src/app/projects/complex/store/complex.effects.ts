@@ -114,7 +114,8 @@ export class ComplexEffects {
               acc.push(mappedObj);
               return acc;
             }, []);
-            return of(ComplexActions.getPISAAssembliesParamsSuccess({ pisa }));
+            const sortedPisa = pisa.sort((a, b) => a.pdb_id.localeCompare(b.pdb_id));
+            return of(ComplexActions.getPISAAssembliesParamsSuccess({ pisa: sortedPisa }));
           }),
           catchError(() => of(ComplexActions.getLigandsForComplexesFailure()))
         )

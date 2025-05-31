@@ -1,15 +1,18 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Assembly } from '../../../models/complex-structure.model';
 import { AG_Grid_Theme_Class, DownloadFileTypeService, DownloadService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
-import { GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
+import { SelectionChangedEvent } from 'ag-grid-community';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
 import { environment } from '../../../../../../environments/environment';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { PARAMS } from '../../../complex.constant';
+import { drawHistogram } from './histogram';
+import { drawSliders } from './slider';
 
 export interface PISAAssemblyParam {
   dissociation_energy: number;
@@ -22,10 +25,17 @@ export interface PISAAssemblyParam {
   assembly_id: string;
 }
 
+export interface SliderDetails {
+  value: number;
+  floor: number;
+  ceil: number;
+  title: string;
+}
+
 @Component({
   selector: 'pdbc-complex-pisa',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MaterialModule],
+  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule],
   templateUrl: './complex-pisa.component.html',
   styleUrls: ['./complex-pisa.component.scss'],
 })
@@ -45,51 +55,52 @@ export class ComplexPISAComponent {
   public rowData = computed(() => this.pisa());
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
 
-  public config!: any;
+  public mappedPisaData = computed(() => {
+    return this.rowData()?.reduce((acc: any[], assembly: any) => {
+      const { pdb_id, assembly_id, ...newAssembly } = assembly;
+      acc.push([`${pdb_id}_${assembly_id}`, newAssembly]);
+      return acc;
+    }, []);
+  });
 
-  public height = '400px';
+  public sliders = signal<SliderDetails[]>([]);
 
-  private selectedRowPDBId = signal<string>('');
+  public pisaAssemblyPropertyOptions = PARAMS.map((property) => ({ value: property, label: property.replace(/_/g, ' ') }));
+  public pisaAssemblyProperty = new FormControl(this.pisaAssemblyPropertyOptions[0].value, { nonNullable: true });
 
-  rowClassRules = {
-    'highlight-row': (params: any) => params.data.id === this.selectedRowPDBId(),
-  };
+  private selectedRowParams = signal<string>('');
 
-  onGridReady(event: GridReadyEvent<any>) {
-    // this.selectedRowPDBId(event.api.getSelectedNodes()[0]?.data?.pdb_id);
-    // event.api.sizeColumnsToFit();
-    // this.rowData
+  public selectPisaAssemblyProperty() {
+    this.drawHistogram();
   }
 
   public onSelectionChanged(event: SelectionChangedEvent) {
     const data = event.api.getSelectedNodes()[0].data;
-    console.log('Selected Row Data:', data);
+    const id = `${data.pdb_id}_${data.assembly_id}`;
+    this.selectedRowParams.set(id);
+    this.drawHistogram();
+    this.drawSliders();
   }
 
-  public downloadMMCIF(): void {
-    // const pdbIds = this.rowData()
-    //   .map((assembly) => assembly.pdb_id)
-    //   .join(',');
-    // if (pdbIds.length <= 100) {
-    //   this.downloadService.initiateDownload(this.fileDownloadUrl, 'entry', pdbIds, 'updated-mmCIF');
-    // } else {
-    //   //go to download service
-    //   localStorage.setItem('pdbIds', pdbIds);
-    //   const url = `${environment.pdbeBaseUrl}download/docs`;
-    //   window.open(url);
-    // }
+  private drawHistogram() {
+    drawHistogram(this.mappedPisaData(), this.selectedRowParams(), this.pisaAssemblyProperty.value, '#histogram-svg');
+  }
+
+  private drawSliders() {
+    drawSliders(this.mappedPisaData(), this.selectedRowParams(), '#sliders');
   }
 
   public downloadCSV(): void {
-    // const mappedData = this.rowData().map((structure) => {
-    //   return {
-    //     PDB: structure.pdb_id,
-    //     ID: structure.assembly_id,
-    //     Title: structure.title,
-    //     'Experimental Method': structure.experimental_method,
-    //     Resolution: structure.resolution,
-    //   };
-    // });
-    // this.downloadFileTypeService.downloadCSV(mappedData, 'structures');
+    const mappedData: any = this.rowData()?.map((pisa: PISAAssemblyParam) => {
+      return {
+        ID: `${pisa.pdb_id}_${pisa.assembly_id}`,
+        'Accessible Surface Area': pisa.accessible_surface_area,
+        'Buried Surface Area': pisa.buried_surface_area,
+        'Solvation Energy Gain': pisa.solvation_energy_gain,
+        'Dissociation Energy': pisa.dissociation_area,
+        'Dissociation Entropy': pisa.dissociation_entropy,
+      };
+    });
+    this.downloadFileTypeService.downloadCSV(mappedData, 'structures');
   }
 }

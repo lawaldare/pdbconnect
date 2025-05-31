@@ -1,22 +1,32 @@
 @if(rowData()?.length){
 <div id="pisa-section">
-  <!-- <header>
-    <h5 class="title">{{rowData().length}} assemblies representing this complex in the PDB</h5>
-    <button class="vf-button vf-button--link" (click)="downloadCSV()">
-      Download structures (csv)
-      <i class="icon icon-common icon-download"></i>
-    </button>
-    <button class="vf-button vf-button--link" (click)="downloadMMCIF()">
-      Download coordinates (mmCIF)
-      <i class="icon icon-common icon-download"></i>
-    </button>
-  </header> -->
+  <div class="charts">
+    <section class="complex-sliders">
+      <div id="sliders"></div>
+    </section>
+    <section class="histogram">
+      <div class="toolbar">
+        <span class="title">PISA Assembly Property</span>
+        <mat-select [formControl]="pisaAssemblyProperty" (selectionChange)="selectPisaAssemblyProperty()">
+          @for (option of pisaAssemblyPropertyOptions; track option.value) {
+          <mat-option [value]="option.value">{{ option.label | titlecase }}</mat-option>
+          }
+        </mat-select>
+      </div>
+      <svg id="histogram-svg"></svg>
+    </section>
+  </div>
+
   <p>
     The table below lists the various assembly properties calculated by the <a href="https://www.ebi.ac.uk/pdbe/pisa/" target="_blank">PISA</a> program for all
     instances of this complex. When the page loads, the slider and histogram visualizations automatically initialize with data from the first row, providing an
     immediate overview of the range and distribution of those properties. To explore other assemblies, simply click a different row to compare that assembly’s
     properties with the rest of the instances.
   </p>
+  <button class="vf-button vf-button--link" (click)="downloadCSV()">
+    Download table as CSV
+    <i class="icon icon-common icon-download"></i>
+  </button>
   <section class="table">
     <ag-grid-angular
       class="ag-theme-quartz"

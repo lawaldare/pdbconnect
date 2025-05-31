@@ -16,16 +16,27 @@ export interface ICustomHeaderParams {
   template: `
     <div>
       <p class="customHeaderLabel">{{ params.displayName }}</p>
-      @if(params.showHelpIcon) {
-      <img src="{{ helpLogoSrc }}" class="icon" matTooltipClass="complex-name-tooltip" [matTooltip]="params.tooltipText" matTooltipPosition="below" alt="help icon" />
-      } @if(params.enableFilterButton){
-      <div #menuButton class="customHeaderMenuButton" (click)="onMenuClicked()">
-        <i class="icon icon-common icon-search"></i>
-      </div>
-      } @if(params.enableSorting){
-      <div #sortIconButton class="customHeaderMenuButton" (click)="onSortIconClicked()">
-        <i class="icon icon-common icon-sort-amount-{{ sortingState() }}"></i>
-      </div>
+      @if (params.showHelpIcon) {
+        <img
+          src="{{ helpLogoSrc }}"
+          class="icon"
+          matTooltipClass="complex-name-tooltip"
+          [matTooltip]="params.tooltipText"
+          matTooltipPosition="below"
+          alt="help icon"
+        />
+      }
+      @if (params.enableFilterButton) {
+        <div #menuButton class="customHeaderMenuButton" (click)="onMenuClicked()">
+          <!-- <i class="icon icon-common icon-search"></i> -->
+          <span class="ag-icon ag-icon-filter" unselectable="on" role="presentation"></span>
+        </div>
+      }
+      @if (params.enableSorting) {
+        <div #sortIconButton class="customHeaderMenuButton" (click)="onSortIconClicked()">
+          <!-- <i class="icon icon-common icon-sort-amount-{{ sortingState() }}"></i> -->
+          <span class="ag-icon ag-icon-{{ sortingState() }}" unselectable="on" role="presentation"></span>
+        </div>
       }
     </div>
   `,
@@ -52,7 +63,7 @@ export class CustomHeaderComponent implements IHeaderAngularComp {
   @ViewChild('menuButton', { read: ElementRef }) public menuButton!: ElementRef;
   @ViewChild('sortIconButton', { read: ElementRef }) public sortIconButton!: ElementRef;
 
-  public sortingState = signal<string>('up');
+  public sortingState = signal<string>('asc');
 
   agInit(params: IHeaderParams & ICustomHeaderParams): void {
     this.params = params;
@@ -63,11 +74,11 @@ export class CustomHeaderComponent implements IHeaderAngularComp {
   }
 
   onSortIconClicked() {
-    if (this.sortingState() === 'down') {
-      this.sortingState.set('up');
+    if (this.sortingState() === 'desc') {
+      this.sortingState.set('asc');
       this.params.setSort('asc');
     } else {
-      this.sortingState.set('down');
+      this.sortingState.set('desc');
       this.params.setSort('desc');
     }
   }

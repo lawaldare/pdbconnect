@@ -1,11 +1,15 @@
 import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions, GridState } from 'ag-grid-community';
+import { CustomHeaderComponent } from '../../cell renderers/custom-header.component';
+import { pisaTableTooltip } from '../../../complex.constant';
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
   defaultColDef: {
     ...agGridOptionsBase.defaultColDef,
     flex: 1,
+    sortable: false,
+    filter: false,
   },
 };
 
@@ -13,7 +17,7 @@ export const colDefs: ColDef[] = [
   {
     headerName: 'PDB ID',
     field: 'pdb_id',
-    sort: 'asc',
+    // sort: 'asc',
     flex: 0.6,
   },
   {
@@ -24,22 +28,32 @@ export const colDefs: ColDef[] = [
   {
     headerName: 'Accessible Surface Area',
     field: 'accessible_surface_area',
+    headerComponent: CustomHeaderComponent,
+    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, tooltipText: pisaTableTooltip.ASA },
   },
   {
     headerName: 'Buried Surface Area',
     field: 'buried_surface_area',
+    headerComponent: CustomHeaderComponent,
+    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, tooltipText: pisaTableTooltip.BSA },
   },
   {
     headerName: 'Solvation Energy Gain',
     field: 'solvation_energy_gain',
+    headerComponent: CustomHeaderComponent,
+    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, tooltipText: pisaTableTooltip.SEA },
   },
   {
     headerName: 'Dissociation Energy',
     field: 'dissociation_area',
+    headerComponent: CustomHeaderComponent,
+    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, tooltipText: pisaTableTooltip.DEG },
   },
   {
     headerName: 'Dissociation Entropy',
     field: 'dissociation_entropy',
+    headerComponent: CustomHeaderComponent,
+    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, tooltipText: pisaTableTooltip.DEP },
   },
 ];
 
