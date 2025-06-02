@@ -22,7 +22,6 @@ const W = 600,
   M = { t: 14, r: 14, b: 50, l: 50 };
 
 export function drawHistogram(rows, selectedId, param, selector) {
-  console.log('drawHistogram', rows, selectedId, param, selector);
   const vals = rows.map((r) => r[1][param]);
   const selVal = rows.find((r) => r[0] === selectedId)?.[1][param];
 
