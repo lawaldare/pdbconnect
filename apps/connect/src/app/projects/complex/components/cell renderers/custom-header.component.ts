@@ -1,4 +1,3 @@
-import { NgClass } from '@angular/common';
 import { Component, ElementRef, signal, ViewChild } from '@angular/core';
 import { MaterialModule } from '@pdbc/core';
 
@@ -15,29 +14,34 @@ export interface ICustomHeaderParams {
   imports: [MaterialModule],
   template: `
     <div>
-      <p class="customHeaderLabel">{{ params.displayName }}</p>
-      @if (params.showHelpIcon) {
-        <img
-          src="{{ helpLogoSrc }}"
-          class="icon"
-          matTooltipClass="complex-name-tooltip"
-          [matTooltip]="params.tooltipText"
-          matTooltipPosition="below"
-          alt="help icon"
-        />
-      }
-      @if (params.enableFilterButton) {
-        <div #menuButton class="customHeaderMenuButton" (click)="onMenuClicked()">
-          <!-- <i class="icon icon-common icon-search"></i> -->
-          <span class="ag-icon ag-icon-filter" unselectable="on" role="presentation"></span>
+      <div data-ref="eHeaderCompWrapper" class="ag-header-cell-comp-wrapper" role="presentation">
+        <div class="ag-cell-label-container" role="presentation">
+          <div data-ref="eLabel" class="ag-header-cell-label" role="presentation">
+            <span data-ref="eText" class="ag-header-cell-text">{{ params.displayName }}</span>
+            @if (params.showHelpIcon) {
+              <img
+                src="{{ helpLogoSrc }}"
+                class="icon"
+                matTooltipClass="complex-name-tooltip"
+                [matTooltip]="params.tooltipText"
+                matTooltipPosition="below"
+                alt="help icon"
+              />
+            }
+            @if (params.enableFilterButton) {
+              <span data-ref="eFilter" #menuButton class="ag-header-icon ag-header-label-icon ag-filter-icon" aria-hidden="true" (click)="onMenuClicked()">
+                <span class="ag-icon ag-icon-filter" unselectable="on" role="presentation"></span>
+              </span>
+            }
+            <!--AG-SORT-INDICATOR-->
+            @if (params.enableSorting) {
+              <div #sortIconButton class="customHeaderMenuButton" (click)="onSortIconClicked()">
+                <span class="ag-icon ag-icon-{{ iconType() }}" unselectable="on" role="presentation" [class.hidden]="!isSorted()"></span>
+              </div>
+            }
+          </div>
         </div>
-      }
-      @if (params.enableSorting) {
-        <div #sortIconButton class="customHeaderMenuButton" (click)="onSortIconClicked()">
-          <!-- <i class="icon icon-common icon-sort-amount-{{ sortingState() }}"></i> -->
-          <span class="ag-icon ag-icon-{{ sortingState() }}" unselectable="on" role="presentation"></span>
-        </div>
-      }
+      </div>
     </div>
   `,
   styles: [
@@ -53,6 +57,14 @@ export interface ICustomHeaderParams {
         cursor: pointer;
         margin-right: 5px;
       }
+
+      .ag-sort-indicator-container {
+        cursor: pointer;
+      }
+
+      .hidden {
+        visibility: hidden;
+      }
     `,
   ],
 })
@@ -63,10 +75,20 @@ export class CustomHeaderComponent implements IHeaderAngularComp {
   @ViewChild('menuButton', { read: ElementRef }) public menuButton!: ElementRef;
   @ViewChild('sortIconButton', { read: ElementRef }) public sortIconButton!: ElementRef;
 
-  public sortingState = signal<string>('asc');
+  public iconType = signal<string>('asc');
+  public isSorted = signal<boolean>(false);
+
+  private sortChangedListener = this.onSortChanged.bind(this);
 
   agInit(params: IHeaderParams & ICustomHeaderParams): void {
     this.params = params;
+    this.updateSortIcon();
+
+    this.params.column.addEventListener('sortChanged', this.sortChangedListener);
+  }
+
+  private onSortChanged() {
+    this.updateSortIcon();
   }
 
   onMenuClicked() {
@@ -74,13 +96,18 @@ export class CustomHeaderComponent implements IHeaderAngularComp {
   }
 
   onSortIconClicked() {
-    if (this.sortingState() === 'desc') {
-      this.sortingState.set('asc');
+    if (this.iconType() === 'desc') {
+      this.iconType.set('asc');
       this.params.setSort('asc');
     } else {
-      this.sortingState.set('desc');
+      this.iconType.set('desc');
       this.params.setSort('desc');
     }
+  }
+
+  updateSortIcon() {
+    const sort = this.params.column.getSort();
+    this.isSorted.set(!!sort);
   }
 
   refresh(params: IHeaderParams) {

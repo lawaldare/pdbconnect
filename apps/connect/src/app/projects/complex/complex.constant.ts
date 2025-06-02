@@ -2,10 +2,28 @@ import { ThemeType } from '@pdbc/core';
 import * as d3 from 'd3';
 
 export const headerSearchComplexConfig = {
-  examples: ['PDB-CPX-159519', 'PDB-CPX-148886', '2nu8', '4fyy'],
+  examples: [
+    {
+      label: 'Hemoglobin HbA complex',
+      value: 'PDB-CPX-159159',
+    },
+    {
+      label: 'Cyclin A2-CDK2 complex',
+      value: 'PDB-CPX-148886',
+    },
+    {
+      label: '2nu8',
+      value: '2nu8',
+    },
+    {
+      label: '4fyy',
+      value: '4fyy',
+    },
+  ],
   backgroundColor: 'rgba(8, 95, 92, 0.79)',
   type: ThemeType.PDBEKB,
   placeholderText: 'View PDBe-KB complex by PDBe complex ID',
+  complexPage: true,
 };
 
 export const navComplexSections = [
@@ -41,7 +59,7 @@ export const complexRouteTabs = [
 export const complexSummaryTabTooltips = {
   polymerComposition: 'Shows the total number of each polymer type in the complex: protein, RNA, DNA, or hybrid DNA/RNA. Counts come from component stoichiometry.',
   globalSymmetry:
-    'Displays the symmetry most often observed for this complex (identified with AnAnaS). PDB assemblies with different or missing symmetry are listed separately.',
+    'Shows every macromolecule in the complex with its copy number. Mapped proteins link to UniProt while mapped RNAs link to Rfam. Unmapped macromolecules are displayed as type_PDB_entityID (for example, antibody_5mv4_1), where type refers to the molecule class: protein, DNA, RNA, or antibody.',
   observedCofactors:
     'Lists every unique cofactor bound to the complex. A ligand is marked as a cofactor when it matches a class in the CoFactor database and binds a protein with a recognised enzymatic role.',
   component:

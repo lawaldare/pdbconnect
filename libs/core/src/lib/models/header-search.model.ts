@@ -3,10 +3,15 @@ export interface Example {
   url: string;
 }
 
+export interface ValueLabel {
+  label: string;
+  value: string;
+}
+
 export interface HeaderSearchConfig {
   backgroundColor?: string;
   type?: string;
-  examples?: string[];
+  examples?: string[] | ValueLabel[];
   isHomepage?: boolean;
   placeholderText?: string;
 }

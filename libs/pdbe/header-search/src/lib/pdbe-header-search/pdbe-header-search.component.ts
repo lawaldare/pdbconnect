@@ -4,7 +4,7 @@ import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { DataLayerService, GoogleAnalyticsService, HeaderSearchConfig, ThemeType, UtilService } from '@pdbc/core';
+import { DataLayerService, GoogleAnalyticsService, HeaderSearchConfig, ThemeType, UtilService, ValueLabel } from '@pdbc/core';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -62,5 +62,13 @@ export class PdbeHeaderSearchComponent implements OnInit {
       this.utilService.redirectToSearchTerm(ligandId);
     }
     this.googleAnalyticsService.logClickEvents('example_click', 'Search Examples Links', 'navigate_to_example', ligandId);
+  }
+
+  public getExampleLabel(id: string | ValueLabel): string {
+    return typeof id === 'string' ? id : id.label;
+  }
+
+  getExampleValue(id: string | ValueLabel): string {
+    return typeof id === 'string' ? id : id.value;
   }
 }

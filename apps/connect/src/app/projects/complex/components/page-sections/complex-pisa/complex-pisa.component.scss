@@ -63,6 +63,11 @@ section.table {
         word-wrap: none;
       }
     }
+
+    svg {
+      width: 100%;
+      height: inherit;
+    }
   }
 }
 

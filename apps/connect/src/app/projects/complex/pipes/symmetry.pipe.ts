@@ -11,6 +11,6 @@ export class ComplexSymmetryPipe implements PipeTransform {
       return '---';
     }
 
-    return `${value.type} (${value.symbol}).`;
+    return `${value.type} (${value.symbol})`;
   }
 }

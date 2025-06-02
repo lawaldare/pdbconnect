@@ -8,8 +8,7 @@ export const gridOptions: GridOptions = {
   defaultColDef: {
     ...agGridOptionsBase.defaultColDef,
     flex: 1,
-    sortable: false,
-    filter: false,
+    filter: true,
   },
 };
 
@@ -19,11 +18,16 @@ export const colDefs: ColDef[] = [
     field: 'pdb_id',
     // sort: 'asc',
     flex: 0.6,
+    filter: true,
+    sortable: true,
   },
   {
-    headerName: 'Assembly ID',
+    headerName: 'ID',
     field: 'assembly_id',
-    flex: 0.8,
+    flex: 0.4,
+    headerComponent: CustomHeaderComponent,
+    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, tooltipText: 'Assembly identifier' },
+    sortable: false,
   },
   {
     headerName: 'Accessible Surface Area',
