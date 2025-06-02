@@ -29,7 +29,7 @@ export const colDefs: ColDef[] = [
     headerName: 'ID',
     field: 'assembly_id',
     // valueGetter: (params) => `${params.data.pdb_id}_${params.data.assembly_id}`,
-    width: 60,
+    width: 80,
     headerComponent: CustomHeaderComponent,
     headerComponentParams: { showHelpIcon: true, tooltipText: 'Assembly identifier' },
     sortable: false,
