@@ -45,6 +45,7 @@ export class ComplexLigandGridComponent implements AfterViewInit {
       .fetchDepiction(this.ligand().ligandId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((depiction: Depiction) => {
+        // console.log('Received depiction:', depiction);
         const ligand = this.renderer.createElement('pdb-ligand-env');
         this.renderer.appendChild(imageContainer, ligand);
         this.renderer.setProperty(ligand, 'depiction', depiction);

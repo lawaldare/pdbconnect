@@ -58,7 +58,6 @@ export class MainComponent implements OnInit {
 
   public readonly headerLogoMenuConfig = headerComplexLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchComplexConfig;
-  private readonly navSectionsInit = navComplexSections;
 
   private readonly globalStore = inject(Store<ComplexStoreState>);
 

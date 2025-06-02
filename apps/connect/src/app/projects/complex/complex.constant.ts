@@ -5,7 +5,7 @@ export const headerSearchComplexConfig = {
   examples: [
     {
       label: 'Hemoglobin HbA complex',
-      value: 'PDB-CPX-159159',
+      value: 'PDB-CPX-159519',
     },
     {
       label: 'Cyclin A2-CDK2 complex',
@@ -50,6 +50,7 @@ export const headerComplexLogoMenuConfig = {
 export const complexRouteTabs = [
   { label: 'Summary', id: 'summary' },
   { label: 'Structures', id: 'structures' },
+  { label: 'PISA-Derived Properties', id: 'pisa' },
   { label: 'Ligands', id: 'ligands' },
   { label: 'Subcomplexes', id: 'subcomplexes' },
   { label: 'Supercomplexes', id: 'supercomplexes' },
