@@ -82,7 +82,8 @@ section.table {
 
 ::ng-deep #histogram-svg {
   background: #f8f8f8;
-  padding: 20px;
+  padding: 10px 0;
+  height: 260px;
 }
 
 ::ng-deep .bin-rect {

@@ -39,12 +39,6 @@ export const colDefs: ColDef[] = [
   },
 ];
 
-export const components: {
-  [p: string]: any;
-} = {
-  agColumnHeader: CustomHeaderComponent,
-};
-
 export const initialState: GridState = {
   rowSelection: ['0'],
 };
@@ -55,11 +49,3 @@ export const rowSelection: any = {
   checkboxes: false,
   enableClickSelection: true,
 };
-
-// export const selectionColumnDef = {
-//   sortable: false,
-//   width: 80,
-//   maxWidth: 80,
-//   suppressHeaderMenuButton: false,
-//   headerName: 'Show',
-// };

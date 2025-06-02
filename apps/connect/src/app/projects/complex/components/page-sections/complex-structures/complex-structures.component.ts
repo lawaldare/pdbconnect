@@ -9,7 +9,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
-import { colDefs, components, gridOptions, initialState, rowSelection } from './ag-grid';
+import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
 import { environment } from '../../../../../../environments/environment';
 
 @Component({
@@ -27,7 +27,6 @@ export class ComplexStructuresComponent implements OnInit {
   public readonly colDefs = colDefs;
   public readonly initialState = initialState;
   public readonly rowSelection = rowSelection;
-  public readonly components = components;
 
   private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
   private readonly downloadService = inject(DownloadService);
