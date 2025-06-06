@@ -26,7 +26,7 @@ export class ErrorPageComponent {
 
   constructor() {
     this.route.queryParams.subscribe((params) => {
-      const code = params['status'];
+      const code = params['status'] ?? this.statusCode();
       this.statusCode.set(code);
       const error = this.errorsList[code];
       this.error.set(error);
