@@ -529,13 +529,7 @@ export class EntryEffects {
       exhaustMap(([, entryId]) =>
         this.entryAPIService.getEntryStatus(entryId).pipe(
           map((entryStatus) => EntryActions.getEntryStatusSuccess({ entryStatus })),
-          catchError((error) => {
-            this.router.navigate(['/error'], {
-              queryParams: { status: error?.status },
-              queryParamsHandling: 'merge',
-            });
-            return of(EntryActions.getEntryStatusFailure());
-          })
+          catchError((error) => of(EntryActions.getEntryStatusFailure({ error })))
         )
       )
     )

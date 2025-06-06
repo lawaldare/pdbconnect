@@ -35,6 +35,7 @@ import { ActionQueueService } from '../../services/action-queue.service';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import Clarity from '@microsoft/clarity';
 import { NotificationComponent } from '@pdbc/notification';
+import { Actions, ofType } from '@ngrx/effects';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -80,6 +81,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
 })
 export class EntryMainPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly actions$ = inject(Actions);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
@@ -138,6 +140,20 @@ export class EntryMainPageComponent implements OnInit {
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.selectedTab.set(tabIndex);
     });
+
+    this.actions$
+      .pipe(
+        ofType(EntryActions.getEntryStatusFailure),
+        tap(({ error }) => {
+          this.router.navigate(['/error'], {
+            queryParams: { status: (error as any)?.status },
+            queryParamsHandling: 'merge',
+          });
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
+
     effect(async () => {
       // this effect runs only once because of molstarFirstRenderStarted
       const hasProcessedMacromoleculesData = this.compCommunication.hasProcessedMacromolecules();

@@ -119,7 +119,7 @@ export const EntryActions = createActionGroup({
     'Get Experiment PDB Raw Data Failure': emptyProps(),
     'Get Entry Status': emptyProps(),
     'Get Entry Status Success': props<{ entryStatus: EntryStatus }>(),
-    'Get Entry Status Failure': emptyProps(),
+    'Get Entry Status Failure': props<{ error: any }>(),
     'Get Interactions': props<{ chainId: string; residueId: string }>(),
     'Get Interactions Success': props<{ interactions: Interaction[] }>(),
     'Get Interactions Failure': emptyProps(),
