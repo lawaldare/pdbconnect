@@ -3,7 +3,7 @@
 
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, catchError, map, of, switchMap, throwError } from 'rxjs';
+import { EMPTY, Observable, catchError, map, of, switchMap, throwError } from 'rxjs';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
 import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
@@ -31,6 +31,7 @@ import { environment } from '../../../../environments/environment';
 import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
 import { LigandMonomer } from '../data-models/ligand-monomers.model';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -43,6 +44,7 @@ export class EntryApiService {
   private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}api/v2/`;
 
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
 
   public getEntrySummary(entryId: string): Observable<ProcessedSummary> {
     return this.http.get<Record<string, EntrySummary[]>>(`${this.BASE_API}summary/${entryId}`).pipe(
@@ -82,7 +84,17 @@ export class EntryApiService {
   }
 
   public getEntryStatus(entryId: string): Observable<EntryStatus> {
-    return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(map((data) => data[entryId][0]));
+    return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(
+      map((data) => data[entryId][0]),
+      catchError((error) => {
+        console.error('API call failed', error);
+        this.router.navigate(['/error'], {
+          queryParams: { status: error.status },
+          queryParamsHandling: 'merge',
+        });
+        return EMPTY;
+      })
+    );
   }
 
   public getEntryInteractions(entryId: string, chainId: string, residueId: string): Observable<any> {

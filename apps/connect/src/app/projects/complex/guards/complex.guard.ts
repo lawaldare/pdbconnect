@@ -30,7 +30,7 @@ export const complexIdGuard: CanActivateFn = (route) => {
       }
     }),
     catchError((error) => {
-      console.error('API call failed Yepa', error);
+      console.error('API call failed', error);
       router.navigateByUrl('/error');
       return of(false);
     })
