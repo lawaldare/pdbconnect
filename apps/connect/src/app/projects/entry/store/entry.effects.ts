@@ -530,10 +530,10 @@ export class EntryEffects {
           map((entryStatus) => EntryActions.getEntryStatusSuccess({ entryStatus })),
           catchError((error) => {
             console.error('API call failed', error);
-            this.router.navigate(['/error'], {
-              queryParams: { status: error.status },
-              queryParamsHandling: 'merge',
-            });
+            // this.router.navigate(['/error'], {
+            //   queryParams: { status: error.status },
+            //   queryParamsHandling: 'merge',
+            // });
             return of(EntryActions.getEntryStatusFailure());
           })
         )
