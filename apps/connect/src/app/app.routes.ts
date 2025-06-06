@@ -20,7 +20,6 @@ export const appRoutes: Route[] = [
     title: 'Complex Pages',
     canActivate: [complexIdGuard],
   },
-  { path: 'error', component: ErrorPageComponent, title: '404 Not Found' },
-
+  { path: 'error', component: ErrorPageComponent, title: 'Error Page' },
   // { path: '**', redirectTo: 'error' },
 ];
