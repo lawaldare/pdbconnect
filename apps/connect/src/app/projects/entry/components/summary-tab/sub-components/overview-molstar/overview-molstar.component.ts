@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Component, ViewChild, ElementRef, AfterViewInit, inject, signal, effect, computed } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OverviewMolstarFacade } from './data-processing.facade';
 import { ComponentCommunicationService } from '../../../../services/component-comm.service';
@@ -8,13 +8,13 @@ import { MolstarOverviewForTopPage } from '../../../../helpers/molstar/molstar-o
 import { OverviewMolstarControBarComponent } from './sub-components/molstar-control-bar/molstar-control-bar.component';
 import { OverviewMolstarTabListViewComponent } from './sub-components/tab-listview-content/tab-listview-content.component';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { LigandsRowData, MacromoleculesRowData } from '../../../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MolstarStateService } from '../../../../services/molstar-state.service';
+import { MaterialModule, PopupWindowService } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-overview-molstar',
   standalone: true,
-  imports: [CommonModule, OverviewMolstarControBarComponent, NgxSkeletonLoaderModule, OverviewMolstarTabListViewComponent],
+  imports: [CommonModule, OverviewMolstarControBarComponent, NgxSkeletonLoaderModule, OverviewMolstarTabListViewComponent, MaterialModule],
   templateUrl: './overview-molstar.component.html',
   styleUrl: './overview-molstar.component.scss',
 })
@@ -31,6 +31,15 @@ export class OverviewMolstarComponent implements AfterViewInit {
 
   public isOverviewSectionDisplayed = signal(false);
   public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
+
+  public readonly popService = inject(PopupWindowService);
+
+  public popupMolstar(): void {
+    const fullMode = this.popService.isMaximizedOnMac();
+    if (!fullMode) {
+      this.popService.popOut(this.molstarContainer, 'ligand-molstar');
+    }
+  }
 
   async ngAfterViewInit() {
     this.stateManagement.infoControls.set(this.infoControls);

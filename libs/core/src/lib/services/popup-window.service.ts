@@ -45,7 +45,7 @@ export class PopupWindowService {
       this.windowWrapperMap[id] = { innerWrapper, popOutWrapper, popOutWindow };
       this.cloneStylesToPopOutWindow(popOutWindow);
       this.renderer.appendChild(popOutWindow.document.body, innerWrapper);
-      // this.cloneScriptsToPopOutWindow(popOutWindow);
+      this.cloneScriptsToPopOutWindow(popOutWindow);
       this.setupEventProxy(popOutWindow, innerWrapper);
 
       popOutWindow.focus();

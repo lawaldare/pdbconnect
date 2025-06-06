@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AG_Grid_Theme_Class, DownloadFileTypeService, DownloadService, MaterialModule } from '@pdbc/core';
+import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { SelectionChangedEvent } from 'ag-grid-community';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -8,7 +8,6 @@ import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
-import { environment } from '../../../../../../environments/environment';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { PARAMS } from '../../../complex.constant';
 import { drawHistogram } from './histogram';
@@ -48,8 +47,6 @@ export class ComplexPISAComponent {
   public readonly initialState = initialState;
   public readonly rowSelection = rowSelection;
 
-  private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
-  private readonly downloadService = inject(DownloadService);
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
 
   public rowData = computed(() => this.pisa());
@@ -82,11 +79,11 @@ export class ComplexPISAComponent {
     this.drawSliders();
   }
 
-  private drawHistogram() {
+  private drawHistogram(): void {
     drawHistogram(this.mappedPisaData(), this.selectedRowParams(), this.pisaAssemblyProperty.value, '#histogram-svg');
   }
 
-  private drawSliders() {
+  private drawSliders(): void {
     drawSliders(this.mappedPisaData(), this.selectedRowParams(), '#sliders');
   }
 

@@ -19,6 +19,16 @@ main {
   }
 }
 
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  mat-icon {
+    cursor: pointer;
+  }
+}
+
 .info {
   display: flex;
   margin-bottom: 16px;

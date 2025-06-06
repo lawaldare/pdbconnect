@@ -47,3 +47,14 @@ ngx-skeleton-loader {
     margin-bottom: 0 !important;
   }
 }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 9px;
+
+  mat-icon {
+    cursor: pointer;
+  }
+}
