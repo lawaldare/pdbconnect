@@ -141,18 +141,18 @@ export class EntryMainPageComponent implements OnInit {
       this.selectedTab.set(tabIndex);
     });
 
-    this.actions$
-      .pipe(
-        ofType(EntryActions.getEntryStatusFailure),
-        tap(({ error }) => {
-          this.router.navigate(['/error'], {
-            queryParams: { status: (error as any)?.status },
-            queryParamsHandling: 'merge',
-          });
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe();
+    // this.actions$
+    //   .pipe(
+    //     ofType(EntryActions.getEntryStatusFailure),
+    //     tap(({ error }) => {
+    //       this.router.navigate(['/error'], {
+    //         queryParams: { status: (error as any)?.status },
+    //         queryParamsHandling: 'merge',
+    //       });
+    //     }),
+    //     takeUntilDestroyed(this.destroyRef)
+    //   )
+    //   .subscribe();
 
     effect(async () => {
       // this effect runs only once because of molstarFirstRenderStarted
