@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { EntryStoreState, UniProtMappingData } from './entry-store.model';
 import { EntryActions } from './entry.actions';
-import { catchError, forkJoin, map, mergeMap, of, switchMap, take } from 'rxjs';
+import { catchError, exhaustMap, filter, forkJoin, map, mergeMap, of, switchMap, take, tap, withLatestFrom } from 'rxjs';
 import { EntryApiService } from '../services/entry-api.service';
 import { EntrySelectors } from './entry.selectors';
 import { AnyExperimentDetail } from '../data-models/experimental-details.model';
@@ -524,11 +524,18 @@ export class EntryEffects {
   getEntryStatus$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryStatus),
-      switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
-      mergeMap((entryId: string) =>
+      withLatestFrom(this.store.select(EntrySelectors.entryId)),
+      filter(([, entryId]) => !!entryId && entryId.length > 0),
+      exhaustMap(([, entryId]) =>
         this.entryAPIService.getEntryStatus(entryId).pipe(
           map((entryStatus) => EntryActions.getEntryStatusSuccess({ entryStatus })),
-          catchError(() => of(EntryActions.getEntryStatusFailure()))
+          catchError((error) => {
+            this.router.navigate(['/error'], {
+              queryParams: { status: error?.status },
+              queryParamsHandling: 'merge',
+            });
+            return of(EntryActions.getEntryStatusFailure());
+          })
         )
       )
     )

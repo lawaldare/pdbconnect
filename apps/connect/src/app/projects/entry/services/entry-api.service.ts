@@ -84,17 +84,7 @@ export class EntryApiService {
   }
 
   public getEntryStatus(entryId: string): Observable<EntryStatus> {
-    return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(
-      map((data) => data[entryId][0]),
-      catchError((error) => {
-        console.error('API call failed', error);
-        this.router.navigate(['/error'], {
-          queryParams: { status: error.status },
-          queryParamsHandling: 'merge',
-        });
-        return EMPTY;
-      })
-    );
+    return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(map((data) => data[entryId][0]));
   }
 
   public getEntryInteractions(entryId: string, chainId: string, residueId: string): Observable<any> {
