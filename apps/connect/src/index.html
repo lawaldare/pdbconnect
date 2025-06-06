@@ -68,6 +68,19 @@
       window.__app_public_path__ = hostname === 'localhost' ? '/' : '/pdbe/connect/';
     </script>
 
+    <script>
+      (function () {
+        var s = document.createElement('script');
+        var h = document.querySelector('head') || document.body;
+        s.src = 'https://acsbapp.com/apps/app/dist/js/app.js';
+        s.async = true;
+        s.onload = function () {
+          acsbJS.init();
+        };
+        h.appendChild(s);
+      })();
+    </script>
+
     <!-- EBI CSS -->
     <!-- <link rel="preload" href="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.css" as="style" onload="this.rel='stylesheet'" />
     <noscript>
