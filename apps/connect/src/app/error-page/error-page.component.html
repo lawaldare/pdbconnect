@@ -10,6 +10,9 @@
     <!-- </div> -->
     <h2>{{statusCode()}} - {{error().title}}</h2>
     <p>{{error().message}}</p>
+    @if(statusCode() > 500){
+    <p>Go to <a href="https://www.ebi.ac.uk/about/contact/support/pdbe" target="_blank">support</a></p>
+    }
     <!-- <a href="#">Go To Homepage</a> -->
   </div>
 </section>
