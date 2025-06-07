@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { EntryStoreState, UniProtMappingData } from './entry-store.model';
 import { EntryActions } from './entry.actions';
-import { catchError, exhaustMap, filter, forkJoin, map, mergeMap, of, switchMap, take, tap, withLatestFrom } from 'rxjs';
+import { catchError, filter, forkJoin, map, mergeMap, of, switchMap, take } from 'rxjs';
 import { EntryApiService } from '../services/entry-api.service';
 import { EntrySelectors } from './entry.selectors';
 import { AnyExperimentDetail } from '../data-models/experimental-details.model';
@@ -13,7 +13,6 @@ import { MainDataProcessingFacade } from '../pages/main/data-processing.facade';
 import { CitationDetail } from '../data-models/publication.model';
 import { IRRMCExperimentRawData } from '../data-models/experiment-raw-data.model';
 import { PvDataApiService } from '../services/entry-pv-nightingale-api.service';
-import { Router } from '@angular/router';
 
 @Injectable()
 export class EntryEffects {
@@ -22,7 +21,6 @@ export class EntryEffects {
   private readonly actions$ = inject(Actions);
   private readonly store = inject(Store<EntryStoreState>);
   private dataProcessing = inject(MainDataProcessingFacade);
-  private readonly router = inject(Router);
 
   getSummaryData$ = createEffect(() =>
     this.actions$.pipe(
@@ -524,9 +522,8 @@ export class EntryEffects {
   getEntryStatus$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryStatus),
-      withLatestFrom(this.store.select(EntrySelectors.entryId)),
-      filter(([, entryId]) => !!entryId && entryId.length > 0),
-      exhaustMap(([, entryId]) =>
+      switchMap(() => this.store.select(EntrySelectors.entryId).pipe(filter(Boolean), take(1))),
+      mergeMap((entryId: string) =>
         this.entryAPIService.getEntryStatus(entryId).pipe(
           map((entryStatus) => EntryActions.getEntryStatusSuccess({ entryStatus })),
           catchError(() => of(EntryActions.getEntryStatusFailure()))
