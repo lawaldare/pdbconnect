@@ -13,6 +13,7 @@ import { MainDataProcessingFacade } from '../pages/main/data-processing.facade';
 import { CitationDetail } from '../data-models/publication.model';
 import { IRRMCExperimentRawData } from '../data-models/experiment-raw-data.model';
 import { PvDataApiService } from '../services/entry-pv-nightingale-api.service';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class EntryEffects {
@@ -21,6 +22,7 @@ export class EntryEffects {
   private readonly actions$ = inject(Actions);
   private readonly store = inject(Store<EntryStoreState>);
   private dataProcessing = inject(MainDataProcessingFacade);
+  private readonly router = inject(Router);
 
   getSummaryData$ = createEffect(() =>
     this.actions$.pipe(
@@ -526,7 +528,14 @@ export class EntryEffects {
       mergeMap((entryId: string) =>
         this.entryAPIService.getEntryStatus(entryId).pipe(
           map((entryStatus) => EntryActions.getEntryStatusSuccess({ entryStatus })),
-          catchError(() => of(EntryActions.getEntryStatusFailure()))
+          catchError((error) => {
+            console.error('API call failed', error);
+            this.router.navigate(['/error'], {
+              queryParams: { status: error.status },
+              queryParamsHandling: 'merge',
+            });
+            return of(EntryActions.getEntryStatusFailure());
+          })
         )
       )
     )
