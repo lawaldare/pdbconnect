@@ -529,7 +529,7 @@ export class EntryEffects {
       exhaustMap(([, entryId]) =>
         this.entryAPIService.getEntryStatus(entryId).pipe(
           map((entryStatus) => EntryActions.getEntryStatusSuccess({ entryStatus })),
-          catchError((error) => of(EntryActions.getEntryStatusFailure({ error })))
+          catchError(() => of(EntryActions.getEntryStatusFailure()))
         )
       )
     )
