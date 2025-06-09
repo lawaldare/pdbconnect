@@ -1,14 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { pdbeLogoConfig } from '../projects/entry/entry-constant';
 import { ActivatedRoute } from '@angular/router';
 import { ErrorsList } from './error-list';
-
-export interface Error {
-  title: string;
-  message: string;
-}
+import { EntryUtilService, Error } from '../projects/entry/services/entry-util.service';
 
 @Component({
   selector: 'pdbc-error-page',
@@ -18,12 +14,15 @@ export interface Error {
   styleUrl: './error-page.component.scss',
 })
 export class ErrorPageComponent {
+  private readonly entryUtilService = inject(EntryUtilService);
   public readonly headerLogoMenuConfig = pdbeLogoConfig;
   private readonly route = inject(ActivatedRoute);
-  public statusCode = signal<number>(404);
+  public statusCode = this.entryUtilService.errorStatusCode;
   private errorsList: Record<string, Error> = ErrorsList;
   // public error = signal<Error>({} as Error);
   public error = computed(() => this.errorsList[String(this.statusCode())]);
+
+  public asPage = input<boolean>(true);
 
   constructor() {
     // this.route.queryParams.subscribe((params) => {

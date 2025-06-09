@@ -1,18 +1,14 @@
+@if(asPage()){
 <pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig" />
+}
+
 <section class="container">
-  <!-- <h1>Error: {{statusCode()}} - {{error().title}}</h1> -->
-  <!-- <h3>{{error().title}}</h3> -->
-  <!-- <p>{{error().message}}</p> -->
-  <!-- <p class="footer">You might try searching for the entry again or refresh the page.</p> -->
   <div id="notfound">
-    <!-- <div class="notfound-404"> -->
     <h1>Oops!</h1>
-    <!-- </div> -->
     <h2>{{statusCode()}} - {{error().title}}</h2>
     <p>{{error().message}}</p>
     @if(statusCode() > 500){
     <p>Go to <a href="https://www.ebi.ac.uk/about/contact/support/pdbe" target="_blank">support</a></p>
     }
-    <!-- <a href="#">Go To Homepage</a> -->
   </div>
 </section>

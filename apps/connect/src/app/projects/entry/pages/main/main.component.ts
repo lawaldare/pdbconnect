@@ -5,7 +5,7 @@ import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 // import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { SearchAppComponent } from '@pdbc/search-app';
 
-import { EMPTY, filter, map, mergeMap, switchMap, take, tap } from 'rxjs';
+import { catchError, EMPTY, filter, map, mergeMap, switchMap, take, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MaterialModule } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
@@ -35,6 +35,8 @@ import { ActionQueueService } from '../../services/action-queue.service';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import Clarity from '@microsoft/clarity';
 import { NotificationComponent } from '@pdbc/notification';
+import { EntryUtilService } from '../../services/entry-util.service';
+import { ErrorPageComponent } from '../../../../error-page/error-page.component';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -74,6 +76,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     LigandsTabComponent,
     DomainsTabComponent,
     NotificationComponent,
+    ErrorPageComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -84,6 +87,7 @@ export class EntryMainPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
+  public readonly util = inject(EntryUtilService);
 
   private readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
   public readonly molstarState = inject(MolstarStateService);
@@ -97,7 +101,7 @@ export class EntryMainPageComponent implements OnInit {
   public readonly pdbeSearchConfig = pdbeSearchConfig;
   public readonly mobileHeaderConfig = mobileHeaderConfig;
 
-  public statusCode = signal<StatusCode>('INITIAL');
+  public entryPageView = this.util.entryPageView;
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
   private molstarFirstRenderStarted = signal(false);
 
@@ -145,7 +149,7 @@ export class EntryMainPageComponent implements OnInit {
       const hasProcessedLigandsData = this.compCommunication.hasProcessedLigands();
       const hasProcessedDomainsData = this.compCommunication.hasProcessedDomains();
 
-      if (this.statusCode() !== 'REL') return;
+      if (this.entryStatus().status_code !== 'REL') return;
       if (this.molstarFirstRenderStarted()) return;
       if (this.selectedTab() < 0) return;
       if (!hasProcessedMacromoleculesData) return;
@@ -214,13 +218,13 @@ export class EntryMainPageComponent implements OnInit {
             map((response: EntryStatus) => response.status_code)
           );
         }),
-        mergeMap(async (statusCode: StatusCode) => {
-          this.statusCode.set(statusCode);
-          if (statusCode === 'REL') {
+        mergeMap(async (status: StatusCode) => {
+          if (status === 'REL') {
+            this.util.setEntryStatus('SUCCESS');
             this.dataProcessing.processInteractiveTablesData();
             this.dataProcessing.getPageData();
           } else {
-            this.statusCode.set(statusCode);
+            this.util.setEntryStatus('OTHER');
           }
           return EMPTY;
         }),

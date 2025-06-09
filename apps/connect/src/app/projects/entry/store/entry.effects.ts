@@ -13,6 +13,7 @@ import { MainDataProcessingFacade } from '../pages/main/data-processing.facade';
 import { CitationDetail } from '../data-models/publication.model';
 import { IRRMCExperimentRawData } from '../data-models/experiment-raw-data.model';
 import { PvDataApiService } from '../services/entry-pv-nightingale-api.service';
+import { EntryUtilService } from '../services/entry-util.service';
 
 @Injectable()
 export class EntryEffects {
@@ -21,6 +22,7 @@ export class EntryEffects {
   private readonly actions$ = inject(Actions);
   private readonly store = inject(Store<EntryStoreState>);
   private dataProcessing = inject(MainDataProcessingFacade);
+  private readonly entryUtilService = inject(EntryUtilService);
 
   getSummaryData$ = createEffect(() =>
     this.actions$.pipe(
@@ -526,7 +528,12 @@ export class EntryEffects {
       mergeMap((entryId: string) =>
         this.entryAPIService.getEntryStatus(entryId).pipe(
           map((entryStatus) => EntryActions.getEntryStatusSuccess({ entryStatus })),
-          catchError(() => of(EntryActions.getEntryStatusFailure()))
+          catchError((error) => {
+            console.error('Error fetching entry status:', error);
+            this.entryUtilService.setError(error.status);
+            this.entryUtilService.setEntryStatus('ERROR');
+            return of(EntryActions.getEntryStatusFailure());
+          })
         )
       )
     )
