@@ -4,7 +4,7 @@
   <pdbc-interactive-tables tabName="Ligands" />
   }
   <div class="table-content">
-    @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Assemblies';
+    @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Ligands';
     <button class="vf-button-ghost" (click)="toggleSidebar()">
       <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
       <span>{{text}}</span>
@@ -106,6 +106,9 @@
             <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
           </div>
           }
+          <!-- <div class="toolbar">
+            <mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="outbox" (click)="popupMolstar()"></mat-icon>
+          </div> -->
           <div id="ligands-molstar-container" class="molstar-container" #molstarContainer></div>
         </section>
         <section class="lig-env-container">
@@ -113,7 +116,6 @@
         </section>
       </section>
     </section>
-    <!-- <button class="vf-button vf-button--secondary-pdbe" (click)="popupMolstar()">Popup the molstar</button> -->
 
     <section class="ligands-info">
       <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure derived from the PDB entry.</p>
@@ -129,7 +131,7 @@
         </li>
         <li>
           Interactions were calculated using
-          <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + entryId() + '/bound/' + selectionIdentifier" target="_blank">Arpeggio</a> (<a
+          <a [href]="util.baseUrl() + 'entry/pdb/' + entryId() + '/bound/' + selectionIdentifier" target="_blank">Arpeggio</a> (<a
             href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5282402/bin/mmc1.docx"
             target="_blank"
             >see details for interaction types</a

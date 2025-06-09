@@ -7,6 +7,7 @@ import { GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core'
 import { cofactorTooltip, drugTooltip, reactantTooltip } from '../../../../ligands/ligand.constant';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Depiction } from '../../../../ligands/data-models/structure.model';
+import { ComplexUtilService } from '../../../services/complex-util.service';
 
 @Component({
   selector: 'pdbc-complex-ligand-grid',
@@ -20,6 +21,7 @@ export class ComplexLigandGridComponent implements AfterViewInit {
   public complexId = input.required<string>();
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  private readonly utilService = inject(ComplexUtilService);
 
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
   private ligandEv!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -64,13 +66,7 @@ export class ComplexLigandGridComponent implements AfterViewInit {
     }
   }
 
-  public openLigandPage(ligandId: string) {
-    this.googleAnalyticsService.logClickEvents('click_Complex_ligand_link', 'Related Ligands', 'click_complex_ligand', ligandId);
-    const trimmedValue = ligandId.trim();
-    const origin = window.location.origin;
-    const pathname = '/chemicalCompound/show/';
-    const baseHref = window.location.hostname === 'localhost' ? '' : '/pdbe/connect';
-    const href = origin + baseHref + pathname + trimmedValue;
-    window.open(href, '_self');
+  public openLigandPage(ligandId: string): void {
+    this.utilService.openLigandPage(ligandId);
   }
 }

@@ -66,7 +66,7 @@ export interface MappedResidue {
 })
 export class MacromoleculesTabComponent {
   public readonly macromoleculesFacade = inject(MacromoleculesFacade);
-  private readonly utilService = inject(UtilService);
+  public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly dialog = inject(MatDialog);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
@@ -155,7 +155,17 @@ export class MacromoleculesTabComponent {
 
   public ecMappings = computed(() => Object.keys(this.ecMappingsForMacromolecule() ?? {}));
   public bestResidues = computed(() => {
-    const isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return [];
+
+    const uniprotsAllowed = macromolecule.additionalData.uniprotAccessions;
+
+    let isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
+    isoformsMappingKeys = isoformsMappingKeys.filter((isoform) => {
+      const hasAllowed = uniprotsAllowed.some((uniprot) => isoform.includes(uniprot));
+      return hasAllowed;
+    });
+
     const filteredIsoformsMapping: any[] = [];
 
     isoformsMappingKeys.forEach((uniprot: string) => {
@@ -187,7 +197,7 @@ export class MacromoleculesTabComponent {
   public readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$);
 
   public readonly macromoleculeTableRows = computed(() => {
-    const isLoaded = this.compCommunication.hasProcessedAssemblies();
+    const isLoaded = this.compCommunication.hasProcessedMacromolecules();
 
     if (isLoaded) {
       const rows = this.compCommunication.processedMacromolecules;

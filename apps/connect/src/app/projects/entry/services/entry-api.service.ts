@@ -96,7 +96,12 @@ export class EntryApiService {
   }
 
   public getUniprotMapping(entryId: string): Observable<UniProtMapping> {
-    return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.MAPPINGS_API}uniprot/${entryId}`).pipe(map((data) => data[entryId]['UniProt']));
+    return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.MAPPINGS_API}uniprot/${entryId}`).pipe(
+      map((data) => data[entryId]['UniProt']),
+      catchError((_error) => {
+        return of({ empty: true } as unknown as UniProtMapping);
+      })
+    );
   }
 
   public getSummaryStats(uniprotId: string): Observable<SummaryStats> {
@@ -158,15 +163,6 @@ export class EntryApiService {
   public getGalleryMolj(moljDescription: string): Observable<any> {
     const BASE_API = 'https://www.ebi.ac.uk/pdbe/static/entry/';
     return this.http.get<any>(`${BASE_API}${moljDescription}.molj`).pipe(map((data) => data.entries));
-  }
-
-  public getBestStructures(uniprotId: string): Observable<any[]> {
-    return this.http.get<any>(`${this.MAPPINGS_API}best_structures/${uniprotId}`).pipe(
-      map((data) => {
-        // const uniprotData = data[uniprotId];
-        return data;
-      })
-    );
   }
 
   public getPDBEntryFiles(entryId: string): Observable<any> {

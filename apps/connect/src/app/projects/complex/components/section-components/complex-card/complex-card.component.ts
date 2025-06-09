@@ -14,6 +14,8 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 })
 export class ComplexCardComponent implements OnChanges {
   private readonly util = inject(UtilService);
+  public baseUrl = this.util.baseUrl();
+
   public complexInteraction = input.required<ComplexInteraction>();
   public complexImageSrc = signal<string>('');
   public participants = computed(() => {
@@ -34,7 +36,7 @@ export class ComplexCardComponent implements OnChanges {
   }
 
   public openComplexPage(complexId: string): void {
-    this.util.redirectToSearchTerm(complexId);
+    this.util.redirectToSearchTerm(complexId, '_blank');
   }
   viewMore(): void {
     this.showLess.update((value) => !value);

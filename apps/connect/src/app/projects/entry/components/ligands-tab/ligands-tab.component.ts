@@ -1,20 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, effect, ElementRef, inject, linkedSignal, Renderer2, signal, ViewChild, OnInit, Signal } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild, OnInit } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
-import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
-import { dashboardStatLinks, INTX_NAME_COLORS } from '../../entry-constant';
+import { dashboardStatLinks } from '../../entry-constant';
 import { filter, first, firstValueFrom, map, timer } from 'rxjs';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
-import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule, PopupWindowService, TruncateTextDirective } from '@pdbc/core';
+import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule, PopupWindowService, TruncateTextDirective, UtilService } from '@pdbc/core';
 import { CellMouseOverEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -73,6 +72,8 @@ export class LigandsTabComponent implements OnInit {
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
   public readonly selectedLigandIdx = toSignal(this.compCommunication.ligandSelection$);
+
+  public readonly util = inject(UtilService);
 
   public readonly ligandTableRows = computed(() => {
     const isLoaded = this.compCommunication.hasProcessedLigands();

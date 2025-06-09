@@ -37,6 +37,7 @@ export interface ComplexData {
   subcomplexes: string[];
   supercomplexes: string[];
   complexId: string;
+  polymer_composition: string;
 }
 
 type RelationshipType = 'sub-complex' | 'super-complex';

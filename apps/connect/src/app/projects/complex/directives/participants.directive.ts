@@ -9,7 +9,10 @@ export class ParticipantDirective implements OnChanges {
   @Input() participants!: Participant[];
 
   private orderedList: any;
-  constructor(private el: ElementRef, private renderer: Renderer2) {}
+  constructor(
+    private el: ElementRef,
+    private renderer: Renderer2
+  ) {}
 
   ngOnChanges(): void {
     this.init();
@@ -21,10 +24,10 @@ export class ParticipantDirective implements OnChanges {
     this.resetEnv();
     const orderedList = this.renderer.createElement('ul');
     for (const participant of this.participants) {
-      if (participant.accession_type === 'UniProt') {
+      if (participant.accession_type === 'UniProt' || participant.accession_type === 'Rfam') {
         const anchorTag = this.renderer.createElement('a');
         anchorTag.textContent = `${participant.accession}`;
-        const proteinLink = `https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/${participant.accession}`;
+        const proteinLink = `https://www.uniprot.org/uniprotkb/${participant.accession}`;
         const rfLink = `https://rfam.org/family/${participant.accession}`;
         const link = participant.accession.startsWith('RF') ? rfLink : proteinLink;
         this.renderer.setAttribute(anchorTag, 'href', link);

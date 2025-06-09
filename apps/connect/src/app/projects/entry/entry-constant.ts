@@ -130,6 +130,9 @@ export const depositionDateTooltip = 'Date when the coordinates were deposited t
 export const releaseDateTooltip = 'Date when the coordinates were released in the PDB archive';
 export const revisionDateTooltip = 'Date of the current version or last minor or major revision of a PDB entry';
 
+const baseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
+const ligandBaseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe-srv/pdbechem/' : 'https://wwwdev.ebi.ac.uk/pdbe-srv/pdbechem/';
+
 /**
  * For dashboard details display of statistic links bar
  */
@@ -140,25 +143,25 @@ export const dashboardStatLinks = {
     {
       id: 'pdbs',
       displayName: 'structures',
-      link: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/',
+      link: `${baseUrl}pdbe-kb/proteins/`,
       linkSuffix: '/structures',
     },
     {
       id: 'ligands',
       displayName: 'ligands',
-      link: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/',
+      link: `${baseUrl}pdbe-kb/proteins/`,
       linkSuffix: '/ligands',
     },
     {
       id: 'similar_proteins',
       displayName: 'similar proteins',
-      link: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/',
+      link: `${baseUrl}pdbe-kb/proteins/`,
       linkSuffix: '/similarity',
     },
     {
       id: 'interaction_partners',
       displayName: 'interactions',
-      link: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/',
+      link: `${baseUrl}pdbe-kb/proteins/`,
       linkSuffix: '/interactions',
     },
   ],
@@ -166,19 +169,19 @@ export const dashboardStatLinks = {
     {
       id: 'pdbs',
       displayName: 'bound structures',
-      link: 'https://www.ebi.ac.uk/pdbe/connect/chemicalCompound/show/',
+      link: `${ligandBaseUrl}chemicalCompound/show/`,
       linkSuffix: '#structures-section',
     },
     {
       id: 'ligands',
       displayName: 'interaction statistics',
-      link: 'https://www.ebi.ac.uk/pdbe/connect/chemicalCompound/show/',
+      link: `${ligandBaseUrl}chemicalCompound/show/`,
       linkSuffix: '#interaction-section',
     },
     {
       id: 'similar_proteins',
       displayName: 'related ligands',
-      link: 'https://www.ebi.ac.uk/pdbe/connect/chemicalCompound/show/',
+      link: `${ligandBaseUrl}chemicalCompound/show/`,
       linkSuffix: '#related-ligand-section',
     },
   ],
@@ -188,7 +191,7 @@ export const dashboardStatLinks = {
 export const resourceUrls: any = {
   CATH: 'https://www.cathdb.info/version/latest/superfamily/',
   SCOP: 'https://ftp.ebi.ac.uk/pub/databases/pdbe-kb/scop-legacy/',
-  Pfam: 'https://www.ebi.ac.uk/interpro/entry/pfam/',
+  Pfam: `${baseUrl}interpro/entry/pfam/`,
 };
 
 export const handleBarSrc = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjE5Ij4KICAgIDxyZWN0IHg9IjEiIHk9IjAiIHdpZHRoPSI2cHgiIGhlaWdodD0iMThweCIgc3R5bGU9ImZpbGw6IGRhcmtncmV5OyBzdHJva2U6IGJsYWNrOyBzdHJva2Utd2lkdGg6IDFweDsiPjwvcmVjdD4KPC9zdmc+`;

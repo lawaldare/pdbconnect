@@ -47,31 +47,15 @@ function splitPDBeEntityDomainsAPIData(apiData: APITrackDatum) {
   const newDomainTrackList: NightingaleFeature[][] = [];
 
   for (const trackDatum of apiData.data) {
-    // let newTrackDatum = { ...trackDatum } as NightingaleFeature;
-    // delete newTrackDatum['locations'];
-    // /**
-    //  *
-    //    accession: string;
-    //    color?: string;
-    //    fill?: string;
-    //    shape?: 'rectangle' | 'bridge' | 'diamond' | 'chevron' | 'catFace' | 'triangle' | 'wave' | 'hexagon' | 'pentagon' | 'circle' | 'arrow' | 'doubleBar';
-    //    tooltipContent?: string;
-    //    type?: string;
-    //    locations?: Array<NightingaleFeatureLocation>;
-    //    feature?: NightingaleFeature;
-    //    start?: number;
-    //    end?: number;
-    //    opacity?: number;
-    //  */
-    // newTrackDatum.feature = {}
-
+    let trackDatumAccession = trackDatum.accession;
+    if (trackDatumAccession.includes('Rfam')) trackDatumAccession = patchRfamString(trackDatumAccession);
     const trackDatumFragments = trackDatum.locations[0].fragments;
-    // const fragmentsByAccession: {[key: string]: APITrackFragment[]} = {};
     const fragmentsByAccession = new Map<string, APITrackFragment[]>();
 
     for (const trackDatumFragment of trackDatumFragments) {
-      const domainAccession = parseDomainTooltipForAccession(trackDatumFragment.tooltipContent);
+      let domainAccession = parseDomainTooltipForAccession(trackDatumFragment.tooltipContent);
       if (domainAccession) {
+        if (domainAccession.includes('Rfam')) domainAccession = patchRfamString(domainAccession);
         const existingFragments = fragmentsByAccession.get(domainAccession) || [];
         fragmentsByAccession.set(domainAccession, [trackDatumFragment, ...existingFragments]);
       }
@@ -79,19 +63,20 @@ function splitPDBeEntityDomainsAPIData(apiData: APITrackDatum) {
 
     const convertedLocationsToFeatures: NightingaleFeature[] = [];
     for (const [accession, fragments] of fragmentsByAccession) {
+      let labelAccession = trackDatumAccession;
+      if (labelAccession.includes('Rfam')) labelAccession = labelAccession.replace('families', 'family');
+      else labelAccession = labelAccession.slice(0, -1);
+
       convertedLocationsToFeatures.push({
         accession: accession,
         tooltipContent: '',
         label: accession,
-        labelTooltip: `${trackDatum.accession.slice(0, -1)}: ${accession}`,
+        labelTooltip: `${labelAccession}: ${accession}`,
         locations: [{ fragments: fragments }],
       } as NightingaleFeature);
     }
 
-    newDomainTrackNames.push(trackDatum.accession);
-    // newDomainTrackNames.push(trackDatum.label);
-
-    // newDomainTrackList.push([trackDatum as unknown as NightingaleFeature]);
+    newDomainTrackNames.push(trackDatumAccession);
     newDomainTrackList.push(convertedLocationsToFeatures);
   }
 
@@ -246,6 +231,12 @@ export function extractOtherTracks(trackName: string, trackData: APITrackData | 
   return trackList;
 }
 
+function patchRfamString(accession: string) {
+  if (accession.includes('Rfam domains')) return accession.replace('domains', 'families');
+  if (accession.includes('Rfam domain')) return accession.replace('domain', 'family');
+  return accession;
+}
+
 export function extractDomainResources(trackDomains: APITrackData | null, trackRfam: APITrackData | null) {
   const domainResourcesList: string[] = [];
   const domainsByResource: NightingaleFeature[][] = [];
@@ -289,15 +280,21 @@ export function extractDomainResources(trackDomains: APITrackData | null, trackR
     const rfamTracks = trackRfam.tracks[0]?.data ?? [];
 
     for (const rfamTrack of rfamTracks) {
-      const resourceLabel = rfamTrack.label;
+      const resourceLabel = patchRfamString(rfamTrack.label);
       const features: NightingaleFeature[] = [];
+      const rfamTrackAccession = patchRfamString(rfamTrack.accession);
 
       const fragmentsByAccession = new Map<string, APITrackFragment[]>();
-      const trackDatumFragments = rfamTrack.locations[0]?.fragments ?? [];
+      let trackDatumFragments = rfamTrack.locations[0]?.fragments ?? [];
+      trackDatumFragments = trackDatumFragments.map((eachFragment) => {
+        return {
+          ...eachFragment,
+          tooltipContent: patchRfamString(eachFragment.tooltipContent),
+        };
+      });
 
       for (const fragment of trackDatumFragments) {
         const domainAccession = parseDomainTooltipForAccession(fragment.tooltipContent);
-
         if (domainAccession) {
           const existingFragments = fragmentsByAccession.get(domainAccession) || [];
           fragmentsByAccession.set(domainAccession, [...existingFragments, fragment]);
@@ -309,7 +306,7 @@ export function extractDomainResources(trackDomains: APITrackData | null, trackR
           accession,
           tooltipContent: '',
           label: accession,
-          labelTooltip: `${rfamTrack.accession}: ${accession}`,
+          labelTooltip: `${rfamTrackAccession}: ${accession}`,
           locations: [{ fragments }],
         } as NightingaleFeature);
       }

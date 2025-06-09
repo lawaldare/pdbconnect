@@ -6,6 +6,10 @@ main {
 
   &.change-display {
     display: block !important;
+
+    .tab-content {
+      width: 100%;
+    }
   }
 
   pdbc-interactive-tables {

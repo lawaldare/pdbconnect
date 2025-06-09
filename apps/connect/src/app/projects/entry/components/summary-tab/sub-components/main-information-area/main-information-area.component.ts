@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UtilService } from '@pdbc/core';
 import { MaterialModule } from '@pdbc/core';
@@ -29,6 +29,9 @@ export class MainInformationAreaComponent {
 
   public mappedInformation: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
 
+  public initialAuthorCount = signal<number>(5);
+  public initialEntriesCount = signal<number>(5);
+
   public generateOrganismSearchUrl(term: string): string {
     return this.util.generateQueryURL(term, 'q_organism_name');
   }
@@ -39,5 +42,15 @@ export class MainInformationAreaComponent {
 
   public splitStringByCommas(str: string): string[] {
     return str.split(',').map((e) => e.trim());
+  }
+  toggleAuthorList() {
+    const authorList = this.primaryPublication()?.author_list ?? [];
+    this.initialAuthorCount.update((prev) => (prev === 5 ? authorList.length : 5));
+  }
+
+  public toggleEntriesList(): void {
+    const entries = this.primaryPublication()?.associated_entries ?? '';
+    const entriesArray = this.splitStringByCommas(entries);
+    this.initialEntriesCount.update((prev) => (prev === 5 ? entriesArray.length : 5));
   }
 }

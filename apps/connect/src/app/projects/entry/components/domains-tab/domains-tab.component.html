@@ -4,7 +4,7 @@
   <pdbc-interactive-tables tabName="Domains" />
   }
   <div class="tab-content">
-    @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Assemblies';
+    @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Domains';
     <button class="vf-button-ghost" (click)="toggleSidebar()">
       <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
       <span>{{text}}</span>

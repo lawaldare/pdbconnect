@@ -132,13 +132,14 @@ article {
     padding-top: 4px;
     padding-bottom: 4px;
     padding-left: 8px;
-
-    // font-family: "IBM Plex Sans";
     font-size: 16px;
     font-style: normal;
     line-height: 27.2px; /* 170% */
     text-align: left;
     width: 100%;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   &:hover {

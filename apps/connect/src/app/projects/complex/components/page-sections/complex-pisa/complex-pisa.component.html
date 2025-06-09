@@ -1,0 +1,44 @@
+@if(rowData()?.length){
+<div id="pisa-section">
+  <div class="charts">
+    <section class="complex-sliders">
+      <div id="sliders"></div>
+    </section>
+    <section class="histogram">
+      <div class="toolbar">
+        <span class="title">PISA Assembly Property</span>
+        <mat-select [formControl]="pisaAssemblyProperty" (selectionChange)="selectPisaAssemblyProperty()">
+          @for (option of pisaAssemblyPropertyOptions; track option.value) {
+          <mat-option [value]="option.value">{{ option.label | titlecase }}</mat-option>
+          }
+        </mat-select>
+      </div>
+      <svg id="histogram-svg"></svg>
+    </section>
+  </div>
+
+  <p>
+    This table lists PISA-derived properties for all assemblies of this complex. The slider and histogram load values from the first row by default. Select a row to
+    view and compare other assemblies.
+  </p>
+  <button class="vf-button vf-button--link" (click)="downloadCSV()">
+    Download table as CSV
+    <i class="icon icon-common icon-download"></i>
+  </button>
+  <section class="table">
+    <ag-grid-angular
+      class="ag-theme-quartz"
+      [rowData]="rowData()"
+      [columnDefs]="colDefs"
+      [gridOptions]="gridOptions"
+      (selectionChanged)="onSelectionChanged($event)"
+      [paginationPageSizeSelector]="paginationPageSizeSelector()"
+      [rowSelection]="rowSelection"
+      [initialState]="initialState"
+    />
+  </section>
+</div>
+
+} @else {
+<h4>No structures data available yet!</h4>
+}

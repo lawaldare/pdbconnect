@@ -22,7 +22,7 @@ export class BondsTableDialogComponent {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
 
   public bonds: Bond[] = [];
-  public readonly displayedColumns: string[] = ['atom_1', 'atom_2', 'bond_type', 'bond_order', 'aromatic', 'stereo', 'ideal_length'];
+
   public readonly gridOptions: GridOptions = {
     ...agGridOptionsBase,
   };

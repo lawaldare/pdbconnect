@@ -1,8 +1,18 @@
 @if(rowData().length){
 <div id="structures-section">
+  <header>
+    <h5 class="title">{{rowData().length}} assemblies representing this complex in the PDB</h5>
+    <button class="vf-button vf-button--link" (click)="downloadCSV()">
+      Download structures (csv)
+      <i class="icon icon-common icon-download"></i>
+    </button>
+    <button class="vf-button vf-button--link" (click)="downloadMMCIF()">
+      Download coordinates (mmCIF)
+      <i class="icon icon-common icon-download"></i>
+    </button>
+  </header>
   <section>
     <div class="table">
-      <p class="title">Shown below are <strong>{{rowData().length}}</strong> assemblies representing this complex in the PDB</p>
       <ag-grid-angular
         class="ag-theme-quartz"
         [rowData]="rowData()"

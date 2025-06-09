@@ -15,17 +15,19 @@
         @if (sequenceIsLoaded()) {
         <!-- Row containing Controls, Navigation, Sequence -->
         <div class="pv-track-row btns">
-          <img src="/assets/img/PDBe-KB-TrackViewer_logo.png" alt="PDBe-KB Track Viewer" />
-          <button id="search-residue-btn" class="pv-link-btn" (click)="openSearchPanel()">Find and highlight residues</button>
-          <!-- Control that opens panel for user custom data -->
-          <button id="map-data-btn" class="pv-link-btn" (click)="openMapPanel()">Map your data</button>
-          <button class="pv-link-btn" (click)="resetVisualization()">Reset visualisation</button>
+          <div class="pv-track-col small"></div>
+          <div class="pv-track-container btns">
+            <button id="search-residue-btn" class="pv-link-btn" (click)="openSearchPanel()">Find and highlight residues</button>
+            <!-- Control that opens panel for user custom data -->
+            <button id="map-data-btn" class="pv-link-btn" (click)="openMapPanel()">Map your data</button>
+            <button class="pv-link-btn" (click)="resetVisualization()">Reset visualisation</button>
+          </div>
         </div>
         <div class="pv-track-row">
           <!-- Column for controls -->
           <div class="pv-track-col small"></div>
           <!-- Column for Navigation & sequence -->
-          <div class="pv-track-col">
+          <div class="pv-track-col pv-track-container">
             <!-- Protvista Navigation bar -->
             <nightingale-navigation [length]="sequenceLength" height="30" margin-left="0" margin-right="10" use-ctrl-to-zoom></nightingale-navigation>
             <div style="position: relative; width: 100%">

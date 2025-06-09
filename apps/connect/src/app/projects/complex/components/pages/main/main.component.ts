@@ -23,6 +23,8 @@ import { complexRouteTabs } from '../../../complex.constant';
 import { MatTabChangeEvent } from '@angular/material/tabs';
 import { SuperComplexesComponent } from '../../page-sections/complex-supercomplex/supercomplexes.component';
 import { SubComplexesComponent } from '../../page-sections/complex-subcomplex/subcomplexes.component';
+import { NotificationComponent } from '@pdbc/notification';
+import { ComplexPISAComponent } from '../../page-sections/complex-pisa/complex-pisa.component';
 
 @Component({
   selector: 'pdbc-main',
@@ -31,9 +33,9 @@ import { SubComplexesComponent } from '../../page-sections/complex-subcomplex/su
     CommonModule,
     PdbeHeaderLogoMenuComponent,
     PdbeHeaderSearchComponent,
-    // PdbeNavMenuComponent,
     SummaryComponent,
     ComplexStructuresComponent,
+    ComplexPISAComponent,
     TruncateTextDirective,
     SubComplexesComponent,
     ComplexPublicationsComponent,
@@ -41,6 +43,7 @@ import { SubComplexesComponent } from '../../page-sections/complex-subcomplex/su
     NgxSkeletonLoaderModule,
     MaterialModule,
     SuperComplexesComponent,
+    NotificationComponent,
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',
@@ -55,17 +58,17 @@ export class MainComponent implements OnInit {
 
   public readonly headerLogoMenuConfig = headerComplexLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchComplexConfig;
-  private readonly navSectionsInit = navComplexSections;
 
   private readonly globalStore = inject(Store<ComplexStoreState>);
 
   public summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
   public complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
   public loaded = toSignal(this.globalStore.select(ComplexSelectors.loadingState));
-  public navSections = toSignal(this.globalStore.select(ComplexSelectors.navItems));
 
   public readonly status = LoadingState;
   public selectedTab = signal<number>(0);
+
+  public showNotificationBanner = signal<boolean>(false);
 
   constructor() {
     this.route.queryParams.subscribe((params) => {
@@ -77,7 +80,7 @@ export class MainComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.globalStore.dispatch(ComplexActions.setNavItems({ navItems: this.navSectionsInit }));
+    this.showNotification();
     this.route.params
       .pipe(
         switchMap((params) => {
@@ -86,6 +89,7 @@ export class MainComponent implements OnInit {
           this.globalStore.dispatch(ComplexActions.getComplexData());
           this.globalStore.dispatch(ComplexActions.getLigandsForComplexes());
           this.globalStore.dispatch(ComplexActions.getComplexInteractions());
+          this.globalStore.dispatch(ComplexActions.getPISAAssembliesParams());
           return of({});
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -95,12 +99,25 @@ export class MainComponent implements OnInit {
       });
   }
 
-  selectTab(event: MatTabChangeEvent) {
+  public selectTab(event: MatTabChangeEvent) {
     const routeTabs = complexRouteTabs;
     const tabName = routeTabs[event.index].id;
     this.router.navigate([], {
       queryParams: { activeTab: tabName },
       queryParamsHandling: 'merge',
     });
+  }
+
+  private showNotification() {
+    const href = document.location.href;
+    if (href.includes('dev.') || href.includes('wwwdev.')) {
+      this.showNotificationBanner.set(true);
+    } else {
+      this.showNotificationBanner.set(false);
+    }
+  }
+
+  public openFeedbackForm(): void {
+    window.open('https://docs.google.com/forms/d/e/1FAIpQLSeSy9zqhqm5n46GtjKizNKOipoRgmj9juweopKUHY2lQc-dyQ/viewform', '_blank');
   }
 }

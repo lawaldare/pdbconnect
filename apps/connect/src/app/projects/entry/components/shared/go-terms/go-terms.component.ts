@@ -9,6 +9,7 @@ import { AG_Grid_Theme_Class, agGridOptionsBase, autoSizeStrategy } from '@pdbc/
 import { AgGridAngular } from 'ag-grid-angular';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { UniProtMappingObj } from '../../../data-models/uniprot-mapping.model';
+import { environment } from '../../../../../../environments/environment';
 
 interface Filter {
   id: string;
@@ -64,7 +65,7 @@ export class GoTermsComponent {
       headerName: 'Name',
       field: 'name',
       cellRenderer: (params: any) =>
-        ` <a href="https://www.ebi.ac.uk/pdbe/entry/search/index?${this.goSearchCategories[params.data.category]}:${params.data.name}" target="_blank">${
+        ` <a href="${environment.pdbeBaseUrl}entry/search/index?${this.goSearchCategories[params.data.category]}:${params.data.name}" target="_blank">${
           params.data.name
         }
             <i class="icon icon-link icon-common" style="margin-left: 5px"></i>

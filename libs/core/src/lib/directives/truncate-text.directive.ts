@@ -11,7 +11,10 @@ export class TruncateTextDirective implements OnInit, OnChanges {
   private fullText = '';
   private truncatedText = '';
 
-  constructor(private el: ElementRef, private renderer: Renderer2) {}
+  constructor(
+    private el: ElementRef,
+    private renderer: Renderer2
+  ) {}
 
   ngOnInit() {
     this.init();

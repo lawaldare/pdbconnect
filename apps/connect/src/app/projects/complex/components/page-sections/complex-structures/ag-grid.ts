@@ -6,14 +6,6 @@ import { CustomHeaderComponent } from '../../cell renderers/custom-header.compon
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
-  defaultColDef: {
-    ...agGridOptionsBase.defaultColDef,
-    // sortable: false,
-    // headerComponentParams: { showHelpIcon: false, tooltipText: '' },
-  },
-  // rowSelection: {
-  //   mode: 'singleRow',
-  // },
 };
 
 export const colDefs: ColDef[] = [
@@ -22,14 +14,12 @@ export const colDefs: ColDef[] = [
     field: 'pdb_id',
     cellRenderer: EntryPageExternalLinkRendererComponent,
     width: 90,
-    // headerComponentParams: { tooltipText: 'Composite index consisting of PDB identifier and assembly identifier.' },
     sortable: false,
   },
   {
     headerName: 'ID',
     field: 'assembly_id',
-    // valueGetter: (params) => `${params.data.pdb_id}_${params.data.assembly_id}`,
-    width: 60,
+    width: 80,
     headerComponent: CustomHeaderComponent,
     headerComponentParams: { showHelpIcon: true, tooltipText: 'Assembly identifier' },
     sortable: false,
@@ -45,20 +35,9 @@ export const colDefs: ColDef[] = [
   {
     headerName: 'Res. (Å)',
     field: 'resolution',
-    // suppressHeaderFilterButton: true,
     width: 120,
-    // headerComponentParams: {
-    //   showHelpIcon: true,
-    //   tooltipText: 'Indicates the level of detail present in the 3D structure. Smaller value means finer details of the structure and higher quality.',
-    // },
   },
 ];
-
-export const components: {
-  [p: string]: any;
-} = {
-  agColumnHeader: CustomHeaderComponent,
-};
 
 export const initialState: GridState = {
   rowSelection: ['0'],
@@ -70,11 +49,3 @@ export const rowSelection: any = {
   checkboxes: false,
   enableClickSelection: true,
 };
-
-// export const selectionColumnDef = {
-//   sortable: false,
-//   width: 80,
-//   maxWidth: 80,
-//   suppressHeaderMenuButton: false,
-//   headerName: 'Show',
-// };

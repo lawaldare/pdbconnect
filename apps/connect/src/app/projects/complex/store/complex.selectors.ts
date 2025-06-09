@@ -8,9 +8,9 @@ export const ComplexSelectors = {
   state: complexStoreState,
   complexId: createSelector(complexStoreState, (state: ComplexStoreState) => state.complexId),
   complexData: createSelector(complexStoreState, (state: ComplexStoreState) => state.complexData),
-  navItems: createSelector(complexStoreState, (state: ComplexStoreState) => state.navItems),
   loadingState: createSelector(complexStoreState, (state: ComplexStoreState) => state.loadingState),
   complexLigands: createSelector(complexStoreState, (state: ComplexStoreState) => state.complexLigands),
   subComplexInteractions: createSelector(complexStoreState, (state: ComplexStoreState) => state.subComplexInteractions),
   superComplexInteractions: createSelector(complexStoreState, (state: ComplexStoreState) => state.superComplexInteractions),
+  pisa: createSelector(complexStoreState, (state: ComplexStoreState) => state.pisa),
 };

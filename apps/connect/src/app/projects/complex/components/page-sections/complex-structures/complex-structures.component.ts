@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Assembly } from '../../../models/complex-structure.model';
-import { AG_Grid_Theme_Class, MaterialModule } from '@pdbc/core';
+import { AG_Grid_Theme_Class, DownloadFileTypeService, DownloadService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { SelectionChangedEvent } from 'ag-grid-community';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
@@ -9,7 +9,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
-import { colDefs, components, gridOptions, initialState, rowSelection } from './ag-grid';
+import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'pdbc-complex-structures',
@@ -26,7 +27,10 @@ export class ComplexStructuresComponent implements OnInit {
   public readonly colDefs = colDefs;
   public readonly initialState = initialState;
   public readonly rowSelection = rowSelection;
-  public readonly components = components;
+
+  private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
+  private readonly downloadService = inject(DownloadService);
+  private readonly downloadFileTypeService = inject(DownloadFileTypeService);
 
   public rowData = computed(() => this.summaryData()?.assemblies as Assembly[]);
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
@@ -57,5 +61,32 @@ export class ComplexStructuresComponent implements OnInit {
     const moleculeId = data.pdb_id;
     const assemblyId = data.assembly_id;
     this.config = { ...this.config, moleculeId, assemblyId };
+  }
+
+  public downloadMMCIF(): void {
+    const pdbIds = this.rowData()
+      .map((assembly) => assembly.pdb_id)
+      .join(',');
+    if (pdbIds.length <= 100) {
+      this.downloadService.initiateDownload(this.fileDownloadUrl, 'entry', pdbIds, 'updated-mmCIF');
+    } else {
+      //go to download service
+      localStorage.setItem('pdbIds', pdbIds);
+      const url = `${environment.pdbeBaseUrl}download/docs`;
+      window.open(url);
+    }
+  }
+
+  public downloadCSV(): void {
+    const mappedData = this.rowData().map((structure) => {
+      return {
+        PDB: structure.pdb_id,
+        ID: structure.assembly_id,
+        Title: structure.title,
+        'Experimental Method': structure.experimental_method,
+        Resolution: structure.resolution,
+      };
+    });
+    this.downloadFileTypeService.downloadCSV(mappedData, 'structures');
   }
 }

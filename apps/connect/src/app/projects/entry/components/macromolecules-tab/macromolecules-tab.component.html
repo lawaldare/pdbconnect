@@ -10,13 +10,13 @@
       <span>{{text}}</span>
     </button>
 
-    @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum()!.additionalData.molecule.molecule_name.length) {
+    @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_name?.length) {
     <h5>{{ currentMacromoleculeDatum()!.additionalData.molecule.molecule_name[0] }}</h5>
     }
 
     <section class="info">
       <div class="info-grouped" style="width: 55%">
-        @let type = currentMacromoleculeDatum()!.additionalData.molecule.molecule_type; @if(type){
+        @let type = currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_type; @if(type){
         <div class="info-row">
           <span class="micro-title"> Type </span>
           <article>{{type | titlecase}}</article>
@@ -31,7 +31,7 @@
             </a>
           </article>
         </div>
-        } @let expressionSystem = currentMacromoleculeDatum()!.additionalData.molecule.source[0].expression_host_scientific_name; @if(expressionSystem){
+        } @let expressionSystem = currentMacromoleculeDatum()?.additionalData?.molecule?.source?.[0]?.expression_host_scientific_name; @if(expressionSystem){
         <div class="info-row">
           <span class="micro-title"> Expression System </span>
           <article>
@@ -68,6 +68,7 @@
             }
           </article>
         </div>
+        }
         <div class="info-row">
           <span class="micro-title"> Length </span>
           <article>{{currentMacromoleculeDatum()!.length}} amino acids</article>
@@ -78,15 +79,14 @@
           <article>{{ currentMacromoleculeDatum()!.additionalData.molecule.weight.toFixed(2) }} KDa</article>
           }
         </div>
-        }
       </div>
       <div class="info-grouped" style="width: 45%">
-        @if(currentMacromoleculeDatum()!.genes.length){
+        @if(currentMacromoleculeDatum()?.genes?.length){
         <div class="info-row">
           <span class="micro-title"> Gene names </span>
           <article>
             @for (gene of currentMacromoleculeDatum()!.genes; track gene; let islast = $last) {
-            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?gene_name:' + gene" target="_blank">{{ gene }}{{ islast ? '' : ',' }}</a> }
+            <a [href]="utilService.baseUrl() +   'entry/search/index?gene_name:' + gene" target="_blank">{{ gene }}{{ islast ? '' : ',' }}</a> }
             <br />
           </article>
         </div>
@@ -96,17 +96,17 @@
           <article>
             @if(goMappings()?.['Molecular_function']?.length){
             <span class="article-title">Molecular function</span>
-            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?biological_function:' + goMappings()['Molecular_function'][0].name" target="_blank"
+            <a [href]="utilService.baseUrl() + 'entry/search/index?biological_function:' + goMappings()['Molecular_function'][0].name" target="_blank"
               >{{goMappings()['Molecular_function'][0].name}}</a
             >
             } @if(goMappings()?.['Biological_process']?.length){
             <span class="article-title">Biological process</span>
-            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?biological_process:' + goMappings()['Biological_process'][0].name" target="_blank"
+            <a [href]="utilService.baseUrl() + 'entry/search/index?biological_process:' + goMappings()['Biological_process'][0].name" target="_blank"
               >{{goMappings()['Biological_process'][0].name}}</a
             >
             } @if(goMappings()?.['Cellular_component']?.length){
             <span class="article-title">Cellular component</span>
-            <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?biological_cell_component:' + goMappings()['Cellular_component'][0].name" target="_blank"
+            <a [href]="utilService.baseUrl() + 'entry/search/index?biological_cell_component:' + goMappings()['Cellular_component'][0].name" target="_blank"
               >{{goMappings()['Cellular_component'][0].name}}</a
             >
             } @if(isCategoryMoreThanOne()){

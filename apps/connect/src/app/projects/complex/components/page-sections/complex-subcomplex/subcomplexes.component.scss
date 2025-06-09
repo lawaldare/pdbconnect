@@ -1,7 +1,26 @@
 p {
-  display: inline;
-  margin-bottom: 0;
+  margin-bottom: 20px !important;
   margin-right: 3px;
+}
+
+.search-box {
+  position: relative;
+  width: 350px;
+  font-size: 16px;
+
+  input {
+    border: none;
+    border-bottom: 1px solid var(--Neutral-600, #707372);
+    box-shadow: none;
+    padding-left: 0;
+  }
+
+  .icon-search {
+    position: absolute;
+    right: 5px;
+    top: 12px;
+    color: #707372;
+  }
 }
 
 .card-container {

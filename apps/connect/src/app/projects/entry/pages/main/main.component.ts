@@ -34,6 +34,7 @@ import { DomainsTabComponent } from '../../components/domains-tab/domains-tab.co
 import { ActionQueueService } from '../../services/action-queue.service';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import Clarity from '@microsoft/clarity';
+import { NotificationComponent } from '@pdbc/notification';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
 
@@ -72,6 +73,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     MacromoleculesTabComponent,
     LigandsTabComponent,
     DomainsTabComponent,
+    NotificationComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -110,6 +112,8 @@ export class EntryMainPageComponent implements OnInit {
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
   public selectedTab = signal<number>(0);
+
+  public showNotificationBanner = signal<boolean>(false);
 
   public readonly apiSearchConfig = {
     additionalParams: 'rows=20000&json.nl=map&wt=json',
@@ -191,6 +195,8 @@ export class EntryMainPageComponent implements OnInit {
     if (environment.production === false) {
       Clarity.init(environment.clarityProjectId);
     }
+
+    this.showNotification();
     // else {
     // Clarity.init('yourProjectId'); // Replace with production ID when it's time
     // }
@@ -220,6 +226,15 @@ export class EntryMainPageComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+  }
+
+  private showNotification() {
+    const href = document.location.href;
+    if (href.includes('dev.') || href.includes('wwwdev.')) {
+      this.showNotificationBanner.set(true);
+    } else {
+      this.showNotificationBanner.set(false);
+    }
   }
 
   async selectTab(event: MatTabChangeEvent) {

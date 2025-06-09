@@ -22,7 +22,7 @@
         <img src="{{ helpLogoSrc }}" class="icon" alt="help icon" matTooltipClass="entry-pgs-tooltip" [matTooltip]="complexIdTooltip" matTooltipPosition="below" />
       </div>
       <article>
-        <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?complex_id:' + assemblyData()?.complexId" target="_blank">{{ assemblyData()?.complexId }}</a>
+        <a [href]="util.baseUrl() + 'entry/search/index?complex_id:' + assemblyData()?.complexId" target="_blank">{{ assemblyData()?.complexId }}</a>
         <i class="icon icon-common icon-search"></i>
       </article>
     </div>

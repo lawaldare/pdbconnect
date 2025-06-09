@@ -144,7 +144,7 @@
   <!-- Macromolecules -->
   @if(macromoleculeTableRows().length){
   <h3 id="macromolecules">Macromolecules ({{macromoleculeTableRows().length}})</h3>
-  @for(row of macromoleculeTableRows().slice(0, macromoleculeInitialCount()); track row.name.molecule ){
+  @for(row of macromoleculeTableRows().slice(0, macromoleculeInitialCount()); track row.index ){
   <section class="macro-row-card">
     <p class="m-title">{{row.name.molecule}}</p>
     <p class="text">{{row.name.chains.length}} chains</p>

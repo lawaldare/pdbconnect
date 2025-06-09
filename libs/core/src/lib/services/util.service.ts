@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-escape */
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Clipboard } from '@angular/cdk/clipboard';
 
@@ -8,6 +8,11 @@ import { Clipboard } from '@angular/cdk/clipboard';
 })
 export class UtilService {
   // constructor() {}
+
+  public baseUrl = computed(() => {
+    const host = window.location.hostname;
+    return host === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
+  });
 
   private _snackBar = inject(MatSnackBar);
   private clipboard = inject(Clipboard);
@@ -31,7 +36,7 @@ export class UtilService {
 
     const encodedURL = encodeURIComponent(urlStringObject);
 
-    const first = 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=';
+    const first = `${this.baseUrl()}entry/search/index/?searchParams=`;
 
     return first + encodedURL;
   }
@@ -46,7 +51,7 @@ export class UtilService {
 
     const encodedURL = encodeURIComponent(urlStringObject);
 
-    const first = 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=';
+    const first = `${this.baseUrl()}entry/search/index/?searchParams=`;
 
     return first + encodedURL;
   }
@@ -62,7 +67,7 @@ export class UtilService {
 
     const encodedURL = encodeURIComponent(urlStringObject);
 
-    const first = 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=';
+    const first = `${this.baseUrl()}entry/search/index/?searchParams=`;
 
     return first + encodedURL;
   }
@@ -78,7 +83,7 @@ export class UtilService {
 
     const encodedURL = encodeURIComponent(urlStringObject);
 
-    const first = 'https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=';
+    const first = `${this.baseUrl()}entry/search/index/?searchParams=`;
 
     return first + encodedURL;
   }
@@ -140,13 +145,13 @@ export class UtilService {
     this.currentlyActive.set(activeSection);
   }
 
-  public redirectToSearchTerm(value: string): void {
+  public redirectToSearchTerm(value: string, target = '_self'): void {
     const trimmedValue = value.trim();
     const hrefArray = window.location.href.split('/');
     hrefArray.pop();
     hrefArray.push(trimmedValue);
     const href = hrefArray.join('/');
-    window.open(href, '_self');
+    window.open(href, target);
   }
 
   //TODO: Update this method for redirection from latest release page
