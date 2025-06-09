@@ -16,10 +16,10 @@ export const appRoutes: Route[] = [
   },
   { path: 'error', component: ErrorPageComponent, title: 'Error Page' },
   {
-    path: environment.isLocal ? ':complexId' : 'complex/:complexId',
+    path: environment.isLocal ? ':complexId' : 'complexes/:complexId',
     loadComponent: () => import('./projects/complex/components/pages/main/main.component').then((m) => m.MainComponent),
     title: 'Complex Pages',
     canActivate: [complexIdGuard],
   },
-  // { path: '**', redirectTo: 'error' },
+  { path: '**', redirectTo: 'error' },
 ];
