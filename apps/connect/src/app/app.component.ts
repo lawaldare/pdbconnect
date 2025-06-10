@@ -37,12 +37,12 @@ export class AppComponent implements OnInit {
     await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
     const pathName = window.location.pathname;
     if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
-      await this.runAbsolutePath();
+      this.runAbsolutePath();
       return;
     }
 
     if (pathName.includes(`/pdbe-kb/complexes/`)) {
-      await this.runAbsolutePath();
+      this.runAbsolutePath();
       return;
     }
 
