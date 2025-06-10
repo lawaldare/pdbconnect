@@ -36,7 +36,7 @@ export class AppComponent implements OnInit {
     await this.scriptLoader.loadScript('https://d3js.org/d3.v6.min.js');
     await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
     const pathName = window.location.pathname;
-    if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
+    if (pathName.includes(`/pdbe-srv/pdbechem/`) || pathName.includes(`/pdbe-kb/complexes/`)) {
       await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-2.0.0-min.js'), true);
       await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.js'), true);
     } else {

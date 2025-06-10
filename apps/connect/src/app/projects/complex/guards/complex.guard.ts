@@ -20,7 +20,7 @@ export const complexIdGuard: CanActivateFn = (route) => {
     map((response) => {
       const complexId = util.findComplexId(response);
       if (complexId) {
-        const path = environment.isLocal ? `/${complexId}` : `/complex/${complexId}`;
+        const path = environment.isLocal ? `/${complexId}` : `/pdbe-kb/complexes/${complexId}`;
         router.navigateByUrl(path);
         return false;
       } else {
