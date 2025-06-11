@@ -66,7 +66,7 @@ export class SummaryComponent implements OnInit {
   public participants = signal<Participant[]>(this.summaryData()?.participants.slice(0, 4) ?? []);
   public respresentStructure = computed(() => this.summaryData()?.representative_structure);
   public textIcon = signal<string>('more');
-  public baseUrl = environment.baseUrl;
+  public baseUrl = 'https://www.ebi.ac.uk/';
 
   ngOnInit(): void {
     this.config = {
