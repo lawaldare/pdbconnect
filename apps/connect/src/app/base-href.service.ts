@@ -20,6 +20,8 @@ export class BaseHrefService {
       baseHref = mappedHref;
     }
 
+    console.log('Base href:', baseHref);
+
     const baseTag = document.querySelector('base');
     if (baseTag) {
       baseTag.setAttribute('href', baseHref);

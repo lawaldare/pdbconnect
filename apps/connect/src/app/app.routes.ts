@@ -3,6 +3,8 @@ import { environment } from '../environments/environment';
 import { ErrorPageComponent } from './error-page/error-page.component';
 import { complexIdGuard } from './projects/complex/guards/complex.guard';
 
+console.log('isLocal', environment.isLocal);
+
 export const appRoutes: Route[] = [
   {
     path: environment.isLocal ? 'pdb/:entryId' : 'entry/pdb/:entryId',
