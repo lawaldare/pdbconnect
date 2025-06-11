@@ -36,7 +36,6 @@ export class AppComponent implements OnInit {
     await this.scriptLoader.loadScript('https://d3js.org/d3.v6.min.js');
     await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
     const pathName = window.location.pathname;
-    console.log('PATHNAME:-', pathName);
     if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
       this.runAbsolutePath();
       return;

@@ -5,8 +5,6 @@ import { complexIdGuard } from './projects/complex/guards/complex.guard';
 const hostname = document.location.hostname;
 const isLocal = hostname === 'localhost';
 
-console.log('isLocal', isLocal);
-
 export const appRoutes: Route[] = [
   {
     path: 'pdb/:entryId',
