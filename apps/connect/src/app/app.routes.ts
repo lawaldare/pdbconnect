@@ -9,7 +9,7 @@ console.log('isLocal', isLocal);
 
 export const appRoutes: Route[] = [
   {
-    path: isLocal ? 'pdb/:entryId' : 'entry/pdb/:entryId',
+    path: 'pdb/:entryId',
     loadComponent: () => import('./projects/entry/pages/main/main.component').then((m) => m.EntryMainPageComponent),
     title: 'PDBe Entry Pages',
   },
