@@ -16,7 +16,7 @@ export const appRoutes: Route[] = [
   },
   { path: 'error', component: ErrorPageComponent, title: 'Error Page' },
   {
-    path: environment.isLocal ? ':complexId' : 'pdbe-kb/complexes/:complexId',
+    path: environment.isLocal ? ':complexId' : 'complexes/:complexId',
     loadComponent: () => import('./projects/complex/components/pages/main/main.component').then((m) => m.MainComponent),
     title: 'Complex Pages',
     canActivate: [complexIdGuard],
