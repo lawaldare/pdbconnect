@@ -38,7 +38,7 @@
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.pdbeComplexId" />
             </span>
             <article>
-              <a [href]="util.baseUrl() + 'entry/search/index?complex_id:' + datum?.complexId" target="_blank">{{datum?.complexId}}</a>
+              <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/complexes/' + datum?.complexId" target="_blank">{{datum?.complexId}}</a>
               <img src="assets/icons/link_search_icon.png" alt="search icon" />
             </article>
           </div>
