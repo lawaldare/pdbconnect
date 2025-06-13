@@ -24,6 +24,12 @@ h1 {
   background-position: center;
 }
 
+header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 h2 {
   color: #000;
   font-size: 24px;
@@ -38,7 +44,7 @@ p {
   font-size: 18px;
   font-weight: 400;
   margin-bottom: 20px;
-  margin-top: 0;
+  margin-top: 15px !important;
   text-align: center;
 }
 

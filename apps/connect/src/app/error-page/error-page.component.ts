@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, inject, input, signal } from '@angular/core';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { pdbeLogoConfig } from '../projects/entry/entry-constant';
 import { ActivatedRoute } from '@angular/router';
 import { ErrorsList } from './error-list';
 import { EntryUtilService, Error } from '../projects/entry/services/entry-util.service';
+import { gsap } from 'gsap';
+import { stagger } from '@angular/animations';
 
 @Component({
   selector: 'pdbc-error-page',
@@ -13,7 +15,7 @@ import { EntryUtilService, Error } from '../projects/entry/services/entry-util.s
   templateUrl: './error-page.component.html',
   styleUrl: './error-page.component.scss',
 })
-export class ErrorPageComponent {
+export class ErrorPageComponent implements AfterViewInit {
   private readonly entryUtilService = inject(EntryUtilService);
   public readonly headerLogoMenuConfig = pdbeLogoConfig;
   private readonly route = inject(ActivatedRoute);
@@ -31,5 +33,19 @@ export class ErrorPageComponent {
     //   const error = this.errorsList[code];
     //   this.error.set(error);
     // });
+  }
+
+  ngAfterViewInit(): void {
+    const option = {
+      y: -100,
+      stagger: { each: 0.2 },
+      ease: 'back',
+    };
+
+    gsap
+      .timeline()
+      .from('h1', option)
+      .from('h2', { opacity: 0, scale: 2, duration: 1.5, ease: 'back(2)' })
+      .from('p.errormsg', { y: 100, duration: 1.5, ease: 'back(4)' });
   }
 }
