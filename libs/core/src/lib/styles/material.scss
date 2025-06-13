@@ -93,6 +93,11 @@ thead {
     font-weight: 700 !important;
   }
 
+  &:hover {
+    background: var(--Brand-50, #fff);
+    border-bottom: none;
+  }
+
   &.mdc-tab--active {
     background: var(--Brand-50, #fff);
     border-bottom: none;
