@@ -77,15 +77,15 @@ export const PARAMS = [
     value: 'buried_surface_area',
   },
   {
-    label: 'Solv. ΔG (kcal /mol)',
+    label: 'Solv. ΔG (kcal/mol)',
     value: 'solvation_energy_gain',
   },
   {
-    label: 'Diss. ΔG (kcal /mol)',
+    label: 'Diss. ΔG (kcal/mol)',
     value: 'dissociation_energy',
   },
   {
-    label: 'Diss. TΔS (kcal /mol)',
+    label: 'Diss. TΔS (kcal/mol)',
     value: 'dissociation_entropy',
   },
 ];

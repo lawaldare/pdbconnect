@@ -9,7 +9,7 @@
         <span class="title">PISA Assembly Property</span>
         <mat-select [formControl]="pisaAssemblyProperty" (selectionChange)="selectPisaAssemblyProperty()">
           @for (option of pisaAssemblyPropertyOptions; track option.value) {
-          <mat-option [value]="option.value">{{ option.label | titlecase }}</mat-option>
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
           }
         </mat-select>
       </div>
