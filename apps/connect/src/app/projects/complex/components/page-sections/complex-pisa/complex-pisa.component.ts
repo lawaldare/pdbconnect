@@ -62,7 +62,7 @@ export class ComplexPISAComponent {
 
   public sliders = signal<SliderDetails[]>([]);
 
-  public pisaAssemblyPropertyOptions = PARAMS.map((property) => ({ value: property, label: property.replace(/_/g, ' ') }));
+  public pisaAssemblyPropertyOptions = PARAMS;
   public pisaAssemblyProperty = new FormControl(this.pisaAssemblyPropertyOptions[0].value, { nonNullable: true });
 
   private selectedRowParams = signal<string>('');

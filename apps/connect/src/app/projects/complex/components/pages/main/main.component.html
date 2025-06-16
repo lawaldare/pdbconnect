@@ -10,7 +10,13 @@
     <article>
       <section class="hero">
         @if(summaryData()?.name){
-        <h1 class="heading-1" libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="50"></h1>
+        <header>
+          <h1 class="heading-1" libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="50"></h1>
+          <a class="vf-button vf-button--link" href="https://www.nature.com/articles/s41597-023-02778-9" target="_blank">
+            Methodology
+            <i class="icon icon-link icon-common"></i>
+          </a>
+        </header>
         } @if(complexId()){
         <h4>{{ complexId() }}</h4>
         }

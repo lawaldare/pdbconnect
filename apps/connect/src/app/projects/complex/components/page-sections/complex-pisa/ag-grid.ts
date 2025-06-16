@@ -2,6 +2,7 @@ import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions, GridState } from 'ag-grid-community';
 import { CustomHeaderComponent } from '../../cell renderers/custom-header.component';
 import { pisaTableTooltip } from '../../../complex.constant';
+import { EntryPageExternalLinkRendererComponent } from './entry-page-link.component';
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
@@ -9,17 +10,17 @@ export const gridOptions: GridOptions = {
     ...agGridOptionsBase.defaultColDef,
     flex: 1,
     filter: true,
+    sortable: true,
   },
 };
 
 export const colDefs: ColDef[] = [
   {
-    headerName: 'PDB ID',
+    headerName: 'PDB',
     field: 'pdb_id',
-    // sort: 'asc',
+    cellRenderer: EntryPageExternalLinkRendererComponent,
     flex: 0.6,
     filter: true,
-    sortable: true,
   },
   {
     headerName: 'ID',
@@ -30,34 +31,34 @@ export const colDefs: ColDef[] = [
     sortable: false,
   },
   {
-    headerName: 'Accessible Surface Area',
+    headerName: 'Acc. SA (Å²)',
     field: 'accessible_surface_area',
     headerComponent: CustomHeaderComponent,
-    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, tooltipText: pisaTableTooltip.ASA },
+    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, enableSorting: true, tooltipText: pisaTableTooltip.ASA },
   },
   {
-    headerName: 'Buried Surface Area',
+    headerName: 'Bur. SA (Å²)',
     field: 'buried_surface_area',
     headerComponent: CustomHeaderComponent,
-    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, tooltipText: pisaTableTooltip.BSA },
+    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, enableSorting: true, tooltipText: pisaTableTooltip.BSA },
   },
   {
-    headerName: 'Solvation Energy Gain',
+    headerName: 'Solv. ΔG (kcal /mol)',
     field: 'solvation_energy_gain',
     headerComponent: CustomHeaderComponent,
-    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, tooltipText: pisaTableTooltip.SEA },
+    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, enableSorting: true, tooltipText: pisaTableTooltip.SEA },
   },
   {
-    headerName: 'Dissociation Energy',
+    headerName: 'Diss. ΔG (kcal /mol)',
     field: 'dissociation_area',
     headerComponent: CustomHeaderComponent,
-    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, tooltipText: pisaTableTooltip.DEG },
+    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, enableSorting: true, tooltipText: pisaTableTooltip.DEG },
   },
   {
-    headerName: 'Dissociation Entropy',
+    headerName: 'Diss. TΔS (kcal /mol)',
     field: 'dissociation_entropy',
     headerComponent: CustomHeaderComponent,
-    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, tooltipText: pisaTableTooltip.DEP },
+    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, enableSorting: true, tooltipText: pisaTableTooltip.DEP },
   },
 ];
 

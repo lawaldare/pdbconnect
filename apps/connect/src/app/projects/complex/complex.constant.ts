@@ -60,15 +60,35 @@ export const complexRouteTabs = [
 export const complexSummaryTabTooltips = {
   polymerComposition: 'Shows the total number of each polymer type in the complex: protein, RNA, DNA, or hybrid DNA/RNA. Counts come from component stoichiometry.',
   globalSymmetry:
-    'Shows every macromolecule in the complex with its copy number. Mapped proteins link to UniProt while mapped RNAs link to Rfam. Unmapped macromolecules are displayed as type_PDB_entityID (for example, antibody_5mv4_1), where type refers to the molecule class: protein, DNA, RNA, or antibody.',
+    'Displays the symmetry most often observed for this complex (identified with AnAnaS). PDB assemblies with different or missing symmetry are listed separately.',
   observedCofactors:
     'Lists every unique cofactor bound to the complex. A ligand is marked as a cofactor when it matches a class in the CoFactor database and binds a protein with a recognised enzymatic role.',
   component:
-    'Shows every macromolecule in the complex with its copy number. Mapped proteins are labelled as Gene name:UniProt accession, and mapped RNAs link to Rfam. Unmapped macromolecules are displayed as type_PDB_entityID (for example, antibody_5mv4_1), where type refers to the molecule class: protein, DNA, RNA, or antibody',
+    'Shows every macromolecule in the complex with its copy number. Mapped proteins link to UniProt while mapped RNAs link to Rfam. Unmapped macromolecules are displayed as type_PDB_entityID (for example, antibody_5mv4_1), where type refers to the molecule class: protein, DNA, RNA, or antibody.',
 };
 
-export const PARAMS = ['accessible_surface_area', 'buried_surface_area', 'solvation_energy_gain', 'dissociation_energy', 'dissociation_entropy'];
-
+export const PARAMS = [
+  {
+    label: 'Acc. SA (Å²)',
+    value: 'accessible_surface_area',
+  },
+  {
+    label: 'Bur. SA (Å²)',
+    value: 'buried_surface_area',
+  },
+  {
+    label: 'Solv. ΔG (kcal /mol)',
+    value: 'solvation_energy_gain',
+  },
+  {
+    label: 'Diss. ΔG (kcal /mol)',
+    value: 'dissociation_energy',
+  },
+  {
+    label: 'Diss. TΔS (kcal /mol)',
+    value: 'dissociation_entropy',
+  },
+];
 /* 2-decimal formatter used everywhere */
 export const fmt2 = d3.format('.2f');
 
@@ -84,7 +104,7 @@ export const formatLabel = (str: string) =>
 export const pisaTableTooltip = {
   ASA: 'Surface area indicates the total solvent-accessible surface area of the assembly, in Å2.',
   BSA: "Buried area indicates, in Å2, the total solvent-accessible surface area of the assembly, buried upon formation of all assembly's interfaces.",
-  SEA: 'Indicates the solvation free energy gain upon formation of the assembly, in kcal/M. The value is calculated as difference in total solvation energies of isolated and assembled structures.',
-  DEG: 'Indicates the free energy of assembly dissociation, in kcal/M. The free energy of dissociation corresponds to the free energy difference between dissociated and associated states. Positive values of ΔGdiss indicate that an external driving force should be applied in order to dissociate the assembly, therefore assemblies with ΔGdiss>0 are thermodynamically stable.',
-  DEP: 'Indicates the rigid-body entropy change at dissociation, in kcal/M. The entropy change corresponds to the lowest free energy way to dissociate the assembly into a set of stable assemblies or monomeric units.',
+  SEA: 'Indicates the solvation free energy gain upon formation of the assembly, in kcal/mol. The value is calculated as difference in total solvation energies of isolated and assembled structures.',
+  DEG: 'Indicates the free energy of assembly dissociation, in kcal/mol. The free energy of dissociation corresponds to the free energy difference between dissociated and associated states. Positive values of ΔGdiss indicate that an external driving force should be applied in order to dissociate the assembly, therefore assemblies with ΔGdiss>0 are thermodynamically stable.',
+  DEP: 'Indicates the rigid-body entropy change at dissociation, in kcal/mol. The entropy change corresponds to the lowest free energy way to dissociate the assembly into a set of stable assemblies or monomeric units.',
 };

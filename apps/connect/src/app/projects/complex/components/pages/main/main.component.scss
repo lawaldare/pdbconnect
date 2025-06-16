@@ -10,18 +10,15 @@ main {
 
 header {
   width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-  h1 {
-    display: inline-block;
-    vertical-align: middle;
+  a {
+    font-size: 18px;
 
-    &.truncated {
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .icon {
+      margin-left: 5px;
     }
   }
 }

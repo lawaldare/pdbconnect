@@ -43,9 +43,9 @@ export class ErrorPageComponent implements AfterViewInit {
     };
 
     gsap
-      .timeline()
+      .timeline({ defaults: { opacity: 0, ease: 'back' } })
       .from('h1', option)
-      .from('h2', { opacity: 0, scale: 2, duration: 1.5, ease: 'back(2)' })
-      .from('p.errormsg', { y: 100, duration: 1.5, ease: 'back(4)' });
+      .from('h2', { opacity: 0, scale: 0, duration: 1.5 })
+      .from('p.errormsg', { y: 100, duration: 1.5 }, '<');
   }
 }

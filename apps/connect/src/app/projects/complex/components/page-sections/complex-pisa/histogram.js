@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { formatLabel } from '../../../complex.constant';
+import { PARAMS } from '../../../complex.constant';
 
 // import * as d3 from "https://cdn.skypack.dev/d3@6";
 // import { formatLabel } from "./utils.js";
@@ -86,5 +86,5 @@ export function drawHistogram(rows, selectedId, param, selector) {
     .attr('y', M.t - 2)
     .attr('text-anchor', 'middle')
     .attr('font-weight', 'bold')
-    .text(formatLabel(param));
+    .text(PARAMS.find((p) => p.value === param)?.label);
 }
