@@ -1,15 +1,12 @@
+/* eslint-disable @angular-eslint/no-empty-lifecycle-method */
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, inject, input, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, inject, input } from '@angular/core';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { pdbeLogoConfig } from '../projects/entry/entry-constant';
 import { ActivatedRoute } from '@angular/router';
 import { ErrorsList } from './error-list';
 import { EntryUtilService, Error } from '../projects/entry/services/entry-util.service';
 import { gsap } from 'gsap';
-import { GSDevTools } from 'gsap/GSDevTools';
-import { SplitText } from 'gsap/SplitText';
-
-gsap.registerPlugin(GSDevTools, SplitText);
 
 @Component({
   selector: 'pdbc-error-page',
@@ -39,11 +36,12 @@ export class ErrorPageComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    const split = new SplitText('.errormsg', { type: 'words' });
-    gsap
-      .timeline({ defaults: { opacity: 0, ease: 'back' } })
-      .from('h1', { y: -100, stagger: { each: 0.2 } })
-      .from('h2', { opacity: 0, scale: 0, duration: 1.5 })
-      .from(split.words, { y: 50, duration: 1, stagger: 0.05, ease: 'back(4)' }, '<');
+    // const split = new SplitText('.errormsg', { type: 'words' });
+    // gsap
+    //   .timeline({ defaults: { opacity: 0, ease: 'back' } })
+    //   .from('h1', { y: -100, stagger: { each: 0.2 } })
+    //   .from('h2', { scale: 0, duration: 1.5 })
+    //   .from('p.errormsg', { y: 100, duration: 1.5 }, '<');
+    // .from(split.words, { y: 50, duration: 1, stagger: 0.05, ease: 'back(4)' }, '<');
   }
 }
