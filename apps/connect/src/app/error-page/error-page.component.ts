@@ -40,7 +40,6 @@ export class ErrorPageComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     const split = new SplitText('.errormsg', { type: 'words' });
-    console.log(split);
     const option = {
       y: -100,
       stagger: { each: 0.2 },
