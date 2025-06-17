@@ -40,15 +40,9 @@ export class ErrorPageComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     const split = new SplitText('.errormsg', { type: 'words' });
-    const option = {
-      y: -100,
-      stagger: { each: 0.2 },
-      ease: 'back',
-    };
-
     gsap
       .timeline({ defaults: { opacity: 0, ease: 'back' } })
-      .from('h1', option)
+      .from('h1', { y: -100, stagger: { each: 0.2 } })
       .from('h2', { opacity: 0, scale: 0, duration: 1.5 })
       .from(split.words, { y: 50, duration: 1, stagger: 0.05, ease: 'back(4)' }, '<');
   }
