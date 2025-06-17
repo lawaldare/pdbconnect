@@ -6,6 +6,9 @@ import { MbCitationTabComponent } from '../mb-citation-tab/mb-citation-tab.compo
 import { ActivatedRoute, Router } from '@angular/router';
 import { MobileFacade } from '../mobile.facade';
 import Clarity from '@microsoft/clarity';
+import { EntryUtilService } from '../../../services/entry-util.service';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { ErrorPageComponent } from '../../../../../error-page/error-page.component';
 
 export enum MobileTabNames {
   Overview = 'overview',
@@ -17,7 +20,7 @@ type MobileTabName = 'overview' | 'molstar' | 'citation';
 
 @Component({
   selector: 'pdbc-mobile-main',
-  imports: [CommonModule, MbOverviewTabComponent, MbMolstarTabComponent, MbCitationTabComponent],
+  imports: [CommonModule, MbOverviewTabComponent, MbMolstarTabComponent, MbCitationTabComponent, NgxSkeletonLoaderModule, ErrorPageComponent],
   templateUrl: './mobile-main.component.html',
   styleUrl: './mobile-main.component.scss',
 })
@@ -25,6 +28,10 @@ export class MobileMainComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   public activeTab = signal<string>('overview');
+
+  public readonly util = inject(EntryUtilService);
+
+  public entryPageView = this.util.entryPageView;
 
   private readonly mbFacade = inject(MobileFacade);
 
