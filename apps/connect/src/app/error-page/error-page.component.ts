@@ -6,7 +6,10 @@ import { ActivatedRoute } from '@angular/router';
 import { ErrorsList } from './error-list';
 import { EntryUtilService, Error } from '../projects/entry/services/entry-util.service';
 import { gsap } from 'gsap';
-import { stagger } from '@angular/animations';
+import { GSDevTools } from 'gsap/GSDevTools';
+import { SplitText } from 'gsap/SplitText';
+
+gsap.registerPlugin(GSDevTools, SplitText);
 
 @Component({
   selector: 'pdbc-error-page',
@@ -36,6 +39,8 @@ export class ErrorPageComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    const split = new SplitText('.errormsg', { type: 'words' });
+    console.log(split);
     const option = {
       y: -100,
       stagger: { each: 0.2 },
@@ -46,6 +51,6 @@ export class ErrorPageComponent implements AfterViewInit {
       .timeline({ defaults: { opacity: 0, ease: 'back' } })
       .from('h1', option)
       .from('h2', { opacity: 0, scale: 0, duration: 1.5 })
-      .from('p.errormsg', { y: 100, duration: 1.5 }, '<');
+      .from(split.words, { y: 50, duration: 1, stagger: 0.05, ease: 'back(4)' }, '<');
   }
 }
