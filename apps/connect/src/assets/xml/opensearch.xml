@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+  <ShortName>PDBe</ShortName>
+  <Description>Search the Protein Data Bank in Europe (PDBe)</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+
+  <Image width="32" height="32" type="image/svg+xml">
+    https://wwwdev.ebi.ac.uk/pdbe/connect/assets/images/mobile/mobile-logo.svg
+  </Image>
+
+  <Url type="text/html" method="get"
+       template="https://www.ebi.ac.uk/pdbe/entry/search/index/?searchParams=%7B%22text%22%3A%5B%7B%22value%22%3A%22{searchTerms}%22%2C%22condition1%22%3A%22AND%22%2C%22condition2%22%3A%22Contains%22%7D%5D%2C%22resultState%22%3A%7B%22tabIndex%22%3A0%2C%22paginationIndex%22%3A1%2C%22perPage%22%3A%2210%22%2C%22sortBy%22%3A%22Sort%20by%22%7D%7D" />
+
+  <moz:SearchForm>https://www.ebi.ac.uk/pdbe/entry/search/index/</moz:SearchForm>
+
+  <Developer>PDBe Team</Developer>
+  <SyndicationRight>open</SyndicationRight>
+</OpenSearchDescription>
