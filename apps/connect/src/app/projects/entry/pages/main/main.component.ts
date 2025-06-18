@@ -221,7 +221,7 @@ export class EntryMainPageComponent implements OnInit {
         mergeMap(async (status: StatusCode) => {
           if (status === 'REL') {
             this.util.setEntryStatus('SUCCESS');
-            this.dataProcessing.processInteractiveTablesData();
+            this.dataProcessing.processInteractiveTablesData(this.entryId());
             this.dataProcessing.getPageData();
           } else {
             this.util.setEntryStatus('OTHER');
