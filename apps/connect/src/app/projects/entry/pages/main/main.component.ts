@@ -208,7 +208,7 @@ export class EntryMainPageComponent implements OnInit {
     this.route.params
       .pipe(
         switchMap((params) => {
-          const entryId = params['entryId'].toLowerCase();
+          const entryId = params['entryId'].toLowerCase().replace('pdb_0000', '');
           this.entryId.set(entryId);
           this.globalStore.dispatch(EntryActions.setCurrentEntryId({ entryId }));
           this.globalStore.dispatch(EntryActions.getEntryStatus());
@@ -221,7 +221,7 @@ export class EntryMainPageComponent implements OnInit {
         mergeMap(async (status: StatusCode) => {
           if (status === 'REL') {
             this.util.setEntryStatus('SUCCESS');
-            this.dataProcessing.processInteractiveTablesData();
+            this.dataProcessing.processInteractiveTablesData(this.entryId());
             this.dataProcessing.getPageData();
           } else {
             this.util.setEntryStatus('OTHER');

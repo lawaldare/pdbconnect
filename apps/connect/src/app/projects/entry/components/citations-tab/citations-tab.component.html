@@ -7,8 +7,9 @@
         <a [href]="'https://europepmc.org/article/MED/' + primaryPublication()?.pubmed_id" target="_blank" [innerHTML]="primaryPublication()?.title"> </a>
         <div class="row__right__authors">
           <span class="row__right__authors__title">Authors:</span>
-          @for (author of primaryPublication()?.author_list; track author.full_name) {
-          <span> <a [href]="util.baseUrl() + 'entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a> </span>, }
+          @for (author of primaryPublication()?.author_list; track author.full_name; let islast = $last) {
+          <span> <a [href]="util.baseUrl() + 'entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a> </span>{{ islast ? '' :
+          ',' }} }
         </div>
         <div class="row__right__pmid">
           @if(primaryPublication()?.doi && primaryPublication()?.pubmed_id){
