@@ -133,7 +133,7 @@ performance_check:
       fi
   allow_failure: true
   tags:
-    - pdbe-shell
+    - pdbe-docker
 
 storybook_publish:
   stage: publish
