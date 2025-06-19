@@ -100,6 +100,9 @@ performance_check:
   stage: metrics
   image: ghcr.io/puppeteer/puppeteer:latest
   extends: .distributed
+  cache:
+    key: no-npm-cache
+    paths: []
   needs:
     - build
   rules:
