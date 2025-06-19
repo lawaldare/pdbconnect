@@ -37,11 +37,11 @@ export class ErrorPageComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     // const split = new SplitText('.errormsg', { type: 'chars' });
-    gsap
-      .timeline({ defaults: { opacity: 0, ease: 'back' } })
-      .from('h1', { y: -100, stagger: { each: 0.2 } })
-      .from('h2', { scale: 0, duration: 1.5 })
-      .from('p.errormsg', { y: 100, duration: 1.5 }, '<');
+    // gsap
+    //   .timeline({ defaults: { opacity: 0, ease: 'back' } })
+    //   .from('h1', { y: -100, stagger: { each: 0.2 } })
+    //   .from('h2', { scale: 0, duration: 1.5 })
+    //   .from('p.errormsg', { y: 100, duration: 1.5 }, '<');
     // .from(split.chars, { y: 50, duration: 1, stagger: 0.05, ease: 'back(4)' }, '<');
   }
 }
