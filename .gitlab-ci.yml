@@ -3,6 +3,7 @@ image: node:20
 stages:
   - test
   - build
+  - metrics
   - publish
   - trigger
   - deploy
@@ -96,7 +97,7 @@ storybook_build:
       - playground
 
 performance_check:
-  stage: build
+  stage: metrics
   image: node:18
   extends: .distributed
   needs:
