@@ -2,6 +2,7 @@ const fs = require('fs');
 const { execSync } = require('child_process');
 const { join } = require('path');
 const os = require('os');
+const https = require('https');
 
 const sendToSheets = process.argv.includes('--sendToSheets');
 const ROUTE_GROUPS = {
@@ -11,13 +12,38 @@ const BASE_URL = 'http://localhost:4200';
 const METRICS = ['performanceScore', 'first-contentful-paint', 'largest-contentful-paint', 'total-blocking-time', 'cumulative-layout-shift', 'speed-index'];
 WEBHOOK_ID = 'AKfycbzYdX0_hatrzs6hDTK3TF37mf97MtG56BqztsjPFmlcRbPUTDvPrlPQ0q9iH3OjHlQC';
 
+const sendPost = (data, url) => {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify(data);
+    const req = https.request(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        },
+      },
+      (res) => {
+        let responseData = '';
+        res.on('data', (chunk) => (responseData += chunk));
+        res.on('end', () => resolve(responseData));
+      }
+    );
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+};
+
 const getLighthouseMetrics = (url, index, preset) => {
   const tmpFile = join(os.tmpdir(), `lh-${preset}-${index}.json`);
   try {
+    // '--verbose',
     const command = [
       `npx lighthouse ${url}`,
       '--quiet',
-      '--chrome-flags="--headless"',
+      '--chrome-flags="--headless --no-sandbox --disable-gpu --disable-dev-shm-usage"',
       `--preset=${preset}`,
       '--throttling-method=provided',
       '--only-categories=performance',
@@ -80,7 +106,8 @@ const sendSummaryToSheets = async (mode, group, summary) => {
 
   const json = JSON.stringify(payload);
   try {
-    execSync(`curl -s -X POST -H "Content-Type: application/json" -d '${json}' https://script.google.com/macros/s/${WEBHOOK_ID}/exec`);
+    // execSync(`curl -s -X POST -H "Content-Type: application/json" -d '${json}' https://script.google.com/macros/s/${WEBHOOK_ID}/exec`);
+    await sendPost(payload, `https://script.google.com/macros/s/${WEBHOOK_ID}/exec`);
     console.log('📤 Sent summary to Google Sheets');
   } catch (err) {
     console.error('❌ Failed to send to Google Sheets:', err.message);
