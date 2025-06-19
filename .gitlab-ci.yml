@@ -113,8 +113,10 @@ performance_check:
       when: never
     - when: always
   script:
-    - echo "Node: $(node -v)"
-    - echo "Chrome: $(google-chrome --version || chromium --version)"
+    - echo "Node:"
+    - node -v
+    - echo "Chrome:"
+    - google-chrome --version || chromium --version
     - echo "Checking for chromium..."
     - export CHROME_PATH=$(which google-chrome || which chromium)
     - npx nx serve connect --port=4200 &
