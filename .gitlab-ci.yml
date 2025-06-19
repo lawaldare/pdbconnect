@@ -113,6 +113,10 @@ performance_check:
       when: never
     - when: always
   script:
+    - echo "Checking for nvm..."
+    - command -v nvm || echo "nvm NOT available"
+    - which node
+    - node -v
     # Start the app in the background
     - npx nx serve connect --port=4200 &
 
