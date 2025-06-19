@@ -98,7 +98,7 @@ storybook_build:
 
 performance_check:
   stage: metrics
-  image: node:18
+  image: node:20
   extends: .distributed
   needs:
     - build
