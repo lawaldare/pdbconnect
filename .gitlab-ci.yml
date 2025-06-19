@@ -117,21 +117,15 @@ performance_check:
     - echo "Chrome: $(google-chrome --version || chromium --version)"
     - echo "Checking for chromium..."
     - export CHROME_PATH=$(which google-chrome || which chromium)
-    # Start the app in the background
     - npx nx serve connect --port=4200 &
-
-    # Wait up to 5 minutes for localhost:4200 to be up
     - npx wait-on http://localhost:4200 --timeout 300000 || echo "App did not become available in time"
-
-    # Run Lighthouse test only if available
-    - |
+    - >
       if curl -s --head http://localhost:4200 | grep "200 OK" > /dev/null; then
-        echo "App is up, running Lighthouse check"
-        node performance_scripts/perf-check.js --sendToSheets
+      echo "App is up, running Lighthouse check";
+      node performance_scripts/perf-check.js --sendToSheets;
       else
-        echo "Skipping Lighthouse: app did not start on time"
-      fi
-  allow_failure: true
+      echo "Skipping Lighthouse: app did not start on time";
+      fiailure: true
   tags:
     - pdbe-docker
 
