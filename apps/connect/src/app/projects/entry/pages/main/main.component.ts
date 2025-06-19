@@ -208,7 +208,7 @@ export class EntryMainPageComponent implements OnInit {
     this.route.params
       .pipe(
         switchMap((params) => {
-          const entryId = params['entryId'].toLowerCase();
+          const entryId = params['entryId'].toLowerCase().replace('pdb_0000', '');
           this.entryId.set(entryId);
           this.globalStore.dispatch(EntryActions.setCurrentEntryId({ entryId }));
           this.globalStore.dispatch(EntryActions.getEntryStatus());
