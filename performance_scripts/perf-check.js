@@ -5,12 +5,15 @@ const os = require('os');
 const https = require('https');
 
 const sendToSheets = process.argv.includes('--sendToSheets');
+const branchArg = process.argv.find((arg) => arg.startsWith('--branch='));
+
 const ROUTE_GROUPS = {
   pdb: ['1cbs', '4hhb', '2vta', '5xnl', '6lu7'],
 };
 const BASE_URL = 'http://localhost:4200';
 const METRICS = ['performanceScore', 'first-contentful-paint', 'largest-contentful-paint', 'total-blocking-time', 'cumulative-layout-shift', 'speed-index'];
-WEBHOOK_ID = 'AKfycbzYdX0_hatrzs6hDTK3TF37mf97MtG56BqztsjPFmlcRbPUTDvPrlPQ0q9iH3OjHlQC';
+const WEBHOOK_ID = 'AKfycbzYdX0_hatrzs6hDTK3TF37mf97MtG56BqztsjPFmlcRbPUTDvPrlPQ0q9iH3OjHlQC';
+const branchName = branchArg ? branchArg.split('=')[1] : 'unknown';
 
 const sendPost = (data, url) => {
   return new Promise((resolve, reject) => {
@@ -93,6 +96,7 @@ const sendSummaryToSheets = async (mode, group, summary) => {
     timestamp,
     mode,
     group,
+    branch: branchName,
     ...Object.fromEntries(
       Object.entries(summary).flatMap(([metric, { avg, min, max, minEntryId, maxEntryId }]) => [
         [`${metric}_avg`, avg],

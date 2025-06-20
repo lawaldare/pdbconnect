@@ -127,7 +127,7 @@ performance_check:
     - >
       if wget --spider --quiet http://localhost:4200; then
         echo "App is up, running Lighthouse check";
-        node performance_scripts/perf-check.js --sendToSheets;
+        node performance_scripts/perf-check.js --sendToSheets --branch="$CI_COMMIT_REF_NAME";
       else
         echo "Skipping Lighthouse: app did not start on time";
         exit 1
