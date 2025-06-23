@@ -23,7 +23,8 @@ main {
   display: flex;
 
   .assembly-section {
-    width: 511px;
+    /* width: 511px; */
+    width: calc((100% / 12) * 6); /* 6/12 columns system */
 
     .assembly-grouped {
       margin-bottom: 12px;
@@ -31,7 +32,37 @@ main {
   }
 
   .molstar-details-container {
-    width: calc(100% - 511px);
+    /* width: calc(100% - 511px); */
+    width: calc((100% / 12) * 4); /* 4/12 columns system */
+  }
+}
+
+/* At 1140px or below, stack them vertically */
+@media (width <= 1160px) {
+  .assemblies-container {
+    flex-direction: column;
+
+    .assembly-section {
+      width: 100%;
+    }
+
+    .molstar-details-container {
+      width: 420px;
+    }
+  }
+
+  .tab-content.change-display {
+    .assemblies-container {
+      flex-direction: row;
+
+      .assembly-section {
+        width: calc((100% / 12) * 6); /* 6/12 columns system */
+      }
+
+      .molstar-details-container {
+        width: calc((100% / 12) * 4); /* 4/12 columns system */
+      }
+    }
   }
 }
 
@@ -66,6 +97,14 @@ main {
         line-height: 27.2px;
         cursor: pointer;
       }
+    }
+  }
+}
+@media (width <= 900px) {
+  .tab-content.change-display {
+    .info-row {
+      flex-direction: column;
+      gap: 2px;
     }
   }
 }

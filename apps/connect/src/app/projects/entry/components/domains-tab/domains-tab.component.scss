@@ -114,6 +114,14 @@ main {
   &-grouped {
     width: 50%;
   }
+
+  @media (width <= 1140px) {
+    flex-direction: column;
+
+    &-grouped {
+      width: 100%;
+    }
+  }
 }
 
 .info-row {
@@ -131,10 +139,10 @@ main {
     font-weight: 500;
     display: block;
 
-    &.micro-title {
-      max-width: 140px;
-      width: 140px;
-      min-width: 140px;
+    @media (width <= 1140px) {
+      max-width: 210px;
+      width: 210px;
+      min-width: 210px;
     }
   }
 
@@ -167,6 +175,7 @@ main {
 
   // height: 296px;
   min-height: 296px;
+  max-width: 688px;
   z-index: 1;
 }
 
@@ -228,4 +237,8 @@ section.domain-info {
 
 section.domain-charts {
   display: flex;
+
+  @media (width <= 1300px) {
+    flex-direction: column;
+  }
 }

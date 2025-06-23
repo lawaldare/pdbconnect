@@ -12,7 +12,7 @@
 
     <h5 class="ligands-title">{{ currentLigandDatum()!.codeAndName.name }}</h5>
     <div class="info">
-      <div class="info-grouped" style="width: 50%">
+      <div class="info-grouped left">
         <div class="info-row">
           <span class="micro-title"> Ligand name </span>
           <article>{{ currentLigandDatum()!.codeAndName.name }}</article>
@@ -27,7 +27,7 @@
         </div>
         }
       </div>
-      <div class="info-grouped" style="width: 40%">
+      <div class="info-grouped right">
         @if(boundDetails && boundDetails.length){
         <div class="info-row">
           <span class="micro-title"> Formula </span>
@@ -95,6 +95,29 @@
             [paginationPageSizeSelector]="paginationPageSizeSelector()"
             overlayNoRowsTemplate="No ligand interactions found"
           />
+          <section class="ligands-info big">
+            <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure derived from the PDB entry.</p>
+            <p>Please note:</p>
+            <ul>
+              <li>
+                Some chain IDs in the tooltip are followed by a number in square brackets. This number corresponds to the operation ID (mmCIF 'oper_expression') used
+                to transform the chain.
+              </li>
+              <li>
+                The structure seen in Mol* (3D view) was protonated using
+                <a href="https://www.cgl.ucsf.edu/chimerax/docs/user/commands/addh.html" target="_blank">ChimeraX</a>.
+              </li>
+              <li>
+                Interactions were calculated using
+                <a [href]="util.baseUrl() + 'entry/pdb/' + entryId() + '/bound/' + selectionIdentifier" target="_blank">Arpeggio</a> (<a
+                  href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5282402/bin/mmc1.docx"
+                  target="_blank"
+                  >see details for interaction types</a
+                >).
+              </li>
+              <li>The colour scheme used is consistent with <a href="https://www.jalview.org/help/html/colourSchemes/clustal.html" target="_blank">Clustal X</a>.</li>
+            </ul>
+          </section>
         </section>
       </div>
       }
@@ -117,7 +140,7 @@
       </section>
     </section>
 
-    <section class="ligands-info">
+    <section class="ligands-info small">
       <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure derived from the PDB entry.</p>
       <p>Please note:</p>
       <ul>

@@ -29,9 +29,32 @@ main {
   }
 }
 
+.info-grouped {
+  &.left {
+    // left is 50%
+    width: 50%;
+
+    @media (width <= 1300px) {
+      width: 100%;
+    }
+  }
+
+  &.right {
+    width: 40%;
+
+    @media (width <= 1300px) {
+      width: 100%;
+    }
+  }
+}
+
 .info {
   display: flex;
   margin-bottom: 16px;
+
+  @media (width <= 1300px) {
+    flex-direction: column;
+  }
 
   .info-row {
     display: flex;
@@ -53,6 +76,10 @@ main {
       font-size: 16px;
       font-weight: 400;
       line-height: 27.2px;
+
+      a {
+        margin-left: 4px;
+      }
 
       &.formula {
         max-width: fit-content;
@@ -117,6 +144,23 @@ main {
   font-weight: 400;
   line-height: 22.4px;
 
+  &.small {
+    display: none;
+  }
+
+  &.big {
+    display: block;
+  }
+  @media (width <= 1340px) {
+    &.small {
+      display: block;
+    }
+
+    &.big {
+      display: none;
+    }
+  }
+
   a {
     font-size: 14px;
     font-weight: 400;
@@ -128,10 +172,18 @@ section.ligand-charts {
   display: flex;
   gap: 8px;
 
+  @media (width <= 1340px) {
+    flex-direction: column;
+  }
+
   section.molstar-lig-env {
     display: flex;
     width: 50%;
     flex-direction: column;
+
+    @media (width <= 1340px) {
+      width: 100%;
+    }
 
     // &.expand {
     //   width: 100%;
@@ -143,6 +195,11 @@ section.ligand-charts {
       max-height: 40vh;
       aspect-ratio: 1 / 1;
       flex: 1;
+
+      @media (width <= 1340px) {
+        max-width: 70%;
+        max-height: 50vh;
+      }
 
       // &.expand {
       //   max-width: unset;
@@ -164,6 +221,10 @@ section.ligand-charts {
       aspect-ratio: 1 / 1;
       flex: 1;
 
+      @media (width <= 1340px) {
+        max-width: 60%;
+      }
+
       &.expand {
         max-width: unset;
         width: 50%;
@@ -184,6 +245,12 @@ section.ligand-charts {
     max-width: 50%;
     min-height: 400px;
 
+    @media (width <= 1340px) {
+      width: 100%;
+      min-width: 100%;
+      max-width: 100%;
+    }
+
     // height: 66vh;
     // max-height: 70vh;
 
@@ -191,20 +258,24 @@ section.ligand-charts {
       display: none !important;
     }
 
+    ::ng-deep .ag-cell {
+      white-space: break-spaces;
+    }
+
     /* ag-grid force auto height so it is not set as 100% which breaks design */
-    // ::ng-deep .ag-root-wrapper.ag-layout-normal {
-    //   height: auto;
-    // }
+    ::ng-deep .ag-root-wrapper.ag-layout-normal {
+      height: auto;
+    }
 
-    // ::ng-deep .ag-root-wrapper-body.ag-layout-normal {
-    //   flex: none;
-    //   height: auto;
-    // }
+    ::ng-deep .ag-root-wrapper-body.ag-layout-normal {
+      flex: none;
+      height: auto;
+    }
 
-    // ::ng-deep .ag-header-cell-label {
-    //   // white-space: pre-wrap !important;
-    //   overflow-wrap: anywhere;
-    // }
+    ::ng-deep .ag-header-cell-label {
+      // white-space: pre-wrap !important;
+      overflow-wrap: anywhere;
+    }
   }
 }
 
@@ -230,6 +301,10 @@ section.ligand-charts {
       width: 166px;
       font-size: 16px;
 
+      @media (width <= 1340px) {
+        width: 40%;
+      }
+
       input {
         border: none;
         border-bottom: 1px solid var(--Neutral-600, #707372);
@@ -248,7 +323,7 @@ section.ligand-charts {
 }
 
 section.table-wrapper {
-  height: 500px;
+  /* height: 500px; */
 
   .ag-theme-quartz {
     --ag-active-color: #89ae54;

@@ -15,7 +15,7 @@
     }
 
     <section class="info">
-      <div class="info-grouped" style="width: 55%">
+      <div class="info-grouped left">
         @let type = currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_type; @if(type){
         <div class="info-row">
           <span class="micro-title"> Type </span>
@@ -80,7 +80,7 @@
           }
         </div>
       </div>
-      <div class="info-grouped" style="width: 45%">
+      <div class="info-grouped right">
         @if(currentMacromoleculeDatum()?.genes?.length){
         <div class="info-row">
           <span class="micro-title"> Gene names </span>
