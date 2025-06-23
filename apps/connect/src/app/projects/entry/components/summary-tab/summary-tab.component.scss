@@ -7,12 +7,42 @@
   gap: 16px;
 
   section.summary {
-    width: 568px;
+    /* width: 568px; */
+    width: calc((100% / 12) * 5); /* 5/12 columns system */
   }
 
   section.explore-3d-tabs {
-    width: calc(100% - 568px);
+    /* width: calc(100% - 568px); */
+    width: calc((100% / 12) * 7); /* 7/12 columns system */
     height: 550px;
     max-height: 550px;
+  }
+}
+
+/* At 1340px or below, stack them vertically (12/12 each) */
+@media (width <= 1340px) {
+  .top-info {
+    flex-wrap: wrap; /* allow stacking at smaller widths */
+    section.summary {
+      width: 100%;
+      max-width: calc((100% / 12) * 9); /* 9/12 columns system */
+    }
+
+    section.explore-3d-tabs {
+      min-width: 716px;
+      width: 100%;
+      max-width: calc((100% / 12) * 9); /* 9/12 columns system */
+    }
+  }
+}
+
+/* At 1340px or below, stack them vertically (12/12 each) */
+@media (width <= 1140px) {
+  .top-info {
+    section.explore-3d-tabs {
+      min-width: 716px;
+      width: 100%;
+      max-width: calc((100% / 12) * 11); /* 11/12 columns system */
+    }
   }
 }

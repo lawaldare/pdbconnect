@@ -35,10 +35,16 @@ thead {
 .mat-expansion-panel-header {
   font-family: 'IBM Plex Sans', sans-serif !important;
   padding: 0 10px 0 24px !important;
-  height: 36px !important;
+
+  /* height: 36px !important; */
+  height: auto !important;
 
   &.mat-expanded:hover {
     background: #f3f3f3 !important;
+  }
+
+  span.mat-content {
+    min-height: 36px;
   }
 }
 

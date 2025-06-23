@@ -1,10 +1,10 @@
 <div class="desktop-view">
-  <pdbc-pdbe-header-logo-menu [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
-  <pdb-search-app [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" />
+  <pdbc-pdbe-header-logo-menu class="entry-page-logo" [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
+  <pdb-search-app class="entry-page-search" [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" />
   @if(showNotificationBanner()) {
   <lib-notification />
   } @if (entryPageView() === 'SUCCESS') {
-  <section class="container">
+  <section class="entry-page-container container-padding">
     <pdbc-entry-page-header />
     <main>
       <mat-tab-group (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTab()" mat-stretch-tabs="false" mat-align-tabs="start">

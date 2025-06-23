@@ -1,7 +1,7 @@
 @import url('./typography.scss');
 
 .paragraph-2-menu-link {
-  color: white;
+  color: #ffffff;
 }
 
 .paragraph-2-menu-link:hover {
@@ -31,9 +31,22 @@
   }
 }
 
+.entry-page-logo,
+.entry-page-search {
+  .container {
+    max-width: 1440px;
+  }
+}
+
 .entry-page-container {
   width: 100%;
   margin: 16px auto 56px;
+
+  &.container-padding {
+    padding: 0 34px;
+    margin-right: auto;
+    margin-left: auto;
+  }
 }
 
 @media (width >= 576px) {
@@ -45,6 +58,10 @@
 @media (width >= 768px) {
   .entry-page-container {
     max-width: 720px;
+
+    &.container-padding {
+      max-width: 1440px;
+    }
   }
 }
 
