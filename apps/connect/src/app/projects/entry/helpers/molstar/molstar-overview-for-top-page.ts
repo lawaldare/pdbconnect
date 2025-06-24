@@ -791,8 +791,13 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     // await addRepresentationToComponent(this.molstarViewInstance(), 'structure-component-static-polymer', reprNonSelectionPolymer, true);
     await this.viewRepresentationByName('structure-component-static-polymer', 'polymer-for-ligand-view', reprNonSelectionPolymer);
 
-    await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-ligand', true);
-    await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-ion', true);
+    // await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-ligand', true);
+    // await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-ion', true);
+
+    // show other ligands as sticks with carbon color by entity id and atom colors SEMI TRANSPARENT
+    await this.viewRepresentationByName('structure-component-static-ligand', 'ligand-sticks-by-entityid-alpha', UNSELECTED_STICKS_COLOR_BY_ENTITY_ALPHA);
+    await this.viewRepresentationByName('structure-component-static-ion', 'ion-sticks-by-element-alpha', UNSELECTED_STICKS_COLOR_BY_ENTITY_ALPHA);
+
     await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-non-standard', true);
     await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-branched', true);
 
