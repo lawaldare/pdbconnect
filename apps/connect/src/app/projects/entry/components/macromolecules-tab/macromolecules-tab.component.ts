@@ -375,4 +375,19 @@ export class MacromoleculesTabComponent {
     //Call render method to display the 2D view
     this.topologyViewerInstance.render(container, options);
   }
+
+  getLengthType(macromolecule: MacromoleculesRowData) {
+    let lengthType = 'residue';
+    if (macromolecule.additionalData.molecule.molecule_type.includes('polypeptide')) {
+      lengthType = 'amino acid';
+    } else if (macromolecule.additionalData.molecule.molecule_type.includes('nucleotide')) {
+      lengthType = 'nucleotide';
+    } else if (macromolecule.additionalData.molecule.molecule_type.includes('carbohydrate')) {
+      lengthType = 'monosaccharide';
+    }
+    if (macromolecule.length > 1) {
+      return `${lengthType}s`;
+    }
+    return lengthType;
+  }
 }
