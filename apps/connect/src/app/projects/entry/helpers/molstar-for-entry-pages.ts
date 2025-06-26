@@ -1,36 +1,24 @@
 import { Injectable, Renderer2 } from '@angular/core';
 import {
-  getComponentList,
-  changeRepresentationVisibility,
   MolstarBaseClass,
   UNSELECTED_CARB_COLORED_ALPHA,
   UNSELECTED_STICKS_GREY_ALPHA,
   UNSELECTED_CARTOON_GREY_ALPHA,
   SELECTED_CARTOON_COLOR_BY_ENTITY,
   SELECTED_STICKS_COLOR_BY_ENTITY,
-  createStaticComponent,
   ELEMENT_COLORS_HEX,
-  createComponent,
-  removeComponent,
   UNSELECTED_CARTOON_COLOR_BY_ENTITY_ALPHA,
   UNSELECTED_STICKS_COLOR_BY_ENTITY_ALPHA,
   SELECTED_STICKS_COLOR_BY_ENTITY_SET25,
   UNSELECTED_STICKS_COLOR_BY_ENTITY_ALPHA_SET25,
   MolstarSelectionObj,
-  MolstarSelectionObjResid,
   SELECTED_CARTOON_CUSTOM_COLOR,
-  hexColorToMolstar,
   UNSELECTED_SPHERES_COLOR_BY_ENTITY_ALPHA,
   MolstarConfigObject,
-  createNewPolymerComponent,
-  REPR_NONSELECTION_POLYMER,
   LIGANDS_REPR_NONSELECTION_POLYMER,
-  LIGANDS_REPR_SELECTION,
-  LIGANDS_REPR_HIGHLIGHT,
 } from '@pdbe-lib/molstar-for-apps';
-import { addRepresentationToComponent, changeComponentVisibility } from '@pdbe-lib/molstar-for-apps';
-import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
-import { groupDomainSelectionsByAccession } from '../domain-helpers';
+import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { groupDomainSelectionsByAccession } from './domain-helpers';
 import { BehaviorSubject, firstValueFrom, interval, map, takeWhile, timeout } from 'rxjs';
 
 /**
@@ -149,7 +137,7 @@ export const MOLSTAR_CONFIG_FACTORIES: {
 @Injectable({
   providedIn: 'root',
 })
-export class MolstarOverviewForTopPage extends MolstarBaseClass {
+export class MolstarForEntryPages extends MolstarBaseClass {
   /**
    * Component extends MolstarBaseClass and contains functions for
    * manipulating Molstar views specific to the overview tabs (page top)
@@ -274,7 +262,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     const hasMacromolecules = macromolecules.length > 0;
     const hasPolymericComponent = componentList.indexOf('structure-component-static-polymer') > -1;
     if (hasMacromolecules && !hasPolymericComponent) {
-      await createStaticComponent(this.molstarViewInstance(), 'polymer');
+      await this.createStaticComponent('polymer');
     }
 
     // check whether ligands and ions exist and create if not
@@ -286,14 +274,14 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     const hasLigandsComponent = componentList.indexOf('structure-component-static-ligand') > -1;
 
     if (hasLigands && !hasLigandsComponent) {
-      await createStaticComponent(this.molstarViewInstance(), 'ligand');
+      await this.createStaticComponent('ligand');
     }
 
     const hasIons = ligandsIons.length > 0;
     const hasIonsComponent = componentList.indexOf('structure-component-static-ligand') > -1;
 
     if (hasIons && !hasIonsComponent) {
-      await createStaticComponent(this.molstarViewInstance(), 'ion');
+      await this.createStaticComponent('ion');
     }
 
     // check whether branched exist and create if not
@@ -301,14 +289,14 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     const hasCarbohydrates = carbohydrates.length > 0;
     const hasBranchedComponent = componentList.indexOf('structure-component-static-branched') > -1;
     if (hasCarbohydrates && !hasBranchedComponent) {
-      await createStaticComponent(this.molstarViewInstance(), 'branched');
+      await this.createStaticComponent('branched');
     }
 
     // check whether non-standard exist and create if not
     const hasModifications = modifications.length > 0;
     const hasNonStandardComponent = componentList.indexOf('structure-component-static-non-standard') > -1;
     if (hasModifications && !hasNonStandardComponent) {
-      await createStaticComponent(this.molstarViewInstance(), 'non-standard');
+      await this.createStaticComponent('non-standard');
     }
     this.hasCheckedComponents = true;
   }
@@ -360,7 +348,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     if (!noGreyout) await this.greyoutEverything();
 
     // erase temporary component
-    await removeComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary');
+    await this.removeComponent('structure-component-dynamic-temporary');
 
     // clear any ligand interactions
     await this.clearInteractions();
@@ -393,7 +381,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     if (Object.keys(this.addedRepresentationsAndIndexes).indexOf(representationName) === -1) {
       // create new representation and hide all previous others by default
       const hideOthers = doNotHideOthers !== undefined ? doNotHideOthers : true;
-      const reprIdx = await addRepresentationToComponent(this.molstarViewInstance(), componentName, representation, hideOthers);
+      const reprIdx = await this.addRepresentationToComponent(componentName, representation, hideOthers);
       this.addedRepresentationsAndIndexes[representationName] = reprIdx as number;
     } else {
       // if representation exists
@@ -401,7 +389,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       const hideRepr = false;
       const hideOthers = doNotHideOthers !== undefined ? doNotHideOthers : true;
       // switch representation visibility to TRUE (hideRepr) and hide all previous others by default
-      await changeRepresentationVisibility(this.molstarViewInstance(), componentName, hideRepr, reprIdx, hideOthers);
+      await this.changeRepresentationVisibility(componentName, hideRepr, reprIdx, hideOthers);
     }
   }
 
@@ -535,10 +523,10 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
     if (macromolecule.additionalData.molecule.molecule_type !== 'carbohydrate polymer') {
       // create temporary component for macromolecule
-      await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', selection, SELECTED_CARTOON_COLOR_BY_ENTITY);
+      await this.createComponent('structure-component-dynamic-temporary', selection, SELECTED_CARTOON_COLOR_BY_ENTITY);
     } else {
       // create temporary component for macromolecule (carbohydrate)
-      await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', selection, SELECTED_STICKS_COLOR_BY_ENTITY);
+      await this.createComponent('structure-component-dynamic-temporary', selection, SELECTED_STICKS_COLOR_BY_ENTITY);
     }
 
     // focus camera on macromolecule
@@ -571,7 +559,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.viewRepresentationByName('structure-component-static-ion', 'ion-sticks-by-element-alpha', UNSELECTED_STICKS_COLOR_BY_ENTITY_ALPHA);
 
     // create temporary component for ligand
-    await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', selection, SELECTED_STICKS_COLOR_BY_ENTITY);
+    await this.createComponent('structure-component-dynamic-temporary', selection, SELECTED_STICKS_COLOR_BY_ENTITY);
 
     // focus camera on ligand
     await this.focusLoci(selection);
@@ -604,10 +592,10 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       const selection = selectionsByAccession[0][0];
 
       const domainRepresentation = SELECTED_CARTOON_CUSTOM_COLOR as any;
-      domainRepresentation.colorParams.value = hexColorToMolstar(domainColors[0]);
+      domainRepresentation.colorParams.value = this.hexColorToMolstar(domainColors[0]);
 
       // create temporary component for modification
-      await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', selection, domainRepresentation);
+      await this.createComponent('structure-component-dynamic-temporary', selection, domainRepresentation);
       return;
     }
 
@@ -628,14 +616,14 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
       const color = Object.values(domainColorsByAccession)[this.overviewDomainsCycleIndex];
 
       const domainRepresentation = SELECTED_CARTOON_CUSTOM_COLOR as any;
-      domainRepresentation.colorParams.value = hexColorToMolstar(color);
+      domainRepresentation.colorParams.value = this.hexColorToMolstar(color);
 
-      await removeComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary');
+      await this.removeComponent('structure-component-dynamic-temporary');
 
       for (let selectionIdx = 0; selectionIdx < selections.length; selectionIdx++) {
         const selection = selections[selectionIdx];
 
-        await createComponent(this.molstarViewInstance(), `structure-component-dynamic-temporary-${selectionIdx}`, selection, domainRepresentation);
+        await this.createComponent(`structure-component-dynamic-temporary-${selectionIdx}`, selection, domainRepresentation);
       }
 
       await this.focusLoci(mergedSelection);
@@ -668,9 +656,9 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.cleanView();
 
     const domainRepresentation = SELECTED_CARTOON_CUSTOM_COLOR as any;
-    domainRepresentation.colorParams.value = hexColorToMolstar(domainColor);
+    domainRepresentation.colorParams.value = this.hexColorToMolstar(domainColor);
 
-    await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', selection, domainRepresentation);
+    await this.createComponent('structure-component-dynamic-temporary', selection, domainRepresentation);
 
     // focus camera on domain
     await this.focusLoci(selection);
@@ -698,7 +686,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     );
 
     // create temporary component for modification
-    await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', selection, SELECTED_STICKS_COLOR_BY_ENTITY_SET25);
+    await this.createComponent('structure-component-dynamic-temporary', selection, SELECTED_STICKS_COLOR_BY_ENTITY_SET25);
 
     // focus camera on modification
     await this.focusLoci(selection);
@@ -712,38 +700,38 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.cleanView();
 
     const residue0Representation = JSON.parse(JSON.stringify(SELECTED_CARTOON_CUSTOM_COLOR));
-    residue0Representation.colorParams.value = hexColorToMolstar('#A9ABAA');
+    residue0Representation.colorParams.value = this.hexColorToMolstar('#A9ABAA');
     residue0Representation.typeParams.alpha = 0.5;
 
     const residue1Representation = JSON.parse(JSON.stringify(SELECTED_CARTOON_CUSTOM_COLOR));
-    residue1Representation.colorParams.value = hexColorToMolstar('#E5E501');
+    residue1Representation.colorParams.value = this.hexColorToMolstar('#E5E501');
 
     const residue2Representation = JSON.parse(JSON.stringify(SELECTED_CARTOON_CUSTOM_COLOR));
-    residue2Representation.colorParams.value = hexColorToMolstar('#DA6E03');
+    residue2Representation.colorParams.value = this.hexColorToMolstar('#DA6E03');
 
     const residue3Representation = JSON.parse(JSON.stringify(SELECTED_CARTOON_CUSTOM_COLOR));
-    residue3Representation.colorParams.value = hexColorToMolstar('#B2182B');
+    residue3Representation.colorParams.value = this.hexColorToMolstar('#B2182B');
 
     // await this.viewRepresentationByName('structure-component-static-polymer', 'polymeric-cartoon-grey', residue0Representation);
-    await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', residuesWith1Outlier, residue1Representation);
-    await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary-1', residuesWith2Outliers, residue2Representation);
-    await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary-2', residuesWith3OrMoreOutliers, residue3Representation);
-    await createNewPolymerComponent(this.molstarViewInstance(), 'model-quality-polymer', residue0Representation);
+    await this.createComponent('structure-component-dynamic-temporary', residuesWith1Outlier, residue1Representation);
+    await this.createComponent('structure-component-dynamic-temporary-1', residuesWith2Outliers, residue2Representation);
+    await this.createComponent('structure-component-dynamic-temporary-2', residuesWith3OrMoreOutliers, residue3Representation);
+    await this.createNewPolymerComponent('model-quality-polymer', residue0Representation);
   }
 
   public async renderModelQualitySpecificIssue(residuesForSpecificOutlier: MolstarSelectionObj) {
     await this.cleanView();
 
     const residue0Representation = JSON.parse(JSON.stringify(SELECTED_CARTOON_CUSTOM_COLOR));
-    residue0Representation.colorParams.value = hexColorToMolstar('#A9ABAA');
+    residue0Representation.colorParams.value = this.hexColorToMolstar('#A9ABAA');
     residue0Representation.typeParams.alpha = 0.5;
 
     const residueSpecificRepresentation = JSON.parse(JSON.stringify(SELECTED_CARTOON_CUSTOM_COLOR));
-    residueSpecificRepresentation.colorParams.value = hexColorToMolstar('#B2182B');
+    residueSpecificRepresentation.colorParams.value = this.hexColorToMolstar('#B2182B');
 
-    await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', residuesForSpecificOutlier, residueSpecificRepresentation);
+    await this.createComponent('structure-component-dynamic-temporary', residuesForSpecificOutlier, residueSpecificRepresentation);
 
-    await createNewPolymerComponent(this.molstarViewInstance(), 'model-quality-polymer', residue0Representation);
+    await this.createNewPolymerComponent('model-quality-polymer', residue0Representation);
   }
 
   /**
@@ -770,10 +758,10 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
 
     if (macromolecule.additionalData.molecule.molecule_type !== 'carbohydrate polymer') {
       // create temporary component for macromolecule
-      await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', selection, SELECTED_CARTOON_COLOR_BY_ENTITY);
+      await this.createComponent('structure-component-dynamic-temporary', selection, SELECTED_CARTOON_COLOR_BY_ENTITY);
     } else {
       // create temporary component for macromolecule (carbohydrate)
-      await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', selection, SELECTED_STICKS_COLOR_BY_ENTITY);
+      await this.createComponent('structure-component-dynamic-temporary', selection, SELECTED_STICKS_COLOR_BY_ENTITY);
     }
 
     // focus camera on macromolecule
@@ -798,12 +786,12 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     await this.viewRepresentationByName('structure-component-static-ligand', 'ligand-sticks-by-entityid-alpha', UNSELECTED_STICKS_COLOR_BY_ENTITY_ALPHA);
     await this.viewRepresentationByName('structure-component-static-ion', 'ion-sticks-by-element-alpha', UNSELECTED_STICKS_COLOR_BY_ENTITY_ALPHA);
 
-    await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-non-standard', true);
-    await changeComponentVisibility(this.molstarViewInstance(), 'structure-component-static-branched', true);
+    await this.changeComponentVisibility('structure-component-static-non-standard', true);
+    await this.changeComponentVisibility('structure-component-static-branched', true);
 
     // finally create ligand component with selected representation
     // await createComponent(this.molstarViewInstance(), `structure-component-dynamic-temporary`, molstarSelection, LIGANDS_REPR_SELECTION);
-    await createComponent(this.molstarViewInstance(), `structure-component-dynamic-temporary`, molstarSelection, SELECTED_STICKS_COLOR_BY_ENTITY);
+    await this.createComponent(`structure-component-dynamic-temporary`, molstarSelection, SELECTED_STICKS_COLOR_BY_ENTITY);
 
     // await createComponent(this.molstarViewInstance(), `structure-component-dynamic-temporary-1`, molstarSelection, LIGANDS_REPR_HIGHLIGHT);
 
@@ -814,12 +802,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
   public async showResiduesAsSticks(selections: MolstarSelectionObj[]) {
     for (let i = 0; i < selections.length; i++) {
       const selection = selections[i];
-      const comp = await createComponent(
-        this.molstarViewInstance(),
-        `structure-component-dynamic-temporary-resids-${i + 1}`,
-        selection,
-        LIGANDS_REPR_NONSELECTION_POLYMER
-      );
+      const comp = await this.createComponent(`structure-component-dynamic-temporary-resids-${i + 1}`, selection, LIGANDS_REPR_NONSELECTION_POLYMER);
     }
   }
 
@@ -829,7 +812,7 @@ export class MolstarOverviewForTopPage extends MolstarBaseClass {
     // const domainRepresentation = SELECTED_CARTOON_CUSTOM_COLOR as any;
     // domainRepresentation.colorParams.value = hexColorToMolstar(domainColor);
 
-    await createComponent(this.molstarViewInstance(), 'structure-component-dynamic-temporary', selection, SELECTED_CARTOON_COLOR_BY_ENTITY);
+    await this.createComponent('structure-component-dynamic-temporary', selection, SELECTED_CARTOON_COLOR_BY_ENTITY);
 
     // focus camera on domain
     await this.focusLoci(selection);

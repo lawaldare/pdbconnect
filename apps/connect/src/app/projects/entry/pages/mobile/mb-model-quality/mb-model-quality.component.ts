@@ -10,7 +10,7 @@ import { ValidationDataProcessingFacade } from '../../../components/model-qualit
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MobileFacade } from '../mobile.facade';
 import { StrucQualityGradientsComponent } from '../../../components/shared/struc-quality-gradients/struc-quality-gradients.component';
-import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
+import { MolstarForEntryPages } from '../../../helpers/molstar-for-entry-pages';
 
 @Component({
   selector: 'pdbc-mb-model-quality',
@@ -27,7 +27,7 @@ export class MbModelQualityComponent implements OnInit {
   public currentData = signal<ProcessedExperimentalDetails | undefined>(undefined);
   public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  private readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+  private readonly molstarVisualisation = inject(MolstarForEntryPages);
 
   public expanded = signal<boolean>(false);
 

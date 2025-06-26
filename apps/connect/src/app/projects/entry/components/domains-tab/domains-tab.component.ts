@@ -9,7 +9,7 @@ import {
   LigandsRowData,
   MacromoleculesRowData,
 } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
-import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
+import { MolstarForEntryPages } from '../../helpers/molstar-for-entry-pages';
 import { getDomainChainsAsString } from '../../helpers/processed-data-to-controls';
 import { DomainsFacade } from './domains.facade';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -52,7 +52,7 @@ export class DomainsTabComponent {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly popService = inject(PopupWindowService);
   private readonly utilService = inject(UtilService);
-  public molstarVisualisation = inject(MolstarOverviewForTopPage);
+  public molstarVisualisation = inject(MolstarForEntryPages);
   public readonly molstarState = inject(MolstarStateService);
   private readonly actionQueue = inject(ActionQueueService);
 

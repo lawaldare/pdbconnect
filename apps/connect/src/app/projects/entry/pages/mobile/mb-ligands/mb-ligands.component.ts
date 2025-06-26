@@ -16,7 +16,7 @@ import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
-import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
+import { MolstarForEntryPages } from '../../../helpers/molstar-for-entry-pages';
 import { LigandsTabService } from '../../../components/ligands-tab/ligands-tab.service';
 import { annotationsTooltips } from '../../../entry-constant';
 import { interactionsToMolstar } from '../../../helpers/interactions-to-molstar';
@@ -41,7 +41,7 @@ export class MbLigandsComponent implements AfterViewInit {
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
 
-  public readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+  public readonly molstarVisualisation = inject(MolstarForEntryPages);
 
   public readonly ligandsTabService = inject(LigandsTabService);
 

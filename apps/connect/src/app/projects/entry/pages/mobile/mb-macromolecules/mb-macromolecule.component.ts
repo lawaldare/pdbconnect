@@ -16,7 +16,7 @@ import { EntryApiService } from '../../../services/entry-api.service';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
-import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
+import { MolstarForEntryPages } from '../../../helpers/molstar-for-entry-pages';
 import { truncateText } from '../../../helpers/truncate-text';
 
 export enum ViewState {
@@ -54,7 +54,7 @@ export class MbMacromoleculeComponent implements OnInit {
   public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
 
   private readonly utilService = inject(UtilService);
-  public readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+  public readonly molstarVisualisation = inject(MolstarForEntryPages);
 
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   public readonly signals = inject(ComponentCommunicationService);

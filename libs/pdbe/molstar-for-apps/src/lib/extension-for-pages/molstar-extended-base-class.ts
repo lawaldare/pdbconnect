@@ -1,13 +1,19 @@
 import { ElementRef, inject } from '@angular/core';
 import { signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { chainEntityResidSelection, MolstarResidueInfo, MolstarSelectionObj } from './utils/molstar-core-manipulation.util';
 import { Column } from 'molstar/lib/mol-data/db';
 import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
+import { Expression } from 'molstar/lib/mol-script/language/expression';
 import { StructureQuery } from 'molstar/lib/mol-model/structure/query/query';
 import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
-import { Structure, StructureSelection } from 'molstar/lib/mol-model/structure';
+import { StructureSelection, StructureProperties, Structure } from 'molstar/lib/mol-model/structure';
 import { MolstarPluginService } from './molstart-plugin.service';
+import { MolScriptBuilder as MS } from 'molstar/lib/mol-script/language/builder';
+import { Queries } from 'molstar/lib/mol-model/structure';
+import { setSubtreeVisibility } from 'molstar/lib/mol-plugin/behavior/static/state';
+import { StructureSelectionCategory, StructureSelectionQuery } from 'molstar/lib/mol-plugin-state/helpers/structure-selection-query';
+import { StructureRepresentationBuiltInProps } from 'molstar/lib/mol-plugin-state/helpers/structure-representation-params';
+import { Color } from 'molstar/lib/mol-util/color';
 
 /**
  * This file contains a base class with helper functions for manipulating Molstar
@@ -16,6 +22,31 @@ import { MolstarPluginService } from './molstart-plugin.service';
  */
 
 declare let PDBeMolstarPlugin: any;
+export interface MolstarResidueInfo {
+  label_entity_id: string | null;
+  label_asym_id: string | null;
+  auth_asym_id: string | null;
+  label_seq_id: number | null;
+  auth_seq_id: number | null;
+  pdbx_PDB_ins_code: string | null;
+  label_comp_id: string | null;
+  auth_comp_id: string | null;
+}
+
+export type MolstarSelectionObjResid = {
+  entityId?: string;
+  authChainId?: string;
+  authBegin: string;
+  authBeginIns: string;
+  authEnd: string;
+  authEndIns: string;
+};
+
+export type MolstarSelectionObj = {
+  entityId?: string;
+  authChainId?: string;
+  residues: MolstarSelectionObjResid[];
+};
 
 /**
  * This configuration object corresponds to configs used in:
@@ -182,6 +213,68 @@ export class MolstarBaseClass {
     this.residues.set(result);
   }
 
+  private chainEntityResidSelection(molstarSelection: MolstarSelectionObj) {
+    const groups: Expression[] = [];
+
+    const atmGroupsQueries: any[] = [];
+    const selection: any = {};
+
+    if (molstarSelection.entityId) {
+      selection['entityTest'] = (l: any) => StructureProperties.entity.id(l.element) === molstarSelection.entityId;
+    }
+
+    if (molstarSelection.authChainId) {
+      selection['chainTest'] = (l: any) => StructureProperties.chain.auth_asym_id(l.element) === molstarSelection.authChainId;
+    }
+
+    if (molstarSelection.residues.length === 0) {
+      if (!molstarSelection.authChainId) {
+        groups.push(
+          MS.struct.generator.atomGroups({
+            'entity-test': MS.core.rel.eq([MS.struct.atomProperty.macromolecular.label_entity_id(), molstarSelection.entityId]),
+          })
+        );
+      } else {
+        groups.push(
+          MS.struct.generator.atomGroups({
+            'entity-test': MS.core.rel.eq([MS.struct.atomProperty.macromolecular.label_entity_id(), molstarSelection.entityId]),
+            'chain-test': MS.core.rel.eq([MS.ammp('auth_asym_id'), molstarSelection.authChainId!]),
+          })
+        );
+      }
+      atmGroupsQueries.push(Queries.generators.atoms(selection));
+    } else {
+      for (const x of molstarSelection.residues) {
+        const entityId = molstarSelection.entityId ? molstarSelection.entityId : x.entityId;
+        const chainId = molstarSelection.authChainId ? molstarSelection.authChainId : x.authChainId;
+        groups.push(
+          MS.struct.generator.atomGroups({
+            'entity-test': MS.core.rel.eq([MS.struct.atomProperty.macromolecular.label_entity_id(), entityId]),
+            'chain-test': MS.core.rel.eq([MS.ammp('auth_asym_id'), chainId]),
+            'residue-test': MS.core.rel.inRange([MS.ammp('auth_seq_id'), parseInt(x.authBegin), parseInt(x.authEnd)]),
+          })
+        );
+        if (x.entityId) {
+          selection['entityTest'] = (l: any) => StructureProperties.entity.id(l.element) === entityId;
+        }
+        if (x.authChainId) {
+          selection['chainTest'] = (l: any) => StructureProperties.chain.auth_asym_id(l.element) === chainId;
+        }
+        selection['residueTest'] = (l: any) => {
+          const authSeqId = StructureProperties.residue.auth_seq_id(l.element);
+          return authSeqId >= parseInt(x.authBegin)! && authSeqId <= parseInt(x.authEnd)!;
+        };
+        atmGroupsQueries.push(Queries.generators.atoms(selection));
+      }
+    }
+    const query = MS.struct.combinator.merge(groups);
+    const queryLoci = Queries.combinators.merge(atmGroupsQueries);
+    return {
+      query: query,
+      queryLoci: queryLoci,
+    };
+  }
+
   /**
    * Function triggers Molstar focus on specific selection
    * @param molstarSelection: MolstarSelectionObj (helpful interface for selecting in Molstar)
@@ -244,7 +337,7 @@ export class MolstarBaseClass {
    * @returns Loci object
    */
   private async getViewerLoci(molstarSelection: MolstarSelectionObj) {
-    const residueData = chainEntityResidSelection(molstarSelection);
+    const residueData = this.chainEntityResidSelection(molstarSelection);
     const residueQueryLoci = residueData.queryLoci;
 
     let queryLoci: Loci = EmptyLoci;
@@ -327,5 +420,156 @@ export class MolstarBaseClass {
       // }
     }
     return componentNames;
+  }
+
+  async changeComponentVisibility(query: string, toHide: boolean) {
+    const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
+    for await (const s of structureData) {
+      for (const comp of s.components) {
+        if (comp.key!.includes(query)) {
+          setSubtreeVisibility(this.molstarViewInstance().state, comp.cell.transform.ref, toHide);
+        }
+      }
+    }
+  }
+
+  async changeRepresentationVisibility(query: string, toHide: boolean, hideIdx: number, hideOthers?: boolean) {
+    const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
+    for await (const s of structureData) {
+      for (const comp of s.components) {
+        if (comp.key!.includes(query)) {
+          // for each representation of selected component
+          for (let i = 0; i < comp.representations.length; i++) {
+            const repr = comp.representations[i];
+            // if representation is the one to change visibility
+            if (i === hideIdx) {
+              // change visiblity of representation
+              setSubtreeVisibility(this.molstarViewInstance().state, repr.cell.transform.ref, toHide);
+            }
+            // if other representations and hideOthers is true
+            else if (hideOthers === true) {
+              // hide all other representations
+              setSubtreeVisibility(this.molstarViewInstance().state, repr.cell.transform.ref, true);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  async createStaticComponent(tagName: 'polymer' | 'ligand' | 'ion' | 'branched' | 'non-standard') {
+    const structure = this.molstarViewInstance().state.select(this.molstarViewInstance().assemblyRef)[0];
+    const component = await this.molstarViewInstance().plugin!.builders.structure.tryCreateComponentStatic(structure, tagName);
+  }
+
+  async createNewPolymerComponent(lbl: string, representation: any) {
+    const structure = this.molstarViewInstance().state.select(this.molstarViewInstance().assemblyRef)[0];
+
+    const polymer = StructureSelectionQuery(
+      'Polymer',
+      MS.struct.modifier.union([
+        MS.struct.generator.atomGroups({
+          'entity-test': MS.core.logic.and([
+            MS.core.rel.eq([MS.ammp('entityType'), 'polymer']),
+            MS.core.str.match([MS.re('(polypeptide|cyclic-pseudo-peptide|peptide-like|nucleotide|peptide nucleic acid)', 'i'), MS.ammp('entitySubtype')]),
+          ]),
+        }),
+      ]),
+      { category: StructureSelectionCategory.Type }
+    );
+
+    const vis = await this.molstarViewInstance().plugin!.builders.structure.tryCreateComponentFromSelection(structure, polymer, lbl, { label: lbl });
+    if (vis) {
+      // create representation and add to molstar
+      const reprObj = await this.molstarViewInstance().plugin!.builders.structure.representation.addRepresentation(
+        vis,
+        representation as StructureRepresentationBuiltInProps
+      );
+      return {
+        status: true,
+        reprObj: reprObj,
+      };
+    }
+    return false;
+  }
+
+  async createComponent(lbl: string, molstarSelection: MolstarSelectionObj, representation: any) {
+    // let structure = [viewer.plugin!.managers.structure.hierarchy.current.structures[0]];
+    const structure = this.molstarViewInstance().state.select(this.molstarViewInstance().assemblyRef)[0];
+    const residueData = this.chainEntityResidSelection(molstarSelection);
+
+    const residueQuery = residueData.query;
+    // const residueQuery = chainEntitySelection(molstarSelection.entityId, molstarSelection.authChainId!)
+    const residueQueryLoci = residueData.queryLoci;
+
+    // create selection from expression that condenses this (entity+chain)
+    const vis = await this.molstarViewInstance().plugin!.builders.structure.tryCreateComponentFromExpression(structure, residueQuery, lbl, { label: lbl });
+    if (vis) {
+      // create representation and add to molstar
+      const reprObj = await this.molstarViewInstance().plugin!.builders.structure.representation.addRepresentation(
+        vis,
+        representation as StructureRepresentationBuiltInProps
+      );
+      return {
+        status: true,
+        residueData: residueData,
+        residueQuery: residueQuery,
+        residueQueryLoci: residueQueryLoci,
+        reprObj: reprObj,
+      };
+    }
+    return false;
+  }
+
+  async removeComponent(query: string) {
+    const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
+    for await (const s of structureData) {
+      for (const comp of s.components) {
+        if (comp.key!.includes(query)) {
+          const builder = this.molstarViewInstance().plugin!.state.data.build();
+          await builder.delete(comp.cell.transform.ref);
+          await builder.commit({ canUndo: false });
+        }
+      }
+    }
+  }
+
+  async addRepresentationToComponent(query: string, representation: any, hideOthers: boolean) {
+    const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
+    for await (const s of structureData) {
+      for (const comp of s.components) {
+        if (comp.key!.includes(query)) {
+          // if hideOthers is true
+          if (hideOthers) {
+            // for each current representation of selected component
+            for (const repr of comp.representations) {
+              // delete not working
+              // const builder = viewer.plugin!.state.data.build()
+              // await builder.delete(repr.cell.transform.ref);
+
+              // hide representation
+              setSubtreeVisibility(this.molstarViewInstance().state, repr.cell.transform.ref, true);
+            }
+          }
+          // add new representation to component
+          await this.molstarViewInstance().plugin!.builders.structure.representation.addRepresentation(
+            comp.cell,
+            representation as StructureRepresentationBuiltInProps
+          );
+          return comp.representations.length;
+        }
+      }
+    }
+
+    // await this.plugin.builders.structure.representation.addRepresentation(component.cell,
+    // builder.to(structureRef).delete(representationRef);
+
+    // let structure = [viewer.plugin!.managers.structure.hierarchy.current.structures[0]];
+    // const reprObj = await viewer.plugin!.builders.structure.representation.addRepresentation(vis, (representation as StructureRepresentationBuiltInProps));
+  }
+
+  hexColorToMolstar(hexColor: string) {
+    const hexColorAsNum = parseInt(hexColor.slice(1), 16);
+    return Color(hexColorAsNum);
   }
 }

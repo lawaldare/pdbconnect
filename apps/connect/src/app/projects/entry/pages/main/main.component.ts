@@ -26,7 +26,7 @@ import { EntryPageHeaderComponent } from '../../components/entry-page-header/ent
 import { environment } from '../../../../../environments/environment';
 import { MobileMainComponent } from '../mobile/mobile-main/mobile-main.component';
 import { MobileHeaderComponent } from '@pdbc/mobile-header';
-import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
+import { MolstarForEntryPages } from '../../helpers/molstar-for-entry-pages';
 import { AssembliesTabComponent } from '../../components/assemblies-tab/assemblies-tab.component';
 import { MacromoleculesTabComponent } from '../../components/macromolecules-tab/macromolecules-tab.component';
 import { LigandsTabComponent } from '../../components/ligands-tab/ligands-tab.component';
@@ -89,7 +89,7 @@ export class EntryMainPageComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly util = inject(EntryUtilService);
 
-  private readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+  private readonly molstarVisualisation = inject(MolstarForEntryPages);
   public readonly molstarState = inject(MolstarStateService);
   private readonly actionQueue = inject(ActionQueueService);
 
