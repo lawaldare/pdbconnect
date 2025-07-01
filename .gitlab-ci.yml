@@ -1,4 +1,4 @@
-image: node:20
+image: node:$NODE_VERSION
 
 stages:
   - test
@@ -25,6 +25,7 @@ stages:
 variables:
   GIT_DEPTH: 0
   BUILD_CONF: development
+  NODE_VERSION: 22
 
 format-check:
   stage: test
@@ -52,7 +53,7 @@ test:
 
 build:
   stage: build
-  image: node:18
+  image: node:$NODE_VERSION
   needs:
     - test
     - format-check
@@ -82,7 +83,7 @@ build:
 
 storybook_build:
   stage: build
-  image: node:18
+  image: node:$NODE_VERSION
   extends: .distributed
   script:
     - npx nx build-storybook lib-docs
@@ -200,7 +201,7 @@ pages:
 
 playground_build_and_publish:
   stage: build
-  image: node:18
+  image: node:$NODE_VERSION
   extends: .distributed
   script:
     - npx nx build playground
