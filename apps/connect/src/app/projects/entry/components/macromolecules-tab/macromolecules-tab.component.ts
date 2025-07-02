@@ -27,6 +27,7 @@ import { InteractiveTablesComponent } from '../shared/interactive-tables/interac
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
+import { SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -60,6 +61,7 @@ export interface MappedResidue {
     InteractiveTablesComponent,
     NgxSkeletonLoaderModule,
     EntryPgProtvistaComponent,
+    SmartSeqViewerComponent,
   ],
   templateUrl: './macromolecules-tab.component.html',
   styleUrl: './macromolecules-tab.component.scss',
