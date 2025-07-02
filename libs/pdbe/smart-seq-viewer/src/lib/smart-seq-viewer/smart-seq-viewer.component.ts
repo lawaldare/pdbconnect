@@ -20,8 +20,6 @@ export class SmartSeqViewerComponent implements AfterViewInit {
     const annotation3 = generateRandomAnnotations(3, sequence, 'CircleAbove');
     const altSequences = generateRandomAlternativeNumberings(sequence, true, true);
 
-    // new SmartSequenceVisualisation(sequence, 'smart-seq-container');
-    // new SmartSequenceVisualisation(sequence, 'smart-seq-container', [annotation1, annotation2, annotation3], undefined, undefined, {scrollMode: true, grouping: true, groupingLineBreak: true});
     new SmartSequenceVisualisation(sequence, 'smart-seq-container', altSequences, [annotation1, annotation2, annotation3], '1', 'A', {
       scrollMode: true,
       grouping: true,

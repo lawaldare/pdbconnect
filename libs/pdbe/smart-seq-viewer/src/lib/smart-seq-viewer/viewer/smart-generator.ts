@@ -3,7 +3,7 @@ import { AlternativeNumbering } from './sequence-visualisation';
 
 const AMINO_ACIDS = 'ACDEFGHIKLMNPQRSTVWY';
 const CATEGORIES = ['low', 'medium', 'high'];
-const COLORS = ['#d3d3d3', '#ffa500', '#ff4500'];
+const COLORS = ['#87cefa', '#ffa500', '#ff4500'];
 
 /**
  * Generate a random protein sequence using 20 standard amino acids.

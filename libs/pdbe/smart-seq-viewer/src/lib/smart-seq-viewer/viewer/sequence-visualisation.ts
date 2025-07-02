@@ -59,18 +59,18 @@ export class SmartSequenceVisualisation {
   private sidebarPanel = true;
 
   private fontFamily = 'roboto';
-  private fontSize = 16;
+  private fontSize = 14;
   private fontColor = '#000';
-  private characterBgPadding = 4;
-  private margins = { top: 10, bottom: 10, left: 10, right: 10 };
+  private characterBgPadding = 2;
+  private margins = { top: 4, bottom: 4, left: 4, right: 4 };
   private resizeObserver: ResizeObserver | null = null;
   private resizeDebounceTimer: number | null = null;
 
   private residueNumberingFreq = 10; // Number of residues per group
   private residueGroupSize = 10; // Number of residues per group
-  private residueGroupRightMargin = 8; // Pixels between residue groups
-  private lineBottomMargin = 8; // Pixels between lines
-  private numberingFontSize = 14; // Smaller font size for numbering
+  private residueGroupRightMargin = 12; // Pixels between residue groups
+  private lineBottomMargin = 4; // Pixels between lines
+  private numberingFontSize = 12; // Smaller font size for numbering
   // private numberingHeight = 12; // Space above sequences for numbers
 
   private maxBoxWidth = -1;
@@ -97,8 +97,8 @@ export class SmartSequenceVisualisation {
 
   // private defaultBgColour = '#f0f0f0';
   private defaultBgColour = 'rgba(255, 255, 255, 0.0)';
-  private circleAnnotationRadius = 4;
-  private circleAnnotationMarginTop = 3;
+  private circleAnnotationRadius = 3;
+  private circleAnnotationMarginTop = 2;
   private circleAnnotationMarginBottom = 2;
 
   private currentHoveredResidue: number | null = null;
@@ -503,20 +503,13 @@ export class SmartSequenceVisualisation {
 
     for (const [residueIndex, box] of this.residueRects.entries()) {
       if (x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height) {
+        this.currentClickedResidue = residueIndex;
         this.residueClick$.next({
           residueIndex,
           annotations: this.getAnnotationsForResidue(residueIndex),
         });
         if (this.externalEvents) this.triggerExternalEvents('click', residueIndex);
-        if (this.sidebarPanel) {
-          this.currentClickedResidue = residueIndex;
-          if (this.sidebarPanelEl) {
-            const content = this.buildSidebarContent(residueIndex);
-            this.sidebarPanelEl.innerHTML = content;
-            this.sidebarPanelEl.style.display = 'block';
-          }
-          this.onContainerResize(); // re-layout with sidebar visible
-        }
+        if (this.sidebarPanel) this.showSidebar(residueIndex);
         return;
       }
     }
@@ -675,6 +668,35 @@ export class SmartSequenceVisualisation {
       this.tooltipEl!.style.left = `${left}px`;
       this.tooltipEl!.style.top = `${top}px`;
     });
+  }
+
+  private showSidebar(residueIndex: number) {
+    if (this.sidebarPanelEl) {
+      const content = this.buildSidebarContent(residueIndex);
+      this.sidebarPanelEl.innerHTML = content;
+      this.sidebarPanelEl.style.display = 'block';
+    }
+    this.onContainerResize(); // re-layout with sidebar visible
+
+    const box = this.residueRects.get(residueIndex);
+    if (!box) return;
+
+    const container = document.getElementById(this.containerId);
+    if (!container || !this.sidebarPanelEl) return;
+
+    // Determine if showing on the right will occlude
+    const sidebarWidth = 280;
+    const residueRightEdge = box.x + box.width;
+    const occludes = residueRightEdge > this.canvasWidth - sidebarWidth;
+
+    const showOnLeft = occludes;
+
+    // Apply positioning class or style
+    this.sidebarPanelEl.style.right = showOnLeft ? '' : '0';
+    this.sidebarPanelEl.style.left = showOnLeft ? '0' : '';
+
+    this.sidebarPanelEl.innerHTML = this.buildSidebarContent(residueIndex);
+    this.sidebarPanelEl.style.display = 'block';
   }
 
   private calcBoxMaxDimensions() {
@@ -904,7 +926,7 @@ export class SmartSequenceVisualisation {
     ctx.fillStyle = annotationColor ?? this.defaultBgColour;
     ctx.fillRect(x, yStart + this.maxNumberingBoxHeight, this.maxBoxWidth, this.maxBoxHeight);
 
-    if (residueIndex === this.currentHoveredResidue) {
+    if (residueIndex === this.currentHoveredResidue || residueIndex === this.currentClickedResidue) {
       ctx.strokeStyle = this.hoverBorderColour || '#000';
       ctx.lineWidth = this.hoverBorderWidth;
       ctx.strokeRect(x, yStart + this.maxNumberingBoxHeight, this.maxBoxWidth, this.maxBoxHeight);
@@ -1070,22 +1092,21 @@ export class SmartSequenceVisualisation {
     const panel = document.createElement('div');
     panel.style.position = 'absolute';
     panel.style.top = '0';
-    panel.style.right = '0';
     panel.style.width = '280px';
     panel.style.height = '100%';
     panel.style.background = '#fafafa';
     panel.style.borderTop = '1px solid #ccc';
-    panel.style.borderLeft = '1px solid #ccc';
     panel.style.borderBottom = '1px solid #ccc';
+    panel.style.borderLeft = '1px solid #ccc';
+    panel.style.borderRight = '1px solid #ccc';
     panel.style.overflowY = 'auto';
     panel.style.padding = '12px';
     panel.style.display = 'none';
     panel.style.zIndex = '9998';
+
+    container.style.position = 'relative'; // Ensure container is positioned
     container.appendChild(panel);
     this.sidebarPanelEl = panel;
-
-    // make room for canvas (trigger re-layout)
-    container.style.position = 'relative';
   }
 
   private buildSidebarContent(residueIndex: number): string {
@@ -1112,7 +1133,7 @@ export class SmartSequenceVisualisation {
 
     let html = `
     <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h3 style="margin: 0;">${residueName} ${residueIndex}</h3>
+      <h5 style="margin: 0;">${residueName} ${residueIndex}</h5>
       <button onclick="smartSeqSidebarClose()" style="background: transparent; border: none; font-size: 20px; cursor: pointer;">×</button>
     </div>
     `;
@@ -1137,7 +1158,7 @@ export class SmartSequenceVisualisation {
     // Annotations
     const annotations = this.getAnnotationsForResidue(residueIndex);
     if (annotations.length > 0) {
-      html += `<hr/><h4>Annotations</h4>`;
+      html += `<hr/><h5>Annotations</h5>`;
       for (const ann of annotations) {
         html += `<ul style="margin-bottom:10px;">`;
         html += `<li><strong>Name</strong>: ${ann.name}</li>`;
