@@ -14,9 +14,15 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { combineLatest, filter, Subject, take, tap } from 'rxjs';
-import '@nightingale-elements/nightingale-manager';
-import '@nightingale-elements/nightingale-navigation';
-import '@nightingale-elements/nightingale-sequence';
+import * as NightingaleManager from '@nightingale-elements/nightingale-manager';
+import * as NightingaleSequence from '@nightingale-elements/nightingale-sequence';
+import * as NightingaleNavigation from '@nightingale-elements/nightingale-navigation';
+
+// Necessart lines added to avoid tree shaking of Nightingale components
+const _NightingaleManager = NightingaleManager;
+const _NightingaleSequence = NightingaleSequence;
+const _NightingaleNavigation = NightingaleNavigation;
+
 import { Feature as NightingaleFeature } from '@nightingale-elements/nightingale-track';
 import { MaterialModule } from '@pdbc/core';
 
@@ -636,8 +642,9 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     }
   }
 
-  @HostListener('document:PDB.topologyViewer.mouseover', ['$event'])
   // @HostListener('document:PDB.litemol.mouseover', ['$event'])
+  @HostListener('document:smartSeqViewerMouseover', ['$event'])
+  @HostListener('document:PDB.topologyViewer.mouseover', ['$event'])
   @HostListener('document:PDB.molstar.mouseover', ['$event'])
   handleExternalMouseoverEvents(event: Event) {
     // 1 - Early exit if external interactivity is disabled
@@ -661,6 +668,13 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       eventEntityId = eventData.entityId;
       eventChainId = eventData.chainId;
       eventResNumber = eventData.residueNumber;
+    } else if (event.type === 'smartSeqViewerMouseover') {
+      const customEvent = event as CustomEvent;
+      const eventData = customEvent.detail?.eventData;
+      eventEntryId = this.entryId();
+      eventEntityId = eventData?.entityId;
+      eventChainId = eventData?.chainId;
+      eventResNumber = eventData?.residueNumber;
     }
 
     // 3 - Match event data to this component's entry/entity/chain
@@ -683,6 +697,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     }
   }
 
+  @HostListener('document:smartSeqViewerMouseout', ['$event'])
   @HostListener('document:PDB.molstar.mouseout', ['$event'])
   // @HostListener('document:PDB.litemol.mouseout', ['$event'])
   @HostListener('document:PDB.topologyViewer.mouseout', ['$event'])
@@ -705,6 +720,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     }
   }
 
+  @HostListener('smartSeqViewerClick', ['$event'])
   @HostListener('document:PDB.topologyViewer.click', ['$event'])
   // @HostListener('document:PDB.litemol.click', ['$event'])
   @HostListener('document:PDB.molstar.click', ['$event'])
@@ -727,6 +743,12 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     } else if (event.type === 'PDB.topologyViewer.click') {
       const eventData = (event as PDBTopolViewerEvent).eventData;
       eventEntryId = eventData.entryId.toLowerCase();
+      eventEntityId = eventData.entityId;
+      eventChainId = eventData.chainId;
+      eventResNumber = eventData.residueNumber;
+    } else if (event.type === 'smartSeqViewerClick') {
+      const eventData = (event as any).eventData;
+      eventEntryId = this.entryId();
       eventEntityId = eventData.entityId;
       eventChainId = eventData.chainId;
       eventResNumber = eventData.residueNumber;
