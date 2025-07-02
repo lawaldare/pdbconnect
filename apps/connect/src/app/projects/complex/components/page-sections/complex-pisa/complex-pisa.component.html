@@ -1,5 +1,29 @@
 @if(rowData()?.length){
-<div id="pisa-section">
+<div class="pisa-section">
+  @let length = (rowData() ?? []).length;
+  <section class="table" [style.width.%]="length < 10 ? 100 : 50">
+    <p>
+      This table lists <a href="https://www.ebi.ac.uk/pdbe/pisa/" target="_blank">PISA</a>-derived properties for all assemblies of this complex. The slider and
+      histogram load values from the first row by default. Select a row to view and compare other assemblies.
+    </p>
+    <button class="vf-button vf-button--link" (click)="downloadCSV()">
+      Download table as CSV
+      <i class="icon icon-common icon-download"></i>
+    </button>
+    <div class="pisa-table">
+      <ag-grid-angular
+        class="ag-theme-quartz"
+        [rowData]="rowData()"
+        [columnDefs]="colDefs"
+        [gridOptions]="gridOptions"
+        (selectionChanged)="onSelectionChanged($event)"
+        [paginationPageSizeSelector]="paginationPageSizeSelector()"
+        [rowSelection]="rowSelection"
+        [initialState]="initialState"
+      />
+    </div>
+  </section>
+  @if(length > 10){
   <div class="charts">
     <section class="complex-sliders">
       <div id="sliders"></div>
@@ -16,31 +40,7 @@
       <svg id="histogram-svg"></svg>
     </section>
   </div>
-
-  <p>
-    This table lists <a href="https://www.ebi.ac.uk/pdbe/pisa/" target="_blank">PISA</a>-derived properties for all assemblies of this complex. The slider and
-    histogram load values from the first row by default. Select a row to view and compare other assemblies.
-  </p>
-  <button class="vf-button vf-button--link" (click)="downloadCSV()">
-    Download table as CSV
-    <i class="icon icon-common icon-download"></i>
-  </button>
-  <section class="table">
-    <ag-grid-angular
-      class="ag-theme-quartz"
-      [rowData]="rowData()"
-      [columnDefs]="colDefs"
-      [gridOptions]="gridOptions"
-      (selectionChanged)="onSelectionChanged($event)"
-      [paginationPageSizeSelector]="paginationPageSizeSelector()"
-      [rowSelection]="rowSelection"
-      [initialState]="initialState"
-    />
-    <button class="vf-button vf-button--link" (click)="downloadCSV()">
-      Download table as CSV
-      <i class="icon icon-common icon-download"></i>
-    </button>
-  </section>
+  }
 </div>
 
 } @else {

@@ -2,15 +2,35 @@
 import * as d3 from 'd3';
 import { fmt2, PARAMS } from '../../../complex.constant';
 
-const W = 550;
+const W = 700;
 const H = 34;
 const pad = { l: 75, r: 25 };
 
 export function drawSliders(rows, selectedId, selector) {
   const datum = rows.find((r) => r[0] === selectedId)?.[1] ?? rows[0][1];
+  console.log('datum', datum, PARAMS);
   const wrap = d3.select(selector).html(''); // clear old
 
   const ext = Object.fromEntries(PARAMS.map((k) => [k.value, d3.extent(rows.map((r) => r[1][k.value]))]));
+
+  const row = wrap.append('div').attr('class', 'text-row');
+  // row.append('div').attr('class', 'param-name').text(k.label);
+
+  row
+    .append('text')
+    // .attr('x', x(ext[k.value][0]))
+    .attr('y', H + 6)
+    .attr('text-anchor', 'middle')
+    .attr('class', 'slider-text')
+    .text('Min');
+
+  row
+    .append('text')
+    // .attr('x', x(ext[k.value][1]))
+    .attr('y', H + 6)
+    .attr('text-anchor', 'middle')
+    .attr('class', 'slider-text')
+    .text('Max');
 
   PARAMS.forEach((k) => {
     const row = wrap.append('div').attr('class', 'slider-row');
@@ -64,35 +84,35 @@ export function drawSliders(rows, selectedId, selector) {
     /* min / max numbers */
     svg
       .append('text')
-      .attr('x', x(ext[k.value][0]) - 6)
-      .attr('y', H / 2 + 4)
+      .attr('x', 106 - 6)
+      .attr('y', 72 / 2 + 4)
       .attr('text-anchor', 'end')
       .attr('class', 'slider-text')
       .text(fmt2(ext[k.value][0]));
 
     svg
       .append('text')
-      .attr('x', x(ext[k.value][1]) - 6)
-      .attr('y', H / 2 + 4)
+      .attr('x', 525 - 6)
+      .attr('y', 72 / 2 + 4)
       .attr('text-anchor', 'end')
       .attr('class', 'slider-text')
       .text(fmt2(ext[k.value][1]));
 
     /* explicit “min / max” tags */
-    svg
-      .append('text')
-      .attr('x', x(ext[k.value][0]))
-      .attr('y', H + 6)
-      .attr('text-anchor', 'middle')
-      .attr('class', 'slider-text')
-      .text('min');
+    // svg
+    //   .append('text')
+    //   .attr('x', x(ext[k.value][0]))
+    //   .attr('y', H + 6)
+    //   .attr('text-anchor', 'middle')
+    //   .attr('class', 'slider-text')
+    //   .text('min');
 
-    svg
-      .append('text')
-      .attr('x', x(ext[k.value][1]))
-      .attr('y', H + 6)
-      .attr('text-anchor', 'middle')
-      .attr('class', 'slider-text')
-      .text('max');
+    // svg
+    //   .append('text')
+    //   .attr('x', x(ext[k.value][1]))
+    //   .attr('y', H + 6)
+    //   .attr('text-anchor', 'middle')
+    //   .attr('class', 'slider-text')
+    //   .text('max');
   });
 }

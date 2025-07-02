@@ -30,7 +30,8 @@ import {
 } from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { getMacromoleculeOfDomain } from '../../helpers/processed-data-to-controls';
 import { environment } from '../../../../../environments/environment';
-import { ENTRY_PAGES_LINKS } from '../../entry-constant';
+import { ENTRY_PAGES_LINKS, labelGroups } from '../../entry-constant';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 
 export type OutliersByModelId = Record<
   string,
@@ -632,6 +633,8 @@ export class MainDataProcessingFacade {
       };
     });
 
+    const mappedDownloadsUpdated = this.groupFilesByLabels(labelGroups, downloadsUpdated);
+
     const viewsUpdated = views.map((d) => {
       return {
         name: d.label,
@@ -640,7 +643,25 @@ export class MainDataProcessingFacade {
       };
     });
 
-    return { downloads: downloadsUpdated, views: viewsUpdated };
+    const mappedViewsUpdated = this.groupFilesByLabels(labelGroups, viewsUpdated);
+
+    return { downloads: mappedDownloadsUpdated, views: mappedViewsUpdated };
+  }
+
+  private groupFilesByLabels(labelGroups: Record<string, string[]>, flatList: DownloadOption[]): any[] {
+    const fileMap = new Map(flatList.map((file) => [file.name, file]));
+
+    const groupedArray = [];
+
+    for (const [groupName, names] of Object.entries(labelGroups)) {
+      const matchedFiles = names.map((name) => fileMap.get(name)).filter((file) => file && file.url);
+
+      if (matchedFiles.length > 0) {
+        groupedArray.push({ group: groupName, items: matchedFiles });
+      }
+    }
+
+    return groupedArray;
   }
 
   public getPageData(): void {

@@ -21,6 +21,6 @@ export class DropdownMenuComponent {
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
 
   public readonly title = input.required<string>();
-  public readonly options = input.required<DownloadOption[] | undefined>();
+  public readonly options = input.required<any[] | undefined>();
   public readonly backgroundColor = input<string>('#FFF');
 }

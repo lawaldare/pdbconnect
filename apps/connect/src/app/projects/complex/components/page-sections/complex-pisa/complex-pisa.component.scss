@@ -2,6 +2,13 @@
   display: block;
 }
 
+.pisa-section {
+  display: flex;
+  gap: 10px;
+
+  // height: 700px;
+}
+
 h5 {
   margin-bottom: 0;
 }
@@ -17,22 +24,24 @@ header {
 }
 
 section.table {
+  width: 50%;
+
+  // margin-top: 5px;
+}
+
+div.pisa-table {
   width: 100%;
   margin-top: 5px;
   height: 500px;
 }
 
 .charts {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  width: 50%;
   margin: 10px 0;
-  height: 300px;
+
+  // height: 300px;
 
   section.complex-sliders {
-    width: 55%;
-
     .complex-slider {
       display: flex;
       align-items: center;
@@ -48,11 +57,10 @@ section.table {
   }
 
   section.histogram {
-    width: 45%;
-
     .toolbar {
       display: flex;
       align-items: center;
+      justify-content: center;
       margin-bottom: 10px;
       gap: 10px;
 
@@ -83,7 +91,7 @@ section.table {
 ::ng-deep #histogram-svg {
   background: #f8f8f8;
   padding: 10px 0;
-  height: 260px;
+  height: 300px;
 }
 
 ::ng-deep .bin-rect {
@@ -100,6 +108,14 @@ section.table {
   display: flex;
   align-items: center;
   margin-bottom: 4px;
+}
+
+::ng-deep .text-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 238px;
+  margin-bottom: 10px;
 }
 
 ::ng-deep .param-name {

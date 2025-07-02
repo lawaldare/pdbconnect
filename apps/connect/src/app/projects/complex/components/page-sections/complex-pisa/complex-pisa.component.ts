@@ -49,7 +49,10 @@ export class ComplexPISAComponent {
 
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
 
-  public rowData = computed(() => this.pisa());
+  public rowData = computed(() => {
+    console.log('rowData', this.pisa());
+    return this.pisa();
+  });
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
 
   public mappedPisaData = computed(() => {

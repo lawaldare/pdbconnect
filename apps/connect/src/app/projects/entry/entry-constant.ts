@@ -357,3 +357,46 @@ export const ENTRY_PAGES_LINKS = [
     sizes: '180x180',
   },
 ];
+
+export const labelGroups = {
+  Popular: [
+    'Archive mmCIF file',
+    'Updated mmCIF file',
+    'PDB file',
+    'Compatible PDB file bundle (tar.gz)',
+    'FASTA (Entry)',
+    'Full report (PDF)',
+    'Validation data (XML)',
+  ],
+  'Archive Files': [
+    'Archive mmCIF file',
+    'PDB file',
+    'Compatible PDB file bundle (tar.gz)',
+    'PDB file (gz)',
+    'PDB header',
+    'PDBML',
+    'PDBML (ATOM lines)',
+    'PDBML (no atoms)',
+  ],
+  'Enriched data': ['Updated mmCIF file'],
+  Mappings: ['SIFTS XML file with residue-level mappings', 'FASTA (Entry)'],
+  Validation: [
+    'Summary report (PDF)',
+    'Full report (PDF)',
+    'Percentile plot (PNG)',
+    'Percentile plot (SVG)',
+    'Validation data (XML)',
+    'Validation report mmCIF file (gz)',
+  ],
+  Assemblies: ['Assembly composition XML', 'Assembly {asm_ph} (mmCIF; gz)', 'Assembly {asm_ph} (atom only; mmCIF)'],
+  'Experimental Data': [
+    'Chemical shifts (text)',
+    'Experimental restraints (text)',
+    'NMR Shifts and Constraints (NEF)',
+    'NMR Shifts and Constraints (PDBx/mmCIF)',
+    'Remediated experimental restraints (text)',
+    'Structure Factors',
+    'EDS map',
+    'EDS difference map',
+  ],
+};
