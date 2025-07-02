@@ -277,12 +277,17 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   @HostListener('window:scroll', ['$event'])
   onWindowScroll() {
     const scrollPosition = window.scrollY || document.documentElement.scrollTop;
-    // Check if we've scrolled past the top of the aside
-    if (scrollPosition >= 394) {
-      this.isSticky.set(true);
-    } else {
-      this.isSticky.set(false);
+
+    const tabHeaderEl = document.querySelector('.mat-mdc-tab-header') as HTMLElement;
+    let threshold = 394;
+    if (tabHeaderEl) {
+      // Check if we've scrolled past the top of the tabs header
+      const offsetTop = tabHeaderEl.offsetTop;
+      const marginBottom = parseFloat(getComputedStyle(tabHeaderEl).marginBottom) || 0;
+      threshold = offsetTop + marginBottom;
     }
+
+    this.isSticky.set(scrollPosition >= threshold);
   }
 
   @HostListener('window:resize', ['$event'])
