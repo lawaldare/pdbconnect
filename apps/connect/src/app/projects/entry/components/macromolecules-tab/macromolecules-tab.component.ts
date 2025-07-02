@@ -390,4 +390,9 @@ export class MacromoleculesTabComponent {
     }
     return lengthType;
   }
+
+  public getRoundedWeight(): number | undefined {
+    const weight = this.currentMacromoleculeDatum()?.additionalData.molecule.weight;
+    return weight !== undefined ? Math.round(weight) : undefined;
+  }
 }

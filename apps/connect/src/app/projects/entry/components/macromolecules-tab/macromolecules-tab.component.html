@@ -76,7 +76,7 @@
         <div class="info-row">
           <span class="micro-title"> Theoretical weight</span>
           @if(currentMacromoleculeDatum()!.additionalData.molecule.weight !== undefined) {
-          <article>{{ currentMacromoleculeDatum()!.additionalData.molecule.weight.toFixed(2) }} KDa</article>
+          <article>{{ getRoundedWeight() }} KDa</article>
           }
         </div>
       </div>
