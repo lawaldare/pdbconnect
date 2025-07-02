@@ -161,7 +161,7 @@ export class MolstarForEntryPages extends MolstarBaseClass {
   private overviewDomainsCycleIndex = 0;
   public currentConfigName?: string;
 
-  private enforceMolstarInContainer(containerName: string) {
+  public enforceMolstarInContainer(containerName: string) {
     setTimeout(async () => {
       if (this.currentMolstarContainer === containerName) return;
       const containerElement = document.querySelector(`#${containerName}-molstar-container`);
