@@ -105,7 +105,7 @@ export const UNSELECTED_CARTOON_COLOR_BY_ENTITY_ALPHA = {
   //   },
   //   overrideWater: true
   // },
-  typeParams: { alpha: 0.45 },
+  typeParams: { alpha: 0.51 },
 };
 
 export const UNSELECTED_SPHERES_COLOR_BY_ENTITY_ALPHA = {
@@ -147,7 +147,7 @@ export const UNSELECTED_STICKS_COLOR_BY_ENTITY_ALPHA = {
     },
     overrideWater: true,
   },
-  typeParams: { alpha: 0.45 },
+  typeParams: { alpha: 0.51 },
 };
 
 export const UNSELECTED_STICKS_COLOR_BY_ENTITY_ALPHA_SET25 = {
@@ -170,7 +170,7 @@ export const UNSELECTED_STICKS_COLOR_BY_ENTITY_ALPHA_SET25 = {
     },
     overrideWater: true,
   },
-  typeParams: { alpha: 0.45 },
+  typeParams: { alpha: 0.51 },
 };
 
 export const UNSELECTED_CARTOON_GREY_ALPHA = {
@@ -292,7 +292,6 @@ export const LIGANDS_REPR_NONSELECTION_POLYMER = {
     },
   },
   // typeParams: { alpha: 0.65 },
-  typeParams: { alpha: 0.55 },
 };
 
 /**

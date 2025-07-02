@@ -71,12 +71,12 @@
         }
         <div class="info-row">
           <span class="micro-title"> Length </span>
-          <article>{{currentMacromoleculeDatum()!.length}} amino acids</article>
+          <article>{{currentMacromoleculeDatum()!.length}} {{ getLengthType(currentMacromoleculeDatum()!) }}</article>
         </div>
         <div class="info-row">
           <span class="micro-title"> Theoretical weight</span>
           @if(currentMacromoleculeDatum()!.additionalData.molecule.weight !== undefined) {
-          <article>{{ currentMacromoleculeDatum()!.additionalData.molecule.weight.toFixed(2) }} KDa</article>
+          <article>{{ getRoundedWeight() }} KDa</article>
           }
         </div>
       </div>

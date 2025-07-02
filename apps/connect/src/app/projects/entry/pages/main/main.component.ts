@@ -26,7 +26,7 @@ import { EntryPageHeaderComponent } from '../../components/entry-page-header/ent
 import { environment } from '../../../../../environments/environment';
 import { MobileMainComponent } from '../mobile/mobile-main/mobile-main.component';
 import { MobileHeaderComponent } from '@pdbc/mobile-header';
-import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
+import { MolstarForEntryPages } from '../../helpers/molstar-for-entry-pages';
 import { AssembliesTabComponent } from '../../components/assemblies-tab/assemblies-tab.component';
 import { MacromoleculesTabComponent } from '../../components/macromolecules-tab/macromolecules-tab.component';
 import { LigandsTabComponent } from '../../components/ligands-tab/ligands-tab.component';
@@ -89,7 +89,7 @@ export class EntryMainPageComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly util = inject(EntryUtilService);
 
-  private readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+  private readonly molstarVisualisation = inject(MolstarForEntryPages);
   public readonly molstarState = inject(MolstarStateService);
   private readonly actionQueue = inject(ActionQueueService);
 
@@ -274,8 +274,7 @@ export class EntryMainPageComponent implements OnInit {
         },
         skippable // skippable
       );
-    }
-    if (tabName === 'model-quality') {
+    } else if (tabName === 'model-quality') {
       this.actionQueue.addAction(
         'tab change renderMolstarForModelQuality',
         async () => {
@@ -284,8 +283,7 @@ export class EntryMainPageComponent implements OnInit {
         skippable // skippable
       );
       //
-    }
-    if (tabName === 'assemblies') {
+    } else if (tabName === 'assemblies') {
       this.actionQueue.addAction(
         'renderMolstarForAssemblies-first-assembly',
         async () => {
@@ -296,8 +294,7 @@ export class EntryMainPageComponent implements OnInit {
         },
         skippable // skippable
       );
-    }
-    if (tabName === 'macromolecules') {
+    } else if (tabName === 'macromolecules') {
       this.actionQueue.addAction(
         `renderMolstarForMacromolecules-first-macromolecule`,
         async () => {
@@ -312,8 +309,7 @@ export class EntryMainPageComponent implements OnInit {
         },
         skippable // skippable
       );
-    }
-    if (tabName === 'ligands') {
+    } else if (tabName === 'ligands') {
       this.actionQueue.addAction(
         `renderMolstarForLigands-first-ligand`,
         async () => {
@@ -328,8 +324,7 @@ export class EntryMainPageComponent implements OnInit {
         },
         skippable // skippable
       );
-    }
-    if (tabName === 'domains') {
+    } else if (tabName === 'domains') {
       this.actionQueue.addAction(
         `renderMolstarForDomains-first-domain`,
         async () => {
@@ -342,6 +337,16 @@ export class EntryMainPageComponent implements OnInit {
           await this.molstarState.renderMolstarForDomains(firstDomain);
         },
         skippable // skippable
+      );
+    } else {
+      this.actionQueue.addAction(
+        `moveMolstarToParent`,
+        async () => {
+          this.molstarState.molstarVisualisation.currentViewName = 'back-to-parent';
+          this.molstarState.molstarVisualisation.enforceMolstarInContainer('parent');
+          await new Promise((res) => setTimeout(res, 500)); // wait for Angular digest cycle completion
+        },
+        skippable
       );
     }
   }

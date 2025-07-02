@@ -1,6 +1,6 @@
 import { ElementRef, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
-import { MolstarOverviewForTopPage } from '../../../../helpers/molstar/molstar-overview-for-top-page';
+import { MolstarForEntryPages } from '../../../../helpers/molstar-for-entry-pages';
 import { OverviewMolstarFacade } from './data-processing.facade';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ActionQueueService } from '../../../../services/action-queue.service';
@@ -10,7 +10,7 @@ import { ActionQueueService } from '../../../../services/action-queue.service';
 })
 export class OverviewStateManagementService {
   public readonly dataProcessing = inject(OverviewMolstarFacade);
-  public readonly molstarOverview = inject(MolstarOverviewForTopPage);
+  public readonly molstarOverview = inject(MolstarForEntryPages);
   private readonly actionQueue = inject(ActionQueueService);
   public infoControls = signal<ElementRef | undefined>(undefined);
 

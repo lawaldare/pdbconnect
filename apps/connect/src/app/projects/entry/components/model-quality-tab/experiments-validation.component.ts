@@ -248,7 +248,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
         if (this.isXray()) {
           const validationInfo = [...(processedExpValData?.[0].validationInfo ?? [])];
           validationInfo.push({ metric: 'RMSD bond length [Å]', description: String(xray?.model_quality?.rmsd_bond_length ?? 0) });
-          validationInfo.push({ metric: 'RMSD bond angle [³]', description: String(xray?.model_quality?.rmsd_bond_angle ?? 0) });
+          validationInfo.push({ metric: 'RMSD bond angle [°]', description: String(xray?.model_quality?.rmsd_bond_angle ?? 0) });
           validationInfo.push({ metric: 'Bulk solvent B [Å²]', description: String(xray?.model_quality?.bulk_solvent_b ?? 0) });
           validationInfo.push({ metric: 'Bulk solvent k [e-/Å³]', description: String(xray?.model_quality?.bulk_solvent_k ?? 0) });
           validationInfo.push({ metric: 'Fo-Fc correlation', description: String(xray?.model_quality?.fo_fc_correlation ?? 0) });
@@ -277,12 +277,17 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   @HostListener('window:scroll', ['$event'])
   onWindowScroll() {
     const scrollPosition = window.scrollY || document.documentElement.scrollTop;
-    // Check if we've scrolled past the top of the aside
-    if (scrollPosition >= 394) {
-      this.isSticky.set(true);
-    } else {
-      this.isSticky.set(false);
+
+    const tabHeaderEl = document.querySelector('.mat-mdc-tab-header') as HTMLElement;
+    let threshold = 394;
+    if (tabHeaderEl) {
+      // Check if we've scrolled past the top of the tabs header
+      const offsetTop = tabHeaderEl.offsetTop;
+      const marginBottom = parseFloat(getComputedStyle(tabHeaderEl).marginBottom) || 0;
+      threshold = offsetTop + marginBottom;
     }
+
+    this.isSticky.set(scrollPosition >= threshold);
   }
 
   @HostListener('window:resize', ['$event'])
