@@ -33,7 +33,7 @@ format-check:
   script:
     - npx nx format:check --base=$NX_BASE --head=$NX_HEAD
   tags:
-    - pdbe-shell
+    - pdbe-docker
 
 lint:
   stage: test
@@ -41,7 +41,7 @@ lint:
   script:
     - npx --no-install nx affected --base=$NX_BASE --head=$NX_HEAD -t lint --parallel=3
   tags:
-    - pdbe-shell
+    - pdbe-docker
 
 test:
   stage: test
@@ -49,7 +49,7 @@ test:
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t test --parallel=3 --configuration=ci
   tags:
-    - pdbe-shell
+    - pdbe-docker
 
 build:
   stage: build
