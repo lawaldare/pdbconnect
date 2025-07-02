@@ -44,26 +44,31 @@
           </div>
         </div>
         <div class="assembly-grouped">
+          @if (getAdditionalData('accessibleSurfaceArea')) {
           <div class="info-row">
             <span>
               Accessible surface area
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.accessbileSurfaceArea" />
             </span>
-            <article>{{ getAdditionalData('accessibleSurfaceArea') }}<sup>2</sup></article>
+            <article>{{ getAdditionalData('accessibleSurfaceArea') }}</article>
           </div>
+          } @if (getAdditionalData('buriedSurfaceArea')) {
           <div class="info-row">
             <span>
               Buried surface area
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.buriedSurfaceArea" />
             </span>
-            <article>{{ getAdditionalData('buriedSurfaceArea') }}<sup>2</sup></article>
+            <article>{{ getAdditionalData('buriedSurfaceArea') }}</article>
           </div>
+          }
         </div>
         <div class="assembly-grouped">
+          @if (getAdditionalData('dissociationArea')) {
           <div class="info-row">
             <span>Dissociation area</span>
-            <article>{{ getAdditionalData('dissociationArea') }}<sup>2</sup></article>
+            <article>{{ getAdditionalData('dissociationArea') }}</article>
           </div>
+          }
           <div class="info-row">
             <span>
               Dissociation energy (ΔGdiss)

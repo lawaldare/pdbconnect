@@ -103,13 +103,13 @@ export class AssemblyDataToTable extends DataToTable {
           complexName: complexName,
           multimericStates: mericity,
           additionalData: {
-            accessibleSurfaceArea: `${pisaAssemblyDatum?.assembly?.accessible_surface_area} Å`,
-            buriedSurfaceArea: `${pisaAssemblyDatum?.assembly?.buried_surface_area} Å`,
-            dissociationArea: `${pisaAssemblyDatum?.assembly?.dissociation_area} Å`,
-            dissociationEnergy: `${pisaAssemblyDatum?.assembly?.dissociation_energy} kcal/mol`,
-            dissociationEntropy: `${pisaAssemblyDatum?.assembly?.entropy} kcal/mol`,
-            symmetryNumber: `${pisaAssemblyDatum?.assembly?.symmetry_number}`,
-            interfaceCount: `${pisaAssemblyDatum?.assembly?.interface_count}`,
+            accessibleSurfaceArea: this.formatPisaValue('area', pisaAssemblyDatum?.assembly?.accessible_surface_area),
+            buriedSurfaceArea: this.formatPisaValue('area', pisaAssemblyDatum?.assembly?.buried_surface_area),
+            dissociationArea: this.formatPisaValue('area', pisaAssemblyDatum?.assembly?.dissociation_area),
+            dissociationEnergy: this.formatPisaValue('energy', pisaAssemblyDatum?.assembly?.dissociation_energy),
+            dissociationEntropy: this.formatPisaValue('energy', pisaAssemblyDatum?.assembly?.entropy),
+            symmetryNumber: this.formatPisaValue('other', pisaAssemblyDatum?.assembly?.symmetry_number),
+            interfaceCount: this.formatPisaValue('other', pisaAssemblyDatum?.assembly?.interface_count),
 
             //?TODO?: Add Molstar Selection here?
             selections: [],
@@ -123,6 +123,12 @@ export class AssemblyDataToTable extends DataToTable {
       rows = [...this.tableRows()];
     }
     return rows;
+  }
+
+  formatPisaValue(valueType: 'area' | 'energy' | 'other', value: string | number | undefined | null) {
+    if (valueType === 'area') return value != null ? `${Math.round(value as number)} Å²` : 'Not available';
+    else if (valueType === 'energy') return value != null ? `${value} kcal/mol` : 'Not available';
+    else return value != null ? `${value}` : 'Not available';
   }
 
   // parse the necessary assembly specific data into data filters
