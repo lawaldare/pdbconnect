@@ -22,6 +22,7 @@ export interface PISAAssemblyParam {
   solvation_energy_gain: number;
   pdb_id: string;
   assembly_id: string;
+  [key: string]: any;
 }
 
 @Component({
@@ -63,8 +64,24 @@ export class ComplexPISAComponent implements OnInit {
   private selectedRowParams = signal<string>('');
   public selectedRow = signal<PISAAssemblyParam>({} as PISAAssemblyParam);
 
+  public pisaProperties = [
+    { label: 'Accessible Surface Area', value: 'accessible_surface_area' },
+    { label: 'Buried Surface Area', value: 'buried_surface_area' },
+    { label: 'Solvation Energy Gain', value: 'solvation_energy_gain' },
+    { label: 'Dissociation Energy', value: 'dissociation_energy' },
+    { label: 'Dissociation Entropy', value: 'dissociation_entropy' },
+  ];
+
   ngOnInit(): void {
     this.stats.set(this.getMinMaxStats(this.pisa() as PISAAssemblyParam[]));
+  }
+
+  getPropertyValue(key: keyof PISAAssemblyParam): number {
+    return this.selectedRow()?.[key] ?? 0; // or null / undefined as fallback if you prefer
+  }
+
+  getPropertyOptions(key: keyof PISAAssemblyParam) {
+    return this.stats()?.[key] ?? {};
   }
 
   public selectPisaAssemblyProperty() {

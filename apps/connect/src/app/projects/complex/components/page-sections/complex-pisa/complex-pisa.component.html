@@ -26,12 +26,12 @@
   @if(length > 10){
   <div class="charts">
     <section class="complex-sliders">
-      <!-- <div id="sliders"></div> -->
-      <ngx-slider [value]="selectedRow().accessible_surface_area" [options]="stats().accessible_surface_area"></ngx-slider>
-      <ngx-slider [value]="selectedRow().buried_surface_area" [options]="stats().buried_surface_area"></ngx-slider>
-      <ngx-slider [value]="selectedRow().solvation_energy_gain" [options]="stats().solvation_energy_gain"></ngx-slider>
-      <ngx-slider [value]="selectedRow().dissociation_energy" [options]="stats().dissociation_energy"></ngx-slider>
-      <ngx-slider [value]="selectedRow().dissociation_entropy" [options]="stats().dissociation_entropy"></ngx-slider>
+      @for(property of pisaProperties; track property.value) {
+      <div class="complex-slider">
+        <span class="title">{{property.label}}</span>
+        <ngx-slider [value]="getPropertyValue(property.value)" [options]="getPropertyOptions(property.value)"></ngx-slider>
+      </div>
+      }
     </section>
     <section class="histogram">
       <div class="toolbar">

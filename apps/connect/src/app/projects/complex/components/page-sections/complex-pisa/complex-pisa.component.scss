@@ -45,13 +45,14 @@ div.pisa-table {
     .complex-slider {
       display: flex;
       align-items: center;
-      gap: 10px;
 
-      span {
+      span.title {
         font-weight: 500;
-        max-width: 200px;
-        width: 100%;
+        font-size: 12px;
         display: block;
+        width: 150px;
+        min-width: 150px;
+        max-width: 150px;
       }
     }
   }
