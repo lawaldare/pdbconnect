@@ -249,8 +249,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
           const validationInfo = [...(processedExpValData?.[0].validationInfo ?? [])];
           validationInfo.push({ metric: 'RMSD bond length [Å]', description: String(xray?.model_quality?.rmsd_bond_length ?? 0) });
           validationInfo.push({ metric: 'RMSD bond angle [°]', description: String(xray?.model_quality?.rmsd_bond_angle ?? 0) });
-          validationInfo.push({ metric: 'Bulk solvent B [Å²]', description: String(xray?.model_quality?.bulk_solvent_b ?? 0) });
-          validationInfo.push({ metric: 'Bulk solvent k [e-/Å³]', description: String(xray?.model_quality?.bulk_solvent_k ?? 0) });
+          validationInfo.push({ metric: 'Bulk solvent scaling B [Å²]', description: String(xray?.model_quality?.bulk_solvent_b ?? 0) });
+          validationInfo.push({ metric: 'Bulk solvent scaling k [e-/Å³]', description: String(xray?.model_quality?.bulk_solvent_k ?? 0) });
           validationInfo.push({ metric: 'Fo-Fc correlation', description: String(xray?.model_quality?.fo_fc_correlation ?? 0) });
           processedExpValData[0].validationInfo = validationInfo;
         }
