@@ -5,6 +5,7 @@ import Clarity from '@microsoft/clarity';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { map } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EntryDropdownFacade } from './entry-dropdown.facade';
 
 @Component({
   selector: 'pdbc-entry-dropdown',
@@ -22,6 +23,7 @@ export class EntryDropdownComponent implements OnInit {
    * Perhaps it should be merged to it in the future
    */
   private readonly destroyRef = inject(DestroyRef);
+  private readonly facade = inject(EntryDropdownFacade);
 
   public readonly title = input.required<string>();
 
@@ -50,7 +52,7 @@ export class EntryDropdownComponent implements OnInit {
       .pipe(
         map((searchQuery: string | null) => {
           if (searchQuery) {
-            return this.filterItemsBySearchQuery(searchQuery, this.options() ?? []);
+            return this.facade.filterItemsBySearchQuery(searchQuery, this.options() ?? []);
           } else {
             return this.options() ?? [];
           }
@@ -62,49 +64,25 @@ export class EntryDropdownComponent implements OnInit {
       });
   }
 
-  private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
-    return items.filter((item) => {
-      const searchQueryLower = searchQuery.toLocaleLowerCase();
-      return (
-        item.group.toLocaleLowerCase().indexOf(searchQueryLower) !== -1 ||
-        item.items
-          .map((c: any) => c.name)
-          .join(',')
-          .toLocaleLowerCase()
-          .indexOf(searchQueryLower) !== -1
-      );
-    });
-  }
-
   public optionClicked(optionName: string) {
     this.currentSelection.set(optionName);
     this.optionClickedEvent.emit(optionName);
   }
 
   public menuOpened() {
-    const tag = this.nameToEventTag(this.title());
+    const tag = this.facade.nameToEventTag(this.title());
     Clarity.event(`file-menu-opened-${tag}`);
   }
 
   public optionDownloaded(optionName: string) {
-    const tag = this.nameToEventTag(optionName);
+    const tag = this.facade.nameToEventTag(optionName);
     Clarity.event('file-downloaded');
     Clarity.event(`file-downloaded-${tag}`);
   }
 
   public optionViewed(optionName: string) {
-    const tag = this.nameToEventTag(optionName);
+    const tag = this.facade.nameToEventTag(optionName);
     Clarity.event('file-viewed');
     Clarity.event(`file-viewed-${tag}`);
-  }
-
-  private nameToEventTag(name: string) {
-    return name
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z\s]/g, '')
-      .trim()
-      .replace(/\s+/g, '-');
   }
 }
