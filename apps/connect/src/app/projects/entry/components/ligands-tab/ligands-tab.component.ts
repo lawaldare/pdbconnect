@@ -29,6 +29,7 @@ import { ActionQueueService } from '../../services/action-queue.service';
 import { Interaction } from '../../data-models/interaction.model';
 import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar';
 import { Molecule } from '../../data-models/molecule.model';
+import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -43,6 +44,7 @@ import { Molecule } from '../../data-models/molecule.model';
     AgGridAngular,
     ReactiveFormsModule,
     TruncateTextDirective,
+    ToolTipComponent,
   ],
   templateUrl: './ligands-tab.component.html',
   styleUrl: './ligands-tab.component.scss',

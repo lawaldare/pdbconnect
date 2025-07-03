@@ -388,7 +388,8 @@ export const labelGroups = {
     'Validation data (XML)',
     'Validation report mmCIF file (gz)',
   ],
-  Assemblies: ['Assembly composition XML', 'Assembly {asm_ph} (mmCIF; gz)', 'Assembly {asm_ph} (atom only; mmCIF)'],
+  Assemblies: ['Assembly composition XML', /^Assembly \d+.*$/],
+  // Assemblies: ['Assembly composition XML', 'Assembly {asm_ph} (mmCIF; gz)', 'Assembly {asm_ph} (atom only; mmCIF)'],
   'Experimental Data': [
     'Chemical shifts (text)',
     'Experimental restraints (text)',

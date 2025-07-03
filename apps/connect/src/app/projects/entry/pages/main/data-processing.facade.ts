@@ -633,7 +633,11 @@ export class MainDataProcessingFacade {
       };
     });
 
+    console.log('downloadsUpdated', downloadsUpdated);
+
     const mappedDownloadsUpdated = this.groupFilesByLabels(labelGroups, downloadsUpdated);
+
+    console.log('mappedDownloadsUpdated', mappedDownloadsUpdated);
 
     const viewsUpdated = views.map((d) => {
       return {
@@ -648,20 +652,34 @@ export class MainDataProcessingFacade {
     return { downloads: mappedDownloadsUpdated, views: mappedViewsUpdated };
   }
 
-  private groupFilesByLabels(labelGroups: Record<string, string[]>, flatList: DownloadOption[]): any[] {
-    const fileMap = new Map(flatList.map((file) => [file.name, file]));
+  // private groupFilesByLabels(labelGroups: Record<string, string[]>, flatList: DownloadOption[]): any[] {
+  //   const fileMap = new Map(flatList.map((file) => [file.name, file]));
 
-    const groupedArray = [];
+  //   const groupedArray = [];
 
-    for (const [groupName, names] of Object.entries(labelGroups)) {
-      const matchedFiles = names.map((name) => fileMap.get(name)).filter((file) => file && file.url);
+  //   for (const [groupName, names] of Object.entries(labelGroups)) {
+  //     const matchedFiles = names.map((name) => fileMap.get(name)).filter((file) => file && file.url);
 
-      if (matchedFiles.length > 0) {
-        groupedArray.push({ group: groupName, items: matchedFiles });
+  //     if (matchedFiles.length > 0) {
+  //       groupedArray.push({ group: groupName, items: matchedFiles });
+  //     }
+  //   }
+
+  //   return groupedArray;
+  // }
+
+  groupFilesByLabels(labelGroups: Record<string, (string | RegExp)[]>, files: DownloadOption[]) {
+    const result: { group: string; items: DownloadOption[] }[] = [];
+
+    for (const [group, patterns] of Object.entries(labelGroups)) {
+      const groupItems = files.filter((file) => patterns.some((pattern) => (pattern instanceof RegExp ? pattern.test(file.name) : file.name === pattern)));
+
+      if (groupItems.length > 0) {
+        result.push({ group, items: groupItems });
       }
     }
 
-    return groupedArray;
+    return result;
   }
 
   public getPageData(): void {

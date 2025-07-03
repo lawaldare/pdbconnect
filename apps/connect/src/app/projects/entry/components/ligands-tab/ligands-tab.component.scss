@@ -329,3 +329,20 @@ section.table-wrapper {
     --ag-active-color: #89ae54;
   }
 }
+
+.ligand-question {
+  span {
+    color: #373a36;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22.4px;
+    margin-bottom: 5px;
+  }
+}
+
+::ng-deep lib-tool-tip {
+  img {
+    height: 16px !important;
+    width: 16px !important;
+  }
+}

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -11,7 +11,7 @@ import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { PARAMS } from '../../../complex.constant';
 import { drawHistogram } from './histogram';
-import { drawSliders } from './slider';
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
 
 export interface PISAAssemblyParam {
   dissociation_energy: number;
@@ -24,21 +24,14 @@ export interface PISAAssemblyParam {
   assembly_id: string;
 }
 
-export interface SliderDetails {
-  value: number;
-  floor: number;
-  ceil: number;
-  title: string;
-}
-
 @Component({
   selector: 'pdbc-complex-pisa',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule],
+  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, NgxSliderModule],
   templateUrl: './complex-pisa.component.html',
   styleUrls: ['./complex-pisa.component.scss'],
 })
-export class ComplexPISAComponent {
+export class ComplexPISAComponent implements OnInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public readonly pisa = toSignal(this.globalStore.select(ComplexSelectors.pisa));
   public readonly gridOptions = gridOptions;
@@ -49,8 +42,9 @@ export class ComplexPISAComponent {
 
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
 
+  public stats = signal<any>({});
+
   public rowData = computed(() => {
-    console.log('rowData', this.pisa());
     return this.pisa();
   });
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
@@ -63,12 +57,15 @@ export class ComplexPISAComponent {
     }, []);
   });
 
-  public sliders = signal<SliderDetails[]>([]);
-
   public pisaAssemblyPropertyOptions = PARAMS;
   public pisaAssemblyProperty = new FormControl(this.pisaAssemblyPropertyOptions[0].value, { nonNullable: true });
 
   private selectedRowParams = signal<string>('');
+  public selectedRow = signal<PISAAssemblyParam>({} as PISAAssemblyParam);
+
+  ngOnInit(): void {
+    this.stats.set(this.getMinMaxStats(this.pisa() as PISAAssemblyParam[]));
+  }
 
   public selectPisaAssemblyProperty() {
     this.drawHistogram();
@@ -76,18 +73,14 @@ export class ComplexPISAComponent {
 
   public onSelectionChanged(event: SelectionChangedEvent) {
     const data = event.api.getSelectedNodes()[0].data;
+    this.selectedRow.set(data);
     const id = `${data.pdb_id}_${data.assembly_id}`;
     this.selectedRowParams.set(id);
     this.drawHistogram();
-    this.drawSliders();
   }
 
   private drawHistogram(): void {
     drawHistogram(this.mappedPisaData(), this.selectedRowParams(), this.pisaAssemblyProperty.value, '#histogram-svg');
-  }
-
-  private drawSliders(): void {
-    drawSliders(this.mappedPisaData(), this.selectedRowParams(), '#sliders');
   }
 
   public downloadCSV(): void {
@@ -102,5 +95,30 @@ export class ComplexPISAComponent {
       };
     });
     this.downloadFileTypeService.downloadCSV(mappedData, 'structures');
+  }
+
+  public getMinMaxStats(data: PISAAssemblyParam[]) {
+    const keys = ['accessible_surface_area', 'buried_surface_area', 'solvation_energy_gain', 'dissociation_energy', 'dissociation_entropy'];
+
+    const result = {} as any;
+
+    keys.forEach((key) => {
+      const values = data.map((item: any) => item[key]).filter((val) => typeof val === 'number' && !isNaN(val));
+
+      if (values.length > 0) {
+        result[key] = {
+          disabled: true,
+          floor: Math.min(...values),
+          ceil: Math.max(...values),
+        };
+      } else {
+        result[key] = {
+          floor: null,
+          ceil: null,
+        };
+      }
+    });
+
+    return result;
   }
 }

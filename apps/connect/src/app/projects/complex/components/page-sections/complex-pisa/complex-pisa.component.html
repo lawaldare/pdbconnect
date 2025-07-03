@@ -1,7 +1,7 @@
 @if(rowData()?.length){
 <div class="pisa-section">
   @let length = (rowData() ?? []).length;
-  <section class="table" [style.width.%]="length < 10 ? 100 : 50">
+  <section class="table" [style.width.%]="length < 10 ? 100 : 65">
     <p>
       This table lists <a href="https://www.ebi.ac.uk/pdbe/pisa/" target="_blank">PISA</a>-derived properties for all assemblies of this complex. The slider and
       histogram load values from the first row by default. Select a row to view and compare other assemblies.
@@ -26,7 +26,12 @@
   @if(length > 10){
   <div class="charts">
     <section class="complex-sliders">
-      <div id="sliders"></div>
+      <!-- <div id="sliders"></div> -->
+      <ngx-slider [value]="selectedRow().accessible_surface_area" [options]="stats().accessible_surface_area"></ngx-slider>
+      <ngx-slider [value]="selectedRow().buried_surface_area" [options]="stats().buried_surface_area"></ngx-slider>
+      <ngx-slider [value]="selectedRow().solvation_energy_gain" [options]="stats().solvation_energy_gain"></ngx-slider>
+      <ngx-slider [value]="selectedRow().dissociation_energy" [options]="stats().dissociation_energy"></ngx-slider>
+      <ngx-slider [value]="selectedRow().dissociation_entropy" [options]="stats().dissociation_entropy"></ngx-slider>
     </section>
     <section class="histogram">
       <div class="toolbar">

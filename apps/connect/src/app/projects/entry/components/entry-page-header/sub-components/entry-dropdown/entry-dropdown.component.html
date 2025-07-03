@@ -7,7 +7,7 @@
     <path d="M7 10.5L12 15.5L17 10.5H7Z" fill="black" />
   </svg>
 </button>
-<mat-menu #menu="matMenu" class="entry-dropdown-menu">
+<mat-menu #menu="matMenu" class="entry-dropdown-menu" yPosition="below">
   <div class="search-box" matMenuContent>
     <input type="search" [formControl]="searchTerm" placeholder="Search all files" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()" />
     @if(!searchTerm.value){

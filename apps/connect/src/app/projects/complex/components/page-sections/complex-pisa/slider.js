@@ -2,7 +2,7 @@
 import * as d3 from 'd3';
 import { fmt2, PARAMS } from '../../../complex.constant';
 
-const W = 700;
+const W = 550;
 const H = 34;
 const pad = { l: 75, r: 25 };
 
@@ -84,35 +84,18 @@ export function drawSliders(rows, selectedId, selector) {
     /* min / max numbers */
     svg
       .append('text')
-      .attr('x', 106 - 6)
-      .attr('y', 72 / 2 + 4)
+      .attr('x', x(ext[k.value][0]) - 6)
+      .attr('y', H / 2 + 4)
       .attr('text-anchor', 'end')
       .attr('class', 'slider-text')
       .text(fmt2(ext[k.value][0]));
 
     svg
       .append('text')
-      .attr('x', 525 - 6)
-      .attr('y', 72 / 2 + 4)
+      .attr('x', x(ext[k.value][1]) - 6)
+      .attr('y', H / 2 + 4)
       .attr('text-anchor', 'end')
       .attr('class', 'slider-text')
       .text(fmt2(ext[k.value][1]));
-
-    /* explicit “min / max” tags */
-    // svg
-    //   .append('text')
-    //   .attr('x', x(ext[k.value][0]))
-    //   .attr('y', H + 6)
-    //   .attr('text-anchor', 'middle')
-    //   .attr('class', 'slider-text')
-    //   .text('min');
-
-    // svg
-    //   .append('text')
-    //   .attr('x', x(ext[k.value][1]))
-    //   .attr('y', H + 6)
-    //   .attr('text-anchor', 'middle')
-    //   .attr('class', 'slider-text')
-    //   .text('max');
   });
 }

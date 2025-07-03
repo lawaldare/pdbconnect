@@ -11,6 +11,36 @@
     </button>
 
     <h5 class="ligands-title">{{ currentLigandDatum()!.codeAndName.name }}</h5>
+    <p class="ligand-question">
+      <span>Where does this data come from?</span>
+      <lib-tool-tip>
+        <p>
+          All ligands listed in this page are from the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >Preferred Assembly</a
+          >
+          of each entry, reflecting their most probable biological form. All data is sourced from our open and free-to-use
+          <a href="https://www.ebi.ac.uk/pdbe/aggregated-api/" target="_blank">Aggregated API endpoints</a>.
+        </p>
+      </lib-tool-tip>
+    </p>
+
+    <p class="ligand-question" style="margin-bottom: 16px !important">
+      <span>How are interactions calculated?</span>
+      <lib-tool-tip>
+        <p>
+          Interactions are calculated using Arpeggio for the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >Preferred Assembly</a
+          >
+          of each entry. The 2D view uses the
+          <a href="https://www.jalview.org/help/html/colourSchemes/clustal.html" target="_blank">Clustal X colour scheme.</a> Details for interaction types can be
+          found here. All data is sourced from our open and free-to-use
+          <a href="https://www.ebi.ac.uk/pdbe/aggregated-api/" target="_blank">Aggregated API endpoints</a>.
+        </p>
+      </lib-tool-tip>
+    </p>
+
     <div class="info">
       <div class="info-grouped left">
         <div class="info-row">
