@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { computed, DestroyRef, inject, Injectable, Injector, Renderer2, RendererFactory2, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, Renderer2, RendererFactory2, signal } from '@angular/core';
 import { Title, Meta } from '@angular/platform-browser';
 import { DataToTable } from '../../components/shared/interactive-tables/data-processing/abstract-base-row-class';
 import { AssemblyDataToTable } from '../../components/shared/interactive-tables/data-processing/assembly-row-class';
@@ -14,7 +14,7 @@ import { TableNames } from './main.component';
 import { TabNames } from '../../helpers/tab-names.enum';
 import { EntryActions } from '../../store/entry.actions';
 import { catchError, combineLatest, of, retry, startWith, tap } from 'rxjs';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ComplexDetails } from '../../data-models/complex-details.model';
 import { ProcessedSummary } from '../../data-models/summary.model';
 import { ResidueWiseOutliersMolecule } from '../../data-models/residuewise-outliers.model';
@@ -633,11 +633,7 @@ export class MainDataProcessingFacade {
       };
     });
 
-    console.log('downloadsUpdated', downloadsUpdated);
-
     const mappedDownloadsUpdated = this.groupFilesByLabels(labelGroups, downloadsUpdated);
-
-    console.log('mappedDownloadsUpdated', mappedDownloadsUpdated);
 
     const viewsUpdated = views.map((d) => {
       return {

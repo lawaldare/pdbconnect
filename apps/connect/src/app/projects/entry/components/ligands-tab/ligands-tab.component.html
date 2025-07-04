@@ -164,6 +164,20 @@
           </div> -->
           <div id="ligands-molstar-container" class="molstar-container" #molstarContainer></div>
         </section>
+        <div class="legends">
+          @for(color of legendsColor.slice(0, initialColorCount()); track color.label ){
+          <div class="legend-wrapper">
+            <span class="legend-color" [style.background-color]="color.color"></span>
+            <span class="legend-label">{{ color.label }}</span>
+          </div>
+          }
+          <div class="control">
+            @if(legendsColor.length > 4){
+            <span role="button" class="related-entry-toggle" (click)="toggleColorList()">{{initialColorCount() > 4 ? 'Hide' : 'Show'}} full legend</span>
+            <i class="icon icon-common" [ngClass]="initialColorCount() > 4 ? 'icon-angle-up' : 'icon-angle-down'"></i>
+            }
+          </div>
+        </div>
         <section class="lig-env-container">
           <div class="ligand-env" #ligandEnvContainer></div>
         </section>

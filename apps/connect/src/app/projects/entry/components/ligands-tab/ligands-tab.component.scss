@@ -346,3 +346,46 @@ section.table-wrapper {
     width: 16px !important;
   }
 }
+
+span.related-entry-toggle {
+  color: #3b6fb6;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 27.2px;
+  display: block;
+  cursor: pointer;
+}
+
+.control {
+  display: flex;
+  align-items: center;
+
+  i.icon {
+    color: #3b6fb6;
+    font-size: 22px;
+  }
+}
+
+.legends {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+
+  .legend-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+    }
+
+    .legend-label {
+      color: #1a1c1a;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 22.4px;
+    }
+  }
+}

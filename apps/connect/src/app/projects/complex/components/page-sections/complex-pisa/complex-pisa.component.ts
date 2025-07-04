@@ -77,7 +77,7 @@ export class ComplexPISAComponent implements OnInit {
   }
 
   getPropertyValue(key: keyof PISAAssemblyParam): number {
-    return this.selectedRow()?.[key] ?? 0; // or null / undefined as fallback if you prefer
+    return this.selectedRow()?.[key] ?? 0;
   }
 
   getPropertyOptions(key: keyof PISAAssemblyParam) {
