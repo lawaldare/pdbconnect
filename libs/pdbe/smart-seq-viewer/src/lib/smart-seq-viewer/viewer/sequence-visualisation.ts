@@ -27,6 +27,7 @@ export interface SmartSequenceAnnotation {
   data: {
     residueIndex: number; // 1-indexed
     value: string; // Category label or value used for color mapping
+    extraData?: any;
   }[];
 }
 
@@ -40,6 +41,7 @@ export interface SmartSequenceAnnotationForEvent {
   datum: {
     residueIndex: number; // 1-indexed
     value: string; // Category label or value used for color mapping
+    extraData?: any;
   };
 }
 
@@ -49,16 +51,15 @@ export class SmartSequenceVisualisation {
   private entityId?: string;
   private chainId?: string;
   private containerId: string;
-  private scrollMode = true;
   private grouping = true;
   private groupingLineBreak = false;
   private responsive = true;
   private externalEvents = false;
   private hoverTooltips = true;
   private tooltipFormatting: TooltipFormatting;
-  private sidebarPanel = true;
+  private scrollContainerMaxHeight = 140;
 
-  private fontFamily = 'roboto';
+  private fontFamily = 'IBM Plex Sans';
   private fontSize = 14;
   private fontColor = '#000';
   private characterBgPadding = 2;
@@ -68,7 +69,7 @@ export class SmartSequenceVisualisation {
 
   private residueNumberingFreq = 10; // Number of residues per group
   private residueGroupSize = 10; // Number of residues per group
-  private residueGroupRightMargin = 12; // Pixels between residue groups
+  private residueGroupRightMargin = 16; // Pixels between residue groups
   private lineBottomMargin = 4; // Pixels between lines
   private numberingFontSize = 12; // Smaller font size for numbering
   // private numberingHeight = 12; // Space above sequences for numbers
@@ -113,7 +114,9 @@ export class SmartSequenceVisualisation {
   private externalEventListeners: { type: string; listener: EventListener }[] = [];
 
   private tooltipEl: HTMLDivElement | null = null;
-  private sidebarPanelEl: HTMLDivElement | null = null;
+  private sidebarPanel: HTMLDivElement | null = null;
+  private visualisationAndSidebarContainer: HTMLDivElement | null = null;
+  private visualisationContainer: HTMLDivElement | null = null;
 
   constructor(
     sequence: string,
@@ -123,19 +126,17 @@ export class SmartSequenceVisualisation {
     entityId?: string,
     chainId?: string,
     options?: {
-      scrollMode?: boolean;
       grouping?: boolean;
       groupingLineBreak?: boolean;
       responsive?: boolean;
       externalEvents?: boolean;
       hoverTooltips?: boolean;
       tooltipFormatting?: TooltipFormatting;
-      sidebarPanel?: boolean;
+      scrollContainerMaxHeight?: number;
     }
   ) {
     this.sequence = sequence;
     this.containerId = containerId;
-    this.scrollMode = options?.scrollMode !== false;
     this.grouping = options?.grouping !== false;
     this.groupingLineBreak = options?.groupingLineBreak === true;
     this.responsive = options?.responsive !== false;
@@ -150,74 +151,110 @@ export class SmartSequenceVisualisation {
       extraLine: 'uniprot',
     };
     this.tooltipFormatting = options?.tooltipFormatting ?? defaultTooltipFormatting;
-    this.sidebarPanel = options?.sidebarPanel !== false;
+    this.scrollContainerMaxHeight = options?.scrollContainerMaxHeight ?? 140;
 
     const container = document.getElementById(this.containerId);
     if (!container) {
       throw new Error(`Container with id "${this.containerId}" not found.`);
     }
-
     this.validateAnnotations(initialAnnotations);
     this.annotations = [...initialAnnotations];
 
-    const width = container.offsetWidth;
-    const height = container.offsetHeight;
+    this.visualisationAndSidebarContainer = this.createFlexBoxWrapper();
+    this.visualisationContainer = this.createScrollableCanvasWrapper();
+    this.sidebarPanel = this.createSidebarPanel();
+
+    container.appendChild(this.visualisationAndSidebarContainer);
+    this.visualisationAndSidebarContainer.appendChild(this.visualisationContainer);
+    this.visualisationAndSidebarContainer.appendChild(this.sidebarPanel);
+
+    const sidebarWidth = this.sidebarPanel.offsetWidth;
+    const width = this.visualisationAndSidebarContainer.offsetWidth - sidebarWidth;
 
     this.canvasWidth = width;
-    this.canvasHeight = this.scrollMode ? height : 0; // placeholder if not scroll mode
+    this.canvasHeight = 0;
 
     this.calcBoxMaxDimensions();
     this.calcNumberingBoxMaxHeight();
     this.processAnnotations();
     // First pass: calculate layout to determine canvasBoxPerLines
-    this.calculateLineBoxLayout();
-
+    this.setCanvasBoxPerLines();
     // Recalculate height after layout for non-scroll mode
-    if (!this.scrollMode) {
-      // chunkedSequence is populated and canvasTextLines is correct
-      this.canvasHeight = this.calcCanvasHeightForFullSequence();
-      // recalculate layout with the correct canvasHeight
-      this.calculateLineBoxLayout();
-    }
+    // chunkedSequence is populated and canvasTextLines is correct
+    this.canvasHeight = this.calcCanvasHeightForFullSequence();
+    // recalculate layout with the correct canvasHeight
+    this.calculateLineBoxLayout();
 
     this.canvas = this.createHiPPICanvas(this.canvasWidth, this.canvasHeight);
     this.registerCanvasMouseEvents();
-    container.appendChild(this.canvas);
+    this.visualisationContainer.appendChild(this.canvas);
     if (this.hoverTooltips) {
-      this.createTooltipElement(container);
-    }
-    if (this.sidebarPanel) {
-      this.createSidebarPanel(container);
+      this.createTooltipElement(this.visualisationContainer);
     }
 
+    this.showSidebar(undefined); // show default placeholder
     this.draw();
     this.setupResizeObserver();
     this.registerExternalEventsListeners();
   }
 
   private onContainerResize() {
-    const container = document.getElementById(this.containerId);
-    if (!container) return;
+    // const container = document.getElementById(this.containerId);
+    if (!this.visualisationContainer || !this.visualisationAndSidebarContainer || !this.sidebarPanel) return;
 
-    const width = container.offsetWidth;
-    const height = container.offsetHeight;
+    const sidebarWidth = this.sidebarPanel.offsetWidth;
 
-    if (width === this.canvasWidth && height === this.canvasHeight) return;
+    const newCanvasWidth = this.visualisationAndSidebarContainer.offsetWidth - sidebarWidth;
+    const newCanvasHeight = this.calcCanvasHeightForFullSequence();
 
-    this.canvasWidth = width;
-    this.canvasHeight = this.scrollMode ? height : this.calcCanvasHeightForFullSequence();
+    // Skip if dimensions haven't changed
+    if (newCanvasWidth === this.canvasWidth && newCanvasHeight === this.canvasHeight) return;
 
+    this.canvasWidth = newCanvasWidth;
+    this.canvasHeight = newCanvasHeight;
+
+    this.setCanvasBoxPerLines();
     this.calculateLineBoxLayout();
     this.canvas = this.createHiPPICanvas(this.canvasWidth, this.canvasHeight);
-    this.registerCanvasMouseEvents(); // reattach events
-    container.innerHTML = ''; // clear old canvas
-    container.appendChild(this.canvas);
+    this.registerCanvasMouseEvents();
+    this.visualisationContainer.innerHTML = ''; // clear old canvas
+
+    // add sidebar panel
+    const sel = this.currentClickedResidue ? this.currentClickedResidue : undefined;
+    this.showSidebar(sel); // show default placeholder
+
+    this.visualisationContainer.appendChild(this.canvas);
+
     this.draw();
   }
 
+  private getSidebarWidth(container: HTMLElement): number {
+    const percentWidth = container.offsetWidth * 0.25;
+    return Math.max(percentWidth, 200);
+  }
+
+  private createFlexBoxWrapper(): HTMLDivElement {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'flexbox-wrapper';
+    wrapper.style.display = 'flex';
+    wrapper.style.height = `${this.scrollContainerMaxHeight}px`;
+    wrapper.style.width = '100%';
+    wrapper.style.background = '#f3f3f3';
+    return wrapper;
+  }
+
+  private createScrollableCanvasWrapper(): HTMLDivElement {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'canvas-wrapper';
+    wrapper.style.width = 'calc(100% - 250px)';
+    wrapper.style.overflowY = 'auto';
+    wrapper.style.maxHeight = `${this.scrollContainerMaxHeight}px`;
+    return wrapper;
+  }
+
   private setupResizeObserver() {
-    const container = document.getElementById(this.containerId);
-    if (!container || !this.responsive) return;
+    // const container = document.getElementById(this.containerId);
+    if (!this.visualisationContainer || !this.responsive) return;
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeDebounceTimer !== null) {
@@ -229,7 +266,7 @@ export class SmartSequenceVisualisation {
       }, 200); // debounce 200ms
     });
 
-    this.resizeObserver.observe(container);
+    this.resizeObserver.observe(this.visualisationContainer);
   }
 
   private teardownResizeObserver() {
@@ -259,54 +296,6 @@ export class SmartSequenceVisualisation {
       names.add(ann.name);
       renderings.add(ann.rendering);
     }
-  }
-
-  public addAnnotations(newAnnotations: SmartSequenceAnnotation[]) {
-    const combined = [...this.annotations, ...newAnnotations];
-    this.validateAnnotations(combined);
-    this.annotations = combined;
-    this.processAnnotations();
-    this.calculateLineBoxLayout();
-    this.draw(); // Re-render with updated annotations
-  }
-
-  public updateAnnotations(annotationId: string, updated: SmartSequenceAnnotation) {
-    const index = this.annotations.findIndex((a) => a.identifier === annotationId);
-    if (index === -1) {
-      throw new Error(`Annotation with id "${annotationId}" not found.`);
-    }
-
-    const updatedList = [...this.annotations];
-    updatedList[index] = updated;
-
-    this.validateAnnotations(updatedList);
-    this.annotations = updatedList;
-    this.processAnnotations();
-    this.calculateLineBoxLayout();
-    this.draw();
-  }
-
-  public getAnnotations() {
-    return this.annotations;
-  }
-
-  public deleteAnnotation(annotationId: string) {
-    const index = this.annotations.findIndex((a) => a.identifier === annotationId);
-    if (index === -1) {
-      throw new Error(`Annotation with id "${annotationId}" not found.`);
-    }
-
-    this.annotations.splice(index, 1);
-    this.processAnnotations();
-    this.calculateLineBoxLayout();
-    this.draw(); // Re-render after deletion
-  }
-
-  public clearAnnotations() {
-    this.annotations = [];
-    this.processAnnotations();
-    this.calculateLineBoxLayout();
-    this.draw();
   }
 
   private processAnnotations() {
@@ -509,7 +498,7 @@ export class SmartSequenceVisualisation {
           annotations: this.getAnnotationsForResidue(residueIndex),
         });
         if (this.externalEvents) this.triggerExternalEvents('click', residueIndex);
-        if (this.sidebarPanel) this.showSidebar(residueIndex);
+        this.showSidebar(residueIndex);
         return;
       }
     }
@@ -670,33 +659,22 @@ export class SmartSequenceVisualisation {
     });
   }
 
-  private showSidebar(residueIndex: number) {
-    if (this.sidebarPanelEl) {
-      const content = this.buildSidebarContent(residueIndex);
-      this.sidebarPanelEl.innerHTML = content;
-      this.sidebarPanelEl.style.display = 'block';
-    }
+  private showSidebar(residueIndex?: number) {
+    if (typeof residueIndex !== 'number') return;
+    if (!this.sidebarPanel) return;
+
+    const content = this.buildSidebarContent(residueIndex);
+    this.sidebarPanel.scrollTop = 0;
+    this.sidebarPanel.innerHTML = content;
     this.onContainerResize(); // re-layout with sidebar visible
 
     const box = this.residueRects.get(residueIndex);
     if (!box) return;
 
-    const container = document.getElementById(this.containerId);
-    if (!container || !this.sidebarPanelEl) return;
+    // const container = document.getElementById(this.containerId);
+    if (!this.visualisationContainer || !this.sidebarPanel) return;
 
-    // Determine if showing on the right will occlude
-    const sidebarWidth = 280;
-    const residueRightEdge = box.x + box.width;
-    const occludes = residueRightEdge > this.canvasWidth - sidebarWidth;
-
-    const showOnLeft = occludes;
-
-    // Apply positioning class or style
-    this.sidebarPanelEl.style.right = showOnLeft ? '' : '0';
-    this.sidebarPanelEl.style.left = showOnLeft ? '0' : '';
-
-    this.sidebarPanelEl.innerHTML = this.buildSidebarContent(residueIndex);
-    this.sidebarPanelEl.style.display = 'block';
+    this.sidebarPanel.innerHTML = this.buildSidebarContent(residueIndex);
   }
 
   private calcBoxMaxDimensions() {
@@ -760,9 +738,6 @@ export class SmartSequenceVisualisation {
   }
 
   private calcCanvasHeightForFullSequence(): number {
-    const effectiveBoxWidth = this.maxBoxWidth + this.hoverBorderWidth;
-    const availableWidth = this.canvasWidth - this.margins.left - this.margins.right;
-
     let x = this.margins.left;
     let lineCount = 1;
 
@@ -787,12 +762,7 @@ export class SmartSequenceVisualisation {
     return this.margins.top + lineCount * totalLineHeight + this.margins.bottom;
   }
 
-  private calculateLineBoxLayout() {
-    if (this.maxBoxWidth <= 0 || this.maxBoxHeight <= 0 || this.maxNumberingBoxHeight <= 0) {
-      console.warn('Box or numbering dimensions not calculated yet.');
-      return;
-    }
-
+  private setCanvasBoxPerLines() {
     const { left: marginLeft, right: marginRight, top: marginTop, bottom: marginBottom } = this.margins;
 
     const availableWidth = this.canvasWidth - marginLeft - marginRight;
@@ -807,6 +777,28 @@ export class SmartSequenceVisualisation {
     } else {
       this.canvasBoxPerLines = Math.floor(availableWidth / effectiveBoxWidth);
     }
+  }
+
+  private calculateLineBoxLayout() {
+    if (this.maxBoxWidth <= 0 || this.maxBoxHeight <= 0 || this.maxNumberingBoxHeight <= 0) {
+      console.warn('Box or numbering dimensions not calculated yet.');
+      return;
+    }
+
+    const { left: _marginLeft, right: _marginRight, top: marginTop, bottom: marginBottom } = this.margins;
+
+    // const availableWidth = this.canvasWidth - marginLeft - marginRight;
+    // const effectiveBoxWidth = this.maxBoxWidth + this.hoverBorderWidth;
+
+    // if (this.groupingLineBreak) {
+    //   this.canvasBoxPerLines = Math.floor(availableWidth / effectiveBoxWidth); // spacing handled during drawing
+    // } else if (this.grouping) {
+    //   const groupBoxWidth = this.residueGroupSize * effectiveBoxWidth + this.residueGroupRightMargin;
+    //   const fullGroupsPerLine = Math.floor((availableWidth + this.residueGroupRightMargin) / groupBoxWidth);
+    //   this.canvasBoxPerLines = fullGroupsPerLine * this.residueGroupSize;
+    // } else {
+    //   this.canvasBoxPerLines = Math.floor(availableWidth / effectiveBoxWidth);
+    // }
 
     const extraCircleHeight = this.hasCircleAnnotation ? this.circleAnnotationRadius * 2 + this.circleAnnotationMarginTop + this.circleAnnotationMarginBottom : 0;
     const totalLineHeight = this.maxNumberingBoxHeight + this.maxBoxHeight + extraCircleHeight + this.lineBottomMargin;
@@ -817,7 +809,7 @@ export class SmartSequenceVisualisation {
     } else {
       this.chunkedSequence = [];
       for (let i = 0; i < this.sequence.length; i += this.canvasBoxPerLines!) {
-        this.chunkedSequence.push(this.sequence.slice(i, i + this.canvasBoxPerLines));
+        this.chunkedSequence.push(this.sequence.slice(i, i + this.canvasBoxPerLines!));
       }
     }
 
@@ -863,11 +855,6 @@ export class SmartSequenceVisualisation {
           x = marginLeft;
           y += lineHeight;
           currentLine++;
-
-          // Stop drawing when we've reached the bottom of the canvas (for scrollMode)
-          if (this.scrollMode && y + lineHeight > this.canvasHeight) {
-            break;
-          }
         }
 
         // Draw background, borders, character, annotations (like before)
@@ -1088,25 +1075,23 @@ export class SmartSequenceVisualisation {
     `;
   }
 
-  private createSidebarPanel(container: HTMLElement) {
+  private createSidebarPanel() {
     const panel = document.createElement('div');
-    panel.style.position = 'absolute';
-    panel.style.top = '0';
-    panel.style.width = '280px';
+    panel.className = 'sidebar-panel';
+    panel.style.width = '250px';
     panel.style.height = '100%';
     panel.style.background = '#fafafa';
-    panel.style.borderTop = '1px solid #ccc';
-    panel.style.borderBottom = '1px solid #ccc';
     panel.style.borderLeft = '1px solid #ccc';
-    panel.style.borderRight = '1px solid #ccc';
     panel.style.overflowY = 'auto';
     panel.style.padding = '12px';
-    panel.style.display = 'none';
     panel.style.zIndex = '9998';
+    panel.innerHTML = `<p style="margin-top: 0; font-size: 14px;">Click a residue to view more details</p>`;
+    panel.style.display = 'block';
 
-    container.style.position = 'relative'; // Ensure container is positioned
-    container.appendChild(panel);
-    this.sidebarPanelEl = panel;
+    return panel;
+    // container.style.position = 'relative';
+    // container.appendChild(panel);
+    // this.sidebarPanel = panel;
   }
 
   private buildSidebarContent(residueIndex: number): string {
@@ -1121,8 +1106,9 @@ export class SmartSequenceVisualisation {
 
     // Inline close handler
     const handleSidebarClose = () => {
-      if (this.sidebarPanelEl) {
-        this.sidebarPanelEl.style.display = 'none';
+      if (this.sidebarPanel) {
+        // this.sidebarPanel.style.display = 'none';
+        this.sidebarPanel.innerHTML = '<p style="margin-top: 0; font-size: 14px;">Click a residue to view more details</p>';
         this.currentClickedResidue = null;
         this.onContainerResize();
       }
@@ -1155,6 +1141,7 @@ export class SmartSequenceVisualisation {
       html += `</ul>`;
     }
 
+    // TODO: Adapt this for validation data once it's here
     // Annotations
     const annotations = this.getAnnotationsForResidue(residueIndex);
     if (annotations.length > 0) {

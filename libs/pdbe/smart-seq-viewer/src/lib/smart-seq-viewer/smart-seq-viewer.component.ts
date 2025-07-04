@@ -12,7 +12,7 @@ import { generateRandomAlternativeNumberings, generateRandomAnnotations, generat
 export class SmartSeqViewerComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     // const sequence = 'M'.repeat(1000);
-    // const sequence = generateRandomSequence(200);
+    // const sequence = generateRandomSequence(5000);
     const sequence =
       'IVGGYNCEENSVPYQVSLNSGYHFCGGSLINEQWVVSAGHCYKSRIQVRLGEHNIEVLEGNEQFINAAKIIRHPQYDRKTLNNDIMLIKLSSRAVINARVSTISLPTAPPATGTKCLISGWGNTASSGADYPDELQCLDAPVLSQAKCEASYPGKITSNMFCVGFLEGGKDSCQGDSGGPVVCNGQLQGVVSWGDGCAQKNKPGVYTKVYNYVKWIKNTIAANS';
     const annotation1 = generateRandomAnnotations(1, sequence, 'Background');
@@ -21,10 +21,10 @@ export class SmartSeqViewerComponent implements AfterViewInit {
     const altSequences = generateRandomAlternativeNumberings(sequence, true, true);
 
     new SmartSequenceVisualisation(sequence, 'smart-seq-container', altSequences, [annotation1, annotation2, annotation3], '1', 'A', {
-      scrollMode: true,
       grouping: true,
-      groupingLineBreak: true,
+      groupingLineBreak: false,
       externalEvents: true,
+      hoverTooltips: false,
     });
   }
 }
