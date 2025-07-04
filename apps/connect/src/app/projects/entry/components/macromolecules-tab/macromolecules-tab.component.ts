@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, computed, effect, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
-import { MolstarOverviewForTopPage } from '../../helpers/molstar/molstar-overview-for-top-page';
+import { MolstarForEntryPages } from '../../helpers/molstar-for-entry-pages';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { dashboardStatLinks } from '../../entry-constant';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -374,5 +374,25 @@ export class MacromoleculesTabComponent {
 
     //Call render method to display the 2D view
     this.topologyViewerInstance.render(container, options);
+  }
+
+  getLengthType(macromolecule: MacromoleculesRowData) {
+    let lengthType = 'residue';
+    if (macromolecule.additionalData.molecule.molecule_type.includes('polypeptide')) {
+      lengthType = 'amino acid';
+    } else if (macromolecule.additionalData.molecule.molecule_type.includes('nucleotide')) {
+      lengthType = 'nucleotide';
+    } else if (macromolecule.additionalData.molecule.molecule_type.includes('carbohydrate')) {
+      lengthType = 'monosaccharide';
+    }
+    if (macromolecule.length > 1) {
+      return `${lengthType}s`;
+    }
+    return lengthType;
+  }
+
+  public getRoundedWeight(): number | undefined {
+    const weight = this.currentMacromoleculeDatum()?.additionalData.molecule.weight;
+    return weight !== undefined ? Math.round(weight) : undefined;
   }
 }

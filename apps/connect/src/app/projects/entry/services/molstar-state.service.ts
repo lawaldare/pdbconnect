@@ -1,7 +1,7 @@
 import { inject, Injectable, Injector, signal } from '@angular/core';
 import { OutliersByModelId } from '../pages/main/data-processing.facade';
 import { OverviewStateManagementService } from '../components/summary-tab/sub-components/overview-molstar/state-management.service';
-import { MolstarOverviewForTopPage } from '../helpers/molstar/molstar-overview-for-top-page';
+import { MolstarForEntryPages } from '../helpers/molstar-for-entry-pages';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
@@ -22,7 +22,7 @@ export class MolstarStateService {
     }
     return this._summaryStateManagement;
   }
-  public readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+  public readonly molstarVisualisation = inject(MolstarForEntryPages);
 
   // state and data variables for Overview
 

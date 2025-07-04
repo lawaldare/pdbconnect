@@ -38,32 +38,37 @@
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.pdbeComplexId" />
             </span>
             <article>
-              <a [href]="util.baseUrl() + 'entry/search/index?complex_id:' + datum?.complexId" target="_blank">{{datum?.complexId}}</a>
+              <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/complexes/' + datum?.complexId" target="_blank">{{datum?.complexId}}</a>
               <img src="assets/icons/link_search_icon.png" alt="search icon" />
             </article>
           </div>
         </div>
         <div class="assembly-grouped">
+          @if (getAdditionalData('accessibleSurfaceArea')) {
           <div class="info-row">
             <span>
               Accessible surface area
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.accessbileSurfaceArea" />
             </span>
-            <article>{{ getAdditionalData('accessibleSurfaceArea') }}<sup>2</sup></article>
+            <article>{{ getAdditionalData('accessibleSurfaceArea') }}</article>
           </div>
+          } @if (getAdditionalData('buriedSurfaceArea')) {
           <div class="info-row">
             <span>
               Buried surface area
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.buriedSurfaceArea" />
             </span>
-            <article>{{ getAdditionalData('buriedSurfaceArea') }}<sup>2</sup></article>
+            <article>{{ getAdditionalData('buriedSurfaceArea') }}</article>
           </div>
+          }
         </div>
         <div class="assembly-grouped">
+          @if (getAdditionalData('dissociationArea')) {
           <div class="info-row">
             <span>Dissociation area</span>
-            <article>{{ getAdditionalData('dissociationArea') }}<sup>2</sup></article>
+            <article>{{ getAdditionalData('dissociationArea') }}</article>
           </div>
+          }
           <div class="info-row">
             <span>
               Dissociation energy (ΔGdiss)

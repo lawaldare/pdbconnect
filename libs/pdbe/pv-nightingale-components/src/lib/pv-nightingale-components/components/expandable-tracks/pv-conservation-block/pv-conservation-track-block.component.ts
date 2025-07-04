@@ -4,9 +4,14 @@ import { MatRadioButton } from '@angular/material/radio';
 import { MaterialModule } from '@pdbc/core';
 import { PvFixedHighlightService } from '../../../services/pv-fixed-highlight.service';
 
-import '@nightingale-elements/nightingale-new-core-adam';
-import '@pdbe-nightingale-conservation';
-import '@nightingale-elements/nightingale-linegraph-track';
+// Prevent tree-shaking of Nightingale web components
+import * as NightingaleCore from '@nightingale-elements/nightingale-new-core-adam';
+import * as PdbeConservation from '@pdbe-nightingale-conservation';
+import * as NightingaleLine from '@nightingale-elements/nightingale-linegraph-track';
+
+// Dummy references to prevent tree-shaking
+const _conservationRefs = [NightingaleCore, PdbeConservation, NightingaleLine];
+
 import { APIConservationData } from '../../../models/pv-api-conservation-track-data.model';
 import { processEntityConservationDataFromAPI, processEntityConservationLineChartDataFromAPI } from './pv-conservation-api-processing';
 

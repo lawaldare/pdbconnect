@@ -191,88 +191,10 @@ export const dashboardStatLinks = {
 export const resourceUrls: any = {
   CATH: 'https://www.cathdb.info/version/latest/superfamily/',
   SCOP: 'https://ftp.ebi.ac.uk/pub/databases/pdbe-kb/scop-legacy/',
-  Pfam: `${baseUrl}interpro/entry/pfam/`,
+  Pfam: `https://www.ebi.ac.uk/pdbe/interpro/entry/pfam/`,
 };
 
 export const handleBarSrc = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjE5Ij4KICAgIDxyZWN0IHg9IjEiIHk9IjAiIHdpZHRoPSI2cHgiIGhlaWdodD0iMThweCIgc3R5bGU9ImZpbGw6IGRhcmtncmV5OyBzdHJva2U6IGJsYWNrOyBzdHJva2Utd2lkdGg6IDFweDsiPjwvcmVjdD4KPC9zdmc+`;
-
-export type ApiDataItem =
-  | 'summaryData'
-  | 'macroMolecules'
-  | 'boundLigands'
-  | 'organismScientificNames'
-  | 'hasRna'
-  | 'experimentalDetails'
-  | 'experimentalMethod'
-  | 'resolutionValues'
-  | 'uniprotMapping'
-  | 'uniprotCountsInPDBe'
-  | 'bestStructuresMappingsByUniProtIds'
-  | 'proteinPagesSummaryByUniProtIds'
-  | 'interproMapping'
-  | 'downloadOptions'
-  | 'viewOptions'
-  | 'pfamMapping'
-  | 'summaryQualityScores'
-  | 'cathMapping'
-  | 'scop175Mapping'
-  | 'modifications'
-  | 'validationKeyStats'
-  | 'validationXRayRefine'
-  | 'primaryPublication'
-  | 'articlesCiting'
-  | 'complexDetails'
-  | 'assemblies'
-  | 'pisaAssemblies'
-  | 'carbohydrates'
-  | 'pdbRedoQualityScore'
-  | 'experimentRawDataPDB'
-  | 'experimentRawDataBMRB'
-  | 'experimentRawDataSBGrid'
-  | 'experimentRawDataIRRMC'
-  | 'experimentRawDataEMPIAR';
-
-/**
- * For different components of the page, this lists their API dependencies
- */
-export const COMPONENT_DEPENDENCIES: Record<string, ApiDataItem[]> = {
-  titleInfo: ['experimentalMethod', 'resolutionValues', 'summaryData'],
-  mainInfoArea: ['summaryData', 'organismScientificNames', 'primaryPublication', 'summaryQualityScores'],
-  overviewMolstar: ['complexDetails', 'macroMolecules', 'boundLigands', 'modifications', 'pfamMapping', 'cathMapping', 'scop175Mapping', 'primaryPublication'],
-  interactiveTables: [
-    'complexDetails',
-    'assemblies',
-    'pisaAssemblies',
-    'pfamMapping',
-    'cathMapping',
-    'scop175Mapping',
-    'macroMolecules',
-    'boundLigands',
-    'modifications',
-    'carbohydrates',
-    'uniprotMapping',
-    'bestStructuresMappingsByUniProtIds',
-  ],
-  detailsDashboard: ['macroMolecules', 'proteinPagesSummaryByUniProtIds'],
-  experimentsValidationTab: [
-    'summaryData',
-    'hasRna',
-    'experimentalDetails',
-    'validationKeyStats',
-    'validationXRayRefine',
-    'pdbRedoQualityScore',
-    'experimentRawDataPDB',
-    'experimentRawDataBMRB',
-    'experimentRawDataSBGrid',
-    'experimentRawDataIRRMC',
-    'experimentRawDataEMPIAR',
-  ],
-  citationsTab: ['primaryPublication', 'articlesCiting'],
-};
-
-export const INITIAL_API_STATUS = Object.fromEntries(
-  (Object.keys(COMPONENT_DEPENDENCIES).flatMap((key) => COMPONENT_DEPENDENCIES[key]) as ApiDataItem[]).map((item) => [item, 'pending'])
-) as Record<ApiDataItem, 'pending' | 'done'>;
 
 export const OUTLIER_TYPE_LABELS: Record<string, string> = {
   bond_angles: 'Bond Angles',
@@ -401,4 +323,81 @@ export const INTX_NAME_COLORS: Record<string, string> = {
   weak_polar: '#96CDE6',
   weak_hbond: '#96CDE6',
   mixed: '#7F7E80',
+};
+
+export const ENTRY_PAGES_LINKS = [
+  {
+    rel: 'search',
+    href: '/assets/xml/opensearch.xml',
+    type: 'application/opensearchdescription+xml',
+    title: 'PDBe',
+  },
+  {
+    rel: 'icon',
+    href: '/assets/icons/pdbe-logo/pdbe-icon-16x16.png',
+    type: 'image/png',
+    sizes: '16x16',
+  },
+  {
+    rel: 'icon',
+    href: '/assets/icons/pdbe-logo/pdbe-icon-32x32.png',
+    type: 'image/png',
+    sizes: '32x32',
+  },
+  {
+    rel: 'shortcut icon',
+    href: '/assets/icons/pdbe-logo/pdbe-icon-144x144.png',
+    type: 'image/png',
+    sizes: '144x144',
+  },
+  {
+    rel: 'apple-touch-icon',
+    href: '/assets/icons/pdbe-logo/pdbe-icon-180x180.png',
+    type: 'image/png',
+    sizes: '180x180',
+  },
+];
+
+export const labelGroups = {
+  Popular: [
+    'Archive mmCIF file',
+    'Updated mmCIF file',
+    'PDB file',
+    'Compatible PDB file bundle (tar.gz)',
+    'FASTA (Entry)',
+    'Full report (PDF)',
+    'Validation data (XML)',
+  ],
+  'Archive Files': [
+    'Archive mmCIF file',
+    'PDB file',
+    'Compatible PDB file bundle (tar.gz)',
+    'PDB file (gz)',
+    'PDB header',
+    'PDBML',
+    'PDBML (ATOM lines)',
+    'PDBML (no atoms)',
+  ],
+  'Enriched data': ['Updated mmCIF file'],
+  Mappings: ['SIFTS XML file with residue-level mappings', 'FASTA (Entry)'],
+  Validation: [
+    'Summary report (PDF)',
+    'Full report (PDF)',
+    'Percentile plot (PNG)',
+    'Percentile plot (SVG)',
+    'Validation data (XML)',
+    'Validation report mmCIF file (gz)',
+  ],
+  Assemblies: ['Assembly composition XML', /^Assembly \d+.*$/],
+  // Assemblies: ['Assembly composition XML', 'Assembly {asm_ph} (mmCIF; gz)', 'Assembly {asm_ph} (atom only; mmCIF)'],
+  'Experimental Data': [
+    'Chemical shifts (text)',
+    'Experimental restraints (text)',
+    'NMR Shifts and Constraints (NEF)',
+    'NMR Shifts and Constraints (PDBx/mmCIF)',
+    'Remediated experimental restraints (text)',
+    'Structure Factors',
+    'EDS map',
+    'EDS difference map',
+  ],
 };

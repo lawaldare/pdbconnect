@@ -28,6 +28,20 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
     this.links = this.headerConfig.urls || [];
   }
 
+  // ngAfterViewInit(): void {
+  //   const fromOption = {
+  //     y: -100,
+  //   };
+
+  //   const toOption = {
+  //     y: 0,
+  //     duration: 3,
+  //     ease: 'bounce',
+  //   };
+
+  //   gsap.fromTo('img', fromOption, toOption);
+  // }
+
   public get getHeaderLogoClass(): string {
     return this.headerConfig.logoType === 'PDBe' ? 'pdbe-header-logo-img' : 'pdbe-kb-header-logo-img';
   }

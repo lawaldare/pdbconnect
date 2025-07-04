@@ -5,5 +5,4 @@ export const environment = {
   pdbeBaseUrl: 'https://www.ebi.ac.uk/pdbe/',
   googleAnalyticsTag: 'G-J9SJVN0SSD',
   clarityProjectId: '',
-  isLocal: false,
 };

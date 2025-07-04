@@ -6,12 +6,17 @@ import { Injectable } from '@angular/core';
 export class BaseHrefService {
   public setBaseHref() {
     const hostname = document.location.hostname;
+    const pathname = document.location.pathname;
+
     let baseHref: string;
 
     if (hostname === 'localhost') {
       baseHref = '/';
+    } else if (pathname.includes('complexes')) {
+      baseHref = '/pdbe/pdbe-kb/';
+    } else if (pathname.includes('entry')) {
+      baseHref = '/pdbe/entry/';
     } else {
-      const pathname = document.location.pathname;
       const pathnamesArray = pathname.split('/');
       const mappedHref = `/${pathnamesArray[1]}/${pathnamesArray[2]}/`;
       baseHref = mappedHref;

@@ -55,15 +55,11 @@ type InteractionType =
   standalone: true,
   imports: [CommonModule, MaterialModule],
   template: `
-    @if (value.length > 1) {
-      <ul>
-        @for (type of value; track type) {
-          <li>{{ type }}</li>
-        }
-      </ul>
-    } @else {
-      <p>{{ value[0] }}</p>
-    }
+    <ul>
+      @for (type of value; track type) {
+        <li>{{ type }}</li>
+      }
+    </ul>
   `,
   styleUrls: [],
 })

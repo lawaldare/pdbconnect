@@ -7,12 +7,22 @@
     <path d="M7 10.5L12 15.5L17 10.5H7Z" fill="black" />
   </svg>
 </button>
-<mat-menu #menu="matMenu" class="entry-dropdown-menu">
-  @for(option of options(); track option.url){ @if(downloadable()){
-  <a mat-menu-item [href]="option.url" download (click)="optionDownloaded(option.name)">{{ option.name }}</a>
-  } @else if(islink()) {
-  <a mat-menu-item [href]="option.url" target="_blank" (click)="optionViewed(option.name)">{{ option.name }}</a>
-  } @else {
+<mat-menu #menu="matMenu" class="entry-dropdown-menu" yPosition="below">
+  <div class="search-box" matMenuContent>
+    <input type="search" [formControl]="searchTerm" placeholder="Search all files" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()" />
+    @if(!searchTerm.value){
+    <i class="icon icon-common icon-search"></i>
+    }
+  </div>
+  @for(option of filteredOptions(); track index; let index = $index;){ @if(downloadable()){
+  <span class="group-name">{{option.group}}</span>
+  @for(d of option.items; track d.name){
+  <a class="url-link" mat-menu-item [href]="d.url" download (click)="optionDownloaded(d.name)">{{ d.name }}</a>
+  } } @else if(islink()) {
+  <span class="group-name">{{option.group}}</span>
+  @for(d of option.items; track d.name){
+  <a class="url-link" mat-menu-item [href]="d.url" target="_blank" (click)="optionViewed(d.name)">{{ d.name }}</a>
+  } } @else {
   <span [ngClass]="{ small: issmall() }" mat-menu-item (click)="optionClicked(option.name)">{{ option.name }}</span>
   } }
 </mat-menu>

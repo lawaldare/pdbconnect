@@ -65,7 +65,7 @@ export const EXPERIMENTAL_INFO_DATA_QUALITY_COLUMN_DEFS: ColDef[] = [
     resizable: false,
   },
   {
-    headerName: 'Value',
+    headerName: 'Overall',
     field: 'value',
     cellRenderer: ExperimentalInfoValueRendererComponent,
     flex: 1,

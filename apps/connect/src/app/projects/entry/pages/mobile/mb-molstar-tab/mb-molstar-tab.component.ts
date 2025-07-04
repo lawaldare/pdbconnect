@@ -26,7 +26,7 @@ import { MbMacromoleculeComponent } from '../mb-macromolecules/mb-macromolecule.
 import { MbLigandsComponent } from '../mb-ligands/mb-ligands.component';
 import { MbDomainsComponent } from '../mb-domains/mb-domains.component';
 import { MobileFacade } from '../mobile.facade';
-import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
+import { MolstarForEntryPages } from '../../../helpers/molstar-for-entry-pages';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MobileTabNames } from '../mobile-main/mobile-main.component';
 import { take } from 'rxjs';
@@ -59,7 +59,7 @@ export class MbMolstarTabComponent implements AfterViewInit, OnDestroy {
   @ViewChildren('chipEl') chipElements!: QueryList<ElementRef<HTMLElement>>;
 
   private molstarFirstRenderStarted = signal(false);
-  private readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+  private readonly molstarVisualisation = inject(MolstarForEntryPages);
   private readonly renderer = inject(Renderer2);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly molstarState = inject(MolstarStateService);

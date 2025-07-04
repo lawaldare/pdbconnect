@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { computed, DestroyRef, inject, Injectable, Injector, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, Renderer2, RendererFactory2, signal } from '@angular/core';
+import { Title, Meta } from '@angular/platform-browser';
 import { DataToTable } from '../../components/shared/interactive-tables/data-processing/abstract-base-row-class';
 import { AssemblyDataToTable } from '../../components/shared/interactive-tables/data-processing/assembly-row-class';
 import { DomainDataToTable } from '../../components/shared/interactive-tables/data-processing/domain-row-class';
@@ -13,7 +14,7 @@ import { TableNames } from './main.component';
 import { TabNames } from '../../helpers/tab-names.enum';
 import { EntryActions } from '../../store/entry.actions';
 import { catchError, combineLatest, of, retry, startWith, tap } from 'rxjs';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ComplexDetails } from '../../data-models/complex-details.model';
 import { ProcessedSummary } from '../../data-models/summary.model';
 import { ResidueWiseOutliersMolecule } from '../../data-models/residuewise-outliers.model';
@@ -28,6 +29,9 @@ import {
   MacromoleculesRowData,
 } from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { getMacromoleculeOfDomain } from '../../helpers/processed-data-to-controls';
+import { environment } from '../../../../../environments/environment';
+import { ENTRY_PAGES_LINKS, labelGroups } from '../../entry-constant';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 
 export type OutliersByModelId = Record<
   string,
@@ -48,6 +52,14 @@ export class MainDataProcessingFacade {
   public readonly molstarState = inject(MolstarStateService);
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
+  private readonly renderer: Renderer2;
+
+  constructor() {
+    const rendererFactory = inject(RendererFactory2);
+    this.renderer = rendererFactory.createRenderer(null, null);
+  }
 
   public tabDataLoaded = computed(() => {
     return (
@@ -59,6 +71,7 @@ export class MainDataProcessingFacade {
   });
   public tableData = signal<DataToTable>({} as DataToTable);
   private tabName = signal<TableNames>('' as TableNames);
+  private isTitleAndMetaProcessed = false;
 
   public readonly routeTabs = [
     { label: 'Summary', id: 'summary' },
@@ -98,7 +111,7 @@ export class MainDataProcessingFacade {
     return tabName as TableNames;
   }
 
-  public processInteractiveTablesData() {
+  public processInteractiveTablesData(entryId: string) {
     const createSelectorStream = <T>(selector: any, defaultValue: T) =>
       this.globalStore.select(selector).pipe(
         startWith(defaultValue),
@@ -137,11 +150,55 @@ export class MainDataProcessingFacade {
           if (!this.compCommunication.hasProcessedMacromolecules()) {
             this.processMacromoleculesData(data);
           }
-          this.processTableData(data);
+          this.processTableData(entryId, data);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+  }
+
+  private setDynamicHeadTags(entryId: string, data: any) {
+    const hasDataArrived = this.isNotUndefined([data.summaryData]);
+
+    if (hasDataArrived && Object.keys(data.summaryData).length > 0) {
+      const summaryData = data.summaryData as ProcessedSummary;
+      const titleAndDescription = `PDB ${entryId}: ${summaryData.entryTitle} | Protein Data Bank in Europe - PDBe`;
+      this.titleService.setTitle(titleAndDescription);
+      this.metaService.addTag({ name: 'description', content: titleAndDescription });
+      this.metaService.addTag({ name: 'author', content: 'Protein Data Bank in Europe - PDBe' });
+      this.metaService.addTag({ name: 'email', content: 'pdbegroup@gmail.com' });
+      this.metaService.addTag({ name: 'Distribution', content: 'Global' });
+      this.metaService.addTag({ name: 'Rating', content: 'General' });
+
+      this.metaService.addTag({ property: 'og:title', content: `PDB: ${entryId} | Protein Data Bank in Europe - PDBe` });
+      this.metaService.addTag({ property: 'og:description', content: `Entry title: "${summaryData.entryTitle}"` });
+      this.metaService.addTag({ property: 'og:url', content: `${environment.pdbeBaseUrl}/entry/pdb/1trn` });
+      this.metaService.addTag({ property: 'og:image', content: `https://www.ebi.ac.uk/pdbe/static/entry/${entryId}_deposited_chain_front_image-800x800.png` });
+      this.metaService.addTag({ property: 'og:image:alt', content: `PDBe ${entryId} Structure` });
+      this.metaService.addTag({ property: 'og:type', content: 'website' });
+      this.metaService.addTag({ property: 'og:locale', content: 'en_GB' });
+      this.metaService.addTag({ property: 'og:site_name', content: 'PDBe Entry Pages' });
+
+      this.metaService.addTag({ name: 'twitter:card', content: 'summary_large_image' });
+      this.metaService.addTag({ name: 'twitter:title', content: titleAndDescription });
+      this.metaService.addTag({ name: 'twitter:description', content: titleAndDescription });
+      this.metaService.addTag({ name: 'twitter:url', content: `${environment.pdbeBaseUrl}/entry/pdb/1trn` });
+      this.metaService.addTag({ name: 'twitter:image', content: `https://www.ebi.ac.uk/pdbe/static/entry/${entryId}_deposited_chain_front_image-800x800.png` });
+      this.metaService.addTag({ name: 'twitter:image:alt', content: `PDBe ${entryId} Structure` });
+      this.metaService.addTag({ name: 'twitter:site', content: `PDBeurope` });
+
+      for (const linkObj of ENTRY_PAGES_LINKS) {
+        const linkEl = this.renderer.createElement('link');
+        this.renderer.setAttribute(linkEl, 'rel', linkObj.rel);
+        this.renderer.setAttribute(linkEl, 'type', linkObj.type);
+        this.renderer.setAttribute(linkEl, 'href', linkObj.href);
+        if (linkObj.sizes) this.renderer.setAttribute(linkEl, 'sizes', linkObj.sizes!);
+        if (linkObj.title) this.renderer.setAttribute(linkEl, 'title', linkObj.title!);
+        this.renderer.appendChild(document.head, linkEl);
+      }
+
+      this.isTitleAndMetaProcessed = true;
+    }
   }
 
   private processAssembliesData(data: any) {
@@ -304,7 +361,7 @@ export class MainDataProcessingFacade {
     }
   }
 
-  private processTableData(data: any) {
+  private processTableData(entryId: string, data: any) {
     let preferredAssemblyData = undefined;
     if (this.isNotUndefined([data.complexDetails, data.summaryData]) && Object.keys(data.summaryData).length > 0 && data.complexDetails.length > 0) {
       preferredAssemblyData = this.processPreferredAssemblyData(data.summaryData, data.complexDetails);
@@ -332,6 +389,10 @@ export class MainDataProcessingFacade {
       outliersByModelId = this.processResidueOutliersData(data.residueOutliers);
     }
     this.molstarState.outliersByModelId.set(outliersByModelId);
+
+    if (this.isTitleAndMetaProcessed === false) {
+      this.setDynamicHeadTags(entryId, data);
+    }
   }
 
   public processPreferredAssemblyData(summaryData: ProcessedSummary, complexDetails: ComplexDetails[]) {
@@ -572,6 +633,8 @@ export class MainDataProcessingFacade {
       };
     });
 
+    const mappedDownloadsUpdated = this.groupFilesByLabels(labelGroups, downloadsUpdated);
+
     const viewsUpdated = views.map((d) => {
       return {
         name: d.label,
@@ -580,7 +643,39 @@ export class MainDataProcessingFacade {
       };
     });
 
-    return { downloads: downloadsUpdated, views: viewsUpdated };
+    const mappedViewsUpdated = this.groupFilesByLabels(labelGroups, viewsUpdated);
+
+    return { downloads: mappedDownloadsUpdated, views: mappedViewsUpdated };
+  }
+
+  // private groupFilesByLabels(labelGroups: Record<string, string[]>, flatList: DownloadOption[]): any[] {
+  //   const fileMap = new Map(flatList.map((file) => [file.name, file]));
+
+  //   const groupedArray = [];
+
+  //   for (const [groupName, names] of Object.entries(labelGroups)) {
+  //     const matchedFiles = names.map((name) => fileMap.get(name)).filter((file) => file && file.url);
+
+  //     if (matchedFiles.length > 0) {
+  //       groupedArray.push({ group: groupName, items: matchedFiles });
+  //     }
+  //   }
+
+  //   return groupedArray;
+  // }
+
+  groupFilesByLabels(labelGroups: Record<string, (string | RegExp)[]>, files: DownloadOption[]) {
+    const result: { group: string; items: DownloadOption[] }[] = [];
+
+    for (const [group, patterns] of Object.entries(labelGroups)) {
+      const groupItems = files.filter((file) => patterns.some((pattern) => (pattern instanceof RegExp ? pattern.test(file.name) : file.name === pattern)));
+
+      if (groupItems.length > 0) {
+        result.push({ group, items: groupItems });
+      }
+    }
+
+    return result;
   }
 
   public getPageData(): void {

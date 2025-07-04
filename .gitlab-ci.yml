@@ -1,8 +1,9 @@
-image: node:20
+image: node:$NODE_VERSION
 
 stages:
   - test
   - build
+  - metrics
   - publish
   - trigger
   - deploy
@@ -24,6 +25,7 @@ stages:
 variables:
   GIT_DEPTH: 0
   BUILD_CONF: development
+  NODE_VERSION: 22
 
 format-check:
   stage: test
@@ -31,7 +33,7 @@ format-check:
   script:
     - npx nx format:check --base=$NX_BASE --head=$NX_HEAD
   tags:
-    - pdbe-shell
+    - pdbe-docker
 
 lint:
   stage: test
@@ -39,7 +41,7 @@ lint:
   script:
     - npx --no-install nx affected --base=$NX_BASE --head=$NX_HEAD -t lint --parallel=3
   tags:
-    - pdbe-shell
+    - pdbe-docker
 
 test:
   stage: test
@@ -47,11 +49,11 @@ test:
   script:
     - npx nx affected --base=$NX_BASE --head=$NX_HEAD -t test --parallel=3 --configuration=ci
   tags:
-    - pdbe-shell
+    - pdbe-docker
 
 build:
   stage: build
-  image: node:18
+  image: node:$NODE_VERSION
   needs:
     - test
     - format-check
@@ -81,7 +83,7 @@ build:
 
 storybook_build:
   stage: build
-  image: node:18
+  image: node:$NODE_VERSION
   extends: .distributed
   script:
     - npx nx build-storybook lib-docs
@@ -94,6 +96,46 @@ storybook_build:
   except:
     refs:
       - playground
+
+performance_check:
+  stage: metrics
+  image: cypress/browsers:node-20.11.0-chrome-121.0.6167.85-1-ff-120.0-edge-121.0.2277.83-1
+  extends: .distributed
+  cache:
+    key: no-npm-cache
+    paths: []
+  needs:
+    - build
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      variables:
+        BUILD_CONF: production
+    - if: "$CI_COMMIT_REF_NAME == 'main'"
+      variables:
+        BUILD_CONF: staging
+    - if: "$CI_COMMIT_REF_NAME == 'playground'"
+      when: never
+    - when: always
+  script:
+    - echo "Node:"
+    - node -v
+    - echo "Chrome:"
+    - google-chrome --version || chromium --version
+    - echo "Checking for chromium..."
+    - export CHROME_PATH=$(which google-chrome || which chromium)
+    - npx nx serve connect --port=4200 &
+    - npx wait-on http://localhost:4200 --timeout 300000 || (echo "App did not become available in time" && exit 1)
+    - >
+      if wget --spider --quiet http://localhost:4200; then
+        echo "App is up, running Lighthouse check";
+        node performance_scripts/perf-check.js --sendToSheets --branch="$CI_COMMIT_REF_NAME";
+      else
+        echo "Skipping Lighthouse: app did not start on time";
+        exit 1
+      fi
+  allow_failure: true
+  tags:
+    - pdbe-docker
 
 storybook_publish:
   stage: publish
@@ -159,7 +201,7 @@ pages:
 
 playground_build_and_publish:
   stage: build
-  image: node:18
+  image: node:$NODE_VERSION
   extends: .distributed
   script:
     - npx nx build playground

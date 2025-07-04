@@ -135,3 +135,7 @@ You can use the draft URL to see the deployment. Once you are happy with the dep
 - [Creating a new library component](./docs/creating-library-component.md)
 - [Creating a new project](./docs/creating-app.md)
 - [Creating and using shared-services to get data](./docs/shared-services.md)
+
+## Performance checks
+
+- [More details about performance checks integration](./docs/performance-check.md)

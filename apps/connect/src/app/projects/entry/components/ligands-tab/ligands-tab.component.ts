@@ -7,7 +7,7 @@ import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tab
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
-import { dashboardStatLinks } from '../../entry-constant';
+import { dashboardStatLinks, INTX_NAME_COLORS } from '../../entry-constant';
 import { filter, first, firstValueFrom, map, timer } from 'rxjs';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
@@ -29,6 +29,7 @@ import { ActionQueueService } from '../../services/action-queue.service';
 import { Interaction } from '../../data-models/interaction.model';
 import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar';
 import { Molecule } from '../../data-models/molecule.model';
+import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -43,6 +44,7 @@ import { Molecule } from '../../data-models/molecule.model';
     AgGridAngular,
     ReactiveFormsModule,
     TruncateTextDirective,
+    ToolTipComponent,
   ],
   templateUrl: './ligands-tab.component.html',
   styleUrl: './ligands-tab.component.scss',
@@ -74,6 +76,10 @@ export class LigandsTabComponent implements OnInit {
   public readonly selectedLigandIdx = toSignal(this.compCommunication.ligandSelection$);
 
   public readonly util = inject(UtilService);
+
+  public readonly legendsColor = this.getInteractionLabelColorArray(INTX_NAME_COLORS, INTX_NAME_STANDARDIZER);
+
+  public initialColorCount = signal<number>(4);
 
   public readonly ligandTableRows = computed(() => {
     const isLoaded = this.compCommunication.hasProcessedLigands();
@@ -159,6 +165,13 @@ export class LigandsTabComponent implements OnInit {
     if (!fullMode) {
       this.popService.popOut(this.molstarContainer, 'ligand-molstar');
     }
+  }
+
+  private getInteractionLabelColorArray(colors: Record<string, string>, labels: Record<string, string>): { label: string; color: string }[] {
+    return Object.entries(labels).map(([key, label]) => ({
+      label,
+      color: colors[key] || '#000000', // default color if not found
+    }));
   }
 
   async triggerLigandUpdateSideEffects(ligand: LigandsRowData) {
@@ -258,6 +271,11 @@ export class LigandsTabComponent implements OnInit {
         }
         this.noTermFiltering.set(false);
       });
+  }
+
+  public toggleColorList(): void {
+    const colorList = this.legendsColor ?? [];
+    this.initialColorCount.update((prev) => (prev === 4 ? colorList.length : 4));
   }
 
   private async renderInMolstar(ligand: LigandsRowData) {

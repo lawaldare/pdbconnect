@@ -1,11 +1,16 @@
-import { Component, Input, ElementRef, Renderer2, signal, OnDestroy, inject, CUSTOM_ELEMENTS_SCHEMA, computed, ViewChildren, QueryList } from '@angular/core';
+import { Component, Input, ElementRef, Renderer2, signal, OnDestroy, inject, CUSTOM_ELEMENTS_SCHEMA, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Feature as NightingaleFeature } from '@nightingale-elements/nightingale-track';
-import '@pdbe-nightingale-track-canvas';
-import '@nightingale-elements/nightingale-scrollbox';
-import { NightingaleScrollbox, NightingaleScrollboxItem } from '@nightingale-elements/nightingale-scrollbox';
+
+// Prevent tree-shaking of Nightingale web components
+import * as NightingaleTrackCanvas from '@pdbe-nightingale-track-canvas';
+import * as NightingaleScrollBox from '@nightingale-elements/nightingale-scrollbox';
+
+// Dummy references to prevent tree-shaking
+const _nestedTrackBlockRefs = [NightingaleTrackCanvas, NightingaleScrollBox];
+
 import { PvTooltipService } from '../../../services/pv-tooltip.service';
-import { interval, map, filter, Subscription, take } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { PvFixedHighlightService } from '../../../services/pv-fixed-highlight.service';
 import { TrackBlockComponent } from '../pv-track-block/pv-track-block.component';
 

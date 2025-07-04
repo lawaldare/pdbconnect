@@ -46,8 +46,8 @@ export interface EntryStoreState {
   goMapping: GOMapping | undefined;
   ecMapping: ECMapping | undefined;
   pfamMapping: PfamMappings | undefined;
-  downloadOptions: DownloadOption[];
-  viewOptions: DownloadOption[];
+  downloadOptions: { group: string; items: DownloadOption[] }[];
+  viewOptions: { group: string; items: DownloadOption[] }[];
   summaryQualityScores: ProcessedQualityScores | undefined;
   cathMapping: CathMappings | undefined;
   scop175Mapping: ScopMappings | undefined;
@@ -104,8 +104,8 @@ export interface UniProtMappingData {
 }
 
 export interface DownloadOptionData {
-  downloadOptions: DownloadOption[];
-  viewOptions: DownloadOption[];
+  downloadOptions: { group: string; items: DownloadOption[] }[];
+  viewOptions: { group: string; items: DownloadOption[] }[];
 }
 
 export interface AssembliesData {

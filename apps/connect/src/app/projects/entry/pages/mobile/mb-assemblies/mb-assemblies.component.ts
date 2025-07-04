@@ -12,7 +12,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { MaterialModule } from '@pdbc/core';
 import { FormsModule } from '@angular/forms';
-import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
+import { MolstarForEntryPages } from '../../../helpers/molstar-for-entry-pages';
 
 @Component({
   selector: 'pdbc-mb-assemblies',
@@ -33,7 +33,7 @@ export class MbAssembliesComponent implements OnInit {
   public readonly symmetry = toSignal(this.globalStore.select(EntrySelectors.symmetry));
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
 
-  public readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+  public readonly molstarVisualisation = inject(MolstarForEntryPages);
 
   public readonly assemblyTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();

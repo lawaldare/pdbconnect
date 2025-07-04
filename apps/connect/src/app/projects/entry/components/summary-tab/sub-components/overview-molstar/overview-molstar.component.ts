@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { OverviewMolstarFacade } from './data-processing.facade';
 import { ComponentCommunicationService } from '../../../../services/component-comm.service';
 import { OverviewStateManagementService } from './state-management.service';
-import { MolstarOverviewForTopPage } from '../../../../helpers/molstar/molstar-overview-for-top-page';
+import { MolstarForEntryPages } from '../../../../helpers/molstar-for-entry-pages';
 import { OverviewMolstarControBarComponent } from './sub-components/molstar-control-bar/molstar-control-bar.component';
 import { OverviewMolstarTabListViewComponent } from './sub-components/tab-listview-content/tab-listview-content.component';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
@@ -21,7 +21,7 @@ import { MaterialModule, PopupWindowService } from '@pdbc/core';
 export class OverviewMolstarComponent implements AfterViewInit {
   public readonly dataProcessing = inject(OverviewMolstarFacade);
   public readonly stateManagement = inject(OverviewStateManagementService);
-  public readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+  public readonly molstarVisualisation = inject(MolstarForEntryPages);
   public readonly molstarState = inject(MolstarStateService);
 
   public readonly compCommunication = inject(ComponentCommunicationService);

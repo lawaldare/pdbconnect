@@ -36,7 +36,7 @@ export interface ICustomHeaderParams {
             <!--AG-SORT-INDICATOR-->
             @if (params.enableSorting) {
               <div #sortIconButton class="customHeaderMenuButton" (click)="onSortIconClicked()">
-                <span class="ag-icon ag-icon-{{ iconType() }}" unselectable="on" role="presentation" [class.hidden]="!isSorted()"></span>
+                <span class="ag-icon ag-icon-{{ iconType() }}" unselectable="on" role="presentation"></span>
               </div>
             }
           </div>
@@ -55,7 +55,6 @@ export interface ICustomHeaderParams {
       p,
       .icon {
         cursor: pointer;
-        margin-right: 5px;
       }
 
       .ag-sort-indicator-container {

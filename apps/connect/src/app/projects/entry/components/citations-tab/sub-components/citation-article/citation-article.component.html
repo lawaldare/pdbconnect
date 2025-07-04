@@ -1,6 +1,6 @@
 <li>
   <p>
-    <a class="row__right__link" [href]="'https://europepmc.org/article/MED/' + article().pubmed_id" target="_blank">{{ article().title }} </a>
+    <a class="row__right__link" [href]="'https://europepmc.org/article/MED/' + article().pubmed_id" target="_blank" [innerHTML]="article().title"></a>
   </p>
   <p>
     <i>{{ article().authors }}</i>

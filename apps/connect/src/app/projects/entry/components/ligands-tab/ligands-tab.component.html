@@ -3,7 +3,7 @@
   @if(isSidebarDisplayed()){
   <pdbc-interactive-tables tabName="Ligands" />
   }
-  <div class="table-content">
+  <div class="tab-content">
     @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Ligands';
     <button class="vf-button-ghost" (click)="toggleSidebar()">
       <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
@@ -11,8 +11,38 @@
     </button>
 
     <h5 class="ligands-title">{{ currentLigandDatum()!.codeAndName.name }}</h5>
+    <p class="ligand-question">
+      <span>Where does this data come from?</span>
+      <lib-tool-tip>
+        <p>
+          All ligands listed in this page are from the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >Preferred Assembly</a
+          >
+          of each entry, reflecting their most probable biological form. All data is sourced from our open and free-to-use
+          <a href="https://www.ebi.ac.uk/pdbe/aggregated-api/" target="_blank">Aggregated API endpoints</a>.
+        </p>
+      </lib-tool-tip>
+    </p>
+
+    <p class="ligand-question" style="margin-bottom: 16px !important">
+      <span>How are interactions calculated?</span>
+      <lib-tool-tip>
+        <p>
+          Interactions are calculated using Arpeggio for the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >Preferred Assembly</a
+          >
+          of each entry. The 2D view uses the
+          <a href="https://www.jalview.org/help/html/colourSchemes/clustal.html" target="_blank">Clustal X colour scheme.</a> Details for interaction types can be
+          found here. All data is sourced from our open and free-to-use
+          <a href="https://www.ebi.ac.uk/pdbe/aggregated-api/" target="_blank">Aggregated API endpoints</a>.
+        </p>
+      </lib-tool-tip>
+    </p>
+
     <div class="info">
-      <div class="info-grouped" style="width: 50%">
+      <div class="info-grouped left">
         <div class="info-row">
           <span class="micro-title"> Ligand name </span>
           <article>{{ currentLigandDatum()!.codeAndName.name }}</article>
@@ -27,7 +57,7 @@
         </div>
         }
       </div>
-      <div class="info-grouped" style="width: 40%">
+      <div class="info-grouped right">
         @if(boundDetails && boundDetails.length){
         <div class="info-row">
           <span class="micro-title"> Formula </span>
@@ -95,6 +125,29 @@
             [paginationPageSizeSelector]="paginationPageSizeSelector()"
             overlayNoRowsTemplate="No ligand interactions found"
           />
+          <section class="ligands-info big">
+            <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure derived from the PDB entry.</p>
+            <p>Please note:</p>
+            <ul>
+              <li>
+                Some chain IDs in the tooltip are followed by a number in square brackets. This number corresponds to the operation ID (mmCIF 'oper_expression') used
+                to transform the chain.
+              </li>
+              <li>
+                The structure seen in Mol* (3D view) was protonated using
+                <a href="https://www.cgl.ucsf.edu/chimerax/docs/user/commands/addh.html" target="_blank">ChimeraX</a>.
+              </li>
+              <li>
+                Interactions were calculated using
+                <a [href]="util.baseUrl() + 'entry/pdb/' + entryId() + '/bound/' + selectionIdentifier" target="_blank">Arpeggio</a> (<a
+                  href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5282402/bin/mmc1.docx"
+                  target="_blank"
+                  >see details for interaction types</a
+                >).
+              </li>
+              <li>The colour scheme used is consistent with <a href="https://www.jalview.org/help/html/colourSchemes/clustal.html" target="_blank">Clustal X</a>.</li>
+            </ul>
+          </section>
         </section>
       </div>
       }
@@ -111,13 +164,27 @@
           </div> -->
           <div id="ligands-molstar-container" class="molstar-container" #molstarContainer></div>
         </section>
+        <div class="legends">
+          @for(color of legendsColor.slice(0, initialColorCount()); track color.label ){
+          <div class="legend-wrapper">
+            <span class="legend-color" [style.background-color]="color.color"></span>
+            <span class="legend-label">{{ color.label }}</span>
+          </div>
+          }
+          <div class="control">
+            @if(legendsColor.length > 4){
+            <span role="button" class="related-entry-toggle" (click)="toggleColorList()">{{initialColorCount() > 4 ? 'Hide' : 'Show'}} full legend</span>
+            <i class="icon icon-common" [ngClass]="initialColorCount() > 4 ? 'icon-angle-up' : 'icon-angle-down'"></i>
+            }
+          </div>
+        </div>
         <section class="lig-env-container">
           <div class="ligand-env" #ligandEnvContainer></div>
         </section>
       </section>
     </section>
 
-    <section class="ligands-info">
+    <section class="ligands-info small">
       <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure derived from the PDB entry.</p>
       <p>Please note:</p>
       <ul>

@@ -10,11 +10,10 @@
       <span>{{text}}</span>
     </button>
 
+    @let accessionId = currentDomainsDatum()!.resource === 'SCOP' ? '' : currentDomainsDatum()!.additionalData.accession;
     <h5 class="domain-title">
       <strong>{{currentDomainsDatum()!.accessionName}}</strong> (<strong>{{currentDomainsDatum()!.resource}}</strong>
-      <a [href]="resourceUrls[currentDomainsDatum()!.resource] + currentDomainsDatum()!.additionalData.accession" target="_blank"
-        >{{currentDomainsDatum()!.additionalData.accession}}</a
-      >)
+      <a [href]="resourceUrls[currentDomainsDatum()!.resource] + accessionId" target="_blank">{{ currentDomainsDatum()!.additionalData.accession }}</a>)
     </h5>
     <section class="domain-info">
       <div class="domain-info-grouped">
@@ -32,9 +31,7 @@
           </span>
           <article>
             {{currentDomainsDatum()!.resource}}
-            <a [href]="resourceUrls[currentDomainsDatum()!.resource] + currentDomainsDatum()!.additionalData.accession" target="_blank"
-              >{{currentDomainsDatum()!.additionalData.accession}}</a
-            >
+            <a [href]="resourceUrls[currentDomainsDatum()!.resource] + accessionId" target="_blank">{{ currentDomainsDatum()!.additionalData.accession }}</a>
           </article>
         </div>
         <div class="info-row">

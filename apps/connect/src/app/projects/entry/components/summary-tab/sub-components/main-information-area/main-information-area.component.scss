@@ -1,5 +1,6 @@
 .information-section {
-  width: 555px;
+  /* width: 555px; */
+  width: 100%;
   background: #fff;
   line-height: 27.2px;
 }
@@ -21,6 +22,11 @@ h4 {
     font-size: 16px;
     font-weight: 500;
     display: block;
+  }
+}
+@media (width <= 1340px) {
+  .info-row {
+    margin-bottom: 4px;
   }
 }
 

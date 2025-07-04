@@ -13,7 +13,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
-import { MolstarOverviewForTopPage } from '../../../helpers/molstar/molstar-overview-for-top-page';
+import { MolstarForEntryPages } from '../../../helpers/molstar-for-entry-pages';
 
 @Component({
   selector: 'pdbc-mb-domains',
@@ -29,7 +29,7 @@ export class MbDomainsComponent implements AfterViewInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  public readonly molstarVisualisation = inject(MolstarOverviewForTopPage);
+  public readonly molstarVisualisation = inject(MolstarForEntryPages);
 
   public readonly resourceUrls = resourceUrls;
 

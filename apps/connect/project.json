@@ -94,6 +94,7 @@
           "optimization": true,
           "sourceMap": true,
           "vendorChunk": false,
+          "outputHashing": "all",
           "baseHref": "$APP_BASE_HREF"
         },
         "local": {

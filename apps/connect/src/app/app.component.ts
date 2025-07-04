@@ -37,12 +37,17 @@ export class AppComponent implements OnInit {
     await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
     const pathName = window.location.pathname;
     if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
-      await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-2.0.0-min.js'), true);
-      await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.js'), true);
-    } else {
-      await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
-      await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.js', true);
+      this.runAbsolutePath();
+      return;
     }
+
+    if (pathName.includes(`/pdbe-kb/`)) {
+      this.runAbsolutePath();
+      return;
+    }
+
+    await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
+    await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.js', true);
   }
 
   private init(): void {
@@ -60,5 +65,10 @@ export class AppComponent implements OnInit {
     `);
     gtagEl.appendChild(gtagBody);
     document.body.appendChild(gtagEl);
+  }
+
+  private async runAbsolutePath() {
+    await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-2.0.0-min.js'), true);
+    await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.js'), true);
   }
 }

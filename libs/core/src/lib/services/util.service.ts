@@ -7,12 +7,12 @@ import { Clipboard } from '@angular/cdk/clipboard';
   providedIn: 'root',
 })
 export class UtilService {
-  // constructor() {}
+  // public baseUrl = computed(() => {
+  //   const host = window.location.hostname;
+  //   return host === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
+  // });
 
-  public baseUrl = computed(() => {
-    const host = window.location.hostname;
-    return host === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
-  });
+  public readonly baseUrl = signal<string>('https://www.ebi.ac.uk/pdbe/');
 
   private _snackBar = inject(MatSnackBar);
   private clipboard = inject(Clipboard);
