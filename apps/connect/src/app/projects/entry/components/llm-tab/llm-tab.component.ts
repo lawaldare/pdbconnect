@@ -35,7 +35,6 @@ import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smar
 import { convertOutliersToSmartSequenceAnnotation } from '../../helpers/quality-annotations-from-seq';
 
 // necessary to render the topology viewer
-declare let PdbTopologyViewerPlugin: any;
 
 export interface SequenceDetail {
   title: string;
@@ -92,7 +91,7 @@ export class LLMTabComponent implements OnInit {
   public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
   public dashboardStatLinks = dashboardStatLinks;
 
-  public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
+  public backgroundAnnotation: SmartSequenceAnnotation | undefined = undefined;
 
   private readonly globalStore = inject(Store<EntryStoreState>);
 
@@ -102,6 +101,7 @@ export class LLMTabComponent implements OnInit {
   public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
   public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
+  private entityId = 0;
 
   public selectionStats: { [key: string]: any } | undefined;
   // public goMappings = computed(() => Object.keys(this.goMapping() ?? {}));
@@ -200,36 +200,6 @@ export class LLMTabComponent implements OnInit {
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
 
-  ngOnInit(): void {
-    combineLatest([this.globalStore.select(EntrySelectors.llmAnnotations), this.globalStore.select(EntrySelectors.primaryPublication)])
-      .pipe(
-        map(([llmAnnotations, primaryPublication]) => {
-          this.primaryPublication.set(primaryPublication ?? ({} as CitationDetail));
-          const annotations = llmAnnotations.filter((a: any) => a.primaryCitation === 'Y');
-          this.filteredLLMAnnotations.set(annotations ?? []);
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({});
-  }
-
-  private readonly allThereVisuals = ['polypeptide(L)', 'polypeptide(D)'];
-  private readonly onlyTwoVisuals = ['polyribonucleotide', 'polydeoxyribonucleotide'];
-  private readonly onlyMolstarVisuals = ['carbohydrate polymer'];
-
-  public hasProtvista = false;
-  public currentProtvistaEntity = signal<string | undefined>(undefined);
-  public currentProtvistaChain = signal<string | undefined>(undefined);
-
-  public hasTopologyViewer = false;
-  @ViewChild('topologyViewerContainer') topologyViewerContainer!: ElementRef;
-  private topologyViewerInstance: any;
-
-  public sequenceDetails: SequenceDetail[] = [];
-
-  public selectionIdentifier = 'None';
-  public selectionTypeText?: string;
-
   public readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$);
 
   public readonly macromoleculeTableRows = computed(() => {
@@ -259,11 +229,58 @@ export class LLMTabComponent implements OnInit {
     if (selectedIdx === this.previousDatumIdx) return datum;
     this.previousDatumIdx = selectedIdx;
 
+    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', datum, this.dropdownSelected);
+
+    this.updateBackgroundAnnotation();
+
     if (datum) {
       this.triggerMacromoleculeUpdateSideEffects(datum);
     }
     return datum;
   });
+
+  ngOnInit(): void {
+    combineLatest([this.globalStore.select(EntrySelectors.llmAnnotations), this.globalStore.select(EntrySelectors.primaryPublication)])
+      .pipe(
+        map(([llmAnnotations, primaryPublication]) => {
+          this.primaryPublication.set(primaryPublication ?? ({} as CitationDetail));
+          const annotations = llmAnnotations.filter((a: any) => a.primaryCitation === 'Y');
+          this.filteredLLMAnnotations.set(annotations ?? []);
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({});
+
+    const macromolecule = this.currentMacromoleculeDatum();
+
+    if (macromolecule) {
+      const entityId = macromolecule.additionalData.molecule.entity_id;
+      this.entityId = entityId;
+
+      this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+
+      this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+
+      this.updateBackgroundAnnotation();
+    }
+  }
+
+  private readonly allThereVisuals = ['polypeptide(L)', 'polypeptide(D)'];
+  private readonly onlyTwoVisuals = ['polyribonucleotide', 'polydeoxyribonucleotide'];
+  private readonly onlyMolstarVisuals = ['carbohydrate polymer'];
+
+  public hasProtvista = false;
+  public currentProtvistaEntity = signal<string | undefined>(undefined);
+  public currentProtvistaChain = signal<string | undefined>(undefined);
+
+  public hasTopologyViewer = false;
+  @ViewChild('topologyViewerContainer') topologyViewerContainer!: ElementRef;
+  private topologyViewerInstance: any;
+
+  public sequenceDetails: SequenceDetail[] = [];
+
+  public selectionIdentifier = 'None';
+  public selectionTypeText?: string;
 
   public onSelectionChanged(event: SelectionChangedEvent) {
     const data = event.api.getSelectedNodes()[0].data;
@@ -296,16 +313,16 @@ export class LLMTabComponent implements OnInit {
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
 
     this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
-    this.updateBackgroundAnnotation();
+    // this.updateBackgroundAnnotation();
   }
 
   private updateBackgroundAnnotation() {
     const sequence = this.sequenceDetails[0]?.fullSequence;
-    if (!sequence || !this.hasProtvista) return;
+    if (!sequence) return;
 
-    const entityId = parseInt(this.currentProtvistaEntity() ?? '');
-    const chainId = this.dropdownSelected.split('Chain ')[1];
-    this.backgroundAnnotation.set(convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, this.residueWiseOutliers()));
+    const entityId = parseInt(this.entityId.toString());
+    const chainId = 'A';
+    this.backgroundAnnotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, this.residueWiseOutliers());
   }
 
   updateVisualsDisplayed(macromolecule: MacromoleculesRowData) {

@@ -59,7 +59,7 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
 
     const annotations = [this.backgroundData(), this.underlineData(), this.circleAboveData()].filter((annotation) => annotation !== undefined);
 
-    let options = this.options();
+    const options = this.options();
     if (options && this.isNucleic()) {
       options.isNucleic = true;
     }

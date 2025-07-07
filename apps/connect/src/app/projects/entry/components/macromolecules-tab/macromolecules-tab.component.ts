@@ -276,6 +276,7 @@ export class MacromoleculesTabComponent {
     const entityId = parseInt(this.currentProtvistaEntity() ?? '');
     const chainId = this.dropdownSelected.split('Chain ')[1];
     this.backgroundAnnotation.set(convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, this.residueWiseOutliers()));
+    console.log('Background annotation updated', this.backgroundAnnotation());
   }
 
   updateVisualsDisplayed(macromolecule: MacromoleculesRowData) {
