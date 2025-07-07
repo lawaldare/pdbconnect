@@ -25,6 +25,7 @@ import { InteractiveTablesComponent } from '../shared/interactive-tables/interac
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
+import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 
 // these types are used by this file and the facade and related to sequence rendering
 export type BoundsByEntityId = {
@@ -43,7 +44,7 @@ export interface SequenceDetail {
 @Component({
   selector: 'pdbc-domains-tab',
   standalone: true,
-  imports: [CommonModule, EntryPgProtvistaComponent, InteractiveTablesComponent, NgxSkeletonLoaderModule, HelpIconWithTooltipComponent],
+  imports: [CommonModule, EntryPgProtvistaComponent, InteractiveTablesComponent, NgxSkeletonLoaderModule, HelpIconWithTooltipComponent, SmartSeqViewerComponent],
   templateUrl: './domains-tab.component.html',
   styleUrl: './domains-tab.component.scss',
 })
@@ -67,12 +68,13 @@ export class DomainsTabComponent {
   public currentProtvistaEntity = signal<string | undefined>(undefined);
   public currentProtvistaChain = signal<string | undefined>(undefined);
   public protvistaDomainSelection = signal<FixedSelectionInput | undefined>(undefined);
+  public backgroundAnnotations = signal<Array<SmartSequenceAnnotation | undefined>>([]);
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
 
-  public sequenceDetails: SequenceDetail[] = [];
+  public sequenceDetails = signal<SequenceDetail[]>([]);
 
   public readonly resourceUrls = resourceUrls;
   public readonly entryDomainsTooltips = entryDomainsTooltips;
@@ -92,14 +94,18 @@ export class DomainsTabComponent {
     const datum = rows[selectedIdx];
     if (!datum) return;
 
-    if (selectedIdx === this.previousDatumIdx) return datum;
     this.previousDatumIdx = selectedIdx;
-
-    if (datum) {
-      this.triggerDomainUpdateSideEffects(datum);
-    }
     return datum;
   });
+
+  constructor() {
+    effect(async () => {
+      const datum = this.currentDomainsDatum();
+      if (datum) {
+        await this.triggerDomainUpdateSideEffects(datum);
+      }
+    });
+  }
 
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 
@@ -111,6 +117,7 @@ export class DomainsTabComponent {
   }
 
   async triggerDomainUpdateSideEffects(domain: DomainsRowData) {
+    this.backgroundAnnotations.set([]);
     // update unique chains inside object
     const mappedDatum = domain.additionalData.boundaries.map((b: any) => b.chain);
     const uniqueChains = [...new Set(mappedDatum)];
@@ -118,7 +125,7 @@ export class DomainsTabComponent {
     this.selectedChains = getDomainChainsAsString(domain);
 
     // update displayed domain sequence
-    this.sequenceDetails = this.domainsFacade.getDomainSequenceDetails(this.entryId() ?? '', this.macromolecules() ?? [], domain);
+    this.sequenceDetails.set(this.domainsFacade.getDomainSequenceDetails(this.entryId() ?? '', this.macromolecules() ?? [], domain));
 
     // update visualisations with data
     await this.renderInMolstar(domain);
@@ -168,5 +175,7 @@ export class DomainsTabComponent {
       trackSegments: segments,
       trackTooltip: 'Current Domain',
     });
+    const annotations = this.domainsFacade.generateSeqViewerDomainAnnotation(this.entryId() ?? '', this.macromolecules() ?? [], domain);
+    this.backgroundAnnotations.set(annotations);
   }
 }

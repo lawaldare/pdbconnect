@@ -16,8 +16,14 @@
     </div>
   </section>
   <section class="action-buttons">
-    <pdbc-entry-dropdown [downloadable]="true" [islink]="false" [options]="downloadOptions()" title="Download files"></pdbc-entry-dropdown>
-    <pdbc-entry-dropdown [downloadable]="false" [islink]="true" [options]="viewOptions()" title="View files"></pdbc-entry-dropdown>
+    <pdbc-entry-dropdown
+      [searchTitle]="'Search all files'"
+      [downloadable]="true"
+      [islink]="false"
+      [options]="downloadOptions()"
+      title="Download files"
+    ></pdbc-entry-dropdown>
+    <pdbc-entry-dropdown [searchTitle]="'Search all files'" [downloadable]="false" [islink]="true" [options]="viewOptions()" title="View files"></pdbc-entry-dropdown>
   </section>
 </header>
 <section class="feedback">
