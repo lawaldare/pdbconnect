@@ -74,7 +74,7 @@ export class DomainsTabComponent {
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
 
-  public sequenceDetails: SequenceDetail[] = [];
+  public sequenceDetails = signal<SequenceDetail[]>([]);
 
   public readonly resourceUrls = resourceUrls;
   public readonly entryDomainsTooltips = entryDomainsTooltips;
@@ -99,10 +99,10 @@ export class DomainsTabComponent {
   });
 
   constructor() {
-    effect(() => {
+    effect(async () => {
       const datum = this.currentDomainsDatum();
       if (datum) {
-        this.triggerDomainUpdateSideEffects(datum);
+        await this.triggerDomainUpdateSideEffects(datum);
       }
     });
   }
@@ -117,6 +117,7 @@ export class DomainsTabComponent {
   }
 
   async triggerDomainUpdateSideEffects(domain: DomainsRowData) {
+    this.backgroundAnnotations.set([]);
     // update unique chains inside object
     const mappedDatum = domain.additionalData.boundaries.map((b: any) => b.chain);
     const uniqueChains = [...new Set(mappedDatum)];
@@ -124,14 +125,11 @@ export class DomainsTabComponent {
     this.selectedChains = getDomainChainsAsString(domain);
 
     // update displayed domain sequence
-    this.sequenceDetails = this.domainsFacade.getDomainSequenceDetails(this.entryId() ?? '', this.macromolecules() ?? [], domain);
-    console.log('this.sequenceDetails');
-    console.log(this.sequenceDetails);
+    this.sequenceDetails.set(this.domainsFacade.getDomainSequenceDetails(this.entryId() ?? '', this.macromolecules() ?? [], domain));
 
     // update visualisations with data
     await this.renderInMolstar(domain);
     this.initOrRefreshProtvista(domain);
-    this.backgroundAnnotations.set(this.domainsFacade.generateSeqViewerDomainAnnotation(this.entryId() ?? '', this.macromolecules() ?? [], domain));
   }
 
   public toggleSidebar() {
@@ -177,5 +175,7 @@ export class DomainsTabComponent {
       trackSegments: segments,
       trackTooltip: 'Current Domain',
     });
+    const annotations = this.domainsFacade.generateSeqViewerDomainAnnotation(this.entryId() ?? '', this.macromolecules() ?? [], domain);
+    this.backgroundAnnotations.set(annotations);
   }
 }

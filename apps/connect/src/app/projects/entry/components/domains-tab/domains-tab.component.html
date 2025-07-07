@@ -74,20 +74,21 @@
       Chain @for(chain of currentDomainsDatum()!.mappedboundaries; track chain; let islast = $last){
       <span>{{chain}}</span>{{ islast ? '' : ',' }} }
     </div>
-    @if (sequenceDetails.length > 0 && currentProtvistaEntity()) {
+    @if (sequenceDetails().length > 0 && currentProtvistaEntity() && backgroundAnnotations().length > 0) {
     <div class="sequence-container">
-      @for (sequenceDetail of sequenceDetails; track sequenceDetail; let i = $index;) {
+      @for (sequenceDetail of sequenceDetails(); track sequenceDetail; let i = $index;) {
       <div class="title">
         <span class="text">{{ sequenceDetail.title }}</span>
         <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
       </div>
+      @let backgroundAnnotation = backgroundAnnotations()[i];
       <lib-smart-seq-viewer
         containerId="'smart-seq-viewer-domains'"
         class="sequence"
         [sequence]="sequenceDetail.fullSequence"
         [entityId]="currentProtvistaEntity()!"
         [chainId]="currentProtvistaChain()!"
-        [backgroundDataInput]="backgroundAnnotations()[i] || undefined"
+        [backgroundDataInput]="backgroundAnnotation"
       ></lib-smart-seq-viewer>
       }
     </div>
