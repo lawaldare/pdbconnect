@@ -25,6 +25,7 @@ import { InteractiveTablesComponent } from '../shared/interactive-tables/interac
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
+import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 
 // these types are used by this file and the facade and related to sequence rendering
 export type BoundsByEntityId = {
@@ -43,7 +44,7 @@ export interface SequenceDetail {
 @Component({
   selector: 'pdbc-domains-tab',
   standalone: true,
-  imports: [CommonModule, EntryPgProtvistaComponent, InteractiveTablesComponent, NgxSkeletonLoaderModule, HelpIconWithTooltipComponent],
+  imports: [CommonModule, EntryPgProtvistaComponent, InteractiveTablesComponent, NgxSkeletonLoaderModule, HelpIconWithTooltipComponent, SmartSeqViewerComponent],
   templateUrl: './domains-tab.component.html',
   styleUrl: './domains-tab.component.scss',
 })
@@ -67,6 +68,7 @@ export class DomainsTabComponent {
   public currentProtvistaEntity = signal<string | undefined>(undefined);
   public currentProtvistaChain = signal<string | undefined>(undefined);
   public protvistaDomainSelection = signal<FixedSelectionInput | undefined>(undefined);
+  public backgroundAnnotations = signal<Array<SmartSequenceAnnotation | undefined>>([]);
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
@@ -92,14 +94,18 @@ export class DomainsTabComponent {
     const datum = rows[selectedIdx];
     if (!datum) return;
 
-    if (selectedIdx === this.previousDatumIdx) return datum;
     this.previousDatumIdx = selectedIdx;
-
-    if (datum) {
-      this.triggerDomainUpdateSideEffects(datum);
-    }
     return datum;
   });
+
+  constructor() {
+    effect(() => {
+      const datum = this.currentDomainsDatum();
+      if (datum) {
+        this.triggerDomainUpdateSideEffects(datum);
+      }
+    });
+  }
 
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 
@@ -119,10 +125,13 @@ export class DomainsTabComponent {
 
     // update displayed domain sequence
     this.sequenceDetails = this.domainsFacade.getDomainSequenceDetails(this.entryId() ?? '', this.macromolecules() ?? [], domain);
+    console.log('this.sequenceDetails');
+    console.log(this.sequenceDetails);
 
     // update visualisations with data
     await this.renderInMolstar(domain);
     this.initOrRefreshProtvista(domain);
+    this.backgroundAnnotations.set(this.domainsFacade.generateSeqViewerDomainAnnotation(this.entryId() ?? '', this.macromolecules() ?? [], domain));
   }
 
   public toggleSidebar() {

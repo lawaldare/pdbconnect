@@ -84,6 +84,8 @@
       @if(dropdownOptions.length > 1){
       <div class="dropdown-container">
         <pdbc-entry-dropdown
+          [searchable]="false"
+          [searchTitle]="''"
           [downloadable]="false"
           [islink]="false"
           [options]="dropdownOptions"
@@ -156,7 +158,7 @@
         <section class="molstar-details-container">
           @if (!molstarFirstRenderFinished()) {
           <div [style.width]="'100%'">
-            <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+            <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '355px', }"></ngx-skeleton-loader>
           </div>
           }
           <!-- <div class="toolbar">
@@ -165,12 +167,14 @@
           <div id="ligands-molstar-container" class="molstar-container" #molstarContainer></div>
         </section>
         <div class="legends">
-          @for(color of legendsColor.slice(0, initialColorCount()); track color.label ){
-          <div class="legend-wrapper">
-            <span class="legend-color" [style.background-color]="color.color"></span>
-            <span class="legend-label">{{ color.label }}</span>
+          <div class="legends-data">
+            @for(color of legendsColor.slice(0, initialColorCount()); track color.label ){
+            <div class="legend-wrapper">
+              <span class="legend-color" [style.background-color]="color.color"></span>
+              <span class="legend-label">{{ color.label }}</span>
+            </div>
+            }
           </div>
-          }
           <div class="control">
             @if(legendsColor.length > 4){
             <span role="button" class="related-entry-toggle" (click)="toggleColorList()">{{initialColorCount() > 4 ? 'Hide' : 'Show'}} full legend</span>

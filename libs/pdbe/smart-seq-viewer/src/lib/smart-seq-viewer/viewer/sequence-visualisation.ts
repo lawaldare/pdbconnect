@@ -45,6 +45,17 @@ export interface SmartSequenceAnnotationForEvent {
   };
 }
 
+export interface SmartSequenceVisOptions {
+  grouping?: boolean;
+  groupingLineBreak?: boolean;
+  responsive?: boolean;
+  externalEvents?: boolean;
+  hoverTooltips?: boolean;
+  tooltipFormatting?: TooltipFormatting;
+  scrollContainerMaxHeight?: number;
+  isNucleic?: boolean;
+}
+
 export class SmartSequenceVisualisation {
   private sequence: string;
   private alternativeNumberings?: AlternativeNumbering[];
@@ -58,6 +69,7 @@ export class SmartSequenceVisualisation {
   private hoverTooltips = true;
   private tooltipFormatting: TooltipFormatting;
   private scrollContainerMaxHeight = 140;
+  private isNucleic = false;
 
   private fontFamily = 'IBM Plex Sans';
   private fontSize = 14;
@@ -80,7 +92,7 @@ export class SmartSequenceVisualisation {
 
   private maxNumberingBoxHeight = -1;
 
-  private canvas: HTMLCanvasElement;
+  private canvas!: HTMLCanvasElement;
   private canvasWidth = 0;
   private canvasHeight = 0;
   private canvasTextLines: number | undefined = undefined;
@@ -105,6 +117,9 @@ export class SmartSequenceVisualisation {
   private currentHoveredResidue: number | null = null;
   private currentClickedResidue: number | null = null;
 
+  private clickedTextColour = '';
+  private clickedBorderColour = '';
+  private clickedBorderWidth = 2;
   private hoverTextColour = '';
   private hoverBorderColour = '';
   private hoverBorderWidth = 2;
@@ -125,15 +140,7 @@ export class SmartSequenceVisualisation {
     initialAnnotations: SmartSequenceAnnotation[] = [],
     entityId?: string,
     chainId?: string,
-    options?: {
-      grouping?: boolean;
-      groupingLineBreak?: boolean;
-      responsive?: boolean;
-      externalEvents?: boolean;
-      hoverTooltips?: boolean;
-      tooltipFormatting?: TooltipFormatting;
-      scrollContainerMaxHeight?: number;
-    }
+    options?: SmartSequenceVisOptions
   ) {
     this.sequence = sequence;
     this.containerId = containerId;
@@ -141,6 +148,7 @@ export class SmartSequenceVisualisation {
     this.groupingLineBreak = options?.groupingLineBreak === true;
     this.responsive = options?.responsive !== false;
     this.externalEvents = options?.externalEvents === true;
+    this.isNucleic = options?.isNucleic === true;
     this.entityId = entityId;
     this.chainId = chainId;
     this.alternativeNumberings = alternativeNumberings;
@@ -784,6 +792,10 @@ export class SmartSequenceVisualisation {
       console.warn('Box or numbering dimensions not calculated yet.');
       return;
     }
+    if (!this.canvasBoxPerLines || isNaN(this.canvasBoxPerLines) || this.canvasBoxPerLines <= 0) {
+      console.warn('canvasBoxPerLines is invalid:', this.canvasBoxPerLines);
+      return;
+    }
 
     const { left: _marginLeft, right: _marginRight, top: marginTop, bottom: marginBottom } = this.margins;
 
@@ -913,16 +925,18 @@ export class SmartSequenceVisualisation {
     ctx.fillStyle = annotationColor ?? this.defaultBgColour;
     ctx.fillRect(x, yStart + this.maxNumberingBoxHeight, this.maxBoxWidth, this.maxBoxHeight);
 
+    let fontWeight = '';
     if (residueIndex === this.currentHoveredResidue || residueIndex === this.currentClickedResidue) {
-      ctx.strokeStyle = this.hoverBorderColour || '#000';
-      ctx.lineWidth = this.hoverBorderWidth;
+      fontWeight = 'bold ';
+      ctx.strokeStyle = this.clickedBorderColour || '#4F81C3';
+      ctx.lineWidth = this.clickedBorderWidth;
       ctx.strokeRect(x, yStart + this.maxNumberingBoxHeight, this.maxBoxWidth, this.maxBoxHeight);
-      ctx.fillStyle = this.hoverTextColour || '#000';
+      ctx.fillStyle = this.clickedTextColour || '#4F81C3';
     } else {
       ctx.fillStyle = this.fontColor;
     }
 
-    ctx.font = `${this.fontSize}px ${this.fontFamily}`;
+    ctx.font = `${fontWeight}${this.fontSize}px ${this.fontFamily}`;
     ctx.fillText(char, x + this.maxBoxWidth / 2, yStart + this.maxNumberingBoxHeight + this.maxBoxHeight / 2);
 
     const circleColor = this.circleColorMap!.get(residueIndex);
@@ -1020,8 +1034,7 @@ export class SmartSequenceVisualisation {
   private buildTooltipContent(residueIndex: number): string | null {
     const residue = this.sequence[residueIndex - 1];
     if (!residue) return null;
-
-    const residueName = this.getResidueNameFromCode(residue);
+    const residueName = this.isNucleic === false ? this.getResidueNameFromCode(residue) : residue;
 
     const authNumbering = this.alternativeNumberings?.find((n) => n.identifier === 'auth');
     const uniprotNumbering = this.alternativeNumberings?.find((n) => n.identifier === 'uniprot');
@@ -1075,17 +1088,70 @@ export class SmartSequenceVisualisation {
     `;
   }
 
+  private getSidebarPanelEmptyState(): string {
+    let html = `<p style="margin: 0; font-weight: bold; font-size: 14px;">Click a residue to view more details</p>`;
+
+    const selectionIcon = `<div style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        margin-right: 6px;
+        border: 2px solid #4F81C3;
+        color: #4F81C3;
+        font-weight: bold;
+        font-size: 12px;
+        background-color: transparent;
+      ">A</div>`;
+    const renderingIcons: Record<SmartSequenceAnnotationRenderingTypes, (color: string) => string> = {
+      Background: (color: string) => `<div style="display:inline-block;width:16px;height:16px;background:${color};margin-right:6px;border:1px solid #aaa;"></div>`,
+      Underline: (color: string) => `<div style="display:inline-block;width:16px;height:2px;background:${color};margin:0 6px 0 0;vertical-align:middle;"></div>`,
+      CircleAbove: (color: string) =>
+        `<div style="display:inline-block;width:12px;height:12px;background:${color};border-radius:50%;margin-right:6px;border:1px solid #aaa;"></div>`,
+      TextColour: () => '', // not rendered here
+    };
+
+    html += `<div style="margin-top: 8px;">`;
+    html += `
+      <div style="display: flex; align-items: center; margin: 4px; padding-bottom: 6px;">
+        ${selectionIcon}
+        <span style="font-size: 13px; line-height: 18.9px;">Currently selected residue</span>
+      </div>
+    `;
+
+    for (const annotation of this.annotations) {
+      if (annotation.rendering === 'TextColour') continue;
+      // html += `<div style="font-weight: bold; line-height: 22.4px; font-size: 13px; margin: 0; margin-bottom: 4px;">${annotation.name}</div>`;
+
+      const domain = annotation.scaleDomain === 'auto' ? [...new Set(annotation.data.map((d) => d.value))] : annotation.scaleDomain;
+
+      html += `<div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; margin: 4px;">`;
+      for (let i = 0; i < domain.length; i++) {
+        const label = domain[i];
+        const color = annotation.scaleRange[i] || '#000';
+        const icon = renderingIcons[annotation.rendering](color);
+
+        html += `<div style="width: fit-content;">${icon}<span style="font-size: 13px;">${label}</span></div>`;
+      }
+      html += `</div>`;
+    }
+    html += `</div>`;
+
+    return html;
+  }
+
   private createSidebarPanel() {
     const panel = document.createElement('div');
     panel.className = 'sidebar-panel';
     panel.style.width = '250px';
     panel.style.height = '100%';
     panel.style.background = '#fafafa';
-    panel.style.borderLeft = '1px solid #ccc';
+    panel.style.border = '1px solid #ccc';
     panel.style.overflowY = 'auto';
     panel.style.padding = '12px';
     panel.style.zIndex = '9998';
-    panel.innerHTML = `<p style="margin-top: 0; font-size: 14px;">Click a residue to view more details</p>`;
+    panel.innerHTML = this.getSidebarPanelEmptyState();
     panel.style.display = 'block';
 
     return panel;
@@ -1096,7 +1162,7 @@ export class SmartSequenceVisualisation {
 
   private buildSidebarContent(residueIndex: number): string {
     const residue = this.sequence[residueIndex - 1];
-    const residueName = this.getResidueNameFromCode(residue);
+    const residueName = this.isNucleic === false ? this.getResidueNameFromCode(residue) : residue;
     const authNumbering = this.alternativeNumberings?.find((n) => n.identifier === 'auth');
     const uniprotNumbering = this.alternativeNumberings?.find((n) => n.identifier === 'uniprot');
 
@@ -1108,7 +1174,7 @@ export class SmartSequenceVisualisation {
     const handleSidebarClose = () => {
       if (this.sidebarPanel) {
         // this.sidebarPanel.style.display = 'none';
-        this.sidebarPanel.innerHTML = '<p style="margin-top: 0; font-size: 14px;">Click a residue to view more details</p>';
+        this.sidebarPanel.innerHTML = this.getSidebarPanelEmptyState();
         this.currentClickedResidue = null;
         this.onContainerResize();
       }
@@ -1144,15 +1210,47 @@ export class SmartSequenceVisualisation {
     // TODO: Adapt this for validation data once it's here
     // Annotations
     const annotations = this.getAnnotationsForResidue(residueIndex);
+    let hasAddedTitle = false;
     if (annotations.length > 0) {
-      html += `<hr/><h5>Annotations</h5>`;
       for (const ann of annotations) {
-        html += `<ul style="margin-bottom:10px;">`;
-        html += `<li><strong>Name</strong>: ${ann.name}</li>`;
-        const color = this.getAnnotationColor(residueIndex, ann.rendering);
-        html += `<li><strong>Value</strong>: ${ann.datum.value}</li>`;
-        html += `<li><strong>Colour</strong>: <div style="display:inline-block;width:12px;height:12px;background:${color};margin-right:6px;"></div></li>`;
-        html += `</ul>`;
+        if (ann.identifier.includes('pdbe-validation')) {
+          if (!hasAddedTitle) {
+            html += `<p style="margin: 0; font-weight: bold; font-size: 14px;">Validation outliers:</p>`;
+            hasAddedTitle = true;
+          }
+          const extraData = ann.datum.extraData || undefined;
+          if (!extraData) continue;
+          const issuesNumber = extraData.outlierTypes.length === 0 ? 'No' : extraData.outlierTypes.length;
+          const typesWord = extraData.outlierTypes.length === 1 ? 'type' : 'types';
+          html += `<p style="margin: 0; font-size: 14px;">${issuesNumber} validation outlier ${typesWord} found for this residue</p>`;
+          if (extraData.outlierTypes.length > 0) {
+            html += `<ul style="margin-bottom:10px;">`;
+            for (const outlierType of extraData.outlierTypes) {
+              html += `<li style="margin: 0; font-size: 14px;">${outlierType}</li>`;
+            }
+            html += `</ul>`;
+          }
+        } else if (ann.identifier.includes('pdbe-domains')) {
+          const extraData = ann.datum.extraData || undefined;
+          if (!extraData) continue;
+          if (!hasAddedTitle) {
+            html += `<p style="margin: 0; font-size: 14px;">
+              This is the <b>${extraData.ordinalLabel} residue</b> in <b>segment ${extraData.segmentIndex} (residues: ${extraData.segment})</b> of this <b>${extraData.source}</b> domain (<b>Domain name: ${extraData.domainName}</b>)
+            </p>`;
+            hasAddedTitle = true;
+          }
+        } else {
+          if (!hasAddedTitle) {
+            html += `<hr/><h5>Annotations</h5>`;
+            hasAddedTitle = true;
+          }
+          html += `<ul style="margin-bottom:10px;">`;
+          html += `<li><strong>Name</strong>: ${ann.name}</li>`;
+          const color = this.getAnnotationColor(residueIndex, ann.rendering);
+          html += `<li><strong>Value</strong>: ${ann.datum.value}</li>`;
+          html += `<li><strong>Colour</strong>: <div style="display:inline-block;width:12px;height:12px;background:${color};margin-right:6px;"></div></li>`;
+          html += `</ul>`;
+        }
       }
     }
 

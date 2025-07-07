@@ -123,6 +123,8 @@
 
     @if (domainCount() > 0) {
     <pdbc-entry-dropdown
+      [searchable]="false"
+      searchTitle="''"
       class="domain-dropdown"
       [downloadable]="false"
       [islink]="false"

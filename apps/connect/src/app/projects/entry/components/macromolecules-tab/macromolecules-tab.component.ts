@@ -27,7 +27,8 @@ import { InteractiveTablesComponent } from '../shared/interactive-tables/interac
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
-import { SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
+import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
+import { convertOutliersToSmartSequenceAnnotation } from '../../helpers/quality-annotations-from-seq';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -85,6 +86,7 @@ export class MacromoleculesTabComponent {
   public dropdownOptions: DownloadOption[] = [];
   public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
   public dashboardStatLinks = dashboardStatLinks;
+  public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
@@ -92,6 +94,7 @@ export class MacromoleculesTabComponent {
   public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
   public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
   public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
+  public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
 
   public selectionStats: { [key: string]: any } | undefined;
   // public goMappings = computed(() => Object.keys(this.goMapping() ?? {}));
@@ -225,11 +228,17 @@ export class MacromoleculesTabComponent {
     if (selectedIdx === this.previousDatumIdx) return datum;
     this.previousDatumIdx = selectedIdx;
 
-    if (datum) {
-      this.triggerMacromoleculeUpdateSideEffects(datum);
-    }
     return datum;
   });
+
+  constructor() {
+    effect(() => {
+      const datum = this.currentMacromoleculeDatum();
+      if (datum) {
+        this.triggerMacromoleculeUpdateSideEffects(datum);
+      }
+    });
+  }
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: MacromoleculesRowData) {
     // refreshes dropdown options on new macromolecule
@@ -243,6 +252,7 @@ export class MacromoleculesTabComponent {
 
     // renders necessary visualisations according to display options and data
     await this.renderVisualisations(macromolecule);
+    this.updateBackgroundAnnotation();
   }
 
   updateDropdownOptions(macromolecule: MacromoleculesRowData) {
@@ -255,6 +265,18 @@ export class MacromoleculesTabComponent {
       };
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+
+    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.updateBackgroundAnnotation();
+  }
+
+  private updateBackgroundAnnotation() {
+    const sequence = this.sequenceDetails[0]?.fullSequence;
+    if (!sequence || !this.hasProtvista) return;
+
+    const entityId = parseInt(this.currentProtvistaEntity() ?? '');
+    const chainId = this.dropdownSelected.split('Chain ')[1];
+    this.backgroundAnnotation.set(convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, this.residueWiseOutliers()));
   }
 
   updateVisualsDisplayed(macromolecule: MacromoleculesRowData) {
@@ -300,7 +322,14 @@ export class MacromoleculesTabComponent {
 
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
+    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(
+      this.entryId() ?? '',
+      macromolecule as MacromoleculesRowData,
+      this.dropdownSelected
+    );
+
     if (macromolecule) await this.renderVisualisations(macromolecule);
+    this.updateBackgroundAnnotation();
   }
 
   public openDialog(type: string) {

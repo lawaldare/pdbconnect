@@ -91,18 +91,7 @@ main {
 
   .sequence {
     align-self: stretch;
-    color: #000;
-
-    // font-family: 'IBM Plex Sans';
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 22.4px; /* 160% */
     word-break: break-word;
-
-    // max-height: 60px;
-    max-height: 76px;
-    overflow-y: auto;
     margin-bottom: 8px;
   }
 }

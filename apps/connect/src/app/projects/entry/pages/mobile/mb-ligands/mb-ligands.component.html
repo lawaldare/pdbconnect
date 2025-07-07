@@ -51,6 +51,8 @@
     @if(dropdownOptions.length > 1){
     <div class="dropdown-container">
       <pdbc-entry-dropdown
+        [searchable]="false"
+        searchTitle="''"
         [downloadable]="false"
         [islink]="false"
         [options]="dropdownOptions"
