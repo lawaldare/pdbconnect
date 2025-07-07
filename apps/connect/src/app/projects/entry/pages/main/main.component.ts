@@ -37,8 +37,9 @@ import Clarity from '@microsoft/clarity';
 import { NotificationComponent } from '@pdbc/notification';
 import { EntryUtilService } from '../../services/entry-util.service';
 import { ErrorPageComponent } from '../../../../error-page/error-page.component';
+import { LLMTabComponent } from '../../components/llm-tab/llm-tab.component';
 
-export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
+export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains' | 'LLM';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -73,6 +74,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     MobileHeaderComponent,
     AssembliesTabComponent,
     MacromoleculesTabComponent,
+    LLMTabComponent,
     LigandsTabComponent,
     DomainsTabComponent,
     NotificationComponent,

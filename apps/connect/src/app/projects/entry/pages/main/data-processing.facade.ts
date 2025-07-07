@@ -80,6 +80,7 @@ export class MainDataProcessingFacade {
     { label: 'Macromolecules', id: 'macromolecules' },
     { label: 'Ligands and Environments', id: 'ligands' },
     { label: 'Domains', id: 'domains' },
+    { label: 'Text Annotation (LLM)', id: 'llm' },
     { label: 'Citations', id: 'citations' },
   ];
 
@@ -711,5 +712,6 @@ export class MainDataProcessingFacade {
     this.globalStore.dispatch(EntryActions.getEntryPolymerCoverage());
     this.globalStore.dispatch(EntryActions.getEntryResidueWiseOutliers());
     this.globalStore.dispatch(EntryActions.getModelQualityXray());
+    this.globalStore.dispatch(EntryActions.getLLMAnnotations());
   }
 }

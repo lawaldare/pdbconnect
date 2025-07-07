@@ -43,6 +43,7 @@ export const EntrySelectors = {
   entryStatus: createSelector(EntryStoreState, (state: EntryStoreState) => state.entryStatus),
   interactions: createSelector(EntryStoreState, (state: EntryStoreState) => state.interactions),
   isoformsMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.isoformsMapping),
+  llmAnnotations: createSelector(EntryStoreState, (state: EntryStoreState) => state.llmAnnotations),
   ecMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.ecMapping),
   goMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.goMapping),
   symmetry: createSelector(EntryStoreState, (state: EntryStoreState) => state.symmetry),

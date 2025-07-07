@@ -31,6 +31,7 @@ import { environment } from '../../../../environments/environment';
 import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
 import { LigandMonomer } from '../data-models/ligand-monomers.model';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
+import { LLMAnnotation } from '../data-models/llm-model';
 
 @Injectable({
   providedIn: 'root',
@@ -217,6 +218,19 @@ export class EntryApiService {
 
   public getSymmetry(entryId: string): Observable<Symmetry[]> {
     return this.http.get<Record<string, Symmetry[]>>(`${this.AggregatedApiUrl}pdb/symmetry/${entryId}`).pipe(map((data) => data[entryId]));
+  }
+
+  public getLLMAnnotations(entryId: string): Observable<LLMAnnotation[]> {
+    const annotations: LLMAnnotation[] = [];
+    return this.http.get<Record<string, any>>(`${this.AggregatedApiUrl}pdb/entry/llm_annotations/summary/${entryId}`).pipe(
+      map((data) => {
+        const residueList = data[entryId].data[0].residueList;
+        residueList.forEach((residue: any) => {
+          annotations.push(...residue.additionalData);
+        });
+        return annotations;
+      })
+    );
   }
 
   public getPisaAssembly(entryId: string, assemblyId: string): Observable<PisaAssembly> {

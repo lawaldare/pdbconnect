@@ -71,6 +71,7 @@ const initialState: EntryStoreState = {
   entityPvAnnotations: {} as APITrackData,
   entityPvConservation: {} as APIConservationData,
   entityPvVariation: {} as APIVariationData,
+  llmAnnotations: [],
 };
 
 export const entryReducer = createReducer(
@@ -102,6 +103,10 @@ export const entryReducer = createReducer(
   on(EntryActions.getECMappingSuccess, (state, action) => ({
     ...state,
     ecMapping: action.ecMapping,
+  })),
+  on(EntryActions.getLLMAnnotationsSuccess, (state, action) => ({
+    ...state,
+    llmAnnotations: action.llmAnnotations,
   })),
   on(EntryActions.getSummaryDataSuccess, (state, action) => ({
     ...state,

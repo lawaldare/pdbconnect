@@ -25,6 +25,7 @@ import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
 import { LigandMonomer } from '../data-models/ligand-monomers.model';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
 import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
+import { LLMAnnotation } from '../data-models/llm-model';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -93,6 +94,9 @@ export const EntryActions = createActionGroup({
     'Get Preferred Assembly': emptyProps(),
     'Get Preferred Assembly Success': props<{ complexDetails: ComplexDetails[] }>(),
     'Get Preferred Assembly Failure': emptyProps(),
+    'Get LLM Annotations': emptyProps(),
+    'Get LLM Annotations Success': props<{ llmAnnotations: LLMAnnotation[] }>(),
+    'Get LLM Annotations Failure': emptyProps(),
     'Get Symmetry': emptyProps(),
     'Get Symmetry Success': props<{ symmetry: Symmetry[] }>(),
     'Get Symmetry Failure': emptyProps(),

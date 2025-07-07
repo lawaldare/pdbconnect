@@ -13,6 +13,10 @@ import { annotationsTooltips, resourceUrls } from '../../../entry-constant';
 import { LigandsTabService } from '../../ligands-tab/ligands-tab.service';
 import { RichTooltipDirective } from '@pdbc/rich-tooltip';
 import { TruncateTextDirective } from '../../../directives/truncate-text.directive';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Store } from '@ngrx/store';
+import { EntryStoreState } from '../../../store/entry-store.model';
+import { EntrySelectors } from '../../../store/entry.selectors';
 
 type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
 
@@ -31,6 +35,9 @@ export interface Filter {
 export class InteractiveTablesComponent implements OnChanges {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly ligandsTabService = inject(LigandsTabService);
+  public readonly globalStore = inject(Store<EntryStoreState>);
+
+  public readonly llmAnnotations = toSignal(this.globalStore.select(EntrySelectors.llmAnnotations));
 
   public readonly tabName = input.required<TableNames>();
 
@@ -49,27 +56,49 @@ export class InteractiveTablesComponent implements OnChanges {
   private mappedTableRows = signal<any[]>([]);
 
   async ngOnChanges(): Promise<void> {
-    const tableData = this.compCommunication.getTabData(this.tabName());
-    this.tableData = tableData as DataToTable;
-    const mappedTableRows = tableData.tableRows().map((row: any, index) => ({
-      ...row,
-      index,
-      annotations: this.getAnnotations(row.id),
-      isModified: this.ligandsTabService.modifications()?.find((e) => e === row.id) ? true : false,
-    }));
-    this.mappedTableRows.update(() => mappedTableRows);
-    this.rowCards.update(() => mappedTableRows);
-    this.selectedRowCard.set(this.rowCards()[0]);
-    this.filters.update(() =>
-      tableData.tableFilters().map((filter: any) => {
-        return {
-          types: filter.types,
-          description: filter.description.includes('All') ? 'All' : filter.description,
-        };
-      })
-    );
-    this.selectedFilter.set(this.filters()[0]);
-    this.loadSelectionFromTable(0);
+    if (this.tabName() !== 'LLM') {
+      const tableData = this.compCommunication.getTabData(this.tabName());
+      console.log('tableData', tableData);
+      this.tableData = tableData as DataToTable;
+      const mappedTableRows = tableData.tableRows().map((row: any, index) => ({
+        ...row,
+        index,
+        annotations: this.getAnnotations(row.id),
+        isModified: this.ligandsTabService.modifications()?.find((e) => e === row.id) ? true : false,
+      }));
+      this.mappedTableRows.update(() => mappedTableRows);
+      this.rowCards.update(() => mappedTableRows);
+      this.selectedRowCard.set(this.rowCards()[0]);
+      this.filters.update(() =>
+        tableData.tableFilters().map((filter: any) => {
+          return {
+            types: filter.types,
+            description: filter.description.includes('All') ? 'All' : filter.description,
+          };
+        })
+      );
+      this.selectedFilter.set(this.filters()[0]);
+      this.loadSelectionFromTable(0);
+    } else {
+      const tableData = this.compCommunication.getTabData('Macromolecules');
+      this.tableData = tableData as DataToTable;
+      const mappedTableRows = tableData.tableRows().map((row: any, index) => ({
+        ...row,
+        index,
+        annotations: this.getAnnotations(row.id),
+        isModified: this.ligandsTabService.modifications()?.find((e) => e === row.id) ? true : false,
+      }));
+
+      const primaryCitationYes = this.llmAnnotations()?.filter((a: any) => a.primaryCitation === 'Y');
+      const llmUniProtIds = [...new Set(primaryCitationYes?.map((a: any) => a.uniprotAccession))];
+      const chainIds = [...new Set(primaryCitationYes?.map((a: any) => a.pdbChain))];
+      const result = mappedTableRows.filter(
+        (a: any) => llmUniProtIds.includes(a.additionalData.uniprotAccessions[0]) && chainIds.includes(a.additionalData.molecule.in_chains[0])
+      );
+      this.mappedTableRows.update(() => result);
+      this.rowCards.update(() => result);
+      this.selectedRowCard.set(this.rowCards()[0]);
+    }
   }
 
   private getAnnotations(id: any) {

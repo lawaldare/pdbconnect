@@ -1,7 +1,7 @@
 @if(tabDataLoaded()){ @if(macromoleculeTableRows().length && currentMacromoleculeDatum()){
 <main [class.change-display]="!isSidebarDisplayed()">
   @if(isSidebarDisplayed()){
-  <pdbc-interactive-tables tabName="Macromolecules" />
+  <pdbc-interactive-tables tabName="LLM" />
   }
   <div class="tab-content">
     @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Macromolecules';

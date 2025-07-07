@@ -97,3 +97,27 @@
   }
 </section>
 }
+
+<!-- LLM -->
+
+@if(tabName() === 'LLM') {
+<p>Testing</p>
+<section>
+  @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card.index; let i = $index) {
+  <div class="card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard().index === card.index">
+    <p class="card-title" pdbcTruncateText [maxLines]="4" [tooltip]="true">{{card.name.molecule}}</p>
+    <p class="card-text">
+      @for(chain of card.name.chains; track chain; let islast = $last) {
+      <span>{{chain}}</span>{{ islast ? '' : ',' }} }
+    </p>
+  </div>
+  } @if(rowCards().length > 10){
+  <pagination-controls
+    (pageChange)="onChangePage($event)"
+    (pageBoundsCorrection)="onChangePage($event)"
+    [previousLabel]="'<'"
+    [nextLabel]="'>'"
+  ></pagination-controls>
+  }
+</section>
+}

@@ -63,6 +63,19 @@ export class EntryEffects {
     )
   );
 
+  getLLMAnnotations$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getLLMAnnotations),
+      switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
+      mergeMap((entryId: string) =>
+        this.entryAPIService.getLLMAnnotations(entryId).pipe(
+          map((llmAnnotations) => EntryActions.getLLMAnnotationsSuccess({ llmAnnotations })),
+          catchError(() => of(EntryActions.getLLMAnnotationsFailure()))
+        )
+      )
+    )
+  );
+
   getGOMapping$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getGOMapping),
