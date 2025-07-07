@@ -28,6 +28,7 @@ export class MolstarStateService {
 
   // state and data variables for Model Quality
   public currentModelId = toSignal(this.molstarVisualisation.currentModelId$);
+  public currentLLMTabId = toSignal(this.molstarVisualisation.currentLLMTabId$);
   public outliersByModelId = signal<OutliersByModelId | undefined>(undefined);
   public modelQualityValidationType = signal<string>('issue_count');
   public modelQualitySpecificIssueKind = signal<string>('');
@@ -52,6 +53,19 @@ export class MolstarStateService {
       // if coming from different tab, refresh state
       await this.summaryStateManagement.updateMolstarAccordionSelection(this.summaryStateManagement.currentView);
     }
+  }
+
+  public async renderMolstarForLLM() {
+    const modelId = this.currentLLMTabId();
+    // const currentOutlierData = this.outliersByModelId()![modelId];
+
+    const displayName = `LLM-Tab-${modelId}`;
+    // if (issueType !== 'issue_count') {
+    //   displayName = `Model Quality(${modelId})-Specific issue-${specificIssue}`;
+    // }
+    if (this.molstarVisualisation.currentViewName === displayName) return;
+    this.molstarVisualisation.currentViewName = displayName;
+    await this.molstarVisualisation.checkLLMReady();
   }
 
   public async renderMolstarForModelQuality() {

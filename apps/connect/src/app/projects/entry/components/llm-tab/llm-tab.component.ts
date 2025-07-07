@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
-import { MolstarForEntryPages } from '../../helpers/molstar-for-entry-pages';
+import { MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { dashboardStatLinks } from '../../entry-constant';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -14,7 +13,6 @@ import { MacromoleculesFacade } from './llm.facade';
 import { getMacromoleculeChainDropdownOptions } from '../../helpers/processed-data-to-controls';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { EntryPgProtvistaComponent } from '../shared/entry-pv-nightingale/entry-pv-nightingale.component';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { ComponentType } from '@angular/cdk/overlay';
 import { EcNumbersComponent } from '../shared/ec-numbers/ec-numbers.component';
@@ -28,11 +26,13 @@ import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { CitationDetail } from '../../data-models/publication.model';
-import { combineLatest, filter, map } from 'rxjs';
+import { combineLatest, map } from 'rxjs';
 import { AgGridAngular } from 'ag-grid-angular';
 import { LLMAnnotation } from '../../data-models/llm-model';
 import { colDefs, gridOptions } from './ag-grid';
 import { SelectionChangedEvent } from 'ag-grid-community';
+import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
+import { convertOutliersToSmartSequenceAnnotation } from '../../helpers/quality-annotations-from-seq';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -65,8 +65,8 @@ export interface MappedResidue {
     ReactiveFormsModule,
     InteractiveTablesComponent,
     NgxSkeletonLoaderModule,
-    EntryPgProtvistaComponent,
     AgGridAngular,
+    SmartSeqViewerComponent,
   ],
   templateUrl: './llm-tab.component.html',
   styleUrl: './llm-tab.component.scss',
@@ -85,11 +85,14 @@ export class LLMTabComponent implements OnInit {
   public readonly molstarState = inject(MolstarStateService);
 
   public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
+  @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
   public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
   public dashboardStatLinks = dashboardStatLinks;
+
+  public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
 
   private readonly globalStore = inject(Store<EntryStoreState>);
 
@@ -98,6 +101,7 @@ export class LLMTabComponent implements OnInit {
   public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
   public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
   public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
+  public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
 
   public selectionStats: { [key: string]: any } | undefined;
   // public goMappings = computed(() => Object.keys(this.goMapping() ?? {}));
@@ -203,7 +207,6 @@ export class LLMTabComponent implements OnInit {
           this.primaryPublication.set(primaryPublication ?? ({} as CitationDetail));
           const annotations = llmAnnotations.filter((a: any) => a.primaryCitation === 'Y');
           this.filteredLLMAnnotations.set(annotations ?? []);
-          console.log('Annotations:', this.filteredLLMAnnotations());
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -291,6 +294,18 @@ export class LLMTabComponent implements OnInit {
       };
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+
+    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.updateBackgroundAnnotation();
+  }
+
+  private updateBackgroundAnnotation() {
+    const sequence = this.sequenceDetails[0]?.fullSequence;
+    if (!sequence || !this.hasProtvista) return;
+
+    const entityId = parseInt(this.currentProtvistaEntity() ?? '');
+    const chainId = this.dropdownSelected.split('Chain ')[1];
+    this.backgroundAnnotation.set(convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, this.residueWiseOutliers()));
   }
 
   updateVisualsDisplayed(macromolecule: MacromoleculesRowData) {
@@ -360,8 +375,16 @@ export class LLMTabComponent implements OnInit {
 
   private async renderVisualisations(macromolecule: MacromoleculesRowData) {
     await this.renderInMolstar(macromolecule);
-    // await this.initOrRefreshProtvista(macromolecule);
+    await this.initOrRefreshProtvista(macromolecule);
     // await this.initOrRefreshTopologyViewer(macromolecule);
+  }
+
+  private async initOrRefreshProtvista(macromolecule: MacromoleculesRowData) {
+    const entityId = macromolecule.additionalData.molecule.entity_id;
+    const chainId = this.dropdownSelected.split('Chain ')[1];
+
+    this.currentProtvistaEntity.set(`${entityId}`);
+    this.currentProtvistaChain.set(chainId);
   }
 
   private async renderInMolstar(macromolecule: MacromoleculesRowData) {

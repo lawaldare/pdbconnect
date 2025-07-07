@@ -66,47 +66,35 @@ section.info {
   // }
 }
 
-section.chart-area {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  height: 500px;
-
-  &.collapsed {
-    flex-wrap: nowrap !important;
-
-    .topology-viewer-container {
-      margin: 0;
-    }
-  }
+p.residue-info {
+  color: #000;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22.4px;
+  margin: 8px 0 !important;
 }
 
-.info-grouped {
-  &.left {
-    // left is 55%
-    width: 55%;
+section.chart-area {
+  display: flex;
+  gap: 5px;
+  height: 450px;
 
-    @media (width <= 1141px) {
-      width: 100%;
-
-      @media (width >= 900px) {
-        main.change-display & {
-          width: 55%;
-        }
-      }
-    }
+  .table-wrapper {
+    width: 60%;
+    height: 450px;
   }
 
-  &.right {
-    width: 45%;
+  .container-3d {
+    width: 40%;
+    height: 450px;
 
-    @media (width <= 1141px) {
-      width: 100%;
+    .molstar-parent {
+      height: 450px;
 
-      @media (width >= 900px) {
-        main.change-display & {
-          width: 45%;
-        }
+      .molstar-container {
+        height: 450px;
+        width: inherit;
       }
     }
   }
@@ -163,19 +151,6 @@ article {
   flex-wrap: wrap;
 }
 
-.stats-link-bar {
-  color: #54585a;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 22.4px;
-
-  a {
-    line-height: 22.4px;
-  }
-
-  margin-bottom: 16px;
-}
-
 .chains {
   margin-top: 12px;
   margin-bottom: 4px;
@@ -200,10 +175,6 @@ article {
     }
   }
 }
-
-// .chains.macromolecules {
-//   margin-bottom: 0px;
-// }
 
 .sequence-container {
   width: 100%;
@@ -246,32 +217,9 @@ article {
     }
   }
 
-  .sequence {
-    align-self: stretch;
-    color: #000;
-
-    // font-family: 'IBM Plex Sans';
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 22.4px; /* 160% */
-    word-break: break-word;
-
-    // max-height: 60px;
-    max-height: 76px;
-    overflow-y: auto;
-    margin-bottom: 8px;
+  lib-smart-seq-viewer {
+    width: 100%;
   }
-}
-
-.protvista-container {
-  width: 100%;
-  max-width: 688px;
-
-  // max-height: 371px;
-  max-height: 500px;
-
-  // overflow-y: scroll;
 }
 
 .molstar-details-container {
@@ -281,15 +229,16 @@ article {
 
 .molstar-container {
   position: relative;
+  width: 334px;
 
-  // width: 334px;
   // height: 334px;
   // flex: 1 0 0;
   flex: 1;
-  width: 337px;
+
+  // width: 337px;
 
   // height: 296px;
-  min-height: 296px;
+  // min-height: 296px;
   z-index: 1;
 }
 
@@ -299,24 +248,4 @@ article {
   flex: 1;
   width: 682px;
   min-height: 339px;
-}
-
-.topology-viewer-container {
-  // flex: 1 0 0;
-  // flex: 1;
-  display: flex;
-  width: 100%;
-  max-width: 411px;
-  margin-top: 16px;
-}
-
-.topology-container {
-  // width: 334px;
-  // height: 334px;
-  // flex: 1 0 0;
-  flex: 1;
-  width: 337px;
-
-  // height: 296px;
-  min-height: 296px;
 }

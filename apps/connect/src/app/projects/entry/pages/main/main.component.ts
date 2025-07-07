@@ -285,6 +285,15 @@ export class EntryMainPageComponent implements OnInit {
         skippable // skippable
       );
       //
+    } else if (tabName === 'llm') {
+      this.actionQueue.addAction(
+        'tab change renderMolstarForLLM',
+        async () => {
+          await this.molstarState.renderMolstarForLLM();
+        },
+        skippable // skippable
+      );
+      //
     } else if (tabName === 'assemblies') {
       this.actionQueue.addAction(
         'renderMolstarForAssemblies-first-assembly',

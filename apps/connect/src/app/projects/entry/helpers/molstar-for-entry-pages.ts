@@ -67,6 +67,17 @@ export const MOLSTAR_CONFIG_FACTORIES: {
     subscribeEvents: true,
     granularity: 'residue',
   }),
+  LLM: ({ entryId, hideCanvControls }) => ({
+    moleculeId: entryId!,
+    loadMaps: false,
+    bgColor: { r: 255, g: 255, b: 255 },
+    hideControls: true,
+    hideCanvasControls: hideCanvControls ?? [],
+    landscape: true,
+    validationAnnotation: true,
+    subscribeEvents: true,
+    granularity: 'residue',
+  }),
   ASSEMBLIES: ({ entryId, assemblyId, symmetryView, hideCanvControls }) => ({
     moleculeId: entryId!,
     loadMaps: false,
@@ -146,6 +157,7 @@ export class MolstarForEntryPages extends MolstarBaseClass {
   public entryId?: string;
   public preferredAssemblyId?: string;
   public currentModelId$ = new BehaviorSubject<string>('1');
+  public currentLLMTabId$ = new BehaviorSubject<string>('1');
   public currentMolstarContainer?: string;
   public molstarViewerElement?: HTMLElement;
   private renderer?: Renderer2;
@@ -162,6 +174,7 @@ export class MolstarForEntryPages extends MolstarBaseClass {
   public currentConfigName?: string;
 
   public enforceMolstarInContainer(containerName: string) {
+    console.log(containerName);
     setTimeout(async () => {
       if (this.currentMolstarContainer === containerName) return;
       const containerElement = document.querySelector(`#${containerName}-molstar-container`);
@@ -418,6 +431,20 @@ export class MolstarForEntryPages extends MolstarBaseClass {
       hideCanvControls: hideCanvControls,
     });
     await this.enforceConfigLoaded('MODEL_QUALITY', config);
+  }
+
+  public async checkLLMReady(isMobile?: boolean) {
+    const hideCanvControls = isMobile ? ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'] : [];
+    if (!this.entryId) {
+      console.warn('Mol*: Unset entry id');
+      return;
+    }
+    this.enforceMolstarInContainer('llm');
+    const config = MOLSTAR_CONFIG_FACTORIES['LLM']({
+      entryId: this.entryId,
+      hideCanvControls: hideCanvControls,
+    });
+    await this.enforceConfigLoaded('LLM', config);
   }
 
   public async checkAssembliesReady(assemblyId: string, symmetryView: boolean, isMobile?: boolean) {
