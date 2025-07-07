@@ -14,7 +14,7 @@ import { TableNames } from './main.component';
 import { TabNames } from '../../helpers/tab-names.enum';
 import { EntryActions } from '../../store/entry.actions';
 import { catchError, combineLatest, of, retry, startWith, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexDetails } from '../../data-models/complex-details.model';
 import { ProcessedSummary } from '../../data-models/summary.model';
 import { ResidueWiseOutliersMolecule } from '../../data-models/residuewise-outliers.model';
@@ -60,6 +60,8 @@ export class MainDataProcessingFacade {
     const rendererFactory = inject(RendererFactory2);
     this.renderer = rendererFactory.createRenderer(null, null);
   }
+
+  public readonly llmAnnotations = this.globalStore.select(EntrySelectors.llmAnnotations);
 
   public tabDataLoaded = computed(() => {
     return (

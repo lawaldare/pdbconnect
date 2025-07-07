@@ -101,7 +101,6 @@
 <!-- LLM -->
 
 @if(tabName() === 'LLM') {
-<p>Testing</p>
 <section>
   @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card.index; let i = $index) {
   <div class="card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard().index === card.index">

@@ -1,15 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, effect, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MolstarForEntryPages } from '../../helpers/molstar-for-entry-pages';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { dashboardStatLinks } from '../../entry-constant';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
-import { MaterialModule, UtilService } from '@pdbc/core';
+import { AG_Grid_Theme_Class, MaterialModule, UtilService } from '@pdbc/core';
 import { MacromoleculesFacade } from './llm.facade';
 import { getMacromoleculeChainDropdownOptions } from '../../helpers/processed-data-to-controls';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
@@ -27,6 +27,12 @@ import { InteractiveTablesComponent } from '../shared/interactive-tables/interac
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
+import { CitationDetail } from '../../data-models/publication.model';
+import { combineLatest, filter, map } from 'rxjs';
+import { AgGridAngular } from 'ag-grid-angular';
+import { LLMAnnotation } from '../../data-models/llm-model';
+import { colDefs, gridOptions } from './ag-grid';
+import { SelectionChangedEvent } from 'ag-grid-community';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -60,11 +66,12 @@ export interface MappedResidue {
     InteractiveTablesComponent,
     NgxSkeletonLoaderModule,
     EntryPgProtvistaComponent,
+    AgGridAngular,
   ],
   templateUrl: './llm-tab.component.html',
   styleUrl: './llm-tab.component.scss',
 })
-export class LLMTabComponent {
+export class LLMTabComponent implements OnInit {
   public readonly macromoleculesFacade = inject(MacromoleculesFacade);
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
@@ -85,6 +92,7 @@ export class LLMTabComponent {
   public dashboardStatLinks = dashboardStatLinks;
 
   private readonly globalStore = inject(Store<EntryStoreState>);
+
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
   public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
@@ -93,6 +101,10 @@ export class LLMTabComponent {
 
   public selectionStats: { [key: string]: any } | undefined;
   // public goMappings = computed(() => Object.keys(this.goMapping() ?? {}));
+
+  public filteredLLMAnnotations = signal<LLMAnnotation[]>([]);
+
+  public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
   public goMappingsForMacromolecule = computed(() => {
     const macromolecule = this.currentMacromoleculeDatum();
@@ -177,6 +189,27 @@ export class LLMTabComponent {
     return filteredIsoformsMapping;
   });
 
+  public readonly primaryPublication = signal({} as CitationDetail | null);
+  private readonly destroyRef = inject(DestroyRef);
+
+  public readonly gridOptions = gridOptions;
+  public readonly themeClass = AG_Grid_Theme_Class;
+  public readonly colDefs = colDefs;
+
+  ngOnInit(): void {
+    combineLatest([this.globalStore.select(EntrySelectors.llmAnnotations), this.globalStore.select(EntrySelectors.primaryPublication)])
+      .pipe(
+        map(([llmAnnotations, primaryPublication]) => {
+          this.primaryPublication.set(primaryPublication ?? ({} as CitationDetail));
+          const annotations = llmAnnotations.filter((a: any) => a.primaryCitation === 'Y');
+          this.filteredLLMAnnotations.set(annotations ?? []);
+          console.log('Annotations:', this.filteredLLMAnnotations());
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({});
+  }
+
   private readonly allThereVisuals = ['polypeptide(L)', 'polypeptide(D)'];
   private readonly onlyTwoVisuals = ['polyribonucleotide', 'polydeoxyribonucleotide'];
   private readonly onlyMolstarVisuals = ['carbohydrate polymer'];
@@ -228,6 +261,11 @@ export class LLMTabComponent {
     }
     return datum;
   });
+
+  public onSelectionChanged(event: SelectionChangedEvent) {
+    const data = event.api.getSelectedNodes()[0].data;
+    console.log('Selection changed', data);
+  }
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: MacromoleculesRowData) {
     // refreshes dropdown options on new macromolecule
@@ -322,8 +360,8 @@ export class LLMTabComponent {
 
   private async renderVisualisations(macromolecule: MacromoleculesRowData) {
     await this.renderInMolstar(macromolecule);
-    await this.initOrRefreshProtvista(macromolecule);
-    await this.initOrRefreshTopologyViewer(macromolecule);
+    // await this.initOrRefreshProtvista(macromolecule);
+    // await this.initOrRefreshTopologyViewer(macromolecule);
   }
 
   private async renderInMolstar(macromolecule: MacromoleculesRowData) {
@@ -339,41 +377,6 @@ export class LLMTabComponent {
       },
       shouldSkip // skippable
     );
-  }
-
-  private async initOrRefreshProtvista(macromolecule: MacromoleculesRowData) {
-    // stop if this dashboard does not have protvista (initially false and then set in onTableRowSelection according to tabName input)
-    if (!this.hasProtvista) return;
-    // const datum = this.currentMacromoleculeDatum();
-    const entityId = macromolecule.additionalData.molecule.entity_id;
-    const chainId = this.dropdownSelected.split('Chain ')[1];
-
-    this.currentProtvistaEntity.set(`${entityId}`);
-    this.currentProtvistaChain.set(chainId);
-  }
-
-  private async initOrRefreshTopologyViewer(macromolecule: MacromoleculesRowData) {
-    // stop if this dashboard does not have topology viewer (initially false and then set in onTableRowSelection according to tabName input)
-    if (!this.hasTopologyViewer) return;
-
-    // topology viewer is only currently shown for macromolecules
-    // const datum = this.currentMacromoleculeDatum();
-    const entityId = (macromolecule as MacromoleculesRowData).additionalData.molecule.entity_id;
-    const chainId = this.dropdownSelected?.split('Chain ')[1];
-
-    // topology viewer load or reload in page is simple
-    this.topologyViewerInstance = new PdbTopologyViewerPlugin();
-    const container = this.topologyViewerContainer.nativeElement;
-
-    const options = {
-      entryId: this.entryId(),
-      entityId: `${entityId}`,
-      chainId: chainId,
-      subscribeEvents: true,
-    };
-
-    //Call render method to display the 2D view
-    this.topologyViewerInstance.render(container, options);
   }
 
   getLengthType(macromolecule: MacromoleculesRowData) {

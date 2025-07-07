@@ -10,120 +10,83 @@
       <span>{{text}}</span>
     </button>
 
+    <section class="info-banner">
+      <p>
+        This page contains residue level text-mined data from open access publications using AI methods developed by the
+        <a href="https://huggingface.co/PDBEurope" target="_blank">PDBe team</a>.
+        <a href="https://www.nature.com/articles/s41597-024-03841-9" target="_blank">Learn more...</a> <br />
+        All data is sourced from our open and free-to-use <a href="https://www.ebi.ac.uk/pdbe/aggregated-api/" target="_blank">Aggregated API endpoints.</a>
+      </p>
+      <p><strong>Primary publication:</strong><span [innerHTML]="primaryPublication()?.title"></span></p>
+      <p>
+        @if(primaryPublication()?.doi && primaryPublication()?.pubmed_id){
+        <span class="row__right__pmid__info">
+          <i>{{ primaryPublication()?.journal_info?.pdb_abbreviation }}</i>
+          {{ primaryPublication()?.journal_info?.volume }} {{ primaryPublication()?.journal_info?.pages }} ({{ primaryPublication()!.journal_info.year }})
+        </span>
+        } @if(primaryPublication()?.pubmed_id){
+        <span class="row__right__authors__title">PMID:</span>
+        <a [href]="'https://europepmc.org/article/MED/' + primaryPublication()?.pubmed_id" target="_blank"
+          >{{ primaryPublication()?.pubmed_id }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+        }
+      </p>
+    </section>
+
     @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_name?.length) {
     <h5>{{ currentMacromoleculeDatum()!.additionalData.molecule.molecule_name[0] }}</h5>
     }
 
     <section class="info">
-      <div class="info-grouped left">
-        @let type = currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_type; @if(type){
-        <div class="info-row">
-          <span class="micro-title"> Type </span>
-          <article>{{type | titlecase}}</article>
-        </div>
-        } @if(currentMacromoleculeDatum()!.organisms.length){
-        <div class="info-row">
-          <span class="micro-title"> Source organism </span>
-          <article>
-            <a [href]="generateOrganismSearchUrl(currentMacromoleculeDatum()!.organisms[0])" target="_blank">
-              <em>{{currentMacromoleculeDatum()!.organisms[0]}}</em>
-              <img src="assets/icons/link_search_icon.png" alt="search icon" style="margin-left: 5px" />
-            </a>
-          </article>
-        </div>
-        } @let expressionSystem = currentMacromoleculeDatum()?.additionalData?.molecule?.source?.[0]?.expression_host_scientific_name; @if(expressionSystem){
-        <div class="info-row">
-          <span class="micro-title"> Expression System </span>
-          <article>
-            <em>{{expressionSystem}}</em>
-          </article>
-        </div>
-        } @if(currentMacromoleculeDatum()!.mappedResidues.length){
-        <div class="info-row">
-          <span class="micro-title"> UniProt mapping </span>
-          <article class="uniport-mapping">
-            @for(residue of currentMacromoleculeDatum()!.mappedResidues; track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <=
-            2){
-            <span
-              >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a> (residues:
-              {{residue.range.join(',')}}; coverage: {{residue.coverage}})</span
-            >
-            } @else { @if(residue.open){
-            <div>
-              Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a>
-              (residues: {{range.join(', ')}}; coverage: {{residue.coverage}})
-              <span class="residue-action-button" (click)="residue.open = !residue.open">show less</span>
-            </div>
-            }@else {
-            <div>
-              Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a>
-              residues: {{range.slice(0,2).join(', ')}}...
-              <span class="residue-action-button" (click)="residue.open = !residue.open">show all</span>
-            </div>
-            } } } @for(res of bestResidues(); track res.name;){
-            <span
-              >Best match <a [href]="'https://www.uniprot.org/uniprotkb/' + res.uniprot" target="_blank">{{res.uniprot}}</a> (residues: {{res.mappings[0].unp_start}}
-              - {{res.mappings[0].unp_end}})</span
-            >
-            }
-          </article>
-        </div>
-        }
-        <div class="info-row">
-          <span class="micro-title"> Length </span>
-          <article>{{currentMacromoleculeDatum()!.length}} {{ getLengthType(currentMacromoleculeDatum()!) }}</article>
-        </div>
-        <div class="info-row">
-          <span class="micro-title"> Theoretical weight</span>
-          @if(currentMacromoleculeDatum()!.additionalData.molecule.weight !== undefined) {
-          <article>{{ getRoundedWeight() }} KDa</article>
+      <!-- <div class="info-grouped left"> -->
+
+      @if(currentMacromoleculeDatum()!.organisms.length){
+      <div class="info-row">
+        <span class="micro-title"> Source organism </span>
+        <article>
+          <a [href]="generateOrganismSearchUrl(currentMacromoleculeDatum()!.organisms[0])" target="_blank">
+            <em>{{currentMacromoleculeDatum()!.organisms[0]}}</em>
+            <img src="assets/icons/link_search_icon.png" alt="search icon" style="margin-left: 5px" />
+          </a>
+        </article>
+      </div>
+      } @if(currentMacromoleculeDatum()!.mappedResidues.length){
+      <div class="info-row">
+        <span class="micro-title"> UniProt mapping </span>
+        <article class="uniport-mapping">
+          @for(residue of currentMacromoleculeDatum()!.mappedResidues; track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <=
+          2){
+          <span
+            >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a> (residues:
+            {{residue.range.join(',')}}; coverage: {{residue.coverage}})</span
+          >
+          } @else { @if(residue.open){
+          <div>
+            Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a>
+            (residues: {{range.join(', ')}}; coverage: {{residue.coverage}})
+            <span class="residue-action-button" (click)="residue.open = !residue.open">show less</span>
+          </div>
+          }@else {
+          <div>
+            Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a>
+            residues: {{range.slice(0,2).join(', ')}}...
+            <span class="residue-action-button" (click)="residue.open = !residue.open">show all</span>
+          </div>
+          } } } @for(res of bestResidues(); track res.name;){
+          <span
+            >Best match <a [href]="'https://www.uniprot.org/uniprotkb/' + res.uniprot" target="_blank">{{res.uniprot}}</a> (residues: {{res.mappings[0].unp_start}} -
+            {{res.mappings[0].unp_end}})</span
+          >
           }
-        </div>
+        </article>
       </div>
-      <div class="info-grouped right">
-        @if(currentMacromoleculeDatum()?.genes?.length){
-        <div class="info-row">
-          <span class="micro-title"> Gene names </span>
-          <article>
-            @for (gene of currentMacromoleculeDatum()!.genes; track gene; let islast = $last) {
-            <a [href]="utilService.baseUrl() +   'entry/search/index?gene_name:' + gene" target="_blank">{{ gene }}{{ islast ? '' : ',' }}</a> }
-            <br />
-          </article>
-        </div>
-        } @if(isThereGoMappings().length){
-        <div class="info-row dialog">
-          <span class="micro-title">GO terms</span>
-          <article>
-            @if(goMappings()?.['Molecular_function']?.length){
-            <span class="article-title">Molecular function</span>
-            <a [href]="utilService.baseUrl() + 'entry/search/index?biological_function:' + goMappings()['Molecular_function'][0].name" target="_blank"
-              >{{goMappings()['Molecular_function'][0].name}}</a
-            >
-            } @if(goMappings()?.['Biological_process']?.length){
-            <span class="article-title">Biological process</span>
-            <a [href]="utilService.baseUrl() + 'entry/search/index?biological_process:' + goMappings()['Biological_process'][0].name" target="_blank"
-              >{{goMappings()['Biological_process'][0].name}}</a
-            >
-            } @if(goMappings()?.['Cellular_component']?.length){
-            <span class="article-title">Cellular component</span>
-            <a [href]="utilService.baseUrl() + 'entry/search/index?biological_cell_component:' + goMappings()['Cellular_component'][0].name" target="_blank"
-              >{{goMappings()['Cellular_component'][0].name}}</a
-            >
-            } @if(isCategoryMoreThanOne()){
-            <span role="button" (click)="openDialog('go')">View all {{isThereGoMappings().length}} GO terms</span>
-            }
-          </article>
-        </div>
-        } @if(ecMappings().length){
-        <div class="info-row dialog">
-          <span class="micro-title">EC numbers</span>
-          <article><span role="button" (click)="openDialog('ec')">View {{ecMappings().length}} EC numbers</span></article>
-        </div>
-        }
-      </div>
+      }
+
+      <!-- </div> -->
     </section>
     }
-    <div class="stats-link-bar">
+    <!-- <div class="stats-link-bar">
       @if(dashboardStatLinks['Macromolecules'].length > 0 && selectionIdentifier !== 'None') {
       <span><img src="assets/icons/logo.png" alt="icon" style="margin-right: 2px" />View more about this {{ selectionTypeText }}:</span>
       @for (displayLink of dashboardStatLinks['Macromolecules']; track displayLink; let islast = $last) {
@@ -131,7 +94,7 @@
         {{ selectionStats?.[selectionIdentifier][displayLink.id] }} {{ displayLink.displayName }}
       </a>
       {{ islast ? '' : '|' }} } }
-    </div>
+    </div> -->
     <div class="chains">
       @if(dropdownOptions.length > 1){
       <div class="dropdown-container">
@@ -164,7 +127,7 @@
     </div>
     }
     <section class="chart-area" [class.collapsed]="compCommunication.isSidebarCollapsed()">
-      @if (hasProtvista) {
+      <!-- @if (hasProtvista) {
       <section class="protvista-container">
         @let molType = currentMacromoleculeDatum()!.additionalData.molecule.molecule_type; @if(entryId() && currentProtvistaEntity() && molType) {
         <pdbc-entry-pg-protvista
@@ -176,7 +139,20 @@
         ></pdbc-entry-pg-protvista>
         }
       </section>
-      }
+      } -->
+
+      <section class="table-wrapper">
+        <ag-grid-angular
+          class="ag-theme-quartz"
+          style="width: 100%; height: 100%"
+          [rowData]="filteredLLMAnnotations()"
+          [columnDefs]="colDefs"
+          [gridOptions]="gridOptions"
+          (selectionChanged)="onSelectionChanged($event)"
+          [paginationPageSizeSelector]="paginationPageSizeSelector()"
+          overlayNoRowsTemplate="No ligand interactions found"
+        />
+      </section>
       <section class="molstar-details-container">
         @if (!molstarFirstRenderFinished()) {
         <div [style.width]="'100%'">
@@ -185,11 +161,11 @@
         }
         <div id="macromolecules-molstar-container" class="molstar-container"></div>
       </section>
-      @if(hasTopologyViewer){
+      <!-- @if(hasTopologyViewer){
       <section class="topology-viewer-container">
         <div class="topology-container" #topologyViewerContainer></div>
       </section>
-      }
+      } -->
     </section>
   </div>
 </main>

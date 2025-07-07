@@ -58,7 +58,6 @@ export class InteractiveTablesComponent implements OnChanges {
   async ngOnChanges(): Promise<void> {
     if (this.tabName() !== 'LLM') {
       const tableData = this.compCommunication.getTabData(this.tabName());
-      console.log('tableData', tableData);
       this.tableData = tableData as DataToTable;
       const mappedTableRows = tableData.tableRows().map((row: any, index) => ({
         ...row,
