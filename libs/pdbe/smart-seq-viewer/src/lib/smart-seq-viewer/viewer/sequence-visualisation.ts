@@ -841,7 +841,7 @@ export class SmartSequenceVisualisation {
     ctx.font = `${this.fontSize}px ${this.fontFamily}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = this.fontColor;
+    ctx.fillStyle = '#000';
 
     const { left: marginLeft, top: marginTop } = this.margins;
 
@@ -925,19 +925,25 @@ export class SmartSequenceVisualisation {
     ctx.fillStyle = annotationColor ?? this.defaultBgColour;
     ctx.fillRect(x, yStart + this.maxNumberingBoxHeight, this.maxBoxWidth, this.maxBoxHeight);
 
+    let residueFontColour = '#000';
+    if (annotationColor) {
+      residueFontColour = this.colorIsDarkAdvanced(annotationColor) ? '#FFF' : '#000';
+    }
+    ctx.fillStyle = residueFontColour;
+
     let fontWeight = '';
     if (residueIndex === this.currentHoveredResidue || residueIndex === this.currentClickedResidue) {
       fontWeight = 'bold ';
-      ctx.strokeStyle = this.clickedBorderColour || '#4F81C3';
+      // ctx.strokeStyle = this.clickedBorderColour || '#4F81C3';
+      ctx.strokeStyle = this.clickedBorderColour || '#000';
       ctx.lineWidth = this.clickedBorderWidth;
       ctx.strokeRect(x, yStart + this.maxNumberingBoxHeight, this.maxBoxWidth, this.maxBoxHeight);
-      ctx.fillStyle = this.clickedTextColour || '#4F81C3';
-    } else {
-      ctx.fillStyle = this.fontColor;
+      // ctx.fillStyle = this.clickedTextColour || '#4F81C3';
     }
 
     ctx.font = `${fontWeight}${this.fontSize}px ${this.fontFamily}`;
     ctx.fillText(char, x + this.maxBoxWidth / 2, yStart + this.maxNumberingBoxHeight + this.maxBoxHeight / 2);
+    ctx.fillStyle = '#000';
 
     const circleColor = this.circleColorMap!.get(residueIndex);
     if (circleColor) {
@@ -947,7 +953,7 @@ export class SmartSequenceVisualisation {
       ctx.arc(circleCenterX, circleCenterY, this.circleAnnotationRadius, 0, 2 * Math.PI);
       ctx.fillStyle = circleColor;
       ctx.fill();
-      ctx.fillStyle = this.fontColor;
+      ctx.fillStyle = '#000';
     }
 
     const underlineColor = this.underlineColorMap!.get(residueIndex);
@@ -1091,6 +1097,9 @@ export class SmartSequenceVisualisation {
   private getSidebarPanelEmptyState(): string {
     let html = `<p style="margin: 0; font-weight: bold; font-size: 14px;">Click a residue to view more details</p>`;
 
+    // const selectionBorderColour = this.clickedBorderColour || '#4F81C3';
+    const selectionBorderColour = this.clickedBorderColour || '#000';
+
     const selectionIcon = `<div style="
         display: flex;
         align-items: center;
@@ -1098,8 +1107,8 @@ export class SmartSequenceVisualisation {
         width: 16px;
         height: 16px;
         margin-right: 6px;
-        border: 2px solid #4F81C3;
-        color: #4F81C3;
+        border: ${this.clickedBorderWidth}px solid ${selectionBorderColour};
+        color: #000;
         font-weight: bold;
         font-size: 12px;
         background-color: transparent;
@@ -1214,16 +1223,22 @@ export class SmartSequenceVisualisation {
     if (annotations.length > 0) {
       for (const ann of annotations) {
         if (ann.identifier.includes('pdbe-validation')) {
-          if (!hasAddedTitle) {
-            html += `<p style="margin: 0; font-weight: bold; font-size: 14px;">Validation outliers:</p>`;
-            hasAddedTitle = true;
-          }
           const extraData = ann.datum.extraData || undefined;
           if (!extraData) continue;
-          const issuesNumber = extraData.outlierTypes.length === 0 ? 'No' : extraData.outlierTypes.length;
-          const typesWord = extraData.outlierTypes.length === 1 ? 'type' : 'types';
-          html += `<p style="margin: 0; font-size: 14px;">${issuesNumber} validation outlier ${typesWord} found for this residue</p>`;
-          if (extraData.outlierTypes.length > 0) {
+          const outlierCount = extraData.outlierTypes.length;
+          if (!hasAddedTitle) {
+            const color = this.getAnnotationColor(residueIndex, ann.rendering);
+            const colorRect = `<span style="display:inline-block;width:12px;height:12px;background:${color};margin-left:2px; margin-right:2px; border: 1.5px solid black;"></span>`;
+            const colourText = `${outlierCount} - ${colorRect}`;
+            html += `<p style="margin: 0; font-weight: bold; font-size: 14px;">Validation outliers (${colourText}):</p>`;
+            hasAddedTitle = true;
+          }
+          // const issuesNumber = extraData.outlierTypes.length === 0 ? 'No' : extraData.outlierTypes.length;
+          // const typesWord = extraData.outlierTypes.length === 1 ? 'type' : 'types';
+          // html += `<p style="margin: 0; font-size: 14px;">${issuesNumber} validation outlier ${typesWord} found for this residue</p>`;
+          if (outlierCount === 0) {
+            html += `<p style="margin: 0; font-size: 14px;">No validation outliers found for this residue</p>`;
+          } else if (outlierCount > 0) {
             html += `<ul style="margin-bottom:10px;">`;
             for (const outlierType of extraData.outlierTypes) {
               html += `<li style="margin: 0; font-size: 14px;">${outlierType}</li>`;
@@ -1288,6 +1303,22 @@ export class SmartSequenceVisualisation {
       V: 'Val',
     };
     return map[code.toUpperCase()] || code;
+  }
+
+  private colorIsDarkAdvanced(bgColor: string) {
+    const color = bgColor.charAt(0) === '#' ? bgColor.substring(1, 7) : bgColor;
+    const r = parseInt(color.substring(0, 2), 16); // hexToR
+    const g = parseInt(color.substring(2, 4), 16); // hexToG
+    const b = parseInt(color.substring(4, 6), 16); // hexToB
+    const uicolors = [r / 255, g / 255, b / 255];
+    const c = uicolors.map((col) => {
+      if (col <= 0.03928) {
+        return col / 12.92;
+      }
+      return Math.pow((col + 0.055) / 1.055, 2.4);
+    });
+    const L = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    return L <= 0.179;
   }
 
   public destroy() {
