@@ -2,8 +2,11 @@ import { Component, CUSTOM_ELEMENTS_SCHEMA, Input, Signal, WritableSignal, compu
 import { CommonModule } from '@angular/common';
 import { MatCheckbox } from '@angular/material/checkbox';
 
-import '@nightingale-elements/nightingale-variation';
-import '@nightingale-elements/nightingale-linegraph-track';
+import * as NightingaleVariation from '@nightingale-elements/nightingale-variation';
+import * as NightingaleLinegraph from '@nightingale-elements/nightingale-linegraph-track';
+
+// Dummy references to prevent tree-shaking
+const _nestedTrackBlockRefs = [NightingaleVariation, NightingaleLinegraph];
 
 import { APIVariant, APIVariationData } from '../../../models/pv-api-variation-track-data.model';
 import { MaterialModule } from '@pdbc/core';
