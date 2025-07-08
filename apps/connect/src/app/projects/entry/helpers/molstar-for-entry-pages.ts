@@ -174,7 +174,6 @@ export class MolstarForEntryPages extends MolstarBaseClass {
   public currentConfigName?: string;
 
   public enforceMolstarInContainer(containerName: string) {
-    console.log(containerName);
     setTimeout(async () => {
       if (this.currentMolstarContainer === containerName) return;
       const containerElement = document.querySelector(`#${containerName}-molstar-container`);

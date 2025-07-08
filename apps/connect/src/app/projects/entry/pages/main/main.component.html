@@ -29,18 +29,10 @@
             @if(dataProcessing.llmAnnotations | async; as annotations){ @if(annotations.length > 0){
             <pdbc-llm-tab />
             } @else {
-            <h3>Reason for an empty residue list:</h3>
-            <p>
-              No residue list available for this entry. The most likely reasons for this is no residues were explicitly mentioned in the publication text, the
-              numbering used in the text does not match the one used for the structure or the UniProt accession or the annotation pipeline failed to process the
-              publication text correctly.
-            </p>
-
-            <h3>Reason for an empty annotation list:</h3>
-            <p>
-              No annotations were found for this entry. The most likely reason for this is the publication text is not open access and could not be processed by the
-              annotation pipeline or the annotation pipeline could not create a link between annotations and residues in the structure.
-            </p>
+            <h5>
+              The residue and annotation lists are empty likely because the publication text either lacked explicit residue mentions, used mismatched numbering, or
+              wasn't open access. Additionally, the annotation pipeline may have failed to extract or map relevant information to the structure.
+            </h5>
             } }
           </ng-template>
         </mat-tab>
