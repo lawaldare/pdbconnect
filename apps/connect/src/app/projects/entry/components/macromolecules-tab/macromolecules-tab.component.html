@@ -192,11 +192,9 @@
         }
         <div id="macromolecules-molstar-container" class="molstar-container"></div>
       </section>
-      @if(hasTopologyViewer){
-      <section class="topology-viewer-container">
+      <section [style.display]="!hasTopologyViewer ? 'none' : '' " class="topology-viewer-container">
         <div class="topology-container" #topologyViewerContainer></div>
       </section>
-      }
     </section>
   </div>
 </main>

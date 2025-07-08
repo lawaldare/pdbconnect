@@ -231,7 +231,7 @@ export class MacromoleculesTabComponent {
     });
   }
 
-  async triggerMacromoleculeUpdateSideEffects(macromolecule: MacromoleculesRowData) {
+  triggerMacromoleculeUpdateSideEffects(macromolecule: MacromoleculesRowData) {
     // refreshes dropdown options on new macromolecule
     this.updateDropdownOptions(macromolecule);
 
@@ -242,7 +242,9 @@ export class MacromoleculesTabComponent {
     this.updateVisualsDisplayed(macromolecule);
 
     // renders necessary visualisations according to display options and data
-    await this.renderVisualisations(macromolecule);
+    this.renderVisualisations(macromolecule);
+
+    // updates smart sequence viewer annotations
     this.updateBackgroundAnnotation();
   }
 
@@ -379,8 +381,13 @@ export class MacromoleculesTabComponent {
   }
 
   private async initOrRefreshTopologyViewer(macromolecule: MacromoleculesRowData) {
+    const topologyContainer = this.topologyViewerContainer.nativeElement;
+
     // stop if this dashboard does not have topology viewer (initially false and then set in onTableRowSelection according to tabName input)
-    if (!this.hasTopologyViewer) return;
+    if (!this.hasTopologyViewer && topologyContainer) {
+      topologyContainer.innerHTML = '';
+      return;
+    }
 
     // topology viewer is only currently shown for macromolecules
     // const datum = this.currentMacromoleculeDatum();
@@ -389,7 +396,6 @@ export class MacromoleculesTabComponent {
 
     // topology viewer load or reload in page is simple
     this.topologyViewerInstance = new PdbTopologyViewerPlugin();
-    const container = this.topologyViewerContainer.nativeElement;
 
     const options = {
       entryId: this.entryId(),
@@ -399,7 +405,7 @@ export class MacromoleculesTabComponent {
     };
 
     //Call render method to display the 2D view
-    this.topologyViewerInstance.render(container, options);
+    this.topologyViewerInstance.render(topologyContainer, options);
   }
 
   getLengthType(macromolecule: MacromoleculesRowData) {
