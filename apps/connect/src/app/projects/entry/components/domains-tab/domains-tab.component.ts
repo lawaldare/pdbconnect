@@ -12,7 +12,7 @@ import {
 import { MolstarForEntryPages } from '../../helpers/molstar-for-entry-pages';
 import { getDomainChainsAsString } from '../../helpers/processed-data-to-controls';
 import { DomainsFacade } from './domains.facade';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
@@ -26,6 +26,7 @@ import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
+import { combineLatest, debounceTime, distinctUntilChanged, filter } from 'rxjs';
 
 // these types are used by this file and the facade and related to sequence rendering
 export type BoundsByEntityId = {
@@ -87,24 +88,21 @@ export class DomainsTabComponent {
     return this.compCommunication.processedDomainsAsList;
   });
 
-  private previousDatumIdx?: number;
-  public currentDomainsDatum = computed(() => {
-    const selectedIdx = this.selectedDomainIdx() ?? 0;
-    const rows = this.domainTableRows();
-    const datum = rows[selectedIdx];
-    if (!datum) return;
-
-    this.previousDatumIdx = selectedIdx;
-    return datum;
-  });
+  public currentDomainsDatum = signal<DomainsRowData | undefined>(undefined);
 
   constructor() {
-    effect(async () => {
-      const datum = this.currentDomainsDatum();
-      if (datum) {
-        await this.triggerDomainUpdateSideEffects(datum);
-      }
-    });
+    combineLatest([this.compCommunication.domainSelection$.pipe(debounceTime(50), distinctUntilChanged()), toObservable(this.domainTableRows)])
+      .pipe(
+        // Wait until table rows are non-empty and index is valid
+        filter(([idx, rows]) => idx !== undefined && idx !== null && rows.length > 0)
+      )
+      .subscribe(([idx, rows]) => {
+        const datum = rows[idx!];
+        if (datum) {
+          this.currentDomainsDatum.set(datum);
+          this.triggerDomainUpdateSideEffects(datum);
+        }
+      });
   }
 
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;

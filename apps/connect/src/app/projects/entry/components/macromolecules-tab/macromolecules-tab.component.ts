@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
@@ -28,6 +28,7 @@ import { ActionQueueService } from '../../services/action-queue.service';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { convertOutliersToSmartSequenceAnnotation } from '../../helpers/quality-annotations-from-seq';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -198,7 +199,7 @@ export class MacromoleculesTabComponent {
   public selectionIdentifier = 'None';
   public selectionTypeText?: string;
 
-  public readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$);
+  public readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()));
 
   public readonly macromoleculeTableRows = computed(() => {
     const isLoaded = this.compCommunication.hasProcessedMacromolecules();
@@ -217,23 +218,14 @@ export class MacromoleculesTabComponent {
     return [];
   });
 
-  private previousDatumIdx?: number;
-  public currentMacromoleculeDatum = computed(() => {
-    const selectedIdx = this.selectedMacromoleculeIdx() ?? 0;
-    const rows = this.macromoleculeTableRows();
-    const datum = rows[selectedIdx];
-    if (!datum) return;
-
-    if (selectedIdx === this.previousDatumIdx) return datum;
-    this.previousDatumIdx = selectedIdx;
-
-    return datum;
-  });
+  public currentMacromoleculeDatum = signal<MacromoleculesRowData | undefined>(undefined);
 
   constructor() {
-    effect(() => {
-      const datum = this.currentMacromoleculeDatum();
+    this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe((idx) => {
+      if (idx === undefined || idx === null) return;
+      const datum = this.macromoleculeTableRows()[idx];
       if (datum) {
+        this.currentMacromoleculeDatum.set(datum);
         this.triggerMacromoleculeUpdateSideEffects(datum);
       }
     });
@@ -270,12 +262,15 @@ export class MacromoleculesTabComponent {
   }
 
   private updateBackgroundAnnotation() {
-    const sequence = this.sequenceDetails[0]?.fullSequence;
-    if (!sequence || !this.hasProtvista) return;
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return;
+    const sequence = macromolecule.additionalData.molecule.sequence;
+    if (!sequence) return;
 
-    const entityId = parseInt(this.currentProtvistaEntity() ?? '');
+    const entityId = macromolecule.additionalData.molecule.entity_id;
     const chainId = this.dropdownSelected.split('Chain ')[1];
-    this.backgroundAnnotation.set(convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, this.residueWiseOutliers()));
+    const annotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, this.residueWiseOutliers());
+    this.backgroundAnnotation.set(annotation);
     console.log('Background annotation updated', this.backgroundAnnotation());
   }
 

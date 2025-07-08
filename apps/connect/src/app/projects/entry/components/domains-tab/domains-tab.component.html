@@ -2,7 +2,7 @@
 <main [class.change-display]="!isSidebarDisplayed()">
   @if(isSidebarDisplayed()){
   <pdbc-interactive-tables tabName="Domains" />
-  }
+  } @if (currentDomainsDatum()) {
   <div class="tab-content">
     @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Domains';
     <button class="vf-button-ghost" (click)="toggleSidebar()">
@@ -116,6 +116,7 @@
     </section>
     <!-- <button class="vf-button vf-button--secondary-pdbe" (click)="popupMolstar()">Popup the molstar</button> -->
   </div>
+  }
 </main>
 
 }@else{

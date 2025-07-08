@@ -1,4 +1,4 @@
-@if(tabDataLoaded()){ @if(macromoleculeTableRows().length && currentMacromoleculeDatum()){
+@if(tabDataLoaded()){ @if(macromoleculeTableRows().length){
 <main [class.change-display]="!isSidebarDisplayed()">
   @if(isSidebarDisplayed()){
   <pdbc-interactive-tables tabName="Macromolecules" />
@@ -38,7 +38,7 @@
             <em>{{expressionSystem}}</em>
           </article>
         </div>
-        } @if(currentMacromoleculeDatum()!.mappedResidues.length){
+        } @if(currentMacromoleculeDatum()?.mappedResidues?.length){
         <div class="info-row">
           <span class="micro-title"> UniProt mapping </span>
           <article class="uniport-mapping">
