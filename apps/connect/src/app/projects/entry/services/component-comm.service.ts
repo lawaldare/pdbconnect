@@ -49,6 +49,7 @@ export class ComponentCommunicationService {
   public macromoleculeSelection$ = new BehaviorSubject<number | undefined>(undefined);
   public ligandSelection$ = new BehaviorSubject<number | undefined>(undefined);
   public domainSelection$ = new BehaviorSubject<number | undefined>(undefined);
+  public llmSelection$ = new BehaviorSubject<number | undefined>(undefined);
 
   public assembliesTableData?: DataToTable;
   public hasProcessedAssemblies = signal<boolean>(false);

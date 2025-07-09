@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Directive, ElementRef, Renderer2, Input, OnChanges, input, inject } from '@angular/core';
 import { UtilService } from '@pdbc/core';
 

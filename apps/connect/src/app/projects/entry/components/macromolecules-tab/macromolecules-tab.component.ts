@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
@@ -273,7 +275,6 @@ export class MacromoleculesTabComponent {
     const chainId = this.dropdownSelected.split('Chain ')[1];
     const annotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, this.residueWiseOutliers());
     this.backgroundAnnotation.set(annotation);
-    console.log('Background annotation updated', this.backgroundAnnotation());
   }
 
   updateVisualsDisplayed(macromolecule: MacromoleculesRowData) {

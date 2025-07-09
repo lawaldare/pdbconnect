@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { inject, Injectable } from '@angular/core';
 import { MacromoleculesResidueRanges, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MappedResidue, SequenceDetail } from './llm-tab.component';

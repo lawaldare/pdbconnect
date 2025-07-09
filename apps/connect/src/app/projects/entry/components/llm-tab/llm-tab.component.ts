@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
@@ -26,7 +28,7 @@ import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { CitationDetail } from '../../data-models/publication.model';
-import { combineLatest, map } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, map } from 'rxjs';
 import { AgGridAngular } from 'ag-grid-angular';
 import { LLMAnnotation } from '../../data-models/llm-model';
 import { colDefs, gridOptions } from './ag-grid';
@@ -202,6 +204,8 @@ export class LLMTabComponent implements OnInit {
 
   public readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$);
 
+  public readonly llmAnnotations = toSignal(this.globalStore.select(EntrySelectors.llmAnnotations));
+
   public readonly macromoleculeTableRows = computed(() => {
     const isLoaded = this.compCommunication.hasProcessedMacromolecules();
 
@@ -214,30 +218,29 @@ export class LLMTabComponent implements OnInit {
           organisms: [...new Set(data['organisms'])],
         };
       });
-      return mappedDatum;
+
+      const primaryCitationYes = this.llmAnnotations()?.filter((a: any) => a.primaryCitation === 'Y');
+      const llmUniProtIds = [...new Set(primaryCitationYes?.map((a: any) => a.uniprotAccession))];
+      const chainIds = [...new Set(primaryCitationYes?.map((a: any) => a.pdbChain))];
+      return mappedDatum.filter(
+        (a: any) => llmUniProtIds.includes(a.additionalData.uniprotAccessions[0]) && chainIds.includes(a.additionalData.molecule.in_chains[0])
+      );
     }
     return [];
   });
 
-  private previousDatumIdx?: number;
-  public currentMacromoleculeDatum = computed(() => {
-    const selectedIdx = this.selectedMacromoleculeIdx() ?? 0;
-    const rows = this.macromoleculeTableRows();
-    const datum = rows[selectedIdx];
-    if (!datum) return;
+  public currentMacromoleculeDatum = signal<MacromoleculesRowData | undefined>(undefined);
 
-    if (selectedIdx === this.previousDatumIdx) return datum;
-    this.previousDatumIdx = selectedIdx;
-
-    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', datum, this.dropdownSelected);
-
-    this.updateBackgroundAnnotation();
-
-    if (datum) {
-      this.triggerMacromoleculeUpdateSideEffects(datum);
-    }
-    return datum;
-  });
+  constructor() {
+    this.compCommunication.llmSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe((idx) => {
+      if (idx === undefined || idx === null) return;
+      const datum = this.macromoleculeTableRows()[idx];
+      if (datum) {
+        this.currentMacromoleculeDatum.set(datum);
+        this.triggerMacromoleculeUpdateSideEffects(datum);
+      }
+    });
+  }
 
   ngOnInit(): void {
     combineLatest([this.globalStore.select(EntrySelectors.llmAnnotations), this.globalStore.select(EntrySelectors.primaryPublication)])
@@ -250,19 +253,6 @@ export class LLMTabComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({});
-
-    const macromolecule = this.currentMacromoleculeDatum();
-
-    if (macromolecule) {
-      const entityId = macromolecule.additionalData.molecule.entity_id;
-      this.entityId = entityId;
-
-      this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
-
-      this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
-
-      this.updateBackgroundAnnotation();
-    }
   }
 
   private readonly allThereVisuals = ['polypeptide(L)', 'polypeptide(D)'];
@@ -299,6 +289,9 @@ export class LLMTabComponent implements OnInit {
 
     // renders necessary visualisations according to display options and data
     await this.renderVisualisations(macromolecule);
+
+    // updates smart sequence viewer annotations
+    this.updateBackgroundAnnotation();
   }
 
   updateDropdownOptions(macromolecule: MacromoleculesRowData) {

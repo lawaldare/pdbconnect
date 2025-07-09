@@ -97,6 +97,7 @@ export class InteractiveTablesComponent implements OnChanges {
       this.mappedTableRows.update(() => result);
       this.rowCards.update(() => result);
       this.selectedRowCard.set(this.rowCards()[0]);
+      this.loadSelectionFromTable(0);
     }
   }
 
@@ -125,6 +126,7 @@ export class InteractiveTablesComponent implements OnChanges {
     if (this.tabName() === 'Macromolecules') this.compCommunication.macromoleculeSelection$.next(rowIdx);
     if (this.tabName() === 'Ligands') this.compCommunication.ligandSelection$.next(rowIdx);
     if (this.tabName() === 'Domains') this.compCommunication.domainSelection$.next(rowIdx);
+    if (this.tabName() === 'LLM') this.compCommunication.llmSelection$.next(rowIdx);
   }
 
   public applyFilter(obj: any, tabName: string): void {

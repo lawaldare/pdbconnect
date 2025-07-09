@@ -9,7 +9,7 @@ import { of, switchMap } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexStructuresComponent } from '../../page-sections/complex-structures/complex-structures.component';
 import { MaterialModule, TruncateTextDirective } from '@pdbc/core';
-import { headerComplexLogoMenuConfig, headerSearchComplexConfig, navComplexSections } from '../../../complex.constant';
+import { headerComplexLogoMenuConfig, headerSearchComplexConfig } from '../../../complex.constant';
 import { ComplexPublicationsComponent } from '../../page-sections/complex-publications/complex-publications.component';
 import { ComplexLigandsComponent } from '../../page-sections/complex-ligands/complex-ligands.component';
 import { ComplexStoreState } from '../../../store/complex-store.model';

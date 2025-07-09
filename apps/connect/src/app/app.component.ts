@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { VfEbiHeaderComponent } from '@vf-lib/ebi-header';
@@ -22,7 +24,7 @@ export class AppComponent implements OnInit {
     private scriptLoader: ScriptLoaderService,
     private assetPathService: LigandsAssetPathService
   ) {
-    this._router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((e: NavigationEnd) => {
+    this._router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
       window.scrollTo(0, 0);
       // window.location.reload();
       this.utilService.setCurrentActive('');

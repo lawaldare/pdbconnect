@@ -6,7 +6,6 @@ import { pdbeLogoConfig } from '../projects/entry/entry-constant';
 import { ActivatedRoute } from '@angular/router';
 import { ErrorsList } from './error-list';
 import { EntryUtilService, Error } from '../projects/entry/services/entry-util.service';
-import { gsap } from 'gsap';
 
 @Component({
   selector: 'pdbc-error-page',

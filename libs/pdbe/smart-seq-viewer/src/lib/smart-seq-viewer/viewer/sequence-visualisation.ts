@@ -1095,7 +1095,7 @@ export class SmartSequenceVisualisation {
   }
 
   private getSidebarPanelEmptyState(): string {
-    let html = `<p style="margin: 0; font-weight: bold; font-size: 14px;">Click a residue to view more details</p>`;
+    let html = `<p style="margin: 0; font-weight: bold; font-size: 14px;">Click any residue for more details</p>`;
 
     // const selectionBorderColour = this.clickedBorderColour || '#4F81C3';
     const selectionBorderColour = this.clickedBorderColour || '#000';

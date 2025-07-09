@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Component, computed, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ComplexCardComponent } from '../../section-components/complex-card/complex-card.component';
