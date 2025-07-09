@@ -1,8 +1,7 @@
-import { AfterViewInit, Component, inject, input, NgZone, OnDestroy, signal } from '@angular/core';
+import { AfterViewInit, Component, input, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSequenceVisOptions, SmartSequenceVisualisation } from './viewer/sequence-visualisation';
-import { generateRandomAlternativeNumberings, generateRandomAnnotations, generateRandomSequence } from './viewer/smart-generator';
-import { filter, take } from 'rxjs';
+import { generateRandomAlternativeNumberings, generateRandomAnnotations } from './viewer/smart-generator';
 
 @Component({
   selector: 'lib-smart-seq-viewer',
@@ -36,12 +35,12 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
   // Instance reference to cleanup
   private visInstance?: SmartSequenceVisualisation;
 
-  private generateRandomAnnotations() {
-    this.backgroundData.set(generateRandomAnnotations(1, this.sequence(), 'Background'));
-    this.underlineData.set(generateRandomAnnotations(2, this.sequence(), 'Underline'));
-    this.circleAboveData.set(generateRandomAnnotations(3, this.sequence(), 'CircleAbove'));
-    const altSequences = generateRandomAlternativeNumberings(this.sequence(), true, true);
-  }
+  // private generateRandomAnnotations() {
+  //   this.backgroundData.set(generateRandomAnnotations(1, this.sequence(), 'Background'));
+  //   this.underlineData.set(generateRandomAnnotations(2, this.sequence(), 'Underline'));
+  //   this.circleAboveData.set(generateRandomAnnotations(3, this.sequence(), 'CircleAbove'));
+  //   const altSequences = generateRandomAlternativeNumberings(this.sequence(), true, true);
+  // }
 
   ngAfterViewInit(): void {
     this.initVisualisation();

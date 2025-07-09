@@ -4,7 +4,6 @@ import { inject } from '@angular/core';
 import { catchError, map, of } from 'rxjs';
 import { ComplexAPIService } from '../services/complex-api.service';
 import { ComplexUtilService } from '../services/complex-util.service';
-import { environment } from '../../../../environments/environment';
 
 export const complexIdGuard: CanActivateFn = (route) => {
   const router = inject(Router);

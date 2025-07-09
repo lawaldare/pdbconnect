@@ -1,4 +1,4 @@
-@if(tabDataLoaded()){ @if(macromoleculeTableRows().length && currentMacromoleculeDatum()){
+@if(tabDataLoaded()){ @if(macromoleculeTableRows().length){
 <main [class.change-display]="!isSidebarDisplayed()">
   @if(isSidebarDisplayed()){
   <pdbc-interactive-tables tabName="LLM" />
@@ -17,7 +17,7 @@
         <a href="https://www.nature.com/articles/s41597-024-03841-9" target="_blank">Learn more...</a> <br />
         All data is sourced from our open and free-to-use <a href="https://www.ebi.ac.uk/pdbe/aggregated-api/" target="_blank">Aggregated API endpoints.</a>
       </p>
-      <p><strong>Primary publication:</strong><span [innerHTML]="primaryPublication()?.title"></span></p>
+      <p><strong>Primary publication: </strong><span [innerHTML]="primaryPublication()?.title"></span></p>
       <p>
         @if(primaryPublication()?.doi && primaryPublication()?.pubmed_id){
         <span class="row__right__pmid__info">
@@ -28,7 +28,7 @@
         <span class="row__right__authors__title">PMID:</span>
         <a [href]="'https://europepmc.org/article/MED/' + primaryPublication()?.pubmed_id" target="_blank"
           >{{ primaryPublication()?.pubmed_id }}
-          <i class="icon icon-link icon-common"></i>
+          <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
         </a>
         }
       </p>
@@ -51,7 +51,7 @@
           </a>
         </article>
       </div>
-      } @if(currentMacromoleculeDatum()!.mappedResidues.length){
+      } @if(currentMacromoleculeDatum()!.mappedResidues?.length){
       <div class="info-row">
         <span class="micro-title"> UniProt mapping </span>
         <article class="uniport-mapping">
