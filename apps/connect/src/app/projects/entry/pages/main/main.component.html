@@ -24,7 +24,7 @@
         <mat-tab label="Domains">
           <ng-template matTabContent> <pdbc-domains-tab /> </ng-template>
         </mat-tab>
-        <mat-tab label="Text Annotation (LLM)">
+        <mat-tab label="Text Annotations (AI)">
           <ng-template matTabContent>
             @if(dataProcessing.llmAnnotations | async; as annotations){ @if(annotations.length > 0){
             <pdbc-llm-tab />

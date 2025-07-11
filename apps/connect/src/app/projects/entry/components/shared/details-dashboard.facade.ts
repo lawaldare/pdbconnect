@@ -155,6 +155,17 @@ export class DetailsDashboardFacade {
     return sequenceDetails;
   }
 
+  public groupByPdbChain(data: any) {
+    return data.reduce((acc: any, item: any) => {
+      const chain = item.pdbChain;
+      if (!acc[chain]) {
+        acc[chain] = [];
+      }
+      acc[chain].push(item);
+      return acc;
+    }, {});
+  }
+
   public transformCoverageData(data: MacromoleculesResidueRanges[]): MappedResidue[] {
     const groupedData: Record<string, any> = {};
     const result: MappedResidue[] = [];

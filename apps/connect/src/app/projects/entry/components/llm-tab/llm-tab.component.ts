@@ -206,6 +206,8 @@ export class LLMTabComponent implements OnInit {
 
   public readonly llmAnnotations = toSignal(this.globalStore.select(EntrySelectors.llmAnnotations));
 
+  private annotationLoaded = signal<boolean>(false);
+
   public readonly macromoleculeTableRows = computed(() => {
     const isLoaded = this.compCommunication.hasProcessedMacromolecules();
 
@@ -238,6 +240,8 @@ export class LLMTabComponent implements OnInit {
       if (datum) {
         this.currentMacromoleculeDatum.set(datum);
         this.triggerMacromoleculeUpdateSideEffects(datum);
+        // if (this.annotationLoaded()) {
+        // }
       }
     });
   }
@@ -249,11 +253,17 @@ export class LLMTabComponent implements OnInit {
           this.primaryPublication.set(primaryPublication ?? ({} as CitationDetail));
           const annotations = llmAnnotations.filter((a: any) => a.primaryCitation === 'Y');
           this.filteredLLMAnnotations.set(annotations ?? []);
+          this.annotationLoaded.set(true);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({});
   }
+
+  private groupedFilteredLLMAnnotations = computed(() => {
+    const annotations = this.filteredLLMAnnotations();
+    return this.detailsDashboardFacade.groupByPdbChain(annotations);
+  });
 
   private readonly allThereVisuals = ['polypeptide(L)', 'polypeptide(D)'];
   private readonly onlyTwoVisuals = ['polyribonucleotide', 'polydeoxyribonucleotide'];
@@ -294,7 +304,7 @@ export class LLMTabComponent implements OnInit {
     this.updateBackgroundAnnotation();
   }
 
-  updateDropdownOptions(macromolecule: MacromoleculesRowData) {
+  private updateDropdownOptions(macromolecule: MacromoleculesRowData) {
     this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(macromolecule);
     this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
       return {
@@ -305,20 +315,29 @@ export class LLMTabComponent implements OnInit {
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
 
+    const letter = this.dropdownSelected.split(' ')[1];
+    const groupedAnnotations = this.groupedFilteredLLMAnnotations()[letter];
+    this.filteredLLMAnnotations.update(() => groupedAnnotations);
+
     this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
-    // this.updateBackgroundAnnotation();
+    this.updateBackgroundAnnotation();
   }
 
   private updateBackgroundAnnotation() {
+    const macromolecule = this.currentMacromoleculeDatum();
+
     const sequence = this.sequenceDetails[0]?.fullSequence;
     if (!sequence) return;
 
-    const entityId = parseInt(this.entityId.toString());
-    const chainId = 'A';
+    // const entityId = parseInt(this.entityId.toString());
+    // const chainId = 'A';
+
+    const entityId = macromolecule?.additionalData.molecule.entity_id ?? 1;
+    const chainId = this.dropdownSelected.split('Chain ')[1];
     this.backgroundAnnotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, this.residueWiseOutliers());
   }
 
-  updateVisualsDisplayed(macromolecule: MacromoleculesRowData) {
+  private updateVisualsDisplayed(macromolecule: MacromoleculesRowData) {
     this.hasTopologyViewer = false;
     this.selectionIdentifier = 'None';
     if (this.allThereVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
@@ -359,9 +378,19 @@ export class LLMTabComponent implements OnInit {
   public async onDropdownSelect(event: string) {
     this.dropdownSelected = event;
 
+    const letter = event.split(' ')[1];
+    const groupedAnnotations = this.groupedFilteredLLMAnnotations()[letter];
+    this.filteredLLMAnnotations.update(() => groupedAnnotations);
+
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
+    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(
+      this.entryId() ?? '',
+      macromolecule as MacromoleculesRowData,
+      this.dropdownSelected
+    );
     if (macromolecule) await this.renderVisualisations(macromolecule);
+    this.updateBackgroundAnnotation();
   }
 
   public openDialog(type: string) {
@@ -412,7 +441,7 @@ export class LLMTabComponent implements OnInit {
     );
   }
 
-  getLengthType(macromolecule: MacromoleculesRowData) {
+  private getLengthType(macromolecule: MacromoleculesRowData) {
     let lengthType = 'residue';
     if (macromolecule.additionalData.molecule.molecule_type.includes('polypeptide')) {
       lengthType = 'amino acid';

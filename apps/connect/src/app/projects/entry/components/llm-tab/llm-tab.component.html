@@ -15,9 +15,10 @@
         This page contains residue level text-mined data from open access publications using AI methods developed by the
         <a href="https://huggingface.co/PDBEurope" target="_blank">PDBe team</a>.
         <a href="https://www.nature.com/articles/s41597-024-03841-9" target="_blank">Learn more...</a> <br />
-        All data is sourced from our open and free-to-use <a href="https://www.ebi.ac.uk/pdbe/aggregated-api/" target="_blank">Aggregated API endpoints.</a>
+        All data is sourced from our open and free-to-use <a href="https://www.ebi.ac.uk/pdbe/api/v2" target="_blank">PDBe API</a> <br />
+
+        <strong style="margin-right: 4px">Primary publication: </strong><span [innerHTML]="primaryPublication()?.title"></span>
       </p>
-      <p><strong>Primary publication: </strong><span [innerHTML]="primaryPublication()?.title"></span></p>
       <p>
         @if(primaryPublication()?.doi && primaryPublication()?.pubmed_id){
         <span class="row__right__pmid__info">
@@ -155,7 +156,10 @@
   </div>
 </main>
 }@else {
-<h5>No Macromolecules data available</h5>
+<h5>
+  The residue and annotation lists are empty likely because the publication text either lacked explicit residue mentions, used mismatched numbering, or wasn't open
+  access. Additionally, the annotation pipeline may have failed to extract or map relevant information to the structure.
+</h5>
 } }@else {
 <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
 }
