@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
@@ -16,17 +16,12 @@ import { getMacromoleculeChainDropdownOptions } from '../../helpers/processed-da
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { ComponentType } from '@angular/cdk/overlay';
-import { EcNumbersComponent } from '../shared/ec-numbers/ec-numbers.component';
-import { GoTermsComponent } from '../shared/go-terms/go-terms.component';
-import { MatDialog } from '@angular/material/dialog';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { DetailsDashboardFacade } from '../shared/details-dashboard.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
-import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { CitationDetail } from '../../data-models/publication.model';
 import { combineLatest, debounceTime, distinctUntilChanged, map } from 'rxjs';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -36,8 +31,6 @@ import { SelectionChangedEvent } from 'ag-grid-community';
 import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { convertOutliersToSmartSequenceAnnotation } from '../../helpers/quality-annotations-from-seq';
 
-// necessary to render the topology viewer
-
 export interface SequenceDetail {
   title: string;
   fullSequence: string;
@@ -46,15 +39,6 @@ export interface SequenceDetail {
     color?: string;
   }[];
 }
-
-export interface MappedResidue {
-  range: string[];
-  coverage: string;
-  chainId: string;
-  uniprot: string;
-  open: boolean;
-}
-
 @Component({
   selector: 'pdbc-llm-tab',
   standalone: true,
@@ -76,7 +60,6 @@ export class LLMTabComponent implements OnInit {
   public readonly macromoleculesFacade = inject(MacromoleculesFacade);
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  private readonly dialog = inject(MatDialog);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
   private readonly actionQueue = inject(ActionQueueService);
@@ -100,78 +83,16 @@ export class LLMTabComponent implements OnInit {
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
   public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
-  public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
-  public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
   private entityId = 0;
 
   public selectionStats: { [key: string]: any } | undefined;
-  // public goMappings = computed(() => Object.keys(this.goMapping() ?? {}));
 
   public filteredLLMAnnotations = signal<LLMAnnotation[]>([]);
+  private mappedAnnotations = signal<LLMAnnotation[]>([]);
 
   public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
-  public goMappingsForMacromolecule = computed(() => {
-    const macromolecule = this.currentMacromoleculeDatum();
-    const goMapping = this.goMapping();
-    if (!macromolecule || !goMapping) return {};
-    const entityId = (macromolecule as MacromoleculesRowData).additionalData.molecule.entity_id;
-    const filteredGoMapping = this.filterMappingByEntityId(goMapping, entityId) as GOMapping;
-    return filteredGoMapping;
-  });
-
-  public ecMappingsForMacromolecule = computed(() => {
-    const macromolecule = this.currentMacromoleculeDatum();
-    const ecMapping = this.ecMapping();
-    if (!macromolecule || !ecMapping) return {};
-    const entityId = (macromolecule as MacromoleculesRowData).additionalData.molecule.entity_id;
-    const filteredEcMapping = this.filterMappingByEntityId(ecMapping, entityId) as ECMapping;
-    return filteredEcMapping;
-  });
-
-  private filterMappingByEntityId(mapping: GOMapping | ECMapping, entityId: number): GOMapping | ECMapping {
-    const filtered: GOMapping | ECMapping = {};
-
-    for (const [id, item] of Object.entries(mapping)) {
-      const relevantMappings = item.mappings.filter((eachMapping: UniProtMappingObj) => eachMapping.entity_id === entityId);
-
-      if (relevantMappings.length > 0) {
-        filtered[id] = {
-          ...item,
-          mappings: relevantMappings, // optional: keep only matching mappings
-        };
-      }
-    }
-
-    return filtered;
-  }
-
-  public isThereGoMappings = computed(() => Object.keys(this.goMappingsForMacromolecule() ?? {}));
-  public goMappings = linkedSignal({
-    source: this.goMappingsForMacromolecule,
-    computation: () => {
-      const mappedData = this.getMappedGOMapping.reduce((acc: any[], curr: any) => {
-        if (acc[curr.category]) {
-          acc[curr.category].push(curr);
-        } else {
-          acc[curr.category] = [curr];
-        }
-        return acc;
-      }, {});
-      return mappedData;
-    },
-  });
-
-  public readonly isCategoryMoreThanOne = computed(() => {
-    return (
-      this.goMappings()?.['Biological_process']?.length > 1 ||
-      this.goMappings()?.['Molecular_function']?.length > 1 ||
-      this.goMappings()?.['Cellular_component']?.length > 1
-    );
-  });
-
-  public ecMappings = computed(() => Object.keys(this.ecMappingsForMacromolecule() ?? {}));
   public bestResidues = computed(() => {
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return [];
@@ -202,11 +123,7 @@ export class LLMTabComponent implements OnInit {
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
 
-  public readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$);
-
   public readonly llmAnnotations = toSignal(this.globalStore.select(EntrySelectors.llmAnnotations));
-
-  private annotationLoaded = signal<boolean>(false);
 
   public readonly macromoleculeTableRows = computed(() => {
     const isLoaded = this.compCommunication.hasProcessedMacromolecules();
@@ -240,8 +157,6 @@ export class LLMTabComponent implements OnInit {
       if (datum) {
         this.currentMacromoleculeDatum.set(datum);
         this.triggerMacromoleculeUpdateSideEffects(datum);
-        // if (this.annotationLoaded()) {
-        // }
       }
     });
   }
@@ -253,7 +168,7 @@ export class LLMTabComponent implements OnInit {
           this.primaryPublication.set(primaryPublication ?? ({} as CitationDetail));
           const annotations = llmAnnotations.filter((a: any) => a.primaryCitation === 'Y');
           this.filteredLLMAnnotations.set(annotations ?? []);
-          this.annotationLoaded.set(true);
+          this.mappedAnnotations.set(annotations ?? []);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -261,21 +176,12 @@ export class LLMTabComponent implements OnInit {
   }
 
   private groupedFilteredLLMAnnotations = computed(() => {
-    const annotations = this.filteredLLMAnnotations();
+    const annotations = this.mappedAnnotations();
     return this.detailsDashboardFacade.groupByPdbChain(annotations);
   });
 
-  private readonly allThereVisuals = ['polypeptide(L)', 'polypeptide(D)'];
-  private readonly onlyTwoVisuals = ['polyribonucleotide', 'polydeoxyribonucleotide'];
-  private readonly onlyMolstarVisuals = ['carbohydrate polymer'];
-
-  public hasProtvista = false;
   public currentProtvistaEntity = signal<string | undefined>(undefined);
   public currentProtvistaChain = signal<string | undefined>(undefined);
-
-  public hasTopologyViewer = false;
-  @ViewChild('topologyViewerContainer') topologyViewerContainer!: ElementRef;
-  private topologyViewerInstance: any;
 
   public sequenceDetails: SequenceDetail[] = [];
 
@@ -288,19 +194,9 @@ export class LLMTabComponent implements OnInit {
   }
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: MacromoleculesRowData) {
-    // refreshes dropdown options on new macromolecule
     this.updateDropdownOptions(macromolecule);
-
-    // updates shown sequence on new macromolecule
     this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
-
-    // updates layout display details on new macromolecule
-    this.updateVisualsDisplayed(macromolecule);
-
-    // renders necessary visualisations according to display options and data
     await this.renderVisualisations(macromolecule);
-
-    // updates smart sequence viewer annotations
     this.updateBackgroundAnnotation();
   }
 
@@ -329,46 +225,9 @@ export class LLMTabComponent implements OnInit {
     const sequence = this.sequenceDetails[0]?.fullSequence;
     if (!sequence) return;
 
-    // const entityId = parseInt(this.entityId.toString());
-    // const chainId = 'A';
-
     const entityId = macromolecule?.additionalData.molecule.entity_id ?? 1;
     const chainId = this.dropdownSelected.split('Chain ')[1];
     this.backgroundAnnotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, this.residueWiseOutliers());
-  }
-
-  private updateVisualsDisplayed(macromolecule: MacromoleculesRowData) {
-    this.hasTopologyViewer = false;
-    this.selectionIdentifier = 'None';
-    if (this.allThereVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
-      this.selectionTypeText = 'protein';
-      // if protein is not chimeric (single uniprotAccession), set this as selectionIdentifier
-      if (macromolecule.additionalData.uniprotAccessions.length === 1) {
-        this.selectionIdentifier = macromolecule.additionalData.uniprotAccessions[0];
-        if (this.proteinsStats()) {
-          this.selectionStats = this.proteinsStats();
-        }
-      }
-      this.hasTopologyViewer = true;
-      this.hasProtvista = true;
-    }
-
-    if (this.onlyTwoVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
-      this.hasProtvista = true;
-      this.hasTopologyViewer = false;
-    }
-
-    if (this.onlyMolstarVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
-      this.hasProtvista = false;
-      this.hasTopologyViewer = false;
-    }
-  }
-
-  get getMappedGOMapping() {
-    return Object.entries(this.goMappingsForMacromolecule() ?? {}).reduce((acc: any[], [id, item]) => {
-      acc.push({ ...item, id });
-      return acc;
-    }, []);
   }
 
   public generateOrganismSearchUrl(term: string): string {
@@ -391,16 +250,6 @@ export class LLMTabComponent implements OnInit {
     );
     if (macromolecule) await this.renderVisualisations(macromolecule);
     this.updateBackgroundAnnotation();
-  }
-
-  public openDialog(type: string) {
-    const macromolecule = this.currentMacromoleculeDatum() as MacromoleculesRowData;
-    const component: ComponentType<any> = type === 'ec' ? EcNumbersComponent : GoTermsComponent;
-    this.dialog.open(component, {
-      disableClose: false,
-      panelClass: 'entry-Dialog',
-      data: { entityId: macromolecule.additionalData.molecule.entity_id },
-    });
   }
 
   public toggleSidebar() {
@@ -439,25 +288,5 @@ export class LLMTabComponent implements OnInit {
       },
       shouldSkip // skippable
     );
-  }
-
-  private getLengthType(macromolecule: MacromoleculesRowData) {
-    let lengthType = 'residue';
-    if (macromolecule.additionalData.molecule.molecule_type.includes('polypeptide')) {
-      lengthType = 'amino acid';
-    } else if (macromolecule.additionalData.molecule.molecule_type.includes('nucleotide')) {
-      lengthType = 'nucleotide';
-    } else if (macromolecule.additionalData.molecule.molecule_type.includes('carbohydrate')) {
-      lengthType = 'monosaccharide';
-    }
-    if (macromolecule.length > 1) {
-      return `${lengthType}s`;
-    }
-    return lengthType;
-  }
-
-  public getRoundedWeight(): number | undefined {
-    const weight = this.currentMacromoleculeDatum()?.additionalData.molecule.weight;
-    return weight !== undefined ? Math.round(weight) : undefined;
   }
 }

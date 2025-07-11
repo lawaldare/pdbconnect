@@ -15,8 +15,8 @@ export class SentenceRendererComponent implements ICellRendererAngularComp {
   }
 
   get getHighlightedSentence() {
-    const escaped = this.exactWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escape special regex chars
-    const regex = new RegExp(escaped, 'g'); // global match
+    const escaped = this.exactWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escaped, 'g');
     return this.value.replace(regex, `<strong>${this.exactWord}</strong>`);
   }
 
