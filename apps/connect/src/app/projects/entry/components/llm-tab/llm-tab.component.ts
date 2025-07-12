@@ -89,6 +89,7 @@ export class LLMTabComponent implements OnInit {
   public selectionStats: { [key: string]: any } | undefined;
 
   public filteredLLMAnnotations = signal<LLMAnnotation[]>([]);
+  public groupedAnnotations = signal<LLMAnnotation[]>([]);
   private mappedAnnotations = signal<LLMAnnotation[]>([]);
 
   public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
@@ -159,6 +160,15 @@ export class LLMTabComponent implements OnInit {
         this.triggerMacromoleculeUpdateSideEffects(datum);
       }
     });
+
+    document.addEventListener('smartSeqViewerClick', (event) => this.smartSeqViewerClick(event));
+  }
+
+  private smartSeqViewerClick(event: any) {
+    const residueName = event.detail.title;
+    const temp = this.mappedAnnotations();
+    const filteredAgain = temp.filter((a: any) => a.sentence.toLocaleLowerCase().includes(residueName.toLocaleLowerCase().replace(' ', '')));
+    this.filteredLLMAnnotations.update(() => filteredAgain);
   }
 
   ngOnInit(): void {
@@ -214,6 +224,7 @@ export class LLMTabComponent implements OnInit {
     const letter = this.dropdownSelected.split(' ')[1];
     const groupedAnnotations = this.groupedFilteredLLMAnnotations()[letter];
     this.filteredLLMAnnotations.update(() => groupedAnnotations);
+    this.groupedAnnotations.update(() => groupedAnnotations);
 
     this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
     this.updateBackgroundAnnotation();

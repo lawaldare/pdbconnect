@@ -580,9 +580,13 @@ export class SmartSequenceVisualisation {
       });
       document.dispatchEvent(eventObj);
 
+      const residue = this.sequence[residueIndex - 1];
+      const residueName = this.isNucleic === false ? this.getResidueNameFromCode(residue) : residue;
+      const title = `${residueName} ${residueIndex}`;
+
       // for new Sequence Track Viewer
       const clickEvent = new CustomEvent('smartSeqViewerClick', {
-        detail: { eventData },
+        detail: { eventData, title },
         bubbles: true,
         cancelable: true,
       });
