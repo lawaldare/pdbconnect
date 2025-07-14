@@ -68,7 +68,7 @@ export class SmartSequenceVisualisation {
   private externalEvents = false;
   private hoverTooltips = true;
   private tooltipFormatting: TooltipFormatting;
-  private scrollContainerMaxHeight = 140;
+  private scrollContainerMaxHeight = 160;
   private isNucleic = false;
 
   private fontFamily = 'IBM Plex Sans';
@@ -173,12 +173,13 @@ export class SmartSequenceVisualisation {
     this.sidebarPanel = this.createSidebarPanel();
 
     container.appendChild(this.visualisationAndSidebarContainer);
+    // container.appendChild(this.sidebarPanel);
     this.visualisationAndSidebarContainer.appendChild(this.visualisationContainer);
     this.visualisationAndSidebarContainer.appendChild(this.sidebarPanel);
 
     const sidebarWidth = this.sidebarPanel.offsetWidth;
     const width = this.visualisationAndSidebarContainer.offsetWidth - sidebarWidth;
-
+    //
     this.canvasWidth = width;
     this.canvasHeight = 0;
 
