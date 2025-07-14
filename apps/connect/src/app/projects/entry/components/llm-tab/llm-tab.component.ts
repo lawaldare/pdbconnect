@@ -167,7 +167,7 @@ export class LLMTabComponent implements OnInit {
   private smartSeqViewerClick(event: any) {
     const residueName = event.detail.title;
     const temp = this.groupedAnnotations();
-    const filteredAgain = temp.filter((a: any) => a.sentence.toLocaleLowerCase().includes(residueName.toLocaleLowerCase().replace(' ', '')));
+    const filteredAgain = temp.filter((a: any) => a.exact.toLocaleLowerCase() === residueName.toLocaleLowerCase().replace(' ', ''));
     this.filteredLLMAnnotations.update(() => filteredAgain);
   }
 
