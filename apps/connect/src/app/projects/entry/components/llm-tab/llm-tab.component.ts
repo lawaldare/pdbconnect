@@ -168,7 +168,19 @@ export class LLMTabComponent implements OnInit {
     const residueName = event.detail.title;
     const temp = this.groupedAnnotations();
     const filteredAgain = temp.filter((a: any) => a.exact.toLocaleLowerCase() === residueName.toLocaleLowerCase().replace(' ', ''));
-    this.filteredLLMAnnotations.update(() => filteredAgain);
+    this.filteredLLMAnnotations.update(() => this.removeDuplicatesByKey(filteredAgain, 'sentence'));
+  }
+
+  private removeDuplicatesByKey(array: any[], key: string): any[] {
+    const seen = new Set();
+    return array.filter((item) => {
+      const keyValue = item[key];
+      if (seen.has(keyValue)) {
+        return false;
+      }
+      seen.add(keyValue);
+      return true;
+    });
   }
 
   ngOnInit(): void {
