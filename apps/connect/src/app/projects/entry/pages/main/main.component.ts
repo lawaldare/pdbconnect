@@ -38,6 +38,7 @@ import { NotificationComponent } from '@pdbc/notification';
 import { EntryUtilService } from '../../services/entry-util.service';
 import { ErrorPageComponent } from '../../../../error-page/error-page.component';
 import { LLMTabComponent } from '../../components/llm-tab/llm-tab.component';
+import { ScrollPositionService } from '../../services/scroll-position.service';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains' | 'LLM';
 
@@ -90,6 +91,7 @@ export class EntryMainPageComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly util = inject(EntryUtilService);
+  public readonly scrollService = inject(ScrollPositionService);
 
   private readonly molstarVisualisation = inject(MolstarForEntryPages);
   public readonly molstarState = inject(MolstarStateService);
@@ -250,6 +252,9 @@ export class EntryMainPageComponent implements OnInit {
     this.previousTab = `${tabName}`;
     this.tabSwitchOrigin.set('main');
     this.currentTab.set(tabName);
+
+    this.scrollService.handleScrollPosition(this.tabGroup, event.index);
+
     this.zone.onStable.pipe(take(1)).subscribe(async () => {
       this.moveAndRenderMolstar(tabName, true);
     });
