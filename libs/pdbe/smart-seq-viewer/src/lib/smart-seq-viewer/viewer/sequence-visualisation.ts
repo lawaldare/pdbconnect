@@ -159,7 +159,7 @@ export class SmartSequenceVisualisation {
       extraLine: 'uniprot',
     };
     this.tooltipFormatting = options?.tooltipFormatting ?? defaultTooltipFormatting;
-    this.scrollContainerMaxHeight = options?.scrollContainerMaxHeight ?? 140;
+    this.scrollContainerMaxHeight = options?.scrollContainerMaxHeight ?? 160;
 
     const container = document.getElementById(this.containerId);
     if (!container) {
