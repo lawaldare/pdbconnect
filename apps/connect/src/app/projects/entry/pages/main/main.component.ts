@@ -5,9 +5,9 @@ import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 // import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { SearchAppComponent } from '@pdbc/search-app';
 
-import { catchError, EMPTY, filter, map, mergeMap, switchMap, take, tap } from 'rxjs';
+import { EMPTY, filter, map, mergeMap, switchMap, take, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MaterialModule } from '@pdbc/core';
+import { MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
 import { mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig } from '../../entry-constant';
 import { MainDataProcessingFacade } from './data-processing.facade';
@@ -38,7 +38,6 @@ import { NotificationComponent } from '@pdbc/notification';
 import { EntryUtilService } from '../../services/entry-util.service';
 import { ErrorPageComponent } from '../../../../error-page/error-page.component';
 import { LLMTabComponent } from '../../components/llm-tab/llm-tab.component';
-import { ScrollPositionService } from '../../services/scroll-position.service';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains' | 'LLM';
 

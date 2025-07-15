@@ -23,3 +23,4 @@ export * from './lib/pipes/capitalize.pipe';
 export * from './lib/pipes/truncate.pipe';
 export * from './lib/services/script-loader.service';
 export * from './lib/services/popup-window.service';
+export * from './lib/services/scroll-position.service';

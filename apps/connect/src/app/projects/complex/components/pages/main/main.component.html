@@ -25,7 +25,7 @@
         <p>Tell us what you think of the new PDBe-KB Complex pages</p>
         <button class="vf-button vf-button--search-pdbe" role="link" (click)="openFeedbackForm()">Share your feedback</button>
       </section>
-      <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)">
+      <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)" #tabs>
         <mat-tab label="Summary">
           <pdbc-summary />
         </mat-tab>
