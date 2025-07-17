@@ -14,6 +14,7 @@ export const gridOptions: GridOptions = {
     resizable: false,
     suppressMovable: true,
   },
+  enableCellTextSelection: true,
   paginationPageSize: isSmallScreen ? 3 : 5,
 };
 

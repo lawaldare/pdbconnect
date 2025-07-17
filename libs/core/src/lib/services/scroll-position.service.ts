@@ -1,10 +1,14 @@
-import { Injectable } from '@angular/core';
+import { ApplicationRef, inject, Injectable, NgZone } from '@angular/core';
 import { MatTabGroup } from '@angular/material/tabs';
+import { take } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ScrollPositionService {
+  private zone = inject(NgZone);
+  private appRef = inject(ApplicationRef);
+
   private scrollPositions: { [tabName: string]: number } = {};
 
   private setScrollPosition(tabName: string, position: number): void {
@@ -16,17 +20,17 @@ export class ScrollPositionService {
   }
 
   public handleScrollPosition(tabGroup: MatTabGroup, currentTabIndex: number): void {
-    const tabs = tabGroup._tabs.toArray();
+    const tabs = tabGroup?._tabs.toArray();
     const currentTab = tabs[currentTabIndex];
 
-    const previousTabIndex = tabGroup.selectedIndex ?? 0;
+    const previousTabIndex = tabGroup?.selectedIndex ?? 0;
     const previousTab = tabs[previousTabIndex];
 
     this.setScrollPosition(previousTab.textLabel, window.pageYOffset);
 
-    setTimeout(() => {
+    this.zone.onStable.pipe(take(1)).subscribe(() => {
       const savedPosition = this.getScrollPosition(currentTab.textLabel);
-      window.scrollTo(0, savedPosition);
-    }, 30);
+      window.scrollTo({ top: savedPosition, behavior: 'auto' });
+    });
   }
 }
