@@ -33,6 +33,37 @@ p {
   }
 }
 
+section.table {
+  display: flex;
+  width: 100%;
+
+  // align-items: center;
+  justify-content: space-between;
+
+  .table-section {
+    width: 50%;
+    margin-top: 5px;
+    height: 500px;
+  }
+
+  .molstar-section {
+    width: 50%;
+  }
+}
+
+::ng-deep lib-pdbe-molstar {
+  .container {
+    display: block;
+    height: 400px !important;
+
+    .msp-plugin {
+      .msp-layout-standard {
+        border: none;
+      }
+    }
+  }
+}
+
 h3 {
   margin-bottom: 20px;
 }

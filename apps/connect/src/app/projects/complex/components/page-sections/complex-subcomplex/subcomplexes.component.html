@@ -1,8 +1,9 @@
 <div id="interaction-section">
-  <h5>{{subcomplexesLength()}} subcomplexes</h5>
+  <h5>{{rowData().length}} subcomplexes</h5>
   <p>
     A subcomplex is a smaller assembly that contains a subset of the components found in this complex. For each subcomplex, only the components shared with this
-    complex are listed.
+    complex are listed. When identifying subcomplexes, we exclude components that are not mapped to UniProt or Rfam, such as peptides, antibodies and short nucleic
+    acid sequences.
   </p>
 
   @if (unfilteredComplexes().length) {
@@ -12,23 +13,26 @@
     <i class="icon icon-common icon-search"></i>
     }
   </div>
-  <section class="subcomplexes">
-    <div class="card-container">
-      @for (complexInteraction of subComplexesPage(); track complexInteraction.pdb_complex_id) {
-      <pdbc-complex-card [complexInteraction]="complexInteraction" />
-      }
-    </div>
+  @if(rowData().length){
 
-    <mat-paginator
-      class="paginator-container"
-      [length]="subcomplexesLength()"
-      [pageSize]="subcomplexesPageSize()"
-      [pageSizeOptions]="subcomplexesPageSizeOptions()"
-      (page)="handlePageEvent($event)"
-      showFirstLastButtons
-      aria-label="Select page of subcomplexes"
-    >
-    </mat-paginator>
+  <section class="table">
+    <div class="table-section">
+      <ag-grid-angular
+        class="ag-theme-quartz"
+        [rowData]="rowData()"
+        [columnDefs]="colDefs"
+        [gridOptions]="gridOptions"
+        (selectionChanged)="onSelectionChanged($event)"
+        [paginationPageSizeSelector]="paginationPageSizeSelector()"
+        [rowSelection]="rowSelection"
+        [initialState]="initialState"
+      />
+    </div>
+    <div class="molstar-section">
+      <div #popoutWrapper>
+        <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
+      </div>
+    </div>
   </section>
-  }
+  } @else {} }
 </div>

@@ -28,6 +28,24 @@ export class ComplexUtilService {
     });
   }
 
+  public filterItemsBySearchQueryComplexes(searchQuery: string, items: any[]): any[] {
+    return items.filter((item) => {
+      const searchQueryLower = searchQuery.toLocaleLowerCase();
+      const additionalAccession = item.pdb_complex_id.join(',').toLocaleLowerCase();
+      const commonAccession = item.name.join(',').toLocaleLowerCase();
+      const additionalName = item.additional_participants
+        .map((c: any) => c.name)
+        .join(',')
+        .toLocaleLowerCase();
+      const commonName = item.common_participants
+        .map((c: any) => c.name)
+        .join(',')
+        .toLocaleLowerCase();
+      const rowString = additionalAccession + commonAccession + additionalName + commonName;
+      return rowString.toLocaleLowerCase().indexOf(searchQueryLower) !== -1;
+    });
+  }
+
   public openLigandPage(ligandId: string) {
     const trimmedValue = ligandId.trim();
     const origin = window.location.origin;
