@@ -2,9 +2,6 @@
 
 import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions, GridState } from 'ag-grid-community';
-import { TitleRendererComponent } from '../../cell renderers/structure-title.component';
-
-import { CustomHeaderComponent } from '../../cell renderers/custom-header.component';
 import { ComplexNameRendererComponent } from '../../cell renderers/custom-complex-name.component';
 import { CommonComponentsRendererComponent } from '../../cell renderers/common-components.component';
 

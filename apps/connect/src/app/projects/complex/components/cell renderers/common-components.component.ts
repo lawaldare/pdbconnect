@@ -12,9 +12,10 @@ import { ComplexInteraction } from '../../models/complex-structure.model';
 
 	@if(showLess()){ @for(participant of participants().slice(0,4); track participant.accession){
       <div style="margin-bottom: 0">
-        @if(participant.accession_type === 'UniProt' || participant.accession_type === 'Rfam'){ @let proteinLink = 'https://www.uniprot.org/uniprotkb/' +
-        participant.accession; @let rfLink = 'https://rfam.org/family/' + participant.accession; @let link = participant.accession.startsWith('RF') ? rfLink :
-        proteinLink;
+        @if(participant.accession_type === 'UniProt' || participant.accession_type === 'Rfam'){
+          @let proteinLink = 'https://www.uniprot.org/uniprotkb/' + participant.accession;
+          @let rfLink = 'https://rfam.org/family/' + participant.accession;
+          @let link = participant.accession.startsWith('RF') ? rfLink : proteinLink;
         <span>
           <a [href]="link" target="_blank" class="pfam-link">{{ participant.accession }}</a> ({{ participant.name }}, {{ participant.stoichiometry }} {{
           participant.stoichiometry > 1 ? 'copies' : 'copy' }})
