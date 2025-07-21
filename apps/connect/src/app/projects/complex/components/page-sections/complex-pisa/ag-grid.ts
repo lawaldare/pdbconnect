@@ -50,7 +50,7 @@ export const colDefs: ColDef[] = [
   },
   {
     headerName: 'Diss. ΔG (kcal /mol)',
-    field: 'dissociation_area',
+    field: 'dissociation_energy',
     headerComponent: CustomHeaderComponent,
     headerComponentParams: { showHelpIcon: true, enableFilterButton: false, enableSorting: true, tooltipText: pisaTableTooltip.DEG },
   },
