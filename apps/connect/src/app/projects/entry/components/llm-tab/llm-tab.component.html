@@ -12,7 +12,7 @@
 
     <section class="info-banner">
       <p>
-        This page contains residue level text-mined data from open access publications using AI methods developed by the
+        This page contains residue level text-mined data from scientific publications using AI methods developed by the
         <a href="https://huggingface.co/PDBEurope" target="_blank">PDBe team</a>.
         <a href="https://www.nature.com/articles/s41597-024-03841-9" target="_blank">Learn more...</a> <br />
         All data is sourced from our open and free-to-use <a href="https://www.ebi.ac.uk/pdbe/api/v2" target="_blank">PDBe API</a> <br />
@@ -123,7 +123,8 @@
     </div>
     }
     <p class="residue-info">
-      Residues containing text-mined annotations are colour-coded according to the number of structural quality criteria for which they contain at least one outlier.
+      Residues are colour-coded according to the number of structural quality criteria for which they contain at least one outlier and the availability of text-mined
+      annotations.
     </p>
     <section class="chart-area" [class.collapsed]="compCommunication.isSidebarCollapsed()">
       <section class="table-wrapper">
@@ -153,8 +154,8 @@
 </main>
 }@else {
 <h5>
-  The residue and annotation lists are empty likely because the publication text either lacked explicit residue mentions, used mismatched numbering, or wasn't open
-  access. Additionally, the annotation pipeline may have failed to extract or map relevant information to the structure.
+  Residue-level annotations may be lacking due to issues such as absent or mismatched residue numbering in publication texts, restricted access to full-text articles,
+  or missing user-submitted data. Additionally, the annotation pipeline might have failed to extract relevant information or accurately map it to structural data.
 </h5>
 } }@else {
 <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
