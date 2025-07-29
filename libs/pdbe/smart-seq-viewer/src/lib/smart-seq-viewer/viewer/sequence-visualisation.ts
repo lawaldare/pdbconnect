@@ -203,7 +203,8 @@ export class SmartSequenceVisualisation {
 
     this.showSidebar(undefined); // show default placeholder
     this.draw();
-    this.setupResizeObserver();
+    // this.setupResizeObserver();
+    this.onContainerResize();
     this.registerExternalEventsListeners();
   }
 
