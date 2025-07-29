@@ -1103,22 +1103,6 @@ export class SmartSequenceVisualisation {
   private getSidebarPanelEmptyState(): string {
     let html = `<p style="margin: 0; font-weight: bold; font-size: 14px;">Click a residue for details</p>`;
 
-    // const selectionBorderColour = this.clickedBorderColour || '#4F81C3';
-    const selectionBorderColour = this.clickedBorderColour || '#000';
-
-    const selectionIcon = `<div style="
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 16px;
-        height: 16px;
-        margin-right: 6px;
-        border: ${this.clickedBorderWidth}px solid ${selectionBorderColour};
-        color: #000;
-        font-weight: bold;
-        font-size: 12px;
-        background-color: transparent;
-      ">A</div>`;
     const renderingIcons: Record<SmartSequenceAnnotationRenderingTypes, (color: string) => string> = {
       Background: (color: string) => `<div style="display:inline-block;width:16px;height:16px;background:${color};margin-right:6px;border:1px solid #aaa;"></div>`,
       Underline: (color: string) => `<div style="display:inline-block;width:16px;height:2px;background:${color};margin:0 6px 0 0;vertical-align:middle;"></div>`,
@@ -1128,13 +1112,6 @@ export class SmartSequenceVisualisation {
     };
 
     html += `<div style="margin-top: 8px;">`;
-    html += `
-      <div style="display: flex; align-items: center; margin: 4px; padding-bottom: 6px;">
-        ${selectionIcon}
-        <span style="font-size: 13px; line-height: 18.9px;">Currently selected residue</span>
-      </div>
-    `;
-
     for (const annotation of this.annotations) {
       if (annotation.rendering === 'TextColour') continue;
       // html += `<div style="font-weight: bold; line-height: 22.4px; font-size: 13px; margin: 0; margin-bottom: 4px;">${annotation.name}</div>`;
