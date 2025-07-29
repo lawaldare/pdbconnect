@@ -1168,7 +1168,7 @@ export class SmartSequenceVisualisation {
         // this.sidebarPanel.style.display = 'none';
         this.sidebarPanel.innerHTML = this.getSidebarPanelEmptyState();
         this.currentClickedResidue = null;
-        this.onContainerResize();
+        this.draw();
       }
     };
 
