@@ -14,8 +14,11 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { combineLatest, filter, Subject, take, tap } from 'rxjs';
+import '@nightingale-elements/nightingale-manager';
 import * as NightingaleManager from '@nightingale-elements/nightingale-manager';
+import '@nightingale-elements/nightingale-sequence';
 import * as NightingaleSequence from '@nightingale-elements/nightingale-sequence';
+import '@nightingale-elements/nightingale-navigation';
 import * as NightingaleNavigation from '@nightingale-elements/nightingale-navigation';
 
 // Necessart lines added to avoid tree shaking of Nightingale components
