@@ -586,14 +586,35 @@ export class SmartSequenceVisualisation {
       const residueName = this.isNucleic === false ? this.getResidueNameFromCode(residue) : residue;
       const title = `${residueName} ${residueIndex}`;
 
-      // for new Sequence Track Viewer
-      const clickEvent = new CustomEvent('smartSeqViewerClick', {
-        detail: { eventData, title },
-        bubbles: true,
-        cancelable: true,
-      });
-      document.dispatchEvent(clickEvent);
+      // for new Sequence Track Viewer and LLM tab
+      const detail = { eventData, title };
+      this.dispatchSelectEvent(detail);
     }
+  }
+
+  private dispatchSelectEvent(detail: {
+    title: string;
+    eventData: {
+      entityId: string;
+      chainId: string;
+      residueNumber?: number | undefined;
+    };
+  }) {
+    const clickEvent = new CustomEvent('smartSeqViewerSelect', {
+      detail: detail,
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(clickEvent);
+  }
+
+  private dispatchDeselectEvent() {
+    const clickEvent = new CustomEvent('smartSeqViewerUnselect', {
+      detail: null,
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(clickEvent);
   }
 
   private handleExternalMouseoverEvent(event: Event) {
@@ -1169,6 +1190,7 @@ export class SmartSequenceVisualisation {
         this.sidebarPanel.innerHTML = this.getSidebarPanelEmptyState();
         this.currentClickedResidue = null;
         this.draw();
+        this.dispatchDeselectEvent();
       }
     };
 

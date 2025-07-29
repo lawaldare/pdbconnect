@@ -161,14 +161,22 @@ export class LLMTabComponent implements OnInit {
       }
     });
 
-    document.addEventListener('smartSeqViewerClick', (event) => this.smartSeqViewerClick(event));
+    document.addEventListener('smartSeqViewerSelect', (event) => this.smartSeqViewerSelectChange(event));
+    document.addEventListener('smartSeqViewerUnselect', (event) => this.smartSeqViewerSelectChange(event));
   }
 
-  private smartSeqViewerClick(event: any) {
+  private smartSeqViewerSelectChange(event: any) {
+    const allAnnotations = this.groupedAnnotations();
+    if (event.detail === null) {
+      const letter = this.dropdownSelected.split(' ')[1];
+      const groupedAnnotations = this.groupedFilteredLLMAnnotations()[letter];
+      this.filteredLLMAnnotations.update(() => groupedAnnotations);
+      return;
+    }
+
     const residueName = event.detail.title;
-    const temp = this.groupedAnnotations();
-    const filteredAgain = temp.filter((a: any) => a.exact.toLocaleLowerCase() === residueName.toLocaleLowerCase().replace(' ', ''));
-    this.filteredLLMAnnotations.update(() => this.removeDuplicatesByKey(filteredAgain, 'sentence'));
+    const filteredByResidue = allAnnotations.filter((a: any) => a.exact.toLocaleLowerCase() === residueName.toLocaleLowerCase().replace(' ', ''));
+    this.filteredLLMAnnotations.update(() => this.removeDuplicatesByKey(filteredByResidue, 'sentence'));
   }
 
   private removeDuplicatesByKey(array: any[], key: string): any[] {

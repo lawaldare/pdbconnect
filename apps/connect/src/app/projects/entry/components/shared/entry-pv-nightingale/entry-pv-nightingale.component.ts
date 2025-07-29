@@ -723,7 +723,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     }
   }
 
-  @HostListener('smartSeqViewerClick', ['$event'])
+  @HostListener('smartSeqViewerSelect', ['$event'])
   @HostListener('document:PDB.topologyViewer.click', ['$event'])
   // @HostListener('document:PDB.litemol.click', ['$event'])
   @HostListener('document:PDB.molstar.click', ['$event'])
@@ -749,7 +749,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       eventEntityId = eventData.entityId;
       eventChainId = eventData.chainId;
       eventResNumber = eventData.residueNumber;
-    } else if (event.type === 'smartSeqViewerClick') {
+    } else if (event.type === 'smartSeqViewerSelect') {
       const eventData = (event as any).eventData;
       eventEntryId = this.entryId();
       eventEntityId = eventData.entityId;
