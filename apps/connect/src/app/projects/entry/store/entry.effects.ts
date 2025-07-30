@@ -130,6 +130,21 @@ export class EntryEffects {
     )
   );
 
+  getResidueListing$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getResidueListing),
+      switchMap((action) => {
+        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
+      }),
+      mergeMap(([action, entryId]) =>
+        this.entryAPIService.getResiduesForChain(entryId, action.chainId).pipe(
+          map((data) => EntryActions.getResidueListingSuccess({ residueListing: data })),
+          catchError(() => of(EntryActions.getResidueListingFailure()))
+        )
+      )
+    )
+  );
+
   getPfamMapping$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getPfamMapping),

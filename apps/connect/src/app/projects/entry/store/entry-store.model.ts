@@ -29,6 +29,7 @@ import { LigandMonomer } from '../data-models/ligand-monomers.model';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
 import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
 import { LLMAnnotation } from '../data-models/llm-model';
+import { ResidueListed } from '../data-models/residue-listing.model';
 
 export interface EntryStoreState {
   entryId: string;
@@ -70,6 +71,7 @@ export interface EntryStoreState {
   experimentRawDataPDB: PDBExperimentRawData[];
   entryStatus: EntryStatus | undefined;
   interactions: Interaction[];
+  residueListing: ResidueListed[];
   symmetry: Symmetry[];
   polymerCoverage: PolymerCoverageMolecule[] | undefined;
   ligandMonomers: LigandMonomer[] | undefined;

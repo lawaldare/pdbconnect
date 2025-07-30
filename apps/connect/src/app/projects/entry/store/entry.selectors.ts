@@ -42,6 +42,7 @@ export const EntrySelectors = {
   experimentRawDataPDB: createSelector(EntryStoreState, (state: EntryStoreState) => state.experimentRawDataPDB),
   entryStatus: createSelector(EntryStoreState, (state: EntryStoreState) => state.entryStatus),
   interactions: createSelector(EntryStoreState, (state: EntryStoreState) => state.interactions),
+  residueListing: createSelector(EntryStoreState, (state: EntryStoreState) => state.residueListing),
   isoformsMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.isoformsMapping),
   llmAnnotations: createSelector(EntryStoreState, (state: EntryStoreState) => state.llmAnnotations),
   ecMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.ecMapping),
