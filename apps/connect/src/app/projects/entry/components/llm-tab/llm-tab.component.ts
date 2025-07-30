@@ -162,6 +162,10 @@ export class LLMTabComponent implements OnInit {
     return [authNumbering];
   });
 
+  public numberOfAnnotatedResids = computed(() => {
+    return this.llmAnnotations()?.filter((annotation, index, self) => index === self.findIndex((a) => a.pdbResidue === annotation.pdbResidue)).length;
+  });
+
   constructor() {
     this.compCommunication.llmSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe((idx) => {
       if (idx === undefined || idx === null) return;
