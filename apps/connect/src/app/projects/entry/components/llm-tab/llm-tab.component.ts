@@ -29,7 +29,8 @@ import { LLMAnnotation } from '../../data-models/llm-model';
 import { colDefs, gridOptions } from './ag-grid';
 import { SelectionChangedEvent } from 'ag-grid-community';
 import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
-import { convertOutliersToSmartSequenceAnnotation } from '../../helpers/quality-annotations-from-seq';
+import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering } from '../../helpers/procesing-for-smart-seq-viewer';
+import { EntryActions } from '../../store/entry.actions';
 
 export interface SequenceDetail {
   title: string;
@@ -85,6 +86,8 @@ export class LLMTabComponent implements OnInit {
   public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
   public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
+  public readonly residueListing = toSignal(this.globalStore.select(EntrySelectors.residueListing));
+
   private entityId = 0;
 
   public selectionStats: { [key: string]: any } | undefined;
@@ -152,6 +155,13 @@ export class LLMTabComponent implements OnInit {
 
   public currentMacromoleculeDatum = signal<MacromoleculesRowData | undefined>(undefined);
 
+  public altSequences = computed(() => {
+    const residueListing = this.residueListing();
+    if (!residueListing || residueListing.length === 0) return [];
+    const authNumbering = createAuthAlternateNumbering(residueListing);
+    return [authNumbering];
+  });
+
   constructor() {
     this.compCommunication.llmSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe((idx) => {
       if (idx === undefined || idx === null) return;
@@ -199,8 +209,8 @@ export class LLMTabComponent implements OnInit {
     return this.detailsDashboardFacade.groupByPdbChain(annotations);
   });
 
-  public currentProtvistaEntity = signal<string | undefined>(undefined);
-  public currentProtvistaChain = signal<string | undefined>(undefined);
+  public currentSelectionEntityId = signal<string | undefined>(undefined);
+  public currentSelectionChainId = signal<string | undefined>(undefined);
 
   public sequenceDetails: SequenceDetail[] = [];
 
@@ -251,6 +261,12 @@ export class LLMTabComponent implements OnInit {
 
     const groupedLLMAnnotations: LLMAnnotation[] = this.groupedFilteredLLMAnnotations()[chainId];
     this.llmAnnotationForSeq = this.llmAnnotationsFacade.getCircleAnnotationsForSeqViewer(groupedLLMAnnotations);
+
+    this.globalStore.dispatch(
+      EntryActions.getResidueListing({
+        chainId: chainId,
+      })
+    );
   }
 
   public generateOrganismSearchUrl(term: string): string {
@@ -294,8 +310,8 @@ export class LLMTabComponent implements OnInit {
     const entityId = macromolecule.additionalData.molecule.entity_id;
     const chainId = this.dropdownSelected.split('Chain ')[1];
 
-    this.currentProtvistaEntity.set(`${entityId}`);
-    this.currentProtvistaChain.set(chainId);
+    this.currentSelectionEntityId.set(`${entityId}`);
+    this.currentSelectionChainId.set(chainId);
   }
 
   private async renderInMolstar(macromolecule: MacromoleculesRowData) {

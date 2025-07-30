@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, input, OnDestroy, signal } from '@angular/core';
+import { AfterViewInit, Component, effect, input, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSequenceVisOptions, SmartSequenceVisualisation } from './viewer/sequence-visualisation';
 import { generateRandomAlternativeNumberings, generateRandomAnnotations } from './viewer/smart-generator';
@@ -25,6 +25,7 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
     externalEvents: true,
     hoverTooltips: false,
     useAuthNumbers: true,
+    helpLogoSrc: '/assets/images/help_outline_24px.svg',
   });
   public readonly isNucleic = input<boolean>(false);
 
@@ -42,6 +43,12 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
   //   this.circleAboveData.set(generateRandomAnnotations(3, this.sequence(), 'CircleAbove'));
   //   const altSequences = generateRandomAlternativeNumberings(this.sequence(), true, true);
   // }
+  constructor() {
+    effect(() => {
+      // Re-run whenever ANY input used here changes
+      this.initVisualisation();
+    });
+  }
 
   ngAfterViewInit(): void {
     this.initVisualisation();

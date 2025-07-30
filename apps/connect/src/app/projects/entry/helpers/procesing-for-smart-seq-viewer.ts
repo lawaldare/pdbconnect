@@ -1,6 +1,8 @@
 import { SmartSequenceAnnotation } from '@pdbe-lib/smart-seq-viewer';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
 import { OUTLIER_TYPE_LABELS } from '../entry-constant';
+import { ResidueListed } from '../data-models/residue-listing.model';
+import { AlternativeNumbering } from '@pdbe-lib/smart-seq-viewer';
 
 export function convertOutliersToSmartSequenceAnnotation(
   sequence: string,
@@ -68,5 +70,14 @@ export function convertOutliersToSmartSequenceAnnotation(
     scaleRange: ['#A9ABAA', '#E5E501', '#DA6E03', '#B2182B'], // optional: white → yellow → orange → red
     rendering: 'Background',
     data: annotationData,
+  };
+}
+
+export function createAuthAlternateNumbering(residueList: ResidueListed[]): AlternativeNumbering {
+  const authResidueList = residueList.map((eachResidue) => `${eachResidue.author_residue_number}${eachResidue.author_insertion_code.replace(' ', '')}`);
+  return {
+    numberingType: 'Auth',
+    identifier: 'auth',
+    alternativeSequence: [authResidueList],
   };
 }
