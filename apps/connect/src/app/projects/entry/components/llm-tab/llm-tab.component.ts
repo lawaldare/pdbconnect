@@ -11,7 +11,7 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { AG_Grid_Theme_Class, MaterialModule, UtilService } from '@pdbc/core';
-import { MacromoleculesFacade } from './llm.facade';
+import { LLMAnnotationsFacade } from './llm.facade';
 import { getMacromoleculeChainDropdownOptions } from '../../helpers/processed-data-to-controls';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -57,7 +57,7 @@ export interface SequenceDetail {
   styleUrl: './llm-tab.component.scss',
 })
 export class LLMTabComponent implements OnInit {
-  public readonly macromoleculesFacade = inject(MacromoleculesFacade);
+  public readonly llmAnnotationsFacade = inject(LLMAnnotationsFacade);
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
@@ -77,6 +77,7 @@ export class LLMTabComponent implements OnInit {
   public dashboardStatLinks = dashboardStatLinks;
 
   public backgroundAnnotation: SmartSequenceAnnotation | undefined = undefined;
+  public llmAnnotationForSeq: SmartSequenceAnnotation | undefined = undefined;
 
   private readonly globalStore = inject(Store<EntryStoreState>);
 
@@ -166,29 +167,17 @@ export class LLMTabComponent implements OnInit {
   }
 
   private smartSeqViewerSelectChange(event: any) {
-    const allAnnotations = this.groupedAnnotations();
     if (event.detail === null) {
       const letter = this.dropdownSelected.split(' ')[1];
       const groupedAnnotations = this.groupedFilteredLLMAnnotations()[letter];
       this.filteredLLMAnnotations.update(() => groupedAnnotations);
       return;
     }
+    const residueNumber = event.detail.eventData.residueNumber;
 
-    const residueName = event.detail.title;
-    const filteredByResidue = allAnnotations.filter((a: any) => a.exact.toLocaleLowerCase() === residueName.toLocaleLowerCase().replace(' ', ''));
-    this.filteredLLMAnnotations.update(() => this.removeDuplicatesByKey(filteredByResidue, 'sentence'));
-  }
-
-  private removeDuplicatesByKey(array: any[], key: string): any[] {
-    const seen = new Set();
-    return array.filter((item) => {
-      const keyValue = item[key];
-      if (seen.has(keyValue)) {
-        return false;
-      }
-      seen.add(keyValue);
-      return true;
-    });
+    const allAnnotations = this.groupedAnnotations();
+    const filteredByResidue = allAnnotations.filter((a: LLMAnnotation) => a.pdbResidue === residueNumber);
+    this.filteredLLMAnnotations.update(() => this.llmAnnotationsFacade.removeDuplicatesByKey(filteredByResidue, 'sentence'));
   }
 
   ngOnInit(): void {
@@ -225,7 +214,7 @@ export class LLMTabComponent implements OnInit {
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: MacromoleculesRowData) {
     this.updateDropdownOptions(macromolecule);
-    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.sequenceDetails = this.llmAnnotationsFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
     await this.renderVisualisations(macromolecule);
     this.updateBackgroundAnnotation();
   }
@@ -246,7 +235,7 @@ export class LLMTabComponent implements OnInit {
     this.filteredLLMAnnotations.update(() => groupedAnnotations);
     this.groupedAnnotations.update(() => groupedAnnotations);
 
-    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.sequenceDetails = this.llmAnnotationsFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
     this.updateBackgroundAnnotation();
   }
 
@@ -259,6 +248,9 @@ export class LLMTabComponent implements OnInit {
     const entityId = macromolecule?.additionalData.molecule.entity_id ?? 1;
     const chainId = this.dropdownSelected.split('Chain ')[1];
     this.backgroundAnnotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, this.residueWiseOutliers());
+
+    const groupedLLMAnnotations: LLMAnnotation[] = this.groupedFilteredLLMAnnotations()[chainId];
+    this.llmAnnotationForSeq = this.llmAnnotationsFacade.getCircleAnnotationsForSeqViewer(groupedLLMAnnotations);
   }
 
   public generateOrganismSearchUrl(term: string): string {
@@ -274,7 +266,7 @@ export class LLMTabComponent implements OnInit {
 
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
-    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(
+    this.sequenceDetails = this.llmAnnotationsFacade.getMacromoleculeSequenceDetails(
       this.entryId() ?? '',
       macromolecule as MacromoleculesRowData,
       this.dropdownSelected

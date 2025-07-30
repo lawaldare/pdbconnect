@@ -54,6 +54,7 @@ export interface SmartSequenceVisOptions {
   tooltipFormatting?: TooltipFormatting;
   scrollContainerMaxHeight?: number;
   isNucleic?: boolean;
+  useAuthNumbers?: boolean;
 }
 
 export class SmartSequenceVisualisation {
@@ -70,21 +71,22 @@ export class SmartSequenceVisualisation {
   private tooltipFormatting: TooltipFormatting;
   private scrollContainerMaxHeight = 160;
   private isNucleic = false;
+  private useAuthNumbers = false;
 
   private fontFamily = 'IBM Plex Sans';
   private fontSize = 14;
-  private fontColor = '#000';
   private characterBgPadding = 2;
   private margins = { top: 4, bottom: 4, left: 4, right: 4 };
   private resizeObserver: ResizeObserver | null = null;
   private resizeDebounceTimer: number | null = null;
 
-  private residueNumberingFreq = 10; // Number of residues per group
+  private residueNumberingFreq = 10; // Number of residues to add numbering above
   private residueGroupSize = 10; // Number of residues per group
   private residueGroupRightMargin = 16; // Pixels between residue groups
-  private lineBottomMargin = 4; // Pixels between lines
+  private lineBottomMargin = 6; // Pixels between lines
   private numberingFontSize = 12; // Smaller font size for numbering
   // private numberingHeight = 12; // Space above sequences for numbers
+  private numberingVerticalSpacing = 0; // Space between sequences and numbers, auto-calculated
 
   private maxBoxWidth = -1;
   private maxBoxHeight = -1;
@@ -110,18 +112,15 @@ export class SmartSequenceVisualisation {
 
   // private defaultBgColour = '#f0f0f0';
   private defaultBgColour = 'rgba(255, 255, 255, 0.0)';
-  private circleAnnotationRadius = 3;
-  private circleAnnotationMarginTop = 2;
-  private circleAnnotationMarginBottom = 2;
+  private circleAnnotationRadius = 4;
+  private circleAnnotationMarginTop = 3;
+  private circleAnnotationMarginBottom = 0;
 
   private currentHoveredResidue: number | null = null;
   private currentClickedResidue: number | null = null;
 
-  private clickedTextColour = '';
   private clickedBorderColour = '';
   private clickedBorderWidth = 2;
-  private hoverTextColour = '';
-  private hoverBorderColour = '';
   private hoverBorderWidth = 2;
   private residueRects = new Map<number, { x: number; y: number; width: number; height: number }>();
   private residueHover$ = new BehaviorSubject<{ residueIndex: number; annotations: SmartSequenceAnnotationForEvent[] | null } | null>(null);
@@ -144,14 +143,16 @@ export class SmartSequenceVisualisation {
   ) {
     this.sequence = sequence;
     this.containerId = containerId;
+
     this.grouping = options?.grouping !== false;
     this.groupingLineBreak = options?.groupingLineBreak === true;
     this.responsive = options?.responsive !== false;
     this.externalEvents = options?.externalEvents === true;
     this.isNucleic = options?.isNucleic === true;
+    this.useAuthNumbers = options?.useAuthNumbers === true;
+
     this.entityId = entityId;
     this.chainId = chainId;
-    this.alternativeNumberings = alternativeNumberings;
     this.hoverTooltips = options?.hoverTooltips !== false;
     const defaultTooltipFormatting: TooltipFormatting = {
       preferred: 'auth',
@@ -160,11 +161,16 @@ export class SmartSequenceVisualisation {
     };
     this.tooltipFormatting = options?.tooltipFormatting ?? defaultTooltipFormatting;
     this.scrollContainerMaxHeight = options?.scrollContainerMaxHeight ?? 160;
+    this.tooltipFormatting = options?.tooltipFormatting ?? defaultTooltipFormatting;
 
     const container = document.getElementById(this.containerId);
     if (!container) {
       throw new Error(`Container with id "${this.containerId}" not found.`);
     }
+
+    this.validateAlternativeNumberings(alternativeNumberings || []);
+    this.alternativeNumberings = alternativeNumberings;
+
     this.validateAnnotations(initialAnnotations);
     this.annotations = [...initialAnnotations];
 
@@ -238,11 +244,6 @@ export class SmartSequenceVisualisation {
     this.draw();
   }
 
-  private getSidebarWidth(container: HTMLElement): number {
-    const percentWidth = container.offsetWidth * 0.25;
-    return Math.max(percentWidth, 200);
-  }
-
   private createFlexBoxWrapper(): HTMLDivElement {
     const wrapper = document.createElement('div');
     wrapper.className = 'flexbox-wrapper';
@@ -283,6 +284,16 @@ export class SmartSequenceVisualisation {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
       this.resizeObserver = null;
+    }
+  }
+
+  private validateAlternativeNumberings(alternativeNumberings: AlternativeNumbering[]) {
+    const seqLength = this.sequence.length;
+    for (const alternativeNumbering of alternativeNumberings) {
+      const altLength = alternativeNumbering.alternativeSequence.length;
+      if (seqLength !== altLength) {
+        throw new Error(`${alternativeNumbering.numberingType} numbering has different length (${altLength}) from seq length (${seqLength})`);
+      }
     }
   }
 
@@ -423,7 +434,7 @@ export class SmartSequenceVisualisation {
     return this.residueHover$.asObservable();
   }
 
-  public getResidueClickObservable() {
+  public getResidueSelectionObservable() {
     return this.residueClick$.asObservable();
   }
 
@@ -769,7 +780,14 @@ export class SmartSequenceVisualisation {
       }
     }
 
-    this.maxNumberingBoxHeight = Math.ceil(maxHeight + this.characterBgPadding * 2);
+    // If circle annotations present, add extra spacing
+    const hasCircle = this.annotations.map((annotation) => annotation.rendering).indexOf('CircleAbove') > -1;
+    if (hasCircle === true) {
+      this.numberingVerticalSpacing = 4;
+      this.lineBottomMargin += 4;
+    }
+
+    this.maxNumberingBoxHeight = Math.ceil(maxHeight + this.characterBgPadding * 2) + this.numberingVerticalSpacing;
   }
 
   private calcCanvasHeightForFullSequence(): number {
@@ -790,9 +808,9 @@ export class SmartSequenceVisualisation {
       }
     }
 
-    const extraCircleHeight = this.hasCircleAnnotation ? this.circleAnnotationRadius * 2 + this.circleAnnotationMarginTop + this.circleAnnotationMarginBottom : 0;
+    // const extraCircleHeight = this.hasCircleAnnotation ? this.circleAnnotationRadius * 2 + this.circleAnnotationMarginTop + this.circleAnnotationMarginBottom : 0;
 
-    const totalLineHeight = this.maxNumberingBoxHeight + this.maxBoxHeight + extraCircleHeight + this.lineBottomMargin;
+    const totalLineHeight = this.maxNumberingBoxHeight + this.maxBoxHeight + this.lineBottomMargin;
 
     return this.margins.top + lineCount * totalLineHeight + this.margins.bottom;
   }
@@ -839,8 +857,8 @@ export class SmartSequenceVisualisation {
     //   this.canvasBoxPerLines = Math.floor(availableWidth / effectiveBoxWidth);
     // }
 
-    const extraCircleHeight = this.hasCircleAnnotation ? this.circleAnnotationRadius * 2 + this.circleAnnotationMarginTop + this.circleAnnotationMarginBottom : 0;
-    const totalLineHeight = this.maxNumberingBoxHeight + this.maxBoxHeight + extraCircleHeight + this.lineBottomMargin;
+    // const extraCircleHeight = this.hasCircleAnnotation ? this.circleAnnotationRadius * 2 + this.circleAnnotationMarginTop + this.circleAnnotationMarginBottom : 0;
+    const totalLineHeight = this.maxNumberingBoxHeight + this.maxBoxHeight + this.lineBottomMargin;
     this.canvasTextLines = Math.floor((this.canvasHeight - marginTop - marginBottom + this.lineBottomMargin) / totalLineHeight);
 
     if (this.groupingLineBreak) {
@@ -872,11 +890,7 @@ export class SmartSequenceVisualisation {
 
     const { left: marginLeft, top: marginTop } = this.margins;
 
-    const lineHeight =
-      this.maxBoxHeight +
-      this.maxNumberingBoxHeight +
-      this.lineBottomMargin +
-      (this.hasCircleAnnotation ? this.circleAnnotationRadius * 2 + this.circleAnnotationMarginTop + this.circleAnnotationMarginBottom : 0);
+    const lineHeight = this.maxBoxHeight + this.maxNumberingBoxHeight + this.lineBottomMargin;
 
     if (this.groupingLineBreak) {
       // Draw entire sequence with dynamic line wrapping and group margin
@@ -947,6 +961,17 @@ export class SmartSequenceVisualisation {
     }
   }
 
+  private getAltNumber(residueIndex: number, altType: 'auth' | 'uniprot') {
+    if (!this.alternativeNumberings) return `${residueIndex}`;
+    for (const alternativeNumbering of this.alternativeNumberings) {
+      if (alternativeNumbering.identifier === altType) {
+        // only getting numbering from first alt sequence
+        return `${alternativeNumbering.alternativeSequence[0][residueIndex - 1]}`;
+      }
+    }
+    return `${residueIndex}`;
+  }
+
   private drawResidue(ctx: CanvasRenderingContext2D, x: number, yStart: number, char: string, residueIndex: number) {
     const annotationColor = this.backgroundColorMap!.get(residueIndex);
     ctx.fillStyle = annotationColor ?? this.defaultBgColour;
@@ -994,9 +1019,10 @@ export class SmartSequenceVisualisation {
       ctx.stroke();
     }
 
-    if (residueIndex % this.residueNumberingFreq === 0) {
+    const residueNumberLabel = this.useAuthNumbers ? this.getAltNumber(residueIndex, 'auth') : residueIndex.toString();
+    if (residueIndex === 1 || residueIndex % this.residueNumberingFreq === 0) {
       ctx.font = `${this.numberingFontSize}px ${this.fontFamily}`;
-      ctx.fillText(residueIndex.toString(), x + this.maxBoxWidth / 2, yStart + this.maxNumberingBoxHeight / 2);
+      ctx.fillText(residueNumberLabel, x + this.maxBoxWidth / 2, yStart - this.numberingVerticalSpacing + this.maxNumberingBoxHeight / 2);
       ctx.font = `${this.fontSize}px ${this.fontFamily}`;
     }
   }
@@ -1168,9 +1194,6 @@ export class SmartSequenceVisualisation {
     panel.style.display = 'block';
 
     return panel;
-    // container.style.position = 'relative';
-    // container.appendChild(panel);
-    // this.sidebarPanel = panel;
   }
 
   private buildSidebarContent(residueIndex: number): string {
@@ -1190,6 +1213,7 @@ export class SmartSequenceVisualisation {
         this.sidebarPanel.innerHTML = this.getSidebarPanelEmptyState();
         this.currentClickedResidue = null;
         this.draw();
+        this.residueClick$.next(null);
         this.dispatchDeselectEvent();
       }
     };
@@ -1197,9 +1221,14 @@ export class SmartSequenceVisualisation {
     // Attach to window so the button onclick can reference it
     (window as any).smartSeqSidebarClose = handleSidebarClose;
 
+    let residueNumberLabel = this.useAuthNumbers ? this.getAltNumber(residueIndex, 'auth') : residueIndex.toString();
+    if (residueNumberLabel !== residueIndex.toString()) {
+      residueNumberLabel = `${residueNumberLabel} (Auth)`;
+    }
+
     let html = `
     <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h5 style="margin: 0;">${residueName} ${residueIndex}</h5>
+      <h5 style="margin: 0;">${residueName} ${residueNumberLabel}</h5>
       <button onclick="smartSeqSidebarClose()" style="background: transparent; border: none; font-size: 20px; cursor: pointer;">×</button>
     </div>
     `;
@@ -1259,6 +1288,13 @@ export class SmartSequenceVisualisation {
             </p>`;
             hasAddedTitle = true;
           }
+        } else if (ann.identifier.includes('pdbe-llm-annotation')) {
+          const extraData = ann.datum.extraData || undefined;
+          if (!extraData) continue;
+          const sentenceS = ann.datum.extraData.length > 1 ? 'sentences' : 'sentence';
+          html += `<p style="margin: 0; font-size: 14px;">
+            ${ann.datum.extraData.length} text-mined ${sentenceS} found mentioning this residue.
+          </p>`;
         } else {
           if (!hasAddedTitle) {
             html += `<hr/><h5>Annotations</h5>`;

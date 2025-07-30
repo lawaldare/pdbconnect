@@ -24,6 +24,7 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
     groupingLineBreak: false,
     externalEvents: true,
     hoverTooltips: false,
+    useAuthNumbers: true,
   });
   public readonly isNucleic = input<boolean>(false);
 
