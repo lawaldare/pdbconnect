@@ -16,6 +16,7 @@ export class SentenceRendererComponent implements ICellRendererAngularComp, Afte
   public value!: string;
   public exactWord!: string;
   public pmcId?: string;
+  public pdbResidue!: number;
 
   @ViewChild('highlightContainer', { static: false }) highlightContainer!: ElementRef;
 
@@ -35,8 +36,19 @@ export class SentenceRendererComponent implements ICellRendererAngularComp, Afte
   }
 
   onStrongClick() {
-    // Custom logic (emit event, open dialog, etc.)
-    console.log(`Clicked strong word: ${this.exactWord}`);
+    const eventObj = new CustomEvent('to-seq-viewer-click', {
+      detail: {
+        eventData: {
+          residueNumber: this.pdbResidue,
+          entityId: 'ignore',
+          chainId: 'ignore',
+          unselect: 'ignore',
+        },
+      },
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(eventObj);
   }
 
   get getHighlightedSentence() {
@@ -101,6 +113,7 @@ export class SentenceRendererComponent implements ICellRendererAngularComp, Afte
   refresh(params: ICellRendererParams): boolean {
     this.value = params.value;
     this.exactWord = params.data.exact;
+    this.pdbResidue = params.data.pdbResidue;
     if (params.data.pmcId) this.pmcId = params.data.pmcId;
     return true;
   }
