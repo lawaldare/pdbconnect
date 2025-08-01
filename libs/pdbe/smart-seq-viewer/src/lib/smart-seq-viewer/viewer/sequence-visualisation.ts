@@ -226,7 +226,7 @@ export class SmartSequenceVisualisation {
 
     this.showSidebar(undefined); // show default placeholder
     this.draw();
-    // this.setupResizeObserver();
+    this.setupResizeObserver();
     this.onContainerResize();
     this.registerExternalEventsListeners();
   }
@@ -296,20 +296,23 @@ export class SmartSequenceVisualisation {
   }
 
   private setupResizeObserver() {
-    // const container = document.getElementById(this.containerId);
     if (!this.visualisationContainer || !this.responsive) return;
 
-    this.resizeObserver = new ResizeObserver(() => {
+    const handleResize = () => {
       if (this.resizeDebounceTimer !== null) {
         window.clearTimeout(this.resizeDebounceTimer);
       }
 
       this.resizeDebounceTimer = window.setTimeout(() => {
-        this.onContainerResize();
-      }, 200); // debounce 200ms
-    });
+        this.onContainerResize(); // keep same name
+      }, 200);
+    };
 
-    this.resizeObserver.observe(this.visualisationContainer);
+    window.addEventListener('resize', handleResize);
+
+    this.resizeObserver = {
+      disconnect: () => window.removeEventListener('resize', handleResize),
+    } as unknown as ResizeObserver;
   }
 
   private teardownResizeObserver() {
