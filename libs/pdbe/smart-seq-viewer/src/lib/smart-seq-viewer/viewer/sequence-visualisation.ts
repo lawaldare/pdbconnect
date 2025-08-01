@@ -132,6 +132,7 @@ export class SmartSequenceVisualisation {
 
   private tooltipEl: HTMLDivElement | null = null;
   private sidebarPanel: HTMLDivElement | null = null;
+  private sidebarPanelWidth = 250;
   private visualisationAndSidebarContainer: HTMLDivElement | null = null;
   private visualisationContainer: HTMLDivElement | null = null;
   private warningDiv: HTMLDivElement | null = null;
@@ -191,8 +192,7 @@ export class SmartSequenceVisualisation {
     this.visualisationAndSidebarContainer.appendChild(this.visualisationContainer);
     this.visualisationAndSidebarContainer.appendChild(this.sidebarPanel);
 
-    const sidebarWidth = this.sidebarPanel.offsetWidth;
-    const width = this.visualisationAndSidebarContainer.offsetWidth - sidebarWidth;
+    const width = this.visualisationAndSidebarContainer.offsetWidth - this.sidebarPanelWidth;
     //
     this.canvasWidth = width;
     this.canvasHeight = 0;
@@ -235,9 +235,7 @@ export class SmartSequenceVisualisation {
     // const container = document.getElementById(this.containerId);
     if (!this.visualisationContainer || !this.visualisationAndSidebarContainer || !this.sidebarPanel) return;
 
-    const sidebarWidth = this.sidebarPanel.offsetWidth;
-
-    const newCanvasWidth = this.visualisationAndSidebarContainer.offsetWidth - sidebarWidth;
+    const newCanvasWidth = this.visualisationAndSidebarContainer.offsetWidth - this.sidebarPanelWidth;
     const newCanvasHeight = this.calcCanvasHeightForFullSequence();
 
     // Skip if dimensions haven't changed
@@ -268,6 +266,7 @@ export class SmartSequenceVisualisation {
     wrapper.style.height = `${this.scrollContainerMaxHeight}px`;
     wrapper.style.width = '100%';
     wrapper.style.background = '#f3f3f3';
+    wrapper.style.overflowY = 'scroll';
     return wrapper;
   }
 
@@ -1256,7 +1255,7 @@ export class SmartSequenceVisualisation {
   private createSidebarPanel() {
     const panel = document.createElement('div');
     panel.className = 'sidebar-panel';
-    panel.style.width = '250px';
+    panel.style.width = `${this.sidebarPanelWidth}px`;
     panel.style.height = '100%';
     panel.style.background = '#fafafa';
     panel.style.border = '1px solid #ccc';
