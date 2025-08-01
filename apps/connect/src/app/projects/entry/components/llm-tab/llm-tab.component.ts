@@ -306,11 +306,11 @@ export class LLMTabComponent implements OnInit {
 
   private async renderVisualisations(macromolecule: MacromoleculesRowData) {
     await this.renderInMolstar(macromolecule);
-    await this.initOrRefreshProtvista(macromolecule);
+    await this.setCurrentSelectionData(macromolecule);
     // await this.initOrRefreshTopologyViewer(macromolecule);
   }
 
-  private async initOrRefreshProtvista(macromolecule: MacromoleculesRowData) {
+  private async setCurrentSelectionData(macromolecule: MacromoleculesRowData) {
     const entityId = macromolecule.additionalData.molecule.entity_id;
     const chainId = this.dropdownSelected.split('Chain ')[1];
 
@@ -325,9 +325,9 @@ export class LLMTabComponent implements OnInit {
     const chainId = molstarSelection.authChainId;
 
     this.actionQueue.addAction(
-      `renderMolstarForMacromolecules-${macromolecule.name.molecule}-${entityId}-${chainId}`,
+      `renderMolstarForLLM-${macromolecule.name.molecule}-${entityId}-${chainId}`,
       async () => {
-        await this.molstarState.renderMolstarForMacromolecules(macromolecule, molstarSelection);
+        await this.molstarState.renderMolstarForLLM(macromolecule, molstarSelection);
       },
       shouldSkip // skippable
     );

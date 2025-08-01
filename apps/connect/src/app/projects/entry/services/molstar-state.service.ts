@@ -55,17 +55,22 @@ export class MolstarStateService {
     }
   }
 
-  public async renderMolstarForLLM() {
+  public async renderMolstarForLLM(macromolecule: MacromoleculesRowData, selection: MolstarSelectionObj) {
+    const entityId = selection.entityId;
+    const chainId = selection.authChainId;
     const modelId = this.currentLLMTabId();
     // const currentOutlierData = this.outliersByModelId()![modelId];
 
-    const displayName = `LLM-Tab-${modelId}`;
+    // const displayName = `LLM-Tab-${modelId}`;
+    const displayName = `Tab-LLM/${macromolecule.name.molecule}-${entityId}-${chainId}`;
     // if (issueType !== 'issue_count') {
     //   displayName = `Model Quality(${modelId})-Specific issue-${specificIssue}`;
     // }
     if (this.molstarVisualisation.currentViewName === displayName) return;
     this.molstarVisualisation.currentViewName = displayName;
+    this.lastMolstarSelection = selection;
     await this.molstarVisualisation.checkLLMReady();
+    await this.molstarVisualisation.renderTabsMacromolecules(macromolecule, selection);
   }
 
   public async renderMolstarForModelQuality() {
