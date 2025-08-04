@@ -16,9 +16,11 @@ import { ComplexInteraction } from '../../models/complex-structure.model';
       </a>
     </span>
 
-    <span matTooltipClass="complex-name-tooltip" [matTooltip]="data.name" matTooltipPosition="above"
-      >{{ data.name.length > 30 ? data.name.slice(0, 30) + '...' : data.name }}
-    </span>
+    @if (data.name) {
+      <span matTooltipClass="complex-name-tooltip" [matTooltip]="data.name" matTooltipPosition="above"
+        >{{ data.name.length > 30 ? data.name.slice(0, 30) + '...' : data.name }}
+      </span>
+    }
   `,
 })
 export class ComplexNameRendererComponent implements ICellRendererAngularComp {
