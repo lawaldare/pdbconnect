@@ -14,8 +14,11 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { combineLatest, filter, Subject, take, tap } from 'rxjs';
+import '@nightingale-elements/nightingale-manager';
 import * as NightingaleManager from '@nightingale-elements/nightingale-manager';
+import '@nightingale-elements/nightingale-sequence';
 import * as NightingaleSequence from '@nightingale-elements/nightingale-sequence';
+import '@nightingale-elements/nightingale-navigation';
 import * as NightingaleNavigation from '@nightingale-elements/nightingale-navigation';
 
 // Necessart lines added to avoid tree shaking of Nightingale components
@@ -720,7 +723,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     }
   }
 
-  @HostListener('smartSeqViewerClick', ['$event'])
+  @HostListener('smartSeqViewerSelect', ['$event'])
   @HostListener('document:PDB.topologyViewer.click', ['$event'])
   // @HostListener('document:PDB.litemol.click', ['$event'])
   @HostListener('document:PDB.molstar.click', ['$event'])
@@ -746,7 +749,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       eventEntityId = eventData.entityId;
       eventChainId = eventData.chainId;
       eventResNumber = eventData.residueNumber;
-    } else if (event.type === 'smartSeqViewerClick') {
+    } else if (event.type === 'smartSeqViewerSelect') {
       const eventData = (event as any).eventData;
       eventEntryId = this.entryId();
       eventEntityId = eventData.entityId;

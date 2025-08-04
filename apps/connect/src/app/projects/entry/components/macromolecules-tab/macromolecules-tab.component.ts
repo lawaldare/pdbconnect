@@ -29,8 +29,9 @@ import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
-import { convertOutliersToSmartSequenceAnnotation } from '../../helpers/quality-annotations-from-seq';
+import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering } from '../../helpers/procesing-for-smart-seq-viewer';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { EntryActions } from '../../store/entry.actions';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -97,6 +98,7 @@ export class MacromoleculesTabComponent {
   public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
   public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
+  public readonly residueListing = toSignal(this.globalStore.select(EntrySelectors.residueListing));
 
   public selectionStats: { [key: string]: any } | undefined;
   // public goMappings = computed(() => Object.keys(this.goMapping() ?? {}));
@@ -222,6 +224,13 @@ export class MacromoleculesTabComponent {
 
   public currentMacromoleculeDatum = signal<MacromoleculesRowData | undefined>(undefined);
 
+  public altSequences = computed(() => {
+    const residueListing = this.residueListing();
+    if (!residueListing || residueListing.length === 0) return [];
+    const authNumbering = createAuthAlternateNumbering(residueListing);
+    return [authNumbering];
+  });
+
   constructor() {
     this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe((idx) => {
       if (idx === undefined || idx === null) return;
@@ -238,7 +247,13 @@ export class MacromoleculesTabComponent {
     this.updateDropdownOptions(macromolecule);
 
     // updates shown sequence on new macromolecule
-    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    const chainId = this.dropdownSelected;
+    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
+    this.globalStore.dispatch(
+      EntryActions.getResidueListing({
+        chainId: chainId,
+      })
+    );
 
     // updates layout display details on new macromolecule
     this.updateVisualsDisplayed(macromolecule);

@@ -57,6 +57,7 @@ const initialState: EntryStoreState = {
   experimentRawDataPDB: [],
   entryStatus: { ...entryStatusDefault },
   interactions: [],
+  residueListing: [],
   symmetry: [],
   polymerCoverage: undefined,
   ligandMonomers: undefined,
@@ -91,6 +92,10 @@ export const entryReducer = createReducer(
   on(EntryActions.getInteractionsSuccess, (state, action) => ({
     ...state,
     interactions: action.interactions,
+  })),
+  on(EntryActions.getResidueListingSuccess, (state, action) => ({
+    ...state,
+    residueListing: action.residueListing,
   })),
   on(EntryActions.getPfamMappingSuccess, (state, action) => ({
     ...state,

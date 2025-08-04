@@ -32,6 +32,7 @@ import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
 import { LigandMonomer } from '../data-models/ligand-monomers.model';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
 import { LLMAnnotation } from '../data-models/llm-model';
+import { ResidueListed, ResidueListing } from '../data-models/residue-listing.model';
 
 @Injectable({
   providedIn: 'root',
@@ -302,6 +303,14 @@ export class EntryApiService {
     return this.http.get<Record<string, { molecules: ResidueWiseOutliersMolecule[] }>>(`${this.VALIDATION_API}residuewise_outlier_summary/entry/${entryId}`).pipe(
       map((data) => {
         return data[entryId]['molecules'] || [];
+      })
+    );
+  }
+
+  public getResiduesForChain(entryId: string, chainId: string): Observable<ResidueListed[]> {
+    return this.http.get<Record<string, ResidueListing>>(`${this.BASE_API}residue_listing/${entryId}/chain/${chainId}`).pipe(
+      map((data) => {
+        return data[entryId]['molecules'][0]['chains'][0]['residues'] || [];
       })
     );
   }

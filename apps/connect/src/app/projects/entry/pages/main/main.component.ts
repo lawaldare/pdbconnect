@@ -281,78 +281,76 @@ export class EntryMainPageComponent implements OnInit {
         skippable // skippable
       );
     } else if (tabName === 'model-quality') {
-      this.actionQueue.addAction(
-        'tab change renderMolstarForModelQuality',
-        async () => {
-          await this.molstarState.renderMolstarForModelQuality();
-        },
-        skippable // skippable
-      );
+      // this.actionQueue.addAction(
+      //   'tab change renderMolstarForModelQuality',
+      //   async () => {
+      //     await this.molstarState.renderMolstarForModelQuality();
+      //   },
+      //   skippable // skippable
+      // );
       //
     } else if (tabName === 'llm') {
-      this.actionQueue.addAction(
-        'tab change renderMolstarForLLM',
-        async () => {
-          await this.molstarState.renderMolstarForLLM();
-        },
-        skippable // skippable
-      );
+      // this.actionQueue.addAction(
+      //   'tab change renderMolstarForLLM',
+      //   async () => {
+      //     const macromoleculesData = this.compCommunication.processedMacromolecules;
+      //     if (macromoleculesData.length === 0) return;
+      //     // this is because we always reset to first macromolecule on tab switch (no state kept)
+      //     const firstMacromolecule = macromoleculesData[0];
+      //     const firstMolstarSelection = firstMacromolecule.additionalData.selections[0];
+      //     await this.molstarState.renderMolstarForLLM(firstMacromolecule, firstMolstarSelection);
+      //   },
+      //   skippable // skippable
+      // );
       //
     } else if (tabName === 'assemblies') {
-      this.actionQueue.addAction(
-        'renderMolstarForAssemblies-first-assembly',
-        async () => {
-          const assembliesData = this.compCommunication.processedAssemblies;
-          if (assembliesData.length === 0) return;
-
-          await this.molstarState.renderMolstarForAssemblies();
-        },
-        skippable // skippable
-      );
+      // this.actionQueue.addAction(
+      //   'renderMolstarForAssemblies-first-assembly',
+      //   async () => {
+      //     const assembliesData = this.compCommunication.processedAssemblies;
+      //     if (assembliesData.length === 0) return;
+      //     await this.molstarState.renderMolstarForAssemblies();
+      //   },
+      //   skippable // skippable
+      // );
     } else if (tabName === 'macromolecules') {
-      this.actionQueue.addAction(
-        `renderMolstarForMacromolecules-first-macromolecule`,
-        async () => {
-          const macromoleculesData = this.compCommunication.processedMacromolecules;
-          if (macromoleculesData.length === 0) return;
-
-          // this is because we always reset to first macromolecule on tab switch (no state kept)
-          const firstMacromolecule = macromoleculesData[0];
-          const firstMolstarSelection = firstMacromolecule.additionalData.selections[0];
-
-          await this.molstarState.renderMolstarForMacromolecules(firstMacromolecule, firstMolstarSelection);
-        },
-        skippable // skippable
-      );
+      // this.actionQueue.addAction(
+      //   `renderMolstarForMacromolecules-first-macromolecule`,
+      //   async () => {
+      //     const macromoleculesData = this.compCommunication.processedMacromolecules;
+      //     if (macromoleculesData.length === 0) return;
+      //     // this is because we always reset to first macromolecule on tab switch (no state kept)
+      //     const firstMacromolecule = macromoleculesData[0];
+      //     const firstMolstarSelection = firstMacromolecule.additionalData.selections[0];
+      //     await this.molstarState.renderMolstarForMacromolecules(firstMacromolecule, firstMolstarSelection);
+      //   },
+      //   skippable // skippable
+      // );
     } else if (tabName === 'ligands') {
-      this.actionQueue.addAction(
-        `renderMolstarForLigands-first-ligand`,
-        async () => {
-          const ligandsData = this.compCommunication.processedLigandsAndModifications;
-          if (ligandsData.length === 0) return;
-
-          // this is because we always reset to first ligand on tab switch (no state kept)
-          const firstLigand = ligandsData[0];
-          const firstMolstarSelection = firstLigand.additionalData.selections[0];
-
-          await this.molstarState.renderMolstarForLigands(this.entryId(), firstLigand, firstMolstarSelection);
-        },
-        skippable // skippable
-      );
+      // this.actionQueue.addAction(
+      //   `renderMolstarForLigands-first-ligand`,
+      //   async () => {
+      //     const ligandsData = this.compCommunication.processedLigandsAndModifications;
+      //     if (ligandsData.length === 0) return;
+      //     // this is because we always reset to first ligand on tab switch (no state kept)
+      //     const firstLigand = ligandsData[0];
+      //     const firstMolstarSelection = firstLigand.additionalData.selections[0];
+      //     await this.molstarState.renderMolstarForLigands(this.entryId(), firstLigand, firstMolstarSelection);
+      //   },
+      //   skippable // skippable
+      // );
     } else if (tabName === 'domains') {
-      this.actionQueue.addAction(
-        `renderMolstarForDomains-first-domain`,
-        async () => {
-          const domainsData = this.compCommunication.processedDomainsAsList;
-          if (domainsData.length === 0) return;
-
-          // this is because we always reset to first domain on tab switch (no state kept)
-          const firstDomain = domainsData[0];
-
-          await this.molstarState.renderMolstarForDomains(firstDomain);
-        },
-        skippable // skippable
-      );
+      // this.actionQueue.addAction(
+      //   `renderMolstarForDomains-first-domain`,
+      //   async () => {
+      //     const domainsData = this.compCommunication.processedDomainsAsList;
+      //     if (domainsData.length === 0) return;
+      //     // this is because we always reset to first domain on tab switch (no state kept)
+      //     const firstDomain = domainsData[0];
+      //     await this.molstarState.renderMolstarForDomains(firstDomain);
+      //   },
+      //   skippable // skippable
+      // );
     } else {
       this.actionQueue.addAction(
         `moveMolstarToParent`,

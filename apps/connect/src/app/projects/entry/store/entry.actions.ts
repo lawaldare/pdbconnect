@@ -26,6 +26,7 @@ import { LigandMonomer } from '../data-models/ligand-monomers.model';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
 import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
 import { LLMAnnotation } from '../data-models/llm-model';
+import { ResidueListed } from '../data-models/residue-listing.model';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -127,6 +128,9 @@ export const EntryActions = createActionGroup({
     'Get Interactions': props<{ chainId: string; residueId: string }>(),
     'Get Interactions Success': props<{ interactions: Interaction[] }>(),
     'Get Interactions Failure': emptyProps(),
+    'Get Residue Listing': props<{ chainId: string }>(),
+    'Get Residue Listing Success': props<{ residueListing: ResidueListed[] }>(),
+    'Get Residue Listing Failure': emptyProps(),
     'Get Entry Polymer Coverage': emptyProps(),
     'Get Entry Polymer Coverage Success': props<{ polymerCoverage: PolymerCoverageMolecule[] }>(),
     'Get Entry Polymer Coverage Failure': emptyProps(),
