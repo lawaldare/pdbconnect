@@ -35,6 +35,8 @@ export class MobileMainComponent {
 
   private readonly mbFacade = inject(MobileFacade);
 
+  public readonly activePage = this.mbFacade.activePage;
+
   public readonly mbTabNames = MobileTabNames;
 
   public readonly mbTabs = [
@@ -57,14 +59,16 @@ export class MobileMainComponent {
       const tabId = params['activeTab'];
       const tabIndex = this.mbTabs.findIndex((tab) => tab.id === tabId);
       if (tabIndex >= 0) {
-        this.activeTab.set(tabId);
-        this.mbFacade.updateSelectedMobileTabName(tabId);
+        // this.activeTab.set(tabId);
+        this.mbFacade.updateActivePage(tabId);
+        this.mbFacade.updateSelectedPageName(tabId);
       }
     });
   }
 
   public selectFooterTab(tabId: MobileTabName) {
     this.activeTab.set(tabId);
+    this.mbFacade.updateActivePage(tabId);
     this.router.navigate([], {
       queryParams: { activeTab: tabId },
       queryParamsHandling: 'merge',

@@ -63,6 +63,12 @@
   <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
   }
 
+  <!-- Molstar Gallery -->
+
+  <lib-molstar-gallery [entryId]="entryStoreId() ?? ''" />
+
+  <button class="vf-button vf-button--primary" (click)="openMolstarPage()">View 3D and annotations</button>
+
   <!-- Primary publication -->
 
   @if(primaryPublication().title){
@@ -103,6 +109,57 @@
   } } }@else {
   <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
   }
+
+  <div class="row" (click)="navigateToCitationPage()">
+    <div class="row__header">
+      <p class="row__header__name">Primary publication abstract and figures</p>
+      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+    </div>
+  </div>
+
+  <!-- Articles citing the PDB entry -->
+
+  @if(articlesCiting().cited_by){ @let articles = articlesCiting().cited_by.Articles; @if(articles.length > 0){
+  <div class="row" (click)="navigateToPageSection($event, 'articles-cited')">
+    <div class="row__header">
+      <p class="row__header__name">Articles citing the PDB entry ({{articles.length}})</p>
+      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+    </div>
+  </div>
+  } }
+
+  <!-- Reviews citing the PDB entry -->
+
+  @if(articlesCiting().cited_by){ @let reviews = articlesCiting().cited_by.Reviews; @if(reviews.length > 0){
+  <div class="row" (click)="navigateToPageSection($event, 'reviews-cited')">
+    <div class="row__header">
+      <p class="row__header__name">Reviews citing the PDB entry ({{reviews.length}})</p>
+      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+    </div>
+  </div>
+  } }
+
+  <!-- Articles not cited! -->
+
+  @if(articlesCiting().cited_by){ @let articles = articlesCiting().appears_without_citation.Articles; @if(articles.length > 0){
+  <div class="row" (click)="navigateToPageSection($event, 'articles-not-cited')">
+    <div class="row__header">
+      <p class="row__header__name">Articles - {{ this.entryId() }} mentioned but not cited ({{articles.length}})</p>
+      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+    </div>
+  </div>
+  } }
+
+  <!-- Reviews not cited! -->
+
+  @if(articlesCiting().cited_by){ @let reviews = articlesCiting().appears_without_citation.Reviews; @if(reviews.length > 0){
+  <div class="row" (click)="navigateToPageSection($event, 'reviews-not-cited')">
+    <div class="row__header">
+      <p class="row__header__name">Reviews - {{ this.entryId() }} mentioned but not cited ({{reviews.length}})</p>
+      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+    </div>
+  </div>
+  } }
 
   <!-- PDB model quality summary -->
 

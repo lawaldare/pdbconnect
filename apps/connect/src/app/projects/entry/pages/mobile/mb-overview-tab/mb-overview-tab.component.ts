@@ -18,10 +18,13 @@ import { CitationDetail } from '../../../data-models/publication.model';
 import { StrucQualityGradientsComponent } from '../../../components/shared/struc-quality-gradients/struc-quality-gradients.component';
 import { DetailsDashboardFacade, MappedResidue } from '../../../components/shared/details-dashboard.facade';
 import { NavigationLink } from '../mb-citation-tab/mb-citation-tab.component';
+import { MolstarGalleryComponent } from '@pdbe-lib/molstar-for-apps';
+import { MobileFacade } from '../mobile.facade';
+import { RelatedPublication } from '../../../data-models/related-publications.model';
 
 @Component({
   selector: 'pdbc-mb-overview-tab',
-  imports: [CommonModule, NgxSkeletonLoaderModule, StrucQualityGradientsComponent],
+  imports: [CommonModule, NgxSkeletonLoaderModule, StrucQualityGradientsComponent, MolstarGalleryComponent],
   templateUrl: './mb-overview-tab.component.html',
   styleUrls: ['../mb-citation-tab/mb-citation-tab.component.scss', './mb-overview-tab.component.scss'],
 })
@@ -32,8 +35,11 @@ export class MbOverviewTabComponent implements OnInit {
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   private readonly destroyRef = inject(DestroyRef);
   public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
+  private readonly mbFacade = inject(MobileFacade);
 
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+  public readonly entryStoreId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+
   public readonly organismScientificNames = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
   public readonly qualityScores = toSignal(this.globalStore.select(EntrySelectors.summaryQualityScores));
   public readonly resolutionValues = toSignal(this.globalStore.select(EntrySelectors.resolutionValues));
@@ -47,6 +53,8 @@ export class MbOverviewTabComponent implements OnInit {
     const isLoaded = this.dataProcessing.tabDataLoaded();
     return isLoaded;
   });
+
+  public readonly articlesCiting = signal<RelatedPublication>({} as RelatedPublication);
 
   public readonly miniFilters = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
@@ -196,10 +204,12 @@ export class MbOverviewTabComponent implements OnInit {
     combineLatest([
       this.globalStore.select(EntrySelectors.primaryPublication).pipe(filter(Boolean)),
       this.globalStore.select(EntrySelectors.entryId).pipe(filter(Boolean)),
+      this.globalStore.select(EntrySelectors.articlesCiting).pipe(filter(Boolean)),
     ])
       .pipe(
-        map(([primaryPublication, entryId]) => {
+        map(([primaryPublication, entryId, articlesCiting]) => {
           this.primaryPublication.set(primaryPublication);
+          this.articlesCiting.set(articlesCiting);
           this.entryId.set(entryId);
 
           if (this.primaryPublication() !== undefined && this.primaryPublication().associated_entries) {
@@ -218,5 +228,26 @@ export class MbOverviewTabComponent implements OnInit {
   private setRelatedEntries(entries: string): void {
     const mappedEntries = entries?.split(',').map((entry) => entry.trim()) ?? null;
     this.relatedEntries.update(() => mappedEntries);
+  }
+
+  public openMolstarPage(): void {
+    this.mbFacade.selectPage('molstar');
+  }
+
+  public navigateToCitationPage(): void {
+    this.mbFacade.selectPage('citation');
+  }
+
+  public navigateToPageSection(event: Event, sectionId: string): void {
+    event.preventDefault();
+    this.mbFacade.selectPage('citation');
+    setTimeout(() => {
+      const element = document.getElementById(sectionId);
+      const toc = document.querySelector('.table-of-contents') as HTMLElement;
+      if (element && toc) {
+        const offsetTop = element.offsetTop;
+        window.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
+      }
+    }, 500);
   }
 }

@@ -14,6 +14,8 @@ import { CitationArticleComponent } from '../../../components/citations-tab/sub-
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { CitationXmlImagesComponent } from '../../../components/citations-tab/sub-components/citation-xml-images/citation-xml-images.component';
 import { MatDialog } from '@angular/material/dialog';
+import { MobileFacade } from '../mobile.facade';
+import { MobileTabNames } from '../mobile-main/mobile-main.component';
 
 export interface NavigationLink {
   id: string;
@@ -32,6 +34,7 @@ export class MbCitationTabComponent implements OnInit {
   private readonly entryAPIService = inject(EntryApiService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialog = inject(MatDialog);
+  private readonly mbFacade = inject(MobileFacade);
 
   public readonly summary = signal<ProcessedSummary>({} as ProcessedSummary);
   public readonly entryId = signal<string>('');
@@ -205,5 +208,9 @@ export class MbCitationTabComponent implements OnInit {
       const offsetTop = element.offsetTop;
       window.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
     }
+  }
+
+  public goBackToOverviewPage(): void {
+    this.mbFacade.selectPage(MobileTabNames.Overview);
   }
 }

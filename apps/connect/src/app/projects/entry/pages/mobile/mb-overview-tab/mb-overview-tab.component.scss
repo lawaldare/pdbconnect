@@ -201,3 +201,32 @@ section.feedback {
     width: 100%;
   }
 }
+
+button.vf-button {
+  width: 97%;
+  margin: 16px auto;
+}
+
+.row {
+  padding: 8px;
+  border-bottom: 1px solid #d0d0ce;
+  cursor: pointer;
+  margin-top: 12px;
+
+  &:hover {
+    background-color: #f3f3f3;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    &__name {
+      color: #1a1c1a;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 27.2px;
+    }
+  }
+}

@@ -29,8 +29,9 @@ import { MobileFacade } from '../mobile.facade';
 import { MolstarForEntryPages } from '../../../helpers/molstar-for-entry-pages';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MobileTabNames } from '../mobile-main/mobile-main.component';
-import { take } from 'rxjs';
+import { filter, take } from 'rxjs';
 import { MolstarStateService } from '../../../services/molstar-state.service';
+import { NavigationEnd, Router } from '@angular/router';
 
 export enum MobileTabChips {
   MQuality = 'MQuality',
@@ -51,6 +52,7 @@ export class MbMolstarTabComponent implements AfterViewInit, OnDestroy {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly mbFacade = inject(MobileFacade);
   private readonly zone = inject(NgZone);
+  private readonly _router = inject(Router);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
@@ -76,60 +78,17 @@ export class MbMolstarTabComponent implements AfterViewInit, OnDestroy {
   private selectedComponent = this.mbFacade.selectedComponent;
 
   ngAfterViewInit() {
-    this.mbFacade.selectedMobileTabName.pipe(take(1)).subscribe(async (mobileTabName) => {
+    this.mbFacade.selectedPageName.pipe(take(1)).subscribe(async (mobileTabName) => {
       if (mobileTabName === MobileTabNames.Molstar) {
+        console.log('Initializing Molstar viewer');
+        this.onTabClick(this.mobileTabChips[0]);
         await this.initializeMolstarViewer();
       }
     });
   }
 
   public onTabClick(chip: { label: string; id: string }): void {
-    if (chip.id === this.selectedTabName()) {
-      this.mbFacade.updateSelectedTabName('');
-    } else {
-      this.mbFacade.updateSelectedTabName(chip.id);
-      // scrolls into view horizontally on mobile without anti pattern
-      this.zone.onStable.pipe(take(1)).subscribe(() => {
-        const chipElement = this.chipElements.find((el) => el.nativeElement.dataset['id'] === chip.id);
-        chipElement?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      });
-    }
-
-    switch (this.selectedTabName()) {
-      case MobileTabChips.MQuality:
-        this.mbFacade.updateSelectedComponent(MbModelQualityComponent);
-        break;
-      case MobileTabChips.Assemblies:
-        this.mbFacade.updateSelectedComponent(MbAssembliesComponent);
-        break;
-      case MobileTabChips.Macromolecules:
-        this.mbFacade.updateSelectedMacromoleculeTitle('Macromolecules');
-        this.mbFacade.updateSelectedComponent(MbMacromoleculeComponent);
-        break;
-      case MobileTabChips.Ligands:
-        this.mbFacade.updateSelectedLigandTitle('Ligands');
-        this.mbFacade.updateSelectedComponent(MbLigandsComponent);
-        break;
-      case MobileTabChips.Domains:
-        this.mbFacade.updateSelectedDomainTitle('Domains');
-        this.mbFacade.updateSelectedComponent(MbDomainsComponent);
-        break;
-      default:
-        this.mbFacade.updateSelectedComponent(null);
-
-        break;
-    }
-
-    if (this.selectedComponent() !== null) {
-      const componentInstance = this.selectedComponent() as Type<any>;
-      this.bottomSheet.open(componentInstance, {
-        height: '40%',
-        hasBackdrop: false,
-        panelClass: 'custom-bottom-sheet',
-      });
-    } else {
-      this.bottomSheet.dismiss();
-    }
+    this.mbFacade.onTabClick(chip, this.chipElements);
   }
 
   private async initializeMolstarViewer(): Promise<void> {
@@ -140,6 +99,11 @@ export class MbMolstarTabComponent implements AfterViewInit, OnDestroy {
 
     await this.molstarVisualisation.renderMobileMolstarInitial();
     this.molstarState.molstarFirstRenderFinished.set(true);
+  }
+
+  public goBackToOverviewPage(): void {
+    this.mbFacade.selectPage(MobileTabNames.Overview);
+    this.bottomSheet.dismiss();
   }
 
   ngOnDestroy(): void {

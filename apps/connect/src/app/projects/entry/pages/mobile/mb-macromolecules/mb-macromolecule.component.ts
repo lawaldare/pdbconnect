@@ -117,7 +117,7 @@ export class MbMacromoleculeComponent implements OnInit {
     const mappedResult = [];
 
     for (const [key, value] of Object.entries(cath)) {
-      if (value.mappings[0].entity_id === entityId) {
+      if (value.mappings?.[0].entity_id === entityId) {
         const obj = {
           cathId: key,
           cathTitle: value.homology,
@@ -127,7 +127,7 @@ export class MbMacromoleculeComponent implements OnInit {
     }
 
     for (const [key, value] of Object.entries(scop)) {
-      if (value.mappings[0].entity_id === entityId) {
+      if (value.mappings?.[0].entity_id === entityId) {
         const obj = {
           cathId: key,
           cathTitle: value.identifier,
@@ -147,7 +147,7 @@ export class MbMacromoleculeComponent implements OnInit {
     const mappedResult = [];
 
     for (const [key, value] of Object.entries(pfam)) {
-      if (value.mappings[0].entity_id === entityId) {
+      if (value.mappings?.[0].entity_id === entityId) {
         const obj = {
           cathId: key,
           cathTitle: value.description,
@@ -158,7 +158,7 @@ export class MbMacromoleculeComponent implements OnInit {
     }
 
     for (const [key, value] of Object.entries(interpro)) {
-      if (value.mappings[0].entity_id === entityId) {
+      if (value.mappings?.[0].entity_id === entityId) {
         const obj = {
           cathId: key,
           cathTitle: value.identifier,
@@ -178,7 +178,7 @@ export class MbMacromoleculeComponent implements OnInit {
     const mappedResult = [];
 
     for (const [key, value] of Object.entries(ec)) {
-      if (value.mappings[0].entity_id === entityId) {
+      if (value.mappings?.[0].entity_id === entityId) {
         mappedResult.push({
           id: key,
           name: value.accepted_name,
@@ -197,7 +197,7 @@ export class MbMacromoleculeComponent implements OnInit {
     const entityId = this.selectedMacromolecule()?.additionalData?.molecule?.entity_id;
 
     const grouped = Object.values(go).reduce((acc: GoMapped[], item: any) => {
-      if (item.mappings[0].entity_id === entityId) {
+      if (item.mappings?.[0].entity_id === entityId) {
         if (!acc[item.category]) {
           acc[item.category] = {
             names: [],

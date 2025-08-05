@@ -2,6 +2,21 @@ main {
   height: 100dvh;
   padding: 12px;
 
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    span {
+      color: #3b6fb6;
+      text-overflow: ellipsis;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 22.4px;
+      cursor: pointer;
+    }
+  }
+
   h1 {
     color: #1a1c1a;
     font-size: 30px;

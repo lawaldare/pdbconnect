@@ -1,5 +1,9 @@
 <main>
-  <h1>{{entryId()}}</h1>
+  <nav>
+    <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
+    <span (click)="goBackToOverviewPage()">Back to entry overview </span>
+  </nav>
+  <h1>3D view - {{entryId()}}</h1>
 
   <section class="chips">
     @for(chip of mobileTabChips; track chip.id){
