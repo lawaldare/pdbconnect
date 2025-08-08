@@ -10,13 +10,13 @@ import { map } from 'rxjs';
 export class MacromoleculesFacade {
   public readonly entryApiService = inject(EntryApiService);
 
-  public getMacromoleculeSequenceDetails(entryId: string, datum: MacromoleculesRowData, dropdownSelected: string) {
+  public getMacromoleculeSequenceDetails(entryId: string, datum: MacromoleculesRowData, chainId: string) {
     const entity = datum.additionalData.molecule;
     const seq = entity.sequence;
     const sequenceDetails: SequenceDetail[] = [];
     if (seq) {
       sequenceDetails.push({
-        title: `>FASTA pdb|${entryId}|${entity.molecule_name[0]}; ${dropdownSelected}`,
+        title: `>FASTA pdb|${entryId}|${entity.molecule_name[0]}; Chain ${chainId}`,
         fullSequence: seq,
         segments: [{ sequence: seq }],
       });

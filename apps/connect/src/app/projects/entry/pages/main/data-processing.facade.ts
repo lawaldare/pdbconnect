@@ -33,16 +33,15 @@ import { environment } from '../../../../../environments/environment';
 import { ENTRY_PAGES_LINKS, labelGroups } from '../../entry-constant';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 
-export type OutliersByModelId = Record<
-  string,
-  {
-    uniqueOutlierTypes: Set<string>;
-    molstarSelectionsByOutlierType: Record<string, MolstarSelectionObj>;
-    residuesWith1Outlier: MolstarSelectionObj;
-    residuesWith2Outliers: MolstarSelectionObj;
-    residuesWith3OrMoreOutliers: MolstarSelectionObj;
-  }
->;
+export interface OutlierDict {
+  uniqueOutlierTypes: Set<string>;
+  molstarSelectionsByOutlierType: Record<string, MolstarSelectionObj>;
+  residuesWith1Outlier: MolstarSelectionObj;
+  residuesWith2Outliers: MolstarSelectionObj;
+  residuesWith3OrMoreOutliers: MolstarSelectionObj;
+}
+
+export type OutliersByModelId = Record<string, OutlierDict>;
 
 @Injectable({
   providedIn: 'root',
@@ -280,14 +279,20 @@ export class MainDataProcessingFacade {
   private processDomainsWithMacromolecules(macromoleculesData: MacromoleculesRowData[], domainsData: DomainsRowData[]) {
     const nestedMap = new Map<number, { macromolecule: MacromoleculesRowData; domains: DomainsRowData[] }>();
 
-    for (const domain of domainsData) {
-      const macromolecule = getMacromoleculeOfDomain(domain, macromoleculesData);
-      const entityId = macromolecule?.additionalData?.molecule.entity_id;
+    for (const macromolecule of macromoleculesData) {
+      const entityId = macromolecule.additionalData.molecule.entity_id;
+
+      const domainsOfMacromolecule = domainsData.filter((eachDomain) => eachDomain.moleculeNames[0] === macromolecule.name.molecule);
 
       if (!nestedMap.has(entityId)) {
         nestedMap.set(entityId, { macromolecule, domains: [] });
       }
-      nestedMap.get(entityId)!.domains.push(domain);
+
+      for (const domainOfMacromolecule of domainsOfMacromolecule) {
+        const currentDomainNames = nestedMap.get(entityId)!.domains.map((eachDomain) => eachDomain.domain);
+        const domainNotInMap = currentDomainNames.indexOf(domainOfMacromolecule.domain) === -1;
+        if (domainNotInMap) nestedMap.get(entityId)!.domains.push(domainOfMacromolecule);
+      }
     }
 
     this.compCommunication.processedDomains = Array.from(nestedMap.values());
@@ -391,7 +396,8 @@ export class MainDataProcessingFacade {
     if (this.isNotUndefined([data.residueOutliers])) {
       outliersByModelId = this.processResidueOutliersData(data.residueOutliers);
     }
-    this.molstarState.outliersByModelId.set(outliersByModelId);
+    // this.molstarState.outliersByModelId.set(outliersByModelId);
+    this.compCommunication.outliersByModelId.set(outliersByModelId);
 
     if (this.isTitleAndMetaProcessed === false) {
       this.setDynamicHeadTags(entryId, data);
@@ -524,9 +530,9 @@ export class MainDataProcessingFacade {
             resultByModelId[modelId] = {
               uniqueOutlierTypes: new Set<string>(),
               molstarSelectionsByOutlierType: {},
-              residuesWith1Outlier: null!,
-              residuesWith2Outliers: null!,
-              residuesWith3OrMoreOutliers: null!,
+              residuesWith1Outlier: { residues: [] },
+              residuesWith2Outliers: { residues: [] },
+              residuesWith3OrMoreOutliers: { residues: [] },
             };
           }
 
@@ -549,7 +555,13 @@ export class MainDataProcessingFacade {
           const residuesByOutlierType: Record<string, FlatOutlierResidue[]> = {};
           resultByModelId[modelId].uniqueOutlierTypes.forEach((type) => {
             residuesByOutlierType[type] = flattenedResidues.filter((residue) => residue.outlier_types.includes(type));
-            resultByModelId[modelId].molstarSelectionsByOutlierType[type] = this.flatOutliersToMolstarSelections(residuesByOutlierType[type]);
+            if (!resultByModelId[modelId].molstarSelectionsByOutlierType[type]) {
+              resultByModelId[modelId].molstarSelectionsByOutlierType[type] = { residues: [] };
+            }
+            resultByModelId[modelId].molstarSelectionsByOutlierType[type].residues.push(
+              ...this.flatOutliersToMolstarSelections(residuesByOutlierType[type]).residues
+            );
+            // this.flatOutliersToMolstarSelections(residuesByOutlierType[type]);
           });
 
           // Group residues based on number of outlier_types
@@ -557,13 +569,12 @@ export class MainDataProcessingFacade {
           const residuesWith2Outliers = flattenedResidues.filter((r) => r.outlier_types.length === 2);
           const residuesWith3OrMoreOutliers = flattenedResidues.filter((r) => r.outlier_types.length >= 3);
 
-          resultByModelId[modelId].residuesWith1Outlier = this.flatOutliersToMolstarSelections(residuesWith1Outlier);
-          resultByModelId[modelId].residuesWith2Outliers = this.flatOutliersToMolstarSelections(residuesWith2Outliers);
-          resultByModelId[modelId].residuesWith3OrMoreOutliers = this.flatOutliersToMolstarSelections(residuesWith3OrMoreOutliers);
+          resultByModelId[modelId].residuesWith1Outlier.residues.push(...this.flatOutliersToMolstarSelections(residuesWith1Outlier).residues);
+          resultByModelId[modelId].residuesWith2Outliers.residues.push(...this.flatOutliersToMolstarSelections(residuesWith2Outliers).residues);
+          resultByModelId[modelId].residuesWith3OrMoreOutliers.residues.push(...this.flatOutliersToMolstarSelections(residuesWith3OrMoreOutliers).residues);
         }
       }
     }
-
     return resultByModelId;
   }
 

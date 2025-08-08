@@ -212,6 +212,10 @@ section.ligand-charts {
         height: 100%;
         flex: 1;
         z-index: 1;
+
+        div {
+          height: 100%;
+        }
       }
     }
 

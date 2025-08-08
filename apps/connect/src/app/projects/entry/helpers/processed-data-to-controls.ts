@@ -1,6 +1,22 @@
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 
+export function getDomainChainDropdownOptions(datum: DomainsRowData) {
+  const dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
+  for (const selection of datum.additionalData.selections) {
+    for (const residue of selection.residues) {
+      const chainKey = `Chain ${residue.authChainId!}`;
+      const allChainsInObj = Object.keys(dropdownOptionsToMolstar);
+      if (allChainsInObj.indexOf(chainKey) > -1) {
+        dropdownOptionsToMolstar[chainKey].residues.push({ ...residue });
+      } else {
+        dropdownOptionsToMolstar[chainKey] = { residues: [{ ...residue }] };
+      }
+    }
+  }
+  return dropdownOptionsToMolstar;
+}
+
 export function getMacromoleculeChainDropdownOptions(datum: MacromoleculesRowData) {
   const dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
   for (const selection of datum.additionalData.selections) {

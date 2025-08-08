@@ -38,6 +38,8 @@ import { NotificationComponent } from '@pdbc/notification';
 import { EntryUtilService } from '../../services/entry-util.service';
 import { ErrorPageComponent } from '../../../../error-page/error-page.component';
 import { LLMTabComponent } from '../../components/llm-tab/llm-tab.component';
+import { InitParams, DefaultParams } from 'pdbe-molstar/lib/spec';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains' | 'LLM';
 
@@ -49,12 +51,6 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
 // 3l3t 4 assemblies
 // 1trn interesting varying domain definitions, modifications
 // 4v99 large chains
-
-/**
- * TODO:
- * - Add status pages
- * - Make <SCRIPT> tags loading Dynamic
- */
 @Component({
   selector: 'pdbc-main',
   standalone: true,
@@ -79,6 +75,7 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     DomainsTabComponent,
     NotificationComponent,
     ErrorPageComponent,
+    MolstarComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -121,6 +118,9 @@ export class EntryMainPageComponent implements OnInit {
   public selectedTab = signal<number>(0);
 
   public showNotificationBanner = signal<boolean>(false);
+
+  public configForMolstar!: InitParams;
+  public molstarHeight = '480px';
 
   public readonly apiSearchConfig = {
     additionalParams: 'rows=20000&json.nl=map&wt=json',
@@ -231,6 +231,23 @@ export class EntryMainPageComponent implements OnInit {
           }
           return EMPTY;
         }),
+        switchMap(() =>
+          this.globalStore.select(EntrySelectors.summaryData).pipe(
+            filter((data) => !!data), // wait until data is available
+            take(1), // only take first non-null value
+            tap((summaryData) => {
+              const preferredAssembly = summaryData.assemblies.filter((eachAssembly) => eachAssembly.preferred);
+              const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
+              // Only set configForMolstar if not already set
+              if (!this.configForMolstar) {
+                this.configForMolstar = DefaultParams;
+                this.configForMolstar.moleculeId = this.entryId();
+                this.configForMolstar.assemblyId = preferredAssemblyId;
+                this.configForMolstar.bgColor = { r: 255, g: 255, b: 255 };
+              }
+            })
+          )
+        ),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
@@ -273,6 +290,8 @@ export class EntryMainPageComponent implements OnInit {
     if (isMobile) return;
 
     if (tabName === 'overview' || tabName === 'summary') {
+      console.log('this.configForMolstar');
+      console.log(this.configForMolstar);
       this.actionQueue.addAction(
         'tab change renderMolstarForOverview',
         async () => {

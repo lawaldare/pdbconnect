@@ -1,4 +1,4 @@
-interface MolstarEventData {
+export interface MolstarEventData {
   entry_id: string;
   model: number;
   instance: string;

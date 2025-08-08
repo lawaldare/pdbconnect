@@ -73,3 +73,7 @@ section.container {
   position: absolute;
   left: -9999px;
 }
+
+::ng-deep .msp-plugin .msp-layout-standard {
+  border: none !important;
+}

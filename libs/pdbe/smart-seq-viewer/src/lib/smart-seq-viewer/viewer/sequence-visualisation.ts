@@ -175,6 +175,8 @@ export class SmartSequenceVisualisation {
       return;
     }
     container.innerHTML = '';
+    container.style.width = '100%';
+    container.style.maxWidth = '100%';
 
     this.validateAlternativeNumberings(alternativeNumberings || []);
     this.alternativeNumberings = alternativeNumberings;
@@ -226,7 +228,7 @@ export class SmartSequenceVisualisation {
 
     this.showSidebar(undefined); // show default placeholder
     this.draw();
-    this.setupResizeObserver();
+    // this.setupResizeObserver();
     this.onContainerResize();
     this.registerExternalEventsListeners();
   }
@@ -265,6 +267,7 @@ export class SmartSequenceVisualisation {
     wrapper.style.display = 'flex';
     wrapper.style.height = `${this.scrollContainerMaxHeight}px`;
     wrapper.style.width = '100%';
+    wrapper.style.maxWidth = '100%';
     wrapper.style.background = '#f3f3f3';
     wrapper.style.overflowY = 'scroll';
     return wrapper;
@@ -274,6 +277,7 @@ export class SmartSequenceVisualisation {
     const wrapper = document.createElement('div');
     wrapper.className = 'canvas-wrapper';
     wrapper.style.width = 'calc(100% - 250px)';
+    wrapper.style.maxWidth = 'calc(100% - 250px)';
     wrapper.style.overflowY = 'auto';
     wrapper.style.maxHeight = `${this.scrollContainerMaxHeight}px`;
     return wrapper;
@@ -569,7 +573,8 @@ export class SmartSequenceVisualisation {
 
     for (const [residueIndex, box] of this.residueRects.entries()) {
       if (x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height) {
-        this.selectResidueState(residueIndex);
+        if (this.currentClickedResidue === residueIndex) this.unselectResidueState();
+        else this.selectResidueState(residueIndex);
         return;
       }
     }
@@ -642,14 +647,6 @@ export class SmartSequenceVisualisation {
         cancelable: true,
       });
       document.dispatchEvent(eventObj);
-
-      const residue = this.sequence[residueIndex - 1];
-      const residueName = this.isNucleic === false ? this.getResidueNameFromCode(residue) : residue;
-      const title = `${residueName} ${residueIndex}`;
-
-      // for new Sequence Track Viewer and LLM tab
-      const detail = { eventData, title };
-      this.dispatchSelectEvent(detail);
     }
     // unsupported by molstar
     // else if (eventType === 'click') {
@@ -664,14 +661,23 @@ export class SmartSequenceVisualisation {
     // }
   }
 
-  private dispatchSelectEvent(detail: {
-    title: string;
-    eventData: {
-      entityId: string;
-      chainId: string;
-      residueNumber?: number | undefined;
-    };
-  }) {
+  private dispatchSelectEvent(residueIndex: number) {
+    const eventData = residueIndex
+      ? {
+          entityId: this.entityId,
+          chainId: this.chainId,
+          residueNumber: residueIndex,
+        }
+      : {
+          entityId: this.entityId,
+          chainId: this.chainId,
+        };
+    const residue = this.sequence[residueIndex - 1];
+    const residueName = this.isNucleic === false ? this.getResidueNameFromCode(residue) : residue;
+    const title = `${residueName} ${residueIndex}`;
+
+    // for new Sequence Track Viewer and LLM tab
+    const detail = { eventData, title };
     const clickEvent = new CustomEvent('smartSeqViewerSelect', {
       detail: detail,
       bubbles: true,
@@ -733,10 +739,13 @@ export class SmartSequenceVisualisation {
 
     if (entityId !== this.entityId || chainId !== this.chainId) return;
 
+    if (detail.unselect !== 'ignore') {
+      const doNotReport = detail.doNotReport;
+      this.unselectResidueState(doNotReport);
+      return;
+    }
     if (residueNumber !== this.currentClickedResidue) {
-      this.selectResidueState(residueNumber);
-    } else if (detail.unselect !== 'ignore') {
-      this.unselectResidueState();
+      this.selectResidueState(residueNumber, true, true);
     }
   }
 
@@ -1133,7 +1142,7 @@ export class SmartSequenceVisualisation {
 
       ['to-seq-viewer-click', this.handleExternalClickEvent.bind(this)],
       ['PDB.topologyViewer.click', this.handleExternalClickEvent.bind(this)],
-      ['PDB.molstar.click', this.handleExternalClickEvent.bind(this)],
+      // ['PDB.molstar.click', this.handleExternalClickEvent.bind(this)],
       // ['protvista-click', this.handleExternalClickEvent.bind(this)],
     ];
 
@@ -1268,24 +1277,25 @@ export class SmartSequenceVisualisation {
     return panel;
   }
 
-  private selectResidueState(residueIndex: number) {
+  private selectResidueState(residueIndex: number, doNotPropagate?: boolean, doNotReport?: boolean) {
     this.currentClickedResidue = residueIndex;
     this.residueClick$.next({
       residueIndex,
       annotations: this.getAnnotationsForResidue(residueIndex),
     });
-    if (this.externalEvents) this.triggerExternalEvents('click', residueIndex);
+    if (this.externalEvents && !doNotPropagate) this.triggerExternalEvents('click', residueIndex);
+    if (!doNotReport) this.dispatchSelectEvent(residueIndex);
     this.showSidebar(residueIndex);
   }
 
-  private unselectResidueState() {
+  private unselectResidueState(doNotReport?: boolean) {
     if (!this.sidebarPanel) return;
     // if (this.externalEvents) this.triggerExternalEvents('click', undefined);
     this.sidebarPanel.innerHTML = this.getSidebarPanelEmptyState();
     this.currentClickedResidue = null;
     this.draw();
     this.residueClick$.next(null);
-    this.dispatchDeselectEvent();
+    if (!doNotReport) this.dispatchDeselectEvent();
   }
 
   private buildSidebarContent(residueIndex: number): string {

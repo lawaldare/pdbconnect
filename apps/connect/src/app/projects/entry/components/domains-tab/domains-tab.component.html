@@ -70,25 +70,42 @@
         </div>
       </div>
     </section>
+    <!-- chains information display before interactive data vis -->
     <div class="chains">
-      Chain @for(chain of currentDomainsDatum()!.mappedboundaries; track chain; let islast = $last){
-      <span>{{chain}}</span>{{ islast ? '' : ',' }} }
+      <!-- if multiple chains for this domain, show dropdown to select -->
+      @if(dropdownOptions.length > 1){
+      <div class="dropdown-container">
+        <pdbc-entry-dropdown
+          [searchable]="false"
+          [searchTitle]="''"
+          [downloadable]="false"
+          [islink]="false"
+          [options]="dropdownOptions"
+          [title]="dropdownSelected"
+          (optionClickedEvent)="onDropdownSelect($event)"
+        >
+        </pdbc-entry-dropdown>
+      </div>
+      }@else if(dropdownOptions.length === 1){
+      <!-- if single chain just show text -->
+      <p>{{dropdownOptions[0].name}}</p>
+      } @else {}
     </div>
-    @if (sequenceDetails().length > 0 && currentProtvistaEntity() && backgroundAnnotations().length > 0) {
+    @if (sequenceDetails().length > 0 && currentProtvistaEntity() && backgroundAnnotation()) {
     <div class="sequence-container">
       @for (sequenceDetail of sequenceDetails(); track sequenceDetail; let i = $index;) {
       <div class="title">
         <span class="text">{{ sequenceDetail.title }}</span>
         <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
       </div>
-      @let backgroundAnnotation = backgroundAnnotations()[i];
       <lib-smart-seq-viewer
-        containerId="'smart-seq-viewer-domains'"
+        [containerId]="'smart-seq-viewer-domains'+(i+1)"
         class="sequence"
         [sequence]="sequenceDetail.fullSequence"
         [entityId]="currentProtvistaEntity()!"
         [chainId]="currentProtvistaChain()!"
-        [backgroundDataInput]="backgroundAnnotation"
+        [backgroundDataInput]="backgroundAnnotation()"
+        [altSequences]="altSequences()"
       ></lib-smart-seq-viewer>
       }
     </div>
@@ -111,7 +128,12 @@
           <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
         </div>
         }
-        <div id="domains-molstar-container" #molstarContainer class="molstar-container"></div>
+        <div class="molstar-container">
+          <div #popoutWrapper>
+            <lib-pdbe-molstar #molstarComponent [id]="'domains-molstar'" [molstarConfig]="configForMolstar()"></lib-pdbe-molstar>
+          </div>
+        </div>
+        <div id="domains-molstar-container" #molstarContainer class="molstar-container" style="display: none"></div>
       </section>
     </section>
     <!-- <button class="vf-button vf-button--secondary-pdbe" (click)="popupMolstar()">Popup the molstar</button> -->

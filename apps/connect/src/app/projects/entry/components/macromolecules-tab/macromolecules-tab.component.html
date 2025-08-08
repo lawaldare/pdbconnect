@@ -191,7 +191,12 @@
           <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
         </div>
         }
-        <div id="macromolecules-molstar-container" class="molstar-container"></div>
+        <div class="molstar-container">
+          <div #popoutWrapper>
+            <lib-pdbe-molstar #molstarComponent [id]="'macromolecules-molstar'" [molstarConfig]="configForMolstar()" [height]="molstarHeight"></lib-pdbe-molstar>
+          </div>
+        </div>
+        <div id="macromolecules-molstar-container" style="display: none"></div>
       </section>
       <section [style.display]="!hasTopologyViewer ? 'none' : '' " class="topology-viewer-container">
         <div class="topology-container" #topologyViewerContainer></div>

@@ -1,12 +1,14 @@
 export interface ResidueListing {
   molecules: Array<{
     entity_id: number;
-    chains: Array<{
-      struct_asym_id: string;
-      residues: ResidueListed[];
-      chain_id: string;
-    }>;
+    chains: ResidueListingChain[];
   }>;
+}
+
+export interface ResidueListingChain {
+  struct_asym_id: string;
+  residues: ResidueListed[];
+  chain_id: string;
 }
 
 export interface ResidueListed {

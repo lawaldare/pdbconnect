@@ -216,6 +216,7 @@ article {
     line-height: 22.4px; /* 160% */
     .text {
       margin-right: 4px;
+      max-width: calc(100% - 250px);
     }
 
     button {

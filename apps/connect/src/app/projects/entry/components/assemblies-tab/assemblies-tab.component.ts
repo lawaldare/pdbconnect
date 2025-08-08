@@ -5,7 +5,7 @@ import { AssembliesRowData } from '../shared/interactive-tables/data-models-and-
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -14,22 +14,42 @@ import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarStateService } from '../../services/molstar-state.service';
 import { ActionQueueService } from '../../services/action-queue.service';
 import { PopupWindowService, UtilService } from '@pdbc/core';
+import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { Structure } from 'molstar/lib/mol-model/structure/structure/structure';
+import { filter, firstValueFrom, take, timer } from 'rxjs';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
   standalone: true,
-  imports: [CommonModule, InteractiveTablesComponent, NgxSkeletonLoaderModule, HelpIconWithTooltipComponent],
+  imports: [CommonModule, InteractiveTablesComponent, NgxSkeletonLoaderModule, HelpIconWithTooltipComponent, MolstarComponent],
   templateUrl: './assemblies-tab.component.html',
   styleUrl: './assemblies-tab.component.scss',
 })
 export class AssembliesTabComponent {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
-  private readonly globalStore = inject(Store<EntryStoreState>);
-  public readonly molstarState = inject(MolstarStateService);
-  private readonly actionQueue = inject(ActionQueueService);
 
-  public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
+  private readonly globalStore = inject(Store<EntryStoreState>);
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  // public readonly molstarState = inject(MolstarStateService);
+  // private readonly actionQueue = inject(ActionQueueService);
+
+  // public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
+  private molstarReady = signal(false);
+  private _molstarComponent?: MolstarComponent;
+  @ViewChild('molstarComponent') set molstarComponent(ref: MolstarComponent | undefined) {
+    if (ref) {
+      this._molstarComponent = ref;
+      this.molstarReady.set(true);
+    }
+  }
+
+  public molstarFirstRenderFinished = computed(() => {
+    if (!this.molstarReady()) return false;
+    return this._molstarComponent?.firstLoadFinished() || false;
+  });
+  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
 
   public readonly symmetry = toSignal(this.globalStore.select(EntrySelectors.symmetry));
 
@@ -60,7 +80,7 @@ export class AssembliesTabComponent {
 
     // could be an effect also
     if (datum) {
-      this.triggerMolstarSideEffect(datum);
+      this.triggerMolstarSideEffect();
     }
     return datum;
   });
@@ -74,6 +94,34 @@ export class AssembliesTabComponent {
     return undefined;
   });
 
+  public readonly configForMolstar = computed<InitParams | undefined>(() => {
+    const assembly = this.currentAssemblyDatum();
+    const entryId = this.entryId();
+    // const chainSelection = this.chainSelection();
+
+    if (!assembly || !entryId) return undefined;
+    const assemblyId = assembly.assemblyId ? assembly.assemblyId : '1';
+
+    const configForMolstar: InitParams = {
+      ...DefaultParams,
+      moleculeId: this.entryId(),
+      assemblyId: assemblyId,
+      bgColor: { r: 255, g: 255, b: 255 },
+      landscape: true,
+      subscribeEvents: true,
+      granularity: 'chain',
+      hideControls: true,
+      visualStyle: {
+        polymer: {
+          type: 'cartoon',
+          color: 'entity-id',
+        },
+      },
+    };
+
+    return configForMolstar;
+  });
+
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
   public readonly popService = inject(PopupWindowService);
 
@@ -84,14 +132,33 @@ export class AssembliesTabComponent {
     }
   }
 
-  triggerMolstarSideEffect(assembly: AssembliesRowData) {
-    this.actionQueue.addAction(
-      `renderMolstarForAssemblies-${assembly.assemblyId}`,
-      async () => {
-        await this.molstarState.renderMolstarForAssemblies(assembly.assemblyId);
-      },
-      true
+  private resetCamera() {
+    const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
+    if (!plugin) return;
+    plugin.managers.camera.reset(undefined, 100);
+  }
+
+  async triggerMolstarSideEffect() {
+    // Wait until first render is finished
+    await firstValueFrom(
+      this.molstarFirstRenderFinished$.pipe(
+        filter((ready) => ready), // proceed when true
+        take(1)
+      )
     );
+
+    // reset camera half a second after loaded
+    timer(500).subscribe(() => {
+      this.resetCamera();
+    });
+
+    // this.actionQueue.addAction(
+    //   `renderMolstarForAssemblies-${assembly.assemblyId}`,
+    //   async () => {
+    //     await this.molstarState.renderMolstarForAssemblies(assembly.assemblyId);
+    //   },
+    //   true
+    // );
   }
 
   public getAdditionalData(name: string) {

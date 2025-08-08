@@ -237,6 +237,9 @@ export class PvTooltipService {
         this.pinnedTooltipElement!.remove();
         this.pinnedTooltipElement = null;
 
+        const eventObj = new CustomEvent('protvista-close-pin');
+        document.dispatchEvent(eventObj);
+
         if (this.highlightService) {
           this.highlightService.setFixedTooltipSelection('');
           this.highlightService.createSelectionHighlight();

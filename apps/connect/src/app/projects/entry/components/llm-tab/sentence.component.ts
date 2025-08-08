@@ -49,6 +49,17 @@ export class SentenceRendererComponent implements ICellRendererAngularComp, Afte
       cancelable: true,
     });
     document.dispatchEvent(eventObj);
+
+    const eventObj2 = new CustomEvent('to-molstar-click', {
+      detail: {
+        eventData: {
+          residueNumber: this.pdbResidue,
+        },
+      },
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(eventObj2);
   }
 
   get getHighlightedSentence() {

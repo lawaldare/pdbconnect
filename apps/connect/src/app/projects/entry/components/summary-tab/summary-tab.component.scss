@@ -16,6 +16,8 @@
     width: calc((100% / 12) * 7); /* 7/12 columns system */
     height: 550px;
     max-height: 550px;
+    display: flex;
+    background-color: #fff;
   }
 }
 
@@ -43,6 +45,336 @@
       min-width: 716px;
       width: 100%;
       max-width: calc((100% / 12) * 11); /* 11/12 columns system */
+    }
+  }
+}
+
+/*
+* Left -> Main Information Area
+*/
+
+.information-section {
+  /* width: 555px; */
+  width: 100%;
+  background: #fff;
+  line-height: 27.2px;
+}
+
+h4 {
+  margin-bottom: 10px;
+}
+
+.info-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  & > span {
+    min-width: 148px;
+    max-width: 148px;
+    width: 100%;
+    color: #1a1c1a;
+    font-size: 16px;
+    font-weight: 500;
+    display: block;
+  }
+}
+@media (width <= 1340px) {
+  .info-row {
+    margin-bottom: 4px;
+  }
+}
+
+span.related-entry-toggle {
+  color: #3b6fb6;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 27.2px;
+  display: block;
+  cursor: pointer;
+}
+
+article {
+  .control {
+    display: flex;
+    align-items: center;
+
+    i.icon {
+      color: #3b6fb6;
+      font-size: 22px;
+    }
+  }
+
+  i.icon {
+    margin-left: 2px;
+    display: inline-block;
+  }
+
+  i.icon-link::before {
+    --icon-search-color: #3b6fb6;
+
+    content: '';
+    width: 14px;
+    height: 14px;
+    mask-size: auto 14px;
+    position: absolute;
+    z-index: -1;
+    top: 3px;
+  }
+
+  i.icon-search::before {
+    --icon-search-color: #3b6fb6;
+
+    content: '';
+    width: 13px;
+    height: 13px;
+    mask-size: auto 13px;
+    position: absolute;
+    z-index: -1;
+    top: 4px;
+  }
+
+  .qualify-span {
+    color: #54585a;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22.5px;
+    display: block;
+  }
+
+  a {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22.5px;
+  }
+}
+
+/*
+* Right -> Molstar related Area
+*/
+
+.molstar-container {
+  position: relative;
+  width: 480px;
+  z-index: 1;
+}
+
+.listview-accordions {
+  width: calc(100% - 480px);
+  max-width: 360px;
+
+  p {
+    font-size: 16px;
+  }
+
+  h5 {
+    margin-bottom: 16px;
+  }
+
+  h6 {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 27.2px; /* 170% */
+    margin-bottom: 0;
+  }
+}
+
+.assembly-panel {
+  //  For assembly tab selected
+  .info-row {
+    display: flex;
+    gap: 0;
+    margin-bottom: 8px;
+    flex-direction: column;
+    position: relative;
+
+    &-header {
+      display: flex;
+      align-items: center;
+
+      img {
+        height: 15px;
+        cursor: pointer;
+        margin-left: 2px;
+      }
+    }
+
+    & > span {
+      // width: 100%;
+      color: #1a1c1a;
+      font-size: 16px;
+      font-weight: 500;
+      display: block;
+    }
+  }
+
+  //  For assembly tab selected
+  article {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 27.2px;
+
+    i {
+      // margin-left: 5px;
+      margin-left: 2px;
+      display: inline-block;
+    }
+
+    i::before {
+      --icon-search-color: #193f90;
+
+      width: 12px;
+      height: 12px;
+      mask-size: auto 12px;
+      position: absolute;
+      z-index: -1;
+      top: 4px;
+    }
+  }
+}
+
+// for list views of Macromolecules, Ligands, Domains, Modifications
+.select-gallery-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-bottom: 1px solid rgb(206 201 185 / 50%);
+  position: relative;
+
+  .color-code-bar {
+    height: 100%;
+    position: absolute;
+    width: 8px;
+    background-color: #007b53;
+  }
+
+  button {
+    margin-left: 9px;
+  }
+
+  .color-code-bars {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+
+    // width: 10px;
+    min-height: 100%;
+
+    // max-height: 35px;
+    // flex-wrap: wrap;
+    // padding-right: 9px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    gap: 3px;
+
+    .color-code-sqr {
+      height: 12px;
+      width: 12px;
+      background-color: #007b53;
+    }
+  }
+
+  .select-entity-btn {
+    cursor: pointer;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 8px;
+    font-size: 16px;
+    font-style: normal;
+    line-height: 27.2px; /* 170% */
+    text-align: left;
+    width: 100%;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  &:hover {
+    background: #f3f3f3;
+  }
+}
+
+.select-gallery-container.invalid .select-entity-btn {
+  cursor: default;
+}
+
+// .select-gallery-container.valid:hover,
+.select-gallery-container.active {
+  background: #f3f3f3;
+
+  .color-code-bars {
+    background: #f3f3f3;
+  }
+
+  .select-entity-btn {
+    background: #f3f3f3;
+    text-shadow: 0.5px 0 0.5px #007b53;
+    color: var(--Brand-700, #007b53);
+  }
+}
+
+.select-gallery-container.nested-1 {
+  padding-left: 12px;
+  width: calc(100% - 12px);
+}
+
+.domain-dropdown {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+// domain resource dropdown
+mat-form-field {
+  margin-top: 8px;
+  width: 100%;
+}
+
+::ng-deep pdbc-entry-dropdown.domain-dropdown {
+  button {
+    height: 25px !important;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+}
+
+.molstar-control-bar {
+  margin-bottom: 4px;
+
+  div {
+    padding: 4px;
+    display: flex;
+    background: #f6f5f3;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-shrink: 0;
+    align-self: stretch;
+
+    .selector {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 0;
+      font-size: 14px;
+      font-weight: 500;
+
+      .molstar-control-txt {
+        margin-left: 8px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      .molstar-control-txt-info {
+        margin-left: 2px;
+      }
+    }
+
+    .buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0;
     }
   }
 }

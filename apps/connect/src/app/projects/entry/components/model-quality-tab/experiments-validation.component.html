@@ -529,7 +529,19 @@
             <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
           </div>
           }
-          <div id="model-quality-molstar-container" class="molstar-container" [style.display]="processedWidth() ? '' : 'none'" #molstarContainer></div>
+          <div class="molstar-container">
+            <div #popoutWrapper>
+              <lib-pdbe-molstar
+                #molstarComponent
+                [id]="'model-quality-molstar'"
+                [molstarConfig]="configForMolstar()"
+                [style.display]="processedWidth() ? '' : 'none'"
+                [height]="'100%'"
+              ></lib-pdbe-molstar>
+            </div>
+          </div>
+          <!-- <div id="model-quality-molstar-container" class="molstar-container" [style.display]="processedWidth() ? '' : 'none'" #molstarContainer></div> -->
+          <div id="model-quality-molstar-container" class="molstar-container" [style.display]="'none'" #molstarContainer></div>
         </div>
       </div>
       <div class="legend">

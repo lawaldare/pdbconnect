@@ -1,125 +1,117 @@
 import { Injectable } from '@angular/core';
-import { DomainsRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { DomainsBoundaries, DomainsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { Molecule } from '../../data-models/molecule.model';
-import { BoundsByEntityId, SequenceDetail } from './domains-tab.component';
+import { SequenceDetail } from './domains-tab.component';
 import { SmartSequenceAnnotation } from '@pdbe-lib/smart-seq-viewer';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DomainsFacade {
-  public getDomainSequenceDetails(entryId: string, macromolecules: Molecule[], datum: DomainsRowData) {
+  public getDomainSequenceDetails(entryId: string, macromoleculesOfDomain: MacromoleculesRowData[], datum: DomainsRowData, chainId: string): SequenceDetail[] {
     const sequenceDetails: SequenceDetail[] = [];
-    const boundariesByEntityId = datum.additionalData.boundaries.reduce((obj: BoundsByEntityId, boundary) => {
-      obj[boundary.entity] = obj[boundary.entity] ?? [];
-      obj[boundary.entity].push(boundary);
-      return obj;
-    }, {});
 
-    const domainDescription = `(${datum.resource}): ${datum.domain}; Segments: ${datum.additionalData.segmentsResidNumbers.join(', ')} (Auth: ${datum.segments.join(
-      ', '
-    )})`;
+    const macromoleculesOfDomainForChain = macromoleculesOfDomain.filter((mm) => mm.additionalData.molecule.in_chains.indexOf(chainId) > -1);
+    if (macromoleculesOfDomainForChain.length > 1) {
+      const allEntityIds = macromoleculesOfDomainForChain.map((mm) => mm.additionalData.molecule.entity_id).join("', '");
+      console.warn(`Multiple entity_id's (${allEntityIds}) mapped to this ${datum.domain}`);
+    }
 
-    for (const [entityId, boundaryList] of Object.entries(boundariesByEntityId)) {
-      const entityOfBoundary = macromolecules.filter((mol: Molecule) => mol.entity_id === parseInt(entityId))[0];
+    const macromolecule = macromoleculesOfDomainForChain[0];
+    const moleculeName = macromolecule.name.molecule;
 
-      const uniqueChainsInBoundaries = boundaryList.map((sel) => sel.chain).filter((ch, idx, chains) => chains.indexOf(ch) === idx);
-      const hasPlural = uniqueChainsInBoundaries.length > 1 ? 's' : '';
+    const boundariesForDomain = datum.additionalData.boundaries;
+    const boundariesForChainId = boundariesForDomain.filter((boundary) => boundary.chain === chainId);
+    if (boundariesForChainId.length === 0) return [];
+    const segmentsStringsForDomains = datum.additionalData.segmentsResidNumbers;
+    const segmentsStringsForChainId = segmentsStringsForDomains.filter((segment) => segment[0] === chainId);
 
-      const sequenceDetail: SequenceDetail = {
-        title: `>FASTA pdb|${entryId}|${entityOfBoundary.molecule_name[0]}; Chain${hasPlural} ${uniqueChainsInBoundaries.join(', ')}; Domain ${domainDescription}`,
-        fullSequence: entityOfBoundary.sequence,
-        segments: [],
-      };
+    const segmentsForDomains = datum.segments;
+    const segmentsForChainId = segmentsForDomains.filter((_segment, i) => boundariesForDomain[i].chain === chainId);
+    const segmentsForOtherChains = segmentsForDomains.filter((_segment, i) => boundariesForDomain[i].chain !== chainId);
 
-      let currentCharIndex = 0;
-      boundaryList.forEach((boundary) => {
-        // Add substring from current index up to start of boundary
-        if (currentCharIndex < boundary.start) {
-          const outOfBoundary = sequenceDetail.fullSequence.substring(currentCharIndex, boundary.start - 1);
-          sequenceDetail.segments.push({
-            sequence: outOfBoundary,
-          });
-        }
+    const domainDescription = `${datum.resource} domain: ${datum.domain}; Segments: ${segmentsStringsForChainId.join(', ')} (Auth: ${segmentsForChainId.join(', ')})`;
+    const otherChains = segmentsForOtherChains.length > 0 ? `; Other auth segments: ${segmentsForOtherChains.join(', ')})` : '';
 
-        // Add the substring within the boundary as a special case
-        const boundarySubstring = sequenceDetail.fullSequence.substring(boundary.start - 1, boundary.end);
+    const sequenceDetail: SequenceDetail = {
+      title: `>FASTA pdb|${entryId}|${moleculeName}; Chain ${chainId}; ${domainDescription}${otherChains}`,
+      fullSequence: macromolecule.additionalData.molecule.sequence,
+      segments: [],
+    };
+
+    let currentCharIndex = 0;
+    boundariesForChainId.forEach((boundary) => {
+      // Add substring from current index up to start of boundary
+      if (currentCharIndex < boundary.start) {
+        const outOfBoundary = sequenceDetail.fullSequence.substring(currentCharIndex, boundary.start - 1);
         sequenceDetail.segments.push({
-          // color: '#9DFF94',
-          color: '#D0DFBB',
-          sequence: boundarySubstring,
-        });
-
-        currentCharIndex = boundary.end; // Update currentIndex to end of boundary
-      });
-      if (currentCharIndex < sequenceDetail.fullSequence.length) {
-        sequenceDetail.segments.push({
-          sequence: sequenceDetail.fullSequence.substring(currentCharIndex),
+          sequence: outOfBoundary,
         });
       }
-      sequenceDetails.push(sequenceDetail);
+
+      // Add the substring within the boundary as a special case
+      const boundarySubstring = sequenceDetail.fullSequence.substring(boundary.start - 1, boundary.end);
+      sequenceDetail.segments.push({
+        // color: '#9DFF94',
+        color: '#D0DFBB',
+        sequence: boundarySubstring,
+      });
+
+      currentCharIndex = boundary.end; // Update currentIndex to end of boundary
+    });
+    if (currentCharIndex < sequenceDetail.fullSequence.length) {
+      sequenceDetail.segments.push({
+        sequence: sequenceDetail.fullSequence.substring(currentCharIndex),
+      });
     }
+    sequenceDetails.push(sequenceDetail);
     return sequenceDetails;
   }
 
-  public generateSeqViewerDomainAnnotation(entryId: string, macromolecules: Molecule[], datum: DomainsRowData): SmartSequenceAnnotation[] {
-    const annotations: SmartSequenceAnnotation[] = [];
+  public generateSeqViewerDomainAnnotation(entryId: string, datum: DomainsRowData, chainId: string): SmartSequenceAnnotation | undefined {
+    const boundariesForChainId = datum.additionalData.boundaries.filter((boundary) => boundary.chain === chainId);
+    if (boundariesForChainId.length === 0) return undefined;
 
-    const boundariesByEntityId = datum.additionalData.boundaries.reduce((acc: Record<number, typeof datum.additionalData.boundaries>, boundary) => {
-      acc[boundary.entity] = acc[boundary.entity] ?? [];
-      acc[boundary.entity].push(boundary);
-      return acc;
-    }, {});
+    const data: SmartSequenceAnnotation['data'] = [];
+    let residueIndex = 1;
 
-    for (const [entityIdStr, boundaryList] of Object.entries(boundariesByEntityId)) {
-      const entityId = parseInt(entityIdStr);
-      const molecule = macromolecules.find((mol) => mol.entity_id === entityId);
-      if (!molecule) continue;
-
-      const fullSequence = molecule.sequence;
-      const data: SmartSequenceAnnotation['data'] = [];
-      let residueIndex = 1;
-
-      for (let segmentIndex = 0; segmentIndex < boundaryList.length; segmentIndex++) {
-        const boundary = boundaryList[segmentIndex];
-        // Fill preceding unannotated region
-        if (residueIndex < boundary.start) {
-          residueIndex = boundary.start;
-        }
-
-        // Annotate each residue in domain range
-        for (let i = boundary.start; i <= boundary.end; i++) {
-          data.push({
-            residueIndex: i,
-            value: 'Domain',
-            extraData: {
-              ordinalLabel: this.getOrdinalLabel(i, boundary.start, boundary.end),
-              domainName: datum.domain,
-              source: datum.resource,
-              segment: `${boundary.start}-${boundary.end}`,
-              segmentIndex: segmentIndex + 1,
-              chain: boundary.chain,
-            },
-          });
-        }
-
-        residueIndex = boundary.end + 1;
+    for (let segmentIndex = 0; segmentIndex < boundariesForChainId.length; segmentIndex++) {
+      const boundary = boundariesForChainId[segmentIndex];
+      // Fill preceding unannotated region
+      if (residueIndex < boundary.start) {
+        residueIndex = boundary.start;
       }
-
-      if (data.length > 0) {
-        annotations.push({
-          name: `Domain`,
-          identifier: `pdbe-domains-${entryId}-${entityId}-${datum.domain}`,
-          scaleType: 'ordinal',
-          scaleDomain: ['Domain'],
-          scaleRange: ['#D0DFBB'],
-          rendering: 'Background',
-          data,
+      // Annotate each residue in domain range
+      for (let i = boundary.start; i <= boundary.end; i++) {
+        // if (boundary.chain !== chainId) continue;
+        data.push({
+          residueIndex: i,
+          value: `${datum.resource} domain ${datum.domain} (${datum.accessionName} (${datum.additionalData.accession} - ${datum.accessionName})`,
+          extraData: {
+            ordinalLabel: this.getOrdinalLabel(i, boundary.start, boundary.end),
+            domainName: datum.domain,
+            source: datum.resource,
+            segment: `${boundary.start}-${boundary.end}`,
+            segmentIndex: segmentIndex + 1,
+            chain: boundary.chain,
+          },
         });
       }
+      residueIndex = boundary.end + 1;
     }
 
-    return annotations;
+    if (data.length > 0) {
+      return {
+        name: `Domain`,
+        identifier: `pdbe-domains-${entryId}-${chainId}-${datum.domain}`,
+        scaleType: 'ordinal',
+        scaleDomain: [`${datum.resource} domain ${datum.domain} (${datum.additionalData.accession} - ${datum.accessionName})`],
+        scaleRange: ['#D0DFBB'],
+        rendering: 'Background',
+        data,
+      };
+    }
+    return undefined;
   }
 
   getOrdinalLabel(current: number, start: number, end: number): string {

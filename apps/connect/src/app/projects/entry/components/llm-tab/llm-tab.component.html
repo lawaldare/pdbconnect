@@ -153,7 +153,12 @@
             <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
           </div>
           }
-          <div id="llm-molstar-container" class="molstar-container" #molstarContainer></div>
+          <div class="molstar-container">
+            <div #popoutWrapper>
+              <lib-pdbe-molstar #molstarComponent [id]="'llm-molstar'" [molstarConfig]="configForMolstar()"></lib-pdbe-molstar>
+            </div>
+          </div>
+          <div id="llm-molstar-container" class="molstar-container" #molstarContainer style="display: none"></div>
         </div>
       </div>
     </section>

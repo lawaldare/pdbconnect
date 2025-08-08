@@ -1,6 +1,7 @@
-import { AfterViewInit, Component, ElementRef, inject, Input, input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, Input, input, OnChanges, signal, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MolstarPluginService } from '../extension-for-pages/molstart-plugin.service';
+import { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
 
 @Component({
   selector: 'lib-pdbe-molstar',
@@ -10,11 +11,13 @@ import { MolstarPluginService } from '../extension-for-pages/molstart-plugin.ser
   styleUrl: './molstar.component.scss',
 })
 export class MolstarComponent implements AfterViewInit, OnChanges {
+  @Input() id = '1';
   @Input() height = '400px';
   @Input() width = '100%';
   @Input({ required: true }) molstarConfig!: any;
 
-  private molstarViewInstance: any;
+  public firstLoadFinished = signal(false);
+  private molstarViewInstance!: PDBeMolstarPlugin;
   private readonly molstarPluginService = inject(MolstarPluginService);
 
   public isExpanded = false;
@@ -30,8 +33,11 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
 
     this.molstarViewInstance.render(container, this.molstarConfig);
     this.molstarViewInstance.events.loadComplete.subscribe((loaded: boolean) => {
+      if (loaded && !this.firstLoadFinished()) this.firstLoadFinished.set(true);
       if (loaded) {
         // this.molstarViewInstance.plugin.managers.camera.orientAxes();
+        const eventName = `LibMolstarComponent-${this.id}`;
+        window.dispatchEvent(new CustomEvent(eventName, { detail: { id: this.id, loaded } }));
       }
     });
   }
@@ -40,5 +46,13 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
     if (!changes['molstarConfig']?.firstChange) {
       this.molstarViewInstance?.visual?.update(this.molstarConfig);
     }
+  }
+
+  public getInstance() {
+    return this.molstarViewInstance;
+  }
+
+  public getContainer() {
+    return this.viewContainer.nativeElement;
   }
 }

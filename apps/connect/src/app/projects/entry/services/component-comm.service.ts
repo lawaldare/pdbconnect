@@ -1,4 +1,4 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal, WritableSignal } from '@angular/core';
 import { DataToTable } from '../components/shared/interactive-tables/data-processing/abstract-base-row-class';
 import { BehaviorSubject } from 'rxjs';
 import {
@@ -7,6 +7,7 @@ import {
   LigandsRowData,
   MacromoleculesRowData,
 } from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { OutliersByModelId } from '../pages/main/data-processing.facade';
 
 export interface PreferredAssemblyData {
   name: string;
@@ -27,6 +28,8 @@ export class ComponentCommunicationService {
   public preferredAssemblyData = signal<PreferredAssemblyData | undefined>(undefined);
   public descriptions = signal<EntryDescription | undefined>(undefined);
   public chainToEntityId = signal<{ [key: string]: string }>({});
+  public outliersByModelId = signal<OutliersByModelId | undefined>(undefined);
+  public relatedEntries: WritableSignal<string[]> = signal([]);
 
   public currentTab = signal<string>('Information');
   public tabSwitchOrigin = signal<string>('main');

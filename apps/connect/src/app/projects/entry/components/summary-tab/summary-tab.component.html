@@ -1,8 +1,407 @@
 <section class="top-info">
   <section class="summary">
-    <pdbc-main-information-area />
+    <div id="information-section" class="information-section">
+      <div class="info-row">
+        <span>Entry title</span>
+        <article [innerHTML]="summary()?.entryTitle"></article>
+      </div>
+      <div class="info-row">
+        <span>Source organism</span>
+        <article>
+          @for (sourceOrganism of organismScientificNames(); track sourceOrganism; let islast = $last) {
+          <span>
+            <i
+              ><a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">
+                {{ sourceOrganism }}
+                <i class="icon icon-common icon-search"></i> </a
+            ></i>
+          </span>
+          {{ islast ? '' : ',' }} } @if (organismScientificNames()?.length === 0) {
+          <span>Not available</span>
+          }
+        </article>
+      </div>
+      @if (primaryPublication() && util.isNotEmptyObject(primaryPublication())) {
+      <div class="info-row">
+        <span>Primary publication</span>
+        <article>
+          @if (primaryPublication()?.journal_info?.pdb_abbreviation! !== 'To be published') {
+          <article [innerHTML]="primaryPublication()?.title"></article>
+          <article>
+            @let authors = primaryPublication()?.author_list ?? []; @for (authorDatum of authors.slice(0, initialAuthorCount()); track authorDatum; let islast =
+            $last) {
+            <a [href]="generateAuthorSearchUrl(authorDatum.full_name ?? '')" target="_blank">{{ authorDatum.full_name }}</a>{{ islast ? '' : ',' }} }
+            <div class="control">
+              @if(authors.length > 5){
+              <span role="button" class="related-entry-toggle" (click)="toggleAuthorList()">{{initialAuthorCount() > 5 ? 'Hide' : 'Show all'}} authors</span>
+              <i class="icon icon-common" [ngClass]="initialAuthorCount() > 5 ? 'icon-angle-up' : 'icon-angle-down'"></i>
+              }
+            </div>
+          </article>
+          <article>
+            <span>
+              <i>{{ primaryPublication()?.journal_info?.pdb_abbreviation }}</i>
+              {{ primaryPublication()?.journal_info?.volume }} {{ primaryPublication()?.journal_info?.pages }} ({{ primaryPublication()?.journal_info?.year }})
+            </span>
+            @if (primaryPublication()?.pubmed_id) {
+            <span style="white-space: nowrap">
+              PMID
+              <a [href]="'https://europepmc.org/article/MED/' + primaryPublication()?.pubmed_id" target="_blank"
+                >{{ primaryPublication()?.pubmed_id }}
+                <i class="icon icon-link icon-common"></i>
+              </a>
+            </span>
+            }
+          </article>
+          @if (primaryPublication()?.doi) {
+          <article>
+            DOI
+            <a [href]="'https://doi.org/' + primaryPublication()?.doi" target="_blank"
+              >{{ primaryPublication()?.doi }}
+              <i class="icon icon-link icon-common"></i>
+            </a>
+          </article>
+          } @let entries = primaryPublication()?.associated_entries ?? ''; @if (entries) { @let entriesArray = splitStringByCommas(entries);
+
+          <article>
+            Also associated with: @for(entry of entriesArray.slice(0, initialEntriesCount()); track entry; let islast = $last){
+            <a [href]="util.baseUrl() +  'entry/pdb/' + entry" target="_blank">{{ entry }}</a>{{ islast? '' : ',' }} }
+            <div class="control">
+              @if(entriesArray.length > 5){
+              <span role="button" class="related-entry-toggle" (click)="toggleEntriesList()"
+                >{{initialEntriesCount() > 5 ? 'Show less' : 'Show more'}} associated entries</span
+              >
+              <i class="icon icon-common" [ngClass]="initialEntriesCount() > 5 ? 'icon-angle-up' : 'icon-angle-down'"></i>
+              }
+            </div>
+          </article>
+          } } @else {
+          <article>To be published</article>
+          }
+        </article>
+      </div>
+      } @if ((summary()?.relatedStructures ?? []).length) {
+      <div class="info-row">
+        <span>EMDB entry</span>
+        <article>
+          <a [href]="'https://www.ebi.ac.uk/emdb/' + summary()!.relatedStructures[0].accession" target="_blank">{{ summary()!.relatedStructures[0].accession }}</a>
+        </article>
+      </div>
+      } @if (qualityScores() !== undefined) {
+      <div class="info-row">
+        <span>PDB model quality summary</span>
+        <article>
+          <pdbc-str-quality-gradient [componentType]="'GeometryFit_RdToBl'" [renderGradients]="qualityScores()!"></pdbc-str-quality-gradient>
+          <span class="qualify-span">Percentile-sliders comparing the quality scores of a model with other models in the archive.</span>
+        </article>
+      </div>
+      }
+    </div>
   </section>
   <section class="explore-3d-tabs">
-    <pdbc-overview-molstar />
+    <section class="molstar-details-container">
+      <!-- molstar control bar: selection dropdown and zoom controls -->
+      <div class="molstar-control-bar">
+        @if (dropdownOptions().length > 0) {
+        <div>
+          <div class="selector">
+            <span class="molstar-control-txt">Select:</span>
+            <span class="molstar-control-txt-info">
+              <pdbc-entry-dropdown
+                [searchable]="false"
+                [searchTitle]="''"
+                [downloadable]="false"
+                [islink]="false"
+                [isdark]="true"
+                [issmall]="true"
+                [options]="dropdownOptions()"
+                [title]="dropdownSelected"
+                (optionClickedEvent)="onDropdownSelect($event)"
+              >
+              </pdbc-entry-dropdown>
+            </span>
+          </div>
+          <div class="buttons">
+            <button class="small-flat-btn" (click)="zoomInCurrentSelection()">
+              Zoom in
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="19" viewBox="0 0 18 19" fill="none">
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M11.5073 11.9322C11.9252 11.5144 12.2567 11.0183 12.4829 10.4723C12.709 9.92636 12.8255 9.34119 12.8255 8.75023C12.8256 8.15927 12.7092 7.57408 12.4831 7.02809C12.2569 6.4821 11.9255 5.98599 11.5076 5.56809C11.0898 5.15019 10.5937 4.81869 10.0478 4.5925C9.5018 4.36632 8.91663 4.24988 8.32566 4.24985C7.13216 4.24978 5.98751 4.72383 5.14352 5.56772C4.29954 6.4116 3.82535 7.5562 3.82528 8.7497C3.82521 9.94321 4.29926 11.0879 5.14315 11.9318C5.98704 12.7758 7.13163 13.25 8.32513 13.2501C9.51864 13.2502 10.6633 12.7761 11.5073 11.9322ZM12.5678 4.50722C13.6016 5.54077 14.2226 6.91622 14.314 8.37523C14.4054 9.83424 13.961 11.2764 13.0643 12.431L13.0988 12.4625L16.2803 15.644C16.421 15.7846 16.5001 15.9754 16.5002 16.1743C16.5002 16.3733 16.4213 16.5641 16.2806 16.7048C16.14 16.8456 15.9492 16.9247 15.7503 16.9247C15.5513 16.9248 15.3605 16.8458 15.2198 16.7052L12.0375 13.523L12.006 13.4892C10.8002 14.4232 9.28391 14.8629 7.76546 14.7191C6.247 14.5752 4.84032 13.8585 3.83134 12.7147C2.82237 11.5708 2.28682 10.0857 2.33357 8.56115C2.38032 7.03661 3.00586 5.58708 4.08302 4.50722C5.20822 3.38216 6.73423 2.75012 8.3254 2.75012C9.91657 2.75012 11.4426 3.38216 12.5678 4.50722ZM7.57502 5.74997H9.07502V7.99997H11.325V9.49997H9.07502V11.75H7.57502V9.49997H5.32502V7.99997H7.57502V5.74997Z"
+                  fill="black"
+                />
+              </svg>
+            </button>
+            <button class="small-flat-btn" (click)="onZoomOut(zoomOutDuration)">
+              Zoom out
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="19" viewBox="0 0 18 19" fill="none">
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M11.5073 11.9322C11.9252 11.5144 12.2567 11.0183 12.4829 10.4723C12.709 9.92636 12.8255 9.34119 12.8255 8.75023C12.8256 8.15927 12.7092 7.57408 12.4831 7.02809C12.2569 6.4821 11.9255 5.98599 11.5076 5.56809C11.0898 5.15019 10.5937 4.81869 10.0478 4.5925C9.5018 4.36632 8.91663 4.24988 8.32566 4.24985C7.13216 4.24978 5.98751 4.72383 5.14352 5.56772C4.29954 6.4116 3.82535 7.5562 3.82528 8.7497C3.82521 9.94321 4.29926 11.0879 5.14315 11.9318C5.98703 12.7758 7.13163 13.25 8.32513 13.2501C9.51864 13.2502 10.6633 12.7761 11.5073 11.9322ZM12.5678 4.50722C13.6016 5.54077 14.2226 6.91622 14.314 8.37523C14.4054 9.83424 13.961 11.2764 13.0643 12.431L13.0988 12.4625L16.2803 15.644C16.421 15.7846 16.5001 15.9754 16.5002 16.1743C16.5002 16.3733 16.4213 16.5641 16.2806 16.7048C16.14 16.8456 15.9492 16.9247 15.7503 16.9247C15.5513 16.9248 15.3605 16.8458 15.2198 16.7052L12.0375 13.523L12.006 13.4892C10.8002 14.4232 9.28391 14.8629 7.76546 14.7191C6.247 14.5752 4.84032 13.8585 3.83134 12.7147C2.82237 11.5708 2.28682 10.0857 2.33357 8.56115C2.38032 7.03661 3.00586 5.58708 4.08302 4.50722C5.20822 3.38216 6.73423 2.75012 8.3254 2.75012C9.91657 2.75012 11.4426 3.38216 12.5678 4.50722ZM7.57502 7.99997H9.07502H11.325V9.49997H9.07502L9.00006 9.49994L7.57502 9.49997H5.32502V7.99997H7.57502Z"
+                  fill="black"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+        }
+      </div>
+      @if (!molstarFirstRenderFinished()) {
+      <div [style.width]="'100%'">
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+      </div>
+      }
+      <div class="molstar-container">
+        <div #popoutWrapper>
+          <lib-pdbe-molstar
+            #molstarComponent
+            [id]="'summary-molstar'"
+            [molstarConfig]="configForMolstar()"
+            [height]="molstarFirstRenderFinished() ? '480px' : 'unset'"
+          ></lib-pdbe-molstar>
+        </div>
+      </div>
+    </section>
+    <section class="listview-accordions">
+      <mat-accordion>
+        <mat-expansion-panel class="assembly-panel" (opened)="onOpenAccordionPanel('Assembly')">
+          <mat-expansion-panel-header>
+            <mat-panel-title> Preferred assembly </mat-panel-title>
+          </mat-expansion-panel-header>
+          <!-- <h5 class="title assembly-title entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="preferredAssemblyTooltip" matTooltipPosition="below">
+            Assembly {{ preferredAssemblyId }} (preferred)
+          </h5> -->
+
+          @if (assemblyData()?.name) {
+          <div class="info-row">
+            <div class="info-row-header">
+              <h6>Assembly name</h6>
+              <img
+                src="{{ helpLogoSrc }}"
+                class="icon"
+                alt="help icon"
+                matTooltipClass="entry-pgs-tooltip"
+                [matTooltip]="assemblyNameTooltip"
+                matTooltipPosition="below"
+              />
+            </div>
+            <article>{{ assemblyData()?.name }}</article>
+          </div>
+          } @if (assemblyData()?.complexId) {
+          <div class="info-row">
+            <div class="info-row-header">
+              <h6>PDBe Complex ID</h6>
+              <img
+                src="{{ helpLogoSrc }}"
+                class="icon"
+                alt="help icon"
+                matTooltipClass="entry-pgs-tooltip"
+                [matTooltip]="complexIdTooltip"
+                matTooltipPosition="below"
+              />
+            </div>
+            <article>
+              <a [href]="util.baseUrl() + 'entry/search/index?complex_id:' + assemblyData()?.complexId" target="_blank">{{ assemblyData()?.complexId }}</a>
+              <i class="icon icon-common icon-search"></i>
+            </article>
+          </div>
+          } @if (assemblyData()?.composition) {
+          <div class="info-row">
+            <div class="info-row-header">
+              <h6>Assembly composition</h6>
+              <img
+                src="{{ helpLogoSrc }}"
+                class="icon"
+                alt="help icon"
+                matTooltipClass="entry-pgs-tooltip"
+                [matTooltip]="assemblyCompositionTooltip"
+                matTooltipPosition="below"
+              />
+            </div>
+            <article>{{ assembly() }}</article>
+          </div>
+          } @if (entryContentsDescription()) {
+          <div class="info-row">
+            <h6>Entry contents</h6>
+            <article>
+              @for (contentLine of entryContentsDescription(); track contentLine; let islast = $last) { {{ contentLine }}
+              <br />
+              }
+            </article>
+          </div>
+          }
+        </mat-expansion-panel>
+        <mat-expansion-panel (opened)="onOpenAccordionPanel('Macromolecules')">
+          <mat-expansion-panel-header>
+            <mat-panel-title> Macromolecules ({{ processedMacromolecules().length }}) </mat-panel-title>
+          </mat-expansion-panel-header>
+          @if (processedMacromolecules().length) { @for (listItem of processedMacromolecules(); track $index; let macromoleculeIdx = $index) {
+          <div
+            class="select-gallery-container valid"
+            [ngClass]="isSelected(listItem, 'Macromolecules') ? 'active' : ''"
+            (click)="selectListItem(listItem, 'Macromolecules')"
+            (mouseover)="mouseinListItem(listItem, 'Macromolecules')"
+            (mouseout)="mouseoutListItem()"
+          >
+            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
+            <button class="select-entity-btn">{{ listItem.name.molecule }}</button>
+          </div>
+          <!-- @if (isSelected(listItem)) {
+                <div class="more-details-btn">
+                  <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+                  <button class="details-btn" (click)="viewDetails()">View more details below</button>
+                </div>
+              } -->
+          } } @else {
+          <p>This entry does not include any information about Macromolecules.</p>
+          @if (hasRelatedEntries()) {
+          <p>
+            Try exploring other entries published alongside this one for additional details.<br />
+            Related entries @for (relatedEntry of relatedEntries(); track relatedEntry; let islast = $last) {
+            <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+            @if (islast === false) { , } }
+          </p>
+          } }
+        </mat-expansion-panel>
+        <mat-expansion-panel (opened)="onOpenAccordionPanel('Ligands')">
+          <mat-expansion-panel-header>
+            <mat-panel-title> Ligands ({{ processedLigands().length }})</mat-panel-title>
+          </mat-expansion-panel-header>
+          @if (processedLigands().length) { @for (listItem of processedLigands(); track $index) {
+          <div
+            class="select-gallery-container valid"
+            [ngClass]="isSelected(listItem, 'Ligands') ? 'active' : ''"
+            (click)="selectListItem(listItem, 'Ligands')"
+            (mouseover)="mouseinListItem(listItem, 'Ligands')"
+            (mouseout)="mouseoutListItem()"
+          >
+            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
+            <button class="select-entity-btn">{{ listItem.codeAndName.name }} - {{ listItem.id }}</button>
+          </div>
+          <!-- @if (isSelected(listItem)) {
+          <div class="more-details-btn">
+            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+            <button class="details-btn" (click)="viewDetails()">View more details below</button>
+          </div>
+        } -->
+          } } @else {
+          <p>This entry does not include any information about Ligands.</p>
+          @if (hasRelatedEntries()) {
+          <p>
+            Try exploring other entries published alongside this one for additional details.<br />
+            Related entries @for (relatedEntry of relatedEntries(); track relatedEntry; let islast = $last) {
+            <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+            @if (islast === false) { , } }
+          </p>
+          } }
+        </mat-expansion-panel>
+        <mat-expansion-panel (opened)="onOpenAccordionPanel('Domains')">
+          <mat-expansion-panel-header>
+            <mat-panel-title> Domains ({{ domainCount() }}) </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          @if (domainCount() > 0) {
+          <pdbc-entry-dropdown
+            [searchable]="false"
+            searchTitle="''"
+            class="domain-dropdown"
+            [downloadable]="false"
+            [islink]="false"
+            [fullwidth]="false"
+            [options]="domainResourceCounts()"
+            [title]="getDomainResourceCountTxt(currentDomainResource(), domainCountByResource())"
+            (optionClickedEvent)="onDomainResourceSelect($event)"
+          >
+          </pdbc-entry-dropdown>
+          @for (nestedListObj of processedDomainsForListView(); track $index) {
+          <div class="select-gallery-container invalid">
+            <div class="color-code-bar" [ngStyle]="{ 'background-color': nestedListObj.macromolecule.molstarColorHex }"></div>
+            <button class="select-entity-btn">
+              <span>{{ nestedListObj.macromolecule.name.molecule }}</span><br />
+              <span>({{ nestedListObj.domains.length }} domains)</span>
+            </button>
+          </div>
+          @for (listItem of nestedListObj.domains; track $index) {
+          <div
+            class="select-gallery-container valid nested-1"
+            [ngClass]="isSelected(listItem, 'Domains') ? 'active' : ''"
+            (click)="selectListItem(listItem, 'Domains')"
+            (mouseover)="mouseinListItem(listItem, 'Domains')"
+            (mouseout)="mouseoutListItem()"
+          >
+            <div class="color-code-bars">
+              <div class="color-code-sqr" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
+            </div>
+            <button class="select-entity-btn">
+              <span>{{ listItem.accessionName }}</span><br />
+              <span>{{ listItem.resource }} {{ listItem.additionalData.accession }}</span><br />
+              <span>{{ listItem.segmentsAsText }}</span>
+            </button>
+          </div>
+          <!-- @if (isSelected(listItem)) {
+                  <div class="more-details-btn">
+                    <button class="details-btn" (click)="viewDetails()">View more details below</button>
+                  </div>
+                } -->
+          } } } @else {
+          <p>This entry does not include any information about Domains.</p>
+          @if (hasRelatedEntries()) {
+          <p>
+            Try exploring other entries published alongside this one for additional details.<br />
+            Related entries @for (relatedEntry of relatedEntries(); track relatedEntry; let islast = $last) {
+            <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+            @if (islast === false) { , } }
+          </p>
+          } }
+        </mat-expansion-panel>
+        <mat-expansion-panel (opened)="onOpenAccordionPanel('Modifications')">
+          <mat-expansion-panel-header>
+            <mat-panel-title> Modifications ({{ processedModifications().length }}) </mat-panel-title>
+          </mat-expansion-panel-header>
+          @if (processedModifications().length) { @for (listItem of processedModifications(); track $index; let modificationIdx = $index) {
+          <div
+            class="select-gallery-container valid"
+            [ngClass]="isSelected(listItem, 'Modifications') ? 'active' : ''"
+            (click)="selectListItem(listItem, 'Modifications')"
+            (mouseover)="mouseinListItem(listItem, 'Modifications')"
+            (mouseout)="mouseoutListItem()"
+          >
+            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
+            <button class="select-entity-btn">{{ listItem.codeAndName.name }} - {{ listItem.id }}</button>
+          </div>
+          <!-- @if (isSelected(listItem)) {
+          <div class="more-details-btn">
+            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+            <button class="details-btn" (click)="viewDetails()">View more details below</button>
+          </div>
+        } -->
+          } } @else {
+          <p>This entry does not include any information about Modifications.</p>
+          @if (hasRelatedEntries()) {
+          <p>
+            Try exploring other entries published alongside this one for additional details.<br />
+            Related entries @for (relatedEntry of relatedEntries(); track relatedEntry; let islast = $last) {
+            <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+            @if (islast === false) { , } }
+          </p>
+          } }
+        </mat-expansion-panel>
+      </mat-accordion>
+    </section>
+    <!-- 
+      DONE: Recreate top panel and right selection panel
+      DONE: Fix MQ not showing all chains
+      CANC: Add Helpers to other tabs
+      
+      TODO: Commit after rebasing mobile changes
+      TODO: Move API calls to become tab based if needed
+      TODO: Refactor code on shared area
+      TODO: Refactor Mobile
+      TODO: Delete unnecessary Molstar code
+      TODO: Replace Mol selection objects for QueryParam directly
+     -->
+    <!-- <pdbc-overview-molstar /> -->
   </section>
 </section>

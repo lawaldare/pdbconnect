@@ -14,17 +14,12 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { combineLatest, filter, Subject, take, tap } from 'rxjs';
-import '@nightingale-elements/nightingale-manager';
 import * as NightingaleManager from '@nightingale-elements/nightingale-manager';
-import '@nightingale-elements/nightingale-sequence';
 import * as NightingaleSequence from '@nightingale-elements/nightingale-sequence';
-import '@nightingale-elements/nightingale-navigation';
 import * as NightingaleNavigation from '@nightingale-elements/nightingale-navigation';
 
-// Necessart lines added to avoid tree shaking of Nightingale components
-const _NightingaleManager = NightingaleManager;
-const _NightingaleSequence = NightingaleSequence;
-const _NightingaleNavigation = NightingaleNavigation;
+// Necessary lines added to avoid tree shaking of Nightingale components
+const _nightingaleRefs = [NightingaleManager, NightingaleSequence, NightingaleNavigation];
 
 import { Feature as NightingaleFeature } from '@nightingale-elements/nightingale-track';
 import { MaterialModule } from '@pdbc/core';
@@ -327,7 +322,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       accession: trackName,
       tooltipContent: trackTooltip,
       locations: [{ fragments }],
-      color: '#444', // optional: you can also allow FixedSelectionInput to provide color if needed
+      color: '#B5CB93', // optional: you can also allow FixedSelectionInput to provide color if needed
     });
 
     this.fixedSelectionData.set(features);
@@ -764,7 +759,10 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
 
     // 4 - Add clicked residue index to selection list and apply highlight logic
     const selectedResidues = [...this.selectedResidues];
-    selectedResidues.push(`Index: ${eventResNumber}`);
+    const idxOfResidue = selectedResidues.indexOf(`Index: ${eventResNumber}`);
+    if (idxOfResidue === -1) selectedResidues.push(`Index: ${eventResNumber}`);
+    // ... or remove from selection list if unselection
+    else selectedResidues.splice(idxOfResidue, 1);
     this.onSelectedResiduesChange(selectedResidues);
   }
 
@@ -817,6 +815,22 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       cancelable: true,
     });
     document.dispatchEvent(eventObj);
+
+    const eventObj2 = new CustomEvent('new-protvista-click', {
+      detail: {
+        start: `${start}`,
+        end: `${end}`,
+        color: color,
+        feature: {
+          entityId: this.entityId(),
+          chainId: this.chainId(),
+          ...feature, // Spread additional metadata from the feature sometimes used by external viewers such as PDBe Molstar
+        },
+      },
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(eventObj2);
   }
 
   // on .scrollable scroll

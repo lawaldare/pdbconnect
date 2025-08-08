@@ -8,6 +8,7 @@ export function convertOutliersToSmartSequenceAnnotation(
   sequence: string,
   entityId: number,
   chainId: string,
+  modelId = '1',
   outliers?: ResidueWiseOutliersMolecule[]
 ): SmartSequenceAnnotation | undefined {
   if (!outliers) return undefined;
@@ -21,6 +22,8 @@ export function convertOutliersToSmartSequenceAnnotation(
       if (chain.chain_id !== chainId) continue;
 
       for (const model of chain.models) {
+        if (model.model_id !== parseInt(modelId)) continue;
+
         for (const residue of model.residues) {
           const index = residue.residue_number; // 1-indexed like the sequence
           if (!residueOutlierMap.has(index)) {
