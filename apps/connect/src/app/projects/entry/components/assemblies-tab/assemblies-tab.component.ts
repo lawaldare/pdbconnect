@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { AssembliesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
@@ -11,8 +10,6 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { entryAssembliesTooltips } from '../../entry-constant';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { MolstarStateService } from '../../services/molstar-state.service';
-import { ActionQueueService } from '../../services/action-queue.service';
 import { PopupWindowService, UtilService } from '@pdbc/core';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
@@ -32,10 +29,7 @@ export class AssembliesTabComponent {
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  // public readonly molstarState = inject(MolstarStateService);
-  // private readonly actionQueue = inject(ActionQueueService);
 
-  // public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
   private molstarReady = signal(false);
   private _molstarComponent?: MolstarComponent;
   @ViewChild('molstarComponent') set molstarComponent(ref: MolstarComponent | undefined) {
@@ -151,14 +145,6 @@ export class AssembliesTabComponent {
     timer(500).subscribe(() => {
       this.resetCamera();
     });
-
-    // this.actionQueue.addAction(
-    //   `renderMolstarForAssemblies-${assembly.assemblyId}`,
-    //   async () => {
-    //     await this.molstarState.renderMolstarForAssemblies(assembly.assemblyId);
-    //   },
-    //   true
-    // );
   }
 
   public getAdditionalData(name: string) {

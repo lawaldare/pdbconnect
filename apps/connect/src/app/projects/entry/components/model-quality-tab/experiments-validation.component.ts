@@ -37,9 +37,9 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { MolstarComponent, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { Color } from 'molstar/lib/mol-util/color';
-import { initializeModelIdTracking } from '../../helpers/nmr-model-tracking';
+import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { Structure } from 'molstar/lib/mol-model/structure';
+import { cameraResetInMolstar, drawSelectionInMolstar } from '../../helpers/molstar-helpers';
 
 export interface ValueLabel {
   value: string;
@@ -229,6 +229,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
           colorParams: { value: Color(0xd4d5d4) },
         },
       },
+      loadMaps: true,
       // ...(chainSelection && { 'selection': chainSelection }),
     };
 
@@ -272,46 +273,12 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       }
 
       if (!this.molstarFirstRenderFinished()) return;
-
-      // TODO
-      // override residue click selection
       this.renderInMolstar(outliers);
     });
   }
   private selectionData?: QueryParam[];
 
-  private zoomSelectionMutex = Promise.resolve();
-
-  async onZoomOut(durationMs: number) {
-    this.zoomSelectionMutex = this.zoomSelectionMutex.then(() => this.zoomOutStructure(durationMs));
-    await this.zoomSelectionMutex;
-  }
-
-  async onZoomInAndSelect() {
-    this.zoomSelectionMutex = this.zoomSelectionMutex.then(() => this.zoomInAndSelect());
-    await this.zoomSelectionMutex;
-  }
-
-  private async zoomOutStructure(durationMs: number) {
-    const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
-    if (!plugin) return;
-
-    const assemblyRef = plugin.managers.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
-    const structure = plugin.state.data?.select(assemblyRef)[0]?.obj?.data;
-    const structureLoci = structure ? Structure.toStructureElementLoci(structure) : null;
-
-    structureLoci && plugin.managers.camera?.focusLoci(structureLoci, { durationMs });
-  }
-
-  private async zoomInAndSelect() {
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance || !this.selectionData) return;
-    await instance.visual.select({ data: this.selectionData });
-  }
-
   private async renderInMolstar(outliers: OutlierDict) {
-    console.log('outliers');
-    console.log(outliers);
     const selectedValidationType = this.selectedValidationType();
     const selectedSpecificIssueKindValue = this.selectedSpecificIssueKindValue();
 
@@ -345,11 +312,12 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       );
     }
 
-    await this.onZoomInAndSelect();
+    const instance = this._molstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+    await drawSelectionInMolstar(instance, this.selectionData);
+
     timer(500).subscribe(async () => {
-      const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
-      if (!plugin) return;
-      plugin.managers.camera.reset(undefined, 100);
+      await cameraResetInMolstar(instance);
     });
   }
 

@@ -2,8 +2,8 @@
  * Generic types for all table row data and filters
  */
 
-import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
-import { Molecule } from '../../../../data-models/molecule.model';
+import { ModifiedResidue } from '../../data-models/modified-residues.model';
+import { Molecule } from '../../data-models/molecule.model';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 
 export type TableRow = AssembliesRowData | MacromoleculesRowData | LigandsRowData | DomainsRowData;

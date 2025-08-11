@@ -7,7 +7,7 @@ import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
   template: `
     <span #highlightContainer [innerHTML]="getHighlightedSentence"></span> <br />
     @if (this.pmcId) {
-      <a [href]="getSentenceLink" target="_blank"> View in article <i class="icon icon-link icon-common" style="margin-left: 5px;"></i></a>
+      <a [href]="getSentenceLink" target="llm-tab-url"> View in article <i class="icon icon-link icon-common" style="margin-left: 5px;"></i></a>
     }
   `,
 })

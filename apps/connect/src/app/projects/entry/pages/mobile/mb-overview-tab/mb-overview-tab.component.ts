@@ -7,11 +7,7 @@ import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MainDataProcessingFacade } from '../../main/data-processing.facade';
-import {
-  AssembliesRowData,
-  LigandsRowData,
-  MacromoleculesRowData,
-} from '../../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { AssembliesRowData, LigandsRowData, MacromoleculesRowData } from '../../../data-classes/data-models-and-definitions/row-and-table.model';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { combineLatest, filter, map } from 'rxjs';
 import { CitationDetail } from '../../../data-models/publication.model';

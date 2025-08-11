@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { OverviewMolstarComponent } from './sub-components/overview-molstar/overview-molstar.component';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { MaterialModule } from '@pdbc/core';
 import { UtilService } from '@pdbc/core';
@@ -20,7 +19,7 @@ import { Structure } from 'molstar/lib/mol-model/structure';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { filter, firstValueFrom, map, take, timer } from 'rxjs';
-import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
@@ -30,6 +29,7 @@ import {
   ligandMolstarSelObjToQueryParam,
   macromoleculeMolstarSelObjToQueryParam,
 } from '../../helpers/temp-mol-sel-obj-to-queryparam';
+import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 
 type NestedDomainsData = Array<{
   macromolecule: MacromoleculesRowData;
@@ -37,15 +37,7 @@ type NestedDomainsData = Array<{
 }>;
 @Component({
   selector: 'pdbc-summary-tab',
-  imports: [
-    CommonModule,
-    OverviewMolstarComponent,
-    StrucQualityGradientsComponent,
-    MaterialModule,
-    MolstarComponent,
-    NgxSkeletonLoaderModule,
-    EntryDropdownComponent,
-  ],
+  imports: [CommonModule, StrucQualityGradientsComponent, MaterialModule, MolstarComponent, NgxSkeletonLoaderModule, EntryDropdownComponent],
   templateUrl: './summary-tab.component.html',
   styleUrl: './summary-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -157,7 +149,7 @@ export class SummaryTabComponent {
   public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
 
   private selectionData?: QueryParam[];
-  private nonSelectionColor?: AnyColor;
+  private nonSelectionColor?: string;
 
   private zoomSelectionMutex = Promise.resolve();
 
@@ -203,30 +195,17 @@ export class SummaryTabComponent {
   }
 
   async onZoomOut(durationMs: number) {
-    this.zoomSelectionMutex = this.zoomSelectionMutex.then(() => this.zoomOutStructure(durationMs));
+    const instance = this._molstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+    this.zoomSelectionMutex = this.zoomSelectionMutex.then(() => zoomOutStructureInMolstar(instance, durationMs));
     await this.zoomSelectionMutex;
   }
 
   async onZoomInAndSelect() {
-    this.zoomSelectionMutex = this.zoomSelectionMutex.then(() => this.zoomInAndSelect());
-    await this.zoomSelectionMutex;
-  }
-
-  private async zoomOutStructure(durationMs: number) {
-    const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
-    if (!plugin) return;
-
-    const assemblyRef = plugin.managers.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
-    const structure = plugin.state.data?.select(assemblyRef)[0]?.obj?.data;
-    const structureLoci = structure ? Structure.toStructureElementLoci(structure) : null;
-
-    structureLoci && plugin.managers.camera?.focusLoci(structureLoci, { durationMs });
-  }
-
-  private async zoomInAndSelect() {
     const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance || !this.selectionData) return;
-    await instance.visual.select({ data: this.selectionData, nonSelectedColor: this.nonSelectionColor });
+    if (!instance) return;
+    this.zoomSelectionMutex = this.zoomSelectionMutex.then(() => drawSelectionInMolstar(instance, this.selectionData, this.nonSelectionColor));
+    await this.zoomSelectionMutex;
   }
 
   //  data used in template for assembly accordion

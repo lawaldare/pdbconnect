@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Component, inject, input, OnChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AssemblyDataToTable } from './data-processing/assembly-row-class';
-import { DomainDataToTable } from './data-processing/domain-row-class';
-import { LigandDataToTable } from './data-processing/ligand-row-class';
-import { MacromoleculeDataToTable } from './data-processing/macromolecule-row';
+import { AssemblyDataToTable } from '../../../data-classes/data-processing/assembly-row-class';
+import { DomainDataToTable } from '../../../data-classes/data-processing/domain-row-class';
+import { LigandDataToTable } from '../../../data-classes/data-processing/ligand-row-class';
+import { MacromoleculeDataToTable } from '../../../data-classes/data-processing/macromolecule-row';
 import { TableNames } from '../../../pages/main/main.component';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { NgxPaginationModule } from 'ngx-pagination';

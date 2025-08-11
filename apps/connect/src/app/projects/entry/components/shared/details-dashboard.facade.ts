@@ -5,7 +5,7 @@ import {
   LigandsRowData,
   MacromoleculesResidueRanges,
   MacromoleculesRowData,
-} from './interactive-tables/data-models-and-definitions/row-and-table.model';
+} from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { Molecule } from '../../data-models/molecule.model';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { EntryApiService } from '../../services/entry-api.service';

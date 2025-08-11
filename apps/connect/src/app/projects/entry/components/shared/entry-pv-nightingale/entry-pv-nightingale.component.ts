@@ -49,7 +49,6 @@ import { EntrySelectors } from '../../../store/entry.selectors';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { MolstarStateService } from '../../../services/molstar-state.service';
 
 /**
  * Helper to decode rawHTML from API endpoints (tooltipContent)
@@ -105,8 +104,6 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   public readonly isNucleic = input<boolean>(false);
   // for fixed tracks on top
   public readonly fixedSelectionInput = input<FixedSelectionInput | undefined>(undefined);
-
-  public readonly molstarState = inject(MolstarStateService);
 
   // Inject required Angular services / extra dynamic manipulation
   public renderer = inject(Renderer2);
@@ -506,15 +503,6 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
 
   async ngAfterViewInit() {
     this.reloadVisualisation();
-
-    const _tooltipSub = this.tooltipService.hidePinnedEvent$
-      .pipe(
-        filter((hide) => hide === true) // Optional: only act on true
-      )
-      .subscribe(async () => {
-        await this.molstarState.focusLastSelection();
-        await this.molstarState.molstarVisualisation.molstarViewInstance().visual.clearSelection();
-      });
   }
 
   openSearchPanel() {

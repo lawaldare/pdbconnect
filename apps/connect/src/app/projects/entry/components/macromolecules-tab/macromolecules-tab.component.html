@@ -157,13 +157,13 @@
         <span class="text">{{ sequenceDetail.title }}</span>
         <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
       </div>
-      @let molType = currentMacromoleculeDatum()!.additionalData.molecule.molecule_type; @if(currentProtvistaEntity() && molType) {
+      @let molType = currentMacromoleculeDatum()!.additionalData.molecule.molecule_type; @if(currentSelectionEntityId() && molType) {
       <lib-smart-seq-viewer
         containerId="'smart-seq-viewer-macromolecules'"
         class="sequence"
         [sequence]="sequenceDetail.fullSequence"
-        [entityId]="currentProtvistaEntity()!"
-        [chainId]="currentProtvistaChain()!"
+        [entityId]="currentSelectionEntityId()!"
+        [chainId]="currentSelectionChainId()!"
         [backgroundDataInput]="backgroundAnnotation()"
         [isNucleic]="molType.includes('nucleotide')"
         [altSequences]="altSequences()"
@@ -174,11 +174,11 @@
     <section class="chart-area" [class.collapsed]="compCommunication.isSidebarCollapsed()">
       @if (hasProtvista) {
       <section class="protvista-container">
-        @let molType = currentMacromoleculeDatum()!.additionalData.molecule.molecule_type; @if(entryId() && currentProtvistaEntity() && molType) {
+        @let molType = currentMacromoleculeDatum()!.additionalData.molecule.molecule_type; @if(entryId() && currentSelectionEntityId() && molType) {
         <pdbc-entry-pg-protvista
           [entryId]="entryId()!"
-          [entityId]="currentProtvistaEntity()!"
-          [chainId]="currentProtvistaChain()!"
+          [entityId]="currentSelectionEntityId()!"
+          [chainId]="currentSelectionChainId()!"
           [externalInteractivity]="true"
           [isNucleic]="molType.includes('nucleotide')"
         ></pdbc-entry-pg-protvista>

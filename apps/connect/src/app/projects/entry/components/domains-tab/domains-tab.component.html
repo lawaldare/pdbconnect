@@ -91,7 +91,7 @@
       <p>{{dropdownOptions[0].name}}</p>
       } @else {}
     </div>
-    @if (sequenceDetails().length > 0 && currentProtvistaEntity() && backgroundAnnotation()) {
+    @if (sequenceDetails().length > 0 && currentSelectionEntityId() && backgroundAnnotation()) {
     <div class="sequence-container">
       @for (sequenceDetail of sequenceDetails(); track sequenceDetail; let i = $index;) {
       <div class="title">
@@ -102,8 +102,8 @@
         [containerId]="'smart-seq-viewer-domains'+(i+1)"
         class="sequence"
         [sequence]="sequenceDetail.fullSequence"
-        [entityId]="currentProtvistaEntity()!"
-        [chainId]="currentProtvistaChain()!"
+        [entityId]="currentSelectionEntityId()!"
+        [chainId]="currentSelectionChainId()!"
         [backgroundDataInput]="backgroundAnnotation()"
         [altSequences]="altSequences()"
       ></lib-smart-seq-viewer>
@@ -112,11 +112,11 @@
     }
     <section class="domain-charts" [ngClass]="'Domains' !== 'Domains' ? 'hidden-molstar-container' : '' ">
       <section class="protvista-container">
-        @if(entryId() && currentProtvistaEntity() && protvistaDomainSelection()) {
+        @if(entryId() && currentSelectionEntityId() && protvistaDomainSelection()) {
         <pdbc-entry-pg-protvista
           [entryId]="entryId()!"
-          [entityId]="currentProtvistaEntity()!"
-          [chainId]="currentProtvistaChain()!"
+          [entityId]="currentSelectionEntityId()!"
+          [chainId]="currentSelectionChainId()!"
           [externalInteractivity]="true"
           [fixedSelectionInput]="protvistaDomainSelection()!"
         ></pdbc-entry-pg-protvista>

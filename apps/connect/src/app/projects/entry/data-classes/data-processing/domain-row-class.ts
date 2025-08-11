@@ -1,13 +1,13 @@
 import { signal, WritableSignal } from '@angular/core';
 import { DomainsBoundaries, DomainsRowData, TableFilter, TableRow } from '../data-models-and-definitions/row-and-table.model';
 import { DataToTable } from './abstract-base-row-class';
-import { PfamMappings, CathMappings, ScopMappings, DomainMapping } from '../../../../data-models/domains.model';
-import { Molecule } from '../../../../data-models/molecule.model';
-import { formatSegments, formatSegmentsWithCoverage } from '../../../../helpers/domain-helpers';
-import { ObservedSegments, PolymerCoverageMolecule } from '../../../../data-models/polymer-coverage.model';
-import { AssemblyData, AssemblyEntity } from '../../../../data-models/assembly.model';
-import { ProcessedSummary } from '../../../../data-models/summary.model';
-import { FILTERED_KELLY22_COLORBLIND_SCALE } from '../../../../entry-constant';
+import { PfamMappings, CathMappings, ScopMappings, DomainMapping } from '../../data-models/domains.model';
+import { Molecule } from '../../data-models/molecule.model';
+import { formatSegments, formatSegmentsWithCoverage } from '../../helpers/domain-helpers';
+import { ObservedSegments, PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
+import { AssemblyData, AssemblyEntity } from '../../data-models/assembly.model';
+import { ProcessedSummary } from '../../data-models/summary.model';
+import { FILTERED_KELLY22_COLORBLIND_SCALE } from '../../entry-constant';
 
 export class DomainDataToTable extends DataToTable {
   // Domain specific data

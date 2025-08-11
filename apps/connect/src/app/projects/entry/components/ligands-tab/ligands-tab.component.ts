@@ -3,7 +3,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild, OnInit } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { LigandsRowData, MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { MolstarComponent, MolstarPluginService, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
@@ -25,7 +25,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { EntryActions } from '../../store/entry.actions';
 import { Interaction } from '../../data-models/interaction.model';
-import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar';
+import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
 import { Molecule } from '../../data-models/molecule.model';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
@@ -35,6 +35,7 @@ import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensio
 import { PluginConfig } from 'molstar/lib/mol-plugin/config';
 import { PresetStructureRepresentations } from 'molstar/lib/mol-plugin-state/builder/structure/representation-preset';
 import { DownloadStructure } from 'molstar/lib/mol-plugin-state/actions/structure';
+import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -165,6 +166,7 @@ export class LigandsTabComponent implements OnInit {
           color: 'entity-id',
         },
       },
+      loadMaps: true,
     };
 
     return configForMolstar;
@@ -264,6 +266,8 @@ export class LigandsTabComponent implements OnInit {
       await this.destroyLigandEnv();
     }
   }
+
+  private selectionData?: QueryParam[];
   private ligandSelection?: QueryParam[];
   private residuesAsSticks?: QueryParam[];
 
@@ -301,24 +305,22 @@ export class LigandsTabComponent implements OnInit {
 
     const pdbeInteractions = interactionsMolstarSelections as unknown as PDBeMolstarInteraction[];
 
-    const selectionData: QueryParam[] = residuesMolstarSelections.map((eachResidData) => {
-      const resid = eachResidData.residues[0];
-      const macromoleculeOfResidue = this.compCommunication.processedMacromolecules.filter((mm) => `${mm.additionalData.molecule.entity_id}` === resid.entityId!)[0];
+    const residueSelectionData: QueryParam[] = residuesMolstarSelections.map((resid) => {
+      const macromoleculeOfResidue = this.compCommunication.processedMacromolecules.filter((mm) => `${mm.additionalData.molecule.entity_id}` === resid.entity_id!)[0];
       // const colorToMol = macromoleculeOfResidue.molstarColorHex ? Color(parseInt(macromoleculeOfResidue.molstarColorHex.slice(1), 16)) : undefined;
       return {
-        entity_id: `${resid.entityId!}`,
-        auth_asym_id: `${resid.authChainId!}`,
-        auth_residue_number: parseInt(resid.authBegin),
-        auth_ins_code_id: resid.authBeginIns && resid.authBeginIns !== 'undefined' ? resid.authBeginIns : undefined,
+        ...resid,
         color: macromoleculeOfResidue.molstarColorHex,
         sideChain: true,
         // representation: "ball-and-stick",
         // representationColor: macromoleculeOfResidue.molstarColorHex,
-        focus: true,
+        focus: false,
       };
     });
-    this.residuesAsSticks = selectionData;
-    this.zoomInAndSelect();
+    this.residuesAsSticks = residueSelectionData;
+    this.selectionData = this.ligandSelection ? [...this.ligandSelection] : [];
+    this.selectionData.push(...residueSelectionData);
+    await drawSelectionInMolstar(instance, this.selectionData);
 
     await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
     await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.loadInteractions(instance, { interactions: pdbeInteractions, structureId: 1 });
@@ -389,26 +391,6 @@ export class LigandsTabComponent implements OnInit {
     this.initialColorCount.update((prev) => (prev === 4 ? colorList.length : 4));
   }
 
-  private async zoomOutStructure(durationMs: number) {
-    const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
-    if (!plugin) return;
-
-    const assemblyRef = plugin.managers.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
-    const structure = plugin.state.data?.select(assemblyRef)[0]?.obj?.data;
-    const structureLoci = structure ? Structure.toStructureElementLoci(structure) : null;
-
-    structureLoci && plugin.managers.camera?.focusLoci(structureLoci, { durationMs });
-  }
-
-  private async zoomInAndSelect() {
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-    const selectionData: QueryParam[] = [];
-    if (this.residuesAsSticks) selectionData.push(...this.residuesAsSticks);
-    if (this.ligandSelection) selectionData.push(...this.ligandSelection);
-    instance.visual.select({ data: selectionData });
-  }
-
   private async renderInMolstar(ligand: LigandsRowData) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
@@ -440,7 +422,7 @@ export class LigandsTabComponent implements OnInit {
 
     // Access Molstar instance
     const entityColor = ligand.molstarColorHex;
-    const selectionData: QueryParam[] = [
+    this.ligandSelection = [
       {
         entity_id: `${entityId}`,
         auth_asym_id: `${chainId}`,
@@ -449,13 +431,15 @@ export class LigandsTabComponent implements OnInit {
         focus: true,
       },
     ];
-    this.ligandSelection = selectionData;
+    this.selectionData = [...this.ligandSelection];
 
     const durationMs = this._molstarComponent ? 1200 : 0;
-    await this.zoomOutStructure(durationMs);
+    const instance = this._molstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+    await zoomOutStructureInMolstar(instance, durationMs);
 
     timer(durationMs + 100).subscribe(async () => {
-      await this.zoomInAndSelect();
+      await drawSelectionInMolstar(instance, this.selectionData);
     });
   }
 
@@ -601,11 +585,11 @@ export class LigandsTabComponent implements OnInit {
 
     if (!this.ligandSelection) return;
 
-    const selectionData: QueryParam[] = [];
-    if (this.residuesAsSticks) selectionData.push(...this.residuesAsSticks);
-    if (this.ligandSelection) selectionData.push(...this.ligandSelection);
+    this.selectionData = [];
+    if (this.ligandSelection) this.selectionData.push(...this.ligandSelection);
+    if (this.residuesAsSticks) this.selectionData.push(...this.residuesAsSticks);
 
-    await instance.visual.focus(selectionData);
+    await instance.visual.focus(this.selectionData);
     await instance.visual.clearHighlight();
   }
 

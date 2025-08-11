@@ -16,18 +16,22 @@
           <ng-template matTabContent> <pdbc-assemblies-tab /> </ng-template>
         </mat-tab>
         <mat-tab label="Macromolecules">
-          <ng-template matTabContent> <pdbc-macromolecules-tab /> </ng-template>
+          <ng-template matTabContent>
+            <pdbc-macromolecules-tab pdbcVisualisationInteractivity [hasSeqViewer]="true" [hasNewProtvista]="true" [hasLLMTable]="false" />
+          </ng-template>
         </mat-tab>
         <mat-tab label="Ligands and Environments">
           <ng-template matTabContent> <pdbc-ligands-tab /> </ng-template>
         </mat-tab>
         <mat-tab label="Domains">
-          <ng-template matTabContent> <pdbc-domains-tab /> </ng-template>
+          <ng-template matTabContent>
+            <pdbc-domains-tab pdbcVisualisationInteractivity [hasSeqViewer]="true" [hasNewProtvista]="true" [hasLLMTable]="false" />
+          </ng-template>
         </mat-tab>
         <mat-tab label="Text Annotations (AI)">
           <ng-template matTabContent>
             @if(dataProcessing.llmAnnotations | async; as annotations){ @if(annotations.length > 0){
-            <pdbc-llm-tab />
+            <pdbc-llm-tab pdbcVisualisationInteractivity [hasSeqViewer]="true" [hasNewProtvista]="true" [hasLLMTable]="true" />
             } @else {
             <h5>
               The residue and annotation lists are empty likely because the publication text either lacked explicit residue mentions, used mismatched numbering, or
@@ -56,11 +60,6 @@
   <lib-mobile-header [headerConfig]="mobileHeaderConfig" />
   <pdbc-mobile-main />
 </div>
-<!-- <div class="molstar-section">
-  <div #popoutWrapper>
-    <lib-pdbe-molstar [molstarConfig]="configForMolstar" [height]="molstarHeight"></lib-pdbe-molstar>
-  </div>
-</div> -->
 <div id="parent-molstar-container" #molstarParent>
   <div id="molstar-element" class="molstar-viewer" #molstarViewer></div>
 </div>

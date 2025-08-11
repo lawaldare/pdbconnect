@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { MolstarComponent, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { dashboardStatLinks } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -20,8 +20,6 @@ import { MainDataProcessingFacade } from '../../pages/main/data-processing.facad
 import { DetailsDashboardFacade } from '../shared/details-dashboard.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
-// import { MolstarStateService } from '../../services/molstar-state.service';
-// import { ActionQueueService } from '../../services/action-queue.service';
 import { CitationDetail } from '../../data-models/publication.model';
 import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, take, timer } from 'rxjs';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -34,9 +32,9 @@ import { EntryActions } from '../../store/entry.actions';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { Color } from 'molstar/lib/mol-util/color';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { Structure } from 'molstar/lib/mol-model/structure';
-import { MolstarEventData, PDBMolstarEvent } from '../shared/entry-pv-nightingale/event-models/pdbe-molstar-events.model';
-import { initializeModelIdTracking } from '../../helpers/nmr-model-tracking';
+import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
+import { PARENT_COMPONENT_TOKEN } from '../../directives/visualisation-interactivity.directive';
+import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 
 export interface SequenceDetail {
   title: string;
@@ -61,6 +59,7 @@ export interface SequenceDetail {
     SmartSeqViewerComponent,
     MolstarComponent,
   ],
+  providers: [{ provide: PARENT_COMPONENT_TOKEN, useExisting: LLMTabComponent }],
   templateUrl: './llm-tab.component.html',
   styleUrl: './llm-tab.component.scss',
 })
@@ -70,13 +69,9 @@ export class LLMTabComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
-  // private readonly actionQueue = inject(ActionQueueService);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
-  // public readonly molstarState = inject(MolstarStateService);
-
-  // public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 
   public dropdownSelected!: string;
@@ -198,13 +193,14 @@ export class LLMTabComponent implements OnInit {
           colorParams: { value: Color(0xfefefe) },
         },
       },
+      loadMaps: true,
     };
 
     return configForMolstar;
   });
 
   private molstarReady = signal(false);
-  private _molstarComponent?: MolstarComponent;
+  public _molstarComponent?: MolstarComponent;
   @ViewChild('molstarComponent') set molstarComponent(ref: MolstarComponent | undefined) {
     if (ref) {
       this._molstarComponent = ref;
@@ -220,6 +216,8 @@ export class LLMTabComponent implements OnInit {
     return this._molstarComponent?.firstLoadFinished() || false;
   });
   private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+
+  public selectionData?: QueryParam[];
 
   constructor() {
     this.compCommunication.llmSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe((idx) => {
@@ -241,56 +239,15 @@ export class LLMTabComponent implements OnInit {
     this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
       this.updateBackgroundAnnotation();
     });
-
-    // document.addEventListener('smartSeqViewerSelect', (event) => this.smartSeqViewerSelectChange(event));
-    // document.addEventListener('smartSeqViewerUnselect', (event) => this.smartSeqViewerSelectChange(event));
   }
 
-  @HostListener('document:smartSeqViewerSelect', ['$event'])
-  @HostListener('document:smartSeqViewerUnselect', ['$event'])
-  private smartSeqViewerSelectChange(event: any) {
-    if (event.detail === null) {
-      this.resetAnnotationList();
-
-      const macromolecule = this.currentMacromoleculeDatum();
-      if (!macromolecule) return;
-      const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-
-      const entityId = molstarSelection.entityId;
-      const chainId = molstarSelection.authChainId;
-      const entityColor = macromolecule.molstarColorHex;
-
-      const selectionData = [
-        {
-          entity_id: `${entityId}`,
-          auth_asym_id: `${chainId}`,
-          color: entityColor,
-          focus: true,
-        },
-      ];
-      this.lastClickedResidue = undefined;
-      this.zoomInAndSelect(selectionData);
-      return;
-    }
-    const residueNumber = event.detail.eventData.residueNumber;
-
-    this.filterAnnotationList(residueNumber);
-    const clickData = {
-      entity_id: event.detail.eventData.entityId,
-      auth_asym_id: event.detail.eventData.chainId,
-      residue_number: event.detail.eventData.residueNumber,
-    };
-    const doNotPropagateEvt = true;
-    this.handleSelectionOnMolstarResClick(clickData, doNotPropagateEvt);
-  }
-
-  private resetAnnotationList() {
+  public resetAnnotationList() {
     const letter = this.dropdownSelected.split(' ')[1];
     const groupedAnnotations = this.groupedFilteredLLMAnnotations()[letter];
     this.filteredLLMAnnotations.update(() => groupedAnnotations);
   }
 
-  private filterAnnotationList(residueNumber: number) {
+  public filterAnnotationList(residueNumber: number) {
     const allAnnotations = this.groupedAnnotations();
     const filteredByResidue = allAnnotations.filter((a: LLMAnnotation) => a.pdbResidue === residueNumber);
     this.filteredLLMAnnotations.update(() => this.llmAnnotationsFacade.removeDuplicatesByKey(filteredByResidue, 'sentence'));
@@ -410,7 +367,6 @@ export class LLMTabComponent implements OnInit {
   private async renderVisualisations(macromolecule: MacromoleculesRowData) {
     await this.renderInMolstar(macromolecule);
     await this.setCurrentSelectionData(macromolecule);
-    // await this.initOrRefreshTopologyViewer(macromolecule);
   }
 
   private async setCurrentSelectionData(macromolecule: MacromoleculesRowData) {
@@ -419,128 +375,6 @@ export class LLMTabComponent implements OnInit {
 
     this.currentSelectionEntityId.set(`${entityId}`);
     this.currentSelectionChainId.set(chainId);
-  }
-
-  private zoomOutStructure(durationMs: number) {
-    const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
-    if (!plugin) return;
-
-    const assemblyRef = plugin.managers.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
-    const structure = plugin.state.data?.select(assemblyRef)[0]?.obj?.data;
-    const structureLoci = structure ? Structure.toStructureElementLoci(structure) : null;
-
-    structureLoci && plugin.managers.camera?.focusLoci(structureLoci, { durationMs });
-  }
-
-  private lastClickedResidue?: {
-    entity_id: string;
-    auth_asym_id: string;
-    residue_number: number;
-  } = undefined;
-
-  @HostListener('document:to-molstar-click', ['$event'])
-  private handleTableResidueSelection(event: Event) {
-    const eventData = (event as any).detail.eventData;
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const entityId = molstarSelection.entityId;
-    const chainId = molstarSelection.authChainId;
-    if (!entityId || !chainId) return;
-    const clickData = {
-      entity_id: entityId,
-      auth_asym_id: chainId,
-      residue_number: eventData.residueNumber,
-    };
-    const doNotPropagateEvt = true;
-    const doNotCheckOrUpdState = true;
-    this.handleSelectionOnMolstarResClick(clickData, doNotPropagateEvt, doNotCheckOrUpdState);
-    this.filterAnnotationList(clickData.residue_number);
-  }
-
-  @HostListener('document:PDB.molstar.click', ['$event'])
-  private keepSelectionOnMolstarResClick(event: Event) {
-    const eventData = (event as PDBMolstarEvent).eventData;
-    const clickData = {
-      entity_id: eventData.entity_id,
-      auth_asym_id: eventData.auth_asym_id,
-      residue_number: eventData.residueNumber,
-    };
-    this.handleSelectionOnMolstarResClick(clickData);
-  }
-
-  /**
-   * Overrides Molstar residue click selection behaviour to allow:
-   * 1 - deselection
-   * 2 - communication with SmartSeqViewer
-   * 3 - communication with this tab
-   * @param clickData
-   */
-  private handleSelectionOnMolstarResClick(
-    clickData: { entity_id: string; auth_asym_id: string; residue_number: number },
-    doNotPropagate?: boolean,
-    doNotCheckOrUpdState?: boolean
-  ) {
-    let currentResidue:
-      | undefined
-      | {
-          entity_id: string;
-          auth_asym_id: string;
-          residue_number: number;
-        } = clickData;
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const entityId = molstarSelection.entityId;
-    const chainId = molstarSelection.authChainId;
-
-    if (
-      !doNotCheckOrUpdState &&
-      this.lastClickedResidue &&
-      this.lastClickedResidue.entity_id === currentResidue.entity_id &&
-      this.lastClickedResidue.auth_asym_id === currentResidue.auth_asym_id &&
-      this.lastClickedResidue.residue_number === currentResidue.residue_number
-    ) {
-      currentResidue = undefined;
-    }
-
-    const macromolecule = this.currentMacromoleculeDatum();
-    if (!macromolecule) return;
-
-    const entityColor = macromolecule.molstarColorHex;
-    const selectionData: QueryParam[] = [
-      {
-        entity_id: `${entityId}`,
-        auth_asym_id: `${chainId}`,
-        color: entityColor,
-        focus: currentResidue ? false : true,
-      },
-    ];
-    if (currentResidue) selectionData.push({ ...currentResidue, focus: true });
-
-    if (!doNotCheckOrUpdState) this.lastClickedResidue = currentResidue;
-    this.zoomInAndSelect(selectionData);
-
-    if (clickData.entity_id !== entityId || clickData.auth_asym_id !== chainId) return;
-    if (!doNotPropagate) {
-      const eventObj = new CustomEvent('to-seq-viewer-click', {
-        detail: {
-          eventData: {
-            residueNumber: clickData.residue_number,
-            entityId: 'ignore',
-            chainId: 'ignore',
-            unselect: currentResidue ? 'ignore' : true,
-          },
-        },
-        bubbles: true,
-        cancelable: true,
-      });
-      document.dispatchEvent(eventObj);
-      if (!currentResidue) this.resetAnnotationList();
-      else this.filterAnnotationList(clickData.residue_number);
-    }
-  }
-
-  private zoomInAndSelect(selectionData: QueryParam[]) {
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-    instance.visual.select({ data: selectionData });
   }
 
   private async renderInMolstar(macromolecule: MacromoleculesRowData) {
@@ -559,7 +393,7 @@ export class LLMTabComponent implements OnInit {
 
     // Access Molstar instance
     const entityColor = macromolecule.molstarColorHex;
-    const selectionData = [
+    this.selectionData = [
       {
         entity_id: `${entityId}`,
         auth_asym_id: `${chainId}`,
@@ -569,18 +403,12 @@ export class LLMTabComponent implements OnInit {
     ];
 
     const durationMs = this._molstarComponent ? 1200 : 0;
-    this.zoomOutStructure(durationMs);
+    const instance = this._molstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+    await zoomOutStructureInMolstar(instance, durationMs);
 
-    timer(durationMs + 100).subscribe(() => {
-      this.zoomInAndSelect(selectionData);
+    timer(durationMs + 100).subscribe(async () => {
+      await drawSelectionInMolstar(instance, this.selectionData);
     });
-
-    // this.actionQueue.addAction(
-    //   `renderMolstarForLLM-${macromolecule.name.molecule}-${entityId}-${chainId}`,
-    //   async () => {
-    //     await this.molstarState.renderMolstarForLLM(macromolecule, molstarSelection);
-    //   },
-    //   shouldSkip // skippable
-    // );
   }
 }

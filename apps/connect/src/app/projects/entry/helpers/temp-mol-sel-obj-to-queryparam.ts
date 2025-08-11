@@ -1,6 +1,6 @@
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../data-classes/data-models-and-definitions/row-and-table.model';
 
 export function macromoleculeMolstarSelObjToQueryParam(
   macromolecule: MacromoleculesRowData,

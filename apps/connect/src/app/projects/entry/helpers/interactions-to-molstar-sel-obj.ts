@@ -1,8 +1,9 @@
 import { MolstarSelectionObj, MolstarSelectionObjResid } from '@pdbe-lib/molstar-for-apps';
 import { INTX_NAME_COLORS } from '../entry-constant';
 import { INTX_NAME_STANDARDIZER } from '../components/ligands-tab/interaction-type.component';
-import { LigandsRowData } from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { LigandsRowData } from '../data-classes/data-models-and-definitions/row-and-table.model';
 import { Interaction } from '../data-models/interaction.model';
+import { QueryParam } from 'pdbe-molstar/lib/helpers';
 
 export function interactionsToMolstar(
   ligand: LigandsRowData,
@@ -14,8 +15,8 @@ export function interactionsToMolstar(
   const residueId = ligandMolstarSelection.residues[0].authBegin;
   const resIns = ligandMolstarSelection.residues[0].authBeginIns;
 
-  const residuesMolstarSelections: MolstarSelectionObj[] = [];
-  const interactionsMolstarSelections: any[] = [];
+  const residuesMolstarSelections: QueryParam[] = [];
+  const interactionsMolstarSelections: QueryParam[] = [];
 
   for (const int of interactions) {
     const dist = int.distance;
@@ -47,30 +48,42 @@ export function interactionsToMolstar(
       color,
       tooltip,
     });
-    const residObj: MolstarSelectionObjResid = {
+    const residObj: QueryParam = {
       // auth_asym_id: int.end.chain_id,
       // auth_seq_id: int.end.author_residue_number,
       // auth_ins_code_id: this.normalizeInsertionCode(int.end.author_insertion_code),
-      entityId: chainToEntityId[int.end.chain_id],
-      authChainId: int.end.chain_id,
-      authBegin: int.end.author_residue_number + '',
-      authBeginIns: normalizeInsertionCode(int.end.author_insertion_code) + '' || '',
-      authEnd: int.end.author_residue_number + '',
-      authEndIns: normalizeInsertionCode(int.end.author_insertion_code) + '' || '',
+
+      // entityId: chainToEntityId[int.end.chain_id],
+      entity_id: chainToEntityId[int.end.chain_id],
+      // authChainId: int.end.chain_id,
+      auth_asym_id: int.end.chain_id,
+      // authBegin: int.end.author_residue_number + '',
+      auth_residue_number: int.end.author_residue_number,
+      // authBeginIns: normalizeInsertionCode(int.end.author_insertion_code) + '' || '',
+      auth_ins_code_id: normalizeInsertionCode(int.end.author_insertion_code),
+      // authEnd: int.end.author_residue_number + '',
+      // authEndIns: normalizeInsertionCode(int.end.author_insertion_code) + '' || '',
     };
 
     const sameResidues = residuesMolstarSelections.filter((sel) => {
+      // return (
+      //   sel.residues[0].entityId === residObj.entityId &&
+      //   sel.residues[0].authChainId === residObj.authChainId &&
+      //   sel.residues[0].authBegin === residObj.authBegin &&
+      //   sel.residues[0].authBeginIns === residObj.authBeginIns
+      // );
       return (
-        sel.residues[0].entityId === residObj.entityId &&
-        sel.residues[0].authChainId === residObj.authChainId &&
-        sel.residues[0].authBegin === residObj.authBegin &&
-        sel.residues[0].authBeginIns === residObj.authBeginIns
+        sel.entity_id === residObj.entity_id &&
+        sel.auth_asym_id === residObj.auth_asym_id &&
+        sel.auth_residue_number === residObj.auth_residue_number &&
+        sel.auth_ins_code_id === residObj.auth_ins_code_id
       );
     });
     if (sameResidues.length === 0) {
-      residuesMolstarSelections.push({
-        residues: [residObj],
-      });
+      // residuesMolstarSelections.push({
+      //   residues: [residObj],
+      // });
+      residuesMolstarSelections.push(residObj);
     }
 
     // if (residuesMolstarSelections.residues.indexOf(residObj) === -1) {

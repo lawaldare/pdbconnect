@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ElementRef, inject, Injectable, NgZone, QueryList, signal, Type } from '@angular/core';
-import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MobileTabNames } from './mobile-main/mobile-main.component';
 import { BehaviorSubject, take } from 'rxjs';
 import { Router } from '@angular/router';
@@ -19,7 +18,6 @@ type MobileTabName = 'overview' | 'molstar' | 'citation';
   providedIn: 'root',
 })
 export class MobileFacade {
-  public readonly signals = inject(ComponentCommunicationService);
   private readonly router = inject(Router);
 
   private bottomSheet = inject(MatBottomSheet);

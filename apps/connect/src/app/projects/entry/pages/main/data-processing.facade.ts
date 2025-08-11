@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { computed, DestroyRef, inject, Injectable, Renderer2, RendererFactory2, signal } from '@angular/core';
 import { Title, Meta } from '@angular/platform-browser';
-import { DataToTable } from '../../components/shared/interactive-tables/data-processing/abstract-base-row-class';
-import { AssemblyDataToTable } from '../../components/shared/interactive-tables/data-processing/assembly-row-class';
-import { DomainDataToTable } from '../../components/shared/interactive-tables/data-processing/domain-row-class';
-import { LigandDataToTable } from '../../components/shared/interactive-tables/data-processing/ligand-row-class';
-import { MacromoleculeDataToTable } from '../../components/shared/interactive-tables/data-processing/macromolecule-row';
+import { DataToTable } from '../../data-classes/data-processing/abstract-base-row-class';
+import { AssemblyDataToTable } from '../../data-classes/data-processing/assembly-row-class';
+import { DomainDataToTable } from '../../data-classes/data-processing/domain-row-class';
+import { LigandDataToTable } from '../../data-classes/data-processing/ligand-row-class';
+import { MacromoleculeDataToTable } from '../../data-classes/data-processing/macromolecule-row';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
@@ -20,14 +20,8 @@ import { ProcessedSummary } from '../../data-models/summary.model';
 import { ResidueWiseOutliersMolecule } from '../../data-models/residuewise-outliers.model';
 import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { FlatOutlierResidue } from '../../components/model-quality-tab/validation-data.facade';
-import { MolstarStateService } from '../../services/molstar-state.service';
 import { Molecule } from '../../data-models/molecule.model';
-import {
-  AssembliesRowData,
-  DomainsRowData,
-  LigandsRowData,
-  MacromoleculesRowData,
-} from '../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { AssembliesRowData, DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { getMacromoleculeOfDomain } from '../../helpers/processed-data-to-controls';
 import { environment } from '../../../../../environments/environment';
 import { ENTRY_PAGES_LINKS, labelGroups } from '../../entry-constant';
@@ -48,7 +42,6 @@ export type OutliersByModelId = Record<string, OutlierDict>;
 })
 export class MainDataProcessingFacade {
   public readonly compCommunication = inject(ComponentCommunicationService);
-  public readonly molstarState = inject(MolstarStateService);
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly destroyRef = inject(DestroyRef);
   private readonly titleService = inject(Title);
@@ -396,7 +389,6 @@ export class MainDataProcessingFacade {
     if (this.isNotUndefined([data.residueOutliers])) {
       outliersByModelId = this.processResidueOutliersData(data.residueOutliers);
     }
-    // this.molstarState.outliersByModelId.set(outliersByModelId);
     this.compCommunication.outliersByModelId.set(outliersByModelId);
 
     if (this.isTitleAndMetaProcessed === false) {

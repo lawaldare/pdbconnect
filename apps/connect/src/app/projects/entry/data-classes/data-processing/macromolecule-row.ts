@@ -1,13 +1,13 @@
 import { signal, WritableSignal } from '@angular/core';
 import { MacromoleculesResidueRanges, MacromoleculesRowData, TableFilter, TableRow } from '../data-models-and-definitions/row-and-table.model';
 import { DataToTable } from './abstract-base-row-class';
-import { CarbohydrateMolecule, CarbohydrateResidue } from '../../../../data-models/carbohydrate-polymer.model';
-import { Molecule } from '../../../../data-models/molecule.model';
-import { UniProtMapping } from '../../../../data-models/uniprot-mapping.model';
+import { CarbohydrateMolecule, CarbohydrateResidue } from '../../data-models/carbohydrate-polymer.model';
+import { Molecule } from '../../data-models/molecule.model';
+import { UniProtMapping } from '../../data-models/uniprot-mapping.model';
 import { DEFAULT_SET_25, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
-import { PolymerCoverageMolecule } from '../../../../data-models/polymer-coverage.model';
-import { AssemblyData, AssemblyEntity } from '../../../../data-models/assembly.model';
-import { ProcessedSummary } from '../../../../data-models/summary.model';
+import { PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
+import { AssemblyData, AssemblyEntity } from '../../data-models/assembly.model';
+import { ProcessedSummary } from '../../data-models/summary.model';
 
 interface MacromoleculesChainBoundaries {
   [key: number]: {
@@ -374,7 +374,7 @@ export class MacromoleculeDataToTable extends DataToTable {
         },
         {
           moleculeTypes: ['polydeoxyribonucleotide', 'polyribonucleotide', 'polydeoxyribonucleotide/polyribonucleotide hybrid'],
-          filterDescriptionSuffix: 'DNA/RNA',
+          filterDescriptionSuffix: 'DNA or RNA',
         },
         {
           moleculeTypes: ['carbohydrate polymer'],

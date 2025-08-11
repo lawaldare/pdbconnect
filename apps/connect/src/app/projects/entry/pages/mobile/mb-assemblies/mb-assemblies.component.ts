@@ -6,13 +6,14 @@ import { ValidationDataProcessingFacade } from '../../../components/model-qualit
 import { MobileFacade } from '../mobile.facade';
 import { MainDataProcessingFacade } from '../../main/data-processing.facade';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { AssembliesRowData } from '../../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { AssembliesRowData } from '../../../data-classes/data-models-and-definitions/row-and-table.model';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { MaterialModule } from '@pdbc/core';
 import { FormsModule } from '@angular/forms';
-import { MolstarForEntryPages } from '../../../helpers/molstar-for-entry-pages';
+import { filter, firstValueFrom, take } from 'rxjs';
+import { clearSelectionInMolstar } from '../../../helpers/molstar-helpers';
 
 @Component({
   selector: 'pdbc-mb-assemblies',
@@ -26,22 +27,20 @@ export class MbAssembliesComponent implements OnInit {
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   private readonly mbFacade = inject(MobileFacade);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
-  public readonly signals = inject(ComponentCommunicationService);
+  public readonly compCommunication = inject(ComponentCommunicationService);
   public expanded = signal<boolean>(false);
   public isChecked = signal<boolean>(false);
 
   public readonly symmetry = toSignal(this.globalStore.select(EntrySelectors.symmetry));
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
 
-  public readonly molstarVisualisation = inject(MolstarForEntryPages);
-
   public readonly assemblyTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
+    const tableData = this.compCommunication.tabTableData();
     const hasData = Object.keys(tableData).indexOf('Assemblies') !== -1;
 
     if (isLoaded && hasData) {
-      const tabData = this.signals.getTabData('Assemblies');
+      const tabData = this.compCommunication.getTabData('Assemblies');
       return tabData.tableRows() as AssembliesRowData[];
     }
     return [];
@@ -65,7 +64,17 @@ export class MbAssembliesComponent implements OnInit {
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbAssembliesComponent>) {}
 
   async ngOnInit() {
-    await this.molstarVisualisation.renderTabsAssemblies();
+    // Wait until first render is finished
+    await firstValueFrom(
+      this.compCommunication.mobileMolstarLoaded$.pipe(
+        filter((ready) => ready), // proceed when true
+        take(1)
+      )
+    );
+
+    const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
+    if (!instance) return;
+    await clearSelectionInMolstar(instance, 700);
   }
 
   toggleBottomsheetHeight() {
@@ -80,6 +89,5 @@ export class MbAssembliesComponent implements OnInit {
     this.bottomSheetRef.dismiss();
     this.mbFacade.updateSelectedComponent(null);
     this.mbFacade.updateSelectedTabName('');
-    await this.molstarVisualisation.resetMobileMolstarInitial();
   }
 }

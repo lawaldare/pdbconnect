@@ -1,4 +1,4 @@
-import { DomainsBoundaries, DomainsRowData } from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { DomainsBoundaries, DomainsRowData } from '../data-classes/data-models-and-definitions/row-and-table.model';
 import { DomainMapping } from '../data-models/domains.model';
 import { MolstarResidueInfo, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { ObservedSegments, PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
@@ -202,18 +202,4 @@ export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCov
     segments,
     segmentsResidNumber,
   };
-}
-
-export function groupDomainSelectionsByAccession(domains: DomainsRowData[]) {
-  const groups = new Map();
-
-  for (const domain of domains) {
-    const acc = domain.additionalData.accession;
-    if (!groups.has(acc)) {
-      groups.set(acc, []);
-    }
-    groups.get(acc).push(...domain.additionalData.selections);
-  }
-
-  return Array.from(groups.values());
 }

@@ -1,13 +1,13 @@
 import { signal, WritableSignal } from '@angular/core';
 import { LigandsRowData, TableFilter, TableRow } from '../data-models-and-definitions/row-and-table.model';
 import { DataToTable } from './abstract-base-row-class';
-import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
-import { Molecule } from '../../../../data-models/molecule.model';
+import { ModifiedResidue } from '../../data-models/modified-residues.model';
+import { Molecule } from '../../data-models/molecule.model';
 import { COLORBREWER_SET2_COLORS, ELEMENT_COLORS_HEX, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
-import { LigandMonomer } from '../../../../data-models/ligand-monomers.model';
-import { AssemblyData } from '../../../../data-models/assembly.model';
-import { ProcessedSummary } from '../../../../data-models/summary.model';
-import { BANG_WONG_COLORBLIND_SCALE } from '../../../../entry-constant';
+import { LigandMonomer } from '../../data-models/ligand-monomers.model';
+import { AssemblyData } from '../../data-models/assembly.model';
+import { ProcessedSummary } from '../../data-models/summary.model';
+import { BANG_WONG_COLORBLIND_SCALE } from '../../entry-constant';
 
 export class LigandDataToTable extends DataToTable {
   // Ligand specific data

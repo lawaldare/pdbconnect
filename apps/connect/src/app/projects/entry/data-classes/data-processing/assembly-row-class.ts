@@ -1,7 +1,7 @@
-import { AssemblyData } from '../../../../data-models/assembly.model';
-import { ComplexDetails } from '../../../../data-models/complex-details.model';
-import { PisaAssembly } from '../../../../data-models/pisa-assembly.model';
-import { ProcessedSummary } from '../../../../data-models/summary.model';
+import { AssemblyData } from '../../data-models/assembly.model';
+import { ComplexDetails } from '../../data-models/complex-details.model';
+import { PisaAssembly } from '../../data-models/pisa-assembly.model';
+import { ProcessedSummary } from '../../data-models/summary.model';
 import { AssembliesRowData, TableFilter, TableRow } from '../data-models-and-definitions/row-and-table.model';
 import { DataToTable } from './abstract-base-row-class';
 import { signal, WritableSignal } from '@angular/core';

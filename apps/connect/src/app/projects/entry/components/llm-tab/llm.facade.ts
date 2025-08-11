@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { inject, Injectable } from '@angular/core';
-import { MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { SequenceDetail } from './llm-tab.component';
 import { EntryApiService } from '../../services/entry-api.service';
 import { LLMAnnotation } from '../../data-models/llm-model';

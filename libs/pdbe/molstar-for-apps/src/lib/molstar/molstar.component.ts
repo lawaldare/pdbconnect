@@ -24,6 +24,8 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
 
   @ViewChild('viewContainer') viewContainer!: ElementRef;
 
+  public molstarActionsMutex = Promise.resolve();
+
   async ngAfterViewInit() {
     await this.molstarPluginService.loadPlugin();
     const pluginInstance = this.molstarPluginService.createInstance();

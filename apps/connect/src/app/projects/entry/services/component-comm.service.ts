@@ -1,13 +1,10 @@
 import { computed, Injectable, signal, WritableSignal } from '@angular/core';
-import { DataToTable } from '../components/shared/interactive-tables/data-processing/abstract-base-row-class';
+import { DataToTable } from '../data-classes/data-processing/abstract-base-row-class';
 import { BehaviorSubject } from 'rxjs';
-import {
-  AssembliesRowData,
-  DomainsRowData,
-  LigandsRowData,
-  MacromoleculesRowData,
-} from '../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
+import { AssembliesRowData, DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../data-classes/data-models-and-definitions/row-and-table.model';
 import { OutliersByModelId } from '../pages/main/data-processing.facade';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { InitParams } from 'pdbe-molstar/lib/spec';
 
 export interface PreferredAssemblyData {
   name: string;
@@ -30,6 +27,11 @@ export class ComponentCommunicationService {
   public chainToEntityId = signal<{ [key: string]: string }>({});
   public outliersByModelId = signal<OutliersByModelId | undefined>(undefined);
   public relatedEntries: WritableSignal<string[]> = signal([]);
+
+  public mobileMolstar?: MolstarComponent;
+  public mobileMolstarLoaded$ = new BehaviorSubject<boolean>(false);
+  public mobileModelIdx$ = new BehaviorSubject<string>('1');
+  public configForMobileMolstar = signal<InitParams | undefined>(undefined);
 
   public currentTab = signal<string>('Information');
   public tabSwitchOrigin = signal<string>('main');
