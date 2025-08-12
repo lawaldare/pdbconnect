@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, QueryList, signal, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, NgZone, QueryList, signal, Type, ViewChild, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
@@ -8,7 +8,6 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { MobileFacade } from '../mobile.facade';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { MobileTabNames } from '../mobile-main/mobile-main.component';
 import { take } from 'rxjs';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
@@ -17,8 +16,22 @@ import { PresetStructureRepresentations } from 'molstar/lib/mol-plugin-state/bui
 import { DownloadStructure } from 'molstar/lib/mol-plugin-state/actions/structure';
 import { Structure } from 'molstar/lib/mol-model/structure';
 import { initializeModelIdTracking } from '../../../helpers/molstar-nmr-model-tracking';
-import { Color } from 'molstar/lib/mol-util/color';
 import { MobileTabChips } from '../../../data-classes/data-models-and-definitions/other-models';
+import { MbAssembliesComponent } from '../mb-assemblies/mb-assemblies.component';
+import { MbDomainsComponent } from '../mb-domains/mb-domains.component';
+import { MbLigandsComponent } from '../mb-ligands/mb-ligands.component';
+import { MbMacromoleculeComponent } from '../mb-macromolecules/mb-macromolecule.component';
+import { MbModelQualityComponent } from '../mb-model-quality/mb-model-quality.component';
+import { MobileStateService } from '../mobile-state.service';
+import { MobileTabNames } from '../mobile-tab.model';
+
+const MOBILE_COMPONENT_MAP = {
+  [MobileTabChips.MQuality]: MbModelQualityComponent,
+  [MobileTabChips.Assemblies]: MbAssembliesComponent,
+  [MobileTabChips.Macromolecules]: MbMacromoleculeComponent,
+  [MobileTabChips.Ligands]: MbLigandsComponent,
+  [MobileTabChips.Domains]: MbDomainsComponent,
+};
 
 @Component({
   selector: 'pdbc-mb-molstar-tab',
@@ -29,6 +42,8 @@ import { MobileTabChips } from '../../../data-classes/data-models-and-definition
 export class MbMolstarTabComponent implements AfterViewInit {
   private bottomSheet = inject(MatBottomSheet);
   private readonly globalStore = inject(Store<EntryStoreState>);
+  private readonly state = inject(MobileStateService);
+  private readonly zone = inject(NgZone);
   private readonly mbFacade = inject(MobileFacade);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
@@ -48,7 +63,7 @@ export class MbMolstarTabComponent implements AfterViewInit {
     { label: 'Domains', id: MobileTabChips.Domains },
   ];
 
-  public selectedTabName = this.mbFacade.selectedTabName;
+  public selectedTabName = this.state.selectedTabName;
 
   private molstarReady = signal(false);
   private _molstarComponent?: MolstarComponent;
@@ -149,7 +164,27 @@ export class MbMolstarTabComponent implements AfterViewInit {
   }
 
   public onTabClick(chip: { label: string; id: string }): void {
-    this.mbFacade.onTabClick(chip, this.chipElements);
+    // this.mbFacade.onTabClick(chip, this.chipElements);
+
+    if (chip.id === this.selectedTabName()) {
+      this.state.updateSelectedTabName('');
+    } else {
+      this.state.updateSelectedTabName(chip.id);
+      // scrolls into view horizontally on mobile without anti pattern
+      this.zone.onStable.pipe(take(1)).subscribe(() => {
+        const chipElement = this.chipElements.find((el) => el.nativeElement.dataset['id'] === chip.id);
+        chipElement?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      });
+    }
+
+    const componentToOpen: Type<any> = MOBILE_COMPONENT_MAP[chip.id as MobileTabChips] || null;
+    if (componentToOpen) {
+      this.bottomSheet.open(componentToOpen, {
+        height: '40%',
+        hasBackdrop: false,
+        panelClass: 'custom-bottom-sheet',
+      });
+    }
   }
 
   public goBackToOverviewPage(): void {

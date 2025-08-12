@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, Optional, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, Optional, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
@@ -7,7 +7,6 @@ import { MacromoleculesRowData } from '../../../data-classes/data-models-and-def
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { MainDataProcessingFacade } from '../../main/data-processing.facade';
-import { MobileFacade } from '../mobile.facade';
 import { MaterialModule, UtilService } from '@pdbc/core';
 import { DetailsDashboardFacade, SequenceDetail } from '../../../components/shared/details-dashboard.facade';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -20,6 +19,7 @@ import { truncateText } from '../../../helpers/truncate-text';
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
 import { macromoleculeMolstarSelObjToQueryParam } from '../../../helpers/temp-mol-sel-obj-to-queryparam';
 import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
+import { MobileStateService } from '../mobile-state.service';
 
 export enum ViewState {
   List = 'list',
@@ -42,7 +42,8 @@ export class MbMacromoleculeComponent {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly destroyRef = inject(DestroyRef);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
-  private readonly mbFacade = inject(MobileFacade);
+  private readonly state = inject(MobileStateService);
+
   public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
   public readonly entryApiService = inject(EntryApiService);
   public readonly compCommunication = inject(ComponentCommunicationService);
@@ -106,7 +107,7 @@ export class MbMacromoleculeComponent {
 
   public selectedMacromolecule = signal<any>({});
 
-  public title = this.mbFacade.macromoleculeTitle;
+  public title = this.state.macromoleculeTitle;
 
   public structureDomains = computed(() => {
     const cath = this.cathMapping() ?? {};
@@ -306,8 +307,8 @@ export class MbMacromoleculeComponent {
 
   public async closeBottomSheet() {
     this.bottomSheetRef.dismiss();
-    this.mbFacade.updateSelectedComponent(null);
-    this.mbFacade.updateSelectedTabName('');
+    this.state.updateSelectedComponent(null);
+    this.state.updateSelectedTabName('');
     // const durationMs = this.compCommunication.mobileMolstar ? 300 : 0;
     // const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
     // if (!instance) return;
@@ -319,14 +320,14 @@ export class MbMacromoleculeComponent {
     const titleElement = this.macroMoleculeTitle.nativeElement;
     const { bestFit, isTruncated } = truncateText(titleElement, data.name.molecule, 3);
     const moleculeName = isTruncated ? bestFit : data.name.molecule;
-    this.mbFacade.updateSelectedMacromoleculeTitle(moleculeName);
+    this.state.updateSelectedMacromoleculeTitle(moleculeName);
     this.selectedMacromolecule.set(data);
     this.updateMacromoleculeData();
   }
 
   public async goBackToList() {
     this.currentViewState.set(ViewState.List);
-    this.mbFacade.updateSelectedMacromoleculeTitle('Macromolecules');
+    this.state.updateSelectedMacromoleculeTitle('Macromolecules');
     await this.renderInMolstar(undefined);
   }
 

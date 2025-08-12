@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, inject, Optional, signal } from '@angular/core';
+import { Component, computed, inject, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
@@ -7,7 +7,6 @@ import { DomainsRowData } from '../../../data-classes/data-models-and-definition
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MainDataProcessingFacade } from '../../main/data-processing.facade';
 import { ViewState } from '../mb-macromolecules/mb-macromolecule.component';
-import { MobileFacade } from '../mobile.facade';
 import { resourceUrls } from '../../../entry-constant';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
@@ -17,6 +16,7 @@ import { debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer
 import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
 import { domainMolstarSelObjToQueryParam } from '../../../helpers/temp-mol-sel-obj-to-queryparam';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import { MobileStateService } from '../mobile-state.service';
 
 @Component({
   selector: 'pdbc-mb-domains',
@@ -25,7 +25,8 @@ import { QueryParam } from 'pdbe-molstar/lib/helpers';
   styleUrls: ['../common-mb-header.scss', './mb-domains.component.scss'],
 })
 export class MbDomainsComponent {
-  private readonly mbFacade = inject(MobileFacade);
+  private readonly state = inject(MobileStateService);
+
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
   private readonly globalStore = inject(Store<EntryStoreState>);
@@ -39,7 +40,7 @@ export class MbDomainsComponent {
   public viewStates = ViewState;
   public selectedDomain = signal<any>({});
   public expanded = signal<boolean>(false);
-  public title = this.mbFacade.domainTitle;
+  public title = this.state.domainTitle;
 
   public dropdownOptions: DownloadOption[] = [];
   public dropdownSelected!: string;
@@ -86,14 +87,14 @@ export class MbDomainsComponent {
 
   public async closeBottomSheet() {
     this.bottomSheetRef.dismiss();
-    this.mbFacade.updateSelectedComponent(null);
-    this.mbFacade.updateSelectedTabName('');
+    this.state.updateSelectedComponent(null);
+    this.state.updateSelectedTabName('');
   }
 
   public navigateToDetail(data: DomainsRowData) {
     this.currentViewState.set(ViewState.Detail);
     this.selectedDomain.set(data);
-    this.mbFacade.updateSelectedDomainTitle(data.accessionName);
+    this.state.updateSelectedDomainTitle(data.accessionName);
     this.updateCurrentDomain();
   }
 
@@ -104,7 +105,7 @@ export class MbDomainsComponent {
 
   public async goBackToList() {
     this.currentViewState.set(ViewState.List);
-    this.mbFacade.updateSelectedDomainTitle('Domains');
+    this.state.updateSelectedDomainTitle('Domains');
     this.renderInMolstar(undefined);
   }
 

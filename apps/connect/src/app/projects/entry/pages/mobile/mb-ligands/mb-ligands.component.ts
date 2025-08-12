@@ -2,7 +2,6 @@
 import { Component, computed, effect, inject, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ViewState } from '../mb-macromolecules/mb-macromolecule.component';
-import { MobileFacade } from '../mobile.facade';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { LigandsRowData } from '../../../data-classes/data-models-and-definitions/row-and-table.model';
 import { MainDataProcessingFacade } from '../../main/data-processing.facade';
@@ -25,6 +24,7 @@ import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, take
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions/index';
+import { MobileStateService } from '../mobile-state.service';
 
 @Component({
   selector: 'pdbc-mb-ligands',
@@ -33,7 +33,8 @@ import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensio
   styleUrls: ['../common-mb-header.scss', './mb-ligands.component.scss'],
 })
 export class MbLigandsComponent {
-  private readonly mbFacade = inject(MobileFacade);
+  private readonly state = inject(MobileStateService);
+
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
   private readonly globalStore = inject(Store<EntryStoreState>);
@@ -53,7 +54,7 @@ export class MbLigandsComponent {
   public viewStates = ViewState;
   public selectedLigands = signal<any>({});
   public expanded = signal<boolean>(false);
-  public title = this.mbFacade.ligandTitle;
+  public title = this.state.ligandTitle;
 
   public dropdownOptions: DownloadOption[] = [];
   public dropdownSelected!: string;
@@ -270,21 +271,21 @@ export class MbLigandsComponent {
 
   public async closeBottomSheet() {
     this.bottomSheetRef.dismiss();
-    this.mbFacade.updateSelectedComponent(null);
-    this.mbFacade.updateSelectedTabName('');
+    this.state.updateSelectedComponent(null);
+    this.state.updateSelectedTabName('');
   }
 
   public navigateToDetail(data: LigandsRowData) {
     this.currentViewState.set(ViewState.Detail);
     this.selectedLigands.set(data);
     const title = `${data.codeAndName.count} X ${data.id}`;
-    this.mbFacade.updateSelectedLigandTitle(title);
+    this.state.updateSelectedLigandTitle(title);
     this.updateCurrentLigand();
   }
 
   public async goBackToList() {
     this.currentViewState.set(ViewState.List);
-    this.mbFacade.updateSelectedLigandTitle('Ligands');
+    this.state.updateSelectedLigandTitle('Ligands');
     await this.renderInMolstar(undefined);
   }
 

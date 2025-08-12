@@ -15,7 +15,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { CitationXmlImagesComponent } from '../../../components/citations-tab/sub-components/citation-xml-images/citation-xml-images.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MobileFacade } from '../mobile.facade';
-import { MobileTabNames } from '../mobile-main/mobile-main.component';
+import { MobileTabNames } from '../mobile-tab.model';
 
 export interface NavigationLink {
   id: string;

@@ -1,12 +1,10 @@
-import { Component, computed, DestroyRef, inject, OnInit, Optional, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { ValidationDataProcessingFacade } from '../../../components/model-quality-tab/validation-data.facade';
-import { MobileFacade } from '../mobile.facade';
 import { MainDataProcessingFacade } from '../../main/data-processing.facade';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { AssembliesRowData } from '../../../data-classes/data-models-and-definitions/row-and-table.model';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../../store/entry.selectors';
@@ -14,6 +12,7 @@ import { MaterialModule } from '@pdbc/core';
 import { FormsModule } from '@angular/forms';
 import { filter, firstValueFrom, take } from 'rxjs';
 import { clearSelectionInMolstar } from '../../../helpers/molstar-helpers';
+import { MobileStateService } from '../mobile-state.service';
 
 @Component({
   selector: 'pdbc-mb-assemblies',
@@ -23,9 +22,9 @@ import { clearSelectionInMolstar } from '../../../helpers/molstar-helpers';
 })
 export class MbAssembliesComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
-  private readonly destroyRef = inject(DestroyRef);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
-  private readonly mbFacade = inject(MobileFacade);
+  private readonly state = inject(MobileStateService);
+
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public expanded = signal<boolean>(false);
@@ -87,7 +86,7 @@ export class MbAssembliesComponent implements OnInit {
 
   public async closeBottomSheet() {
     this.bottomSheetRef.dismiss();
-    this.mbFacade.updateSelectedComponent(null);
-    this.mbFacade.updateSelectedTabName('');
+    this.state.updateSelectedComponent(null);
+    this.state.updateSelectedTabName('');
   }
 }

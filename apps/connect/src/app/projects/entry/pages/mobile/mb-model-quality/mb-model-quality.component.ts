@@ -2,17 +2,17 @@ import { Component, DestroyRef, inject, OnInit, Optional, signal } from '@angula
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, from, mergeMap, take, timer } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, mergeMap, take, timer } from 'rxjs';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { ProcessedExperimentalDetails } from '../../../components/model-quality-tab/data-models-and-definitions/processed-experimental-details.model';
 import { ValidationDataProcessingFacade } from '../../../components/model-quality-tab/validation-data.facade';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { MobileFacade } from '../mobile.facade';
 import { StrucQualityGradientsComponent } from '../../../components/shared/struc-quality-gradients/struc-quality-gradients.component';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { cameraResetInMolstar, drawSelectionInMolstar } from '../../../helpers/molstar-helpers';
+import { MobileStateService } from '../mobile-state.service';
 
 @Component({
   selector: 'pdbc-mb-model-quality',
@@ -24,7 +24,8 @@ export class MbModelQualityComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly destroyRef = inject(DestroyRef);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
-  private readonly mbFacade = inject(MobileFacade);
+  private readonly state = inject(MobileStateService);
+
   public readonly compCommunication = inject(ComponentCommunicationService);
 
   public currentData = signal<ProcessedExperimentalDetails | undefined>(undefined);
@@ -66,11 +67,7 @@ export class MbModelQualityComponent implements OnInit {
       .select(EntrySelectors.experimentalDetails)
       .pipe(
         filter(Boolean),
-        mergeMap((experimentalDetails) => {
-          // if (experimentalDetails.length > 1) {
-          //   this.isHybrid.set(true);
-          // }
-
+        mergeMap(() => {
           return this.dataFacade.processData();
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -84,8 +81,8 @@ export class MbModelQualityComponent implements OnInit {
 
   public async closeBottomSheet() {
     this.bottomSheetRef.dismiss();
-    this.mbFacade.updateSelectedComponent(null);
-    this.mbFacade.updateSelectedTabName('');
+    this.state.updateSelectedComponent(null);
+    this.state.updateSelectedTabName('');
     // await this.molstarVisualisation.resetMobileMolstarInitial();
   }
 

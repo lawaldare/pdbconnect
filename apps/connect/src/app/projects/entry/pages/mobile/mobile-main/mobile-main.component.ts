@@ -9,14 +9,7 @@ import Clarity from '@microsoft/clarity';
 import { EntryUtilService } from '../../../services/entry-util.service';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ErrorPageComponent } from '../../../../../error-page/error-page.component';
-
-export enum MobileTabNames {
-  Overview = 'overview',
-  Molstar = 'molstar',
-  Citation = 'citation',
-}
-
-type MobileTabName = 'overview' | 'molstar' | 'citation';
+import { MobileTabNames, MobileTabName } from '../mobile-tab.model';
 
 @Component({
   selector: 'pdbc-mobile-main',
