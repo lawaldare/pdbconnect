@@ -32,9 +32,7 @@ import { DomainsTabComponent } from '../../components/domains-tab/domains-tab.co
 import Clarity from '@microsoft/clarity';
 import { NotificationComponent } from '@pdbc/notification';
 import { EntryUtilService } from '../../services/entry-util.service';
-import { ErrorPageComponent } from '../../../../error-page/error-page.component';
 import { LLMTabComponent } from '../../components/llm-tab/llm-tab.component';
-import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { VisualisationInteractivityDirective } from '../../directives/visualisation-interactivity.directive';
 
 export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains' | 'LLM';
@@ -70,7 +68,6 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     LigandsTabComponent,
     DomainsTabComponent,
     NotificationComponent,
-    ErrorPageComponent,
     VisualisationInteractivityDirective,
   ],
   templateUrl: './main.component.html',

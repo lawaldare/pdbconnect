@@ -33,6 +33,7 @@ import { LigandMonomer } from '../data-models/ligand-monomers.model';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
 import { LLMAnnotation } from '../data-models/llm-model';
 import { ResidueListed, ResidueListing } from '../data-models/residue-listing.model';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -43,6 +44,7 @@ export class EntryApiService {
   private VALIDATION_API = `${environment.pdbeBaseUrl}api/validation/`;
   private GRAPH_API = `https://www.ebi.ac.uk/pdbe/graph-api/pdb/`;
   private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}api/v2/`;
+  private readonly router = inject(Router);
 
   private readonly http = inject(HttpClient);
 
@@ -84,7 +86,13 @@ export class EntryApiService {
   }
 
   public getEntryStatus(entryId: string): Observable<EntryStatus> {
-    return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(map((data) => data[entryId][0]));
+    return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(
+      map((data) => data[entryId][0]),
+      catchError(() => {
+        this.router.navigate(['/error']);
+        return of({ empty: true } as unknown as EntryStatus);
+      })
+    );
   }
 
   public getEntryInteractions(entryId: string, chainId: string, residueId: string): Observable<any> {

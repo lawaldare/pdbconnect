@@ -13,8 +13,6 @@ import { StrucQualityGradientsComponent } from '../../../components/shared/struc
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { cameraResetInMolstar, drawSelectionInMolstar } from '../../../helpers/molstar-helpers';
-import { DefaultParams } from 'pdbe-molstar/lib/spec';
-import { Color } from 'molstar/lib/mol-util/color';
 
 @Component({
   selector: 'pdbc-mb-model-quality',

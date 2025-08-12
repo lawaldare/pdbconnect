@@ -11,6 +11,7 @@ import { MbLigandsComponent } from './mb-ligands/mb-ligands.component';
 import { MbMacromoleculeComponent } from './mb-macromolecules/mb-macromolecule.component';
 import { MbModelQualityComponent } from './mb-model-quality/mb-model-quality.component';
 import { MobileTabChips } from './mb-molstar-tab/mb-molstar-tab.component';
+import { MOBILE_COMPONENT_MAP } from './mobile-component-map';
 
 type MobileTabName = 'overview' | 'molstar' | 'citation';
 
@@ -41,7 +42,7 @@ export class MobileFacade {
   private _ligandTitle = signal<string>('Ligands');
   public ligandTitle = this._ligandTitle.asReadonly();
 
-  private _domainTitle = signal<string>('Ligands');
+  private _domainTitle = signal<string>('Domains');
   public domainTitle = this._domainTitle.asReadonly();
 
   public molstarViewInstance = signal<any>(undefined);
@@ -98,31 +99,8 @@ export class MobileFacade {
         chipElement?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       });
     }
-
-    switch (this.selectedTabName()) {
-      case MobileTabChips.MQuality:
-        this.updateSelectedComponent(MbModelQualityComponent);
-        break;
-      case MobileTabChips.Assemblies:
-        this.updateSelectedComponent(MbAssembliesComponent);
-        break;
-      case MobileTabChips.Macromolecules:
-        this.updateSelectedMacromoleculeTitle('Macromolecules');
-        this.updateSelectedComponent(MbMacromoleculeComponent);
-        break;
-      case MobileTabChips.Ligands:
-        this.updateSelectedLigandTitle('Ligands');
-        this.updateSelectedComponent(MbLigandsComponent);
-        break;
-      case MobileTabChips.Domains:
-        this.updateSelectedDomainTitle('Domains');
-        this.updateSelectedComponent(MbDomainsComponent);
-        break;
-      default:
-        this.updateSelectedComponent(null);
-
-        break;
-    }
+    const selectedComponent = MOBILE_COMPONENT_MAP[this.selectedTabName() as MobileTabChips] || null;
+    this.updateSelectedComponent(selectedComponent);
 
     if (this.selectedComponent() !== null) {
       const componentInstance = this.selectedComponent() as Type<any>;
