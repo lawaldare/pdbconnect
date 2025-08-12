@@ -128,15 +128,15 @@ export class AssembliesTabComponent {
 
   private resetCamera() {
     const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
-    if (!plugin) {
-      console.log('resetCamera');
-      console.log('this._molstarComponent');
-      console.log(this._molstarComponent);
-      console.log('this._molstarComponent?.getInstance()');
-      console.log(this._molstarComponent?.getInstance());
-      console.log('this._molstarComponent?.getInstance()?.plugin');
-      console.log(this._molstarComponent?.getInstance()?.plugin);
-    }
+    // if (!plugin) {
+    //   console.log('resetCamera');
+    //   console.log('this._molstarComponent');
+    //   console.log(this._molstarComponent);
+    //   console.log('this._molstarComponent?.getInstance()');
+    //   console.log(this._molstarComponent?.getInstance());
+    //   console.log('this._molstarComponent?.getInstance()?.plugin');
+    //   console.log(this._molstarComponent?.getInstance()?.plugin);
+    // }
     if (!plugin) return;
     plugin.managers.camera.reset(undefined, 100);
   }
