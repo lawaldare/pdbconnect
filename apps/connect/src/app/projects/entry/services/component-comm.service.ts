@@ -22,6 +22,8 @@ export interface EntryDescription {
   providedIn: 'root',
 })
 export class ComponentCommunicationService {
+  public currentTabName = signal<string | undefined>(undefined);
+
   public preferredAssemblyData = signal<PreferredAssemblyData | undefined>(undefined);
   public descriptions = signal<EntryDescription | undefined>(undefined);
   public chainToEntityId = signal<{ [key: string]: string }>({});
@@ -32,23 +34,11 @@ export class ComponentCommunicationService {
   public mobileMolstarLoaded$ = new BehaviorSubject<boolean>(false);
   public mobileModelIdx$ = new BehaviorSubject<string>('1');
   public configForMobileMolstar = signal<InitParams | undefined>(undefined);
-
-  public currentTab = signal<string>('Information');
-  public tabSwitchOrigin = signal<string>('main');
-  public tabState = signal<{ [key: string]: string | number }>({
-    Assemblies: 'Main',
-    Macromolecules: 'Main',
-    Ligands: 'Main',
-    Domains: 'Main',
-    // 'Experiments': 'Main',
-    // 'Citations': 'Main',
-  });
+  public mobileMolstarDisplay = 'none';
 
   public isTabDataGenerated = computed(() => {
     return this.hasProcessedAssemblies() && this.hasProcessedLigands() && this.hasProcessedDomains() && this.hasProcessedMacromolecules();
   });
-
-  public tabTableData = signal<{ [key: string]: DataToTable }>({});
 
   public assemblySelection$ = new BehaviorSubject<number | undefined>(undefined);
   public macromoleculeSelection$ = new BehaviorSubject<number | undefined>(undefined);
@@ -79,22 +69,17 @@ export class ComponentCommunicationService {
     domains: DomainsRowData[];
   }[] = [];
 
-  setTabState(tabName: string, newState: string | number) {
-    this.tabState.update((state) => ({
-      ...state, // spread the existing state
-      [tabName]: newState, // update the specific key dynamically
-    }));
-  }
-
-  getTabData(tabName: string) {
-    return this.tabTableData()[tabName];
-  }
-
-  setTabData(tabName: string, newState: DataToTable) {
-    this.tabTableData.update((state) => ({
-      ...state,
-      [tabName]: newState,
-    }));
+  getTabData(tabName: string): DataToTable | undefined {
+    if (tabName === 'Macromolecules') {
+      return this.macromoleculesTableData;
+    } else if (tabName === 'Ligands') {
+      return this.ligandsTableData;
+    } else if (tabName === 'Domains') {
+      return this.domainsTableData;
+    } else if (tabName === 'Assemblies') {
+      return this.assembliesTableData;
+    }
+    return undefined;
   }
 
   private sidebarState = signal<boolean>(false);

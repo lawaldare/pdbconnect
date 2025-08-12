@@ -233,7 +233,7 @@ export class SmartSequenceVisualisation {
     this.registerExternalEventsListeners();
   }
 
-  private onContainerResize() {
+  public onContainerResize() {
     // const container = document.getElementById(this.containerId);
     if (!this.visualisationContainer || !this.visualisationAndSidebarContainer || !this.sidebarPanel) return;
 

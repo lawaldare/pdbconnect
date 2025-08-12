@@ -91,8 +91,6 @@ export class VisualisationInteractivityDirective {
 
   @HostListener('document:to-molstar-click', ['$event'])
   private handleTableResidueSelection(event: Event) {
-    console.log('handleTableResidueSelection');
-
     if (!this.hasLLMTable) return;
 
     const eventData = (event as any).detail.eventData;
@@ -113,7 +111,6 @@ export class VisualisationInteractivityDirective {
     (this.parent as LLMTabComponent).filterAnnotationList(clickData.residue_number);
   }
 
-  // TODO: update timer, interactivity and clearFocus on all relevant tabs
   private async handleSelectionOnMolstarResClick(
     clickData: { entity_id: string; auth_asym_id: string; residue_number: number },
     doNotPropagate?: boolean,
@@ -206,7 +203,6 @@ export class VisualisationInteractivityDirective {
   @HostListener('document:new-protvista-click', ['$event'])
   private async handleProtvistaTrackClick(event: CustomEvent) {
     if (!this.hasNewProtvista) return;
-
     const detail = event.detail;
     if (!detail) return;
 

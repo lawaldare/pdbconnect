@@ -59,7 +59,6 @@ export class MbMacromoleculeComponent {
   private readonly utilService = inject(UtilService);
 
   public readonly dataProcessing = inject(MainDataProcessingFacade);
-  public readonly signals = inject(ComponentCommunicationService);
   public expanded = signal<boolean>(false);
   public readonly util = inject(UtilService);
 
@@ -73,12 +72,10 @@ export class MbMacromoleculeComponent {
 
   public readonly macromoleculeTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Macromolecules') !== -1;
+    const hasData = this.compCommunication.hasProcessedMacromolecules();
 
     if (isLoaded && hasData) {
-      const tabData = this.signals.getTabData('Macromolecules');
-      const datum = tabData.tableRows() as MacromoleculesRowData[];
+      const datum = this.compCommunication.processedMacromolecules;
       const mappedDatum = datum.map((data) => {
         return {
           ...data,
@@ -282,7 +279,9 @@ export class MbMacromoleculeComponent {
     if (!instance) return;
 
     if (!macromolecule) {
+      if (this.compCommunication.mobileMolstarDisplay === 'macromols') return;
       await clearSelectionInMolstar(instance, durationMs);
+      this.compCommunication.mobileMolstarDisplay = 'macromols';
       return;
     }
 
@@ -294,6 +293,7 @@ export class MbMacromoleculeComponent {
     timer(durationMs + 100).subscribe(async () => {
       await drawSelectionInMolstar(instance, selectionData, '#FEFEFE');
     });
+    this.compCommunication.mobileMolstarDisplay = 'macromols-specific';
   }
 
   public toggleBottomsheetHeight() {

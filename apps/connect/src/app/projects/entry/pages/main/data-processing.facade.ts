@@ -209,9 +209,9 @@ export class MainDataProcessingFacade {
       const tempTableData = new AssemblyDataToTable(data.summaryData, data.complexDetails, data.assemblyData, data.pisaAssemblyData);
       tempTableData.generateTableData();
       tempTableData.generateTableFilters();
-      this.compCommunication.setTabData(tabName, tempTableData);
 
       const rows = tempTableData.tableRows() as AssembliesRowData[];
+      this.compCommunication.assembliesTableData = tempTableData;
       this.compCommunication.processedAssemblies = rows;
 
       this.compCommunication.hasProcessedAssemblies.set(true);
@@ -256,8 +256,9 @@ export class MainDataProcessingFacade {
       );
       tempTableData.generateTableData();
       tempTableData.generateTableFilters();
-      this.compCommunication.setTabData(tabName, tempTableData);
       const rows = tempTableData.tableRows() as DomainsRowData[];
+
+      this.compCommunication.domainsTableData = tempTableData;
       this.compCommunication.processedDomainsAsList = rows;
       this.compCommunication.hasPreProcessedDomains.set(true);
       if (this.compCommunication.hasProcessedMacromolecules()) {
@@ -287,7 +288,6 @@ export class MainDataProcessingFacade {
         if (domainNotInMap) nestedMap.get(entityId)!.domains.push(domainOfMacromolecule);
       }
     }
-
     this.compCommunication.processedDomains = Array.from(nestedMap.values());
     this.compCommunication.hasProcessedDomains.set(true);
   }
@@ -309,9 +309,9 @@ export class MainDataProcessingFacade {
 
       tempTableData.generateTableData();
       tempTableData.generateTableFilters();
-      this.compCommunication.setTabData(tabName, tempTableData);
 
       const rows = tempTableData.tableRows() as LigandsRowData[];
+      this.compCommunication.ligandsTableData = tempTableData;
       this.compCommunication.processedLigandsAndModifications = rows;
       this.compCommunication.processedLigands = rows.filter((row) => row.type === 'ligand');
       this.compCommunication.processedModifications = rows.filter((row) => row.type === 'modification');
@@ -348,9 +348,9 @@ export class MainDataProcessingFacade {
 
       tempTableData.generateTableData();
       tempTableData.generateTableFilters();
-      this.compCommunication.setTabData(tabName, tempTableData);
 
       const rows = tempTableData.tableRows() as MacromoleculesRowData[];
+      this.compCommunication.macromoleculesTableData = tempTableData;
       this.compCommunication.processedMacromolecules = rows;
 
       this.compCommunication.hasProcessedMacromolecules.set(true);

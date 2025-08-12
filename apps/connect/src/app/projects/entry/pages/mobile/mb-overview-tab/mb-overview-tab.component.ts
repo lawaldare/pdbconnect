@@ -7,7 +7,7 @@ import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MainDataProcessingFacade } from '../../main/data-processing.facade';
-import { AssembliesRowData, LigandsRowData, MacromoleculesRowData } from '../../../data-classes/data-models-and-definitions/row-and-table.model';
+import { AssembliesRowData, LigandsRowData, MacromoleculesRowData, TableFilter } from '../../../data-classes/data-models-and-definitions/row-and-table.model';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { combineLatest, filter, map } from 'rxjs';
 import { CitationDetail } from '../../../data-models/publication.model';
@@ -27,7 +27,7 @@ import { RelatedPublication } from '../../../data-models/related-publications.mo
 export class MbOverviewTabComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly util = inject(UtilService);
-  public readonly signals = inject(ComponentCommunicationService);
+  public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   private readonly destroyRef = inject(DestroyRef);
   public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
@@ -54,42 +54,40 @@ export class MbOverviewTabComponent implements OnInit {
 
   public readonly miniFilters = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
-    const tableDataKeys = Object.keys(tableData);
-    const hasData = tableDataKeys.indexOf('Ligands') !== -1 && tableDataKeys.indexOf('Macromolecules') !== -1;
+    const hasData = this.compCommunication.hasProcessedLigands() && this.compCommunication.hasProcessedMacromolecules();
 
-    if (isLoaded && hasData) {
-      const ligandTableData = this.signals.getTabData('Ligands');
-      const macromoleculeTableData = this.signals.getTabData('Macromolecules');
-      return [
-        ...macromoleculeTableData.tableFilters().filter((f) => !f.description.includes('All')),
-        ...ligandTableData.tableFilters().filter((f) => !f.description.includes('All')),
-      ];
+    if (!isLoaded || !hasData) return [];
+    const filters: TableFilter[] = [];
+
+    const macromoleculeTableData = this.compCommunication.macromoleculesTableData;
+    if (macromoleculeTableData) {
+      filters.push(...macromoleculeTableData.tableFilters().filter((f) => !f.description.includes('All')));
     }
-    return [];
+    const ligandTableData = this.compCommunication.ligandsTableData;
+    if (ligandTableData) {
+      filters.push(...ligandTableData.tableFilters().filter((f) => !f.description.includes('All')));
+    }
+    return filters;
   });
 
   public readonly assemblyTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Assemblies') !== -1;
+    const hasData = this.compCommunication.hasProcessedAssemblies();
 
     if (isLoaded && hasData) {
-      const tabData = this.signals.getTabData('Assemblies');
-      return tabData.tableRows() as AssembliesRowData[];
+      const tabData = this.compCommunication.processedAssemblies;
+      return tabData;
     }
     return [];
   });
 
   public readonly macromoleculeTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Macromolecules') !== -1;
+    const hasData = this.compCommunication.hasProcessedMacromolecules();
     const mappedResiduesList = this.mappedResiduesSignal();
 
     if (isLoaded && hasData) {
-      const tabData = this.signals.getTabData('Macromolecules');
-      const datum = tabData.tableRows() as MacromoleculesRowData[];
+      const datum = this.compCommunication.processedMacromolecules;
       const mappedDatum = datum.map((data, index) => {
         return {
           ...data,
@@ -105,11 +103,10 @@ export class MbOverviewTabComponent implements OnInit {
 
   public readonly ligandTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Ligands') !== -1;
+    const hasData = this.compCommunication.hasProcessedLigands();
     if (isLoaded && hasData) {
-      const tabData = this.signals.getTabData('Ligands');
-      return tabData.tableRows() as LigandsRowData[];
+      const tabData = this.compCommunication.processedLigandsAndModifications;
+      return tabData;
     }
     return [];
   });
@@ -182,10 +179,6 @@ export class MbOverviewTabComponent implements OnInit {
       const offsetTop = element.offsetTop;
       window.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
     }
-  }
-
-  public openFeedbackForm(): void {
-    window.open('https://docs.google.com/forms/d/e/1FAIpQLSe_cs6jrhCM8I7G8zsbtTQWEOjGmR07tC6aJDTrN62gyQ8e0A/viewform', '_blank');
   }
 
   public toggleMacromoleculeList(): void {

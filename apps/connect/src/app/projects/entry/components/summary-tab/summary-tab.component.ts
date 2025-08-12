@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { MaterialModule } from '@pdbc/core';
@@ -42,7 +42,7 @@ type NestedDomainsData = Array<{
   styleUrl: './summary-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SummaryTabComponent {
+export class SummaryTabComponent implements AfterViewInit {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   private readonly globalStore = inject(Store<EntryStoreState>);
@@ -153,15 +153,19 @@ export class SummaryTabComponent {
 
   private zoomSelectionMutex = Promise.resolve();
 
-  constructor() {
+  ngAfterViewInit(): void {
     // forces molstar to apply 'polymer-and-ligand' component preset when it loads (so ligands, ions, etc always shown)
     this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((finished) => {
-      if (finished) {
+      if (finished && this.compCommunication.currentTabName() === 'summary') {
         let attempts = 0;
         const maxAttempts = 180; // polling for 3 minutes, 1 attempt every second
 
         const pollingInterval = setInterval(() => {
           try {
+            if (this.compCommunication.currentTabName() !== 'summary') {
+              clearInterval(pollingInterval);
+              return;
+            }
             const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
             if (!plugin) throw new Error('Mol* plugin not found');
 

@@ -3,12 +3,14 @@
   <pdb-search-app class="entry-page-search" [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" />
   @if(showNotificationBanner()) {
   <lib-notification />
-  } @if (entryPageView() === 'SUCCESS') {
+  } @if (entryPageView() === 'SUCCESS' && isDesktop()) {
   <section class="entry-page-container container-padding">
     <pdbc-entry-page-header />
     <main>
       <mat-tab-group #tabs (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTab()" mat-stretch-tabs="false" mat-align-tabs="start">
-        <mat-tab label="Summary"> <pdbc-summary-tab /> </mat-tab>
+        <mat-tab label="Summary">
+          <ng-template matTabContent> <pdbc-summary-tab /> </ng-template>
+        </mat-tab>
         <mat-tab label="Model quality">
           <ng-template matTabContent> <pdbc-experiments-validation /> </ng-template>
         </mat-tab>
@@ -57,8 +59,10 @@
   }
 </div>
 <div class="mobile-view">
+  @if(isDesktop() === false) {
   <lib-mobile-header [headerConfig]="mobileHeaderConfig" />
   <pdbc-mobile-main />
+  }
 </div>
 <div id="parent-molstar-container" #molstarParent>
   <div id="molstar-element" class="molstar-viewer" #molstarViewer></div>

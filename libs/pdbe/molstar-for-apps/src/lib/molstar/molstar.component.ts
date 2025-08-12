@@ -33,12 +33,13 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
 
     const container = this.viewContainer.nativeElement;
 
-    this.molstarViewInstance.render(container, this.molstarConfig);
+    await this.molstarViewInstance.render(container, this.molstarConfig);
     this.molstarViewInstance.events.loadComplete.subscribe((loaded: boolean) => {
+      const eventName = `LibMolstarComponent-${this.id}`;
+      console.log('loadComplete for ', eventName);
       if (loaded && !this.firstLoadFinished()) this.firstLoadFinished.set(true);
       if (loaded) {
         // this.molstarViewInstance.plugin.managers.camera.orientAxes();
-        const eventName = `LibMolstarComponent-${this.id}`;
         window.dispatchEvent(new CustomEvent(eventName, { detail: { id: this.id, loaded } }));
       }
     });

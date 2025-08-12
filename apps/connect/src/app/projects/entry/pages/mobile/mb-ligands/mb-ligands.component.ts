@@ -35,7 +35,6 @@ import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensio
 export class MbLigandsComponent {
   private readonly mbFacade = inject(MobileFacade);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
-  public readonly signals = inject(ComponentCommunicationService);
   public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
@@ -61,13 +60,11 @@ export class MbLigandsComponent {
 
   public readonly LigandTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Ligands') !== -1;
+    const hasData = this.compCommunication.hasProcessedLigands();
 
     if (isLoaded && hasData) {
-      const tabData = this.signals.getTabData('Ligands');
-      const datum = tabData.tableRows() as LigandsRowData[];
-      return datum.map((row: any, index) => ({
+      const datum = this.compCommunication.processedLigandsAndModifications;
+      return datum.map((row: LigandsRowData, index) => ({
         ...row,
         index,
         annotations: this.ligandsTabService.ligandMonomers()[row.id] ?? [],
@@ -98,7 +95,7 @@ export class MbLigandsComponent {
       ligand,
       molstarSelection,
       interactions,
-      this.signals.chainToEntityId()
+      this.compCommunication.chainToEntityId()
     );
 
     const pdbeInteractions = interactionsMolstarSelections as unknown as PDBeMolstarInteraction[];
@@ -221,10 +218,12 @@ export class MbLigandsComponent {
     if (!instance) return;
 
     if (!ligand) {
+      if (this.compCommunication.mobileMolstarDisplay === 'ligands') return;
       const ligandsSelectionData = this.allLigandsQueryParam();
       await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
       await drawSelectionInMolstar(instance, ligandsSelectionData, '#FEFEFE');
       await zoomOutStructureInMolstar(instance, 700);
+      this.compCommunication.mobileMolstarDisplay = 'ligands';
       return;
     }
 
@@ -258,6 +257,7 @@ export class MbLigandsComponent {
     timer(durationMs + 100).subscribe(async () => {
       await drawSelectionInMolstar(instance, this.selectionData);
     });
+    this.compCommunication.mobileMolstarDisplay = 'ligands-specific';
   }
 
   public toggleBottomsheetHeight() {

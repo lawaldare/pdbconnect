@@ -329,12 +329,16 @@ export class LigandsTabComponent implements OnInit {
   constructor() {
     // forces molstar to apply 'polymer-and-ligand' component preset when it loads (so ligands, ions, etc always shown)
     this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((finished) => {
-      if (finished) {
+      if (finished && this.compCommunication.currentTabName() === 'ligands') {
         let attempts = 0;
         const maxAttempts = 180; // polling for 3 minutes, 1 attempt every second
 
         const pollingInterval = setInterval(() => {
           try {
+            if (this.compCommunication.currentTabName() !== 'ligands') {
+              clearInterval(pollingInterval);
+              return;
+            }
             const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
             if (!plugin) throw new Error('Mol* plugin not found');
 
@@ -544,7 +548,6 @@ export class LigandsTabComponent implements OnInit {
 
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
-    // TODO: Add interactivity here somehow (Atom selections?)
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     const entityId = molstarSelection.entityId;
     const chainId = molstarSelection.authChainId;
@@ -613,13 +616,9 @@ export class LigandsTabComponent implements OnInit {
     const entityId = this.compCommunication.chainToEntityId()[chainId];
     if (!entityId) return 'Undefined';
 
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.compCommunication.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Macromolecules') !== -1;
-    if (!isLoaded || !hasData) return 'Undefined';
-
-    const tabData = this.compCommunication.getTabData('Macromolecules');
-    const macromolecules = tabData.tableRows() as MacromoleculesRowData[];
+    const hasData = this.compCommunication.hasProcessedMacromolecules();
+    if (!hasData) return 'Undefined';
+    const macromolecules = this.compCommunication.processedMacromolecules;
     if (macromolecules.length === 0) return 'Undefined';
 
     const mols = macromolecules.filter((mol) => mol.additionalData.molecule.entity_id === parseInt(entityId));

@@ -20,6 +20,7 @@ main {
 
   .tab-content {
     width: calc(100% - 268px);
+    max-width: 1104px;
   }
 }
 
@@ -50,8 +51,6 @@ main {
 
 .sequence-container {
   width: 100%;
-
-  // max-width: 676px;
   display: flex;
   padding: 4px;
   flex-direction: column;

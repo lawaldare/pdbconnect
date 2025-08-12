@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
@@ -71,7 +71,6 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     DomainsTabComponent,
     NotificationComponent,
     ErrorPageComponent,
-    MolstarComponent,
     VisualisationInteractivityDirective,
   ],
   templateUrl: './main.component.html',
@@ -96,12 +95,7 @@ export class EntryMainPageComponent implements OnInit {
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
 
   private readonly entryId = signal<string>('');
-
-  public currentTab = this.compCommunication.currentTab;
-  public tabSwitchOrigin = this.compCommunication.tabSwitchOrigin;
-  public previousTab = 'undefined';
-
-  public doesTabHasData = signal<boolean>(true);
+  public isDesktop = signal(false);
 
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
@@ -126,13 +120,25 @@ export class EntryMainPageComponent implements OnInit {
   public preferredAssemblyData = computed(() => this.compCommunication.preferredAssemblyData());
 
   constructor() {
+    this.checkWindowWidth();
     this.route.queryParams.subscribe((params) => {
+      // Check for screen width <= 768px
+      if (window.innerWidth <= 768) return;
       const routeTabs = this.dataProcessing.routeTabs;
       const tabName = params['activeTab'] ?? 'summary';
-      this.currentTab.set(tabName);
+      this.compCommunication.currentTabName.set(tabName);
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.selectedTab.set(tabIndex);
     });
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: Event): void {
+    this.checkWindowWidth();
+  }
+
+  private checkWindowWidth(): void {
+    this.isDesktop.set(window.innerWidth > 768);
   }
 
   ngOnInit(): void {
@@ -141,6 +147,7 @@ export class EntryMainPageComponent implements OnInit {
     }
 
     this.showNotification();
+    this.checkWindowWidth();
     // else {
     // Clarity.init('yourProjectId'); // Replace with production ID when it's time
     // }
@@ -184,15 +191,9 @@ export class EntryMainPageComponent implements OnInit {
   async selectTab(event: MatTabChangeEvent) {
     const routeTabs = this.dataProcessing.routeTabs;
     const tabName = routeTabs[event.index].id;
-    this.previousTab = `${tabName}`;
-    this.tabSwitchOrigin.set('main');
-    this.currentTab.set(tabName);
-
     this.scrollService.handleScrollPosition(this.tabGroup, event.index);
+    this.compCommunication.currentTabName.set(tabName);
 
-    setTimeout(() => {
-      this.doesTabHasData.set(this.compCommunication.getTabData(tabName)?.tableRows()?.length > 0);
-    }, 2000);
     this.router.navigate([], {
       queryParams: { activeTab: tabName },
       queryParamsHandling: 'merge',

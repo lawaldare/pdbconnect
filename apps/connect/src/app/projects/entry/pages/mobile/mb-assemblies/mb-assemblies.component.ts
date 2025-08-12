@@ -36,12 +36,10 @@ export class MbAssembliesComponent implements OnInit {
 
   public readonly assemblyTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.compCommunication.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Assemblies') !== -1;
-
+    const hasData = this.compCommunication.hasProcessedAssemblies();
     if (isLoaded && hasData) {
-      const tabData = this.compCommunication.getTabData('Assemblies');
-      return tabData.tableRows() as AssembliesRowData[];
+      const tabData = this.compCommunication.processedAssemblies;
+      return tabData;
     }
     return [];
   });
@@ -71,10 +69,12 @@ export class MbAssembliesComponent implements OnInit {
         take(1)
       )
     );
+    if (this.compCommunication.mobileMolstarDisplay === 'assemblies') return;
 
     const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
     if (!instance) return;
     await clearSelectionInMolstar(instance, 700);
+    this.compCommunication.mobileMolstarDisplay = 'assemblies';
   }
 
   toggleBottomsheetHeight() {

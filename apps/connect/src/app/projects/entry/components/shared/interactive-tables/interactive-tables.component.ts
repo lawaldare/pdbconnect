@@ -59,6 +59,7 @@ export class InteractiveTablesComponent implements OnChanges {
     if (this.tabName() !== 'LLM') {
       const tableData = this.compCommunication.getTabData(this.tabName());
       this.tableData = tableData as DataToTable;
+      if (!tableData) return;
       const mappedTableRows = tableData.tableRows().map((row: any, index) => ({
         ...row,
         index,
@@ -81,6 +82,7 @@ export class InteractiveTablesComponent implements OnChanges {
     } else {
       const tableData = this.compCommunication.getTabData('Macromolecules');
       this.tableData = tableData as DataToTable;
+      if (!tableData) return;
       const mappedTableRows = tableData.tableRows().map((row: any, index) => ({
         ...row,
         index,
@@ -121,7 +123,6 @@ export class InteractiveTablesComponent implements OnChanges {
   }
 
   public loadSelectionFromTable(rowIdx: number) {
-    this.compCommunication.setTabState(this.tabName(), rowIdx);
     if (this.tabName() === 'Assemblies') this.compCommunication.assemblySelection$.next(rowIdx);
     if (this.tabName() === 'Macromolecules') this.compCommunication.macromoleculeSelection$.next(rowIdx);
     if (this.tabName() === 'Ligands') this.compCommunication.ligandSelection$.next(rowIdx);

@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, OnInit, Optional, signal } from '@angula
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { debounceTime, distinctUntilChanged, filter, firstValueFrom, from, mergeMap, take, timer } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, from, mergeMap, take, timer } from 'rxjs';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { ProcessedExperimentalDetails } from '../../../components/model-quality-tab/data-models-and-definitions/processed-experimental-details.model';
@@ -40,13 +40,16 @@ export class MbModelQualityComponent implements OnInit {
 
   public expanded = signal<boolean>(false);
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbModelQualityComponent>) {
-    this.outliers$
-      .pipe(
+    combineLatest([
+      this.outliers$.pipe(
         debounceTime(50),
         distinctUntilChanged(),
         filter((otl) => otl !== undefined)
-      )
-      .subscribe(async (outliers) => {
+      ),
+      this.compCommunication.mobileModelIdx$.pipe(debounceTime(50), distinctUntilChanged()),
+    ])
+      .pipe(takeUntilDestroyed(this.destroyRef)) // Ensures cleanup when the component is destroyed
+      .subscribe(async ([_outliers, _modelIdx]) => {
         // Wait until mobileMolstarLoaded$ is true before proceeding
         await firstValueFrom(
           this.compCommunication.mobileMolstarLoaded$.pipe(
@@ -54,6 +57,8 @@ export class MbModelQualityComponent implements OnInit {
             take(1) // Take the first value, then complete
           )
         );
+
+        // Now that mobileMolstarLoaded$ is true, proceed with the logic
         this.displayMolstarMQuality();
       });
   }
@@ -95,9 +100,12 @@ export class MbModelQualityComponent implements OnInit {
   }
 
   public async displayMolstarMQuality() {
+    if (this.compCommunication.mobileMolstarDisplay === 'mquality') return;
     const currentModelIdx = this.compCommunication.mobileModelIdx$.getValue();
     // get model quality data and display here
-    const outliers = this.compCommunication.outliersByModelId()![currentModelIdx];
+    const allOutliers = this.compCommunication.outliersByModelId();
+    if (!allOutliers) return;
+    const outliers = allOutliers[currentModelIdx];
 
     const colours = ['#D4D5D4', '#E5E501', '#DA6E03', '#B2182B'];
     const outlierList = [outliers.residuesWith1Outlier, outliers.residuesWith2Outliers, outliers.residuesWith3OrMoreOutliers];
@@ -125,5 +133,6 @@ export class MbModelQualityComponent implements OnInit {
     timer(500).subscribe(async () => {
       await cameraResetInMolstar(instance);
     });
+    this.compCommunication.mobileMolstarDisplay = 'mquality';
   }
 }

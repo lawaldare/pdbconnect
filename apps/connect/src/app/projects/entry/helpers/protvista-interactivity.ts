@@ -1,4 +1,6 @@
-export function protToMolBuildHighlightQuery(detail: any): any | null {
+import { QueryParam } from 'pdbe-molstar/lib/helpers';
+
+export function protToMolBuildHighlightQuery(detail: any): QueryParam | null {
   if (!detail.start || !detail.end) return null;
 
   const query: any = {
@@ -7,9 +9,8 @@ export function protToMolBuildHighlightQuery(detail: any): any | null {
   };
 
   if (detail.feature?.entityId) query.entity_id = String(detail.feature.entityId);
-  if (detail.feature?.bestChainId) query.struct_asym_id = detail.feature.bestChainId;
-  if (detail.feature?.chainId) query.struct_asym_id = detail.feature.chainId;
-
+  if (detail.feature?.bestChainId) query.auth_asym_id = detail.feature.bestChainId;
+  if (detail.feature?.chainId) query.auth_asym_id = detail.feature.chainId;
   return query;
 }
 
@@ -32,6 +33,5 @@ export function protToMolExtractColor(detail: any): { r: number; g: number; b: n
       .map((c) => parseInt(c.trim(), 10));
     return { r: rgbArr[0], g: rgbArr[1], b: rgbArr[2] };
   }
-
   return color;
 }

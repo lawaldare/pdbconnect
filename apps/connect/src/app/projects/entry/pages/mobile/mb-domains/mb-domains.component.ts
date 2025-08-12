@@ -27,7 +27,6 @@ import { QueryParam } from 'pdbe-molstar/lib/helpers';
 export class MbDomainsComponent {
   private readonly mbFacade = inject(MobileFacade);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
-  public readonly signals = inject(ComponentCommunicationService);
   public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
@@ -47,13 +46,11 @@ export class MbDomainsComponent {
 
   public readonly domainTableRows = computed(() => {
     const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Domains') !== -1;
+    const hasData = this.compCommunication.hasProcessedDomains();
 
     if (isLoaded && hasData) {
-      const tabData = this.signals.getTabData('Domains');
-      const datum = tabData.tableRows() as DomainsRowData[];
-      return datum;
+      const tabData = this.compCommunication.processedDomainsAsList;
+      return tabData;
     }
     return [];
   });
@@ -126,7 +123,9 @@ export class MbDomainsComponent {
     if (!instance) return;
 
     if (!domain) {
+      if (this.compCommunication.mobileMolstarDisplay === 'domains') return;
       await clearSelectionInMolstar(instance, durationMs);
+      this.compCommunication.mobileMolstarDisplay = 'domains';
       return;
     }
 
@@ -138,5 +137,6 @@ export class MbDomainsComponent {
     timer(durationMs + 100).subscribe(async () => {
       await drawSelectionInMolstar(instance, this.selectionData, '#FEFEFE');
     });
+    this.compCommunication.mobileMolstarDisplay = 'domains-specific';
   }
 }

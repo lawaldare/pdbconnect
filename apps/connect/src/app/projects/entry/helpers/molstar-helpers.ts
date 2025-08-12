@@ -57,10 +57,10 @@ export async function cameraResetInMolstar(instance?: PDBeMolstarPlugin) {
 // DONE: On Mobile replace current code for helpers
 // DONE: Remove molstar-state and visualisation on lib-
 // DONE: interactions as QueryParam directly
+// DONE: Clean up CompCommunication
+// SKIP: API handling desktop vs mobile (too similar)
 
 // TODO: refactor MolSelectionObj functions for QueryParam
 // TODO: Remove temp-mol-sel-obj-to-queryparam
-// TODO: Clean up CompCommunication
-// TODO: API handling desktop vs mobile
-// TODO: Fix Protvista bugs
+// ONGOING: Fix Protvista bugs (1 done, missing unselect click)
 // TODO: Protvista refactoring

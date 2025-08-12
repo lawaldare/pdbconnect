@@ -128,6 +128,15 @@ export class AssembliesTabComponent {
 
   private resetCamera() {
     const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
+    if (!plugin) {
+      console.log('resetCamera');
+      console.log('this._molstarComponent');
+      console.log(this._molstarComponent);
+      console.log('this._molstarComponent?.getInstance()');
+      console.log(this._molstarComponent?.getInstance());
+      console.log('this._molstarComponent?.getInstance()?.plugin');
+      console.log(this._molstarComponent?.getInstance()?.plugin);
+    }
     if (!plugin) return;
     plugin.managers.camera.reset(undefined, 100);
   }
@@ -136,13 +145,13 @@ export class AssembliesTabComponent {
     // Wait until first render is finished
     await firstValueFrom(
       this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready), // proceed when true
+        filter((ready) => ready === true), // proceed when true
         take(1)
       )
     );
 
-    // reset camera half a second after loaded
-    timer(500).subscribe(() => {
+    // reset camera after loaded
+    timer(800).subscribe(() => {
       this.resetCamera();
     });
   }

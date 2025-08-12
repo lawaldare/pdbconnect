@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, effect, input, OnDestroy, signal } from '@angular/core';
+import { AfterViewInit, Component, effect, ElementRef, input, OnDestroy, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSequenceVisOptions, SmartSequenceVisualisation } from './viewer/sequence-visualisation';
 import { generateRandomAlternativeNumberings, generateRandomAnnotations } from './viewer/smart-generator';
@@ -10,6 +10,8 @@ import { generateRandomAlternativeNumberings, generateRandomAnnotations } from '
   styleUrl: './smart-seq-viewer.component.scss',
 })
 export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('containerElement', { read: ElementRef }) public containerElement!: ElementRef;
+
   // External inputs (read-only)
   public readonly containerId = input<string>('smart-seq-id');
   public readonly sequence = input<string>('TESTSTRING');
@@ -36,6 +38,7 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
 
   // Instance reference to cleanup
   private visInstance?: SmartSequenceVisualisation;
+  private resizeTimeoutId?: any;
 
   // private generateRandomAnnotations() {
   //   this.backgroundData.set(generateRandomAnnotations(1, this.sequence(), 'Background'));
@@ -71,6 +74,7 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
       options.isNucleic = true;
     }
     if (this.visInstance) {
+      if (this.resizeTimeoutId) clearTimeout(this.resizeTimeoutId);
       this.visInstance.destroy();
       this.visInstance = undefined;
     }
@@ -84,9 +88,25 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
       this.chainId(),
       options
     );
+    this.waitForCanvasAndResize();
+  }
+
+  private waitForCanvasAndResize(): void {
+    if (!this.containerElement) return;
+    const element = this.containerElement.nativeElement;
+    if (!element) return;
+    const canvasElement = element.querySelector('canvas');
+    if (canvasElement) {
+      this.visInstance?.onContainerResize(); // Call resize when canvas is available
+      if (this.resizeTimeoutId) clearTimeout(this.resizeTimeoutId);
+    } else if (this.visInstance) {
+      // If canvas is not found, retry after a big delay (e.g., 1s)
+      this.resizeTimeoutId = setTimeout(() => this.waitForCanvasAndResize(), 1000);
+    }
   }
 
   ngOnDestroy(): void {
+    if (this.resizeTimeoutId) clearTimeout(this.resizeTimeoutId);
     this.visInstance?.destroy();
     this.visInstance = undefined;
   }
