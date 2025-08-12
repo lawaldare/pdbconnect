@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { DomainsBoundaries, DomainsRowData, MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { Molecule } from '../../data-models/molecule.model';
-import { SequenceDetail } from './domains-tab.component';
 import { SmartSequenceAnnotation } from '@pdbe-lib/smart-seq-viewer';
+import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
 
 @Injectable({
   providedIn: 'root',

@@ -2,22 +2,9 @@ import { computed, Injectable, signal, WritableSignal } from '@angular/core';
 import { DataToTable } from '../data-classes/data-processing/abstract-base-row-class';
 import { BehaviorSubject } from 'rxjs';
 import { AssembliesRowData, DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../data-classes/data-models-and-definitions/row-and-table.model';
-import { OutliersByModelId } from '../pages/main/data-processing.facade';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { InitParams } from 'pdbe-molstar/lib/spec';
-
-export interface PreferredAssemblyData {
-  name: string;
-  preferred: number;
-  composition: string | undefined;
-  complexId: string | undefined;
-}
-
-export interface EntryDescription {
-  macromoleculesDescription: string;
-  entryContentsDescription: string[];
-}
-
+import { EntryDescription, OutliersByModelId, PreferredAssemblyData } from '../data-classes/data-models-and-definitions/other-models';
 @Injectable({
   providedIn: 'root',
 })

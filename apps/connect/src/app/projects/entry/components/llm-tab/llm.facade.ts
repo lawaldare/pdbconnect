@@ -2,10 +2,10 @@
 
 import { inject, Injectable } from '@angular/core';
 import { MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
-import { SequenceDetail } from './llm-tab.component';
 import { EntryApiService } from '../../services/entry-api.service';
 import { LLMAnnotation } from '../../data-models/llm-model';
 import { SmartSequenceAnnotation } from '@pdbe-lib/smart-seq-viewer';
+import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
 
 @Injectable({
   providedIn: 'root',

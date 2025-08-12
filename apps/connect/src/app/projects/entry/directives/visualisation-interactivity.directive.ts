@@ -1,35 +1,28 @@
-import { Directive, HostListener, Inject, InjectionToken, Input } from '@angular/core';
+import { Directive, HostListener, inject, Input } from '@angular/core';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { clearInteractivityFocusInMolstar, drawSelectionInMolstar, showInteractivityFocusInMolstar } from '../helpers/molstar-helpers';
 import { timer } from 'rxjs';
 import { protToMolBuildHighlightQuery, protToMolExtractColor, protToMolShouldShowInteraction } from '../helpers/protvista-interactivity';
-import { DomainsTabComponent } from '../components/domains-tab/domains-tab.component';
-import { MacromoleculesTabComponent } from '../components/macromolecules-tab/macromolecules-tab.component';
-import { LLMTabComponent } from '../components/llm-tab/llm-tab.component';
-
-export const PARENT_COMPONENT_TOKEN = new InjectionToken<DomainsTabComponent | MacromoleculesTabComponent | LLMTabComponent>('ParentComponent');
+import { ComponentReferenceService } from '../services/component-ref.service';
 
 @Directive({
   selector: '[pdbcVisualisationInteractivity]',
   standalone: true,
 })
 export class VisualisationInteractivityDirective {
+  @Input({ required: true }) parentType!: 'macromolecules' | 'llm' | 'domains';
   @Input({ required: true }) hasSeqViewer = false;
   @Input({ required: true }) hasNewProtvista = false;
   @Input({ required: true }) hasLLMTable = false;
   // TODO @Input({required: true}) hasTopologyViewer: boolean = false;
 
-  private parent: DomainsTabComponent | MacromoleculesTabComponent | LLMTabComponent;
+  public readonly compReference = inject(ComponentReferenceService);
 
   private lastClickedResidue?: {
     entity_id: string;
     auth_asym_id: string;
     residue_number: number;
   } = undefined;
-
-  constructor(@Inject(PARENT_COMPONENT_TOKEN) parent: DomainsTabComponent | MacromoleculesTabComponent | LLMTabComponent) {
-    this.parent = parent;
-  }
 
   private applyFocus(selectionData: QueryParam[], toFocus: boolean) {
     if (!selectionData) return;
@@ -44,7 +37,7 @@ export class VisualisationInteractivityDirective {
     if (!this.hasSeqViewer) return;
     if (this.hasLLMTable) {
       const residueNumber = event.detail.eventData.residueNumber;
-      (this.parent as LLMTabComponent).filterAnnotationList(residueNumber);
+      this.compReference.llmTabComponent.filterAnnotationList(residueNumber);
     }
     const clickData = {
       entity_id: event.detail.eventData.entityId,
@@ -60,10 +53,12 @@ export class VisualisationInteractivityDirective {
     if (!this.hasSeqViewer) return;
 
     if (this.hasLLMTable) {
-      (this.parent as LLMTabComponent).resetAnnotationList();
+      this.compReference.llmTabComponent.resetAnnotationList();
     }
 
-    const instance = this.parent._molstarComponent?.getInstance() ?? null;
+    const parent = this.compReference.getComponent(this.parentType);
+    const instance = parent._molstarComponent?.getInstance() ?? null;
+    // const instance = this.parent._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
 
     // if already deselected, do nothing
@@ -71,9 +66,11 @@ export class VisualisationInteractivityDirective {
     this.lastClickedResidue = undefined;
 
     await clearInteractivityFocusInMolstar(instance);
-    if (!this.parent.selectionData) return;
+    // if (!this.parent.selectionData) return;
+    if (!parent.selectionData) return;
 
-    const selectionData = this.applyFocus([...this.parent.selectionData], true);
+    const selectionData = this.applyFocus([...parent.selectionData], true);
+    // const selectionData = this.applyFocus([...this.parent.selectionData], true);
     await drawSelectionInMolstar(instance, selectionData);
     return;
   }
@@ -94,8 +91,12 @@ export class VisualisationInteractivityDirective {
     if (!this.hasLLMTable) return;
 
     const eventData = (event as any).detail.eventData;
-    const entityId = this.parent.currentSelectionEntityId();
-    const chainId = this.parent.currentSelectionChainId();
+
+    const parent = this.compReference.getComponent(this.parentType);
+    // const entityId = this.parent.currentSelectionEntityId();
+    const entityId = parent.currentSelectionEntityId();
+    // const chainId = this.parent.currentSelectionChainId();
+    const chainId = parent.currentSelectionChainId();
     const residueNumber = eventData.residueNumber;
 
     if (!entityId || !chainId) return;
@@ -108,7 +109,8 @@ export class VisualisationInteractivityDirective {
     const doNotPropagateEvt = true;
     const doNotCheckOrUpdState = true;
     this.handleSelectionOnMolstarResClick(clickData, doNotPropagateEvt, doNotCheckOrUpdState);
-    (this.parent as LLMTabComponent).filterAnnotationList(clickData.residue_number);
+    // (this.parent as LLMTabComponent).filterAnnotationList(clickData.residue_number);
+    (parent as any).filterAnnotationList(clickData.residue_number);
   }
 
   private async handleSelectionOnMolstarResClick(
@@ -116,7 +118,9 @@ export class VisualisationInteractivityDirective {
     doNotPropagate?: boolean,
     doNotCheckOrUpdState?: boolean
   ) {
-    const instance = this.parent._molstarComponent?.getInstance() ?? null;
+    const parent = this.compReference.getComponent(this.parentType);
+    // const instance = this.parent._molstarComponent?.getInstance() ?? null;
+    const instance = parent._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
     // 50 ms to let molstar update components before overriding slection
     timer(50).subscribe(async () => {
@@ -142,7 +146,8 @@ export class VisualisationInteractivityDirective {
       }
 
       const toFocus = currentResidue ? false : true;
-      const dataToFocus = this.parent.selectionData ? [...this.parent.selectionData] : [];
+      // const dataToFocus = this.parent.selectionData ? [...this.parent.selectionData] : [];
+      const dataToFocus = parent.selectionData ? [...parent.selectionData] : [];
       const selectionData: QueryParam[] = this.applyFocus(dataToFocus, toFocus)!;
 
       // if residue is to be selected (exists)
@@ -166,10 +171,14 @@ export class VisualisationInteractivityDirective {
 
       // if clicks in other residues/entity do not propagate evt to seq. viewer
       if (
-        !this.parent.currentSelectionEntityId() ||
-        !this.parent.currentSelectionChainId() ||
-        clickData.entity_id !== this.parent.currentSelectionEntityId() ||
-        clickData.auth_asym_id !== this.parent.currentSelectionChainId()
+        // !this.parent.currentSelectionEntityId() ||
+        !parent.currentSelectionEntityId() ||
+        // !this.parent.currentSelectionChainId() ||
+        !parent.currentSelectionChainId() ||
+        // clickData.entity_id !== this.parent.currentSelectionEntityId() ||
+        clickData.entity_id !== parent.currentSelectionEntityId() ||
+        // clickData.auth_asym_id !== this.parent.currentSelectionChainId()
+        clickData.auth_asym_id !== parent.currentSelectionChainId()
       )
         return;
 
@@ -192,9 +201,10 @@ export class VisualisationInteractivityDirective {
 
         // ... and do extra actions necessary if on llm tab
         if (this.hasLLMTable && !currentResidue) {
-          (this.parent as LLMTabComponent).resetAnnotationList();
+          // (this.parent as LLMTabComponent).resetAnnotationList();
+          (parent as any).resetAnnotationList();
         } else if (this.hasLLMTable && currentResidue) {
-          (this.parent as LLMTabComponent).filterAnnotationList(clickData.residue_number);
+          (parent as any).filterAnnotationList(clickData.residue_number);
         }
       }
     });
@@ -206,7 +216,9 @@ export class VisualisationInteractivityDirective {
     const detail = event.detail;
     if (!detail) return;
 
-    const instance = this.parent._molstarComponent?.getInstance() ?? null;
+    const parent = this.compReference.getComponent(this.parentType);
+    // const instance = this.parent._molstarComponent?.getInstance() ?? null;
+    const instance = parent._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
 
     // Build highlight query
@@ -226,7 +238,8 @@ export class VisualisationInteractivityDirective {
     // Always focus
     highlightQuery.focus = true;
 
-    const dataToFocus = this.parent.selectionData ? [...this.parent.selectionData] : [];
+    // const dataToFocus = this.parent.selectionData ? [...this.parent.selectionData] : [];
+    const dataToFocus = parent.selectionData ? [...parent.selectionData] : [];
     const selectionData = this.applyFocus(dataToFocus, false)!;
 
     selectionData.push(highlightQuery);
@@ -254,14 +267,16 @@ export class VisualisationInteractivityDirective {
   @HostListener('document:protvista-close-pin', ['$event'])
   private async handleProtvistaClosePin(event: CustomEvent) {
     if (!this.hasNewProtvista) return;
-
-    const instance = this.parent._molstarComponent?.getInstance() ?? null;
+    const parent = this.compReference.getComponent(this.parentType);
+    // const instance = this.parent._molstarComponent?.getInstance() ?? null;
+    const instance = parent._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
 
     // if after opening pin, res has been selected in smart seq viewer, abort
     if (this.lastClickedResidue !== undefined) return;
 
-    const dataToFocus = this.parent.selectionData ? [...this.parent.selectionData] : [];
+    // const dataToFocus = this.parent.selectionData ? [...this.parent.selectionData] : [];
+    const dataToFocus = parent.selectionData ? [...parent.selectionData] : [];
     const selectionData = this.applyFocus(dataToFocus, true)!;
 
     await clearInteractivityFocusInMolstar(instance);

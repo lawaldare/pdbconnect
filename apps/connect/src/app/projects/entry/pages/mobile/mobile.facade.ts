@@ -5,8 +5,8 @@ import { BehaviorSubject, take } from 'rxjs';
 import { Router } from '@angular/router';
 import Clarity from '@microsoft/clarity';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MobileTabChips } from './mb-molstar-tab/mb-molstar-tab.component';
 import { MOBILE_COMPONENT_MAP } from './mobile-component-map';
+import { MobileTabChips } from '../../data-classes/data-models-and-definitions/other-models';
 
 type MobileTabName = 'overview' | 'molstar' | 'citation';
 

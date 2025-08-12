@@ -164,11 +164,13 @@
           <!-- <div class="toolbar">
             <mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="outbox" (click)="popupMolstar()"></mat-icon>
           </div> -->
+          @if (configForMolstar()) {
           <div class="molstar-container">
             <div #popoutWrapper>
               <lib-pdbe-molstar #molstarComponent [id]="'ligands-molstar'" [molstarConfig]="configForMolstar()" [height]="'100%'"></lib-pdbe-molstar>
             </div>
           </div>
+          }
           <div id="ligands-molstar-container" class="molstar-container" #molstarContainer style="display: none"></div>
         </section>
         <div class="legends">

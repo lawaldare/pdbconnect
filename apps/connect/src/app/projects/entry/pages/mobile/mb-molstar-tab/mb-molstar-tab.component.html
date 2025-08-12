@@ -15,8 +15,10 @@
     <!-- <div class="molstar-parent" id="parent-molstar-container">
       <div class="molstar-container" #molstarContainer id="molstar-mobile-element"></div>
     </div> -->
+    @if (configForMolstar()) {
     <div class="molstar-parent">
       <lib-pdbe-molstar class="molstar-container" #molstarComponent [id]="'mobile-molstar'" [molstarConfig]="configForMolstar()" [height]="'100%'"></lib-pdbe-molstar>
     </div>
+    }
   </div>
 </main>

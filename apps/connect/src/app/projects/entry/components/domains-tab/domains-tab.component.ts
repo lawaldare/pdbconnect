@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { DomainsRowData, MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { getDomainChainDropdownOptions } from '../../helpers/processed-data-to-controls';
@@ -28,18 +28,9 @@ import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { Color } from 'molstar/lib/mol-util/color';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { domainMolstarSelObjToQueryParam } from '../../helpers/temp-mol-sel-obj-to-queryparam';
-import { PARENT_COMPONENT_TOKEN } from '../../directives/visualisation-interactivity.directive';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
-
-// these types are used by this file and the facade and related to sequence rendering
-export interface SequenceDetail {
-  title: string;
-  fullSequence: string;
-  segments: {
-    sequence: string;
-    color?: string;
-  }[];
-}
+import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
+import { ComponentReferenceService } from '../../services/component-ref.service';
 
 @Component({
   selector: 'pdbc-domains-tab',
@@ -54,13 +45,13 @@ export interface SequenceDetail {
     SmartSeqViewerComponent,
     MolstarComponent,
   ],
-  providers: [{ provide: PARENT_COMPONENT_TOKEN, useExisting: DomainsTabComponent }],
   templateUrl: './domains-tab.component.html',
   styleUrl: './domains-tab.component.scss',
 })
-export class DomainsTabComponent {
+export class DomainsTabComponent implements OnInit {
   public domainsFacade = inject(DomainsFacade);
   public readonly compCommunication = inject(ComponentCommunicationService);
+  public readonly compReference = inject(ComponentReferenceService);
   public readonly popService = inject(PopupWindowService);
   private readonly utilService = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
@@ -166,6 +157,10 @@ export class DomainsTabComponent {
       const authNumbering = createAuthAlternateNumbering(residueListing);
       this.altSequences.set([authNumbering]);
     });
+  }
+
+  ngOnInit(): void {
+    this.compReference.setComponent('domains', this);
   }
 
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;

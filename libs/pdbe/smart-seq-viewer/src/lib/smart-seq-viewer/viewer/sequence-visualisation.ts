@@ -747,6 +747,7 @@ export class SmartSequenceVisualisation {
     if (residueNumber !== this.currentClickedResidue) {
       this.selectResidueState(residueNumber, true, true);
     }
+    this.draw();
   }
 
   private showTooltip(content: string, x: number, y: number) {

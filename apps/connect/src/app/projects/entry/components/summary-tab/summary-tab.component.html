@@ -152,7 +152,7 @@
       <div [style.width]="'100%'">
         <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
       </div>
-      }
+      } @if (configForMolstar()) {
       <div class="molstar-container">
         <div #popoutWrapper>
           <lib-pdbe-molstar
@@ -163,6 +163,7 @@
           ></lib-pdbe-molstar>
         </div>
       </div>
+      }
     </section>
     <section class="listview-accordions">
       <mat-accordion>

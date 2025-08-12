@@ -32,7 +32,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { MainDataProcessingFacade, OutlierDict } from '../../pages/main/data-processing.facade';
+import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { MolstarComponent, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
@@ -40,12 +40,7 @@ import { Color } from 'molstar/lib/mol-util/color';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { cameraResetInMolstar, drawSelectionInMolstar } from '../../helpers/molstar-helpers';
-
-export interface ValueLabel {
-  value: string;
-  label: string;
-  shell?: string;
-}
+import { OutlierDict, ValueLabel } from '../../data-classes/data-models-and-definitions/other-models';
 
 /**
  * Examples that should be tested when looking at this component

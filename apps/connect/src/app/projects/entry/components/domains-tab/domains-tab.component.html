@@ -127,12 +127,13 @@
         <div [style.width]="'100%'">
           <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
         </div>
-        }
+        } @if (configForMolstar()) {
         <div class="molstar-container">
           <div #popoutWrapper>
             <lib-pdbe-molstar #molstarComponent [id]="'domains-molstar'" [molstarConfig]="configForMolstar()"></lib-pdbe-molstar>
           </div>
         </div>
+        }
         <div id="domains-molstar-container" #molstarContainer class="molstar-container" style="display: none"></div>
       </section>
     </section>

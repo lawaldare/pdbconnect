@@ -33,17 +33,10 @@ import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { Color } from 'molstar/lib/mol-util/color';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
-import { PARENT_COMPONENT_TOKEN } from '../../directives/visualisation-interactivity.directive';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
+import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
+import { ComponentReferenceService } from '../../services/component-ref.service';
 
-export interface SequenceDetail {
-  title: string;
-  fullSequence: string;
-  segments: {
-    sequence: string;
-    color?: string;
-  }[];
-}
 @Component({
   selector: 'pdbc-llm-tab',
   standalone: true,
@@ -59,7 +52,6 @@ export interface SequenceDetail {
     SmartSeqViewerComponent,
     MolstarComponent,
   ],
-  providers: [{ provide: PARENT_COMPONENT_TOKEN, useExisting: LLMTabComponent }],
   templateUrl: './llm-tab.component.html',
   styleUrl: './llm-tab.component.scss',
 })
@@ -219,6 +211,8 @@ export class LLMTabComponent implements OnInit {
 
   public selectionData?: QueryParam[];
 
+  public readonly compReference = inject(ComponentReferenceService);
+
   constructor() {
     this.compCommunication.llmSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe((idx) => {
       if (idx === undefined || idx === null) return;
@@ -254,6 +248,7 @@ export class LLMTabComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.compReference.setComponent('llm', this);
     combineLatest([this.globalStore.select(EntrySelectors.llmAnnotations), this.globalStore.select(EntrySelectors.primaryPublication)])
       .pipe(
         map(([llmAnnotations, primaryPublication]) => {

@@ -59,6 +59,7 @@
  * Tab chip/tag
 */
 .tab-tag {
+  margin-left: 4px;
   display: inline-flex;
   padding: 0 2px;
   justify-content: center;
@@ -92,20 +93,17 @@
 .mat-mdc-tab-body-content {
   height: auto !important;
   overflow: visible !important;
-  overflow: visible !important;
   display: block !important;
 }
 
 .mat-mdc-tab-body {
   height: auto !important;
   overflow: visible !important;
-  overflow: visible !important;
   display: block !important;
 }
 
 .mat-mdc-tab-body.mat-mdc-tab-body-active {
   height: auto !important;
-  overflow: visible !important;
   overflow: visible !important;
   display: block !important;
 }

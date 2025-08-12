@@ -6,7 +6,6 @@ import { AssemblyDataToTable } from '../../../data-classes/data-processing/assem
 import { DomainDataToTable } from '../../../data-classes/data-processing/domain-row-class';
 import { LigandDataToTable } from '../../../data-classes/data-processing/ligand-row-class';
 import { MacromoleculeDataToTable } from '../../../data-classes/data-processing/macromolecule-row';
-import { TableNames } from '../../../pages/main/main.component';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { annotationsTooltips, resourceUrls } from '../../../entry-constant';
@@ -17,13 +16,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
+import { Filter, TableNames } from '../../../data-classes/data-models-and-definitions/other-models';
 
 type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
-
-export interface Filter {
-  types: string[];
-  description: string;
-}
 
 @Component({
   selector: 'pdbc-interactive-tables',

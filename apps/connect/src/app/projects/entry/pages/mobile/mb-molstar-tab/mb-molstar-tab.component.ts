@@ -18,14 +18,7 @@ import { DownloadStructure } from 'molstar/lib/mol-plugin-state/actions/structur
 import { Structure } from 'molstar/lib/mol-model/structure';
 import { initializeModelIdTracking } from '../../../helpers/molstar-nmr-model-tracking';
 import { Color } from 'molstar/lib/mol-util/color';
-
-export enum MobileTabChips {
-  MQuality = 'MQuality',
-  Assemblies = 'Assemblies',
-  Macromolecules = 'Macromolecules',
-  Ligands = 'Ligands',
-  Domains = 'Domains',
-}
+import { MobileTabChips } from '../../../data-classes/data-models-and-definitions/other-models';
 
 @Component({
   selector: 'pdbc-mb-molstar-tab',

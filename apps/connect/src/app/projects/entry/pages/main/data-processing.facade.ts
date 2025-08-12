@@ -10,7 +10,6 @@ import { ComponentCommunicationService } from '../../services/component-comm.ser
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
-import { TableNames } from './main.component';
 import { TabNames } from '../../helpers/tab-names.enum';
 import { EntryActions } from '../../store/entry.actions';
 import { catchError, combineLatest, of, retry, startWith, tap } from 'rxjs';
@@ -26,16 +25,7 @@ import { getMacromoleculeOfDomain } from '../../helpers/processed-data-to-contro
 import { environment } from '../../../../../environments/environment';
 import { ENTRY_PAGES_LINKS, labelGroups } from '../../entry-constant';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-
-export interface OutlierDict {
-  uniqueOutlierTypes: Set<string>;
-  molstarSelectionsByOutlierType: Record<string, MolstarSelectionObj>;
-  residuesWith1Outlier: MolstarSelectionObj;
-  residuesWith2Outliers: MolstarSelectionObj;
-  residuesWith3OrMoreOutliers: MolstarSelectionObj;
-}
-
-export type OutliersByModelId = Record<string, OutlierDict>;
+import { OutliersByModelId, TableNames } from '../../data-classes/data-models-and-definitions/other-models';
 
 @Injectable({
   providedIn: 'root',

@@ -1,8 +1,8 @@
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community/';
 import { Component, inject, signal } from '@angular/core';
-import { ValueLabel } from '../experiments-validation.component';
 import { UtilService } from '@pdbc/core';
+import { ValueLabel } from '../../../data-classes/data-models-and-definitions/other-models';
 
 @Component({
   standalone: true,

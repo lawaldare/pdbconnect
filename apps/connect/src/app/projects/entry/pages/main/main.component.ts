@@ -1,11 +1,11 @@
-import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { SearchAppComponent } from '@pdbc/search-app';
 
 import { EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
 import { mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig } from '../../entry-constant';
@@ -34,8 +34,7 @@ import { NotificationComponent } from '@pdbc/notification';
 import { EntryUtilService } from '../../services/entry-util.service';
 import { LLMTabComponent } from '../../components/llm-tab/llm-tab.component';
 import { VisualisationInteractivityDirective } from '../../directives/visualisation-interactivity.directive';
-
-export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains' | 'LLM';
+// import { ComponentReferenceService } from '../../services/component-ref.service';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -79,8 +78,40 @@ export class EntryMainPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
+  // public readonly compReference = inject(ComponentReferenceService);
   public readonly util = inject(EntryUtilService);
   public readonly scrollService = inject(ScrollPositionService);
+
+  public hasLoadedAssemblies = computed(() => this.compCommunication.hasProcessedAssemblies());
+  public hasAssemblies = computed(() => {
+    if (!this.compCommunication.hasProcessedAssemblies()) return false;
+    return this.compCommunication.processedAssemblies.length > 0;
+  });
+  public hasLoadedDomains = computed(() => this.compCommunication.hasProcessedDomains());
+  public hasDomains = computed(() => {
+    if (!this.compCommunication.hasProcessedDomains()) return false;
+    return this.compCommunication.processedDomainsAsList.length > 0;
+  });
+  public hasLoadedMacromolecules = computed(() => this.compCommunication.hasProcessedMacromolecules());
+  public hasMacromolecules = computed(() => {
+    if (!this.compCommunication.hasProcessedMacromolecules()) return false;
+    return this.compCommunication.processedMacromolecules.length > 0;
+  });
+  public hasLoadedLigands = computed(() => this.compCommunication.hasProcessedDomains());
+  public hasLigands = computed(() => {
+    if (!this.compCommunication.hasProcessedLigands()) return false;
+    return this.compCommunication.processedLigandsAndModifications.length > 0;
+  });
+  public annotationsSignal = toSignal(this.dataProcessing.llmAnnotations);
+  public hasLoadedAnnotations = computed(() => this.annotationsSignal() !== undefined);
+  public hasAnnotations = computed(() => {
+    const annotations = this.annotationsSignal();
+    return annotations && annotations.length > 0;
+  });
+
+  // @ViewChild('DomainsTabComp') domainsTabComponent!: DomainsTabComponent;
+  // @ViewChild('MacromoleculesTabComp') macromoleculesTabComponent!: MacromoleculesTabComponent;
+  // @ViewChild('LLMTabComp') llmTabComponent!: LLMTabComponent;
 
   private readonly router = inject(Router);
 
@@ -136,6 +167,9 @@ export class EntryMainPageComponent implements OnInit {
 
   private checkWindowWidth(): void {
     this.isDesktop.set(window.innerWidth > 768);
+    // if (this.isDesktop() && this.compReference.hasSetComponents() === false) {
+    //   this.setRefComponents();
+    // }
   }
 
   ngOnInit(): void {
@@ -175,6 +209,21 @@ export class EntryMainPageComponent implements OnInit {
       )
       .subscribe();
   }
+
+  // ngAfterViewInit(): void {
+  //   this.setRefComponents();
+  // }
+
+  // private setRefComponents() {
+  //   // Ensure that the @ViewChild references are populated here
+  //   console.log("this.llmTabComponent", this.llmTabComponent);
+  //   console.log("this.domainsTabComponent", this.domainsTabComponent);
+
+  //   // Set components after the view has been initialized
+  //   this.compReference.setComponent('domains', this.domainsTabComponent as unknown as DomainsTabComponent);
+  //   this.compReference.setComponent('macromolecules', this.macromoleculesTabComponent as unknown as MacromoleculesTabComponent);
+  //   this.compReference.setComponent('llm', this.llmTabComponent as unknown as LLMTabComponent);
+  // }
 
   private showNotification() {
     const href = document.location.href;

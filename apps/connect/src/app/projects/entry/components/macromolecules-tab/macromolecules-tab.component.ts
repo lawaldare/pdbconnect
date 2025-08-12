@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { MolstarComponent, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
@@ -34,29 +34,12 @@ import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Color } from 'molstar/lib/mol-util/color';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { macromoleculeMolstarSelObjToQueryParam } from '../../helpers/temp-mol-sel-obj-to-queryparam';
-import { PARENT_COMPONENT_TOKEN } from '../../directives/visualisation-interactivity.directive';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
+import { ComponentReferenceService } from '../../services/component-ref.service';
+import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
-
-export interface SequenceDetail {
-  title: string;
-  fullSequence: string;
-  segments: {
-    sequence: string;
-    color?: string;
-  }[];
-}
-
-export interface MappedResidue {
-  range: string[];
-  coverage: string;
-  chainId: string;
-  uniprot: string;
-  open: boolean;
-}
-
 @Component({
   selector: 'pdbc-macromolecules-tab',
   standalone: true,
@@ -72,14 +55,14 @@ export interface MappedResidue {
     SmartSeqViewerComponent,
     MolstarComponent,
   ],
-  providers: [{ provide: PARENT_COMPONENT_TOKEN, useExisting: MacromoleculesTabComponent }],
   templateUrl: './macromolecules-tab.component.html',
   styleUrl: './macromolecules-tab.component.scss',
 })
-export class MacromoleculesTabComponent {
+export class MacromoleculesTabComponent implements OnInit {
   public readonly macromoleculesFacade = inject(MacromoleculesFacade);
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
+  public readonly compReference = inject(ComponentReferenceService);
   private readonly dialog = inject(MatDialog);
   // public readonly dataProcessing = inject(MainDataProcessingFacade);
   public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
@@ -306,6 +289,10 @@ export class MacromoleculesTabComponent {
     this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
       this.updateBackgroundAnnotation();
     });
+  }
+
+  ngOnInit(): void {
+    this.compReference.setComponent('macromolecules', this);
   }
 
   triggerMacromoleculeUpdateSideEffects(macromolecule: MacromoleculesRowData) {

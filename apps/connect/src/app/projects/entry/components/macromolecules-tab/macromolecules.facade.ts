@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { MacromoleculesResidueRanges, MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
-import { MappedResidue, SequenceDetail } from './macromolecules-tab.component';
 import { EntryApiService } from '../../services/entry-api.service';
 import { map } from 'rxjs';
+import { MappedResidue, SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
 
 @Injectable({
   providedIn: 'root',
