@@ -5,11 +5,6 @@ import { BehaviorSubject, take } from 'rxjs';
 import { Router } from '@angular/router';
 import Clarity from '@microsoft/clarity';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MbAssembliesComponent } from './mb-assemblies/mb-assemblies.component';
-import { MbDomainsComponent } from './mb-domains/mb-domains.component';
-import { MbLigandsComponent } from './mb-ligands/mb-ligands.component';
-import { MbMacromoleculeComponent } from './mb-macromolecules/mb-macromolecule.component';
-import { MbModelQualityComponent } from './mb-model-quality/mb-model-quality.component';
 import { MobileTabChips } from './mb-molstar-tab/mb-molstar-tab.component';
 import { MOBILE_COMPONENT_MAP } from './mobile-component-map';
 
