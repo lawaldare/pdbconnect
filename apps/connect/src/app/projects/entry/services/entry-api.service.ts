@@ -86,6 +86,8 @@ export class EntryApiService {
   }
 
   public getEntryStatus(entryId: string): Observable<EntryStatus> {
+    // for testing on wwwdev
+    // return this.http.get<Record<string, EntryStatus[]>>(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/status/${entryId}`).pipe(
     return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(
       map((data) => data[entryId][0]),
       catchError(() => {
