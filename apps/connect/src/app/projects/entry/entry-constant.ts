@@ -24,7 +24,8 @@ export const mobileHeaderConfig = {
 };
 
 export const pdbeSearchConfig = {
-  examples: ['1trn', '1cbs', '7v08', '4v99', '6nrv'],
+  // examples: ['1trn', '1cbs', '7v08', '4v99', '6nrv'],
+  examples: ['2dn2', '8b0x', '7l35', '5cxt', '6qvt', '3ah8'],
   backgroundColor: '#007B53',
   hasAdvancedSearch: true,
   buttonText: 'Search',
