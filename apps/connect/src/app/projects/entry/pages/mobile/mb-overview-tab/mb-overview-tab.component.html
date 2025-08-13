@@ -233,7 +233,7 @@
 
   } @if(macromoleculeTableRows().length > 5){
   <button class="vf-button vf-button--search-pdbe" (click)="toggleMacromoleculeList()">{{macromoleculeInitialCount() > 5 ? 'Hide' : 'Show'}} full list</button>
-  } }@else {
+  } } @else if (compCommunication.hasProcessedMacromolecules() === false) {
   <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
   }
 
@@ -253,7 +253,7 @@
   </section>
   } @if(ligandTableRows().length > 5){
   <button class="vf-button vf-button--search-pdbe" (click)="toggleLigandList()">{{ligandInitialCount() > 5 ? 'Hide' : 'Show'}} full list</button>
-  } }@else {
+  } } @else if (compCommunication.hasProcessedLigands() === false) {
   <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
   }
 

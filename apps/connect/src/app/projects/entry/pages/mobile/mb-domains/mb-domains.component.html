@@ -57,5 +57,14 @@
     Chain @for(chain of selectedDomain()?.additionalData?.segmentsResidNumbers; track chain; let islast = $last) { <span>{{chain.trim()}}</span>{{ islast ? '' : ','
     }} }
   </p>
-  } }
+  } } @else {
+  <header>
+    <section class="header">
+      <h2>No Domains data available</h2>
+      <div class="controls">
+        <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+      </div>
+    </section>
+  </header>
+  }
 </section>
