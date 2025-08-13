@@ -34,7 +34,6 @@ import { NotificationComponent } from '@pdbc/notification';
 import { EntryUtilService } from '../../services/entry-util.service';
 import { LLMTabComponent } from '../../components/llm-tab/llm-tab.component';
 import { VisualisationInteractivityDirective } from '../../directives/visualisation-interactivity.directive';
-// import { ComponentReferenceService } from '../../services/component-ref.service';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -78,7 +77,6 @@ export class EntryMainPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  // public readonly compReference = inject(ComponentReferenceService);
   public readonly util = inject(EntryUtilService);
   public readonly scrollService = inject(ScrollPositionService);
 
@@ -106,12 +104,8 @@ export class EntryMainPageComponent implements OnInit {
   public hasLoadedAnnotations = computed(() => this.annotationsSignal() !== undefined);
   public hasAnnotations = computed(() => {
     const annotations = this.annotationsSignal();
-    return annotations && annotations.length > 0;
+    return annotations && annotations.filter((a: any) => a.primaryCitation === 'Y').length > 0;
   });
-
-  // @ViewChild('DomainsTabComp') domainsTabComponent!: DomainsTabComponent;
-  // @ViewChild('MacromoleculesTabComp') macromoleculesTabComponent!: MacromoleculesTabComponent;
-  // @ViewChild('LLMTabComp') llmTabComponent!: LLMTabComponent;
 
   private readonly router = inject(Router);
 
@@ -167,9 +161,6 @@ export class EntryMainPageComponent implements OnInit {
 
   private checkWindowWidth(): void {
     this.isDesktop.set(window.innerWidth > 768);
-    // if (this.isDesktop() && this.compReference.hasSetComponents() === false) {
-    //   this.setRefComponents();
-    // }
   }
 
   ngOnInit(): void {
@@ -209,21 +200,6 @@ export class EntryMainPageComponent implements OnInit {
       )
       .subscribe();
   }
-
-  // ngAfterViewInit(): void {
-  //   this.setRefComponents();
-  // }
-
-  // private setRefComponents() {
-  //   // Ensure that the @ViewChild references are populated here
-  //   console.log("this.llmTabComponent", this.llmTabComponent);
-  //   console.log("this.domainsTabComponent", this.domainsTabComponent);
-
-  //   // Set components after the view has been initialized
-  //   this.compReference.setComponent('domains', this.domainsTabComponent as unknown as DomainsTabComponent);
-  //   this.compReference.setComponent('macromolecules', this.macromoleculesTabComponent as unknown as MacromoleculesTabComponent);
-  //   this.compReference.setComponent('llm', this.llmTabComponent as unknown as LLMTabComponent);
-  // }
 
   private showNotification() {
     const href = document.location.href;
