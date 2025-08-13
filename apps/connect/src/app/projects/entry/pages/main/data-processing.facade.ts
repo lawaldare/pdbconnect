@@ -110,7 +110,7 @@ export class MainDataProcessingFacade {
       pfamMappings: createSelectorStream(EntrySelectors.pfamMapping, null),
       cathMappings: createSelectorStream(EntrySelectors.cathMapping, null),
       scopMappings: createSelectorStream(EntrySelectors.scop175Mapping, null),
-      ligands: createSelectorStream(EntrySelectors.boundLigands, []),
+      ligands: createSelectorStream(EntrySelectors.boundLigands, undefined),
       modifications: createSelectorStream(EntrySelectors.modifications, []),
       carbohydrates: createSelectorStream(EntrySelectors.carbohydrates, []),
       uniprotMapping: createSelectorStream(EntrySelectors.uniprotMapping, null),
