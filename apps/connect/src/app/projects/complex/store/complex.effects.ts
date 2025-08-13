@@ -8,9 +8,9 @@ import { ComplexStoreState } from './complex-store.model';
 import { ComplexActions } from './complex.actions';
 import { ComplexSelectors } from './complex.selectors';
 import { LoadingState } from '../../ligands/enums/loading-state.enum';
-import { ComplexLigand } from '../components/page-sections/complex-ligands/complex-ligands.component';
 import { ComplexInteraction } from '../models/complex-structure.model';
-import { PISAAssemblyParam } from '../components/page-sections/complex-pisa/complex-pisa.component';
+import { PISAAssemblyParam } from '../models/pisa-assembly-param.model';
+import { ComplexLigand } from '../models/complex-ligands.model';
 
 @Injectable()
 export class ComplexEffects {
