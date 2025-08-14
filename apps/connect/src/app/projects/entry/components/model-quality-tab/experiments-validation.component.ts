@@ -36,7 +36,6 @@ import { MainDataProcessingFacade } from '../../pages/main/data-processing.facad
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { MolstarComponent, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
-import { Color } from 'molstar/lib/mol-util/color';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { cameraResetInMolstar, drawSelectionInMolstar } from '../../helpers/molstar-helpers';
@@ -221,7 +220,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
           type: 'cartoon',
           // 'color': 'entity-id',
           color: 'uniform',
-          colorParams: { value: Color(0xd4d5d4) },
+          colorParams: { value: '#d4d5d4' },
         },
       },
       loadMaps: true,

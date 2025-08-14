@@ -30,7 +30,6 @@ import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smar
 import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering } from '../../helpers/procesing-for-smart-seq-viewer';
 import { EntryActions } from '../../store/entry.actions';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
-import { Color } from 'molstar/lib/mol-util/color';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
@@ -182,7 +181,7 @@ export class LLMTabComponent implements OnInit {
         polymer: {
           type: 'cartoon',
           color: 'uniform',
-          colorParams: { value: Color(0xfefefe) },
+          colorParams: { value: '#fefefe' },
         },
       },
       loadMaps: true,

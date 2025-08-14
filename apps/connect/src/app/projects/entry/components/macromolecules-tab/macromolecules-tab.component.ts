@@ -31,7 +31,6 @@ import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValue
 import { EntryActions } from '../../store/entry.actions';
 import { InitParams, DefaultParams } from 'pdbe-molstar/lib/spec';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { Color } from 'molstar/lib/mol-util/color';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { macromoleculeMolstarSelObjToQueryParam } from '../../helpers/temp-mol-sel-obj-to-queryparam';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
@@ -115,7 +114,7 @@ export class MacromoleculesTabComponent implements OnInit {
           type: 'cartoon',
           // 'color': 'entity-id',
           color: 'uniform',
-          colorParams: { value: Color(0xfefefe) },
+          colorParams: { value: '#fefefe' },
         },
       },
       loadMaps: true,

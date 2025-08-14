@@ -25,7 +25,6 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
-import { Color } from 'molstar/lib/mol-util/color';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { domainMolstarSelObjToQueryParam } from '../../helpers/temp-mol-sel-obj-to-queryparam';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
@@ -108,7 +107,7 @@ export class DomainsTabComponent implements OnInit {
         polymer: {
           type: 'cartoon',
           color: 'uniform',
-          colorParams: { value: Color(0xfefefe) },
+          colorParams: { value: '#fefefe' },
         },
       },
     };

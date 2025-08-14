@@ -10,8 +10,7 @@ import { modelQualitySummaryTooltip } from '../../entry-constant';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { MolstarComponent, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
-import { AnyColor, DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
-import { Color } from 'molstar/lib/mol-util/color';
+import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { PluginConfig } from 'molstar/lib/mol-plugin/config';
 import { PresetStructureRepresentations } from 'molstar/lib/mol-plugin-state/builder/structure/representation-preset';
 import { DownloadStructure } from 'molstar/lib/mol-plugin-state/actions/structure';
@@ -132,8 +131,6 @@ export class SummaryTabComponent implements AfterViewInit {
         polymer: {
           type: 'cartoon',
           color: 'entity-id',
-          // 'color': 'uniform',
-          // 'colorParams': { value: Color(0xfefefe) },
         },
       },
       // ...(chainSelection && { 'selection': chainSelection }),
