@@ -1,7 +1,7 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import { ComplexData, ComplexInteraction } from '../models/complex-structure.model';
-import { ComplexLigand } from '../components/page-sections/complex-ligands/complex-ligands.component';
-import { PISAAssemblyParam } from '../components/page-sections/complex-pisa/complex-pisa.component';
+import { ComplexLigand } from '../models/complex-ligands.model';
+import { PISAAssemblyParam } from '../models/pisa-assembly-param.model';
 
 export const ComplexActions = createActionGroup({
   source: 'Ligands Page',

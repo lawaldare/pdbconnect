@@ -14,18 +14,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { PARAMS } from '../../../complex.constant';
 import { drawHistogram } from './histogram';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
-
-export interface PISAAssemblyParam {
-  dissociation_energy: number;
-  accessible_surface_area: number;
-  buried_surface_area: number;
-  dissociation_entropy: number;
-  dissociation_area: number;
-  solvation_energy_gain: number;
-  pdb_id: string;
-  assembly_id: string;
-  [key: string]: any;
-}
+import { PISAAssemblyParam } from '../../../models/pisa-assembly-param.model';
 
 @Component({
   selector: 'pdbc-complex-pisa',
