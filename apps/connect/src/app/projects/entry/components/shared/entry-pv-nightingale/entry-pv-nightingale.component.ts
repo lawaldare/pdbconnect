@@ -230,6 +230,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
 
   // data for modals
   public selectedResidues: string[] = [];
+  public selectedFromExternal: string[] = [];
   public panelResidueData: PanelResidueDatum[] = [];
 
   // height for the scrollable tracks div is automatically calculated from parent's total height - fixed header height
@@ -706,7 +707,16 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     }
   }
 
-  @HostListener('smartSeqViewerSelect', ['$event'])
+  @HostListener('document:smartSeqViewerUnselect', ['$event'])
+  removeFromExternal(event: Event) {
+    if (this.selectedFromExternal.length > 0) {
+      this.selectedFromExternal = [];
+      const selectedResidues = [...this.selectedResidues];
+      this.onSelectedResiduesChange(selectedResidues);
+    }
+  }
+
+  @HostListener('document:smartSeqViewerSelect', ['$event'])
   @HostListener('document:PDB.topologyViewer.click', ['$event'])
   // @HostListener('document:PDB.litemol.click', ['$event'])
   @HostListener('document:PDB.molstar.click', ['$event'])
@@ -733,7 +743,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       eventChainId = eventData.chainId;
       eventResNumber = eventData.residueNumber;
     } else if (event.type === 'smartSeqViewerSelect') {
-      const eventData = (event as any).eventData;
+      const eventData = (event as any).detail.eventData;
       eventEntryId = this.entryId();
       eventEntityId = eventData.entityId;
       eventChainId = eventData.chainId;
@@ -745,12 +755,19 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     if (this.entityId() !== eventEntityId) return;
     if (this.chainId() && this.chainId() !== eventChainId) return;
 
-    // 4 - Add clicked residue index to selection list and apply highlight logic
+    // 4 - set externally selected residues
+    const idxOfResidue = this.selectedFromExternal.indexOf(`Index: ${eventResNumber}`);
+    if (idxOfResidue === -1) this.selectedFromExternal = [`Index: ${eventResNumber}`];
+    else this.selectedFromExternal = [];
+
+    // 5 - Add clicked residue index to selection list and apply highlight logic
     const selectedResidues = [...this.selectedResidues];
-    const idxOfResidue = selectedResidues.indexOf(`Index: ${eventResNumber}`);
-    if (idxOfResidue === -1) selectedResidues.push(`Index: ${eventResNumber}`);
+
+    // const idxOfResidue = selectedResidues.indexOf(`Index: ${eventResNumber}`);
+    // if (idxOfResidue === -1) selectedResidues.push(`Index: ${eventResNumber}`);
     // ... or remove from selection list if unselection
-    else selectedResidues.splice(idxOfResidue, 1);
+    // else selectedResidues.splice(idxOfResidue, 1);
+
     this.onSelectedResiduesChange(selectedResidues);
   }
 
@@ -1023,8 +1040,11 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     // 1 - Update selected residues from search panel or external interactivity
     this.selectedResidues = newSelection;
 
+    const mergedSelections = [...this.selectedResidues];
+    mergedSelections.push(...this.selectedFromExternal);
+
     // 2 - Convert selected strings (e.g. "Index: 15-20") to Nightingale highlight ranges (e.g. "15:20")
-    const searchSelections = this.selectedResidues
+    const searchSelections = mergedSelections
       .map((entry) => {
         const indexPart = entry.split('|').find((part) => part.trim().startsWith('Index:'));
         if (!indexPart) return '';
