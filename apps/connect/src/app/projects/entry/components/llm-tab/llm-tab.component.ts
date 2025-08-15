@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
@@ -34,7 +34,7 @@ import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
-import { ComponentReferenceService } from '../../services/component-ref.service';
+import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 
 @Component({
   selector: 'pdbc-llm-tab',
@@ -195,6 +195,7 @@ export class LLMTabComponent implements OnInit {
   @ViewChild('molstarComponent') set molstarComponent(ref: MolstarComponent | undefined) {
     if (ref) {
       this._molstarComponent = ref;
+      this.visInteractivity.currentMolstarComponent = this._molstarComponent;
       this.molstarReady.set(true);
     }
   }
@@ -210,7 +211,7 @@ export class LLMTabComponent implements OnInit {
 
   public selectionData?: QueryParam[];
 
-  public readonly compReference = inject(ComponentReferenceService);
+  public readonly visInteractivity = inject(VisualisationInteractivityService);
 
   constructor() {
     this.compCommunication.llmSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe((idx) => {
@@ -234,20 +235,23 @@ export class LLMTabComponent implements OnInit {
     });
   }
 
+  @HostListener('document:llm-reset-list', ['$event'])
   public resetAnnotationList() {
     const letter = this.dropdownSelected.split(' ')[1];
     const groupedAnnotations = this.groupedFilteredLLMAnnotations()[letter];
     this.filteredLLMAnnotations.update(() => groupedAnnotations);
   }
 
-  public filterAnnotationList(residueNumber: number) {
+  @HostListener('document:llm-filter-list', ['$event'])
+  public filterAnnotationList(event: Event) {
+    const eventData = (event as any).detail.eventData;
+    const residueNumber = eventData.residueNumber;
     const allAnnotations = this.groupedAnnotations();
     const filteredByResidue = allAnnotations.filter((a: LLMAnnotation) => a.pdbResidue === residueNumber);
     this.filteredLLMAnnotations.update(() => this.llmAnnotationsFacade.removeDuplicatesByKey(filteredByResidue, 'sentence'));
   }
 
   ngOnInit(): void {
-    this.compReference.setComponent('llm', this);
     combineLatest([this.globalStore.select(EntrySelectors.llmAnnotations), this.globalStore.select(EntrySelectors.primaryPublication)])
       .pipe(
         map(([llmAnnotations, primaryPublication]) => {
@@ -369,6 +373,8 @@ export class LLMTabComponent implements OnInit {
 
     this.currentSelectionEntityId.set(`${entityId}`);
     this.currentSelectionChainId.set(chainId);
+    this.visInteractivity.currentSelectionEntityId.set(`${entityId}`);
+    this.visInteractivity.currentSelectionChainId.set(chainId);
   }
 
   private async renderInMolstar(macromolecule: MacromoleculesRowData) {
@@ -394,6 +400,7 @@ export class LLMTabComponent implements OnInit {
         focus: true,
       },
     ];
+    this.visInteractivity.currentSelectionData.set(this.selectionData);
 
     const durationMs = this._molstarComponent ? 1200 : 0;
     const instance = this._molstarComponent?.getInstance() ?? null;

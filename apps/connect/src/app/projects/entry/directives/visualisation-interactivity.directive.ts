@@ -3,7 +3,7 @@ import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { clearInteractivityFocusInMolstar, drawSelectionInMolstar, showInteractivityFocusInMolstar } from '../helpers/molstar-helpers';
 import { timer } from 'rxjs';
 import { protToMolBuildHighlightQuery, protToMolExtractColor, protToMolShouldShowInteraction } from '../helpers/protvista-interactivity';
-import { ComponentReferenceService } from '../services/component-ref.service';
+import { VisualisationInteractivityService } from '../services/vis-interactivity-service';
 
 @Directive({
   selector: '[pdbcVisualisationInteractivity]',
@@ -16,7 +16,7 @@ export class VisualisationInteractivityDirective {
   @Input({ required: true }) hasLLMTable = false;
   // TODO @Input({required: true}) hasTopologyViewer: boolean = false;
 
-  public readonly compReference = inject(ComponentReferenceService);
+  public readonly visInteractivity = inject(VisualisationInteractivityService);
 
   private lastClickedResidue?: {
     entity_id: string;
@@ -37,7 +37,16 @@ export class VisualisationInteractivityDirective {
     if (!this.hasSeqViewer) return;
     if (this.hasLLMTable) {
       const residueNumber = event.detail.eventData.residueNumber;
-      this.compReference.llmTabComponent.filterAnnotationList(residueNumber);
+      const eventObj = new CustomEvent('llm-filter-list', {
+        detail: {
+          eventData: {
+            residueNumber: residueNumber,
+          },
+        },
+        bubbles: true,
+        cancelable: true,
+      });
+      document.dispatchEvent(eventObj);
     }
     const clickData = {
       entity_id: event.detail.eventData.entityId,
@@ -53,12 +62,11 @@ export class VisualisationInteractivityDirective {
     if (!this.hasSeqViewer) return;
 
     if (this.hasLLMTable) {
-      this.compReference.llmTabComponent.resetAnnotationList();
+      const eventObj = new CustomEvent('llm-reset-list');
+      document.dispatchEvent(eventObj);
     }
 
-    const parent = this.compReference.getComponent(this.parentType);
-    const instance = parent._molstarComponent?.getInstance() ?? null;
-    // const instance = this.parent._molstarComponent?.getInstance() ?? null;
+    const instance = this.visInteractivity.currentMolstarComponent?.getInstance() ?? null;
     if (!instance) return;
 
     // if already deselected, do nothing
@@ -66,11 +74,10 @@ export class VisualisationInteractivityDirective {
     this.lastClickedResidue = undefined;
 
     await clearInteractivityFocusInMolstar(instance);
-    // if (!this.parent.selectionData) return;
-    if (!parent.selectionData) return;
+    const selection = this.visInteractivity.currentSelectionData();
+    if (!selection) return;
 
-    const selectionData = this.applyFocus([...parent.selectionData], true);
-    // const selectionData = this.applyFocus([...this.parent.selectionData], true);
+    const selectionData = this.applyFocus([...selection], true);
     await drawSelectionInMolstar(instance, selectionData);
     return;
   }
@@ -92,11 +99,8 @@ export class VisualisationInteractivityDirective {
 
     const eventData = (event as any).detail.eventData;
 
-    const parent = this.compReference.getComponent(this.parentType);
-    // const entityId = this.parent.currentSelectionEntityId();
-    const entityId = parent.currentSelectionEntityId();
-    // const chainId = this.parent.currentSelectionChainId();
-    const chainId = parent.currentSelectionChainId();
+    const entityId = this.visInteractivity.currentSelectionEntityId();
+    const chainId = this.visInteractivity.currentSelectionChainId();
     const residueNumber = eventData.residueNumber;
 
     if (!entityId || !chainId) return;
@@ -109,8 +113,16 @@ export class VisualisationInteractivityDirective {
     const doNotPropagateEvt = true;
     const doNotCheckOrUpdState = true;
     this.handleSelectionOnMolstarResClick(clickData, doNotPropagateEvt, doNotCheckOrUpdState);
-    // (this.parent as LLMTabComponent).filterAnnotationList(clickData.residue_number);
-    (parent as any).filterAnnotationList(clickData.residue_number);
+    const eventObj = new CustomEvent('llm-filter-list', {
+      detail: {
+        eventData: {
+          residueNumber: clickData.residue_number,
+        },
+      },
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(eventObj);
   }
 
   private async handleSelectionOnMolstarResClick(
@@ -118,9 +130,9 @@ export class VisualisationInteractivityDirective {
     doNotPropagate?: boolean,
     doNotCheckOrUpdState?: boolean
   ) {
-    const parent = this.compReference.getComponent(this.parentType);
-    // const instance = this.parent._molstarComponent?.getInstance() ?? null;
-    const instance = parent._molstarComponent?.getInstance() ?? null;
+    const selection = this.visInteractivity.currentSelectionData();
+    const instance = this.visInteractivity.currentMolstarComponent?.getInstance() ?? null;
+
     if (!instance) return;
     // 50 ms to let molstar update components before overriding slection
     timer(50).subscribe(async () => {
@@ -146,8 +158,7 @@ export class VisualisationInteractivityDirective {
       }
 
       const toFocus = currentResidue ? false : true;
-      // const dataToFocus = this.parent.selectionData ? [...this.parent.selectionData] : [];
-      const dataToFocus = parent.selectionData ? [...parent.selectionData] : [];
+      const dataToFocus = selection ? [...selection] : [];
       const selectionData: QueryParam[] = this.applyFocus(dataToFocus, toFocus)!;
 
       // if residue is to be selected (exists)
@@ -171,14 +182,10 @@ export class VisualisationInteractivityDirective {
 
       // if clicks in other residues/entity do not propagate evt to seq. viewer
       if (
-        // !this.parent.currentSelectionEntityId() ||
-        !parent.currentSelectionEntityId() ||
-        // !this.parent.currentSelectionChainId() ||
-        !parent.currentSelectionChainId() ||
-        // clickData.entity_id !== this.parent.currentSelectionEntityId() ||
-        clickData.entity_id !== parent.currentSelectionEntityId() ||
-        // clickData.auth_asym_id !== this.parent.currentSelectionChainId()
-        clickData.auth_asym_id !== parent.currentSelectionChainId()
+        !this.visInteractivity.currentSelectionEntityId() ||
+        !this.visInteractivity.currentSelectionChainId() ||
+        clickData.entity_id !== this.visInteractivity.currentSelectionEntityId() ||
+        clickData.auth_asym_id !== this.visInteractivity.currentSelectionChainId()
       )
         return;
 
@@ -201,10 +208,19 @@ export class VisualisationInteractivityDirective {
 
         // ... and do extra actions necessary if on llm tab
         if (this.hasLLMTable && !currentResidue) {
-          // (this.parent as LLMTabComponent).resetAnnotationList();
-          (parent as any).resetAnnotationList();
+          const eventObj = new CustomEvent('llm-reset-list');
+          document.dispatchEvent(eventObj);
         } else if (this.hasLLMTable && currentResidue) {
-          (parent as any).filterAnnotationList(clickData.residue_number);
+          const eventObj = new CustomEvent('llm-filter-list', {
+            detail: {
+              eventData: {
+                residueNumber: clickData.residue_number,
+              },
+            },
+            bubbles: true,
+            cancelable: true,
+          });
+          document.dispatchEvent(eventObj);
         }
       }
     });
@@ -216,9 +232,8 @@ export class VisualisationInteractivityDirective {
     const detail = event.detail;
     if (!detail) return;
 
-    const parent = this.compReference.getComponent(this.parentType);
-    // const instance = this.parent._molstarComponent?.getInstance() ?? null;
-    const instance = parent._molstarComponent?.getInstance() ?? null;
+    const selection = this.visInteractivity.currentSelectionData();
+    const instance = this.visInteractivity.currentMolstarComponent?.getInstance() ?? null;
     if (!instance) return;
 
     // Build highlight query
@@ -238,8 +253,7 @@ export class VisualisationInteractivityDirective {
     // Always focus
     highlightQuery.focus = true;
 
-    // const dataToFocus = this.parent.selectionData ? [...this.parent.selectionData] : [];
-    const dataToFocus = parent.selectionData ? [...parent.selectionData] : [];
+    const dataToFocus = selection ? [...selection] : [];
     const selectionData = this.applyFocus(dataToFocus, false)!;
 
     selectionData.push(highlightQuery);
@@ -267,16 +281,15 @@ export class VisualisationInteractivityDirective {
   @HostListener('document:protvista-close-pin', ['$event'])
   private async handleProtvistaClosePin(event: CustomEvent) {
     if (!this.hasNewProtvista) return;
-    const parent = this.compReference.getComponent(this.parentType);
-    // const instance = this.parent._molstarComponent?.getInstance() ?? null;
-    const instance = parent._molstarComponent?.getInstance() ?? null;
+    const selection = this.visInteractivity.currentSelectionData();
+    const instance = this.visInteractivity.currentMolstarComponent?.getInstance() ?? null;
+
     if (!instance) return;
 
     // if after opening pin, res has been selected in smart seq viewer, abort
     if (this.lastClickedResidue !== undefined) return;
 
-    // const dataToFocus = this.parent.selectionData ? [...this.parent.selectionData] : [];
-    const dataToFocus = parent.selectionData ? [...parent.selectionData] : [];
+    const dataToFocus = selection ? [...selection] : [];
     const selectionData = this.applyFocus(dataToFocus, true)!;
 
     await clearInteractivityFocusInMolstar(instance);

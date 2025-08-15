@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { DomainsRowData, MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { getDomainChainDropdownOptions } from '../../helpers/processed-data-to-controls';
@@ -28,7 +28,7 @@ import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
-import { ComponentReferenceService } from '../../services/component-ref.service';
+import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 
 @Component({
   selector: 'pdbc-domains-tab',
@@ -46,10 +46,10 @@ import { ComponentReferenceService } from '../../services/component-ref.service'
   templateUrl: './domains-tab.component.html',
   styleUrl: './domains-tab.component.scss',
 })
-export class DomainsTabComponent implements OnInit {
+export class DomainsTabComponent {
   public domainsFacade = inject(DomainsFacade);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  public readonly compReference = inject(ComponentReferenceService);
+  public readonly visInteractivity = inject(VisualisationInteractivityService);
   public readonly popService = inject(PopupWindowService);
   private readonly utilService = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
@@ -75,6 +75,7 @@ export class DomainsTabComponent implements OnInit {
   @ViewChild('molstarComponent') set molstarComponent(ref: MolstarComponent | undefined) {
     if (ref) {
       this._molstarComponent = ref;
+      this.visInteractivity.currentMolstarComponent = this._molstarComponent;
       this.molstarReady.set(true);
     }
   }
@@ -155,10 +156,6 @@ export class DomainsTabComponent implements OnInit {
       const authNumbering = createAuthAlternateNumbering(residueListing);
       this.altSequences.set([authNumbering]);
     });
-  }
-
-  ngOnInit(): void {
-    this.compReference.setComponent('domains', this);
   }
 
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
@@ -296,6 +293,7 @@ export class DomainsTabComponent implements OnInit {
         focus: true,
       };
     });
+    this.visInteractivity.currentSelectionData.set(this.selectionData);
 
     const durationMs = this._molstarComponent ? 1200 : 0;
     const instance = this._molstarComponent?.getInstance() ?? null;
@@ -321,6 +319,8 @@ export class DomainsTabComponent implements OnInit {
 
     this.currentSelectionEntityId.set(`${entityId}`);
     this.currentSelectionChainId.set(chainId);
+    this.visInteractivity.currentSelectionEntityId.set(`${entityId}`);
+    this.visInteractivity.currentSelectionChainId.set(chainId);
     this.protvistaDomainSelection.set({
       trackName: 'Current Domain',
       trackSegments: segments,
