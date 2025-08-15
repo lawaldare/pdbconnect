@@ -25,7 +25,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
-import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering } from '../../helpers/procesing-for-smart-seq-viewer';
+import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
 import { EntryActions } from '../../store/entry.actions';
 import { InitParams, DefaultParams } from 'pdbe-molstar/lib/spec';
@@ -261,6 +261,13 @@ export class MacromoleculesTabComponent {
     if (!residueListing || residueListing.length === 0) return [];
     const authNumbering = createAuthAlternateNumbering(residueListing);
     return [authNumbering];
+  });
+
+  public nonObserved = computed(() => {
+    const residueListing = this.residueListing();
+    if (!residueListing || residueListing.length === 0) return [];
+    const nonObservedResidues = getNonObserved(residueListing);
+    return nonObservedResidues;
   });
 
   public currentModelId$ = new BehaviorSubject<string>('1');

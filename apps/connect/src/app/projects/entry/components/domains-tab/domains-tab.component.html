@@ -91,7 +91,7 @@
       <p>{{dropdownOptions[0].name}}</p>
       } @else {}
     </div>
-    @if (sequenceDetails().length > 0 && currentSelectionEntityId() && backgroundAnnotation()) {
+    @if (sequenceDetails().length > 0 && currentSelectionEntityId() && backgroundAnnotation() && nonObserved() !== undefined) {
     <div class="sequence-container">
       @for (sequenceDetail of sequenceDetails(); track sequenceDetail; let i = $index;) {
       <div class="title">
@@ -106,6 +106,7 @@
         [chainId]="currentSelectionChainId()!"
         [backgroundDataInput]="backgroundAnnotation()"
         [altSequences]="altSequences()"
+        [nonObserved]="nonObserved()!"
       ></lib-smart-seq-viewer>
       }
     </div>

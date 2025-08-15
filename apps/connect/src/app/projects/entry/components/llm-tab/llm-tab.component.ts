@@ -27,7 +27,7 @@ import { LLMAnnotation } from '../../data-models/llm-model';
 import { colDefs, gridOptions } from './ag-grid';
 import { SelectionChangedEvent } from 'ag-grid-community';
 import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
-import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering } from '../../helpers/procesing-for-smart-seq-viewer';
+import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import { EntryActions } from '../../store/entry.actions';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
@@ -154,6 +154,13 @@ export class LLMTabComponent implements OnInit {
     if (!residueListing || residueListing.length === 0) return [];
     const authNumbering = createAuthAlternateNumbering(residueListing);
     return [authNumbering];
+  });
+
+  public nonObserved = computed(() => {
+    const residueListing = this.residueListing();
+    if (!residueListing || residueListing.length === 0) return [];
+    const nonObservedResidues = getNonObserved(residueListing);
+    return nonObservedResidues;
   });
 
   public numberOfAnnotatedResids = computed(() => {

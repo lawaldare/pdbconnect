@@ -19,7 +19,7 @@ import { InteractiveTablesComponent } from '../shared/interactive-tables/interac
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
-import { createAuthAlternateNumbering } from '../../helpers/procesing-for-smart-seq-viewer';
+import { createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import { EntryActions } from '../../store/entry.actions';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
@@ -136,6 +136,7 @@ export class DomainsTabComponent {
 
   public currentDomainsDatum = signal<DomainsRowData | undefined>(undefined);
   public altSequences = signal<AlternativeNumbering[]>([]);
+  public nonObserved = signal<number[] | undefined>(undefined);
 
   constructor() {
     combineLatest([this.compCommunication.domainSelection$.pipe(debounceTime(50), distinctUntilChanged()), toObservable(this.domainTableRows)])
@@ -155,6 +156,9 @@ export class DomainsTabComponent {
       if (!residueListing) this.altSequences.set([]);
       const authNumbering = createAuthAlternateNumbering(residueListing);
       this.altSequences.set([authNumbering]);
+
+      const nonObservedResidues = getNonObserved(residueListing);
+      this.nonObserved.set(nonObservedResidues);
     });
   }
 
