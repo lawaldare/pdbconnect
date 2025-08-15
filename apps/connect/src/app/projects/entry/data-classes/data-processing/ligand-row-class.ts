@@ -3,11 +3,12 @@ import { LigandsRowData, TableFilter, TableRow } from '../data-models-and-defini
 import { DataToTable } from './abstract-base-row-class';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { Molecule } from '../../data-models/molecule.model';
-import { COLORBREWER_SET2_COLORS, ELEMENT_COLORS_HEX, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { COLORBREWER_SET2_COLORS, ELEMENT_COLORS_HEX } from '@pdbe-lib/molstar-for-apps';
 import { LigandMonomer } from '../../data-models/ligand-monomers.model';
 import { AssemblyData } from '../../data-models/assembly.model';
 import { ProcessedSummary } from '../../data-models/summary.model';
 import { BANG_WONG_COLORBLIND_SCALE } from '../../entry-constant';
+import { QueryParam } from 'pdbe-molstar/lib/helpers';
 
 export class LigandDataToTable extends DataToTable {
   // Ligand specific data
@@ -183,17 +184,6 @@ export class LigandDataToTable extends DataToTable {
   }
 
   generateMolstarSelectionsLigands(ligandEntity: Molecule, ligandMonomers: LigandMonomer[]) {
-    // const ligandResidueInfo = molstarResidueInfo.filter((residInfo) => {
-    //   return (
-    //     residInfo.label_entity_id &&
-    //     residInfo.auth_asym_id &&
-    //     residInfo.label_asym_id &&
-    //     residInfo.label_entity_id === ligandEntity.entity_id + '' &&
-    //     ligandEntity.in_chains.indexOf(residInfo.auth_asym_id) > -1 &&
-    //     ligandEntity.in_struct_asyms.indexOf(residInfo.label_asym_id) > -1
-    //   );
-    // });
-
     const filteredLigandMonomers = ligandMonomers.filter((ligandMonomer) => {
       return (
         ligandMonomer.entity_id &&
@@ -205,39 +195,17 @@ export class LigandDataToTable extends DataToTable {
       );
     });
 
-    // const selectionNames: string[] = [];
-    // const selections: MolstarSelectionObj[] = ligandResidueInfo.map((ligResidInfo) => {
-    //   const resIns = ligResidInfo.pdbx_PDB_ins_code || '';
-    //   selectionNames.push(`Chain: ${ligResidInfo.auth_asym_id!} - Res: ${ligResidInfo.auth_seq_id!}${resIns}`);
-    //   return {
-    //     entityId: ligandEntity.entity_id + '',
-    //     authChainId: ligResidInfo.auth_asym_id!,
-    //     residues: [
-    //       {
-    //         authBegin: ligResidInfo.auth_seq_id! + '',
-    //         authBeginIns: ligResidInfo.pdbx_PDB_ins_code || '',
-    //         authEnd: ligResidInfo.auth_seq_id! + '',
-    //         authEndIns: ligResidInfo.pdbx_PDB_ins_code || '',
-    //       },
-    //     ],
-    //   };
-    // });
-
     const selectionNames: string[] = [];
-    const selections: MolstarSelectionObj[] = filteredLigandMonomers.map((ligandMonomer) => {
+    const selections: QueryParam[][] = filteredLigandMonomers.map((ligandMonomer) => {
       selectionNames.push(`Chain: ${ligandMonomer.chain_id} - Res: ${ligandMonomer.author_residue_number}${ligandMonomer.author_insertion_code}`);
-      return {
-        entityId: ligandEntity.entity_id + '',
-        authChainId: ligandMonomer.chain_id,
-        residues: [
-          {
-            authBegin: ligandMonomer.author_residue_number + '',
-            authBeginIns: ligandMonomer.author_insertion_code,
-            authEnd: ligandMonomer.author_residue_number + '',
-            authEndIns: ligandMonomer.author_insertion_code,
-          },
-        ],
-      };
+      return [
+        {
+          entity_id: ligandEntity.entity_id + '',
+          auth_asym_id: ligandMonomer.chain_id,
+          auth_residue_number: ligandMonomer.author_residue_number,
+          auth_ins_code_id: ligandMonomer.author_insertion_code ? ligandMonomer.author_insertion_code : undefined,
+        },
+      ];
     });
 
     if (filteredLigandMonomers.length === 0) {
@@ -248,20 +216,16 @@ export class LigandDataToTable extends DataToTable {
 
   generateMolstarSelectionsModifications(modifications: ModifiedResidue[]) {
     const selectionNames: string[] = [];
-    const selections: MolstarSelectionObj[] = [];
+    const selections: QueryParam[][] = [];
     for (const mod of modifications) {
-      const newMolstarSelection: MolstarSelectionObj = {
-        entityId: mod.entity_id + '',
-        authChainId: mod.chain_id,
-        residues: [
-          {
-            authBegin: mod.author_residue_number + '',
-            authBeginIns: mod.author_insertion_code,
-            authEnd: mod.author_residue_number + '',
-            authEndIns: mod.author_insertion_code,
-          },
-        ],
-      };
+      const newMolstarSelection: QueryParam[] = [
+        {
+          entity_id: mod.entity_id + '',
+          auth_asym_id: mod.chain_id,
+          auth_residue_number: mod.author_residue_number,
+          auth_ins_code_id: mod.author_insertion_code ? mod.author_insertion_code : undefined,
+        },
+      ];
       selections.push(newMolstarSelection);
       selectionNames.push(`Chain ${mod.chain_id} -  Res: ${mod.author_residue_number}${mod.author_insertion_code}`);
     }

@@ -22,11 +22,10 @@ import { combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFr
 import { createAuthAlternateNumbering } from '../../helpers/procesing-for-smart-seq-viewer';
 import { EntryActions } from '../../store/entry.actions';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { MolstarComponent, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { domainMolstarSelObjToQueryParam } from '../../helpers/temp-mol-sel-obj-to-queryparam';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
 import { ComponentReferenceService } from '../../services/component-ref.service';
@@ -64,7 +63,7 @@ export class DomainsTabComponent implements OnInit {
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
 
   public currentSelectionEntityId = signal<string | undefined>(undefined);
   public currentSelectionChainId = signal<string | undefined>(undefined);
@@ -107,7 +106,7 @@ export class DomainsTabComponent implements OnInit {
         polymer: {
           type: 'cartoon',
           color: 'uniform',
-          colorParams: { value: '#fefefe' },
+          colorParams: { value: 0xfefefe },
         },
       },
     };
@@ -288,9 +287,15 @@ export class DomainsTabComponent implements OnInit {
         take(1)
       )
     );
-
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     const domainColor = '#B5CB93'; // domain.molstarColorHex;
-    this.selectionData = domainMolstarSelObjToQueryParam(domain, true, domainColor);
+    this.selectionData = molstarSelection.map((eachSelection) => {
+      return {
+        ...eachSelection,
+        color: domainColor,
+        focus: true,
+      };
+    });
 
     const durationMs = this._molstarComponent ? 1200 : 0;
     const instance = this._molstarComponent?.getInstance() ?? null;

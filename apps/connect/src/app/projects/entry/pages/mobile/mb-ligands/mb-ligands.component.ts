@@ -9,12 +9,11 @@ import { ComponentCommunicationService } from '../../../services/component-comm.
 import { TruncatePipe, TruncateTextDirective } from '@pdbc/core';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { DetailsDashboardFacade } from '../../../components/shared/details-dashboard.facade';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
-import { MolstarPluginService, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 import { LigandsTabService } from '../../../components/ligands-tab/ligands-tab.service';
 import { annotationsTooltips } from '../../../entry-constant';
 import { interactionsToMolstar } from '../../../helpers/interactions-to-molstar-sel-obj';
@@ -25,6 +24,7 @@ import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../help
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions/index';
 import { MobileStateService } from '../mobile-state.service';
+import { getLigandsDropdownOptions } from '../../../helpers/processed-data-to-controls';
 
 @Component({
   selector: 'pdbc-mb-ligands',
@@ -36,7 +36,6 @@ export class MbLigandsComponent {
   private readonly state = inject(MobileStateService);
 
   public readonly dataProcessing = inject(MainDataProcessingFacade);
-  public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly molstarPluginService = inject(MolstarPluginService);
@@ -48,7 +47,7 @@ export class MbLigandsComponent {
 
   public readonly annotationsTooltips: any = annotationsTooltips;
 
-  public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
 
   public currentViewState = signal<ViewState>(ViewState.List);
   public viewStates = ViewState;
@@ -137,14 +136,14 @@ export class MbLigandsComponent {
     const ligands = this.compCommunication.processedLigandsAndModifications;
     for (const lig of ligands) {
       for (const sel of lig.additionalData.selections) {
-        const entityId = sel.entityId;
-        const chainId = sel.authChainId;
-        const residueId = sel.residues[0].authBegin;
+        const entityId = sel[0].entity_id;
+        const chainId = sel[0].auth_asym_id;
+        const residueId = sel[0].auth_residue_number;
         const entityColor = lig.molstarColorHex;
         ligandsSelectionData.push({
           entity_id: `${entityId}`,
           auth_asym_id: `${chainId}`,
-          auth_residue_number: parseInt(residueId),
+          auth_residue_number: residueId,
           color: entityColor,
           representation: 'spacefill',
           representationColor: entityColor,
@@ -183,18 +182,16 @@ export class MbLigandsComponent {
   }
 
   private async updateCurrentLigand() {
-    const dropdownResults = this.detailsDashboardFacade.getLigandsDropdownOptions(this.selectedLigands());
-    this.dropdownOptionsToMolstar = dropdownResults.dropdownOptionsToMolstar;
-
-    this.dropdownOptions = dropdownResults.dropdownOptions.map((eachString, idx) => {
+    const ligand = this.selectedLigands();
+    this.dropdownOptionsToMolstar = getLigandsDropdownOptions(ligand);
+    this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
       return {
         name: eachString,
-        url: `macro-${idx + 1}`,
+        url: `lig-${idx + 1}`,
         downloadable: false,
       };
     });
-    this.dropdownSelected = dropdownResults.dropdownSelected;
-
+    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
     await this.renderInMolstar(this.selectedLigands());
   }
   public mapSynonyms(synonyms: any[]): string {
@@ -229,14 +226,13 @@ export class MbLigandsComponent {
     }
 
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const entityId = molstarSelection.entityId;
-    const chainId = molstarSelection.authChainId;
-    const residueId = molstarSelection.residues[0].authBegin;
+    const chainId = molstarSelection[0].auth_asym_id!;
+    const residueId = molstarSelection[0].auth_residue_number!;
 
     this.globalStore.dispatch(
       EntryActions.getInteractions({
         chainId: chainId ?? '',
-        residueId: residueId,
+        residueId: `${residueId}`,
       })
     );
 
@@ -244,9 +240,7 @@ export class MbLigandsComponent {
     const entityColor = ligand.molstarColorHex;
     this.ligandSelection = [
       {
-        entity_id: `${entityId}`,
-        auth_asym_id: `${chainId}`,
-        auth_residue_number: parseInt(residueId),
+        ...molstarSelection[0],
         color: entityColor,
         focus: true,
       },

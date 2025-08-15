@@ -1,13 +1,14 @@
 import { signal, WritableSignal } from '@angular/core';
 import { MacromoleculesResidueRanges, MacromoleculesRowData, TableFilter, TableRow } from '../data-models-and-definitions/row-and-table.model';
 import { DataToTable } from './abstract-base-row-class';
-import { CarbohydrateMolecule, CarbohydrateResidue } from '../../data-models/carbohydrate-polymer.model';
+import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
 import { Molecule } from '../../data-models/molecule.model';
 import { UniProtMapping } from '../../data-models/uniprot-mapping.model';
-import { DEFAULT_SET_25, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { DEFAULT_SET_25 } from '@pdbe-lib/molstar-for-apps';
 import { PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
-import { AssemblyData, AssemblyEntity } from '../../data-models/assembly.model';
+import { AssemblyData } from '../../data-models/assembly.model';
 import { ProcessedSummary } from '../../data-models/summary.model';
+import { QueryParam } from 'pdbe-molstar/lib/helpers';
 
 interface MacromoleculesChainBoundaries {
   [key: number]: {
@@ -171,7 +172,7 @@ export class MacromoleculeDataToTable extends DataToTable {
         const selectionData = this.generateMolstarSelectionsMacromolecules(molecule, carbohydrate);
 
         const selectionNames = selectionData.selectionNames;
-        const molstarSelections: MolstarSelectionObj[] = selectionData.selections;
+        const molstarSelections: QueryParam[][] = selectionData.selections;
 
         const colorEntityIdx = molecule.entity_id - 1;
 
@@ -315,33 +316,31 @@ export class MacromoleculeDataToTable extends DataToTable {
 
   private generateMolstarSelectionsMacromolecules(molecule: Molecule, carbohydrate?: CarbohydrateMolecule) {
     const selectionNames: string[] = [];
-    const selections = molecule.in_chains.map((ch) => {
-      const molstarSelection: MolstarSelectionObj = {
-        entityId: molecule.entity_id + '',
-        authChainId: ch,
-        residues: [],
-      };
-      if (molecule.molecule_type.includes('carbohydrate') && carbohydrate) {
-        const carbohydratesOfChain = carbohydrate.chains.filter((carbch) => carbch.chain_id === ch);
-        const carbohydrateResidues: CarbohydrateResidue[] = [];
-        for (const carbch of carbohydratesOfChain) {
-          carbohydrateResidues.push(...carbch.residues);
-        }
-        carbohydratesOfChain.map((carbch) => carbch.residues);
-        molstarSelection['residues'] = carbohydrateResidues.map((carbResidue) => {
-          const resNum = carbResidue.author_residue_number;
-          const resIns = carbResidue.author_insertion_code;
-          selectionNames.push(`Chain ${ch} } - Res: ${resNum}${resIns}`);
-          return {
-            authBegin: resNum + '',
-            authBeginIns: resIns,
-            authEnd: resNum + '',
-            authEndIns: resIns,
-          };
+    const selections: QueryParam[][] = [];
+    for (const chainId of molecule.in_chains) {
+      const molstarSelection: QueryParam[] = [];
+      if (molecule.molecule_type.includes('carbohydrate') === false) {
+        molstarSelection.push({
+          entity_id: molecule.entity_id + '',
+          auth_asym_id: chainId,
         });
-      } else selectionNames.push(`Chain ${ch}`);
-      return molstarSelection;
-    });
+        selectionNames.push(`Chain ${chainId}`);
+      } else if (molecule.molecule_type.includes('carbohydrate') && carbohydrate) {
+        const carbohydratesOfChain = carbohydrate.chains.filter((carbch) => carbch.chain_id === chainId);
+        for (const carbChain of carbohydratesOfChain) {
+          for (const carbResidue of carbChain.residues) {
+            molstarSelection.push({
+              entity_id: molecule.entity_id + '',
+              auth_asym_id: chainId,
+              auth_residue_number: carbResidue.author_residue_number,
+              auth_ins_code_id: carbResidue.author_insertion_code || undefined,
+              residue_number: carbResidue.residue_number,
+            });
+          }
+        }
+      }
+      selections.push(molstarSelection);
+    }
     if (selections.length === 0) {
       console.warn(`WARNING: No selections could be generated for macromolecule: ${molecule.molecule_name[0]} (${molecule.entity_id})`);
     }

@@ -2,9 +2,9 @@
  * Generic types for all table row data and filters
  */
 
+import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { Molecule } from '../../data-models/molecule.model';
-import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 
 export type TableRow = AssembliesRowData | MacromoleculesRowData | LigandsRowData | DomainsRowData;
 
@@ -32,7 +32,7 @@ export interface AssembliesRowData {
     dissociationEntropy: string;
     symmetryNumber: string;
     interfaceCount: string;
-    selections: MolstarSelectionObj[];
+    selections: QueryParam[][];
   };
 }
 
@@ -60,7 +60,7 @@ export interface MacromoleculesRowData {
   genes: string[];
   additionalData: {
     molecule: Molecule;
-    selections: MolstarSelectionObj[];
+    selections: QueryParam[][];
     selectionNames: string[];
     uniprotAccessions: string[];
   };
@@ -89,7 +89,7 @@ export interface LigandsRowData {
   annotation: LigandsAnnotation;
   additionalData: {
     source: Molecule | ModifiedResidue[];
-    selections: MolstarSelectionObj[];
+    selections: QueryParam[][];
     selectionNames: string[];
   };
   molstarColorHex?: string;
@@ -117,7 +117,7 @@ export interface DomainsRowData {
     accession: string;
     boundaries: DomainsBoundaries[];
     segmentsResidNumbers: string[];
-    selections: MolstarSelectionObj[];
+    selections: QueryParam[][];
     selectionNames: string[];
   };
   mappedboundaries?: string[];

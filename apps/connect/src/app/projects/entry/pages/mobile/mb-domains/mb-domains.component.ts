@@ -2,7 +2,6 @@ import { Component, computed, inject, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { DetailsDashboardFacade } from '../../../components/shared/details-dashboard.facade';
 import { DomainsRowData } from '../../../data-classes/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MainDataProcessingFacade } from '../../main/data-processing.facade';
@@ -14,7 +13,6 @@ import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
 import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
-import { domainMolstarSelObjToQueryParam } from '../../../helpers/temp-mol-sel-obj-to-queryparam';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { MobileStateService } from '../mobile-state.service';
 
@@ -28,7 +26,6 @@ export class MbDomainsComponent {
   private readonly state = inject(MobileStateService);
 
   public readonly dataProcessing = inject(MainDataProcessingFacade);
-  public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
 
@@ -130,8 +127,16 @@ export class MbDomainsComponent {
       return;
     }
 
-    const domainColor = '#B5CB93';
-    this.selectionData = domainMolstarSelObjToQueryParam(domain, true, domainColor);
+    // TODO: Add domain dropdown to mobile domains too
+    const molstarSelection = domain.additionalData.selections[0];
+    const domainColor = '#B5CB93'; // domain.molstarColorHex;
+    this.selectionData = molstarSelection.map((eachSelection) => {
+      return {
+        ...eachSelection,
+        color: domainColor,
+        focus: true,
+      };
+    });
 
     await zoomOutStructureInMolstar(instance, durationMs);
 

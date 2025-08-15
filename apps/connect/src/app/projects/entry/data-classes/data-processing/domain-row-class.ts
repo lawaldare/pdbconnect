@@ -1,11 +1,11 @@
 import { signal, WritableSignal } from '@angular/core';
-import { DomainsBoundaries, DomainsRowData, TableFilter, TableRow } from '../data-models-and-definitions/row-and-table.model';
+import { DomainsRowData, TableFilter, TableRow } from '../data-models-and-definitions/row-and-table.model';
 import { DataToTable } from './abstract-base-row-class';
 import { PfamMappings, CathMappings, ScopMappings, DomainMapping } from '../../data-models/domains.model';
 import { Molecule } from '../../data-models/molecule.model';
-import { formatSegments, formatSegmentsWithCoverage } from '../../helpers/domain-helpers';
+import { formatSegmentsWithCoverage } from '../../helpers/domain-helpers';
 import { ObservedSegments, PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
-import { AssemblyData, AssemblyEntity } from '../../data-models/assembly.model';
+import { AssemblyData } from '../../data-models/assembly.model';
 import { ProcessedSummary } from '../../data-models/summary.model';
 import { FILTERED_KELLY22_COLORBLIND_SCALE } from '../../entry-constant';
 
@@ -151,7 +151,6 @@ export class DomainDataToTable extends DataToTable {
           // ... and use the formatSegments function to get:
           // 1 - molstarSelections to each cath domain (molstarSelection)
           // 2 - segment data (chain, starting and ending residues) for each cath domain (segmentsBoundaries)
-          // const segmentData = formatSegments(mappings, this.molstarResidueInfo);
           const segmentData = formatSegmentsWithCoverage(mappings, this.polymerCoverage);
 
           // ... formatSegments also uses molstarResidueInfo (residue data parsed from Molstar)
@@ -205,7 +204,6 @@ export class DomainDataToTable extends DataToTable {
           // ... and use the formatSegments function to get:
           // 1 - molstarSelections to each SCOP 1.75 domain (molstarSelection)
           // 2 - segment data (chain, starting and ending residues) for each SCOP 1.75 domain (segmentsBoundaries)
-          // const segmentData = formatSegments(mappings, this.molstarResidueInfo);
           const segmentData = formatSegmentsWithCoverage(mappings, this.polymerCoverage);
 
           // ... formatSegments also uses molstarResidueInfo (residue data parsed from Molstar)
@@ -257,7 +255,6 @@ export class DomainDataToTable extends DataToTable {
           // ... and use the formatSegments function to get:
           // 1 - molstarSelections to each Pfam domain (molstarSelection)
           // 2 - segment data (chain, starting and ending residues) for each Pfam domain (segmentsBoundaries)
-          // const segmentData = formatSegments([mapping], this.molstarResidueInfo);
           const segmentData = formatSegmentsWithCoverage([mapping], this.polymerCoverage);
 
           // ... formatSegments also uses molstarResidueInfo (residue data parsed from Molstar)
@@ -393,35 +390,6 @@ export class DomainDataToTable extends DataToTable {
     }
     return newFilters;
   }
-
-  // helper function for filtering a list of domain mappings according to whether they have at least one
-  // residue observed (existing) in Molstar
-  // filterMappingObserved(domainMappings: DomainMapping[], molstarResidueInfo: MolstarResidueInfo[]) {
-  //   const observedMappings: MolstarResidueInfo[][] = [];
-  //   for (const mapping of domainMappings) {
-  //     // ... this is done by checking equivalence with molstarResidueInfo for:
-  //     //  entity_id (label_entity_id in Molstar), chain_id (auth_asym_id in Molstar)
-  //     //  and residue_number (label_seq_id in Molstar)
-  //     const residueListingChain = molstarResidueInfo.filter((residInfo) => {
-  //       return (
-  //         residInfo.label_entity_id &&
-  //         residInfo.auth_asym_id &&
-  //         residInfo.label_seq_id &&
-  //         residInfo.auth_seq_id &&
-  //         residInfo.label_entity_id === mapping.entity_id + '' &&
-  //         residInfo.auth_asym_id === mapping.chain_id
-  //       );
-  //     });
-  //     const residuesOfChain = residueListingChain.sort((a, b) => a.label_seq_id! - b.label_seq_id!);
-  //     const residuesOfMappingObserved = residuesOfChain.filter((resid) => {
-  //       return resid.label_seq_id! <= mapping.end.residue_number && resid.label_seq_id! >= mapping.start.residue_number;
-  //     });
-  //     if (residuesOfMappingObserved.length > 0) {
-  //       observedMappings.push(residuesOfMappingObserved);
-  //     }
-  //   }
-  //   return observedMappings;
-  // }
 
   filterMappingObservedWithCoverage(domainMappings: DomainMapping[], polymerCoverage: PolymerCoverageMolecule[]): number[] {
     const observedLengths: number[] = [];

@@ -7,16 +7,16 @@ import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MainDataProcessingFacade } from '../../main/data-processing.facade';
-import { AssembliesRowData, LigandsRowData, MacromoleculesRowData, TableFilter } from '../../../data-classes/data-models-and-definitions/row-and-table.model';
+import { TableFilter } from '../../../data-classes/data-models-and-definitions/row-and-table.model';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { combineLatest, filter, map } from 'rxjs';
 import { CitationDetail } from '../../../data-models/publication.model';
 import { StrucQualityGradientsComponent } from '../../../components/shared/struc-quality-gradients/struc-quality-gradients.component';
-import { DetailsDashboardFacade, MappedResidue } from '../../../components/shared/details-dashboard.facade';
 import { NavigationLink } from '../mb-citation-tab/mb-citation-tab.component';
 import { MolstarGalleryComponent } from '@pdbe-lib/molstar-for-apps';
 import { MobileFacade } from '../mobile.facade';
 import { RelatedPublication } from '../../../data-models/related-publications.model';
+import { MappedResidue } from '../../../data-classes/data-models-and-definitions/other-models';
 
 @Component({
   selector: 'pdbc-mb-overview-tab',
@@ -30,7 +30,6 @@ export class MbOverviewTabComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   private readonly destroyRef = inject(DestroyRef);
-  public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
   private readonly mbFacade = inject(MobileFacade);
 
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));

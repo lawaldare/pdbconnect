@@ -9,7 +9,7 @@ import { assemblyCompositionTooltip, assemblyNameTooltip, complexIdTooltip, pref
 import { modelQualitySummaryTooltip } from '../../entry-constant';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
-import { MolstarComponent, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { PluginConfig } from 'molstar/lib/mol-plugin/config';
 import { PresetStructureRepresentations } from 'molstar/lib/mol-plugin-state/builder/structure/representation-preset';
@@ -23,11 +23,6 @@ import { EntryDropdownComponent } from '../entry-page-header/sub-components/entr
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions, getMacromoleculeChainDropdownOptions } from '../../helpers/processed-data-to-controls';
-import {
-  domainMolstarSelObjToQueryParam,
-  ligandMolstarSelObjToQueryParam,
-  macromoleculeMolstarSelObjToQueryParam,
-} from '../../helpers/temp-mol-sel-obj-to-queryparam';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 
 type NestedDomainsData = Array<{
@@ -143,7 +138,7 @@ export class SummaryTabComponent implements AfterViewInit {
 
   public dropdownSelected!: string;
   public dropdownOptions = signal<DownloadOption[]>([]);
-  public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
 
   private selectionData?: QueryParam[];
   private nonSelectionColor?: string;
@@ -251,14 +246,10 @@ export class SummaryTabComponent implements AfterViewInit {
     const ligands = this.compCommunication.processedLigands;
     for (const lig of ligands) {
       for (const sel of lig.additionalData.selections) {
-        const entityId = sel.entityId;
-        const chainId = sel.authChainId;
-        const residueId = sel.residues[0].authBegin;
+        const ligSel = sel[0];
         const entityColor = lig.molstarColorHex;
         ligandsSelectionData.push({
-          entity_id: `${entityId}`,
-          auth_asym_id: `${chainId}`,
-          auth_residue_number: parseInt(residueId),
+          ...ligSel,
           color: entityColor,
           representation: 'spacefill',
           representationColor: entityColor,
@@ -283,16 +274,10 @@ export class SummaryTabComponent implements AfterViewInit {
     const modifications = this.compCommunication.processedModifications;
     for (const mod of modifications) {
       for (const sel of mod.additionalData.selections) {
-        const entityId = sel.entityId;
-        const chainId = sel.authChainId;
-        const residueId = sel.residues[0].authBegin;
-        const residueIns = sel.residues[0].authBeginIns;
+        const modSel = sel[0];
         const entityColor = mod.molstarColorHex;
         modsSelectionData.push({
-          entity_id: `${entityId}`,
-          auth_asym_id: `${chainId}`,
-          auth_residue_number: parseInt(residueId),
-          auth_ins_code_id: residueIns ? residueIns : undefined,
+          ...modSel,
           color: entityColor,
           representation: 'spacefill',
           representationColor: entityColor,
@@ -400,15 +385,10 @@ export class SummaryTabComponent implements AfterViewInit {
     const domainsForResource = allDomains.filter((dom) => dom.resource === this.currentDomainResource());
     for (const domain of domainsForResource) {
       const eachSelection = domain.additionalData.selections[0];
-      for (const residRange of eachSelection.residues) {
+      for (const residRange of eachSelection) {
         const domainColor = domain.molstarColorHex;
         domainSelectionData.push({
-          entity_id: `${residRange.entityId!}`,
-          auth_asym_id: `${residRange.authChainId!}`,
-          start_auth_residue_number: parseInt(residRange.authBegin),
-          start_auth_ins_code_id: residRange.authBeginIns ? residRange.authBeginIns : undefined,
-          end_auth_residue_number: parseInt(residRange.authEnd),
-          end_auth_ins_code_id: residRange.authEndIns ? residRange.authEndIns : undefined,
+          ...residRange,
           color: domainColor,
           focus: false,
         });
@@ -579,33 +559,43 @@ export class SummaryTabComponent implements AfterViewInit {
     selectionType: string,
     focusType: boolean,
     useCurrent: boolean
-  ) {
-    let selectionToHighlight: QueryParam[] | undefined = undefined;
+  ): QueryParam[] | undefined {
+    let molstarSelections: QueryParam[] | undefined = undefined;
     if (selectionType === 'Macromolecules') {
       const macromolecule = listItem as MacromoleculesRowData;
       const allSelections = macromolecule.additionalData.selections;
       const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const molstarSelections = useCurrent ? [currentMolstarSelection] : allSelections;
-      selectionToHighlight = macromoleculeMolstarSelObjToQueryParam(macromolecule, molstarSelections, focusType);
+      const flatSelections = allSelections.reduce((acc, curr) => acc.concat(curr), []);
+      molstarSelections = useCurrent ? currentMolstarSelection : flatSelections;
     }
     if (selectionType === 'Ligands') {
       const ligand = listItem as LigandsRowData;
       const allSelections = ligand.additionalData.selections;
       const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const molstarSelections = useCurrent ? [currentMolstarSelection] : allSelections;
-      selectionToHighlight = ligandMolstarSelObjToQueryParam(ligand, molstarSelections, focusType);
+      const flatSelections = allSelections.reduce((acc, curr) => acc.concat(curr), []);
+      molstarSelections = useCurrent ? currentMolstarSelection : flatSelections;
     }
     if (selectionType === 'Domains') {
       const domain = listItem as DomainsRowData;
-      selectionToHighlight = domainMolstarSelObjToQueryParam(domain, focusType);
+      molstarSelections = domain.additionalData.selections[0];
     }
     if (selectionType === 'Modifications') {
       const mod = listItem as LigandsRowData;
       const allSelections = mod.additionalData.selections;
       const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const molstarSelections = useCurrent ? [currentMolstarSelection] : allSelections;
-      selectionToHighlight = ligandMolstarSelObjToQueryParam(mod, molstarSelections, focusType);
+      const flatSelections = allSelections.reduce((acc, curr) => acc.concat(curr), []);
+      molstarSelections = useCurrent ? currentMolstarSelection : flatSelections;
     }
+    if (!molstarSelections) return molstarSelections;
+
+    // loop over each molstar selection and add color and focus
+    const selectionToHighlight = molstarSelections.map((eachSelection) => {
+      return {
+        ...eachSelection,
+        color: listItem.molstarColorHex,
+        focus: focusType,
+      };
+    });
     return selectionToHighlight;
   }
 
@@ -652,7 +642,14 @@ export class SummaryTabComponent implements AfterViewInit {
       return;
     }
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    this.selectionData = macromoleculeMolstarSelObjToQueryParam(macromolecule, [molstarSelection], true);
+    // loop over each molstar selection and add color and focus
+    this.selectionData = molstarSelection.map((eachSelection) => {
+      return {
+        ...eachSelection,
+        color: macromolecule.molstarColorHex,
+        focus: true,
+      };
+    });
     this.nonSelectionColor = '#FEFEFE';
 
     const durationMs = this._molstarComponent ? this.zoomOutDuration : 0;
@@ -671,7 +668,13 @@ export class SummaryTabComponent implements AfterViewInit {
       this.nonSelectionColor = '#FEFEFE';
     } else {
       const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      this.selectionData = ligandMolstarSelObjToQueryParam(ligand, [molstarSelection], true);
+      this.selectionData = molstarSelection.map((eachSelection) => {
+        return {
+          ...eachSelection,
+          color: ligand.molstarColorHex,
+          focus: true,
+        };
+      });
     }
 
     const durationMs = this._molstarComponent ? this.zoomOutDuration : 0;
@@ -689,7 +692,13 @@ export class SummaryTabComponent implements AfterViewInit {
       const domainsSelectionData = this.allCurrentResourceDomainsQueryParam();
       this.selectionData = domainsSelectionData;
     } else {
-      this.selectionData = domainMolstarSelObjToQueryParam(domain, true);
+      this.selectionData = domain.additionalData.selections[0].map((eachSegment) => {
+        return {
+          ...eachSegment,
+          color: domain.molstarColorHex,
+          focus: true,
+        };
+      });
     }
 
     const durationMs = this._molstarComponent ? this.zoomOutDuration : 0;
@@ -708,7 +717,13 @@ export class SummaryTabComponent implements AfterViewInit {
       this.nonSelectionColor = '#FEFEFE';
     } else {
       const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      this.selectionData = ligandMolstarSelObjToQueryParam(mod, [molstarSelection], true);
+      this.selectionData = molstarSelection.map((eachSelection) => {
+        return {
+          ...eachSelection,
+          color: mod.molstarColorHex,
+          focus: true,
+        };
+      });
     }
 
     const durationMs = this._molstarComponent ? this.zoomOutDuration : 0;

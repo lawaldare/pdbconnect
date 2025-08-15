@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
-import { MolstarComponent, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { dashboardStatLinks } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
@@ -17,7 +17,7 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
-import { DetailsDashboardFacade } from '../shared/details-dashboard.facade';
+import { SharedDataFacade } from '../shared/shared-data.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { CitationDetail } from '../../data-models/publication.model';
@@ -59,7 +59,7 @@ export class LLMTabComponent implements OnInit {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
-  public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
+  public readonly sharedDataFacade = inject(SharedDataFacade);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
@@ -67,7 +67,7 @@ export class LLMTabComponent implements OnInit {
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
   public dashboardStatLinks = dashboardStatLinks;
 
   public backgroundAnnotation: SmartSequenceAnnotation | undefined = undefined;
@@ -132,7 +132,7 @@ export class LLMTabComponent implements OnInit {
       const mappedDatum = rows.map((data) => {
         return {
           ...data,
-          mappedResidues: this.detailsDashboardFacade.transformCoverageData(data.residues),
+          mappedResidues: this.sharedDataFacade.transformCoverageData(data.residues),
           organisms: [...new Set(data['organisms'])],
         };
       });
@@ -181,7 +181,7 @@ export class LLMTabComponent implements OnInit {
         polymer: {
           type: 'cartoon',
           color: 'uniform',
-          colorParams: { value: '#fefefe' },
+          colorParams: { value: 0xfefefe },
         },
       },
       loadMaps: true,
@@ -263,7 +263,7 @@ export class LLMTabComponent implements OnInit {
 
   private groupedFilteredLLMAnnotations = computed(() => {
     const annotations = this.mappedAnnotations();
-    return this.detailsDashboardFacade.groupByPdbChain(annotations);
+    return this.llmAnnotationsFacade.groupByPdbChain(annotations);
   });
 
   public currentSelectionEntityId = signal<string | undefined>(undefined);
@@ -373,9 +373,6 @@ export class LLMTabComponent implements OnInit {
 
   private async renderInMolstar(macromolecule: MacromoleculesRowData) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    // const shouldSkip = !this.molstarFirstRenderFinished();
-    const entityId = molstarSelection.entityId;
-    const chainId = molstarSelection.authChainId;
 
     // Wait until first render is finished
     await firstValueFrom(
@@ -387,10 +384,12 @@ export class LLMTabComponent implements OnInit {
 
     // Access Molstar instance
     const entityColor = macromolecule.molstarColorHex;
+
+    // because we don't loop over molstarSelections we assume no
+    // annotations map to carbohydrates in this tab (proteins only atm)
     this.selectionData = [
       {
-        entity_id: `${entityId}`,
-        auth_asym_id: `${chainId}`,
+        ...molstarSelection[0],
         color: entityColor,
         focus: true,
       },

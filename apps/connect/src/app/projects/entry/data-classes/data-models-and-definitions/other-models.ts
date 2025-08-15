@@ -1,4 +1,5 @@
-import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import { OutlierResidues } from '../../data-models/residuewise-outliers.model';
 
 export interface PreferredAssemblyData {
   name: string;
@@ -14,10 +15,10 @@ export interface EntryDescription {
 
 export interface OutlierDict {
   uniqueOutlierTypes: Set<string>;
-  molstarSelectionsByOutlierType: Record<string, MolstarSelectionObj>;
-  residuesWith1Outlier: MolstarSelectionObj;
-  residuesWith2Outliers: MolstarSelectionObj;
-  residuesWith3OrMoreOutliers: MolstarSelectionObj;
+  molstarSelectionsByOutlierType: Record<string, QueryParam[]>;
+  residuesWith1Outlier: QueryParam[];
+  residuesWith2Outliers: QueryParam[];
+  residuesWith3OrMoreOutliers: QueryParam[];
 }
 
 export type OutliersByModelId = Record<string, OutlierDict>;
@@ -60,3 +61,5 @@ export enum MobileTabChips {
   Ligands = 'Ligands',
   Domains = 'Domains',
 }
+
+export type FlatOutlierResidue = OutlierResidues & { entity_id: number; chain_id: string; struct_asym_id: string };

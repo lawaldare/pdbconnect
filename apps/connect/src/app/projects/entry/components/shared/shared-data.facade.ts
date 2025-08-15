@@ -1,28 +1,18 @@
 import { inject, Injectable } from '@angular/core';
-import { MacromoleculesResidueRanges, MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
+import { DomainsBoundaries, MacromoleculesResidueRanges } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { EntryApiService } from '../../services/entry-api.service';
 import { map } from 'rxjs';
-import { MappedResidue, SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
+import { MappedResidue } from '../../data-classes/data-models-and-definitions/other-models';
+
+export type BoundsByEntityId = {
+  [key: number]: DomainsBoundaries[];
+};
 
 @Injectable({
   providedIn: 'root',
 })
-export class MacromoleculesFacade {
+export class SharedDataFacade {
   public readonly entryApiService = inject(EntryApiService);
-
-  public getMacromoleculeSequenceDetails(entryId: string, datum: MacromoleculesRowData, chainId: string) {
-    const entity = datum.additionalData.molecule;
-    const seq = entity.sequence;
-    const sequenceDetails: SequenceDetail[] = [];
-    if (seq) {
-      sequenceDetails.push({
-        title: `>FASTA pdb|${entryId}|${entity.molecule_name[0]}; Chain ${chainId}`,
-        fullSequence: seq,
-        segments: [{ sequence: seq }],
-      });
-    }
-    return sequenceDetails;
-  }
 
   public transformCoverageData(data: MacromoleculesResidueRanges[]): MappedResidue[] {
     const groupedData: Record<string, any> = {};
