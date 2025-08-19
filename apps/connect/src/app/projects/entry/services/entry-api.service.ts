@@ -73,6 +73,7 @@ export class EntryApiService {
           revisionDate: revisionDateObj,
           assemblies: datum.assemblies,
           relatedStructures: datum.related_structures,
+          experimentalMethods: datum.experimental_method,
         };
       }),
       catchError((_error) => {

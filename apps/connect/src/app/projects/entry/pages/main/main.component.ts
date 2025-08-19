@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
@@ -34,6 +34,7 @@ import { NotificationComponent } from '@pdbc/notification';
 import { EntryUtilService } from '../../services/entry-util.service';
 import { LLMTabComponent } from '../../components/llm-tab/llm-tab.component';
 import { VisualisationInteractivityDirective } from '../../directives/visualisation-interactivity.directive';
+import { EntryBioschemasService } from '../../services/entry.bioschemas';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -79,6 +80,8 @@ export class EntryMainPageComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly util = inject(EntryUtilService);
   public readonly scrollService = inject(ScrollPositionService);
+  private readonly entryBioschemasService = inject(EntryBioschemasService);
+  private readonly renderer = inject(Renderer2);
 
   public hasLoadedAssemblies = computed(() => this.compCommunication.hasProcessedAssemblies());
   public hasAssemblies = computed(() => {
@@ -191,6 +194,7 @@ export class EntryMainPageComponent implements OnInit {
             this.util.setEntryStatus('SUCCESS');
             this.dataProcessing.processInteractiveTablesData(this.entryId());
             this.dataProcessing.getPageData();
+            this.entryBioschemasService.buildBioschemasJSON(this.renderer);
           } else {
             this.util.setEntryStatus('OTHER');
           }
