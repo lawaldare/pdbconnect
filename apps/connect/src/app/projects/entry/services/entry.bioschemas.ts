@@ -4,7 +4,6 @@ import { BioschemasService } from '@pdbc/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../store/entry-store.model';
 import { EntrySelectors } from '../store/entry.selectors';
-import * as moment from 'moment';
 
 @Injectable({
   providedIn: 'root',
@@ -36,7 +35,7 @@ export class EntryBioschemasService {
           name: summaryData()?.entryTitle,
           description: summaryData()?.entryTitle,
           url: `https://www.ebi.ac.uk/pdbe/entry/pdb/${entryId()}`,
-          datePublished: moment(summaryData()?.releaseDate).format('YYYY-MM-DD'),
+          datePublished: new Date(summaryData()?.releaseDate ?? '').toISOString().split('T')[0],
           license: 'https://creativecommons.org/publicdomain/zero/1.0/',
           keywords: summaryData()?.experimentalMethods.join(', '),
           citation: {
@@ -78,6 +77,8 @@ export class EntryBioschemasService {
           },
           isAccessibleForFree: true,
         };
+
+        console.log('Bioschemas JSON:', JSON);
 
         this.bioschemasService.setJsonLd(renderer, JSON);
       }, 2000);
