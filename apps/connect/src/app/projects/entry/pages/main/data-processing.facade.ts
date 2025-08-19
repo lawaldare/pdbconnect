@@ -13,19 +13,17 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { TabNames } from '../../helpers/tab-names.enum';
 import { EntryActions } from '../../store/entry.actions';
 import { catchError, combineLatest, of, retry, startWith, tap } from 'rxjs';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ComplexDetails } from '../../data-models/complex-details.model';
 import { ProcessedSummary } from '../../data-models/summary.model';
 import { ResidueWiseOutliersMolecule } from '../../data-models/residuewise-outliers.model';
-import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
-import { FlatOutlierResidue } from '../../components/model-quality-tab/validation-data.facade';
 import { Molecule } from '../../data-models/molecule.model';
 import { AssembliesRowData, DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
-import { getMacromoleculeOfDomain } from '../../helpers/processed-data-to-controls';
 import { environment } from '../../../../../environments/environment';
 import { ENTRY_PAGES_LINKS, labelGroups } from '../../entry-constant';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { OutliersByModelId, TableNames } from '../../data-classes/data-models-and-definitions/other-models';
+import { FlatOutlierResidue, OutliersByModelId, TableNames } from '../../data-classes/data-models-and-definitions/other-models';
+import { QueryParam } from 'pdbe-molstar/lib/helpers';
 
 @Injectable({
   providedIn: 'root',
@@ -512,9 +510,9 @@ export class MainDataProcessingFacade {
             resultByModelId[modelId] = {
               uniqueOutlierTypes: new Set<string>(),
               molstarSelectionsByOutlierType: {},
-              residuesWith1Outlier: { residues: [] },
-              residuesWith2Outliers: { residues: [] },
-              residuesWith3OrMoreOutliers: { residues: [] },
+              residuesWith1Outlier: [],
+              residuesWith2Outliers: [],
+              residuesWith3OrMoreOutliers: [],
             };
           }
 
@@ -538,11 +536,9 @@ export class MainDataProcessingFacade {
           resultByModelId[modelId].uniqueOutlierTypes.forEach((type) => {
             residuesByOutlierType[type] = flattenedResidues.filter((residue) => residue.outlier_types.includes(type));
             if (!resultByModelId[modelId].molstarSelectionsByOutlierType[type]) {
-              resultByModelId[modelId].molstarSelectionsByOutlierType[type] = { residues: [] };
+              resultByModelId[modelId].molstarSelectionsByOutlierType[type] = [];
             }
-            resultByModelId[modelId].molstarSelectionsByOutlierType[type].residues.push(
-              ...this.flatOutliersToMolstarSelections(residuesByOutlierType[type]).residues
-            );
+            resultByModelId[modelId].molstarSelectionsByOutlierType[type].push(...this.flatOutliersToMolstarSelections(residuesByOutlierType[type]));
             // this.flatOutliersToMolstarSelections(residuesByOutlierType[type]);
           });
 
@@ -551,9 +547,9 @@ export class MainDataProcessingFacade {
           const residuesWith2Outliers = flattenedResidues.filter((r) => r.outlier_types.length === 2);
           const residuesWith3OrMoreOutliers = flattenedResidues.filter((r) => r.outlier_types.length >= 3);
 
-          resultByModelId[modelId].residuesWith1Outlier.residues.push(...this.flatOutliersToMolstarSelections(residuesWith1Outlier).residues);
-          resultByModelId[modelId].residuesWith2Outliers.residues.push(...this.flatOutliersToMolstarSelections(residuesWith2Outliers).residues);
-          resultByModelId[modelId].residuesWith3OrMoreOutliers.residues.push(...this.flatOutliersToMolstarSelections(residuesWith3OrMoreOutliers).residues);
+          resultByModelId[modelId].residuesWith1Outlier.push(...this.flatOutliersToMolstarSelections(residuesWith1Outlier));
+          resultByModelId[modelId].residuesWith2Outliers.push(...this.flatOutliersToMolstarSelections(residuesWith2Outliers));
+          resultByModelId[modelId].residuesWith3OrMoreOutliers.push(...this.flatOutliersToMolstarSelections(residuesWith3OrMoreOutliers));
         }
       }
     }
@@ -561,18 +557,14 @@ export class MainDataProcessingFacade {
   }
 
   private flatOutliersToMolstarSelections(flattenedResidues: FlatOutlierResidue[]) {
-    const molstarSelectionObj: MolstarSelectionObj = {
-      residues: flattenedResidues.map((eachRes) => {
-        return {
-          entityId: eachRes.entity_id + '',
-          authChainId: eachRes.chain_id,
-          authBegin: eachRes.author_residue_number + '',
-          authBeginIns: eachRes.author_insertion_code || '',
-          authEnd: eachRes.author_residue_number + '',
-          authEndIns: eachRes.author_insertion_code || '',
-        };
-      }),
-    };
+    const molstarSelectionObj: QueryParam[] = flattenedResidues.map((eachRes) => {
+      return {
+        entity_id: eachRes.entity_id + '',
+        auth_asym_id: eachRes.chain_id,
+        auth_residue_number: eachRes.author_residue_number,
+        auth_ins_code_id: eachRes.author_insertion_code || undefined,
+      };
+    });
     return molstarSelectionObj;
   }
 

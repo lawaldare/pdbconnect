@@ -61,6 +61,8 @@ export interface SmartSequenceVisOptions {
 export class SmartSequenceVisualisation {
   private sequence: string;
   private alternativeNumberings?: AlternativeNumbering[];
+  private nonObservedResidues?: number[];
+
   private entityId?: string;
   private chainId?: string;
   private containerId: string;
@@ -141,6 +143,7 @@ export class SmartSequenceVisualisation {
     sequence: string,
     containerId: string,
     alternativeNumberings?: AlternativeNumbering[],
+    nonObservedResidues?: number[],
     initialAnnotations: SmartSequenceAnnotation[] = [],
     entityId?: string,
     chainId?: string,
@@ -180,6 +183,9 @@ export class SmartSequenceVisualisation {
 
     this.validateAlternativeNumberings(alternativeNumberings || []);
     this.alternativeNumberings = alternativeNumberings;
+
+    this.validateNonObserved(nonObservedResidues || []);
+    this.nonObservedResidues = nonObservedResidues;
 
     this.validateAnnotations(initialAnnotations);
     this.annotations = [...initialAnnotations];
@@ -357,6 +363,15 @@ export class SmartSequenceVisualisation {
     }
   }
 
+  private validateNonObserved(nonObserved: number[]) {
+    const seqLength = this.sequence.length;
+    for (const num of nonObserved) {
+      if (num < 1 || num > seqLength) {
+        throw new Error(`Invalid non-observed resnum: ${num}`);
+      }
+    }
+  }
+
   private validateAnnotations(annotations: SmartSequenceAnnotation[]): void {
     const identifiers = new Set<string>();
     const names = new Set<string>();
@@ -518,40 +533,94 @@ export class SmartSequenceVisualisation {
     return matching;
   }
 
+  private centeredCoordsAtResidue(residueIndex: number) {
+    if (!this.visualisationContainer) return;
+    if (!this.canvasBoxPerLines || !this.canvasTextLines) return;
+
+    const { top: marginTop } = this.margins;
+    const lineHeight = this.maxBoxHeight + this.maxNumberingBoxHeight + this.lineBottomMargin;
+
+    const lineIndex = Math.floor((residueIndex - 1) / this.canvasBoxPerLines);
+    const yStart = marginTop + lineIndex * lineHeight;
+
+    const centerOffset = this.visualisationContainer.clientHeight / 2 - lineHeight / 2;
+    const scrollTop = yStart - centerOffset;
+
+    // Clamp scrollTop to valid scroll range
+    const maxScroll = this.visualisationContainer.scrollHeight - this.visualisationContainer.clientHeight;
+    const clampedScroll = Math.max(0, Math.min(scrollTop, maxScroll));
+
+    this.visualisationContainer.scrollTo({ top: clampedScroll, behavior: 'smooth' });
+  }
+
+  private getResidueAtCoords(x: number, y: number): number | null {
+    const { top: marginTop, left: marginLeft } = this.margins;
+    const lineHeight = this.maxBoxHeight + this.maxNumberingBoxHeight + this.lineBottomMargin;
+
+    const lineIndex = Math.floor((y - marginTop) / lineHeight);
+    if (lineIndex < 0 || lineIndex >= this.chunkedSequence.length) return null;
+
+    const yStart = marginTop + lineIndex * lineHeight;
+    let xCursor = marginLeft;
+    const sequenceLine = this.chunkedSequence[lineIndex];
+    const residueGlobalIndex = lineIndex * this.canvasBoxPerLines!;
+
+    for (let i = 0; i < sequenceLine.length; i++) {
+      const residueIndex = residueGlobalIndex + i + 1;
+
+      if (this.grouping && i > 0 && i % this.residueGroupSize === 0) {
+        xCursor += this.residueGroupRightMargin;
+      }
+
+      const box = {
+        x: xCursor,
+        y: yStart + this.maxNumberingBoxHeight,
+        width: this.maxBoxWidth,
+        height: this.maxBoxHeight,
+      };
+
+      if (x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height) {
+        return residueIndex;
+      }
+
+      xCursor += this.maxBoxWidth + this.hoverBorderWidth;
+    }
+
+    return null;
+  }
+
   private onMouseMove(event: MouseEvent) {
     const rect = this.canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    for (const [residueIndex, box] of this.residueRects.entries()) {
-      if (x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height) {
-        if (this.currentHoveredResidue !== residueIndex) {
-          this.currentHoveredResidue = residueIndex;
-          const eventData = {
-            residueIndex,
-            annotations: this.getAnnotationsForResidue(residueIndex),
-          };
-          this.residueHover$.next(eventData);
-          if (this.externalEvents) this.triggerExternalEvents('hover', residueIndex);
-          this.canvas.style.cursor = 'pointer';
-          this.draw(); // trigger visual change
-          if (this.hoverTooltips && this.tooltipEl) {
-            const content = this.buildTooltipContent(residueIndex);
-            if (content) this.showTooltip(content, x, y);
-          }
-        }
-        return;
-      }
-    }
+    const residueIndex = this.getResidueAtCoords(x, y);
 
-    // If no match, clear hover
-    if (this.currentHoveredResidue !== null) {
-      this.currentHoveredResidue = null;
-      this.residueHover$.next(null);
-      if (this.externalEvents) this.triggerExternalEvents('hover');
-      this.canvas.style.cursor = 'default';
-      this.draw(); // remove highlight
-      if (this.hoverTooltips && this.tooltipEl) this.tooltipEl.style.display = 'none';
+    if (residueIndex !== null) {
+      if (this.currentHoveredResidue !== residueIndex) {
+        this.currentHoveredResidue = residueIndex;
+        const eventData = {
+          residueIndex,
+          annotations: this.getAnnotationsForResidue(residueIndex),
+        };
+        this.residueHover$.next(eventData);
+        if (this.externalEvents) this.triggerExternalEvents('hover', residueIndex);
+        this.canvas.style.cursor = 'pointer';
+        this.draw();
+        if (this.hoverTooltips && this.tooltipEl) {
+          const content = this.buildTooltipContent(residueIndex);
+          if (content) this.showTooltip(content, x, y);
+        }
+      }
+    } else {
+      if (this.currentHoveredResidue !== null) {
+        this.currentHoveredResidue = null;
+        this.residueHover$.next(null);
+        if (this.externalEvents) this.triggerExternalEvents('hover');
+        this.canvas.style.cursor = 'default';
+        this.draw();
+        if (this.hoverTooltips && this.tooltipEl) this.tooltipEl.style.display = 'none';
+      }
     }
   }
 
@@ -571,11 +640,13 @@ export class SmartSequenceVisualisation {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    for (const [residueIndex, box] of this.residueRects.entries()) {
-      if (x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height) {
-        if (this.currentClickedResidue === residueIndex) this.unselectResidueState();
-        else this.selectResidueState(residueIndex);
-        return;
+    const residueIndex = this.getResidueAtCoords(x, y);
+
+    if (residueIndex !== null) {
+      if (this.currentClickedResidue === residueIndex) {
+        this.unselectResidueState();
+      } else {
+        this.selectResidueState(residueIndex);
       }
     }
   }
@@ -1054,30 +1125,55 @@ export class SmartSequenceVisualisation {
   }
 
   private drawResidue(ctx: CanvasRenderingContext2D, x: number, yStart: number, char: string, residueIndex: number) {
-    const annotationColor = this.backgroundColorMap!.get(residueIndex);
-    ctx.fillStyle = annotationColor ?? this.defaultBgColour;
+    const isNonObserved = this.nonObservedResidues?.includes(residueIndex) ?? false;
+
+    // Get annotation color and override to white if residue is non-observed
+    const bgAnnotationColor = this.backgroundColorMap!.get(residueIndex);
+    // if (isNonObserved) bgAnnotationColor = '#ffffff';
+
+    // Draw background rectangle according to annotation
+    ctx.fillStyle = bgAnnotationColor ?? this.defaultBgColour;
     ctx.fillRect(x, yStart + this.maxNumberingBoxHeight, this.maxBoxWidth, this.maxBoxHeight);
 
+    // Draw light grey cross if residue is non-observed
+    if (isNonObserved) {
+      let nonObservedBg = '#d0d0d0';
+      if (bgAnnotationColor) {
+        nonObservedBg = this.colorIsDarkAdvanced(bgAnnotationColor) ? '#000' : '#FFF';
+      }
+      ctx.strokeStyle = nonObservedBg;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x, yStart + this.maxNumberingBoxHeight);
+      ctx.lineTo(x + this.maxBoxWidth, yStart + this.maxNumberingBoxHeight + this.maxBoxHeight);
+      ctx.moveTo(x + this.maxBoxWidth, yStart + this.maxNumberingBoxHeight);
+      ctx.lineTo(x, yStart + this.maxNumberingBoxHeight + this.maxBoxHeight);
+      ctx.stroke();
+    }
+
+    // Decide residue text color between black and white based on background
     let residueFontColour = '#000';
-    if (annotationColor) {
-      residueFontColour = this.colorIsDarkAdvanced(annotationColor) ? '#FFF' : '#000';
+    if (bgAnnotationColor) {
+      residueFontColour = this.colorIsDarkAdvanced(bgAnnotationColor) ? '#FFF' : '#000';
     }
     ctx.fillStyle = residueFontColour;
 
+    // If residue is selected or hovered set fontWeight to bold ...
     let fontWeight = '';
     if (residueIndex === this.currentHoveredResidue || residueIndex === this.currentClickedResidue) {
       fontWeight = 'bold ';
-      // ctx.strokeStyle = this.clickedBorderColour || '#4F81C3';
+      // ... and draw a bold black rectangle around background
       ctx.strokeStyle = this.clickedBorderColour || '#000';
       ctx.lineWidth = this.clickedBorderWidth;
       ctx.strokeRect(x, yStart + this.maxNumberingBoxHeight, this.maxBoxWidth, this.maxBoxHeight);
-      // ctx.fillStyle = this.clickedTextColour || '#4F81C3';
     }
 
+    // Draw residue letter
     ctx.font = `${fontWeight}${this.fontSize}px ${this.fontFamily}`;
     ctx.fillText(char, x + this.maxBoxWidth / 2, yStart + this.maxNumberingBoxHeight + this.maxBoxHeight / 2);
-    ctx.fillStyle = '#000';
 
+    // Draw circle annotations on top of residue
+    ctx.fillStyle = '#000';
     const circleColor = this.circleColorMap!.get(residueIndex);
     if (circleColor) {
       const circleCenterX = x + this.maxBoxWidth / 2;
@@ -1089,6 +1185,7 @@ export class SmartSequenceVisualisation {
       ctx.fillStyle = '#000';
     }
 
+    // Draw underline annotations below residue
     const underlineColor = this.underlineColorMap!.get(residueIndex);
     if (underlineColor) {
       const underlineY = yStart + this.maxNumberingBoxHeight + this.maxBoxHeight + 4;
@@ -1100,6 +1197,7 @@ export class SmartSequenceVisualisation {
       ctx.stroke();
     }
 
+    // Draw number on top of residue if first, last or every this.residueNumberingFreq
     const residueNumberLabel = this.useAuthNumbers ? this.getAltNumber(residueIndex, 'auth') : residueIndex.toString();
     if (residueIndex === 1 || residueIndex % this.residueNumberingFreq === 0 || residueIndex === this.sequence.length) {
       ctx.font = `${this.numberingFontSize}px ${this.fontFamily}`;
@@ -1286,6 +1384,7 @@ export class SmartSequenceVisualisation {
     });
     if (this.externalEvents && !doNotPropagate) this.triggerExternalEvents('click', residueIndex);
     if (!doNotReport) this.dispatchSelectEvent(residueIndex);
+    if (doNotPropagate && doNotReport) this.centeredCoordsAtResidue(residueIndex);
     this.showSidebar(residueIndex);
   }
 
@@ -1351,6 +1450,26 @@ export class SmartSequenceVisualisation {
 
     // Close residue info div
     html += '</div>';
+
+    // If Residue is non observed, add observation to this
+    const isNonObserved = this.nonObservedResidues?.includes(residueIndex) ?? false;
+    if (isNonObserved) {
+      const helpLogoSrc = this.helpLogoSrc || '';
+      const tooltipText = `Non-observed coordinates are parts of the molecule that were present in the experimental sample but could not be modeled due to lack of clear structural data evidence. This can happen because of instrinsic structural flexibility, disorder, or due to experimental limitations during structure determination.`;
+
+      const nonObservedHelpEl = `
+        <div style="position: relative; display: inline-block; top: -2px; left: -3px;">
+          <img src="${helpLogoSrc}" 
+              class="icon help-icon" 
+              alt="help icon" 
+              data-tooltip="${tooltipText}" />
+        </div>
+      `;
+
+      html += `<div style="margin: 0; font-size: 14px; margin-bottom: 4px;">
+        This residue's coordinates are partially or completely absent. ${nonObservedHelpEl}
+      </div>`;
+    }
 
     // // UniProt
     // const uniprotNumbering = this.alternativeNumberings?.find((n) => n.identifier === 'uniprot');

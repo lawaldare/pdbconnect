@@ -31,11 +31,6 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { UtilService } from '@pdbc/core';
 import { startWith, catchError, of, combineLatest, map, retry, mergeMap, Observable } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { OutlierResidues, ResidueWiseOutliersMolecule } from '../../data-models/residuewise-outliers.model';
-import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
-
-export type FlatOutlierResidue = OutlierResidues & { entity_id: number; chain_id: string; struct_asym_id: string };
-
 @Injectable({
   providedIn: 'root',
 })

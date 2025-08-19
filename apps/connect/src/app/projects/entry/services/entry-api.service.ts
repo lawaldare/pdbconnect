@@ -92,7 +92,7 @@ export class EntryApiService {
     return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(
       map((data) => data[entryId][0]),
       catchError(() => {
-        this.router.navigate(['/error']);
+        this.router.navigateByUrl('/error');
         return of({ empty: true } as unknown as EntryStatus);
       })
     );

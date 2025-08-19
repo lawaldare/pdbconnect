@@ -107,7 +107,7 @@
       <p>{{dropdownOptions[0].name}}</p>
       } @else {}
     </div>
-    @if (sequenceDetails.length > 0) {
+    @if (sequenceDetails.length > 0 && currentSelectionEntityId() && nonObserved() !== undefined) {
     <div class="sequence-container">
       @for (sequenceDetail of sequenceDetails; track sequenceDetail;) {
       <div class="title">
@@ -119,12 +119,13 @@
         containerId="'smart-seq-viewer-llm'"
         class="sequence"
         [sequence]="sequenceDetail.fullSequence"
-        [entityId]="currentSelectionEntityId()!"
+        [entityId]="currentSelectionEntityId()"
         [chainId]="currentSelectionChainId()!"
         [backgroundDataInput]="backgroundAnnotation"
         [circleAboveDataInput]="llmAnnotationForSeq"
         [isNucleic]="molType.includes('nucleotide')"
         [altSequences]="altSequences()"
+        [nonObserved]="nonObserved()"
       ></lib-smart-seq-viewer>
       } }
     </div>

@@ -109,12 +109,9 @@ export class MbModelQualityComponent implements OnInit {
     for (let i = 0; i < outlierList.length; i++) {
       const outlierResids = outlierList[i];
       selectionData.push(
-        ...outlierResids.residues.map((outlier) => {
+        ...outlierResids.map((outlier) => {
           return {
-            entity_id: outlier.entityId,
-            auth_asym_id: outlier.authChainId,
-            auth_residue_number: parseInt(outlier.authBegin),
-            auth_ins_code_id: outlier.authBeginIns || undefined,
+            ...outlier,
             color: colours[i + 1],
             focus: false,
           };

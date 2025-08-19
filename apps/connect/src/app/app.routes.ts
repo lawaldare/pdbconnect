@@ -2,8 +2,8 @@ import { Route } from '@angular/router';
 import { ErrorPageComponent } from './error-page/error-page.component';
 import { complexIdGuard } from './projects/complex/guards/complex.guard';
 
-// const hostname = document.location.hostname;
-// const isLocal = hostname === 'localhost';
+const hostname = document.location.hostname;
+const isLocal = hostname === 'localhost';
 
 export const appRoutes: Route[] = [
   {
@@ -18,7 +18,7 @@ export const appRoutes: Route[] = [
   },
   { path: 'error', component: ErrorPageComponent, title: 'Error Page' },
   {
-    path: 'complexes/:complexId',
+    path: isLocal ? ':complexId' : 'complexes/:complexId',
     loadComponent: () => import('./projects/complex/components/pages/main/main.component').then((m) => m.MainComponent),
     title: 'Complex Pages',
     canActivate: [complexIdGuard],

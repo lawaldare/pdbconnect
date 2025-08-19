@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
-import { MolstarComponent, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { dashboardStatLinks } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
@@ -17,7 +17,7 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
-import { DetailsDashboardFacade } from '../shared/details-dashboard.facade';
+import { SharedDataFacade } from '../shared/shared-data.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { CitationDetail } from '../../data-models/publication.model';
@@ -27,15 +27,14 @@ import { LLMAnnotation } from '../../data-models/llm-model';
 import { colDefs, gridOptions } from './ag-grid';
 import { SelectionChangedEvent } from 'ag-grid-community';
 import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
-import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering } from '../../helpers/procesing-for-smart-seq-viewer';
+import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import { EntryActions } from '../../store/entry.actions';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
-import { Color } from 'molstar/lib/mol-util/color';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
-import { ComponentReferenceService } from '../../services/component-ref.service';
+import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 
 @Component({
   selector: 'pdbc-llm-tab',
@@ -60,7 +59,7 @@ export class LLMTabComponent implements OnInit {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
-  public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
+  public readonly sharedDataFacade = inject(SharedDataFacade);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
@@ -68,7 +67,7 @@ export class LLMTabComponent implements OnInit {
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
   public dashboardStatLinks = dashboardStatLinks;
 
   public backgroundAnnotation: SmartSequenceAnnotation | undefined = undefined;
@@ -133,7 +132,7 @@ export class LLMTabComponent implements OnInit {
       const mappedDatum = rows.map((data) => {
         return {
           ...data,
-          mappedResidues: this.detailsDashboardFacade.transformCoverageData(data.residues),
+          mappedResidues: this.sharedDataFacade.transformCoverageData(data.residues),
           organisms: [...new Set(data['organisms'])],
         };
       });
@@ -155,6 +154,13 @@ export class LLMTabComponent implements OnInit {
     if (!residueListing || residueListing.length === 0) return [];
     const authNumbering = createAuthAlternateNumbering(residueListing);
     return [authNumbering];
+  });
+
+  public nonObserved = computed(() => {
+    const residueListing = this.residueListing();
+    if (!residueListing || residueListing.length === 0) return [];
+    const nonObservedResidues = getNonObserved(residueListing);
+    return nonObservedResidues;
   });
 
   public numberOfAnnotatedResids = computed(() => {
@@ -182,7 +188,7 @@ export class LLMTabComponent implements OnInit {
         polymer: {
           type: 'cartoon',
           color: 'uniform',
-          colorParams: { value: Color(0xfefefe) },
+          colorParams: { value: 0xfefefe },
         },
       },
       loadMaps: true,
@@ -196,6 +202,7 @@ export class LLMTabComponent implements OnInit {
   @ViewChild('molstarComponent') set molstarComponent(ref: MolstarComponent | undefined) {
     if (ref) {
       this._molstarComponent = ref;
+      this.visInteractivity.currentMolstarComponent = this._molstarComponent;
       this.molstarReady.set(true);
     }
   }
@@ -211,7 +218,7 @@ export class LLMTabComponent implements OnInit {
 
   public selectionData?: QueryParam[];
 
-  public readonly compReference = inject(ComponentReferenceService);
+  public readonly visInteractivity = inject(VisualisationInteractivityService);
 
   constructor() {
     this.compCommunication.llmSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe((idx) => {
@@ -235,20 +242,23 @@ export class LLMTabComponent implements OnInit {
     });
   }
 
+  @HostListener('document:llm-reset-list', ['$event'])
   public resetAnnotationList() {
     const letter = this.dropdownSelected.split(' ')[1];
     const groupedAnnotations = this.groupedFilteredLLMAnnotations()[letter];
     this.filteredLLMAnnotations.update(() => groupedAnnotations);
   }
 
-  public filterAnnotationList(residueNumber: number) {
+  @HostListener('document:llm-filter-list', ['$event'])
+  public filterAnnotationList(event: Event) {
+    const eventData = (event as any).detail.eventData;
+    const residueNumber = eventData.residueNumber;
     const allAnnotations = this.groupedAnnotations();
     const filteredByResidue = allAnnotations.filter((a: LLMAnnotation) => a.pdbResidue === residueNumber);
     this.filteredLLMAnnotations.update(() => this.llmAnnotationsFacade.removeDuplicatesByKey(filteredByResidue, 'sentence'));
   }
 
   ngOnInit(): void {
-    this.compReference.setComponent('llm', this);
     combineLatest([this.globalStore.select(EntrySelectors.llmAnnotations), this.globalStore.select(EntrySelectors.primaryPublication)])
       .pipe(
         map(([llmAnnotations, primaryPublication]) => {
@@ -264,7 +274,7 @@ export class LLMTabComponent implements OnInit {
 
   private groupedFilteredLLMAnnotations = computed(() => {
     const annotations = this.mappedAnnotations();
-    return this.detailsDashboardFacade.groupByPdbChain(annotations);
+    return this.llmAnnotationsFacade.groupByPdbChain(annotations);
   });
 
   public currentSelectionEntityId = signal<string | undefined>(undefined);
@@ -370,13 +380,12 @@ export class LLMTabComponent implements OnInit {
 
     this.currentSelectionEntityId.set(`${entityId}`);
     this.currentSelectionChainId.set(chainId);
+    this.visInteractivity.currentSelectionEntityId.set(`${entityId}`);
+    this.visInteractivity.currentSelectionChainId.set(chainId);
   }
 
   private async renderInMolstar(macromolecule: MacromoleculesRowData) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    // const shouldSkip = !this.molstarFirstRenderFinished();
-    const entityId = molstarSelection.entityId;
-    const chainId = molstarSelection.authChainId;
 
     // Wait until first render is finished
     await firstValueFrom(
@@ -388,14 +397,17 @@ export class LLMTabComponent implements OnInit {
 
     // Access Molstar instance
     const entityColor = macromolecule.molstarColorHex;
+
+    // because we don't loop over molstarSelections we assume no
+    // annotations map to carbohydrates in this tab (proteins only atm)
     this.selectionData = [
       {
-        entity_id: `${entityId}`,
-        auth_asym_id: `${chainId}`,
+        ...molstarSelection[0],
         color: entityColor,
         focus: true,
       },
     ];
+    this.visInteractivity.currentSelectionData.set(this.selectionData);
 
     const durationMs = this._molstarComponent ? 1200 : 0;
     const instance = this._molstarComponent?.getInstance() ?? null;

@@ -16,6 +16,7 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
   public readonly containerId = input<string>('smart-seq-id');
   public readonly sequence = input<string>('TESTSTRING');
   public readonly altSequences = input<AlternativeNumbering[]>([]);
+  public readonly nonObserved = input<number[]>([]);
   public readonly entityId = input<string | undefined>(undefined);
   public readonly chainId = input<string | undefined>(undefined);
   public readonly backgroundDataInput = input<SmartSequenceAnnotation | undefined>(undefined);
@@ -83,6 +84,7 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
       this.sequence(),
       this.containerId(),
       this.altSequences(),
+      this.nonObserved(),
       annotations,
       this.entityId(),
       this.chainId(),

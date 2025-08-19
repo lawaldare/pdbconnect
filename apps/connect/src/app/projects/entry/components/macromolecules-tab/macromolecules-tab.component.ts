@@ -1,18 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
-import { MolstarComponent, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { dashboardStatLinks } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { MaterialModule, UtilService } from '@pdbc/core';
-import { MacromoleculesFacade } from './macromolecules.facade';
-import { getMacromoleculeChainDropdownOptions } from '../../helpers/processed-data-to-controls';
+import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../helpers/processed-data-to-controls';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EntryPgProtvistaComponent } from '../shared/entry-pv-nightingale/entry-pv-nightingale.component';
@@ -21,21 +20,19 @@ import { ComponentType } from '@angular/cdk/overlay';
 import { EcNumbersComponent } from '../shared/ec-numbers/ec-numbers.component';
 import { GoTermsComponent } from '../shared/go-terms/go-terms.component';
 import { MatDialog } from '@angular/material/dialog';
-import { DetailsDashboardFacade } from '../shared/details-dashboard.facade';
+import { SharedDataFacade } from '../shared/shared-data.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
-import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering } from '../../helpers/procesing-for-smart-seq-viewer';
+import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
 import { EntryActions } from '../../store/entry.actions';
 import { InitParams, DefaultParams } from 'pdbe-molstar/lib/spec';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { Color } from 'molstar/lib/mol-util/color';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
-import { macromoleculeMolstarSelObjToQueryParam } from '../../helpers/temp-mol-sel-obj-to-queryparam';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
-import { ComponentReferenceService } from '../../services/component-ref.service';
+import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
 
 // necessary to render the topology viewer
@@ -58,14 +55,12 @@ declare let PdbTopologyViewerPlugin: any;
   templateUrl: './macromolecules-tab.component.html',
   styleUrl: './macromolecules-tab.component.scss',
 })
-export class MacromoleculesTabComponent implements OnInit {
-  public readonly macromoleculesFacade = inject(MacromoleculesFacade);
+export class MacromoleculesTabComponent {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  public readonly compReference = inject(ComponentReferenceService);
+  public readonly visInteractivity = inject(VisualisationInteractivityService);
   private readonly dialog = inject(MatDialog);
-  // public readonly dataProcessing = inject(MainDataProcessingFacade);
-  public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
+  public readonly sharedDataFacade = inject(SharedDataFacade);
   private readonly destroyRef = inject(DestroyRef);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
@@ -73,7 +68,7 @@ export class MacromoleculesTabComponent implements OnInit {
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
   public dashboardStatLinks = dashboardStatLinks;
   public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
 
@@ -82,6 +77,7 @@ export class MacromoleculesTabComponent implements OnInit {
   @ViewChild('molstarComponent') set molstarComponent(ref: MolstarComponent | undefined) {
     if (ref) {
       this._molstarComponent = ref;
+      this.visInteractivity.currentMolstarComponent = this._molstarComponent;
       this.molstarReady.set(true);
     }
   }
@@ -115,7 +111,7 @@ export class MacromoleculesTabComponent implements OnInit {
           type: 'cartoon',
           // 'color': 'entity-id',
           color: 'uniform',
-          colorParams: { value: Color(0xfefefe) },
+          colorParams: { value: 0xfefefe },
         },
       },
       loadMaps: true,
@@ -249,7 +245,7 @@ export class MacromoleculesTabComponent implements OnInit {
       const mappedDatum = rows.map((data) => {
         return {
           ...data,
-          mappedResidues: this.detailsDashboardFacade.transformCoverageData(data.residues),
+          mappedResidues: this.sharedDataFacade.transformCoverageData(data.residues),
           organisms: [...new Set(data['organisms'])],
         };
       });
@@ -265,6 +261,13 @@ export class MacromoleculesTabComponent implements OnInit {
     if (!residueListing || residueListing.length === 0) return [];
     const authNumbering = createAuthAlternateNumbering(residueListing);
     return [authNumbering];
+  });
+
+  public nonObserved = computed(() => {
+    const residueListing = this.residueListing();
+    if (!residueListing || residueListing.length === 0) return [];
+    const nonObservedResidues = getNonObserved(residueListing);
+    return nonObservedResidues;
   });
 
   public currentModelId$ = new BehaviorSubject<string>('1');
@@ -291,17 +294,13 @@ export class MacromoleculesTabComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.compReference.setComponent('macromolecules', this);
-  }
-
   triggerMacromoleculeUpdateSideEffects(macromolecule: MacromoleculesRowData) {
     // refreshes dropdown options on new macromolecule
     this.updateDropdownOptions(macromolecule);
 
     // updates shown sequence on new macromolecule
     const chainId = this.dropdownSelected?.split('Chain ')[1];
-    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
+    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.globalStore.dispatch(
       EntryActions.getResidueListing({
         chainId: chainId,
@@ -329,7 +328,7 @@ export class MacromoleculesTabComponent implements OnInit {
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
 
-    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
     this.updateBackgroundAnnotation();
   }
 
@@ -391,11 +390,7 @@ export class MacromoleculesTabComponent implements OnInit {
 
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
-    this.sequenceDetails = this.macromoleculesFacade.getMacromoleculeSequenceDetails(
-      this.entryId() ?? '',
-      macromolecule as MacromoleculesRowData,
-      this.dropdownSelected
-    );
+    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule as MacromoleculesRowData, this.dropdownSelected);
 
     if (macromolecule) await this.renderVisualisations(macromolecule);
     this.updateBackgroundAnnotation();
@@ -438,7 +433,16 @@ export class MacromoleculesTabComponent implements OnInit {
     );
 
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    this.selectionData = macromoleculeMolstarSelObjToQueryParam(macromolecule, [molstarSelection], true);
+
+    // loop over each molstar selection and add color and focus
+    this.selectionData = molstarSelection.map((eachSelection) => {
+      return {
+        ...eachSelection,
+        color: macromolecule.molstarColorHex,
+        focus: true,
+      };
+    });
+    this.visInteractivity.currentSelectionData.set(this.selectionData);
 
     const durationMs = this._molstarComponent ? 1200 : 0;
 
@@ -460,6 +464,8 @@ export class MacromoleculesTabComponent implements OnInit {
 
     this.currentSelectionEntityId.set(`${entityId}`);
     this.currentSelectionChainId.set(chainId);
+    this.visInteractivity.currentSelectionEntityId.set(`${entityId}`);
+    this.visInteractivity.currentSelectionChainId.set(chainId);
   }
 
   private async initOrRefreshTopologyViewer(macromolecule: MacromoleculesRowData) {

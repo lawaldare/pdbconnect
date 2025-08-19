@@ -84,3 +84,9 @@ export function createAuthAlternateNumbering(residueList: ResidueListed[]): Alte
     alternativeSequence: [authResidueList],
   };
 }
+
+export function getNonObserved(residueList: ResidueListed[]): number[] {
+  const nonObservedResidues = residueList.filter((eachResidue) => eachResidue.observed_ratio < 1).map((eachResidue) => eachResidue.residue_number);
+
+  return nonObservedResidues;
+}

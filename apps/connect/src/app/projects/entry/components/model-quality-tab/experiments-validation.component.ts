@@ -35,8 +35,7 @@ import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
-import { MolstarComponent, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
-import { Color } from 'molstar/lib/mol-util/color';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { cameraResetInMolstar, drawSelectionInMolstar } from '../../helpers/molstar-helpers';
@@ -221,7 +220,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
           type: 'cartoon',
           // 'color': 'entity-id',
           color: 'uniform',
-          colorParams: { value: Color(0xd4d5d4) },
+          colorParams: { value: 0xd4d5d4 },
         },
       },
       loadMaps: true,
@@ -281,7 +280,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
     const colours: string[] = [];
 
-    const outlierList: MolstarSelectionObj[] = [];
+    const outlierList: QueryParam[][] = [];
     if (selectedValidationType.value === 'issue_count') {
       colours.push(...this.legends.map((legend) => legend.color));
       outlierList.push(...[outliers.residuesWith1Outlier, outliers.residuesWith2Outliers, outliers.residuesWith3OrMoreOutliers]);
@@ -294,12 +293,9 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     for (let i = 0; i < outlierList.length; i++) {
       const outlierResids = outlierList[i];
       this.selectionData.push(
-        ...outlierResids.residues.map((outlier) => {
+        ...outlierResids.map((outlier) => {
           return {
-            entity_id: outlier.entityId,
-            auth_asym_id: outlier.authChainId,
-            auth_residue_number: parseInt(outlier.authBegin),
-            auth_ins_code_id: outlier.authBeginIns || undefined,
+            ...outlier,
             color: colours[i + 1],
             focus: false,
           };

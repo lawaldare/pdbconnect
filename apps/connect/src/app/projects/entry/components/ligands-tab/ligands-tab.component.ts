@@ -3,8 +3,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild, OnInit } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { LigandsRowData, MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
-import { MolstarComponent, MolstarPluginService, MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { LigandsRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
+import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
 import { dashboardStatLinks, INTX_NAME_COLORS } from '../../entry-constant';
@@ -65,7 +65,7 @@ export class LigandsTabComponent implements OnInit {
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
 
   public renderer = inject(Renderer2);
   public elementRef = inject(ElementRef);
@@ -114,10 +114,10 @@ export class LigandsTabComponent implements OnInit {
   private ligandEnvLoaded = false;
   public hasLigandEnv = false;
   private ligandEnvSelection: {
-    resId: string;
+    resId: number;
     chainId: string;
   } = {
-    resId: '-1',
+    resId: -1,
     chainId: '-1',
   };
 
@@ -398,9 +398,9 @@ export class LigandsTabComponent implements OnInit {
   private async renderInMolstar(ligand: LigandsRowData) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
-    const entityId = molstarSelection.entityId;
-    const chainId = molstarSelection.authChainId;
-    const residueId = molstarSelection.residues[0].authBegin;
+    const entityId = molstarSelection[0].entity_id;
+    const chainId = molstarSelection[0].auth_asym_id!;
+    const residueId = molstarSelection[0].auth_residue_number!;
 
     this.noTermFiltering.set(true);
     this.searchTerm.setValue('');
@@ -409,7 +409,7 @@ export class LigandsTabComponent implements OnInit {
     this.globalStore.dispatch(
       EntryActions.getInteractions({
         chainId: chainId ?? '',
-        residueId: residueId,
+        residueId: `${residueId}`,
       })
     );
     if (ligand.type === 'modification') {
@@ -428,9 +428,7 @@ export class LigandsTabComponent implements OnInit {
     const entityColor = ligand.molstarColorHex;
     this.ligandSelection = [
       {
-        entity_id: `${entityId}`,
-        auth_asym_id: `${chainId}`,
-        auth_residue_number: parseInt(residueId),
+        ...molstarSelection[0],
         color: entityColor,
         focus: true,
       },
@@ -462,8 +460,8 @@ export class LigandsTabComponent implements OnInit {
 
     // ligand env viewer is only shown for ligands tab. data is retrieved from dropdown
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const resId = molstarSelection.residues[0].authBegin;
-    const chainId = molstarSelection.authChainId;
+    const resId = molstarSelection[0].auth_residue_number!;
+    const chainId = molstarSelection[0].auth_asym_id!;
 
     // stop if ligand already loaded
     if (this.ligandEnvSelection.resId === resId && this.ligandEnvSelection.chainId === chainId) {
@@ -506,7 +504,7 @@ export class LigandsTabComponent implements OnInit {
     this.ligandEnvLoaded = false;
     this.hasLigandEnv = false;
     this.ligandEnvSelection = {
-      resId: '-1',
+      resId: -1,
       chainId: '-1',
     };
     // unfortunately needed so destruction happens syncronously
@@ -549,10 +547,10 @@ export class LigandsTabComponent implements OnInit {
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const entityId = molstarSelection.entityId;
-    const chainId = molstarSelection.authChainId;
-    const residueId = molstarSelection.residues[0].authBegin;
-    const resIns = molstarSelection.residues[0].authBeginIns;
+    const entityId = molstarSelection[0].entity_id;
+    const chainId = molstarSelection[0].auth_asym_id;
+    const residueId = molstarSelection[0].auth_residue_number!;
+    const resIns = molstarSelection[0].auth_ins_code_id;
 
     const residEntityId = this.compCommunication.chainToEntityId()[int.end.chain_id];
 
@@ -560,7 +558,7 @@ export class LigandsTabComponent implements OnInit {
       {
         entity_id: `${entityId}`,
         auth_asym_id: chainId,
-        auth_seq_id: parseInt(residueId),
+        auth_seq_id: residueId,
         auth_ins_code_id: normalizeInsertionCode(resIns),
         atoms: int.ligand_atoms,
         focus: true,

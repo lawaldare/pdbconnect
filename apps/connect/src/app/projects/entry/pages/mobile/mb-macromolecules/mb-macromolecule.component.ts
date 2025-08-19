@@ -8,18 +8,19 @@ import { ComponentCommunicationService } from '../../../services/component-comm.
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { MainDataProcessingFacade } from '../../main/data-processing.facade';
 import { MaterialModule, UtilService } from '@pdbc/core';
-import { DetailsDashboardFacade, SequenceDetail } from '../../../components/shared/details-dashboard.facade';
+import { SharedDataFacade } from '../../../components/shared/shared-data.facade';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { EntryApiService } from '../../../services/entry-api.service';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 import { truncateText } from '../../../helpers/truncate-text';
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
-import { macromoleculeMolstarSelObjToQueryParam } from '../../../helpers/temp-mol-sel-obj-to-queryparam';
 import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
 import { MobileStateService } from '../mobile-state.service';
+import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../../helpers/processed-data-to-controls';
+import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import { SequenceDetail } from '../../../data-classes/data-models-and-definitions/other-models';
 
 export enum ViewState {
   List = 'list',
@@ -44,7 +45,7 @@ export class MbMacromoleculeComponent {
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   private readonly state = inject(MobileStateService);
 
-  public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
+  public readonly sharedDataFacade = inject(SharedDataFacade);
   public readonly entryApiService = inject(EntryApiService);
   public readonly compCommunication = inject(ComponentCommunicationService);
 
@@ -63,7 +64,7 @@ export class MbMacromoleculeComponent {
   public expanded = signal<boolean>(false);
   public readonly util = inject(UtilService);
 
-  public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
 
   public dropdownOptions: DownloadOption[] = [];
   public dropdownSelected!: string;
@@ -80,7 +81,7 @@ export class MbMacromoleculeComponent {
       const mappedDatum = datum.map((data) => {
         return {
           ...data,
-          mappedResidues: this.detailsDashboardFacade.transformCoverageData(data.residues),
+          mappedResidues: this.sharedDataFacade.transformCoverageData(data.residues),
           organisms: [...new Set(data['organisms'])],
         };
       });
@@ -249,19 +250,17 @@ export class MbMacromoleculeComponent {
   }
 
   private async updateMacromoleculeData(): Promise<void> {
-    const dropdownResults = this.detailsDashboardFacade.getMacromoleculeDropdownOptions(this.selectedMacromolecule());
-    this.dropdownOptionsToMolstar = dropdownResults.dropdownOptionsToMolstar;
-
-    this.dropdownOptions = dropdownResults.dropdownOptions.map((eachString, idx) => {
+    const macromolecule = this.selectedMacromolecule();
+    this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(macromolecule);
+    this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
       return {
         name: eachString,
         url: `macro-${idx + 1}`,
         downloadable: false,
       };
     });
-    this.dropdownSelected = dropdownResults.dropdownSelected;
-
-    this.sequenceDetails = this.detailsDashboardFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', this.selectedMacromolecule(), this.dropdownSelected);
+    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
 
     await this.renderInMolstar(this.selectedMacromolecule());
   }
@@ -287,7 +286,15 @@ export class MbMacromoleculeComponent {
     }
 
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const selectionData = macromoleculeMolstarSelObjToQueryParam(macromolecule, [molstarSelection], true);
+
+    // loop over each molstar selection and add color and focus
+    const selectionData = molstarSelection.map((eachSelection) => {
+      return {
+        ...eachSelection,
+        color: macromolecule.molstarColorHex,
+        focus: true,
+      };
+    });
 
     await zoomOutStructureInMolstar(instance, durationMs);
 

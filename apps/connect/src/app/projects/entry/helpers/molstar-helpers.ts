@@ -59,8 +59,10 @@ export async function cameraResetInMolstar(instance?: PDBeMolstarPlugin) {
 // DONE: interactions as QueryParam directly
 // DONE: Clean up CompCommunication
 // SKIP: API handling desktop vs mobile (too similar)
+// DONE: refactor MolSelectionObj functions for QueryParam
+// DONE: Remove temp-mol-sel-obj-to-queryparam
+// DONE: Fix Protvista bugs (1 done, missing unselect click)
+// DONE: Non-observed residues and sequence viewer improvements
 
-// TODO: refactor MolSelectionObj functions for QueryParam
-// TODO: Remove temp-mol-sel-obj-to-queryparam
-// ONGOING: Fix Protvista bugs (1 done, missing unselect click)
 // TODO: Protvista refactoring
+// TODO: Try angular comp control seq viewer resize
