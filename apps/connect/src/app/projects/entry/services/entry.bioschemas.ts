@@ -78,7 +78,7 @@ export class EntryBioschemasService {
           isAccessibleForFree: true,
         };
 
-        console.log('Bioschemas JSON:', JSON);
+        // console.log('Bioschemas JSON:', JSON);
 
         this.bioschemasService.setJsonLd(renderer, JSON);
       }, 2000);
