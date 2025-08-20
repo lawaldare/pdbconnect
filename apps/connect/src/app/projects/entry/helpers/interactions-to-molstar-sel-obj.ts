@@ -48,7 +48,7 @@ export function interactionsToMolstar(
       tooltip,
     });
     const residObj: QueryParam = {
-      entity_id: chainToEntityId[int.end.chain_id],
+      // entity_id: chainToEntityId[int.end.chain_id],
       auth_asym_id: int.end.chain_id,
       auth_residue_number: int.end.author_residue_number,
       auth_ins_code_id: normalizeInsertionCode(int.end.author_insertion_code),
@@ -56,10 +56,8 @@ export function interactionsToMolstar(
 
     const sameResidues = residuesMolstarSelections.filter((sel) => {
       return (
-        sel.entity_id === residObj.entity_id &&
-        sel.auth_asym_id === residObj.auth_asym_id &&
-        sel.auth_residue_number === residObj.auth_residue_number &&
-        sel.auth_ins_code_id === residObj.auth_ins_code_id
+        // sel.entity_id === residObj.entity_id &&
+        sel.auth_asym_id === residObj.auth_asym_id && sel.auth_residue_number === residObj.auth_residue_number && sel.auth_ins_code_id === residObj.auth_ins_code_id
       );
     });
     if (sameResidues.length === 0) {

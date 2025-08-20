@@ -1,12 +1,17 @@
-import { Structure } from 'molstar/lib/mol-model/structure/structure/structure';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
 
-export async function drawSelectionInMolstar(instance?: PDBeMolstarPlugin, selectionsToDraw?: QueryParam[], nonSelectionColor?: string | number) {
+export async function drawSelectionInMolstar(
+  instance?: PDBeMolstarPlugin,
+  selectionsToDraw?: QueryParam[],
+  nonSelectionColor?: string | number,
+  keepRepresentations?: boolean
+) {
   if (!instance || !selectionsToDraw) return;
   const toDrawData = {
     data: selectionsToDraw,
     nonSelectedColor: nonSelectionColor ? nonSelectionColor : undefined,
+    keepRepresentations: keepRepresentations ? keepRepresentations : undefined,
   };
   await instance.visual.select(toDrawData);
 }
@@ -14,7 +19,6 @@ export async function drawSelectionInMolstar(instance?: PDBeMolstarPlugin, selec
 export async function clearSelectionInMolstar(instance?: PDBeMolstarPlugin, durationMs?: number) {
   if (!instance) return;
   await instance.visual.clearSelection();
-  // await this.onZoomOut(this.zoomOutDuration);
   await zoomOutStructureInMolstar(instance, durationMs);
 }
 
@@ -24,12 +28,7 @@ export async function zoomOutStructureInMolstar(instance?: PDBeMolstarPlugin, du
   if (!plugin) return;
 
   await clearInteractivityFocusInMolstar(instance);
-
-  const assemblyRef = plugin.managers.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
-  const structure = plugin.state.data?.select(assemblyRef)[0]?.obj?.data;
-  const structureLoci = structure ? Structure.toStructureElementLoci(structure) : null;
-
-  structureLoci && plugin.managers.camera?.focusLoci(structureLoci, { durationMs });
+  plugin.managers.camera.reset(undefined, durationMs);
 }
 
 export async function showInteractivityFocusInMolstar(instance?: PDBeMolstarPlugin, selectionsToDraw?: QueryParam[]) {
@@ -49,6 +48,21 @@ export async function cameraResetInMolstar(instance?: PDBeMolstarPlugin) {
   const plugin = instance?.plugin ?? null;
   if (!plugin) return;
   plugin.managers.camera.reset(undefined, 100);
+}
+
+export async function componentExistsInMolstar(instance?: PDBeMolstarPlugin, query?: string) {
+  if (!instance || !query) return;
+  const plugin = instance?.plugin ?? null;
+  if (!plugin) return;
+  const structureData = [plugin.managers.structure.hierarchy.current.structures[0]];
+  for await (const s of structureData) {
+    for (const comp of s.components) {
+      if (comp.key!.includes(query)) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 // DONE: Migrate these functions below

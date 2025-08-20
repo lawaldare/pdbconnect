@@ -20,7 +20,7 @@ import { interactionsToMolstar } from '../../../helpers/interactions-to-molstar-
 import { Interaction } from '../../../data-models/interaction.model';
 import { EntryActions } from '../../../store/entry.actions';
 import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, take, timer } from 'rxjs';
-import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
+import { componentExistsInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions/index';
 import { MobileStateService } from '../mobile-state.service';
@@ -99,21 +99,10 @@ export class MbLigandsComponent {
     );
 
     const pdbeInteractions = interactionsMolstarSelections as unknown as PDBeMolstarInteraction[];
-    // await this.molstarState.renderMolstarInteractions(residuesMolstarSelections, interactionsMolstarSelections);
     const residueSelectionData: QueryParam[] = residuesMolstarSelections.map((resid) => {
-      // const resid = eachResidData.residues[0];
-      const macromoleculeOfResidue = this.compCommunication.processedMacromolecules.filter((mm) => `${mm.additionalData.molecule.entity_id}` === resid.entity_id!)[0];
-      // const colorToMol = macromoleculeOfResidue.molstarColorHex ? Color(parseInt(macromoleculeOfResidue.molstarColorHex.slice(1), 16)) : undefined;
       return {
         ...resid,
-        // entity_id: `${resid.entityId!}`,
-        // auth_asym_id: `${resid.authChainId!}`,
-        // auth_residue_number: parseInt(resid.authBegin),
-        // auth_ins_code_id: resid.authBeginIns && resid.authBeginIns !== 'undefined' ? resid.authBeginIns : undefined,
-        color: macromoleculeOfResidue.molstarColorHex,
-        sideChain: true,
-        // representation: "ball-and-stick",
-        // representationColor: macromoleculeOfResidue.molstarColorHex,
+        representation: 'ball-and-stick',
         focus: false,
       };
     });
@@ -238,11 +227,17 @@ export class MbLigandsComponent {
 
     // Access Molstar instance
     const entityColor = ligand.molstarColorHex;
+    const componentQuery = ligand.type === 'modification' ? 'non-standard' : 'ligand';
+    const hasLigandsOrMod = await componentExistsInMolstar(instance, componentQuery);
     this.ligandSelection = [
       {
         ...molstarSelection[0],
         color: entityColor,
         focus: true,
+        ...(hasLigandsOrMod === false && {
+          representation: 'ball-and-stick',
+          representationColor: ligand.molstarColorHex,
+        }),
       },
     ];
     this.selectionData = [...this.ligandSelection];

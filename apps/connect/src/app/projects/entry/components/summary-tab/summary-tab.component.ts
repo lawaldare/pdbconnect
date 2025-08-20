@@ -1,9 +1,9 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { UtilService } from '@pdbc/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { assemblyCompositionTooltip, assemblyNameTooltip, complexIdTooltip, preferredAssemblyTooltip } from '../../entry-constant';
 import { modelQualitySummaryTooltip } from '../../entry-constant';
@@ -11,10 +11,6 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
-import { PluginConfig } from 'molstar/lib/mol-plugin/config';
-import { PresetStructureRepresentations } from 'molstar/lib/mol-plugin-state/builder/structure/representation-preset';
-import { DownloadStructure } from 'molstar/lib/mol-plugin-state/actions/structure';
-import { Structure } from 'molstar/lib/mol-model/structure';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { filter, firstValueFrom, map, take, timer } from 'rxjs';
@@ -23,7 +19,7 @@ import { EntryDropdownComponent } from '../entry-page-header/sub-components/entr
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions, getMacromoleculeChainDropdownOptions } from '../../helpers/processed-data-to-controls';
-import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
+import { componentExistsInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 
 type NestedDomainsData = Array<{
   macromolecule: MacromoleculesRowData;
@@ -36,7 +32,7 @@ type NestedDomainsData = Array<{
   styleUrl: './summary-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SummaryTabComponent implements AfterViewInit {
+export class SummaryTabComponent {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   private readonly globalStore = inject(Store<EntryStoreState>);
@@ -146,44 +142,6 @@ export class SummaryTabComponent implements AfterViewInit {
   private nonSelectionColor?: string;
 
   private zoomSelectionMutex = Promise.resolve();
-
-  ngAfterViewInit(): void {
-    // forces molstar to apply 'polymer-and-ligand' component preset when it loads (so ligands, ions, etc always shown)
-    this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((finished) => {
-      if (finished && this.compCommunication.currentTabName() === 'summary') {
-        let attempts = 0;
-        const maxAttempts = 180; // polling for 3 minutes, 1 attempt every second
-
-        const pollingInterval = setInterval(() => {
-          try {
-            if (this.compCommunication.currentTabName() !== 'summary') {
-              clearInterval(pollingInterval);
-              return;
-            }
-            const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
-            if (!plugin) throw new Error('Mol* plugin not found');
-
-            const params = DownloadStructure.createDefaultParams(plugin.state.data.root.obj!, plugin);
-            const assemblyRef = plugin.managers.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
-            const structure = plugin.state.data?.select(assemblyRef)[0]?.obj?.data;
-            const thresholds = plugin.config.get(PluginConfig.Structure.SizeThresholds) || Structure.DefaultSizeThresholds;
-            const size = Structure.getSize(structure, thresholds);
-            if (size !== Structure.Size.Small) {
-              PresetStructureRepresentations['polymer-and-ligand'].apply(assemblyRef, params as any, plugin);
-            }
-          } catch (error) {
-            console.warn(`Error during attempt ${attempts + 1} for Mol* initialization:`, error);
-          }
-
-          attempts++;
-          if (attempts >= maxAttempts) {
-            clearInterval(pollingInterval); // Stop polling after 3 minutes
-            console.warn('Polling expired: Mol* setup was not successful in time.');
-          }
-        }, 1000); // polling interval: 1 secon
-      }
-    });
-  }
 
   private async resetSelection() {
     const instance = this._molstarComponent?.getInstance() ?? null;
@@ -471,7 +429,7 @@ export class SummaryTabComponent implements AfterViewInit {
   }
 
   public async mouseinListItem(listItem: MacromoleculesRowData | LigandsRowData | DomainsRowData, selectionType: string) {
-    const selectionToHighlight = this.getSelectionObjForSelectionType(listItem, selectionType, false, false);
+    const selectionToHighlight = await this.getSelectionObjForSelectionType(listItem, selectionType, false, false);
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance || !selectionToHighlight) return;
     await instance.visual.highlight({ data: selectionToHighlight });
@@ -559,12 +517,12 @@ export class SummaryTabComponent implements AfterViewInit {
     this.updateMolstarAny(listViewItem, tabName);
   }
 
-  private getSelectionObjForSelectionType(
+  private async getSelectionObjForSelectionType(
     listItem: MacromoleculesRowData | LigandsRowData | DomainsRowData,
     selectionType: string,
     focusType: boolean,
     useCurrent: boolean
-  ): QueryParam[] | undefined {
+  ): Promise<QueryParam[] | undefined> {
     let molstarSelections: QueryParam[] | undefined = undefined;
     if (selectionType === 'Macromolecules') {
       const macromolecule = listItem as MacromoleculesRowData;
@@ -609,7 +567,7 @@ export class SummaryTabComponent implements AfterViewInit {
     const tabName = this.openedAccordionName;
     const listViewItem = this.lastSelection[tabName];
     if (!listViewItem) return;
-    const selectionToZoom = this.getSelectionObjForSelectionType(listViewItem, tabName, true, true);
+    const selectionToZoom = await this.getSelectionObjForSelectionType(listViewItem, tabName, true, true);
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance || !selectionToZoom) return;
     await instance.visual.focus(selectionToZoom);
@@ -673,11 +631,17 @@ export class SummaryTabComponent implements AfterViewInit {
       this.nonSelectionColor = '#FEFEFE';
     } else {
       const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+      const instance = this._molstarComponent?.getInstance() ?? undefined;
+      const hasLigands = await componentExistsInMolstar(instance, 'ligand');
       this.selectionData = molstarSelection.map((eachSelection) => {
         return {
           ...eachSelection,
           color: ligand.molstarColorHex,
           focus: true,
+          ...(hasLigands === false && {
+            representation: 'ball-and-stick',
+            representationColor: ligand.molstarColorHex,
+          }),
         };
       });
     }
@@ -722,11 +686,17 @@ export class SummaryTabComponent implements AfterViewInit {
       this.nonSelectionColor = '#FEFEFE';
     } else {
       const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+      const instance = this._molstarComponent?.getInstance() ?? undefined;
+      const hasModifications = await componentExistsInMolstar(instance, 'non-standard');
       this.selectionData = molstarSelection.map((eachSelection) => {
         return {
           ...eachSelection,
           color: mod.molstarColorHex,
           focus: true,
+          ...(hasModifications === false && {
+            representation: 'ball-and-stick',
+            representationColor: mod.molstarColorHex,
+          }),
         };
       });
     }

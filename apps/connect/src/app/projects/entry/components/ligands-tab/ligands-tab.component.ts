@@ -38,12 +38,8 @@ import { Molecule } from '../../data-models/molecule.model';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { Structure } from 'molstar/lib/mol-model/structure';
 import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions/index';
-import { PluginConfig } from 'molstar/lib/mol-plugin/config';
-import { PresetStructureRepresentations } from 'molstar/lib/mol-plugin-state/builder/structure/representation-preset';
-import { DownloadStructure } from 'molstar/lib/mol-plugin-state/actions/structure';
-import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
+import { componentExistsInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -312,69 +308,25 @@ export class LigandsTabComponent implements OnInit {
       this.compCommunication.chainToEntityId()
     );
 
-    // const entityId = molstarSelection.entityId;
-    // const chainId = molstarSelection.authChainId;
-    // const residueId = molstarSelection.residues[0].authBegin;
-
     const pdbeInteractions = interactionsMolstarSelections as unknown as PDBeMolstarInteraction[];
 
     const residueSelectionData: QueryParam[] = residuesMolstarSelections.map((resid) => {
-      const macromoleculeOfResidue = this.compCommunication.processedMacromolecules.filter((mm) => `${mm.additionalData.molecule.entity_id}` === resid.entity_id!)[0];
-      // const colorToMol = macromoleculeOfResidue.molstarColorHex ? Color(parseInt(macromoleculeOfResidue.molstarColorHex.slice(1), 16)) : undefined;
+      // TODO: Once endpoint has entity_id data use it to map colours
       return {
         ...resid,
-        color: macromoleculeOfResidue.molstarColorHex,
-        sideChain: true,
-        // representation: "ball-and-stick",
-        // representationColor: macromoleculeOfResidue.molstarColorHex,
+        // type_symbol: ['C'],
+        representation: 'ball-and-stick',
+        // representationColor: '#d3d3d3',
         focus: false,
       };
     });
     this.residuesAsSticks = residueSelectionData;
     this.selectionData = this.ligandSelection ? [...this.ligandSelection] : [];
     this.selectionData.push(...residueSelectionData);
-    await drawSelectionInMolstar(instance, this.selectionData);
+    await this.onDrawSelectionInMolstar();
 
     await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
     await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.loadInteractions(instance, { interactions: pdbeInteractions, structureId: 1 });
-  }
-
-  constructor() {
-    // forces molstar to apply 'polymer-and-ligand' component preset when it loads (so ligands, ions, etc always shown)
-    this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((finished) => {
-      if (finished && this.compCommunication.currentTabName() === 'ligands') {
-        let attempts = 0;
-        const maxAttempts = 180; // polling for 3 minutes, 1 attempt every second
-
-        const pollingInterval = setInterval(() => {
-          try {
-            if (this.compCommunication.currentTabName() !== 'ligands') {
-              clearInterval(pollingInterval);
-              return;
-            }
-            const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
-            if (!plugin) throw new Error('Mol* plugin not found');
-
-            const params = DownloadStructure.createDefaultParams(plugin.state.data.root.obj!, plugin);
-            const assemblyRef = plugin.managers.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
-            const structure = plugin.state.data?.select(assemblyRef)[0]?.obj?.data;
-            const thresholds = plugin.config.get(PluginConfig.Structure.SizeThresholds) || Structure.DefaultSizeThresholds;
-            const size = Structure.getSize(structure, thresholds);
-            if (size !== Structure.Size.Small) {
-              PresetStructureRepresentations['polymer-and-ligand'].apply(assemblyRef, params as any, plugin);
-            }
-          } catch (error) {
-            console.warn(`Error during attempt ${attempts + 1} for Mol* initialization:`, error);
-          }
-
-          attempts++;
-          if (attempts >= maxAttempts) {
-            clearInterval(pollingInterval); // Stop polling after 3 minutes
-            console.warn('Polling expired: Mol* setup was not successful in time.');
-          }
-        }, 1000); // polling interval: 1 secon
-      }
-    });
   }
 
   ngOnInit(): void {
@@ -438,23 +390,30 @@ export class LigandsTabComponent implements OnInit {
     );
 
     // Access Molstar instance
+    const instance = this._molstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+
     const entityColor = ligand.molstarColorHex;
+    const componentQuery = ligand.type === 'modification' ? 'non-standard' : 'ligand';
+    const hasLigandsOrMod = await componentExistsInMolstar(instance, componentQuery);
     this.ligandSelection = [
       {
         ...molstarSelection[0],
         color: entityColor,
         focus: true,
+        ...(hasLigandsOrMod === false && {
+          representation: 'ball-and-stick',
+          representationColor: ligand.molstarColorHex,
+        }),
       },
     ];
     this.selectionData = [...this.ligandSelection];
 
     const durationMs = this._molstarComponent ? 1200 : 0;
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
     await zoomOutStructureInMolstar(instance, durationMs);
 
     timer(durationMs + 100).subscribe(async () => {
-      await drawSelectionInMolstar(instance, this.selectionData);
+      await this.onDrawSelectionInMolstar();
     });
   }
 
@@ -542,6 +501,17 @@ export class LigandsTabComponent implements OnInit {
   }
 
   private tableHoverMutex = Promise.resolve();
+  private molstarSelectionMutex = Promise.resolve();
+
+  async onDrawSelectionInMolstar() {
+    const instance = this._molstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+
+    this.molstarSelectionMutex = this.molstarSelectionMutex.then(() => drawSelectionInMolstar(instance, this.residuesAsSticks));
+    await this.molstarSelectionMutex;
+    this.molstarSelectionMutex = this.molstarSelectionMutex.then(() => drawSelectionInMolstar(instance, this.ligandSelection, undefined, true));
+    await this.molstarSelectionMutex;
+  }
 
   async onCellMouseOver(event: CellMouseOverEvent<Interaction>) {
     this.tableHoverMutex = this.tableHoverMutex.then(() => this._handleCellMouseOver(event));

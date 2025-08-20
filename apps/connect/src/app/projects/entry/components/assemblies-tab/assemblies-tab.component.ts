@@ -13,7 +13,6 @@ import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { PopupWindowService, UtilService } from '@pdbc/core';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { Structure } from 'molstar/lib/mol-model/structure/structure/structure';
 import { filter, firstValueFrom, take, timer } from 'rxjs';
 
 @Component({

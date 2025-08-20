@@ -11,10 +11,6 @@ import { ComponentCommunicationService } from '../../../services/component-comm.
 import { take } from 'rxjs';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
-import { PluginConfig } from 'molstar/lib/mol-plugin/config';
-import { PresetStructureRepresentations } from 'molstar/lib/mol-plugin-state/builder/structure/representation-preset';
-import { DownloadStructure } from 'molstar/lib/mol-plugin-state/actions/structure';
-import { Structure } from 'molstar/lib/mol-model/structure';
 import { initializeModelIdTracking } from '../../../helpers/molstar-nmr-model-tracking';
 import { MobileTabChips } from '../../../data-classes/data-models-and-definitions/other-models';
 import { MbAssembliesComponent } from '../mb-assemblies/mb-assemblies.component';
@@ -115,44 +111,12 @@ export class MbMolstarTabComponent implements AfterViewInit {
   });
 
   private modelIdObserver?: MutationObserver;
-
   constructor() {
     // once molstar has rendered, initializes mutation observer for NMR model Id
     this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (finished) => {
       if (finished) {
+        this.compCommunication.mobileMolstarLoaded$.next(true);
         this.modelIdObserver = await initializeModelIdTracking(this.compCommunication.mobileModelIdx$, this._molstarComponent?.getContainer());
-      }
-    });
-    // forces molstar to apply 'polymer-and-ligand' component preset when it loads (so ligands, ions, etc always shown)
-    this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((finished) => {
-      if (finished) {
-        let attempts = 0;
-        const maxAttempts = 180; // polling for 3 minutes, 1 attempt every second
-
-        const pollingInterval = setInterval(() => {
-          try {
-            const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
-            if (!plugin) throw new Error('Mol* plugin not found');
-
-            const params = DownloadStructure.createDefaultParams(plugin.state.data.root.obj!, plugin);
-            const assemblyRef = plugin.managers.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
-            const structure = plugin.state.data?.select(assemblyRef)[0]?.obj?.data;
-            const thresholds = plugin.config.get(PluginConfig.Structure.SizeThresholds) || Structure.DefaultSizeThresholds;
-            const size = Structure.getSize(structure, thresholds);
-            if (size !== Structure.Size.Small) {
-              PresetStructureRepresentations['polymer-and-ligand'].apply(assemblyRef, params as any, plugin);
-            }
-            this.compCommunication.mobileMolstarLoaded$.next(true);
-          } catch (error) {
-            console.warn(`Error during attempt ${attempts + 1} for Mol* initialization:`, error);
-          }
-
-          attempts++;
-          if (attempts >= maxAttempts) {
-            clearInterval(pollingInterval); // Stop polling after 3 minutes
-            console.warn('Polling expired: Mol* setup was not successful in time.');
-          }
-        }, 1000); // polling interval: 1 secon
       }
     });
   }
