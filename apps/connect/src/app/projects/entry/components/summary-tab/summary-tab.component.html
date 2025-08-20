@@ -236,7 +236,11 @@
         </mat-expansion-panel>
         <mat-expansion-panel (opened)="onOpenAccordionPanel('Macromolecules')">
           <mat-expansion-panel-header>
-            <mat-panel-title> Macromolecules ({{ processedMacromolecules().length }}) </mat-panel-title>
+            <mat-panel-title>
+              Macromolecules @if(hasLoadedMacromolecules() === false) {
+              <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
+              } @else { ({{ processedMacromolecules().length }}) }
+            </mat-panel-title>
           </mat-expansion-panel-header>
           @if (processedMacromolecules().length) { @for (listItem of processedMacromolecules(); track $index; let macromoleculeIdx = $index) {
           <div
@@ -268,7 +272,11 @@
         </mat-expansion-panel>
         <mat-expansion-panel (opened)="onOpenAccordionPanel('Ligands')">
           <mat-expansion-panel-header>
-            <mat-panel-title> Ligands ({{ processedLigands().length }})</mat-panel-title>
+            <mat-panel-title>
+              Ligands @if(hasLoadedLigands() === false) {
+              <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
+              } @else { ({{ processedLigands().length }}) }
+            </mat-panel-title>
           </mat-expansion-panel-header>
           @if (processedLigands().length) { @for (listItem of processedLigands(); track $index) {
           <div
@@ -300,7 +308,11 @@
         </mat-expansion-panel>
         <mat-expansion-panel (opened)="onOpenAccordionPanel('Domains')">
           <mat-expansion-panel-header>
-            <mat-panel-title> Domains ({{ domainCount() }}) </mat-panel-title>
+            <mat-panel-title>
+              Domains @if(hasLoadedDomains() === false) {
+              <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
+              } @else { ({{ domainCount() }}) }
+            </mat-panel-title>
           </mat-expansion-panel-header>
 
           @if (domainCount() > 0) {
@@ -359,7 +371,11 @@
         </mat-expansion-panel>
         <mat-expansion-panel (opened)="onOpenAccordionPanel('Modifications')">
           <mat-expansion-panel-header>
-            <mat-panel-title> Modifications ({{ processedModifications().length }}) </mat-panel-title>
+            <mat-panel-title>
+              Modifications @if(hasLoadedLigands() === false) {
+              <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
+              } @else { ({{ processedModifications().length }}) }
+            </mat-panel-title>
           </mat-expansion-panel-header>
           @if (processedModifications().length) { @for (listItem of processedModifications(); track $index; let modificationIdx = $index) {
           <div

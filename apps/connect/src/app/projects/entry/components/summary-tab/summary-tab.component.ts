@@ -83,6 +83,10 @@ export class SummaryTabComponent {
    * Right panel: Molstar related
    */
 
+  public hasLoadedDomains = computed(() => this.compCommunication.hasProcessedDomains());
+  public hasLoadedMacromolecules = computed(() => this.compCommunication.hasProcessedMacromolecules());
+  public hasLoadedLigands = computed(() => this.compCommunication.hasProcessedDomains());
+
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
 
   private readonly destroyRef = inject(DestroyRef);
