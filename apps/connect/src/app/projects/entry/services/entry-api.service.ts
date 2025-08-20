@@ -416,7 +416,7 @@ export class EntryApiService {
     // https://proteindiffraction.org/api/ebi/4weq/
     // example without data:
     // https://proteindiffraction.org/api/ebi/1trn/
-    return this.http.get<IRRMCExperimentRawData>(`https://proteindiffraction.org/api/ebi/${entryId}`);
+    return this.http.get<IRRMCExperimentRawData>(`https://proteindiffraction.org/api/ebi/${entryId}/`);
   }
 
   public getExperimentRawDataEMPIAR(entryId: string): Observable<EMPIARExperimentRawData[]> {
