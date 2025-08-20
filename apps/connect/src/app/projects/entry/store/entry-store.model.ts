@@ -42,7 +42,7 @@ export interface EntryStoreState {
   resolutionValues: (number | undefined)[];
   experimentalMethod: string;
   uniprotMapping: UniProtMapping | undefined;
-  proteinPagesSummaryByUniProtIds: Record<string, ProteinSummaryStats> | undefined;
+  proteinPagesSummaryByUniProtIds: ProteinSummaryStats | undefined;
   interproMapping: InterProMappings | undefined;
   isoformsMapping: UniProtMapping | undefined;
   goMapping: GOMapping | undefined;

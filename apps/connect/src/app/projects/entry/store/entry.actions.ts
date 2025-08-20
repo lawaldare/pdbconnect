@@ -27,6 +27,7 @@ import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers
 import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
 import { LLMAnnotation } from '../data-models/llm-model';
 import { ResidueListed } from '../data-models/residue-listing.model';
+import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -42,8 +43,11 @@ export const EntryActions = createActionGroup({
     'Get Experiment Success': props<{ data: ExperimentData }>(),
     'Get Experiment Failure': emptyProps(),
     'Get UniprotMapping': emptyProps(),
-    'Get UniprotMapping Success': props<{ data: UniProtMappingData }>(),
+    'Get UniprotMapping Success': props<{ uniprotMapping: UniProtMapping }>(),
     'Get UniprotMapping Failure': emptyProps(),
+    'Get UniprotSummary': props<{ uniprotId: string }>(),
+    'Get UniprotSummary Success': props<{ unpSummaryData: ProteinSummaryStats }>(),
+    'Get UniprotSummary Failure': emptyProps(),
     'Get IsoformsMapping': emptyProps(),
     'Get IsoformsMapping Success': props<{ isoformsMapping: UniProtMapping }>(),
     'Get IsoformsMapping Failure': emptyProps(),

@@ -28,7 +28,7 @@ const initialState: EntryStoreState = {
   resolutionValues: [],
   experimentalMethod: '',
   uniprotMapping: undefined,
-  proteinPagesSummaryByUniProtIds: {},
+  proteinPagesSummaryByUniProtIds: undefined,
   interproMapping: {},
   isoformsMapping: {},
   goMapping: {},
@@ -181,8 +181,11 @@ export const entryReducer = createReducer(
   })),
   on(EntryActions.getUniprotMappingSuccess, (state, action) => ({
     ...state,
-    uniprotMapping: action.data.uniprotMapping,
-    proteinPagesSummaryByUniProtIds: action.data.proteinPagesSummaryByUniProtIds,
+    uniprotMapping: action.uniprotMapping,
+  })),
+  on(EntryActions.getUniprotSummarySuccess, (state, action) => ({
+    ...state,
+    proteinPagesSummaryByUniProtIds: action.unpSummaryData,
   })),
   on(EntryActions.getValidationXrayRefineSuccess, (state, action) => ({
     ...state,

@@ -34,6 +34,7 @@ import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-track
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
+import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -130,7 +131,7 @@ export class MacromoleculesTabComponent {
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
+  public readonly proteinsStatsObservable = this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds);
   public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
   public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
   public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
@@ -138,7 +139,7 @@ export class MacromoleculesTabComponent {
   public readonly residueListing = toSignal(this.globalStore.select(EntrySelectors.residueListing));
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
 
-  public selectionStats: { [key: string]: any } | undefined;
+  public selectionStats = signal<ProteinSummaryStats | undefined>(undefined);
   // public goMappings = computed(() => Object.keys(this.goMapping() ?? {}));
 
   public goMappingsForMacromolecule = computed(() => {
@@ -238,7 +239,7 @@ export class MacromoleculesTabComponent {
 
   public sequenceDetails: SequenceDetail[] = [];
 
-  public selectionIdentifier = 'None';
+  public selectionUniprotId = 'None';
   public selectionTypeText?: string;
 
   public readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()));
@@ -298,6 +299,14 @@ export class MacromoleculesTabComponent {
     this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
       this.updateBackgroundAnnotation();
     });
+    this.proteinsStatsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((proteinSummary) => {
+      this.selectionStats.set(proteinSummary);
+    });
+  }
+
+  getStatValue(id: string): number | undefined {
+    const stats = this.selectionStats();
+    return stats ? stats[id as keyof ProteinSummaryStats] : undefined;
   }
 
   triggerMacromoleculeUpdateSideEffects(macromolecule: MacromoleculesRowData) {
@@ -355,15 +364,19 @@ export class MacromoleculesTabComponent {
 
   updateVisualsDisplayed(macromolecule: MacromoleculesRowData) {
     this.hasTopologyViewer = false;
-    this.selectionIdentifier = 'None';
+    this.selectionUniprotId = 'None';
     if (this.allThereVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
       this.selectionTypeText = 'protein';
-      // if protein is not chimeric (single uniprotAccession), set this as selectionIdentifier
+      // if protein is not chimeric (single uniprotAccession), set this as selectionUniprotId
       if (macromolecule.additionalData.uniprotAccessions.length === 1) {
-        this.selectionIdentifier = macromolecule.additionalData.uniprotAccessions[0];
-        if (this.proteinsStats()) {
-          this.selectionStats = this.proteinsStats();
-        }
+        this.selectionUniprotId = macromolecule.additionalData.uniprotAccessions[0];
+        // dispatch call to API endpoint and when finished triggers
+        // constructor this.proteinsStatsObservable.pipe(...)
+        this.globalStore.dispatch(
+          EntryActions.getUniprotSummary({
+            uniprotId: this.selectionUniprotId ?? '',
+          })
+        );
       }
       this.hasTopologyViewer = true;
       this.hasProtvista = true;

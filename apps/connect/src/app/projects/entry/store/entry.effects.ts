@@ -334,52 +334,29 @@ export class EntryEffects {
     )
   );
 
-  getUniprotMapping$ = createEffect(() =>
+  getUniProtMapping$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getUniprotMapping),
       switchMap(() => this.store.select(EntrySelectors.entryId).pipe(take(1))),
       mergeMap((entryId: string) =>
         this.entryAPIService.getUniprotMapping(entryId).pipe(
-          mergeMap((uniprotMapping: UniProtMapping) => {
-            if ((uniprotMapping as any).empty === true) {
-              const emptyUniProtResponse = {
-                uniprotMapping: { empty: true },
-                proteinPagesSummaryByUniProtIds: { empty: true },
-              };
-              return of(
-                EntryActions.getUniprotMappingSuccess({
-                  data: emptyUniProtResponse as unknown as UniProtMappingData,
-                })
-              );
-            }
-            const uniprotIds = Object.keys(uniprotMapping);
-            const proteinPagesSummaryObservables = uniprotIds.map((uniprotId) =>
-              this.entryAPIService.getProteinPagesSummaryStats(uniprotId).pipe(
-                map((result) => ({ [uniprotId]: result })) // Wrap each result in an object with uniprotId as key
-              )
-            );
+          map((data) => EntryActions.getUniprotMappingSuccess({ uniprotMapping: data })),
+          catchError(() => of(EntryActions.getUniprotMappingFailure()))
+        )
+      )
+    )
+  );
 
-            // Use forkJoin to wait for all observables to complete
-            return forkJoin(proteinPagesSummaryObservables).pipe(
-              map((proteinPagesSummary) => {
-                // Combine results into dictionaries
-                const proteinPagesSummaryByUniProtIds: { [key: string]: ProteinSummaryStats } = {};
-
-                // Process proteinPagesSummary results
-                for (const summaryDict of proteinPagesSummary as { [key: string]: ProteinSummaryStats }[]) {
-                  const uniprotId = Object.keys(summaryDict)[0];
-                  proteinPagesSummaryByUniProtIds[uniprotId] = summaryDict[uniprotId];
-                }
-                return EntryActions.getUniprotMappingSuccess({
-                  data: {
-                    uniprotMapping,
-                    proteinPagesSummaryByUniProtIds,
-                  },
-                });
-              }),
-              catchError(() => of(EntryActions.getUniprotMappingFailure()))
-            );
-          })
+  getUniProtSummary$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getUniprotSummary),
+      switchMap((action) => {
+        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
+      }),
+      mergeMap(([action, _entryId]) =>
+        this.entryAPIService.getProteinPagesSummaryStats(action.uniprotId).pipe(
+          map((data) => EntryActions.getUniprotSummarySuccess({ unpSummaryData: data })),
+          catchError(() => of(EntryActions.getUniprotSummaryFailure()))
         )
       )
     )
