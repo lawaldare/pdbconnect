@@ -6,7 +6,7 @@ import { SearchAppComponent } from '@pdbc/search-app';
 
 import { EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { MaterialModule, ScrollPositionService } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
 import { mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig } from '../../entry-constant';
 import { MainDataProcessingFacade } from './data-processing.facade';
@@ -82,6 +82,7 @@ export class EntryMainPageComponent implements OnInit {
   public readonly scrollService = inject(ScrollPositionService);
   private readonly entryBioschemasService = inject(EntryBioschemasService);
   private readonly renderer = inject(Renderer2);
+  public readonly gAS = inject(GoogleAnalyticsService);
 
   public hasLoadedAssemblies = computed(() => this.compCommunication.hasProcessedAssemblies());
   public hasAssemblies = computed(() => {
@@ -154,6 +155,9 @@ export class EntryMainPageComponent implements OnInit {
       this.compCommunication.currentTabName.set(tabName);
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.selectedTab.set(tabIndex);
+      this.gAS.logEntryPageEvents('ep_desktop_tab_access', {
+        tab: tabName,
+      });
     });
   }
 
@@ -219,6 +223,9 @@ export class EntryMainPageComponent implements OnInit {
     const tabName = routeTabs[event.index].id;
     this.scrollService.handleScrollPosition(this.tabGroup, event.index);
     this.compCommunication.currentTabName.set(tabName);
+    this.gAS.logEntryPageEvents('ep_desktop_tab_switch', {
+      tab: tabName,
+    });
 
     this.router.navigate([], {
       queryParams: { activeTab: tabName },

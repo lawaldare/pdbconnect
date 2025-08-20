@@ -10,6 +10,7 @@ import { EntryUtilService } from '../../../services/entry-util.service';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ErrorPageComponent } from '../../../../../error-page/error-page.component';
 import { MobileTabNames, MobileTabName } from '../mobile-tab.model';
+import { GoogleAnalyticsService } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-mobile-main',
@@ -21,6 +22,8 @@ export class MobileMainComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   public activeTab = signal<string>('overview');
+
+  public readonly gAS = inject(GoogleAnalyticsService);
 
   public readonly util = inject(EntryUtilService);
 
@@ -56,6 +59,9 @@ export class MobileMainComponent {
         this.mbFacade.updateActivePage(tabId);
         this.mbFacade.updateSelectedPageName(tabId);
       }
+      this.gAS.logEntryPageEvents('ep_mobile_3d_access', {
+        tab: tabId,
+      });
     });
   }
 

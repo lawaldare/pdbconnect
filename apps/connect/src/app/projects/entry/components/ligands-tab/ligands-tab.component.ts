@@ -13,7 +13,15 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
-import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule, PopupWindowService, TruncateTextDirective, UtilService } from '@pdbc/core';
+import {
+  AG_Grid_Theme_Class,
+  DownloadFileTypeService,
+  GoogleAnalyticsService,
+  MaterialModule,
+  PopupWindowService,
+  TruncateTextDirective,
+  UtilService,
+} from '@pdbc/core';
 import { CellMouseOverEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -72,6 +80,7 @@ export class LigandsTabComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   public dashboardStatLinks = dashboardStatLinks;
+  public readonly gAS = inject(GoogleAnalyticsService);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
   public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
@@ -83,6 +92,10 @@ export class LigandsTabComponent implements OnInit {
   public readonly legendsColor = this.getInteractionLabelColorArray(INTX_NAME_COLORS, INTX_NAME_STANDARDIZER);
 
   public initialColorCount = signal<number>(4);
+
+  public get isMobile(): boolean {
+    return window.innerWidth <= 768; // typical mobile breakpoint
+  }
 
   public readonly ligandTableRows = computed(() => {
     const isLoaded = this.compCommunication.hasProcessedLigands();

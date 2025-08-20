@@ -22,7 +22,7 @@ import * as NightingaleNavigation from '@nightingale-elements/nightingale-naviga
 const _nightingaleRefs = [NightingaleManager, NightingaleSequence, NightingaleNavigation];
 
 import { Feature as NightingaleFeature } from '@nightingale-elements/nightingale-track';
-import { MaterialModule } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 
 import {
   APIConservationData,
@@ -49,6 +49,7 @@ import { EntrySelectors } from '../../../store/entry.selectors';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { ComponentCommunicationService } from '../../../services/component-comm.service';
 
 /**
  * Helper to decode rawHTML from API endpoints (tooltipContent)
@@ -109,6 +110,9 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   public renderer = inject(Renderer2);
   public elementRef = inject(ElementRef);
   private zone = inject(NgZone);
+
+  public readonly gAS = inject(GoogleAnalyticsService);
+  public readonly compCommunication = inject(ComponentCommunicationService);
 
   // State boolean variables indicating API loading and sequence loading
   public readonly loadedTracksAPIData = signal<boolean>(false);
@@ -562,6 +566,10 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     // 4 - Show map panel and hide search panel
     this.showMapPanel = true;
     this.showSearchPanel = false;
+
+    this.gAS.logEntryPageEvents('ep_map_data', {
+      tab: this.compCommunication.currentTabName() ?? '',
+    });
   }
 
   resetVisualization() {

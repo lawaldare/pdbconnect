@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, NgZone, QueryList, signal, Type, ViewChild, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
@@ -45,6 +45,8 @@ export class MbMolstarTabComponent implements AfterViewInit {
   private readonly state = inject(MobileStateService);
   private readonly zone = inject(NgZone);
   private readonly mbFacade = inject(MobileFacade);
+
+  public readonly gAS = inject(GoogleAnalyticsService);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
@@ -185,6 +187,10 @@ export class MbMolstarTabComponent implements AfterViewInit {
         panelClass: 'custom-bottom-sheet',
       });
     }
+
+    this.gAS.logEntryPageEvents('ep_mobile_3d_tab_switch', {
+      tab: chip.id,
+    });
   }
 
   public goBackToOverviewPage(): void {

@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
-import { MaterialModule } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { UtilService } from '@pdbc/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
@@ -42,6 +42,8 @@ export class SummaryTabComponent implements AfterViewInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly util = inject(UtilService);
   private readonly compCommunication = inject(ComponentCommunicationService);
+
+  public readonly gAS = inject(GoogleAnalyticsService);
 
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly organismScientificNames = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
@@ -441,6 +443,9 @@ export class SummaryTabComponent implements AfterViewInit {
   }
 
   public onOpenAccordionPanel(tabName: string) {
+    this.gAS.logEntryPageEvents('ep_overview_click', {
+      tab_name: tabName,
+    });
     if (tabName === this.openedAccordionName) {
       this.openedAccordionName = undefined;
     } else {

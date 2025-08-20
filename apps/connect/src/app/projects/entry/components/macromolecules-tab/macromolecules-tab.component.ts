@@ -10,7 +10,7 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
-import { MaterialModule, UtilService } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../helpers/processed-data-to-controls';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -63,6 +63,8 @@ export class MacromoleculesTabComponent {
   public readonly sharedDataFacade = inject(SharedDataFacade);
   private readonly destroyRef = inject(DestroyRef);
 
+  public readonly gAS = inject(GoogleAnalyticsService);
+
   public readonly isSidebarDisplayed = signal<boolean>(true);
   public readonly tabDataLoaded = computed(() => this.compCommunication.isTabDataGenerated());
 
@@ -80,6 +82,10 @@ export class MacromoleculesTabComponent {
       this.visInteractivity.currentMolstarComponent = this._molstarComponent;
       this.molstarReady.set(true);
     }
+  }
+
+  public get isMobile(): boolean {
+    return window.innerWidth <= 768; // typical mobile breakpoint
   }
 
   public molstarFirstRenderFinished = computed(() => {
@@ -413,6 +419,9 @@ export class MacromoleculesTabComponent {
   public copySequence(sequenceDetail: SequenceDetail) {
     const text = `${sequenceDetail.title}\r\n${sequenceDetail.fullSequence}`;
     this.utilService.copy(text);
+    this.gAS.logEntryPageEvents('ep_copy_seq', {
+      tab: 'macromolecules',
+    });
   }
 
   private async renderVisualisations(macromolecule: MacromoleculesRowData) {

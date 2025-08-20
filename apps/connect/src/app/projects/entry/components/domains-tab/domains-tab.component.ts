@@ -11,7 +11,7 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { EntryPgProtvistaComponent, FixedSelectionInput } from '../shared/entry-pv-nightingale/entry-pv-nightingale.component';
-import { PopupWindowService, UtilService } from '@pdbc/core';
+import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
 import { entryDomainsTooltips, resourceUrls } from '../../entry-constant';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
@@ -49,6 +49,7 @@ import { VisualisationInteractivityService } from '../../services/vis-interactiv
 export class DomainsTabComponent {
   public domainsFacade = inject(DomainsFacade);
   public readonly compCommunication = inject(ComponentCommunicationService);
+  public readonly gAS = inject(GoogleAnalyticsService);
   public readonly visInteractivity = inject(VisualisationInteractivityService);
   public readonly popService = inject(PopupWindowService);
   private readonly utilService = inject(UtilService);
@@ -276,6 +277,9 @@ export class DomainsTabComponent {
   public copySequence(sequenceDetail: SequenceDetail) {
     const text = `${sequenceDetail.title}\r\n${sequenceDetail.fullSequence}`;
     this.utilService.copy(text);
+    this.gAS.logEntryPageEvents('ep_copy_seq', {
+      tab: 'domains',
+    });
   }
 
   public selectionData?: QueryParam[];

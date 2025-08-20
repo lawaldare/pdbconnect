@@ -2,7 +2,7 @@ import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal }
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { UtilService } from '@pdbc/core';
+import { GoogleAnalyticsService, UtilService } from '@pdbc/core';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
@@ -31,6 +31,8 @@ export class MbOverviewTabComponent implements OnInit {
   public readonly dataProcessing = inject(MainDataProcessingFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly mbFacade = inject(MobileFacade);
+
+  public readonly gAS = inject(GoogleAnalyticsService);
 
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly entryStoreId = toSignal(this.globalStore.select(EntrySelectors.entryId));
@@ -220,10 +222,14 @@ export class MbOverviewTabComponent implements OnInit {
 
   public openMolstarPage(): void {
     this.mbFacade.selectPage('molstar');
+    this.gAS.logEntryPageEvents('ep_mobile_3d_btn_click', {});
   }
 
   public navigateToCitationPage(): void {
     this.mbFacade.selectPage('citation');
+    this.gAS.logEntryPageEvents('ep_mobile_citations_link_click', {
+      page_section: 'abstract',
+    });
   }
 
   public navigateToPageSection(event: Event, sectionId: string): void {
@@ -237,5 +243,29 @@ export class MbOverviewTabComponent implements OnInit {
         window.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
       }
     }, 500);
+
+    this.logGAEvents(sectionId);
+  }
+
+  private logGAEvents(sectionId: string): void {
+    let eventName = '';
+    switch (sectionId) {
+      case 'articles-cited':
+        eventName = 'articles_cite_pdb';
+        break;
+      case 'reviews-cited':
+        eventName = 'reviews_cite_pdb';
+        break;
+      case 'articles-not-cited':
+        eventName = 'articles_mention_pdb';
+        break;
+      case 'reviews-not-cited':
+        eventName = 'reviews_mention_pdb';
+        break;
+    }
+
+    this.gAS.logEntryPageEvents('ep_mobile_citations_link_click', {
+      page_section: eventName,
+    });
   }
 }

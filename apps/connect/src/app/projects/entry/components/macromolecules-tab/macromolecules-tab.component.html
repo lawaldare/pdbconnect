@@ -127,7 +127,14 @@
       @if(dashboardStatLinks['Macromolecules'].length > 0 && selectionIdentifier !== 'None') {
       <span><img src="assets/icons/logo.png" alt="icon" style="margin-right: 2px" />View more about this {{ selectionTypeText }}:</span>
       @for (displayLink of dashboardStatLinks['Macromolecules']; track displayLink; let islast = $last) {
-      <a [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix" target="_blank">
+      <a
+        [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix"
+        target="_blank"
+        (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
+        kb_website: displayLink.displayName,
+        device_type: isMobile ? 'mobile' : 'desktop',
+      })"
+      >
         {{ selectionStats?.[selectionIdentifier][displayLink.id] }} {{ displayLink.displayName }}
       </a>
       {{ islast ? '' : '|' }} } }
