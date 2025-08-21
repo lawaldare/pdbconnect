@@ -76,8 +76,11 @@ export class EntryApiService {
           experimentalMethods: datum.experimental_method,
         };
       }),
-      catchError((_error) => {
-        return of({ empty: true } as unknown as ProcessedSummary);
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as ProcessedSummary);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }
@@ -111,8 +114,11 @@ export class EntryApiService {
   public getUniprotMapping(entryId: string): Observable<UniProtMapping> {
     return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.MAPPINGS_API}uniprot/${entryId}`).pipe(
       map((data) => data[entryId]['UniProt']),
-      catchError((_error) => {
-        return of({ empty: true } as unknown as UniProtMapping);
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as UniProtMapping);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }
@@ -140,8 +146,11 @@ export class EntryApiService {
   public getPfamMapping(entryId: string): Observable<PfamMappings> {
     return this.http.get<Record<string, Record<string, PfamMappings>>>(`${this.MAPPINGS_API}pfam/${entryId}`).pipe(
       map((data) => data[entryId]['Pfam']),
-      catchError((_error) => {
-        return of({ empty: true } as unknown as PfamMappings);
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as PfamMappings);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }
@@ -149,8 +158,11 @@ export class EntryApiService {
   public getCATHMapping(entryId: string): Observable<CathMappings> {
     return this.http.get<Record<string, Record<string, CathMappings>>>(`${this.MAPPINGS_API}cath/${entryId}`).pipe(
       map((data) => data[entryId]['CATH']),
-      catchError((_error) => {
-        return of({ empty: true } as unknown as CathMappings);
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as CathMappings);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }
@@ -158,8 +170,11 @@ export class EntryApiService {
   public getSCOP175Mapping(entryId: string): Observable<ScopMappings> {
     return this.http.get<Record<string, Record<string, ScopMappings>>>(`${this.MAPPINGS_API}scop/${entryId}`).pipe(
       map((data) => data[entryId]['SCOP']),
-      catchError((_error) => {
-        return of({ empty: true } as unknown as ScopMappings);
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as ScopMappings);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }
@@ -167,8 +182,11 @@ export class EntryApiService {
   public getModifications(entryId: string): Observable<ModifiedResidue[]> {
     return this.http.get<Record<string, ModifiedResidue[]>>(`${this.BASE_API}modified_AA_or_NA/${entryId}`).pipe(
       map((data) => data[entryId]),
-      catchError((_error) => {
-        return of({ empty: true } as unknown as ModifiedResidue[]);
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as ModifiedResidue[]);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }
@@ -213,8 +231,11 @@ export class EntryApiService {
   public getPreferredAssembly(entryId: string): Observable<ComplexDetails[]> {
     return this.http.get<Record<string, ComplexDetails[]>>(`${this.AggregatedApiUrl}complex/details/${entryId}?id_type=pdb_id`).pipe(
       map((data) => data[entryId]),
-      catchError((_error) => {
-        return of({ empty: true } as unknown as ComplexDetails[]);
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as ComplexDetails[]);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }
@@ -222,8 +243,11 @@ export class EntryApiService {
   public getAssembly(entryId: string): Observable<AssemblyData[]> {
     return this.http.get<Record<string, AssemblyData[]>>(`${this.BASE_API}assembly/${entryId}`).pipe(
       map((data) => data[entryId]),
-      catchError((_error) => {
-        return of({ empty: true } as unknown as AssemblyData[]);
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as AssemblyData[]);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }
@@ -248,8 +272,11 @@ export class EntryApiService {
   public getPisaAssembly(entryId: string, assemblyId: string): Observable<PisaAssembly> {
     return this.http.get<Record<string, PisaAssembly>>(`https://www.ebi.ac.uk/pdbe/api/pisa/assembly/${entryId}/${assemblyId}`).pipe(
       map((data) => data[entryId]),
-      catchError((_error) => {
-        return of({ empty: true } as unknown as PisaAssembly);
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as PisaAssembly);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }
@@ -257,8 +284,11 @@ export class EntryApiService {
   public getCarbohydrates(entryId: string): Observable<CarbohydrateMolecule[]> {
     return this.http.get<Record<string, CarbohydrateMolecule[]>>(`${this.BASE_API}carbohydrate_polymer/${entryId}`).pipe(
       map((data) => data[entryId]),
-      catchError((_error) => {
-        return of({ empty: true } as unknown as CarbohydrateMolecule[]);
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as CarbohydrateMolecule[]);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }
@@ -293,8 +323,11 @@ export class EntryApiService {
       map((data) => {
         return data[entryId]['molecules'] || [];
       }),
-      catchError((_error) => {
-        return of({ empty: true } as unknown as PolymerCoverageMolecule[]);
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as PolymerCoverageMolecule[]);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }
@@ -304,8 +337,11 @@ export class EntryApiService {
       map((data) => {
         return data[entryId];
       }),
-      catchError((_error) => {
-        return of({ empty: true } as unknown as LigandMonomer[]);
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as LigandMonomer[]);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }
