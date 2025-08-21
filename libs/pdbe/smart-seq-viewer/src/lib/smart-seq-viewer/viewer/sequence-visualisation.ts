@@ -1455,7 +1455,7 @@ export class SmartSequenceVisualisation {
     const isNonObserved = this.nonObservedResidues?.includes(residueIndex) ?? false;
     if (isNonObserved) {
       const helpLogoSrc = this.helpLogoSrc || '';
-      const tooltipText = `Non-observed coordinates are parts of the molecule that were present in the experimental sample but could not be modeled due to lack of clear structural data evidence. This can happen because of instrinsic structural flexibility, disorder, or due to experimental limitations during structure determination.`;
+      const tooltipText = `Non-observed coordinates are parts of the molecule that were present in the experimental sample but could not be modeled usually due to lack of clear structural data evidence. This can happen because of instrinsic structural flexibility, disorder, or due to experimental limitations during structure determination.`;
 
       const nonObservedHelpEl = `
         <div style="position: relative; display: inline-block; top: -2px; left: -3px;">
