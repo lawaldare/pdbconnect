@@ -378,3 +378,11 @@ mat-form-field {
     }
   }
 }
+
+.link-btn {
+  color: var(--Blue-600, #3b6fb6);
+  font-weight: 400;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 4px;
+}

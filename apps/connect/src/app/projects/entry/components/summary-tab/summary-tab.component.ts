@@ -191,16 +191,78 @@ export class SummaryTabComponent {
   });
 
   // data processed for all views
+  readonly maxPerPage = 80;
   public processedMacromolecules = computed(() => {
     const hasMacromoleculesData = this.compCommunication.hasProcessedMacromolecules();
     if (!hasMacromoleculesData) return [];
     return this.compCommunication.processedMacromolecules;
   });
 
+  public currentMacromoleculesPage = signal(0);
+
+  public maxMacromoleculesPages = computed(() => {
+    const hasMacromoleculesData = this.compCommunication.hasProcessedMacromolecules();
+    if (!hasMacromoleculesData) return 1;
+    const macromolecules = this.processedMacromolecules();
+    const total = macromolecules.length;
+    return Math.ceil(total / this.maxPerPage);
+  });
+
+  public setListViewPage(nextOrPrev: 1 | -1, selectionType: string) {
+    let element: HTMLElement | undefined;
+    if (selectionType === 'Macromolecules') {
+      const idx = this.currentMacromoleculesPage();
+      this.currentMacromoleculesPage.set(idx + nextOrPrev);
+      element = document.querySelector('#mm-exp-panel .mat-expansion-panel-body') as HTMLElement;
+    } else if (selectionType === 'Ligands') {
+      const idx = this.currentLigandsPage();
+      this.currentLigandsPage.set(idx + nextOrPrev);
+      element = document.querySelector('#lig-exp-panel .mat-expansion-panel-body') as HTMLElement;
+    } else if (selectionType === 'Domains') {
+      const idx = this.currentDomainsPage();
+      this.currentDomainsPage.set(idx + nextOrPrev);
+      element = document.querySelector('#dom-exp-panel .mat-expansion-panel-body') as HTMLElement;
+    } else if (selectionType === 'Modifications') {
+      const idx = this.currentModificationsPage();
+      this.currentModificationsPage.set(idx + nextOrPrev);
+      element = document.querySelector('#mod-exp-panel .mat-expansion-panel-body') as HTMLElement;
+    }
+    setTimeout(() => {
+      if (nextOrPrev === 1 && element) element.scrollTop = 0;
+      else if (element) element.scrollTop = element.scrollHeight;
+    }, 50);
+  }
+
+  public processedMacromoleculesToView = computed(() => {
+    const macromolecules = this.processedMacromolecules();
+    const page = this.currentMacromoleculesPage();
+    const start = page * this.maxPerPage;
+    const end = start + this.maxPerPage;
+    return macromolecules.slice(start, end);
+  });
+
   public processedLigands = computed(() => {
     const hasLigandsData = this.compCommunication.hasProcessedLigands();
     if (!hasLigandsData) return [];
     return this.compCommunication.processedLigands;
+  });
+
+  public currentLigandsPage = signal(0);
+
+  public maxLigandsPages = computed(() => {
+    const hasLigandsData = this.compCommunication.hasProcessedLigands();
+    if (!hasLigandsData) return 1;
+    const ligands = this.processedLigands();
+    const total = ligands.length;
+    return Math.ceil(total / this.maxPerPage);
+  });
+
+  public processedLigandsToView = computed(() => {
+    const ligands = this.processedLigands();
+    const page = this.currentLigandsPage();
+    const start = page * this.maxPerPage;
+    const end = start + this.maxPerPage;
+    return ligands.slice(start, end);
   });
 
   public allLigandsQueryParam = computed(() => {
@@ -229,6 +291,24 @@ export class SummaryTabComponent {
     const hasLigandsData = this.compCommunication.hasProcessedLigands();
     if (!hasLigandsData) return [];
     return this.compCommunication.processedModifications;
+  });
+
+  public currentModificationsPage = signal(0);
+
+  public maxModificationsPages = computed(() => {
+    const hasLigandsData = this.compCommunication.hasProcessedLigands();
+    if (!hasLigandsData) return 1;
+    const modifications = this.processedModifications();
+    const total = modifications.length;
+    return Math.ceil(total / this.maxPerPage);
+  });
+
+  public processedModificationsToView = computed(() => {
+    const modifications = this.processedModifications();
+    const page = this.currentModificationsPage();
+    const start = page * this.maxPerPage;
+    const end = start + this.maxPerPage;
+    return modifications.slice(start, end);
   });
 
   public allModificationsQueryParam = computed(() => {
@@ -338,6 +418,59 @@ export class SummaryTabComponent {
       }
     }
     return result;
+  });
+
+  public currentDomainsPage = signal(0);
+
+  private chunkProcessedDomainsByDomainCount(processedDomains: NestedDomainsData): NestedDomainsData[] {
+    const chunks: NestedDomainsData[] = [];
+    let currentChunk: NestedDomainsData = [];
+    let currentTotal = 0;
+
+    for (const pd of processedDomains) {
+      const domainCount = pd.domains.length;
+
+      if (domainCount >= this.maxPerPage) {
+        // Single large item goes in its own page
+        if (currentChunk.length > 0) {
+          chunks.push(currentChunk);
+          currentChunk = [];
+          currentTotal = 0;
+        }
+        chunks.push([pd]);
+      } else if (currentTotal + domainCount > this.maxPerPage) {
+        // Current chunk is full, start a new one
+        chunks.push(currentChunk);
+        currentChunk = [pd];
+        currentTotal = domainCount;
+      } else {
+        // Add to current chunk
+        currentChunk.push(pd);
+        currentTotal += domainCount;
+      }
+    }
+
+    if (currentChunk.length > 0) {
+      chunks.push(currentChunk);
+    }
+
+    return chunks;
+  }
+
+  public maxDomainsPages = computed(() => {
+    const hasDomainsData = this.compCommunication.hasProcessedDomains();
+    if (!hasDomainsData) return 1;
+
+    const processedDomains = this.processedDomainsForListView();
+    const chunks = this.chunkProcessedDomainsByDomainCount(processedDomains);
+    return chunks.length || 1;
+  });
+
+  public processedDomainsToView = computed(() => {
+    const page = this.currentDomainsPage();
+    const processedDomains = this.processedDomainsForListView();
+    const chunks = this.chunkProcessedDomainsByDomainCount(processedDomains);
+    return chunks[page] || [];
   });
 
   public allCurrentResourceDomainsQueryParam = computed(() => {

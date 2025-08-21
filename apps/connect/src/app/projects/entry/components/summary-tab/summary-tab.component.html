@@ -234,7 +234,7 @@
           </div>
           }
         </mat-expansion-panel>
-        <mat-expansion-panel (opened)="onOpenAccordionPanel('Macromolecules')">
+        <mat-expansion-panel id="mm-exp-panel" (opened)="onOpenAccordionPanel('Macromolecules')">
           <mat-expansion-panel-header>
             <mat-panel-title>
               Macromolecules @if(hasLoadedMacromolecules() === false) {
@@ -242,7 +242,9 @@
               } @else { ({{ processedMacromolecules().length }}) }
             </mat-panel-title>
           </mat-expansion-panel-header>
-          @if (processedMacromolecules().length) { @for (listItem of processedMacromolecules(); track $index; let macromoleculeIdx = $index) {
+          @if (processedMacromolecules().length) { @if (currentMacromoleculesPage() > 0 && processedMacromoleculesToView().length > 0) {
+          <button class="link-btn" (click)="setListViewPage(-1, 'Macromolecules')">View previous</button>
+          } @for (listItem of processedMacromoleculesToView(); track $index) {
           <div
             class="select-gallery-container valid"
             [ngClass]="isSelected(listItem, 'Macromolecules') ? 'active' : ''"
@@ -259,6 +261,8 @@
                   <button class="details-btn" (click)="viewDetails()">View more details below</button>
                 </div>
               } -->
+          } @if (currentMacromoleculesPage() < maxMacromoleculesPages() - 1) {
+          <button class="link-btn" (click)="setListViewPage(1, 'Macromolecules')">View next</button>
           } } @else {
           <p>This entry does not include any information about Macromolecules.</p>
           @if (hasRelatedEntries()) {
@@ -270,7 +274,7 @@
           </p>
           } }
         </mat-expansion-panel>
-        <mat-expansion-panel (opened)="onOpenAccordionPanel('Ligands')">
+        <mat-expansion-panel id="lig-exp-panel" (opened)="onOpenAccordionPanel('Ligands')">
           <mat-expansion-panel-header>
             <mat-panel-title>
               Ligands @if(hasLoadedLigands() === false) {
@@ -278,7 +282,9 @@
               } @else { ({{ processedLigands().length }}) }
             </mat-panel-title>
           </mat-expansion-panel-header>
-          @if (processedLigands().length) { @for (listItem of processedLigands(); track $index) {
+          @if (processedLigands().length) { @if (currentLigandsPage() > 0 && processedLigandsToView().length > 0) {
+          <button class="link-btn" (click)="setListViewPage(-1, 'Ligands')">View previous</button>
+          } @for (listItem of processedLigandsToView(); track $index) {
           <div
             class="select-gallery-container valid"
             [ngClass]="isSelected(listItem, 'Ligands') ? 'active' : ''"
@@ -295,6 +301,8 @@
             <button class="details-btn" (click)="viewDetails()">View more details below</button>
           </div>
         } -->
+          } @if (currentLigandsPage() < maxLigandsPages() - 1) {
+          <button class="link-btn" (click)="setListViewPage(1, 'Ligands')">View next</button>
           } } @else {
           <p>This entry does not include any information about Ligands.</p>
           @if (hasRelatedEntries()) {
@@ -306,7 +314,7 @@
           </p>
           } }
         </mat-expansion-panel>
-        <mat-expansion-panel (opened)="onOpenAccordionPanel('Domains')">
+        <mat-expansion-panel id="dom-exp-panel" (opened)="onOpenAccordionPanel('Domains')">
           <mat-expansion-panel-header>
             <mat-panel-title>
               Domains @if(hasLoadedDomains() === false) {
@@ -328,7 +336,9 @@
             (optionClickedEvent)="onDomainResourceSelect($event)"
           >
           </pdbc-entry-dropdown>
-          @for (nestedListObj of processedDomainsForListView(); track $index) {
+          @if (currentDomainsPage() > 0 && processedDomainsToView().length > 0) {
+          <button class="link-btn" (click)="setListViewPage(-1, 'Domains')">View previous</button>
+          } @for (nestedListObj of processedDomainsToView(); track $index) {
           <div class="select-gallery-container invalid">
             <div class="color-code-bar" [ngStyle]="{ 'background-color': nestedListObj.macromolecule.molstarColorHex }"></div>
             <button class="select-entity-btn">
@@ -358,7 +368,9 @@
                     <button class="details-btn" (click)="viewDetails()">View more details below</button>
                   </div>
                 } -->
-          } } } @else {
+          } } @if (currentDomainsPage() < maxDomainsPages() - 1) {
+          <button class="link-btn" (click)="setListViewPage(1, 'Domains')">View next</button>
+          } } @else {
           <p>This entry does not include any information about Domains.</p>
           @if (hasRelatedEntries()) {
           <p>
@@ -369,7 +381,7 @@
           </p>
           } }
         </mat-expansion-panel>
-        <mat-expansion-panel (opened)="onOpenAccordionPanel('Modifications')">
+        <mat-expansion-panel id="mod-exp-panel" (opened)="onOpenAccordionPanel('Modifications')">
           <mat-expansion-panel-header>
             <mat-panel-title>
               Modifications @if(hasLoadedLigands() === false) {
@@ -377,7 +389,9 @@
               } @else { ({{ processedModifications().length }}) }
             </mat-panel-title>
           </mat-expansion-panel-header>
-          @if (processedModifications().length) { @for (listItem of processedModifications(); track $index; let modificationIdx = $index) {
+          @if (processedModifications().length) { @if (currentModificationsPage() > 0 && processedModificationsToView().length > 0) {
+          <button class="link-btn" (click)="setListViewPage(-1, 'Modifications')">View previous</button>
+          } @for (listItem of processedModificationsToView(); track $index; let modificationIdx = $index) {
           <div
             class="select-gallery-container valid"
             [ngClass]="isSelected(listItem, 'Modifications') ? 'active' : ''"
@@ -394,6 +408,8 @@
             <button class="details-btn" (click)="viewDetails()">View more details below</button>
           </div>
         } -->
+          } @if (currentModificationsPage() < maxModificationsPages() - 1) {
+          <button class="link-btn" (click)="setListViewPage(1, 'Modifications')">View next</button>
           } } @else {
           <p>This entry does not include any information about Modifications.</p>
           @if (hasRelatedEntries()) {
