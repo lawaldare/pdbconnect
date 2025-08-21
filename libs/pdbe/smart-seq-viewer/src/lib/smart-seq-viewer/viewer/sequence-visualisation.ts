@@ -1369,7 +1369,6 @@ export class SmartSequenceVisualisation {
     panel.style.border = '1px solid #ccc';
     panel.style.overflowY = 'auto';
     panel.style.padding = '10px';
-    panel.style.zIndex = '9998';
     panel.innerHTML = this.getSidebarPanelEmptyState();
     panel.style.display = 'block';
 
