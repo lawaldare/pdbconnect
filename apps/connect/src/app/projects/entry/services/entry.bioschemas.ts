@@ -38,15 +38,17 @@ export class EntryBioschemasService {
           datePublished: new Date(summaryData()?.releaseDate ?? '').toISOString().split('T')[0],
           license: 'https://creativecommons.org/publicdomain/zero/1.0/',
           keywords: summaryData()?.experimentalMethods.join(', '),
-          citation: {
-            '@id': `https://identifiers.org/pubmed:${citation()?.pubmed_id}`,
-            '@type': 'ScholarlyArticle',
-            headline: citation()?.title,
-            datePublished: citation()?.journal_info?.year,
-          },
+          ...(citation()?.pubmed_id && {
+            citation: {
+              '@id': `https://identifiers.org/pubmed:${citation()?.pubmed_id}`,
+              '@type': 'ScholarlyArticle',
+              headline: citation()?.title,
+              datePublished: citation()?.journal_info?.year,
+            },
+          }),
           creator: {
             '@type': 'Organization',
-            name: 'Protein Data Bank in Europe',
+            name: 'Protein Data Bank in Europe (PDBe)',
             url: 'https://www.ebi.ac.uk/pdbe',
           },
           publisher: {
@@ -56,7 +58,7 @@ export class EntryBioschemasService {
           },
           maintainer: {
             '@type': 'Organization',
-            name: 'Protein Data Bank in Europe',
+            name: 'Protein Data Bank in Europe (PDBe)',
             url: 'https://www.ebi.ac.uk/pdbe',
           },
           includedInDataCatalog: {
@@ -72,7 +74,7 @@ export class EntryBioschemasService {
           },
           mainEntity: {
             '@type': 'BioChemEntity',
-            name: 'PropertyValue',
+            name: summaryData()?.entryTitle,
             identifier: entryId(),
           },
           isAccessibleForFree: true,
