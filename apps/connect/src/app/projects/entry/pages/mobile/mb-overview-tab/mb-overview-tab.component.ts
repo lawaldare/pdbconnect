@@ -180,6 +180,7 @@ export class MbOverviewTabComponent implements OnInit {
       const offsetTop = element.offsetTop;
       window.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
     }
+    this.gAS.logEntryPageEvents('ep_mobile_quick_access_click', {});
   }
 
   public toggleMacromoleculeList(): void {
