@@ -535,6 +535,6 @@ export class MacromoleculesTabComponent {
 
   public getRoundedWeight(): number | undefined {
     const weight = this.currentMacromoleculeDatum()?.additionalData.molecule.weight;
-    return weight !== undefined ? Math.round(weight) : undefined;
+    return weight !== undefined ? +(weight / 1000).toFixed(3) : undefined;
   }
 }
