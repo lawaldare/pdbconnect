@@ -3,7 +3,7 @@ import {
   Component,
   computed,
   CUSTOM_ELEMENTS_SCHEMA,
-  effect,
+  DestroyRef,
   ElementRef,
   HostListener,
   inject,
@@ -13,7 +13,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { combineLatest, filter, Subject, take, tap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, filter, Subject, take, tap } from 'rxjs';
 import * as NightingaleManager from '@nightingale-elements/nightingale-manager';
 import * as NightingaleSequence from '@nightingale-elements/nightingale-sequence';
 import * as NightingaleNavigation from '@nightingale-elements/nightingale-navigation';
@@ -50,6 +50,7 @@ import { EntryStoreState } from '../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 
 /**
  * Helper to decode rawHTML from API endpoints (tooltipContent)
@@ -98,6 +99,8 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   // Component inputs (can be bound from parent)
   public readonly entryId = input<string>('1trn');
   public readonly entityId = input<string>('1');
+  private entityIdObs = toObservable(this.entityId);
+
   public readonly chainId = input<string | undefined>(undefined);
   // to enable Mol*/TopologyViewer events sync
   public readonly externalInteractivity = input<boolean>(false);
@@ -105,11 +108,13 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   public readonly isNucleic = input<boolean>(false);
   // for fixed tracks on top
   public readonly fixedSelectionInput = input<FixedSelectionInput | undefined>(undefined);
+  private fixedSelectionInputObs = toObservable(this.fixedSelectionInput);
 
   // Inject required Angular services / extra dynamic manipulation
   public renderer = inject(Renderer2);
   public elementRef = inject(ElementRef);
   private zone = inject(NgZone);
+  private readonly destroyRef = inject(DestroyRef);
 
   public readonly gAS = inject(GoogleAnalyticsService);
   public readonly compCommunication = inject(ComponentCommunicationService);
@@ -249,6 +254,8 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     return undefined;
   });
 
+  private firstDataLoad = signal(false);
+
   constructor() {
     // 1 - mousemove, touchmove and touchstart here update latest mouse position for
     // positioning absolute tooltips when they are triggered
@@ -279,22 +286,30 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       { passive: true }
     ); // 1.2 use passive to prevent scrolling jank
 
-    // 2 - this effect allows the visualisation to auto reset on entityId change
-    effect(() => {
-      const current = this.entityId();
+    this.entityIdObs
+      .pipe(
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef),
+        tap(() => {
+          if (!this.firstDataLoad()) return;
+          this.globalStore.dispatch(EntryActions.clearEntityProtvistaData());
 
-      this.globalStore.dispatch(EntryActions.clearEntityProtvistaData());
+          this.zone.onStable.pipe(take(1)).subscribe(() => {
+            this.resetVisualization();
+          });
+        })
+      )
+      .subscribe();
 
-      // wait for DOM to stabilize before reload
-      this.zone.onStable.pipe(take(1)).subscribe(() => {
-        this.resetVisualization();
-      });
-    });
-
-    effect(() => {
-      const fixedInput = this.fixedSelectionInput();
-      this.setupFixedSelectionTrack();
-    });
+    this.fixedSelectionInputObs
+      .pipe(
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef),
+        tap(() => {
+          this.setupFixedSelectionTrack();
+        })
+      )
+      .subscribe();
   }
 
   setupFixedSelectionTrack() {
@@ -482,6 +497,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
         }
 
         this.loadedTracksAPIData.set(true);
+        if (!this.firstDataLoad()) this.firstDataLoad.set(true);
         this.trackCoreProcessed$.next(); // signal that core data is processed
       });
 
