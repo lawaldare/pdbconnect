@@ -24,7 +24,10 @@ export class BaseHrefService {
 
     const baseTag = document.querySelector('base');
     if (baseTag) {
+      console.log(`SUCCESS! hostname: ${hostname} with pathname: ${pathname} parsed for baseHref: ${baseHref}`);
       baseTag.setAttribute('href', baseHref);
+    } else {
+      console.log(`FAILED! hostname: ${hostname} with pathname: ${pathname} parsed for baseHref: ${baseHref}`);
     }
   }
 }
