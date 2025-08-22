@@ -80,16 +80,36 @@ export interface EntryStoreState {
   polymerCoverage: PolymerCoverageMolecule[] | undefined;
   ligandMonomers: LigandMonomer[] | undefined;
   residueWiseOutliers: ResidueWiseOutliersMolecule[];
-  entityPvUniprot: APITrackData;
-  entityPvChains: APITrackData;
-  entityPvDomains: APITrackData;
-  entityPvRfam: APITrackData;
-  entityPvSecondaryStructure: APITrackData;
-  entityPvBindingSites: APITrackData;
-  entityPvInterfaces: APITrackData;
-  entityPvAnnotations: APITrackData;
-  entityPvConservation: APIConservationData;
-  entityPvVariation: APIVariationData;
+  entityPvUniprot: {
+    [entityId: string]: APITrackData;
+  };
+  entityPvChains: {
+    [entityId: string]: APITrackData;
+  };
+  entityPvDomains: {
+    [entityId: string]: APITrackData;
+  };
+  entityPvRfam: {
+    [entityId: string]: APITrackData;
+  };
+  entityPvSecondaryStructure: {
+    [entityId: string]: APITrackData;
+  };
+  entityPvBindingSites: {
+    [entityId: string]: APITrackData;
+  };
+  entityPvInterfaces: {
+    [entityId: string]: APITrackData;
+  };
+  entityPvAnnotations: {
+    [entityId: string]: APITrackData;
+  };
+  entityPvConservation: {
+    [entityId: string]: APIConservationData;
+  };
+  entityPvVariation: {
+    [entityId: string]: APIVariationData;
+  };
   llmAnnotations: LLMAnnotation[];
 }
 
@@ -104,11 +124,6 @@ export interface ExperimentData {
   experimentalDetails: AnyExperimentDetail[];
   resolutionValues: (number | undefined)[];
   experimentalMethod: string;
-}
-
-export interface UniProtMappingData {
-  uniprotMapping: UniProtMapping;
-  proteinPagesSummaryByUniProtIds: Record<string, ProteinSummaryStats>;
 }
 
 export interface DownloadOptionData {

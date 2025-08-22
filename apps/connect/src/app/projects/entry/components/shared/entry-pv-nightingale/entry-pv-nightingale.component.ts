@@ -13,7 +13,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { combineLatest, distinctUntilChanged, filter, Subject, take, tap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, filter, map, ReplaySubject, take, tap } from 'rxjs';
 import * as NightingaleManager from '@nightingale-elements/nightingale-manager';
 import * as NightingaleSequence from '@nightingale-elements/nightingale-sequence';
 import * as NightingaleNavigation from '@nightingale-elements/nightingale-navigation';
@@ -196,7 +196,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
 
   public readonly dataIsParsed = signal<boolean>(false);
   public invalidVisualisation = signal<boolean>(false);
-  private readonly trackCoreProcessed$ = new Subject<void>();
+  private readonly trackCoreProcessed$ = new ReplaySubject<void>(1);
 
   // conservation API data has a special track and data types (ConservationTrackBlockComponent)
   // this data is set using signals for automatic processing and rendering on update
@@ -292,8 +292,6 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
         takeUntilDestroyed(this.destroyRef),
         tap(() => {
           if (!this.firstDataLoad()) return;
-          this.globalStore.dispatch(EntryActions.clearEntityProtvistaData());
-
           this.zone.onStable.pipe(take(1)).subscribe(() => {
             this.resetVisualization();
           });
@@ -411,7 +409,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     return allContainData;
   }
 
-  processProtvistaData() {
+  processProtvistaData(currentEntityId: string) {
     combineLatest([
       this.trackUniprotMapping$,
       this.trackChains$,
@@ -423,59 +421,61 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       this.trackAnnotations$,
     ])
       .pipe(
-        tap(([uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations]) => {
+        map(([uniprotMap, chainsMap, domainsMap, rfamMap, secondaryMap, bindingMap, interfacesMap, annotationsMap]) => {
+          const get = (map: { [key: string]: APITrackData | null }) => {
+            if (Object.keys(map).length === 0) return undefined;
+            return map[currentEntityId];
+          };
+          return {
+            uniprot: get(uniprotMap),
+            chains: get(chainsMap),
+            domains: get(domainsMap),
+            rfam: get(rfamMap),
+            secondary: get(secondaryMap),
+            binding: get(bindingMap),
+            interfaces: get(interfacesMap),
+            annotations: get(annotationsMap),
+          };
+        }),
+        tap(({ uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations }) => {
           // detect whether all data sources return undefined, null or an error (at least one needed)
           const trackSources = [uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations];
-          const allAreNull = trackSources.every((track) => track === null);
-          const allEmpty = trackSources.every((resp) => {
-            const anyResp = resp as any;
-            return anyResp.empty === true;
-          });
-          if (allAreNull || allEmpty) {
-            this.invalidVisualisation.set(true);
-          }
+          const allNull = trackSources.every((t) => t === null);
+          const allEmpty = trackSources.every((t: any) => t?.empty === true);
+
+          if (allNull || allEmpty) this.invalidVisualisation.set(true);
         }),
-        filter(([uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations]) =>
+        filter(({ uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations }) =>
           this.allTracksReadyCheck(uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations)
         ),
         take(1) // only once
       )
-      .subscribe(([uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations]) => {
-        const uniprotData = (uniprot as any)?.empty ? null : uniprot;
-        const chainsData = (chains as any)?.empty ? null : chains;
-        const domainsData = (domains as any)?.empty ? null : domains;
-        const rfamData = (rfam as any)?.empty ? null : rfam;
-        const secondaryData = (secondary as any)?.empty ? null : secondary;
-        const bindingData = (binding as any)?.empty ? null : binding;
-        const interfacesData = (interfaces as any)?.empty ? null : interfaces;
-        const annotationsData = (annotations as any)?.empty ? null : annotations;
+      .subscribe(({ uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations }) => {
+        const clean = (data: APITrackData | null) => ((data as any)?.empty ? null : data);
+
+        const uniprotData = clean(uniprot as APITrackData | null);
+        const chainsData = clean(chains as APITrackData | null);
+        const domainsData = clean(domains as APITrackData | null);
+        const rfamData = clean(rfam as APITrackData | null);
+        const secondaryData = clean(secondary as APITrackData | null);
+        const bindingData = clean(binding as APITrackData | null);
+        const interfacesData = clean(interfaces as APITrackData | null);
+        const annotationsData = clean(annotations as APITrackData | null);
 
         // At this point everything is loaded → safe to process
-        const trackDataArray: (APITrackData | null)[] = [uniprotData, chainsData, domainsData, rfamData, secondaryData, bindingData, interfacesData, annotationsData];
+        const trackDataArray = [uniprotData, chainsData, domainsData, rfamData, secondaryData, bindingData, interfacesData, annotationsData];
 
         this.setSequenceFromTrackData(trackDataArray);
 
-        const uniprotTracks = extractOtherTracks('UniProt', uniprotData);
-        this.uniprotTracks.set(uniprotTracks);
-
-        const validationTracks = extractOtherTracks('Validation', chainsData);
-        this.validationTracks.set(validationTracks);
-
-        const secStrTracks = extractOtherTracks('Secondary structure', secondaryData);
-        this.secStrTracks.set(secStrTracks);
-
-        const ligandBindingTracks = extractOtherTracks('Ligand binding sites', bindingData);
-        this.ligandBindingTracks.set(ligandBindingTracks);
-
-        const interfacesTracks = extractOtherTracks('Interaction interfaces', interfacesData);
-        this.interfacesTracks.set(interfacesTracks);
+        this.uniprotTracks.set(extractOtherTracks('UniProt', uniprotData));
+        this.validationTracks.set(extractOtherTracks('Validation', chainsData));
+        this.secStrTracks.set(extractOtherTracks('Secondary structure', secondaryData));
+        this.ligandBindingTracks.set(extractOtherTracks('Ligand binding sites', bindingData));
+        this.interfacesTracks.set(extractOtherTracks('Interaction interfaces', interfacesData));
 
         const tooltips = extractAllTooltips(trackDataArray);
-        const panelResidueData = sequenceToPanelData(this.sequence!, uniprotTracks || undefined, this.isNucleic());
-
-        for (const [k, v] of Object.entries(tooltips)) {
-          this.tooltips[k] = v;
-        }
+        const panelResidueData = sequenceToPanelData(this.sequence!, this.uniprotTracks() || undefined, this.isNucleic());
+        for (const [k, v] of Object.entries(tooltips)) this.tooltips[k] = v;
         this.panelResidueData = panelResidueData;
 
         if (domainsData || rfamData) {
@@ -495,23 +495,25 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
           this.biophysicalResourcesList.set([]);
           this.biophysicalByResource.set([]);
         }
-
         this.loadedTracksAPIData.set(true);
         if (!this.firstDataLoad()) this.firstDataLoad.set(true);
         this.trackCoreProcessed$.next(); // signal that core data is processed
       });
 
-    combineLatest([this.trackCoreProcessed$, this.trackConservation$, this.trackVariation$]).subscribe(([_, conservationData, variationData]) => {
-      let preProcessedConservationData: APIConservationData | undefined = conservationData;
-      if (Object.keys(conservationData).length === 0) preProcessedConservationData = undefined;
-      this.originalConservationData.set(preProcessedConservationData);
-      this.loadedConservationAPIData.set(true);
+    combineLatest([this.trackCoreProcessed$, this.trackConservation$, this.trackVariation$])
+      .pipe(take(1)) // only once
+      .subscribe(([_, conservationMap, variationMap]) => {
+        let preProcessedConservationData: APIConservationData | undefined = undefined;
+        if (conservationMap[currentEntityId]) preProcessedConservationData = conservationMap[currentEntityId];
+        this.originalConservationData.set(preProcessedConservationData);
+        this.loadedConservationAPIData.set(true);
 
-      let preProcessedVariationData: APIVariationData | undefined = variationData;
-      if (Object.keys(variationData).length === 0) preProcessedVariationData = undefined;
-      this.originalVariationData.set(preProcessedVariationData);
-      this.loadedVariationAPIData.set(true);
-    });
+        let preProcessedVariationData: APIVariationData | undefined = undefined;
+        if (variationMap[`${currentEntityId}`]) preProcessedVariationData = variationMap[currentEntityId];
+        this.originalVariationData.set(preProcessedVariationData);
+
+        this.loadedVariationAPIData.set(true);
+      });
   }
 
   reloadVisualisation() {
@@ -519,7 +521,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     this.setupTooltipServices();
     const entityId = this.entityId();
     this.getProtvistaData(entityId);
-    this.processProtvistaData();
+    this.processProtvistaData(entityId);
   }
 
   async ngAfterViewInit() {

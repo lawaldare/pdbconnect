@@ -1,14 +1,12 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { EntryStoreState, UniProtMappingData } from './entry-store.model';
+import { EntryStoreState } from './entry-store.model';
 import { EntryActions } from './entry.actions';
 import { catchError, filter, forkJoin, map, mergeMap, of, switchMap, take } from 'rxjs';
 import { EntryApiService } from '../services/entry-api.service';
 import { EntrySelectors } from './entry.selectors';
 import { AnyExperimentDetail } from '../data-models/experimental-details.model';
-import { UniProtMapping } from '../data-models/uniprot-mapping.model';
-import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
 import { MainDataProcessingFacade } from '../pages/main/data-processing.facade';
 import { CitationDetail } from '../data-models/publication.model';
 import { IRRMCExperimentRawData } from '../data-models/experiment-raw-data.model';
@@ -616,150 +614,430 @@ export class EntryEffects {
   getEntryProtvistaUniprotMapping$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryProtvistaUniprotMapping),
-      switchMap((action) => {
-        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
-      }),
-      mergeMap(([action, entryId]) =>
-        this.protvistaAPIService.getPdbeEntityUniprotMappingTrackData(entryId, action.entityId).pipe(
-          map((data) => EntryActions.getEntryProtvistaUniprotMappingSuccess({ entityPvUniprot: data })),
-          catchError(() => of(EntryActions.getEntryProtvistaUniprotMappingFailure()))
+      switchMap((action) =>
+        this.store.select(EntrySelectors.entityPvUniprot).pipe(
+          // select entire interactions object
+          take(1),
+          map((trackData) => {
+            const cached = trackData?.[action.entityId];
+            return { action, cached };
+          })
         )
-      )
+      ),
+      mergeMap(({ cached, action }) => {
+        if (cached) {
+          // Return success action with cached value
+          return of(
+            EntryActions.getEntryProtvistaUniprotMappingSuccess({
+              entityId: action.entityId,
+              entityPvUniprot: cached,
+            })
+          );
+        }
+
+        // Otherwise, fetch from API
+        return this.store.select(EntrySelectors.entryId).pipe(
+          take(1),
+          switchMap((entryId) =>
+            this.protvistaAPIService.getPdbeEntityUniprotMappingTrackData(entryId, action.entityId).pipe(
+              map((data) =>
+                EntryActions.getEntryProtvistaUniprotMappingSuccess({
+                  entityId: action.entityId,
+                  entityPvUniprot: data,
+                })
+              ),
+              catchError(() => of(EntryActions.getEntryProtvistaUniprotMappingFailure()))
+            )
+          )
+        );
+      })
     )
   );
 
   getEntryProtvistaChains$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryProtvistaChains),
-      switchMap((action) => {
-        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
-      }),
-      mergeMap(([action, entryId]) =>
-        this.protvistaAPIService.getPdbeEntityChainsTrackData(entryId, action.entityId).pipe(
-          map((data) => EntryActions.getEntryProtvistaChainsSuccess({ entityPvChains: data })),
-          catchError(() => of(EntryActions.getEntryProtvistaChainsFailure()))
+      switchMap((action) =>
+        this.store.select(EntrySelectors.entityPvChains).pipe(
+          // select entire interactions object
+          take(1),
+          map((trackData) => {
+            const cached = trackData?.[action.entityId];
+            return { action, cached };
+          })
         )
-      )
+      ),
+      mergeMap(({ cached, action }) => {
+        if (cached) {
+          // Return success action with cached value
+          return of(
+            EntryActions.getEntryProtvistaChainsSuccess({
+              entityId: action.entityId,
+              entityPvChains: cached,
+            })
+          );
+        }
+
+        // Otherwise, fetch from API
+        return this.store.select(EntrySelectors.entryId).pipe(
+          take(1),
+          switchMap((entryId) =>
+            this.protvistaAPIService.getPdbeEntityChainsTrackData(entryId, action.entityId).pipe(
+              map((data) =>
+                EntryActions.getEntryProtvistaChainsSuccess({
+                  entityId: action.entityId,
+                  entityPvChains: data,
+                })
+              ),
+              catchError(() => of(EntryActions.getEntryProtvistaChainsFailure()))
+            )
+          )
+        );
+      })
     )
   );
 
   getEntryProtvistaDomains$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryProtvistaDomains),
-      switchMap((action) => {
-        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
-      }),
-      mergeMap(([action, entryId]) =>
-        this.protvistaAPIService.getPdbeEntityDomainsTrackData(entryId, action.entityId).pipe(
-          map((data) => EntryActions.getEntryProtvistaDomainsSuccess({ entityPvDomains: data })),
-          catchError(() => of(EntryActions.getEntryProtvistaDomainsFailure()))
+      switchMap((action) =>
+        this.store.select(EntrySelectors.entityPvDomains).pipe(
+          // select entire interactions object
+          take(1),
+          map((trackData) => {
+            const cached = trackData?.[action.entityId];
+            return { action, cached };
+          })
         )
-      )
+      ),
+      mergeMap(({ cached, action }) => {
+        if (cached) {
+          // Return success action with cached value
+          return of(
+            EntryActions.getEntryProtvistaDomainsSuccess({
+              entityId: action.entityId,
+              entityPvDomains: cached,
+            })
+          );
+        }
+
+        // Otherwise, fetch from API
+        return this.store.select(EntrySelectors.entryId).pipe(
+          take(1),
+          switchMap((entryId) =>
+            this.protvistaAPIService.getPdbeEntityDomainsTrackData(entryId, action.entityId).pipe(
+              map((data) =>
+                EntryActions.getEntryProtvistaDomainsSuccess({
+                  entityId: action.entityId,
+                  entityPvDomains: data,
+                })
+              ),
+              catchError(() => of(EntryActions.getEntryProtvistaDomainsFailure()))
+            )
+          )
+        );
+      })
     )
   );
 
   getEntryProtvistaRfam$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryProtvistaRfam),
-      switchMap((action) => {
-        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
-      }),
-      mergeMap(([action, entryId]) =>
-        this.protvistaAPIService.getPdbeEntityRfamTrackData(entryId, action.entityId).pipe(
-          map((data) => EntryActions.getEntryProtvistaRfamSuccess({ entityPvRfam: data })),
-          catchError(() => of(EntryActions.getEntryProtvistaRfamFailure()))
+      switchMap((action) =>
+        this.store.select(EntrySelectors.entityPvRfam).pipe(
+          // select entire interactions object
+          take(1),
+          map((trackData) => {
+            const cached = trackData?.[action.entityId];
+            return { action, cached };
+          })
         )
-      )
+      ),
+      mergeMap(({ cached, action }) => {
+        if (cached) {
+          // Return success action with cached value
+          return of(
+            EntryActions.getEntryProtvistaRfamSuccess({
+              entityId: action.entityId,
+              entityPvRfam: cached,
+            })
+          );
+        }
+
+        // Otherwise, fetch from API
+        return this.store.select(EntrySelectors.entryId).pipe(
+          take(1),
+          switchMap((entryId) =>
+            this.protvistaAPIService.getPdbeEntityRfamTrackData(entryId, action.entityId).pipe(
+              map((data) =>
+                EntryActions.getEntryProtvistaRfamSuccess({
+                  entityId: action.entityId,
+                  entityPvRfam: data,
+                })
+              ),
+              catchError(() => of(EntryActions.getEntryProtvistaRfamFailure()))
+            )
+          )
+        );
+      })
     )
   );
 
   getEntryProtvistaSecondaryStructure$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryProtvistaSecondaryStructure),
-      switchMap((action) => {
-        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
-      }),
-      mergeMap(([action, entryId]) =>
-        this.protvistaAPIService.getPdbeEntitySecondaryStructureTrackData(entryId, action.entityId).pipe(
-          map((data) => EntryActions.getEntryProtvistaSecondaryStructureSuccess({ entityPvSecondaryStructure: data })),
-          catchError(() => of(EntryActions.getEntryProtvistaSecondaryStructureFailure()))
+      switchMap((action) =>
+        this.store.select(EntrySelectors.entityPvSecondaryStructure).pipe(
+          // select entire interactions object
+          take(1),
+          map((trackData) => {
+            const cached = trackData?.[action.entityId];
+            return { action, cached };
+          })
         )
-      )
+      ),
+      mergeMap(({ cached, action }) => {
+        if (cached) {
+          // Return success action with cached value
+          return of(
+            EntryActions.getEntryProtvistaSecondaryStructureSuccess({
+              entityId: action.entityId,
+              entityPvSecondaryStructure: cached,
+            })
+          );
+        }
+
+        // Otherwise, fetch from API
+        return this.store.select(EntrySelectors.entryId).pipe(
+          take(1),
+          switchMap((entryId) =>
+            this.protvistaAPIService.getPdbeEntitySecondaryStructureTrackData(entryId, action.entityId).pipe(
+              map((data) =>
+                EntryActions.getEntryProtvistaSecondaryStructureSuccess({
+                  entityId: action.entityId,
+                  entityPvSecondaryStructure: data,
+                })
+              ),
+              catchError(() => of(EntryActions.getEntryProtvistaSecondaryStructureFailure()))
+            )
+          )
+        );
+      })
     )
   );
 
   getEntryProtvistaBindingSites$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryProtvistaBindingSites),
-      switchMap((action) => {
-        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
-      }),
-      mergeMap(([action, entryId]) =>
-        this.protvistaAPIService.getPdbeEntityBindingSitesTrackData(entryId, action.entityId).pipe(
-          map((data) => EntryActions.getEntryProtvistaBindingSitesSuccess({ entityPvBindingSites: data })),
-          catchError(() => of(EntryActions.getEntryProtvistaBindingSitesFailure()))
+      switchMap((action) =>
+        this.store.select(EntrySelectors.entityPvBindingSites).pipe(
+          // select entire object
+          take(1),
+          map((trackData) => {
+            const cached = trackData?.[action.entityId];
+            return { action, cached };
+          })
         )
-      )
+      ),
+      mergeMap(({ cached, action }) => {
+        if (cached) {
+          // Return success action with cached value
+          return of(
+            EntryActions.getEntryProtvistaBindingSitesSuccess({
+              entityId: action.entityId,
+              entityPvBindingSites: cached,
+            })
+          );
+        }
+
+        // Otherwise, fetch from API
+        return this.store.select(EntrySelectors.entryId).pipe(
+          take(1),
+          switchMap((entryId) =>
+            this.protvistaAPIService.getPdbeEntityBindingSitesTrackData(entryId, action.entityId).pipe(
+              map((data) =>
+                EntryActions.getEntryProtvistaBindingSitesSuccess({
+                  entityId: action.entityId,
+                  entityPvBindingSites: data,
+                })
+              ),
+              catchError(() => of(EntryActions.getEntryProtvistaBindingSitesFailure()))
+            )
+          )
+        );
+      })
     )
   );
 
   getEntryProtvistaInterfaces$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryProtvistaInterfaces),
-      switchMap((action) => {
-        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
-      }),
-      mergeMap(([action, entryId]) =>
-        this.protvistaAPIService.getPdbeEntityInterfacesTrackData(entryId, action.entityId).pipe(
-          map((data) => EntryActions.getEntryProtvistaInterfacesSuccess({ entityPvInterfaces: data })),
-          catchError(() => of(EntryActions.getEntryProtvistaInterfacesFailure()))
+      switchMap((action) =>
+        this.store.select(EntrySelectors.entityPvInterfaces).pipe(
+          // select entire object
+          take(1),
+          map((trackData) => {
+            const cached = trackData?.[action.entityId];
+            return { action, cached };
+          })
         )
-      )
+      ),
+      mergeMap(({ cached, action }) => {
+        if (cached) {
+          // Return success action with cached value
+          return of(
+            EntryActions.getEntryProtvistaInterfacesSuccess({
+              entityId: action.entityId,
+              entityPvInterfaces: cached,
+            })
+          );
+        }
+
+        // Otherwise, fetch from API
+        return this.store.select(EntrySelectors.entryId).pipe(
+          take(1),
+          switchMap((entryId) =>
+            this.protvistaAPIService.getPdbeEntityInterfacesTrackData(entryId, action.entityId).pipe(
+              map((data) =>
+                EntryActions.getEntryProtvistaInterfacesSuccess({
+                  entityId: action.entityId,
+                  entityPvInterfaces: data,
+                })
+              ),
+              catchError(() => of(EntryActions.getEntryProtvistaInterfacesFailure()))
+            )
+          )
+        );
+      })
     )
   );
 
   getEntryProtvistaAnnotations$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryProtvistaAnnotations),
-      switchMap((action) => {
-        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
-      }),
-      mergeMap(([action, entryId]) =>
-        this.protvistaAPIService.getPdbeEntityAnnotationsTrackData(entryId, action.entityId).pipe(
-          map((data) => EntryActions.getEntryProtvistaAnnotationsSuccess({ entityPvAnnotations: data })),
-          catchError(() => of(EntryActions.getEntryProtvistaAnnotationsFailure()))
+      switchMap((action) =>
+        this.store.select(EntrySelectors.entityPvAnnotations).pipe(
+          // select entire object
+          take(1),
+          map((trackData) => {
+            const cached = trackData?.[action.entityId];
+            return { action, cached };
+          })
         )
-      )
+      ),
+      mergeMap(({ cached, action }) => {
+        if (cached) {
+          // Return success action with cached value
+          return of(
+            EntryActions.getEntryProtvistaAnnotationsSuccess({
+              entityId: action.entityId,
+              entityPvAnnotations: cached,
+            })
+          );
+        }
+
+        // Otherwise, fetch from API
+        return this.store.select(EntrySelectors.entryId).pipe(
+          take(1),
+          switchMap((entryId) =>
+            this.protvistaAPIService.getPdbeEntityAnnotationsTrackData(entryId, action.entityId).pipe(
+              map((data) =>
+                EntryActions.getEntryProtvistaAnnotationsSuccess({
+                  entityId: action.entityId,
+                  entityPvAnnotations: data,
+                })
+              ),
+              catchError(() => of(EntryActions.getEntryProtvistaAnnotationsFailure()))
+            )
+          )
+        );
+      })
     )
   );
 
   getEntryProtvistaConservation$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryProtvistaConservation),
-      switchMap((action) => {
-        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
-      }),
-      mergeMap(([action, entryId]) =>
-        this.protvistaAPIService.getPdbeConservationTrackData(entryId, action.entityId).pipe(
-          map((data) => EntryActions.getEntryProtvistaConservationSuccess({ entityPvConservation: data })),
-          catchError(() => of(EntryActions.getEntryProtvistaConservationFailure()))
+      switchMap((action) =>
+        this.store.select(EntrySelectors.entityPvConservation).pipe(
+          // select entire object
+          take(1),
+          map((trackData) => {
+            const cached = trackData?.[action.entityId];
+            return { action, cached };
+          })
         )
-      )
+      ),
+      mergeMap(({ cached, action }) => {
+        if (cached) {
+          // Return success action with cached value
+          return of(
+            EntryActions.getEntryProtvistaConservationSuccess({
+              entityId: action.entityId,
+              entityPvConservation: cached,
+            })
+          );
+        }
+
+        // Otherwise, fetch from API
+        return this.store.select(EntrySelectors.entryId).pipe(
+          take(1),
+          switchMap((entryId) =>
+            this.protvistaAPIService.getPdbeConservationTrackData(entryId, action.entityId).pipe(
+              map((data) =>
+                EntryActions.getEntryProtvistaConservationSuccess({
+                  entityId: action.entityId,
+                  entityPvConservation: data,
+                })
+              ),
+              catchError(() => of(EntryActions.getEntryProtvistaConservationFailure()))
+            )
+          )
+        );
+      })
     )
   );
 
   getEntryProtvistaVariation$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryProtvistaVariation),
-      switchMap((action) => {
-        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
-      }),
-      mergeMap(([action, entryId]) =>
-        this.protvistaAPIService.getPdbeVariationTrackData(entryId, action.entityId).pipe(
-          map((data) => EntryActions.getEntryProtvistaVariationSuccess({ entityPvVariation: data })),
-          catchError(() => of(EntryActions.getEntryProtvistaVariationFailure()))
+      switchMap((action) =>
+        this.store.select(EntrySelectors.entityPvVariation).pipe(
+          // select entire object
+          take(1),
+          map((trackData) => {
+            const cached = trackData?.[action.entityId];
+            return { action, cached };
+          })
         )
-      )
+      ),
+      mergeMap(({ cached, action }) => {
+        if (cached) {
+          // Return success action with cached value
+          return of(
+            EntryActions.getEntryProtvistaVariationSuccess({
+              entityId: action.entityId,
+              entityPvVariation: cached,
+            })
+          );
+        }
+
+        // Otherwise, fetch from API
+        return this.store.select(EntrySelectors.entryId).pipe(
+          take(1),
+          switchMap((entryId) =>
+            this.protvistaAPIService.getPdbeVariationTrackData(entryId, action.entityId).pipe(
+              map((data) =>
+                EntryActions.getEntryProtvistaVariationSuccess({
+                  entityId: action.entityId,
+                  entityPvVariation: data,
+                })
+              ),
+              catchError(() => of(EntryActions.getEntryProtvistaVariationFailure()))
+            )
+          )
+        );
+      })
     )
   );
 }
