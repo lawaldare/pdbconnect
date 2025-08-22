@@ -8,7 +8,7 @@ import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-ap
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
 import { dashboardStatLinks, INTX_NAME_COLORS } from '../../entry-constant';
-import { filter, first, firstValueFrom, map, take, timer } from 'rxjs';
+import { filter, first, firstValueFrom, map, take, tap, timer } from 'rxjs';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -187,8 +187,16 @@ export class LigandsTabComponent implements OnInit {
   public readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
 
+  private currentChainId = signal<string | undefined>(undefined);
+  private currentResidueId = signal<string | undefined>(undefined);
+
   public readonly isInitialInteractionsMoreThanOne = computed(() => {
-    const interaction = this.interactions();
+    const chainId = this.currentChainId();
+    const residueId = this.currentResidueId();
+    if (!chainId || !residueId) return false;
+    const interactions = this.interactions();
+    if (!interactions) return false;
+    const interaction = interactions[chainId][residueId];
     return interaction && interaction.length > 1;
   });
 
@@ -330,7 +338,11 @@ export class LigandsTabComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.interactionsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((interactions) => {
+    this.interactionsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((allInteractions) => {
+      const chainId = this.currentChainId();
+      const residueId = this.currentResidueId();
+      if (!chainId || !residueId) return;
+      const interactions = allInteractions[chainId][residueId];
       // only update if no search term
       if (!this.searchTerm.value) {
         this.triggerLigandInteractionsSideEffects(interactions);
@@ -341,7 +353,12 @@ export class LigandsTabComponent implements OnInit {
     this.searchTerm.valueChanges
       .pipe(
         map((searchQuery: string | null) => {
-          const interactions = this.interactions() ?? [];
+          const chainId = this.currentChainId();
+          const residueId = this.currentResidueId();
+          if (!chainId || !residueId) return [];
+          const allInteractions = this.interactions();
+          if (!allInteractions || Object.keys(allInteractions).length === 0) return [];
+          const interactions = allInteractions[chainId][residueId] ?? [];
           return searchQuery ? this.filterItemsBySearchQuery(searchQuery, interactions) : interactions;
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -366,6 +383,9 @@ export class LigandsTabComponent implements OnInit {
     const entityId = molstarSelection[0].entity_id;
     const chainId = molstarSelection[0].auth_asym_id!;
     const residueId = molstarSelection[0].auth_residue_number!;
+
+    this.currentChainId.set(chainId);
+    this.currentResidueId.set(`${residueId}`);
 
     this.noTermFiltering.set(true);
     this.searchTerm.setValue('');

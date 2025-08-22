@@ -130,7 +130,7 @@ export const EntryActions = createActionGroup({
     'Get Entry Status Success': props<{ entryStatus: EntryStatus }>(),
     'Get Entry Status Failure': emptyProps(),
     'Get Interactions': props<{ chainId: string; residueId: string }>(),
-    'Get Interactions Success': props<{ interactions: Interaction[] }>(),
+    'Get Interactions Success': props<{ chainId: string; residueId: string; interactions: Interaction[] }>(),
     'Get Interactions Failure': emptyProps(),
     'Get Residue Listing': props<{ chainId: string }>(),
     'Get Residue Listing Success': props<{ residueListing: ResidueListed[] }>(),

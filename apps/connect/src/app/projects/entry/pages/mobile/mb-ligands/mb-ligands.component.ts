@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, computed, effect, inject, Optional, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ViewState } from '../mb-macromolecules/mb-macromolecule.component';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
@@ -9,7 +9,7 @@ import { ComponentCommunicationService } from '../../../services/component-comm.
 import { TruncatePipe, TruncateTextDirective } from '@pdbc/core';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
@@ -39,9 +39,13 @@ export class MbLigandsComponent {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly molstarPluginService = inject(MolstarPluginService);
+  private readonly destroyRef = inject(DestroyRef);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  public readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
+  public readonly interactionsObservable = this.globalStore.select(EntrySelectors.interactions);
+
+  private currentChainId = signal<string | undefined>(undefined);
+  private currentResidueId = signal<string | undefined>(undefined);
 
   public readonly ligandsTabService = inject(LigandsTabService);
 
@@ -162,11 +166,14 @@ export class MbLigandsComponent {
         );
         this.renderInMolstar(undefined);
       });
-    effect(() => {
-      const data = this.interactions();
-      if (data) {
-        this.triggerLigandInteractionsSideEffects(data);
-      }
+
+    this.interactionsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((allInteractions) => {
+      const chainId = this.currentChainId();
+      const residueId = this.currentResidueId();
+      if (!chainId || !residueId) return;
+      if (!allInteractions || Object.keys(allInteractions).length === 0) return;
+      const interactions = allInteractions[chainId][residueId];
+      this.triggerLigandInteractionsSideEffects(interactions);
     });
   }
 
@@ -217,6 +224,8 @@ export class MbLigandsComponent {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     const chainId = molstarSelection[0].auth_asym_id!;
     const residueId = molstarSelection[0].auth_residue_number!;
+    this.currentChainId.set(chainId);
+    this.currentResidueId.set(`${residueId}`);
 
     this.globalStore.dispatch(
       EntryActions.getInteractions({

@@ -118,15 +118,45 @@ export class EntryEffects {
   getInteractions$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getInteractions),
-      switchMap((action) => {
-        return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
-      }),
-      mergeMap(([action, entryId]) =>
-        this.entryAPIService.getEntryInteractions(entryId, action.chainId, action.residueId).pipe(
-          map((data) => EntryActions.getInteractionsSuccess({ interactions: data.interactions })),
-          catchError(() => of(EntryActions.getInteractionsFailure()))
+      switchMap((action) =>
+        this.store.select(EntrySelectors.interactions).pipe(
+          // select entire interactions object
+          take(1),
+          map((interactions) => {
+            const cached = interactions?.[action.chainId]?.[action.residueId];
+            return { action, cached };
+          })
         )
-      )
+      ),
+      mergeMap(({ cached, action }) => {
+        if (cached && cached.length > 0) {
+          // Return success action with cached value
+          return of(
+            EntryActions.getInteractionsSuccess({
+              chainId: action.chainId,
+              residueId: action.residueId,
+              interactions: cached,
+            })
+          );
+        }
+
+        // Otherwise, fetch from API
+        return this.store.select(EntrySelectors.entryId).pipe(
+          take(1),
+          switchMap((entryId) =>
+            this.entryAPIService.getEntryInteractions(entryId, action.chainId, action.residueId).pipe(
+              map((data) =>
+                EntryActions.getInteractionsSuccess({
+                  chainId: action.chainId,
+                  residueId: action.residueId,
+                  interactions: data.interactions,
+                })
+              ),
+              catchError(() => of(EntryActions.getInteractionsFailure()))
+            )
+          )
+        );
+      })
     )
   );
 

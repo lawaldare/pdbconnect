@@ -56,7 +56,7 @@ const initialState: EntryStoreState = {
   experimentRawDataEMPIAR: [],
   experimentRawDataPDB: [],
   entryStatus: { ...entryStatusDefault },
-  interactions: [],
+  interactions: {},
   residueListing: [],
   symmetry: [],
   polymerCoverage: undefined,
@@ -89,10 +89,25 @@ export const entryReducer = createReducer(
     ...state,
     symmetry: action.symmetry,
   })),
-  on(EntryActions.getInteractionsSuccess, (state, action) => ({
-    ...state,
-    interactions: action.interactions,
-  })),
+  on(EntryActions.getInteractionsSuccess, (state, action) => {
+    const prevInteractions = state.interactions ?? {};
+
+    const prevChain = prevInteractions[action.chainId] ?? {};
+    const updatedChain = {
+      ...prevChain,
+      [action.residueId]: action.interactions,
+    };
+
+    const updatedInteractions = {
+      ...prevInteractions,
+      [action.chainId]: updatedChain,
+    };
+
+    return {
+      ...state,
+      interactions: updatedInteractions,
+    };
+  }),
   on(EntryActions.getResidueListingSuccess, (state, action) => ({
     ...state,
     residueListing: action.residueListing,

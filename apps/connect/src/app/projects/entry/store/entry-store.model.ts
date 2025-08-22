@@ -70,7 +70,11 @@ export interface EntryStoreState {
   experimentRawDataEMPIAR: EMPIARExperimentRawData[];
   experimentRawDataPDB: PDBExperimentRawData[];
   entryStatus: EntryStatus | undefined;
-  interactions: Interaction[];
+  interactions: {
+    [chainId: string]: {
+      [residueId: string]: Interaction[];
+    };
+  };
   residueListing: ResidueListed[];
   symmetry: Symmetry[];
   polymerCoverage: PolymerCoverageMolecule[] | undefined;
