@@ -25,7 +25,6 @@ import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, fil
 import { AgGridAngular } from 'ag-grid-angular';
 import { LLMAnnotation } from '../../data-models/llm-model';
 import { colDefs, gridOptions } from './ag-grid';
-import { SelectionChangedEvent } from 'ag-grid-community';
 import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import { EntryActions } from '../../store/entry.actions';
@@ -284,11 +283,6 @@ export class LLMTabComponent implements OnInit {
 
   public selectionIdentifier = 'None';
   public selectionTypeText?: string;
-
-  public onSelectionChanged(event: SelectionChangedEvent) {
-    const data = event.api.getSelectedNodes()[0].data;
-    // console.log('Selection changed', data);
-  }
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: MacromoleculesRowData) {
     this.updateDropdownOptions(macromolecule);
