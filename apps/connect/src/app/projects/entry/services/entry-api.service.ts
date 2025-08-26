@@ -127,7 +127,7 @@ export class EntryApiService {
   }
 
   public getSummaryStats(uniprotId: string): Observable<SummaryStats> {
-    return this.http.get<Record<string, SummaryStats>>(`${environment.pdbeBaseUrl}graph-api/uniprot/summary_stats/${uniprotId}`).pipe(map((data) => data[uniprotId]));
+    return this.http.get<Record<string, SummaryStats>>(`${this.AggregatedApiUrl}/uniprot/summary_stats/${uniprotId}`).pipe(map((data) => data[uniprotId]));
   }
 
   public getIsoformsMapping(entryId: string): Observable<UniProtMapping> {
@@ -309,14 +309,6 @@ export class EntryApiService {
           geometry: geometryQuality,
           modelfit: modelFit,
         };
-      })
-    );
-  }
-
-  public getProteinPagesSummaryStats(uniprotId: string): Observable<ProteinSummaryStats> {
-    return this.http.get<Record<string, ProteinSummaryStats>>(`https://www.ebi.ac.uk/pdbe/graph-api/uniprot/summary_stats/${uniprotId}`).pipe(
-      map((data) => {
-        return data[uniprotId];
       })
     );
   }

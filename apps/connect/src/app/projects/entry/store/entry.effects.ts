@@ -382,7 +382,7 @@ export class EntryEffects {
         return forkJoin([of(action), this.store.select(EntrySelectors.entryId).pipe(take(1))]);
       }),
       mergeMap(([action, _entryId]) =>
-        this.entryAPIService.getProteinPagesSummaryStats(action.uniprotId).pipe(
+        this.entryAPIService.getSummaryStats(action.uniprotId).pipe(
           map((data) => EntryActions.getUniprotSummarySuccess({ unpSummaryData: data })),
           catchError(() => of(EntryActions.getUniprotSummaryFailure()))
         )
