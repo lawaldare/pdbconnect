@@ -23,5 +23,5 @@ export const appRoutes: Route[] = [
     title: 'Complex Pages',
     canActivate: [complexIdGuard],
   },
-  { path: '**', redirectTo: 'error' },
+  { path: '**', component: ErrorPageComponent, title: 'Error Page' },
 ];
