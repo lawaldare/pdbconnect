@@ -35,7 +35,7 @@ import { EntryUtilService } from '../../services/entry-util.service';
 import { LLMTabComponent } from '../../components/llm-tab/llm-tab.component';
 import { VisualisationInteractivityDirective } from '../../directives/visualisation-interactivity.directive';
 import { EntryBioschemasService } from '../../services/entry.bioschemas';
-// import { ErrorPageComponent } from '../../../../error-page/error-page.component';
+import { ErrorPageComponent } from '../../../../error-page/error-page.component';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -68,7 +68,7 @@ import { EntryBioschemasService } from '../../services/entry.bioschemas';
     LigandsTabComponent,
     DomainsTabComponent,
     NotificationComponent,
-    // ErrorPageComponent,
+    ErrorPageComponent,
     VisualisationInteractivityDirective,
   ],
   templateUrl: './main.component.html',
