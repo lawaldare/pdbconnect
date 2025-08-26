@@ -15,6 +15,7 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
   @Input() height = '400px';
   @Input() width = '100%';
   @Input({ required: true }) molstarConfig!: any;
+  private previousMolstarConfig: any = null;
 
   public firstLoadFinished = signal(false);
   private molstarViewInstance!: PDBeMolstarPlugin;
@@ -24,7 +25,15 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
 
   @ViewChild('viewContainer') viewContainer!: ElementRef;
 
-  public molstarActionsMutex = Promise.resolve();
+  public molstarActionsMutex: Promise<boolean | void> = Promise.resolve();
+
+  private deepCopy(a: any) {
+    return JSON.parse(JSON.stringify(a));
+  }
+
+  private deepEqual(a: any, b: any): boolean {
+    return JSON.stringify(a) === JSON.stringify(b);
+  }
 
   async ngAfterViewInit() {
     await this.molstarPluginService.loadPlugin();
@@ -32,8 +41,9 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
     this.molstarViewInstance = pluginInstance;
 
     const container = this.viewContainer.nativeElement;
+    // await this.molstarViewInstance.render(container, this.molstarConfig);
+    this.molstarActionsMutex = this.molstarActionsMutex.then(() => this.molstarViewInstance.render(container, this.molstarConfig));
 
-    await this.molstarViewInstance.render(container, this.molstarConfig);
     this.molstarViewInstance.events.loadComplete.subscribe((loaded: boolean) => {
       const eventName = `LibMolstarComponent-${this.id}`;
       // console.log('loadComplete for ', eventName);
@@ -45,9 +55,15 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
     });
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  async ngOnChanges(changes: SimpleChanges): Promise<void> {
+    const newConfig = changes['molstarConfig']?.currentValue;
     if (!changes['molstarConfig']?.firstChange) {
-      this.molstarViewInstance?.visual?.update(this.molstarConfig);
+      if (!newConfig) return;
+      const configChanged = !this.deepEqual(this.previousMolstarConfig, newConfig);
+      if (!configChanged) return;
+      // await this.molstarViewInstance?.visual?.update(this.molstarConfig);
+      this.molstarActionsMutex = this.molstarActionsMutex.then(() => this.molstarViewInstance?.visual?.update(newConfig));
+      this.previousMolstarConfig = this.deepCopy(newConfig);
     }
   }
 
