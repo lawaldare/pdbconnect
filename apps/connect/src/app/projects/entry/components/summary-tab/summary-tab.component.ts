@@ -20,6 +20,7 @@ import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions, getMacromoleculeChainDropdownOptions } from '../../helpers/processed-data-to-controls';
 import { componentExistsInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
+import { Molecule } from '../../data-models/molecule.model';
 
 type NestedDomainsData = Array<{
   macromolecule: MacromoleculesRowData;
@@ -663,17 +664,24 @@ export class SummaryTabComponent {
     let molstarSelections: QueryParam[] | undefined = undefined;
     if (selectionType === 'Macromolecules') {
       const macromolecule = listItem as MacromoleculesRowData;
-      const allSelections = macromolecule.additionalData.selections;
+      const allSelections: QueryParam[] = [
+        {
+          entity_id: `${macromolecule.additionalData.molecule.entity_id}`,
+        },
+      ];
       const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const flatSelections = allSelections.reduce((acc, curr) => acc.concat(curr), []);
-      molstarSelections = useCurrent ? currentMolstarSelection : flatSelections;
+      molstarSelections = useCurrent ? currentMolstarSelection : allSelections;
     }
     if (selectionType === 'Ligands') {
       const ligand = listItem as LigandsRowData;
-      const allSelections = ligand.additionalData.selections;
+      const src = ligand.additionalData.source as Molecule;
+      const allSelections: QueryParam[] = [
+        {
+          entity_id: `${src.entity_id}`,
+        },
+      ];
       const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const flatSelections = allSelections.reduce((acc, curr) => acc.concat(curr), []);
-      molstarSelections = useCurrent ? currentMolstarSelection : flatSelections;
+      molstarSelections = useCurrent ? currentMolstarSelection : allSelections;
     }
     if (selectionType === 'Domains') {
       const domain = listItem as DomainsRowData;
@@ -683,7 +691,7 @@ export class SummaryTabComponent {
       const mod = listItem as LigandsRowData;
       const allSelections = mod.additionalData.selections;
       const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const flatSelections = allSelections.reduce((acc, curr) => acc.concat(curr), []);
+      const flatSelections = allSelections.flat(1);
       molstarSelections = useCurrent ? currentMolstarSelection : flatSelections;
     }
     if (!molstarSelections) return molstarSelections;
