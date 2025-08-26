@@ -94,7 +94,9 @@ export class EntryApiService {
     // return this.http.get<Record<string, EntryStatus[]>>(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/status/${entryId}`).pipe(
     return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(
       map((data) => data[entryId][0]),
-      catchError(() => {
+      catchError((error) => {
+        console.log('getEntryStatus error');
+        console.log(error);
         this.router.navigateByUrl('/error');
         return of({ empty: true } as unknown as EntryStatus);
       })
