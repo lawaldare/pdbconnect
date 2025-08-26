@@ -1,4 +1,4 @@
-// LIGAND ENV
+/* LIGAND ENV CSS FOR ENTRY PAGES */
 
 #pdb-lig-env-root {
   cursor: default;
@@ -155,7 +155,7 @@
   width: 49%;
   padding-bottom: 5px;
   border: none;
-  color: black;
+  color: #000000;
   text-align: center;
   font-weight: bold;
   display: inline-block;
@@ -182,7 +182,7 @@
 
 .pdb-lig-env-svg-bond-ligand {
   stroke-width: 4px;
-  stroke: black;
+  stroke: #000000;
 }
 
 .pdb-lig-env-svg-bond-electrostatic {
@@ -194,7 +194,7 @@
 .pdb-lig-env-svg-bond-stacking {
   stroke-width: 2px;
   stroke-dasharray: 10 10;
-  stroke: green;
+  stroke: #008000;
 }
 
 .pdb-lig-env-svg-bond-atom-pi {
@@ -206,7 +206,7 @@
 .pdb-lig-env-svg-bond-amide {
   stroke-width: 2px;
   stroke-dasharray: 10 10;
-  stroke: green;
+  stroke: #008000;
 }
 
 .pdb-lig-env-svg-bond-vdw {
@@ -238,13 +238,13 @@
 
 .pdb-lig-env-svg-bond-covalent {
   stroke-width: 3px;
-  stroke: black;
+  stroke: #000000;
 }
 
 .pdb-lig-env-svg-bond-other {
   stroke-width: 1px;
   stroke-dasharray: 10 10;
-  stroke: black;
+  stroke: #000000;
 }
 
 .pdb-lig-env-svg-bond-highlighted line {
@@ -258,8 +258,8 @@
 .pdb-lig-env-svg-node text {
   cursor: inherit;
   font-family: 'Exo 2', sans-serif;
-  stroke: black !important;
-  fill: black !important;
+  stroke: #000000 !important;
+  fill: #000000 !important;
 }
 
 .pdb-lig-env-svg-node text tspan:first-child {
@@ -275,8 +275,8 @@
 }
 
 .pdb-lig-env-svg-ligand-res {
-  stroke: black;
-  fill: white;
+  stroke: #000000;
+  fill: #ffffff;
 }
 
 .pdb-lig-env-svg-water-res {

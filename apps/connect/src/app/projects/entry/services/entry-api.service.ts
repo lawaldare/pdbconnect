@@ -42,7 +42,7 @@ export class EntryApiService {
   private BASE_API = `${environment.pdbeBaseUrl}api/v2/pdb/entry/`;
   private MAPPINGS_API = `${environment.pdbeBaseUrl}api/mappings/`;
   private VALIDATION_API = `${environment.pdbeBaseUrl}api/validation/`;
-  private GRAPH_API = `https://www.ebi.ac.uk/pdbe/graph-api/pdb/`;
+  // private GRAPH_API = `https://www.ebi.ac.uk/pdbe/graph-api/pdb/`;
   private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}api/v2/`;
   // private readonly router = inject(Router);
 
@@ -106,7 +106,7 @@ export class EntryApiService {
 
   public getEntryInteractions(entryId: string, chainId: string, residueId: string): Observable<any> {
     return this.http
-      .get<Record<string, any[]>>(`${this.GRAPH_API}bound_ligand_interactions/${entryId}/${chainId}/${residueId}`)
+      .get<Record<string, any[]>>(`${this.AggregatedApiUrl}pdb/bound_ligand_interactions/${entryId}/${chainId}/${residueId}`)
       .pipe(map((data) => data[entryId][0]));
   }
 
