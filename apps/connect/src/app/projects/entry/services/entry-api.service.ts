@@ -127,7 +127,7 @@ export class EntryApiService {
   }
 
   public getSummaryStats(uniprotId: string): Observable<SummaryStats> {
-    return this.http.get<Record<string, SummaryStats>>(`${this.AggregatedApiUrl}/uniprot/summary_stats/${uniprotId}`).pipe(map((data) => data[uniprotId]));
+    return this.http.get<Record<string, SummaryStats>>(`${this.AggregatedApiUrl}uniprot/summary_stats/${uniprotId}`).pipe(map((data) => data[uniprotId]));
   }
 
   public getIsoformsMapping(entryId: string): Observable<UniProtMapping> {
@@ -192,11 +192,6 @@ export class EntryApiService {
         return throwError(() => error); // rethrow for anything else
       })
     );
-  }
-
-  public getGalleryMolj(moljDescription: string): Observable<any> {
-    const BASE_API = 'https://www.ebi.ac.uk/pdbe/static/entry/';
-    return this.http.get<any>(`${BASE_API}${moljDescription}.molj`).pipe(map((data) => data.entries));
   }
 
   public getPDBEntryFiles(entryId: string): Observable<any> {
@@ -394,7 +389,7 @@ export class EntryApiService {
   public getExperimentRawDataPDB(entryId: string): Observable<PDBExperimentRawData[]> {
     // Example with data: https://www.ebi.ac.uk/pdbe/api/pdb/entry/related_experiment_data/5o8b
     // Example without data: https://www.ebi.ac.uk/pdbe/api/pdb/entry/related_experiment_data/1trn
-    return this.http.get<Record<string, PDBExperimentRawData[]>>(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/related_experiment_data/${entryId}`).pipe(
+    return this.http.get<Record<string, PDBExperimentRawData[]>>(`${this.BASE_API}related_experiment_data/${entryId}`).pipe(
       map((data) => {
         return data[entryId];
       })
