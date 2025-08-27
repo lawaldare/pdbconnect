@@ -21,10 +21,12 @@
 
 .splide__slide {
   opacity: 0.6;
+  height: 0;
 }
 
 .splide__slide.is-active {
   opacity: 1;
+  height: auto;
 }
 
 header {
@@ -42,7 +44,7 @@ header {
 #thumbnail {
   position: sticky;
   bottom: 0;
-  background: white;
+  background: #ffffff;
 
   .splide__list {
     justify-content: center;

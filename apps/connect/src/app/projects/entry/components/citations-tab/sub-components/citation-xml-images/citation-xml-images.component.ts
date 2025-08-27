@@ -46,6 +46,13 @@ export class CitationXmlImagesComponent implements AfterViewInit {
         },
       });
       main.sync(thumbnails);
+      // Scroll to top on slide change
+      main.on('moved', () => {
+        const activeSlide = document.querySelector('.splide__slide.is-active');
+        if (activeSlide) {
+          activeSlide.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
       main.mount();
       thumbnails.mount();
     }, 500);
