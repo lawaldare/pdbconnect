@@ -26,7 +26,7 @@
 
   <!-- Sequence Logo Track -->
   <div class="pv-track-row non-header-track track" [ngStyle]="{ display: isExpanded() ? '' : 'none' }">
-    <div class="pv-track-label-col subtrack variation">
+    <div class="pv-track-label-col subtrack variation" style="height: 350px; overflow-y: auto">
       <p>
         <span class="pdbe-pv-colname-tooltip">
           Amino acid probabilities
@@ -41,7 +41,7 @@
         Highest probabilities
       </mat-radio-button>
 
-      <div class="legend" style="height: 200px">
+      <div class="legend">
         <p>Amino acid properties</p>
         <div class="protvista-sc-legend">
           <div class="protvista-sc-legend"><span class="pv-legend-color" style="background: #15a4a4"></span><span class="pv-legend-text">Aromatic</span></div>

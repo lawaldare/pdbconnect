@@ -87,13 +87,15 @@
 
 .pv-protvista .pv-track-label-col {
   width: 20%;
-  padding: 4px 6px;
+  margin-top: 2px;
+  margin-bottom: 2px;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   word-break: break-word;
   font-size: 14px;
   line-height: 18px;
+  justify-content: flex-start;
   cursor: pointer;
 }
 
@@ -114,6 +116,7 @@
 .pv-protvista .pv-track-label-col.variation {
   flex-direction: column;
   align-items: flex-start;
+  overflow-x: auto;
 }
 
 .pv-protvista nightingale-scrollbox {
@@ -276,10 +279,27 @@ with extra ajustments for close button */
 }
 
 /* Legend styles below migrated from previous protvista */
+.pv-protvista .legend {
+  margin-top: 8px;
+}
+
+.pv-protvista .protvista-sc-legend {
+  display: flex;
+  flex-direction: column;
+  margin-top: 6px;
+
+  .protvista-sc-legend {
+    margin-top: 2px;
+    flex-direction: row;
+  }
+}
+
 .pv-protvista .pv-legend-color {
   display: inline-block;
-  height: 10px;
-  width: 26px;
+  min-height: 1rem;
+  min-width: 1rem;
+  max-width: 1rem;
+  max-height: 1rem;
 }
 
 .pv-protvista .pv-legend-text {

@@ -179,9 +179,9 @@
       } }
     </div>
     }
-    <section class="chart-area" [class.collapsed]="compCommunication.isSidebarCollapsed()">
+    <section class="chart-area" [class.collapsed]="!isSidebarDisplayed()">
       @if (hasProtvista) {
-      <section class="protvista-container">
+      <section class="protvista-container" [class.collapsed]="!isSidebarDisplayed()">
         @let molType = currentMacromoleculeDatum()!.additionalData.molecule.molecule_type; @if(entryId() && currentSelectionEntityId() && molType) {
         <pdbc-entry-pg-protvista
           [entryId]="entryId()!"
@@ -193,22 +193,21 @@
         }
       </section>
       }
-      <section class="molstar-details-container">
+      <section class="molstar-topol-container" [class.collapsed]="!isSidebarDisplayed()">
         @if (!molstarFirstRenderFinished()) {
         <div [style.width]="'100%'">
           <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
         </div>
         } @if (configForMolstar()) {
-        <div class="molstar-container">
+        <div class="molstar-container" [class.collapsed]="!isSidebarDisplayed()">
           <div #popoutWrapper>
             <lib-pdbe-molstar #molstarComponent [id]="'macromolecules-molstar'" [molstarConfig]="configForMolstar()" [height]="molstarHeight"></lib-pdbe-molstar>
           </div>
         </div>
         }
-        <div id="macromolecules-molstar-container" style="display: none"></div>
-      </section>
-      <section [style.display]="!hasTopologyViewer ? 'none' : '' " class="topology-viewer-container">
-        <div class="topology-container" #topologyViewerContainer></div>
+        <section [style.display]="!hasTopologyViewer ? 'none' : '' " class="topology-viewer-container">
+          <div class="topology-container" #topologyViewerContainer></div>
+        </section>
       </section>
     </section>
   </div>

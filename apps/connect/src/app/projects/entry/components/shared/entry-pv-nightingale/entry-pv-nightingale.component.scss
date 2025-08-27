@@ -21,14 +21,17 @@
 :host {
   position: relative; /* Required for absolute children to position against it */
   display: block;
-  max-height: inherit;
+
+  /* max-height: inherit; */
   overflow: clip;
 }
 
 .elements-container {
   width: 100%;
   min-height: 480px;
-  max-height: 500px;
+
+  /* max-height: 500px; */
+  height: auto;
   overflow-y: clip;
 
   .always-on-top {
@@ -66,6 +69,10 @@
     line-height: 12px;
     margin: 4px;
   }
+
+  @media (width <= 1140px) {
+    font-size: 0.65rem;
+  }
 }
 
 .waiting-txt {
@@ -94,4 +101,25 @@
 .pv-invalid a {
   font-size: 20px;
   font-weight: 500;
+}
+
+/* Styles for columns responsiveness */
+::ng-deep .pv-protvista .pv-track-label-col {
+  font-size: 14px;
+}
+
+@media screen and (width <= 1240px) {
+  ::ng-deep .pv-protvista .pv-track-label-col {
+    font-size: 0.8rem;
+    word-break: normal;
+  }
+
+  ::ng-deep .pv-protvista .pv-link-btn {
+    padding: 3px 8px;
+    font-size: 12px;
+  }
+
+  ::ng-deep .pv-protvista .pv-track-container.no-data {
+    font-size: 12px;
+  }
 }
