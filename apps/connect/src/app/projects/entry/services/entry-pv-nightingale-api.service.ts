@@ -56,8 +56,6 @@ export class PvDataApiService {
 
   public getPdbeEntityUniprotMappingTrackData(entryId: string, entityId: string): Observable<APITrackData> {
     const url = this.buildUrl('uniprot_mapping', entryId, entityId);
-    console.log('url');
-    console.log(url);
     return this.http.get<Record<string, APITrackData>>(url).pipe(this.handleTrackDataResponse(entryId));
   }
 
@@ -98,12 +96,26 @@ export class PvDataApiService {
 
   public getPdbeConservationTrackData(entryId: string, entityId: string) {
     const url = this.buildUrl('sequence_conservation', entryId, entityId);
-    return this.http.get<APIConservationData>(url);
+    return this.http.get<APIConservationData>(url).pipe(
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as APIConservationData);
+        }
+        return throwError(() => error);
+      })
+    );
   }
 
   public getPdbeVariationTrackData(entryId: string, entityId: string) {
     const url = `${this.BaseAPI}pdbe_pages/protvista/variation/${entryId}/${entityId}`;
     // const url = this.buildUrl('variation', entryId, entityId);
-    return this.http.get<APIVariationData>(url);
+    return this.http.get<APIVariationData>(url).pipe(
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as APIVariationData);
+        }
+        return throwError(() => error);
+      })
+    );
   }
 }

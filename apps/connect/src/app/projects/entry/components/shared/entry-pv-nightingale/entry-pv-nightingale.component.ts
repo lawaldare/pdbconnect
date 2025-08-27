@@ -501,15 +501,22 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       });
 
     combineLatest([this.trackCoreProcessed$, this.trackConservation$, this.trackVariation$])
-      .pipe(take(1)) // only once
+      .pipe(
+        filter(([_, conservationMap, variationMap]) => Object.keys(conservationMap).length > 0 && Object.keys(variationMap).length > 0),
+        take(1)
+      ) // only once
       .subscribe(([_, conservationMap, variationMap]) => {
         let preProcessedConservationData: APIConservationData | undefined = undefined;
-        if (conservationMap[currentEntityId]) preProcessedConservationData = conservationMap[currentEntityId];
+        const consDataExists = conservationMap[`${currentEntityId}`] ? true : false;
+        const consDataNotEmpty = (conservationMap[`${currentEntityId}`] as any).empty ? true : false;
+        if (consDataExists && !consDataNotEmpty) preProcessedConservationData = conservationMap[currentEntityId];
         this.originalConservationData.set(preProcessedConservationData);
         this.loadedConservationAPIData.set(true);
 
         let preProcessedVariationData: APIVariationData | undefined = undefined;
-        if (variationMap[`${currentEntityId}`]) preProcessedVariationData = variationMap[currentEntityId];
+        const varDataExists = variationMap[`${currentEntityId}`] ? true : false;
+        const varDataNotEmpty = (variationMap[`${currentEntityId}`] as any).empty ? true : false;
+        if (varDataExists && !varDataNotEmpty) preProcessedVariationData = variationMap[currentEntityId];
         this.originalVariationData.set(preProcessedVariationData);
 
         this.loadedVariationAPIData.set(true);
@@ -734,7 +741,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   }
 
   @HostListener('document:smartSeqViewerUnselect', ['$event'])
-  removeFromExternal(event: Event) {
+  removeFromExternal(_event?: Event) {
     if (this.selectedFromExternal.length > 0) {
       this.selectedFromExternal = [];
       const selectedResidues = [...this.selectedResidues];
@@ -908,6 +915,9 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     if (!this.tooltipService.tooltipElement) return;
     const tooltipContent = this.tooltipService.tooltipElement.innerHTML;
     this.tooltipService.showPinnedTooltip(target, tooltipContent, { x: coords[0], y: coords[1] });
+
+    // 1.1 - Reset any externally triggered highlight events
+    this.removeFromExternal();
 
     // 2 - If external interactivity is enabled, trigger external click events
     // Clicked range and color are determined based on track type
