@@ -386,3 +386,25 @@ mat-form-field {
   white-space: nowrap;
   padding: 4px;
 }
+
+.custom-panel-body {
+  max-height: 250px;
+
+  .scrollable-content {
+    max-height: 234px;
+    overflow-y: auto;
+  }
+
+  .scrollable-content.big {
+    max-height: 250px;
+  }
+
+  .pagination-buttons {
+    height: 16px;
+  }
+}
+
+::ng-deep .mat-expansion-panel-body {
+  max-height: 290px;
+  overflow-y: initial;
+}
