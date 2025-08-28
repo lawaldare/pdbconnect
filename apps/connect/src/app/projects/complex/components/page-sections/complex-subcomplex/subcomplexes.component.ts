@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatPaginator } from '@angular/material/paginator';
 import { ComplexStoreState } from '../../../store/complex-store.model';
@@ -10,17 +10,19 @@ import { Store } from '@ngrx/store';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { AG_Grid_Theme_Class, MaterialModule } from '@pdbc/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { filter, map } from 'rxjs';
+import { map } from 'rxjs';
 import { ComplexUtilService } from '../../../services/complex-util.service';
 import { AgGridAngular } from 'ag-grid-angular';
-import { gridOptions, colDefs, initialState, rowSelection } from './ag-grid';
+import { gridOptions, colDefs, rowSelection } from './ag-grid';
 import { SelectionChangedEvent } from 'ag-grid-community';
-import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { SuperpositionService } from '../../../services/superposition.service';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { superpositionTooltip } from '../../../complex.constant';
 
 @Component({
   selector: 'pdbc-subcomplexes',
   standalone: true,
-  imports: [CommonModule, MolstarComponent, NgxSkeletonLoaderModule, MaterialModule, ReactiveFormsModule, AgGridAngular],
+  imports: [CommonModule, NgxSkeletonLoaderModule, MaterialModule, ReactiveFormsModule, AgGridAngular, HelpIconWithTooltipComponent],
   templateUrl: './subcomplexes.component.html',
   styleUrl: './subcomplexes.component.scss',
 })
@@ -28,6 +30,18 @@ export class SubComplexesComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
   private utilService = inject(ComplexUtilService);
+
+  private readonly superpositionService = inject(SuperpositionService);
+  public initialized = false;
+
+  @ViewChild('molstarContainer') set container(el: ElementRef | undefined) {
+    if (el && this.rowData().length && !this.initialized) {
+      this.initialized = true;
+      this.superpositionService.loadInitialComplexView(el.nativeElement);
+    }
+  }
+
+  public isLoading = this.superpositionService.isLoading;
 
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public subcomplexInteractions = toSignal(this.globalStore.select(ComplexSelectors.subComplexInteractions));
@@ -47,33 +61,18 @@ export class SubComplexesComponent implements OnInit {
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
-  public readonly initialState = initialState;
+  // public readonly initialState = initialState;
   public readonly rowSelection = rowSelection;
 
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
 
   public height = '400px';
 
-  public config!: any;
+  private currentComplexId = signal<string>('');
+
+  public superpositionTooltip = superpositionTooltip;
 
   ngOnInit(): void {
-    this.globalStore
-      .select(ComplexSelectors.subComplexInteractions)
-      .pipe(
-        filter((d) => d.length > 0),
-        map((data) => {
-          this.config = {
-            moleculeId: data[0].representative_structure.pdb_id,
-            bgColor: { r: 255, g: 255, b: 255 },
-            assemblyId: data[0].representative_structure.assembly_id,
-            hideControls: true,
-            hideCanvasControls: ['expand', 'animation', 'controlToggle', 'controlInfo', 'selection', 'trajectory'],
-            landscape: true,
-          };
-        })
-      )
-      .subscribe();
-
     this.searchTerm.valueChanges
       .pipe(
         map((searchQuery: string | null) => {
@@ -89,10 +88,12 @@ export class SubComplexesComponent implements OnInit {
       });
   }
 
-  public onSelectionChanged(event: SelectionChangedEvent) {
+  public async onSelectionChanged(event: SelectionChangedEvent) {
+    if (this.currentComplexId()) {
+      await this.superpositionService.deleteComplex(this.currentComplexId());
+    }
     const data = event.api.getSelectedNodes()[0].data;
-    const moleculeId = data.representative_structure.pdb_id;
-    const assemblyId = data.representative_structure.assembly_id;
-    this.config = { ...this.config, moleculeId, assemblyId };
+    this.currentComplexId.set(data.pdb_complex_id);
+    await this.superpositionService.loadComplex(data.pdb_complex_id, 'subcomplex');
   }
 }

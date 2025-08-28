@@ -108,3 +108,6 @@ export const pisaTableTooltip = {
   DEG: 'Indicates the free energy of assembly dissociation, in kcal/mol. The free energy of dissociation corresponds to the free energy difference between dissociated and associated states. Positive values of ΔGdiss indicate that an external driving force should be applied in order to dissociate the assembly, therefore assemblies with ΔGdiss>0 are thermodynamically stable.',
   DEP: 'Indicates the rigid-body entropy change at dissociation, in kcal/mol. The entropy change corresponds to the lowest free energy way to dissociate the assembly into a set of stable assemblies or monomeric units.',
 };
+
+export const superpositionTooltip =
+  'Complexes are aligned based on the largest common component (measured the by number of residues) with a UniProt mapping. In case there are no common components with Uniprot mapping, the largest common component with an Rfam mapping is used. Residue-residue correspondence is determined by UniProt residue numbers (for UniProt mappings) or by sequence alignment (for Rfam mappings).';

@@ -41,26 +41,47 @@ section.table {
   justify-content: space-between;
 
   .table-section {
+    min-width: 50%;
     width: 50%;
     margin-top: 5px;
-    height: 500px;
+    height: 740px;
   }
 
   .molstar-section {
     width: 50%;
+
+    #molstar-container {
+      width: 685px;
+      height: 500px;
+      position: relative;
+    }
+
+    .legend-info {
+      margin-top: 20px;
+
+      p,
+      li {
+        color: #000;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 27.2px;
+      }
+
+      .title {
+        font-weight: 500;
+      }
+    }
   }
 }
 
-::ng-deep lib-pdbe-molstar {
-  .container {
-    display: block;
-    height: 400px !important;
+.spinner {
+  transform-origin: center;
+  animation: spinner 0.75s infinite linear;
+}
 
-    .msp-plugin {
-      .msp-layout-standard {
-        border: none;
-      }
-    }
+@keyframes spinner {
+  100% {
+    transform: rotate(360deg);
   }
 }
 

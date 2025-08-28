@@ -32,9 +32,9 @@ export const colDefs: ColDef[] = [
   },
 ];
 
-export const initialState: GridState = {
-  rowSelection: ['0'],
-};
+// export const initialState: GridState = {
+//   rowSelection: ['0'],
+// };
 
 export const rowSelection: any = {
   mode: 'singleRow',
