@@ -1,3 +1,5 @@
+@import url('https://www.ebi.ac.uk/pdbe/pdb-component-library/css/pdb-ligand-env-svg.css');
+
 main {
   display: flex;
   width: 100%;
@@ -403,4 +405,20 @@ span.related-entry-toggle {
   .control span {
     margin-right: 5px;
   }
+}
+
+::ng-deep div.pdb-lig-env-toolbar-container > div:nth-child(1) > i::before {
+  content: initial;
+  position: initial;
+  mask-image: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: initial;
+  height: initial;
+  mask-size: initial;
+  mask-repeat: initial;
+  background-color: initial;
+
+  /* z-index: -1; */
 }
