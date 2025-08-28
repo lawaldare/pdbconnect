@@ -118,6 +118,6 @@ export class SuperpositionService {
 
   public async deleteComplex(id: string) {
     await this.viewerInstance.deleteStructure(id);
-    await this.viewerInstance.visual.reset({ camera: true });
+    // await this.viewerInstance.visual.reset({ camera: true });
   }
 }
