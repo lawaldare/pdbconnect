@@ -127,7 +127,7 @@ export class MacromoleculesTabComponent {
 
     return configForMolstar;
   });
-  public molstarHeight = '480px';
+  public molstarHeight = '100%';
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));

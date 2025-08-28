@@ -139,6 +139,8 @@ export class SmartSequenceVisualisation {
   private visualisationContainer: HTMLDivElement | null = null;
   private warningDiv: HTMLDivElement | null = null;
 
+  private annotationRenderers: Map<string, (ann: SmartSequenceAnnotationForEvent, residueIndex: number) => string> = new Map();
+
   constructor(
     sequence: string,
     containerId: string,
@@ -646,6 +648,8 @@ export class SmartSequenceVisualisation {
       if (this.currentClickedResidue === residueIndex) {
         this.unselectResidueState();
       } else {
+        this.currentClickedResidue = null;
+        this.draw();
         this.selectResidueState(residueIndex);
       }
     }
@@ -1376,6 +1380,7 @@ export class SmartSequenceVisualisation {
   }
 
   private selectResidueState(residueIndex: number, doNotPropagate?: boolean, doNotReport?: boolean) {
+    this.currentHoveredResidue = null;
     this.currentClickedResidue = residueIndex;
     this.residueClick$.next({
       residueIndex,
@@ -1564,9 +1569,38 @@ export class SmartSequenceVisualisation {
     return html;
   }
 
-  private processGenericAnnotation(ann: SmartSequenceAnnotationForEvent, residueIndex: number, hasAddedTitle: boolean) {
-    let html = '';
+  /**
+   * Registers a custom HTML renderer for a specific annotation identifier.
+   *
+   * This allows users to override the default sidebar rendering for a given
+   * annotation with their own custom HTML logic.
+   *
+   * @param identifier - The unique annotation identifier that the renderer should handle.
+   * @param renderer - A function that receives the annotation and residue index, and returns raw HTML (as a string) to be rendered in the sidebar.
+   *
+   * Example of usage:
+   *  mySmartViewer.registerAnnotationRenderer('my-annotation-id', (ann, residueIndex) => {
+   *    const value = ann.datum.value;
+   *    return `
+   *      <div style="margin-bottom: 8px;">
+   *        <strong>${ann.name}:</strong>
+   *        <div style="color: green;">Custom value at ${residueIndex}: ${value}</div>
+   *      </div>
+   *    `;
+   *  });
+   */
+  public registerAnnotationRenderer(identifier: string, renderer: (ann: SmartSequenceAnnotationForEvent, residueIndex: number) => string) {
+    this.annotationRenderers.set(identifier, renderer);
+  }
 
+  private processGenericAnnotation(ann: SmartSequenceAnnotationForEvent, residueIndex: number, hasAddedTitle: boolean) {
+    const customRenderer = this.annotationRenderers.get(ann.identifier);
+    if (customRenderer) {
+      return customRenderer(ann, residueIndex);
+    }
+
+    // fallback: default HTML
+    let html = '';
     if (!hasAddedTitle) html += `<hr/><h5>Annotations</h5>`;
 
     html += `<ul style="margin-bottom:10px;">`;

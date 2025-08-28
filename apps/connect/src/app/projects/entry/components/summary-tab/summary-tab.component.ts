@@ -210,27 +210,44 @@ export class SummaryTabComponent {
   });
 
   public setListViewPage(nextOrPrev: 1 | -1, selectionType: string) {
-    let element: HTMLElement | undefined;
-    if (selectionType === 'Macromolecules') {
-      const idx = this.currentMacromoleculesPage();
-      this.currentMacromoleculesPage.set(idx + nextOrPrev);
-      element = document.querySelector('#mm-exp-panel .mat-expansion-panel-body') as HTMLElement;
-    } else if (selectionType === 'Ligands') {
-      const idx = this.currentLigandsPage();
-      this.currentLigandsPage.set(idx + nextOrPrev);
-      element = document.querySelector('#lig-exp-panel .mat-expansion-panel-body') as HTMLElement;
-    } else if (selectionType === 'Domains') {
-      const idx = this.currentDomainsPage();
-      this.currentDomainsPage.set(idx + nextOrPrev);
-      element = document.querySelector('#dom-exp-panel .mat-expansion-panel-body') as HTMLElement;
-    } else if (selectionType === 'Modifications') {
-      const idx = this.currentModificationsPage();
-      this.currentModificationsPage.set(idx + nextOrPrev);
-      element = document.querySelector('#mod-exp-panel .mat-expansion-panel-body') as HTMLElement;
-    }
+    const configMap = {
+      Macromolecules: {
+        currentPage: this.currentMacromoleculesPage,
+        maxPages: this.maxMacromoleculesPages,
+        panelSelector: '#mm-exp-panel .mat-expansion-panel-body',
+      },
+      Ligands: {
+        currentPage: this.currentLigandsPage,
+        maxPages: this.maxLigandsPages,
+        panelSelector: '#lig-exp-panel .mat-expansion-panel-body',
+      },
+      Domains: {
+        currentPage: this.currentDomainsPage,
+        maxPages: this.maxDomainsPages,
+        panelSelector: '#dom-exp-panel .mat-expansion-panel-body',
+      },
+      Modifications: {
+        currentPage: this.currentModificationsPage,
+        maxPages: this.maxModificationsPages,
+        panelSelector: '#mod-exp-panel .mat-expansion-panel-body',
+      },
+    } as const;
+
+    const config = configMap[selectionType as keyof typeof configMap];
+    if (!config) return;
+
+    const idx = config.currentPage();
+    const max = config.maxPages();
+    const proposedIdx = idx + nextOrPrev;
+    const newIdx = (proposedIdx + max) % max; // wrap logic
+    config.currentPage.set(newIdx);
+
+    const element = document.querySelector(config.panelSelector) as HTMLElement;
+
     setTimeout(() => {
-      if (nextOrPrev === 1 && element) element.scrollTop = 0;
-      else if (element) element.scrollTop = element.scrollHeight;
+      if (element) {
+        element.scrollTop = nextOrPrev === 1 ? 0 : element.scrollHeight;
+      }
     }, 50);
   }
 
@@ -271,20 +288,21 @@ export class SummaryTabComponent {
     const hasLigandsData = this.compCommunication.hasProcessedLigands();
     if (!hasLigandsData) return ligandsSelectionData;
     const ligands = this.compCommunication.processedLigands;
-    for (const lig of ligands) {
-      for (const sel of lig.additionalData.selections) {
-        const ligSel = sel[0];
-        const entityColor = lig.molstarColorHex;
-        ligandsSelectionData.push({
-          ...ligSel,
+    ligandsSelectionData.push(
+      ...ligands.map((ligand) => {
+        const entityId = (ligand.additionalData.source as Molecule).entity_id;
+        const entityColor = ligand.molstarColorHex;
+        const queryParam: QueryParam = {
+          entity_id: `${entityId}`,
           color: entityColor,
           representation: 'spacefill',
           representationColor: entityColor,
           focus: false,
-        });
+        };
         this.nonSelectionColor = '#FEFEFE';
-      }
-    }
+        return queryParam;
+      })
+    );
     return ligandsSelectionData;
   });
 
@@ -371,15 +389,21 @@ export class SummaryTabComponent {
   public currentDomainResource = computed(() => {
     const dropdownSelectedResource = this.currentDomainResourceFromDropdown();
     if (dropdownSelectedResource) return dropdownSelectedResource;
-    const countByResource = this.domainCountByResource();
-    const firstAvailable = ['CATH', 'SCOP', 'Pfam'].find((r) => countByResource[r] > 0);
-    if (firstAvailable) return firstAvailable;
-    return 'CATH';
+    // const countByResource = this.domainCountByResource();
+    // const firstAvailable = ['CATH', 'SCOP', 'Pfam'].find((r) => countByResource[r] > 0);
+    // if (firstAvailable) return firstAvailable;
+    return 'All';
   });
 
   public domainResourceCounts = computed(() => {
     const countByResource = this.domainCountByResource();
     const domainResourceCounts = [];
+
+    domainResourceCounts.push({
+      name: this.getDomainResourceCountTxt('All', countByResource),
+      downloadable: false,
+      url: '0',
+    });
 
     domainResourceCounts.push({
       name: this.getDomainResourceCountTxt('CATH', countByResource),
@@ -410,7 +434,9 @@ export class SummaryTabComponent {
     const processedDomains = this.compCommunication.processedDomains;
     for (const processedDomain of processedDomains) {
       const macromolecule = processedDomain.macromolecule;
-      const filteredDomains = processedDomain.domains.filter((domain) => domain.resource === this.currentDomainResource());
+      const allDomainsInListView = this.currentDomainResource() === 'All';
+      let filteredDomains = processedDomain.domains;
+      if (!allDomainsInListView) filteredDomains = processedDomain.domains.filter((domain) => domain.resource === this.currentDomainResource());
       if (filteredDomains.length > 0) {
         result.push({
           macromolecule,
@@ -475,10 +501,13 @@ export class SummaryTabComponent {
   });
 
   public allCurrentResourceDomainsQueryParam = computed(() => {
-    const domainSelectionData: QueryParam[] = [];
     const hasDomainsData = this.compCommunication.hasProcessedDomains();
-    if (!hasDomainsData) return domainSelectionData;
+    if (!hasDomainsData) return [];
 
+    const allDomainsInListView = this.currentDomainResource() === 'All';
+    if (allDomainsInListView) return [];
+
+    const domainSelectionData: QueryParam[] = [];
     const allDomains = this.processedDomainsAsList();
     const domainsForResource = allDomains.filter((dom) => dom.resource === this.currentDomainResource());
     for (const domain of domainsForResource) {
@@ -492,6 +521,7 @@ export class SummaryTabComponent {
         });
       }
     }
+    if (domainSelectionData.length > 100) return [];
     return domainSelectionData;
   });
 
@@ -534,6 +564,11 @@ export class SummaryTabComponent {
   };
 
   public getDomainResourceCountTxt(domainName: string, countByResource: { [key: string]: number }) {
+    if (domainName === 'All') {
+      const totalCount = Object.entries(countByResource).reduce((sum, [, count]) => sum + count, 0);
+      const plural = totalCount > 1 ? 's' : '';
+      return `All - ${totalCount} domain${plural}`;
+    }
     const plural = countByResource[domainName] > 1 ? 's' : '';
     return `${domainName} - ${countByResource[domainName]} domain${plural}`;
   }

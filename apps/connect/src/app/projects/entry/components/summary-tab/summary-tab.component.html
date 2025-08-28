@@ -242,28 +242,38 @@
               } @else { ({{ processedMacromolecules().length }}) }
             </mat-panel-title>
           </mat-expansion-panel-header>
-          @if (processedMacromolecules().length) { @if (currentMacromoleculesPage() > 0 && processedMacromoleculesToView().length > 0) {
-          <button class="link-btn" (click)="setListViewPage(-1, 'Macromolecules')">View previous</button>
-          } @for (listItem of processedMacromoleculesToView(); track $index) {
-          <div
-            class="select-gallery-container valid"
-            [ngClass]="isSelected(listItem, 'Macromolecules') ? 'active' : ''"
-            (click)="selectListItem(listItem, 'Macromolecules')"
-            (mouseover)="mouseinListItem(listItem, 'Macromolecules')"
-            (mouseout)="mouseoutListItem()"
-          >
-            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
-            <button class="select-entity-btn">{{ listItem.name.molecule }}</button>
+          @if (processedMacromolecules().length) {
+          <!-- Panel Body -->
+          <div class="custom-panel-body">
+            <!-- Scrollable content only -->
+            <div class="scrollable-content" [class.big]="maxMacromoleculesPages() === 1">
+              @for (listItem of processedMacromoleculesToView(); track $index) {
+              <div
+                class="select-gallery-container valid"
+                [ngClass]="isSelected(listItem, 'Macromolecules') ? 'active' : ''"
+                (click)="selectListItem(listItem, 'Macromolecules')"
+                (mouseover)="mouseinListItem(listItem, 'Macromolecules')"
+                (mouseout)="mouseoutListItem()"
+              >
+                <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
+                <button class="select-entity-btn">{{ listItem.name.molecule }}</button>
+              </div>
+              <!-- @if (isSelected(listItem)) {
+                    <div class="more-details-btn">
+                      <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+                      <button class="details-btn" (click)="viewDetails()">View more details below</button>
+                    </div>
+                } -->
+              }
+            </div>
+            <!-- Non scrollable paging -->
+            <div class="pagination-buttons" [style.display]="maxMacromoleculesPages() > 1 ? '' : 'none'">
+              <button class="link-btn" (click)="setListViewPage(-1, 'Macromolecules')">View previous</button>
+              <span class="pagination-txt"> Page {{ currentMacromoleculesPage() + 1 }} of {{ maxMacromoleculesPages() }} </span>
+              <button class="link-btn" (click)="setListViewPage(1, 'Macromolecules')">View next</button>
+            </div>
           </div>
-          <!-- @if (isSelected(listItem)) {
-                <div class="more-details-btn">
-                  <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-                  <button class="details-btn" (click)="viewDetails()">View more details below</button>
-                </div>
-              } -->
-          } @if (currentMacromoleculesPage() < maxMacromoleculesPages() - 1) {
-          <button class="link-btn" (click)="setListViewPage(1, 'Macromolecules')">View next</button>
-          } } @else {
+          } @else {
           <p>This entry does not include any information about Macromolecules.</p>
           @if (hasRelatedEntries()) {
           <p>
@@ -282,28 +292,38 @@
               } @else { ({{ processedLigands().length }}) }
             </mat-panel-title>
           </mat-expansion-panel-header>
-          @if (processedLigands().length) { @if (currentLigandsPage() > 0 && processedLigandsToView().length > 0) {
-          <button class="link-btn" (click)="setListViewPage(-1, 'Ligands')">View previous</button>
-          } @for (listItem of processedLigandsToView(); track $index) {
-          <div
-            class="select-gallery-container valid"
-            [ngClass]="isSelected(listItem, 'Ligands') ? 'active' : ''"
-            (click)="selectListItem(listItem, 'Ligands')"
-            (mouseover)="mouseinListItem(listItem, 'Ligands')"
-            (mouseout)="mouseoutListItem()"
-          >
-            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
-            <button class="select-entity-btn">{{ listItem.codeAndName.name }} - {{ listItem.id }}</button>
+          @if (processedLigands().length) {
+          <!-- Panel Body -->
+          <div class="custom-panel-body">
+            <!-- Scrollable content only -->
+            <div class="scrollable-content" [class.big]="maxLigandsPages() === 1">
+              @for (listItem of processedLigandsToView(); track $index) {
+              <div
+                class="select-gallery-container valid"
+                [ngClass]="isSelected(listItem, 'Ligands') ? 'active' : ''"
+                (click)="selectListItem(listItem, 'Ligands')"
+                (mouseover)="mouseinListItem(listItem, 'Ligands')"
+                (mouseout)="mouseoutListItem()"
+              >
+                <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
+                <button class="select-entity-btn">{{ listItem.codeAndName.name }} - {{ listItem.id }}</button>
+              </div>
+              <!-- @if (isSelected(listItem)) {
+              <div class="more-details-btn">
+                <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+                <button class="details-btn" (click)="viewDetails()">View more details below</button>
+              </div>
+              } -->
+              }
+            </div>
+            <!-- Non scrollable paging -->
+            <div class="pagination-buttons" [style.display]="maxLigandsPages() > 1 ? '' : 'none'">
+              <button class="link-btn" (click)="setListViewPage(-1, 'Ligands')">View previous</button>
+              <span class="pagination-txt"> Page {{ currentLigandsPage() + 1 }} of {{ maxLigandsPages() }} </span>
+              <button class="link-btn" (click)="setListViewPage(1, 'Ligands')">View next</button>
+            </div>
           </div>
-          <!-- @if (isSelected(listItem)) {
-          <div class="more-details-btn">
-            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-            <button class="details-btn" (click)="viewDetails()">View more details below</button>
-          </div>
-        } -->
-          } @if (currentLigandsPage() < maxLigandsPages() - 1) {
-          <button class="link-btn" (click)="setListViewPage(1, 'Ligands')">View next</button>
-          } } @else {
+          } @else {
           <p>This entry does not include any information about Ligands.</p>
           @if (hasRelatedEntries()) {
           <p>
@@ -336,41 +356,50 @@
             (optionClickedEvent)="onDomainResourceSelect($event)"
           >
           </pdbc-entry-dropdown>
-          @if (currentDomainsPage() > 0 && processedDomainsToView().length > 0) {
-          <button class="link-btn" (click)="setListViewPage(-1, 'Domains')">View previous</button>
-          } @for (nestedListObj of processedDomainsToView(); track $index) {
-          <div class="select-gallery-container invalid">
-            <div class="color-code-bar" [ngStyle]="{ 'background-color': nestedListObj.macromolecule.molstarColorHex }"></div>
-            <button class="select-entity-btn">
-              <span>{{ nestedListObj.macromolecule.name.molecule }}</span><br />
-              <span>({{ nestedListObj.domains.length }} domains)</span>
-            </button>
-          </div>
-          @for (listItem of nestedListObj.domains; track $index) {
-          <div
-            class="select-gallery-container valid nested-1"
-            [ngClass]="isSelected(listItem, 'Domains') ? 'active' : ''"
-            (click)="selectListItem(listItem, 'Domains')"
-            (mouseover)="mouseinListItem(listItem, 'Domains')"
-            (mouseout)="mouseoutListItem()"
-          >
-            <div class="color-code-bars">
-              <div class="color-code-sqr" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
+          <!-- Panel Body -->
+          <div class="custom-panel-body">
+            <!-- Scrollable content only -->
+            <div class="scrollable-content" [class.big]="maxDomainsPages() === 1">
+              @for (nestedListObj of processedDomainsToView(); track $index) {
+              <div class="select-gallery-container invalid">
+                <div class="color-code-bar" [ngStyle]="{ 'background-color': nestedListObj.macromolecule.molstarColorHex }"></div>
+                <button class="select-entity-btn">
+                  <span>{{ nestedListObj.macromolecule.name.molecule }}</span><br />
+                  <span>({{ nestedListObj.domains.length }} domains)</span>
+                </button>
+              </div>
+              @for (listItem of nestedListObj.domains; track $index) {
+              <div
+                class="select-gallery-container valid nested-1"
+                [ngClass]="isSelected(listItem, 'Domains') ? 'active' : ''"
+                (click)="selectListItem(listItem, 'Domains')"
+                (mouseover)="mouseinListItem(listItem, 'Domains')"
+                (mouseout)="mouseoutListItem()"
+              >
+                <div class="color-code-bars">
+                  <div class="color-code-sqr" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
+                </div>
+                <button class="select-entity-btn">
+                  <span>{{ listItem.accessionName }}</span><br />
+                  <span>{{ listItem.resource }} {{ listItem.additionalData.accession }}</span><br />
+                  <span>{{ listItem.segmentsAsText }}</span>
+                </button>
+              </div>
+              <!-- @if (isSelected(listItem)) {
+                      <div class="more-details-btn">
+                        <button class="details-btn" (click)="viewDetails()">View more details below</button>
+                      </div>
+                    } -->
+              } }
             </div>
-            <button class="select-entity-btn">
-              <span>{{ listItem.accessionName }}</span><br />
-              <span>{{ listItem.resource }} {{ listItem.additionalData.accession }}</span><br />
-              <span>{{ listItem.segmentsAsText }}</span>
-            </button>
+            <!-- Non scrollable paging -->
+            <div class="pagination-buttons" [style.display]="maxDomainsPages() > 1 ? '' : 'none'">
+              <button class="link-btn" (click)="setListViewPage(-1, 'Domains')">View previous</button>
+              <span class="pagination-txt"> Page {{ currentDomainsPage() + 1 }} of {{ maxDomainsPages() }} </span>
+              <button class="link-btn" (click)="setListViewPage(1, 'Domains')">View next</button>
+            </div>
           </div>
-          <!-- @if (isSelected(listItem)) {
-                  <div class="more-details-btn">
-                    <button class="details-btn" (click)="viewDetails()">View more details below</button>
-                  </div>
-                } -->
-          } } @if (currentDomainsPage() < maxDomainsPages() - 1) {
-          <button class="link-btn" (click)="setListViewPage(1, 'Domains')">View next</button>
-          } } @else {
+          } @else {
           <p>This entry does not include any information about Domains.</p>
           @if (hasRelatedEntries()) {
           <p>
@@ -389,28 +418,38 @@
               } @else { ({{ processedModifications().length }}) }
             </mat-panel-title>
           </mat-expansion-panel-header>
-          @if (processedModifications().length) { @if (currentModificationsPage() > 0 && processedModificationsToView().length > 0) {
-          <button class="link-btn" (click)="setListViewPage(-1, 'Modifications')">View previous</button>
-          } @for (listItem of processedModificationsToView(); track $index; let modificationIdx = $index) {
-          <div
-            class="select-gallery-container valid"
-            [ngClass]="isSelected(listItem, 'Modifications') ? 'active' : ''"
-            (click)="selectListItem(listItem, 'Modifications')"
-            (mouseover)="mouseinListItem(listItem, 'Modifications')"
-            (mouseout)="mouseoutListItem()"
-          >
-            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
-            <button class="select-entity-btn">{{ listItem.codeAndName.name }} - {{ listItem.id }}</button>
+          @if (processedModifications().length) {
+          <!-- Panel Body -->
+          <div class="custom-panel-body">
+            <!-- Scrollable content only -->
+            <div class="scrollable-content" [class.big]="maxModificationsPages() === 1">
+              @for (listItem of processedModificationsToView(); track $index; let modificationIdx = $index) {
+              <div
+                class="select-gallery-container valid"
+                [ngClass]="isSelected(listItem, 'Modifications') ? 'active' : ''"
+                (click)="selectListItem(listItem, 'Modifications')"
+                (mouseover)="mouseinListItem(listItem, 'Modifications')"
+                (mouseout)="mouseoutListItem()"
+              >
+                <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
+                <button class="select-entity-btn">{{ listItem.codeAndName.name }} - {{ listItem.id }}</button>
+              </div>
+              <!-- @if (isSelected(listItem)) {
+                <div class="more-details-btn">
+                  <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
+                  <button class="details-btn" (click)="viewDetails()">View more details below</button>
+                </div>
+              } -->
+              }
+            </div>
+            <!-- Non scrollable paging -->
+            <div class="pagination-buttons" [style.display]="maxModificationsPages() > 1 ? '' : 'none'">
+              <button class="link-btn" (click)="setListViewPage(-1, 'Modifications')">View previous</button>
+              <span class="pagination-txt"> Page {{ currentModificationsPage() + 1 }} of {{ maxModificationsPages() }} </span>
+              <button class="link-btn" (click)="setListViewPage(1, 'Modifications')">View next</button>
+            </div>
           </div>
-          <!-- @if (isSelected(listItem)) {
-          <div class="more-details-btn">
-            <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.colors[0] }"></div>
-            <button class="details-btn" (click)="viewDetails()">View more details below</button>
-          </div>
-        } -->
-          } @if (currentModificationsPage() < maxModificationsPages() - 1) {
-          <button class="link-btn" (click)="setListViewPage(1, 'Modifications')">View next</button>
-          } } @else {
+          } @else {
           <p>This entry does not include any information about Modifications.</p>
           @if (hasRelatedEntries()) {
           <p>
