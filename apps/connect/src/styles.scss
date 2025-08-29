@@ -10,15 +10,14 @@
 @import url('libs/core/src/lib/styles/button.scss');
 @import url('libs/core/src/lib/styles/material.scss');
 @import url('libs/core/src/lib/styles/ag-grid.scss');
-@import url('./assets/entry-styles/ag-grid-table-styles/all-tables.scss');
-@import url('./assets/entry-styles/topology-viewer/pdbe-topology-style.scss');
 
-/* @import url('./assets/entry-styles/protvista/protvista.scss'); */
-@import url('./assets/entry-styles/protvista/new-protvista.scss');
+@import url('./assets/entry-styles/ag-grid-table-styles/table-exp-val-style.scss');
 @import url('./assets/entry-styles/extra/extra.scss');
 
-@import url('https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.css');
-@import url('https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css');
+// @import url('https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.min.css');
+// @import url('https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css');
+
+@import url('./assets/ebi/css/ebi-global.min.css');
 
 /*  @import url('https://molstar.org/pdbe-molstar/build/pdbe-molstar.css'); */
 
