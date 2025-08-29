@@ -33,10 +33,13 @@ export class AppComponent implements OnInit {
     });
   }
 
+  private readonly isLocalhost = window?.location?.hostname === 'localhost';
+
   async ngOnInit(): Promise<void> {
     this.init();
+
+    // d3 js is currently always imported
     await this.scriptLoader.loadScript('https://d3js.org/d3.v6.min.js');
-    await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
 
     const pathName = window.location.pathname;
     if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
@@ -49,8 +52,19 @@ export class AppComponent implements OnInit {
       return;
     }
 
+    // ligand env component is always imported
     await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
-    await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.min.js', true);
+
+    // import topology viewer only for localhost and route has `/pdb/`
+    // OR outside localhost && route has `pdbe/entry/pdb`
+    if ((this.isLocalhost && pathName.includes(`/pdb/`)) || (!this.isLocalhost && pathName.includes(`pdbe/entry/pdb`))) {
+      await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
+    }
+
+    // Heatmap components is only imported for Ligand pages (route has chemicalCompound)
+    if (pathName.includes(`/chemicalCompound/`)) {
+      await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.min.js', true);
+    }
   }
 
   private init(): void {
