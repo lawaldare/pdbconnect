@@ -13,7 +13,12 @@
   </button>
   <a href="https://github.com/PDBe-KB/pdbe-kb-manual/wiki/Interaction-statistics" target="_blank">Documentation</a>
   <div class="intx-component-container">
-    <lib-interactions-heatmap [ligandId]="ligandId()" (newFilteringEvent)="changeLigandEnvironmentFilters($event)" [interactions]="interaction" />
+    <lib-interactions-heatmap
+      [ligandId]="ligandId()"
+      (newFilteringEvent)="changeLigandEnvironmentFilters($event)"
+      [interactions]="interaction"
+      [atomNumber]="atomNumber"
+    />
     <div class="ligandEnv-container">
       <div class="ligandEnv-header">
         <h4>

@@ -12,22 +12,22 @@
           <mat-radio-button (click)="changeSorting('by_frequency')">Interactions</mat-radio-button>
         </div>
         <div class="controls-row">
-          @if (viewerData) {
+          @if (viewerData()) {
           <span class="controls-title">
-            Filter by: @if (viewerData.filters.length > 0) {
+            Filter by: @if (viewerData()!.filters.length > 0) {
             <button class="vf-button vf-button--link" (click)="clearFilters()">Clear</button>
             }
           </span>
           }
         </div>
         <div id="hm-int-filters">
-          @if (interactionFilters) { @for (filter of interactionFilters; track filter) {
+          @if (interactionFilters()) { @for (filter of interactionFilters(); track filter) {
           <mat-checkbox [checked]="hasFilter(filter)" (click)="filterByInteraction($event.target!, filter)">{{ getFilterName(filter) }}</mat-checkbox>
           } }
         </div>
       </div>
       <div id="hm-aa-legend">
-        @if (aminoAcidsLegend) { @for (aa of aminoAcidsLegend; track aa) {
+        @if (aminoAcidsLegend()) { @for (aa of aminoAcidsLegend(); track aa) {
         <div class="each-aa-box">
           <img [src]="getImgForAA(aa)" width="15px" alt="atom symbols" />
           <span>{{ aa }}</span>
@@ -37,22 +37,34 @@
     </div>
   </div>
   <div class="visualisation-column">
-    @if (atomNamesList) {
     <nightingale-manager>
-      <nightingale-navigation [length]="viewerData!.length" width="581" height="40" margin-left="0" margin-right="10"></nightingale-navigation>
+      @if (atomNumber()) {
+      <nightingale-navigation
+        [display-start]="1"
+        [display-end]="atomNumber()"
+        [length]="atomNumber()"
+        width="581"
+        height="40"
+        margin-left="0"
+        margin-right="10"
+      ></nightingale-navigation>
+      } @if (atomNamesString()) {
       <pdb-ligand-interactions-sequence
         id="ligand-atoms-sequence"
-        [length]="viewerData!.length"
-        [sequence]="atomNamesString!"
+        #ligAtomsSequence
+        [length]="atomNumber()"
+        [sequence]="atomNamesString()"
         height="40"
         width="581"
         margin-left="0"
         margin-right="10"
         style="padding-top: 10px"
       ></pdb-ligand-interactions-sequence>
+      }
       <nightingale-sequence-heatmap-new
         id="heatmap-container-atoms"
         heatmap-id="heatmap-atoms"
+        #heatmapAtoms
         width="581"
         height="23"
         margin-left="0"
@@ -62,6 +74,7 @@
       <nightingale-sequence-heatmap-new
         id="heatmap-container-resids"
         heatmap-id="heatmap-resids"
+        #heatmapResids
         width="581"
         height="390"
         margin-left="0"
@@ -70,7 +83,6 @@
         hm-highlight-width="1"
       ></nightingale-sequence-heatmap-new>
     </nightingale-manager>
-    }
   </div>
 </div>
 <div class="interactions-heatmap-legend">

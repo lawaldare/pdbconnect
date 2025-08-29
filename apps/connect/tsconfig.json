@@ -12,7 +12,7 @@
     "checkJs": false
   },
   "files": [],
-  "include": ["src/**/*.ts", "src/**/*.js"],
+  "include": ["src/**/*.ts", "src/**/*.js", "src/assets/heatmap-components-v0.2.min.js"],
   "references": [
     {
       "path": "./tsconfig.app.json"

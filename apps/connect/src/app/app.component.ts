@@ -50,7 +50,7 @@ export class AppComponent implements OnInit {
     }
 
     await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
-    await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.js', true);
+    await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.min.js', true);
   }
 
   private init(): void {
@@ -72,6 +72,6 @@ export class AppComponent implements OnInit {
 
   private async runAbsolutePath() {
     await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-2.0.0-min.js'), true);
-    await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.js'), true);
+    await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.min.js'), true);
   }
 }
