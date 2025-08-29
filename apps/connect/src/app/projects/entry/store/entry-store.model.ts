@@ -23,7 +23,7 @@ import {
   SBGRIDExperimentRawData,
 } from '../data-models/experiment-raw-data.model';
 import { EntryStatus } from '../data-models/status.model';
-import { Interaction } from '../data-models/interaction.model';
+import { InteractionFromAPI } from '../data-models/interaction.model';
 import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
 import { LigandMonomer } from '../data-models/ligand-monomers.model';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
@@ -72,7 +72,7 @@ export interface EntryStoreState {
   entryStatus: EntryStatus | undefined;
   interactions: {
     [chainId: string]: {
-      [residueId: string]: Interaction[];
+      [residueId: string]: InteractionFromAPI;
     };
   };
   residueListing: ResidueListed[];

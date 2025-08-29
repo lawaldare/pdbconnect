@@ -127,7 +127,7 @@ export class EntryEffects {
         )
       ),
       mergeMap(({ cached, action }) => {
-        if (cached && cached.length > 0) {
+        if (cached) {
           // Return success action with cached value
           return of(
             EntryActions.getInteractionsSuccess({
@@ -147,7 +147,7 @@ export class EntryEffects {
                 EntryActions.getInteractionsSuccess({
                   chainId: action.chainId,
                   residueId: action.residueId,
-                  interactions: data.interactions,
+                  interactions: data,
                 })
               ),
               catchError(() => of(EntryActions.getInteractionsFailure()))

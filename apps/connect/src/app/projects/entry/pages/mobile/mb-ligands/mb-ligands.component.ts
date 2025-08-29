@@ -172,7 +172,7 @@ export class MbLigandsComponent {
       const residueId = this.currentResidueId();
       if (!chainId || !residueId) return;
       if (!allInteractions || Object.keys(allInteractions).length === 0) return;
-      const interactions = allInteractions[chainId][residueId];
+      const interactions = allInteractions[chainId][residueId].interactions;
       this.triggerLigandInteractionsSideEffects(interactions);
     });
   }

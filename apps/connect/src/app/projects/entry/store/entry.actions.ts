@@ -18,7 +18,7 @@ import {
   SBGRIDExperimentRawData,
 } from '../data-models/experiment-raw-data.model';
 import { EntryStatus } from '../data-models/status.model';
-import { Interaction } from '../data-models/interaction.model';
+import { InteractionFromAPI } from '../data-models/interaction.model';
 import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
 import { Symmetry } from '../data-models/assembly.model';
 import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
@@ -130,7 +130,7 @@ export const EntryActions = createActionGroup({
     'Get Entry Status Success': props<{ entryStatus: EntryStatus }>(),
     'Get Entry Status Failure': emptyProps(),
     'Get Interactions': props<{ chainId: string; residueId: string }>(),
-    'Get Interactions Success': props<{ chainId: string; residueId: string; interactions: Interaction[] }>(),
+    'Get Interactions Success': props<{ chainId: string; residueId: string; interactions: InteractionFromAPI }>(),
     'Get Interactions Failure': emptyProps(),
     'Get Residue Listing': props<{ chainId: string }>(),
     'Get Residue Listing Success': props<{ residueListing: ResidueListed[] }>(),
