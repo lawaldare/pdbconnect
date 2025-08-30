@@ -53,16 +53,16 @@ export class AppComponent implements OnInit {
       return;
     }
 
-    // ligand env component is always imported
-    await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
-
     // import topology viewer only for localhost and route has `/pdb/`
     // OR outside localhost && route has `pdbe/entry/pdb`
     if ((this.isLocalhost && pathName.includes(`/pdb/`)) || (!this.isLocalhost && pathName.includes(`pdbe/entry/pdb`))) {
       // await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
-      await this.stylesLoader.loadStyle('./assets/entry-styles/extra/extra.css');
-      await this.stylesLoader.loadStyle('./assets/entry-styles/topology-viewer/pdbe-topology-style.css');
-      await this.stylesLoader.loadStyle('./assets/entry-styles/protvista/new-protvista.css');
+      await this.stylesLoader.loadStyle('./assets/entry-styles/extra/extra.min.css');
+      await this.stylesLoader.loadStyle('./assets/entry-styles/topology-viewer/pdbe-topology-style.min.css');
+      await this.stylesLoader.loadStyle('./assets/entry-styles/protvista/new-protvista.min.css');
+    } else {
+      // ligand env component is always imported for other pages
+      await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
     }
 
     // Heatmap components is only imported for Ligand pages (route has chemicalCompound)
