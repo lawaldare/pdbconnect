@@ -10,7 +10,7 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
-import { GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule, ScriptLoaderService, UtilService } from '@pdbc/core';
 import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../helpers/processed-data-to-controls';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -63,6 +63,7 @@ export class MacromoleculesTabComponent {
   private readonly dialog = inject(MatDialog);
   public readonly sharedDataFacade = inject(SharedDataFacade);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly scriptLoader = inject(ScriptLoaderService);
 
   public readonly gAS = inject(GoogleAnalyticsService);
 
@@ -281,6 +282,8 @@ export class MacromoleculesTabComponent {
   private modelIdObserver?: MutationObserver;
 
   constructor() {
+    this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
+
     this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe((idx) => {
       if (idx === undefined || idx === null) return;
       const datum = this.macromoleculeTableRows()[idx];
