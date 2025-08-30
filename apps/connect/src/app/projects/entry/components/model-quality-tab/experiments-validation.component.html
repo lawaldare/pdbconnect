@@ -449,9 +449,6 @@
           <h5>Experimental raw data</h5>
           <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.expRawDataTooltip" />
         </div>
-        <!-- <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="expRawDataTooltip" matTooltipPosition="below">
-          Experimental raw data
-        </h5> -->
         @for (table of currentData()?.experimentalRawData; track table) {
         <ag-grid-angular
           style="height: fit-content"
