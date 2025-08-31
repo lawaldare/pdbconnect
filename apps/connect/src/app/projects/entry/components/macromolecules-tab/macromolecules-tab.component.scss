@@ -31,6 +31,7 @@ section.info {
   flex-direction: row;
   gap: 20px;
   margin-bottom: 16px;
+  min-height: 80px;
 
   // switch layout in 1140 px or less screens ...
   @media (width <= 1140px) {
@@ -222,6 +223,7 @@ section.chart-area {
   flex-wrap: wrap;
   gap: 5px;
   width: 100%;
+  min-height: 700px;
 
   &.collapsed {
     flex-wrap: nowrap !important;
@@ -279,6 +281,7 @@ section.chart-area {
 @media screen and (width <= 1000px) {
   section.chart-area {
     flex-direction: column;
+    min-height: 1255px;
 
     .molstar-topol-container {
       width: 80%;
@@ -292,6 +295,7 @@ section.chart-area {
 
     &.collapsed {
       flex-direction: row;
+      min-height: 700px;
     }
 
     .molstar-topol-container.collapsed {
