@@ -6,7 +6,7 @@ import { VfEbiHeaderComponent } from '@vf-lib/ebi-header';
 import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 import { filter } from 'rxjs';
 import { environment } from '../environments/environment';
-import { ScriptLoaderService, StyleLoaderService, UtilService } from '@pdbc/core';
+import { ScriptLoaderService, UtilService } from '@pdbc/core';
 import { LigandsAssetPathService } from './projects/ligands/services/assets-path.service';
 
 declare const gtag: any;
@@ -22,7 +22,6 @@ export class AppComponent implements OnInit {
     private _router: Router,
     private utilService: UtilService,
     private scriptLoader: ScriptLoaderService,
-    private stylesLoader: StyleLoaderService,
     private assetPathService: LigandsAssetPathService
   ) {
     this._router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
@@ -57,9 +56,6 @@ export class AppComponent implements OnInit {
     // OR outside localhost && route has `pdbe/entry/pdb`
     if ((this.isLocalhost && pathName.includes(`/pdb/`)) || (!this.isLocalhost && pathName.includes(`pdbe/entry/pdb`))) {
       // await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
-      await this.stylesLoader.loadStyle('./assets/entry-styles/extra/extra.min.css');
-      await this.stylesLoader.loadStyle('./assets/entry-styles/topology-viewer/pdbe-topology-style.min.css');
-      await this.stylesLoader.loadStyle('./assets/entry-styles/protvista/new-protvista.min.css');
     } else {
       // ligand env component is always imported for other pages
       await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);

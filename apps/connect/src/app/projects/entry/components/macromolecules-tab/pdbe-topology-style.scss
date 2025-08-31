@@ -1,23 +1,23 @@
-section.topology-viewer-container > div > div > div:nth-child(2) {
+::ng-deep section.topology-viewer-container > div > div > div:nth-child(2) {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
   justify-content: space-between;
 }
 
-section.topology-viewer-container > div > div > div:nth-child(2) > img {
+::ng-deep section.topology-viewer-container > div > div > div:nth-child(2) > img {
   top: 0;
 }
 
-section.topology-viewer-container > div > div > div:nth-child(2) > a {
+::ng-deep section.topology-viewer-container > div > div > div:nth-child(2) > a {
   margin-top: 2px;
 }
 
-.menuDesc {
+::ng-deep .menuDesc {
   white-space: nowrap;
 }
 
-.menuOptions {
+::ng-deep .menuOptions {
   float: none;
   margin-left: 20px;
   display: flex;
@@ -25,13 +25,13 @@ section.topology-viewer-container > div > div > div:nth-child(2) > a {
   align-items: center;
 }
 
-.menuSelectbox {
+::ng-deep .menuSelectbox {
   height: 28px;
   font-size: 16px;
   margin: 0;
 }
 
-.resetIcon {
+::ng-deep .resetIcon {
   top: 0;
   right: 12px;
 }

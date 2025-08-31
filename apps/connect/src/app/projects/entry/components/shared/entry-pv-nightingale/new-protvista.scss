@@ -1,7 +1,7 @@
 /* ==========================================================================
    THEME VARIABLES & COLORS FOR ANGULAR MATERIALS
   ========================================================================== */
-.pv-protvista {
+::ng-deep .pv-protvista {
   --mat-checkbox-label-text-line-height: 18px;
   --mat-checkbox-label-text-size: 14px;
   --mdc-checkbox-state-layer-size: 26px;
@@ -14,7 +14,7 @@
   --mdc-checkbox-selected-pressed-state-layer-color: #0275ff;
 }
 
-.pv-protvista .mat-mdc-radio-button.mat-accent {
+::ng-deep .pv-protvista .mat-mdc-radio-button.mat-accent {
   --mdc-radio-selected-focus-icon-color: #0275ff;
   --mdc-radio-selected-hover-icon-color: #0275ff;
   --mdc-radio-selected-icon-color: #0275ff;
@@ -22,41 +22,41 @@
   --mat-radio-checked-ripple-color: #0275ff;
 }
 
-.pv-protvista .pv-track-label-col .mdc-label {
+::ng-deep .pv-protvista .pv-track-label-col .mdc-label {
   font-size: 12px;
 }
 
 /* ==========================================================================
    LAYOUT STRUCTURE (Track Rows, Columns, Containers)
   ========================================================================== */
-.pv-protvista .pv-track-row {
+::ng-deep .pv-protvista .pv-track-row {
   display: flex;
   align-content: center;
   flex-wrap: wrap;
 }
 
-.pv-protvista .pv-track-row.btns {
+::ng-deep .pv-protvista .pv-track-row.btns {
   display: flex;
   margin-bottom: 4px;
   margin-top: 6px;
 }
 
-.pv-protvista .pv-track-row.btns img {
+::ng-deep .pv-protvista .pv-track-row.btns img {
   height: 34px;
   margin-left: 8px;
   margin-right: 26px;
 }
 
-.pv-protvista .pv-track-row.btns p {
+::ng-deep .pv-protvista .pv-track-row.btns p {
   font-size: 14px;
   line-height: 30px;
 }
 
-.pv-protvista .pv-track-row.no-data {
+::ng-deep .pv-protvista .pv-track-row.no-data {
   min-height: 40px;
 }
 
-.pv-protvista .pv-track-col {
+::ng-deep .pv-protvista .pv-track-col {
   display: flex;
   flex-direction: column;
   width: 80%;
@@ -64,28 +64,28 @@
   z-index: 3;
 }
 
-.pv-protvista .pv-track-col.small {
+::ng-deep .pv-protvista .pv-track-col.small {
   width: 20%;
 }
 
-.pv-protvista .pv-track-container {
+::ng-deep .pv-protvista .pv-track-container {
   width: 80%;
 }
 
-.pv-protvista .pv-track-container.btns {
+::ng-deep .pv-protvista .pv-track-container.btns {
   width: 80%;
   display: flex;
   gap: 8px;
 }
 
-.pv-protvista .pv-track-container.no-data {
+::ng-deep .pv-protvista .pv-track-container.no-data {
   display: flex;
   align-items: center;
   padding-left: 4px;
   font-size: 14px;
 }
 
-.pv-protvista .pv-track-label-col {
+::ng-deep .pv-protvista .pv-track-label-col {
   width: 20%;
   margin-top: 2px;
   margin-bottom: 2px;
@@ -99,31 +99,31 @@
   cursor: pointer;
 }
 
-.pv-protvista .pv-track-label-col.nested {
+::ng-deep .pv-protvista .pv-track-label-col.nested {
   padding-left: 12px;
 }
 
-.pv-protvista .pv-track-label-col.subtrack {
+::ng-deep .pv-protvista .pv-track-label-col.subtrack {
   padding-left: 12px;
   cursor: default;
 }
 
-.pv-protvista .pv-track-label-col.nested.subtrack {
+::ng-deep .pv-protvista .pv-track-label-col.nested.subtrack {
   padding-left: 16px;
   cursor: default;
 }
 
-.pv-protvista .pv-track-label-col.variation {
+::ng-deep .pv-protvista .pv-track-label-col.variation {
   flex-direction: column;
   align-items: flex-start;
   overflow-x: auto;
 }
 
-.pv-protvista nightingale-scrollbox {
+::ng-deep .pv-protvista nightingale-scrollbox {
   width: 100%;
 }
 
-.pv-protvista .pv-track-label-col > .expand-icon {
+::ng-deep .pv-protvista .pv-track-label-col > .expand-icon {
   display: flex;
   width: 14px;
 }
@@ -133,39 +133,39 @@
   ========================================================================== */
 
 /* Border between expanded Tracks rows */
-.pv-protvista .non-header-track {
+::ng-deep .pv-protvista .non-header-track {
   border-bottom: 1px solid #c6c6c6;
 }
 
 /* Hide border on collapsed Tracks rows */
-.pv-protvista .non-header-track.track {
+::ng-deep .pv-protvista .non-header-track.track {
   border: none;
 }
 
 /* Track header column minimum height */
-.pv-protvista .non-header-track > .pv-track-label-col {
+::ng-deep .pv-protvista .non-header-track > .pv-track-label-col {
   min-height: 40px;
 }
 
 /* Track header column on expanded color */
-.pv-protvista .non-header-track.expanded > .pv-track-label-col {
+::ng-deep .pv-protvista .non-header-track.expanded > .pv-track-label-col {
   background-color: #e1e1e1;
 }
 
 /** Track header column on hover color  */
-.pv-protvista .pv-track-label-col.hoverable:hover,
-.pv-protvista .non-header-track > .pv-track-label-col.hoverable:hover,
-.pv-protvista .non-header-track.expanded > .pv-track-label-col.hoverable:hover {
+::ng-deep .pv-protvista .pv-track-label-col.hoverable:hover,
+::ng-deep .pv-protvista .non-header-track > .pv-track-label-col.hoverable:hover,
+::ng-deep .pv-protvista .non-header-track.expanded > .pv-track-label-col.hoverable:hover {
   background-color: #efefef;
 }
 
 /* Custom Tracks separation border */
-.pv-protvista .always-on-top .custom-row {
+::ng-deep .pv-protvista .always-on-top .custom-row {
   border-bottom: 1px solid #000;
 }
 
 /* Custom Tracks maximum row height */
-.pv-protvista .always-on-top .non-header-track > .pv-track-label-col {
+::ng-deep .pv-protvista .always-on-top .non-header-track > .pv-track-label-col {
   max-height: 40px;
   text-overflow: ellipsis;
 }
@@ -174,7 +174,7 @@
   TOOLTIP STYLING (Hover + Pinned)
   ========================================================================== */
 
-.pv-protvista .manual-tooltip {
+::ng-deep .pv-protvista .manual-tooltip {
   background-color: #fff;
   color: #1a1c1a;
   font-family: 'IBM Plex Sans', Arial, Helvetica, sans-serif;
@@ -191,32 +191,32 @@
   border-radius: 0;
 }
 
-.pv-protvista .manual-tooltip a {
+::ng-deep .pv-protvista .manual-tooltip a {
   font-size: 16px;
 }
 
 /* For Variation tooltips (tables received as tooltipContent) styling */
-.pv-protvista .manual-tooltip td {
+::ng-deep .pv-protvista .manual-tooltip td {
   font-size: 14px;
   padding: 2px 4px;
   line-height: 20px;
 }
 
 /* For Variation tooltips (tables received as tooltipContent) styling */
-.pv-protvista .manual-tooltip td a {
+::ng-deep .pv-protvista .manual-tooltip td a {
   font-size: 14px;
 }
 
 /* Pinned tooltips share normal tooltip stylings
 with extra ajustments for close button */
-.pv-protvista .pinned-tooltip .tooltip-header {
+::ng-deep .pv-protvista .pinned-tooltip .tooltip-header {
   float: right;
   margin-top: -6px;
   margin-right: -6px;
   max-height: 20px;
 }
 
-.pv-protvista .pinned-tooltip .close-btn {
+::ng-deep .pv-protvista .pinned-tooltip .close-btn {
   border: none;
   background: transparent;
   cursor: pointer;
@@ -224,7 +224,7 @@ with extra ajustments for close button */
   color: #888;
 }
 
-.pv-protvista .pinned-tooltip .close-btn:hover {
+::ng-deep .pv-protvista .pinned-tooltip .close-btn:hover {
   color: #000;
 }
 
@@ -232,17 +232,17 @@ with extra ajustments for close button */
    VISUAL ELEMENTS (Icons, Legend, Buttons, Sequence Text)
    ========================================================================== */
 
-.pv-protvista .icon {
+::ng-deep .pv-protvista .icon {
   height: 15px;
   margin-bottom: 2px;
 }
 
-/* .pv-protvista .pv-link-btn {
+/* ::ng-deep .pv-protvista .pv-link-btn {
    font-size: 14px;
    line-height: 18px;
 } */
 
-.pv-protvista .pv-link-btn {
+::ng-deep .pv-protvista .pv-link-btn {
   line-height: 18px;
   padding: 6px 12px;
   font-size: 14px;
@@ -255,7 +255,7 @@ with extra ajustments for close button */
   cursor: pointer;
 }
 
-.pv-protvista .pv-sel-menu-item {
+::ng-deep .pv-protvista .pv-sel-menu-item {
   border-color: #0a5032;
   border-width: 1px;
   border-style: solid;
@@ -268,22 +268,22 @@ with extra ajustments for close button */
   color: #0a5032;
 }
 
-.pv-protvista .pv-sel-menu-item.sel {
+::ng-deep .pv-protvista .pv-sel-menu-item.sel {
   border-style: dashed;
 }
 
 /* Overrides Nightingale-sequence default font size (too small) */
-.pv-protvista .sequence,
-.pv-protvista .sequence > .base {
+::ng-deep .pv-protvista .sequence,
+::ng-deep .pv-protvista .sequence > .base {
   font-size: 12px;
 }
 
 /* Legend styles below migrated from previous protvista */
-.pv-protvista .legend {
+::ng-deep .pv-protvista .legend {
   margin-top: 8px;
 }
 
-.pv-protvista .protvista-sc-legend {
+::ng-deep .pv-protvista .protvista-sc-legend {
   display: flex;
   flex-direction: column;
   margin-top: 6px;
@@ -294,7 +294,7 @@ with extra ajustments for close button */
   }
 }
 
-.pv-protvista .pv-legend-color {
+::ng-deep .pv-protvista .pv-legend-color {
   display: inline-block;
   min-height: 1rem;
   min-width: 1rem;
@@ -302,7 +302,7 @@ with extra ajustments for close button */
   max-height: 1rem;
 }
 
-.pv-protvista .pv-legend-text {
+::ng-deep .pv-protvista .pv-legend-text {
   display: inline-block;
   font-size: 90%;
   text-align: left;
@@ -310,6 +310,6 @@ with extra ajustments for close button */
   margin-left: 2px;
 }
 
-/** .pv-protvista g.highlighted > rect:not(:last-child) {
+/** ::ng-deep .pv-protvista g.highlighted > rect:not(:last-child) {
   fill: #ffffff66;
 } */

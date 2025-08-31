@@ -4,6 +4,7 @@
   --vf-button-shadow-border-color: #0a5032;
   --vf-button-shadow-background-color: #0a5032;
   --vf-button-border-color--visited: #0a5032;
+
   color: #0a5032;
   padding: 4px 8px;
   height: 36px;
@@ -15,12 +16,14 @@
   font-weight: 500;
   line-height: 27.2px;
 }
+
 .filter-btns-container {
   display: flex;
   margin-bottom: 12px;
   gap: 12px;
   flex-wrap: wrap;
 }
+
 .filter-btn {
   color: var(--Neutral-900, #1a1c1a);
   font-size: 14px;
@@ -30,15 +33,18 @@
   cursor: pointer;
   background: #f3f3f3;
 }
+
 .filter-btn:hover {
   background: #e7efdd;
 }
+
 .filter-btn.active {
   color: #0a5032;
   font-weight: 500;
   border: 1px solid #e7efdd;
   background: #d0debb;
 }
+
 html {
   --mat-menu-container-shape: 0px;
   --mat-app-corner-extra-small: 0px;
@@ -57,20 +63,25 @@ html {
   --mat-menu-item-label-text-weight: normal;
   --mat-app-label-large-weight: normal;
 }
+
 .mat-mdc-menu-content {
   max-height: 400px;
 }
+
 .mat-mdc-menu-item {
   min-height: 40px !important;
 }
+
 span.mat-mdc-menu-item {
   cursor: pointer;
 }
+
 span.mat-mdc-menu-item.small > .mat-mdc-menu-content,
 .mat-mdc-menu-content .mat-mdc-menu-item .mat-mdc-menu-item-text {
   font-size: 16px !important;
   line-height: 27.2px !important;
 }
+
 .tab-tag {
   margin-left: 4px;
   display: inline-flex;
@@ -87,30 +98,37 @@ span.mat-mdc-menu-item.small > .mat-mdc-menu-content,
   line-height: 16.5px;
   cursor: pointer;
 }
+
 .tab-tag.no-chip {
   display: none;
 }
+
 .tab-tag.na {
   background: var(--Red-700, #bd103b);
 }
+
 .tab-tag.new {
   background: var(--Brand-600, #0c8950);
 }
+
 .mat-mdc-tab-body-content {
   height: auto !important;
   overflow: visible !important;
   display: block !important;
 }
+
 .mat-mdc-tab-body {
   height: auto !important;
   overflow: visible !important;
   display: block !important;
 }
+
 .mat-mdc-tab-body.mat-mdc-tab-body-active {
   height: auto !important;
   overflow: visible !important;
   display: block !important;
 }
+
 .entry-pgs-tooltip {
   .mdc-tooltip__surface {
     background-color: #fff;
