@@ -4,19 +4,19 @@ import * as d3 from 'd3';
 export const headerSearchComplexConfig = {
   examples: [
     {
-      label: 'Hemoglobin HbA complex',
+      label: 'Hemoglobin HbA (PDB-CPX-159519)',
       value: 'PDB-CPX-159519',
     },
     {
-      label: 'Cyclin A2-CDK2 complex',
+      label: 'Cyclin A2-CDK2 (PDB-CPX-148886)',
       value: 'PDB-CPX-148886',
     },
     {
-      label: '2nu8',
+      label: 'Succinyl-CoA synthetase (2nu8)',
       value: '2nu8',
     },
     {
-      label: '4fyy',
+      label: 'Aspartate carbamoyltransferase (4fyy)',
       value: '4fyy',
     },
   ],
