@@ -68,7 +68,6 @@ export class MbMacromoleculeComponent {
 
   public dropdownOptions: DownloadOption[] = [];
   public dropdownSelected!: string;
-  public sequenceDetails: SequenceDetail[] = [];
 
   @ViewChild('macroMoleculeTitle') macroMoleculeTitle!: ElementRef;
 
@@ -102,6 +101,14 @@ export class MbMacromoleculeComponent {
 
     return filteredIsoformsMapping;
   });
+
+  public sequenceDetails = signal<
+    | {
+        title: string;
+        fullSequence: string;
+      }
+    | undefined
+  >(undefined);
 
   public currentViewState = signal<ViewState>(ViewState.List);
   public viewStates = ViewState;
@@ -260,7 +267,10 @@ export class MbMacromoleculeComponent {
       };
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
-    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+
+    this.sequenceDetails.set(undefined);
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.sequenceDetails.set(sequenceDetails);
 
     await this.renderInMolstar(this.selectedMacromolecule());
   }
@@ -347,7 +357,8 @@ export class MbMacromoleculeComponent {
     await this.renderInMolstar(this.selectedMacromolecule());
   }
 
-  public copySequence(sequenceDetail: SequenceDetail) {
+  public copySequence(sequenceDetail?: { title: string; fullSequence: string }) {
+    if (!sequenceDetail) return;
     const text = `${sequenceDetail.title}\r\n${sequenceDetail.fullSequence}`;
     this.utilService.copy(text);
   }

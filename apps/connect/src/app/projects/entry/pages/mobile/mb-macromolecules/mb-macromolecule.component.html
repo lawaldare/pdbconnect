@@ -124,19 +124,13 @@
         <p>{{dropdownOptions[0].name}}</p>
         } @else {}
       </div>
-      @if (sequenceDetails.length > 0) {
+      @if (sequenceDetails()) {
       <div class="sequence-container">
-        @for (sequenceDetail of sequenceDetails; track sequenceDetail;) {
         <div class="title">
           <span class="text">FASTA sequence</span>
-          <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
+          <button (click)="copySequence(sequenceDetails())">Copy sequence</button>
         </div>
-        <div class="sequence">
-          @for (sequenceSegment of sequenceDetail.segments; track sequenceSegment) {
-          <span [style.background]="sequenceSegment.color ? sequenceSegment.color : ''">{{ sequenceSegment.sequence }}</span>
-          }
-        </div>
-        }
+        <div class="sequence">{{ sequenceDetails()?.fullSequence }}</div>
       </div>
       }
     </mat-tab>

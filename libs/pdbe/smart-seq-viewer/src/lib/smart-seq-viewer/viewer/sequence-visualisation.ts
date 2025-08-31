@@ -1,62 +1,14 @@
 import { scaleOrdinal, scaleQuantile } from 'd3-scale';
 import { BehaviorSubject } from 'rxjs';
-
-export type SmartSequenceAnnotationScales = 'ordinal' | 'quantile';
-export type SmartSequenceAnnotationRenderingTypes = 'Background' | 'Underline' | 'CircleAbove' | 'TextColour';
-
-export interface AlternativeNumbering {
-  numberingType: 'Auth' | 'UniProt'; // e.g Auth, UniProt
-  identifier: 'auth' | 'uniprot';
-  alternativeSequence: Array<Array<string | number>>;
-  extraIdentifiers?: string[][];
-}
-
-export interface TooltipFormatting {
-  preferred: 'auth' | 'uniprot' | 'none';
-  secondary?: 'auth' | 'uniprot' | 'none';
-  extraLine?: 'auth' | 'uniprot' | 'none';
-}
-
-export interface SmartSequenceAnnotation {
-  name: string; // Human-readable label for the annotation
-  identifier: string; // Unique ID defined by the user
-  scaleType: SmartSequenceAnnotationScales; // D3 scale type
-  scaleDomain: 'auto' | string[]; // Categories or values; 'auto' will infer from data
-  scaleRange: string[]; // Array of colors to map values to
-  rendering: SmartSequenceAnnotationRenderingTypes; // For now only 'Background' supported
-  data: {
-    residueIndex: number; // 1-indexed
-    value: string; // Category label or value used for color mapping
-    extraData?: any;
-  }[];
-}
-
-export interface SmartSequenceAnnotationForEvent {
-  name: string; // Human-readable label for the annotation
-  identifier: string; // Unique ID defined by the user
-  scaleType: SmartSequenceAnnotationScales; // D3 scale type
-  scaleDomain: 'auto' | string[]; // Categories or values; 'auto' will infer from data
-  scaleRange: string[]; // Array of colors to map values to
-  rendering: SmartSequenceAnnotationRenderingTypes; // For now only 'Background' supported
-  datum: {
-    residueIndex: number; // 1-indexed
-    value: string; // Category label or value used for color mapping
-    extraData?: any;
-  };
-}
-
-export interface SmartSequenceVisOptions {
-  grouping?: boolean;
-  groupingLineBreak?: boolean;
-  responsive?: boolean;
-  externalEvents?: boolean;
-  hoverTooltips?: boolean;
-  tooltipFormatting?: TooltipFormatting;
-  scrollContainerMaxHeight?: number;
-  isNucleic?: boolean;
-  useAuthNumbers?: boolean;
-  helpLogoSrc?: string;
-}
+import {
+  AlternativeNumbering,
+  SmartSequenceAnnotation,
+  SmartSequenceAnnotationForEvent,
+  SmartSequenceAnnotationRenderingTypes,
+  SmartSequenceVisOptions,
+  TooltipFormatting,
+} from './seq-viewer-models';
+import { validateAlternativeNumberings, validateAnnotations, validateNonObserved } from './seq-viewer-validation';
 
 export class SmartSequenceVisualisation {
   private sequence: string;
@@ -183,13 +135,13 @@ export class SmartSequenceVisualisation {
     container.style.width = '100%';
     container.style.maxWidth = '100%';
 
-    this.validateAlternativeNumberings(alternativeNumberings || []);
+    validateAlternativeNumberings(this.sequence, alternativeNumberings || []);
     this.alternativeNumberings = alternativeNumberings;
 
-    this.validateNonObserved(nonObservedResidues || []);
+    validateNonObserved(this.sequence, nonObservedResidues || []);
     this.nonObservedResidues = nonObservedResidues;
 
-    this.validateAnnotations(initialAnnotations);
+    validateAnnotations(initialAnnotations);
     this.annotations = [...initialAnnotations];
 
     this.visualisationAndSidebarContainer = this.createFlexBoxWrapper();
@@ -330,69 +282,6 @@ export class SmartSequenceVisualisation {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
       this.resizeObserver = null;
-    }
-  }
-
-  private onlyDigits(s: string) {
-    for (let i = s.length - 1; i >= 0; i--) {
-      const d = s.charCodeAt(i);
-      if (d < 48 || d > 57) return false;
-    }
-    return true;
-  }
-
-  private validateAlternativeNumberings(alternativeNumberings: AlternativeNumbering[]) {
-    const seqLength = this.sequence.length;
-    for (const alternativeNumbering of alternativeNumberings) {
-      for (const seq of alternativeNumbering.alternativeSequence) {
-        const altLength = seq.length;
-        if (seqLength !== altLength) {
-          throw new Error(`${alternativeNumbering.numberingType} numbering has different length (${altLength}) from seq length (${seqLength})`);
-        }
-      }
-      if (alternativeNumbering.identifier === 'auth') {
-        if (alternativeNumbering.alternativeSequence.length > 1) {
-          throw new Error(`Only a single Auth alternative sequence numbering is allowed`);
-        }
-        const seq = alternativeNumbering.alternativeSequence[0] as string[]; // auth should have single sequence
-        const authIsNumeric = seq.every((num) => this.onlyDigits(num));
-        if (authIsNumeric) {
-          this.authOffset = `${parseInt(seq[0]) - 1}`;
-        } else {
-          this.authOffset = 'non-trivial';
-        }
-      }
-    }
-  }
-
-  private validateNonObserved(nonObserved: number[]) {
-    const seqLength = this.sequence.length;
-    for (const num of nonObserved) {
-      if (num < 1 || num > seqLength) {
-        throw new Error(`Invalid non-observed resnum: ${num}`);
-      }
-    }
-  }
-
-  private validateAnnotations(annotations: SmartSequenceAnnotation[]): void {
-    const identifiers = new Set<string>();
-    const names = new Set<string>();
-    const renderings = new Set<SmartSequenceAnnotationRenderingTypes>();
-
-    for (const ann of annotations) {
-      if (identifiers.has(ann.identifier)) {
-        throw new Error(`Duplicate annotation identifier: ${ann.identifier}`);
-      }
-      if (names.has(ann.name)) {
-        throw new Error(`Duplicate annotation name: ${ann.name}`);
-      }
-      if (renderings.has(ann.rendering)) {
-        throw new Error(`Only one annotation per rendering type is allowed. Duplicate: ${ann.rendering}`);
-      }
-
-      identifiers.add(ann.identifier);
-      names.add(ann.name);
-      renderings.add(ann.rendering);
     }
   }
 

@@ -1,5 +1,5 @@
-import { SmartSequenceAnnotation, SmartSequenceAnnotationRenderingTypes } from './sequence-visualisation';
-import { AlternativeNumbering } from './sequence-visualisation';
+import { SmartSequenceAnnotation, SmartSequenceAnnotationRenderingTypes } from './seq-viewer-models';
+import { AlternativeNumbering } from './seq-viewer-models';
 
 const AMINO_ACIDS = 'ACDEFGHIKLMNPQRSTVWY';
 const CATEGORIES = ['low', 'medium', 'high'];

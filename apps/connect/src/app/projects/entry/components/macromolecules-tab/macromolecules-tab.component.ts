@@ -24,7 +24,7 @@ import { SharedDataFacade } from '../shared/shared-data.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
-import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
+import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
 import { EntryActions } from '../../store/entry.actions';
@@ -33,7 +33,6 @@ import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
-import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 
 // necessary to render the topology viewer
@@ -74,6 +73,8 @@ export class MacromoleculesTabComponent {
   public dropdownOptions: DownloadOption[] = [];
   public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
   public dashboardStatLinks = dashboardStatLinks;
+
+  public macromoleculeSequence = computed(() => this.sequenceDetails()?.fullSequence);
   public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
 
   private molstarReady = signal(false);
@@ -137,7 +138,7 @@ export class MacromoleculesTabComponent {
   public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
   public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
-  public readonly residueListing = toSignal(this.globalStore.select(EntrySelectors.residueListing));
+  public readonly residueListingObservable = this.globalStore.select(EntrySelectors.residueListing);
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
 
   public selectionStats = signal<ProteinSummaryStats | undefined>(undefined);
@@ -238,7 +239,13 @@ export class MacromoleculesTabComponent {
   @ViewChild('topologyViewerContainer') topologyViewerContainer!: ElementRef;
   private topologyViewerInstance: any;
 
-  public sequenceDetails: SequenceDetail[] = [];
+  public sequenceDetails = signal<
+    | {
+        title: string;
+        fullSequence: string;
+      }
+    | undefined
+  >(undefined);
 
   public selectionUniprotId = 'None';
   public selectionTypeText?: string;
@@ -264,30 +271,34 @@ export class MacromoleculesTabComponent {
 
   public currentMacromoleculeDatum = signal<MacromoleculesRowData | undefined>(undefined);
 
-  public altSequences = computed(() => {
-    const residueListing = this.residueListing();
-    if (!residueListing || residueListing.length === 0) return [];
-    const authNumbering = createAuthAlternateNumbering(residueListing);
-    return [authNumbering];
-  });
+  public altSequences = signal<AlternativeNumbering[] | undefined>(undefined);
+  public nonObserved = signal<number[] | undefined>(undefined);
 
-  public nonObserved = computed(() => {
-    const residueListing = this.residueListing();
-    if (!residueListing || residueListing.length === 0) return [];
-    const nonObservedResidues = getNonObserved(residueListing);
-    return nonObservedResidues;
+  public seqViewerReady = computed(() => {
+    const hasSequence = this.macromoleculeSequence() !== undefined;
+    const hasAltSequences = this.altSequences() !== undefined;
+    const hasNonObserved = this.nonObserved() !== undefined;
+    const hasBgAnnotations = this.backgroundAnnotation() !== undefined;
+    const hasCurrentSelectionEntityId = this.currentSelectionEntityId() !== undefined;
+    const hasCurrentSelectionChainId = this.currentSelectionChainId() !== undefined;
+    return hasSequence && hasAltSequences && hasNonObserved && hasBgAnnotations && hasCurrentSelectionEntityId && hasCurrentSelectionChainId;
   });
 
   public currentModelId$ = new BehaviorSubject<string>('1');
   private modelIdObserver?: MutationObserver;
 
+  private topolViewerMutex = Promise.resolve();
+
   constructor() {
-    this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
+    this.topolViewerMutex = this.topolViewerMutex.then(async () => {
+      await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
+    });
 
     this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe((idx) => {
       if (idx === undefined || idx === null) return;
       const datum = this.macromoleculeTableRows()[idx];
       if (datum) {
+        this.sequenceDetails.set(undefined);
         this.currentMacromoleculeDatum.set(datum);
         this.triggerMacromoleculeUpdateSideEffects(datum);
       }
@@ -302,9 +313,28 @@ export class MacromoleculesTabComponent {
     this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
       this.updateBackgroundAnnotation();
     });
+
     this.proteinsStatsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((proteinSummary) => {
       this.selectionStats.set(proteinSummary);
     });
+
+    this.residueListingObservable
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        distinctUntilChanged(),
+        filter((resList) => resList !== undefined)
+      )
+      .subscribe((residueListing) => {
+        if (residueListing.length > 0) {
+          const authNumbering = createAuthAlternateNumbering(residueListing);
+          const nonObservedResidues = getNonObserved(residueListing);
+          this.altSequences.set([authNumbering]);
+          this.nonObserved.set(nonObservedResidues);
+        } else {
+          this.altSequences.set([]);
+          this.nonObserved.set([]);
+        }
+      });
   }
 
   getStatValue(id: string): number | undefined {
@@ -318,7 +348,11 @@ export class MacromoleculesTabComponent {
 
     // updates shown sequence on new macromolecule
     const chainId = this.dropdownSelected?.split('Chain ')[1];
-    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
+    this.sequenceDetails.set(sequenceDetails);
+
+    this.altSequences.set(undefined);
+    this.nonObserved.set(undefined);
     this.globalStore.dispatch(
       EntryActions.getResidueListing({
         chainId: chainId,
@@ -345,8 +379,9 @@ export class MacromoleculesTabComponent {
       };
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
-
-    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.sequenceDetails.set(undefined);
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.sequenceDetails.set(sequenceDetails);
     this.updateBackgroundAnnotation();
   }
 
@@ -412,9 +447,13 @@ export class MacromoleculesTabComponent {
 
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
-    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule as MacromoleculesRowData, this.dropdownSelected);
+    if (!macromolecule) return;
 
-    if (macromolecule) await this.renderVisualisations(macromolecule);
+    this.sequenceDetails.set(undefined);
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.sequenceDetails.set(sequenceDetails);
+
+    await this.renderVisualisations(macromolecule);
     this.updateBackgroundAnnotation();
   }
 
@@ -432,7 +471,8 @@ export class MacromoleculesTabComponent {
     this.isSidebarDisplayed.update((prev) => !prev);
   }
 
-  public copySequence(sequenceDetail: SequenceDetail) {
+  public copySequence(sequenceDetail?: { title: string; fullSequence: string }) {
+    if (!sequenceDetail) return;
     const text = `${sequenceDetail.title}\r\n${sequenceDetail.fullSequence}`;
     this.utilService.copy(text);
     this.gAS.logEntryPageEvents('ep_copy_seq', {
@@ -494,31 +534,33 @@ export class MacromoleculesTabComponent {
   }
 
   private async initOrRefreshTopologyViewer(macromolecule: MacromoleculesRowData) {
-    const topologyContainer = this.topologyViewerContainer.nativeElement;
+    this.topolViewerMutex = this.topolViewerMutex.then(() => {
+      const topologyContainer = this.topologyViewerContainer.nativeElement;
 
-    // stop if this dashboard does not have topology viewer (initially false and then set in onTableRowSelection according to tabName input)
-    if (!this.hasTopologyViewer && topologyContainer) {
-      topologyContainer.innerHTML = '';
-      return;
-    }
+      // stop if this dashboard does not have topology viewer (initially false and then set in onTableRowSelection according to tabName input)
+      if (!this.hasTopologyViewer && topologyContainer) {
+        topologyContainer.innerHTML = '';
+        return;
+      }
 
-    // topology viewer is only currently shown for macromolecules
-    // const datum = this.currentMacromoleculeDatum();
-    const entityId = (macromolecule as MacromoleculesRowData).additionalData.molecule.entity_id;
-    const chainId = this.dropdownSelected?.split('Chain ')[1];
+      // topology viewer is only currently shown for macromolecules
+      // const datum = this.currentMacromoleculeDatum();
+      const entityId = (macromolecule as MacromoleculesRowData).additionalData.molecule.entity_id;
+      const chainId = this.dropdownSelected?.split('Chain ')[1];
 
-    // topology viewer load or reload in page is simple
-    this.topologyViewerInstance = new PdbTopologyViewerPlugin();
+      // topology viewer load or reload in page is simple
+      this.topologyViewerInstance = new PdbTopologyViewerPlugin();
 
-    const options = {
-      entryId: this.entryId(),
-      entityId: `${entityId}`,
-      chainId: chainId,
-      subscribeEvents: true,
-    };
+      const options = {
+        entryId: this.entryId(),
+        entityId: `${entityId}`,
+        chainId: chainId,
+        subscribeEvents: true,
+      };
 
-    //Call render method to display the 2D view
-    this.topologyViewerInstance.render(topologyContainer, options);
+      //Call render method to display the 2D view
+      this.topologyViewerInstance.render(topologyContainer, options);
+    });
   }
 
   getLengthType(macromolecule: MacromoleculesRowData) {

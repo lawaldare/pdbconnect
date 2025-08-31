@@ -29,15 +29,10 @@ export function getMacromoleculeChainDropdownOptions(datum: MacromoleculesRowDat
 export function getMacromoleculeSequenceDetails(entryId: string, datum: MacromoleculesRowData, chainId: string) {
   const entity = datum.additionalData.molecule;
   const seq = entity.sequence;
-  const sequenceDetails: SequenceDetail[] = [];
-  if (seq) {
-    sequenceDetails.push({
-      title: `>FASTA pdb|${entryId}|${entity.molecule_name[0]}; Chain ${chainId}`,
-      fullSequence: seq,
-      segments: [{ sequence: seq }],
-    });
-  }
-  return sequenceDetails;
+  return {
+    title: `>FASTA pdb|${entryId}|${entity.molecule_name[0]}; Chain ${chainId}`,
+    fullSequence: seq,
+  };
 }
 
 function convertLigandDatumToString(id: string, selectedLigandInstance: QueryParam[]) {
