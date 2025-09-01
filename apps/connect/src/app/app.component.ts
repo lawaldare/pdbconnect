@@ -41,6 +41,7 @@ export class AppComponent implements OnInit {
 
     // d3 js is currently always imported
     await this.scriptLoader.loadScript('https://d3js.org/d3.v6.min.js');
+    await this.scriptLoader.loadScript('https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/js/script.js');
 
     const pathName = window.location.pathname;
     if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
