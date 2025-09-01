@@ -9,7 +9,7 @@ import { of, switchMap } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexStructuresComponent } from '../../page-sections/complex-structures/complex-structures.component';
 import { MaterialModule, ScrollPositionService, TruncateTextDirective } from '@pdbc/core';
-import { headerComplexLogoMenuConfig, headerSearchComplexConfig } from '../../../complex.constant';
+import { headerComplexLogoMenuConfig, headerSearchComplexConfig, idWarningTooltip } from '../../../complex.constant';
 import { ComplexPublicationsComponent } from '../../page-sections/complex-publications/complex-publications.component';
 import { ComplexLigandsComponent } from '../../page-sections/complex-ligands/complex-ligands.component';
 import { ComplexStoreState } from '../../../store/complex-store.model';
@@ -25,6 +25,7 @@ import { SuperComplexesComponent } from '../../page-sections/complex-supercomple
 import { SubComplexesComponent } from '../../page-sections/complex-subcomplex/subcomplexes.component';
 import { NotificationComponent } from '@pdbc/notification';
 import { ComplexPISAComponent } from '../../page-sections/complex-pisa/complex-pisa.component';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 
 @Component({
   selector: 'pdbc-main',
@@ -44,6 +45,7 @@ import { ComplexPISAComponent } from '../../page-sections/complex-pisa/complex-p
     MaterialModule,
     SuperComplexesComponent,
     NotificationComponent,
+    HelpIconWithTooltipComponent,
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',
@@ -70,6 +72,8 @@ export class MainComponent implements OnInit {
   public selectedTab = signal<number>(0);
 
   public showNotificationBanner = signal<boolean>(false);
+
+  public idWarningTooltip = idWarningTooltip;
 
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 

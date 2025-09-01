@@ -23,6 +23,21 @@ header {
   }
 }
 
+.sub-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .warning {
+    padding: 2px 4px;
+    background-color: #fae1b6;
+    color: #1a1c1a;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 27.2px;
+  }
+}
+
 section.feedback {
   display: flex;
   align-items: center;

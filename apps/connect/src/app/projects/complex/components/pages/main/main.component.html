@@ -18,7 +18,13 @@
           </a>
         </header>
         } @if(complexId()){
-        <h4>{{ complexId() }}</h4>
+        <div class="sub-header">
+          <h4>{{ complexId() }}</h4>
+          <div class="warning">
+            This ID is temporary and might change
+            <lib-help-icon-with-tooltip [tooltipText]="idWarningTooltip" />
+          </div>
+        </div>
         }
       </section>
       <section class="feedback">
