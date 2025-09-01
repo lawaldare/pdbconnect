@@ -636,23 +636,7 @@ export class MainDataProcessingFacade {
     return { downloads: mappedDownloadsUpdated, views: mappedViewsUpdated };
   }
 
-  // private groupFilesByLabels(labelGroups: Record<string, string[]>, flatList: DownloadOption[]): any[] {
-  //   const fileMap = new Map(flatList.map((file) => [file.name, file]));
-
-  //   const groupedArray = [];
-
-  //   for (const [groupName, names] of Object.entries(labelGroups)) {
-  //     const matchedFiles = names.map((name) => fileMap.get(name)).filter((file) => file && file.url);
-
-  //     if (matchedFiles.length > 0) {
-  //       groupedArray.push({ group: groupName, items: matchedFiles });
-  //     }
-  //   }
-
-  //   return groupedArray;
-  // }
-
-  groupFilesByLabels(labelGroups: Record<string, (string | RegExp)[]>, files: DownloadOption[]) {
+  private groupFilesByLabels(labelGroups: Record<string, (string | RegExp)[]>, files: DownloadOption[]) {
     const result: { group: string; items: DownloadOption[] }[] = [];
 
     for (const [group, patterns] of Object.entries(labelGroups)) {
@@ -667,38 +651,38 @@ export class MainDataProcessingFacade {
   }
 
   public getPageData(): void {
+    /* used in:
+     *  - entry-page-header
+     *  - domains-tab
+     *  - ligands-tab
+     *  - llm-tab
+     *  - macromolecules-tab
+     *  - mq-tab
+     *  - summary-tab
+     *  - mb-citation
+     *  - mb-model-quality
+     *  - mb-overview
+     *  - entry.bioschemas
+     * processed in:
+     * - assemblies
+     * - domains
+     * - ligands
+     * - macromolecules
+     * - preferred assembly
+     * */
     this.globalStore.dispatch(EntryActions.getSummaryData());
-    this.globalStore.dispatch(EntryActions.getEntryMolecules());
-    this.globalStore.dispatch(EntryActions.getExperiment());
-    this.globalStore.dispatch(EntryActions.getInterproMapping());
-    this.globalStore.dispatch(EntryActions.getPfamMapping());
-    this.globalStore.dispatch(EntryActions.getDownloadOptions());
-    this.globalStore.dispatch(EntryActions.getSummaryQualityScores());
-    this.globalStore.dispatch(EntryActions.getCathMapping());
-    this.globalStore.dispatch(EntryActions.getScop175Mapping());
-    this.globalStore.dispatch(EntryActions.getModifications());
-    this.globalStore.dispatch(EntryActions.getValidationKeyStats());
-    this.globalStore.dispatch(EntryActions.getValidationXrayRefine());
-    this.globalStore.dispatch(EntryActions.getPrimaryPublication());
-    this.globalStore.dispatch(EntryActions.getArticleCitingPDBEntry());
-    this.globalStore.dispatch(EntryActions.getPreferredAssembly());
-    this.globalStore.dispatch(EntryActions.getAssemblies());
-    this.globalStore.dispatch(EntryActions.getCarbohydrates());
-    this.globalStore.dispatch(EntryActions.getExperimentBMRBRawData());
-    this.globalStore.dispatch(EntryActions.getPDBRedoQualityScores());
-    this.globalStore.dispatch(EntryActions.getExperimentSBGridRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentIRRMCRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentEMPIARRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentPDBRawData());
-    this.globalStore.dispatch(EntryActions.getUniprotMapping());
-    this.globalStore.dispatch(EntryActions.getIsoformsMapping());
-    this.globalStore.dispatch(EntryActions.getGOMapping());
-    this.globalStore.dispatch(EntryActions.getECMapping());
-    this.globalStore.dispatch(EntryActions.getSymmetry());
-    this.globalStore.dispatch(EntryActions.getEntryLigandMonomers());
-    this.globalStore.dispatch(EntryActions.getEntryPolymerCoverage());
-    this.globalStore.dispatch(EntryActions.getEntryResidueWiseOutliers());
-    this.globalStore.dispatch(EntryActions.getModelQualityXray());
-    this.globalStore.dispatch(EntryActions.getLLMAnnotations());
+    this.globalStore.dispatch(EntryActions.getEntryMolecules()); // processed into macromolecules and ligands, used in domains-tab, model-quality, summary-tab, mb-overview
+    this.globalStore.dispatch(EntryActions.getPfamMapping()); // processed into domains
+    this.globalStore.dispatch(EntryActions.getCathMapping()); // processed into domains
+    this.globalStore.dispatch(EntryActions.getScop175Mapping()); // processed into domains
+    this.globalStore.dispatch(EntryActions.getModifications()); // processed into ligands, modifications
+    this.globalStore.dispatch(EntryActions.getPrimaryPublication()); // used in citations-tab, llm-tab, summary-tab, mb-citation-tab, mb-overview-tab, entry.bioschemas
+    this.globalStore.dispatch(EntryActions.getPreferredAssembly()); // processed into assemblies and used in processedAssemblies data for summary
+    this.globalStore.dispatch(EntryActions.getAssemblies()); // processed into domains, ligand, macromolecules, assemblies tied
+    this.globalStore.dispatch(EntryActions.getCarbohydrates()); // processed into macromolecules
+    this.globalStore.dispatch(EntryActions.getUniprotMapping()); // processed into macromolecules
+    this.globalStore.dispatch(EntryActions.getEntryLigandMonomers()); // processed into ligands, LigandsTabService
+    this.globalStore.dispatch(EntryActions.getEntryPolymerCoverage()); // processed into macromolecules and domains
+    this.globalStore.dispatch(EntryActions.getLLMAnnotations()); // used in llm-tab, here, interactive-tables
   }
 }

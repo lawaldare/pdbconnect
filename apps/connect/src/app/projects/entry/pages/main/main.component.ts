@@ -145,8 +145,6 @@ export class EntryMainPageComponent implements OnInit {
     env: environment.production ? '' : 'dev',
   };
 
-  public preferredAssemblyData = computed(() => this.compCommunication.preferredAssemblyData());
-
   constructor() {
     this.checkWindowWidth();
     this.route.queryParams.subscribe((params) => {

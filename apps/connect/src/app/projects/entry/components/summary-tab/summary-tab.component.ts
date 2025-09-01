@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
@@ -21,6 +21,7 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions, getMacromoleculeChainDropdownOptions } from '../../helpers/processed-data-to-controls';
 import { componentExistsInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { Molecule } from '../../data-models/molecule.model';
+import { EntryActions } from '../../store/entry.actions';
 
 type NestedDomainsData = Array<{
   macromolecule: MacromoleculesRowData;
@@ -33,7 +34,7 @@ type NestedDomainsData = Array<{
   styleUrl: './summary-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SummaryTabComponent {
+export class SummaryTabComponent implements OnInit {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   private readonly globalStore = inject(Store<EntryStoreState>);
@@ -46,6 +47,11 @@ export class SummaryTabComponent {
   public readonly organismScientificNames = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
   public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
   public readonly qualityScores = toSignal(this.globalStore.select(EntrySelectors.summaryQualityScores));
+
+  ngOnInit() {
+    /* 1. Fetch data for tab */
+    this.globalStore.dispatch(EntryActions.getSummaryQualityScores()); // used in summary, mb-overview
+  }
 
   /**
    * Left panel: Text information related

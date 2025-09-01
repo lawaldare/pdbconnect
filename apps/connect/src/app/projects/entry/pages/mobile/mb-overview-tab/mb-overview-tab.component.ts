@@ -17,6 +17,7 @@ import { MolstarGalleryComponent } from '@pdbe-lib/molstar-for-apps';
 import { MobileFacade } from '../mobile.facade';
 import { RelatedPublication } from '../../../data-models/related-publications.model';
 import { MappedResidue } from '../../../data-classes/data-models-and-definitions/other-models';
+import { EntryActions } from '../../../store/entry.actions';
 
 @Component({
   selector: 'pdbc-mb-overview-tab',
@@ -192,6 +193,12 @@ export class MbOverviewTabComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    /* 1. Fetch data for tab */
+    this.globalStore.dispatch(EntryActions.getSummaryQualityScores()); // used in summary, mb-overview
+    this.globalStore.dispatch(EntryActions.getExperiment());
+    this.globalStore.dispatch(EntryActions.getArticleCitingPDBEntry()); // used in citations, mb-overview, mb-citations
+    this.globalStore.dispatch(EntryActions.getIsoformsMapping()); // used in llm, macro, mb-overview, mb-macro
+
     combineLatest([
       this.globalStore.select(EntrySelectors.primaryPublication).pipe(filter(Boolean)),
       this.globalStore.select(EntrySelectors.entryId).pipe(filter(Boolean)),

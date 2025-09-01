@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
@@ -55,7 +55,7 @@ declare let PdbTopologyViewerPlugin: any;
   templateUrl: './macromolecules-tab.component.html',
   styleUrl: './macromolecules-tab.component.scss',
 })
-export class MacromoleculesTabComponent {
+export class MacromoleculesTabComponent implements OnInit {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly visInteractivity = inject(VisualisationInteractivityService);
@@ -289,7 +289,14 @@ export class MacromoleculesTabComponent {
 
   private topolViewerMutex = Promise.resolve();
 
-  constructor() {
+  ngOnInit() {
+    /* 1. Fetch tab data*/
+    this.globalStore.dispatch(EntryActions.getGOMapping());
+    this.globalStore.dispatch(EntryActions.getECMapping());
+    this.globalStore.dispatch(EntryActions.getIsoformsMapping()); // used in llm, macro, mb-overview, mb-macro
+    this.globalStore.dispatch(EntryActions.getEntryResidueWiseOutliers());
+
+    /* 2. Fetch topol viewer mutex inside Promise */
     this.topolViewerMutex = this.topolViewerMutex.then(async () => {
       await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
     });

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
@@ -14,6 +14,7 @@ import { PopupWindowService, UtilService } from '@pdbc/core';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { filter, firstValueFrom, take, timer } from 'rxjs';
+import { EntryActions } from '../../store/entry.actions';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
@@ -22,7 +23,7 @@ import { filter, firstValueFrom, take, timer } from 'rxjs';
   templateUrl: './assemblies-tab.component.html',
   styleUrl: './assemblies-tab.component.scss',
 })
-export class AssembliesTabComponent {
+export class AssembliesTabComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly dataProcessing = inject(MainDataProcessingFacade);
 
@@ -117,6 +118,11 @@ export class AssembliesTabComponent {
 
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
   public readonly popService = inject(PopupWindowService);
+
+  ngOnInit(): void {
+    /* 1. Fetch data */
+    this.globalStore.dispatch(EntryActions.getSymmetry()); // used in assemblies and mb-assemblies
+  }
 
   public popupMolstar(): void {
     const fullMode = this.popService.isMaximizedOnMac();

@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, ElementRef, inject, Optional, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, OnInit, Optional, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
@@ -21,6 +21,7 @@ import { MobileStateService } from '../mobile-state.service';
 import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../../helpers/processed-data-to-controls';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { SequenceDetail } from '../../../data-classes/data-models-and-definitions/other-models';
+import { EntryActions } from '../../../store/entry.actions';
 
 export enum ViewState {
   List = 'list',
@@ -39,7 +40,7 @@ interface GoMapped {
   templateUrl: './mb-macromolecule.component.html',
   styleUrls: ['../common-mb-header.scss', './mb-macromolecule.component.scss'],
 })
-export class MbMacromoleculeComponent {
+export class MbMacromoleculeComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly destroyRef = inject(DestroyRef);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
@@ -246,6 +247,14 @@ export class MbMacromoleculeComponent {
         );
         this.renderInMolstar(undefined);
       });
+  }
+
+  ngOnInit(): void {
+    /* 1. Fetch tab data*/
+    this.globalStore.dispatch(EntryActions.getGOMapping());
+    this.globalStore.dispatch(EntryActions.getECMapping());
+    this.globalStore.dispatch(EntryActions.getInterproMapping()); // used in mb-macromolecule
+    this.globalStore.dispatch(EntryActions.getIsoformsMapping()); // used in llm, macro, mb-overview, mb-macro
   }
 
   public toggleSynonymsList(total: number) {

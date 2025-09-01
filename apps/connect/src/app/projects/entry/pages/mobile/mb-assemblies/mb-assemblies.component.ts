@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { filter, firstValueFrom, take } from 'rxjs';
 import { clearSelectionInMolstar } from '../../../helpers/molstar-helpers';
 import { MobileStateService } from '../mobile-state.service';
+import { EntryActions } from '../../../store/entry.actions';
 
 @Component({
   selector: 'pdbc-mb-assemblies',
@@ -61,6 +62,10 @@ export class MbAssembliesComponent implements OnInit {
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbAssembliesComponent>) {}
 
   async ngOnInit() {
+    /* 1. Fetch data */
+    this.globalStore.dispatch(EntryActions.getSymmetry()); // used in assemblies and mb-assemblies
+
+    /* 2. Draw in Molstar */
     // Wait until first render is finished
     await firstValueFrom(
       this.compCommunication.mobileMolstarLoaded$.pipe(

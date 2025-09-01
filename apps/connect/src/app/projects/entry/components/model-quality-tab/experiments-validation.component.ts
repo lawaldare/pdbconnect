@@ -40,6 +40,7 @@ import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-track
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { cameraResetInMolstar, drawSelectionInMolstar } from '../../helpers/molstar-helpers';
 import { OutlierDict, ValueLabel } from '../../data-classes/data-models-and-definitions/other-models';
+import { EntryActions } from '../../store/entry.actions';
 
 /**
  * Examples that should be tested when looking at this component
@@ -234,16 +235,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   private modelIdObserver?: MutationObserver;
 
   constructor() {
-    // once molstar has rendered, initializes mutation observer for NMR model Id
-    this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (finished) => {
-      if (finished) {
-        this.modelIdObserver = await initializeModelIdTracking(this.currentModelId$, this._molstarComponent?.getContainer());
-      }
-    });
-    // every time NMR model Id updates, data for smart seq viewer is refreshed
-    this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
-      this.modelIdx.set(newModelId);
-    });
     effect(() => {
       const currentModelIdx = this.modelIdx();
       const allOutliers = this.compCommunication.outliersByModelId();
@@ -313,6 +304,32 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    /* 1. Fetch tab data */
+    this.globalStore.dispatch(EntryActions.getExperiment());
+    this.globalStore.dispatch(EntryActions.getPDBRedoQualityScores());
+    this.globalStore.dispatch(EntryActions.getEntryResidueWiseOutliers());
+    this.globalStore.dispatch(EntryActions.getModelQualityXray());
+    this.globalStore.dispatch(EntryActions.getExperimentSBGridRawData());
+    this.globalStore.dispatch(EntryActions.getExperimentIRRMCRawData());
+    this.globalStore.dispatch(EntryActions.getExperimentEMPIARRawData());
+    this.globalStore.dispatch(EntryActions.getExperimentPDBRawData());
+    this.globalStore.dispatch(EntryActions.getExperimentBMRBRawData());
+    this.globalStore.dispatch(EntryActions.getValidationKeyStats());
+    this.globalStore.dispatch(EntryActions.getValidationXrayRefine());
+
+    /* 2a. Once molstar has rendered, initializes mutation observer for NMR model Id */
+    this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (finished) => {
+      if (finished) {
+        this.modelIdObserver = await initializeModelIdTracking(this.currentModelId$, this._molstarComponent?.getContainer());
+      }
+    });
+
+    /* 2b. Every time NMR model Id updates, data for smart seq viewer is refreshed */
+    this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
+      this.modelIdx.set(newModelId);
+    });
+
+    /* 3. (TODO: Refactor) Data processing for tab */
     combineLatest([
       this.globalStore.select(EntrySelectors.modelQualityXray),
       this.globalStore.select(EntrySelectors.experimentalDetails),
@@ -404,7 +421,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   /**
    * when a filter is clicked we changed the rendered data
    */
-  setData(data: ProcessedExperimentalDetails) {
+  switchExperimentTypeTab(data: ProcessedExperimentalDetails) {
     this.isXray.update((prev) => !prev);
     this.currentData.set(data);
   }

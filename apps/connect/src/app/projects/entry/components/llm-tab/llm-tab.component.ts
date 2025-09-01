@@ -258,6 +258,9 @@ export class LLMTabComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    /* 1. Fetch necessary data */
+    this.globalStore.dispatch(EntryActions.getIsoformsMapping()); // used in llm, macro, mb-overview, mb-macro
+
     combineLatest([this.globalStore.select(EntrySelectors.llmAnnotations), this.globalStore.select(EntrySelectors.primaryPublication)])
       .pipe(
         map(([llmAnnotations, primaryPublication]) => {

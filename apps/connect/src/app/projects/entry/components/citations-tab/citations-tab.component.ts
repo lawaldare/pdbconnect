@@ -14,6 +14,7 @@ import { combineLatest, filter, map } from 'rxjs';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { CitationDetail } from '../../data-models/publication.model';
 import { RelatedPublication } from '../../data-models/related-publications.model';
+import { EntryActions } from '../../store/entry.actions';
 
 @Component({
   selector: 'pdbc-citations-tab',
@@ -48,6 +49,9 @@ export class CitationsTabComponent implements OnInit {
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
   ngOnInit(): void {
+    /* 1. Fetch necessary data */
+    this.globalStore.dispatch(EntryActions.getArticleCitingPDBEntry()); // used in citations, mb-overview, mb-citations
+
     combineLatest([
       this.globalStore.select(EntrySelectors.primaryPublication).pipe(filter(Boolean)),
       this.globalStore.select(EntrySelectors.articlesCiting).pipe(filter(Boolean)),

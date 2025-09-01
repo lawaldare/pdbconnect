@@ -6,7 +6,7 @@
       <button
         class="filter-btn"
         [ngClass]="currentData()!.generalInfo.methodName === expValdata.generalInfo.methodName ? 'active' : ''"
-        (click)="setData(expValdata)"
+        (click)="switchExperimentTypeTab(expValdata)"
       >
         {{ expValdata.generalInfo.methodName }}
       </button>
