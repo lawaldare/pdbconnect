@@ -39,7 +39,7 @@ export class SuperpositionService {
 
   async loadInitialComplexView(container: HTMLElement): Promise<void> {
     this.isLoading.set(true);
-    await this.scriptLoaderService.loadScript('https://molstar.org/pdbe-molstar/build/pdbe-molstar-plugin.js');
+    // await this.scriptLoaderService.loadScript('https://molstar.org/pdbe-molstar/build/pdbe-molstar-plugin.js');
     const complexData = this.complexData();
     if (complexData) {
       const { pdb_id, assembly_id } = complexData.representative_structure;
@@ -109,7 +109,7 @@ export class SuperpositionService {
           animationDuration: 500, // optionals
         });
         if (result.superposition) {
-          console.log(`Superposed complexes with RMSD ${result.superposition.rmsd} on ${result.superposition.nAlignedElements} residues`, result.superposition);
+          // console.log(`Superposed complexes with RMSD ${result.superposition.rmsd} on ${result.superposition.nAlignedElements} residues`, result.superposition);
         } else {
           console.warn(`Failed to superpose complexes`);
         }

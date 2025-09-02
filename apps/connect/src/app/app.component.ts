@@ -63,6 +63,7 @@ export class AppComponent implements OnInit {
       await this.stylesLoader.loadStyle('./assets/entry-styles/extra/extra.css');
       await this.stylesLoader.loadStyle('./assets/entry-styles/topology-viewer/pdbe-topology-style.css');
       await this.stylesLoader.loadStyle('./assets/entry-styles/protvista/new-protvista.css');
+      await this.stylesLoader.loadStyle('https://cdn.jsdelivr.net/npm/pdbe-molstar@3.7.0/build/pdbe-molstar-light.css');
     }
 
     // Heatmap components is only imported for Ligand pages (route has chemicalCompound)
