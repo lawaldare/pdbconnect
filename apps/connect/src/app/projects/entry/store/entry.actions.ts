@@ -1,6 +1,6 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import { ProcessedSummary } from '../data-models/summary.model';
-import { AssembliesData, DownloadOptionData, EntryMoleculesData, ExperimentData } from './entry-store.model';
+import { AssembliesData, DownloadOptionData, EntryMoleculesData, EntryResidueWiseData, ExperimentData } from './entry-store.model';
 import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../data-models/domains.model';
 import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
@@ -28,6 +28,13 @@ import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/p
 import { LLMAnnotation } from '../data-models/llm-model';
 import { ResidueListed } from '../data-models/residue-listing.model';
 import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
+import { AssemblyUICard, ProcessedAssembly } from './data-processing/assembly-processing';
+import { Filter, PreferredAssemblyData } from './data-processing/models/other-models';
+import { MacromoleculeUICard } from './data-processing/macromolecule-processing';
+import { LigandOrModUICard, ProcessedLigandOrMod } from './data-processing/ligand-processing';
+import { DomainsWithMacromolecules, DomainUICard } from './data-processing/domain-processing';
+import { ProcessedDomain, ProcessedMacromolecule } from './data-processing/models/processed-entities.model';
+import { LigandSummaryStats } from '../data-models/ligand-summary-stats.model';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -46,8 +53,11 @@ export const EntryActions = createActionGroup({
     'Get UniprotMapping Success': props<{ uniprotMapping: UniProtMapping }>(),
     'Get UniprotMapping Failure': emptyProps(),
     'Get UniprotSummary': props<{ uniprotId: string }>(),
-    'Get UniprotSummary Success': props<{ unpSummaryData: ProteinSummaryStats }>(),
+    'Get UniprotSummary Success': props<{ uniprotId: string; unpSummaryData: ProteinSummaryStats }>(),
     'Get UniprotSummary Failure': emptyProps(),
+    'Get LigandSummary': emptyProps(),
+    'Get LigandSummary Success': props<{ ligandPagesSummary: LigandSummaryStats[] }>(),
+    'Get LigandSummary Failure': emptyProps(),
     'Get IsoformsMapping': emptyProps(),
     'Get IsoformsMapping Success': props<{ isoformsMapping: UniProtMapping }>(),
     'Get IsoformsMapping Failure': emptyProps(),
@@ -142,8 +152,56 @@ export const EntryActions = createActionGroup({
     'Get Entry Ligand Monomers Success': props<{ ligandMonomers: LigandMonomer[] }>(),
     'Get Entry Ligand Monomers Failure': emptyProps(),
     'Get Entry Residue Wise Outliers': emptyProps(),
-    'Get Entry Residue Wise Outliers Success': props<{ residueWiseOutliers: ResidueWiseOutliersMolecule[] }>(),
+    'Get Entry Residue Wise Outliers Success': props<{ data: EntryResidueWiseData }>(),
     'Get Entry Residue Wise Outliers Failure': emptyProps(),
+    'Get Proc Assemblies Cards': emptyProps(),
+    'Get Proc Assemblies Cards Success': props<{ procAssembliesCards: AssemblyUICard[] }>(),
+    'Get Proc Assemblies Cards Failure': emptyProps(),
+    'Get Proc Assemblies Filters': emptyProps(),
+    'Get Proc Assemblies Filters Success': props<{ procAssembliesFilters: Filter[] }>(),
+    'Get Proc Assemblies Filters Failure': emptyProps(),
+    'Get Processed Assemblies': emptyProps(),
+    'Get Processed Assemblies Success': props<{ processedAssemblies: ProcessedAssembly[] }>(),
+    'Get Processed Assemblies Failure': emptyProps(),
+    'Get Proc Macromolecules Cards': emptyProps(),
+    'Get Proc Macromolecules Cards Success': props<{ procMacromoleculesCards: MacromoleculeUICard[] }>(),
+    'Get Proc Macromolecules Cards Failure': emptyProps(),
+    'Get Proc Macromolecules Filters': emptyProps(),
+    'Get Proc Macromolecules Filters Success': props<{ procMacromoleculesFilters: Filter[] }>(),
+    'Get Proc Macromolecules Filters Failure': emptyProps(),
+    'Get Processed Macromolecules': emptyProps(),
+    'Get Processed Macromolecules Success': props<{ processedMacromolecules: ProcessedMacromolecule[] }>(),
+    'Get Processed Macromolecules Failure': emptyProps(),
+    'Get Proc Ligands Cards': emptyProps(),
+    'Get Proc Ligands Cards Success': props<{ procLigandsCards: LigandOrModUICard[] }>(),
+    'Get Proc Ligands Cards Failure': emptyProps(),
+    'Get Proc Ligands Filters': emptyProps(),
+    'Get Proc Ligands Filters Success': props<{ procLigandsFilters: Filter[] }>(),
+    'Get Proc Ligands Filters Failure': emptyProps(),
+    'Get Processed Ligands': emptyProps(),
+    'Get Processed Ligands Success': props<{ processedLigands: ProcessedLigandOrMod[] }>(),
+    'Get Processed Ligands Failure': emptyProps(),
+    'Get Proc Domains Cards': emptyProps(),
+    'Get Proc Domains Cards Success': props<{ procDomainsCards: DomainUICard[] }>(),
+    'Get Proc Domains Cards Failure': emptyProps(),
+    'Get Proc Domains Filters': emptyProps(),
+    'Get Proc Domains Filters Success': props<{ procDomainsFilters: Filter[] }>(),
+    'Get Proc Domains Filters Failure': emptyProps(),
+    'Get Processed Domains': emptyProps(),
+    'Get Processed Domains Success': props<{ processedDomains: ProcessedDomain[] }>(),
+    'Get Processed Domains Failure': emptyProps(),
+    'Get Processed Macromols For LLM': emptyProps(),
+    'Get Processed Macromols For LLM Success': props<{ processedMacromoleculesForLLM: ProcessedMacromolecule[] }>(),
+    'Get Processed Macromols For LLM Failure': emptyProps(),
+    'Get Proc LLM Cards': emptyProps(),
+    'Get Proc LLM Cards Success': props<{ procLLMCards: MacromoleculeUICard[] }>(),
+    'Get Proc LLM Cards Failure': emptyProps(),
+    'Get Processed Domains With Macromols': emptyProps(),
+    'Get Processed Domains With Macromols Success': props<{ processedDomainsWithMacromols: DomainsWithMacromolecules }>(),
+    'Get Processed Domains With Macromols Failure': emptyProps(),
+    'Get Processed Pref Assembly': emptyProps(),
+    'Get Processed Pref Assembly Success': props<{ processedPrefAssembly: PreferredAssemblyData | undefined }>(),
+    'Get Processed Pref Assembly Failure': emptyProps(),
     'Get Entry Protvista Uniprot Mapping': props<{ entityId: string }>(),
     'Get Entry Protvista Uniprot Mapping Success': props<{ entityId: string; entityPvUniprot: APITrackData }>(),
     'Get Entry Protvista Uniprot Mapping Failure': emptyProps(),

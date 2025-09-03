@@ -33,6 +33,7 @@ import { LigandMonomer } from '../data-models/ligand-monomers.model';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
 import { LLMAnnotation } from '../data-models/llm-model';
 import { ResidueListed, ResidueListing } from '../data-models/residue-listing.model';
+import { LigandSummaryStats } from '../data-models/ligand-summary-stats.model';
 // import { Router } from '@angular/router';
 
 @Injectable({
@@ -91,9 +92,9 @@ export class EntryApiService {
 
   public getEntryStatus(entryId: string): Observable<EntryStatus> {
     // for testing on wwwdev
-    // return this.http.get<Record<string, EntryStatus[]>>(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/status/${entryId}`).pipe(
+    return this.http.get<Record<string, EntryStatus[]>>(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/status/${entryId}`).pipe(map((data) => data[entryId][0]));
 
-    return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(map((data) => data[entryId][0]));
+    // return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(map((data) => data[entryId][0]));
 
     // return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API}status/${entryId}`).pipe(
     //   map((data) => data[entryId][0]),
@@ -105,9 +106,14 @@ export class EntryApiService {
   }
 
   public getEntryInteractions(entryId: string, chainId: string, residueId: string): Observable<any> {
-    return this.http
-      .get<Record<string, any[]>>(`${this.AggregatedApiUrl}pdb/bound_ligand_interactions/${entryId}/${chainId}/${residueId}`)
-      .pipe(map((data) => data[entryId][0]));
+    // const AggregatedApiUrl2 = `https://www.ebi.ac.uk/pdbe/api/v2/`;
+    return (
+      this.http
+        // for localhost test
+        // .get<Record<string, any[]>>(`${AggregatedApiUrl2}pdb/bound_ligand_interactions/${entryId}/${chainId}/${residueId}?preserve_case=true`)
+        .get<Record<string, any[]>>(`${this.AggregatedApiUrl}pdb/bound_ligand_interactions/${entryId}/${chainId}/${residueId}?preserve_case=true`)
+        .pipe(map((data) => data[entryId][0]))
+    );
   }
 
   public getPrimaryPublicationAbstract(entryId: string): Observable<CitationDetail> {
@@ -128,6 +134,10 @@ export class EntryApiService {
 
   public getSummaryStats(uniprotId: string): Observable<SummaryStats> {
     return this.http.get<Record<string, SummaryStats>>(`${this.AggregatedApiUrl}uniprot/summary_stats/${uniprotId}`).pipe(map((data) => data[uniprotId]));
+  }
+
+  public getLigandSummaryStats(entryId: string): Observable<LigandSummaryStats[]> {
+    return this.http.get<Record<string, LigandSummaryStats[]>>(`${this.BASE_API}ligand_summary_stats/${entryId}`).pipe(map((data) => data[entryId]));
   }
 
   public getIsoformsMapping(entryId: string): Observable<UniProtMapping> {

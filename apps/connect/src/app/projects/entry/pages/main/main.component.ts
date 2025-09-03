@@ -1,15 +1,14 @@
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { SearchAppComponent } from '@pdbc/search-app';
 
-import { EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { combineLatest, EMPTY, filter, map, mergeMap, switchMap, take, tap } from 'rxjs';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { GoogleAnalyticsService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
-import { mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig } from '../../entry-constant';
-import { MainDataProcessingFacade } from './data-processing.facade';
+import { ENTRY_PAGES_LINKS, mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig } from '../../entry-constant';
 import { EntryStatus, StatusCode } from '../../data-models/status.model';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { EntryMainAlternativeComponent } from '../../components/entry-main-alternative/entry-main-alternative.component';
@@ -36,6 +35,8 @@ import { LLMTabComponent } from '../../components/llm-tab/llm-tab.component';
 import { VisualisationInteractivityDirective } from '../../directives/visualisation-interactivity.directive';
 import { EntryBioschemasService } from '../../services/entry.bioschemas';
 import { ErrorPageComponent } from '../../../../error-page/error-page.component';
+import { Meta, Title } from '@angular/platform-browser';
+import { DesktopAPIDispatcher } from './desktop-api-dispacher';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -75,8 +76,10 @@ import { ErrorPageComponent } from '../../../../error-page/error-page.component'
   styleUrls: ['./main.component.scss'],
 })
 export class EntryMainPageComponent implements OnInit {
+  private readonly desktopApiDispatcher = inject(DesktopAPIDispatcher);
   private readonly route = inject(ActivatedRoute);
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
   private readonly destroyRef = inject(DestroyRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
@@ -86,31 +89,46 @@ export class EntryMainPageComponent implements OnInit {
   private readonly renderer = inject(Renderer2);
   public readonly gAS = inject(GoogleAnalyticsService);
 
-  public hasLoadedAssemblies = computed(() => this.compCommunication.hasProcessedAssemblies());
+  private procAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
+  private procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  private procLigands = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  private procDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomains));
+  private procLLMMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromoleculesForLLM));
+  private processedDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomainsWithMacromols));
+  public llmAnnotations = toSignal(this.globalStore.select(EntrySelectors.llmAnnotations));
+
+  public hasLoadedAssemblies = computed(() => this.procAssemblies() !== undefined);
   public hasAssemblies = computed(() => {
-    if (!this.compCommunication.hasProcessedAssemblies()) return false;
-    return this.compCommunication.processedAssemblies.length > 0;
+    const rows = this.procAssemblies();
+    if (rows === undefined) return false;
+    return rows.length > 0;
   });
-  public hasLoadedDomains = computed(() => this.compCommunication.hasProcessedDomains());
+
+  public hasLoadedDomains = computed(() => this.processedDomains() !== undefined);
   public hasDomains = computed(() => {
-    if (!this.compCommunication.hasProcessedDomains()) return false;
-    return this.compCommunication.processedDomainsAsList.length > 0;
+    const rows = this.procDomains();
+    const procWithMacro = this.processedDomains();
+    if (procWithMacro === undefined) return false;
+    if (rows === undefined) return false;
+    return rows.length > 0;
   });
-  public hasLoadedMacromolecules = computed(() => this.compCommunication.hasProcessedMacromolecules());
+  public hasLoadedMacromolecules = computed(() => this.procMacromolecules() !== undefined);
   public hasMacromolecules = computed(() => {
-    if (!this.compCommunication.hasProcessedMacromolecules()) return false;
-    return this.compCommunication.processedMacromolecules.length > 0;
+    const rows = this.procMacromolecules();
+    if (rows === undefined) return false;
+    return rows.length > 0;
   });
-  public hasLoadedLigands = computed(() => this.compCommunication.hasProcessedDomains());
+  public hasLoadedLigands = computed(() => this.procLigands() !== undefined);
   public hasLigands = computed(() => {
-    if (!this.compCommunication.hasProcessedLigands()) return false;
-    return this.compCommunication.processedLigandsAndModifications.length > 0;
+    const rows = this.procLigands();
+    if (rows === undefined) return false;
+    return rows.length > 0;
   });
-  public annotationsSignal = toSignal(this.dataProcessing.llmAnnotations);
-  public hasLoadedAnnotations = computed(() => this.annotationsSignal() !== undefined);
+  public hasLoadedAnnotations = computed(() => this.procLLMMacromolecules() !== undefined);
   public hasAnnotations = computed(() => {
-    const annotations = this.annotationsSignal();
-    return annotations && annotations.filter((a: any) => a.primaryCitation === 'Y').length > 0;
+    const rows = this.procLLMMacromolecules();
+    if (rows === undefined) return false;
+    return rows.length > 0;
   });
 
   private readonly router = inject(Router);
@@ -121,9 +139,13 @@ export class EntryMainPageComponent implements OnInit {
 
   public entryPageView = this.util.entryPageView;
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
+  public entryStatusObs$ = toObservable(this.entryStatus);
 
   private readonly entryId = signal<string>('');
   public isDesktop = signal(false);
+  public isDesktopObs$ = toObservable(this.isDesktop);
+
+  public currentTabNameObs$ = toObservable(this.compCommunication.currentTabName);
 
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
@@ -145,12 +167,23 @@ export class EntryMainPageComponent implements OnInit {
     env: environment.production ? '' : 'dev',
   };
 
+  public readonly routeTabs = [
+    { label: 'Summary', id: 'summary' },
+    { label: 'Model quality', id: 'model-quality' },
+    { label: 'Assemblies', id: 'assemblies' },
+    { label: 'Macromolecules', id: 'macromolecules' },
+    { label: 'Ligands and Environments', id: 'ligands' },
+    { label: 'Domains', id: 'domains' },
+    { label: 'Text Annotation (LLM)', id: 'llm' },
+    { label: 'Citations', id: 'citations' },
+  ];
+
   constructor() {
     this.checkWindowWidth();
     this.route.queryParams.subscribe((params) => {
       // Check for screen width <= 768px
       if (window.innerWidth <= 768) return;
-      const routeTabs = this.dataProcessing.routeTabs;
+      const routeTabs = this.routeTabs;
       const tabName = params['activeTab'] ?? 'summary';
       this.compCommunication.currentTabName.set(tabName);
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
@@ -196,13 +229,91 @@ export class EntryMainPageComponent implements OnInit {
         mergeMap(async (status: StatusCode) => {
           if (status === 'REL') {
             this.util.setEntryStatus('SUCCESS');
-            this.dataProcessing.processInteractiveTablesData(this.entryId());
-            this.dataProcessing.getPageData();
+            this.buildMetaTags();
+
+            // used in multiple tabs
+            this.globalStore.dispatch(EntryActions.getSummaryData());
+            // used in citations-tab, llm-tab, summary-tab, mb-citation-tab, mb-overview-tab, entry.bioschemas
+            this.globalStore.dispatch(EntryActions.getPrimaryPublication());
             this.entryBioschemasService.buildBioschemasJSON(this.renderer);
           } else {
             this.util.setEntryStatus('OTHER');
           }
           return EMPTY;
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
+
+    // detects current tab, if entry is released and we are in desktop mode
+    combineLatest([this.entryStatusObs$, this.isDesktopObs$, this.currentTabNameObs$])
+      .pipe(
+        map(([entryStatus, isDesktop, tabName]) => {
+          if (entryStatus === undefined || isDesktop === undefined || tabName === undefined) return;
+          if (entryStatus.status_code === 'REL' && isDesktop) {
+            // if released and desktop mode dispatch listeners for data status of different tabs
+            this.desktopApiDispatcher.dispatchForTab(tabName);
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({});
+  }
+
+  private isTitleAndMetaProcessed = false;
+
+  private buildMetaTags() {
+    this.globalStore
+      .select(EntrySelectors.summaryData)
+      .pipe(
+        filter((summaryData) => {
+          return summaryData !== undefined && Object.keys(summaryData).length > 0;
+        }),
+        take(1),
+        map((summaryData) => {
+          if (summaryData && this.isTitleAndMetaProcessed === false) {
+            const titleAndDescription = `PDB ${this.entryId()}: ${summaryData.entryTitle} | Protein Data Bank in Europe - PDBe`;
+            this.titleService.setTitle(titleAndDescription);
+            this.metaService.addTag({ name: 'description', content: titleAndDescription });
+            this.metaService.addTag({ name: 'author', content: 'Protein Data Bank in Europe - PDBe' });
+            this.metaService.addTag({ name: 'email', content: 'pdbegroup@gmail.com' });
+            this.metaService.addTag({ name: 'Distribution', content: 'Global' });
+            this.metaService.addTag({ name: 'Rating', content: 'General' });
+
+            this.metaService.addTag({ property: 'og:title', content: `PDB: ${this.entryId()} | Protein Data Bank in Europe - PDBe` });
+            this.metaService.addTag({ property: 'og:description', content: `Entry title: "${summaryData.entryTitle}"` });
+            this.metaService.addTag({ property: 'og:url', content: `${environment.pdbeBaseUrl}/entry/pdb/1trn` });
+            this.metaService.addTag({
+              property: 'og:image',
+              content: `https://www.ebi.ac.uk/pdbe/static/entry/${this.entryId()}_deposited_chain_front_image-800x800.png`,
+            });
+            this.metaService.addTag({ property: 'og:image:alt', content: `PDBe ${this.entryId()} Structure` });
+            this.metaService.addTag({ property: 'og:type', content: 'website' });
+            this.metaService.addTag({ property: 'og:locale', content: 'en_GB' });
+            this.metaService.addTag({ property: 'og:site_name', content: 'PDBe Entry Pages' });
+
+            this.metaService.addTag({ name: 'twitter:card', content: 'summary_large_image' });
+            this.metaService.addTag({ name: 'twitter:title', content: titleAndDescription });
+            this.metaService.addTag({ name: 'twitter:description', content: titleAndDescription });
+            this.metaService.addTag({ name: 'twitter:url', content: `${environment.pdbeBaseUrl}/entry/pdb/1trn` });
+            this.metaService.addTag({
+              name: 'twitter:image',
+              content: `https://www.ebi.ac.uk/pdbe/static/entry/${this.entryId()}_deposited_chain_front_image-800x800.png`,
+            });
+            this.metaService.addTag({ name: 'twitter:image:alt', content: `PDBe ${this.entryId()} Structure` });
+            this.metaService.addTag({ name: 'twitter:site', content: `PDBeurope` });
+
+            for (const linkObj of ENTRY_PAGES_LINKS) {
+              const linkEl = this.renderer.createElement('link');
+              this.renderer.setAttribute(linkEl, 'rel', linkObj.rel);
+              this.renderer.setAttribute(linkEl, 'type', linkObj.type);
+              this.renderer.setAttribute(linkEl, 'href', linkObj.href);
+              if (linkObj.sizes) this.renderer.setAttribute(linkEl, 'sizes', linkObj.sizes!);
+              if (linkObj.title) this.renderer.setAttribute(linkEl, 'title', linkObj.title!);
+              this.renderer.appendChild(document.head, linkEl);
+            }
+            this.isTitleAndMetaProcessed = true;
+          }
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -219,7 +330,7 @@ export class EntryMainPageComponent implements OnInit {
   }
 
   async selectTab(event: MatTabChangeEvent) {
-    const routeTabs = this.dataProcessing.routeTabs;
+    const routeTabs = this.routeTabs;
     const tabName = routeTabs[event.index].id;
     this.scrollService.handleScrollPosition(this.tabGroup, event.index);
     this.compCommunication.currentTabName.set(tabName);

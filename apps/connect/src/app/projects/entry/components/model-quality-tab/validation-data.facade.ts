@@ -31,6 +31,9 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { UtilService } from '@pdbc/core';
 import { startWith, catchError, of, combineLatest, map, retry, mergeMap, Observable } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+// TODO
+// move all logic here to store (effect, data-processing)
 @Injectable({
   providedIn: 'root',
 })

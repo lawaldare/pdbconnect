@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, computed, DestroyRef, effect, inject, Optional, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ViewState } from '../mb-macromolecules/mb-macromolecule.component';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { LigandsRowData } from '../../../data-classes/data-models-and-definitions/row-and-table.model';
-import { MainDataProcessingFacade } from '../../main/data-processing.facade';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { TruncatePipe, TruncateTextDirective } from '@pdbc/core';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
@@ -14,7 +12,6 @@ import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
-import { LigandsTabService } from '../../../components/ligands-tab/ligands-tab.service';
 import { annotationsTooltips } from '../../../entry-constant';
 import { interactionsToMolstar } from '../../../helpers/interactions-to-molstar-sel-obj';
 import { Interaction } from '../../../data-models/interaction.model';
@@ -25,6 +22,7 @@ import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions/index';
 import { MobileStateService } from '../mobile-state.service';
 import { getLigandsDropdownOptions } from '../../../helpers/processed-data-to-controls';
+import { ProcessedLigandOrMod } from '../../../store/data-processing/ligand-processing';
 
 @Component({
   selector: 'pdbc-mb-ligands',
@@ -32,10 +30,9 @@ import { getLigandsDropdownOptions } from '../../../helpers/processed-data-to-co
   templateUrl: './mb-ligands.component.html',
   styleUrls: ['../common-mb-header.scss', './mb-ligands.component.scss'],
 })
-export class MbLigandsComponent {
+export class MbLigandsComponent implements OnInit {
   private readonly state = inject(MobileStateService);
 
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly molstarPluginService = inject(MolstarPluginService);
@@ -46,8 +43,6 @@ export class MbLigandsComponent {
 
   private currentChainId = signal<string | undefined>(undefined);
   private currentResidueId = signal<string | undefined>(undefined);
-
-  public readonly ligandsTabService = inject(LigandsTabService);
 
   public readonly annotationsTooltips: any = annotationsTooltips;
 
@@ -62,24 +57,17 @@ export class MbLigandsComponent {
   public dropdownOptions: DownloadOption[] = [];
   public dropdownSelected!: string;
 
-  public readonly LigandTableRows = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const hasData = this.compCommunication.hasProcessedLigands();
+  public readonly processedLigandsObs$ = this.globalStore.select(EntrySelectors.processedLigands);
+  public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
 
-    if (isLoaded && hasData) {
-      const datum = this.compCommunication.processedLigandsAndModifications;
-      return datum.map((row: LigandsRowData, index) => ({
-        ...row,
-        index,
-        annotations: this.ligandsTabService.ligandMonomers()[row.id] ?? [],
-        isModified: this.ligandsTabService.modifications()?.find((e) => e === row.id) ? true : false,
-      }));
-    }
-    return [];
+  public readonly LigandTableRows = computed(() => {
+    const rows = this.processedLigands();
+    if (!rows) return [];
+    return rows;
   });
 
   private async triggerLigandInteractionsSideEffects(interactions: Interaction[] | undefined) {
-    const ligand = this.selectedLigands() as LigandsRowData;
+    const ligand = this.selectedLigands() as ProcessedLigandOrMod;
     if (!interactions) return;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     if (!molstarSelection) return;
@@ -95,12 +83,7 @@ export class MbLigandsComponent {
     const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
     if (!instance) return;
 
-    const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(
-      ligand,
-      molstarSelection,
-      interactions,
-      this.compCommunication.chainToEntityId()
-    );
+    const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(ligand, molstarSelection, interactions);
 
     const pdbeInteractions = interactionsMolstarSelections as unknown as PDBeMolstarInteraction[];
     const residueSelectionData: QueryParam[] = residuesMolstarSelections.map((resid) => {
@@ -124,9 +107,8 @@ export class MbLigandsComponent {
 
   public allLigandsQueryParam = computed(() => {
     const ligandsSelectionData: QueryParam[] = [];
-    const hasLigandsData = this.compCommunication.hasProcessedLigands();
-    if (!hasLigandsData) return ligandsSelectionData;
-    const ligands = this.compCommunication.processedLigandsAndModifications;
+    const ligands = this.processedLigands();
+    if (!ligands) return ligandsSelectionData;
     for (const lig of ligands) {
       for (const sel of lig.additionalData.selections) {
         const entityId = sel[0].entity_id;
@@ -147,14 +129,12 @@ export class MbLigandsComponent {
     return ligandsSelectionData;
   });
 
-  private hasLigands$ = toObservable(this.compCommunication.hasProcessedLigands);
-
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbLigandsComponent>) {
-    this.hasLigands$
+    this.processedLigandsObs$
       .pipe(
         debounceTime(50),
         distinctUntilChanged(),
-        filter((hasLig) => hasLig == true)
+        filter((hasLig) => hasLig !== undefined)
       )
       .subscribe(async (hasLig) => {
         // Wait until mobileMolstarLoaded$ is true before proceeding
@@ -175,6 +155,16 @@ export class MbLigandsComponent {
       const interactions = allInteractions[chainId][residueId].interactions;
       this.triggerLigandInteractionsSideEffects(interactions);
     });
+  }
+
+  ngOnInit(): void {
+    /* 1. Fetch data */
+    this.globalStore.dispatch(EntryActions.getSummaryData());
+    this.globalStore.dispatch(EntryActions.getAssemblies());
+    this.globalStore.dispatch(EntryActions.getEntryMolecules());
+    this.globalStore.dispatch(EntryActions.getEntryLigandMonomers());
+    this.globalStore.dispatch(EntryActions.getModifications());
+    this.globalStore.dispatch(EntryActions.getProcessedLigands());
   }
 
   private async updateCurrentLigand() {
@@ -198,7 +188,7 @@ export class MbLigandsComponent {
   private ligandSelection?: QueryParam[];
   private residuesAsSticks?: QueryParam[];
 
-  private async renderInMolstar(ligand?: LigandsRowData) {
+  private async renderInMolstar(ligand?: ProcessedLigandOrMod) {
     // Wait until first render is finished
     await firstValueFrom(
       this.compCommunication.mobileMolstarLoaded$.pipe(
@@ -273,7 +263,7 @@ export class MbLigandsComponent {
     this.state.updateSelectedTabName('');
   }
 
-  public navigateToDetail(data: LigandsRowData) {
+  public navigateToDetail(data: ProcessedLigandOrMod) {
     this.currentViewState.set(ViewState.Detail);
     this.selectedLigands.set(data);
     const title = `${data.codeAndName.count} X ${data.id}`;

@@ -168,19 +168,19 @@ export const dashboardStatLinks = {
   ],
   Ligands: [
     {
-      id: 'pdbs',
+      id: 'bound_entries',
       displayName: 'bound structures',
       link: `${ligandBaseUrl}chemicalCompound/show/`,
       linkSuffix: '#structures-section',
     },
     {
-      id: 'ligands',
+      id: 'total_interactions',
       displayName: 'interaction statistics',
       link: `${ligandBaseUrl}chemicalCompound/show/`,
       linkSuffix: '#interaction-section',
     },
     {
-      id: 'similar_proteins',
+      id: 'related_ligands',
       displayName: 'related ligands',
       link: `${ligandBaseUrl}chemicalCompound/show/`,
       linkSuffix: '#related-ligand-section',

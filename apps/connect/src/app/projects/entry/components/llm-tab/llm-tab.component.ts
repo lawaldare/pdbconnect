@@ -3,7 +3,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { dashboardStatLinks } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -11,13 +10,10 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { AG_Grid_Theme_Class, MaterialModule, UtilService } from '@pdbc/core';
-import { LLMAnnotationsFacade } from './llm.facade';
-import { getMacromoleculeChainDropdownOptions } from '../../helpers/processed-data-to-controls';
+import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../helpers/processed-data-to-controls';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
-import { SharedDataFacade } from '../shared/shared-data.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { CitationDetail } from '../../data-models/publication.model';
@@ -26,14 +22,22 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { LLMAnnotation } from '../../data-models/llm-model';
 import { colDefs, gridOptions } from './ag-grid';
 import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
-import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
+import {
+  convertOutliersToSmartSequenceAnnotation,
+  createAuthAlternateNumbering,
+  getCircleAnnotationsForSeqViewer,
+  getNonObserved,
+  removeDuplicatesByKey,
+} from '../../helpers/procesing-for-smart-seq-viewer';
 import { EntryActions } from '../../store/entry.actions';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
-import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
+import { SequenceDetail } from '../../store/data-processing/models/other-models';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
+import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
+import { getUniProtsDataForMacromolecule } from '../../store/data-processing/macromolecule-processing';
 
 @Component({
   selector: 'pdbc-llm-tab',
@@ -54,14 +58,10 @@ import { VisualisationInteractivityService } from '../../services/vis-interactiv
   styleUrl: './llm-tab.component.scss',
 })
 export class LLMTabComponent implements OnInit {
-  public readonly llmAnnotationsFacade = inject(LLMAnnotationsFacade);
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
-  public readonly sharedDataFacade = inject(SharedDataFacade);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
-  public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 
   public dropdownSelected!: string;
@@ -73,6 +73,7 @@ export class LLMTabComponent implements OnInit {
   public llmAnnotationForSeq: SmartSequenceAnnotation | undefined = undefined;
 
   private readonly globalStore = inject(Store<EntryStoreState>);
+  public readonly processedMacromolsLLM = toSignal(this.globalStore.select(EntrySelectors.processedMacromoleculesForLLM));
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
@@ -80,8 +81,8 @@ export class LLMTabComponent implements OnInit {
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
   public readonly residueListing = toSignal(this.globalStore.select(EntrySelectors.residueListing));
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
-
-  private entityId = 0;
+  public readonly uniprotMappings = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
+  public readonly polymerCoverage = toSignal(this.globalStore.select(EntrySelectors.polymerCoverage));
 
   public selectionStats: { [key: string]: any } | undefined;
 
@@ -91,11 +92,25 @@ export class LLMTabComponent implements OnInit {
 
   public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
-  public bestResidues = computed(() => {
-    const macromolecule = this.currentMacromoleculeDatum();
-    if (!macromolecule) return [];
+  public uniprotMappedData = computed(() => {
+    const currentMacromoleculeDatum = this.currentMacromoleculeDatum();
+    const uniprotMappings = this.uniprotMappings();
+    const polymerCoverage = this.polymerCoverage();
 
-    const uniprotsAllowed = macromolecule.additionalData.uniprotAccessions;
+    if (!currentMacromoleculeDatum) return undefined;
+    if (!uniprotMappings) return undefined;
+    if (!polymerCoverage) return undefined;
+
+    const mol = currentMacromoleculeDatum.additionalData.molecule;
+    const mappedUnps = getUniProtsDataForMacromolecule(mol, uniprotMappings, polymerCoverage);
+    return mappedUnps;
+  });
+
+  public uniprotsAllowed = computed(() => this.uniprotMappedData()?.uniprotAccsForMacromolecule);
+
+  public bestResidues = computed(() => {
+    const uniprotsAllowed = this.uniprotsAllowed();
+    if (!uniprotsAllowed) return [];
 
     let isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
     isoformsMappingKeys = isoformsMappingKeys.filter((isoform) => {
@@ -123,30 +138,33 @@ export class LLMTabComponent implements OnInit {
 
   public readonly llmAnnotations = toSignal(this.globalStore.select(EntrySelectors.llmAnnotations));
 
+  public readonly tabDataLoaded = computed(() => this.processedMacromolsLLM() !== undefined);
   public readonly macromoleculeTableRows = computed(() => {
-    const isLoaded = this.compCommunication.hasProcessedMacromolecules();
-
-    if (isLoaded) {
-      const rows = this.compCommunication.processedMacromolecules;
-      const mappedDatum = rows.map((data) => {
-        return {
-          ...data,
-          mappedResidues: this.sharedDataFacade.transformCoverageData(data.residues),
-          organisms: [...new Set(data['organisms'])],
-        };
-      });
-
-      const primaryCitationYes = this.llmAnnotations()?.filter((a: any) => a.primaryCitation === 'Y');
-      const llmUniProtIds = [...new Set(primaryCitationYes?.map((a: any) => a.uniprotAccession))];
-      const chainIds = [...new Set(primaryCitationYes?.map((a: any) => a.pdbChain))];
-      return mappedDatum.filter(
-        (a: any) => llmUniProtIds.includes(a.additionalData.uniprotAccessions[0]) && chainIds.includes(a.additionalData.molecule.in_chains[0])
-      );
-    }
-    return [];
+    const rows = this.processedMacromolsLLM();
+    if (rows === undefined) return [];
+    return rows;
   });
 
-  public currentMacromoleculeDatum = signal<MacromoleculesRowData | undefined>(undefined);
+  public currentMacromoleculeDatum = signal<ProcessedMacromolecule | undefined>(undefined);
+
+  public uniqueOrganisms = computed(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (macromolecule === undefined) return [];
+    return [...new Set(macromolecule['organisms'].filter((organism) => organism !== null))];
+  });
+
+  public mappedResidues = computed(() => {
+    const currentMacromoleculeDatum = this.currentMacromoleculeDatum();
+    const currentChain = this.currentSelectionChainId();
+    const mappedUnps = this.uniprotMappedData();
+
+    if (!currentMacromoleculeDatum) return undefined;
+    if (!mappedUnps) return undefined;
+    if (!currentChain) return undefined;
+
+    const mappingsForChains = mappedUnps.uniprotRangesByChainId;
+    return mappingsForChains[currentChain];
+  });
 
   public altSequences = computed(() => {
     const residueListing = this.residueListing();
@@ -254,13 +272,10 @@ export class LLMTabComponent implements OnInit {
     const residueNumber = eventData.residueNumber;
     const allAnnotations = this.groupedAnnotations();
     const filteredByResidue = allAnnotations.filter((a: LLMAnnotation) => a.pdbResidue === residueNumber);
-    this.filteredLLMAnnotations.update(() => this.llmAnnotationsFacade.removeDuplicatesByKey(filteredByResidue, 'sentence'));
+    this.filteredLLMAnnotations.update(() => removeDuplicatesByKey(filteredByResidue, 'sentence'));
   }
 
   ngOnInit(): void {
-    /* 1. Fetch necessary data */
-    this.globalStore.dispatch(EntryActions.getIsoformsMapping()); // used in llm, macro, mb-overview, mb-macro
-
     combineLatest([this.globalStore.select(EntrySelectors.llmAnnotations), this.globalStore.select(EntrySelectors.primaryPublication)])
       .pipe(
         map(([llmAnnotations, primaryPublication]) => {
@@ -274,27 +289,41 @@ export class LLMTabComponent implements OnInit {
       .subscribe({});
   }
 
+  private groupAnnotationsByPdbChain(data: any) {
+    return data.reduce((acc: any, item: any) => {
+      const chain = item.pdbChain;
+      if (!acc[chain]) {
+        acc[chain] = [];
+      }
+      acc[chain].push(item);
+      return acc;
+    }, {});
+  }
+
   private groupedFilteredLLMAnnotations = computed(() => {
     const annotations = this.mappedAnnotations();
-    return this.llmAnnotationsFacade.groupByPdbChain(annotations);
+    return this.groupAnnotationsByPdbChain(annotations);
   });
 
   public currentSelectionEntityId = signal<string | undefined>(undefined);
   public currentSelectionChainId = signal<string | undefined>(undefined);
 
-  public sequenceDetails: SequenceDetail[] = [];
+  public sequenceDetails?: {
+    title: string;
+    fullSequence: string;
+  } = undefined;
 
   public selectionIdentifier = 'None';
   public selectionTypeText?: string;
 
-  async triggerMacromoleculeUpdateSideEffects(macromolecule: MacromoleculesRowData) {
+  async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
     this.updateDropdownOptions(macromolecule);
-    this.sequenceDetails = this.llmAnnotationsFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
     await this.renderVisualisations(macromolecule);
     this.updateBackgroundAnnotation();
   }
 
-  private updateDropdownOptions(macromolecule: MacromoleculesRowData) {
+  private updateDropdownOptions(macromolecule: ProcessedMacromolecule) {
     this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(macromolecule);
     this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
       return {
@@ -310,14 +339,14 @@ export class LLMTabComponent implements OnInit {
     this.filteredLLMAnnotations.update(() => groupedAnnotations);
     this.groupedAnnotations.update(() => groupedAnnotations);
 
-    this.sequenceDetails = this.llmAnnotationsFacade.getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
     this.updateBackgroundAnnotation();
   }
 
   private updateBackgroundAnnotation() {
     const macromolecule = this.currentMacromoleculeDatum();
 
-    const sequence = this.sequenceDetails[0]?.fullSequence;
+    const sequence = this.sequenceDetails?.fullSequence;
     if (!sequence) return;
 
     const entityId = macromolecule?.additionalData.molecule.entity_id ?? 1;
@@ -326,7 +355,7 @@ export class LLMTabComponent implements OnInit {
     this.backgroundAnnotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, this.residueWiseOutliers());
 
     const groupedLLMAnnotations: LLMAnnotation[] = this.groupedFilteredLLMAnnotations()[chainId];
-    this.llmAnnotationForSeq = this.llmAnnotationsFacade.getCircleAnnotationsForSeqViewer(groupedLLMAnnotations);
+    this.llmAnnotationForSeq = getCircleAnnotationsForSeqViewer(groupedLLMAnnotations);
 
     this.globalStore.dispatch(
       EntryActions.getResidueListing({
@@ -348,11 +377,7 @@ export class LLMTabComponent implements OnInit {
 
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
-    this.sequenceDetails = this.llmAnnotationsFacade.getMacromoleculeSequenceDetails(
-      this.entryId() ?? '',
-      macromolecule as MacromoleculesRowData,
-      this.dropdownSelected
-    );
+    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule as ProcessedMacromolecule, this.dropdownSelected);
     if (macromolecule) await this.renderVisualisations(macromolecule);
     this.updateBackgroundAnnotation();
   }
@@ -361,17 +386,17 @@ export class LLMTabComponent implements OnInit {
     this.isSidebarDisplayed.update((prev) => !prev);
   }
 
-  public copySequence(sequenceDetail: SequenceDetail) {
-    const text = `${sequenceDetail.title}\r\n${sequenceDetail.fullSequence}`;
+  public copySequence(sequenceDetails: { title: string; fullSequence: string }) {
+    const text = `${sequenceDetails.title}\r\n${sequenceDetails.fullSequence}`;
     this.utilService.copy(text);
   }
 
-  private async renderVisualisations(macromolecule: MacromoleculesRowData) {
+  private async renderVisualisations(macromolecule: ProcessedMacromolecule) {
     await this.renderInMolstar(macromolecule);
     await this.setCurrentSelectionData(macromolecule);
   }
 
-  private async setCurrentSelectionData(macromolecule: MacromoleculesRowData) {
+  private async setCurrentSelectionData(macromolecule: ProcessedMacromolecule) {
     const entityId = macromolecule.additionalData.molecule.entity_id;
     const chainId = this.dropdownSelected.split('Chain ')[1];
 
@@ -381,7 +406,7 @@ export class LLMTabComponent implements OnInit {
     this.visInteractivity.currentSelectionChainId.set(chainId);
   }
 
-  private async renderInMolstar(macromolecule: MacromoleculesRowData) {
+  private async renderInMolstar(macromolecule: ProcessedMacromolecule) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
     // Wait until first render is finished

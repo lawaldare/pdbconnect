@@ -207,8 +207,7 @@
           <article>
             @for (sourceOrganism of currentData()!.sampleInfo!.sourceOrganisms; track sourceOrganism) {
             <div>
-              <!-- <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">{{ sourceOrganism }}</a> -->
-              <a>
+              <a [href]="generateOrganismSearchUrl(sourceOrganism)">
                 <em>{{ sourceOrganism }}</em>
                 <i class="icon icon-common icon-search"></i>
               </a>
@@ -222,11 +221,10 @@
           <article>
             @for (expressionSystem of currentData()!.sampleInfo!.expressionSystem; track expressionSystem) {
             <div>
-              <!-- <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">{{ sourceOrganism }}</a> -->
-              <span>
+              <a [href]="generateExpSearchUrl(expressionSystem)">
                 <em>{{ expressionSystem }}</em>
-                <!-- <i class="icon icon-common icon-search"></i> -->
-              </span>
+                <i class="icon icon-common icon-search"></i>
+              </a>
             </div>
             }
           </article>

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
-import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
+// import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
@@ -23,9 +23,9 @@ import { EntryActions } from '../../store/entry.actions';
   templateUrl: './assemblies-tab.component.html',
   styleUrl: './assemblies-tab.component.scss',
 })
-export class AssembliesTabComponent implements OnInit {
+export class AssembliesTabComponent {
   public readonly compCommunication = inject(ComponentCommunicationService);
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
+  // public readonly dataProcessing = inject(MainDataProcessingFacade);
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
@@ -46,26 +46,30 @@ export class AssembliesTabComponent implements OnInit {
   private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
 
   public readonly symmetry = toSignal(this.globalStore.select(EntrySelectors.symmetry));
+  public readonly processedAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
 
   public readonly entryAssembliesTooltips = entryAssembliesTooltips;
 
   public readonly util = inject(UtilService);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
-  public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
+  // public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
+  public readonly tabDataLoaded = computed(() => this.processedAssemblies() !== undefined);
 
   public readonly selectedAssemblyIdx = toSignal(this.compCommunication.assemblySelection$);
 
   public readonly assemblyTableRows = computed(() => {
-    const isLoaded = this.compCommunication.hasProcessedAssemblies();
-    if (!isLoaded) return [];
-    return this.compCommunication.processedAssemblies;
+    // const isLoaded = this.compCommunication.hasProcessedAssemblies();
+    const rows = this.processedAssemblies();
+    if (!rows) return [];
+    return rows;
   });
 
   private previousAssemblyDatumIdx?: number;
   public currentAssemblyDatum = computed(() => {
     const selectedIdx = this.selectedAssemblyIdx() ?? 0;
-    const rows = this.assemblyTableRows();
+    const rows = this.processedAssemblies();
+    if (!rows) return;
     const datum = rows[selectedIdx];
     if (!datum) return;
 
@@ -118,11 +122,6 @@ export class AssembliesTabComponent implements OnInit {
 
   @ViewChild('molstarContainer') molstarContainer!: ElementRef;
   public readonly popService = inject(PopupWindowService);
-
-  ngOnInit(): void {
-    /* 1. Fetch data */
-    this.globalStore.dispatch(EntryActions.getSymmetry()); // used in assemblies and mb-assemblies
-  }
 
   public popupMolstar(): void {
     const fullMode = this.popService.isMaximizedOnMac();

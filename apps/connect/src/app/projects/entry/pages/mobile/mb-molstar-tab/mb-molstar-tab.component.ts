@@ -12,7 +12,7 @@ import { take } from 'rxjs';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { initializeModelIdTracking } from '../../../helpers/molstar-nmr-model-tracking';
-import { MobileTabChips } from '../../../data-classes/data-models-and-definitions/other-models';
+import { MobileTabChips } from '../../../store/data-processing/models/other-models';
 import { MbAssembliesComponent } from '../mb-assemblies/mb-assemblies.component';
 import { MbDomainsComponent } from '../mb-domains/mb-domains.component';
 import { MbLigandsComponent } from '../mb-ligands/mb-ligands.component';

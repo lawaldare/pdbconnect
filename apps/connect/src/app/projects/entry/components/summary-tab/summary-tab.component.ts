@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
@@ -14,7 +14,6 @@ import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { filter, firstValueFrom, map, take, timer } from 'rxjs';
-import { DomainsRowData, LigandsRowData, MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
@@ -22,10 +21,12 @@ import { getLigandsDropdownOptions, getMacromoleculeChainDropdownOptions } from 
 import { componentExistsInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { Molecule } from '../../data-models/molecule.model';
 import { EntryActions } from '../../store/entry.actions';
+import { ProcessedDomain, ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
+import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
 
 type NestedDomainsData = Array<{
-  macromolecule: MacromoleculesRowData;
-  domains: DomainsRowData[];
+  macromolecule: ProcessedMacromolecule;
+  domains: ProcessedDomain[];
 }>;
 @Component({
   selector: 'pdbc-summary-tab',
@@ -34,7 +35,7 @@ type NestedDomainsData = Array<{
   styleUrl: './summary-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SummaryTabComponent implements OnInit {
+export class SummaryTabComponent {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   private readonly globalStore = inject(Store<EntryStoreState>);
@@ -47,11 +48,6 @@ export class SummaryTabComponent implements OnInit {
   public readonly organismScientificNames = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
   public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
   public readonly qualityScores = toSignal(this.globalStore.select(EntrySelectors.summaryQualityScores));
-
-  ngOnInit() {
-    /* 1. Fetch data for tab */
-    this.globalStore.dispatch(EntryActions.getSummaryQualityScores()); // used in summary, mb-overview
-  }
 
   /**
    * Left panel: Text information related
@@ -90,9 +86,15 @@ export class SummaryTabComponent implements OnInit {
    * Right panel: Molstar related
    */
 
-  public hasLoadedDomains = computed(() => this.compCommunication.hasProcessedDomains());
-  public hasLoadedMacromolecules = computed(() => this.compCommunication.hasProcessedMacromolecules());
-  public hasLoadedLigands = computed(() => this.compCommunication.hasProcessedDomains());
+  private procPrefAssembly = toSignal(this.globalStore.select(EntrySelectors.processedPrefAssembly));
+  private procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  private procLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
+  private procDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomains));
+  private processedDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomainsWithMacromols));
+
+  public hasLoadedDomains = computed(() => this.processedDomains() !== undefined);
+  public hasLoadedMacromolecules = computed(() => this.procMacromolecules() !== undefined);
+  public hasLoadedLigands = computed(() => this.procLigands() !== undefined);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
 
@@ -176,9 +178,10 @@ export class SummaryTabComponent implements OnInit {
   }
 
   //  data used in template for assembly accordion
-  public assemblyData = computed(() => this.compCommunication.preferredAssemblyData());
-  public entryContentsDescription = computed(() => this.compCommunication.descriptions()?.entryContentsDescription);
-  public macromoleculesDescription = computed(() => this.compCommunication.descriptions()?.macromoleculesDescription);
+  public assemblyData = computed(() => this.procPrefAssembly());
+  public descriptionsFromAPI = toSignal(this.globalStore.select(EntrySelectors.macromolsDescriptions));
+  public entryContentsDescription = computed(() => this.descriptionsFromAPI()?.entryContentsDescription);
+  public macromoleculesDescription = computed(() => this.descriptionsFromAPI()?.macromoleculesDescription);
 
   public preferredAssemblyTooltip = preferredAssemblyTooltip;
   public assemblyNameTooltip = assemblyNameTooltip;
@@ -200,16 +203,16 @@ export class SummaryTabComponent implements OnInit {
   // data processed for all views
   readonly maxPerPage = 80;
   public processedMacromolecules = computed(() => {
-    const hasMacromoleculesData = this.compCommunication.hasProcessedMacromolecules();
-    if (!hasMacromoleculesData) return [];
-    return this.compCommunication.processedMacromolecules;
+    const rows = this.procMacromolecules();
+    if (rows === undefined) return [];
+    return rows;
   });
 
   public currentMacromoleculesPage = signal(0);
 
   public maxMacromoleculesPages = computed(() => {
-    const hasMacromoleculesData = this.compCommunication.hasProcessedMacromolecules();
-    if (!hasMacromoleculesData) return 1;
+    const hasMacromoleculesData = this.procMacromolecules();
+    if (hasMacromoleculesData === undefined) return 1;
     const macromolecules = this.processedMacromolecules();
     const total = macromolecules.length;
     return Math.ceil(total / this.maxPerPage);
@@ -266,16 +269,16 @@ export class SummaryTabComponent implements OnInit {
   });
 
   public processedLigands = computed(() => {
-    const hasLigandsData = this.compCommunication.hasProcessedLigands();
-    if (!hasLigandsData) return [];
-    return this.compCommunication.processedLigands;
+    const rows = this.procLigands();
+    if (rows === undefined) return [];
+    return rows.filter((lig) => lig.type === 'ligand');
   });
 
   public currentLigandsPage = signal(0);
 
   public maxLigandsPages = computed(() => {
-    const hasLigandsData = this.compCommunication.hasProcessedLigands();
-    if (!hasLigandsData) return 1;
+    const hasLigandsData = this.procLigands();
+    if (hasLigandsData === undefined) return 1;
     const ligands = this.processedLigands();
     const total = ligands.length;
     return Math.ceil(total / this.maxPerPage);
@@ -291,9 +294,9 @@ export class SummaryTabComponent implements OnInit {
 
   public allLigandsQueryParam = computed(() => {
     const ligandsSelectionData: QueryParam[] = [];
-    const hasLigandsData = this.compCommunication.hasProcessedLigands();
-    if (!hasLigandsData) return ligandsSelectionData;
-    const ligands = this.compCommunication.processedLigands;
+    const hasLigandsData = this.procLigands();
+    if (hasLigandsData === undefined) return ligandsSelectionData;
+    const ligands = this.processedLigands();
     ligandsSelectionData.push(
       ...ligands.map((ligand) => {
         const entityId = (ligand.additionalData.source as Molecule).entity_id;
@@ -313,16 +316,16 @@ export class SummaryTabComponent implements OnInit {
   });
 
   public processedModifications = computed(() => {
-    const hasLigandsData = this.compCommunication.hasProcessedLigands();
-    if (!hasLigandsData) return [];
-    return this.compCommunication.processedModifications;
+    const rows = this.procLigands();
+    if (rows === undefined) return [];
+    return rows.filter((lig) => lig.type === 'modification');
   });
 
   public currentModificationsPage = signal(0);
 
   public maxModificationsPages = computed(() => {
-    const hasLigandsData = this.compCommunication.hasProcessedLigands();
-    if (!hasLigandsData) return 1;
+    const hasLigandsData = this.procLigands();
+    if (hasLigandsData === undefined) return 1;
     const modifications = this.processedModifications();
     const total = modifications.length;
     return Math.ceil(total / this.maxPerPage);
@@ -338,9 +341,9 @@ export class SummaryTabComponent implements OnInit {
 
   public allModificationsQueryParam = computed(() => {
     const modsSelectionData: QueryParam[] = [];
-    const hasLigandsData = this.compCommunication.hasProcessedLigands();
-    if (!hasLigandsData) return modsSelectionData;
-    const modifications = this.compCommunication.processedModifications;
+    const hasLigandsData = this.procLigands();
+    if (hasLigandsData === undefined) return modsSelectionData;
+    const modifications = this.processedModifications();
     for (const mod of modifications) {
       for (const sel of mod.additionalData.selections) {
         const modSel = sel[0];
@@ -359,9 +362,9 @@ export class SummaryTabComponent implements OnInit {
   });
 
   public processedDomainsAsList = computed(() => {
-    const hasDomainsData = this.compCommunication.hasProcessedDomains();
-    if (!hasDomainsData) return [];
-    return this.compCommunication.processedDomainsAsList;
+    const rows = this.procDomains();
+    if (rows === undefined) return [];
+    return rows;
   });
 
   public domainCount = computed(() => {
@@ -434,10 +437,10 @@ export class SummaryTabComponent implements OnInit {
 
   public processedDomainsForListView = computed(() => {
     const result: NestedDomainsData = [];
-    const hasMacromoleculesData = this.compCommunication.hasProcessedMacromolecules();
-    const hasDomainsData = this.compCommunication.hasProcessedDomains();
+    const hasMacromoleculesData = this.procMacromolecules() !== undefined;
+    const hasDomainsData = this.processedDomains() !== undefined;
     if (!hasMacromoleculesData || !hasDomainsData) return result;
-    const processedDomains = this.compCommunication.processedDomains;
+    const processedDomains = this.processedDomains()!;
     for (const processedDomain of processedDomains) {
       const macromolecule = processedDomain.macromolecule;
       const allDomainsInListView = this.currentDomainResource() === 'All';
@@ -491,7 +494,7 @@ export class SummaryTabComponent implements OnInit {
   }
 
   public maxDomainsPages = computed(() => {
-    const hasDomainsData = this.compCommunication.hasProcessedDomains();
+    const hasDomainsData = this.processedDomains() !== undefined;
     if (!hasDomainsData) return 1;
 
     const processedDomains = this.processedDomainsForListView();
@@ -507,7 +510,7 @@ export class SummaryTabComponent implements OnInit {
   });
 
   public allCurrentResourceDomainsQueryParam = computed(() => {
-    const hasDomainsData = this.compCommunication.hasProcessedDomains();
+    const hasDomainsData = this.processedDomains() !== undefined;
     if (!hasDomainsData) return [];
 
     const allDomainsInListView = this.currentDomainResource() === 'All';
@@ -558,7 +561,7 @@ export class SummaryTabComponent implements OnInit {
   public openedAccordionName?: string;
 
   public lastSelection: {
-    [key: string]: MacromoleculesRowData | LigandsRowData | DomainsRowData | undefined;
+    [key: string]: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined;
   } = {};
 
   public lastSubSelection: {
@@ -591,7 +594,7 @@ export class SummaryTabComponent implements OnInit {
     this.updateView(tabName, false);
   }
 
-  public async selectListItem(listItem: MacromoleculesRowData | LigandsRowData | DomainsRowData, selectionType: string) {
+  public async selectListItem(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain, selectionType: string) {
     // on click if already selected -> undefined, otherwise select
     if (listItem === this.lastSelection[selectionType]) {
       this.lastSelection[selectionType] = undefined;
@@ -603,11 +606,11 @@ export class SummaryTabComponent implements OnInit {
     this.updateView(selectionType, true);
   }
 
-  public isSelected(listItem: MacromoleculesRowData | LigandsRowData | DomainsRowData, selectionType: string) {
+  public isSelected(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain, selectionType: string) {
     return this.lastSelection[selectionType] === listItem;
   }
 
-  public async mouseinListItem(listItem: MacromoleculesRowData | LigandsRowData | DomainsRowData, selectionType: string) {
+  public async mouseinListItem(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain, selectionType: string) {
     const selectionToHighlight = await this.getSelectionObjForSelectionType(listItem, selectionType, false, false);
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance || !selectionToHighlight) return;
@@ -633,13 +636,13 @@ export class SummaryTabComponent implements OnInit {
     this.updateMolstarAny(listViewItem, tabName);
   }
 
-  private updateDropdownOptions(listItem: MacromoleculesRowData | LigandsRowData | DomainsRowData, selectionType: string, resetDropdown: boolean) {
+  private updateDropdownOptions(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain, selectionType: string, resetDropdown: boolean) {
     if (selectionType === 'Assembly' || selectionType === 'Domains') {
       this.dropdownOptionsToMolstar = {};
       this.dropdownOptions.set([]);
     }
     if (selectionType === 'Macromolecules') {
-      this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(listItem as MacromoleculesRowData);
+      this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(listItem as ProcessedMacromolecule);
       this.dropdownOptions.set(
         Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
           return {
@@ -654,7 +657,7 @@ export class SummaryTabComponent implements OnInit {
       this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx];
     }
     if (selectionType === 'Ligands') {
-      this.dropdownOptionsToMolstar = getLigandsDropdownOptions(listItem as LigandsRowData);
+      this.dropdownOptionsToMolstar = getLigandsDropdownOptions(listItem as ProcessedLigandOrMod);
       this.dropdownOptions.set(
         Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
           return {
@@ -669,7 +672,7 @@ export class SummaryTabComponent implements OnInit {
       this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx];
     }
     if (selectionType === 'Modifications') {
-      this.dropdownOptionsToMolstar = getLigandsDropdownOptions(listItem as LigandsRowData);
+      this.dropdownOptionsToMolstar = getLigandsDropdownOptions(listItem as ProcessedLigandOrMod);
       this.dropdownOptions.set(
         Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
           return {
@@ -697,14 +700,14 @@ export class SummaryTabComponent implements OnInit {
   }
 
   private async getSelectionObjForSelectionType(
-    listItem: MacromoleculesRowData | LigandsRowData | DomainsRowData,
+    listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain,
     selectionType: string,
     focusType: boolean,
     useCurrent: boolean
   ): Promise<QueryParam[] | undefined> {
     let molstarSelections: QueryParam[] | undefined = undefined;
     if (selectionType === 'Macromolecules') {
-      const macromolecule = listItem as MacromoleculesRowData;
+      const macromolecule = listItem as ProcessedMacromolecule;
       const allSelections: QueryParam[] = [
         {
           entity_id: `${macromolecule.additionalData.molecule.entity_id}`,
@@ -714,7 +717,7 @@ export class SummaryTabComponent implements OnInit {
       molstarSelections = useCurrent ? currentMolstarSelection : allSelections;
     }
     if (selectionType === 'Ligands') {
-      const ligand = listItem as LigandsRowData;
+      const ligand = listItem as ProcessedLigandOrMod;
       const src = ligand.additionalData.source as Molecule;
       const allSelections: QueryParam[] = [
         {
@@ -725,11 +728,11 @@ export class SummaryTabComponent implements OnInit {
       molstarSelections = useCurrent ? currentMolstarSelection : allSelections;
     }
     if (selectionType === 'Domains') {
-      const domain = listItem as DomainsRowData;
+      const domain = listItem as ProcessedDomain;
       molstarSelections = domain.additionalData.selections[0];
     }
     if (selectionType === 'Modifications') {
-      const mod = listItem as LigandsRowData;
+      const mod = listItem as ProcessedLigandOrMod;
       const allSelections = mod.additionalData.selections;
       const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
       const flatSelections = allSelections.flat(1);
@@ -759,7 +762,7 @@ export class SummaryTabComponent implements OnInit {
     await instance.visual.focus(selectionToZoom);
   }
 
-  private async updateMolstarAny(listItem: MacromoleculesRowData | LigandsRowData | DomainsRowData | undefined, selectionType: string) {
+  private async updateMolstarAny(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
     // Wait until first render is finished
     await firstValueFrom(
       this.molstarFirstRenderFinished$.pipe(
@@ -772,20 +775,20 @@ export class SummaryTabComponent implements OnInit {
       this.resetSelection();
     }
     if (selectionType === 'Macromolecules') {
-      this.updateMolstarMacromolecules(listItem as MacromoleculesRowData | undefined);
+      this.updateMolstarMacromolecules(listItem as ProcessedMacromolecule | undefined);
     }
     if (selectionType === 'Ligands') {
-      this.updateMolstarLigands(listItem as LigandsRowData | undefined);
+      this.updateMolstarLigands(listItem as ProcessedLigandOrMod | undefined);
     }
     if (selectionType === 'Domains') {
-      this.updateMolstarDomains(listItem as DomainsRowData | undefined);
+      this.updateMolstarDomains(listItem as ProcessedDomain | undefined);
     }
     if (selectionType === 'Modifications') {
-      this.updateMolstarModifications(listItem as LigandsRowData | undefined);
+      this.updateMolstarModifications(listItem as ProcessedLigandOrMod | undefined);
     }
   }
 
-  private async updateMolstarMacromolecules(macromolecule: MacromoleculesRowData | undefined) {
+  private async updateMolstarMacromolecules(macromolecule: ProcessedMacromolecule | undefined) {
     if (!macromolecule) {
       await this.resetSelection();
       return;
@@ -809,7 +812,7 @@ export class SummaryTabComponent implements OnInit {
     });
   }
 
-  private async updateMolstarLigands(ligand: LigandsRowData | undefined) {
+  private async updateMolstarLigands(ligand: ProcessedLigandOrMod | undefined) {
     if (!ligand) {
       this.selectionData = [];
       const ligandsSelectionData = this.allLigandsQueryParam();
@@ -840,7 +843,7 @@ export class SummaryTabComponent implements OnInit {
     });
   }
 
-  private async updateMolstarDomains(domain: DomainsRowData | undefined) {
+  private async updateMolstarDomains(domain: ProcessedDomain | undefined) {
     this.nonSelectionColor = '#FEFEFE';
     if (!domain) {
       this.selectionData = [];
@@ -864,7 +867,7 @@ export class SummaryTabComponent implements OnInit {
     });
   }
 
-  private async updateMolstarModifications(mod: LigandsRowData | undefined) {
+  private async updateMolstarModifications(mod: ProcessedLigandOrMod | undefined) {
     if (!mod) {
       this.selectionData = [];
       const ligandsSelectionData = this.allModificationsQueryParam();

@@ -35,8 +35,8 @@ export class MbModelQualityComponent implements OnInit {
   public readonly entryId = toSignal(this.entryIdObs);
   public readonly summaryObs = this.globalStore.select(EntrySelectors.summaryData);
   public readonly summary = toSignal(this.summaryObs);
-
-  private outliers$ = toObservable(this.compCommunication.outliersByModelId);
+  public readonly outliersByModelId = toSignal(this.globalStore.select(EntrySelectors.outliersByModelId));
+  private outliers$ = this.globalStore.select(EntrySelectors.outliersByModelId);
 
   public expanded = signal<boolean>(false);
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbModelQualityComponent>) {
@@ -113,7 +113,7 @@ export class MbModelQualityComponent implements OnInit {
     if (this.compCommunication.mobileMolstarDisplay === 'mquality') return;
     const currentModelIdx = this.compCommunication.mobileModelIdx$.getValue();
     // get model quality data and display here
-    const allOutliers = this.compCommunication.outliersByModelId();
+    const allOutliers = this.outliersByModelId();
     if (!allOutliers) return;
     const outliers = allOutliers[currentModelIdx];
 

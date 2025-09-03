@@ -1,5 +1,5 @@
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { OutlierResidues } from '../../data-models/residuewise-outliers.model';
+import { OutlierResidues } from '../../../data-models/residuewise-outliers.model';
 
 export interface PreferredAssemblyData {
   name: string;

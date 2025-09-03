@@ -22,7 +22,7 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
 import { modelQualityTooltips, OUTLIER_TYPE_LABELS } from '../../entry-constant';
 import { MaterialModule, UtilService } from '@pdbc/core';
-import { BehaviorSubject, combineLatest, forkJoin, mergeMap, of, take, timer } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, forkJoin, mergeMap, of, take, timer } from 'rxjs';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
@@ -30,17 +30,15 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { EntrySelectors } from '../../store/entry.selectors';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
-import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { cameraResetInMolstar, drawSelectionInMolstar } from '../../helpers/molstar-helpers';
-import { OutlierDict, ValueLabel } from '../../data-classes/data-models-and-definitions/other-models';
 import { EntryActions } from '../../store/entry.actions';
+import { OutlierDict, ValueLabel } from '../../store/data-processing/models/other-models';
 
 /**
  * Examples that should be tested when looking at this component
@@ -87,22 +85,21 @@ import { EntryActions } from '../../store/entry.actions';
   styleUrl: './experiments-validation.component.scss',
 })
 export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
+  public readonly utilService = inject(UtilService);
   public readonly renderer = inject(Renderer2);
   public readonly elementRef = inject(ElementRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   public readonly tableFacade = inject(ValidationTablesFacade);
 
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
-
   public readonly util = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
-  public readonly compCommunication = inject(ComponentCommunicationService);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly sourceOrganisms = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
   public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
+  public readonly outliersByModelId = toSignal(this.globalStore.select(EntrySelectors.outliersByModelId));
   public readonly experimentalMethod = toSignal(this.globalStore.select(EntrySelectors.experimentalMethod));
 
   // used in template
@@ -178,7 +175,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
   public hasOutliers = computed(() => {
     const currentModelIdx = this.modelIdx();
-    const allOutliers = this.compCommunication.outliersByModelId();
+    const allOutliers = this.outliersByModelId();
     if (!currentModelIdx || !allOutliers) return false;
 
     const outliers = allOutliers[currentModelIdx];
@@ -237,7 +234,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   constructor() {
     effect(() => {
       const currentModelIdx = this.modelIdx();
-      const allOutliers = this.compCommunication.outliersByModelId();
+      const allOutliers = this.outliersByModelId();
 
       if (!currentModelIdx || !allOutliers) return;
       // if (!allOutliers) return;
@@ -304,19 +301,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    /* 1. Fetch tab data */
-    this.globalStore.dispatch(EntryActions.getExperiment());
-    this.globalStore.dispatch(EntryActions.getPDBRedoQualityScores());
-    this.globalStore.dispatch(EntryActions.getEntryResidueWiseOutliers());
-    this.globalStore.dispatch(EntryActions.getModelQualityXray());
-    this.globalStore.dispatch(EntryActions.getExperimentSBGridRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentIRRMCRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentEMPIARRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentPDBRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentBMRBRawData());
-    this.globalStore.dispatch(EntryActions.getValidationKeyStats());
-    this.globalStore.dispatch(EntryActions.getValidationXrayRefine());
-
     /* 2a. Once molstar has rendered, initializes mutation observer for NMR model Id */
     this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (finished) => {
       if (finished) {
@@ -336,8 +320,11 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       this.globalStore.select(EntrySelectors.macroMolecules),
     ])
       .pipe(
+        filter(([xray, experimentalDetails, macroMolecules]) => {
+          return xray !== undefined && experimentalDetails !== undefined && macroMolecules !== undefined;
+        }),
         mergeMap(([xray, experimentalDetails, macroMolecules]) => {
-          if (experimentalDetails.length > 1) {
+          if (experimentalDetails && experimentalDetails.length > 1) {
             this.isHybrid.set(true);
           }
           const processedExpValData$ = this.dataFacade.processData().pipe(take(1));
@@ -446,5 +433,13 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       }
     }
     return result;
+  }
+
+  public generateOrganismSearchUrl(term: string): string {
+    return this.utilService.generateQueryURL(term, 'q_organism_name');
+  }
+
+  public generateExpSearchUrl(term: string): string {
+    return this.utilService.generateQueryURL(term, 'organism_scientific_name');
   }
 }

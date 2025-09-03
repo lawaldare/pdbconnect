@@ -18,244 +18,59 @@
 
   <!-- Structure overview -->
 
-  @if(tabDataLoaded()){
   <h3 id="structure-overview">Structure overview</h3>
-  <section class="structure-overview">
-    <div class="info">
-      <p class="info__title">Method</p>
-      <p class="info__content">{{experimentalMethod()}}</p>
-    </div>
-    <div class="info">
-      <p class="info__title">Resolution</p>
-      <p class="info__content">
-        @if (resolutionValues() ?? [].length > 0) { @for (resolutionValue of resolutionValues(); track resolutionValue) { @if (resolutionValue !== undefined) {
-        <span>{{ resolutionValue }}Å</span>
-        } } }
-      </p>
-    </div>
-    <div class="info">
-      <p class="info__title">Organisms</p>
-      <p class="info__content">
-        @for (sourceOrganism of organismScientificNames(); track sourceOrganism; let islast = $last) {
-        <span>
-          <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank"> {{ sourceOrganism }} </a>
-        </span>
-        {{ islast ? '' : ',' }} } @if (organismScientificNames()?.length === 0) {
-        <span>Not available</span>
-        }
-      </p>
-    </div>
-    <div class="info">
-      <p class="info__title">Entry content</p>
-      <p class="info__content">
-        @for(filter of miniFilters(); track filter.description){
-        <span style="display: block">{{filter.description}}</span>
-        }
-      </p>
-    </div>
-  </section>
-  } @else {
-  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+  @defer (on viewport) {
+  <pdbc-mb-structure-overview></pdbc-mb-structure-overview>
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
   }
 
   <!-- Molstar Gallery -->
-
   <lib-molstar-gallery [entryId]="entryStoreId() ?? ''" />
-
   <button class="vf-button vf-button--primary" (click)="openMolstarPage()">View 3D and annotations</button>
 
   <!-- Primary publication -->
-
-  @if(primaryPublication().title){
   <h3 id="primary-publication">Primary publication</h3>
-  <p class="publication-title">{{primaryPublication().title}}</p>
-  <div class="authors">
-    @for (author of primaryPublication().author_list.slice(0, initialAuthorCount()); track author.full_name; let islast = $last) {
-    <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a>{{ islast ? '' : ',' }} }
-    @if(primaryPublication().author_list.length > 5){
-    <span role="button" class="related-entry-toggle" (click)="toggleAuthorList()">{{initialAuthorCount() > 5 ? 'Hide' : 'Show all'}} authors</span>
-    }
-  </div>
-  <div class="pmid">
-    <span class="pmid-title">PMID </span>
-    <a [href]="'https://europepmc.org/article/MED/' + primaryPublication().pubmed_id" target="_blank"
-      >{{ primaryPublication().pubmed_id }}
-      <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
-    </a>
-  </div>
-  @if(primaryPublication().journal_info){
-  <p class="journal-info">
-    {{ primaryPublication().journal_info.pdb_abbreviation }} {{ primaryPublication().journal_info.volume }} {{ primaryPublication().journal_info.pages }} ({{
-    primaryPublication().journal_info.year}})
-  </p>
+  @defer (on viewport) {
+  <pdbc-mb-primary-publication></pdbc-mb-primary-publication>
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
   }
-  <div class="pmid">
-    <span class="pmid-title">DOI </span>
-    <a [href]="'https://doi.org/' + primaryPublication().doi" target="_blank">{{ primaryPublication().doi }} </a>
-  </div>
-  @if(relatedEntries().length){
-  <div>
-    <span class="pmid-title">Also associated with </span>
-    @for (entry of relatedEntries().slice(0, initialCount()); track entry; let islast = $last) {
-    <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + entry" target="_blank" class="row__right__link">{{ entry }} </a>{{ islast ? '' : ',' }} }
-  </div>
-  @if(relatedEntries().length > 5){
-  <span role="button" class="related-entry-toggle" (click)="toggleRelatedEntriesList()">{{initialCount() > 5 ? 'Hide' : 'Show all'}} associated entries</span>
-  } } }@else {
-  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
-  }
-
-  <div class="row" (click)="navigateToCitationPage()">
-    <div class="row__header">
-      <p class="row__header__name">Primary publication abstract and figures</p>
-      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
-    </div>
-  </div>
-
-  <!-- Articles citing the PDB entry -->
-
-  @if(articlesCiting().cited_by){ @let articles = articlesCiting().cited_by.Articles; @if(articles.length > 0){
-  <div class="row" (click)="navigateToPageSection($event, 'articles-cited')">
-    <div class="row__header">
-      <p class="row__header__name">Articles citing the PDB entry ({{articles.length}})</p>
-      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
-    </div>
-  </div>
-  } }
-
-  <!-- Reviews citing the PDB entry -->
-
-  @if(articlesCiting().cited_by){ @let reviews = articlesCiting().cited_by.Reviews; @if(reviews.length > 0){
-  <div class="row" (click)="navigateToPageSection($event, 'reviews-cited')">
-    <div class="row__header">
-      <p class="row__header__name">Reviews citing the PDB entry ({{reviews.length}})</p>
-      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
-    </div>
-  </div>
-  } }
-
-  <!-- Articles not cited! -->
-
-  @if(articlesCiting().cited_by){ @let articles = articlesCiting().appears_without_citation.Articles; @if(articles.length > 0){
-  <div class="row" (click)="navigateToPageSection($event, 'articles-not-cited')">
-    <div class="row__header">
-      <p class="row__header__name">Articles - {{ this.entryId() }} mentioned but not cited ({{articles.length}})</p>
-      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
-    </div>
-  </div>
-  } }
-
-  <!-- Reviews not cited! -->
-
-  @if(articlesCiting().cited_by){ @let reviews = articlesCiting().appears_without_citation.Reviews; @if(reviews.length > 0){
-  <div class="row" (click)="navigateToPageSection($event, 'reviews-not-cited')">
-    <div class="row__header">
-      <p class="row__header__name">Reviews - {{ this.entryId() }} mentioned but not cited ({{reviews.length}})</p>
-      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
-    </div>
-  </div>
-  } }
 
   <!-- PDB model quality summary -->
 
   <h3 id="model-quality-summary">PDB model quality summary</h3>
-  <pdbc-str-quality-gradient [componentType]="'GeometryFit_RdToBl'" [renderGradients]="qualityScores()"></pdbc-str-quality-gradient>
-  <span class="qualify-span">Percentile-sliders comparing the quality scores of a model with other models in the archive.</span>
-
+  @defer (on viewport) {
+  <pdbc-mb-model-quality-summary-overview></pdbc-mb-model-quality-summary-overview>
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
   <!-- Assembly -->
 
-  @if(assemblyTableRows().length){
   <h3 id="assembly">Assembly (preferred)</h3>
-  <section class="structure-overview assembly">
-    @if(assemblyTableRows()[0].complexName){
-    <div class="info">
-      <p class="info__title">Assembly name</p>
-      <p class="info__content">{{assemblyTableRows()[0].complexName}}</p>
-    </div>
-    } @if(assemblyTableRows()[0].multimericStates){
-    <div class="info">
-      <p class="info__title">Assembly composition</p>
-      <p class="info__content">{{assemblyTableRows()[0].multimericStates}}</p>
-    </div>
-    } @if(assemblyTableRows()[0].complexId){
-    <div class="info">
-      <p class="info__title">PDBe complex ID</p>
-      <p class="info__content">
-        <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/complex/' + assemblyTableRows()[0].complexId" target="_blank">{{assemblyTableRows()[0].complexId}}</a>
-      </p>
-    </div>
-    } @if(assemblyTableRows().length > 1){
-    <p class="assembly-footer-text">
-      This entry contains {{assemblyTableRows().length - 1}} more assemblies with different assembly compositions. Alternative assemblies are available on the desktop
-      version.
-    </p>
-    }
-  </section>
+  @defer (on viewport) {
+  <pdbc-mb-overview-assembly></pdbc-mb-overview-assembly>
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
   }
 
   <!-- Macromolecules -->
-  @if(macromoleculeTableRows().length){
-  <h3 id="macromolecules">Macromolecules ({{macromoleculeTableRows().length}})</h3>
-  @for(row of macromoleculeTableRows().slice(0, macromoleculeInitialCount()); track row.index ){
-  <section class="macro-row-card">
-    <p class="m-title">{{row.name.molecule}}</p>
-    <p class="text">{{row.name.chains.length}} chains</p>
-    @if(row.organisms.length){
-    <p class="text">Source organism:</p>
-    <p class="text">
-      @for (sourceOrganism of row.organisms; track sourceOrganism) {
-      <span>
-        <em><a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank"> {{ sourceOrganism }} </a></em>
-      </span>
-      }
-    </p>
-    } @if(row.mappedResidues.length){
-    <p class="text">UniProt mapping:</p>
-    <div class="uniport-mapping">
-      @for(residue of row.mappedResidues; track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <= 2){
-      <span>Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a></span>
-      <span> (residues: {{residue.range.join(', ')}}; coverage: {{residue.coverage}}) </span>
-      } @else { @if(residue.open){
-      <span> Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a> </span>
-      <span>(residues: {{range.join(', ')}}; coverage: {{residue.coverage}})</span>
-      <span class="residue-action-button" (click)="residue.open = !residue.open">show less</span>
-      }@else {
-      <span> Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a></span>
-      residues: {{range.slice(0,2).join(', ')}}...
-      <span class="residue-action-button" (click)="residue.open = !residue.open">show all</span>
-      } } } @for(residue of bestResidues(); track residue.name;){
-      <span>Best match <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a></span>
-      <span> (residues: {{residue.mappings[0].unp_start}} - {{residue.mappings[0].unp_end}})</span>
-      }
-    </div>
+  <section id="macromolecules">
+    @defer (on viewport) {
+    <pdbc-mb-overview-macromolecules></pdbc-mb-overview-macromolecules>
+    } @placeholder {
+    <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
     }
   </section>
 
-  } @if(macromoleculeTableRows().length > 5){
-  <button class="vf-button vf-button--search-pdbe" (click)="toggleMacromoleculeList()">{{macromoleculeInitialCount() > 5 ? 'Hide' : 'Show'}} full list</button>
-  } } @else if (compCommunication.hasProcessedMacromolecules() === false) {
-  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
-  }
-
   <!-- Ligands and modifications -->
-  @if(ligandTableRows().length){
-  <h3 id="ligands-and-modifications">Ligands and modifications ({{ligandTableRows().length}})</h3>
-  @for(row of ligandTableRows().slice(0, ligandInitialCount()); track row.id ){
-  <section class="ligand-row-card">
-    <div class="image-info">
-      <img [src]="'https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/' + row.id +'_100.svg'" alt="" />
-      <p class="annotation">{{row.annotation.description}}</p>
-    </div>
-    <div class="card-info">
-      <p class="card-title">{{row.codeAndName.count}} X {{row.id}}</p>
-      <p class="card-name">{{row.codeAndName.name}}</p>
-    </div>
+  <section id="ligands-and-modifications">
+    @defer (on viewport) {
+    <pdbc-mb-overview-ligands-and-mods></pdbc-mb-overview-ligands-and-mods>
+    } @placeholder {
+    <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+    }
   </section>
-  } @if(ligandTableRows().length > 5){
-  <button class="vf-button vf-button--search-pdbe" (click)="toggleLigandList()">{{ligandInitialCount() > 5 ? 'Hide' : 'Show'}} full list</button>
-  } } @else if (compCommunication.hasProcessedLigands() === false) {
-  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
-  }
 
   <!-- Related databases and links -->
   <h3 id="related-databases">Related databases and links</h3>

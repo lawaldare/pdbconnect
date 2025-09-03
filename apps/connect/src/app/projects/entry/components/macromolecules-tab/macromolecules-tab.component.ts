@@ -3,7 +3,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { dashboardStatLinks } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -20,7 +19,6 @@ import { ComponentType } from '@angular/cdk/overlay';
 import { EcNumbersComponent } from '../shared/ec-numbers/ec-numbers.component';
 import { GoTermsComponent } from '../shared/go-terms/go-terms.component';
 import { MatDialog } from '@angular/material/dialog';
-import { SharedDataFacade } from '../shared/shared-data.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
@@ -34,6 +32,8 @@ import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-track
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
+import { getUniProtsDataForMacromolecule } from '../../store/data-processing/macromolecule-processing';
+import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -60,14 +60,28 @@ export class MacromoleculesTabComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly visInteractivity = inject(VisualisationInteractivityService);
   private readonly dialog = inject(MatDialog);
-  public readonly sharedDataFacade = inject(SharedDataFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly scriptLoader = inject(ScriptLoaderService);
+
+  private readonly globalStore = inject(Store<EntryStoreState>);
+
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+
+  public readonly proteinsStatsObservable = this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds);
+  public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
+  public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
+  public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
+  public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
+  public readonly residueListingObservable = this.globalStore.select(EntrySelectors.residueListing);
+  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+  public readonly uniprotMappings = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
+  public readonly polymerCoverage = toSignal(this.globalStore.select(EntrySelectors.polymerCoverage));
 
   public readonly gAS = inject(GoogleAnalyticsService);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
-  public readonly tabDataLoaded = computed(() => this.compCommunication.isTabDataGenerated());
+  public readonly tabDataLoaded = computed(() => this.processedMacromolecules() !== undefined);
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
@@ -131,16 +145,6 @@ export class MacromoleculesTabComponent implements OnInit {
   });
   public molstarHeight = '100%';
 
-  private readonly globalStore = inject(Store<EntryStoreState>);
-  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  public readonly proteinsStatsObservable = this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds);
-  public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
-  public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
-  public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
-  public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
-  public readonly residueListingObservable = this.globalStore.select(EntrySelectors.residueListing);
-  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
-
   public selectionStats = signal<ProteinSummaryStats | undefined>(undefined);
   // public goMappings = computed(() => Object.keys(this.goMapping() ?? {}));
 
@@ -148,7 +152,7 @@ export class MacromoleculesTabComponent implements OnInit {
     const macromolecule = this.currentMacromoleculeDatum();
     const goMapping = this.goMapping();
     if (!macromolecule || !goMapping) return {};
-    const entityId = (macromolecule as MacromoleculesRowData).additionalData.molecule.entity_id;
+    const entityId = (macromolecule as ProcessedMacromolecule).additionalData.molecule.entity_id;
     const filteredGoMapping = this.filterMappingByEntityId(goMapping, entityId) as GOMapping;
     return filteredGoMapping;
   });
@@ -157,7 +161,7 @@ export class MacromoleculesTabComponent implements OnInit {
     const macromolecule = this.currentMacromoleculeDatum();
     const ecMapping = this.ecMapping();
     if (!macromolecule || !ecMapping) return {};
-    const entityId = (macromolecule as MacromoleculesRowData).additionalData.molecule.entity_id;
+    const entityId = (macromolecule as ProcessedMacromolecule).additionalData.molecule.entity_id;
     const filteredEcMapping = this.filterMappingByEntityId(ecMapping, entityId) as ECMapping;
     return filteredEcMapping;
   });
@@ -204,11 +208,27 @@ export class MacromoleculesTabComponent implements OnInit {
   });
 
   public ecMappings = computed(() => Object.keys(this.ecMappingsForMacromolecule() ?? {}));
-  public bestResidues = computed(() => {
-    const macromolecule = this.currentMacromoleculeDatum();
-    if (!macromolecule) return [];
 
-    const uniprotsAllowed = macromolecule.additionalData.uniprotAccessions;
+  public uniprotMappedData = computed(() => {
+    const currentMacromoleculeDatum = this.currentMacromoleculeDatum();
+    const uniprotMappings = this.uniprotMappings();
+    const polymerCoverage = this.polymerCoverage();
+
+    if (!currentMacromoleculeDatum) return undefined;
+    if (!uniprotMappings) return undefined;
+    if (!polymerCoverage) return undefined;
+
+    const mol = currentMacromoleculeDatum.additionalData.molecule;
+    const mappedUnps = getUniProtsDataForMacromolecule(mol, uniprotMappings, polymerCoverage);
+    return mappedUnps;
+  });
+
+  public uniprotsAllowed = computed(() => this.uniprotMappedData()?.uniprotAccsForMacromolecule);
+  public uniprotsAllowedObs$ = toObservable(this.uniprotsAllowed);
+
+  public bestResidues = computed(() => {
+    const uniprotsAllowed = this.uniprotsAllowed();
+    if (!uniprotsAllowed) return [];
 
     let isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
     isoformsMappingKeys = isoformsMappingKeys.filter((isoform) => {
@@ -253,23 +273,38 @@ export class MacromoleculesTabComponent implements OnInit {
   public readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()));
 
   public readonly macromoleculeTableRows = computed(() => {
-    const isLoaded = this.compCommunication.hasProcessedMacromolecules();
-
-    if (isLoaded) {
-      const rows = this.compCommunication.processedMacromolecules;
-      const mappedDatum = rows.map((data) => {
-        return {
-          ...data,
-          mappedResidues: this.sharedDataFacade.transformCoverageData(data.residues),
-          organisms: [...new Set(data['organisms'])],
-        };
-      });
-      return mappedDatum;
-    }
-    return [];
+    const rows = this.processedMacromolecules();
+    if (rows === undefined) return [];
+    return rows;
   });
 
-  public currentMacromoleculeDatum = signal<MacromoleculesRowData | undefined>(undefined);
+  public currentMacromoleculeDatum = signal<ProcessedMacromolecule | undefined>(undefined);
+
+  public uniqueOrganisms = computed(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (macromolecule === undefined) return [];
+    return [...new Set(macromolecule['organisms'].filter((organism) => organism !== null))];
+  });
+
+  public uniqueExpSystems = computed(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (macromolecule === undefined) return [];
+    const expSystems = macromolecule.additionalData.molecule.source.map((src) => src.expression_host_scientific_name);
+    return [...new Set(expSystems.filter((expSystem) => expSystem !== null))];
+  });
+
+  public mappedResidues = computed(() => {
+    const currentMacromoleculeDatum = this.currentMacromoleculeDatum();
+    const currentChain = this.currentSelectionChainId();
+    const mappedUnps = this.uniprotMappedData();
+
+    if (!currentMacromoleculeDatum) return undefined;
+    if (!mappedUnps) return undefined;
+    if (!currentChain) return undefined;
+
+    const mappingsForChains = mappedUnps.uniprotRangesByChainId;
+    return mappingsForChains[currentChain];
+  });
 
   public altSequences = signal<AlternativeNumbering[] | undefined>(undefined);
   public nonObserved = signal<number[] | undefined>(undefined);
@@ -291,10 +326,6 @@ export class MacromoleculesTabComponent implements OnInit {
 
   ngOnInit() {
     /* 1. Fetch tab data*/
-    this.globalStore.dispatch(EntryActions.getGOMapping());
-    this.globalStore.dispatch(EntryActions.getECMapping());
-    this.globalStore.dispatch(EntryActions.getIsoformsMapping()); // used in llm, macro, mb-overview, mb-macro
-    this.globalStore.dispatch(EntryActions.getEntryResidueWiseOutliers());
 
     /* 2. Fetch topol viewer mutex inside Promise */
     this.topolViewerMutex = this.topolViewerMutex.then(async () => {
@@ -321,8 +352,32 @@ export class MacromoleculesTabComponent implements OnInit {
       this.updateBackgroundAnnotation();
     });
 
+    // when uniprot listing has arrived and been processed
+    this.uniprotsAllowedObs$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        distinctUntilChanged(),
+        filter((unps) => unps !== undefined)
+      )
+      .subscribe((unpsList) => {
+        // if protein is not chimeric (single uniprotAccession), set this as selectionUniprotId
+        if (unpsList.length === 1) {
+          this.selectionUniprotId = unpsList[0];
+          // dispatch call to API endpoint and when finished triggers
+          // constructor this.proteinsStatsObservable.pipe(...)
+          this.globalStore.dispatch(
+            EntryActions.getUniprotSummary({
+              uniprotId: this.selectionUniprotId ?? '',
+            })
+          );
+        }
+      });
+    // when uniprot summary API call has finished
     this.proteinsStatsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((proteinSummary) => {
-      this.selectionStats.set(proteinSummary);
+      if (proteinSummary) {
+        const datum = proteinSummary[this.selectionUniprotId];
+        if (datum) this.selectionStats.set(datum);
+      }
     });
 
     this.residueListingObservable
@@ -349,7 +404,7 @@ export class MacromoleculesTabComponent implements OnInit {
     return stats ? stats[id as keyof ProteinSummaryStats] : undefined;
   }
 
-  triggerMacromoleculeUpdateSideEffects(macromolecule: MacromoleculesRowData) {
+  triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
     // refreshes dropdown options on new macromolecule
     this.updateDropdownOptions(macromolecule);
 
@@ -376,7 +431,7 @@ export class MacromoleculesTabComponent implements OnInit {
     this.updateBackgroundAnnotation();
   }
 
-  updateDropdownOptions(macromolecule: MacromoleculesRowData) {
+  updateDropdownOptions(macromolecule: ProcessedMacromolecule) {
     this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(macromolecule);
     this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
       return {
@@ -407,22 +462,11 @@ export class MacromoleculesTabComponent implements OnInit {
     this.backgroundAnnotation.set(annotation);
   }
 
-  updateVisualsDisplayed(macromolecule: MacromoleculesRowData) {
+  updateVisualsDisplayed(macromolecule: ProcessedMacromolecule) {
     this.hasTopologyViewer = false;
     this.selectionUniprotId = 'None';
     if (this.allThereVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
       this.selectionTypeText = 'protein';
-      // if protein is not chimeric (single uniprotAccession), set this as selectionUniprotId
-      if (macromolecule.additionalData.uniprotAccessions.length === 1) {
-        this.selectionUniprotId = macromolecule.additionalData.uniprotAccessions[0];
-        // dispatch call to API endpoint and when finished triggers
-        // constructor this.proteinsStatsObservable.pipe(...)
-        this.globalStore.dispatch(
-          EntryActions.getUniprotSummary({
-            uniprotId: this.selectionUniprotId ?? '',
-          })
-        );
-      }
       this.hasTopologyViewer = true;
       this.hasProtvista = true;
     }
@@ -465,7 +509,7 @@ export class MacromoleculesTabComponent implements OnInit {
   }
 
   public openDialog(type: string) {
-    const macromolecule = this.currentMacromoleculeDatum() as MacromoleculesRowData;
+    const macromolecule = this.currentMacromoleculeDatum() as ProcessedMacromolecule;
     const component: ComponentType<any> = type === 'ec' ? EcNumbersComponent : GoTermsComponent;
     this.dialog.open(component, {
       disableClose: false,
@@ -487,7 +531,7 @@ export class MacromoleculesTabComponent implements OnInit {
     });
   }
 
-  private async renderVisualisations(macromolecule: MacromoleculesRowData) {
+  private async renderVisualisations(macromolecule: ProcessedMacromolecule) {
     await this.renderInMolstar(macromolecule);
     await this.initOrRefreshProtvista(macromolecule);
     await this.initOrRefreshTopologyViewer(macromolecule);
@@ -495,7 +539,7 @@ export class MacromoleculesTabComponent implements OnInit {
 
   public selectionData?: QueryParam[];
 
-  private async renderInMolstar(macromolecule: MacromoleculesRowData) {
+  private async renderInMolstar(macromolecule: ProcessedMacromolecule) {
     // Wait until first render is finished
     await firstValueFrom(
       this.molstarFirstRenderFinished$.pipe(
@@ -527,7 +571,7 @@ export class MacromoleculesTabComponent implements OnInit {
     });
   }
 
-  private async initOrRefreshProtvista(macromolecule: MacromoleculesRowData) {
+  private async initOrRefreshProtvista(macromolecule: ProcessedMacromolecule) {
     // stop if this dashboard does not have protvista (initially false and then set in onTableRowSelection according to tabName input)
     if (!this.hasProtvista) return;
     // const datum = this.currentMacromoleculeDatum();
@@ -540,7 +584,7 @@ export class MacromoleculesTabComponent implements OnInit {
     this.visInteractivity.currentSelectionChainId.set(chainId);
   }
 
-  private async initOrRefreshTopologyViewer(macromolecule: MacromoleculesRowData) {
+  private async initOrRefreshTopologyViewer(macromolecule: ProcessedMacromolecule) {
     this.topolViewerMutex = this.topolViewerMutex.then(() => {
       const topologyContainer = this.topologyViewerContainer.nativeElement;
 
@@ -552,7 +596,7 @@ export class MacromoleculesTabComponent implements OnInit {
 
       // topology viewer is only currently shown for macromolecules
       // const datum = this.currentMacromoleculeDatum();
-      const entityId = (macromolecule as MacromoleculesRowData).additionalData.molecule.entity_id;
+      const entityId = (macromolecule as ProcessedMacromolecule).additionalData.molecule.entity_id;
       const chainId = this.dropdownSelected?.split('Chain ')[1];
 
       // topology viewer load or reload in page is simple
@@ -570,7 +614,7 @@ export class MacromoleculesTabComponent implements OnInit {
     });
   }
 
-  getLengthType(macromolecule: MacromoleculesRowData) {
+  getLengthType(macromolecule: ProcessedMacromolecule) {
     let lengthType = 'residue';
     if (macromolecule.additionalData.molecule.molecule_type.includes('polypeptide')) {
       lengthType = 'amino acid';

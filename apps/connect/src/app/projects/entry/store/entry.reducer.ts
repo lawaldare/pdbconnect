@@ -21,14 +21,16 @@ const initialState: EntryStoreState = {
   entryId: '',
   summaryData: undefined,
   macroMolecules: undefined,
+  macromolsDescriptions: undefined,
+  macromolsChainsToEntityIds: undefined,
   boundLigands: [],
   organismScientificNames: [],
   hasRNA: false,
-  experimentalDetails: [],
+  experimentalDetails: undefined,
   resolutionValues: [],
   experimentalMethod: '',
   uniprotMapping: undefined,
-  proteinPagesSummaryByUniProtIds: undefined,
+  proteinPagesSummaryByUniProtIds: {},
   interproMapping: {},
   isoformsMapping: {},
   goMapping: {},
@@ -62,6 +64,24 @@ const initialState: EntryStoreState = {
   polymerCoverage: undefined,
   ligandMonomers: undefined,
   residueWiseOutliers: [],
+  outliersByModelId: undefined,
+  procAssembliesCards: undefined,
+  procAssembliesFilters: undefined,
+  processedAssemblies: undefined,
+  procMacromoleculesCards: undefined,
+  procMacromoleculesFilters: undefined,
+  processedMacromolecules: undefined,
+  procLigandsCards: undefined,
+  procLigandsFilters: undefined,
+  processedLigands: undefined,
+  procDomainsCards: undefined,
+  procDomainsFilters: undefined,
+  processedDomains: undefined,
+  procLLMCards: undefined,
+  processedDomainsWithMacromols: undefined,
+  processedMacromoleculesForLLM: undefined,
+  processedPrefAssembly: undefined,
+  ligandPagesSummary: undefined,
   entityPvUniprot: {},
   entityPvChains: {},
   entityPvDomains: {},
@@ -186,6 +206,8 @@ export const entryReducer = createReducer(
     macroMolecules: action.data.macroMolecules,
     boundLigands: action.data.boundLigands,
     organismScientificNames: action.data.organismScientificNames,
+    macromolsDescriptions: action.data.macromolsDescriptions,
+    macromolsChainsToEntityIds: action.data.macromolsChainsToEntityIds,
     hasRNA: action.data.hasRNA,
   })),
   on(EntryActions.getExperimentSuccess, (state, action) => ({
@@ -198,10 +220,27 @@ export const entryReducer = createReducer(
     ...state,
     uniprotMapping: action.uniprotMapping,
   })),
-  on(EntryActions.getUniprotSummarySuccess, (state, action) => ({
+  // on(EntryActions.getUniprotSummarySuccess, (state, action) => ({
+  //   ...state,
+  //   proteinPagesSummaryByUniProtIds: action.unpSummaryData,
+  // })),
+  on(EntryActions.getLigandSummarySuccess, (state, action) => ({
     ...state,
-    proteinPagesSummaryByUniProtIds: action.unpSummaryData,
+    ligandPagesSummary: action.ligandPagesSummary,
   })),
+  on(EntryActions.getUniprotSummarySuccess, (state, action) => {
+    const prevData = state.proteinPagesSummaryByUniProtIds ?? {};
+
+    const updatedData = {
+      ...prevData,
+      [action.uniprotId]: action.unpSummaryData,
+    };
+
+    return {
+      ...state,
+      proteinPagesSummaryByUniProtIds: updatedData,
+    };
+  }),
   on(EntryActions.getValidationXrayRefineSuccess, (state, action) => ({
     ...state,
     validationXRayRefine: action.validationXRayRefine,
@@ -249,7 +288,72 @@ export const entryReducer = createReducer(
   })),
   on(EntryActions.getEntryResidueWiseOutliersSuccess, (state, action) => ({
     ...state,
-    residueWiseOutliers: action.residueWiseOutliers,
+    residueWiseOutliers: action.data.residueWiseOutliers,
+    outliersByModelId: action.data.outliersByModelId,
+  })),
+  on(EntryActions.getProcessedAssembliesSuccess, (state, action) => ({
+    ...state,
+    processedAssemblies: action.processedAssemblies,
+  })),
+  on(EntryActions.getProcAssembliesFiltersSuccess, (state, action) => ({
+    ...state,
+    procAssembliesFilters: action.procAssembliesFilters,
+  })),
+  on(EntryActions.getProcAssembliesCardsSuccess, (state, action) => ({
+    ...state,
+    procAssembliesCards: action.procAssembliesCards,
+  })),
+  on(EntryActions.getProcessedMacromoleculesSuccess, (state, action) => ({
+    ...state,
+    processedMacromolecules: action.processedMacromolecules,
+  })),
+  on(EntryActions.getProcMacromoleculesFiltersSuccess, (state, action) => ({
+    ...state,
+    procMacromoleculesFilters: action.procMacromoleculesFilters,
+  })),
+  on(EntryActions.getProcMacromoleculesCardsSuccess, (state, action) => ({
+    ...state,
+    procMacromoleculesCards: action.procMacromoleculesCards,
+  })),
+  on(EntryActions.getProcessedLigandsSuccess, (state, action) => ({
+    ...state,
+    processedLigands: action.processedLigands,
+  })),
+  on(EntryActions.getProcLigandsFiltersSuccess, (state, action) => ({
+    ...state,
+    procLigandsFilters: action.procLigandsFilters,
+  })),
+  on(EntryActions.getProcLigandsCardsSuccess, (state, action) => ({
+    ...state,
+    procLigandsCards: action.procLigandsCards,
+  })),
+  on(EntryActions.getProcessedDomainsSuccess, (state, action) => ({
+    ...state,
+    processedDomains: action.processedDomains,
+  })),
+  on(EntryActions.getProcDomainsFiltersSuccess, (state, action) => ({
+    ...state,
+    procDomainsFilters: action.procDomainsFilters,
+  })),
+  on(EntryActions.getProcDomainsCardsSuccess, (state, action) => ({
+    ...state,
+    procDomainsCards: action.procDomainsCards,
+  })),
+  on(EntryActions.getProcessedMacromolsForLLMSuccess, (state, action) => ({
+    ...state,
+    processedMacromoleculesForLLM: action.processedMacromoleculesForLLM,
+  })),
+  on(EntryActions.getProcLLMCardsSuccess, (state, action) => ({
+    ...state,
+    procLLMCards: action.procLLMCards,
+  })),
+  on(EntryActions.getProcessedDomainsWithMacromolsSuccess, (state, action) => ({
+    ...state,
+    processedDomainsWithMacromols: action.processedDomainsWithMacromols,
+  })),
+  on(EntryActions.getProcessedPrefAssemblySuccess, (state, action) => ({
+    ...state,
+    processedPrefAssembly: action.processedPrefAssembly,
   })),
   on(EntryActions.getEntryProtvistaUniprotMappingSuccess, (state, action) => {
     const prevTrackData = state.entityPvUniprot ?? {};

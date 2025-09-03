@@ -3,13 +3,10 @@ import { CommonModule } from '@angular/common';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
 import { ValidationDataProcessingFacade } from '../../../components/model-quality-tab/validation-data.facade';
-import { MacromoleculesRowData } from '../../../data-classes/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { EntryStoreState } from '../../../store/entry-store.model';
-import { MainDataProcessingFacade } from '../../main/data-processing.facade';
-import { MaterialModule, UtilService } from '@pdbc/core';
-import { SharedDataFacade } from '../../../components/shared/shared-data.facade';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { EntryApiService } from '../../../services/entry-api.service';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
@@ -20,8 +17,10 @@ import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMols
 import { MobileStateService } from '../mobile-state.service';
 import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../../helpers/processed-data-to-controls';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { SequenceDetail } from '../../../data-classes/data-models-and-definitions/other-models';
+import { SequenceDetail } from '../../../store/data-processing/models/other-models';
 import { EntryActions } from '../../../store/entry.actions';
+import { ProcessedMacromolecule } from '../../../store/data-processing/models/processed-entities.model';
+import { getUniProtsDataForMacromolecule } from '../../../store/data-processing/macromolecule-processing';
 
 export enum ViewState {
   List = 'list',
@@ -45,10 +44,13 @@ export class MbMacromoleculeComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   private readonly state = inject(MobileStateService);
+  public readonly gAS = inject(GoogleAnalyticsService);
 
-  public readonly sharedDataFacade = inject(SharedDataFacade);
   public readonly entryApiService = inject(EntryApiService);
   public readonly compCommunication = inject(ComponentCommunicationService);
+
+  public readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  public readonly processedMacromoleculesObs$ = this.globalStore.select(EntrySelectors.processedLigands);
 
   public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
   public readonly cathMapping = toSignal(this.globalStore.select(EntrySelectors.cathMapping));
@@ -58,10 +60,12 @@ export class MbMacromoleculeComponent implements OnInit {
   public readonly interproMapping = toSignal(this.globalStore.select(EntrySelectors.interproMapping));
   public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
   public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
+  public readonly uniprotMappings = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
+  public readonly polymerCoverage = toSignal(this.globalStore.select(EntrySelectors.polymerCoverage));
+  public readonly proteinsStatsObservable = this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds);
 
   private readonly utilService = inject(UtilService);
 
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
   public expanded = signal<boolean>(false);
   public readonly util = inject(UtilService);
 
@@ -73,22 +77,27 @@ export class MbMacromoleculeComponent implements OnInit {
   @ViewChild('macroMoleculeTitle') macroMoleculeTitle!: ElementRef;
 
   public readonly macromoleculeTableRows = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const hasData = this.compCommunication.hasProcessedMacromolecules();
-
-    if (isLoaded && hasData) {
-      const datum = this.compCommunication.processedMacromolecules;
-      const mappedDatum = datum.map((data) => {
-        return {
-          ...data,
-          mappedResidues: this.sharedDataFacade.transformCoverageData(data.residues),
-          organisms: [...new Set(data['organisms'])],
-        };
-      });
-      return mappedDatum;
-    }
-    return [];
+    const rows = this.processedMacromolecules();
+    if (rows === undefined) return [];
+    return rows;
   });
+
+  public uniprotMappedData = computed(() => {
+    const currentMacromoleculeDatum = this.selectedMacromolecule();
+    const uniprotMappings = this.uniprotMappings();
+    const polymerCoverage = this.polymerCoverage();
+
+    if (!currentMacromoleculeDatum) return undefined;
+    if (!uniprotMappings) return undefined;
+    if (!polymerCoverage) return undefined;
+
+    const mol = currentMacromoleculeDatum.additionalData.molecule;
+    const mappedUnps = getUniProtsDataForMacromolecule(mol, uniprotMappings, polymerCoverage);
+    return mappedUnps;
+  });
+
+  public uniprotsAllowed = computed(() => this.uniprotMappedData()?.uniprotAccsForMacromolecule);
+  public uniprotsAllowedObs$ = toObservable(this.uniprotsAllowed);
 
   public bestResidues = computed(() => {
     const isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
@@ -114,7 +123,46 @@ export class MbMacromoleculeComponent implements OnInit {
   public currentViewState = signal<ViewState>(ViewState.List);
   public viewStates = ViewState;
 
-  public selectedMacromolecule = signal<any>({});
+  public selectedMacromolecule = signal<ProcessedMacromolecule | undefined>(undefined);
+
+  public uniqueOrganisms = computed(() => {
+    const macromolecule = this.selectedMacromolecule();
+    if (macromolecule === undefined) return [];
+    return [...new Set(macromolecule['organisms'].filter((organism) => organism !== null))];
+  });
+
+  public uniqueExpSystems = computed(() => {
+    const macromolecule = this.selectedMacromolecule();
+    if (macromolecule === undefined) return [];
+    const expSystems = macromolecule.additionalData.molecule.source.map((src) => src.expression_host_scientific_name);
+    return [...new Set(expSystems.filter((expSystem) => expSystem !== null))];
+  });
+
+  public mappedResidues = computed(() => {
+    const currentMacromoleculeDatum = this.selectedMacromolecule();
+    const mappedUnps = this.uniprotMappedData();
+
+    if (!currentMacromoleculeDatum) return undefined;
+    if (!mappedUnps) return undefined;
+
+    const mappingsForChains = mappedUnps.uniprotRangesByChainId;
+    const mappingsForAllChains = Object.values(mappingsForChains).flat();
+
+    // aggregate by (uniprot + range)
+    const aggregated: Record<string, (typeof mappingsForAllChains)[number]> = {};
+
+    for (const mapping of mappingsForAllChains) {
+      const key = `${mapping.uniprot}-${mapping.range.join(',')}`;
+
+      if (!aggregated[key]) {
+        aggregated[key] = { ...mapping, chainId: mapping.chainId };
+      } else {
+        // append chainId
+        aggregated[key].chainId += `,${mapping.chainId}`;
+      }
+    }
+    return Object.values(aggregated);
+  });
 
   public title = this.state.macromoleculeTitle;
 
@@ -228,16 +276,17 @@ export class MbMacromoleculeComponent implements OnInit {
   public initialSynonymsCount = signal<number>(5);
   public initialGoTermsCount = signal<number>(5);
 
-  private hasMacromolecules$ = toObservable(this.compCommunication.hasProcessedMacromolecules);
+  public numOfStructures = signal<number | undefined>(undefined);
+  public numOfStructuresDict = signal<{ [key: string]: number } | undefined>(undefined);
 
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbMacromoleculeComponent>) {
-    this.hasMacromolecules$
+    this.processedMacromoleculesObs$
       .pipe(
         debounceTime(50),
         distinctUntilChanged(),
-        filter((hasMM) => hasMM == true)
+        filter((hasMM) => hasMM !== undefined)
       )
-      .subscribe(async (hasMM) => {
+      .subscribe(async (_hasMM) => {
         // Wait until mobileMolstarLoaded$ is true before proceeding
         await firstValueFrom(
           this.compCommunication.mobileMolstarLoaded$.pipe(
@@ -248,13 +297,48 @@ export class MbMacromoleculeComponent implements OnInit {
         this.renderInMolstar(undefined);
       });
   }
-
   ngOnInit(): void {
     /* 1. Fetch tab data*/
     this.globalStore.dispatch(EntryActions.getGOMapping());
     this.globalStore.dispatch(EntryActions.getECMapping());
     this.globalStore.dispatch(EntryActions.getInterproMapping()); // used in mb-macromolecule
     this.globalStore.dispatch(EntryActions.getIsoformsMapping()); // used in llm, macro, mb-overview, mb-macro
+    this.globalStore.dispatch(EntryActions.getSummaryData());
+    this.globalStore.dispatch(EntryActions.getAssemblies());
+    this.globalStore.dispatch(EntryActions.getEntryMolecules());
+    this.globalStore.dispatch(EntryActions.getCarbohydrates());
+    this.globalStore.dispatch(EntryActions.getUniprotMapping());
+    this.globalStore.dispatch(EntryActions.getEntryPolymerCoverage());
+    this.globalStore.dispatch(EntryActions.getProcessedMacromolecules());
+    // when uniprot listing has arrived and been processed
+    this.uniprotsAllowedObs$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        filter((unps) => unps !== undefined)
+      )
+      .subscribe((unpsList) => {
+        const unpDict: Record<string, number> = {};
+        for (const unp of unpsList) {
+          unpDict[unp] = 0; // start with 0 structures
+          this.globalStore.dispatch(EntryActions.getUniprotSummary({ uniprotId: unp }));
+        }
+        this.numOfStructuresDict.set(unpDict);
+      });
+    // when uniprot summary API call has finished
+    this.proteinsStatsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((proteinSummary) => {
+      if (proteinSummary) {
+        const updated = { ...this.numOfStructuresDict() };
+        for (const [unp, datum] of Object.entries(proteinSummary)) {
+          if (datum) updated[unp] = datum.pdbs;
+        }
+        this.numOfStructuresDict.set(updated);
+      }
+    });
+  }
+
+  public getNumberStructures(unp: string) {
+    return this.numOfStructuresDict()?.[unp] ?? undefined;
   }
 
   public toggleSynonymsList(total: number) {
@@ -267,24 +351,28 @@ export class MbMacromoleculeComponent implements OnInit {
 
   private async updateMacromoleculeData(): Promise<void> {
     const macromolecule = this.selectedMacromolecule();
-    this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(macromolecule);
-    this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-      return {
-        name: eachString,
-        url: `macro-${idx + 1}`,
-        downloadable: false,
-      };
-    });
-    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+    if (macromolecule) {
+      this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(macromolecule);
+      this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
+        return {
+          name: eachString,
+          url: `macro-${idx + 1}`,
+          downloadable: false,
+        };
+      });
+      this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+    }
 
     this.sequenceDetails.set(undefined);
-    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
-    this.sequenceDetails.set(sequenceDetails);
+    if (macromolecule) {
+      const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+      this.sequenceDetails.set(sequenceDetails);
+    }
 
-    await this.renderInMolstar(this.selectedMacromolecule());
+    await this.renderInMolstar(macromolecule);
   }
 
-  private async renderInMolstar(macromolecule?: MacromoleculesRowData) {
+  private async renderInMolstar(macromolecule?: ProcessedMacromolecule) {
     // Wait until first render is finished
     await firstValueFrom(
       this.compCommunication.mobileMolstarLoaded$.pipe(
@@ -341,7 +429,7 @@ export class MbMacromoleculeComponent implements OnInit {
     // await clearSelectionInMolstar(instance, durationMs);
   }
 
-  public navigateToDetail(data: MacromoleculesRowData) {
+  public navigateToDetail(data: ProcessedMacromolecule) {
     this.currentViewState.set(ViewState.Detail);
     const titleElement = this.macroMoleculeTitle.nativeElement;
     const { bestFit, isTruncated } = truncateText(titleElement, data.name.molecule, 3);

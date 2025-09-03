@@ -2,8 +2,6 @@ import { Component, computed, inject, OnInit, Optional, signal } from '@angular/
 import { CommonModule } from '@angular/common';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
-import { ValidationDataProcessingFacade } from '../../../components/model-quality-tab/validation-data.facade';
-import { MainDataProcessingFacade } from '../../main/data-processing.facade';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -23,24 +21,20 @@ import { EntryActions } from '../../../store/entry.actions';
 })
 export class MbAssembliesComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
-  public readonly dataFacade = inject(ValidationDataProcessingFacade);
   private readonly state = inject(MobileStateService);
-
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
   public readonly compCommunication = inject(ComponentCommunicationService);
+
   public expanded = signal<boolean>(false);
   public isChecked = signal<boolean>(false);
 
   public readonly symmetry = toSignal(this.globalStore.select(EntrySelectors.symmetry));
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
 
+  public readonly processedAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
+
   public readonly assemblyTableRows = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const hasData = this.compCommunication.hasProcessedAssemblies();
-    if (isLoaded && hasData) {
-      const tabData = this.compCommunication.processedAssemblies;
-      return tabData;
-    }
+    const rows = this.processedAssemblies();
+    if (rows) return rows;
     return [];
   });
 
@@ -63,7 +57,11 @@ export class MbAssembliesComponent implements OnInit {
 
   async ngOnInit() {
     /* 1. Fetch data */
-    this.globalStore.dispatch(EntryActions.getSymmetry()); // used in assemblies and mb-assemblies
+    this.globalStore.dispatch(EntryActions.getSymmetry());
+    this.globalStore.dispatch(EntryActions.getSummaryData());
+    this.globalStore.dispatch(EntryActions.getAssemblies());
+    this.globalStore.dispatch(EntryActions.getPreferredAssembly());
+    this.globalStore.dispatch(EntryActions.getProcessedAssemblies());
 
     /* 2. Draw in Molstar */
     // Wait until first render is finished
