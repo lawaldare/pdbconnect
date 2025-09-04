@@ -14,6 +14,7 @@ import { combineLatest, filter, map } from 'rxjs';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { CitationDetail } from '../../data-models/publication.model';
 import { RelatedPublication } from '../../data-models/related-publications.model';
+import { EntryActions } from '../../store/entry.actions';
 
 @Component({
   selector: 'pdbc-citations-tab',

@@ -41,22 +41,23 @@
     }
 
     <section class="info">
-      @if(currentMacromoleculeDatum()!.organisms.length){
+      @if(uniqueOrganisms().length){
       <div class="info-row">
-        <span class="micro-title"> Source organism </span>
+        <span class="micro-title"> Source organism{{ uniqueOrganisms().length > 1 ? 's': '' }} </span>
         <article>
-          <a [href]="generateOrganismSearchUrl(currentMacromoleculeDatum()!.organisms[0])" target="_blank">
-            <em>{{currentMacromoleculeDatum()!.organisms[0]}}</em>
+          @for (sourceOrganism of uniqueOrganisms(); track sourceOrganism) {
+          <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">
+            <em>{{sourceOrganism}}</em>
             <img src="assets/icons/link_search_icon.png" alt="search icon" style="margin-left: 5px" />
           </a>
+          }
         </article>
       </div>
-      } @if(currentMacromoleculeDatum()!.mappedResidues?.length){
+      } @if(mappedResidues()?.length){
       <div class="info-row">
         <span class="micro-title"> UniProt mapping </span>
         <article class="uniport-mapping">
-          @for(residue of currentMacromoleculeDatum()!.mappedResidues; track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <=
-          2){
+          @for(residue of mappedResidues()!; track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <= 2){
           <span
             >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a> (residues:
             {{residue.range.join(',')}}; coverage: {{residue.coverage}})</span
@@ -107,18 +108,17 @@
       <p>{{dropdownOptions[0].name}}</p>
       } @else {}
     </div>
-    @if (sequenceDetails.length > 0 && currentSelectionEntityId() && nonObserved() !== undefined) {
+    @if (sequenceDetails !== undefined && currentSelectionEntityId() && nonObserved() !== undefined) {
     <div class="sequence-container">
-      @for (sequenceDetail of sequenceDetails; track sequenceDetail;) {
       <div class="title">
-        <span class="text">{{ sequenceDetail.title }}</span>
-        <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
+        <span class="text">{{ sequenceDetails.title }}</span>
+        <button (click)="copySequence(sequenceDetails)">Copy sequence</button>
       </div>
       @let molType = currentMacromoleculeDatum()!.additionalData.molecule.molecule_type; @if(currentSelectionEntityId() && molType) {
       <lib-smart-seq-viewer
         containerId="'smart-seq-viewer-llm'"
         class="sequence"
-        [sequence]="sequenceDetail.fullSequence"
+        [sequence]="sequenceDetails.fullSequence"
         [entityId]="currentSelectionEntityId()"
         [chainId]="currentSelectionChainId()!"
         [backgroundDataInput]="backgroundAnnotation"
@@ -127,14 +127,14 @@
         [altSequences]="altSequences()"
         [nonObserved]="nonObserved()"
       ></lib-smart-seq-viewer>
-      } }
+      }
     </div>
     }
     <p class="residue-info">
       Residues are colour-coded according to the number of structural quality criteria for which they contain at least one outlier and the availability of text-mined
       annotations.
     </p>
-    <section class="chart-area" [class.collapsed]="compCommunication.isSidebarCollapsed()">
+    <section class="chart-area" [class.collapsed]="!isSidebarDisplayed()">
       <section class="table-wrapper">
         <ag-grid-angular
           class="ag-theme-quartz"

@@ -3,9 +3,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { DomainsRowData, MacromoleculesRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
-import { getDomainChainDropdownOptions } from '../../helpers/processed-data-to-controls';
-import { DomainsFacade } from './domains.facade';
+import { getDomainChainDropdownOptions, getDomainSequenceDetails } from '../../helpers/processed-data-to-controls';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -13,13 +11,12 @@ import { Store } from '@ngrx/store';
 import { EntryPgProtvistaComponent, FixedSelectionInput } from '../shared/entry-pv-nightingale/entry-pv-nightingale.component';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
 import { entryDomainsTooltips, resourceUrls } from '../../entry-constant';
-import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
-import { createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
+import { createAuthAlternateNumbering, generateSeqViewerDomainAnnotation, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import { EntryActions } from '../../store/entry.actions';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
@@ -27,8 +24,10 @@ import { EntryDropdownComponent } from '../entry-page-header/sub-components/entr
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
-import { SequenceDetail } from '../../data-classes/data-models-and-definitions/other-models';
+import { SequenceDetail } from '../../store/data-processing/models/other-models';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
+import { Molecule } from '../../data-models/molecule.model';
+import { ProcessedDomain } from '../../store/data-processing/models/processed-entities.model';
 
 @Component({
   selector: 'pdbc-domains-tab',
@@ -47,7 +46,6 @@ import { VisualisationInteractivityService } from '../../services/vis-interactiv
   styleUrl: './domains-tab.component.scss',
 })
 export class DomainsTabComponent {
-  public domainsFacade = inject(DomainsFacade);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly gAS = inject(GoogleAnalyticsService);
   public readonly visInteractivity = inject(VisualisationInteractivityService);
@@ -55,11 +53,16 @@ export class DomainsTabComponent {
   private readonly utilService = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
 
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
-
   public readonly isSidebarDisplayed = signal<boolean>(true);
-  public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
+  private readonly globalStore = inject(Store<EntryStoreState>);
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
+  public readonly residueListingObs = this.globalStore.select(EntrySelectors.residueListing);
+  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+  public readonly processedDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomains));
+
+  public readonly tabDataLoaded = computed(() => this.processedDomains() !== undefined);
   public selectedChains?: string;
 
   public dropdownSelected!: string;
@@ -116,12 +119,6 @@ export class DomainsTabComponent {
     return configForMolstar;
   });
 
-  private readonly globalStore = inject(Store<EntryStoreState>);
-  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
-  public readonly residueListingObs = this.globalStore.select(EntrySelectors.residueListing);
-  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
-
   public sequenceDetails = signal<SequenceDetail[]>([]);
 
   public readonly resourceUrls = resourceUrls;
@@ -130,12 +127,12 @@ export class DomainsTabComponent {
   public readonly selectedDomainIdx = toSignal(this.compCommunication.domainSelection$);
 
   public readonly domainTableRows = computed(() => {
-    const isLoaded = this.compCommunication.hasProcessedDomains();
-    if (!isLoaded) return [];
-    return this.compCommunication.processedDomainsAsList;
+    const rows = this.processedDomains();
+    if (rows === undefined) return [];
+    return rows;
   });
 
-  public currentDomainsDatum = signal<DomainsRowData | undefined>(undefined);
+  public currentDomainsDatum = signal<ProcessedDomain | undefined>(undefined);
   public altSequences = signal<AlternativeNumbering[]>([]);
   public nonObserved = signal<number[] | undefined>(undefined);
 
@@ -172,7 +169,7 @@ export class DomainsTabComponent {
     }
   }
 
-  async triggerDomainUpdateSideEffects(domain: DomainsRowData) {
+  async triggerDomainUpdateSideEffects(domain: ProcessedDomain) {
     // reset alt sequences
     this.altSequences.set([]);
 
@@ -183,9 +180,7 @@ export class DomainsTabComponent {
     const chainId = this.dropdownSelected?.split('Chain ')[1];
 
     // get macromolecule
-    const macromoleculesOfDomain = this.compCommunication.processedMacromolecules.filter(
-      (eachMacromolecule) => domain.moleculeNames[0] === eachMacromolecule.name.molecule
-    );
+    const macromoleculesOfDomain = this.macromolecules()!.filter((eachMacromolecule) => domain.moleculeNames[0] === eachMacromolecule.molecule_name[0]);
 
     // get author numbering
     this.getAuthorNumberingForChain(chainId);
@@ -200,7 +195,7 @@ export class DomainsTabComponent {
     this.renderVisualisations(domain, chainId);
   }
 
-  private updateDropdownOptions(domain: DomainsRowData) {
+  private updateDropdownOptions(domain: ProcessedDomain) {
     this.dropdownOptionsToMolstar = getDomainChainDropdownOptions(domain);
     this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
       return {
@@ -220,17 +215,17 @@ export class DomainsTabComponent {
     );
   }
 
-  private updateBackgroundAnnotation(domain: DomainsRowData, chainId: string) {
+  private updateBackgroundAnnotation(domain: ProcessedDomain, chainId: string) {
     this.backgroundAnnotation.set(undefined);
 
-    const annotation = this.domainsFacade.generateSeqViewerDomainAnnotation(this.entryId() ?? '', domain, chainId);
+    const annotation = generateSeqViewerDomainAnnotation(this.entryId() ?? '', domain, chainId);
 
     this.backgroundAnnotation.set(annotation);
   }
 
-  private updateSequenceDetails(domain: DomainsRowData, macromoleculesOfDomain: MacromoleculesRowData[], chainId: string) {
+  private updateSequenceDetails(domain: ProcessedDomain, macromoleculesOfDomain: Molecule[], chainId: string) {
     // update displayed domain sequence
-    this.sequenceDetails.set(this.domainsFacade.getDomainSequenceDetails(this.entryId() ?? '', macromoleculesOfDomain, domain, chainId));
+    this.sequenceDetails.set(getDomainSequenceDetails(this.entryId() ?? '', macromoleculesOfDomain, domain, chainId));
   }
 
   public onDropdownSelect(event: string) {
@@ -248,8 +243,8 @@ export class DomainsTabComponent {
     // get macromolecule
     const chainsOfDomain = domain.additionalData.boundaries.map((bd) => bd.chain).filter((v, i, arr) => arr.indexOf(v) === i);
 
-    const macromoleculesOfDomain = this.compCommunication.processedMacromolecules.filter((eachMacromolecule) => {
-      const chainsOfMacromolecule = eachMacromolecule.additionalData.molecule.in_chains;
+    const macromoleculesOfDomain = this.macromolecules()!.filter((eachMacromolecule) => {
+      const chainsOfMacromolecule = eachMacromolecule.in_chains;
       return chainsOfDomain.some((ch) => chainsOfMacromolecule.includes(ch));
     });
 
@@ -265,7 +260,7 @@ export class DomainsTabComponent {
     this.renderVisualisations(domain, chainId);
   }
 
-  private renderVisualisations(domain: DomainsRowData, chainId: string) {
+  private renderVisualisations(domain: ProcessedDomain, chainId: string) {
     this.renderInMolstar(domain, chainId);
     this.initOrRefreshProtvista(domain, chainId);
   }
@@ -284,7 +279,7 @@ export class DomainsTabComponent {
 
   public selectionData?: QueryParam[];
 
-  private async renderInMolstar(domain: DomainsRowData, chainId: string) {
+  private async renderInMolstar(domain: ProcessedDomain, chainId: string) {
     // Wait until first render is finished
     await firstValueFrom(
       this.molstarFirstRenderFinished$.pipe(
@@ -313,7 +308,7 @@ export class DomainsTabComponent {
     });
   }
 
-  private initOrRefreshProtvista(domain: DomainsRowData, chainId: string) {
+  private initOrRefreshProtvista(domain: ProcessedDomain, chainId: string) {
     // stop if this dashboard does not have protvista (initially false and then set in onTableRowSelection according to tabName input)
     const segmentsForChainId = domain.additionalData.boundaries.filter((boundary) => boundary.chain === chainId);
 

@@ -1,14 +1,14 @@
 import { INTX_NAME_COLORS } from '../entry-constant';
 import { INTX_NAME_STANDARDIZER } from '../components/ligands-tab/interaction-type.component';
-import { LigandsRowData } from '../data-classes/data-models-and-definitions/row-and-table.model';
 import { Interaction } from '../data-models/interaction.model';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
 
 export function interactionsToMolstar(
-  ligand: LigandsRowData,
+  ligand: ProcessedLigandOrMod,
   ligandMolstarSelection: QueryParam[],
-  interactions: Interaction[],
-  chainToEntityId: { [key: string]: string }
+  interactions: Interaction[]
+  // chainToEntityId: { [key: string]: string }
 ) {
   const chainId = ligandMolstarSelection[0].auth_asym_id!;
   const residueId = ligandMolstarSelection[0].auth_residue_number!;

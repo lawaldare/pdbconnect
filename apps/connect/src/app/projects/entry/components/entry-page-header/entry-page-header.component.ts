@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
@@ -6,6 +6,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { EntryDropdownComponent } from './sub-components/entry-dropdown/entry-dropdown.component';
 import { tap } from 'rxjs';
+import { EntryActions } from '../../store/entry.actions';
 
 @Component({
   selector: 'pdbc-entry-page-header',
@@ -13,7 +14,7 @@ import { tap } from 'rxjs';
   templateUrl: './entry-page-header.component.html',
   styleUrl: './entry-page-header.component.scss',
 })
-export class EntryPageHeaderComponent {
+export class EntryPageHeaderComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly resolutionValues = toSignal(this.globalStore.select(EntrySelectors.resolutionValues));
@@ -21,4 +22,11 @@ export class EntryPageHeaderComponent {
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly downloadOptions = toSignal(this.globalStore.select(EntrySelectors.downloadOptions));
   public readonly viewOptions = toSignal(this.globalStore.select(EntrySelectors.viewOptions));
+
+  ngOnInit() {
+    /* 1. Fetch data for header  */
+    this.globalStore.dispatch(EntryActions.getDownloadOptions());
+    // getExperiment also used in entry-page-header, model-quality, mb-overview, mb-model-quality
+    this.globalStore.dispatch(EntryActions.getExperiment());
+  }
 }

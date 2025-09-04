@@ -1,7 +1,9 @@
 import { AfterViewInit, Component, effect, ElementRef, input, OnDestroy, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AlternativeNumbering, SmartSequenceAnnotation, SmartSequenceVisOptions, SmartSequenceVisualisation } from './viewer/sequence-visualisation';
 import { generateRandomAlternativeNumberings, generateRandomAnnotations } from './viewer/smart-generator';
+import { AlternativeNumbering, SmartSequenceAnnotation, SmartSequenceVisOptions } from './viewer/seq-viewer-models';
+import { SmartSequenceVisualisation } from './viewer/sequence-visualisation';
+import { validateAlternativeNumberings, validateAnnotations, validateNonObserved } from './viewer/seq-viewer-validation';
 
 @Component({
   selector: 'lib-smart-seq-viewer',
@@ -36,6 +38,8 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
   private backgroundData = signal<SmartSequenceAnnotation | undefined>(undefined);
   private underlineData = signal<SmartSequenceAnnotation | undefined>(undefined);
   private circleAboveData = signal<SmartSequenceAnnotation | undefined>(undefined);
+  private altSequencesData = signal<AlternativeNumbering[]>([]);
+  private nonObservedData = signal<number[]>([]);
 
   // Instance reference to cleanup
   private visInstance?: SmartSequenceVisualisation;
@@ -68,6 +72,15 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
     this.underlineData.set(this.underlineDataInput());
     this.circleAboveData.set(this.circleAboveDataInput());
 
+    const validAlt = validateAlternativeNumberings(this.sequence(), this.altSequences(), true).valid;
+    const validNonObs = validateNonObserved(this.sequence(), this.nonObserved(), true).valid;
+
+    if (validAlt) this.altSequencesData.set(this.altSequences());
+    else this.altSequencesData.set([]);
+
+    if (validNonObs) this.nonObservedData.set(this.nonObserved());
+    else this.nonObservedData.set([]);
+
     const annotations = [this.backgroundData(), this.underlineData(), this.circleAboveData()].filter((annotation) => annotation !== undefined);
 
     const options = this.options();
@@ -83,8 +96,8 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
     this.visInstance = new SmartSequenceVisualisation(
       this.sequence(),
       this.containerId(),
-      this.altSequences(),
-      this.nonObserved(),
+      this.altSequencesData(),
+      this.nonObservedData(),
       annotations,
       this.entityId(),
       this.chainId(),

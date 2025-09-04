@@ -16,6 +16,7 @@ import { CitationXmlImagesComponent } from '../../../components/citations-tab/su
 import { MatDialog } from '@angular/material/dialog';
 import { MobileFacade } from '../mobile.facade';
 import { MobileTabNames } from '../mobile-tab.model';
+import { EntryActions } from '../../../store/entry.actions';
 
 export interface NavigationLink {
   id: string;
@@ -74,6 +75,10 @@ export class MbCitationTabComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    /* 1. Fetch necessary data */
+    this.globalStore.dispatch(EntryActions.getArticleCitingPDBEntry()); // used in citations, mb-overview, mb-citations
+    this.globalStore.dispatch(EntryActions.getPrimaryPublication()); // used in citations-tab, llm-tab, summary-tab, mb-citation-tab, mb-overview-tab, entry.bioschemas
+
     combineLatest([
       this.globalStore.select(EntrySelectors.summaryData).pipe(filter(Boolean)),
       this.globalStore.select(EntrySelectors.primaryPublication).pipe(filter(Boolean)),

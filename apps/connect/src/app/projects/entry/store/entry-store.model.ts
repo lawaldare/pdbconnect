@@ -30,19 +30,31 @@ import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers
 import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
 import { LLMAnnotation } from '../data-models/llm-model';
 import { ResidueListed } from '../data-models/residue-listing.model';
-
+import { AssemblyUICard, ProcessedAssembly } from './data-processing/assembly-processing';
+import { Filter, OutliersByModelId, PreferredAssemblyData } from './data-processing/models/other-models';
+import { MacromoleculesDescriptions, MacromoleculeUICard } from './data-processing/macromolecule-processing';
+import { LigandOrModUICard, ProcessedLigandOrMod } from './data-processing/ligand-processing';
+import { DomainsWithMacromolecules, DomainUICard } from './data-processing/domain-processing';
+import { ProcessedDomain, ProcessedMacromolecule } from './data-processing/models/processed-entities.model';
+import { LigandSummaryStats } from '../data-models/ligand-summary-stats.model';
 export interface EntryStoreState {
   entryId: string;
   summaryData: ProcessedSummary | undefined;
   macroMolecules: Molecule[] | undefined;
+  macromolsDescriptions: MacromoleculesDescriptions | undefined;
+  macromolsChainsToEntityIds: { [key: string]: string } | undefined;
   boundLigands: Molecule[] | undefined;
   organismScientificNames: string[];
   hasRNA: boolean;
-  experimentalDetails: AnyExperimentDetail[];
+  experimentalDetails: AnyExperimentDetail[] | undefined;
   resolutionValues: (number | undefined)[];
   experimentalMethod: string;
   uniprotMapping: UniProtMapping | undefined;
-  proteinPagesSummaryByUniProtIds: ProteinSummaryStats | undefined;
+  proteinPagesSummaryByUniProtIds: {
+    [uniprotId: string]: ProteinSummaryStats;
+  };
+  // complexPagesSummary: ComplexSummaryStats[] | undefined;
+  ligandPagesSummary: LigandSummaryStats[] | undefined;
   interproMapping: InterProMappings | undefined;
   isoformsMapping: UniProtMapping | undefined;
   goMapping: GOMapping | undefined;
@@ -80,6 +92,23 @@ export interface EntryStoreState {
   polymerCoverage: PolymerCoverageMolecule[] | undefined;
   ligandMonomers: LigandMonomer[] | undefined;
   residueWiseOutliers: ResidueWiseOutliersMolecule[];
+  outliersByModelId: OutliersByModelId | undefined;
+  processedAssemblies: ProcessedAssembly[] | undefined;
+  procAssembliesCards: AssemblyUICard[] | undefined;
+  procAssembliesFilters: Filter[] | undefined;
+  processedMacromolecules: ProcessedMacromolecule[] | undefined;
+  procMacromoleculesCards: MacromoleculeUICard[] | undefined;
+  procMacromoleculesFilters: Filter[] | undefined;
+  procLigandsCards: LigandOrModUICard[] | undefined;
+  procLigandsFilters: Filter[] | undefined;
+  processedLigands: ProcessedLigandOrMod[] | undefined;
+  procDomainsCards: DomainUICard[] | undefined;
+  procDomainsFilters: Filter[] | undefined;
+  processedDomains: ProcessedDomain[] | undefined;
+  procLLMCards: MacromoleculeUICard[] | undefined;
+  processedMacromoleculesForLLM: ProcessedMacromolecule[] | undefined;
+  processedDomainsWithMacromols: DomainsWithMacromolecules | undefined;
+  processedPrefAssembly: PreferredAssemblyData | undefined;
   entityPvUniprot: {
     [entityId: string]: APITrackData;
   };
@@ -115,9 +144,16 @@ export interface EntryStoreState {
 
 export interface EntryMoleculesData {
   macroMolecules: Molecule[];
+  macromolsDescriptions: MacromoleculesDescriptions;
+  macromolsChainsToEntityIds: { [key: string]: string };
   boundLigands: Molecule[];
   organismScientificNames: string[];
   hasRNA: boolean;
+}
+
+export interface EntryResidueWiseData {
+  residueWiseOutliers: ResidueWiseOutliersMolecule[];
+  outliersByModelId: OutliersByModelId;
 }
 
 export interface ExperimentData {

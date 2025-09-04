@@ -1,10 +1,8 @@
-import { Component, computed, inject, Optional, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { DomainsRowData } from '../../../data-classes/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { MainDataProcessingFacade } from '../../main/data-processing.facade';
 import { ViewState } from '../mb-macromolecules/mb-macromolecule.component';
 import { resourceUrls } from '../../../entry-constant';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -15,6 +13,8 @@ import { debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer
 import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { MobileStateService } from '../mobile-state.service';
+import { EntryActions } from '../../../store/entry.actions';
+import { ProcessedDomain } from '../../../store/data-processing/models/processed-entities.model';
 
 @Component({
   selector: 'pdbc-mb-domains',
@@ -22,14 +22,14 @@ import { MobileStateService } from '../mobile-state.service';
   templateUrl: './mb-domains.component.html',
   styleUrls: ['../common-mb-header.scss', './mb-domains.component.scss'],
 })
-export class MbDomainsComponent {
+export class MbDomainsComponent implements OnInit {
   private readonly state = inject(MobileStateService);
-
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly processedDomainsObs$ = this.globalStore.select(EntrySelectors.processedDomains);
+  public readonly processedDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomains));
 
   public readonly resourceUrls = resourceUrls;
 
@@ -43,24 +43,17 @@ export class MbDomainsComponent {
   public dropdownSelected!: string;
 
   public readonly domainTableRows = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const hasData = this.compCommunication.hasProcessedDomains();
-
-    if (isLoaded && hasData) {
-      const tabData = this.compCommunication.processedDomainsAsList;
-      return tabData;
-    }
-    return [];
+    const rows = this.processedDomains();
+    if (rows === undefined) return [];
+    return rows;
   });
 
-  private hasDomains$ = toObservable(this.compCommunication.hasProcessedDomains);
-
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbDomainsComponent>) {
-    this.hasDomains$
+    this.processedDomainsObs$
       .pipe(
         debounceTime(50),
         distinctUntilChanged(),
-        filter((hasDom) => hasDom == true)
+        filter((hasDom) => hasDom !== undefined)
       )
       .subscribe(async (hasDom) => {
         // Wait until mobileMolstarLoaded$ is true before proceeding
@@ -72,6 +65,17 @@ export class MbDomainsComponent {
         );
         this.renderInMolstar(undefined);
       });
+  }
+  ngOnInit(): void {
+    /* 1. Fetch data */
+    this.globalStore.dispatch(EntryActions.getSummaryData());
+    this.globalStore.dispatch(EntryActions.getAssemblies());
+    this.globalStore.dispatch(EntryActions.getCathMapping());
+    this.globalStore.dispatch(EntryActions.getPfamMapping());
+    this.globalStore.dispatch(EntryActions.getScop175Mapping());
+    this.globalStore.dispatch(EntryActions.getEntryPolymerCoverage());
+    this.globalStore.dispatch(EntryActions.getEntryMolecules());
+    this.globalStore.dispatch(EntryActions.getProcessedDomains());
   }
 
   toggleBottomsheetHeight() {
@@ -88,7 +92,7 @@ export class MbDomainsComponent {
     this.state.updateSelectedTabName('');
   }
 
-  public navigateToDetail(data: DomainsRowData) {
+  public navigateToDetail(data: ProcessedDomain) {
     this.currentViewState.set(ViewState.Detail);
     this.selectedDomain.set(data);
     this.state.updateSelectedDomainTitle(data.accessionName);
@@ -108,7 +112,7 @@ export class MbDomainsComponent {
 
   private selectionData?: QueryParam[];
 
-  private async renderInMolstar(domain?: DomainsRowData) {
+  private async renderInMolstar(domain?: ProcessedDomain) {
     await firstValueFrom(
       this.compCommunication.mobileMolstarLoaded$.pipe(
         filter((ready) => ready), // proceed when true

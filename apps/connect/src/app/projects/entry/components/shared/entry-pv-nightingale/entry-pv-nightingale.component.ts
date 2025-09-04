@@ -507,16 +507,26 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       ) // only once
       .subscribe(([_, conservationMap, variationMap]) => {
         let preProcessedConservationData: APIConservationData | undefined = undefined;
-        const consDataExists = conservationMap[`${currentEntityId}`] ? true : false;
-        const consDataNotEmpty = (conservationMap[`${currentEntityId}`] as any).empty ? true : false;
-        if (consDataExists && !consDataNotEmpty) preProcessedConservationData = conservationMap[currentEntityId];
+        let processConsData = true;
+        if (!conservationMap[`${currentEntityId}`]) {
+          processConsData = false;
+        }
+        if (processConsData && (conservationMap[`${currentEntityId}`] as any).empty) {
+          processConsData = false;
+        }
+        if (processConsData) preProcessedConservationData = conservationMap[currentEntityId];
         this.originalConservationData.set(preProcessedConservationData);
         this.loadedConservationAPIData.set(true);
 
         let preProcessedVariationData: APIVariationData | undefined = undefined;
-        const varDataExists = variationMap[`${currentEntityId}`] ? true : false;
-        const varDataNotEmpty = (variationMap[`${currentEntityId}`] as any).empty ? true : false;
-        if (varDataExists && !varDataNotEmpty) preProcessedVariationData = variationMap[currentEntityId];
+        let processVarData = true;
+        if (!variationMap[`${currentEntityId}`]) {
+          processVarData = false;
+        }
+        if (processVarData && (variationMap[`${currentEntityId}`] as any).empty) {
+          processVarData = false;
+        }
+        if (processVarData) preProcessedVariationData = variationMap[currentEntityId];
         this.originalVariationData.set(preProcessedVariationData);
 
         this.loadedVariationAPIData.set(true);

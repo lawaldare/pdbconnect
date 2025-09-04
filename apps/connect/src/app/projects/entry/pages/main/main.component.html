@@ -84,7 +84,7 @@
               }
             </ng-template>
             <ng-template matTabContent>
-              @if(dataProcessing.llmAnnotations | async; as annotations){ @if(annotations.length > 0){
+              @if(llmAnnotations()!== undefined){ @if(llmAnnotations()!.length > 0){
               <pdbc-llm-tab #LLMTabComp pdbcVisualisationInteractivity [parentType]="'llm'" [hasSeqViewer]="true" [hasNewProtvista]="true" [hasLLMTable]="true" />
               } @else {
               <h5>

@@ -3,7 +3,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild, OnInit } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { LigandsRowData } from '../../data-classes/data-models-and-definitions/row-and-table.model';
 import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
@@ -19,6 +18,7 @@ import {
   GoogleAnalyticsService,
   MaterialModule,
   PopupWindowService,
+  ScriptLoaderService,
   TruncateTextDirective,
   UtilService,
 } from '@pdbc/core';
@@ -28,7 +28,6 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { colDefs, gridOptions } from './ag-grid';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { EntryActions } from '../../store/entry.actions';
@@ -42,7 +41,7 @@ import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensio
 import { componentExistsInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { AggregatedApiService } from '../../../ligands/services/aggregated-api.service';
 import { Depiction } from '../../../ligands/data-models/structure.model';
-
+import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
 @Component({
   selector: 'pdbc-ligands-tab',
   standalone: true,
@@ -63,11 +62,16 @@ import { Depiction } from '../../../ligands/data-models/structure.model';
   styleUrl: './ligands-tab.component.scss',
 })
 export class LigandsTabComponent implements OnInit {
+  /**
+   * TODO:
+   * 6. Add numbers here
+   * 10. Timesheets
+   */
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly molstarPluginService = inject(MolstarPluginService);
-
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
+  private readonly scriptLoader = inject(ScriptLoaderService);
+  private readonly globalStore = inject(Store<EntryStoreState>);
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
@@ -82,9 +86,19 @@ export class LigandsTabComponent implements OnInit {
   private aggregatedApiService = inject(AggregatedApiService);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
-  public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
   public readonly selectedLigandIdx = toSignal(this.compCommunication.ligandSelection$);
+
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly interactionsObservable = this.globalStore.select(EntrySelectors.interactions);
+  public readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
+  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+  public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
+  public readonly chainToEntityId = toSignal(this.globalStore.select(EntrySelectors.macromolsChainsToEntityIds));
+  public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
+  public readonly ligandSummaryList = toSignal(this.globalStore.select(EntrySelectors.ligandPagesSummary));
+
+  public readonly tabDataLoaded = computed(() => this.processedLigands() !== undefined);
 
   public readonly util = inject(UtilService);
 
@@ -97,9 +111,9 @@ export class LigandsTabComponent implements OnInit {
   }
 
   public readonly ligandTableRows = computed(() => {
-    const isLoaded = this.compCommunication.hasProcessedLigands();
-    if (!isLoaded) return [];
-    return this.compCommunication.processedLigandsAndModifications;
+    const rows = this.processedLigands();
+    if (rows === undefined) return [];
+    return rows;
   });
 
   private previousDatumIdx?: number;
@@ -122,18 +136,8 @@ export class LigandsTabComponent implements OnInit {
   public selectionTypeText?: string;
 
   @ViewChild('ligandEnvContainer') ligandEnvContainer!: ElementRef;
-  private ligandEnvInstance: any;
   private ligandEv: any;
-
-  private ligandEnvLoaded = false;
   public hasLigandEnv = false;
-  private ligandEnvSelection: {
-    resId: number;
-    chainId: string;
-  } = {
-    resId: -1,
-    chainId: '-1',
-  };
 
   private molstarReady = signal(false);
   private _molstarComponent?: MolstarComponent;
@@ -186,12 +190,6 @@ export class LigandsTabComponent implements OnInit {
     return configForMolstar;
   });
 
-  private readonly globalStore = inject(Store<EntryStoreState>);
-  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  public readonly interactionsObservable = this.globalStore.select(EntrySelectors.interactions);
-  public readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
-  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
-
   private currentChainId = signal<string | undefined>(undefined);
   private currentResidueId = signal<string | undefined>(undefined);
 
@@ -216,7 +214,17 @@ export class LigandsTabComponent implements OnInit {
 
   public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
-  public selectionStats: { [key: string]: any } | undefined;
+  // public selectionStats: { [key: string]: any } | undefined;
+  public selectionStats = computed(() => {
+    const ligandSummaryList = this.ligandSummaryList();
+    const currentLig = this.currentLigandDatum();
+    if (ligandSummaryList && currentLig) {
+      const currentLigId = currentLig.id;
+      const datum = ligandSummaryList.find((eachLig) => eachLig.ligand_id === currentLigId);
+      if (datum) return datum as any;
+    }
+    return undefined;
+  });
 
   public ligandWeight = computed(() => {
     const datum = this.currentLigandDatum();
@@ -251,7 +259,7 @@ export class LigandsTabComponent implements OnInit {
     }));
   }
 
-  async triggerLigandUpdateSideEffects(ligand: LigandsRowData) {
+  async triggerLigandUpdateSideEffects(ligand: ProcessedLigandOrMod) {
     // update ligand dropdown options
     this.updateDropdownOptions(ligand);
 
@@ -266,7 +274,7 @@ export class LigandsTabComponent implements OnInit {
     await this.initOrRefreshLigandEnvViewer(ligand);
   }
 
-  updateDropdownOptions(ligand: LigandsRowData) {
+  updateDropdownOptions(ligand: ProcessedLigandOrMod) {
     this.dropdownOptionsToMolstar = getLigandsDropdownOptions(ligand);
     this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
       return {
@@ -278,13 +286,14 @@ export class LigandsTabComponent implements OnInit {
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
   }
 
-  async updateVisualsDisplayed(ligand: LigandsRowData) {
+  async updateVisualsDisplayed(ligand: ProcessedLigandOrMod) {
     // modification is a special case for Ligands table in which lig env viewer is not displayed
     if (ligand.type.includes('modification') === false) {
       this.hasLigandEnv = true;
     } else {
       // if it is a ligand
       // we await destruction of current ligand env viewer (if there is one) and resetting of loading status vars
+      this.hasLigandEnv = false;
       await this.destroyLigandEnv();
     }
   }
@@ -315,12 +324,7 @@ export class LigandsTabComponent implements OnInit {
     if (!this.molstarPluginService.PDBeMolstarPluginClass) return;
     await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
 
-    const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(
-      ligand,
-      molstarSelection,
-      interactions,
-      this.compCommunication.chainToEntityId()
-    );
+    const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(ligand, molstarSelection, interactions);
 
     const pdbeInteractions = interactionsMolstarSelections as unknown as PDBeMolstarInteraction[];
 
@@ -344,7 +348,18 @@ export class LigandsTabComponent implements OnInit {
     if (rawInteractions) await this.loadInteractionsLigandEnvViewer(rawInteractions);
   }
 
+  private ligandEnvMutex = Promise.resolve();
+  private ligandEnvToken = 0;
+
+  constructor() {
+    this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+      await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js', true);
+      await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
+    });
+  }
+
   ngOnInit(): void {
+    /* 1. Fetch data */
     this.interactionsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((allInteractions) => {
       const chainId = this.currentChainId();
       const residueId = this.currentResidueId();
@@ -366,6 +381,8 @@ export class LigandsTabComponent implements OnInit {
           if (!chainId || !residueId) return undefined;
           const allInteractions = this.interactions();
           if (!allInteractions || Object.keys(allInteractions).length === 0) return undefined;
+          if (Object.keys(allInteractions).indexOf(chainId) === -1) return undefined;
+          if (Object.keys(allInteractions[chainId]).indexOf(residueId) === -1) return undefined;
           const interactionsFromApiToFilter = allInteractions[chainId][residueId] ?? [];
           const filteredInteractions = searchQuery
             ? this.filterItemsBySearchQuery(searchQuery, interactionsFromApiToFilter.interactions)
@@ -395,7 +412,7 @@ export class LigandsTabComponent implements OnInit {
     this.initialColorCount.update((prev) => (prev === 4 ? colorList.length : 4));
   }
 
-  private async renderInMolstar(ligand: LigandsRowData) {
+  private async renderInMolstar(ligand: ProcessedLigandOrMod) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
     const entityId = molstarSelection[0].entity_id;
@@ -464,15 +481,6 @@ export class LigandsTabComponent implements OnInit {
     await this.initOrRefreshLigandEnvViewer(ligand);
   }
 
-  private resetLigEnvRenderer() {
-    const imageContainer = this.ligandEnvContainer.nativeElement;
-
-    if (this.ligandEv) {
-      this.renderer.removeChild(imageContainer, this.ligandEv);
-      this.ligandEv = undefined;
-    }
-  }
-
   private async waitForLigandEnvReady(maxWaitMs = 5000, intervalMs = 100, onlyDepiction = true): Promise<void> {
     const start = Date.now();
     while (Date.now() - start < maxWaitMs) {
@@ -488,91 +496,113 @@ export class LigandsTabComponent implements OnInit {
   }
 
   private async loadInteractionsLigandEnvViewer(interactionsRawData: InteractionFromAPI) {
-    const ligand = this.currentLigandDatum();
-    if (!this.ligandEv && ligand) {
-      await this.initOrRefreshLigandEnvViewer(ligand);
-    }
-    const dataToLigEnv: { [key: string]: InteractionFromAPI[] } = {};
-    dataToLigEnv[`${this.entryId()}`] = [interactionsRawData];
+    const token = this.ligandEnvToken;
+    this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+      const dataToLigEnv: { [key: string]: InteractionFromAPI[] } = {};
+      const copiedInteractions = JSON.parse(JSON.stringify(interactionsRawData));
+      dataToLigEnv[`${this.entryId()}`] = [copiedInteractions];
+      this.ligandEv.display.addLigandInteractions(dataToLigEnv, false);
 
-    this.ligandEv.display.addLigandInteractions(dataToLigEnv, false);
+      await this.waitForLigandEnvReady(5000, 100, false);
+      if (token !== this.ligandEnvToken) return;
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      if (token !== this.ligandEnvToken) return;
 
-    await this.waitForLigandEnvReady(5000, 100, false);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    this.ligandEv.display.centerScene();
+      this.ligandEv.display.centerScene();
 
-    // configure interactivity for dynamic data load
-    const nodes = this.ligandEv.display.nodes;
-    nodes
-      .filter((datum: any) => !datum.residue.isLigand)
-      .on('mouseenter', null)
-      .on('mouseleave', null) // clear previous listeners
-      .on('mouseenter', (ev: any, datum: any) => {
-        const g = document.querySelectorAll('.pdb-lig-env-svg-node');
-        this.ligandEv.display.nodeMouseoverEventHandler(datum, datum.index - 1, g);
-        const instance = this._molstarComponent?.getInstance() ?? null;
-        if (!instance) return;
-        const authorInsertionCode = datum.residue.authorInsertionCode.replaceAll(' ', '');
-        this.molstarSelectionMutex = this.molstarSelectionMutex.then(() =>
-          instance.visual.highlight({
-            data: [
-              {
-                auth_asym_id: datum.residue.chainId,
-                auth_residue_number: datum.residue.authorResidueNumber,
-                auth_ins_code_id: authorInsertionCode,
-              },
-            ],
-          })
-        );
-      })
-      .on('mouseleave', (ev: any, datum: any) => {
-        const g = document.querySelectorAll('.pdb-lig-env-svg-node');
-        this.ligandEv.display.nodeMouseoutEventHandler(datum, datum.index - 1, g);
-        const instance = this._molstarComponent?.getInstance() ?? null;
-        if (!instance) return;
-        this.molstarSelectionMutex = this.molstarSelectionMutex.then(() => instance.visual.clearHighlight());
-      });
+      // // configure interactivity for dynamic data load
+      const nodes = this.ligandEv.display.nodes;
+      nodes
+        .filter((datum: any) => !datum.residue.isLigand)
+        //   .on('mouseenter', null)
+        //   .on('mouseleave', null) // clear previous listeners
+        .on('mouseenter', (datum: any, i: number, g: any) => {
+          //     const g = document.querySelectorAll('.pdb-lig-env-svg-node');
+          this.ligandEv.display.nodeMouseoverEventHandler(datum, i, g);
+          const instance = this._molstarComponent?.getInstance() ?? null;
+          if (!instance) return;
+          const authorInsertionCode = datum.residue.authorInsertionCode.replaceAll(' ', '');
+          this.molstarSelectionMutex = this.molstarSelectionMutex.then(() =>
+            instance.visual.highlight({
+              data: [
+                {
+                  auth_asym_id: datum.residue.chainId,
+                  auth_residue_number: datum.residue.authorResidueNumber,
+                  auth_ins_code_id: authorInsertionCode,
+                },
+              ],
+            })
+          );
+        })
+        .on('mouseleave', (datum: any, i: number, g: any) => {
+          //     const g = document.querySelectorAll('.pdb-lig-env-svg-node');
+          //     this.ligandEv.display.nodeMouseoutEventHandler(datum, datum.index - 1, g);
+          this.ligandEv.display.nodeMouseoutEventHandler(datum, i, g);
+          const instance = this._molstarComponent?.getInstance() ?? null;
+          if (!instance) return;
+          this.molstarSelectionMutex = this.molstarSelectionMutex.then(() => instance.visual.clearHighlight());
+        });
 
-    const links = this.ligandEv.display.links;
-    links.selectAll('line').on('mouseenter', null).on('mouseleave', null); // clear previous listeners
-    // ... if there is ever a way to use Molstar to select the interactions
-    // .on('mouseenter', (ev: any, datum: any) => {
-    //   const g = document.querySelectorAll('.pdb-lig-env-svg-bond');
-    //   this.ligandEv.display.linkMouseOverEventHandler(datum, datum.index, g);
-    // })
-    // .on('mouseleave', (ev: any, datum: any) => {
-    //   const g = document.querySelectorAll('.pdb-lig-env-svg-bond');
-    //   this.ligandEv.display.linkMouseOutEventHandler(datum, datum.index, g);
-    // })
+      // const links = this.ligandEv.display.links;
+      // links.selectAll('line').on('mouseenter', null).on('mouseleave', null); // clear previous listeners
+      // ... if there is ever a way to use Molstar to select the interactions
+      // .on('mouseenter', (ev: any, datum: any) => {
+      //   const g = document.querySelectorAll('.pdb-lig-env-svg-bond');
+      //   this.ligandEv.display.linkMouseOverEventHandler(datum, datum.index, g);
+      // })
+      // .on('mouseleave', (ev: any, datum: any) => {
+      //   const g = document.querySelectorAll('.pdb-lig-env-svg-bond');
+      //   this.ligandEv.display.linkMouseOutEventHandler(datum, datum.index, g);
+      // })
+    });
   }
 
-  private async initOrRefreshLigandEnvViewer(ligand: LigandsRowData) {
+  private async initOrRefreshLigandEnvViewer(ligand: ProcessedLigandOrMod) {
     const ligandId = ligand.id;
     // ligand env viewer is only shown for ligands tab. data is retrieved from dropdown
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     const resId = molstarSelection[0].auth_residue_number!;
     const chainId = molstarSelection[0].auth_asym_id!;
 
-    this.resetLigEnvRenderer();
+    // this.resetLigEnvRenderer();
     const imageContainer = this.ligandEnvContainer.nativeElement;
+
+    const token = this.ligandEnvToken;
     this.aggregatedApiService
       .fetchDepiction(ligandId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(async (depiction: Depiction) => {
-        const ligandComp = this.renderer.createElement('pdb-ligand-env');
-        this.renderer.setAttribute(ligandComp, 'pdb-id', this.entryId() ?? ''.toLowerCase());
-        this.renderer.appendChild(imageContainer, ligandComp);
-        this.renderer.setProperty(ligandComp, 'depiction', depiction);
-        this.ligandEv = ligandComp;
-        this.ligandEv.pdbId = `${this.entryId()}`;
-        this.ligandEv.chainId = chainId;
-        this.ligandEv.resId = resId;
-        this.ligandEv.display.pdbId = `${this.entryId()}`;
-        this.ligandEv.display.chainId = chainId;
-        this.ligandEv.display.resId = resId;
-        await this.waitForLigandEnvReady(5000, 100, true);
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        this.ligandEv.display.centerScene();
+        this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+          if (token !== this.ligandEnvToken) return;
+          if (this.ligandEv) {
+            this.renderer.removeChild(imageContainer, this.ligandEv);
+            this.ligandEv = undefined;
+          }
+
+          const ligandComp = this.renderer.createElement('pdb-ligand-env');
+          // this.renderer.setAttribute(ligandComp, 'pdb-id', this.entryId() ?? ''.toLowerCase());
+          this.renderer.appendChild(imageContainer, ligandComp);
+          // ligandComp.display.initLigandInteraction = () => {
+          //   ligandComp.chainId = chainId;
+          // };
+          this.renderer.setProperty(ligandComp, 'depiction', depiction);
+          this.ligandEv = ligandComp;
+          this.ligandEv.display.initLigandInteraction = () => {
+            ligandComp.chainId = chainId;
+          };
+          this.ligandEv.pdbId = `${this.entryId()}`;
+          this.ligandEv.chainId = chainId;
+          this.ligandEv.resId = resId;
+          this.ligandEv.display.pdbId = `${this.entryId()}`;
+          this.ligandEv.display.chainId = chainId;
+          this.ligandEv.display.resId = resId;
+          if (token !== this.ligandEnvToken) return;
+          await this.waitForLigandEnvReady(5000, 100, true);
+          if (token !== this.ligandEnvToken) return;
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          if (token !== this.ligandEnvToken) return;
+          this.ligandEv.display.centerScene();
+        });
       });
   }
 
@@ -581,20 +611,18 @@ export class LigandsTabComponent implements OnInit {
   }
 
   private async destroyLigandEnv() {
-    // to destroy ligand env we use removeChild and reset all variables related to it's loading status
-    if (this.ligandEnvInstance) {
-      this.renderer.removeChild(this.elementRef.nativeElement, this.ligandEnvInstance);
-      // this.ligandEnvContainer.nativeElement.innerHTML = '';
-      this.ligandEnvInstance = undefined;
-    }
-    this.ligandEnvLoaded = false;
-    this.hasLigandEnv = false;
-    this.ligandEnvSelection = {
-      resId: -1,
-      chainId: '-1',
-    };
-    // unfortunately needed so destruction happens syncronously
-    await firstValueFrom(timer(100));
+    this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+      // to destroy ligand env we use removeChild and reset all variables related to it's loading status
+      if (this.ligandEv) {
+        const imageContainer = this.ligandEnvContainer.nativeElement;
+        this.renderer.removeChild(imageContainer, this.ligandEv);
+        // this.ligandEnvContainer.nativeElement.innerHTML = '';
+        this.ligandEv = undefined;
+      }
+      this.hasLigandEnv = false;
+      // unfortunately needed so destruction happens syncronously
+      await firstValueFrom(timer(100));
+    });
   }
 
   private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
@@ -649,7 +677,9 @@ export class LigandsTabComponent implements OnInit {
     const residueId = molstarSelection[0].auth_residue_number!;
     const resIns = molstarSelection[0].auth_ins_code_id;
 
-    const residEntityId = this.compCommunication.chainToEntityId()[int.end.chain_id];
+    const chainToEntityId = this.chainToEntityId();
+    if (!chainToEntityId) return;
+    const residEntityId = chainToEntityId[int.end.chain_id];
 
     const atomSelections: QueryParam[] = [
       {
@@ -708,18 +738,19 @@ export class LigandsTabComponent implements OnInit {
   }
 
   private getMoleculeName(chainId: string) {
-    const entityId = this.compCommunication.chainToEntityId()[chainId];
+    const chainToEntityId = this.chainToEntityId();
+    if (!chainToEntityId) return 'Undefined';
+
+    const entityId = chainToEntityId[chainId];
     if (!entityId) return 'Undefined';
 
-    const hasData = this.compCommunication.hasProcessedMacromolecules();
-    if (!hasData) return 'Undefined';
-    const macromolecules = this.compCommunication.processedMacromolecules;
-    if (macromolecules.length === 0) return 'Undefined';
+    const macromolecules = this.macromolecules();
+    if (macromolecules === undefined || macromolecules.length === 0) return 'Undefined';
 
-    const mols = macromolecules.filter((mol) => mol.additionalData.molecule.entity_id === parseInt(entityId));
+    const mols = macromolecules.filter((mol) => mol.entity_id === parseInt(entityId));
     if (mols.length === 0) return 'Undefined';
 
-    return mols[0].name.molecule; //.replace(/\s/g, "_");
+    return mols[0].molecule_name[0]; //.replace(/\s/g, "_");
   }
 
   public mapSynonyms(synonyms: any[]): string {
