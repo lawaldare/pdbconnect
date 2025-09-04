@@ -10,7 +10,6 @@ import { combineLatest, filter, map } from 'rxjs';
 import { NavigationLink } from '../mb-citation-tab/mb-citation-tab.component';
 import { MolstarGalleryComponent } from '@pdbe-lib/molstar-for-apps';
 import { MobileFacade } from '../mobile.facade';
-import { EntryActions } from '../../../store/entry.actions';
 import { MbStructureOverviewComponent } from './sub-components/mb-structure-overview/mb-structure-overview.component';
 import { MbPrimaryPublicationComponent } from './sub-components/mb-primary-publication/mb-primary-publication.component';
 import { MbModelQualitySummaryOverviewComponent } from './sub-components/mb-pdb-model-quality-summary/mb-pdb-model-quality-summary.component';
@@ -38,16 +37,11 @@ export class MbOverviewTabComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly destroyRef = inject(DestroyRef);
   private readonly mbFacade = inject(MobileFacade);
-
   public readonly gAS = inject(GoogleAnalyticsService);
 
+  // summary dispatch called in main.component.ts and used for related
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly entryStoreId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-
-  public readonly ligands = toSignal(this.globalStore.select(EntrySelectors.boundLigands));
-  public readonly modifications = toSignal(this.globalStore.select(EntrySelectors.modifications));
-
-  public readonly experimentalMethod = toSignal(this.globalStore.select(EntrySelectors.experimentalMethod));
 
   public readonly entryId = signal<string>('');
   public relatedEntries = signal<string[]>([]);
@@ -94,10 +88,6 @@ export class MbOverviewTabComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    /* 1. Fetch data for tab */
-    this.globalStore.dispatch(EntryActions.getExperiment());
-    // this.globalStore.dispatch(EntryActions.getSummaryData());
-
     combineLatest([this.globalStore.select(EntrySelectors.entryId).pipe(filter(Boolean))])
       .pipe(
         map(([entryId]) => {
