@@ -192,7 +192,7 @@ export const dashboardStatLinks = {
 export const resourceUrls: any = {
   CATH: 'https://www.cathdb.info/version/latest/superfamily/',
   SCOP: 'https://ftp.ebi.ac.uk/pub/databases/pdbe-kb/scop-legacy/',
-  Pfam: `https://www.ebi.ac.uk/pdbe/interpro/entry/pfam/`,
+  Pfam: `https://www.ebi.ac.uk/interpro/entry/pfam/`,
 };
 
 export const handleBarSrc = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjE5Ij4KICAgIDxyZWN0IHg9IjEiIHk9IjAiIHdpZHRoPSI2cHgiIGhlaWdodD0iMThweCIgc3R5bGU9ImZpbGw6IGRhcmtncmV5OyBzdHJva2U6IGJsYWNrOyBzdHJva2Utd2lkdGg6IDFweDsiPjwvcmVjdD4KPC9zdmc+`;
