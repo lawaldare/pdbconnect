@@ -38,8 +38,12 @@
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.pdbeComplexId" />
             </span>
             <article>
+              @if (datum?.complexId) {
               <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/complexes/' + datum?.complexId" target="_blank">{{datum?.complexId}}</a>
               <img src="assets/icons/link_search_icon.png" alt="search icon" />
+              } @else {
+              <span>Not available</span>
+              }
             </article>
           </div>
         </div>

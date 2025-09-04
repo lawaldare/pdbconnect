@@ -35,7 +35,7 @@
         </div>
         } @if(uniqueExpSystems().length > 0) {
         <div class="info-row">
-          <span class="micro-title"> Expression System{{ uniqueExpSystems().length > 1 ? 's': '' }} </span>
+          <span class="micro-title"> Expression system{{ uniqueExpSystems().length > 1 ? 's': '' }} </span>
           @for (expressionSystem of uniqueExpSystems(); track expressionSystem) {
           <article>
             <em>{{expressionSystem}}</em>

@@ -17,12 +17,14 @@ export function getPreferredAssemblyId(summaryData: ProcessedSummary) {
 }
 
 export function getPreferredAssemblyDatum(summaryData: ProcessedSummary, assemblyData: AssemblyData[]) {
+  if ((<any>assemblyData).empty === true) assemblyData = [];
   const preferredAssemblyId = getPreferredAssemblyId(summaryData);
   const assembly = assemblyData.filter((assembly) => parseInt(assembly.assembly_id) === preferredAssemblyId)[0];
   return assembly;
 }
 
 export function processPreferredAssemblyData(summaryData: ProcessedSummary, complexDetails: ComplexDetails[]): PreferredAssemblyData | undefined {
+  if ((<any>complexDetails).empty === true) complexDetails = [];
   let preferredAssemblyData = undefined;
   let preferredAssemblyId = undefined;
 
@@ -71,10 +73,13 @@ export function getEntityToStructAsymsMapOfAssembly(assembly: AssemblyData): Map
 }
 
 export function getComplexDetailByAssemblyId(assemblyDatum: AssemblyData, complexDetails: ComplexDetails[], verbose = false) {
-  let complexDetail = complexDetails.filter((eachComplexDetail) => {
+  let complexDetail: ComplexDetails | undefined = undefined;
+  if ((<any>complexDetails).empty === true) complexDetails = [];
+  const complexDetailFiltered = complexDetails.filter((eachComplexDetail) => {
     const complexAssemblyIds = eachComplexDetail.assemblies.map((assemblyInfo) => assemblyInfo.assembly_id + '');
     return complexAssemblyIds.indexOf(assemblyDatum.assembly_id) > -1;
-  })[0];
+  });
+  if (complexDetailFiltered.length > 0) complexDetail = complexDetailFiltered[0];
   if (complexDetail === undefined) {
     if (verbose) console.warn('WARNING: Assembly complex detail data is undefined, skipping...');
     complexDetail = {
@@ -104,6 +109,8 @@ export interface AssemblyUICard {
 }
 
 export function generateAssembliesCards(assemblyData: AssemblyData[], complexDetails: ComplexDetails[], summaryData: ProcessedSummary): AssemblyUICard[] {
+  if ((<any>assemblyData).empty === true) assemblyData = [];
+  if ((<any>complexDetails).empty === true) complexDetails = [];
   const assemblyCards: AssemblyUICard[] = [];
   const preferredAssemblyId = getPreferredAssemblyId(summaryData);
   let index = 0;
@@ -114,7 +121,9 @@ export function generateAssembliesCards(assemblyData: AssemblyData[], complexDet
 
     const preferredWord = assemblyDatum.assembly_id === `${preferredAssemblyId}` ? ' (preferred)' : '';
     const complexName = complexDetail.name ? complexDetail.name : '';
-    let mericity = `${summaryAssemblyDatum.form} ${summaryAssemblyDatum.name}`;
+    const form = summaryAssemblyDatum?.form;
+    const name = summaryAssemblyDatum?.name;
+    let mericity = form && name ? `${summaryAssemblyDatum.form} ${summaryAssemblyDatum.name}` : 'Not available';
     mericity = mericity.replace('homo monomer', 'monomer');
 
     assemblyCards.push({
@@ -130,6 +139,7 @@ export function generateAssembliesCards(assemblyData: AssemblyData[], complexDet
 }
 
 export function generateAssembliesTableFilters(summaryData: ProcessedSummary, assemblyData: AssemblyData[]): Filter[] {
+  if ((<any>assemblyData).empty === true) assemblyData = [];
   const newFilters: Filter[] = [];
   const mericityCounts: { [key: string]: number } = {};
 
@@ -137,7 +147,9 @@ export function generateAssembliesTableFilters(summaryData: ProcessedSummary, as
   for (const assemblyDatum of assemblyData) {
     const summaryAssemblyDatum = summaryData.assemblies.filter((summaryAssembly) => summaryAssembly.assembly_id === assemblyDatum.assembly_id)[0];
 
-    let mericity = `${summaryAssemblyDatum.form} ${summaryAssemblyDatum.name}`;
+    const form = summaryAssemblyDatum?.form;
+    const name = summaryAssemblyDatum?.name;
+    let mericity = form && name ? `${summaryAssemblyDatum.form} ${summaryAssemblyDatum.name}` : 'Not available';
     mericity = mericity.replace('homo monomer', 'monomer');
 
     // ... and count how many instances of that mericity appear
@@ -169,7 +181,7 @@ export interface ProcessedAssembly {
   assemblyId: string;
   assemblyName: string;
   moleculeNames: string[];
-  complexId: string;
+  complexId?: string;
   complexName: string;
   multimericStates: string;
   additionalData: {
@@ -197,6 +209,10 @@ export function generateProcessedAssemblies(
   summaryData: ProcessedSummary,
   pisaAssemblyData: PisaAssembly[]
 ) {
+  if ((<any>assemblyData).empty === true) return [];
+  if ((<any>complexDetails).empty === true) complexDetails = [];
+  if ((<any>pisaAssemblyData).empty === true) pisaAssemblyData = [];
+
   const listProcessedAssemblies: ProcessedAssembly[] = [];
   const preferredAssemblyId = getPreferredAssemblyId(summaryData);
   for (const assemblyDatum of assemblyData) {
@@ -215,9 +231,12 @@ export function generateProcessedAssemblies(
     if (moleculeNames.length > 5) {
       moleculeNames = [`${moleculeNames.length} molecules`];
     }
-    const complexId = complexDetail.pdb_complex_id ? complexDetail.pdb_complex_id : '';
-    const complexName = complexDetail.name ? complexDetail.name : '';
-    let mericity = `${summaryAssemblyDatum.form} ${summaryAssemblyDatum.name}`;
+    const hasComplexId = complexDetail?.pdb_complex_id && complexDetail?.pdb_complex_id.length > 0;
+    const complexId = hasComplexId ? complexDetail?.pdb_complex_id : undefined;
+    const complexName = complexDetail?.name ? complexDetail?.name : '';
+    const form = summaryAssemblyDatum?.form;
+    const name = summaryAssemblyDatum?.name;
+    let mericity = form && name ? `${summaryAssemblyDatum.form} ${summaryAssemblyDatum.name}` : 'Not available';
     mericity = mericity.replace('homo monomer', 'monomer');
 
     // ... and finally push all necessary data for rendering a row

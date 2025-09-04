@@ -56,7 +56,7 @@
         }
       </p>
       } @if(uniqueExpSystems().length) {
-      <p class="title">Expression System{{ uniqueExpSystems().length > 1 ? 's': '' }}</p>
+      <p class="title">Expression system{{ uniqueExpSystems().length > 1 ? 's': '' }}</p>
       @for (expressionSystem of uniqueExpSystems(); track expressionSystem) {
       <p class="content">
         <em>{{expressionSystem}}</em>

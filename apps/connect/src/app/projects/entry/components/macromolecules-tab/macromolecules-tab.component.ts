@@ -289,7 +289,9 @@ export class MacromoleculesTabComponent implements OnInit {
   public uniqueExpSystems = computed(() => {
     const macromolecule = this.currentMacromoleculeDatum();
     if (macromolecule === undefined) return [];
-    const expSystems = macromolecule.additionalData.molecule.source.map((src) => src.expression_host_scientific_name);
+    const sources = macromolecule.additionalData.molecule.source;
+    if (!sources) return [];
+    const expSystems = sources.map((src) => src.expression_host_scientific_name);
     return [...new Set(expSystems.filter((expSystem) => expSystem !== null))];
   });
 

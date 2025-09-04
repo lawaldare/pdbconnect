@@ -162,6 +162,8 @@ article {
 .listview-accordions {
   width: calc(100% - 480px);
   max-width: 360px;
+  height: 550px;
+  max-height: 550px;
 
   p {
     font-size: 16px;

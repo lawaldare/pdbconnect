@@ -91,7 +91,7 @@ export class EntryMainPageComponent implements OnInit {
 
   private procAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
   private procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
-  private procLigands = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  private procLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
   private procDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomains));
   private procLLMMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromoleculesForLLM));
   private processedDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomainsWithMacromols));
