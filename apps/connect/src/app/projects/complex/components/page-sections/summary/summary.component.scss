@@ -80,14 +80,26 @@ p.view-more {
   gap: 10px;
   align-items: center;
 
+  @media screen and (width <= 768px) {
+    flex-direction: column-reverse;
+  }
+
   .details {
     width: 40%;
     align-self: flex-start;
+
+    @media screen and (width <= 768px) {
+      width: 100%;
+    }
   }
 
   .molstar {
     width: calc(60% - 10px);
     align-self: flex-start;
+
+    @media screen and (width <= 768px) {
+      width: 100%;
+    }
 
     header {
       display: flex;

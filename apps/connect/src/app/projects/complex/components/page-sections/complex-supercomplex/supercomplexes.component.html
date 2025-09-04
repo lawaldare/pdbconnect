@@ -53,5 +53,40 @@
       </div>
     </div>
   </section>
+  <section class="mobile-alternative">
+    @for(structure of structuresPage(); track structure){
+    <article>
+      <div class="list">
+        <p class="list-item-left">Supercomplex ID</p>
+        <p class="list-item-right">
+          <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + structure.pdb_complex_id" target="_blank">
+            {{ structure.pdb_complex_id }}
+            <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
+          </a>
+        </p>
+      </div>
+      <div class="list">
+        <p class="list-item-left">Name</p>
+        <p class="list-item-right">{{ structure.name }}</p>
+      </div>
+      <div class="list">
+        <p class="list-item-left">Additional Components</p>
+        <div class="list-item-right">
+          <pdbc-complex-components [data]="structure" />
+        </div>
+      </div>
+    </article>
+    }
+    <mat-paginator
+      class="paginator-container"
+      [length]="structuresLength()"
+      [pageSize]="structuresPageSize()"
+      [pageSizeOptions]="structuresPageSizeOptions()"
+      (page)="handlePageEvent($event)"
+      showFirstLastButtons
+      aria-label="Select page of structures"
+    >
+    </mat-paginator>
+  </section>
   } @else { } }
 </div>

@@ -205,3 +205,64 @@ nightingale-navigation .container .brush .handle {
 .ngx-slider .ngx-slider-pointer::after {
   display: none !important;
 }
+
+.mobile-alternative {
+  display: none;
+
+  article {
+    padding: 8px;
+    box-shadow: 4px 5px 4px 0 rgb(0 0 0 / 25%);
+    border: 2px solid #d3cece;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    width: 99%;
+
+    .list {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      border-bottom: 1px solid #d0d0ce;
+      line-height: 22.4px;
+      color: #1a1c1a;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      a {
+        font-size: 14px;
+      }
+
+      .list-item-left {
+        width: 142px;
+        min-width: 142px;
+        padding: 8px 4px;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .search-box {
+    position: relative;
+    font-size: 16px;
+
+    input {
+      border: none;
+      border-bottom: 1px solid var(--Neutral-600, #707372);
+      box-shadow: none;
+      padding-left: 0;
+    }
+
+    .icon-search {
+      position: absolute;
+      right: 5px;
+      top: 12px;
+      color: #707372;
+    }
+  }
+
+  @media screen and (width <= 768px) {
+    display: block;
+    width: 100%;
+  }
+}

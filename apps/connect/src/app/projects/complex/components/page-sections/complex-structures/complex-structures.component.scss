@@ -10,11 +10,27 @@ header {
   display: flex;
   align-items: center;
   gap: 20px;
+
+  @media screen and (width <= 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .vf-button {
+    @media screen and (width <= 768px) {
+      align-self: flex-start;
+    }
+  }
 }
 
 section {
   display: flex;
   width: 100%;
+
+  // @media screen and (max-width: 768px) {
+  //   flex-direction: column-reverse;
+  // }
 
   // align-items: center;
   justify-content: space-between;
@@ -23,10 +39,53 @@ section {
     width: 50%;
     margin-top: 5px;
     height: 500px;
+
+    @media screen and (width <= 768px) {
+      display: none;
+    }
+  }
+
+  .table-alternative {
+    display: none;
+
+    article {
+      padding: 8px;
+      box-shadow: 1px 1px 4px 0 rgb(0 0 0 / 25%);
+      margin-bottom: 12px;
+      width: 99%;
+
+      .list {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #d0d0ce;
+        font-size: 14px;
+        line-height: 22.4px;
+        color: #1a1c1a;
+
+        a {
+          font-size: 14px;
+        }
+
+        .list-item-left {
+          width: 142px;
+          min-width: 142px;
+          padding: 8px 4px;
+          font-weight: 500;
+        }
+      }
+    }
+
+    @media screen and (width <= 768px) {
+      display: block;
+    }
   }
 
   .molstar {
     width: 50%;
+
+    @media screen and (width <= 768px) {
+      display: none;
+    }
   }
 }
 
@@ -34,5 +93,24 @@ section {
   .container {
     display: block;
     height: 400px !important;
+  }
+}
+
+.search-box {
+  position: relative;
+  font-size: 16px;
+
+  input {
+    border: none;
+    border-bottom: 1px solid var(--Neutral-600, #707372);
+    box-shadow: none;
+    padding-left: 0;
+  }
+
+  .icon-search {
+    position: absolute;
+    right: 5px;
+    top: 12px;
+    color: #707372;
   }
 }

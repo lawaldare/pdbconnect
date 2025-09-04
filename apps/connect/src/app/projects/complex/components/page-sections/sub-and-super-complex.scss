@@ -37,6 +37,10 @@ section.table {
   display: flex;
   width: 100%;
 
+  @media screen and (width <= 768px) {
+    display: none;
+  }
+
   // align-items: center;
   justify-content: space-between;
 

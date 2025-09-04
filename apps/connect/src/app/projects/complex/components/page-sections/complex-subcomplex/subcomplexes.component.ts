@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -18,13 +18,14 @@ import { SelectionChangedEvent } from 'ag-grid-community';
 import { SuperpositionService } from '../../../services/superposition.service';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { superpositionTooltip } from '../../../complex.constant';
+import { MbComplexComponent } from '../mb-complex-components';
 
 @Component({
   selector: 'pdbc-subcomplexes',
   standalone: true,
-  imports: [CommonModule, NgxSkeletonLoaderModule, MaterialModule, ReactiveFormsModule, AgGridAngular, HelpIconWithTooltipComponent],
+  imports: [CommonModule, NgxSkeletonLoaderModule, MaterialModule, ReactiveFormsModule, AgGridAngular, HelpIconWithTooltipComponent, MbComplexComponent],
   templateUrl: './subcomplexes.component.html',
-  styleUrl: './subcomplexes.component.scss',
+  styleUrl: '../sub-and-super-complex.scss',
 })
 export class SubComplexesComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -51,6 +52,11 @@ export class SubComplexesComponent implements OnInit {
     computation: () => this.subcomplexInteractions() ?? [],
   });
 
+  public structuresPage = linkedSignal({
+    source: this.rowData,
+    computation: () => (this.rowData() ?? []).slice(0, this.structuresPageSize()),
+  });
+
   public unfilteredComplexes = linkedSignal({
     source: this.subcomplexInteractions,
     computation: () => this.subcomplexInteractions() ?? [],
@@ -61,7 +67,6 @@ export class SubComplexesComponent implements OnInit {
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
-  // public readonly initialState = initialState;
   public readonly rowSelection = rowSelection;
 
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
@@ -71,6 +76,10 @@ export class SubComplexesComponent implements OnInit {
   private currentComplexId = signal<string>('');
 
   public superpositionTooltip = superpositionTooltip;
+
+  public structuresLength = computed(() => (this.rowData() ?? []).length);
+  public structuresPageSize = signal<number>(5);
+  public structuresPageSizeOptions = computed(() => [5, 10, 20, 50, 100]);
 
   ngOnInit(): void {
     this.searchTerm.valueChanges
@@ -86,6 +95,12 @@ export class SubComplexesComponent implements OnInit {
       .subscribe((data: any) => {
         this.rowData.update(() => data ?? []);
       });
+  }
+
+  public handlePageEvent(event: PageEvent) {
+    const startIndex = event.pageIndex * event.pageSize;
+    const endIndex = startIndex + event.pageSize;
+    this.structuresPage.set((this.rowData() ?? []).slice(startIndex, endIndex));
   }
 
   public async onSelectionChanged(event: SelectionChangedEvent) {
