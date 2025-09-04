@@ -115,7 +115,7 @@ performance_check:
         BUILD_CONF: staging
     - if: "$CI_COMMIT_REF_NAME == 'playground'"
       when: never
-    - when: always
+    - when: manual
   script:
     - echo "Node:"
     - node -v
