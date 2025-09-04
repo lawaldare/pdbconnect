@@ -115,6 +115,6 @@
   <pdbc-mobile-main />
   }
 </div>
-@if (entryPageView() !== 'SUCCESS' && entryPageView() !== 'LOADING' && entryPageView() !== 'ERROR') {
+@if (entryPageView() === 'OTHER') {
 <pdbc-entry-main-alternative [entryStatus]="entryStatus()" />
 }

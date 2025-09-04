@@ -236,7 +236,7 @@ export class EntryMainPageComponent implements OnInit {
             // used in citations-tab, llm-tab, summary-tab, mb-citation-tab, mb-overview-tab, entry.bioschemas
             this.globalStore.dispatch(EntryActions.getPrimaryPublication());
             this.entryBioschemasService.buildBioschemasJSON(this.renderer);
-          } else {
+          } else if (status !== 'INITIAL') {
             this.util.setEntryStatus('OTHER');
           }
           return EMPTY;
