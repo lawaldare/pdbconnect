@@ -8,7 +8,7 @@ import { ComplexSelectors } from '../../../store/complex.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { AG_Grid_Theme_Class, MaterialModule } from '@pdbc/core';
+import { AG_Grid_Theme_Class, MaterialModule, UtilService } from '@pdbc/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { map } from 'rxjs';
 import { ComplexUtilService } from '../../../services/complex-util.service';
@@ -31,6 +31,7 @@ export class SubComplexesComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
   private utilService = inject(ComplexUtilService);
+  private readonly util = inject(UtilService);
 
   private readonly superpositionService = inject(SuperpositionService);
   public initialized = false;
@@ -95,6 +96,10 @@ export class SubComplexesComponent implements OnInit {
       .subscribe((data: any) => {
         this.rowData.update(() => data ?? []);
       });
+  }
+
+  public openComplexPage(complexId: string): void {
+    this.util.redirectToSearchTerm(complexId, '_blank');
   }
 
   public handlePageEvent(event: PageEvent) {

@@ -59,7 +59,7 @@
       <div class="list">
         <p class="list-item-left">Supercomplex ID</p>
         <p class="list-item-right">
-          <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + structure.pdb_complex_id" target="_blank">
+          <a (click)="openComplexPage(structure.pdb_complex_id)">
             {{ structure.pdb_complex_id }}
             <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
           </a>
