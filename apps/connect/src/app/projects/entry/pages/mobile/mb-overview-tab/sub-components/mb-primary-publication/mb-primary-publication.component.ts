@@ -10,6 +10,7 @@ import { RelatedPublication } from '../../../../../data-models/related-publicati
 import { MobileFacade } from '../../../mobile.facade';
 import { GoogleAnalyticsService } from '@pdbc/core';
 import { EntryActions } from '../../../../../store/entry.actions';
+import { ApplicationAPIDispatcher } from '../../../../../services/application-api-dispacher.service';
 
 @Component({
   selector: 'pdbc-mb-primary-publication',
@@ -23,6 +24,7 @@ export class MbPrimaryPublicationComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly mbFacade = inject(MobileFacade);
   public readonly gAS = inject(GoogleAnalyticsService);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly primaryPublication = signal<CitationDetail | undefined>(undefined);
   public readonly articlesCiting = signal<RelatedPublication | undefined>(undefined);
@@ -49,8 +51,9 @@ export class MbPrimaryPublicationComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.globalStore.dispatch(EntryActions.getPrimaryPublication());
-    this.globalStore.dispatch(EntryActions.getArticleCitingPDBEntry()); // used in citations, mb-overview, mb-citations
+    this.applicationApiDispatcher.dispatchForList([EntryActions.getPrimaryPublication, EntryActions.getArticleCitingPDBEntry]);
+    // this.globalStore.dispatch(EntryActions.getPrimaryPublication());
+    // this.globalStore.dispatch(EntryActions.getArticleCitingPDBEntry()); // used in citations, mb-overview, mb-citations
 
     combineLatest([
       this.globalStore.select(EntrySelectors.primaryPublication).pipe(filter(Boolean)),

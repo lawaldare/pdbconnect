@@ -26,7 +26,17 @@
   }
 
   <!-- Molstar Gallery -->
+  @if (slowNetwork() === undefined) {
+  <!-- Loading state -->
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '200px' }"></ngx-skeleton-loader>
+  } @else if (slowNetwork() === false) {
+  <!-- Good network -->
   <lib-molstar-gallery [entryId]="entryStoreId() ?? ''" />
+  } @else {
+  <!-- Bad network -->
+  @if (imageGallery().length > 0) {
+  <pdbc-mb-slow-network-image-gallery [images]="imageGallery()"></pdbc-mb-slow-network-image-gallery>
+  } }
   <button class="vf-button vf-button--primary" (click)="openMolstarPage()">View 3D and annotations</button>
 
   <!-- Primary publication -->

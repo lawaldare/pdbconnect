@@ -7,6 +7,7 @@ import { InitParams } from 'pdbe-molstar/lib/spec';
 })
 export class ComponentCommunicationService {
   public currentTabName = signal<string | undefined>(undefined);
+  public slowNetwork$ = new BehaviorSubject<boolean | undefined>(undefined);
 
   public mobileMolstar?: MolstarComponent;
   public mobileMolstarLoaded$ = new BehaviorSubject<boolean>(false);

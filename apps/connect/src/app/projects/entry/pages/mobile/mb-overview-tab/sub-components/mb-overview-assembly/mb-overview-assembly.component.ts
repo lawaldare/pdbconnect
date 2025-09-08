@@ -5,6 +5,7 @@ import { EntryStoreState } from '../../../../../store/entry-store.model';
 import { EntrySelectors } from '../../../../../store/entry.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EntryActions } from '../../../../../store/entry.actions';
+import { ApplicationAPIDispatcher } from '../../../../../services/application-api-dispacher.service';
 
 @Component({
   selector: 'pdbc-mb-overview-assembly',
@@ -15,6 +16,7 @@ import { EntryActions } from '../../../../../store/entry.actions';
 })
 export class MbOverviewAssemblyComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly processedAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
 
@@ -25,9 +27,10 @@ export class MbOverviewAssemblyComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.applicationApiDispatcher.dispatchForList([EntryActions.getAssemblies, EntryActions.getPreferredAssembly, EntryActions.getProcessedAssemblies]);
     // summary data always imported on main
-    this.globalStore.dispatch(EntryActions.getAssemblies());
-    this.globalStore.dispatch(EntryActions.getPreferredAssembly());
-    this.globalStore.dispatch(EntryActions.getProcessedAssemblies());
+    // this.globalStore.dispatch(EntryActions.getAssemblies());
+    // this.globalStore.dispatch(EntryActions.getPreferredAssembly());
+    // this.globalStore.dispatch(EntryActions.getProcessedAssemblies());
   }
 }

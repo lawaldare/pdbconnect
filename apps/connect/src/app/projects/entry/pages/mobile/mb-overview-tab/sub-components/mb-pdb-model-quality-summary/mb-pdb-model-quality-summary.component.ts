@@ -6,6 +6,7 @@ import { EntryStoreState } from '../../../../../store/entry-store.model';
 import { EntrySelectors } from '../../../../../store/entry.selectors';
 import { EntryActions } from '../../../../../store/entry.actions';
 import { StrucQualityGradientsComponent } from '../../../../../components/shared/struc-quality-gradients/struc-quality-gradients.component';
+import { ApplicationAPIDispatcher } from '../../../../../services/application-api-dispacher.service';
 
 @Component({
   selector: 'pdbc-mb-model-quality-summary-overview',
@@ -16,9 +17,11 @@ import { StrucQualityGradientsComponent } from '../../../../../components/shared
 })
 export class MbModelQualitySummaryOverviewComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
   public readonly qualityScores = toSignal(this.globalStore.select(EntrySelectors.summaryQualityScores));
 
   ngOnInit() {
-    this.globalStore.dispatch(EntryActions.getSummaryQualityScores()); // used in summary, mb-overview
+    this.applicationApiDispatcher.dispatchForList([EntryActions.getSummaryQualityScores]);
+    // this.globalStore.dispatch(EntryActions.getSummaryQualityScores()); // used in summary, mb-overview
   }
 }

@@ -12,6 +12,7 @@ import { ModifiedResidue } from '../../../../../data-models/modified-residues.mo
 import { EntryActions } from '../../../../../store/entry.actions';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { UtilService } from '@pdbc/core';
+import { ApplicationAPIDispatcher } from '../../../../../services/application-api-dispacher.service';
 
 @Component({
   selector: 'pdbc-mb-structure-overview',
@@ -23,6 +24,7 @@ import { UtilService } from '@pdbc/core';
 export class MbStructureOverviewComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly util = inject(UtilService);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly organismScientificNames = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames)); // molecules
   public readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules)); // all processedMacro
@@ -65,14 +67,24 @@ export class MbStructureOverviewComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.globalStore.dispatch(EntryActions.getAssemblies());
-    this.globalStore.dispatch(EntryActions.getEntryMolecules());
-    this.globalStore.dispatch(EntryActions.getEntryLigandMonomers());
-    this.globalStore.dispatch(EntryActions.getProcessedLigands());
-    this.globalStore.dispatch(EntryActions.getCarbohydrates());
-    this.globalStore.dispatch(EntryActions.getModifications());
-    this.globalStore.dispatch(EntryActions.getProcessedMacromolecules());
-    this.globalStore.dispatch(EntryActions.getExperiment());
+    this.applicationApiDispatcher.dispatchForList([
+      EntryActions.getAssemblies,
+      EntryActions.getEntryMolecules,
+      EntryActions.getEntryLigandMonomers,
+      EntryActions.getProcessedLigands,
+      EntryActions.getCarbohydrates,
+      EntryActions.getModifications,
+      EntryActions.getProcessedMacromolecules,
+      EntryActions.getExperiment,
+    ]);
+    //   this.globalStore.dispatch(EntryActions.getAssemblies());
+    //   this.globalStore.dispatch(EntryActions.getEntryMolecules());
+    //   this.globalStore.dispatch(EntryActions.getEntryLigandMonomers());
+    //   this.globalStore.dispatch(EntryActions.getProcessedLigands());
+    //   this.globalStore.dispatch(EntryActions.getCarbohydrates());
+    //   this.globalStore.dispatch(EntryActions.getModifications());
+    //   this.globalStore.dispatch(EntryActions.getProcessedMacromolecules());
+    //   this.globalStore.dispatch(EntryActions.getExperiment());
   }
 
   public generateOrganismSearchUrl(term: string): string {

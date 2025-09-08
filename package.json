@@ -76,6 +76,7 @@
     "d3": "^7.8.5",
     "detect-browser": "^5.3.0",
     "gsap": "^3.13.0",
+    "ng-speed-test": "^3.2.1",
     "ngx-pagination": "^6.0.3",
     "ngx-skeleton-loader": "^9.0.0",
     "react": "^18.2.0",

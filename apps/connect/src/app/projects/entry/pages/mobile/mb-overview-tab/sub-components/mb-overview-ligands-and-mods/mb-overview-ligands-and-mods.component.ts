@@ -6,6 +6,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../../../../store/entry.selectors';
 import { EntryActions } from '../../../../../store/entry.actions';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { ApplicationAPIDispatcher } from '../../../../../services/application-api-dispacher.service';
 
 @Component({
   selector: 'pdbc-mb-overview-ligands-and-mods',
@@ -16,6 +17,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 })
 export class MbOverviewLigandsAndModsComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
 
@@ -30,11 +32,18 @@ export class MbOverviewLigandsAndModsComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.globalStore.dispatch(EntryActions.getAssemblies());
-    this.globalStore.dispatch(EntryActions.getEntryMolecules());
-    this.globalStore.dispatch(EntryActions.getEntryLigandMonomers());
-    this.globalStore.dispatch(EntryActions.getModifications());
-    this.globalStore.dispatch(EntryActions.getProcessedLigands());
+    this.applicationApiDispatcher.dispatchForList([
+      EntryActions.getAssemblies,
+      EntryActions.getEntryMolecules,
+      EntryActions.getEntryLigandMonomers,
+      EntryActions.getModifications,
+      EntryActions.getProcessedLigands,
+    ]);
+    // this.globalStore.dispatch(EntryActions.getAssemblies());
+    // this.globalStore.dispatch(EntryActions.getEntryMolecules());
+    // this.globalStore.dispatch(EntryActions.getEntryLigandMonomers());
+    // this.globalStore.dispatch(EntryActions.getModifications());
+    // this.globalStore.dispatch(EntryActions.getProcessedLigands());
   }
 
   public toggleLigandList(): void {

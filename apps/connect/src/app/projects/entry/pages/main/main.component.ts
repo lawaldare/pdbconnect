@@ -36,7 +36,8 @@ import { VisualisationInteractivityDirective } from '../../directives/visualisat
 import { EntryBioschemasService } from '../../services/entry.bioschemas';
 import { ErrorPageComponent } from '../../../../error-page/error-page.component';
 import { Meta, Title } from '@angular/platform-browser';
-import { DesktopAPIDispatcher } from './desktop-api-dispacher';
+import { ApplicationAPIDispatcher } from '../../services/application-api-dispacher.service';
+import { SpeedTestService } from 'ng-speed-test';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -76,7 +77,7 @@ import { DesktopAPIDispatcher } from './desktop-api-dispacher';
   styleUrls: ['./main.component.scss'],
 })
 export class EntryMainPageComponent implements OnInit {
-  private readonly desktopApiDispatcher = inject(DesktopAPIDispatcher);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
   private readonly route = inject(ActivatedRoute);
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
@@ -88,6 +89,7 @@ export class EntryMainPageComponent implements OnInit {
   private readonly entryBioschemasService = inject(EntryBioschemasService);
   private readonly renderer = inject(Renderer2);
   public readonly gAS = inject(GoogleAnalyticsService);
+  private readonly speedTest = inject(SpeedTestService);
 
   private procAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
   private procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
@@ -192,6 +194,42 @@ export class EntryMainPageComponent implements OnInit {
         tab: tabName,
       });
     });
+    this.testNetworkSpeed();
+  }
+
+  private testNetworkSpeed() {
+    const customSettings = {
+      iterations: 1, // Run 1 test for better accuracy
+      retryDelay: 500, // Wait 1 second between retries
+      file: {
+        // path: 'https://www.ebi.ac.uk/pdbe/entry-files/download/10mh.bcif.gz',
+        // size: 103402,        // 106KB in bytes
+        // path: 'https://raw.githubusercontent.com/jrquick17/ng-speed-test/02c59e4afde67c35a5ba74014b91d44b33c0b3fe/demo/src/assets/500kb.jpg',
+        // size: 500000,        // 106KB in bytes
+        path: 'https://www.ebi.ac.uk/pdbe/entry-files/download/3d12.bcif',
+        size: 401069,
+        shouldBustCache: true, // Prevent browser caching
+      },
+    };
+
+    this.speedTest.isOnline().subscribe((isOnline) => {
+      if (!isOnline) {
+        console.log('No internet connection');
+      }
+    });
+
+    this.speedTest.getMbps(customSettings).subscribe({
+      next: (speed) => {
+        // speed is in Mbps
+        // console.log('Detected speed (Mbps):', speed);
+        if (speed < 7.5) this.compCommunication.slowNetwork$.next(true);
+        else this.compCommunication.slowNetwork$.next(false);
+      },
+      error: (err) => {
+        console.error('Speed test failed', err), console.log('Setting default as slow network mode');
+        this.compCommunication.slowNetwork$.next(true);
+      },
+    });
   }
 
   @HostListener('window:resize', ['$event'])
@@ -252,7 +290,7 @@ export class EntryMainPageComponent implements OnInit {
           if (entryStatus === undefined || isDesktop === undefined || tabName === undefined) return;
           if (entryStatus.status_code === 'REL' && isDesktop) {
             // if released and desktop mode dispatch listeners for data status of different tabs
-            this.desktopApiDispatcher.dispatchForTab(tabName);
+            this.applicationApiDispatcher.dispatchForTab(tabName);
           }
         }),
         takeUntilDestroyed(this.destroyRef)

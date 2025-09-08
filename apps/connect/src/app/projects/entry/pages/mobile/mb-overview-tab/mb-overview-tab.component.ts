@@ -1,4 +1,4 @@
-import { Component, DestroyRef, HostListener, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
@@ -16,6 +16,8 @@ import { MbModelQualitySummaryOverviewComponent } from './sub-components/mb-pdb-
 import { MbOverviewAssemblyComponent } from './sub-components/mb-overview-assembly/mb-overview-assembly.component';
 import { MbOverviewMacromoleculesComponent } from './sub-components/mb-overview-macromolecules/mb-overview-macromolecules.component';
 import { MbOverviewLigandsAndModsComponent } from './sub-components/mb-overview-ligands-and-mods/mb-overview-ligands-and-mods.component';
+import { ComponentCommunicationService } from '../../../services/component-comm.service';
+import { MbSlowNetworkImageGalleryComponent } from './sub-components/mb-slow-network-img-gallery/mb-slow-network-img-gallery.component';
 
 @Component({
   selector: 'pdbc-mb-overview-tab',
@@ -29,6 +31,7 @@ import { MbOverviewLigandsAndModsComponent } from './sub-components/mb-overview-
     MbOverviewAssemblyComponent,
     MbOverviewMacromoleculesComponent,
     MbOverviewLigandsAndModsComponent,
+    MbSlowNetworkImageGalleryComponent,
   ],
   templateUrl: './mb-overview-tab.component.html',
   styleUrls: ['../mb-citation-tab/mb-citation-tab.component.scss', './mb-overview-tab.component.scss'],
@@ -38,10 +41,27 @@ export class MbOverviewTabComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly mbFacade = inject(MobileFacade);
   public readonly gAS = inject(GoogleAnalyticsService);
+  public readonly compCommunication = inject(ComponentCommunicationService);
 
   // summary dispatch called in main.component.ts and used for related
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly entryStoreId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+
+  public readonly slowNetwork = toSignal(
+    this.compCommunication.slowNetwork$,
+    { initialValue: undefined } // 👈 assume "unknown/loading" until we know
+  );
+
+  public readonly imageGallery = computed(() => {
+    const entryId = this.entryStoreId();
+    if (!entryId) return [];
+    // if (!this.slowNetwork()) return [];
+    return [
+      `https://www.ebi.ac.uk/pdbe/static/entry/${entryId.toLowerCase()}_deposited_chemically_distinct_molecules_front_image-800x800.png`,
+      `https://www.ebi.ac.uk/pdbe/static/entry/${entryId.toLowerCase()}_deposited_chemically_distinct_molecules_side_image-800x800.png`,
+      `https://www.ebi.ac.uk/pdbe/static/entry/${entryId.toLowerCase()}_deposited_chemically_distinct_molecules_top_image-800x800.png`,
+    ];
+  });
 
   public readonly entryId = signal<string>('');
   public relatedEntries = signal<string[]>([]);

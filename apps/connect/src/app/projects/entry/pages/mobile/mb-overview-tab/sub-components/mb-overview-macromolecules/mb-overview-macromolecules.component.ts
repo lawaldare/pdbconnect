@@ -7,6 +7,7 @@ import { EntrySelectors } from '../../../../../store/entry.selectors';
 import { EntryActions } from '../../../../../store/entry.actions';
 import { UtilService } from '@pdbc/core';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { ApplicationAPIDispatcher } from '../../../../../services/application-api-dispacher.service';
 
 @Component({
   selector: 'pdbc-mb-overview-macromolecules',
@@ -18,6 +19,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 export class MbOverviewMacromoleculesComponent implements OnInit {
   public readonly util = inject(UtilService);
   private readonly globalStore = inject(Store<EntryStoreState>);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
   // public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
@@ -66,10 +68,17 @@ export class MbOverviewMacromoleculesComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.globalStore.dispatch(EntryActions.getAssemblies());
-    this.globalStore.dispatch(EntryActions.getEntryMolecules());
-    this.globalStore.dispatch(EntryActions.getCarbohydrates());
-    this.globalStore.dispatch(EntryActions.getProcessedMacromolecules());
+    this.applicationApiDispatcher.dispatchForList([
+      EntryActions.getAssemblies,
+      EntryActions.getEntryMolecules,
+      EntryActions.getCarbohydrates,
+      EntryActions.getProcessedMacromolecules,
+      // EntryActions.getIsoformsMapping
+    ]);
+    // // this.globalStore.dispatch(EntryActions.getAssemblies());
+    // // this.globalStore.dispatch(EntryActions.getEntryMolecules());
+    // // this.globalStore.dispatch(EntryActions.getCarbohydrates());
+    // // this.globalStore.dispatch(EntryActions.getProcessedMacromolecules());
     // this.globalStore.dispatch(EntryActions.getIsoformsMapping()); // used in llm, macro, mb-overview, mb-macro
   }
 
