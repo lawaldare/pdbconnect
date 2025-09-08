@@ -245,8 +245,6 @@ export function generateProcessedLigands(ligands: Molecule[], ligandMonomers: Li
     }
 
     const ligandMonomersForThisLigand = filterLigandMonomersForMolecule(ligand, ligandMonomers);
-    console.log('ligandMonomersForThisLigand');
-    console.log(ligandMonomersForThisLigand);
     const uniqueLigandAnnotationTypes = ligandMonomersForThisLigand
       .map((ligandMonomer) => {
         return ligandMonomer.annotations.map((annotation) => annotation.type);

@@ -150,17 +150,12 @@
       </div>
       @if (!molstarFirstRenderFinished()) {
       <div [style.width]="'100%'">
-        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '480px', }"></ngx-skeleton-loader>
       </div>
       } @if (configForMolstar()) {
       <div class="molstar-container">
         <div #popoutWrapper>
-          <lib-pdbe-molstar
-            #molstarComponent
-            [id]="'summary-molstar'"
-            [molstarConfig]="configForMolstar()"
-            [height]="molstarFirstRenderFinished() ? '480px' : 'unset'"
-          ></lib-pdbe-molstar>
+          <lib-pdbe-molstar #molstarComponent [id]="'summary-molstar'" [molstarConfig]="configForMolstar()" [height]="'480px'"></lib-pdbe-molstar>
         </div>
       </div>
       }

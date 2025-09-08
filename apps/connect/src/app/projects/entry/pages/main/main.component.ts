@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { SearchAppComponent } from '@pdbc/search-app';
 
-import { combineLatest, EMPTY, filter, map, mergeMap, switchMap, take, tap } from 'rxjs';
+import { catchError, combineLatest, EMPTY, filter, map, mergeMap, of, retry, switchMap, take, tap } from 'rxjs';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { GoogleAnalyticsService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
@@ -199,7 +199,7 @@ export class EntryMainPageComponent implements OnInit {
 
   private testNetworkSpeed() {
     const customSettings = {
-      iterations: 1, // Run 1 test for better accuracy
+      iterations: 2, // Run 1 test for better accuracy
       retryDelay: 500, // Wait 1 second between retries
       file: {
         // path: 'https://www.ebi.ac.uk/pdbe/entry-files/download/10mh.bcif.gz',
@@ -218,18 +218,28 @@ export class EntryMainPageComponent implements OnInit {
       }
     });
 
-    this.speedTest.getMbps(customSettings).subscribe({
-      next: (speed) => {
-        // speed is in Mbps
-        // console.log('Detected speed (Mbps):', speed);
-        if (speed < 7.5) this.compCommunication.slowNetwork$.next(true);
-        else this.compCommunication.slowNetwork$.next(false);
-      },
-      error: (err) => {
-        console.error('Speed test failed', err), console.log('Setting default as slow network mode');
-        this.compCommunication.slowNetwork$.next(true);
-      },
-    });
+    this.speedTest
+      .getMbps(customSettings)
+      .pipe(
+        retry(5), // retry up to 5 times on error
+        catchError((err) => {
+          console.error('Speed test failed after retries', err);
+          this.compCommunication.slowNetwork$.next(true); // fallback to slow mode
+          return of(null); // emit a safe value
+        })
+      )
+      .subscribe({
+        next: (speed) => {
+          // speed is in Mbps
+          console.log('Detected speed (Mbps): ', speed);
+          if (speed && speed < 7.5) this.compCommunication.slowNetwork$.next(true);
+          else this.compCommunication.slowNetwork$.next(false);
+        },
+        error: (err) => {
+          console.error('Speed test failed', err), console.log('Setting default as slow network mode');
+          this.compCommunication.slowNetwork$.next(true);
+        },
+      });
   }
 
   @HostListener('window:resize', ['$event'])
