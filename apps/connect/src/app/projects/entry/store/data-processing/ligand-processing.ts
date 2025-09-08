@@ -135,11 +135,12 @@ export function generateLigandsCards(ligands: Molecule[], ligandMonomers: Ligand
 
   for (const ligand of ligands) {
     const chemCompId = ligand.chem_comp_ids[0];
-    const countInPrefAssembly = ligand.number_of_copies;
 
     const ligandMonomersForThisLigand = filterLigandMonomersForMolecule(ligand, ligandMonomers);
     // const ligandMonomersForThisLigand = ligandMonomers
     //   .filter((ligandMonomer) => ligandMonomer.chem_comp_id === chemCompId);
+
+    const countInPrefAssembly = ligandMonomersForThisLigand.length;
 
     const annotationTypes = ligandMonomersForThisLigand
       .map((ligandMonomer) => ligandMonomer.annotations)
@@ -244,6 +245,8 @@ export function generateProcessedLigands(ligands: Molecule[], ligandMonomers: Li
     }
 
     const ligandMonomersForThisLigand = filterLigandMonomersForMolecule(ligand, ligandMonomers);
+    console.log('ligandMonomersForThisLigand');
+    console.log(ligandMonomersForThisLigand);
     const uniqueLigandAnnotationTypes = ligandMonomersForThisLigand
       .map((ligandMonomer) => {
         return ligandMonomer.annotations.map((annotation) => annotation.type);
