@@ -65,6 +65,26 @@ export async function componentExistsInMolstar(instance?: PDBeMolstarPlugin, que
   return false;
 }
 
+export async function removeComponent(instance?: PDBeMolstarPlugin, query?: string) {
+  if (!instance || !query) return;
+  const plugin = instance?.plugin ?? null;
+  if (!plugin) return;
+
+  let hasRemoved = false;
+  const structureData = [plugin.managers.structure.hierarchy.current.structures[0]];
+  for await (const s of structureData) {
+    for (const comp of s.components) {
+      if (comp.key!.includes(query)) {
+        const builder = plugin.state.data.build();
+        builder.delete(comp.cell.transform.ref);
+        await builder.commit({ canUndo: false });
+        hasRemoved = true;
+      }
+    }
+  }
+  return hasRemoved;
+}
+
 // DONE: Migrate these functions below
 // DONE: HostListeners as directives
 // SKIP: Refactor tabs to use helpers with a global mutex on compCommunication

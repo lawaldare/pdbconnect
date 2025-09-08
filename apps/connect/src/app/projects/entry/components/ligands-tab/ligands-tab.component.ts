@@ -38,7 +38,13 @@ import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions/index';
-import { componentExistsInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
+import {
+  componentExistsInMolstar,
+  drawSelectionInMolstar,
+  removeComponent,
+  showInteractivityFocusInMolstar,
+  zoomOutStructureInMolstar,
+} from '../../helpers/molstar-helpers';
 import { AggregatedApiService } from '../../../ligands/services/aggregated-api.service';
 import { Depiction } from '../../../ligands/data-models/structure.model';
 import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
@@ -344,8 +350,11 @@ export class LigandsTabComponent implements OnInit {
     this.selectionData.push(...residueSelectionData);
     await this.onDrawSelectionInMolstar();
 
-    await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
-    await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.loadInteractions(instance, { interactions: pdbeInteractions, structureId: 1 });
+    this.molstarSelectionMutex = this.molstarSelectionMutex.then(async () => {
+      await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
+      await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.loadInteractions(instance, { interactions: pdbeInteractions, structureId: 1 });
+    });
+
     if (rawInteractions) await this.loadInteractionsLigandEnvViewer(rawInteractions);
   }
 
@@ -466,7 +475,9 @@ export class LigandsTabComponent implements OnInit {
     this.selectionData = [...this.ligandSelection];
 
     const durationMs = this._molstarComponent ? 1200 : 0;
-    await zoomOutStructureInMolstar(instance, durationMs);
+    this.molstarSelectionMutex = this.molstarSelectionMutex.then(async () => {
+      await zoomOutStructureInMolstar(instance, durationMs);
+    });
 
     timer(durationMs + 100).subscribe(async () => {
       await this.onDrawSelectionInMolstar();
@@ -506,7 +517,7 @@ export class LigandsTabComponent implements OnInit {
 
       await this.waitForLigandEnvReady(5000, 100, false);
       if (token !== this.ligandEnvToken) return;
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 700));
       if (token !== this.ligandEnvToken) return;
 
       this.ligandEv.display.centerScene();
@@ -650,9 +661,13 @@ export class LigandsTabComponent implements OnInit {
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
 
-    this.molstarSelectionMutex = this.molstarSelectionMutex.then(() => drawSelectionInMolstar(instance, this.residuesAsSticks));
-    await this.molstarSelectionMutex;
-    this.molstarSelectionMutex = this.molstarSelectionMutex.then(() => drawSelectionInMolstar(instance, this.ligandSelection, undefined, true));
+    this.molstarSelectionMutex = this.molstarSelectionMutex.then(async () => {
+      await drawSelectionInMolstar(instance, this.residuesAsSticks);
+      await drawSelectionInMolstar(instance, this.ligandSelection, undefined, true);
+      await showInteractivityFocusInMolstar(instance, this.ligandSelection);
+      await removeComponent(instance, 'structure-focus-target-sel');
+      await removeComponent(instance, 'structure-focus-surr-sel');
+    });
     await this.molstarSelectionMutex;
   }
 
@@ -718,7 +733,10 @@ export class LigandsTabComponent implements OnInit {
     if (this.ligandSelection) this.selectionData.push(...this.ligandSelection);
     if (this.residuesAsSticks) this.selectionData.push(...this.residuesAsSticks);
 
-    await instance.visual.focus(this.selectionData);
+    await instance.visual.focus(this.ligandSelection);
+    await showInteractivityFocusInMolstar(instance, this.ligandSelection);
+    await removeComponent(instance, 'structure-focus-target-sel');
+    await removeComponent(instance, 'structure-focus-surr-sel');
     await instance.visual.clearHighlight();
   }
 

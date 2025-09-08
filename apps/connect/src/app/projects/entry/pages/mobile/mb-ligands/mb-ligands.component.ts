@@ -17,7 +17,13 @@ import { interactionsToMolstar } from '../../../helpers/interactions-to-molstar-
 import { Interaction } from '../../../data-models/interaction.model';
 import { EntryActions } from '../../../store/entry.actions';
 import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, take, timer } from 'rxjs';
-import { componentExistsInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
+import {
+  componentExistsInMolstar,
+  drawSelectionInMolstar,
+  removeComponent,
+  showInteractivityFocusInMolstar,
+  zoomOutStructureInMolstar,
+} from '../../../helpers/molstar-helpers';
 import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions/index';
 import { MobileStateService } from '../mobile-state.service';
@@ -99,6 +105,9 @@ export class MbLigandsComponent implements OnInit {
 
     timer(800).subscribe(async () => {
       await drawSelectionInMolstar(instance, this.selectionData);
+      await showInteractivityFocusInMolstar(instance, this.ligandSelection);
+      await removeComponent(instance, 'structure-focus-target-sel');
+      await removeComponent(instance, 'structure-focus-surr-sel');
     });
 
     await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
@@ -245,6 +254,9 @@ export class MbLigandsComponent implements OnInit {
 
     timer(durationMs + 100).subscribe(async () => {
       await drawSelectionInMolstar(instance, this.selectionData);
+      await showInteractivityFocusInMolstar(instance, this.ligandSelection);
+      await removeComponent(instance, 'structure-focus-target-sel');
+      await removeComponent(instance, 'structure-focus-surr-sel');
     });
     this.compCommunication.mobileMolstarDisplay = 'ligands-specific';
   }

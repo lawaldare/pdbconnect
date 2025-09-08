@@ -105,6 +105,8 @@ export class MbMolstarTabComponent implements AfterViewInit {
         },
       },
       hideCanvasControls: ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'],
+      loadMaps: true,
+      mapSettings: { defaultView: 'selection-box' },
     };
 
     return configForMolstar;
