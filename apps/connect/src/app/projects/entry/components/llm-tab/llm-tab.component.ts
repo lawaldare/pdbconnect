@@ -209,6 +209,7 @@ export class LLMTabComponent implements OnInit {
         },
       },
       loadMaps: true,
+      mapSettings: { defaultView: 'selection-box' },
     };
 
     return configForMolstar;

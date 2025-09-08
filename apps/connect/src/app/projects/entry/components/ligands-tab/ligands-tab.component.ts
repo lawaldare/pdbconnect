@@ -185,6 +185,7 @@ export class LigandsTabComponent implements OnInit {
         },
       },
       loadMaps: true,
+      mapSettings: { defaultView: 'selection-box' },
     };
 
     return configForMolstar;

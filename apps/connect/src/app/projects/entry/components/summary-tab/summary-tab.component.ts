@@ -139,6 +139,8 @@ export class SummaryTabComponent {
           color: 'entity-id',
         },
       },
+      loadMaps: true,
+      mapSettings: { defaultView: 'selection-box' },
       // ...(chainSelection && { 'selection': chainSelection }),
     };
 

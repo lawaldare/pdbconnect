@@ -138,6 +138,7 @@ export class MacromoleculesTabComponent implements OnInit {
         },
       },
       loadMaps: true,
+      mapSettings: { defaultView: 'selection-box' },
       // ...(chainSelection && { 'selection': chainSelection }),
     };
 

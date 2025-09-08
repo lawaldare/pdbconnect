@@ -222,6 +222,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
         },
       },
       loadMaps: true,
+      mapSettings: { defaultView: 'selection-box' },
       // ...(chainSelection && { 'selection': chainSelection }),
     };
 
