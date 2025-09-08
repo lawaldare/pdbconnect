@@ -282,6 +282,10 @@ section.ligand-charts {
       // white-space: pre-wrap !important;
       overflow-wrap: anywhere;
     }
+
+    ::ng-deep .ag-body .ag-layout-normal {
+      min-height: 40px;
+    }
   }
 }
 
