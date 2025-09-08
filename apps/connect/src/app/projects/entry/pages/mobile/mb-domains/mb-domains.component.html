@@ -41,7 +41,7 @@
   <p class="title">Source and domain accession</p>
   <p class="content">
     {{selectedDomain()?.resource}}
-    <a [href]="resourceUrls[selectedDomain()?.resource] + selectedDomain()?.additionalData?.accession" target="_blank">
+    <a [href]="getDomainUrl(selectedDomain())" target="_blank">
       {{selectedDomain()?.additionalData?.accession}}
       <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
     </a>

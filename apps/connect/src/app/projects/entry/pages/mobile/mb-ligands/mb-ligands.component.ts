@@ -29,6 +29,7 @@ import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensio
 import { MobileStateService } from '../mobile-state.service';
 import { getLigandsDropdownOptions } from '../../../helpers/processed-data-to-controls';
 import { ProcessedLigandOrMod } from '../../../store/data-processing/ligand-processing';
+import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
 
 @Component({
   selector: 'pdbc-mb-ligands',
@@ -43,6 +44,7 @@ export class MbLigandsComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly molstarPluginService = inject(MolstarPluginService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly interactionsObservable = this.globalStore.select(EntrySelectors.interactions);
@@ -168,12 +170,20 @@ export class MbLigandsComponent implements OnInit {
 
   ngOnInit(): void {
     /* 1. Fetch data */
-    this.globalStore.dispatch(EntryActions.getSummaryData());
-    this.globalStore.dispatch(EntryActions.getAssemblies());
-    this.globalStore.dispatch(EntryActions.getEntryMolecules());
-    this.globalStore.dispatch(EntryActions.getEntryLigandMonomers());
-    this.globalStore.dispatch(EntryActions.getModifications());
-    this.globalStore.dispatch(EntryActions.getProcessedLigands());
+    // this.globalStore.dispatch(EntryActions.getSummaryData());
+    // this.globalStore.dispatch(EntryActions.getAssemblies());
+    // this.globalStore.dispatch(EntryActions.getEntryMolecules());
+    // this.globalStore.dispatch(EntryActions.getEntryLigandMonomers());
+    // this.globalStore.dispatch(EntryActions.getModifications());
+    // this.globalStore.dispatch(EntryActions.getProcessedLigands());
+    this.applicationApiDispatcher.dispatchForList([
+      EntryActions.getSummaryData,
+      EntryActions.getAssemblies,
+      EntryActions.getEntryMolecules,
+      EntryActions.getEntryLigandMonomers,
+      EntryActions.getModifications,
+      EntryActions.getProcessedLigands,
+    ]);
   }
 
   private async updateCurrentLigand() {

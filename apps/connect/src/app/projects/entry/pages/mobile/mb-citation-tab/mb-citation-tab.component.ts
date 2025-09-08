@@ -17,6 +17,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MobileFacade } from '../mobile.facade';
 import { MobileTabNames } from '../mobile-tab.model';
 import { EntryActions } from '../../../store/entry.actions';
+import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
 
 export interface NavigationLink {
   id: string;
@@ -36,6 +37,7 @@ export class MbCitationTabComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialog = inject(MatDialog);
   private readonly mbFacade = inject(MobileFacade);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly summary = signal<ProcessedSummary>({} as ProcessedSummary);
   public readonly entryId = signal<string>('');
@@ -76,8 +78,9 @@ export class MbCitationTabComponent implements OnInit {
 
   ngOnInit(): void {
     /* 1. Fetch necessary data */
-    this.globalStore.dispatch(EntryActions.getArticleCitingPDBEntry()); // used in citations, mb-overview, mb-citations
-    this.globalStore.dispatch(EntryActions.getPrimaryPublication()); // used in citations-tab, llm-tab, summary-tab, mb-citation-tab, mb-overview-tab, entry.bioschemas
+    // this.globalStore.dispatch(EntryActions.getArticleCitingPDBEntry()); // used in citations, mb-overview, mb-citations
+    // this.globalStore.dispatch(EntryActions.getPrimaryPublication()); // used in citations-tab, llm-tab, summary-tab, mb-citation-tab, mb-overview-tab, entry.bioschemas
+    this.applicationApiDispatcher.dispatchForList([EntryActions.getArticleCitingPDBEntry, EntryActions.getPrimaryPublication]);
 
     combineLatest([
       this.globalStore.select(EntrySelectors.summaryData).pipe(filter(Boolean)),

@@ -21,6 +21,7 @@ import { SequenceDetail } from '../../../store/data-processing/models/other-mode
 import { EntryActions } from '../../../store/entry.actions';
 import { ProcessedMacromolecule } from '../../../store/data-processing/models/processed-entities.model';
 import { getUniProtsDataForMacromolecule } from '../../../store/data-processing/macromolecule-processing';
+import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
 
 export enum ViewState {
   List = 'list',
@@ -45,6 +46,7 @@ export class MbMacromoleculeComponent implements OnInit {
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   private readonly state = inject(MobileStateService);
   public readonly gAS = inject(GoogleAnalyticsService);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly entryApiService = inject(EntryApiService);
   public readonly compCommunication = inject(ComponentCommunicationService);
@@ -178,8 +180,10 @@ export class MbMacromoleculeComponent implements OnInit {
     for (const [key, value] of Object.entries(cath)) {
       if (value.mappings?.[0].entity_id === entityId) {
         const obj = {
-          cathId: key,
-          cathTitle: value.homology,
+          domainId: key,
+          domainTitle: value.homology,
+          identity: 'CATH',
+          link: `https://www.cathdb.info/version/latest/superfamily/${key}`,
         };
         mappedResult.push(obj);
       }
@@ -188,8 +192,10 @@ export class MbMacromoleculeComponent implements OnInit {
     for (const [key, value] of Object.entries(scop)) {
       if (value.mappings?.[0].entity_id === entityId) {
         const obj = {
-          cathId: key,
-          cathTitle: value.identifier,
+          domainId: key,
+          domainTitle: value.identifier,
+          identity: 'SCOP 1.75',
+          link: `https://ftp.ebi.ac.uk/pub/databases/pdbe-kb/scop-legacy/`,
         };
         mappedResult.push(obj);
       }
@@ -208,9 +214,10 @@ export class MbMacromoleculeComponent implements OnInit {
     for (const [key, value] of Object.entries(pfam)) {
       if (value.mappings?.[0].entity_id === entityId) {
         const obj = {
-          cathId: key,
-          cathTitle: value.description,
+          domainId: key,
+          domainTitle: value.description,
           identity: 'Pfam',
+          link: `https://www.ebi.ac.uk/interpro/entry/pfam/${key}`,
         };
         mappedResult.push(obj);
       }
@@ -219,9 +226,10 @@ export class MbMacromoleculeComponent implements OnInit {
     for (const [key, value] of Object.entries(interpro)) {
       if (value.mappings?.[0].entity_id === entityId) {
         const obj = {
-          cathId: key,
-          cathTitle: value.identifier,
+          domainId: key,
+          domainTitle: value.identifier,
           identity: 'InterPro',
+          link: `https://www.ebi.ac.uk/interpro/entry/interPro/${key}`,
         };
         mappedResult.push(obj);
       }
@@ -301,17 +309,34 @@ export class MbMacromoleculeComponent implements OnInit {
   }
   ngOnInit(): void {
     /* 1. Fetch tab data*/
-    this.globalStore.dispatch(EntryActions.getGOMapping());
-    this.globalStore.dispatch(EntryActions.getECMapping());
-    this.globalStore.dispatch(EntryActions.getInterproMapping()); // used in mb-macromolecule
-    this.globalStore.dispatch(EntryActions.getIsoformsMapping()); // used in llm, macro, mb-overview, mb-macro
-    this.globalStore.dispatch(EntryActions.getSummaryData());
-    this.globalStore.dispatch(EntryActions.getAssemblies());
-    this.globalStore.dispatch(EntryActions.getEntryMolecules());
-    this.globalStore.dispatch(EntryActions.getCarbohydrates());
-    this.globalStore.dispatch(EntryActions.getUniprotMapping());
-    this.globalStore.dispatch(EntryActions.getEntryPolymerCoverage());
-    this.globalStore.dispatch(EntryActions.getProcessedMacromolecules());
+    // this.globalStore.dispatch(EntryActions.getGOMapping());
+    // this.globalStore.dispatch(EntryActions.getECMapping());
+    // this.globalStore.dispatch(EntryActions.getInterproMapping()); // used in mb-macromolecule
+    // this.globalStore.dispatch(EntryActions.getIsoformsMapping()); // used in llm, macro, mb-overview, mb-macro
+    // this.globalStore.dispatch(EntryActions.getSummaryData());
+    // this.globalStore.dispatch(EntryActions.getAssemblies());
+    // this.globalStore.dispatch(EntryActions.getEntryMolecules());
+    // this.globalStore.dispatch(EntryActions.getCarbohydrates());
+    // this.globalStore.dispatch(EntryActions.getUniprotMapping());
+    // this.globalStore.dispatch(EntryActions.getEntryPolymerCoverage());
+    // this.globalStore.dispatch(EntryActions.getProcessedMacromolecules());
+    this.applicationApiDispatcher.dispatchForList([
+      EntryActions.getGOMapping,
+      EntryActions.getECMapping,
+      EntryActions.getPfamMapping,
+      EntryActions.getCathMapping,
+      EntryActions.getScop175Mapping,
+      EntryActions.getInterproMapping,
+      EntryActions.getIsoformsMapping,
+      EntryActions.getSummaryData,
+      EntryActions.getAssemblies,
+      EntryActions.getEntryMolecules,
+      EntryActions.getCarbohydrates,
+      EntryActions.getUniprotMapping,
+      EntryActions.getEntryPolymerCoverage,
+      EntryActions.getProcessedMacromolecules,
+    ]);
+
     // when uniprot listing has arrived and been processed
     this.uniprotsAllowedObs$
       .pipe(

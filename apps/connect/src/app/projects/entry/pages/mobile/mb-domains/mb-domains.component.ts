@@ -15,6 +15,7 @@ import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { MobileStateService } from '../mobile-state.service';
 import { EntryActions } from '../../../store/entry.actions';
 import { ProcessedDomain } from '../../../store/data-processing/models/processed-entities.model';
+import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
 
 @Component({
   selector: 'pdbc-mb-domains',
@@ -26,6 +27,7 @@ export class MbDomainsComponent implements OnInit {
   private readonly state = inject(MobileStateService);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly processedDomainsObs$ = this.globalStore.select(EntrySelectors.processedDomains);
@@ -67,15 +69,25 @@ export class MbDomainsComponent implements OnInit {
       });
   }
   ngOnInit(): void {
-    /* 1. Fetch data */
-    this.globalStore.dispatch(EntryActions.getSummaryData());
-    this.globalStore.dispatch(EntryActions.getAssemblies());
-    this.globalStore.dispatch(EntryActions.getCathMapping());
-    this.globalStore.dispatch(EntryActions.getPfamMapping());
-    this.globalStore.dispatch(EntryActions.getScop175Mapping());
-    this.globalStore.dispatch(EntryActions.getEntryPolymerCoverage());
-    this.globalStore.dispatch(EntryActions.getEntryMolecules());
-    this.globalStore.dispatch(EntryActions.getProcessedDomains());
+    // /* 1. Fetch data */
+    // this.globalStore.dispatch(EntryActions.getSummaryData());
+    // this.globalStore.dispatch(EntryActions.getAssemblies());
+    // this.globalStore.dispatch(EntryActions.getCathMapping());
+    // this.globalStore.dispatch(EntryActions.getPfamMapping());
+    // this.globalStore.dispatch(EntryActions.getScop175Mapping());
+    // this.globalStore.dispatch(EntryActions.getEntryPolymerCoverage());
+    // this.globalStore.dispatch(EntryActions.getEntryMolecules());
+    // this.globalStore.dispatch(EntryActions.getProcessedDomains());
+    this.applicationApiDispatcher.dispatchForList([
+      EntryActions.getSummaryData,
+      EntryActions.getAssemblies,
+      EntryActions.getCathMapping,
+      EntryActions.getPfamMapping,
+      EntryActions.getScop175Mapping,
+      EntryActions.getEntryPolymerCoverage,
+      EntryActions.getEntryMolecules,
+      EntryActions.getProcessedDomains,
+    ]);
   }
 
   toggleBottomsheetHeight() {
@@ -148,5 +160,11 @@ export class MbDomainsComponent implements OnInit {
       await drawSelectionInMolstar(instance, this.selectionData, '#FEFEFE');
     });
     this.compCommunication.mobileMolstarDisplay = 'domains-specific';
+  }
+
+  public getDomainUrl(domain?: ProcessedDomain) {
+    if (!domain) return '';
+    if (domain.resource.includes('SCOP')) return resourceUrls[domain.resource];
+    return resourceUrls[domain.resource] + domain.additionalData?.accession;
   }
 }

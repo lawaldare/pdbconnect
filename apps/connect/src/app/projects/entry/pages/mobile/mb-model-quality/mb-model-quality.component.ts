@@ -14,6 +14,7 @@ import { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { cameraResetInMolstar, drawSelectionInMolstar } from '../../../helpers/molstar-helpers';
 import { MobileStateService } from '../mobile-state.service';
 import { EntryActions } from '../../../store/entry.actions';
+import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
 
 @Component({
   selector: 'pdbc-mb-model-quality',
@@ -26,6 +27,7 @@ export class MbModelQualityComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   private readonly state = inject(MobileStateService);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly compCommunication = inject(ComponentCommunicationService);
 
@@ -65,17 +67,29 @@ export class MbModelQualityComponent implements OnInit {
 
   async ngOnInit() {
     /* 1. Fetch tab data */
-    this.globalStore.dispatch(EntryActions.getExperiment());
-    this.globalStore.dispatch(EntryActions.getPDBRedoQualityScores());
-    this.globalStore.dispatch(EntryActions.getEntryResidueWiseOutliers());
-    // this.globalStore.dispatch(EntryActions.getModelQualityXray());
-    this.globalStore.dispatch(EntryActions.getExperimentSBGridRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentIRRMCRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentEMPIARRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentPDBRawData());
-    this.globalStore.dispatch(EntryActions.getExperimentBMRBRawData());
-    this.globalStore.dispatch(EntryActions.getValidationKeyStats());
-    // this.globalStore.dispatch(EntryActions.getValidationXrayRefine());
+    // this.globalStore.dispatch(EntryActions.getExperiment());
+    // this.globalStore.dispatch(EntryActions.getPDBRedoQualityScores());
+    // this.globalStore.dispatch(EntryActions.getEntryResidueWiseOutliers());
+    // // this.globalStore.dispatch(EntryActions.getModelQualityXray());
+    // this.globalStore.dispatch(EntryActions.getExperimentSBGridRawData());
+    // this.globalStore.dispatch(EntryActions.getExperimentIRRMCRawData());
+    // this.globalStore.dispatch(EntryActions.getExperimentEMPIARRawData());
+    // this.globalStore.dispatch(EntryActions.getExperimentPDBRawData());
+    // this.globalStore.dispatch(EntryActions.getExperimentBMRBRawData());
+    // this.globalStore.dispatch(EntryActions.getValidationKeyStats());
+    // // this.globalStore.dispatch(EntryActions.getValidationXrayRefine());
+
+    this.applicationApiDispatcher.dispatchForList([
+      EntryActions.getExperiment,
+      EntryActions.getPDBRedoQualityScores,
+      EntryActions.getEntryResidueWiseOutliers,
+      EntryActions.getExperimentSBGridRawData,
+      EntryActions.getExperimentIRRMCRawData,
+      EntryActions.getExperimentEMPIARRawData,
+      EntryActions.getExperimentPDBRawData,
+      EntryActions.getExperimentBMRBRawData,
+      EntryActions.getValidationKeyStats,
+    ]);
 
     /* 2. (TODO: Refactor) Data processing for tab */
     this.globalStore

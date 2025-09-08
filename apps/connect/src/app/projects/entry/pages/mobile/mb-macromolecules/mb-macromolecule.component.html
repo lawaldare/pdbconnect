@@ -175,12 +175,12 @@
 
       @if(structureDomains().length){
       <p class="title">Structure domains ({{structureDomains().length}}):</p>
-      @for(domain of structureDomains(); track domain.cathId){
-      <p class="content" style="margin-left: 16px !important">{{domain.cathTitle}}</p>
+      @for(domain of structureDomains(); track domain.domainId){
+      <p class="content" style="margin-left: 16px !important">{{domain.domainTitle}}</p>
       <p class="content" style="margin-left: 16px !important">
-        (CATH
-        <a [href]="'https://www.cathdb.info/version/latest/superfamily/' + domain.cathId" target="_blank">
-          {{domain.cathId}}
+        ({{domain.identity}}
+        <a [href]="domain.link" target="_blank">
+          {{domain.domainId}}
           <!-- <i class="icon icon-link icon-common" style="margin-left: 4px"></i> --> </a
         >)
       </p>
@@ -190,12 +190,12 @@
 
       @if(sequenceDomains().length){
       <p class="title" style="margin-top: 12px !important">Sequence domains ({{sequenceDomains().length}}):</p>
-      @for(domain of sequenceDomains(); track domain.cathId){
-      <p class="content" style="margin-left: 16px !important">{{domain.cathTitle}}</p>
+      @for(domain of sequenceDomains(); track domain.domainId){
+      <p class="content" style="margin-left: 16px !important">{{domain.domainTitle}}</p>
       <p class="content" style="margin-left: 16px !important">
         ({{domain.identity}}
-        <a [href]="'https://www.ebi.ac.uk/interpro/entry/pfam/' + domain.cathId" target="_blank">
-          {{domain.cathId}}
+        <a [href]="domain.link" target="_blank">
+          {{domain.domainId}}
           <!-- <i class="icon icon-link icon-common" style="margin-left: 4px"></i> --> </a
         >)
       </p>

@@ -12,6 +12,7 @@ import { filter, firstValueFrom, take } from 'rxjs';
 import { clearSelectionInMolstar } from '../../../helpers/molstar-helpers';
 import { MobileStateService } from '../mobile-state.service';
 import { EntryActions } from '../../../store/entry.actions';
+import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
 
 @Component({
   selector: 'pdbc-mb-assemblies',
@@ -23,6 +24,7 @@ export class MbAssembliesComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly state = inject(MobileStateService);
   public readonly compCommunication = inject(ComponentCommunicationService);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public expanded = signal<boolean>(false);
   public isChecked = signal<boolean>(false);
@@ -57,11 +59,18 @@ export class MbAssembliesComponent implements OnInit {
 
   async ngOnInit() {
     /* 1. Fetch data */
-    this.globalStore.dispatch(EntryActions.getSymmetry());
-    this.globalStore.dispatch(EntryActions.getSummaryData());
-    this.globalStore.dispatch(EntryActions.getAssemblies());
-    this.globalStore.dispatch(EntryActions.getPreferredAssembly());
-    this.globalStore.dispatch(EntryActions.getProcessedAssemblies());
+    // this.globalStore.dispatch(EntryActions.getSymmetry());
+    // this.globalStore.dispatch(EntryActions.getSummaryData());
+    // this.globalStore.dispatch(EntryActions.getAssemblies());
+    // this.globalStore.dispatch(EntryActions.getPreferredAssembly());
+    // this.globalStore.dispatch(EntryActions.getProcessedAssemblies());
+    this.applicationApiDispatcher.dispatchForList([
+      EntryActions.getSymmetry,
+      EntryActions.getSummaryData,
+      EntryActions.getAssemblies,
+      EntryActions.getPreferredAssembly,
+      EntryActions.getProcessedAssemblies,
+    ]);
 
     /* 2. Draw in Molstar */
     // Wait until first render is finished
