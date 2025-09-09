@@ -1,575 +1,575 @@
-import { ElementRef, inject } from '@angular/core';
-import { signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
-import { Column } from 'molstar/lib/mol-data/db';
-import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
-import { Expression } from 'molstar/lib/mol-script/language/expression';
-import { StructureQuery } from 'molstar/lib/mol-model/structure/query/query';
-import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
-import { StructureSelection, StructureProperties, Structure } from 'molstar/lib/mol-model/structure';
-import { MolstarPluginService } from './molstart-plugin.service';
-import { MolScriptBuilder as MS } from 'molstar/lib/mol-script/language/builder';
-import { Queries } from 'molstar/lib/mol-model/structure';
-import { setSubtreeVisibility } from 'molstar/lib/mol-plugin/behavior/static/state';
-import { StructureSelectionCategory, StructureSelectionQuery } from 'molstar/lib/mol-plugin-state/helpers/structure-selection-query';
-import { StructureRepresentationBuiltInProps } from 'molstar/lib/mol-plugin-state/helpers/structure-representation-params';
-import { Color } from 'molstar/lib/mol-util/color';
+// import { ElementRef, inject } from '@angular/core';
+// import { signal } from '@angular/core';
+// import { firstValueFrom } from 'rxjs';
+// import { Column } from 'molstar/lib/mol-data/db';
+// import { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects';
+// import { Expression } from 'molstar/lib/mol-script/language/expression';
+// import { StructureQuery } from 'molstar/lib/mol-model/structure/query/query';
+// import { EmptyLoci, Loci } from 'molstar/lib/mol-model/loci';
+// import { StructureSelection, StructureProperties, Structure } from 'molstar/lib/mol-model/structure';
+// import { MolstarPluginService } from './molstart-plugin.service';
+// import { MolScriptBuilder as MS } from 'molstar/lib/mol-script/language/builder';
+// import { Queries } from 'molstar/lib/mol-model/structure';
+// import { setSubtreeVisibility } from 'molstar/lib/mol-plugin/behavior/static/state';
+// import { StructureSelectionCategory, StructureSelectionQuery } from 'molstar/lib/mol-plugin-state/helpers/structure-selection-query';
+// import { StructureRepresentationBuiltInProps } from 'molstar/lib/mol-plugin-state/helpers/structure-representation-params';
+// import { Color } from 'molstar/lib/mol-util/color';
 
-/**
- * This file contains a base class with helper functions for manipulating Molstar
- *
- * Ideally these will be eventually migrated into Molstar
- */
+// /**
+//  * This file contains a base class with helper functions for manipulating Molstar
+//  *
+//  * Ideally these will be eventually migrated into Molstar
+//  */
 
-declare let PDBeMolstarPlugin: any;
-export interface MolstarResidueInfo {
-  label_entity_id: string | null;
-  label_asym_id: string | null;
-  auth_asym_id: string | null;
-  label_seq_id: number | null;
-  auth_seq_id: number | null;
-  pdbx_PDB_ins_code: string | null;
-  label_comp_id: string | null;
-  auth_comp_id: string | null;
-}
+// declare let PDBeMolstarPlugin: any;
+// export interface MolstarResidueInfo {
+//   label_entity_id: string | null;
+//   label_asym_id: string | null;
+//   auth_asym_id: string | null;
+//   label_seq_id: number | null;
+//   auth_seq_id: number | null;
+//   pdbx_PDB_ins_code: string | null;
+//   label_comp_id: string | null;
+//   auth_comp_id: string | null;
+// }
 
-export type MolstarSelectionObjResid = {
-  entityId?: string;
-  authChainId?: string;
-  authBegin: string;
-  authBeginIns: string;
-  authEnd: string;
-  authEndIns: string;
-};
+// export type MolstarSelectionObjResid = {
+//   entityId?: string;
+//   authChainId?: string;
+//   authBegin: string;
+//   authBeginIns: string;
+//   authEnd: string;
+//   authEndIns: string;
+// };
 
-export type MolstarSelectionObj = {
-  entityId?: string;
-  authChainId?: string;
-  residues: MolstarSelectionObjResid[];
-};
+// export type MolstarSelectionObj = {
+//   entityId?: string;
+//   authChainId?: string;
+//   residues: MolstarSelectionObjResid[];
+// };
 
-/**
- * This configuration object corresponds to configs used in:
- * https://github.com/molstar/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin#plugin-parameters-options
- */
-export interface MolstarConfigObject {
-  moleculeId?: string;
-  customData?: {
-    url: string;
-    format: string;
-    binary: boolean;
-  };
-  assemblyId?: string;
-  loadMaps?: boolean;
-  bgColor: { r: number; g: number; b: number };
-  hideControls: boolean;
-  hideCanvasControls?: string[];
-  landscape: boolean;
-  subscribeEvents: boolean;
-  granularity?: string;
-  validationAnnotation?: boolean;
-  symmetryAnnotation?: boolean;
-}
+// /**
+//  * This configuration object corresponds to configs used in:
+//  * https://github.com/molstar/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin#plugin-parameters-options
+//  */
+// export interface MolstarConfigObject {
+//   moleculeId?: string;
+//   customData?: {
+//     url: string;
+//     format: string;
+//     binary: boolean;
+//   };
+//   assemblyId?: string;
+//   loadMaps?: boolean;
+//   bgColor: { r: number; g: number; b: number };
+//   hideControls: boolean;
+//   hideCanvasControls?: string[];
+//   landscape: boolean;
+//   subscribeEvents: boolean;
+//   granularity?: string;
+//   validationAnnotation?: boolean;
+//   symmetryAnnotation?: boolean;
+// }
 
-/**
- * Helper function useful for parsing Molstar instance residues
- */
-function getValue<T>(column: Column<T>, iRow: number): T | null {
-  if (column.valueKind(iRow) === Column.ValueKind.Present) {
-    return column.value(iRow);
-  } else {
-    return null;
-  }
-}
+// /**
+//  * Helper function useful for parsing Molstar instance residues
+//  */
+// function getValue<T>(column: Column<T>, iRow: number): T | null {
+//   if (column.valueKind(iRow) === Column.ValueKind.Present) {
+//     return column.value(iRow);
+//   } else {
+//     return null;
+//   }
+// }
 
-export class MolstarBaseClass {
-  public molstarViewInstance = signal<any>(undefined);
-  public galleryManager = signal<any>(undefined);
-  public residues = signal<MolstarResidueInfo[]>([]);
-  public cameraDuration = 1200; // in ms (1200 = 1.2 sec)
+// export class MolstarBaseClass {
+//   public molstarViewInstance = signal<any>(undefined);
+//   public galleryManager = signal<any>(undefined);
+//   public residues = signal<MolstarResidueInfo[]>([]);
+//   public cameraDuration = 1200; // in ms (1200 = 1.2 sec)
 
-  private readonly molstarPluginService = inject(MolstarPluginService);
+//   private readonly molstarPluginService = inject(MolstarPluginService);
 
-  /**
-   * Function triggers PDBe Molstar visualisation initialization and saves this instance to
-   * molstarViewInstance signal
-   * @param molstarConfigObject
-   * @param molstarContainer
-   * @param molstarViewer
-   */
-  public async initMolstar(molstarConfigObject: MolstarConfigObject, molstarContainer?: ElementRef, molstarViewer?: HTMLElement) {
-    if (this.molstarViewInstance()) {
-      console.error('MOLSTAR INSTANCE EXISTS');
-    }
-    await this.molstarPluginService.loadPlugin();
-    const pluginInstance = this.molstarPluginService.createInstance();
-    this.molstarViewInstance.set(pluginInstance);
-    const container = molstarViewer ? molstarViewer : molstarContainer?.nativeElement;
-    await this.molstarViewInstance().render(container, molstarConfigObject);
-    await firstValueFrom(this.molstarViewInstance().events.loadComplete);
-  }
+//   /**
+//    * Function triggers PDBe Molstar visualisation initialization and saves this instance to
+//    * molstarViewInstance signal
+//    * @param molstarConfigObject
+//    * @param molstarContainer
+//    * @param molstarViewer
+//    */
+//   public async initMolstar(molstarConfigObject: MolstarConfigObject, molstarContainer?: ElementRef, molstarViewer?: HTMLElement) {
+//     if (this.molstarViewInstance()) {
+//       console.error('MOLSTAR INSTANCE EXISTS');
+//     }
+//     await this.molstarPluginService.loadPlugin();
+//     const pluginInstance = this.molstarPluginService.createInstance();
+//     this.molstarViewInstance.set(pluginInstance);
+//     const container = molstarViewer ? molstarViewer : molstarContainer?.nativeElement;
+//     await this.molstarViewInstance().render(container, molstarConfigObject);
+//     await firstValueFrom(this.molstarViewInstance().events.loadComplete);
+//   }
 
-  /**
-   * Function triggers PDBe Molstar visualisation update without the need of
-   * destroying and creating a new Molstar instance
-   * @param molstarConfigObject
-   */
-  public async updateMolstar(molstarConfigObject: MolstarConfigObject) {
-    this.molstarViewInstance().visual.update(molstarConfigObject, true);
-    await firstValueFrom(this.molstarViewInstance().events.loadComplete);
-  }
+//   /**
+//    * Function triggers PDBe Molstar visualisation update without the need of
+//    * destroying and creating a new Molstar instance
+//    * @param molstarConfigObject
+//    */
+//   public async updateMolstar(molstarConfigObject: MolstarConfigObject) {
+//     this.molstarViewInstance().visual.update(molstarConfigObject, true);
+//     await firstValueFrom(this.molstarViewInstance().events.loadComplete);
+//   }
 
-  public async initOrUpdateMolstar(molstarConfigObject: MolstarConfigObject, molstarContainer?: ElementRef, molstarViewer?: HTMLElement) {
-    if (this.molstarViewInstance()) {
-      this.updateMolstar(molstarConfigObject);
-    } else {
-      this.initMolstar(molstarConfigObject, molstarContainer, molstarViewer);
-    }
-  }
+//   public async initOrUpdateMolstar(molstarConfigObject: MolstarConfigObject, molstarContainer?: ElementRef, molstarViewer?: HTMLElement) {
+//     if (this.molstarViewInstance()) {
+//       this.updateMolstar(molstarConfigObject);
+//     } else {
+//       this.initMolstar(molstarConfigObject, molstarContainer, molstarViewer);
+//     }
+//   }
 
-  /**
-   * Function allows manually hiding PDBe Molstar buttons that are usually displayed
-   * NOTE:
-   * Should soon be unnecessary in future PDBe Molstar updates
-   */
-  public buttonsShowHide() {
-    const btnToContent = {
-      animation: 'Select Animation',
-      screenshot: 'Screenshot / State Snapshot',
-      controlToggle: 'Toggle Controls Panel',
-      selection: 'Toggle Selection Mode',
-      controlInfo: 'Settings / Controls Info',
-    };
-    for (const [_currentBtn, contentKey] of Object.entries(btnToContent)) {
-      const currentBtnEle = <HTMLInputElement>document.querySelector(`button[title="${contentKey}"]`);
-      if (!currentBtnEle) continue;
-      currentBtnEle.style.display = 'none';
-    }
-  }
+//   /**
+//    * Function allows manually hiding PDBe Molstar buttons that are usually displayed
+//    * NOTE:
+//    * Should soon be unnecessary in future PDBe Molstar updates
+//    */
+//   public buttonsShowHide() {
+//     const btnToContent = {
+//       animation: 'Select Animation',
+//       screenshot: 'Screenshot / State Snapshot',
+//       controlToggle: 'Toggle Controls Panel',
+//       selection: 'Toggle Selection Mode',
+//       controlInfo: 'Settings / Controls Info',
+//     };
+//     for (const [_currentBtn, contentKey] of Object.entries(btnToContent)) {
+//       const currentBtnEle = <HTMLInputElement>document.querySelector(`button[title="${contentKey}"]`);
+//       if (!currentBtnEle) continue;
+//       currentBtnEle.style.display = 'none';
+//     }
+//   }
 
-  /**
-   * Function initializes MolstarImageGallery for loading images
-   * NOTE:
-   * Usage of MolstarImageGallery should eventually be replaced by MolViewSpec
-   * @param entryId: PDB entry identifier
-   */
-  public async initImageGallery(entryId: string) {
-    const galleryManager = await PDBeMolstarPlugin.extensions.StateGallery.StateGalleryManager.create(this.molstarViewInstance().plugin, entryId);
-    this.galleryManager.set(galleryManager);
-  }
+//   /**
+//    * Function initializes MolstarImageGallery for loading images
+//    * NOTE:
+//    * Usage of MolstarImageGallery should eventually be replaced by MolViewSpec
+//    * @param entryId: PDB entry identifier
+//    */
+//   public async initImageGallery(entryId: string) {
+//     const galleryManager = await PDBeMolstarPlugin.extensions.StateGallery.StateGalleryManager.create(this.molstarViewInstance().plugin, entryId);
+//     this.galleryManager.set(galleryManager);
+//   }
 
-  public async showInteractions(interactions: any) {
-    await this.clearInteractions();
-    await PDBeMolstarPlugin.extensions.Interactions.loadInteractions(this.molstarViewInstance(), { interactions: interactions, structureId: 1 });
-  }
+//   public async showInteractions(interactions: any) {
+//     await this.clearInteractions();
+//     await PDBeMolstarPlugin.extensions.Interactions.loadInteractions(this.molstarViewInstance(), { interactions: interactions, structureId: 1 });
+//   }
 
-  public async clearInteractions() {
-    await PDBeMolstarPlugin.extensions.Interactions.clearInteractions(this.molstarViewInstance());
-  }
+//   public async clearInteractions() {
+//     await PDBeMolstarPlugin.extensions.Interactions.clearInteractions(this.molstarViewInstance());
+//   }
 
-  /**
-   * Function loads image from MolstarImageGallery using image name
-   * @param imgName
-   */
-  public async loadImage(imgName: string) {
-    if (imgName) {
-      await this.galleryManager().load(imgName);
-    }
-  }
+//   /**
+//    * Function loads image from MolstarImageGallery using image name
+//    * @param imgName
+//    */
+//   public async loadImage(imgName: string) {
+//     if (imgName) {
+//       await this.galleryManager().load(imgName);
+//     }
+//   }
 
-  /**
-   * Function parses which residues are currently present in a Molstar instance
-   * and saves this data in the residues signal
-   * @returns
-   */
-  public parseInstanceResidues() {
-    // first we get structure object
-    const assemblyRef = this.molstarViewInstance().plugin?.managers?.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
-    const structure = (this.molstarViewInstance().plugin?.state?.data?.select(assemblyRef)[0]?.obj as PluginStateObject.Molecule.Structure)?.data;
-    if (structure === undefined) return;
-    const result: MolstarResidueInfo[] = [];
-    // we then iterate over elements of this object and retrieve residue data
-    for (const unit of structure.units ?? []) {
-      const h = unit.model.atomicHierarchy;
-      let lastIRes = -1;
-      for (let i = 0; i < unit.elements.length; i++) {
-        const iAtom = unit.elements[i];
-        const iChain = h.chainAtomSegments.index[iAtom];
-        const iRes = h.residueAtomSegments.index[iAtom];
-        if (iRes === lastIRes) continue;
-        lastIRes = iRes;
-        result.push({
-          label_entity_id: getValue(h.chains.label_entity_id, iChain),
-          label_asym_id: getValue(h.chains.label_asym_id, iChain),
-          auth_asym_id: getValue(h.chains.auth_asym_id, iChain),
-          label_seq_id: getValue(h.residues.label_seq_id, iRes),
-          auth_seq_id: getValue(h.residues.auth_seq_id, iRes),
-          pdbx_PDB_ins_code: getValue(h.residues.pdbx_PDB_ins_code, iRes),
-          label_comp_id: getValue(h.atoms.label_comp_id, iAtom),
-          auth_comp_id: getValue(h.atoms.auth_comp_id, iAtom),
-        });
-      }
-    }
-    this.residues.set(result);
-  }
+//   /**
+//    * Function parses which residues are currently present in a Molstar instance
+//    * and saves this data in the residues signal
+//    * @returns
+//    */
+//   public parseInstanceResidues() {
+//     // first we get structure object
+//     const assemblyRef = this.molstarViewInstance().plugin?.managers?.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
+//     const structure = (this.molstarViewInstance().plugin?.state?.data?.select(assemblyRef)[0]?.obj as PluginStateObject.Molecule.Structure)?.data;
+//     if (structure === undefined) return;
+//     const result: MolstarResidueInfo[] = [];
+//     // we then iterate over elements of this object and retrieve residue data
+//     for (const unit of structure.units ?? []) {
+//       const h = unit.model.atomicHierarchy;
+//       let lastIRes = -1;
+//       for (let i = 0; i < unit.elements.length; i++) {
+//         const iAtom = unit.elements[i];
+//         const iChain = h.chainAtomSegments.index[iAtom];
+//         const iRes = h.residueAtomSegments.index[iAtom];
+//         if (iRes === lastIRes) continue;
+//         lastIRes = iRes;
+//         result.push({
+//           label_entity_id: getValue(h.chains.label_entity_id, iChain),
+//           label_asym_id: getValue(h.chains.label_asym_id, iChain),
+//           auth_asym_id: getValue(h.chains.auth_asym_id, iChain),
+//           label_seq_id: getValue(h.residues.label_seq_id, iRes),
+//           auth_seq_id: getValue(h.residues.auth_seq_id, iRes),
+//           pdbx_PDB_ins_code: getValue(h.residues.pdbx_PDB_ins_code, iRes),
+//           label_comp_id: getValue(h.atoms.label_comp_id, iAtom),
+//           auth_comp_id: getValue(h.atoms.auth_comp_id, iAtom),
+//         });
+//       }
+//     }
+//     this.residues.set(result);
+//   }
 
-  private chainEntityResidSelection(molstarSelection: MolstarSelectionObj) {
-    const groups: Expression[] = [];
+//   private chainEntityResidSelection(molstarSelection: MolstarSelectionObj) {
+//     const groups: Expression[] = [];
 
-    const atmGroupsQueries: any[] = [];
-    const selection: any = {};
+//     const atmGroupsQueries: any[] = [];
+//     const selection: any = {};
 
-    if (molstarSelection.entityId) {
-      selection['entityTest'] = (l: any) => StructureProperties.entity.id(l.element) === molstarSelection.entityId;
-    }
+//     if (molstarSelection.entityId) {
+//       selection['entityTest'] = (l: any) => StructureProperties.entity.id(l.element) === molstarSelection.entityId;
+//     }
 
-    if (molstarSelection.authChainId) {
-      selection['chainTest'] = (l: any) => StructureProperties.chain.auth_asym_id(l.element) === molstarSelection.authChainId;
-    }
+//     if (molstarSelection.authChainId) {
+//       selection['chainTest'] = (l: any) => StructureProperties.chain.auth_asym_id(l.element) === molstarSelection.authChainId;
+//     }
 
-    if (molstarSelection.residues.length === 0) {
-      if (!molstarSelection.authChainId) {
-        groups.push(
-          MS.struct.generator.atomGroups({
-            'entity-test': MS.core.rel.eq([MS.struct.atomProperty.macromolecular.label_entity_id(), molstarSelection.entityId]),
-          })
-        );
-      } else {
-        groups.push(
-          MS.struct.generator.atomGroups({
-            'entity-test': MS.core.rel.eq([MS.struct.atomProperty.macromolecular.label_entity_id(), molstarSelection.entityId]),
-            'chain-test': MS.core.rel.eq([MS.ammp('auth_asym_id'), molstarSelection.authChainId!]),
-          })
-        );
-      }
-      atmGroupsQueries.push(Queries.generators.atoms(selection));
-    } else {
-      for (const x of molstarSelection.residues) {
-        const entityId = molstarSelection.entityId ? molstarSelection.entityId : x.entityId;
-        const chainId = molstarSelection.authChainId ? molstarSelection.authChainId : x.authChainId;
-        groups.push(
-          MS.struct.generator.atomGroups({
-            'entity-test': MS.core.rel.eq([MS.struct.atomProperty.macromolecular.label_entity_id(), entityId]),
-            'chain-test': MS.core.rel.eq([MS.ammp('auth_asym_id'), chainId]),
-            'residue-test': MS.core.rel.inRange([MS.ammp('auth_seq_id'), parseInt(x.authBegin), parseInt(x.authEnd)]),
-          })
-        );
-        if (x.entityId) {
-          selection['entityTest'] = (l: any) => StructureProperties.entity.id(l.element) === entityId;
-        }
-        if (x.authChainId) {
-          selection['chainTest'] = (l: any) => StructureProperties.chain.auth_asym_id(l.element) === chainId;
-        }
-        selection['residueTest'] = (l: any) => {
-          const authSeqId = StructureProperties.residue.auth_seq_id(l.element);
-          return authSeqId >= parseInt(x.authBegin)! && authSeqId <= parseInt(x.authEnd)!;
-        };
-        atmGroupsQueries.push(Queries.generators.atoms(selection));
-      }
-    }
-    const query = MS.struct.combinator.merge(groups);
-    const queryLoci = Queries.combinators.merge(atmGroupsQueries);
-    return {
-      query: query,
-      queryLoci: queryLoci,
-    };
-  }
+//     if (molstarSelection.residues.length === 0) {
+//       if (!molstarSelection.authChainId) {
+//         groups.push(
+//           MS.struct.generator.atomGroups({
+//             'entity-test': MS.core.rel.eq([MS.struct.atomProperty.macromolecular.label_entity_id(), molstarSelection.entityId]),
+//           })
+//         );
+//       } else {
+//         groups.push(
+//           MS.struct.generator.atomGroups({
+//             'entity-test': MS.core.rel.eq([MS.struct.atomProperty.macromolecular.label_entity_id(), molstarSelection.entityId]),
+//             'chain-test': MS.core.rel.eq([MS.ammp('auth_asym_id'), molstarSelection.authChainId!]),
+//           })
+//         );
+//       }
+//       atmGroupsQueries.push(Queries.generators.atoms(selection));
+//     } else {
+//       for (const x of molstarSelection.residues) {
+//         const entityId = molstarSelection.entityId ? molstarSelection.entityId : x.entityId;
+//         const chainId = molstarSelection.authChainId ? molstarSelection.authChainId : x.authChainId;
+//         groups.push(
+//           MS.struct.generator.atomGroups({
+//             'entity-test': MS.core.rel.eq([MS.struct.atomProperty.macromolecular.label_entity_id(), entityId]),
+//             'chain-test': MS.core.rel.eq([MS.ammp('auth_asym_id'), chainId]),
+//             'residue-test': MS.core.rel.inRange([MS.ammp('auth_seq_id'), parseInt(x.authBegin), parseInt(x.authEnd)]),
+//           })
+//         );
+//         if (x.entityId) {
+//           selection['entityTest'] = (l: any) => StructureProperties.entity.id(l.element) === entityId;
+//         }
+//         if (x.authChainId) {
+//           selection['chainTest'] = (l: any) => StructureProperties.chain.auth_asym_id(l.element) === chainId;
+//         }
+//         selection['residueTest'] = (l: any) => {
+//           const authSeqId = StructureProperties.residue.auth_seq_id(l.element);
+//           return authSeqId >= parseInt(x.authBegin)! && authSeqId <= parseInt(x.authEnd)!;
+//         };
+//         atmGroupsQueries.push(Queries.generators.atoms(selection));
+//       }
+//     }
+//     const query = MS.struct.combinator.merge(groups);
+//     const queryLoci = Queries.combinators.merge(atmGroupsQueries);
+//     return {
+//       query: query,
+//       queryLoci: queryLoci,
+//     };
+//   }
 
-  /**
-   * Function triggers Molstar focus on specific selection
-   * @param molstarSelection: MolstarSelectionObj (helpful interface for selecting in Molstar)
-   */
-  public async focusLoci(molstarSelection: MolstarSelectionObj, duration?: number) {
-    if (duration === undefined) {
-      duration = this.cameraDuration;
-    }
-    const queryLoci = await this.getViewerLoci(molstarSelection);
-    await this.molstarViewInstance()?.plugin?.managers?.camera?.focusLoci(queryLoci, { durationMs: duration });
-  }
+//   /**
+//    * Function triggers Molstar focus on specific selection
+//    * @param molstarSelection: MolstarSelectionObj (helpful interface for selecting in Molstar)
+//    */
+//   public async focusLoci(molstarSelection: MolstarSelectionObj, duration?: number) {
+//     if (duration === undefined) {
+//       duration = this.cameraDuration;
+//     }
+//     const queryLoci = await this.getViewerLoci(molstarSelection);
+//     await this.molstarViewInstance()?.plugin?.managers?.camera?.focusLoci(queryLoci, { durationMs: duration });
+//   }
 
-  public async focusLociPDBe(params: any) {
-    await this.molstarViewInstance().visual.focus(params);
-  }
+//   public async focusLociPDBe(params: any) {
+//     await this.molstarViewInstance().visual.focus(params);
+//   }
 
-  /**
-   * Function triggers Molstar focus on whole current structure
-   */
-  public async focusStructure() {
-    const assemblyRef = this.molstarViewInstance().plugin?.managers?.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
-    const structure = (this.molstarViewInstance().plugin?.state?.data?.select(assemblyRef)[0]?.obj as PluginStateObject.Molecule.Structure)?.data;
-    const structureLoci = Structure.toStructureElementLoci(structure);
-    await this.molstarViewInstance()?.plugin?.managers?.camera?.focusLoci(structureLoci, { durationMs: this.cameraDuration });
-  }
+//   /**
+//    * Function triggers Molstar focus on whole current structure
+//    */
+//   public async focusStructure() {
+//     const assemblyRef = this.molstarViewInstance().plugin?.managers?.structure?.hierarchy?.current?.structures[0]?.cell?.transform?.ref;
+//     const structure = (this.molstarViewInstance().plugin?.state?.data?.select(assemblyRef)[0]?.obj as PluginStateObject.Molecule.Structure)?.data;
+//     const structureLoci = Structure.toStructureElementLoci(structure);
+//     await this.molstarViewInstance()?.plugin?.managers?.camera?.focusLoci(structureLoci, { durationMs: this.cameraDuration });
+//   }
 
-  /**
-   * Function triggers clearing of Molstar focus (resets camera position)
-   */
-  public async unfocusLoci() {
-    await this.molstarViewInstance().visual.reset({ camera: true });
-  }
+//   /**
+//    * Function triggers clearing of Molstar focus (resets camera position)
+//    */
+//   public async unfocusLoci() {
+//     await this.molstarViewInstance().visual.reset({ camera: true });
+//   }
 
-  /**
-   * Function triggers Molstar highlight (hovering over selection)
-   * @param molstarSelection: MolstarSelectionObj (helpful interface for selecting in Molstar)
-   * @returns
-   */
-  public async highlightLoci(molstarSelection: MolstarSelectionObj) {
-    const queryLoci = await this.getViewerLoci(molstarSelection);
-    if (Loci.isEmpty(queryLoci)) return;
-    this.molstarViewInstance().plugin.managers.interactivity.lociHighlights.highlightOnly({ loci: queryLoci });
-  }
+//   /**
+//    * Function triggers Molstar highlight (hovering over selection)
+//    * @param molstarSelection: MolstarSelectionObj (helpful interface for selecting in Molstar)
+//    * @returns
+//    */
+//   public async highlightLoci(molstarSelection: MolstarSelectionObj) {
+//     const queryLoci = await this.getViewerLoci(molstarSelection);
+//     if (Loci.isEmpty(queryLoci)) return;
+//     this.molstarViewInstance().plugin.managers.interactivity.lociHighlights.highlightOnly({ loci: queryLoci });
+//   }
 
-  public async highlightLociPDBe(params: any) {
-    await this.molstarViewInstance().visual.highlight(params);
-  }
+//   public async highlightLociPDBe(params: any) {
+//     await this.molstarViewInstance().visual.highlight(params);
+//   }
 
-  /**
-   * Function triggers clearing of Molstar highlight (hovering over selection)
-   */
-  public async clearHighlightLoci() {
-    await this.molstarViewInstance().visual.clearHighlight();
-  }
+//   /**
+//    * Function triggers clearing of Molstar highlight (hovering over selection)
+//    */
+//   public async clearHighlightLoci() {
+//     await this.molstarViewInstance().visual.clearHighlight();
+//   }
 
-  /**
-   * Function allows retrieving a Loci object from a MolstarSelection Obj
-   * This is needed for focusLoci and highlightLoci
-   * @param molstarSelection: MolstarSelectionObj (helpful interface for selecting in Molstar)
-   * @returns Loci object
-   */
-  private async getViewerLoci(molstarSelection: MolstarSelectionObj) {
-    const residueData = this.chainEntityResidSelection(molstarSelection);
-    const residueQueryLoci = residueData.queryLoci;
+//   /**
+//    * Function allows retrieving a Loci object from a MolstarSelection Obj
+//    * This is needed for focusLoci and highlightLoci
+//    * @param molstarSelection: MolstarSelectionObj (helpful interface for selecting in Molstar)
+//    * @returns Loci object
+//    */
+//   private async getViewerLoci(molstarSelection: MolstarSelectionObj) {
+//     const residueData = this.chainEntityResidSelection(molstarSelection);
+//     const residueQueryLoci = residueData.queryLoci;
 
-    let queryLoci: Loci = EmptyLoci;
-    const assemblyRef = this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0].cell.transform.ref;
-    if (assemblyRef !== '') {
-      const data = (this.molstarViewInstance().plugin!.state.data.select(assemblyRef)[0].obj as PluginStateObject.Molecule.Structure).data;
-      if (data) {
-        const sel = StructureQuery.run(residueQueryLoci, data);
-        queryLoci = StructureSelection.toLociWithSourceUnits(sel);
-      }
-    }
-    return queryLoci;
-  }
+//     let queryLoci: Loci = EmptyLoci;
+//     const assemblyRef = this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0].cell.transform.ref;
+//     if (assemblyRef !== '') {
+//       const data = (this.molstarViewInstance().plugin!.state.data.select(assemblyRef)[0].obj as PluginStateObject.Molecule.Structure).data;
+//       if (data) {
+//         const sel = StructureQuery.run(residueQueryLoci, data);
+//         queryLoci = StructureSelection.toLociWithSourceUnits(sel);
+//       }
+//     }
+//     return queryLoci;
+//   }
 
-  public async waitForCondition(checkFn: () => boolean, interval = 2000, timeout = 120000): Promise<void> {
-    const startTime = Date.now();
+//   public async waitForCondition(checkFn: () => boolean, interval = 2000, timeout = 120000): Promise<void> {
+//     const startTime = Date.now();
 
-    return new Promise((resolve, reject) => {
-      const check = () => {
-        if (checkFn()) {
-          resolve();
-        } else if (Date.now() - startTime > timeout) {
-          reject(new Error('Timeout waiting for condition'));
-        } else {
-          setTimeout(check, interval);
-        }
-      };
-      check();
-    });
-  }
+//     return new Promise((resolve, reject) => {
+//       const check = () => {
+//         if (checkFn()) {
+//           resolve();
+//         } else if (Date.now() - startTime > timeout) {
+//           reject(new Error('Timeout waiting for condition'));
+//         } else {
+//           setTimeout(check, interval);
+//         }
+//       };
+//       check();
+//     });
+//   }
 
-  async getComponentList() {
-    try {
-      const isUndefined = this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0];
-      await this.waitForCondition(() => {
-        return this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0] !== undefined;
-      });
-      if (isUndefined) await new Promise((resolve) => setTimeout(resolve, 2000)); // wait two seconds to be sure
-    } catch (err) {
-      console.error('Failed to load Molstar structure within 2 minutes:', err);
-    }
+//   async getComponentList() {
+//     try {
+//       const isUndefined = this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0];
+//       await this.waitForCondition(() => {
+//         return this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0] !== undefined;
+//       });
+//       if (isUndefined) await new Promise((resolve) => setTimeout(resolve, 2000)); // wait two seconds to be sure
+//     } catch (err) {
+//       console.error('Failed to load Molstar structure within 2 minutes:', err);
+//     }
 
-    const structureData = [this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0]];
-    if (structureData[0] === undefined) {
-      console.warn('WARNING: No Mol* structure data set yet. Was this called too early?');
-      return [];
-    }
-    const componentNames: string[] = [];
-    for await (const s of structureData) {
-      for (const comp of s.components) {
-        componentNames.push(comp.key!);
-      }
-    }
-    return componentNames;
-  }
+//     const structureData = [this.molstarViewInstance()?.plugin?.managers.structure.hierarchy.current.structures[0]];
+//     if (structureData[0] === undefined) {
+//       console.warn('WARNING: No Mol* structure data set yet. Was this called too early?');
+//       return [];
+//     }
+//     const componentNames: string[] = [];
+//     for await (const s of structureData) {
+//       for (const comp of s.components) {
+//         componentNames.push(comp.key!);
+//       }
+//     }
+//     return componentNames;
+//   }
 
-  async getComponentCellList() {
-    const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
-    if (structureData[0] === undefined) {
-      console.warn('WARNING: No Mol* structure data set yet. Was this called too early?');
-      return [];
-    }
-    const componentNames: string[] = [];
-    for await (const s of structureData) {
-      console.log('s');
-      console.log(s);
-      // for (const comp of s.cell) {
-      //   // const parsedKey = comp.key!.replace('structure-component-', '');
-      //   componentNames.push(comp.key!);
-      //   // "!1cbs/model-0/props/struct-assembly-1/entities/entity-1"
-      //   // if (comp.key!.includes('/entities/')) {
-      //   //   const entityNumber = comp.key!.split('/entity-')[1];
-      //   //   console.log("comp.key!")
-      //   //   console.log("entityNumber: ", entityNumber)
-      //   //   const entityColor = comp.representations[0].cell.params.values.colorTheme.params.value;
-      //   //   const entityColorHex = '#' + ('000000' + entityColor.toString(16)).slice(-6);
-      //   //   console.log("entityColor: ", entityColor)
-      //   //   console.log("entityColorHex: ", entityColorHex)
-      //   // }
-      // }
-    }
-    return componentNames;
-  }
+//   async getComponentCellList() {
+//     const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
+//     if (structureData[0] === undefined) {
+//       console.warn('WARNING: No Mol* structure data set yet. Was this called too early?');
+//       return [];
+//     }
+//     const componentNames: string[] = [];
+//     for await (const s of structureData) {
+//       console.log('s');
+//       console.log(s);
+//       // for (const comp of s.cell) {
+//       //   // const parsedKey = comp.key!.replace('structure-component-', '');
+//       //   componentNames.push(comp.key!);
+//       //   // "!1cbs/model-0/props/struct-assembly-1/entities/entity-1"
+//       //   // if (comp.key!.includes('/entities/')) {
+//       //   //   const entityNumber = comp.key!.split('/entity-')[1];
+//       //   //   console.log("comp.key!")
+//       //   //   console.log("entityNumber: ", entityNumber)
+//       //   //   const entityColor = comp.representations[0].cell.params.values.colorTheme.params.value;
+//       //   //   const entityColorHex = '#' + ('000000' + entityColor.toString(16)).slice(-6);
+//       //   //   console.log("entityColor: ", entityColor)
+//       //   //   console.log("entityColorHex: ", entityColorHex)
+//       //   // }
+//       // }
+//     }
+//     return componentNames;
+//   }
 
-  async changeComponentVisibility(query: string, toHide: boolean) {
-    const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
-    for await (const s of structureData) {
-      for (const comp of s.components) {
-        if (comp.key!.includes(query)) {
-          setSubtreeVisibility(this.molstarViewInstance().state, comp.cell.transform.ref, toHide);
-        }
-      }
-    }
-  }
+//   async changeComponentVisibility(query: string, toHide: boolean) {
+//     const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
+//     for await (const s of structureData) {
+//       for (const comp of s.components) {
+//         if (comp.key!.includes(query)) {
+//           setSubtreeVisibility(this.molstarViewInstance().state, comp.cell.transform.ref, toHide);
+//         }
+//       }
+//     }
+//   }
 
-  async changeRepresentationVisibility(query: string, toHide: boolean, hideIdx: number, hideOthers?: boolean) {
-    const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
-    for await (const s of structureData) {
-      for (const comp of s.components) {
-        if (comp.key!.includes(query)) {
-          // for each representation of selected component
-          for (let i = 0; i < comp.representations.length; i++) {
-            const repr = comp.representations[i];
-            // if representation is the one to change visibility
-            if (i === hideIdx) {
-              // change visiblity of representation
-              setSubtreeVisibility(this.molstarViewInstance().state, repr.cell.transform.ref, toHide);
-            }
-            // if other representations and hideOthers is true
-            else if (hideOthers === true) {
-              // hide all other representations
-              setSubtreeVisibility(this.molstarViewInstance().state, repr.cell.transform.ref, true);
-            }
-          }
-        }
-      }
-    }
-  }
+//   async changeRepresentationVisibility(query: string, toHide: boolean, hideIdx: number, hideOthers?: boolean) {
+//     const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
+//     for await (const s of structureData) {
+//       for (const comp of s.components) {
+//         if (comp.key!.includes(query)) {
+//           // for each representation of selected component
+//           for (let i = 0; i < comp.representations.length; i++) {
+//             const repr = comp.representations[i];
+//             // if representation is the one to change visibility
+//             if (i === hideIdx) {
+//               // change visiblity of representation
+//               setSubtreeVisibility(this.molstarViewInstance().state, repr.cell.transform.ref, toHide);
+//             }
+//             // if other representations and hideOthers is true
+//             else if (hideOthers === true) {
+//               // hide all other representations
+//               setSubtreeVisibility(this.molstarViewInstance().state, repr.cell.transform.ref, true);
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
 
-  async createStaticComponent(tagName: 'polymer' | 'ligand' | 'ion' | 'branched' | 'non-standard') {
-    const structure = this.molstarViewInstance().state.select(this.molstarViewInstance().assemblyRef)[0];
-    const component = await this.molstarViewInstance().plugin!.builders.structure.tryCreateComponentStatic(structure, tagName);
-  }
+//   async createStaticComponent(tagName: 'polymer' | 'ligand' | 'ion' | 'branched' | 'non-standard') {
+//     const structure = this.molstarViewInstance().state.select(this.molstarViewInstance().assemblyRef)[0];
+//     const component = await this.molstarViewInstance().plugin!.builders.structure.tryCreateComponentStatic(structure, tagName);
+//   }
 
-  async createNewPolymerComponent(lbl: string, representation: any) {
-    const structure = this.molstarViewInstance().state.select(this.molstarViewInstance().assemblyRef)[0];
+//   async createNewPolymerComponent(lbl: string, representation: any) {
+//     const structure = this.molstarViewInstance().state.select(this.molstarViewInstance().assemblyRef)[0];
 
-    const polymer = StructureSelectionQuery(
-      'Polymer',
-      MS.struct.modifier.union([
-        MS.struct.generator.atomGroups({
-          'entity-test': MS.core.logic.and([
-            MS.core.rel.eq([MS.ammp('entityType'), 'polymer']),
-            MS.core.str.match([MS.re('(polypeptide|cyclic-pseudo-peptide|peptide-like|nucleotide|peptide nucleic acid)', 'i'), MS.ammp('entitySubtype')]),
-          ]),
-        }),
-      ]),
-      { category: StructureSelectionCategory.Type }
-    );
+//     const polymer = StructureSelectionQuery(
+//       'Polymer',
+//       MS.struct.modifier.union([
+//         MS.struct.generator.atomGroups({
+//           'entity-test': MS.core.logic.and([
+//             MS.core.rel.eq([MS.ammp('entityType'), 'polymer']),
+//             MS.core.str.match([MS.re('(polypeptide|cyclic-pseudo-peptide|peptide-like|nucleotide|peptide nucleic acid)', 'i'), MS.ammp('entitySubtype')]),
+//           ]),
+//         }),
+//       ]),
+//       { category: StructureSelectionCategory.Type }
+//     );
 
-    const vis = await this.molstarViewInstance().plugin!.builders.structure.tryCreateComponentFromSelection(structure, polymer, lbl, { label: lbl });
-    if (vis) {
-      // create representation and add to molstar
-      const reprObj = await this.molstarViewInstance().plugin!.builders.structure.representation.addRepresentation(
-        vis,
-        representation as StructureRepresentationBuiltInProps
-      );
-      return {
-        status: true,
-        reprObj: reprObj,
-      };
-    }
-    return false;
-  }
+//     const vis = await this.molstarViewInstance().plugin!.builders.structure.tryCreateComponentFromSelection(structure, polymer, lbl, { label: lbl });
+//     if (vis) {
+//       // create representation and add to molstar
+//       const reprObj = await this.molstarViewInstance().plugin!.builders.structure.representation.addRepresentation(
+//         vis,
+//         representation as StructureRepresentationBuiltInProps
+//       );
+//       return {
+//         status: true,
+//         reprObj: reprObj,
+//       };
+//     }
+//     return false;
+//   }
 
-  async createComponent(lbl: string, molstarSelection: MolstarSelectionObj, representation: any) {
-    // let structure = [viewer.plugin!.managers.structure.hierarchy.current.structures[0]];
-    const structure = this.molstarViewInstance().state.select(this.molstarViewInstance().assemblyRef)[0];
-    const residueData = this.chainEntityResidSelection(molstarSelection);
+//   async createComponent(lbl: string, molstarSelection: MolstarSelectionObj, representation: any) {
+//     // let structure = [viewer.plugin!.managers.structure.hierarchy.current.structures[0]];
+//     const structure = this.molstarViewInstance().state.select(this.molstarViewInstance().assemblyRef)[0];
+//     const residueData = this.chainEntityResidSelection(molstarSelection);
 
-    const residueQuery = residueData.query;
-    // const residueQuery = chainEntitySelection(molstarSelection.entityId, molstarSelection.authChainId!)
-    const residueQueryLoci = residueData.queryLoci;
+//     const residueQuery = residueData.query;
+//     // const residueQuery = chainEntitySelection(molstarSelection.entityId, molstarSelection.authChainId!)
+//     const residueQueryLoci = residueData.queryLoci;
 
-    // create selection from expression that condenses this (entity+chain)
-    const vis = await this.molstarViewInstance().plugin!.builders.structure.tryCreateComponentFromExpression(structure, residueQuery, lbl, { label: lbl });
-    if (vis) {
-      // create representation and add to molstar
-      const reprObj = await this.molstarViewInstance().plugin!.builders.structure.representation.addRepresentation(
-        vis,
-        representation as StructureRepresentationBuiltInProps
-      );
-      return {
-        status: true,
-        residueData: residueData,
-        residueQuery: residueQuery,
-        residueQueryLoci: residueQueryLoci,
-        reprObj: reprObj,
-      };
-    }
-    return false;
-  }
+//     // create selection from expression that condenses this (entity+chain)
+//     const vis = await this.molstarViewInstance().plugin!.builders.structure.tryCreateComponentFromExpression(structure, residueQuery, lbl, { label: lbl });
+//     if (vis) {
+//       // create representation and add to molstar
+//       const reprObj = await this.molstarViewInstance().plugin!.builders.structure.representation.addRepresentation(
+//         vis,
+//         representation as StructureRepresentationBuiltInProps
+//       );
+//       return {
+//         status: true,
+//         residueData: residueData,
+//         residueQuery: residueQuery,
+//         residueQueryLoci: residueQueryLoci,
+//         reprObj: reprObj,
+//       };
+//     }
+//     return false;
+//   }
 
-  async removeComponent(query: string) {
-    const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
-    for await (const s of structureData) {
-      for (const comp of s.components) {
-        if (comp.key!.includes(query)) {
-          const builder = this.molstarViewInstance().plugin!.state.data.build();
-          await builder.delete(comp.cell.transform.ref);
-          await builder.commit({ canUndo: false });
-        }
-      }
-    }
-  }
+//   async removeComponent(query: string) {
+//     const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
+//     for await (const s of structureData) {
+//       for (const comp of s.components) {
+//         if (comp.key!.includes(query)) {
+//           const builder = this.molstarViewInstance().plugin!.state.data.build();
+//           await builder.delete(comp.cell.transform.ref);
+//           await builder.commit({ canUndo: false });
+//         }
+//       }
+//     }
+//   }
 
-  async addRepresentationToComponent(query: string, representation: any, hideOthers: boolean) {
-    const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
-    for await (const s of structureData) {
-      for (const comp of s.components) {
-        if (comp.key!.includes(query)) {
-          // if hideOthers is true
-          if (hideOthers) {
-            // for each current representation of selected component
-            for (const repr of comp.representations) {
-              // delete not working
-              // const builder = viewer.plugin!.state.data.build()
-              // await builder.delete(repr.cell.transform.ref);
+//   async addRepresentationToComponent(query: string, representation: any, hideOthers: boolean) {
+//     const structureData = [this.molstarViewInstance().plugin!.managers.structure.hierarchy.current.structures[0]];
+//     for await (const s of structureData) {
+//       for (const comp of s.components) {
+//         if (comp.key!.includes(query)) {
+//           // if hideOthers is true
+//           if (hideOthers) {
+//             // for each current representation of selected component
+//             for (const repr of comp.representations) {
+//               // delete not working
+//               // const builder = viewer.plugin!.state.data.build()
+//               // await builder.delete(repr.cell.transform.ref);
 
-              // hide representation
-              setSubtreeVisibility(this.molstarViewInstance().state, repr.cell.transform.ref, true);
-            }
-          }
-          // add new representation to component
-          await this.molstarViewInstance().plugin!.builders.structure.representation.addRepresentation(
-            comp.cell,
-            representation as StructureRepresentationBuiltInProps
-          );
-          return comp.representations.length;
-        }
-      }
-    }
+//               // hide representation
+//               setSubtreeVisibility(this.molstarViewInstance().state, repr.cell.transform.ref, true);
+//             }
+//           }
+//           // add new representation to component
+//           await this.molstarViewInstance().plugin!.builders.structure.representation.addRepresentation(
+//             comp.cell,
+//             representation as StructureRepresentationBuiltInProps
+//           );
+//           return comp.representations.length;
+//         }
+//       }
+//     }
 
-    // await this.plugin.builders.structure.representation.addRepresentation(component.cell,
-    // builder.to(structureRef).delete(representationRef);
+//     // await this.plugin.builders.structure.representation.addRepresentation(component.cell,
+//     // builder.to(structureRef).delete(representationRef);
 
-    // let structure = [viewer.plugin!.managers.structure.hierarchy.current.structures[0]];
-    // const reprObj = await viewer.plugin!.builders.structure.representation.addRepresentation(vis, (representation as StructureRepresentationBuiltInProps));
-  }
+//     // let structure = [viewer.plugin!.managers.structure.hierarchy.current.structures[0]];
+//     // const reprObj = await viewer.plugin!.builders.structure.representation.addRepresentation(vis, (representation as StructureRepresentationBuiltInProps));
+//   }
 
-  hexColorToMolstar(hexColor: string) {
-    const hexColorAsNum = parseInt(hexColor.slice(1), 16);
-    return Color(hexColorAsNum);
-  }
-}
+//   hexColorToMolstar(hexColor: string) {
+//     const hexColorAsNum = parseInt(hexColor.slice(1), 16);
+//     return Color(hexColorAsNum);
+//   }
+// }
