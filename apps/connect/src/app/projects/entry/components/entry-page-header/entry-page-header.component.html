@@ -1,3 +1,4 @@
+@if (headerReady()) {
 <header>
   <section class="title-info">
     <h1 class="heading-1">{{ entryId() }}</h1>
@@ -26,3 +27,4 @@
     <pdbc-entry-dropdown [searchTitle]="'Search all files'" [downloadable]="false" [islink]="true" [options]="viewOptions()" title="View files"></pdbc-entry-dropdown>
   </section>
 </header>
+}

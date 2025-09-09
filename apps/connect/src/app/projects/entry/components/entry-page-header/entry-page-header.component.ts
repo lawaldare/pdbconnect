@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
@@ -23,6 +23,10 @@ export class EntryPageHeaderComponent implements OnInit {
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly downloadOptions = toSignal(this.globalStore.select(EntrySelectors.downloadOptions));
   public readonly viewOptions = toSignal(this.globalStore.select(EntrySelectors.viewOptions));
+
+  public readonly headerReady = computed(() => {
+    return this.entryId() !== undefined && this.experimentalMethod() !== undefined && this.summaryData() !== undefined;
+  });
 
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
