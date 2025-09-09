@@ -52,6 +52,9 @@ export class MbOverviewTabComponent implements OnInit {
     { initialValue: undefined } // 👈 assume "unknown/loading" until we know
   );
 
+  public readonly checkedWebGl = computed(() => this.compCommunication.checkedWebGlSupport);
+  public readonly isWebGlEnabled = computed(() => this.compCommunication.isWebGlEnabled);
+
   public readonly imageGallery = computed(() => {
     const entryId = this.entryStoreId();
     if (!entryId) return [];

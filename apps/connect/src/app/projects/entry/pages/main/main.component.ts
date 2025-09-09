@@ -195,6 +195,7 @@ export class EntryMainPageComponent implements OnInit {
       });
     });
     this.testNetworkSpeed();
+    this.checkWebglEnabled();
   }
 
   private testNetworkSpeed() {
@@ -240,6 +241,21 @@ export class EntryMainPageComponent implements OnInit {
           this.compCommunication.slowNetwork$.next(true);
         },
       });
+  }
+
+  private checkWebglEnabled() {
+    const isWebGlEnabled = this.detectWebglSupport() ? true : false;
+    this.compCommunication.checkedWebGlSupport.set(true); // fallback to slow mode
+    this.compCommunication.isWebGlEnabled.set(isWebGlEnabled);
+  }
+
+  private detectWebglSupport() {
+    try {
+      const canvas = document.createElement('canvas');
+      return !!window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+    } catch (e) {
+      return false;
+    }
   }
 
   @HostListener('window:resize', ['$event'])

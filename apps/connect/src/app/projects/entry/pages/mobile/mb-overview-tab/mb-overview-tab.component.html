@@ -26,14 +26,14 @@
   }
 
   <!-- Molstar Gallery -->
-  @if (slowNetwork() === undefined) {
+  @if (slowNetwork() === undefined || checkedWebGl() === undefined) {
   <!-- Loading state -->
   <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '200px' }"></ngx-skeleton-loader>
-  } @else if (slowNetwork() === false) {
-  <!-- Good network -->
+  } @else if (slowNetwork() === false && isWebGlEnabled()) {
+  <!-- Good network and WebGl support -->
   <lib-molstar-gallery [entryId]="entryStoreId() ?? ''" />
   } @else {
-  <!-- Bad network -->
+  <!-- Bad network or no WebGl support -->
   @if (imageGallery().length > 0) {
   <pdbc-mb-slow-network-image-gallery [images]="imageGallery()"></pdbc-mb-slow-network-image-gallery>
   } }
