@@ -249,11 +249,15 @@ export class EntryMainPageComponent implements OnInit {
     this.compCommunication.isWebGlEnabled.set(isWebGlEnabled);
   }
 
-  private detectWebglSupport() {
+  private detectWebglSupport(): boolean {
     try {
       const canvas = document.createElement('canvas');
-      return !!window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
-    } catch (e) {
+      // Try WebGL2 first, fallback to WebGL1
+      return (
+        !!(window.WebGL2RenderingContext && canvas.getContext('webgl2')) ||
+        !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')))
+      );
+    } catch {
       return false;
     }
   }
