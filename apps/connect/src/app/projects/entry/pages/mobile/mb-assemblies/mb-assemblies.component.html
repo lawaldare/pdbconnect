@@ -41,7 +41,15 @@
   <article>
     <p>PDBe complex ID</p>
     <p class="content">
-      <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/complexes/' + preferredAssembly().complexId" target="_blank">{{preferredAssembly().complexId}}</a>
+      <a
+        [href]="baseUrl + 'pdbe-kb/complexes/' + preferredAssembly().complexId"
+        target="_blank"
+        (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
+        kb_website: 'complexes',
+        device_type: 'mobile',
+      })"
+        >{{preferredAssembly().complexId}}</a
+      >
     </p>
   </article>
   }

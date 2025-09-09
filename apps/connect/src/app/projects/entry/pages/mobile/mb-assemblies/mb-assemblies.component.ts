@@ -6,13 +6,14 @@ import { ComponentCommunicationService } from '../../../services/component-comm.
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../../store/entry.selectors';
-import { MaterialModule } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { FormsModule } from '@angular/forms';
 import { filter, firstValueFrom, take } from 'rxjs';
 import { clearSelectionInMolstar } from '../../../helpers/molstar-helpers';
 import { MobileStateService } from '../mobile-state.service';
 import { EntryActions } from '../../../store/entry.actions';
 import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
+import { baseUrl } from '../../../entry-constant';
 
 @Component({
   selector: 'pdbc-mb-assemblies',
@@ -25,6 +26,9 @@ export class MbAssembliesComponent implements OnInit {
   private readonly state = inject(MobileStateService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
+  public readonly gAS = inject(GoogleAnalyticsService);
+  // public baseUrl = baseUrl;
+  public baseUrl = 'https://wwwdev.ebi.ac.uk/pdbe/';
 
   public expanded = signal<boolean>(false);
   public isChecked = signal<boolean>(false);

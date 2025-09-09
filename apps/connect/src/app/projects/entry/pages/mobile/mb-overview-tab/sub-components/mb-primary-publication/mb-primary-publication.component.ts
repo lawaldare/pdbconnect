@@ -11,6 +11,7 @@ import { MobileFacade } from '../../../mobile.facade';
 import { GoogleAnalyticsService } from '@pdbc/core';
 import { EntryActions } from '../../../../../store/entry.actions';
 import { ApplicationAPIDispatcher } from '../../../../../services/application-api-dispacher.service';
+import { baseUrl } from '../../../../../entry-constant';
 
 @Component({
   selector: 'pdbc-mb-primary-publication',
@@ -25,6 +26,7 @@ export class MbPrimaryPublicationComponent implements OnInit {
   private readonly mbFacade = inject(MobileFacade);
   public readonly gAS = inject(GoogleAnalyticsService);
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
+  public baseUrl = baseUrl;
 
   public readonly primaryPublication = signal<CitationDetail | undefined>(undefined);
   public readonly articlesCiting = signal<RelatedPublication | undefined>(undefined);

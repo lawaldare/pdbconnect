@@ -65,7 +65,7 @@
 
           <article>
             Also associated with: @for(entry of entriesArray.slice(0, initialEntriesCount()); track entry; let islast = $last){
-            <a [href]="util.baseUrl() +  'entry/pdb/' + entry" target="_blank">{{ entry }}</a>{{ islast? '' : ',' }} }
+            <a [href]="baseUrl +  'entry/pdb/' + entry" target="_blank">{{ entry }}</a>{{ islast? '' : ',' }} }
             <div class="control">
               @if(entriesArray.length > 5){
               <span role="button" class="related-entry-toggle" (click)="toggleEntriesList()"
@@ -195,7 +195,7 @@
               />
             </div>
             <article>
-              <a [href]="util.baseUrl() + 'entry/search/index?complex_id:' + assemblyData()?.complexId" target="_blank">{{ assemblyData()?.complexId }}</a>
+              <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?complex_id:' + assemblyData()?.complexId" target="_blank">{{ assemblyData()?.complexId }}</a>
               <i class="icon icon-common icon-search"></i>
             </article>
           </div>
@@ -273,7 +273,7 @@
           <p>
             Try exploring other entries published alongside this one for additional details.<br />
             Related entries @for (relatedEntry of relatedEntries(); track relatedEntry; let islast = $last) {
-            <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+            <a [href]="baseUrl + 'entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
             @if (islast === false) { , } }
           </p>
           } } }
@@ -326,7 +326,7 @@
           <p>
             Try exploring other entries published alongside this one for additional details.<br />
             Related entries @for (relatedEntry of relatedEntries(); track relatedEntry; let islast = $last) {
-            <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+            <a [href]="baseUrl + 'entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
             @if (islast === false) { , } }
           </p>
           } } }
@@ -404,7 +404,7 @@
           <p>
             Try exploring other entries published alongside this one for additional details.<br />
             Related entries @for (relatedEntry of relatedEntries(); track relatedEntry; let islast = $last) {
-            <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+            <a [href]="baseUrl + 'entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
             @if (islast === false) { , } }
           </p>
           } } }
@@ -457,7 +457,7 @@
           <p>
             Try exploring other entries published alongside this one for additional details.<br />
             Related entries @for (relatedEntry of relatedEntries(); track relatedEntry; let islast = $last) {
-            <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
+            <a [href]="baseUrl + 'entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
             @if (islast === false) { , } }
           </p>
           } } }

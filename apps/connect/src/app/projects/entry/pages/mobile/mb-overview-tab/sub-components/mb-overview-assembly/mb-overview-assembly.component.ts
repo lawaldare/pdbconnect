@@ -6,6 +6,8 @@ import { EntrySelectors } from '../../../../../store/entry.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EntryActions } from '../../../../../store/entry.actions';
 import { ApplicationAPIDispatcher } from '../../../../../services/application-api-dispacher.service';
+import { GoogleAnalyticsService } from '@pdbc/core';
+import { baseUrl } from '../../../../../entry-constant';
 
 @Component({
   selector: 'pdbc-mb-overview-assembly',
@@ -17,6 +19,9 @@ import { ApplicationAPIDispatcher } from '../../../../../services/application-ap
 export class MbOverviewAssemblyComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
+  public readonly gAS = inject(GoogleAnalyticsService);
+  // public baseUrl = baseUrl;
+  public baseUrl = 'https://wwwdev.ebi.ac.uk/pdbe/';
 
   public readonly processedAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
 

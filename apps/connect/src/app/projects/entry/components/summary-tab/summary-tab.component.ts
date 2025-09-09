@@ -5,7 +5,7 @@ import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { UtilService } from '@pdbc/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { assemblyCompositionTooltip, assemblyNameTooltip, complexIdTooltip, preferredAssemblyTooltip } from '../../entry-constant';
+import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../entry-constant';
 import { modelQualitySummaryTooltip } from '../../entry-constant';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -42,6 +42,7 @@ export class SummaryTabComponent {
   private readonly compCommunication = inject(ComponentCommunicationService);
 
   public readonly gAS = inject(GoogleAnalyticsService);
+  public baseUrl = baseUrl;
 
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly organismScientificNames = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));

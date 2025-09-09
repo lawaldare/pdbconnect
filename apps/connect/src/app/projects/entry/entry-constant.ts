@@ -131,7 +131,7 @@ export const depositionDateTooltip = 'Date when the coordinates were deposited t
 export const releaseDateTooltip = 'Date when the coordinates were released in the PDB archive';
 export const revisionDateTooltip = 'Date of the current version or last minor or major revision of a PDB entry';
 
-const baseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
+export const baseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
 const ligandBaseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe-srv/pdbechem/' : 'https://wwwdev.ebi.ac.uk/pdbe-srv/pdbechem/';
 
 /**

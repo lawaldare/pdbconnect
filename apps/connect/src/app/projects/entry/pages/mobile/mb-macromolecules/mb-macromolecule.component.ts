@@ -22,6 +22,7 @@ import { EntryActions } from '../../../store/entry.actions';
 import { ProcessedMacromolecule } from '../../../store/data-processing/models/processed-entities.model';
 import { getUniProtsDataForMacromolecule } from '../../../store/data-processing/macromolecule-processing';
 import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
+import { baseUrl } from '../../../entry-constant';
 
 export enum ViewState {
   List = 'list',
@@ -67,6 +68,7 @@ export class MbMacromoleculeComponent implements OnInit {
   public readonly proteinsStatsObservable = this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds);
 
   private readonly utilService = inject(UtilService);
+  public baseUrl = baseUrl;
 
   public expanded = signal<boolean>(false);
   public readonly util = inject(UtilService);

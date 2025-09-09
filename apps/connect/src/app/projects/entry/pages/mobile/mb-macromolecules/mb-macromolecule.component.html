@@ -69,7 +69,7 @@
           Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a>
           @if (getNumberStructures(residue.uniprot)) {
           <a
-            [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot"
+            [href]="baseUrl + 'pdbe-kb/proteins/' + residue.uniprot"
             target="_blank"
             (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
                 kb_website: 'proteins',
@@ -87,7 +87,7 @@
           Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a> @if
           (getNumberStructures(residue.uniprot)) {
           <a
-            [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot"
+            [href]="baseUrl + 'pdbe-kb/proteins/' + residue.uniprot"
             target="_blank"
             (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
                 kb_website: 'proteins',
@@ -106,7 +106,7 @@
           Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a> @if
           (getNumberStructures(residue.uniprot)) {
           <a
-            [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot"
+            [href]="baseUrl + 'pdbe-kb/proteins/' + residue.uniprot"
             target="_blank"
             (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
                 kb_website: 'proteins',
