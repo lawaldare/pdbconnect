@@ -37,7 +37,7 @@ import { EntryBioschemasService } from '../../services/entry.bioschemas';
 import { ErrorPageComponent } from '../../../../error-page/error-page.component';
 import { Meta, Title } from '@angular/platform-browser';
 import { ApplicationAPIDispatcher } from '../../services/application-api-dispacher.service';
-import { SpeedTestService } from 'ng-speed-test';
+import { SpeedTestServiceCustom } from '../../services/speed-test/speed-test-service.service';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -89,7 +89,7 @@ export class EntryMainPageComponent implements OnInit {
   private readonly entryBioschemasService = inject(EntryBioschemasService);
   private readonly renderer = inject(Renderer2);
   public readonly gAS = inject(GoogleAnalyticsService);
-  private readonly speedTest = inject(SpeedTestService);
+  private readonly speedTest = inject(SpeedTestServiceCustom);
 
   private procAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
   private procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
