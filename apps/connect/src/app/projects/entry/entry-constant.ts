@@ -139,7 +139,32 @@ const ligandBaseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://ww
  */
 
 export const dashboardStatLinks = {
-  Assemblies: [],
+  Complexes: [
+    {
+      id: 'pdbs',
+      displayName: 'structures',
+      link: `${baseUrl}pdbe-kb/complexes/`,
+      linkSuffix: '?activeTab=structures',
+    },
+    {
+      id: 'ligands',
+      displayName: 'ligands',
+      link: `${baseUrl}pdbe-kb/complexes/`,
+      linkSuffix: '?activeTab=ligands',
+    },
+    {
+      id: 'supercomplexes',
+      displayName: 'supercomplexes',
+      link: `${baseUrl}pdbe-kb/complexes/`,
+      linkSuffix: '?activeTab=supercomplexes',
+    },
+    {
+      id: 'subcomplexes',
+      displayName: 'subcomplexes',
+      link: `${baseUrl}pdbe-kb/complexes/`,
+      linkSuffix: '?activeTab=subcomplexes',
+    },
+  ],
   Macromolecules: [
     {
       id: 'pdbs',

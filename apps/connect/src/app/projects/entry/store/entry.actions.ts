@@ -35,6 +35,7 @@ import { LigandOrModUICard, ProcessedLigandOrMod } from './data-processing/ligan
 import { DomainsWithMacromolecules, DomainUICard } from './data-processing/domain-processing';
 import { ProcessedDomain, ProcessedMacromolecule } from './data-processing/models/processed-entities.model';
 import { LigandSummaryStats } from '../data-models/ligand-summary-stats.model';
+import { ComplexSummaryStats } from '../data-models/complex-summary-stats.model';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -58,6 +59,9 @@ export const EntryActions = createActionGroup({
     'Get LigandSummary': emptyProps(),
     'Get LigandSummary Success': props<{ ligandPagesSummary: LigandSummaryStats[] }>(),
     'Get LigandSummary Failure': emptyProps(),
+    'Get ComplexSummary': emptyProps(),
+    'Get ComplexSummary Success': props<{ complexPagesSummary: ComplexSummaryStats }>(),
+    'Get ComplexSummary Failure': emptyProps(),
     'Get IsoformsMapping': emptyProps(),
     'Get IsoformsMapping Success': props<{ isoformsMapping: UniProtMapping }>(),
     'Get IsoformsMapping Failure': emptyProps(),

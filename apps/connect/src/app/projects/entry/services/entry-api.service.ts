@@ -34,6 +34,7 @@ import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers
 import { LLMAnnotation } from '../data-models/llm-model';
 import { ResidueListed, ResidueListing } from '../data-models/residue-listing.model';
 import { LigandSummaryStats } from '../data-models/ligand-summary-stats.model';
+import { ComplexSummaryStats } from '../data-models/complex-summary-stats.model';
 // import { Router } from '@angular/router';
 
 @Injectable({
@@ -138,6 +139,27 @@ export class EntryApiService {
 
   public getLigandSummaryStats(entryId: string): Observable<LigandSummaryStats[]> {
     return this.http.get<Record<string, LigandSummaryStats[]>>(`${this.BASE_API}ligand_summary_stats/${entryId}`).pipe(map((data) => data[entryId]));
+  }
+
+  public getComplexSummaryStats(entryId: string): Observable<ComplexSummaryStats> {
+    return this.http.get<Record<string, ComplexSummaryStats>>(`${this.BASE_API}complex_summary_stats/${entryId}`).pipe(
+      map((data) => data[entryId]),
+      catchError((error) => {
+        if (error?.status === 404) {
+          const stats: ComplexSummaryStats = {};
+          stats[`${entryId}_1`] = {
+            pdb_complex_id: undefined,
+            preferred_assembly: true,
+            pdbs: 0,
+            ligands: 0,
+            subcomplexes: 0,
+            supercomplexes: 0,
+          };
+          return of(stats);
+        }
+        return throwError(() => error); // rethrow for anything else
+      })
+    );
   }
 
   public getIsoformsMapping(entryId: string): Observable<UniProtMapping> {

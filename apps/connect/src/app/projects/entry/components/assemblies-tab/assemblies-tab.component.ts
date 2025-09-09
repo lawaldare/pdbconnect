@@ -7,9 +7,9 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
-import { entryAssembliesTooltips } from '../../entry-constant';
+import { dashboardStatLinks, entryAssembliesTooltips } from '../../entry-constant';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { PopupWindowService, UtilService } from '@pdbc/core';
+import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { filter, firstValueFrom, take, timer } from 'rxjs';
 import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
@@ -23,9 +23,13 @@ import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
 })
 export class AssembliesTabComponent {
   public readonly compCommunication = inject(ComponentCommunicationService);
+  public readonly gAS = inject(GoogleAnalyticsService);
+
+  public dashboardStatLinks = dashboardStatLinks;
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly assemblySummaryDict = toSignal(this.globalStore.select(EntrySelectors.complexPagesSummary));
 
   private molstarReady = signal(false);
   private _molstarComponent?: MolstarComponent;
@@ -76,6 +80,18 @@ export class AssembliesTabComponent {
       this.triggerMolstarSideEffect();
     }
     return datum;
+  });
+
+  public selectionStats = computed(() => {
+    const assemblySummaryDict = this.assemblySummaryDict();
+    const entryId = this.entryId();
+    const currentAssembly = this.currentAssemblyDatum();
+    if (entryId && assemblySummaryDict && currentAssembly) {
+      const currentAssemblyId = `${entryId}_${currentAssembly.assemblyId}`;
+      const datum = assemblySummaryDict[currentAssemblyId];
+      if (datum) return datum as any;
+    }
+    return undefined;
   });
 
   public readonly preferredSymmetry = computed(() => {
@@ -163,5 +179,9 @@ export class AssembliesTabComponent {
 
   public toggleSidebar() {
     this.isSidebarDisplayed.update((prev) => !prev);
+  }
+
+  public generateComplexSearchUrl(term: string): string {
+    return this.util.generateQueryURL(term, 'complex_id');
   }
 }

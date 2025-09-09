@@ -71,6 +71,7 @@ export const EntrySelectors = {
   processedDomainsWithMacromols: createSelector(EntryStoreState, (state: EntryStoreState) => state.processedDomainsWithMacromols),
   processedPrefAssembly: createSelector(EntryStoreState, (state: EntryStoreState) => state.processedPrefAssembly),
   ligandPagesSummary: createSelector(EntryStoreState, (state: EntryStoreState) => state.ligandPagesSummary),
+  complexPagesSummary: createSelector(EntryStoreState, (state: EntryStoreState) => state.complexPagesSummary),
   entityPvUniprot: createSelector(EntryStoreState, (state: EntryStoreState) => state.entityPvUniprot),
   entityPvChains: createSelector(EntryStoreState, (state: EntryStoreState) => state.entityPvChains),
   entityPvDomains: createSelector(EntryStoreState, (state: EntryStoreState) => state.entityPvDomains),

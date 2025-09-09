@@ -83,6 +83,7 @@ export class ApplicationAPIDispatcher {
         ...[
           // EntryActions.getProcessedAssemblies // called in desktop tabs above
           EntryActions.getSymmetry,
+          EntryActions.getComplexSummary,
         ]
       );
     } else if (tabName === 'macromolecules') {

@@ -82,6 +82,7 @@ const initialState: EntryStoreState = {
   processedMacromoleculesForLLM: undefined,
   processedPrefAssembly: undefined,
   ligandPagesSummary: undefined,
+  complexPagesSummary: undefined,
   entityPvUniprot: {},
   entityPvChains: {},
   entityPvDomains: {},
@@ -227,6 +228,10 @@ export const entryReducer = createReducer(
   on(EntryActions.getLigandSummarySuccess, (state, action) => ({
     ...state,
     ligandPagesSummary: action.ligandPagesSummary,
+  })),
+  on(EntryActions.getComplexSummarySuccess, (state, action) => ({
+    ...state,
+    complexPagesSummary: action.complexPagesSummary,
   })),
   on(EntryActions.getUniprotSummarySuccess, (state, action) => {
     const prevData = state.proteinPagesSummaryByUniProtIds ?? {};

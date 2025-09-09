@@ -502,6 +502,22 @@ export class EntryEffects {
     )
   );
 
+  getComplexSummary$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getComplexSummary),
+      switchMap(() => combineLatest([this.store.select(EntrySelectors.entryId).pipe(take(1)), this.store.select(EntrySelectors.complexPagesSummary).pipe(take(1))])),
+      mergeMap(([entryId, cachedCompSummary]) => {
+        if (cachedCompSummary !== undefined) {
+          return of(EntryActions.getComplexSummarySuccess({ complexPagesSummary: cachedCompSummary }));
+        }
+        return this.entryAPIService.getComplexSummaryStats(entryId).pipe(
+          map((complexPagesSummary) => EntryActions.getComplexSummarySuccess({ complexPagesSummary })),
+          catchError(() => of(EntryActions.getComplexSummaryFailure()))
+        );
+      })
+    )
+  );
+
   getUniProtSummary$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getUniprotSummary),

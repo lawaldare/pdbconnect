@@ -114,6 +114,22 @@ article {
   align-items: center;
   gap: 5px;
   flex-wrap: wrap;
+
+  i {
+    display: inline-block;
+  }
+
+  i::before {
+    --icon-search-color: #3b6fb6;
+
+    content: '';
+    width: 13px;
+    height: 13px;
+    mask-size: auto 13px;
+    position: absolute;
+    z-index: -1;
+    top: 2px;
+  }
 }
 
 .molstar-details-container {

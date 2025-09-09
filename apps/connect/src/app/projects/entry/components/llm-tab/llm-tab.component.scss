@@ -276,3 +276,16 @@ article {
     max-height: unset !important;
   }
 }
+
+article i.icon-search::before {
+  --icon-search-color: #3b6fb6;
+
+  content: '';
+  width: 13px;
+  height: 13px;
+  mask-size: auto 13px;
+  position: absolute;
+  z-index: -1;
+  top: 5px;
+  left: 4px;
+}

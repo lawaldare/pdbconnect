@@ -37,6 +37,7 @@ import { LigandOrModUICard, ProcessedLigandOrMod } from './data-processing/ligan
 import { DomainsWithMacromolecules, DomainUICard } from './data-processing/domain-processing';
 import { ProcessedDomain, ProcessedMacromolecule } from './data-processing/models/processed-entities.model';
 import { LigandSummaryStats } from '../data-models/ligand-summary-stats.model';
+import { ComplexSummaryStats } from '../data-models/complex-summary-stats.model';
 export interface EntryStoreState {
   entryId: string;
   summaryData: ProcessedSummary | undefined;
@@ -55,6 +56,7 @@ export interface EntryStoreState {
   };
   // complexPagesSummary: ComplexSummaryStats[] | undefined;
   ligandPagesSummary: LigandSummaryStats[] | undefined;
+  complexPagesSummary: ComplexSummaryStats | undefined;
   interproMapping: InterProMappings | undefined;
   isoformsMapping: UniProtMapping | undefined;
   goMapping: GOMapping | undefined;
