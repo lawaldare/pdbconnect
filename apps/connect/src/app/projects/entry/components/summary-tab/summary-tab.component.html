@@ -166,7 +166,7 @@
           <mat-expansion-panel-header>
             <mat-panel-title> Preferred assembly </mat-panel-title>
           </mat-expansion-panel-header>
-          @if (assemblyData()?.name) {
+          @if (lastOpenedAccordionName() === 'Assembly') { @if (assemblyData()?.name) {
           <div class="info-row">
             <div class="info-row-header">
               <h6>Assembly name</h6>
@@ -223,17 +223,20 @@
               }
             </article>
           </div>
-          }
+          } }
         </mat-expansion-panel>
         <mat-expansion-panel id="mm-exp-panel" (opened)="onOpenAccordionPanel('Macromolecules')">
           <mat-expansion-panel-header>
             <mat-panel-title>
-              Macromolecules @if(hasLoadedMacromolecules() === false) {
-              <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
-              } @else { ({{ processedMacromolecules().length }}) }
+              Macromolecules&nbsp;
+              <span class="count-box">
+                @if(hasLoadedMacromolecules() === false) {
+                <mat-progress-spinner [diameter]="17"></mat-progress-spinner>
+                } @else { ({{ processedMacromolecules().length }}) }
+              </span>
             </mat-panel-title>
           </mat-expansion-panel-header>
-          @if (processedMacromolecules().length) {
+          @if (lastOpenedAccordionName() === 'Macromolecules') { @if (processedMacromolecules().length) {
           <!-- Panel Body -->
           <div class="custom-panel-body">
             <!-- Scrollable content only -->
@@ -273,17 +276,20 @@
             <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
             @if (islast === false) { , } }
           </p>
-          } }
+          } } }
         </mat-expansion-panel>
         <mat-expansion-panel id="lig-exp-panel" (opened)="onOpenAccordionPanel('Ligands')">
           <mat-expansion-panel-header>
             <mat-panel-title>
-              Ligands @if(hasLoadedLigands() === false) {
-              <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
-              } @else { ({{ processedLigands().length }}) }
+              Ligands&nbsp;
+              <span class="count-box">
+                @if (hasLoadedLigands() === false) {
+                <mat-progress-spinner mode="indeterminate" [diameter]="17"></mat-progress-spinner>
+                } @else { ({{ processedLigands().length }}) }
+              </span>
             </mat-panel-title>
           </mat-expansion-panel-header>
-          @if (processedLigands().length) {
+          @if (lastOpenedAccordionName() === 'Ligands') { @if (processedLigands().length) {
           <!-- Panel Body -->
           <div class="custom-panel-body">
             <!-- Scrollable content only -->
@@ -323,18 +329,20 @@
             <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
             @if (islast === false) { , } }
           </p>
-          } }
+          } } }
         </mat-expansion-panel>
         <mat-expansion-panel id="dom-exp-panel" (opened)="onOpenAccordionPanel('Domains')">
           <mat-expansion-panel-header>
             <mat-panel-title>
-              Domains @if(hasLoadedDomains() === false) {
-              <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
-              } @else { ({{ domainCount() }}) }
+              Domains&nbsp;
+              <span class="count-box">
+                @if (hasLoadedDomains() === false) {
+                <mat-progress-spinner mode="indeterminate" [diameter]="17"></mat-progress-spinner>
+                } @else { ({{ domainCount() }}) }
+              </span>
             </mat-panel-title>
           </mat-expansion-panel-header>
-
-          @if (domainCount() > 0) {
+          @if (lastOpenedAccordionName() === 'Domains') { @if (domainCount() > 0) {
           <pdbc-entry-dropdown
             [searchable]="false"
             searchTitle="''"
@@ -399,17 +407,20 @@
             <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
             @if (islast === false) { , } }
           </p>
-          } }
+          } } }
         </mat-expansion-panel>
         <mat-expansion-panel id="mod-exp-panel" (opened)="onOpenAccordionPanel('Modifications')">
           <mat-expansion-panel-header>
             <mat-panel-title>
-              Modifications @if(hasLoadedLigands() === false) {
-              <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
-              } @else { ({{ processedModifications().length }}) }
+              Modifications&nbsp;
+              <span class="count-box">
+                @if (hasLoadedLigands() === false) {
+                <mat-progress-spinner mode="indeterminate" [diameter]="17"></mat-progress-spinner>
+                } @else { ({{ processedModifications().length }}) }
+              </span>
             </mat-panel-title>
           </mat-expansion-panel-header>
-          @if (processedModifications().length) {
+          @if (lastOpenedAccordionName() === 'Modifications') { @if (processedModifications().length) {
           <!-- Panel Body -->
           <div class="custom-panel-body">
             <!-- Scrollable content only -->
@@ -449,7 +460,7 @@
             <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + relatedEntry">{{ relatedEntry }}</a>
             @if (islast === false) { , } }
           </p>
-          } }
+          } } }
         </mat-expansion-panel>
       </mat-accordion>
     </section>

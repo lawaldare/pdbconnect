@@ -559,7 +559,8 @@ export class SummaryTabComponent {
   //   return relatedEntriesText;
   // });
 
-  public openedAccordionName?: string;
+  public lastOpenedAccordionName = signal<string | undefined>(undefined);
+  public openedAccordionName = signal<string | undefined>(undefined);
 
   public lastSelection: {
     [key: string]: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined;
@@ -587,10 +588,11 @@ export class SummaryTabComponent {
     this.gAS.logEntryPageEvents('ep_overview_click', {
       tab_name: tabName,
     });
-    if (tabName === this.openedAccordionName) {
-      this.openedAccordionName = undefined;
+    this.lastOpenedAccordionName.set(tabName);
+    if (tabName === this.openedAccordionName()) {
+      this.openedAccordionName.set(undefined);
     } else {
-      this.openedAccordionName = tabName;
+      this.openedAccordionName.set(tabName);
     }
     this.updateView(tabName, false);
   }
@@ -690,8 +692,8 @@ export class SummaryTabComponent {
   }
 
   public async onDropdownSelect(event: string) {
-    if (!this.openedAccordionName) return;
-    const tabName = this.openedAccordionName;
+    const tabName = this.openedAccordionName();
+    if (!tabName) return;
     const listViewItem = this.lastSelection[tabName];
     const subSelectionIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(event);
     if (subSelectionIdx === -1) return;
@@ -753,8 +755,8 @@ export class SummaryTabComponent {
   }
 
   public async zoomInCurrentSelection() {
-    if (!this.openedAccordionName) return;
-    const tabName = this.openedAccordionName;
+    const tabName = this.openedAccordionName();
+    if (!tabName) return;
     const listViewItem = this.lastSelection[tabName];
     if (!listViewItem) return;
     const selectionToZoom = await this.getSelectionObjForSelectionType(listViewItem, tabName, true, true);
