@@ -5,7 +5,7 @@
  * 3. Move generateTableData to helpers
  */
 
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { AssemblyData } from '../../data-models/assembly.model';
 import { LigandMonomer } from '../../data-models/ligand-monomers.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';

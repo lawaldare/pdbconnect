@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { InitParams } from 'pdbe-molstar/lib/spec';
+import type { InitParams } from 'pdbe-molstar/lib/spec';
 @Injectable({
   providedIn: 'root',
 })

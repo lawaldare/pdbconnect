@@ -35,12 +35,12 @@ import { Interaction, InteractionFromAPI } from '../../data-models/interaction.m
 import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
 import { Molecule } from '../../data-models/molecule.model';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
-import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions/index';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions';
 import {
   componentExistsInMolstar,
   drawSelectionInMolstar,
+  Molstar370DefaultParams,
   removeComponent,
   showInteractivityFocusInMolstar,
   zoomOutStructureInMolstar,
@@ -160,7 +160,7 @@ export class LigandsTabComponent implements OnInit {
   });
   private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
 
-  public readonly configForMolstar = computed<InitParams | undefined>(() => {
+  public readonly configForMolstar = computed(() => {
     const summary = this.summaryData();
     const entryId = this.entryId();
 
@@ -168,8 +168,8 @@ export class LigandsTabComponent implements OnInit {
     const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
     const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
 
-    const configForMolstar: InitParams = {
-      ...DefaultParams,
+    const configForMolstar = {
+      ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
       assemblyId: preferredAssemblyId,
       bgColor: { r: 255, g: 255, b: 255 },

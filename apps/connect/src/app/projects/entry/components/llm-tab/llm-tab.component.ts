@@ -30,10 +30,9 @@ import {
   removeDuplicatesByKey,
 } from '../../helpers/procesing-for-smart-seq-viewer';
 import { EntryActions } from '../../store/entry.actions';
-import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
-import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
+import { drawSelectionInMolstar, Molstar370DefaultParams, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { SequenceDetail } from '../../store/data-processing/models/other-models';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
@@ -184,7 +183,7 @@ export class LLMTabComponent implements OnInit {
     return this.llmAnnotations()?.filter((annotation, index, self) => index === self.findIndex((a) => a.pdbResidue === annotation.pdbResidue)).length;
   });
 
-  public readonly configForMolstar = computed<InitParams | undefined>(() => {
+  public readonly configForMolstar = computed(() => {
     const summary = this.summaryData();
     const entryId = this.entryId();
 
@@ -192,8 +191,8 @@ export class LLMTabComponent implements OnInit {
     const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
     const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
 
-    const configForMolstar: InitParams = {
-      ...DefaultParams,
+    const configForMolstar = {
+      ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
       assemblyId: preferredAssemblyId,
       bgColor: { r: 255, g: 255, b: 255 },

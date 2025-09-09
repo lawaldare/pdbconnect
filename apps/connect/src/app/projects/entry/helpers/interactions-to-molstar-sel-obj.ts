@@ -1,7 +1,7 @@
 import { INTX_NAME_COLORS } from '../entry-constant';
 import { INTX_NAME_STANDARDIZER } from '../components/ligands-tab/interaction-type.component';
 import { Interaction } from '../data-models/interaction.model';
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
 
 export function interactionsToMolstar(

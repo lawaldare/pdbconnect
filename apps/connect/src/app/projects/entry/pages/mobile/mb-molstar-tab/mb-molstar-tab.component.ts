@@ -10,7 +10,6 @@ import { MobileFacade } from '../mobile.facade';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { take } from 'rxjs';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { initializeModelIdTracking } from '../../../helpers/molstar-nmr-model-tracking';
 import { MobileTabChips } from '../../../store/data-processing/models/other-models';
 import { MbAssembliesComponent } from '../mb-assemblies/mb-assemblies.component';
@@ -20,6 +19,7 @@ import { MbMacromoleculeComponent } from '../mb-macromolecules/mb-macromolecule.
 import { MbModelQualityComponent } from '../mb-model-quality/mb-model-quality.component';
 import { MobileStateService } from '../mobile-state.service';
 import { MobileTabNames } from '../mobile-tab.model';
+import { Molstar370DefaultParams } from '../../../helpers/molstar-helpers';
 
 const MOBILE_COMPONENT_MAP = {
   [MobileTabChips.MQuality]: MbModelQualityComponent,
@@ -79,7 +79,7 @@ export class MbMolstarTabComponent implements AfterViewInit {
   });
   private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
 
-  public readonly configForMolstar = computed<InitParams | undefined>(() => {
+  public readonly configForMolstar = computed(() => {
     const summary = this.summary();
     const entryId = this.entryId();
 
@@ -87,8 +87,8 @@ export class MbMolstarTabComponent implements AfterViewInit {
     const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
     const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
 
-    const configForMolstar: InitParams = {
-      ...DefaultParams,
+    const configForMolstar = {
+      ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
       assemblyId: preferredAssemblyId,
       bgColor: { r: 255, g: 255, b: 255 },

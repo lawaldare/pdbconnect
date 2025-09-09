@@ -10,15 +10,14 @@ import { modelQualitySummaryTooltip } from '../../entry-constant';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { filter, firstValueFrom, map, take, timer } from 'rxjs';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions, getMacromoleculeChainDropdownOptions } from '../../helpers/processed-data-to-controls';
-import { componentExistsInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
+import { componentExistsInMolstar, drawSelectionInMolstar, Molstar370DefaultParams, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { Molecule } from '../../data-models/molecule.model';
 import { EntryActions } from '../../store/entry.actions';
 import { ProcessedDomain, ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
@@ -115,7 +114,7 @@ export class SummaryTabComponent {
   });
   private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
 
-  public readonly configForMolstar = computed<InitParams | undefined>(() => {
+  public readonly configForMolstar = computed(() => {
     const summary = this.summary();
     const entryId = this.entryId();
     // const chainSelection = this.chainSelection();
@@ -124,8 +123,8 @@ export class SummaryTabComponent {
     const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
     const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
 
-    const configForMolstar: InitParams = {
-      ...DefaultParams,
+    const configForMolstar = {
+      ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
       assemblyId: preferredAssemblyId,
       bgColor: { r: 255, g: 255, b: 255 },

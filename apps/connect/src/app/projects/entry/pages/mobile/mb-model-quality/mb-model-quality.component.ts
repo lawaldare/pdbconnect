@@ -10,7 +10,7 @@ import { ValidationDataProcessingFacade } from '../../../components/model-qualit
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { StrucQualityGradientsComponent } from '../../../components/shared/struc-quality-gradients/struc-quality-gradients.component';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { cameraResetInMolstar, drawSelectionInMolstar } from '../../../helpers/molstar-helpers';
 import { MobileStateService } from '../mobile-state.service';
 import { EntryActions } from '../../../store/entry.actions';

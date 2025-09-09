@@ -32,11 +32,10 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { cameraResetInMolstar, drawSelectionInMolstar } from '../../helpers/molstar-helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
+import { cameraResetInMolstar, drawSelectionInMolstar, Molstar370DefaultParams } from '../../helpers/molstar-helpers';
 import { EntryActions } from '../../store/entry.actions';
 import { OutlierDict, ValueLabel } from '../../store/data-processing/models/other-models';
 
@@ -199,14 +198,14 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   });
   private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
 
-  public readonly configForMolstar = computed<InitParams | undefined>(() => {
+  public readonly configForMolstar = computed(() => {
     const entryId = this.entryId();
     // const chainSelection = this.chainSelection();
 
     if (!entryId) return undefined;
 
-    const configForMolstar: InitParams = {
-      ...DefaultParams,
+    const configForMolstar = {
+      ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
       bgColor: { r: 255, g: 255, b: 255 },
       landscape: true,

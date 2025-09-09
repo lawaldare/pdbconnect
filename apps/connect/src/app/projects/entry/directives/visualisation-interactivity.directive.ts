@@ -1,5 +1,5 @@
 import { Directive, HostListener, inject, Input } from '@angular/core';
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { clearInteractivityFocusInMolstar, drawSelectionInMolstar, showInteractivityFocusInMolstar } from '../helpers/molstar-helpers';
 import { timer } from 'rxjs';
 import { protToMolBuildHighlightQuery, protToMolExtractColor, protToMolShouldShowInteraction } from '../helpers/protvista-interactivity';

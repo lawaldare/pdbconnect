@@ -1,4 +1,4 @@
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { SequenceDetail } from '../store/data-processing/models/other-models';
 import { ProcessedDomain, ProcessedMacromolecule } from '../store/data-processing/models/processed-entities.model';
 import { Molecule } from '../data-models/molecule.model';

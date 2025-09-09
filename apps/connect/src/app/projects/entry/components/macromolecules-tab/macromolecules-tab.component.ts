@@ -26,10 +26,9 @@ import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent 
 import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
 import { EntryActions } from '../../store/entry.actions';
-import { InitParams, DefaultParams } from 'pdbe-molstar/lib/spec';
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
-import { drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
+import { drawSelectionInMolstar, Molstar370DefaultParams, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 import { getUniProtsDataForMacromolecule } from '../../store/data-processing/macromolecule-processing';
@@ -111,7 +110,7 @@ export class MacromoleculesTabComponent implements OnInit {
   });
   private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
 
-  public readonly configForMolstar = computed<InitParams | undefined>(() => {
+  public readonly configForMolstar = computed(() => {
     const summary = this.summaryData();
     const entryId = this.entryId();
     // const chainSelection = this.chainSelection();
@@ -120,8 +119,8 @@ export class MacromoleculesTabComponent implements OnInit {
     const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
     const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
 
-    const configForMolstar: InitParams = {
-      ...DefaultParams,
+    const configForMolstar = {
+      ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
       assemblyId: preferredAssemblyId,
       bgColor: { r: 255, g: 255, b: 255 },

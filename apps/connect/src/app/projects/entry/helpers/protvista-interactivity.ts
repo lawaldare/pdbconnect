@@ -1,4 +1,4 @@
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 
 export function protToMolBuildHighlightQuery(detail: any): QueryParam | null {
   if (!detail.start || !detail.end) return null;

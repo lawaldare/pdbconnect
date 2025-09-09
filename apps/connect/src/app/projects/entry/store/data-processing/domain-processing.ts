@@ -1,4 +1,4 @@
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { CathMappings, DomainMapping, PfamMappings, ScopMappings } from '../../data-models/domains.model';
 import { ObservedSegments, PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
 import { Filter } from './models/other-models';

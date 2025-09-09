@@ -1,4 +1,4 @@
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Molecule } from '../../../data-models/molecule.model';
 import { MappedResidue } from './other-models';
 

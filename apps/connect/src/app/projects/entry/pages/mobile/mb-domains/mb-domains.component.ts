@@ -11,7 +11,7 @@ import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
 import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { MobileStateService } from '../mobile-state.service';
 import { EntryActions } from '../../../store/entry.actions';
 import { ProcessedDomain } from '../../../store/data-processing/models/processed-entities.model';

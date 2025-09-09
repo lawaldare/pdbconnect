@@ -24,8 +24,8 @@ import {
   showInteractivityFocusInMolstar,
   zoomOutStructureInMolstar,
 } from '../../../helpers/molstar-helpers';
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions/index';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions';
 import { MobileStateService } from '../mobile-state.service';
 import { getLigandsDropdownOptions } from '../../../helpers/processed-data-to-controls';
 import { ProcessedLigandOrMod } from '../../../store/data-processing/ligand-processing';

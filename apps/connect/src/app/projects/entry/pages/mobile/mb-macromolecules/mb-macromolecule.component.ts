@@ -16,7 +16,7 @@ import { debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer
 import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
 import { MobileStateService } from '../mobile-state.service';
 import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../../helpers/processed-data-to-controls';
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { SequenceDetail } from '../../../store/data-processing/models/other-models';
 import { EntryActions } from '../../../store/entry.actions';
 import { ProcessedMacromolecule } from '../../../store/data-processing/models/processed-entities.model';

@@ -1,5 +1,55 @@
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
+
+// Check InitParams and DefaultParams at:
+// https://github.com/molstar/pdbe-molstar/blob/v3.7.0/src/app/spec.ts
+
+export const Molstar370DefaultParams = {
+  moleculeId: undefined,
+  customData: undefined,
+  assemblyId: undefined,
+  defaultPreset: 'default',
+  ligandView: undefined,
+  alphafoldView: false,
+  superposition: false,
+  superpositionParams: undefined,
+  selection: undefined,
+  galleryView: false,
+
+  visualStyle: undefined,
+  hideStructure: [],
+  loadMaps: false,
+  mapSettings: undefined,
+  bgColor: { r: 0, g: 0, b: 0 },
+  highlightColor: undefined,
+  selectColor: undefined,
+  lighting: undefined,
+
+  validationAnnotation: false,
+  domainAnnotation: false,
+  symmetryAnnotation: false,
+  pdbeUrl: 'https://www.ebi.ac.uk/pdbe/',
+  encoding: 'bcif',
+  lowPrecisionCoords: false,
+  selectInteraction: true,
+  selectBindings: undefined,
+  focusBindings: undefined,
+  granularity: undefined,
+  subscribeEvents: false,
+
+  hideControls: false,
+  hideCanvasControls: [],
+  sequencePanel: false,
+  leftPanel: true,
+  rightPanel: true,
+  logPanel: false,
+  pdbeLink: true,
+  loadingOverlay: false,
+  expanded: false,
+  landscape: false,
+  reactive: false,
+  tabs: 'pdbe',
+};
 
 export async function drawSelectionInMolstar(
   instance?: PDBeMolstarPlugin,
@@ -84,19 +134,3 @@ export async function removeComponent(instance?: PDBeMolstarPlugin, query?: stri
   }
   return hasRemoved;
 }
-
-// DONE: Migrate these functions below
-// DONE: HostListeners as directives
-// SKIP: Refactor tabs to use helpers with a global mutex on compCommunication
-// DONE: On Mobile replace current code for helpers
-// DONE: Remove molstar-state and visualisation on lib-
-// DONE: interactions as QueryParam directly
-// DONE: Clean up CompCommunication
-// SKIP: API handling desktop vs mobile (too similar)
-// DONE: refactor MolSelectionObj functions for QueryParam
-// DONE: Remove temp-mol-sel-obj-to-queryparam
-// DONE: Fix Protvista bugs (1 done, missing unselect click)
-// DONE: Non-observed residues and sequence viewer improvements
-
-// TODO: Protvista refactoring
-// TODO: Try angular comp control seq viewer resize

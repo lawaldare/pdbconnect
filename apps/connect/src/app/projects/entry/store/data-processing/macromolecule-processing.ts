@@ -1,4 +1,4 @@
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Molecule } from '../../data-models/molecule.model';
 import { UniProtMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';

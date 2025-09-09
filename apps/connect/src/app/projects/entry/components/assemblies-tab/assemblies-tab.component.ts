@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
-// import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
@@ -11,10 +10,9 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { entryAssembliesTooltips } from '../../entry-constant';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { PopupWindowService, UtilService } from '@pdbc/core';
-import { DefaultParams, InitParams } from 'pdbe-molstar/lib/spec';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { filter, firstValueFrom, take, timer } from 'rxjs';
-import { EntryActions } from '../../store/entry.actions';
+import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
@@ -25,7 +23,6 @@ import { EntryActions } from '../../store/entry.actions';
 })
 export class AssembliesTabComponent {
   public readonly compCommunication = inject(ComponentCommunicationService);
-  // public readonly dataProcessing = inject(MainDataProcessingFacade);
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
@@ -53,13 +50,11 @@ export class AssembliesTabComponent {
   public readonly util = inject(UtilService);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
-  // public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
   public readonly tabDataLoaded = computed(() => this.processedAssemblies() !== undefined);
 
   public readonly selectedAssemblyIdx = toSignal(this.compCommunication.assemblySelection$);
 
   public readonly assemblyTableRows = computed(() => {
-    // const isLoaded = this.compCommunication.hasProcessedAssemblies();
     const rows = this.processedAssemblies();
     if (!rows) return [];
     return rows;
@@ -92,7 +87,7 @@ export class AssembliesTabComponent {
     return undefined;
   });
 
-  public readonly configForMolstar = computed<InitParams | undefined>(() => {
+  public readonly configForMolstar = computed(() => {
     const assembly = this.currentAssemblyDatum();
     const entryId = this.entryId();
     // const chainSelection = this.chainSelection();
@@ -100,8 +95,10 @@ export class AssembliesTabComponent {
     if (!assembly || !entryId) return undefined;
     const assemblyId = assembly.assemblyId ? assembly.assemblyId : '1';
 
-    const configForMolstar: InitParams = {
-      ...DefaultParams,
+    // Check InitParams and DefaultParams at:
+    // https://github.com/molstar/pdbe-molstar/blob/v3.7.0/src/app/spec.ts
+    const configForMolstar = {
+      ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
       assemblyId: assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },

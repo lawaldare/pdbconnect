@@ -1,4 +1,4 @@
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Filter, PreferredAssemblyData } from './models/other-models';
 import { AssemblyData } from '../../data-models/assembly.model';
 import { ComplexDetails } from '../../data-models/complex-details.model';

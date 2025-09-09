@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 
 @Injectable({
   providedIn: 'root',

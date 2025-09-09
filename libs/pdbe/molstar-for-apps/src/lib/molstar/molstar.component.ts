@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, inject, Input, input, OnChanges, signal, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MolstarPluginService } from '../extension-for-pages/molstart-plugin.service';
-import { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
+import type { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
 
 @Component({
   selector: 'lib-pdbe-molstar',
