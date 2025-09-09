@@ -6,12 +6,18 @@
     </button>
 
     <div class="gallery-image">
-      @if (isLoading) {
+      @if (!isImageLoaded(currentIndex())) {
       <div class="loading-img">
         <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', width: '300px', height: '300px' }"></ngx-skeleton-loader>
       </div>
       }
-      <img [src]="images[currentIndex()]" [alt]="'image-' + currentIndex()" (load)="onImageLoad()" (error)="onImageError()" [class.hidden]="isLoading" />
+      <img
+        [src]="images[currentIndex()]"
+        [alt]="'image-' + currentIndex()"
+        (load)="onImageLoad(currentIndex())"
+        (error)="onImageError(currentIndex())"
+        [class.hidden]="!isImageLoaded(currentIndex())"
+      />
     </div>
 
     <button class="arrow-right right" (click)="next()">

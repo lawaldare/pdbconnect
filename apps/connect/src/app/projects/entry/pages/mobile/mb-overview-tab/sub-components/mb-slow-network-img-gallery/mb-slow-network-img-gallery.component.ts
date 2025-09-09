@@ -16,38 +16,37 @@ export class MbSlowNetworkImageGalleryComponent implements OnInit {
   /** Current index signal */
   public currentIndex = signal(0);
 
-  /** Current img loading status */
-  public isLoading = true;
+  /** Images loading status */
+  private loadedStates: boolean[] = [];
 
   ngOnInit() {
     // When the first image starts loading
-    if (this.images.length > 0) {
-      this.isLoading = true;
-    }
+    this.loadedStates = this.images.map(() => false);
   }
 
-  onImageLoad() {
-    this.isLoading = false;
+  isImageLoaded(index: number): boolean {
+    return this.loadedStates[index];
   }
 
-  onImageError() {
-    this.isLoading = false;
+  onImageLoad(index: number) {
+    this.loadedStates[index] = true;
+  }
+
+  onImageError(index: number) {
+    this.loadedStates[index] = true;
   }
 
   next() {
     if (this.images.length === 0) return;
-    this.isLoading = true; // show spinner immediately
     this.currentIndex.update((i) => (i + 1) % this.images.length);
   }
 
   prev() {
     if (this.images.length === 0) return;
-    this.isLoading = true; // show spinner immediately
     this.currentIndex.update((i) => (i - 1 + this.images.length) % this.images.length);
   }
 
   goTo(index: number) {
-    this.isLoading = true; // show spinner immediately
     this.currentIndex.set(index);
   }
 }
