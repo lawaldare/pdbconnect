@@ -1,12 +1,13 @@
-@if ( loadingStatus() === 'loading' ) {
+@if ( loadingStatus() === 'no-tracks-loaded' ) {
 <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', 'margin-top': '8px' }"></ngx-skeleton-loader>
-} @if ( loadingStatus() === 'invalid') {
+} @else if ( loadingStatus() === 'invalid') {
 <div class="pv-invalid">
   <p>Error: Could not load PDBe Track Viewer</p>
   <p>Please try again later or <a href="https://www.ebi.ac.uk/about/contact/support/PDBe" target="_blank">report this issue</a></p>
 </div>
 }
-<div class="pdbe-protvista" [ngStyle]="{ display: loadedAllData() === true && loadingStatus() !== 'invalid' ? '' : 'none' }">
+<!-- Do not add @if because this needs to be always rendered for tooltips to work -->
+<div class="pdbe-protvista" [ngStyle]="{ display: loadingStatus() !== 'invalid' ? '' : 'none' }">
   <!-- Protvista manager for events and attribute management between components -->
   <nightingale-manager>
     <div class="pv-protvista elements-container">
@@ -78,7 +79,9 @@
       <!-- Div for scrollable Protvista elements -->
       <div id="pv-scrollable" class="scrollable" (scroll)="onPvScroll($event)" [style.maxHeight.px]="calculatedHeight()">
         <!-- For most "normal" tracks -->
-        @for (trackBlock of trackBlocks(); track $index) { @if (loadedTracksAPIData() && trackBlock.data) {
+        @for (trackBlock of trackBlocks(); track $index) { @if (loadingStatusPerTrack()[namesToStatus[trackBlock.name]] === 'not-loaded') {
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '50px', 'margin-top': '8px' }" />
+        } @else if (loadingStatusPerTrack()[namesToStatus[trackBlock.name]] === 'ready-has-data' && trackBlock.data) {
         <lib-pv-track-block
           [trackName]="trackBlock.name"
           [subtracks]="trackBlock.data"
@@ -87,7 +90,7 @@
           [tooltips]="tooltips"
           [isCustomData]="false"
         ></lib-pv-track-block>
-        } @else if (loadedTracksAPIData() && trackBlock.data === null) {
+        } @else {
         <div class="pv-track-row no-data">
           <div class="pv-track-label-col">
             <span class="expand-icon" style="visibility: hidden">▸</span>
@@ -95,12 +98,12 @@
           </div>
           <div class="pv-track-container no-data">No "{{ trackBlock.name }}" data found for this molecule.</div>
         </div>
-        } @else {
-        <div>Loading tracks...</div>
         } }
 
         <!-- For nested "normal" tracks -->
-        @for (trackNestedBlock of trackNestedBlocks(); track $index) { @if(loadedTracksAPIData() === true && trackNestedBlock.data.length > 0) {
+        @for (trackNestedBlock of trackNestedBlocks(); track $index) { @if (loadingStatusPerTrack()[namesToStatus[trackNestedBlock.name]] === 'not-loaded') {
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '50px', 'margin-top': '8px' }" />
+        } @else if (trackNestedBlock.data.length > 0) {
         <lib-pv-nested-track-block
           [trackName]="trackNestedBlock.name"
           [subtrackNames]="trackNestedBlock.dataNames"
@@ -110,7 +113,7 @@
           [tooltips]="tooltips"
           [isCustomData]="false"
         ></lib-pv-nested-track-block>
-        } @else if(loadedTracksAPIData() === true && trackNestedBlock.data.length === 0) {
+        } @else {
         <div class="pv-track-row no-data">
           <div class="pv-track-label-col">
             <span class="expand-icon" style="visibility: hidden">▸</span>
@@ -118,13 +121,13 @@
           </div>
           <div class="pv-track-container no-data">No "{{ trackNestedBlock.name }}" data found for this molecule.</div>
         </div>
-        } @else {
-        <div>Loading tracks...</div>
         } }
 
         <!-- For special conservation track -->
+        @if (loadingStatusPerTrack()['conservation'] === 'not-loaded') {
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '50px', 'margin-top': '8px' }" />
+        } @else if (loadingStatusPerTrack()['conservation'] === 'ready-has-data' && originalConservationData()) {
         <lib-conservation-track-block
-          [ngStyle]="{ display: loadedConservationAPIData() === true && this.originalConservationData() ? '' : 'none' }"
           [sequenceLength]="sequenceLength!"
           [originalConservationData]="originalConservationData"
           [selectionHighlight]="selectionHighlight()"
@@ -132,30 +135,36 @@
           [tooltipText]="tooltips['aaProbs']"
           [isEntryData]="true"
         />
-        <div class="pv-track-row no-data" [ngStyle]="{ display: loadedConservationAPIData() === true && this.originalConservationData() ? 'none' : '' }">
+        } @else {
+        <div class="pv-track-row no-data">
           <div class="pv-track-label-col">
             <span class="expand-icon" style="visibility: hidden">▸</span>
             Conservation
           </div>
           <div class="pv-track-container no-data">No "Conservation" data found for this molecule.</div>
         </div>
+        }
 
         <!-- For special variation track  -->
+        @if (loadingStatusPerTrack()['variation'] === 'not-loaded') {
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '50px', 'margin-top': '8px' }" />
+        } @else if (loadingStatusPerTrack()['variation'] === 'ready-has-data' && originalVariationData()) {
         <lib-variation-track-block
-          [ngStyle]="{ display: loadedVariationAPIData() === true && this.originalVariationData()  ? '' : 'none' }"
           [chainId]="chainId()"
           [sequenceLength]="sequenceLength!"
           [originalVariationData]="originalVariationData"
           [selectionHighlight]="selectionHighlight()"
           [isEntryData]="true"
         />
-        <div class="pv-track-row no-data" [ngStyle]="{ display: loadedVariationAPIData() === true && this.originalVariationData() ? 'none' : '' }">
+        } @else {
+        <div class="pv-track-row no-data">
           <div class="pv-track-label-col">
             <span class="expand-icon" style="visibility: hidden">▸</span>
             Variation
           </div>
           <div class="pv-track-container no-data">No "Variation" data found for this molecule.</div>
         </div>
+        }
 
         <!-- Margin for extra tooltip space -->
         <div [ngStyle]="{ display: originalConservationData() || this.originalVariationData()  ? '' : 'none' }" style="margin-bottom: 150px"></div>
