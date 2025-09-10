@@ -1017,6 +1017,54 @@ export class SmartSequenceVisualisation {
     return `${residueIndex}`;
   }
 
+  private createCheckeredPattern(ctx: CanvasRenderingContext2D, baseColor: string): CanvasPattern {
+    const size = 6; // size of the small squares
+    const patternCanvas = document.createElement('canvas');
+    patternCanvas.width = size * 2;
+    patternCanvas.height = size * 2;
+    const pctx = patternCanvas.getContext('2d')!;
+
+    const lighter = this.lightenColor(baseColor, 0.2);
+
+    // Fill with baseColor
+    pctx.fillStyle = baseColor;
+    pctx.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
+
+    // Draw lighter squares
+    pctx.fillStyle = lighter;
+    pctx.fillRect(0, 0, size, size);
+    pctx.fillRect(size, size, size, size);
+
+    return ctx.createPattern(patternCanvas, 'repeat')!;
+  }
+
+  private createStripedPattern(ctx: CanvasRenderingContext2D, baseColor: string): CanvasPattern {
+    const size = 6; // tile size controls stripe spacing
+    const patternCanvas = document.createElement('canvas');
+    patternCanvas.width = size;
+    patternCanvas.height = size;
+    const pctx = patternCanvas.getContext('2d')!;
+
+    const stripeColor = this.lightenColor(baseColor, 0.3);
+
+    // fill base
+    pctx.fillStyle = baseColor;
+    pctx.fillRect(0, 0, size, size);
+
+    // draw multiple diagonal lines that wrap around the tile
+    pctx.strokeStyle = stripeColor;
+    pctx.lineWidth = 2;
+
+    pctx.beginPath();
+    pctx.moveTo(0, size / 2);
+    pctx.lineTo(size / 2, 0);
+    pctx.moveTo(size / 2, size);
+    pctx.lineTo(size, size / 2);
+    pctx.stroke();
+
+    return ctx.createPattern(patternCanvas, 'repeat')!;
+  }
+
   private drawResidue(ctx: CanvasRenderingContext2D, x: number, yStart: number, char: string, residueIndex: number) {
     const isNonObserved = this.nonObservedResidues?.includes(residueIndex) ?? false;
 
@@ -1030,18 +1078,23 @@ export class SmartSequenceVisualisation {
 
     // Draw light grey cross if residue is non-observed
     if (isNonObserved) {
-      let nonObservedBg = '#d0d0d0';
-      if (bgAnnotationColor) {
-        nonObservedBg = this.colorIsDarkAdvanced(bgAnnotationColor) ? '#000' : '#FFF';
-      }
-      ctx.strokeStyle = nonObservedBg;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(x, yStart + this.maxNumberingBoxHeight);
-      ctx.lineTo(x + this.maxBoxWidth, yStart + this.maxNumberingBoxHeight + this.maxBoxHeight);
-      ctx.moveTo(x + this.maxBoxWidth, yStart + this.maxNumberingBoxHeight);
-      ctx.lineTo(x, yStart + this.maxNumberingBoxHeight + this.maxBoxHeight);
-      ctx.stroke();
+      // let nonObservedBg = '#d0d0d0';
+      // if (bgAnnotationColor) {
+      //   nonObservedBg = this.colorIsDarkAdvanced(bgAnnotationColor) ? '#000' : '#FFF';
+      // }
+      // ctx.strokeStyle = nonObservedBg;
+      // ctx.lineWidth = 3;
+      // ctx.beginPath();
+      // ctx.moveTo(x, yStart + this.maxNumberingBoxHeight);
+      // ctx.lineTo(x + this.maxBoxWidth, yStart + this.maxNumberingBoxHeight + this.maxBoxHeight);
+      // ctx.moveTo(x + this.maxBoxWidth, yStart + this.maxNumberingBoxHeight);
+      // ctx.lineTo(x, yStart + this.maxNumberingBoxHeight + this.maxBoxHeight);
+      // ctx.stroke();
+
+      const base = bgAnnotationColor ?? '#d0d0d0';
+      const pattern = this.createStripedPattern(ctx, base);
+      ctx.fillStyle = pattern;
+      ctx.fillRect(x, yStart + this.maxNumberingBoxHeight, this.maxBoxWidth, this.maxBoxHeight);
     }
 
     // Decide residue text color between black and white based on background
@@ -1232,13 +1285,18 @@ export class SmartSequenceVisualisation {
     };
 
     html += `<div style="margin-top: 8px;">`;
+    let hasWrittenContainer = false;
+    let hasWrittenAbsent = false;
     for (const annotation of this.annotations) {
       if (annotation.rendering === 'TextColour') continue;
       // html += `<div style="font-weight: bold; line-height: 22.4px; font-size: 13px; margin: 0; margin-bottom: 4px;">${annotation.name}</div>`;
 
       const domain = annotation.scaleDomain === 'auto' ? [...new Set(annotation.data.map((d) => d.value))] : annotation.scaleDomain;
 
-      html += `<div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; margin: 4px;">`;
+      if (!hasWrittenContainer) {
+        html += `<div style="display: flex; flex-direction: row; flex-wrap: wrap; row-gap: 2px; column-gap: 12px; margin: 4px;">`;
+        hasWrittenContainer = true;
+      }
       for (let i = 0; i < domain.length; i++) {
         const label = domain[i];
         const color = annotation.scaleRange[i] || '#000';
@@ -1246,8 +1304,31 @@ export class SmartSequenceVisualisation {
 
         html += `<div style="width: fit-content;">${icon}<span style="font-size: 13px;">${label}</span></div>`;
       }
-      html += `</div>`;
     }
+    if (!hasWrittenAbsent && this.nonObservedResidues && this.nonObservedResidues.length > 0) {
+      const absentIcon = `
+        <div style="
+          display:inline-block;
+          width:16px;
+          height:16px;
+          margin-right: 2px;
+          border:1px solid #aaa;
+          background-color: #f2f2f2;
+          background-image: repeating-linear-gradient(
+            135deg,          /* smooth diagonal */
+            #b3b3b3 0,       /* stripe color */
+            #b3b3b3 3px,     /* stripe thickness */
+            transparent 3px, 
+            transparent 6px  /* spacing between stripes */
+          );
+        ">
+        </div>
+      `;
+      const absentLabel = 'Absent coordinates';
+      html += `<div style="width: fit-content;">${absentIcon}<span style="font-size: 13px;">${absentLabel}</span></div>`;
+      hasWrittenAbsent = true;
+    }
+    html += `</div>`;
     html += `</div>`;
 
     return html;
@@ -1582,6 +1663,19 @@ export class SmartSequenceVisualisation {
     });
     const L = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
     return L <= 0.179;
+  }
+
+  private lightenColor(hex: string, percent: number): string {
+    const num = parseInt(hex.replace('#', ''), 16);
+    let r = (num >> 16) + Math.round(255 * percent);
+    let g = ((num >> 8) & 0x00ff) + Math.round(255 * percent);
+    let b = (num & 0x0000ff) + Math.round(255 * percent);
+
+    r = r > 255 ? 255 : r;
+    g = g > 255 ? 255 : g;
+    b = b > 255 ? 255 : b;
+
+    return `rgb(${r},${g},${b})`;
   }
 
   public destroy() {
