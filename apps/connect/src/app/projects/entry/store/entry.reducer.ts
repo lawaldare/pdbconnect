@@ -24,7 +24,7 @@ const initialState: EntryStoreState = {
   macromolsDescriptions: undefined,
   macromolsChainsToEntityIds: undefined,
   boundLigands: [],
-  boundMolecules: [],
+  boundMolecules: undefined,
   organismScientificNames: [],
   hasRNA: false,
   experimentalDetails: undefined,

@@ -31,11 +31,12 @@ export class ApplicationAPIDispatcher {
           EntryActions.getEntryPolymerCoverage,
           EntryActions.getLLMAnnotations,
           EntryActions.getUniprotMapping,
+          EntryActions.getBoundMolecules,
           // needs: assemblies, pisaAssemblies, summaryData, complexDetails
           EntryActions.getProcessedAssemblies,
           // needs: summaryData, assemblies, polymerCoverage, cathMapping, scop175Mapping, pfamMapping, macroMolecules
           EntryActions.getProcessedDomains,
-          // needs: summaryData, assemblies, boundLigands, ligandMonomers, modifications
+          // needs: summaryData, assemblies, boundLigands, boundMolecules, ligandMonomers, modifications
           EntryActions.getProcessedLigands,
           // needs: summaryData, assemblies, macroMolecules, carbohydrates
           EntryActions.getProcessedMacromolecules,

@@ -27,41 +27,36 @@ export class MbStructureOverviewComponent implements OnInit {
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly organismScientificNames = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames)); // molecules
-  public readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules)); // all processedMacro
-  public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands)); // all processedLigands
+
+  public readonly macromoleculesFilters = toSignal(this.globalStore.select(EntrySelectors.procMacromoleculesFilters));
+  public readonly ligandsAndModsFilters = toSignal(this.globalStore.select(EntrySelectors.procLigandsFilters));
+
   public readonly resolutionValues = toSignal(this.globalStore.select(EntrySelectors.resolutionValues)); // experiment
   public readonly experimentalMethod = toSignal(this.globalStore.select(EntrySelectors.experimentalMethod)); // experiment
 
   public readonly overviewDataLoaded = computed(() => {
-    const loadedLigands = this.processedLigands() !== undefined;
-    const loadedMacromolecules = this.processedMacromolecules() !== undefined;
+    const loadedLigands = this.ligandsAndModsFilters() !== undefined;
+    const loadedMacromolecules = this.macromoleculesFilters() !== undefined;
     const isLoaded = loadedLigands && loadedMacromolecules;
     return isLoaded;
   });
 
   public readonly miniFilters = computed(() => {
-    const loadedLigands = this.processedLigands() !== undefined;
-    const loadedMacromolecules = this.processedMacromolecules() !== undefined;
+    const loadedLigands = this.ligandsAndModsFilters() !== undefined;
+    const loadedMacromolecules = this.macromoleculesFilters() !== undefined;
     const isLoaded = loadedLigands && loadedMacromolecules;
 
     if (!isLoaded) return [];
     const filters: Filter[] = [];
 
-    const macromolecules = this.processedMacromolecules();
-    if (macromolecules) {
-      const macromoleculesMols = macromolecules.map((mm) => mm.additionalData.molecule);
-      filters.push(...generateMacromoleculesTableFilters(macromoleculesMols).filter((f) => !f.description.includes('All')));
+    const macromoleculesFilters = this.macromoleculesFilters();
+    if (macromoleculesFilters) {
+      filters.push(...macromoleculesFilters.filter((f) => !f.description.includes('All')));
     }
 
-    const ligandsAndMods = this.processedLigands();
-    if (ligandsAndMods !== undefined) {
-      const ligands = ligandsAndMods.filter((lm) => lm.type === 'ligand').map((ligand) => ligand.additionalData.source);
-
-      const modifications = ligandsAndMods.filter((lm) => lm.type === 'modification').map((modification) => modification.additionalData.source);
-
-      const modificationsFlat = (<ModifiedResidue[][]>modifications).flat();
-
-      filters.push(...generateLigandsAndModsTableFilters(<Molecule[]>ligands, modificationsFlat).filter((f) => !f.description.includes('All')));
+    const ligandsAndModsFilters = this.ligandsAndModsFilters();
+    if (ligandsAndModsFilters !== undefined) {
+      filters.push(...ligandsAndModsFilters.filter((f) => !f.description.includes('All')));
     }
     return filters;
   });
@@ -71,10 +66,11 @@ export class MbStructureOverviewComponent implements OnInit {
       EntryActions.getAssemblies,
       EntryActions.getEntryMolecules,
       EntryActions.getEntryLigandMonomers,
-      EntryActions.getProcessedLigands,
-      EntryActions.getCarbohydrates,
+      EntryActions.getBoundMolecules,
       EntryActions.getModifications,
-      EntryActions.getProcessedMacromolecules,
+      EntryActions.getCarbohydrates,
+      EntryActions.getProcLigandsFilters,
+      EntryActions.getProcMacromoleculesFilters,
       EntryActions.getExperiment,
     ]);
     //   this.globalStore.dispatch(EntryActions.getAssemblies());

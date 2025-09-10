@@ -370,7 +370,7 @@ export class EntryApiService {
   }
 
   public getBoundMolecules(entryId: string): Observable<BoundMolecule[]> {
-    return this.http.get<Record<string, BoundMolecule[]>>(`${this.BASE_API}bound_molecules/${entryId}`).pipe(
+    return this.http.get<Record<string, BoundMolecule[]>>(`${this.AggregatedApiUrl}pdb/bound_molecules/${entryId}`).pipe(
       map((data) => {
         return data[entryId];
       }),
