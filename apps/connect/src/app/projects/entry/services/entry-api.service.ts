@@ -35,6 +35,7 @@ import { LLMAnnotation } from '../data-models/llm-model';
 import { ResidueListed, ResidueListing } from '../data-models/residue-listing.model';
 import { LigandSummaryStats } from '../data-models/ligand-summary-stats.model';
 import { ComplexSummaryStats } from '../data-models/complex-summary-stats.model';
+import { BoundMolecule } from '../data-models/bound-molecule.model';
 // import { Router } from '@angular/router';
 
 @Injectable({
@@ -362,6 +363,20 @@ export class EntryApiService {
       catchError((error) => {
         if (error?.status === 404) {
           return of({ empty: true } as unknown as LigandMonomer[]);
+        }
+        return throwError(() => error); // rethrow for anything else
+      })
+    );
+  }
+
+  public getBoundMolecules(entryId: string): Observable<BoundMolecule[]> {
+    return this.http.get<Record<string, BoundMolecule[]>>(`${this.BASE_API}bound_molecules/${entryId}`).pipe(
+      map((data) => {
+        return data[entryId];
+      }),
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of([]);
         }
         return throwError(() => error); // rethrow for anything else
       })

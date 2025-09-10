@@ -52,6 +52,7 @@ export const EntrySelectors = {
   symmetry: createSelector(EntryStoreState, (state: EntryStoreState) => state.symmetry),
   polymerCoverage: createSelector(EntryStoreState, (state: EntryStoreState) => state.polymerCoverage),
   ligandMonomers: createSelector(EntryStoreState, (state: EntryStoreState) => state.ligandMonomers),
+  boundMolecules: createSelector(EntryStoreState, (state: EntryStoreState) => state.boundMolecules),
   residueWiseOutliers: createSelector(EntryStoreState, (state: EntryStoreState) => state.residueWiseOutliers),
   outliersByModelId: createSelector(EntryStoreState, (state: EntryStoreState) => state.outliersByModelId),
   processedAssemblies: createSelector(EntryStoreState, (state: EntryStoreState) => state.processedAssemblies),

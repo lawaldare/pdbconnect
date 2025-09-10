@@ -38,6 +38,7 @@ import { DomainsWithMacromolecules, DomainUICard } from './data-processing/domai
 import { ProcessedDomain, ProcessedMacromolecule } from './data-processing/models/processed-entities.model';
 import { LigandSummaryStats } from '../data-models/ligand-summary-stats.model';
 import { ComplexSummaryStats } from '../data-models/complex-summary-stats.model';
+import { BoundMolecule } from '../data-models/bound-molecule.model';
 export interface EntryStoreState {
   entryId: string;
   summaryData: ProcessedSummary | undefined;
@@ -45,6 +46,7 @@ export interface EntryStoreState {
   macromolsDescriptions: MacromoleculesDescriptions | undefined;
   macromolsChainsToEntityIds: { [key: string]: string } | undefined;
   boundLigands: Molecule[] | undefined;
+  boundMolecules: BoundMolecule[] | undefined;
   organismScientificNames: string[];
   hasRNA: boolean;
   experimentalDetails: AnyExperimentDetail[] | undefined;

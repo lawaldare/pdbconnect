@@ -36,6 +36,7 @@ import { DomainsWithMacromolecules, DomainUICard } from './data-processing/domai
 import { ProcessedDomain, ProcessedMacromolecule } from './data-processing/models/processed-entities.model';
 import { LigandSummaryStats } from '../data-models/ligand-summary-stats.model';
 import { ComplexSummaryStats } from '../data-models/complex-summary-stats.model';
+import { BoundMolecule } from '../data-models/bound-molecule.model';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -56,6 +57,9 @@ export const EntryActions = createActionGroup({
     'Get UniprotSummary': props<{ uniprotId: string }>(),
     'Get UniprotSummary Success': props<{ uniprotId: string; unpSummaryData: ProteinSummaryStats }>(),
     'Get UniprotSummary Failure': emptyProps(),
+    'Get BoundMolecules': emptyProps(),
+    'Get BoundMolecules Success': props<{ boundMolecules: BoundMolecule[] }>(),
+    'Get BoundMolecules Failure': emptyProps(),
     'Get LigandSummary': emptyProps(),
     'Get LigandSummary Success': props<{ ligandPagesSummary: LigandSummaryStats[] }>(),
     'Get LigandSummary Failure': emptyProps(),

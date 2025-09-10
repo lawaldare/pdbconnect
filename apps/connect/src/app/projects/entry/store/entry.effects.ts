@@ -787,6 +787,22 @@ export class EntryEffects {
     )
   );
 
+  getBoundMolecules$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getBoundMolecules),
+      switchMap(() => combineLatest([this.store.select(EntrySelectors.entryId).pipe(take(1)), this.store.select(EntrySelectors.boundMolecules).pipe(take(1))])),
+      mergeMap(([entryId, cachedBndMolecules]) => {
+        if (cachedBndMolecules !== undefined) {
+          return of(EntryActions.getBoundMoleculesSuccess({ boundMolecules: cachedBndMolecules }));
+        }
+        return this.entryAPIService.getBoundMolecules(entryId).pipe(
+          map((boundMolecules) => EntryActions.getBoundMoleculesSuccess({ boundMolecules })),
+          catchError(() => of(EntryActions.getBoundMoleculesFailure()))
+        );
+      })
+    )
+  );
+
   getResidueWiseOutliers$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryResidueWiseOutliers),
