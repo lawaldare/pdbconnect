@@ -519,7 +519,7 @@
       </div>
       <div class="container-3d">
         <div class="molstar-parent">
-          @if (!molstarFirstRenderFinished()) {
+          @if (!configForMolstar()) {
           <div [style.width]="'100%'">
             <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
           </div>
