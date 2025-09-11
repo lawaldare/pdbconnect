@@ -787,6 +787,22 @@ export class EntryEffects {
     )
   );
 
+  getBoundMolecules$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getBoundMolecules),
+      switchMap(() => combineLatest([this.store.select(EntrySelectors.entryId).pipe(take(1)), this.store.select(EntrySelectors.boundMolecules).pipe(take(1))])),
+      mergeMap(([entryId, cachedBndMolecules]) => {
+        if (cachedBndMolecules !== undefined) {
+          return of(EntryActions.getBoundMoleculesSuccess({ boundMolecules: cachedBndMolecules }));
+        }
+        return this.entryAPIService.getBoundMolecules(entryId).pipe(
+          map((boundMolecules) => EntryActions.getBoundMoleculesSuccess({ boundMolecules })),
+          catchError(() => of(EntryActions.getBoundMoleculesFailure()))
+        );
+      })
+    )
+  );
+
   getResidueWiseOutliers$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getEntryResidueWiseOutliers),
@@ -973,21 +989,37 @@ export class EntryEffects {
           this.store.select(EntrySelectors.summaryData),
           this.store.select(EntrySelectors.assemblies),
           this.store.select(EntrySelectors.boundLigands),
+          this.store.select(EntrySelectors.boundMolecules),
+          this.store.select(EntrySelectors.ligandMonomers),
           this.store.select(EntrySelectors.modifications),
         ]).pipe(
           filter(
-            ([summaryData, assemblyData, ligands, modifications]) =>
-              summaryData !== undefined && assemblyData !== undefined && ligands !== undefined && modifications !== undefined
+            ([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) =>
+              summaryData !== undefined &&
+              assemblyData !== undefined &&
+              ligands !== undefined &&
+              boundMolecules !== undefined &&
+              ligandMonomers !== undefined &&
+              modifications !== undefined
           )
           // take(1)
         )
       ),
-      map(([summaryData, assemblyData, ligands, modifications]) => {
-        if (summaryData === undefined || assemblyData === undefined || ligands === undefined || modifications === undefined) throw 'missing data to process ligands';
+      map(([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) => {
+        if (
+          summaryData === undefined ||
+          assemblyData === undefined ||
+          ligands === undefined ||
+          boundMolecules === undefined ||
+          ligandMonomers === undefined ||
+          modifications === undefined
+        )
+          throw 'missing data to process ligands';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         const ligandsForPrefAssembly = filterLigandsByPreferredAssembly(ligands, preferredAssembly);
+        const ligandMonomersForPrefAssembly = filterLigandMonomersByPreferredAssembly(ligandMonomers, boundMolecules, preferredAssembly);
         const modificationsForPrefAssembly = filterModificationsByPreferredAssembly(modifications, preferredAssembly);
-        const procLigandsFilters = generateLigandsAndModsTableFilters(ligandsForPrefAssembly, modificationsForPrefAssembly);
+        const procLigandsFilters = generateLigandsAndModsTableFilters(ligandsForPrefAssembly, ligandMonomersForPrefAssembly, modificationsForPrefAssembly);
         return EntryActions.getProcLigandsFiltersSuccess({ procLigandsFilters });
       }),
       catchError(() => of(EntryActions.getProcLigandsFiltersFailure()))
@@ -1002,22 +1034,35 @@ export class EntryEffects {
           this.store.select(EntrySelectors.summaryData),
           this.store.select(EntrySelectors.assemblies),
           this.store.select(EntrySelectors.boundLigands),
+          this.store.select(EntrySelectors.boundMolecules),
           this.store.select(EntrySelectors.ligandMonomers),
           this.store.select(EntrySelectors.modifications),
         ]).pipe(
           filter(
-            ([summaryData, assemblyData, ligands, ligandMonomers, modifications]) =>
-              summaryData !== undefined && assemblyData !== undefined && ligands !== undefined && ligandMonomers !== undefined && modifications !== undefined
+            ([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) =>
+              summaryData !== undefined &&
+              assemblyData !== undefined &&
+              ligands !== undefined &&
+              boundMolecules !== undefined &&
+              ligandMonomers !== undefined &&
+              modifications !== undefined
           )
           // take(1)
         )
       ),
-      map(([summaryData, assemblyData, ligands, ligandMonomers, modifications]) => {
-        if (summaryData === undefined || assemblyData === undefined || ligands === undefined || ligandMonomers === undefined || modifications === undefined)
+      map(([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) => {
+        if (
+          summaryData === undefined ||
+          assemblyData === undefined ||
+          ligands === undefined ||
+          boundMolecules === undefined ||
+          ligandMonomers === undefined ||
+          modifications === undefined
+        )
           throw 'missing data to process ligands';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         const ligandsForPrefAssembly = filterLigandsByPreferredAssembly(ligands, preferredAssembly);
-        const ligandMonomersForPrefAssembly = filterLigandMonomersByPreferredAssembly(ligandMonomers, preferredAssembly);
+        const ligandMonomersForPrefAssembly = filterLigandMonomersByPreferredAssembly(ligandMonomers, boundMolecules, preferredAssembly);
         const modificationsForPrefAssembly = filterModificationsByPreferredAssembly(modifications, preferredAssembly);
         const procLigandsCards = generateLigandsCards(ligandsForPrefAssembly, ligandMonomersForPrefAssembly, modificationsForPrefAssembly);
         return EntryActions.getProcLigandsCardsSuccess({ procLigandsCards });
@@ -1035,22 +1080,35 @@ export class EntryEffects {
             this.store.select(EntrySelectors.summaryData),
             this.store.select(EntrySelectors.assemblies),
             this.store.select(EntrySelectors.boundLigands),
+            this.store.select(EntrySelectors.boundMolecules),
             this.store.select(EntrySelectors.ligandMonomers),
             this.store.select(EntrySelectors.modifications),
           ]).pipe(
             filter(
-              ([summaryData, assemblyData, ligands, ligandMonomers, modifications]) =>
-                summaryData !== undefined && assemblyData !== undefined && ligands !== undefined && ligandMonomers !== undefined && modifications !== undefined
+              ([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) =>
+                summaryData !== undefined &&
+                assemblyData !== undefined &&
+                ligands !== undefined &&
+                boundMolecules !== undefined &&
+                ligandMonomers !== undefined &&
+                modifications !== undefined
             ),
             take(1)
           ) // take a snapshot
       ),
-      map(([summaryData, assemblyData, ligands, ligandMonomers, modifications]) => {
-        if (summaryData === undefined || assemblyData === undefined || ligands === undefined || ligandMonomers === undefined || modifications === undefined)
+      map(([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) => {
+        if (
+          summaryData === undefined ||
+          assemblyData === undefined ||
+          ligands === undefined ||
+          boundMolecules === undefined ||
+          ligandMonomers === undefined ||
+          modifications === undefined
+        )
           throw 'missing data to process ligands';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         const ligandsForPrefAssembly = filterLigandsByPreferredAssembly(ligands, preferredAssembly);
-        const ligandMonomersForPrefAssembly = filterLigandMonomersByPreferredAssembly(ligandMonomers, preferredAssembly);
+        const ligandMonomersForPrefAssembly = filterLigandMonomersByPreferredAssembly(ligandMonomers, boundMolecules, preferredAssembly);
         const processedLigandsOnly = generateProcessedLigands(ligandsForPrefAssembly, ligandMonomersForPrefAssembly);
         const modificationsForPrefAssembly = filterModificationsByPreferredAssembly(modifications, preferredAssembly);
         const processedModifications = generateProcessedModifications(modificationsForPrefAssembly);

@@ -14,6 +14,7 @@ import { getEntityToStructAsymsMapOfAssembly } from './assembly-processing';
 import { COLORBREWER_SET2_COLORS, ELEMENT_COLORS_HEX } from '@pdbe-lib/molstar-for-apps';
 import { BANG_WONG_COLORBLIND_SCALE } from '../../entry-constant';
 import { Filter } from './models/other-models';
+import { BoundMolecule } from '../../data-models/bound-molecule.model';
 
 export function filterLigandsByPreferredAssembly(ligands: Molecule[], preferredAssembly: AssemblyData): Molecule[] {
   const entityMap = getEntityToStructAsymsMapOfAssembly(preferredAssembly);
@@ -52,13 +53,89 @@ export function filterModificationsByPreferredAssembly(modifications: ModifiedRe
   });
 }
 
-export function filterLigandMonomersByPreferredAssembly(ligandMonomers: LigandMonomer[], preferredAssembly: AssemblyData): LigandMonomer[] {
+type SymmetryLigandInfo = {
+  chain_id: string;
+  chem_comp_id: string;
+  entity: number;
+  author_residue_number: number;
+  author_insertion_code: string;
+};
+
+// Composite key helper
+function makeLigKey(chem_comp_id: string, entity: number, resnum: number, ins: string): string {
+  return `${chem_comp_id}|${entity}|${resnum}|${ins}`;
+}
+
+/**
+ * Build a nested map:
+ * Map<baseChainId, Map<ligKey, SymmetryLigandInfo[]>>
+ */
+function buildSymmetryOpMap(boundMolecules: BoundMolecule[]): Map<string, Map<string, SymmetryLigandInfo[]>> {
+  const symMap = new Map<string, Map<string, SymmetryLigandInfo[]>>();
+
+  for (const bm of boundMolecules) {
+    for (const lig of bm.composition.ligands) {
+      if (!lig.chain_id.includes('_')) continue;
+
+      const baseChain = lig.chain_id.split('_')[0];
+      const key = makeLigKey(lig.chem_comp_id, lig.entity, lig.author_residue_number, lig.author_insertion_code.replace(' ', ''));
+
+      if (!symMap.has(baseChain)) symMap.set(baseChain, new Map());
+      const inner = symMap.get(baseChain)!;
+
+      if (!inner.has(key)) inner.set(key, []);
+      inner.get(key)!.push({
+        chain_id: lig.chain_id,
+        chem_comp_id: lig.chem_comp_id,
+        entity: lig.entity,
+        author_residue_number: lig.author_residue_number,
+        author_insertion_code: lig.author_insertion_code,
+      });
+    }
+  }
+  return symMap;
+}
+
+export function filterLigandMonomersByPreferredAssembly(
+  ligandMonomers: LigandMonomer[],
+  boundMolecules: BoundMolecule[],
+  preferredAssembly: AssemblyData
+): LigandMonomer[] {
   if ((<any>ligandMonomers).empty === true) ligandMonomers = [];
   const entityMap = getEntityToStructAsymsMapOfAssembly(preferredAssembly);
 
-  return ligandMonomers.filter((monomer) => {
-    return entityMap.has(monomer.entity_id) && entityMap.get(monomer.entity_id)!.includes(monomer.struct_asym_id);
-  });
+  // Step 1: Filter by preferred assembly
+  const ligandMonomersByPreferredAssembly = ligandMonomers.filter(
+    (monomer) => entityMap.has(monomer.entity_id) && entityMap.get(monomer.entity_id)!.includes(monomer.struct_asym_id)
+  );
+
+  // Step 2: Build symmetry op map
+  const symMap = buildSymmetryOpMap(boundMolecules);
+
+  // Step 3: Expand ligandMonomersByPreferredAssembly using direct lookups
+  const extraMonomers: LigandMonomer[] = [];
+
+  for (const ligMonomer of ligandMonomersByPreferredAssembly) {
+    const baseChain = ligMonomer.chain_id;
+    if (!symMap.has(baseChain)) continue;
+
+    const inner = symMap.get(baseChain)!;
+    const key = makeLigKey(ligMonomer.chem_comp_id, ligMonomer.entity_id, ligMonomer.author_residue_number, ligMonomer.author_insertion_code);
+
+    if (!inner.has(key)) continue;
+
+    for (const mapped of inner.get(key)!) {
+      extraMonomers.push({
+        ...ligMonomer,
+        chain_id: mapped.chain_id,
+      });
+    }
+  }
+
+  // Append all extra monomers in one go
+  ligandMonomersByPreferredAssembly.push(...extraMonomers);
+
+  return ligandMonomersByPreferredAssembly;
 }
 
 export function filterLigandMonomersForMolecule(ligand: Molecule, ligandMonomers: LigandMonomer[]) {
@@ -70,7 +147,6 @@ export function filterLigandMonomersForMolecule(ligand: Molecule, ligandMonomers
       ligandMonomer.chain_id &&
       ligandMonomer.struct_asym_id &&
       ligandMonomer.entity_id === ligand.entity_id &&
-      ligand.in_chains.indexOf(ligandMonomer.chain_id) > -1 &&
       ligand.in_struct_asyms.indexOf(ligandMonomer.struct_asym_id) > -1
     );
   });
@@ -148,15 +224,17 @@ export function generateLigandsCards(ligands: Molecule[], ligandMonomers: Ligand
       .map((annotation) => annotation.type)
       .filter((v, i, arr) => arr.indexOf(v) === i);
 
-    ligandOrModCards.push({
-      index,
-      molType: 'ligand',
-      chemCompId,
-      countInPrefAssembly,
-      isModified: false,
-      annotationTypes,
-    });
-    index += 1;
+    if (countInPrefAssembly > 0) {
+      ligandOrModCards.push({
+        index,
+        molType: 'ligand',
+        chemCompId,
+        countInPrefAssembly,
+        isModified: false,
+        annotationTypes,
+      });
+      index += 1;
+    }
   }
 
   const modificationIds = modifications.map((mod) => mod.chem_comp_id).filter((mod, idx, array) => array.indexOf(mod) === idx);
@@ -164,22 +242,30 @@ export function generateLigandsCards(ligands: Molecule[], ligandMonomers: Ligand
     const chemCompId = modificationIds[modIdx];
     const modificationsOfId = modifications.filter((mod) => mod.chem_comp_id === chemCompId);
     const countInPrefAssembly = modificationsOfId.length;
-    ligandOrModCards.push({
-      index,
-      molType: 'modification',
-      chemCompId,
-      countInPrefAssembly,
-      isModified: true,
-      annotationTypes: [],
-    });
-    index += 1;
+    if (countInPrefAssembly > 0) {
+      ligandOrModCards.push({
+        index,
+        molType: 'modification',
+        chemCompId,
+        countInPrefAssembly,
+        isModified: true,
+        annotationTypes: [],
+      });
+      index += 1;
+    }
   }
   return ligandOrModCards;
 }
 
-export function generateLigandsAndModsTableFilters(ligands: Molecule[], modifications: ModifiedResidue[]): Filter[] {
+export function generateLigandsAndModsTableFilters(ligands: Molecule[], ligandMonomersForPrefAssembly: LigandMonomer[], modifications: ModifiedResidue[]): Filter[] {
   if ((<any>ligands).empty === true) ligands = [];
   if ((<any>modifications).empty === true) modifications = [];
+
+  ligands = ligands.filter((eachLigand) => {
+    const ligandMonomersForThisLigand = filterLigandMonomersForMolecule(eachLigand, ligandMonomersForPrefAssembly);
+    return ligandMonomersForThisLigand.length > 0;
+  });
+
   const newFilters: Filter[] = [];
   newFilters.push({
     // ${modificationIds.length + ligands.length}
@@ -245,6 +331,7 @@ export function generateProcessedLigands(ligands: Molecule[], ligandMonomers: Li
     }
 
     const ligandMonomersForThisLigand = filterLigandMonomersForMolecule(ligand, ligandMonomers);
+    const countInPrefAssembly = ligandMonomersForThisLigand.length;
     const uniqueLigandAnnotationTypes = ligandMonomersForThisLigand
       .map((ligandMonomer) => {
         return ligandMonomer.annotations.map((annotation) => annotation.type);
@@ -254,21 +341,23 @@ export function generateProcessedLigands(ligands: Molecule[], ligandMonomers: Li
 
     const annotationsOfLigand = uniqueLigandAnnotationTypes.length > 0 ? uniqueLigandAnnotationTypes : [];
 
-    processedLigands.push({
-      type: 'ligand',
-      id: ligand.chem_comp_ids[0],
-      codeAndName: {
-        count: ligandMonomersForThisLigand.length,
-        name: ligand.molecule_name[0],
-      },
-      annotations: annotationsOfLigand,
-      additionalData: {
-        source: ligand,
-        selections: ligandMolstarData.selections,
-        selectionNames: ligandMolstarData.selectionNames,
-      },
-      molstarColorHex: ligandColor,
-    });
+    if (countInPrefAssembly > 0) {
+      processedLigands.push({
+        type: 'ligand',
+        id: ligand.chem_comp_ids[0],
+        codeAndName: {
+          count: countInPrefAssembly,
+          name: ligand.molecule_name[0],
+        },
+        annotations: annotationsOfLigand,
+        additionalData: {
+          source: ligand,
+          selections: ligandMolstarData.selections,
+          selectionNames: ligandMolstarData.selectionNames,
+        },
+        molstarColorHex: ligandColor,
+      });
+    }
   }
   return processedLigands;
 }
@@ -280,26 +369,29 @@ export function generateProcessedModifications(modifications: ModifiedResidue[])
   for (let modIdx = 0; modIdx < modificationIds.length; modIdx++) {
     const modId = modificationIds[modIdx];
     const modificationsOfId = modifications.filter((mod) => mod.chem_comp_id === modId);
-    const moleculesOfId = modificationsOfId.map((mod) => mod.description).filter((molName, idx, array) => array.indexOf(molName) === idx);
+    const countInPrefAssembly = modificationsOfId.length;
 
+    const moleculesOfId = modificationsOfId.map((mod) => mod.description).filter((molName, idx, array) => array.indexOf(molName) === idx);
     const modificationMolstarData = generateMolstarSelectionsForModification(modificationsOfId);
 
     const modColor = BANG_WONG_COLORBLIND_SCALE[modIdx % BANG_WONG_COLORBLIND_SCALE.length];
-    processedModifications.push({
-      type: 'modification',
-      id: modId,
-      codeAndName: {
-        count: modificationsOfId.length,
-        name: modificationsOfId[0].chem_comp_name,
-      },
-      annotations: [],
-      additionalData: {
-        source: modificationsOfId,
-        selections: modificationMolstarData.selections,
-        selectionNames: modificationMolstarData.selectionNames,
-      },
-      molstarColorHex: modColor,
-    });
+    if (countInPrefAssembly > 0) {
+      processedModifications.push({
+        type: 'modification',
+        id: modId,
+        codeAndName: {
+          count: modificationsOfId.length,
+          name: modificationsOfId[0].chem_comp_name,
+        },
+        annotations: [],
+        additionalData: {
+          source: modificationsOfId,
+          selections: modificationMolstarData.selections,
+          selectionNames: modificationMolstarData.selectionNames,
+        },
+        molstarColorHex: modColor,
+      });
+    }
   }
   return processedModifications;
 }

@@ -162,40 +162,36 @@ export function sequenceToPanelData(sequence: string, uniprotData?: NightingaleF
   return panelResidueData;
 }
 
-export function extractAllTooltips(trackDataArray: (APITrackData | null)[]) {
+export function extractTooltips(trackData: APITrackData | null) {
   const tooltips: { [key: string]: string } = {};
-  for (let i = 0; i < trackDataArray.length; i++) {
-    const trackData = trackDataArray[i];
+  if (trackData === null) return tooltips;
+  const dataTracks = trackData.tracks;
+  for (const track of dataTracks) {
+    const trackDataCopy = JSON.parse(JSON.stringify(track.data));
+    const tracksToNightingale: NightingaleFeature[] = [...(trackDataCopy as unknown as NightingaleFeature[])];
 
-    if (trackData === null) continue;
-    const dataTracks = trackData.tracks;
-    for (const track of dataTracks) {
-      const trackDataCopy = JSON.parse(JSON.stringify(track.data));
-      const tracksToNightingale: NightingaleFeature[] = [...(trackDataCopy as unknown as NightingaleFeature[])];
+    let currentTrackNames = [track.label];
+    let currentTrackList = [tracksToNightingale];
 
-      let currentTrackNames = [track.label];
-      let currentTrackList = [tracksToNightingale];
+    if (track.label === 'Chains') {
+      currentTrackNames = ['Validation'];
+    }
 
-      if (track.label === 'Chains') {
-        currentTrackNames = ['Validation'];
-      }
+    if (track.label === 'Domains' || track.label === 'Rfam') {
+      const { newDomainTrackNames, newDomainTrackList } = splitPDBeEntityDomainsAPIData(track);
+      currentTrackNames = newDomainTrackNames;
+      currentTrackList = newDomainTrackList;
+    }
 
-      if (track.label === 'Domains' || track.label === 'Rfam') {
-        const { newDomainTrackNames, newDomainTrackList } = splitPDBeEntityDomainsAPIData(track);
-        currentTrackNames = newDomainTrackNames;
-        currentTrackList = newDomainTrackList;
-      }
+    for (let j = 0; j < currentTrackNames.length; j++) {
+      const eachTrackName = currentTrackNames[j];
+      const eachTrackData = currentTrackList[j];
+      for (const eachTrackDatum of eachTrackData) {
+        const eachTrackDatumProcessed = eachTrackDatum as NightingaleFeature & { label?: string };
 
-      for (let j = 0; j < currentTrackNames.length; j++) {
-        const eachTrackName = currentTrackNames[j];
-        const eachTrackData = currentTrackList[j];
-        for (const eachTrackDatum of eachTrackData) {
-          const eachTrackDatumProcessed = eachTrackDatum as NightingaleFeature & { label?: string };
-
-          // const tooltipId = `${eachTrackName}-${eachTrackDatum.accession}`;
-          const tooltipId = `${eachTrackName}-${eachTrackDatumProcessed.label}`;
-          tooltips[tooltipId] = (eachTrackDatum as APITrackItem).labelTooltip;
-        }
+        // const tooltipId = `${eachTrackName}-${eachTrackDatum.accession}`;
+        const tooltipId = `${eachTrackName}-${eachTrackDatumProcessed.label}`;
+        tooltips[tooltipId] = (eachTrackDatum as APITrackItem).labelTooltip;
       }
     }
   }

@@ -148,7 +148,7 @@
         </div>
         }
       </div>
-      @if (!molstarFirstRenderFinished()) {
+      @if (!configForMolstar()) {
       <div [style.width]="'100%'">
         <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '480px', }"></ngx-skeleton-loader>
       </div>

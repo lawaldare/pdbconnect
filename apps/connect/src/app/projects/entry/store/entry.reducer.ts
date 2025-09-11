@@ -24,6 +24,7 @@ const initialState: EntryStoreState = {
   macromolsDescriptions: undefined,
   macromolsChainsToEntityIds: undefined,
   boundLigands: [],
+  boundMolecules: undefined,
   organismScientificNames: [],
   hasRNA: false,
   experimentalDetails: undefined,
@@ -225,6 +226,10 @@ export const entryReducer = createReducer(
   //   ...state,
   //   proteinPagesSummaryByUniProtIds: action.unpSummaryData,
   // })),
+  on(EntryActions.getBoundMoleculesSuccess, (state, action) => ({
+    ...state,
+    boundMolecules: action.boundMolecules,
+  })),
   on(EntryActions.getLigandSummarySuccess, (state, action) => ({
     ...state,
     ligandPagesSummary: action.ligandPagesSummary,

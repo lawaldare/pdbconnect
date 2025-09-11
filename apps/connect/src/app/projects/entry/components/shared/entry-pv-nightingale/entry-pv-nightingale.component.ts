@@ -13,7 +13,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { combineLatest, distinctUntilChanged, filter, map, ReplaySubject, take, tap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, filter, map, of, ReplaySubject, take, tap } from 'rxjs';
 import * as NightingaleManager from '@nightingale-elements/nightingale-manager';
 import * as NightingaleSequence from '@nightingale-elements/nightingale-sequence';
 import * as NightingaleNavigation from '@nightingale-elements/nightingale-navigation';
@@ -40,7 +40,7 @@ import {
   VariationTrackBlockComponent,
 } from '@pdbe-lib/pv-nightingale-components';
 
-import { extractAllTooltips, extractBiophysicalResources, extractDomainResources, extractOtherTracks, sequenceToPanelData } from './pv-entry-api-processing';
+import { extractBiophysicalResources, extractDomainResources, extractOtherTracks, extractTooltips, sequenceToPanelData } from './pv-entry-api-processing';
 import { handleBarSrc, PAUL_TOL_COLORBLIND_SCALE } from '../../../entry-constant';
 import { PDBMolstarEvent } from './event-models/pdbe-molstar-events.model';
 import { PDBTopolViewerEvent } from './event-models/pdbe-topol-events.model';
@@ -51,6 +51,7 @@ import { Store } from '@ngrx/store';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { consumerPollProducersForChange } from '@angular/core/primitives/signals';
 
 /**
  * Helper to decode rawHTML from API endpoints (tooltipContent)
@@ -120,24 +121,48 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
 
   // State boolean variables indicating API loading and sequence loading
-  public readonly loadedTracksAPIData = signal<boolean>(false);
+  public readonly loadedAnyTracksAPIData = signal<boolean>(false);
   public readonly loadedConservationAPIData = signal<boolean>(false);
   public readonly loadedVariationAPIData = signal<boolean>(false);
   public readonly sequenceIsLoaded = signal<boolean>(false);
+
+  public readonly loadingStatusPerTrack = signal<{
+    [key: string]: string;
+  }>({
+    uniprot: 'not-loaded',
+    validation: 'not-loaded',
+    domains: 'not-loaded',
+    rfam: 'not-loaded',
+    secondary: 'not-loaded',
+    binding: 'not-loaded',
+    interfaces: 'not-loaded',
+    variation: 'not-loaded',
+    conservation: 'not-loaded',
+  });
+
+  public readonly invalidVisualisation = computed(() => {
+    if (!this.loadedAllTracksAPIData()) return false;
+    const status = this.loadingStatusPerTrack();
+    return Object.values(status).every((s) => s.startsWith('ready-empty'));
+  });
+
+  public readonly loadedAllTracksAPIData = computed(() => {
+    const status = this.loadingStatusPerTrack();
+    return Object.values(status).every((s) => s !== 'not-loaded');
+  });
 
   public readonly loadingStatus = computed(() => {
     if (this.invalidVisualisation()) {
       return 'invalid';
     }
-    if (!this.loadedTracksAPIData() || !this.loadedConservationAPIData() || !this.loadedVariationAPIData()) {
-      return 'loading';
+    if (this.loadedAnyTracksAPIData() || this.loadedConservationAPIData() || this.loadedVariationAPIData()) {
+      return 'any-tracks-loaded';
+    }
+    if (!this.loadedAnyTracksAPIData() || !this.loadedConservationAPIData() || !this.loadedVariationAPIData()) {
+      return 'no-tracks-loaded';
     }
     return 'ready';
   });
-
-  public loadedAllData() {
-    return this.loadedTracksAPIData() && this.loadedVariationAPIData() && this.loadedConservationAPIData();
-  }
 
   // all Nightingale tracks require sequence and/or sequence length
   public sequence?: string;
@@ -158,6 +183,17 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     { name: 'Ligand binding sites', data: this.ligandBindingTracks() },
     { name: 'Interaction interfaces', data: this.interfacesTracks() },
   ]);
+
+  public readonly namesToStatus: { [key: string]: string } = {
+    UniProt: 'uniprot',
+    Validation: 'validation',
+    'Secondary structure': 'secondary',
+    'Ligand binding sites': 'binding',
+    'Interaction interfaces': 'interfaces',
+    Families: 'rfam',
+    Domains: 'domains',
+    'Biophysical parameters': 'secondary',
+  };
 
   // this also includes custom data from the user
   public customTrackData: NightingaleFeature[] = [];
@@ -195,7 +231,6 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   private readonly trackVariation$ = this.globalStore.select(EntrySelectors.entityPvVariation);
 
   public readonly dataIsParsed = signal<boolean>(false);
-  public invalidVisualisation = signal<boolean>(false);
   private readonly trackCoreProcessed$ = new ReplaySubject<void>(1);
 
   // conservation API data has a special track and data types (ConservationTrackBlockComponent)
@@ -248,7 +283,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     if (!header) return undefined;
     const headerHeight = header.getBoundingClientRect().height;
     const height = this.elementRef.nativeElement.parentNode.getBoundingClientRect().height;
-    if (this.loadedTracksAPIData() && this.loadedVariationAPIData() && this.loadedConservationAPIData()) {
+    if (this.loadedAllTracksAPIData() && this.loadedVariationAPIData() && this.loadedConservationAPIData()) {
       return height - headerHeight;
     }
     return undefined;
@@ -376,148 +411,190 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     this.dataIsParsed.set(false);
   }
 
-  allTracksReadyCheck(
-    uniprot: APITrackData | null | undefined,
-    chains: APITrackData | null | undefined,
-    domains: APITrackData | null | undefined,
-    rfam: APITrackData | null | undefined,
-    secondary: APITrackData | null | undefined,
-    binding: APITrackData | null | undefined,
-    interfaces: APITrackData | null | undefined,
-    annotations: APITrackData | null | undefined
-  ) {
-    const allDefined =
-      uniprot !== undefined &&
-      chains !== undefined &&
-      domains !== undefined &&
-      rfam !== undefined &&
-      secondary !== undefined &&
-      binding !== undefined &&
-      interfaces !== undefined &&
-      annotations !== undefined;
+  checkTrackIsReady(track: APITrackData | null | undefined): boolean {
+    // not ready yet → still undefined
+    if (track === undefined) return false;
 
-    if (allDefined === false) return false;
-    const allContainData =
-      (uniprot === null || Object.keys(uniprot).length > 0) &&
-      (chains === null || Object.keys(chains).length > 0) &&
-      (domains === null || Object.keys(domains).length > 0) &&
-      (rfam === null || Object.keys(rfam).length > 0) &&
-      (secondary === null || Object.keys(secondary).length > 0) &&
-      (binding === null || Object.keys(binding).length > 0) &&
-      (interfaces === null || Object.keys(interfaces).length > 0) &&
-      (annotations === null || Object.keys(annotations).length > 0);
-    return allContainData;
+    // track is null → means “loaded but no data” → still considered ready
+    if (track === null) return true;
+
+    // empty object or flagged empty → treat as ready but no data
+    if ((track as any).empty === true) return true;
+    if (Object.keys(track).length === 0) return true;
+
+    // otherwise has some data → ready
+    return true;
   }
 
   processProtvistaData(currentEntityId: string) {
-    combineLatest([
-      this.trackUniprotMapping$,
-      this.trackChains$,
-      this.trackDomains$,
-      this.trackRfam$,
-      this.trackSecondaryStructure$,
-      this.trackBindingSites$,
-      this.trackInterfaces$,
-      this.trackAnnotations$,
-    ])
-      .pipe(
-        map(([uniprotMap, chainsMap, domainsMap, rfamMap, secondaryMap, bindingMap, interfacesMap, annotationsMap]) => {
-          const get = (map: { [key: string]: APITrackData | null }) => {
-            if (Object.keys(map).length === 0) return undefined;
-            return map[currentEntityId];
-          };
-          return {
-            uniprot: get(uniprotMap),
-            chains: get(chainsMap),
-            domains: get(domainsMap),
-            rfam: get(rfamMap),
-            secondary: get(secondaryMap),
-            binding: get(bindingMap),
-            interfaces: get(interfacesMap),
-            annotations: get(annotationsMap),
-          };
-        }),
-        tap(({ uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations }) => {
-          // detect whether all data sources return undefined, null or an error (at least one needed)
-          const trackSources = [uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations];
-          const allNull = trackSources.every((t) => t === null);
-          const allEmpty = trackSources.every((t: any) => t?.empty === true);
+    if (this.firstDataLoad() === false) this.firstDataLoad.set(true);
 
-          if (allNull || allEmpty) this.invalidVisualisation.set(true);
-        }),
-        filter(({ uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations }) =>
-          this.allTracksReadyCheck(uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations)
-        ),
+    const clean = (data: APITrackData | null) => ((data as any)?.empty ? null : data);
+
+    // --- UniProt
+    this.trackUniprotMapping$
+      .pipe(
+        map((m) => m[this.entityId()]),
+        filter((d) => this.checkTrackIsReady(d)),
         take(1) // only once
       )
-      .subscribe(({ uniprot, chains, domains, rfam, secondary, binding, interfaces, annotations }) => {
-        const clean = (data: APITrackData | null) => ((data as any)?.empty ? null : data);
-
-        const uniprotData = clean(uniprot as APITrackData | null);
-        const chainsData = clean(chains as APITrackData | null);
-        const domainsData = clean(domains as APITrackData | null);
-        const rfamData = clean(rfam as APITrackData | null);
-        const secondaryData = clean(secondary as APITrackData | null);
-        const bindingData = clean(binding as APITrackData | null);
-        const interfacesData = clean(interfaces as APITrackData | null);
-        const annotationsData = clean(annotations as APITrackData | null);
-
-        // At this point everything is loaded → safe to process
-        const trackDataArray = [uniprotData, chainsData, domainsData, rfamData, secondaryData, bindingData, interfacesData, annotationsData];
-
-        this.setSequenceFromTrackData(trackDataArray);
-
+      .subscribe((uniprot) => {
+        const uniprotData = clean(uniprot);
+        this.setSequenceFromTrackData(uniprotData);
         this.uniprotTracks.set(extractOtherTracks('UniProt', uniprotData));
-        this.validationTracks.set(extractOtherTracks('Validation', chainsData));
-        this.secStrTracks.set(extractOtherTracks('Secondary structure', secondaryData));
-        this.ligandBindingTracks.set(extractOtherTracks('Ligand binding sites', bindingData));
-        this.interfacesTracks.set(extractOtherTracks('Interaction interfaces', interfacesData));
 
-        const tooltips = extractAllTooltips(trackDataArray);
-        const panelResidueData = sequenceToPanelData(this.sequence!, this.uniprotTracks() || undefined, this.isNucleic());
+        const tooltips = extractTooltips(uniprotData);
         for (const [k, v] of Object.entries(tooltips)) this.tooltips[k] = v;
+
+        const panelResidueData = sequenceToPanelData(this.sequence!, this.uniprotTracks() || undefined, this.isNucleic());
         this.panelResidueData = panelResidueData;
 
+        const hasData = uniprotData === null ? 'empty' : 'has-data';
+        this.loadingStatusPerTrack.update((state) => ({ ...state, uniprot: `ready-${hasData}` }));
+      });
+
+    // --- Validation (chains)
+    this.trackChains$
+      .pipe(
+        map((m) => m[currentEntityId]),
+        filter((d) => this.checkTrackIsReady(d)),
+        take(1)
+      )
+      .subscribe((chains) => {
+        const chainsData = clean(chains);
+        this.setSequenceFromTrackData(chainsData);
+        this.validationTracks.set(extractOtherTracks('Validation', chainsData));
+
+        const tooltips = extractTooltips(chainsData);
+        for (const [k, v] of Object.entries(tooltips)) this.tooltips[k] = v;
+
+        const hasData = chainsData === null ? 'empty' : 'has-data';
+        this.loadingStatusPerTrack.update((state) => ({ ...state, validation: `ready-${hasData}` }));
+      });
+
+    // --- Domains + Rfam (nested block)
+    combineLatest([
+      this.trackDomains$,
+      this.isNucleic() ? this.trackRfam$ : of({} as any), // if not nucleic, emit empty object once
+    ])
+      .pipe(
+        map(([domainsMap, rfamMap]) => {
+          const domains = domainsMap[currentEntityId];
+          const rfam = this.isNucleic() ? rfamMap[currentEntityId] : null;
+          return { domains, rfam };
+        }),
+        filter(({ domains, rfam }) => (this.isNucleic() ? this.checkTrackIsReady(domains) && this.checkTrackIsReady(rfam) : this.checkTrackIsReady(domains))),
+        take(1)
+      )
+      .subscribe(({ domains, rfam }) => {
+        const domainsData = clean(domains);
+        const rfamData = this.isNucleic() ? clean(rfam) : null;
+        this.setSequenceFromTrackData(domainsData);
+        this.setSequenceFromTrackData(rfamData);
+
         if (domainsData || rfamData) {
-          const domainsProcessed = extractDomainResources(domainsData, rfamData);
-          this.domainResourcesList.set(domainsProcessed.domainResourcesList);
-          this.domainsByResource.set(domainsProcessed.domainsByResource);
+          const processed = extractDomainResources(domainsData, rfamData);
+          this.domainResourcesList.set(processed.domainResourcesList);
+          this.domainsByResource.set(processed.domainsByResource);
         } else {
           this.domainResourcesList.set([]);
           this.domainsByResource.set([]);
         }
 
+        const hasDataDomains = domainsData === null ? 'empty' : 'has-data';
+        const hasDataRfam = rfamData === null ? 'empty' : 'has-data';
+        this.loadingStatusPerTrack.update((state) => ({ ...state, domains: `ready-${hasDataDomains}` }));
+        this.loadingStatusPerTrack.update((state) => ({ ...state, rfam: `ready-${hasDataRfam}` }));
+      });
+
+    // --- Secondary structure
+    this.trackSecondaryStructure$
+      .pipe(
+        map((m) => m[currentEntityId]),
+        filter((d) => this.checkTrackIsReady(d)),
+        take(1)
+      )
+      .subscribe((sec) => {
+        const secondaryData = clean(sec);
+        this.setSequenceFromTrackData(secondaryData);
+        this.secStrTracks.set(extractOtherTracks('Secondary structure', secondaryData));
+
         if (secondaryData) {
-          const biophysicalProcessed = extractBiophysicalResources(secondaryData);
-          this.biophysicalResourcesList.set(biophysicalProcessed.biophysicalResourcesList);
-          this.biophysicalByResource.set(biophysicalProcessed.biophysicalByResource);
+          const biophysical = extractBiophysicalResources(secondaryData);
+          this.biophysicalResourcesList.set(biophysical.biophysicalResourcesList);
+          this.biophysicalByResource.set(biophysical.biophysicalByResource);
         } else {
           this.biophysicalResourcesList.set([]);
           this.biophysicalByResource.set([]);
         }
-        this.loadedTracksAPIData.set(true);
-        if (!this.firstDataLoad()) this.firstDataLoad.set(true);
-        this.trackCoreProcessed$.next(); // signal that core data is processed
+
+        const hasData = secondaryData === null ? 'empty' : 'has-data';
+        this.loadingStatusPerTrack.update((state) => ({ ...state, secondary: `ready-${hasData}` }));
+
+        const tooltips = extractTooltips(secondaryData);
+        for (const [k, v] of Object.entries(tooltips)) this.tooltips[k] = v;
       });
 
-    combineLatest([this.trackCoreProcessed$, this.trackConservation$, this.trackVariation$])
+    // --- Binding sites
+    this.trackBindingSites$
       .pipe(
-        filter(([_, conservationMap, variationMap]) => Object.keys(conservationMap).length > 0 && Object.keys(variationMap).length > 0),
+        map((m) => m[currentEntityId]),
+        filter((d) => this.checkTrackIsReady(d)),
+        take(1)
+      )
+      .subscribe((binding) => {
+        const bindingData = clean(binding);
+        this.setSequenceFromTrackData(bindingData);
+        this.ligandBindingTracks.set(extractOtherTracks('Ligand binding sites', bindingData));
+
+        const tooltips = extractTooltips(bindingData);
+        for (const [k, v] of Object.entries(tooltips)) this.tooltips[k] = v;
+
+        const hasData = bindingData === null ? 'empty' : 'has-data';
+        this.loadingStatusPerTrack.update((state) => ({ ...state, binding: `ready-${hasData}` }));
+      });
+
+    // --- Interfaces
+    this.trackInterfaces$
+      .pipe(
+        map((m) => m[currentEntityId]),
+        filter((d) => this.checkTrackIsReady(d)),
+        take(1)
+      )
+      .subscribe((interfaces) => {
+        const interfacesData = clean(interfaces);
+        this.setSequenceFromTrackData(interfacesData);
+        this.interfacesTracks.set(extractOtherTracks('Interaction interfaces', interfacesData));
+
+        const tooltips = extractTooltips(interfacesData);
+        for (const [k, v] of Object.entries(tooltips)) this.tooltips[k] = v;
+
+        const hasData = interfacesData === null ? 'empty' : 'has-data';
+        this.loadingStatusPerTrack.update((state) => ({ ...state, interfaces: `ready-${hasData}` }));
+      });
+
+    // --- Annotations
+    // this.trackAnnotations$
+    //   .pipe(
+    //     map(m => m[currentEntityId]),
+    //     filter(d => this.checkTrackIsReady(d)),
+    //     take(1)
+    //   )
+    //   .subscribe(annotations => {
+    //     const annotationsData = clean(annotations);
+    //     this.setSequenceFromTrackData(annotationsData);
+
+    //     const tooltips = extractTooltips(annotationsData);
+    //     for (const [k, v] of Object.entries(tooltips)) this.tooltips[k] = v;
+    //   });
+
+    // --- Variation
+    this.trackVariation$
+      .pipe(
+        filter((variationMap) => Object.keys(variationMap).length > 0),
         take(1)
       ) // only once
-      .subscribe(([_, conservationMap, variationMap]) => {
-        let preProcessedConservationData: APIConservationData | undefined = undefined;
-        let processConsData = true;
-        if (!conservationMap[`${currentEntityId}`]) {
-          processConsData = false;
-        }
-        if (processConsData && (conservationMap[`${currentEntityId}`] as any).empty) {
-          processConsData = false;
-        }
-        if (processConsData) preProcessedConservationData = conservationMap[currentEntityId];
-        this.originalConservationData.set(preProcessedConservationData);
-        this.loadedConservationAPIData.set(true);
-
+      .subscribe((variationMap) => {
         let preProcessedVariationData: APIVariationData | undefined = undefined;
         let processVarData = true;
         if (!variationMap[`${currentEntityId}`]) {
@@ -529,7 +606,32 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
         if (processVarData) preProcessedVariationData = variationMap[currentEntityId];
         this.originalVariationData.set(preProcessedVariationData);
 
+        const hasData = preProcessedVariationData !== undefined ? 'has-data' : 'empty';
+        this.loadingStatusPerTrack.update((state) => ({ ...state, variation: `ready-${hasData}` }));
         this.loadedVariationAPIData.set(true);
+      });
+
+    // --- Conservation
+    this.trackConservation$
+      .pipe(
+        filter((conservationMap) => Object.keys(conservationMap).length > 0),
+        take(1)
+      ) // only once
+      .subscribe((conservationMap) => {
+        let preProcessedConservationData: APIConservationData | undefined = undefined;
+        let processConsData = true;
+        if (!conservationMap[`${currentEntityId}`]) {
+          processConsData = false;
+        }
+        if (processConsData && (conservationMap[`${currentEntityId}`] as any).empty) {
+          processConsData = false;
+        }
+        if (processConsData) preProcessedConservationData = conservationMap[currentEntityId];
+        this.originalConservationData.set(preProcessedConservationData);
+
+        const hasData = preProcessedConservationData !== undefined ? 'has-data' : 'empty';
+        this.loadingStatusPerTrack.update((state) => ({ ...state, conservation: `ready-${hasData}` }));
+        this.loadedConservationAPIData.set(true);
       });
   }
 
@@ -608,8 +710,20 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   }
 
   resetVisualization() {
-    // 1 - Reset all API-loaded signals to false
-    this.loadedTracksAPIData.set(false);
+    // 1 - Reset per-track loading statuses
+    this.loadingStatusPerTrack.set({
+      uniprot: 'not-loaded',
+      validation: 'not-loaded',
+      domains: 'not-loaded',
+      rfam: 'not-loaded',
+      secondary: 'not-loaded',
+      binding: 'not-loaded',
+      interfaces: 'not-loaded',
+      variation: 'not-loaded',
+      conservation: 'not-loaded',
+    });
+
+    // 2 - Reset all API-loaded flags
     this.loadedConservationAPIData.set(false);
     this.loadedVariationAPIData.set(false);
     this.sequenceIsLoaded.set(false);
@@ -647,28 +761,19 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     // }, 100);
   }
 
-  setSequenceFromTrackData(trackDataArray: (APITrackData | null)[]) {
-    const allAreNull = trackDataArray.every((track) => track === null);
-    if (allAreNull) {
-      console.warn('Missing enough data to start Nightingale components');
-      return;
-    }
-
-    // 1 - Extract sequence from all track records (skip nulls)
-    const seqs = trackDataArray.filter((eachTrackDatum) => eachTrackDatum !== null).map((eachTrackDatum) => eachTrackDatum.sequence);
-
-    // 2 - Validate if all sequences are equal (warn if not)
-    const allEqual = seqs.every((val, i, arr) => val === arr[0]);
-    if (!allEqual) {
-      console.warn('Unexpected: sequence is not equal for all track data. Using first track sequence');
-    }
-
+  setSequenceFromTrackData(trackData: APITrackData | null) {
+    if (!trackData) return;
     // 3 - If not already set, update sequence and length (used by Nightingale)
     if (this.sequenceIsLoaded() === false) {
-      const sequence = seqs[0];
+      const sequence = trackData.sequence;
       this.sequence = sequence;
       this.sequenceLength = this.sequence.length;
       this.sequenceIsLoaded.set(true);
+    } else {
+      const sequence = trackData.sequence;
+      if (sequence !== this.sequence) {
+        console.warn('Unexpected: sequence is not equal for all track data. Using first track sequence');
+      }
     }
   }
 
