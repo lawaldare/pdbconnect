@@ -296,6 +296,12 @@ export class EntryApiService {
           annotations.push(...residue.additionalData);
         });
         return annotations;
+      }),
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of([]);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }
