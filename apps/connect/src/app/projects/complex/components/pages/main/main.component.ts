@@ -26,6 +26,7 @@ import { SubComplexesComponent } from '../../page-sections/complex-subcomplex/su
 import { NotificationComponent } from '@pdbc/notification';
 import { ComplexPISAComponent } from '../../page-sections/complex-pisa/complex-pisa.component';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { DataPrivacyBannerComponent } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-main',
@@ -46,6 +47,7 @@ import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
     SuperComplexesComponent,
     NotificationComponent,
     HelpIconWithTooltipComponent,
+    DataPrivacyBannerComponent,
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',

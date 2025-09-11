@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, input, OnInit, signal } from '@angular/core';
 
+type PageID = 'dataProtectionAgreedForComplexPages' | 'dataProtectionAgreedForEntryPages' | 'dataProtectionAgreedForLigandPages';
 @Component({
   selector: 'lib-data-privacy-banner',
   standalone: true,
@@ -13,7 +14,7 @@ import { Component, input, OnInit, signal } from '@angular/core';
             This website requires cookies, and the limited processing of your personal data in order to function. By using the site you are agreeing to this as
             outlined in our
             <a target="_blank" [href]="privacyNoticeUrl()">Privacy Notice</a> and
-            <a target="_blank" href="https://www.ebi.ac.uk/data-protection/privacy-notice/embl-ebi-public-website">Terms of Use</a>.
+            <a target="_blank" href="https://www.ebi.ac.uk/about/terms-of-use/">Terms of Use</a>.
           </div>
           <div class="columns medium-4 large-3 text-right white-color">
             <a id="data-protection-agree" (click)="closeDataProtectionBanner()">I agree, dismiss this banner</a>
@@ -34,12 +35,18 @@ import { Component, input, OnInit, signal } from '@angular/core';
         border-top: 1px solid rgb(55, 58, 54);
         color: rgb(238, 238, 238);
         z-index: 10;
+
+        a {
+          border-bottom-width: 1px;
+          border-bottom-style: dotted;
+          border-bottom-color: inherit;
+        }
       }
     `,
   ],
 })
 export class DataPrivacyBannerComponent implements OnInit {
-  public pageId = input.required<string>();
+  public pageId = input.required<PageID>();
   public privacyNoticeUrl = input.required<string>();
 
   public showBanner = signal<boolean>(false);
