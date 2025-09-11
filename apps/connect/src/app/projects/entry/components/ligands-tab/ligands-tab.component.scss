@@ -200,7 +200,9 @@ section.ligand-charts {
 
       @media (width <= 1340px) {
         max-width: 70%;
-        max-height: 50vh;
+
+        // max-height: 50vh;
+        max-height: 60vh;
       }
 
       // &.expand {
