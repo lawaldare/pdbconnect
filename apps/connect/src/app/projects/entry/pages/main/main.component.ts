@@ -273,6 +273,11 @@ export class EntryMainPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    /** Setting styles dynamically for mac scrollbar compatibility */
+    document.documentElement.style.overflowX = 'hidden'; // <html>
+    document.body.style.overflowX = 'hidden'; // <body>
+    document.body.style.width = '100%';
+
     if (environment.production === false) {
       Clarity.init(environment.clarityProjectId);
     }
