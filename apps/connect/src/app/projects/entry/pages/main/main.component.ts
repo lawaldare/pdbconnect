@@ -201,7 +201,7 @@ export class EntryMainPageComponent implements OnInit {
 
   private testNetworkSpeed() {
     const customSettings = {
-      iterations: 2, // Run 1 test for better accuracy
+      iterations: 1, // Run 1 test for better accuracy
       retryDelay: 500, // Wait 1 second between retries
       file: {
         // path: 'https://www.ebi.ac.uk/pdbe/entry-files/download/10mh.bcif.gz',
@@ -233,12 +233,13 @@ export class EntryMainPageComponent implements OnInit {
       .subscribe({
         next: (speed) => {
           // speed is in Mbps
-          console.log('Detected speed (Mbps): ', speed);
+          // console.log('Detected speed (Mbps): ', speed);
           if (speed && speed < 7.5) this.compCommunication.slowNetwork$.next(true);
           else this.compCommunication.slowNetwork$.next(false);
         },
         error: (err) => {
-          console.error('Speed test failed', err), console.log('Setting default as slow network mode');
+          console.error('Speed test failed', err);
+          // console.log('Setting default as slow network mode');
           this.compCommunication.slowNetwork$.next(true);
         },
       });
