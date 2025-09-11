@@ -361,22 +361,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       });
   }
 
-  @HostListener('window:scroll', ['$event'])
-  onWindowScroll() {
-    const scrollPosition = window.scrollY || document.documentElement.scrollTop;
-
-    const tabHeaderEl = document.querySelector('.mat-mdc-tab-header') as HTMLElement;
-    let threshold = 394;
-    if (tabHeaderEl) {
-      // Check if we've scrolled past the top of the tabs header
-      const offsetTop = tabHeaderEl.offsetTop;
-      const marginBottom = parseFloat(getComputedStyle(tabHeaderEl).marginBottom) || 0;
-      threshold = offsetTop + marginBottom;
-    }
-
-    this.isSticky.set(scrollPosition >= threshold);
-  }
-
   @HostListener('window:resize', ['$event'])
   onResize() {
     this.updateLeftSideWidth();
@@ -402,6 +386,17 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
   async ngAfterViewInit() {
     this.updateLeftSideWidth();
+    const tabHeaderEl = document.querySelector('.mat-mdc-tab-header');
+    if (!tabHeaderEl) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        this.isSticky.set(!entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+
+    observer.observe(tabHeaderEl);
   }
 
   /**
