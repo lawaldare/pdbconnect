@@ -23,7 +23,7 @@ const initialState: EntryStoreState = {
   macroMolecules: undefined,
   macromolsDescriptions: undefined,
   macromolsChainsToEntityIds: undefined,
-  boundLigands: [],
+  boundLigands: undefined,
   boundMolecules: undefined,
   organismScientificNames: [],
   hasRNA: false,
@@ -94,7 +94,7 @@ const initialState: EntryStoreState = {
   entityPvAnnotations: {},
   entityPvConservation: {},
   entityPvVariation: {},
-  llmAnnotations: [],
+  llmAnnotations: undefined,
 };
 
 export const entryReducer = createReducer(
