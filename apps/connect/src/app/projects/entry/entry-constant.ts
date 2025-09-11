@@ -300,9 +300,9 @@ export const entryAssembliesTooltips = {
   accessbileSurfaceArea: 'Surface area indicates the total solvent-accessible surface area of the assembly, in Å2.',
   buriedSurfaceArea: "Buried area indicates, in Å2, the total solvent-accessible surface area of the assembly, buried upon formation of all assembly's interfaces.",
   dissociationEnergy:
-    'Indicates the free energy of assembly dissociation, in kcal/M. The free energy of dissociation corresponds to the free energy difference between dissociated and associated states. Positive values of ΔGdiss indicate that an external driving force should be applied in order to dissociate the assembly, therefore assemblies with ΔGdiss>0 are thermodynamically stable.',
+    'Indicates the free energy of assembly dissociation, in kcal/mol. The free energy of dissociation corresponds to the free energy difference between dissociated and associated states. Positive values of ΔGdiss indicate that an external driving force should be applied in order to dissociate the assembly, therefore assemblies with ΔGdiss>0 are thermodynamically stable.',
   dissociationEntropy:
-    'Indicates the rigid-body entropy change at dissociation, in kcal/M. The entropy change corresponds to the lowest free energy way to dissociate the assembly into a set of stable assemblies or monomeric units.',
+    'Indicates the rigid-body entropy change at dissociation, in kcal/mol. The entropy change corresponds to the lowest free energy way to dissociate the assembly into a set of stable assemblies or monomeric units.',
   assemblySymmetry:
     'Point group symmetry for the biological assembly. The symmetry group is calculated using the AnAnaS software. It detects five symmetry groups: cyclic, dihedral, tetrahedral, octahedral and icosahedral.',
 };
