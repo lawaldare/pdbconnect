@@ -6,7 +6,7 @@ import { SearchAppComponent } from '@pdbc/search-app';
 
 import { catchError, combineLatest, EMPTY, filter, map, mergeMap, of, retry, switchMap, take, tap } from 'rxjs';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { GoogleAnalyticsService, MaterialModule, ScrollPositionService } from '@pdbc/core';
+import { DataPrivacyBannerComponent, GoogleAnalyticsService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
 import { ENTRY_PAGES_LINKS, mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig } from '../../entry-constant';
 import { EntryStatus, StatusCode } from '../../data-models/status.model';
@@ -72,6 +72,7 @@ import { SpeedTestServiceCustom } from '../../services/speed-test/speed-test-ser
     NotificationComponent,
     ErrorPageComponent,
     VisualisationInteractivityDirective,
+    DataPrivacyBannerComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
