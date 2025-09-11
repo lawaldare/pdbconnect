@@ -29,7 +29,7 @@
       <span>How are interactions calculated?</span>
       <lib-tool-tip>
         <p>
-          Interactions are calculated using <a href="https://github.com/PDBeurope/arpeggio">PDBe Arpeggio</a> for the
+          Interactions are calculated using <a href="https://github.com/PDBeurope/arpeggio" target="_blank">PDBe Arpeggio</a> for the
           <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
             >Preferred Assembly</a
           >
@@ -73,7 +73,7 @@
     </div>
     <div class="stats-link-bar">
       @if(dashboardStatLinks['Ligands'].length > 0 && selectionIdentifier !== 'None') {
-      <span><img src="assets/icons/logo.png" alt="icon" style="margin-right: 2px" /> View more about this ligand:</span>
+      <span><img src="assets/icons/pdbe-kb_logo.webp" alt="icon" style="width: 16px; height: 16px; margin-right: 2px" /> View more about this ligand:</span>
       @for (displayLink of dashboardStatLinks['Ligands']; track displayLink; let islast = $last) {
       <a
         [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix"

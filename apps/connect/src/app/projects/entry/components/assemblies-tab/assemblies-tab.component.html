@@ -16,7 +16,7 @@
     @if (datum?.complexId) { @let selectionIdentifier = datum!.complexId;
     <div class="stats-link-bar">
       @if(dashboardStatLinks['Complexes'].length > 0 && selectionIdentifier !== 'None') {
-      <span><img src="assets/icons/logo.png" alt="icon" style="margin-right: 2px" /> View more about this complex:</span>
+      <span><img src="assets/icons/pdbe-kb_logo.webp" alt="icon" style="width: 16px; height: 16px; margin-right: 2px" /> View more about this complex:</span>
       @for (displayLink of dashboardStatLinks['Complexes']; track displayLink; let islast = $last) {
       <a
         [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix"
