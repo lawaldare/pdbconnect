@@ -25,7 +25,7 @@ import { InteractiveTablesComponent } from '../shared/interactive-tables/interac
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
-import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, of, take, timeout, timer } from 'rxjs';
+import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, of, take, timeout, timer } from 'rxjs';
 import { EntryActions } from '../../store/entry.actions';
 import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
@@ -111,6 +111,25 @@ export class MacromoleculesTabComponent implements OnInit {
     return this._molstarComponent?.firstLoadFinished() || false;
   });
   private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+
+  public readonly slowNetwork = toSignal(
+    this.compCommunication.slowNetwork$,
+    { initialValue: undefined } // assume "unknown/loading" until we know
+  );
+
+  public readonly checkedWebGl = computed(() => this.compCommunication.checkedWebGlSupport);
+  public readonly isWebGlEnabled = computed(() => this.compCommunication.isWebGlEnabled);
+
+  public readonly fastNetworkOrForceLoad = computed(() => {
+    const isSlow = this.slowNetwork();
+    const forceLoad = this.compCommunication.forceLoad();
+    return isSlow === false || forceLoad === true;
+  });
+
+  public toggleMolstar() {
+    const forceLoad = this.compCommunication.forceLoad();
+    this.compCommunication.forceLoad.set(!forceLoad);
+  }
 
   public readonly configForMolstar = computed(() => {
     const summary = this.summaryData();
@@ -463,10 +482,11 @@ export class MacromoleculesTabComponent implements OnInit {
     let outliers = this.residueWiseOutliers();
     if (outliers === undefined) {
       outliers = await firstValueFrom(
-        this.residueWiseOutliersObservable.pipe(
-          filter((o) => o !== undefined),
-          take(1),
-          timeout({ first: 10000, with: () => of([]) }) // fallback to []
+        interval(200).pipe(
+          map(() => this.residueWiseOutliers()),
+          filter((o) => o !== undefined), // stop when defined
+          take(1), // only take the first defined
+          timeout({ first: 10000, with: () => of([]) }) // fallback if still undefined
         )
       );
     }
@@ -548,7 +568,7 @@ export class MacromoleculesTabComponent implements OnInit {
   }
 
   private async renderVisualisations(macromolecule: ProcessedMacromolecule) {
-    await this.renderInMolstar(macromolecule);
+    this.renderInMolstar(macromolecule);
     await this.initOrRefreshProtvista(macromolecule);
     await this.initOrRefreshTopologyViewer(macromolecule);
   }

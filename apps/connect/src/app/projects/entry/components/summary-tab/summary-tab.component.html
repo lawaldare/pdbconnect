@@ -99,7 +99,12 @@
     </div>
   </section>
   <section class="explore-3d-tabs" id="structure-overview-tour">
-    <section class="molstar-details-container-tour">
+    @if (slowNetwork() === undefined || checkedWebGl() === undefined) {
+    <div [style.width]="'100%'">
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '480px', }"></ngx-skeleton-loader>
+    </div>
+    } @else if (isWebGlEnabled() && fastNetworkOrForceLoad()) {
+    <section class="molstar-details-container">
       <!-- molstar control bar: selection dropdown and zoom controls -->
       <div class="molstar-control-bar">
         @if (dropdownOptions().length > 0) {
@@ -152,7 +157,7 @@
       <div [style.width]="'100%'">
         <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '480px', }"></ngx-skeleton-loader>
       </div>
-      } @if (configForMolstar()) {
+      } @else if (configForMolstar()) {
       <div class="molstar-container">
         <div #popoutWrapper>
           <lib-pdbe-molstar #molstarComponent [id]="'summary-molstar'" [molstarConfig]="configForMolstar()" [height]="'480px'"></lib-pdbe-molstar>
@@ -202,7 +207,7 @@
           } @if (assemblyData()?.composition) {
           <div class="info-row">
             <div class="info-row-header">
-              <h6>Assembly composition</h6>
+              <h6>Complex composition</h6>
               <img
                 src="{{ helpLogoSrc }}"
                 class="icon"
@@ -464,5 +469,27 @@
         </mat-expansion-panel>
       </mat-accordion>
     </section>
+    } @else if (!isWebGlEnabled()) {
+    <div class="molstar-not-loaded">
+      <img alt="WebGL not supported" src="assets/img/no_webgl.webp" />
+      <div>
+        <h4 class="heading-4">3D viewer not supported in this browser</h4>
+        <p>Your browser doesn’t support WebGL, which is required for the 3D structure.</p>
+        <a target="_blank" href="https://get.webgl.org/webgl2/enable.html">
+          Learn how to enable WebGL
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </div>
+    </div>
+    } @else if (isWebGlEnabled() && !fastNetworkOrForceLoad()) {
+    <div class="molstar-not-loaded">
+      <img alt="3D viewer paused" src="assets/img/paused_3d.webp" />
+      <div>
+        <h4 class="heading-4">3D viewer paused due to large structure or slow connection</h4>
+        <p>The 3D structure is large and may load slowly on your current connection.</p>
+      </div>
+      <button class="vf-button vf-button--search-pdbe" (click)="toggleMolstar()">Load 3D anyway</button>
+    </div>
+    }
   </section>
 </section>

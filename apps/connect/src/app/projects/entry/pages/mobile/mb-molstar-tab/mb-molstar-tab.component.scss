@@ -79,3 +79,56 @@ main {
     }
   }
 }
+
+.molstar-not-loaded {
+  width: 100%;
+  min-height: 296px;
+  display: flex;
+  padding: 24px 36px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  align-self: stretch;
+
+  i.icon {
+    margin-left: 2px;
+    display: inline-block;
+  }
+
+  i.icon-link::before {
+    --icon-search-color: #3b6fb6;
+
+    content: '';
+    width: 14px;
+    height: 14px;
+    mask-size: auto 14px;
+    position: absolute;
+    z-index: -1;
+    top: 3px;
+  }
+
+  img {
+    width: 130px;
+    height: 104px;
+  }
+
+  div {
+    text-align: center;
+  }
+
+  button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 44px;
+    padding: 8px 16px;
+    box-shadow: 4px 4px 0 0 #0a5032;
+    margin: 0;
+  }
+
+  button:hover {
+    box-shadow: 1px 1px 0 0 #0a5032;
+    transform: translate(6px, 6px);
+  }
+}

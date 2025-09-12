@@ -37,6 +37,7 @@ import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-track
 import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { cameraResetInMolstar, drawSelectionInMolstar, Molstar370DefaultParams } from '../../helpers/molstar-helpers';
 import { OutlierDict, ValueLabel } from '../../store/data-processing/models/other-models';
+import { ComponentCommunicationService } from '../../services/component-comm.service';
 
 /**
  * Examples that should be tested when looking at this component
@@ -89,6 +90,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   public readonly tableFacade = inject(ValidationTablesFacade);
+  private readonly compCommunication = inject(ComponentCommunicationService);
 
   public readonly util = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
@@ -111,8 +113,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
   // tooltip constants
   public readonly modelQualityTooltips = modelQualityTooltips;
-
-  @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 
   public readonly isSticky = signal<boolean>(false);
   public readonly validationTypes = [
@@ -196,6 +196,25 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     return this._molstarComponent?.firstLoadFinished() || false;
   });
   private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+
+  public readonly slowNetwork = toSignal(
+    this.compCommunication.slowNetwork$,
+    { initialValue: undefined } // assume "unknown/loading" until we know
+  );
+
+  public readonly checkedWebGl = computed(() => this.compCommunication.checkedWebGlSupport);
+  public readonly isWebGlEnabled = computed(() => this.compCommunication.isWebGlEnabled);
+
+  public readonly fastNetworkOrForceLoad = computed(() => {
+    const isSlow = this.slowNetwork();
+    const forceLoad = this.compCommunication.forceLoad();
+    return isSlow === false || forceLoad === true;
+  });
+
+  public toggleMolstar() {
+    const forceLoad = this.compCommunication.forceLoad();
+    this.compCommunication.forceLoad.set(!forceLoad);
+  }
 
   public readonly configForMolstar = computed(() => {
     const entryId = this.entryId();

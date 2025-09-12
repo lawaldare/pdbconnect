@@ -115,6 +115,7 @@ export class ApplicationAPIDispatcher {
         ...[
           // EntryActions.getPrimaryPublication // always dispatched in main.component.ts
           // EntryActions.getProcessedMacromolsForLLM // called in desktop tab above
+          EntryActions.getEntryResidueWiseOutliers,
           EntryActions.getIsoformsMapping,
         ]
       );

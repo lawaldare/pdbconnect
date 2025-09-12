@@ -18,11 +18,11 @@ import { EntryDropdownComponent } from '../entry-page-header/sub-components/entr
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { CitationDetail } from '../../data-models/publication.model';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, of, take, timeout, timer } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, of, take, timeout, timer } from 'rxjs';
 import { AgGridAngular } from 'ag-grid-angular';
 import { LLMAnnotation } from '../../data-models/llm-model';
 import { colDefs, gridOptions } from './ag-grid';
-import { SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
+import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import {
   convertOutliersToSmartSequenceAnnotation,
   createAuthAlternateNumbering,
@@ -62,15 +62,11 @@ export class LLMTabComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
-  @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
   public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
   public dashboardStatLinks = dashboardStatLinks;
-
-  public backgroundAnnotation: SmartSequenceAnnotation | undefined = undefined;
-  public llmAnnotationForSeq: SmartSequenceAnnotation | undefined = undefined;
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly processedMacromolsLLM = toSignal(this.globalStore.select(EntrySelectors.processedMacromoleculesForLLM));
@@ -80,7 +76,7 @@ export class LLMTabComponent implements OnInit {
   public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
   public readonly residueWiseOutliersObservable = this.globalStore.select(EntrySelectors.residueWiseOutliers);
-  public readonly residueListing = toSignal(this.globalStore.select(EntrySelectors.residueListing));
+  public readonly residueListingObservable = this.globalStore.select(EntrySelectors.residueListing);
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly uniprotMappings = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
   public readonly polymerCoverage = toSignal(this.globalStore.select(EntrySelectors.polymerCoverage));
@@ -167,18 +163,23 @@ export class LLMTabComponent implements OnInit {
     return mappingsForChains[currentChain];
   });
 
-  public altSequences = computed(() => {
-    const residueListing = this.residueListing();
-    if (!residueListing || residueListing.length === 0) return [];
-    const authNumbering = createAuthAlternateNumbering(residueListing);
-    return [authNumbering];
-  });
+  public macromoleculeSequence = computed(() => this.sequenceDetails()?.fullSequence);
+  public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
+  public llmAnnotationForSeq = signal<SmartSequenceAnnotation | undefined>(undefined);
+  public altSequences = signal<AlternativeNumbering[] | undefined>(undefined);
+  public nonObserved = signal<number[] | undefined>(undefined);
 
-  public nonObserved = computed(() => {
-    const residueListing = this.residueListing();
-    if (!residueListing || residueListing.length === 0) return [];
-    const nonObservedResidues = getNonObserved(residueListing);
-    return nonObservedResidues;
+  public seqViewerReady = computed(() => {
+    const hasSequence = this.macromoleculeSequence() !== undefined;
+    const hasAltSequences = this.altSequences() !== undefined;
+    const hasNonObserved = this.nonObserved() !== undefined;
+    const hasBgAnnotations = this.backgroundAnnotation() !== undefined;
+    const hasLlmAnnotationForSeq = this.llmAnnotationForSeq() !== undefined;
+    const hasCurrentSelectionEntityId = this.currentSelectionEntityId() !== undefined;
+    const hasCurrentSelectionChainId = this.currentSelectionChainId() !== undefined;
+    return (
+      hasSequence && hasAltSequences && hasNonObserved && hasBgAnnotations && hasLlmAnnotationForSeq && hasCurrentSelectionEntityId && hasCurrentSelectionChainId
+    );
   });
 
   public numberOfAnnotatedResids = computed(() => {
@@ -235,11 +236,46 @@ export class LLMTabComponent implements OnInit {
   });
   private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
 
+  public readonly slowNetwork = toSignal(
+    this.compCommunication.slowNetwork$,
+    { initialValue: undefined } // assume "unknown/loading" until we know
+  );
+
+  public readonly checkedWebGl = computed(() => this.compCommunication.checkedWebGlSupport);
+  public readonly isWebGlEnabled = computed(() => this.compCommunication.isWebGlEnabled);
+
+  public readonly fastNetworkOrForceLoad = computed(() => {
+    const isSlow = this.slowNetwork();
+    const forceLoad = this.compCommunication.forceLoad();
+    return isSlow === false || forceLoad === true;
+  });
+
+  public toggleMolstar() {
+    const forceLoad = this.compCommunication.forceLoad();
+    this.compCommunication.forceLoad.set(!forceLoad);
+  }
+
   public selectionData?: QueryParam[];
 
   public readonly visInteractivity = inject(VisualisationInteractivityService);
 
-  constructor() {
+  @HostListener('document:llm-reset-list', ['$event'])
+  public resetAnnotationList() {
+    const letter = this.dropdownSelected.split(' ')[1];
+    const groupedAnnotations = this.groupedFilteredLLMAnnotations()[letter];
+    this.filteredLLMAnnotations.update(() => groupedAnnotations);
+  }
+
+  @HostListener('document:llm-filter-list', ['$event'])
+  public filterAnnotationList(event: Event) {
+    const eventData = (event as any).detail.eventData;
+    const residueNumber = eventData.residueNumber;
+    const allAnnotations = this.groupedAnnotations();
+    const filteredByResidue = allAnnotations.filter((a: LLMAnnotation) => a.pdbResidue === residueNumber);
+    this.filteredLLMAnnotations.update(() => removeDuplicatesByKey(filteredByResidue, 'sentence'));
+  }
+
+  ngOnInit(): void {
     this.compCommunication.llmSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
       if (idx === undefined || idx === null) return;
       const datum = this.macromoleculeTableRows()[idx];
@@ -259,25 +295,7 @@ export class LLMTabComponent implements OnInit {
     this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
       await this.updateBackgroundAnnotation();
     });
-  }
 
-  @HostListener('document:llm-reset-list', ['$event'])
-  public resetAnnotationList() {
-    const letter = this.dropdownSelected.split(' ')[1];
-    const groupedAnnotations = this.groupedFilteredLLMAnnotations()[letter];
-    this.filteredLLMAnnotations.update(() => groupedAnnotations);
-  }
-
-  @HostListener('document:llm-filter-list', ['$event'])
-  public filterAnnotationList(event: Event) {
-    const eventData = (event as any).detail.eventData;
-    const residueNumber = eventData.residueNumber;
-    const allAnnotations = this.groupedAnnotations();
-    const filteredByResidue = allAnnotations.filter((a: LLMAnnotation) => a.pdbResidue === residueNumber);
-    this.filteredLLMAnnotations.update(() => removeDuplicatesByKey(filteredByResidue, 'sentence'));
-  }
-
-  ngOnInit(): void {
     combineLatest([this.globalStore.select(EntrySelectors.llmAnnotations), this.globalStore.select(EntrySelectors.primaryPublication)])
       .pipe(
         filter(([llmAnnotations, primaryPublication]) => {
@@ -292,6 +310,24 @@ export class LLMTabComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({});
+
+    this.residueListingObservable
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        distinctUntilChanged(),
+        filter((resList) => resList !== undefined)
+      )
+      .subscribe((residueListing) => {
+        if (residueListing.length > 0) {
+          const authNumbering = createAuthAlternateNumbering(residueListing);
+          const nonObservedResidues = getNonObserved(residueListing);
+          this.altSequences.set([authNumbering]);
+          this.nonObserved.set(nonObservedResidues);
+        } else {
+          this.altSequences.set([]);
+          this.nonObserved.set([]);
+        }
+      });
   }
 
   private groupAnnotationsByPdbChain(data: any) {
@@ -313,17 +349,21 @@ export class LLMTabComponent implements OnInit {
   public currentSelectionEntityId = signal<string | undefined>(undefined);
   public currentSelectionChainId = signal<string | undefined>(undefined);
 
-  public sequenceDetails?: {
-    title: string;
-    fullSequence: string;
-  } = undefined;
+  public sequenceDetails = signal<
+    | {
+        title: string;
+        fullSequence: string;
+      }
+    | undefined
+  >(undefined);
 
   public selectionIdentifier = 'None';
   public selectionTypeText?: string;
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
     await this.updateDropdownOptions(macromolecule);
-    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.sequenceDetails.set(sequenceDetails);
     await this.renderVisualisations(macromolecule);
     await this.updateBackgroundAnnotation();
   }
@@ -344,24 +384,28 @@ export class LLMTabComponent implements OnInit {
     this.filteredLLMAnnotations.update(() => groupedAnnotations);
     this.groupedAnnotations.update(() => groupedAnnotations);
 
-    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.sequenceDetails.set(sequenceDetails);
     await this.updateBackgroundAnnotation();
   }
 
   private async updateBackgroundAnnotation() {
-    const macromolecule = this.currentMacromoleculeDatum();
+    this.backgroundAnnotation.set(undefined);
 
-    const sequence = this.sequenceDetails?.fullSequence;
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return;
+    const sequence = macromolecule.additionalData.molecule.sequence;
     if (!sequence) return;
 
     // wait max 10s for residueWiseOutliers to populate
     let outliers = this.residueWiseOutliers();
     if (outliers === undefined) {
       outliers = await firstValueFrom(
-        this.residueWiseOutliersObservable.pipe(
-          filter((o) => o !== undefined),
-          take(1),
-          timeout({ first: 10000, with: () => of([]) }) // fallback to []
+        interval(200).pipe(
+          map(() => this.residueWiseOutliers()),
+          filter((o) => o !== undefined), // stop when defined
+          take(1), // only take the first defined
+          timeout({ first: 10000, with: () => of([]) }) // fallback if still undefined
         )
       );
     }
@@ -369,10 +413,11 @@ export class LLMTabComponent implements OnInit {
     const entityId = macromolecule?.additionalData.molecule.entity_id ?? 1;
     const chainId = this.dropdownSelected.split('Chain ')[1];
     const modelId = this.currentModelId$.value || '1';
-    this.backgroundAnnotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
+    const annotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
+    this.backgroundAnnotation.set(annotation);
 
     const groupedLLMAnnotations: LLMAnnotation[] = this.groupedFilteredLLMAnnotations()[chainId];
-    this.llmAnnotationForSeq = getCircleAnnotationsForSeqViewer(groupedLLMAnnotations);
+    this.llmAnnotationForSeq.set(getCircleAnnotationsForSeqViewer(groupedLLMAnnotations));
 
     this.globalStore.dispatch(
       EntryActions.getResidueListing({
@@ -394,7 +439,11 @@ export class LLMTabComponent implements OnInit {
 
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
-    this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule as ProcessedMacromolecule, this.dropdownSelected);
+    if (!macromolecule) return;
+
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    this.sequenceDetails.set(sequenceDetails);
+
     if (macromolecule) await this.renderVisualisations(macromolecule);
     await this.updateBackgroundAnnotation();
   }
@@ -403,13 +452,14 @@ export class LLMTabComponent implements OnInit {
     this.isSidebarDisplayed.update((prev) => !prev);
   }
 
-  public copySequence(sequenceDetails: { title: string; fullSequence: string }) {
+  public copySequence(sequenceDetails?: { title: string; fullSequence: string }) {
+    if (!sequenceDetails) return;
     const text = `${sequenceDetails.title}\r\n${sequenceDetails.fullSequence}`;
     this.utilService.copy(text);
   }
 
   private async renderVisualisations(macromolecule: ProcessedMacromolecule) {
-    await this.renderInMolstar(macromolecule);
+    this.renderInMolstar(macromolecule);
     await this.setCurrentSelectionData(macromolecule);
   }
 

@@ -108,28 +108,26 @@
       <p>{{dropdownOptions[0].name}}</p>
       } @else {}
     </div>
-    @if (sequenceDetails !== undefined && currentSelectionEntityId() && nonObserved() !== undefined) {
     <div class="sequence-container">
       <div class="title">
-        <span class="text">{{ sequenceDetails.title }}</span>
-        <button (click)="copySequence(sequenceDetails)">Copy sequence</button>
+        <span class="text">{{ sequenceDetails()?.title }}</span>
+        <button (click)="copySequence(sequenceDetails())">Copy sequence</button>
       </div>
-      @let molType = currentMacromoleculeDatum()!.additionalData.molecule.molecule_type; @if(currentSelectionEntityId() && molType) {
+      @let molType = currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_type; @if(seqViewerReady() && sequenceDetails() && molType) {
       <lib-smart-seq-viewer
         containerId="'smart-seq-viewer-llm'"
         class="sequence"
-        [sequence]="sequenceDetails.fullSequence"
-        [entityId]="currentSelectionEntityId()"
+        [sequence]="macromoleculeSequence()!"
+        [entityId]="currentSelectionEntityId()!"
         [chainId]="currentSelectionChainId()!"
-        [backgroundDataInput]="backgroundAnnotation"
-        [circleAboveDataInput]="llmAnnotationForSeq"
+        [backgroundDataInput]="backgroundAnnotation()!"
+        [circleAboveDataInput]="llmAnnotationForSeq()!"
         [isNucleic]="molType.includes('nucleotide')"
-        [altSequences]="altSequences()"
-        [nonObserved]="nonObserved()"
+        [altSequences]="altSequences()!"
+        [nonObserved]="nonObserved()!"
       ></lib-smart-seq-viewer>
       }
     </div>
-    }
     <p class="residue-info">
       Residues are colour-coded according to the number of structural quality criteria for which they contain at least one outlier and the availability of text-mined
       annotations.
@@ -148,18 +146,38 @@
       </section>
       <div class="container-3d">
         <div class="molstar-parent">
-          @if (!configForMolstar()) {
+          @if (!configForMolstar() || slowNetwork() === undefined || checkedWebGl() === undefined) {
           <div [style.width]="'100%'">
             <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
           </div>
-          } @if (configForMolstar()) {
+          } @else if (configForMolstar() && isWebGlEnabled() && fastNetworkOrForceLoad()) {
           <div class="molstar-container">
             <div #popoutWrapper>
               <lib-pdbe-molstar #molstarComponent [id]="'llm-molstar'" [molstarConfig]="configForMolstar()"></lib-pdbe-molstar>
             </div>
           </div>
+          } @else if (!isWebGlEnabled()) {
+          <div class="molstar-not-loaded">
+            <img alt="WebGL not supported" src="assets/img/no_webgl.webp" />
+            <div>
+              <h4 class="heading-4">3D viewer not supported in this browser</h4>
+              <p>Your browser doesn’t support WebGL, which is required for the 3D structure.</p>
+              <a target="_blank" href="https://get.webgl.org/webgl2/enable.html">
+                Learn how to enable WebGL
+                <i class="icon icon-link icon-common"></i>
+              </a>
+            </div>
+          </div>
+          } @else if (isWebGlEnabled() && !fastNetworkOrForceLoad()) {
+          <div class="molstar-not-loaded">
+            <img alt="3D viewer paused" src="assets/img/paused_3d.webp" />
+            <div>
+              <h4 class="heading-4">3D viewer paused due to large structure or slow connection</h4>
+              <p>The 3D structure is large and may load slowly on your current connection.</p>
+            </div>
+            <button class="vf-button vf-button--search-pdbe" (click)="toggleMolstar()">Load 3D anyway</button>
+          </div>
           }
-          <div id="llm-molstar-container" class="molstar-container" #molstarContainer style="display: none"></div>
         </div>
       </div>
     </section>

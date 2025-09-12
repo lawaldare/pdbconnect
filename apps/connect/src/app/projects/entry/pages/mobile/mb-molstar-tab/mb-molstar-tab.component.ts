@@ -2,6 +2,7 @@ import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, NgZ
 import { CommonModule } from '@angular/common';
 import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -31,7 +32,7 @@ const MOBILE_COMPONENT_MAP = {
 
 @Component({
   selector: 'pdbc-mb-molstar-tab',
-  imports: [CommonModule, MaterialModule, MolstarComponent],
+  imports: [CommonModule, MaterialModule, NgxSkeletonLoaderModule, MolstarComponent],
   templateUrl: './mb-molstar-tab.component.html',
   styleUrl: './mb-molstar-tab.component.scss',
 })
@@ -78,6 +79,26 @@ export class MbMolstarTabComponent implements AfterViewInit {
     return this._molstarComponent?.firstLoadFinished() || false;
   });
   private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+
+  public readonly slowNetwork = toSignal(
+    this.compCommunication.slowNetwork$,
+    { initialValue: undefined } // assume "unknown/loading" until we know
+  );
+
+  public readonly checkedWebGl = computed(() => this.compCommunication.checkedWebGlSupport);
+  public readonly isWebGlEnabled = computed(() => this.compCommunication.isWebGlEnabled);
+
+  public readonly fastNetworkOrForceLoad = computed(() => {
+    const isSlow = this.slowNetwork();
+    const forceLoad = this.compCommunication.forceLoad();
+    if (isSlow === undefined) return false;
+    return isSlow === false || forceLoad === true;
+  });
+
+  public toggleMolstar() {
+    const forceLoad = this.compCommunication.forceLoad();
+    this.compCommunication.forceLoad.set(!forceLoad);
+  }
 
   public readonly configForMolstar = computed(() => {
     const summary = this.summary();
