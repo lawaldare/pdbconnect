@@ -4,7 +4,7 @@
   <pdbc-interactive-tables tabName="Assemblies" />
   }
   <div class="tab-content" [class.change-display]="!isSidebarDisplayed()">
-    @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Assemblies';
+    @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Complexes';
     <button class="vf-button-ghost" (click)="toggleSidebar()">
       <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
       <span>{{text}}</span>
@@ -37,7 +37,7 @@
           @if(datum?.complexName){
           <div class="info-row">
             <span>
-              Assembly name
+              Complex name
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.assemblyName" />
             </span>
             <article>{{datum?.complexName}}</article>
@@ -110,7 +110,7 @@
           @if(preferredSymmetry()?.type){
           <div class="info-row">
             <span>
-              Assembly symmetry
+              Complex symmetry
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.assemblySymmetry" />
             </span>
             <article>{{preferredSymmetry()?.type}} - {{preferredSymmetry()?.symbol}}</article>
@@ -142,7 +142,7 @@
   </div>
 </main>
 } @else {
-<h5>No Assemblies data available</h5>
+<h5>No Complexes data available</h5>
 } }@else{
 <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
 }

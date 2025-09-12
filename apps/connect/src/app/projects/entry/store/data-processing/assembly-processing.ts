@@ -129,7 +129,7 @@ export function generateAssembliesCards(assemblyData: AssemblyData[], complexDet
     assemblyCards.push({
       index,
       assemblyId: assemblyDatum.assembly_id,
-      assemblyName: `Assembly ${assemblyDatum.assembly_id}${preferredWord}`,
+      assemblyName: `Complex ${assemblyDatum.assembly_id}${preferredWord}`,
       complexName: complexName,
       multimericStates: mericity,
     });
@@ -242,7 +242,7 @@ export function generateProcessedAssemblies(
     // ... and finally push all necessary data for rendering a row
     listProcessedAssemblies.push({
       assemblyId: assemblyDatum.assembly_id,
-      assemblyName: `Assembly ${assemblyDatum.assembly_id}${preferredWord}`,
+      assemblyName: `Complex ${assemblyDatum.assembly_id}${preferredWord}`,
       moleculeNames: moleculeNames,
       complexId: complexId,
       complexName: complexName,

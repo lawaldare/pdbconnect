@@ -55,7 +55,7 @@ export class MbMolstarTabComponent implements AfterViewInit {
 
   public readonly mobileTabChips = [
     { label: 'Model Quality', id: MobileTabChips.MQuality },
-    { label: 'Assembly', id: MobileTabChips.Assemblies },
+    { label: 'Complex', id: MobileTabChips.Assemblies },
     { label: 'Macromolecules', id: MobileTabChips.Macromolecules },
     { label: 'Ligands and Environments', id: MobileTabChips.Ligands },
     { label: 'Domains', id: MobileTabChips.Domains },
