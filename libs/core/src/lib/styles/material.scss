@@ -254,6 +254,19 @@ mat-tab-header {
         background: transparent !important;
         border: none !important;
       }
+
+      button.driver-popover-next-btn {
+        color: #0a5032 !important;
+        font-family: 'IBM Plex Sans' !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        line-height: 27.2px;
+        text-decoration: none !important;
+        text-shadow: none !important;
+        border: 2px solid #0a5032 !important;
+        background: #fff !important;
+        box-shadow: 4px 4px 0 0 #0a5032 !important;
+      }
     }
   }
 }

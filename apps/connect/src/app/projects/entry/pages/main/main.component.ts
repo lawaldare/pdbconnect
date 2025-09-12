@@ -431,4 +431,8 @@ export class EntryMainPageComponent implements OnInit {
     Clarity.event('tab-change');
     Clarity.event(`tab-access-${tabName}`);
   }
+
+  public startTour() {
+    this.tutorialTourService.startTour();
+  }
 }
