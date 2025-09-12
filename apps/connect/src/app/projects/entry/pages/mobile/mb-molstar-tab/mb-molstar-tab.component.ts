@@ -124,6 +124,7 @@ export class MbMolstarTabComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    document.body.style.top = '0px';
     this.mbFacade.selectedPageName.pipe(take(1)).subscribe(async (mobileTabName) => {
       if (mobileTabName === MobileTabNames.Molstar) {
         this.onTabClick(this.mobileTabChips[0]);
