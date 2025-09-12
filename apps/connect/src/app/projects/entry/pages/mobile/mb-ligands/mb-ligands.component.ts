@@ -180,6 +180,7 @@ export class MbLigandsComponent implements OnInit {
       EntryActions.getSummaryData,
       EntryActions.getAssemblies,
       EntryActions.getEntryMolecules,
+      EntryActions.getBoundMolecules,
       EntryActions.getEntryLigandMonomers,
       EntryActions.getModifications,
       EntryActions.getProcessedLigands,
