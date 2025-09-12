@@ -39,7 +39,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { ApplicationAPIDispatcher } from '../../services/application-api-dispacher.service';
 import { SpeedTestServiceCustom } from '../../services/speed-test/speed-test-service.service';
 
-import { IStepOption, TourService, TourMatMenuModule } from 'ngx-ui-tour-md-menu';
+import { TutorialTourService } from '../../services/tutorial-tour.service';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -75,7 +75,6 @@ import { IStepOption, TourService, TourMatMenuModule } from 'ngx-ui-tour-md-menu
     ErrorPageComponent,
     VisualisationInteractivityDirective,
     DataPrivacyBannerComponent,
-    TourMatMenuModule,
     RouterModule,
   ],
   templateUrl: './main.component.html',
@@ -95,6 +94,7 @@ export class EntryMainPageComponent implements OnInit {
   private readonly renderer = inject(Renderer2);
   public readonly gAS = inject(GoogleAnalyticsService);
   private readonly speedTest = inject(SpeedTestServiceCustom);
+  private readonly tutorialTourService = inject(TutorialTourService);
 
   private procAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
   private procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
@@ -338,12 +338,12 @@ export class EntryMainPageComponent implements OnInit {
       )
       .subscribe({});
 
-    this.tourService.initialize(this.steps, {
-      enableBackdrop: true,
-      backdropConfig: {
-        offset: 10,
-      },
-    });
+    // this.tourService.initialize(this.steps, {
+    //   enableBackdrop: true,
+    //   backdropConfig: {
+    //     offset: 10,
+    //   },
+    // });
   }
 
   private isTitleAndMetaProcessed = false;
@@ -431,28 +431,4 @@ export class EntryMainPageComponent implements OnInit {
     Clarity.event('tab-change');
     Clarity.event(`tab-access-${tabName}`);
   }
-
-  private readonly tourService = inject(TourService);
-  private readonly steps: IStepOption[] = [
-    {
-      anchorId: 'start-button',
-      title: 'Welcome',
-      content: 'Welcome to the demo tour!',
-    },
-    {
-      anchorId: 'speed-and-performance',
-      title: 'Speed & Performance',
-      content: 'Achieve the maximum speed possible on the Web Platform today, and take it further, via Web Workers and server-side rendering.',
-    },
-    {
-      anchorId: 'what-is-angular',
-      title: 'What is Angular',
-      content: 'Angular is a platform that makes it easy to build applications with the web.',
-    },
-    {
-      anchorId: 'component-metadata',
-      title: 'Component Metadata',
-      content: 'The metadata for a component class associates it with a template that defines a view.',
-    },
-  ];
 }

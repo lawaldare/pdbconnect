@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @angular-eslint/prefer-inject */
 
 import { Directive, ElementRef, Renderer2, Input, OnChanges } from '@angular/core';
 import { Participant } from '../models/complex-structure.model';

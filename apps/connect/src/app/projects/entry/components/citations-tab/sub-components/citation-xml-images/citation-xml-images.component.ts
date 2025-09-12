@@ -1,3 +1,5 @@
+/* eslint-disable @angular-eslint/prefer-inject */
+
 import { AfterViewInit, Component, ElementRef, Inject, Renderer2, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { XMLImageRendererService, MaterialModule } from '@pdbc/core';

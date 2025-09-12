@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { ChangeDetectionStrategy, Component, DestroyRef, EventEmitter, inject, input, linkedSignal, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';

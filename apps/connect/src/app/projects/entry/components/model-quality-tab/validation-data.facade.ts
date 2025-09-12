@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { DestroyRef, inject, Injectable } from '@angular/core';
 import { ExperimentDetail } from '../../data-models/experimental-details.model';
 import { XRayRefine } from '../../data-models/x-ray-refine.model';

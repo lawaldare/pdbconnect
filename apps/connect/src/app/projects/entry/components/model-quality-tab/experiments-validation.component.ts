@@ -36,7 +36,6 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { cameraResetInMolstar, drawSelectionInMolstar, Molstar370DefaultParams } from '../../helpers/molstar-helpers';
-import { EntryActions } from '../../store/entry.actions';
 import { OutlierDict, ValueLabel } from '../../store/data-processing/models/other-models';
 
 /**

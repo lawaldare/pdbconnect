@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @angular-eslint/prefer-inject */
 
 import { Component, Inject, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';

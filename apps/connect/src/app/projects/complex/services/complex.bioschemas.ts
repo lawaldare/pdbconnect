@@ -1,3 +1,5 @@
+/* eslint-disable @angular-eslint/prefer-inject */
+
 import { EnvironmentInjector, inject, Injectable, Renderer2, runInInjectionContext } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { BioschemasService } from '@pdbc/core';

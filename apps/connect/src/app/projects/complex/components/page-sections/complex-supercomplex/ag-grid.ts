@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { agGridOptionsBase } from '@pdbc/core';
-import { ColDef, GridOptions, GridState } from 'ag-grid-community';
+import { ColDef, GridOptions } from 'ag-grid-community';
 import { ComplexNameRendererComponent } from '../../cell renderers/custom-complex-name.component';
 import { CommonComponentsRendererComponent } from '../../cell renderers/common-components.component';
 

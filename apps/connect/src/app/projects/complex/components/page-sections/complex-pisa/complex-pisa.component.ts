@@ -16,7 +16,6 @@ import { drawHistogram } from './histogram';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { PISAAssemblyParam } from '../../../models/pisa-assembly-param.model';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { LigandStructure } from '../../../../ligands/data-models/structure.model';
 import { map } from 'rxjs';
 
 @Component({

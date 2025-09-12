@@ -1,5 +1,5 @@
 <section class="top-info">
-  <section class="summary">
+  <section class="summary" id="structure-summary-tour">
     <div id="information-section" class="information-section">
       <div class="info-row">
         <span>Entry title</span>
@@ -98,8 +98,8 @@
       }
     </div>
   </section>
-  <section class="explore-3d-tabs">
-    <section class="molstar-details-container">
+  <section class="explore-3d-tabs" id="structure-overview-tour">
+    <section class="molstar-details-container-tour">
       <!-- molstar control bar: selection dropdown and zoom controls -->
       <div class="molstar-control-bar">
         @if (dropdownOptions().length > 0) {
@@ -161,7 +161,7 @@
       }
     </section>
     <section class="listview-accordions">
-      <mat-accordion>
+      <mat-accordion id="entry-features-tour">
         <mat-expansion-panel class="assembly-panel" (opened)="onOpenAccordionPanel('Assembly')">
           <mat-expansion-panel-header>
             <mat-panel-title> Preferred assembly </mat-panel-title>

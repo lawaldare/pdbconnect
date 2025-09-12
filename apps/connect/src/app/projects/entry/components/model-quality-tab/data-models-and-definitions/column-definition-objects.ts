@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 import { ColDef, ValueFormatterParams } from 'ag-grid-community'; // Column Definition Type Interface
 import { TableHeaderWithTooltipComponent } from '../../shared/table-header-with-tooltip/table-header-with-tooltip.component';
 import { depositionDateTooltip, expEmBufferTooltip, nmrContentsTooltip, nmrSampleTooltip, releaseDateTooltip, revisionDateTooltip } from '../../../entry-constant';

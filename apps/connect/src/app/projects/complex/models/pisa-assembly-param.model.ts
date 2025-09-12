@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export interface PISAAssemblyParam {
   dissociation_energy: number;
   accessible_surface_area: number;

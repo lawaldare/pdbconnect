@@ -204,3 +204,56 @@ mat-tab-header {
 .mat-bottom-sheet-container {
   padding-top: 0 !important;
 }
+
+.driver-popover {
+  padding: 20px !important;
+  background-color: #056643 !important;
+  box-shadow:
+    0 4px 8px 0 rgb(0 0 0 / 30%),
+    0 6px 20px 0 rgb(0 0 0 / 30%) !important;
+  width: 420px !important;
+  color: #fff !important;
+
+  .mat-mdc-card-header,
+  .mat-mdc-card-content {
+    padding: 0;
+  }
+
+  #driver-popover-title {
+    font-family: 'IBM Plex Sans' !important;
+    font-size: 21px !important;
+    font-weight: 500 !important;
+    line-height: 27.3px;
+  }
+
+  #driver-popover-description {
+    font-family: 'IBM Plex Sans' !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    line-height: 27.2px;
+  }
+
+  footer.driver-popover-footer {
+    span.driver-popover-progress-text {
+      font-family: 'IBM Plex Sans' !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      line-height: 16.5px;
+      color: #fff !important;
+    }
+
+    span.driver-popover-navigation-btns {
+      button.driver-popover-prev-btn {
+        color: #fff !important;
+        font-family: 'IBM Plex Sans' !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+        line-height: 27.2px;
+        text-decoration: none !important;
+        text-shadow: none !important;
+        background: transparent !important;
+        border: none !important;
+      }
+    }
+  }
+}

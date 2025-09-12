@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { catchError, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
+import { catchError, mergeMap, of, switchMap, take, tap } from 'rxjs';
 
 import { ComplexAPIService } from '../services/complex-api.service';
 import { ComplexStoreState } from './complex-store.model';

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { ScriptLoaderService } from '@pdbc/core';
 import { ComplexStoreState } from '../store/complex-store.model';
