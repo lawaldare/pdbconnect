@@ -143,7 +143,7 @@ export interface EntryStoreState {
   entityPvVariation: {
     [entityId: string]: APIVariationData;
   };
-  llmAnnotations: LLMAnnotation[];
+  llmAnnotations: LLMAnnotation[] | undefined;
 }
 
 export interface EntryMoleculesData {

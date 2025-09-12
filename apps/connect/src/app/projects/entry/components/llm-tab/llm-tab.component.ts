@@ -278,9 +278,12 @@ export class LLMTabComponent implements OnInit {
   ngOnInit(): void {
     combineLatest([this.globalStore.select(EntrySelectors.llmAnnotations), this.globalStore.select(EntrySelectors.primaryPublication)])
       .pipe(
+        filter(([llmAnnotations, primaryPublication]) => {
+          return llmAnnotations !== undefined;
+        }),
         map(([llmAnnotations, primaryPublication]) => {
           this.primaryPublication.set(primaryPublication ?? ({} as CitationDetail));
-          const annotations = llmAnnotations.filter((a: any) => a.primaryCitation === 'Y');
+          const annotations = llmAnnotations?.filter((a: any) => a.primaryCitation === 'Y');
           this.filteredLLMAnnotations.set(annotations ?? []);
           this.mappedAnnotations.set(annotations ?? []);
         }),

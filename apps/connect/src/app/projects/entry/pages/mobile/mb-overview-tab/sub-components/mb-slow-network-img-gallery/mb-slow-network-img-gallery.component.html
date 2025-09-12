@@ -1,14 +1,16 @@
 <div class="gallery">
   <div class="gallery-container" *ngIf="images.length > 0">
-    <!-- Arrows -->
-    <button class="arrow-left left" (click)="prev()">
-      <img src="/assets/images/mobile/left-mat-btn.svg" alt="arrow-left" />
-    </button>
-
     <div class="gallery-image">
+      <!-- Arrows -->
+      <button class="arrow-left left" (click)="prev()">
+        <img src="/assets/images/mobile/left-mat-btn.svg" alt="arrow-left" />
+      </button>
+      <button class="arrow-right right" (click)="next()">
+        <img src="/assets/images/mobile/right-mat-btn.svg" alt="arrow-right" />
+      </button>
       @if (!isImageLoaded(currentIndex())) {
       <div class="loading-img">
-        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', width: '300px', height: '300px' }"></ngx-skeleton-loader>
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', width: '400px', height: '400px' }"></ngx-skeleton-loader>
       </div>
       }
       <img
@@ -19,11 +21,6 @@
         [class.hidden]="!isImageLoaded(currentIndex())"
       />
     </div>
-
-    <button class="arrow-right right" (click)="next()">
-      <img src="/assets/images/mobile/right-mat-btn.svg" alt="arrow-right" />
-    </button>
-
     <!-- Dot indicators -->
     <div class="gallery-nav">
       <div class="dot-indicators">

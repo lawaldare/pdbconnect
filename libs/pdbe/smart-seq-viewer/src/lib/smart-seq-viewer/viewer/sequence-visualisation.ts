@@ -33,12 +33,15 @@ export class SmartSequenceVisualisation {
   private fontFamily = 'IBM Plex Sans';
   private fontSize = 14;
   private characterBgPadding = 2;
+  private originalMargins = { top: 4, bottom: 4, left: 4, right: 4 };
   private margins = { top: 4, bottom: 4, left: 4, right: 4 };
   private resizeObserver: ResizeObserver | null = null;
   private resizeDebounceTimer: number | null = null;
 
   private residueNumberingFreq = 10; // Number of residues to add numbering above
+  private currentResidueNumberingFreq: number | null = null;
   private residueGroupSize = 10; // Number of residues per group
+  private currentGroupSize: number | null = null;
   private residueGroupRightMargin = 16; // Pixels between residue groups
   private lineBottomMargin = 6; // Pixels between lines
   private numberingFontSize = 12; // Smaller font size for numbering
@@ -55,6 +58,8 @@ export class SmartSequenceVisualisation {
   private canvasWidth = 0;
   private canvasHeight = 0;
   private canvasTextLines: number | undefined = undefined;
+  private fullGroupsPerLine: number | undefined = undefined;
+  private notDrawnWidth: number | undefined = undefined;
   private canvasBoxPerLines: number | undefined = undefined;
 
   private chunkedSequence: string[] = [];
@@ -92,6 +97,10 @@ export class SmartSequenceVisualisation {
   private warningDiv: HTMLDivElement | null = null;
 
   private annotationRenderers: Map<string, (ann: SmartSequenceAnnotationForEvent, residueIndex: number) => string> = new Map();
+
+  private boundOnMouseMove!: (e: MouseEvent) => void;
+  private boundOnMouseLeave!: (e: MouseEvent) => void;
+  private boundOnClick!: (e: MouseEvent) => void;
 
   constructor(
     sequence: string,
@@ -135,7 +144,9 @@ export class SmartSequenceVisualisation {
     container.style.width = '100%';
     container.style.maxWidth = '100%';
 
-    validateAlternativeNumberings(this.sequence, alternativeNumberings || []);
+    const altNumVal = validateAlternativeNumberings(this.sequence, alternativeNumberings || []);
+    this.authOffset = altNumVal.authOffset;
+
     this.alternativeNumberings = alternativeNumberings;
 
     validateNonObserved(this.sequence, nonObservedResidues || []);
@@ -164,12 +175,12 @@ export class SmartSequenceVisualisation {
     this.processAnnotations();
     // First pass: calculate layout to determine canvasBoxPerLines
     this.setCanvasBoxPerLines();
+    this.horizontalCenterMargins();
     // Recalculate height after layout for non-scroll mode
     // chunkedSequence is populated and canvasTextLines is correct
     this.canvasHeight = this.calcCanvasHeightForFullSequence();
     // recalculate layout with the correct canvasHeight
     this.calculateLineBoxLayout();
-
     if (this.authOffset && this.authOffset !== '0') {
       const inclusionExplanation =
         this.authOffset === 'non-trivial'
@@ -186,11 +197,33 @@ export class SmartSequenceVisualisation {
       this.createTooltipElement(this.visualisationContainer);
     }
 
-    this.showSidebar(undefined); // show default placeholder
+    // this.showSidebar(undefined); // show default placeholder
+    this.unselectResidueState();
     this.draw();
-    // this.setupResizeObserver();
-    this.onContainerResize();
+    this.setupResizeObserver();
+    // this.onContainerResize();
     this.registerExternalEventsListeners();
+  }
+
+  private setGroupSize(num: number) {
+    this.residueGroupSize = num;
+    this.residueNumberingFreq = num;
+  }
+
+  private horizontalCenterMargins() {
+    if (!this.notDrawnWidth) return;
+    this.margins.left = this.originalMargins.left + Math.floor(this.notDrawnWidth / 2);
+  }
+
+  private recalculateLayout() {
+    this.setCanvasBoxPerLines();
+    this.horizontalCenterMargins();
+    this.calculateLineBoxLayout();
+    this.canvasHeight = this.calcCanvasHeightForFullSequence();
+
+    // freeze current group size & numbering frequency for consistency
+    this.currentGroupSize = this.residueGroupSize;
+    this.currentResidueNumberingFreq = this.residueNumberingFreq;
   }
 
   public onContainerResize() {
@@ -198,19 +231,37 @@ export class SmartSequenceVisualisation {
     if (!this.visualisationContainer || !this.visualisationAndSidebarContainer || !this.sidebarPanel) return;
 
     const newCanvasWidth = this.visualisationAndSidebarContainer.offsetWidth - this.sidebarPanelWidth;
-    const newCanvasHeight = this.calcCanvasHeightForFullSequence();
+
+    // decide group size for this width
+    if (newCanvasWidth > 820) this.setGroupSize(10);
+    else if (newCanvasWidth > 735) this.setGroupSize(12);
+    else if (newCanvasWidth > 625) this.setGroupSize(10);
+    else if (newCanvasWidth > 495) this.setGroupSize(12);
+    else if (newCanvasWidth > 415) this.setGroupSize(10);
+    else if (newCanvasWidth > 310) this.setGroupSize(15);
+    else if (newCanvasWidth > 210) this.setGroupSize(10);
+    else this.setGroupSize(8);
+
+    // const newCanvasHeight = this.calcCanvasHeightForFullSequence();
 
     // Skip if dimensions haven't changed
-    if (newCanvasWidth === this.canvasWidth && newCanvasHeight === this.canvasHeight) return;
+    // if (newCanvasWidth === this.canvasWidth && newCanvasHeight === this.canvasHeight) return;
+    if (newCanvasWidth === this.canvasWidth) return;
 
     this.canvasWidth = newCanvasWidth;
-    this.canvasHeight = newCanvasHeight;
+    // this.canvasHeight = newCanvasHeight;
+    this.recalculateLayout();
 
-    this.setCanvasBoxPerLines();
-    this.calculateLineBoxLayout();
+    // this.setCanvasBoxPerLines();
+    // this.horizontalCenterMargins();
+    // this.calculateLineBoxLayout();
+    // remove only the old canvas, keep warningDiv intact
+    if (this.canvas && this.visualisationContainer.contains(this.canvas)) {
+      this.visualisationContainer.removeChild(this.canvas);
+    }
+
     this.canvas = this.createHiPPICanvas(this.canvasWidth, this.canvasHeight);
     this.registerCanvasMouseEvents();
-    this.visualisationContainer.innerHTML = ''; // clear old canvas
 
     // add sidebar panel
     const sel = this.currentClickedResidue ? this.currentClickedResidue : undefined;
@@ -229,7 +280,8 @@ export class SmartSequenceVisualisation {
     wrapper.style.width = '100%';
     wrapper.style.maxWidth = '100%';
     wrapper.style.background = '#f3f3f3';
-    wrapper.style.overflowY = 'scroll';
+    // wrapper.style.overflowY = 'scroll';
+    wrapper.style.overflowY = 'hidden';
     return wrapper;
   }
 
@@ -239,6 +291,7 @@ export class SmartSequenceVisualisation {
     wrapper.style.width = 'calc(100% - 250px)';
     wrapper.style.maxWidth = 'calc(100% - 250px)';
     wrapper.style.overflowY = 'auto';
+    wrapper.style.overflowX = 'hidden';
     wrapper.style.maxHeight = `${this.scrollContainerMaxHeight}px`;
     return wrapper;
   }
@@ -459,7 +512,9 @@ export class SmartSequenceVisualisation {
     for (let i = 0; i < sequenceLine.length; i++) {
       const residueIndex = residueGlobalIndex + i + 1;
 
-      if (this.grouping && i > 0 && i % this.residueGroupSize === 0) {
+      // if (this.grouping && i > 0 && i % this.residueGroupSize === 0) {
+      const grpSize = this.currentGroupSize ? this.currentGroupSize : this.residueGroupSize;
+      if (this.grouping && i > 0 && i % grpSize === 0) {
         xCursor += this.residueGroupRightMargin;
       }
 
@@ -838,6 +893,7 @@ export class SmartSequenceVisualisation {
   private calcCanvasHeightForFullSequence(): number {
     let x = this.margins.left;
     let lineCount = 1;
+    const groupSize = this.currentGroupSize ?? this.residueGroupSize;
 
     for (let i = 1; i <= this.sequence.length; i++) {
       if (x + this.maxBoxWidth > this.canvasWidth - this.margins.right) {
@@ -848,7 +904,7 @@ export class SmartSequenceVisualisation {
       x += this.maxBoxWidth + this.hoverBorderWidth;
 
       // Add spacing after group
-      if (this.grouping && i % this.residueGroupSize === 0) {
+      if (this.grouping && i % groupSize === 0) {
         x += this.residueGroupRightMargin;
       }
     }
@@ -870,8 +926,9 @@ export class SmartSequenceVisualisation {
       this.canvasBoxPerLines = Math.floor(availableWidth / effectiveBoxWidth); // spacing handled during drawing
     } else if (this.grouping) {
       const groupBoxWidth = this.residueGroupSize * effectiveBoxWidth + this.residueGroupRightMargin;
-      const fullGroupsPerLine = Math.floor((availableWidth + this.residueGroupRightMargin) / groupBoxWidth);
-      this.canvasBoxPerLines = fullGroupsPerLine * this.residueGroupSize;
+      this.fullGroupsPerLine = Math.floor((availableWidth + this.residueGroupRightMargin) / groupBoxWidth);
+      this.notDrawnWidth = Math.floor(availableWidth + this.residueGroupRightMargin) - this.fullGroupsPerLine * groupBoxWidth;
+      this.canvasBoxPerLines = this.fullGroupsPerLine * this.residueGroupSize;
     } else {
       this.canvasBoxPerLines = Math.floor(availableWidth / effectiveBoxWidth);
     }
@@ -913,6 +970,8 @@ export class SmartSequenceVisualisation {
       for (let i = 0; i < this.sequence.length; i += this.canvasBoxPerLines!) {
         this.chunkedSequence.push(this.sequence.slice(i, i + this.canvasBoxPerLines!));
       }
+      this.currentGroupSize = this.residueGroupSize;
+      this.currentResidueNumberingFreq = this.residueNumberingFreq;
     }
 
     this.currentStartLine = 0;
@@ -968,7 +1027,9 @@ export class SmartSequenceVisualisation {
         x += this.maxBoxWidth + this.hoverBorderWidth;
 
         // Add group spacing if needed
-        if (residueIndex % this.residueGroupSize === 0) {
+        // if (residueIndex % this.residueGroupSize === 0) {
+        const grpSize = this.currentGroupSize ? this.currentGroupSize : this.residueGroupSize;
+        if (residueIndex % grpSize === 0) {
           x += this.residueGroupRightMargin;
         }
 
@@ -987,7 +1048,8 @@ export class SmartSequenceVisualisation {
           const char = sequenceLine[i];
           const residueIndex = residueGlobalIndex + i + 1;
 
-          if (this.grouping && i > 0 && i % this.residueGroupSize === 0) {
+          const grpSize = this.currentGroupSize ? this.currentGroupSize : this.residueGroupSize;
+          if (this.grouping && i > 0 && i % grpSize === 0) {
             x += this.residueGroupRightMargin;
           }
 
@@ -1145,7 +1207,9 @@ export class SmartSequenceVisualisation {
 
     // Draw number on top of residue if first, last or every this.residueNumberingFreq
     const residueNumberLabel = this.useAuthNumbers ? this.getAltNumber(residueIndex, 'auth') : residueIndex.toString();
-    if (residueIndex === 1 || residueIndex % this.residueNumberingFreq === 0 || residueIndex === this.sequence.length) {
+    // if (residueIndex === 1 || residueIndex % this.residueNumberingFreq === 0 || residueIndex === this.sequence.length) {
+    const numberingFreq = this.currentResidueNumberingFreq ? this.currentResidueNumberingFreq : this.residueNumberingFreq;
+    if (residueIndex === 1 || residueIndex % numberingFreq === 0 || residueIndex === this.sequence.length) {
       ctx.font = `${this.numberingFontSize}px ${this.fontFamily}`;
       ctx.fillText(residueNumberLabel, x + this.maxBoxWidth / 2, yStart - this.numberingVerticalSpacing + this.maxNumberingBoxHeight / 2);
       ctx.font = `${this.fontSize}px ${this.fontFamily}`;
@@ -1168,9 +1232,13 @@ export class SmartSequenceVisualisation {
   }
 
   private registerCanvasMouseEvents() {
-    this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-    this.canvas.addEventListener('mouseleave', this.onMouseLeave.bind(this));
-    this.canvas.addEventListener('click', this.onClick.bind(this));
+    this.boundOnMouseMove = this.onMouseMove.bind(this);
+    this.boundOnMouseLeave = this.onMouseLeave.bind(this);
+    this.boundOnClick = this.onClick.bind(this);
+
+    this.canvas.addEventListener('mousemove', this.boundOnMouseMove);
+    this.canvas.addEventListener('mouseleave', this.boundOnMouseLeave);
+    this.canvas.addEventListener('click', this.boundOnClick);
   }
 
   private registerExternalEventsListeners() {
@@ -1342,6 +1410,7 @@ export class SmartSequenceVisualisation {
     panel.style.background = '#fafafa';
     panel.style.border = '1px solid #ccc';
     panel.style.overflowY = 'auto';
+    panel.style.overflowX = 'hidden';
     panel.style.padding = '10px';
     panel.innerHTML = this.getSidebarPanelEmptyState();
     panel.style.display = 'block';
@@ -1685,9 +1754,9 @@ export class SmartSequenceVisualisation {
     }
     this.externalEventListeners = [];
     if (this.canvas) {
-      this.canvas.removeEventListener('mousemove', this.onMouseMove.bind(this));
-      this.canvas.removeEventListener('mouseleave', this.onMouseLeave.bind(this));
-      this.canvas.removeEventListener('click', this.onClick.bind(this));
+      this.canvas.removeEventListener('mousemove', this.boundOnMouseMove);
+      this.canvas.removeEventListener('mouseleave', this.boundOnMouseLeave);
+      this.canvas.removeEventListener('click', this.boundOnClick);
     }
   }
 }
