@@ -18,7 +18,7 @@ import { EntryDropdownComponent } from '../entry-page-header/sub-components/entr
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { CitationDetail } from '../../data-models/publication.model';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, take, timer } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, of, take, timeout, timer } from 'rxjs';
 import { AgGridAngular } from 'ag-grid-angular';
 import { LLMAnnotation } from '../../data-models/llm-model';
 import { colDefs, gridOptions } from './ag-grid';
@@ -79,6 +79,7 @@ export class LLMTabComponent implements OnInit {
   public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
   public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
+  public readonly residueWiseOutliersObservable = this.globalStore.select(EntrySelectors.residueWiseOutliers);
   public readonly residueListing = toSignal(this.globalStore.select(EntrySelectors.residueListing));
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly uniprotMappings = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
@@ -239,12 +240,12 @@ export class LLMTabComponent implements OnInit {
   public readonly visInteractivity = inject(VisualisationInteractivityService);
 
   constructor() {
-    this.compCommunication.llmSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe((idx) => {
+    this.compCommunication.llmSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
       if (idx === undefined || idx === null) return;
       const datum = this.macromoleculeTableRows()[idx];
       if (datum) {
         this.currentMacromoleculeDatum.set(datum);
-        this.triggerMacromoleculeUpdateSideEffects(datum);
+        await this.triggerMacromoleculeUpdateSideEffects(datum);
       }
     });
 
@@ -256,7 +257,7 @@ export class LLMTabComponent implements OnInit {
     });
     // every time NMR model Id updates, data for smart seq viewer is refreshed
     this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
-      this.updateBackgroundAnnotation();
+      await this.updateBackgroundAnnotation();
     });
   }
 
@@ -321,13 +322,13 @@ export class LLMTabComponent implements OnInit {
   public selectionTypeText?: string;
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
-    this.updateDropdownOptions(macromolecule);
+    await this.updateDropdownOptions(macromolecule);
     this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
     await this.renderVisualisations(macromolecule);
-    this.updateBackgroundAnnotation();
+    await this.updateBackgroundAnnotation();
   }
 
-  private updateDropdownOptions(macromolecule: ProcessedMacromolecule) {
+  private async updateDropdownOptions(macromolecule: ProcessedMacromolecule) {
     this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(macromolecule);
     this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
       return {
@@ -344,19 +345,31 @@ export class LLMTabComponent implements OnInit {
     this.groupedAnnotations.update(() => groupedAnnotations);
 
     this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
-    this.updateBackgroundAnnotation();
+    await this.updateBackgroundAnnotation();
   }
 
-  private updateBackgroundAnnotation() {
+  private async updateBackgroundAnnotation() {
     const macromolecule = this.currentMacromoleculeDatum();
 
     const sequence = this.sequenceDetails?.fullSequence;
     if (!sequence) return;
 
+    // wait max 10s for residueWiseOutliers to populate
+    let outliers = this.residueWiseOutliers();
+    if (outliers === undefined) {
+      outliers = await firstValueFrom(
+        this.residueWiseOutliersObservable.pipe(
+          filter((o) => o !== undefined),
+          take(1),
+          timeout({ first: 10000, with: () => of([]) }) // fallback to []
+        )
+      );
+    }
+
     const entityId = macromolecule?.additionalData.molecule.entity_id ?? 1;
     const chainId = this.dropdownSelected.split('Chain ')[1];
     const modelId = this.currentModelId$.value || '1';
-    this.backgroundAnnotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, this.residueWiseOutliers());
+    this.backgroundAnnotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
 
     const groupedLLMAnnotations: LLMAnnotation[] = this.groupedFilteredLLMAnnotations()[chainId];
     this.llmAnnotationForSeq = getCircleAnnotationsForSeqViewer(groupedLLMAnnotations);
@@ -383,7 +396,7 @@ export class LLMTabComponent implements OnInit {
     const macromolecule = this.currentMacromoleculeDatum();
     this.sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule as ProcessedMacromolecule, this.dropdownSelected);
     if (macromolecule) await this.renderVisualisations(macromolecule);
-    this.updateBackgroundAnnotation();
+    await this.updateBackgroundAnnotation();
   }
 
   public toggleSidebar() {
