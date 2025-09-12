@@ -16,12 +16,12 @@
           <mat-tab label="Summary">
             <ng-template matTabContent> <pdbc-summary-tab /> </ng-template>
           </mat-tab>
-          <mat-tab label="Model quality">
+          <mat-tab label="Model Quality">
             <ng-template matTabContent> <pdbc-experiments-validation /> </ng-template>
           </mat-tab>
           <mat-tab>
             <ng-template mat-tab-label>
-              Assemblies @if(hasLoadedAssemblies() === false) {
+              Complexes @if(hasLoadedAssemblies() === false) {
               <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
               } @else if(hasAssemblies() === false) {
               <div class="tab-tag na">N/A</div>

@@ -95,7 +95,7 @@ export interface EntryStoreState {
   symmetry: Symmetry[];
   polymerCoverage: PolymerCoverageMolecule[] | undefined;
   ligandMonomers: LigandMonomer[] | undefined;
-  residueWiseOutliers: ResidueWiseOutliersMolecule[];
+  residueWiseOutliers: ResidueWiseOutliersMolecule[] | undefined;
   outliersByModelId: OutliersByModelId | undefined;
   processedAssemblies: ProcessedAssembly[] | undefined;
   procAssembliesCards: AssemblyUICard[] | undefined;

@@ -128,7 +128,10 @@
     }
     <div class="stats-link-bar">
       @if(dashboardStatLinks['Macromolecules'].length > 0 && selectionUniprotId !== 'None') {
-      <span><img src="assets/icons/logo.png" alt="icon" style="margin-right: 2px" />View more about this {{ selectionTypeText }}:</span>
+      <span
+        ><img src="assets/icons/pdbe-kb_logo.webp" alt="icon" style="width: 16px; height: 16px; margin-right: 2px" />View more about this {{ selectionTypeText
+        }}:</span
+      >
       @for (displayLink of dashboardStatLinks['Macromolecules']; track displayLink; let islast = $last) {
       <a
         [href]="displayLink.link + selectionUniprotId + displayLink.linkSuffix"
@@ -178,7 +181,11 @@
         [nonObserved]="nonObserved()!"
       ></lib-smart-seq-viewer>
     </div>
-    }
+    } @if (slowNetwork() === undefined) {
+    <div [style.width]="'100%'">
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+    </div>
+    } @else if (fastNetworkOrForceLoad()) {
     <section class="chart-area" [class.collapsed]="!isSidebarDisplayed()">
       @if (hasProtvista) {
       <section class="protvista-container" [class.collapsed]="!isSidebarDisplayed()">
@@ -194,14 +201,26 @@
       </section>
       }
       <section class="molstar-topol-container" [class.collapsed]="!isSidebarDisplayed()">
-        @if (!configForMolstar()) {
+        @if (!configForMolstar() || checkedWebGl() === undefined) {
         <div [style.width]="'100%'">
           <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
         </div>
-        } @if (configForMolstar()) {
+        } @else if (configForMolstar() && isWebGlEnabled()) {
         <div class="molstar-container" [class.collapsed]="!isSidebarDisplayed()">
           <div #popoutWrapper>
             <lib-pdbe-molstar #molstarComponent [id]="'macromolecules-molstar'" [molstarConfig]="configForMolstar()" [height]="molstarHeight"></lib-pdbe-molstar>
+          </div>
+        </div>
+        } @else if (!isWebGlEnabled()) {
+        <div class="molstar-not-loaded">
+          <img alt="WebGL not supported" src="assets/img/no_webgl.webp" />
+          <div>
+            <h4 class="heading-4">3D viewer not supported in this browser</h4>
+            <p>Your browser doesn’t support WebGL, which is required for the 3D structure.</p>
+            <a target="_blank" href="https://get.webgl.org/webgl2/enable.html">
+              Learn how to enable WebGL
+              <i class="icon icon-link icon-common"></i>
+            </a>
           </div>
         </div>
         }
@@ -210,6 +229,17 @@
         </section>
       </section>
     </section>
+    } @else if (!fastNetworkOrForceLoad()) {
+    <div class="molstar-not-loaded outside">
+      <img alt="Visualisations paused" src="assets/img/paused_3d.webp" />
+      <div>
+        <h4 class="heading-4">All viewers paused due to large structure or slow connection</h4>
+        <p>This page includes multiple viewers (annotations, 3D structure, topology viewer).</p>
+        <p>Loading may take longer than usual.</p>
+      </div>
+      <button class="vf-button vf-button--search-pdbe" (click)="toggleMolstar()">Load viewers anyway</button>
+    </div>
+    }
   </div>
 </main>
 }@else {

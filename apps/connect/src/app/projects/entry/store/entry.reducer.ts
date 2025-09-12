@@ -64,7 +64,7 @@ const initialState: EntryStoreState = {
   symmetry: [],
   polymerCoverage: undefined,
   ligandMonomers: undefined,
-  residueWiseOutliers: [],
+  residueWiseOutliers: undefined,
   outliersByModelId: undefined,
   procAssembliesCards: undefined,
   procAssembliesFilters: undefined,

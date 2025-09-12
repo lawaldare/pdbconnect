@@ -4,7 +4,7 @@
   <pdbc-interactive-tables tabName="Assemblies" />
   }
   <div class="tab-content" [class.change-display]="!isSidebarDisplayed()">
-    @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Assemblies';
+    @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Complexes';
     <button class="vf-button-ghost" (click)="toggleSidebar()">
       <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
       <span>{{text}}</span>
@@ -16,7 +16,7 @@
     @if (datum?.complexId) { @let selectionIdentifier = datum!.complexId;
     <div class="stats-link-bar">
       @if(dashboardStatLinks['Complexes'].length > 0 && selectionIdentifier !== 'None') {
-      <span><img src="assets/icons/logo.png" alt="icon" style="margin-right: 2px" /> View more about this complex:</span>
+      <span><img src="assets/icons/pdbe-kb_logo.webp" alt="icon" style="width: 16px; height: 16px; margin-right: 2px" /> View more about this complex:</span>
       @for (displayLink of dashboardStatLinks['Complexes']; track displayLink; let islast = $last) {
       <a
         [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix"
@@ -37,7 +37,7 @@
           @if(datum?.complexName){
           <div class="info-row">
             <span>
-              Assembly name
+              Complex name
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.assemblyName" />
             </span>
             <article>{{datum?.complexName}}</article>
@@ -110,7 +110,7 @@
           @if(preferredSymmetry()?.type){
           <div class="info-row">
             <span>
-              Assembly symmetry
+              Complex symmetry
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.assemblySymmetry" />
             </span>
             <article>{{preferredSymmetry()?.type}} - {{preferredSymmetry()?.symbol}}</article>
@@ -123,18 +123,38 @@
         </div>
       </section>
       <section class="molstar-details-container">
-        @if (!configForMolstar()) {
+        @if (!configForMolstar() || slowNetwork() === undefined || checkedWebGl() === undefined) {
         <div [style.width]="'100%'">
           <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
         </div>
-        } @if (configForMolstar()) {
+        } @else if (configForMolstar() && isWebGlEnabled() && fastNetworkOrForceLoad()) {
         <div class="molstar-container">
           <div #popoutWrapper>
             <lib-pdbe-molstar #molstarComponent [id]="'assemblies-molstar'" [molstarConfig]="configForMolstar()"></lib-pdbe-molstar>
           </div>
         </div>
+        } @else if (!isWebGlEnabled()) {
+        <div class="molstar-not-loaded">
+          <img alt="WebGL not supported" src="assets/img/no_webgl.webp" />
+          <div>
+            <h4 class="heading-4">3D viewer not supported in this browser</h4>
+            <p>Your browser doesn’t support WebGL, which is required for the 3D structure.</p>
+            <a target="_blank" href="https://get.webgl.org/webgl2/enable.html">
+              Learn how to enable WebGL
+              <i class="icon icon-link icon-common"></i>
+            </a>
+          </div>
+        </div>
+        } @else if (isWebGlEnabled() && !fastNetworkOrForceLoad()) {
+        <div class="molstar-not-loaded">
+          <img alt="3D viewer paused" src="assets/img/paused_3d.webp" />
+          <div>
+            <h4 class="heading-4">3D viewer paused due to large structure or slow connection</h4>
+            <p>The 3D structure is large and may load slowly on your current connection.</p>
+          </div>
+          <button class="vf-button vf-button--search-pdbe" (click)="toggleMolstar()">Load 3D anyway</button>
+        </div>
         }
-        <div id="assemblies-molstar-container" #molstarContainer class="molstar-container" style="display: none"></div>
       </section>
     </section>
 
@@ -142,7 +162,7 @@
   </div>
 </main>
 } @else {
-<h5>No Assemblies data available</h5>
+<h5>No Complexes data available</h5>
 } }@else{
 <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
 }

@@ -176,7 +176,7 @@ export class EntryMainPageComponent implements OnInit {
 
   public readonly routeTabs = [
     { label: 'Summary', id: 'summary' },
-    { label: 'Model quality', id: 'model-quality' },
+    { label: 'Model Quality', id: 'model-quality' },
     { label: 'Assemblies', id: 'assemblies' },
     { label: 'Macromolecules', id: 'macromolecules' },
     { label: 'Ligands and Environments', id: 'ligands' },
@@ -199,8 +199,15 @@ export class EntryMainPageComponent implements OnInit {
         tab: tabName,
       });
     });
-    this.testNetworkSpeed();
-    this.checkWebglEnabled();
+  }
+
+  private testProcessingPower() {
+    const t0 = performance.now();
+    for (let i = 0; i < 1e7; i++) Math.sqrt(i);
+    const t1 = performance.now();
+    const isCPUSlow = t1 - t0 > 40;
+    this.compCommunication.checkedCPUspeed.set(true); // fallback to slow mode
+    this.compCommunication.isCPUSlow.set(isCPUSlow);
   }
 
   private testNetworkSpeed() {
@@ -253,6 +260,7 @@ export class EntryMainPageComponent implements OnInit {
     const isWebGlEnabled = this.detectWebglSupport() ? true : false;
     this.compCommunication.checkedWebGlSupport.set(true); // fallback to slow mode
     this.compCommunication.isWebGlEnabled.set(isWebGlEnabled);
+    return isWebGlEnabled;
   }
 
   private detectWebglSupport(): boolean {
@@ -309,6 +317,10 @@ export class EntryMainPageComponent implements OnInit {
           if (status === 'REL') {
             this.util.setEntryStatus('SUCCESS');
             this.buildMetaTags();
+            const isWebGlEnabled = this.checkWebglEnabled();
+
+            if (isWebGlEnabled) this.testNetworkSpeed();
+            this.testProcessingPower();
 
             // used in multiple tabs
             this.globalStore.dispatch(EntryActions.getSummaryData());

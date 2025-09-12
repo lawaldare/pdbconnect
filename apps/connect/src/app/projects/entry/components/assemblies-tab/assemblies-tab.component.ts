@@ -49,6 +49,25 @@ export class AssembliesTabComponent {
   });
   private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
 
+  public readonly slowNetwork = toSignal(
+    this.compCommunication.slowNetwork$,
+    { initialValue: undefined } // assume "unknown/loading" until we know
+  );
+
+  public readonly checkedWebGl = computed(() => this.compCommunication.checkedWebGlSupport);
+  public readonly isWebGlEnabled = computed(() => this.compCommunication.isWebGlEnabled);
+
+  public readonly fastNetworkOrForceLoad = computed(() => {
+    const isSlow = this.slowNetwork();
+    const forceLoad = this.compCommunication.forceLoad();
+    return isSlow === false || forceLoad === true;
+  });
+
+  public toggleMolstar() {
+    const forceLoad = this.compCommunication.forceLoad();
+    this.compCommunication.forceLoad.set(!forceLoad);
+  }
+
   public readonly symmetry = toSignal(this.globalStore.select(EntrySelectors.symmetry));
   public readonly processedAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
 
@@ -136,13 +155,13 @@ export class AssembliesTabComponent {
     return configForMolstar;
   });
 
-  @ViewChild('molstarContainer') molstarContainer!: ElementRef;
+  @ViewChild('popoutWrapper') popoutWrapper!: ElementRef;
   public readonly popService = inject(PopupWindowService);
 
   public popupMolstar(): void {
     const fullMode = this.popService.isMaximizedOnMac();
     if (!fullMode) {
-      this.popService.popOut(this.molstarContainer, 'assemblies-molstar');
+      this.popService.popOut(this.popoutWrapper, 'assemblies-molstar');
     }
   }
 

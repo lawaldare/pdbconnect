@@ -49,7 +49,7 @@ export class MbOverviewTabComponent implements OnInit {
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
-    { initialValue: undefined } // 👈 assume "unknown/loading" until we know
+    { initialValue: undefined } // assume "unknown/loading" until we know
   );
 
   public readonly checkedWebGl = computed(() => this.compCommunication.checkedWebGlSupport);

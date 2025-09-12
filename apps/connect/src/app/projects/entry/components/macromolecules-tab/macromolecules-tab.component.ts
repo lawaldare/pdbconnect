@@ -25,7 +25,7 @@ import { InteractiveTablesComponent } from '../shared/interactive-tables/interac
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
-import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
+import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, of, take, timeout, timer } from 'rxjs';
 import { EntryActions } from '../../store/entry.actions';
 import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
@@ -73,6 +73,7 @@ export class MacromoleculesTabComponent implements OnInit {
   public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
   public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
+  public readonly residueWiseOutliersObservable = this.globalStore.select(EntrySelectors.residueWiseOutliers);
   public readonly residueListingObservable = this.globalStore.select(EntrySelectors.residueListing);
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly uniprotMappings = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
@@ -110,6 +111,25 @@ export class MacromoleculesTabComponent implements OnInit {
     return this._molstarComponent?.firstLoadFinished() || false;
   });
   private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+
+  public readonly slowNetwork = toSignal(
+    this.compCommunication.slowNetwork$,
+    { initialValue: undefined } // assume "unknown/loading" until we know
+  );
+
+  public readonly checkedWebGl = computed(() => this.compCommunication.checkedWebGlSupport);
+  public readonly isWebGlEnabled = computed(() => this.compCommunication.isWebGlEnabled);
+
+  public readonly fastNetworkOrForceLoad = computed(() => {
+    const isSlow = this.slowNetwork();
+    const forceLoad = this.compCommunication.forceLoad();
+    return isSlow === false || forceLoad === true;
+  });
+
+  public toggleMolstar() {
+    const forceLoad = this.compCommunication.forceLoad();
+    this.compCommunication.forceLoad.set(!forceLoad);
+  }
 
   public readonly configForMolstar = computed(() => {
     const summary = this.summaryData();
@@ -335,13 +355,13 @@ export class MacromoleculesTabComponent implements OnInit {
       await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
     });
 
-    this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe((idx) => {
+    this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
       if (idx === undefined || idx === null) return;
       const datum = this.macromoleculeTableRows()[idx];
       if (datum) {
         this.sequenceDetails.set(undefined);
         this.currentMacromoleculeDatum.set(datum);
-        this.triggerMacromoleculeUpdateSideEffects(datum);
+        await this.triggerMacromoleculeUpdateSideEffects(datum);
       }
     });
     // once molstar has rendered, initializes mutation observer for NMR model Id
@@ -352,7 +372,7 @@ export class MacromoleculesTabComponent implements OnInit {
     });
     // every time NMR model Id updates, data for smart seq viewer is refreshed
     this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
-      this.updateBackgroundAnnotation();
+      await this.updateBackgroundAnnotation();
     });
 
     // when uniprot listing has arrived and been processed
@@ -407,9 +427,9 @@ export class MacromoleculesTabComponent implements OnInit {
     return stats ? stats[id as keyof ProteinSummaryStats] : undefined;
   }
 
-  triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
+  async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
     // refreshes dropdown options on new macromolecule
-    this.updateDropdownOptions(macromolecule);
+    await this.updateDropdownOptions(macromolecule);
 
     // updates shown sequence on new macromolecule
     const chainId = this.dropdownSelected?.split('Chain ')[1];
@@ -431,10 +451,10 @@ export class MacromoleculesTabComponent implements OnInit {
     this.renderVisualisations(macromolecule);
 
     // updates smart sequence viewer annotations
-    this.updateBackgroundAnnotation();
+    await this.updateBackgroundAnnotation();
   }
 
-  updateDropdownOptions(macromolecule: ProcessedMacromolecule) {
+  async updateDropdownOptions(macromolecule: ProcessedMacromolecule) {
     this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(macromolecule);
     this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
       return {
@@ -447,10 +467,10 @@ export class MacromoleculesTabComponent implements OnInit {
     this.sequenceDetails.set(undefined);
     const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
     this.sequenceDetails.set(sequenceDetails);
-    this.updateBackgroundAnnotation();
+    await this.updateBackgroundAnnotation();
   }
 
-  private updateBackgroundAnnotation() {
+  private async updateBackgroundAnnotation() {
     this.backgroundAnnotation.set(undefined);
 
     const macromolecule = this.currentMacromoleculeDatum();
@@ -458,10 +478,23 @@ export class MacromoleculesTabComponent implements OnInit {
     const sequence = macromolecule.additionalData.molecule.sequence;
     if (!sequence) return;
 
+    // wait max 10s for residueWiseOutliers to populate
+    let outliers = this.residueWiseOutliers();
+    if (outliers === undefined) {
+      outliers = await firstValueFrom(
+        interval(200).pipe(
+          map(() => this.residueWiseOutliers()),
+          filter((o) => o !== undefined), // stop when defined
+          take(1), // only take the first defined
+          timeout({ first: 10000, with: () => of([]) }) // fallback if still undefined
+        )
+      );
+    }
+
     const entityId = macromolecule.additionalData.molecule.entity_id;
     const chainId = this.dropdownSelected.split('Chain ')[1];
     const modelId = this.currentModelId$.value || '1';
-    const annotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, this.residueWiseOutliers());
+    const annotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
     this.backgroundAnnotation.set(annotation);
   }
 
@@ -508,7 +541,7 @@ export class MacromoleculesTabComponent implements OnInit {
     this.sequenceDetails.set(sequenceDetails);
 
     await this.renderVisualisations(macromolecule);
-    this.updateBackgroundAnnotation();
+    await this.updateBackgroundAnnotation();
   }
 
   public openDialog(type: string) {
@@ -535,7 +568,7 @@ export class MacromoleculesTabComponent implements OnInit {
   }
 
   private async renderVisualisations(macromolecule: ProcessedMacromolecule) {
-    await this.renderInMolstar(macromolecule);
+    this.renderInMolstar(macromolecule);
     await this.initOrRefreshProtvista(macromolecule);
     await this.initOrRefreshTopologyViewer(macromolecule);
   }

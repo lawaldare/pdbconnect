@@ -56,7 +56,7 @@ export interface MappedResidue {
 
 export enum MobileTabChips {
   MQuality = 'MQuality',
-  Assemblies = 'Assemblies',
+  Assemblies = 'Complexes',
   Macromolecules = 'Macromolecules',
   Ligands = 'Ligands',
   Domains = 'Domains',

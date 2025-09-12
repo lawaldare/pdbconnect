@@ -162,6 +162,7 @@
     "webpack": "5.91.0"
   },
   "overrides": {
-    "webpack": "5.91.0"
+    "webpack": "5.91.0",
+    "ora": "5.4.1"
   }
 }
