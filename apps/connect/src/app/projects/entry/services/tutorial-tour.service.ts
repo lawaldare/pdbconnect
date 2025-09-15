@@ -73,8 +73,9 @@ export class TutorialTourService {
       id: 'model-quality',
       element: '#model-quality-data-side-tour',
       popover: {
-        title: 'Model quality summary',
-        description: 'Here you’ll find the key details about this structure, including authors, external databases links, and PDB model quality summary.',
+        title: 'Model quality',
+        description:
+          'Scroll down the page to check validation metric scores, PDB-REDO quality summary and different model quality information according to the experiment type of an entry.',
         side: 'right',
         align: 'start',
       },
@@ -83,8 +84,8 @@ export class TutorialTourService {
       id: 'model-quality',
       element: '#molstar-side-tour',
       popover: {
-        title: 'Entry navigation',
-        description: 'Use the tabs to move through different sections of the entry and find more information.',
+        title: 'Model quality in 3D',
+        description: 'Residues in the 3D viewer are coloured by validation issues according to the legend. Use the top menu to filter by issue type.',
         side: 'left',
         align: 'start',
         doneBtnText: 'Finish',
