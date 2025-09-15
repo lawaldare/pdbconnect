@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { driver } from 'driver.js';
 import { ComponentCommunicationService } from './component-comm.service';
-import { routeTabs, tourIds } from '../entry-constant';
+import { tourIds } from '../entry-constant';
 
 @Injectable({
   providedIn: 'root',
