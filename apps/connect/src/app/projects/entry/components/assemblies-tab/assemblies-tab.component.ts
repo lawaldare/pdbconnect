@@ -78,10 +78,12 @@ export class AssembliesTabComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.tutorialTourService.hasAssemblies.set(this.hasAssemblies());
 
-    const agreed = this.tutorialTourService.getCookie(tourIds.assemblies);
-    if (!agreed && this.hasAssemblies()) {
-      this.isBannerCookies.set(true);
-    }
+    setTimeout(() => {
+      const agreed = this.tutorialTourService.getCookie(tourIds.assemblies);
+      if (!agreed && this.hasAssemblies()) {
+        this.isBannerCookies.set(true);
+      }
+    }, 500);
   }
 
   public startAssembliesTabTour(): void {
