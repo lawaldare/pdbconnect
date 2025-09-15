@@ -274,8 +274,6 @@ export class EntryMainPageComponent implements OnInit {
     this.isDesktop.set(window.innerWidth > 768);
   }
 
-  public isBannerCookies = signal(false);
-
   ngOnInit(): void {
     /** Setting styles dynamically for mac scrollbar compatibility */
     document.documentElement.style.overflowX = 'hidden'; // <html>
@@ -340,11 +338,6 @@ export class EntryMainPageComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({});
-
-    const agreed = this.tutorialTourService.getCookie(tourIds.summary);
-    if (agreed) {
-      this.isBannerCookies.set(true);
-    }
   }
 
   private isTitleAndMetaProcessed = false;

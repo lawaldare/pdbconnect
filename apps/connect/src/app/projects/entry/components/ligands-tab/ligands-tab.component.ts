@@ -389,7 +389,7 @@ export class LigandsTabComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(TutorialTourService);
 
   ngOnInit(): void {
     this.compCommunication.ligandSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
@@ -461,16 +461,24 @@ export class LigandsTabComponent implements OnInit, AfterViewInit {
    * For ligand env viewer to always initialise
    */
   private viewReady = signal(false);
-  ngAfterViewInit() {
+
+  public isBannerCookies = signal(false);
+
+  ngAfterViewInit(): void {
     this.viewReady.set(true);
     this.tutorialTourService.hasLigands.set(this.hasLigands());
 
     setTimeout(() => {
       const agreed = this.tutorialTourService.getCookie(tourIds.ligands);
       if (!agreed && this.hasLigands()) {
-        this.tutorialTourService.startTour(this.tutorialTourService.ligandsTabTourSteps);
+        console.log('hello');
+        this.isBannerCookies.set(true);
       }
     }, 500);
+  }
+
+  public startLigandsTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.ligandsTabTourSteps);
   }
 
   public toggleColorList(): void {

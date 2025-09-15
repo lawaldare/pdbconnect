@@ -28,7 +28,7 @@ import { TutorialTourService } from '../../services/tutorial-tour.service';
 export class AssembliesTabComponent implements AfterViewInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly gAS = inject(GoogleAnalyticsService);
-  private readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(TutorialTourService);
 
   public dashboardStatLinks = dashboardStatLinks;
 
@@ -73,15 +73,19 @@ export class AssembliesTabComponent implements AfterViewInit {
     return rows.length > 0;
   });
 
+  public isBannerCookies = signal(false);
+
   ngAfterViewInit(): void {
     this.tutorialTourService.hasAssemblies.set(this.hasAssemblies());
 
-    setTimeout(() => {
-      const agreed = this.tutorialTourService.getCookie(tourIds.assemblies);
-      if (!agreed && this.hasAssemblies()) {
-        this.tutorialTourService.startTour(this.tutorialTourService.complexesTabTourSteps);
-      }
-    }, 500);
+    const agreed = this.tutorialTourService.getCookie(tourIds.assemblies);
+    if (!agreed && this.hasAssemblies()) {
+      this.isBannerCookies.set(true);
+    }
+  }
+
+  public startAssembliesTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.complexesTabTourSteps);
   }
 
   public toggleMolstar() {

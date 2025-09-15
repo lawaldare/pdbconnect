@@ -183,7 +183,7 @@ export class DomainsTabComponent implements AfterViewInit {
 
   @ViewChild('popoutWrapper') popoutWrapper!: ElementRef;
 
-  private readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(TutorialTourService);
   private processedDomainsWithMacrols = toSignal(this.globalStore.select(EntrySelectors.processedDomainsWithMacromols));
   public hasLoadedDomains = computed(() => this.processedDomainsWithMacrols() !== undefined);
   public hasDomains = computed(() => {
@@ -194,15 +194,21 @@ export class DomainsTabComponent implements AfterViewInit {
     return rows.length > 0;
   });
 
+  public isBannerCookies = signal(false);
+
   ngAfterViewInit(): void {
     this.tutorialTourService.hasDomains.set(this.hasDomains());
 
     setTimeout(() => {
       const agreed = this.tutorialTourService.getCookie(tourIds.domains);
       if (!agreed && this.hasDomains()) {
-        this.tutorialTourService.startTour(this.tutorialTourService.domainTabTourSteps);
+        this.isBannerCookies.set(true);
       }
     }, 500);
+  }
+
+  public startDomainsTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.domainTabTourSteps);
   }
 
   popupMolstar(): void {

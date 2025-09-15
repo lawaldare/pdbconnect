@@ -331,7 +331,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
       });
   }
 
-  private readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(TutorialTourService);
   private procLLMMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromoleculesForLLM));
   public hasLoadedAnnotations = computed(() => this.procLLMMacromolecules() !== undefined);
   public hasAnnotations = computed(() => {
@@ -340,15 +340,21 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     return rows.length > 0;
   });
 
+  public isBannerCookies = signal(false);
+
   ngAfterViewInit(): void {
     this.tutorialTourService.hasAnnotations.set(this.hasAnnotations());
 
     setTimeout(() => {
       const agreed = this.tutorialTourService.getCookie(tourIds.llm);
       if (!agreed && this.hasAnnotations()) {
-        this.tutorialTourService.startTour(this.tutorialTourService.annotationsTabTourSteps);
+        this.isBannerCookies.set(true);
       }
     }, 500);
+  }
+
+  public startLLMTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.annotationsTabTourSteps);
   }
 
   private groupAnnotationsByPdbChain(data: any) {

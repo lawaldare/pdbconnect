@@ -268,3 +268,19 @@ nightingale-navigation .container .brush .handle {
     width: 100%;
   }
 }
+
+section.onboarding-tutorial-banner {
+  display: flex;
+  align-items: center;
+  padding: 8px 20px;
+  background: #e7efdd;
+  margin-bottom: 12px;
+  gap: 12px;
+
+  span {
+    border-bottom-width: 1px;
+    border-bottom-style: dotted;
+    border-bottom-color: inherit;
+    cursor: pointer;
+  }
+}

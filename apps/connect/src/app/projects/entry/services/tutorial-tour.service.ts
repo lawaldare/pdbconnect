@@ -8,7 +8,14 @@ import { tourIds } from '../entry-constant';
 })
 export class TutorialTourService {
   public readonly compCommunication = inject(ComponentCommunicationService);
-  public showTourBanner = signal(true);
+  public showSummaryTourBanner = signal(true);
+  public showModelQualityTourBanner = signal(true);
+  public showAssembliesTourBanner = signal(true);
+  public showMacromoleculesTourBanner = signal(true);
+  public showLigandsTourBanner = signal(true);
+  public showDomainsTourBanner = signal(true);
+  public showAnnotationsTourBanner = signal(true);
+
   public showHelpGuideModal = signal(false);
 
   // loaded data state for each tab
@@ -61,7 +68,7 @@ export class TutorialTourService {
         doneBtnText: 'Finish',
         onNextClick: (el: any, step: any, options: any) => {
           this.setCookie(tourIds.summary, 'true', 365);
-          this.showTourBanner.set(false);
+          this.showSummaryTourBanner.set(false);
           options.driver.destroy();
         },
       },
@@ -91,6 +98,7 @@ export class TutorialTourService {
         doneBtnText: 'Finish',
         onNextClick: (el: any, step: any, options: any) => {
           this.setCookie(tourIds.modelQuality, 'true', 365);
+          this.showModelQualityTourBanner.set(false);
           options.driver.destroy();
         },
       },
@@ -129,6 +137,7 @@ export class TutorialTourService {
         doneBtnText: 'Finish',
         onNextClick: (el: any, step: any, options: any) => {
           this.setCookie(tourIds.assemblies, 'true', 365);
+          this.showAssembliesTourBanner.set(false);
           options.driver.destroy();
         },
       },
@@ -200,6 +209,7 @@ export class TutorialTourService {
         doneBtnText: 'Finish',
         onNextClick: (el: any, step: any, options: any) => {
           this.setCookie(tourIds.macromolecules, 'true', 365);
+          this.showMacromoleculesTourBanner.set(false);
           options.driver.destroy();
         },
       },
@@ -260,6 +270,7 @@ export class TutorialTourService {
         doneBtnText: 'Finish',
         onNextClick: (el: any, step: any, options: any) => {
           this.setCookie(tourIds.ligands, 'true', 365);
+          this.showLigandsTourBanner.set(false);
           options.driver.destroy();
         },
       },
@@ -301,6 +312,7 @@ export class TutorialTourService {
         doneBtnText: 'Finish',
         onNextClick: (el: any, step: any, options: any) => {
           this.setCookie(tourIds.domains, 'true', 365);
+          this.showDomainsTourBanner.set(false);
           options.driver.destroy();
         },
       },
@@ -341,6 +353,7 @@ export class TutorialTourService {
         doneBtnText: 'Finish',
         onNextClick: (el: any, step: any, options: any) => {
           this.setCookie(tourIds.llm, 'true', 365);
+          this.showAnnotationsTourBanner.set(false);
           options.driver.destroy();
         },
       },

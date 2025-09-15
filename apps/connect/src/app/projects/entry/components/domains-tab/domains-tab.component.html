@@ -1,4 +1,9 @@
-@if(tabDataLoaded()){ @if(domainTableRows().length){
+@if(tutorialTourService.showDomainsTourBanner() && isBannerCookies()){
+<section class="onboarding-tutorial-banner">
+  <img src="assets/images/light-star.svg" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startDomainsTabTour()">Take an on-page tour.</span></p>
+</section>
+} @if(tabDataLoaded()){ @if(domainTableRows().length){
 <main [class.change-display]="!isSidebarDisplayed()">
   @if(isSidebarDisplayed()){
   <pdbc-interactive-tables tabName="Domains" id="domains-list-tour" />

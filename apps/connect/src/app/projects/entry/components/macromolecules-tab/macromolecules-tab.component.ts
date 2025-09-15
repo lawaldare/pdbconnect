@@ -348,7 +348,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   private topolViewerMutex = Promise.resolve();
 
-  private readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(TutorialTourService);
   public hasLoadedMacromolecules = computed(() => this.processedMacromolecules() !== undefined);
   public hasMacromolecules = computed(() => {
     const rows = this.processedMacromolecules();
@@ -356,15 +356,22 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return rows.length > 0;
   });
 
+  public isBannerCookies = signal(false);
+
   ngAfterViewInit(): void {
     this.tutorialTourService.hasMacromolecules.set(this.hasMacromolecules());
 
     setTimeout(() => {
       const agreed = this.tutorialTourService.getCookie(tourIds.macromolecules);
       if (!agreed && this.hasMacromolecules()) {
-        this.tutorialTourService.startTour(this.tutorialTourService.macromoleculeTabTourSteps);
+        console.log('hello');
+        this.isBannerCookies.set(true);
       }
     }, 500);
+  }
+
+  public startMacromoleculesTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.macromoleculeTabTourSteps);
   }
 
   ngOnInit() {

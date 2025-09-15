@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { UtilService } from '@pdbc/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../entry-constant';
+import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip, tourIds } from '../../entry-constant';
 import { modelQualitySummaryTooltip } from '../../entry-constant';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -22,6 +22,7 @@ import { Molecule } from '../../data-models/molecule.model';
 import { EntryActions } from '../../store/entry.actions';
 import { ProcessedDomain, ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
 import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
+import { TutorialTourService } from '../../services/tutorial-tour.service';
 
 type NestedDomainsData = Array<{
   macromolecule: ProcessedMacromolecule;
@@ -34,12 +35,14 @@ type NestedDomainsData = Array<{
   styleUrl: './summary-tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SummaryTabComponent {
+export class SummaryTabComponent implements AfterViewInit {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly util = inject(UtilService);
   private readonly compCommunication = inject(ComponentCommunicationService);
+
+  public readonly tutorialTourService = inject(TutorialTourService);
 
   public readonly gAS = inject(GoogleAnalyticsService);
   public baseUrl = baseUrl;
@@ -634,6 +637,15 @@ export class SummaryTabComponent {
     return this.lastSelection[selectionType] === listItem;
   }
 
+  public isBannerCookies = signal(false);
+
+  ngAfterViewInit(): void {
+    const agreed = this.tutorialTourService.getCookie(tourIds.summary);
+    if (agreed) {
+      this.isBannerCookies.set(true);
+    }
+  }
+
   public async mouseinListItem(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain, selectionType: string) {
     const selectionToHighlight = await this.getSelectionObjForSelectionType(listItem, selectionType, false, false);
     const instance = this._molstarComponent?.getInstance() ?? null;
@@ -920,5 +932,9 @@ export class SummaryTabComponent {
     timer(durationMs + 100).subscribe(async () => {
       await this.onZoomInAndSelect();
     });
+  }
+
+  public startSummaryTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.summaryTabTourSteps);
   }
 }

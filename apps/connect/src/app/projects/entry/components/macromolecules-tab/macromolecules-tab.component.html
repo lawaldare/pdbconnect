@@ -1,4 +1,9 @@
-@if(tabDataLoaded()){ @if(macromoleculeTableRows().length){
+@if(tutorialTourService.showMacromoleculesTourBanner() && isBannerCookies()){
+<section class="onboarding-tutorial-banner">
+  <img src="assets/images/light-star.svg" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startMacromoleculesTabTour()">Take an on-page tour.</span></p>
+</section>
+} @if(tabDataLoaded()){ @if(macromoleculeTableRows().length){
 <main [class.change-display]="!isSidebarDisplayed()">
   @if(isSidebarDisplayed()){
   <pdbc-interactive-tables tabName="Macromolecules" id="macromolecules-list-tour" />

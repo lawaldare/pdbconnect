@@ -92,7 +92,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   public readonly tableFacade = inject(ValidationTablesFacade);
   private readonly compCommunication = inject(ComponentCommunicationService);
-  private readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(TutorialTourService);
 
   public readonly util = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
@@ -405,6 +405,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     this.selectedSpecificIssueKindValue.set(event.value); // trigger effect
   }
 
+  public isBannerCookies = signal(false);
+
   async ngAfterViewInit() {
     this.updateLeftSideWidth();
     const tabHeaderEl = document.querySelector('.mat-mdc-tab-header');
@@ -419,12 +421,14 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
     observer.observe(tabHeaderEl);
 
-    setTimeout(() => {
-      const agreed = this.tutorialTourService.getCookie(tourIds.modelQuality);
-      if (!agreed) {
-        this.tutorialTourService.startTour(this.tutorialTourService.modelQualityTabTourSteps);
-      }
-    }, 500);
+    const agreed = this.tutorialTourService.getCookie(tourIds.modelQuality);
+    if (agreed) {
+      this.isBannerCookies.set(true);
+    }
+  }
+
+  public startMQTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.modelQualityTabTourSteps);
   }
 
   /**

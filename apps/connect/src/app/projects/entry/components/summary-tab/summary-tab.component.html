@@ -1,3 +1,9 @@
+@if(tutorialTourService.showSummaryTourBanner() && !isBannerCookies()){
+<section class="onboarding-tutorial-banner">
+  <img src="assets/images/light-star.svg" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startSummaryTabTour()">Take an on-page tour.</span></p>
+</section>
+}
 <section class="top-info">
   <section class="summary" id="structure-summary-tour">
     <div id="information-section" class="information-section">

@@ -7,12 +7,6 @@
     } @if (entryPageView() === 'SUCCESS' && isDesktop()) {
     <section class="entry-page-container container-padding">
       <pdbc-entry-page-header id="entry-navigation-tour" />
-      @if(tutorialTourService.showTourBanner() && !isBannerCookies()){
-      <section class="onboarding-tutorial-banner">
-        <img src="assets/images/light-star.svg" alt="light start icon" />
-        <p>We have redesigned this page to enhance your experience. <span (click)="startTour()">Take an on-page tour for each tab.</span></p>
-      </section>
-      }
       <main>
         <mat-tab-group #tabs (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTabIndex()" mat-stretch-tabs="false" mat-align-tabs="start">
           <mat-tab label="Summary">
