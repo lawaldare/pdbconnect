@@ -343,9 +343,8 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
   public isBannerCookies = signal(false);
 
   ngAfterViewInit(): void {
-    this.tutorialTourService.hasAnnotations.set(this.hasAnnotations());
-
     setTimeout(() => {
+      this.tutorialTourService.hasAnnotations.set(this.hasAnnotations());
       const agreed = this.tutorialTourService.getCookie(tourIds.llm);
       if (!agreed && this.hasAnnotations()) {
         this.isBannerCookies.set(true);

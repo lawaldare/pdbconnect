@@ -76,9 +76,8 @@ export class AssembliesTabComponent implements AfterViewInit {
   public isBannerCookies = signal(false);
 
   ngAfterViewInit(): void {
-    this.tutorialTourService.hasAssemblies.set(this.hasAssemblies());
-
     setTimeout(() => {
+      this.tutorialTourService.hasAssemblies.set(this.hasAssemblies());
       const agreed = this.tutorialTourService.getCookie(tourIds.assemblies);
       if (!agreed && this.hasAssemblies()) {
         this.isBannerCookies.set(true);

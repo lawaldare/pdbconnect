@@ -177,38 +177,36 @@
             <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '385px', }"></ngx-skeleton-loader>
           </div>
           } @else if (isWebGlEnabled() && fastNetworkOrForceLoad()) {
-          <div id="ligand-environment-tour">
-            <section class="molstar-details-container">
-              @if (!configForMolstar()) {
-              <div [style.width]="'100%'">
-                <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '355px', }"></ngx-skeleton-loader>
-              </div>
-              } @else if (configForMolstar()) {
-              <!-- <div class="toolbar">
+          <section class="molstar-details-container">
+            @if (!configForMolstar()) {
+            <div [style.width]="'100%'">
+              <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '355px', }"></ngx-skeleton-loader>
+            </div>
+            } @else if (configForMolstar()) {
+            <!-- <div class="toolbar">
               <mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="outbox" (click)="popupMolstar()"></mat-icon>
             </div> -->
-              <div class="molstar-container">
-                <div #popoutWrapper>
-                  <lib-pdbe-molstar #molstarComponent [id]="'ligands-molstar'" [molstarConfig]="configForMolstar()" [height]="'100%'"></lib-pdbe-molstar>
-                </div>
+            <div class="molstar-container">
+              <div #popoutWrapper>
+                <lib-pdbe-molstar #molstarComponent [id]="'ligands-molstar'" [molstarConfig]="configForMolstar()" [height]="'100%'"></lib-pdbe-molstar>
+              </div>
+            </div>
+            }
+          </section>
+          <div class="legends">
+            <div class="legends-data">
+              @for(color of legendsColor.slice(0, initialColorCount()); track color.label ){
+              <div class="legend-wrapper">
+                <span class="legend-color" [style.background-color]="color.color"></span>
+                <span class="legend-label">{{ color.label }}</span>
               </div>
               }
-            </section>
-            <div class="legends">
-              <div class="legends-data">
-                @for(color of legendsColor.slice(0, initialColorCount()); track color.label ){
-                <div class="legend-wrapper">
-                  <span class="legend-color" [style.background-color]="color.color"></span>
-                  <span class="legend-label">{{ color.label }}</span>
-                </div>
-                }
-              </div>
-              <div class="control">
-                @if(legendsColor.length > 4){
-                <span role="button" class="related-entry-toggle" (click)="toggleColorList()">{{initialColorCount() > 4 ? 'Hide' : 'Show'}} full legend</span>
-                <i class="icon icon-common" [ngClass]="initialColorCount() > 4 ? 'icon-angle-up' : 'icon-angle-down'"></i>
-                }
-              </div>
+            </div>
+            <div class="control">
+              @if(legendsColor.length > 4){
+              <span role="button" class="related-entry-toggle" (click)="toggleColorList()">{{initialColorCount() > 4 ? 'Hide' : 'Show'}} full legend</span>
+              <i class="icon icon-common" [ngClass]="initialColorCount() > 4 ? 'icon-angle-up' : 'icon-angle-down'"></i>
+              }
             </div>
           </div>
           } @else if (!isWebGlEnabled()) {
@@ -233,7 +231,7 @@
             <button class="vf-button vf-button--search-pdbe" (click)="toggleMolstar()">Load 3D anyway</button>
           </div>
           }
-          <section class="lig-env-container">
+          <section class="lig-env-container" id="ligand-environment-tour">
             <div class="ligand-env" #ligandEnvContainer></div>
           </section>
         </section>

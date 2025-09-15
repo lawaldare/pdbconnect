@@ -197,9 +197,8 @@ export class DomainsTabComponent implements AfterViewInit {
   public isBannerCookies = signal(false);
 
   ngAfterViewInit(): void {
-    this.tutorialTourService.hasDomains.set(this.hasDomains());
-
     setTimeout(() => {
+      this.tutorialTourService.hasDomains.set(this.hasDomains());
       const agreed = this.tutorialTourService.getCookie(tourIds.domains);
       if (!agreed && this.hasDomains()) {
         this.isBannerCookies.set(true);
