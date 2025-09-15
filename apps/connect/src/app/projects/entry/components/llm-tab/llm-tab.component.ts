@@ -341,6 +341,8 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
   });
 
   ngAfterViewInit(): void {
+    this.tutorialTourService.hasAnnotations.set(this.hasAnnotations());
+
     setTimeout(() => {
       const agreed = this.tutorialTourService.getCookie(tourIds.llm);
       if (!agreed && this.hasAnnotations()) {

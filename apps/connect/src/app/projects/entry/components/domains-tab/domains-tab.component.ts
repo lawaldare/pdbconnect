@@ -195,6 +195,8 @@ export class DomainsTabComponent implements AfterViewInit {
   });
 
   ngAfterViewInit(): void {
+    this.tutorialTourService.hasDomains.set(this.hasDomains());
+
     setTimeout(() => {
       const agreed = this.tutorialTourService.getCookie(tourIds.domains);
       if (!agreed && this.hasDomains()) {

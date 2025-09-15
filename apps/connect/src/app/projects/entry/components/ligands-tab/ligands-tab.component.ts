@@ -463,6 +463,8 @@ export class LigandsTabComponent implements OnInit, AfterViewInit {
   private viewReady = signal(false);
   ngAfterViewInit() {
     this.viewReady.set(true);
+    this.tutorialTourService.hasLigands.set(this.hasLigands());
+
     setTimeout(() => {
       const agreed = this.tutorialTourService.getCookie(tourIds.ligands);
       if (!agreed && this.hasLigands()) {

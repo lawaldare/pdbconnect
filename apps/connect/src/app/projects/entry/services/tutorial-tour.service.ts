@@ -8,10 +8,19 @@ import { routeTabs, tourIds } from '../entry-constant';
 })
 export class TutorialTourService {
   public readonly compCommunication = inject(ComponentCommunicationService);
-  public readonly showTourBanner = signal(true);
+  public showTourBanner = signal(true);
+  public showHelpGuideModal = signal(false);
+
+  // loaded data state for each tab
+  public hasAssemblies = signal(true);
+  public hasMacromolecules = signal(true);
+  public hasAnnotations = signal(true);
+  public hasLigands = signal(true);
+  public hasDomains = signal(true);
 
   public summaryTabTourSteps: any = [
     {
+      id: 'summary',
       element: '#structure-summary-tour',
       popover: {
         title: 'Structure summary',
@@ -21,6 +30,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'summary',
       element: '#structure-overview-tour',
       popover: {
         title: '3D structure overview',
@@ -30,6 +40,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'summary',
       element: '#entry-features-tour',
       popover: {
         title: 'Entry features in 3D',
@@ -40,6 +51,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'summary',
       element: '#entry-navigation-tour',
       popover: {
         title: 'Entry navigation',
@@ -58,6 +70,7 @@ export class TutorialTourService {
 
   public modelQualityTabTourSteps: any = [
     {
+      id: 'model-quality',
       element: '#model-quality-data-side-tour',
       popover: {
         title: 'Model quality summary',
@@ -67,6 +80,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'model-quality',
       element: '#molstar-side-tour',
       popover: {
         title: 'Entry navigation',
@@ -84,6 +98,7 @@ export class TutorialTourService {
 
   public complexesTabTourSteps: any = [
     {
+      id: 'assemblies',
       element: '#complexes-content-tour',
       popover: {
         title: 'Complex details',
@@ -93,6 +108,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'assemblies',
       element: '#dashboard-stat-links-tour',
       popover: {
         title: 'Deeper analysis',
@@ -102,6 +118,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'assemblies',
       element: '#complexes-list-tour',
       popover: {
         title: 'Available complexes',
@@ -119,6 +136,7 @@ export class TutorialTourService {
 
   public macromoleculeTabTourSteps: any = [
     {
+      id: 'macromolecules',
       element: '#macromolecule-details-tour',
       popover: {
         title: 'Macromolecule details',
@@ -128,6 +146,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'macromolecules',
       element: '#deeper-analysis-tour',
       popover: {
         title: 'Deeper analysis',
@@ -137,6 +156,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'macromolecules',
       element: '#annotations-viewer-tour',
       popover: {
         title: '3D and annotation viewers',
@@ -146,6 +166,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'macromolecules',
       element: '#interactive-sequence-viewer-tour',
       popover: {
         title: 'Interactive sequence viewer',
@@ -156,6 +177,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'macromolecules',
       element: '#map-data-btn',
       popover: {
         title: 'Map your residues in 3D',
@@ -166,6 +188,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'macromolecules',
       element: '#macromolecules-list-tour',
       popover: {
         title: 'Available macromolecules',
@@ -184,6 +207,7 @@ export class TutorialTourService {
 
   public ligandsTabTourSteps: any = [
     {
+      id: 'ligands',
       element: '#ligands-detail-tour',
       popover: {
         title: 'Ligand details',
@@ -193,6 +217,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'ligands',
       element: '#ligand-deeper-analysis-tour',
       popover: {
         title: 'Deeper analysis',
@@ -202,6 +227,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'ligands',
       element: '#ligand-interaction-tour',
       popover: {
         title: 'Ligand interactions linked to 3D',
@@ -211,6 +237,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'ligands',
       element: '#ligand-environment-tour',
       popover: {
         title: 'Ligand environment in 2D view',
@@ -221,6 +248,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'ligands',
       element: '#ligand-list-tour',
       popover: {
         title: 'Available ligands and modified residues',
@@ -239,6 +267,7 @@ export class TutorialTourService {
 
   public domainTabTourSteps: any = [
     {
+      id: 'domains',
       element: '#domains-detail-tour',
       popover: {
         title: 'Domains details',
@@ -249,6 +278,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'domains',
       element: '#domains-sequence-viewer-tour',
       popover: {
         title: 'Interactive sequence viewer',
@@ -259,6 +289,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'domains',
       element: '#domains-list-tour',
       popover: {
         title: 'Available domains',
@@ -277,6 +308,7 @@ export class TutorialTourService {
 
   public annotationsTabTourSteps: any = [
     {
+      id: 'llm',
       element: '#text-mined-annotations-tour',
       popover: {
         title: 'Text mined annotations',
@@ -287,6 +319,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'llm',
       element: '#ai-annotations-sequence-viewer-tour',
       popover: {
         title: 'AI annotations in the Sequence Viewer',
@@ -297,6 +330,7 @@ export class TutorialTourService {
       },
     },
     {
+      id: 'llm',
       element: '#llm-list-tour',
       popover: {
         title: 'Available molecules with annotations',
@@ -318,6 +352,9 @@ export class TutorialTourService {
       showButtons: ['next', 'previous', 'close'],
       steps: steps,
       prevBtnText: 'Previous step',
+      onDestroyed: (element: any, step: any, options: any) => {
+        this.setCookiesWhenTourClosedWithFinishing(step.id);
+      },
     });
 
     driverObj.drive();
@@ -332,5 +369,76 @@ export class TutorialTourService {
     const expires = new Date();
     expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
     document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+  }
+
+  private setCookiesWhenTourClosedWithFinishing(tourId: string): void {
+    switch (tourId) {
+      case 'summary':
+        this.setCookie(tourIds.summary, 'true', 365);
+        break;
+      case 'model-quality':
+        this.setCookie(tourIds.modelQuality, 'true', 365);
+        break;
+      case 'assemblies':
+        this.setCookie(tourIds.assemblies, 'true', 365);
+        break;
+      case 'macromolecules':
+        this.setCookie(tourIds.macromolecules, 'true', 365);
+        break;
+      case 'ligands':
+        this.setCookie(tourIds.ligands, 'true', 365);
+        break;
+      case 'domains':
+        this.setCookie(tourIds.domains, 'true', 365);
+        break;
+      case 'llm':
+        this.setCookie(tourIds.llm, 'true', 365);
+        break;
+      default:
+        console.log('No tour steps found for this tab');
+        break;
+    }
+  }
+
+  public startTourFromHelp() {
+    const currentTabName = this.compCommunication.currentTabName();
+    switch (currentTabName) {
+      case 'summary':
+        this.startTour(this.summaryTabTourSteps);
+        break;
+      case 'model-quality':
+        this.startTour(this.modelQualityTabTourSteps);
+        break;
+      case 'assemblies':
+        if (this.hasAssemblies()) {
+          this.startTour(this.complexesTabTourSteps);
+        }
+        break;
+      case 'macromolecules':
+        if (this.hasMacromolecules()) {
+          this.startTour(this.macromoleculeTabTourSteps);
+        }
+        break;
+      case 'ligands':
+        if (this.hasLigands()) {
+          this.startTour(this.ligandsTabTourSteps);
+        }
+        break;
+      case 'domains':
+        if (this.hasDomains()) {
+          this.startTour(this.domainTabTourSteps);
+        }
+        break;
+      case 'llm':
+        if (this.hasAnnotations()) {
+          this.startTour(this.annotationsTabTourSteps);
+        }
+        break;
+      default:
+        console.log('No tour steps found for this tab');
+        break;
+    }
+
+    this.showHelpGuideModal.set(false);
   }
 }

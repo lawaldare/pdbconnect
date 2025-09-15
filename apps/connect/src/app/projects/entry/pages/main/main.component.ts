@@ -161,8 +161,6 @@ export class EntryMainPageComponent implements OnInit {
   public showNotificationBanner = signal<boolean>(false);
   public molstarHeight = '480px';
 
-  public showHelpGuideModal = signal(false);
-
   public readonly apiSearchConfig = {
     additionalParams: 'rows=20000&json.nl=map&wt=json',
     fields: 'value,num_pdb_entries,var_name',
@@ -440,10 +438,10 @@ export class EntryMainPageComponent implements OnInit {
   }
 
   public openHelpModal(): void {
-    this.showHelpGuideModal.set(true);
+    this.tutorialTourService.showHelpGuideModal.set(true);
   }
 
   public closeHelpGuideModal(): void {
-    this.showHelpGuideModal.set(false);
+    this.tutorialTourService.showHelpGuideModal.set(false);
   }
 }

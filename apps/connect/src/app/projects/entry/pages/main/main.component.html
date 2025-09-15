@@ -130,13 +130,13 @@
 <div class="help-button" (click)="openHelpModal()">Help</div>
 
 <!-- Help Panel -->
-<div class="help-panel" [class.active]="showHelpGuideModal()">
+<div class="help-panel" [class.active]="tutorialTourService.showHelpGuideModal()">
   <div class="help-header">
     <span>Help</span>
     <span class="close-btn" (click)="closeHelpGuideModal()">&times;</span>
   </div>
   <div class="help-body">
-    <span class="action">Take on-page tour</span>
+    <span class="action" (click)="tutorialTourService.startTourFromHelp()">Take on-page tour</span>
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSe_cs6jrhCM8I7G8zsbtTQWEOjGmR07tC6aJDTrN62gyQ8e0A/viewform?usp=header" target="_blank"
       >Give your feedback <i style="margin-left: 5px" class="icon icon-link icon-common"></i
     ></a>

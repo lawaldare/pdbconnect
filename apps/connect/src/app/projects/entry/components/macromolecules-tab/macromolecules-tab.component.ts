@@ -357,6 +357,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   });
 
   ngAfterViewInit(): void {
+    this.tutorialTourService.hasMacromolecules.set(this.hasMacromolecules());
+
     setTimeout(() => {
       const agreed = this.tutorialTourService.getCookie(tourIds.macromolecules);
       if (!agreed && this.hasMacromolecules()) {
