@@ -25,4 +25,11 @@ export class ComponentCommunicationService {
   public ligandSelection$ = new BehaviorSubject<number | undefined>(undefined);
   public domainSelection$ = new BehaviorSubject<number | undefined>(undefined);
   public llmSelection$ = new BehaviorSubject<number | undefined>(undefined);
+
+  private _selectedTabIndex = signal<number>(0);
+  public selectedTabIndex = this._selectedTabIndex.asReadonly();
+
+  public updateSelectedTabIndex(index: number) {
+    this._selectedTabIndex.set(index);
+  }
 }

@@ -7,12 +7,14 @@
     } @if (entryPageView() === 'SUCCESS' && isDesktop()) {
     <section class="entry-page-container container-padding">
       <pdbc-entry-page-header id="entry-navigation-tour" />
-      <!-- <section class="onboarding-tutorial-banner">
+      @if(tutorialTourService.showTourBanner() && !isBannerCookies()){
+      <section class="onboarding-tutorial-banner">
         <img src="assets/images/light-star.svg" alt="light start icon" />
         <p>We have redesigned this page to enhance your experience. <span (click)="startTour()">Take on-page tour</span></p>
-      </section> -->
+      </section>
+      }
       <main>
-        <mat-tab-group #tabs (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTab()" mat-stretch-tabs="false" mat-align-tabs="start">
+        <mat-tab-group #tabs (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTabIndex()" mat-stretch-tabs="false" mat-align-tabs="start">
           <mat-tab label="Summary">
             <ng-template matTabContent> <pdbc-summary-tab /> </ng-template>
           </mat-tab>
@@ -124,3 +126,20 @@
 }
 
 <lib-data-privacy-banner privacyNoticeUrl="assets/data-privacy/entry-pages-data-privacy.pdf" pageId="dataProtectionAgreedForEntryPages" />
+
+<div class="help-button" (click)="openHelpModal()">Help</div>
+
+<!-- Help Panel -->
+<div class="help-panel" [class.active]="showHelpGuideModal()">
+  <div class="help-header">
+    <span>Help</span>
+    <span class="close-btn" (click)="closeHelpGuideModal()">&times;</span>
+  </div>
+  <div class="help-body">
+    <span class="action">Take on-page tour</span>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSe_cs6jrhCM8I7G8zsbtTQWEOjGmR07tC6aJDTrN62gyQ8e0A/viewform?usp=header" target="_blank"
+      >Give your feedback <i style="margin-left: 5px" class="icon icon-link icon-common"></i
+    ></a>
+    <p>We’re working to add more content to the Help section. Stay tuned!</p>
+  </div>
+</div>

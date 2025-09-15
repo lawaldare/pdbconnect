@@ -13,9 +13,9 @@
       }
     </div>
     }
-    <section class="exp-validation-info">
+    <section class="exp-validation-info" id="model-quality-data-side-tour">
       @if (currentData()) {
-      <h4 class="heading-4 title">
+      <h4 class="heading-4 title" id="test-tour-tour">
         {{ currentData()!.generalInfo.methodName }} @if (currentData()!.generalInfo.resolution) { • {{ currentData()!.generalInfo.resolution }} }
       </h4>
       <!-- ------------------- -->
@@ -497,7 +497,7 @@
     </section>
   </section>
   <aside>
-    <div class="right-side" [class.sticky]="isSticky()" [style.width]="leftSideWidth">
+    <div class="right-side" [class.sticky]="isSticky()" [style.width]="leftSideWidth" id="molstar-side-tour">
       @if (slowNetwork() === undefined || checkedWebGl() === undefined) {
       <div [style.width]="'100%'">
         <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>

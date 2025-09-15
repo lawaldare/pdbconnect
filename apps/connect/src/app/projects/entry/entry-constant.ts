@@ -398,3 +398,25 @@ export const labelGroups = {
     'EDS difference map',
   ],
 };
+
+export const routeTabs = [
+  { label: 'Summary', id: 'summary' },
+  { label: 'Model Quality', id: 'model-quality' },
+  { label: 'Assemblies', id: 'assemblies' },
+  { label: 'Macromolecules', id: 'macromolecules' },
+  { label: 'Ligands and Environments', id: 'ligands' },
+  { label: 'Domains', id: 'domains' },
+  { label: 'Text Annotation (LLM)', id: 'llm' },
+  { label: 'Citations', id: 'citations' },
+];
+
+export const tourIds = {
+  summary: 'tour-summary',
+  modelQuality: 'tour-model-quality',
+  assemblies: 'tour-assemblies',
+  macromolecules: 'tour-macromolecules',
+  ligands: 'tour-ligands',
+  domains: 'tour-domains',
+  llm: 'tour-llm',
+  citations: 'tour-citations',
+};

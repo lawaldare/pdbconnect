@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { dashboardStatLinks } from '../../entry-constant';
+import { dashboardStatLinks, tourIds } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -34,6 +34,7 @@ import { VisualisationInteractivityService } from '../../services/vis-interactiv
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 import { getUniProtsDataForMacromolecule } from '../../store/data-processing/macromolecule-processing';
 import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
+import { TutorialTourService } from '../../services/tutorial-tour.service';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -55,7 +56,7 @@ declare let PdbTopologyViewerPlugin: any;
   templateUrl: './macromolecules-tab.component.html',
   styleUrl: './macromolecules-tab.component.scss',
 })
-export class MacromoleculesTabComponent implements OnInit {
+export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly visInteractivity = inject(VisualisationInteractivityService);
@@ -346,6 +347,23 @@ export class MacromoleculesTabComponent implements OnInit {
   private modelIdObserver?: MutationObserver;
 
   private topolViewerMutex = Promise.resolve();
+
+  private readonly tutorialTourService = inject(TutorialTourService);
+  public hasLoadedMacromolecules = computed(() => this.processedMacromolecules() !== undefined);
+  public hasMacromolecules = computed(() => {
+    const rows = this.processedMacromolecules();
+    if (rows === undefined) return false;
+    return rows.length > 0;
+  });
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      const agreed = this.tutorialTourService.getCookie(tourIds.macromolecules);
+      if (!agreed && this.hasMacromolecules()) {
+        this.tutorialTourService.startTour(this.tutorialTourService.macromoleculeTabTourSteps);
+      }
+    }, 500);
+  }
 
   ngOnInit() {
     /* 1. Fetch tab data*/

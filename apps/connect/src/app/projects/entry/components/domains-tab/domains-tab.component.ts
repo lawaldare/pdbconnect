@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { getDomainChainDropdownOptions, getDomainSequenceDetails } from '../../helpers/processed-data-to-controls';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -12,7 +12,7 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { EntryPgProtvistaComponent, FixedSelectionInput } from '../shared/entry-pv-nightingale/entry-pv-nightingale.component';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
-import { entryDomainsTooltips, resourceUrls } from '../../entry-constant';
+import { entryDomainsTooltips, resourceUrls, tourIds } from '../../entry-constant';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
@@ -29,6 +29,7 @@ import { SequenceDetail } from '../../store/data-processing/models/other-models'
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { Molecule } from '../../data-models/molecule.model';
 import { ProcessedDomain } from '../../store/data-processing/models/processed-entities.model';
+import { TutorialTourService } from '../../services/tutorial-tour.service';
 
 @Component({
   selector: 'pdbc-domains-tab',
@@ -46,7 +47,7 @@ import { ProcessedDomain } from '../../store/data-processing/models/processed-en
   templateUrl: './domains-tab.component.html',
   styleUrl: './domains-tab.component.scss',
 })
-export class DomainsTabComponent {
+export class DomainsTabComponent implements AfterViewInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly gAS = inject(GoogleAnalyticsService);
   public readonly visInteractivity = inject(VisualisationInteractivityService);
@@ -181,6 +182,26 @@ export class DomainsTabComponent {
   }
 
   @ViewChild('popoutWrapper') popoutWrapper!: ElementRef;
+
+  private readonly tutorialTourService = inject(TutorialTourService);
+  private processedDomainsWithMacrols = toSignal(this.globalStore.select(EntrySelectors.processedDomainsWithMacromols));
+  public hasLoadedDomains = computed(() => this.processedDomainsWithMacrols() !== undefined);
+  public hasDomains = computed(() => {
+    const rows = this.processedDomains();
+    const procWithMacro = this.processedDomainsWithMacrols();
+    if (procWithMacro === undefined) return false;
+    if (rows === undefined) return false;
+    return rows.length > 0;
+  });
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      const agreed = this.tutorialTourService.getCookie(tourIds.domains);
+      if (!agreed && this.hasDomains()) {
+        this.tutorialTourService.startTour(this.tutorialTourService.domainTabTourSteps);
+      }
+    }, 500);
+  }
 
   popupMolstar(): void {
     const fullMode = this.popService.isMaximizedOnMac();

@@ -211,12 +211,12 @@ mat-tab-header {
   box-shadow:
     0 4px 8px 0 rgb(0 0 0 / 30%),
     0 6px 20px 0 rgb(0 0 0 / 30%) !important;
+  min-width: 420px !important;
   width: 420px !important;
   color: #fff !important;
 
-  .mat-mdc-card-header,
-  .mat-mdc-card-content {
-    padding: 0;
+  .driver-popover-close-btn {
+    color: #ffffff !important;
   }
 
   #driver-popover-title {

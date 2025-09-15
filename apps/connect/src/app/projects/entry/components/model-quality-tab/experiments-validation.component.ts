@@ -20,7 +20,7 @@ import { ValidationTablesFacade } from './validation-tables.facade';
 import { AgGridAngular } from 'ag-grid-angular';
 
 import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
-import { modelQualityTooltips, OUTLIER_TYPE_LABELS } from '../../entry-constant';
+import { modelQualityTooltips, OUTLIER_TYPE_LABELS, tourIds } from '../../entry-constant';
 import { MaterialModule, UtilService } from '@pdbc/core';
 import { BehaviorSubject, combineLatest, filter, forkJoin, mergeMap, of, take, timer } from 'rxjs';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
@@ -38,6 +38,7 @@ import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { cameraResetInMolstar, drawSelectionInMolstar, Molstar370DefaultParams } from '../../helpers/molstar-helpers';
 import { OutlierDict, ValueLabel } from '../../store/data-processing/models/other-models';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { TutorialTourService } from '../../services/tutorial-tour.service';
 
 /**
  * Examples that should be tested when looking at this component
@@ -91,6 +92,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   public readonly tableFacade = inject(ValidationTablesFacade);
   private readonly compCommunication = inject(ComponentCommunicationService);
+  private readonly tutorialTourService = inject(TutorialTourService);
 
   public readonly util = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
@@ -416,6 +418,13 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     );
 
     observer.observe(tabHeaderEl);
+
+    setTimeout(() => {
+      const agreed = this.tutorialTourService.getCookie(tourIds.modelQuality);
+      if (!agreed) {
+        this.tutorialTourService.startTour(this.tutorialTourService.modelQualityTabTourSteps);
+      }
+    }, 500);
   }
 
   /**

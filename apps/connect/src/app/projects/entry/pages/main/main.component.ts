@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
@@ -8,7 +8,7 @@ import { catchError, combineLatest, EMPTY, filter, map, mergeMap, of, retry, swi
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { DataPrivacyBannerComponent, GoogleAnalyticsService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
-import { ENTRY_PAGES_LINKS, mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig } from '../../entry-constant';
+import { ENTRY_PAGES_LINKS, mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig, routeTabs, tourIds } from '../../entry-constant';
 import { EntryStatus, StatusCode } from '../../data-models/status.model';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { EntryMainAlternativeComponent } from '../../components/entry-main-alternative/entry-main-alternative.component';
@@ -94,7 +94,7 @@ export class EntryMainPageComponent implements OnInit {
   private readonly renderer = inject(Renderer2);
   public readonly gAS = inject(GoogleAnalyticsService);
   private readonly speedTest = inject(SpeedTestServiceCustom);
-  private readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(TutorialTourService);
 
   private procAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
   private procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
@@ -156,10 +156,12 @@ export class EntryMainPageComponent implements OnInit {
 
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
-  public selectedTab = signal<number>(0);
+  public selectedTabIndex = this.compCommunication.selectedTabIndex;
 
   public showNotificationBanner = signal<boolean>(false);
   public molstarHeight = '480px';
+
+  public showHelpGuideModal = signal(false);
 
   public readonly apiSearchConfig = {
     additionalParams: 'rows=20000&json.nl=map&wt=json',
@@ -174,27 +176,16 @@ export class EntryMainPageComponent implements OnInit {
     env: environment.production ? '' : 'dev',
   };
 
-  public readonly routeTabs = [
-    { label: 'Summary', id: 'summary' },
-    { label: 'Model Quality', id: 'model-quality' },
-    { label: 'Assemblies', id: 'assemblies' },
-    { label: 'Macromolecules', id: 'macromolecules' },
-    { label: 'Ligands and Environments', id: 'ligands' },
-    { label: 'Domains', id: 'domains' },
-    { label: 'Text Annotation (LLM)', id: 'llm' },
-    { label: 'Citations', id: 'citations' },
-  ];
-
   constructor() {
     this.checkWindowWidth();
     this.route.queryParams.subscribe((params) => {
       // Check for screen width <= 768px
       if (window.innerWidth <= 768) return;
-      const routeTabs = this.routeTabs;
+      // const routeTabs = this.routeTabs;
       const tabName = params['activeTab'] ?? 'summary';
       this.compCommunication.currentTabName.set(tabName);
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
-      this.selectedTab.set(tabIndex);
+      this.compCommunication.updateSelectedTabIndex(tabIndex);
       this.gAS.logEntryPageEvents('ep_desktop_tab_access', {
         tab: tabName,
       });
@@ -285,6 +276,8 @@ export class EntryMainPageComponent implements OnInit {
     this.isDesktop.set(window.innerWidth > 768);
   }
 
+  public isBannerCookies = signal(false);
+
   ngOnInit(): void {
     /** Setting styles dynamically for mac scrollbar compatibility */
     document.documentElement.style.overflowX = 'hidden'; // <html>
@@ -350,12 +343,10 @@ export class EntryMainPageComponent implements OnInit {
       )
       .subscribe({});
 
-    // this.tourService.initialize(this.steps, {
-    //   enableBackdrop: true,
-    //   backdropConfig: {
-    //     offset: 10,
-    //   },
-    // });
+    const agreed = this.tutorialTourService.getCookie(tourIds.summary);
+    if (agreed) {
+      this.isBannerCookies.set(true);
+    }
   }
 
   private isTitleAndMetaProcessed = false;
@@ -428,7 +419,7 @@ export class EntryMainPageComponent implements OnInit {
   }
 
   async selectTab(event: MatTabChangeEvent) {
-    const routeTabs = this.routeTabs;
+    // const routeTabs = this.routeTabs;
     const tabName = routeTabs[event.index].id;
     this.scrollService.handleScrollPosition(this.tabGroup, event.index);
     this.compCommunication.currentTabName.set(tabName);
@@ -444,7 +435,15 @@ export class EntryMainPageComponent implements OnInit {
     Clarity.event(`tab-access-${tabName}`);
   }
 
-  public startTour() {
-    this.tutorialTourService.startTour();
+  public startTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.summaryTabTourSteps);
+  }
+
+  public openHelpModal(): void {
+    this.showHelpGuideModal.set(true);
+  }
+
+  public closeHelpGuideModal(): void {
+    this.showHelpGuideModal.set(false);
   }
 }

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
@@ -10,12 +10,13 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
-import { dashboardStatLinks, entryAssembliesTooltips } from '../../entry-constant';
+import { dashboardStatLinks, entryAssembliesTooltips, tourIds } from '../../entry-constant';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { filter, firstValueFrom, take, timer } from 'rxjs';
 import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
+import { TutorialTourService } from '../../services/tutorial-tour.service';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
@@ -24,9 +25,10 @@ import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
   templateUrl: './assemblies-tab.component.html',
   styleUrl: './assemblies-tab.component.scss',
 })
-export class AssembliesTabComponent {
+export class AssembliesTabComponent implements AfterViewInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly gAS = inject(GoogleAnalyticsService);
+  private readonly tutorialTourService = inject(TutorialTourService);
 
   public dashboardStatLinks = dashboardStatLinks;
 
@@ -62,6 +64,23 @@ export class AssembliesTabComponent {
     const forceLoad = this.compCommunication.forceLoad();
     return isSlow === false || forceLoad === true;
   });
+
+  private procAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
+  public hasLoadedAssemblies = computed(() => this.procAssemblies() !== undefined);
+  public hasAssemblies = computed(() => {
+    const rows = this.procAssemblies();
+    if (rows === undefined) return false;
+    return rows.length > 0;
+  });
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      const agreed = this.tutorialTourService.getCookie(tourIds.assemblies);
+      if (!agreed && this.hasAssemblies()) {
+        this.tutorialTourService.startTour(this.tutorialTourService.complexesTabTourSteps);
+      }
+    }, 500);
+  }
 
   public toggleMolstar() {
     const forceLoad = this.compCommunication.forceLoad();

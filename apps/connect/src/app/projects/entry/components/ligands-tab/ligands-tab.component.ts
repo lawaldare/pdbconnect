@@ -8,7 +8,7 @@ import { ComponentCommunicationService } from '../../services/component-comm.ser
 import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
-import { dashboardStatLinks, INTX_NAME_COLORS } from '../../entry-constant';
+import { dashboardStatLinks, INTX_NAME_COLORS, tourIds } from '../../entry-constant';
 import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, map, take, tap, timer } from 'rxjs';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
@@ -50,6 +50,8 @@ import {
 import { AggregatedApiService } from '../../../ligands/services/aggregated-api.service';
 import { Depiction } from '../../../ligands/data-models/structure.model';
 import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
+import { TutorialTourService } from '../../services/tutorial-tour.service';
+
 @Component({
   selector: 'pdbc-ligands-tab',
   standalone: true,
@@ -387,6 +389,8 @@ export class LigandsTabComponent implements OnInit, AfterViewInit {
     });
   }
 
+  private readonly tutorialTourService = inject(TutorialTourService);
+
   ngOnInit(): void {
     this.compCommunication.ligandSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
       if (idx === undefined || idx === null) return;
@@ -446,12 +450,25 @@ export class LigandsTabComponent implements OnInit, AfterViewInit {
       });
   }
 
+  public hasLoadedLigands = computed(() => this.processedLigands() !== undefined);
+  public hasLigands = computed(() => {
+    const rows = this.processedLigands();
+    if (rows === undefined) return false;
+    return rows.length > 0;
+  });
+
   /**
    * For ligand env viewer to always initialise
    */
   private viewReady = signal(false);
   ngAfterViewInit() {
     this.viewReady.set(true);
+    setTimeout(() => {
+      const agreed = this.tutorialTourService.getCookie(tourIds.ligands);
+      if (!agreed && this.hasLigands()) {
+        this.tutorialTourService.startTour(this.tutorialTourService.ligandsTabTourSteps);
+      }
+    }, 500);
   }
 
   public toggleColorList(): void {

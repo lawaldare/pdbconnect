@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { dashboardStatLinks } from '../../entry-constant';
+import { dashboardStatLinks, tourIds } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -38,6 +38,7 @@ import { SequenceDetail } from '../../store/data-processing/models/other-models'
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
 import { getUniProtsDataForMacromolecule } from '../../store/data-processing/macromolecule-processing';
+import { TutorialTourService } from '../../services/tutorial-tour.service';
 
 @Component({
   selector: 'pdbc-llm-tab',
@@ -57,7 +58,7 @@ import { getUniProtsDataForMacromolecule } from '../../store/data-processing/mac
   templateUrl: './llm-tab.component.html',
   styleUrl: './llm-tab.component.scss',
 })
-export class LLMTabComponent implements OnInit {
+export class LLMTabComponent implements OnInit, AfterViewInit {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
 
@@ -328,6 +329,24 @@ export class LLMTabComponent implements OnInit {
           this.nonObserved.set([]);
         }
       });
+  }
+
+  private readonly tutorialTourService = inject(TutorialTourService);
+  private procLLMMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromoleculesForLLM));
+  public hasLoadedAnnotations = computed(() => this.procLLMMacromolecules() !== undefined);
+  public hasAnnotations = computed(() => {
+    const rows = this.procLLMMacromolecules();
+    if (rows === undefined) return false;
+    return rows.length > 0;
+  });
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      const agreed = this.tutorialTourService.getCookie(tourIds.llm);
+      if (!agreed && this.hasAnnotations()) {
+        this.tutorialTourService.startTour(this.tutorialTourService.annotationsTabTourSteps);
+      }
+    }, 500);
   }
 
   private groupAnnotationsByPdbChain(data: any) {

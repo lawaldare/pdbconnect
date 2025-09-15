@@ -1,77 +1,79 @@
 @if(tabDataLoaded()){ @if(ligandTableRows().length){
 <main [class.change-display]="!isSidebarDisplayed()">
   @if(isSidebarDisplayed()){
-  <pdbc-interactive-tables tabName="Ligands" />
+  <pdbc-interactive-tables tabName="Ligands" id="ligand-list-tour" />
   } @if (currentLigandDatum()) {
   <div class="tab-content">
-    @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Ligands';
-    <button class="vf-button-ghost" (click)="toggleSidebar()">
-      <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
-      <span>{{text}}</span>
-    </button>
+    <div id="ligands-detail-tour">
+      @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Ligands';
+      <button class="vf-button-ghost" (click)="toggleSidebar()">
+        <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
+        <span>{{text}}</span>
+      </button>
 
-    <h5 class="ligands-title">{{ currentLigandDatum()!.codeAndName.name }}</h5>
-    <p class="ligand-question">
-      <span>Where does this data come from?</span>
-      <lib-tool-tip>
-        <p>
-          All ligands listed in this page are from the
-          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
-            >Preferred Assembly</a
-          >
-          of each entry, reflecting their most probable biological form. All data is sourced from our open and free-to-use
-          <a href="https://www.ebi.ac.uk/pdbe/aggregated-api/" target="_blank">PDBe API endpoints</a>.
-        </p>
-      </lib-tool-tip>
-    </p>
+      <h5 class="ligands-title">{{ currentLigandDatum()!.codeAndName.name }}</h5>
+      <p class="ligand-question">
+        <span>Where does this data come from?</span>
+        <lib-tool-tip>
+          <p>
+            All ligands listed in this page are from the
+            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+              >Preferred Assembly</a
+            >
+            of each entry, reflecting their most probable biological form. All data is sourced from our open and free-to-use
+            <a href="https://www.ebi.ac.uk/pdbe/aggregated-api/" target="_blank">PDBe API endpoints</a>.
+          </p>
+        </lib-tool-tip>
+      </p>
 
-    <p class="ligand-question" style="margin-bottom: 16px !important">
-      <span>How are interactions calculated?</span>
-      <lib-tool-tip>
-        <p>
-          Interactions are calculated using <a href="https://github.com/PDBeurope/arpeggio" target="_blank">PDBe Arpeggio</a> for the
-          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
-            >Preferred Assembly</a
-          >
-          of each entry. The 2D view uses the
-          <a href="https://www.jalview.org/help/html/colourSchemes/clustal.html" target="_blank">Clustal X colour scheme.</a> Details for interaction types can be
-          found <a href="https://www.ebi.ac.uk/biostudies/europepmc/studies/S-EPMC5282402" target="_blank">here</a> (mmc1.docx file). All data is sourced from our
-          open and free-to-use <a href="https://www.ebi.ac.uk/pdbe/aggregated-api/" target="_blank">PDBe API endpoints</a>.
-        </p>
-      </lib-tool-tip>
-    </p>
+      <p class="ligand-question" style="margin-bottom: 16px !important">
+        <span>How are interactions calculated?</span>
+        <lib-tool-tip>
+          <p>
+            Interactions are calculated using <a href="https://github.com/PDBeurope/arpeggio" target="_blank">PDBe Arpeggio</a> for the
+            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+              >Preferred Assembly</a
+            >
+            of each entry. The 2D view uses the
+            <a href="https://www.jalview.org/help/html/colourSchemes/clustal.html" target="_blank">Clustal X colour scheme.</a> Details for interaction types can be
+            found <a href="https://www.ebi.ac.uk/biostudies/europepmc/studies/S-EPMC5282402" target="_blank">here</a> (mmc1.docx file). All data is sourced from our
+            open and free-to-use <a href="https://www.ebi.ac.uk/pdbe/aggregated-api/" target="_blank">PDBe API endpoints</a>.
+          </p>
+        </lib-tool-tip>
+      </p>
 
-    <div class="info">
-      <div class="info-grouped left">
-        <div class="info-row">
-          <span class="micro-title"> Ligand name </span>
-          <article>{{ currentLigandDatum()!.codeAndName.name }}</article>
-        </div>
-        @let boundDetails = ligandBoundDetails() ?? undefined; @if(boundDetails && boundDetails?.[0]?.synonyms.length){
-        <div class="info-row">
-          <span class="micro-title"> Synonyms </span>
-          <article libTruncateText [truncateText]="mapSynonyms(boundDetails[0].synonyms)" [limit]="53">
-            <!-- @for(synonym of boundDetails[0].synonyms; track synonym.value; let islast = $last){
+      <div class="info">
+        <div class="info-grouped left">
+          <div class="info-row">
+            <span class="micro-title"> Ligand name </span>
+            <article>{{ currentLigandDatum()!.codeAndName.name }}</article>
+          </div>
+          @let boundDetails = ligandBoundDetails() ?? undefined; @if(boundDetails && boundDetails?.[0]?.synonyms.length){
+          <div class="info-row">
+            <span class="micro-title"> Synonyms </span>
+            <article libTruncateText [truncateText]="mapSynonyms(boundDetails[0].synonyms)" [limit]="53">
+              <!-- @for(synonym of boundDetails[0].synonyms; track synonym.value; let islast = $last){
             <span>{{synonym.value }}</span>{{ islast ? '' : ',' }} } -->
-          </article>
+            </article>
+          </div>
+          }
         </div>
-        }
-      </div>
-      <div class="info-grouped right">
-        @if(boundDetails && boundDetails.length){
-        <div class="info-row">
-          <span class="micro-title"> Formula </span>
-          <article class="formula">{{ boundDetails[0]?.formula }}</article>
+        <div class="info-grouped right">
+          @if(boundDetails && boundDetails.length){
+          <div class="info-row">
+            <span class="micro-title"> Formula </span>
+            <article class="formula">{{ boundDetails[0]?.formula }}</article>
+          </div>
+          } @if (ligandWeight()) {
+          <div class="info-row">
+            <span class="micro-title"> Molecular weight </span>
+            <article>{{ ligandWeight() }} Da</article>
+          </div>
+          }
         </div>
-        } @if (ligandWeight()) {
-        <div class="info-row">
-          <span class="micro-title"> Molecular weight </span>
-          <article>{{ ligandWeight() }} Da</article>
-        </div>
-        }
       </div>
     </div>
-    <div class="stats-link-bar">
+    <div class="stats-link-bar" id="ligand-deeper-analysis-tour">
       @if(dashboardStatLinks['Ligands'].length > 0 && selectionIdentifier !== 'None') {
       <span><img src="assets/icons/pdbe-kb_logo.webp" alt="icon" style="width: 16px; height: 16px; margin-right: 2px" /> View more about this ligand:</span>
       @for (displayLink of dashboardStatLinks['Ligands']; track displayLink; let islast = $last) {
@@ -87,145 +89,151 @@
       </a>
       {{ islast ? '' : '|' }} } }
     </div>
-    <div class="chains">
-      @if(dropdownOptions.length > 1){
-      <div class="dropdown-container">
-        <pdbc-entry-dropdown
-          [searchable]="false"
-          [searchTitle]="''"
-          [downloadable]="false"
-          [islink]="false"
-          [options]="dropdownOptions"
-          [title]="dropdownSelected"
-          (optionClickedEvent)="onDropdownSelect($event)"
-        >
-        </pdbc-entry-dropdown>
-      </div>
-      }@else if(dropdownOptions.length === 1){
-      <p>{{dropdownOptions[0].name}}</p>
-      }@else {}
-    </div>
-    <section class="ligand-charts">
-      @if (interactionsRowData()) {
-      <div class="table">
-        <p class="table-title">Ligand interactions - {{interactionsRowData()?.length}} total</p>
-        <div class="table-toolbar">
-          <button class="vf-button vf-button--link" (click)="downloadCSV()">
-            Download table (csv)
-            <i class="icon icon-common icon-download"></i>
-          </button>
-          <div class="search-box">
-            <input type="search" [formControl]="searchTerm" placeholder="Search the table" />
-            @if(!searchTerm.value){
-            <i class="icon icon-common icon-search"></i>
-            }
-          </div>
+    <div id="ligand-interaction-tour">
+      <div class="chains">
+        @if(dropdownOptions.length > 1){
+        <div class="dropdown-container">
+          <pdbc-entry-dropdown
+            [searchable]="false"
+            [searchTitle]="''"
+            [downloadable]="false"
+            [islink]="false"
+            [options]="dropdownOptions"
+            [title]="dropdownSelected"
+            (optionClickedEvent)="onDropdownSelect($event)"
+          >
+          </pdbc-entry-dropdown>
         </div>
-        <section class="table-wrapper">
-          <ag-grid-angular
-            class="ag-theme-quartz"
-            style="width: 100%; height: 100%"
-            [rowData]="interactionsRowData()"
-            [columnDefs]="colDefs"
-            [gridOptions]="gridOptions"
-            (selectionChanged)="onSelectionChanged($event)"
-            (cellMouseOver)="onCellMouseOver($event)"
-            (cellMouseOut)="onCellMouseOut()"
-            [paginationPageSizeSelector]="paginationPageSizeSelector()"
-            overlayNoRowsTemplate="No ligand interactions found"
-          />
-          <section class="ligands-info big">
-            <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure derived from the PDB entry.</p>
-            <p>Please note:</p>
-            <ul>
-              <li>
-                Some chain IDs in the tooltip are followed by a number in square brackets. This number corresponds to the operation ID (mmCIF 'oper_expression') used
-                to transform the chain.
-              </li>
-              <li>
-                The structure seen in Mol* (3D view) was protonated using
-                <a href="https://www.cgl.ucsf.edu/chimerax/docs/user/commands/addh.html" target="_blank">ChimeraX</a>.
-              </li>
-              <li>
-                Interactions were calculated using
-                <a href="https://github.com/PDBeurope/arpeggio" target="_blank">PDBe Arpeggio</a> (<a
-                  href="https://www.ebi.ac.uk/biostudies/europepmc/studies/S-EPMC5282402"
-                  target="_blank"
-                  >see mmc1.docx file for interaction types</a
-                >).
-              </li>
-              <li>The colour scheme used is consistent with <a href="https://www.jalview.org/help/html/colourSchemes/clustal.html" target="_blank">Clustal X</a>.</li>
-            </ul>
+        }@else if(dropdownOptions.length === 1){
+        <p>{{dropdownOptions[0].name}}</p>
+        }@else {}
+      </div>
+      <section class="ligand-charts">
+        @if (interactionsRowData()) {
+        <div class="table">
+          <p class="table-title">Ligand interactions - {{interactionsRowData()?.length}} total</p>
+          <div class="table-toolbar">
+            <button class="vf-button vf-button--link" (click)="downloadCSV()">
+              Download table (csv)
+              <i class="icon icon-common icon-download"></i>
+            </button>
+            <div class="search-box">
+              <input type="search" [formControl]="searchTerm" placeholder="Search the table" />
+              @if(!searchTerm.value){
+              <i class="icon icon-common icon-search"></i>
+              }
+            </div>
+          </div>
+          <section class="table-wrapper">
+            <ag-grid-angular
+              class="ag-theme-quartz"
+              style="width: 100%; height: 100%"
+              [rowData]="interactionsRowData()"
+              [columnDefs]="colDefs"
+              [gridOptions]="gridOptions"
+              (selectionChanged)="onSelectionChanged($event)"
+              (cellMouseOver)="onCellMouseOver($event)"
+              (cellMouseOut)="onCellMouseOut()"
+              [paginationPageSizeSelector]="paginationPageSizeSelector()"
+              overlayNoRowsTemplate="No ligand interactions found"
+            />
+            <section class="ligands-info big">
+              <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure derived from the PDB entry.</p>
+              <p>Please note:</p>
+              <ul>
+                <li>
+                  Some chain IDs in the tooltip are followed by a number in square brackets. This number corresponds to the operation ID (mmCIF 'oper_expression')
+                  used to transform the chain.
+                </li>
+                <li>
+                  The structure seen in Mol* (3D view) was protonated using
+                  <a href="https://www.cgl.ucsf.edu/chimerax/docs/user/commands/addh.html" target="_blank">ChimeraX</a>.
+                </li>
+                <li>
+                  Interactions were calculated using
+                  <a href="https://github.com/PDBeurope/arpeggio" target="_blank">PDBe Arpeggio</a> (<a
+                    href="https://www.ebi.ac.uk/biostudies/europepmc/studies/S-EPMC5282402"
+                    target="_blank"
+                    >see mmc1.docx file for interaction types</a
+                  >).
+                </li>
+                <li>
+                  The colour scheme used is consistent with <a href="https://www.jalview.org/help/html/colourSchemes/clustal.html" target="_blank">Clustal X</a>.
+                </li>
+              </ul>
+            </section>
           </section>
-        </section>
-      </div>
-      }
-
-      <section class="molstar-lig-env">
-        @if (slowNetwork() === undefined || checkedWebGl() === undefined) {
-        <div [style.width]="'100%'">
-          <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '385px', }"></ngx-skeleton-loader>
-        </div>
-        } @else if (isWebGlEnabled() && fastNetworkOrForceLoad()) {
-        <section class="molstar-details-container">
-          @if (!configForMolstar()) {
-          <div [style.width]="'100%'">
-            <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '355px', }"></ngx-skeleton-loader>
-          </div>
-          } @else if (configForMolstar()) {
-          <!-- <div class="toolbar">
-              <mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="outbox" (click)="popupMolstar()"></mat-icon>
-            </div> -->
-          <div class="molstar-container">
-            <div #popoutWrapper>
-              <lib-pdbe-molstar #molstarComponent [id]="'ligands-molstar'" [molstarConfig]="configForMolstar()" [height]="'100%'"></lib-pdbe-molstar>
-            </div>
-          </div>
-          }
-        </section>
-        <div class="legends">
-          <div class="legends-data">
-            @for(color of legendsColor.slice(0, initialColorCount()); track color.label ){
-            <div class="legend-wrapper">
-              <span class="legend-color" [style.background-color]="color.color"></span>
-              <span class="legend-label">{{ color.label }}</span>
-            </div>
-            }
-          </div>
-          <div class="control">
-            @if(legendsColor.length > 4){
-            <span role="button" class="related-entry-toggle" (click)="toggleColorList()">{{initialColorCount() > 4 ? 'Hide' : 'Show'}} full legend</span>
-            <i class="icon icon-common" [ngClass]="initialColorCount() > 4 ? 'icon-angle-up' : 'icon-angle-down'"></i>
-            }
-          </div>
-        </div>
-        } @else if (!isWebGlEnabled()) {
-        <div class="molstar-not-loaded">
-          <img alt="WebGL not supported" src="assets/img/no_webgl.webp" />
-          <div>
-            <h4 class="heading-4">3D viewer not supported in this browser</h4>
-            <p>Your browser doesn’t support WebGL, which is required for the 3D structure.</p>
-            <a target="_blank" href="https://get.webgl.org/webgl2/enable.html">
-              Learn how to enable WebGL
-              <i class="icon icon-link icon-common"></i>
-            </a>
-          </div>
-        </div>
-        } @else if (isWebGlEnabled() && !fastNetworkOrForceLoad()) {
-        <div class="molstar-not-loaded">
-          <img alt="3D viewer paused" src="assets/img/paused_3d.webp" />
-          <div>
-            <h4 class="heading-4">3D viewer paused due to large structure or slow connection</h4>
-            <p>The 3D structure is large and may load slowly on your current connection.</p>
-          </div>
-          <button class="vf-button vf-button--search-pdbe" (click)="toggleMolstar()">Load 3D anyway</button>
         </div>
         }
-        <section class="lig-env-container">
-          <div class="ligand-env" #ligandEnvContainer></div>
+
+        <section class="molstar-lig-env">
+          @if (slowNetwork() === undefined || checkedWebGl() === undefined) {
+          <div [style.width]="'100%'">
+            <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '385px', }"></ngx-skeleton-loader>
+          </div>
+          } @else if (isWebGlEnabled() && fastNetworkOrForceLoad()) {
+          <div id="ligand-environment-tour">
+            <section class="molstar-details-container">
+              @if (!configForMolstar()) {
+              <div [style.width]="'100%'">
+                <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '355px', }"></ngx-skeleton-loader>
+              </div>
+              } @else if (configForMolstar()) {
+              <!-- <div class="toolbar">
+              <mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="outbox" (click)="popupMolstar()"></mat-icon>
+            </div> -->
+              <div class="molstar-container">
+                <div #popoutWrapper>
+                  <lib-pdbe-molstar #molstarComponent [id]="'ligands-molstar'" [molstarConfig]="configForMolstar()" [height]="'100%'"></lib-pdbe-molstar>
+                </div>
+              </div>
+              }
+            </section>
+            <div class="legends">
+              <div class="legends-data">
+                @for(color of legendsColor.slice(0, initialColorCount()); track color.label ){
+                <div class="legend-wrapper">
+                  <span class="legend-color" [style.background-color]="color.color"></span>
+                  <span class="legend-label">{{ color.label }}</span>
+                </div>
+                }
+              </div>
+              <div class="control">
+                @if(legendsColor.length > 4){
+                <span role="button" class="related-entry-toggle" (click)="toggleColorList()">{{initialColorCount() > 4 ? 'Hide' : 'Show'}} full legend</span>
+                <i class="icon icon-common" [ngClass]="initialColorCount() > 4 ? 'icon-angle-up' : 'icon-angle-down'"></i>
+                }
+              </div>
+            </div>
+          </div>
+          } @else if (!isWebGlEnabled()) {
+          <div class="molstar-not-loaded">
+            <img alt="WebGL not supported" src="assets/img/no_webgl.webp" />
+            <div>
+              <h4 class="heading-4">3D viewer not supported in this browser</h4>
+              <p>Your browser doesn’t support WebGL, which is required for the 3D structure.</p>
+              <a target="_blank" href="https://get.webgl.org/webgl2/enable.html">
+                Learn how to enable WebGL
+                <i class="icon icon-link icon-common"></i>
+              </a>
+            </div>
+          </div>
+          } @else if (isWebGlEnabled() && !fastNetworkOrForceLoad()) {
+          <div class="molstar-not-loaded">
+            <img alt="3D viewer paused" src="assets/img/paused_3d.webp" />
+            <div>
+              <h4 class="heading-4">3D viewer paused due to large structure or slow connection</h4>
+              <p>The 3D structure is large and may load slowly on your current connection.</p>
+            </div>
+            <button class="vf-button vf-button--search-pdbe" (click)="toggleMolstar()">Load 3D anyway</button>
+          </div>
+          }
+          <section class="lig-env-container">
+            <div class="ligand-env" #ligandEnvContainer></div>
+          </section>
         </section>
       </section>
-    </section>
+    </div>
 
     <section class="ligands-info small">
       <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure derived from the PDB entry.</p>
