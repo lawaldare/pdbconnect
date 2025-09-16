@@ -35,7 +35,7 @@ export class ComplexStructuresComponent implements OnInit {
   public readonly initialState = initialState;
   public readonly rowSelection = rowSelection;
 
-  private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
+  private readonly fileDownloadUrl = `${environment.baseUrl}pdbe/download/api/pdb/`;
   private readonly downloadService = inject(DownloadService);
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
 
@@ -114,7 +114,7 @@ export class ComplexStructuresComponent implements OnInit {
     } else {
       //go to download service
       localStorage.setItem('pdbIds', pdbIds);
-      const url = `${environment.pdbeBaseUrl}download/docs`;
+      const url = `${environment.baseUrl}pdbe/download/docs`;
       window.open(url);
     }
   }

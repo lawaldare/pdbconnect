@@ -362,7 +362,7 @@ export class EntryMainPageComponent implements OnInit {
 
             this.metaService.addTag({ property: 'og:title', content: `PDB: ${this.entryId()} | Protein Data Bank in Europe - PDBe` });
             this.metaService.addTag({ property: 'og:description', content: `Entry title: "${summaryData.entryTitle}"` });
-            this.metaService.addTag({ property: 'og:url', content: `${environment.pdbeBaseUrl}/entry/pdb/1trn` });
+            this.metaService.addTag({ property: 'og:url', content: `${environment.baseUrl}pdbe//entry/pdb/1trn` });
             this.metaService.addTag({
               property: 'og:image',
               content: `https://www.ebi.ac.uk/pdbe/static/entry/${this.entryId()}_deposited_chain_front_image-800x800.png`,
@@ -375,7 +375,7 @@ export class EntryMainPageComponent implements OnInit {
             this.metaService.addTag({ name: 'twitter:card', content: 'summary_large_image' });
             this.metaService.addTag({ name: 'twitter:title', content: titleAndDescription });
             this.metaService.addTag({ name: 'twitter:description', content: titleAndDescription });
-            this.metaService.addTag({ name: 'twitter:url', content: `${environment.pdbeBaseUrl}/entry/pdb/1trn` });
+            this.metaService.addTag({ name: 'twitter:url', content: `${environment.baseUrl}pdbe//entry/pdb/1trn` });
             this.metaService.addTag({
               name: 'twitter:image',
               content: `https://www.ebi.ac.uk/pdbe/static/entry/${this.entryId()}_deposited_chain_front_image-800x800.png`,

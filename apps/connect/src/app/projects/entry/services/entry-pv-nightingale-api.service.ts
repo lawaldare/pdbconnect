@@ -12,7 +12,7 @@ export class PvDataApiService {
   private readonly isLocalhost = window?.location?.hostname === 'localhost';
 
   private readonly BaseAPI = `https://www.ebi.ac.uk/pdbe/graph-api/`;
-  private readonly AggregatedApiUrl = `${environment.pdbeBaseUrl}api/v2/`;
+  private readonly AggregatedApiUrl = `${environment.baseUrl}pdbe/api/v2/`;
 
   private buildUrl(endpoint: string, entryId: string, entityId: string): string {
     const baseUrl = this.isLocalhost ? this.BaseAPI : this.AggregatedApiUrl;

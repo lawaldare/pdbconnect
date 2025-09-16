@@ -37,7 +37,7 @@ export class StructuresComponent {
   private readonly agGridService = inject(AgGridStructureService);
   private readonly utilService = inject(UtilService);
 
-  private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
+  private readonly fileDownloadUrl = `${environment.baseUrl}pdbe/download/api/pdb/`;
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly globalStore = inject(Store<LigandStoreState>);
@@ -191,7 +191,7 @@ export class StructuresComponent {
     } else {
       //go to download service
       localStorage.setItem('pdbIds', uniqueData.join(','));
-      const url = `${environment.pdbeBaseUrl}download/docs`;
+      const url = `${environment.baseUrl}pdbe/download/docs`;
       window.open(url);
     }
     this.googleAnalyticsService.logClickEvents('download_coordinates_mmcif', 'Download', 'download_mmcif', 'Download coordinates');
