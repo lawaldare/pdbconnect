@@ -55,16 +55,6 @@ export class TutorialTourService {
           'The accordions display key features of the entry. Expanding each section provides more detail and links the feature directly to the 3D viewer. For example, clicking on “Ligands” will highlight the ligands in the 3D view. Clicking on one ligand will highlight and, then, focus the viewer on it.',
         side: 'bottom',
         align: 'center',
-      },
-    },
-    {
-      id: 'summary',
-      element: '#entry-navigation-tour',
-      popover: {
-        title: 'Entry navigation',
-        description: 'Use the tabs to move through different sections of the entry and find more information.',
-        side: 'bottom',
-        align: 'start',
         doneBtnText: 'Finish',
         onNextClick: (el: any, step: any, options: any) => {
           this.setCookie(tourIds.summary, 'true', 365);
@@ -73,6 +63,22 @@ export class TutorialTourService {
         },
       },
     },
+    // {
+    //   id: 'summary',
+    //   element: '#entry-navigation-tour',
+    //   popover: {
+    //     title: 'Entry navigation',
+    //     description: 'Use the tabs to move through different sections of the entry and find more information.',
+    //     side: 'bottom',
+    //     align: 'start',
+    //     doneBtnText: 'Finish',
+    //     onNextClick: (el: any, step: any, options: any) => {
+    //       this.setCookie(tourIds.summary, 'true', 365);
+    //       this.showSummaryTourBanner.set(false);
+    //       options.driver.destroy();
+    //     },
+    //   },
+    // },
   ];
 
   public modelQualityTabTourSteps: any = [

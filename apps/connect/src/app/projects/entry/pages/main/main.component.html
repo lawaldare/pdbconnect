@@ -6,7 +6,7 @@
     <lib-notification />
     } @if (entryPageView() === 'SUCCESS' && isDesktop()) {
     <section class="entry-page-container container-padding">
-      <pdbc-entry-page-header id="entry-navigation-tour" />
+      <pdbc-entry-page-header />
       <main>
         <mat-tab-group #tabs (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTabIndex()" mat-stretch-tabs="false" mat-align-tabs="start">
           <mat-tab label="Summary">
