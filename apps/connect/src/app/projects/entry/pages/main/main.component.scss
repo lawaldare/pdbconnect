@@ -154,6 +154,12 @@ span.action {
   }
 }
 
+.help-body span.action {
+  @media screen and (width <= 768px) {
+    display: none;
+  }
+}
+
 .help-body a:hover {
   text-decoration: underline;
 }
