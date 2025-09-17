@@ -1,26 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Component, inject, input, OnChanges, signal } from '@angular/core';
+import { Component, inject, input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AssemblyDataToTable } from './data-processing/assembly-row-class';
-import { DomainDataToTable } from './data-processing/domain-row-class';
-import { LigandDataToTable } from './data-processing/ligand-row-class';
-import { MacromoleculeDataToTable } from './data-processing/macromolecule-row';
-import { TableNames } from '../../../pages/main/main.component';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { annotationsTooltips, resourceUrls } from '../../../entry-constant';
-import { LigandsTabService } from '../../ligands-tab/ligands-tab.service';
 import { RichTooltipDirective } from '@pdbc/rich-tooltip';
 import { TruncateTextDirective } from '../../../directives/truncate-text.directive';
-
-type DataToTable = AssemblyDataToTable | DomainDataToTable | LigandDataToTable | MacromoleculeDataToTable;
-
-export interface Filter {
-  types: string[];
-  description: string;
-}
-
+import { Store } from '@ngrx/store';
+import { EntryStoreState } from '../../../store/entry-store.model';
+import { EntrySelectors } from '../../../store/entry.selectors';
+import { Filter, TableNames } from '../../../store/data-processing/models/other-models';
+import { EntryActions } from '../../../store/entry.actions';
+import { MacromoleculeUICard } from '../../../store/data-processing/macromolecule-processing';
+import { LigandOrModUICard } from '../../../store/data-processing/ligand-processing';
+import { DomainUICard } from '../../../store/data-processing/domain-processing';
+import { AssemblyUICard } from '../../../store/data-processing/assembly-processing';
 @Component({
   selector: 'pdbc-interactive-tables',
   standalone: true,
@@ -28,55 +23,96 @@ export interface Filter {
   templateUrl: './interactive-tables.component.html',
   styleUrl: './interactive-tables.component.scss',
 })
-export class InteractiveTablesComponent implements OnChanges {
-  public readonly compCommunication = inject(ComponentCommunicationService);
-  public readonly ligandsTabService = inject(LigandsTabService);
-
+export class InteractiveTablesComponent implements OnInit {
   public readonly tabName = input.required<TableNames>();
 
-  public readonly resourceUrls = resourceUrls;
+  public readonly compCommunication = inject(ComponentCommunicationService);
+  public readonly globalStore = inject(Store<EntryStoreState>);
 
+  public readonly resourceUrls = resourceUrls;
   public readonly annotationsTooltips: any = annotationsTooltips;
 
-  public tableData?: any;
-  public currentTableFilter: string[] = [];
-
   public selectedRowCard = signal<any>({});
-  public filters = signal<Filter[]>([]);
   public selectedFilter = signal<Filter>({} as Filter);
-  public rowCards = signal<any[]>([]);
   public startNumber = signal<number>(1);
-  private mappedTableRows = signal<any[]>([]);
 
-  async ngOnChanges(): Promise<void> {
-    const tableData = this.compCommunication.getTabData(this.tabName());
-    this.tableData = tableData as DataToTable;
-    const mappedTableRows = tableData.tableRows().map((row: any, index) => ({
-      ...row,
-      index,
-      annotations: this.getAnnotations(row.id),
-      isModified: this.ligandsTabService.modifications()?.find((e) => e === row.id) ? true : false,
-    }));
-    this.mappedTableRows.update(() => mappedTableRows);
-    this.rowCards.update(() => mappedTableRows);
+  public assembliesFiltersObs = this.globalStore.select(EntrySelectors.procAssembliesFilters);
+  public assembliesCardsObs = this.globalStore.select(EntrySelectors.procAssembliesCards);
+
+  public macromoleculesFiltersObs = this.globalStore.select(EntrySelectors.procMacromoleculesFilters);
+  public macromoleculesCardsObs = this.globalStore.select(EntrySelectors.procMacromoleculesCards);
+
+  public ligandsAndModsFiltersObs = this.globalStore.select(EntrySelectors.procLigandsFilters);
+  public ligandsAndModsCardsObs = this.globalStore.select(EntrySelectors.procLigandsCards);
+
+  public domainsFiltersObs = this.globalStore.select(EntrySelectors.procDomainsFilters);
+  public domainsCardsObs = this.globalStore.select(EntrySelectors.procDomainsCards);
+
+  public llmCardsObs = this.globalStore.select(EntrySelectors.procLLMCards);
+
+  public filters = signal<Filter[]>([]);
+  public originalRowCards = signal<any>([]);
+  public rowCards = signal<any>([]);
+
+  ngOnInit(): void {
+    if (this.tabName() === 'Macromolecules') {
+      this.globalStore.dispatch(EntryActions.getProcMacromoleculesCards());
+      this.macromoleculesCardsObs.subscribe((macromoleculesCards) => {
+        if (macromoleculesCards !== undefined) this.setCards(macromoleculesCards);
+      });
+
+      this.globalStore.dispatch(EntryActions.getProcMacromoleculesFilters());
+      this.macromoleculesFiltersObs.subscribe((macromoleculesFilters) => {
+        if (macromoleculesFilters !== undefined) this.setFilters(macromoleculesFilters);
+      });
+    } else if (this.tabName() === 'Ligands') {
+      this.globalStore.dispatch(EntryActions.getProcLigandsCards());
+      this.ligandsAndModsCardsObs.subscribe((ligandsAndModsCards) => {
+        if (ligandsAndModsCards !== undefined) this.setCards(ligandsAndModsCards);
+      });
+
+      this.globalStore.dispatch(EntryActions.getProcLigandsFilters());
+      this.ligandsAndModsFiltersObs.subscribe((ligandsAndModsFilters) => {
+        if (ligandsAndModsFilters !== undefined) this.setFilters(ligandsAndModsFilters);
+      });
+    } else if (this.tabName() === 'Domains') {
+      this.globalStore.dispatch(EntryActions.getProcDomainsCards());
+      this.domainsCardsObs.subscribe((domainsCards) => {
+        if (domainsCards !== undefined) this.setCards(domainsCards);
+      });
+
+      this.globalStore.dispatch(EntryActions.getProcDomainsFilters());
+      this.domainsFiltersObs.subscribe((domainsFilters) => {
+        if (domainsFilters !== undefined) this.setFilters(domainsFilters);
+      });
+    } else if (this.tabName() === 'Assemblies') {
+      this.globalStore.dispatch(EntryActions.getProcAssembliesCards());
+      this.assembliesCardsObs.subscribe((assembliesCards) => {
+        if (assembliesCards !== undefined) this.setCards(assembliesCards);
+      });
+
+      this.globalStore.dispatch(EntryActions.getProcAssembliesFilters());
+      this.assembliesFiltersObs.subscribe((assembliesFilters) => {
+        if (assembliesFilters !== undefined) this.setFilters(assembliesFilters);
+      });
+    } else if (this.tabName() === 'LLM') {
+      this.globalStore.dispatch(EntryActions.getProcLLMCards());
+      this.llmCardsObs.subscribe((llmCards) => {
+        if (llmCards !== undefined) this.setCards(llmCards);
+      });
+    }
+  }
+
+  private setCards(cards: AssemblyUICard[] | LigandOrModUICard[] | MacromoleculeUICard[] | DomainUICard[]) {
+    this.originalRowCards.set([...cards]);
+    this.rowCards.set([...cards]);
     this.selectedRowCard.set(this.rowCards()[0]);
-    this.filters.update(() =>
-      tableData.tableFilters().map((filter: any) => {
-        return {
-          types: filter.types,
-          description: filter.description.includes('All') ? 'All' : filter.description,
-        };
-      })
-    );
-    this.selectedFilter.set(this.filters()[0]);
     this.loadSelectionFromTable(0);
   }
 
-  private getAnnotations(id: any) {
-    if (!this.ligandsTabService.ligandMonomers()) return [];
-    const item = this.ligandsTabService.ligandMonomers()[id];
-    if (!item) return [];
-    return item;
+  private setFilters(filters: Filter[]) {
+    this.filters.set(filters);
+    this.selectedFilter.set(this.filters()[0]);
   }
 
   onCardClick(card: any): void {
@@ -92,11 +128,11 @@ export class InteractiveTablesComponent implements OnChanges {
   }
 
   public loadSelectionFromTable(rowIdx: number) {
-    this.compCommunication.setTabState(this.tabName(), rowIdx);
     if (this.tabName() === 'Assemblies') this.compCommunication.assemblySelection$.next(rowIdx);
     if (this.tabName() === 'Macromolecules') this.compCommunication.macromoleculeSelection$.next(rowIdx);
     if (this.tabName() === 'Ligands') this.compCommunication.ligandSelection$.next(rowIdx);
     if (this.tabName() === 'Domains') this.compCommunication.domainSelection$.next(rowIdx);
+    if (this.tabName() === 'LLM') this.compCommunication.llmSelection$.next(rowIdx);
   }
 
   public applyFilter(obj: any, tabName: string): void {
@@ -105,18 +141,18 @@ export class InteractiveTablesComponent implements OnChanges {
     this.startNumber.set(1);
 
     if (tabName === 'Macromolecules') {
-      const filteredRowCards = this.mappedTableRows().filter((row: any) => obj.types.includes(row?.additionalData?.molecule?.molecule_type));
-      this.rowCards.update(() => filteredRowCards);
+      const filteredCards = [...this.originalRowCards()].filter((card) => obj.types.includes((<MacromoleculeUICard>card).molType));
+      this.rowCards.update(() => [...filteredCards]);
     }
 
     if (tabName === 'Ligands') {
-      const filteredRowCards = this.mappedTableRows().filter((row: any) => obj.types.includes(row?.type));
-      this.rowCards.update(() => filteredRowCards);
+      const filteredCards = [...this.originalRowCards()].filter((card) => obj.types.includes((<LigandOrModUICard>card).molType));
+      this.rowCards.update(() => [...filteredCards]);
     }
 
     if (tabName === 'Domains') {
-      const filteredRowCards = this.mappedTableRows().filter((row: any) => obj.types.includes(row?.resource));
-      this.rowCards.update(() => filteredRowCards);
+      const filteredCards = [...this.originalRowCards()].filter((card) => obj.types.includes((<DomainUICard>card).resource));
+      this.rowCards.update(() => [...filteredCards]);
     }
 
     this.selectedRowCard.set(this.rowCards()[0]);

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { ChangeDetectionStrategy, Component, DestroyRef, EventEmitter, inject, input, linkedSignal, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
@@ -28,6 +30,7 @@ export class EntryDropdownComponent implements OnInit {
   public readonly title = input.required<string>();
 
   public readonly options = input.required<any[] | undefined>();
+  public readonly searchTitle = input.required<string>();
   public readonly backgroundColor = input<string>('#FFF');
   public readonly islink = input.required<boolean>();
 
@@ -36,6 +39,8 @@ export class EntryDropdownComponent implements OnInit {
   public readonly issmall = input<boolean>(false);
 
   public readonly downloadable = input.required<boolean>();
+  public readonly searchable = input<boolean>(true);
+
   @Output() optionClickedEvent = new EventEmitter<string>();
 
   public searchTerm = new FormControl('');

@@ -4,7 +4,6 @@
 
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { StrucExplorerEcm2024Component } from '../../components/struc-explorer-ecm-2024/struc-explorer-ecm-2024.component';
 import { PlaygroundService } from '../../services/playground.service';
 import { combineLatest, map, Observable, of, switchMap } from 'rxjs';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -29,7 +28,6 @@ export interface DownloadOption {
   standalone: true,
   imports: [
     CommonModule,
-    StrucExplorerEcm2024Component,
     EntryInformationComponent,
     EntryLigandsEnvironmentsComponent,
     RouterModule,

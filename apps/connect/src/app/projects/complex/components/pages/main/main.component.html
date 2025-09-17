@@ -18,14 +18,20 @@
           </a>
         </header>
         } @if(complexId()){
-        <h4>{{ complexId() }}</h4>
+        <div class="sub-header">
+          <h4>{{ complexId() }}</h4>
+          <div class="warning">
+            This ID is temporary and might change
+            <lib-help-icon-with-tooltip [tooltipText]="idWarningTooltip" />
+          </div>
+        </div>
         }
       </section>
       <section class="feedback">
         <p>Tell us what you think of the new PDBe-KB Complex pages</p>
         <button class="vf-button vf-button--search-pdbe" role="link" (click)="openFeedbackForm()">Share your feedback</button>
       </section>
-      <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)">
+      <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)" #tabs>
         <mat-tab label="Summary">
           <pdbc-summary />
         </mat-tab>
@@ -58,3 +64,8 @@
     }
   </div>
 </main>
+
+<lib-data-privacy-banner
+  privacyNoticeUrl="https://www.ebi.ac.uk/data-protection/privacy-notice/embl-ebi-public-website/"
+  pageId="dataProtectionAgreedForComplexPages"
+/>

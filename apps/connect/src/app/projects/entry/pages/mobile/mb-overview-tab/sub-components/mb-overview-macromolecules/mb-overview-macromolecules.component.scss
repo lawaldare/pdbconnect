@@ -1,0 +1,50 @@
+h3 {
+  color: #1a1c1a;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 31.2px;
+  margin-bottom: 12px;
+  margin-top: 32px;
+}
+
+section.macro-row-card {
+  padding: 8px 0;
+  border-bottom: 1px solid rgb(0 0 0 / 12%);
+
+  p.m-title {
+    color: #1a1c1a;
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 26.6px;
+  }
+
+  p.text {
+    color: #1a1c1a;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 27.2px;
+
+    span {
+      display: block;
+      margin-left: 16px;
+    }
+  }
+
+  .uniport-mapping {
+    span {
+      display: block;
+      margin-left: 16px;
+    }
+  }
+}
+
+button.vf-button {
+  width: 97%;
+  margin: 16px auto;
+}
+
+.vf-button--search-pdbe {
+  margin: 12px auto 0;
+  display: block;
+  padding: 8px 16px;
+}

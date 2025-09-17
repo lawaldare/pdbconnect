@@ -47,6 +47,60 @@
   </div>
   }
 </div>
+<div class="mobile-alternative">
+  <p>This table lists <a href="https://www.ebi.ac.uk/pdbe/pisa/" target="_blank">PISA</a>-derived properties for all assemblies of this complex.</p>
+  <div class="search-box">
+    <input type="search" [formControl]="searchTerm" placeholder="Search..." />
+    <i class="icon icon-common icon-search"> </i>
+  </div>
+  @for(structure of structuresPage; track structure){
+  <article>
+    <div class="list">
+      <p class="list-item-left">PDB</p>
+      <p class="list-item-right">
+        <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + structure.pdb_id" target="_blank">
+          {{ structure.pdb_id }}
+          <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
+        </a>
+      </p>
+    </div>
+    <div class="list">
+      <p class="list-item-left">ID</p>
+      <p class="list-item-right">{{ structure.assembly_id }}</p>
+    </div>
+    <div class="list">
+      <p class="list-item-left">Acc. SA (Å²)</p>
+      <p class="list-item-right">{{ structure.accessible_surface_area }}</p>
+    </div>
+    <div class="list">
+      <p class="list-item-left">Bur. SA (Å²)</p>
+      <p class="list-item-right">{{ structure.buried_surface_area }}</p>
+    </div>
+    <div class="list">
+      <p class="list-item-left">Solv. ΔG (kcal /mol)</p>
+      <p class="list-item-right">{{ structure.solvation_energy_gain }}</p>
+    </div>
+    <div class="list">
+      <p class="list-item-left">Diss. ΔG (kcal /mol)</p>
+      <p class="list-item-right">{{ structure.dissociation_energy }}</p>
+    </div>
+    <div class="list">
+      <p class="list-item-left">Diss. TΔS (kcal /mol)</p>
+      <p class="list-item-right">{{ structure.dissociation_entropy }}</p>
+    </div>
+  </article>
+  }
+  <mat-paginator
+    class="paginator-container"
+    [length]="structuresLength()"
+    [pageSize]="structuresPageSize()"
+    [pageSizeOptions]="structuresPageSizeOptions()"
+    (page)="handlePageEvent($event)"
+    showFirstLastButtons
+    aria-label="Select page of structures"
+  >
+  </mat-paginator>
+</div>
 
 } @else {
 <h4>No structures data available yet!</h4>

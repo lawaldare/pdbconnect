@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { Component, computed, DestroyRef, ElementRef, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CitationPublicationComponent } from './sub-components/citation-publication/citation-publication.component';
@@ -14,6 +16,7 @@ import { combineLatest, filter, map } from 'rxjs';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { CitationDetail } from '../../data-models/publication.model';
 import { RelatedPublication } from '../../data-models/related-publications.model';
+import { EntryActions } from '../../store/entry.actions';
 
 @Component({
   selector: 'pdbc-citations-tab',

@@ -4,19 +4,19 @@ import * as d3 from 'd3';
 export const headerSearchComplexConfig = {
   examples: [
     {
-      label: 'Hemoglobin HbA complex',
+      label: 'Hemoglobin HbA (PDB-CPX-159519)',
       value: 'PDB-CPX-159519',
     },
     {
-      label: 'Cyclin A2-CDK2 complex',
+      label: 'Cyclin A2-CDK2 (PDB-CPX-148886)',
       value: 'PDB-CPX-148886',
     },
     {
-      label: '2nu8',
+      label: 'Succinyl-CoA synthetase (2nu8)',
       value: '2nu8',
     },
     {
-      label: '4fyy',
+      label: 'Aspartate carbamoyltransferase (4fyy)',
       value: '4fyy',
     },
   ],
@@ -108,3 +108,9 @@ export const pisaTableTooltip = {
   DEG: 'Indicates the free energy of assembly dissociation, in kcal/mol. The free energy of dissociation corresponds to the free energy difference between dissociated and associated states. Positive values of ΔGdiss indicate that an external driving force should be applied in order to dissociate the assembly, therefore assemblies with ΔGdiss>0 are thermodynamically stable.',
   DEP: 'Indicates the rigid-body entropy change at dissociation, in kcal/mol. The entropy change corresponds to the lowest free energy way to dissociate the assembly into a set of stable assemblies or monomeric units.',
 };
+
+export const superpositionTooltip =
+  'Complexes are aligned based on the largest common component (measured the by number of residues) with a UniProt mapping. In case there are no common components with Uniprot mapping, the largest common component with an Rfam mapping is used. Residue-residue correspondence is determined by UniProt residue numbers (for UniProt mappings) or by sequence alignment (for Rfam mappings).';
+
+export const idWarningTooltip =
+  'The identifier shown on this page is currently part of the beta release. These identifiers are subject to change during the beta phase. Final, stable IDs will be assigned and maintained once the resource enters full production.';

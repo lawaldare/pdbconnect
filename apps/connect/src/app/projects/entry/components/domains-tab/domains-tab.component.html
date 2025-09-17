@@ -1,117 +1,183 @@
-@if(tabDataLoaded()){ @if(domainTableRows().length){
+@if(tutorialTourService.showDomainsTourBanner() && isBannerCookies()){
+<section class="onboarding-tutorial-banner">
+  <img src="assets/img/light-star.svg" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startDomainsTabTour()">Take an on-page tour.</span></p>
+</section>
+} @if(tabDataLoaded()){ @if(domainTableRows().length){
 <main [class.change-display]="!isSidebarDisplayed()">
   @if(isSidebarDisplayed()){
-  <pdbc-interactive-tables tabName="Domains" />
-  }
+  <pdbc-interactive-tables tabName="Domains" id="domains-list-tour" />
+  } @if (currentDomainsDatum()) {
   <div class="tab-content">
-    @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Domains';
-    <button class="vf-button-ghost" (click)="toggleSidebar()">
-      <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
-      <span>{{text}}</span>
-    </button>
+    <div id="domains-detail-tour">
+      @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Domains';
+      <button class="vf-button-ghost" (click)="toggleSidebar()">
+        <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
+        <span>{{text}}</span>
+      </button>
 
-    @let accessionId = currentDomainsDatum()!.resource === 'SCOP' ? '' : currentDomainsDatum()!.additionalData.accession;
-    <h5 class="domain-title">
-      <strong>{{currentDomainsDatum()!.accessionName}}</strong> (<strong>{{currentDomainsDatum()!.resource}}</strong>
-      <a [href]="resourceUrls[currentDomainsDatum()!.resource] + accessionId" target="_blank">{{ currentDomainsDatum()!.additionalData.accession }}</a>)
-    </h5>
-    <section class="domain-info">
-      <div class="domain-info-grouped">
-        <div class="info-row">
-          <span>
-            Description
-            <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.description" />
-          </span>
-          <article>{{currentDomainsDatum()!.accessionName}}</article>
+      @let accessionId = currentDomainsDatum()!.resource === 'SCOP' ? '' : currentDomainsDatum()!.additionalData.accession;
+      <h5 class="domain-title">
+        <strong>{{currentDomainsDatum()!.accessionName}}</strong> (<strong>{{currentDomainsDatum()!.resource}}</strong>
+        <a [href]="resourceUrls[currentDomainsDatum()!.resource] + accessionId" target="_blank">{{ currentDomainsDatum()!.additionalData.accession }}</a>)
+      </h5>
+      <section class="domain-info">
+        <div class="domain-info-grouped">
+          <div class="info-row">
+            <span>
+              Description
+              <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.description" />
+            </span>
+            <article>{{currentDomainsDatum()!.accessionName}}</article>
+          </div>
+          <div class="info-row">
+            <span>
+              Source and domain accession
+              <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.sourceDomainAccession" />
+            </span>
+            <article>
+              {{currentDomainsDatum()!.resource}}
+              <a [href]="resourceUrls[currentDomainsDatum()!.resource] + accessionId" target="_blank">{{ currentDomainsDatum()!.additionalData.accession }}</a>
+            </article>
+          </div>
+          <div class="info-row">
+            <span> Molecule name </span>
+            <article>{{currentDomainsDatum()!.moleculeNames[0]}}</article>
+          </div>
         </div>
-        <div class="info-row">
-          <span>
-            Source and domain accession
-            <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.sourceDomainAccession" />
-          </span>
-          <article>
-            {{currentDomainsDatum()!.resource}}
-            <a [href]="resourceUrls[currentDomainsDatum()!.resource] + accessionId" target="_blank">{{ currentDomainsDatum()!.additionalData.accession }}</a>
-          </article>
-        </div>
-        <div class="info-row">
-          <span> Molecule name </span>
-          <article>{{currentDomainsDatum()!.moleculeNames[0]}}</article>
-        </div>
-      </div>
-      <div class="domain-info-grouped">
-        <div class="info-row">
-          <span>
-            Domain name
-            <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.domainName" />
-          </span>
-          <article>{{currentDomainsDatum()!.domain}}</article>
-        </div>
+        <div class="domain-info-grouped">
+          <div class="info-row">
+            <span>
+              Domain name
+              <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.domainName" />
+            </span>
+            <article>{{currentDomainsDatum()!.domain}}</article>
+          </div>
 
-        <div class="info-row">
-          <span>
-            Author segments
-            <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.authorSegments" />
-          </span>
-          <article>
-            Chain @for(chain of currentDomainsDatum()!.segments; track chain; let islast = $last) {
-            <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
-          </article>
+          <div class="info-row">
+            <span>
+              Author segments
+              <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.authorSegments" />
+            </span>
+            <article>
+              Chain @for(chain of currentDomainsDatum()!.segments; track chain; let islast = $last) {
+              <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
+            </article>
+          </div>
+          <div class="info-row">
+            <span>
+              Segments
+              <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.segments" />
+            </span>
+            <article>
+              Chain @for(chain of currentDomainsDatum()!.additionalData.segmentsResidNumbers; track chain; let islast = $last) {
+              <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
+            </article>
+          </div>
         </div>
-        <div class="info-row">
-          <span>
-            Segments
-            <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.segments" />
-          </span>
-          <article>
-            Chain @for(chain of currentDomainsDatum()!.additionalData.segmentsResidNumbers; track chain; let islast = $last) {
-            <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
-          </article>
-        </div>
-      </div>
-    </section>
-    <div class="chains">
-      Chain @for(chain of currentDomainsDatum()!.mappedboundaries; track chain; let islast = $last){
-      <span>{{chain}}</span>{{ islast ? '' : ',' }} }
+      </section>
     </div>
-    @if (sequenceDetails.length > 0) {
-    <div class="sequence-container">
-      @for (sequenceDetail of sequenceDetails; track sequenceDetail;) {
-      <div class="title">
-        <span class="text">{{ sequenceDetail.title }}</span>
-        <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
+    <!-- chains information display before interactive data vis -->
+    <div id="domains-sequence-viewer-tour">
+      <div class="chains">
+        <!-- if multiple chains for this domain, show dropdown to select -->
+        @if(dropdownOptions.length > 1){
+        <div class="dropdown-container">
+          <pdbc-entry-dropdown
+            [searchable]="false"
+            [searchTitle]="''"
+            [downloadable]="false"
+            [islink]="false"
+            [options]="dropdownOptions"
+            [title]="dropdownSelected"
+            (optionClickedEvent)="onDropdownSelect($event)"
+          >
+          </pdbc-entry-dropdown>
+        </div>
+        }@else if(dropdownOptions.length === 1){
+        <!-- if single chain just show text -->
+        <p>{{dropdownOptions[0].name}}</p>
+        } @else {}
       </div>
-      <div class="sequence">
-        @for (sequenceSegment of sequenceDetail.segments; track sequenceSegment) {
-        <span [style.background]="sequenceSegment.color ? sequenceSegment.color : ''">{{ sequenceSegment.sequence }}</span>
+      @if (sequenceDetails().length > 0 && currentSelectionEntityId() && backgroundAnnotation() && nonObserved() !== undefined) {
+      <div class="sequence-container">
+        @for (sequenceDetail of sequenceDetails(); track sequenceDetail; let i = $index;) {
+        <div class="title">
+          <span class="text">{{ sequenceDetail.title }}</span>
+          <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
+        </div>
+        <lib-smart-seq-viewer
+          [containerId]="'smart-seq-viewer-domains'+(i+1)"
+          class="sequence"
+          [sequence]="sequenceDetail.fullSequence"
+          [entityId]="currentSelectionEntityId()!"
+          [chainId]="currentSelectionChainId()!"
+          [backgroundDataInput]="backgroundAnnotation()"
+          [altSequences]="altSequences()"
+          [nonObserved]="nonObserved()!"
+        ></lib-smart-seq-viewer>
         }
       </div>
       }
     </div>
-    }
-    <section class="domain-charts" [ngClass]="'Domains' !== 'Domains' ? 'hidden-molstar-container' : '' ">
-      <section class="protvista-container">
-        @if(entryId() && currentProtvistaEntity() && protvistaDomainSelection()) {
+
+    @if (slowNetwork() === undefined) {
+    <div [style.width]="'100%'">
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+    </div>
+    } @else if (fastNetworkOrForceLoad()) {
+    <section class="domain-charts" [class.collapsed]="!isSidebarDisplayed()">
+      <section class="protvista-container" [class.collapsed]="!isSidebarDisplayed()">
+        @if(entryId() && currentSelectionEntityId() && protvistaDomainSelection()) {
         <pdbc-entry-pg-protvista
           [entryId]="entryId()!"
-          [entityId]="currentProtvistaEntity()!"
-          [chainId]="currentProtvistaChain()!"
+          [entityId]="currentSelectionEntityId()!"
+          [chainId]="currentSelectionChainId()!"
           [externalInteractivity]="true"
           [fixedSelectionInput]="protvistaDomainSelection()!"
         ></pdbc-entry-pg-protvista>
         }
       </section>
-      <section class="molstar-details-container">
-        @if (!molstarFirstRenderFinished()) {
+      <section class="molstar-details-container" [class.collapsed]="!isSidebarDisplayed()">
+        @if (!configForMolstar() || checkedWebGl() === undefined) {
         <div [style.width]="'100%'">
           <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
         </div>
+        } @else if (configForMolstar() && isWebGlEnabled() ) {
+        <div class="molstar-container">
+          <div #popoutWrapper>
+            <lib-pdbe-molstar #molstarComponent [id]="'domains-molstar'" [molstarConfig]="configForMolstar()"></lib-pdbe-molstar>
+          </div>
+        </div>
+        } @else if (!isWebGlEnabled()) {
+        <div class="molstar-not-loaded">
+          <img alt="WebGL not supported" src="assets/img/no_webgl.webp" />
+          <div>
+            <h4 class="heading-4">3D viewer not supported in this browser</h4>
+            <p>Your browser doesn’t support WebGL, which is required for the 3D structure.</p>
+            <a target="_blank" href="https://get.webgl.org/webgl2/enable.html">
+              Learn how to enable WebGL
+              <i class="icon icon-link icon-common"></i>
+            </a>
+          </div>
+        </div>
         }
-        <div id="domains-molstar-container" #molstarContainer class="molstar-container"></div>
       </section>
     </section>
+    } @else if (!fastNetworkOrForceLoad()) {
+    <div class="molstar-not-loaded outside">
+      <img alt="Visualisations paused" src="assets/img/paused_3d.webp" />
+      <div>
+        <h4 class="heading-4">All viewers paused due to slow connection</h4>
+        <p>This page includes multiple viewers (annotations, 3D structure).</p>
+        <p>Loading may take longer than usual.</p>
+      </div>
+      <button class="vf-button vf-button--search-pdbe" (click)="toggleMolstar()">Load viewers anyway</button>
+    </div>
+    }
     <!-- <button class="vf-button vf-button--secondary-pdbe" (click)="popupMolstar()">Popup the molstar</button> -->
   </div>
+  }
 </main>
 
 }@else{

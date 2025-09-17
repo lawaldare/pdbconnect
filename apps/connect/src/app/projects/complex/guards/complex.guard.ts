@@ -4,7 +4,6 @@ import { inject } from '@angular/core';
 import { catchError, map, of } from 'rxjs';
 import { ComplexAPIService } from '../services/complex-api.service';
 import { ComplexUtilService } from '../services/complex-util.service';
-import { environment } from '../../../../environments/environment';
 
 export const complexIdGuard: CanActivateFn = (route) => {
   const router = inject(Router);
@@ -20,8 +19,8 @@ export const complexIdGuard: CanActivateFn = (route) => {
     map((response) => {
       const complexId = util.findComplexId(response);
       if (complexId) {
-        const hostname = document.location.hostname;
-        const path = hostname === 'localhost' ? `/${complexId}` : `/complexes/${complexId}`;
+        // const hostname = document.location.hostname;
+        const path = `/complexes/${complexId}`;
         router.navigateByUrl(path);
         return false;
       } else {

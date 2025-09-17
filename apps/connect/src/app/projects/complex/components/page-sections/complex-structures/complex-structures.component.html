@@ -33,6 +33,51 @@
         <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
       </div>
     </div>
+    <div class="mobile-alternative">
+      <div class="search-box">
+        <input type="search" [formControl]="searchTerm" placeholder="Search..." />
+        <i class="icon icon-common icon-search"> </i>
+      </div>
+      @for(structure of structuresPage; track structure){
+      <article>
+        <div class="list">
+          <p class="list-item-left">PDB</p>
+          <p class="list-item-right">
+            <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + structure.pdb_id" target="_blank">
+              {{ structure.pdb_id }}
+              <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
+            </a>
+          </p>
+        </div>
+        <div class="list">
+          <p class="list-item-left">ID</p>
+          <p class="list-item-right">{{ structure.assembly_id }}</p>
+        </div>
+        <div class="list">
+          <p class="list-item-left">Title</p>
+          <p class="list-item-right">{{ structure.title }}</p>
+        </div>
+        <div class="list">
+          <p class="list-item-left">Exp. method</p>
+          <p class="list-item-right">{{ structure.experimental_method }}</p>
+        </div>
+        <div class="list">
+          <p class="list-item-left">Res. (Å)</p>
+          <p class="list-item-right">{{ structure.resolution }}</p>
+        </div>
+      </article>
+      }
+      <mat-paginator
+        class="paginator-container"
+        [length]="structuresLength()"
+        [pageSize]="structuresPageSize()"
+        [pageSizeOptions]="structuresPageSizeOptions()"
+        (page)="handlePageEvent($event)"
+        showFirstLastButtons
+        aria-label="Select page of structures"
+      >
+      </mat-paginator>
+    </div>
   </section>
 </div>
 

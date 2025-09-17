@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, DestroyRef, ElementRef, inject, input, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ComplexLigand } from '../../page-sections/complex-ligands/complex-ligands.component';
 import { AggregatedApiService } from '../../../../ligands/services/aggregated-api.service';
 import { RouterModule } from '@angular/router';
 import { GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
@@ -8,6 +7,7 @@ import { cofactorTooltip, drugTooltip, reactantTooltip } from '../../../../ligan
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Depiction } from '../../../../ligands/data-models/structure.model';
 import { ComplexUtilService } from '../../../services/complex-util.service';
+import { ComplexLigand } from '../../../models/complex-ligands.model';
 
 @Component({
   selector: 'pdbc-complex-ligand-grid',

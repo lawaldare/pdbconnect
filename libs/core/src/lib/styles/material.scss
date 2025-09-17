@@ -204,3 +204,69 @@ mat-tab-header {
 .mat-bottom-sheet-container {
   padding-top: 0 !important;
 }
+
+.driver-popover {
+  padding: 20px !important;
+  background-color: #056643 !important;
+  box-shadow:
+    0 4px 8px 0 rgb(0 0 0 / 30%),
+    0 6px 20px 0 rgb(0 0 0 / 30%) !important;
+  min-width: 420px !important;
+  width: 420px !important;
+  color: #fff !important;
+
+  .driver-popover-close-btn {
+    color: #ffffff !important;
+  }
+
+  #driver-popover-title {
+    font-family: 'IBM Plex Sans' !important;
+    font-size: 21px !important;
+    font-weight: 500 !important;
+    line-height: 27.3px;
+  }
+
+  #driver-popover-description {
+    font-family: 'IBM Plex Sans' !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    line-height: 27.2px;
+  }
+
+  footer.driver-popover-footer {
+    span.driver-popover-progress-text {
+      font-family: 'IBM Plex Sans' !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      line-height: 16.5px;
+      color: #fff !important;
+    }
+
+    span.driver-popover-navigation-btns {
+      button.driver-popover-prev-btn {
+        color: #fff !important;
+        font-family: 'IBM Plex Sans' !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+        line-height: 27.2px;
+        text-decoration: none !important;
+        text-shadow: none !important;
+        background: transparent !important;
+        border: none !important;
+      }
+
+      button.driver-popover-next-btn {
+        color: #0a5032 !important;
+        font-family: 'IBM Plex Sans' !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        line-height: 27.2px;
+        text-decoration: none !important;
+        text-shadow: none !important;
+        border: 2px solid #0a5032 !important;
+        background: #fff !important;
+        box-shadow: 4px 4px 0 0 #0a5032 !important;
+      }
+    }
+  }
+}

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ComplexLigandGridComponent } from '../../section-components/complex-ligand-grid/complex-ligand-grid.component';
@@ -6,19 +8,9 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { Store } from '@ngrx/store';
 import { ComplexSelectors } from '../../../store/complex.selectors';
-import { ComplexActions } from '../../../store/complex.actions';
-import { navComplexSections } from '../../../complex.constant';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { map } from 'rxjs';
-
-export interface ComplexLigand {
-  ligandId: string;
-  annotations: string[];
-  num_pdb_entries: number;
-  num_chains: number;
-  num_ligand_instances: number;
-  name: string;
-}
+import { ComplexLigand } from '../../../models/complex-ligands.model';
 
 @Component({
   selector: 'pdbc-complex-ligands',

@@ -1,16 +1,14 @@
-import { Component, computed, DestroyRef, effect, inject, NgZone, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
-// import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { SearchAppComponent } from '@pdbc/search-app';
 
-import { catchError, EMPTY, filter, map, mergeMap, switchMap, take, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MaterialModule } from '@pdbc/core';
+import { catchError, combineLatest, EMPTY, filter, map, mergeMap, of, retry, switchMap, take, tap } from 'rxjs';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { DataPrivacyBannerComponent, GoogleAnalyticsService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
-import { mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig } from '../../entry-constant';
-import { MainDataProcessingFacade } from './data-processing.facade';
+import { ENTRY_PAGES_LINKS, mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig, routeTabs, tourIds } from '../../entry-constant';
 import { EntryStatus, StatusCode } from '../../data-models/status.model';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { EntryMainAlternativeComponent } from '../../components/entry-main-alternative/entry-main-alternative.component';
@@ -26,19 +24,22 @@ import { EntryPageHeaderComponent } from '../../components/entry-page-header/ent
 import { environment } from '../../../../../environments/environment';
 import { MobileMainComponent } from '../mobile/mobile-main/mobile-main.component';
 import { MobileHeaderComponent } from '@pdbc/mobile-header';
-import { MolstarForEntryPages } from '../../helpers/molstar-for-entry-pages';
 import { AssembliesTabComponent } from '../../components/assemblies-tab/assemblies-tab.component';
 import { MacromoleculesTabComponent } from '../../components/macromolecules-tab/macromolecules-tab.component';
 import { LigandsTabComponent } from '../../components/ligands-tab/ligands-tab.component';
 import { DomainsTabComponent } from '../../components/domains-tab/domains-tab.component';
-import { ActionQueueService } from '../../services/action-queue.service';
-import { MolstarStateService } from '../../services/molstar-state.service';
 import Clarity from '@microsoft/clarity';
 import { NotificationComponent } from '@pdbc/notification';
 import { EntryUtilService } from '../../services/entry-util.service';
+import { LLMTabComponent } from '../../components/llm-tab/llm-tab.component';
+import { VisualisationInteractivityDirective } from '../../directives/visualisation-interactivity.directive';
+import { EntryBioschemasService } from '../../services/entry.bioschemas';
 import { ErrorPageComponent } from '../../../../error-page/error-page.component';
+import { Meta, Title } from '@angular/platform-browser';
+import { ApplicationAPIDispatcher } from '../../services/application-api-dispacher.service';
+import { SpeedTestServiceCustom } from '../../services/speed-test/speed-test-service.service';
 
-export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains';
+import { TutorialTourService } from '../../services/tutorial-tour.service';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -48,12 +49,6 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
 // 3l3t 4 assemblies
 // 1trn interesting varying domain definitions, modifications
 // 4v99 large chains
-
-/**
- * TODO:
- * - Add status pages
- * - Make <SCRIPT> tags loading Dynamic
- */
 @Component({
   selector: 'pdbc-main',
   standalone: true,
@@ -73,29 +68,77 @@ export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains'
     MobileHeaderComponent,
     AssembliesTabComponent,
     MacromoleculesTabComponent,
+    LLMTabComponent,
     LigandsTabComponent,
     DomainsTabComponent,
     NotificationComponent,
     ErrorPageComponent,
+    VisualisationInteractivityDirective,
+    DataPrivacyBannerComponent,
+    RouterModule,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
 })
 export class EntryMainPageComponent implements OnInit {
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
   private readonly route = inject(ActivatedRoute);
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
   private readonly destroyRef = inject(DestroyRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly util = inject(EntryUtilService);
+  public readonly scrollService = inject(ScrollPositionService);
+  private readonly entryBioschemasService = inject(EntryBioschemasService);
+  private readonly renderer = inject(Renderer2);
+  public readonly gAS = inject(GoogleAnalyticsService);
+  private readonly speedTest = inject(SpeedTestServiceCustom);
+  public readonly tutorialTourService = inject(TutorialTourService);
 
-  private readonly molstarVisualisation = inject(MolstarForEntryPages);
-  public readonly molstarState = inject(MolstarStateService);
-  private readonly actionQueue = inject(ActionQueueService);
+  private procAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
+  private procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  private procLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
+  private procDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomains));
+  private procLLMMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromoleculesForLLM));
+  private processedDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomainsWithMacromols));
+  public llmAnnotations = toSignal(this.globalStore.select(EntrySelectors.llmAnnotations));
+
+  public hasLoadedAssemblies = computed(() => this.procAssemblies() !== undefined);
+  public hasAssemblies = computed(() => {
+    const rows = this.procAssemblies();
+    if (rows === undefined) return false;
+    return rows.length > 0;
+  });
+
+  public hasLoadedDomains = computed(() => this.processedDomains() !== undefined);
+  public hasDomains = computed(() => {
+    const rows = this.procDomains();
+    const procWithMacro = this.processedDomains();
+    if (procWithMacro === undefined) return false;
+    if (rows === undefined) return false;
+    return rows.length > 0;
+  });
+  public hasLoadedMacromolecules = computed(() => this.procMacromolecules() !== undefined);
+  public hasMacromolecules = computed(() => {
+    const rows = this.procMacromolecules();
+    if (rows === undefined) return false;
+    return rows.length > 0;
+  });
+  public hasLoadedLigands = computed(() => this.procLigands() !== undefined);
+  public hasLigands = computed(() => {
+    const rows = this.procLigands();
+    if (rows === undefined) return false;
+    return rows.length > 0;
+  });
+  public hasLoadedAnnotations = computed(() => this.procLLMMacromolecules() !== undefined);
+  public hasAnnotations = computed(() => {
+    const rows = this.procLLMMacromolecules();
+    if (rows === undefined) return false;
+    return rows.length > 0;
+  });
 
   private readonly router = inject(Router);
-  private readonly renderer = inject(Renderer2);
-  private zone = inject(NgZone);
 
   public readonly pdbeLogoConfig = pdbeLogoConfig;
   public readonly pdbeSearchConfig = pdbeSearchConfig;
@@ -103,21 +146,20 @@ export class EntryMainPageComponent implements OnInit {
 
   public entryPageView = this.util.entryPageView;
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
-  private molstarFirstRenderStarted = signal(false);
+  public entryStatusObs$ = toObservable(this.entryStatus);
 
   private readonly entryId = signal<string>('');
+  public isDesktop = signal(false);
+  public isDesktopObs$ = toObservable(this.isDesktop);
 
-  public currentTab = this.compCommunication.currentTab;
-  public tabSwitchOrigin = this.compCommunication.tabSwitchOrigin;
-  public previousTab = 'undefined';
-
-  public doesTabHasData = signal<boolean>(true);
+  public currentTabNameObs$ = toObservable(this.compCommunication.currentTabName);
 
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
-  public selectedTab = signal<number>(0);
+  public selectedTabIndex = this.compCommunication.selectedTabIndex;
 
   public showNotificationBanner = signal<boolean>(false);
+  public molstarHeight = '480px';
 
   public readonly apiSearchConfig = {
     additionalParams: 'rows=20000&json.nl=map&wt=json',
@@ -132,76 +174,118 @@ export class EntryMainPageComponent implements OnInit {
     env: environment.production ? '' : 'dev',
   };
 
-  public preferredAssemblyData = computed(() => this.compCommunication.preferredAssemblyData());
-
   constructor() {
+    this.checkWindowWidth();
     this.route.queryParams.subscribe((params) => {
-      const routeTabs = this.dataProcessing.routeTabs;
+      // Check for screen width <= 768px
+      if (window.innerWidth <= 768) return;
+      // const routeTabs = this.routeTabs;
       const tabName = params['activeTab'] ?? 'summary';
-      this.currentTab.set(tabName);
+      this.compCommunication.currentTabName.set(tabName);
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
-      this.selectedTab.set(tabIndex);
-    });
-
-    effect(async () => {
-      // this effect runs only once because of molstarFirstRenderStarted
-      const hasProcessedMacromoleculesData = this.compCommunication.hasProcessedMacromolecules();
-      const hasProcessedLigandsData = this.compCommunication.hasProcessedLigands();
-      const hasProcessedDomainsData = this.compCommunication.hasProcessedDomains();
-
-      if (this.entryStatus().status_code !== 'REL') return;
-      if (this.molstarFirstRenderStarted()) return;
-      if (this.selectedTab() < 0) return;
-      if (!hasProcessedMacromoleculesData) return;
-      if (!hasProcessedLigandsData) return;
-      if (!hasProcessedDomainsData) return;
-      if (!this.preferredAssemblyData()) return;
-
-      const molstarElement = document.getElementById('molstar-element');
-      this.molstarVisualisation.entryId = this.entryId();
-      this.molstarVisualisation.setRenderer(this.renderer);
-      this.molstarVisualisation.molstarViewerElement = molstarElement as HTMLElement;
-
-      const macromoleculesData = this.compCommunication.processedMacromolecules;
-      const ligandsData = this.compCommunication.processedLigands;
-      const modificationsData = this.compCommunication.processedModifications;
-
-      this.actionQueue.addAction(
-        'init and check molstar',
-        async () => {
-          this.molstarFirstRenderStarted.set(true);
-          await this.molstarVisualisation.renderMolstarInitial();
-          await this.molstarVisualisation.initializeModelIdTracking();
-          // set preferred assembly id data
-          if (this.molstarVisualisation.preferredAssemblyId === undefined) {
-            const assemblyToUse = this.preferredAssemblyData()?.preferred ? this.preferredAssemblyData()?.preferred + '' : '1';
-            this.molstarVisualisation.preferredAssemblyId = assemblyToUse;
-          }
-          await this.molstarVisualisation.checkAndCreateComponents(macromoleculesData, ligandsData, modificationsData);
-          this.molstarVisualisation.initializeModelIdTracking();
-        },
-        false // unskippable
-      );
-
-      const tabName = this.currentTab();
-      this.moveAndRenderMolstar(tabName, false);
-
-      this.actionQueue.addAction(
-        'set unskippable first cycle as finished',
-        async () => {
-          this.molstarState.molstarFirstRenderFinished.set(true);
-        },
-        false // unskippable
-      );
+      this.compCommunication.updateSelectedTabIndex(tabIndex);
+      this.gAS.logEntryPageEvents('ep_desktop_tab_access', {
+        tab: tabName,
+      });
     });
   }
 
+  private testProcessingPower() {
+    const t0 = performance.now();
+    for (let i = 0; i < 1e7; i++) Math.sqrt(i);
+    const t1 = performance.now();
+    const isCPUSlow = t1 - t0 > 40;
+    this.compCommunication.checkedCPUspeed.set(true); // fallback to slow mode
+    this.compCommunication.isCPUSlow.set(isCPUSlow);
+  }
+
+  private testNetworkSpeed() {
+    const customSettings = {
+      iterations: 1, // Run 1 test for better accuracy
+      retryDelay: 500, // Wait 1 second between retries
+      file: {
+        // path: 'https://www.ebi.ac.uk/pdbe/entry-files/download/10mh.bcif.gz',
+        // size: 103402,        // 106KB in bytes
+        // path: 'https://raw.githubusercontent.com/jrquick17/ng-speed-test/02c59e4afde67c35a5ba74014b91d44b33c0b3fe/demo/src/assets/500kb.jpg',
+        // size: 500000,        // 106KB in bytes
+        path: 'https://www.ebi.ac.uk/pdbe/entry-files/download/3d12.bcif',
+        size: 401069,
+        shouldBustCache: true, // Prevent browser caching
+      },
+    };
+
+    this.speedTest.isOnline().subscribe((isOnline) => {
+      if (!isOnline) {
+        console.log('No internet connection');
+      }
+    });
+
+    this.speedTest
+      .getMbps(customSettings)
+      .pipe(
+        retry(5), // retry up to 5 times on error
+        catchError((err) => {
+          console.error('Speed test failed after retries', err);
+          this.compCommunication.slowNetwork$.next(true); // fallback to slow mode
+          return of(null); // emit a safe value
+        })
+      )
+      .subscribe({
+        next: (speed) => {
+          // speed is in Mbps
+          // console.log('Detected speed (Mbps): ', speed);
+          if (speed && speed < 7.5) this.compCommunication.slowNetwork$.next(true);
+          else this.compCommunication.slowNetwork$.next(false);
+        },
+        error: (err) => {
+          console.error('Speed test failed', err);
+          // console.log('Setting default as slow network mode');
+          this.compCommunication.slowNetwork$.next(true);
+        },
+      });
+  }
+
+  private checkWebglEnabled() {
+    const isWebGlEnabled = this.detectWebglSupport() ? true : false;
+    this.compCommunication.checkedWebGlSupport.set(true); // fallback to slow mode
+    this.compCommunication.isWebGlEnabled.set(isWebGlEnabled);
+    return isWebGlEnabled;
+  }
+
+  private detectWebglSupport(): boolean {
+    try {
+      const canvas = document.createElement('canvas');
+      // Try WebGL2 first, fallback to WebGL1
+      return (
+        !!(window.WebGL2RenderingContext && canvas.getContext('webgl2')) ||
+        !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')))
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: Event): void {
+    this.checkWindowWidth();
+  }
+
+  private checkWindowWidth(): void {
+    this.isDesktop.set(window.innerWidth > 768);
+  }
+
   ngOnInit(): void {
+    /** Setting styles dynamically for mac scrollbar compatibility */
+    document.documentElement.style.overflowX = 'hidden'; // <html>
+    document.body.style.overflowX = 'hidden'; // <body>
+    document.body.style.width = '100%';
+
     if (environment.production === false) {
       Clarity.init(environment.clarityProjectId);
     }
 
     this.showNotification();
+    this.checkWindowWidth();
     // else {
     // Clarity.init('yourProjectId'); // Replace with production ID when it's time
     // }
@@ -221,12 +305,95 @@ export class EntryMainPageComponent implements OnInit {
         mergeMap(async (status: StatusCode) => {
           if (status === 'REL') {
             this.util.setEntryStatus('SUCCESS');
-            this.dataProcessing.processInteractiveTablesData(this.entryId());
-            this.dataProcessing.getPageData();
-          } else {
+            this.buildMetaTags();
+            const isWebGlEnabled = this.checkWebglEnabled();
+
+            if (isWebGlEnabled) this.testNetworkSpeed();
+            this.testProcessingPower();
+
+            // used in multiple tabs
+            this.globalStore.dispatch(EntryActions.getSummaryData());
+            // used in citations-tab, llm-tab, summary-tab, mb-citation-tab, mb-overview-tab, entry.bioschemas
+            this.globalStore.dispatch(EntryActions.getPrimaryPublication());
+            this.entryBioschemasService.buildBioschemasJSON(this.renderer);
+          } else if (status !== 'INITIAL') {
             this.util.setEntryStatus('OTHER');
           }
           return EMPTY;
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
+
+    // detects current tab, if entry is released and we are in desktop mode
+    combineLatest([this.entryStatusObs$, this.isDesktopObs$, this.currentTabNameObs$])
+      .pipe(
+        map(([entryStatus, isDesktop, tabName]) => {
+          if (entryStatus === undefined || isDesktop === undefined || tabName === undefined) return;
+          if (entryStatus.status_code === 'REL' && isDesktop) {
+            // if released and desktop mode dispatch listeners for data status of different tabs
+            this.applicationApiDispatcher.dispatchForTab(tabName);
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({});
+  }
+
+  private isTitleAndMetaProcessed = false;
+
+  private buildMetaTags() {
+    this.globalStore
+      .select(EntrySelectors.summaryData)
+      .pipe(
+        filter((summaryData) => {
+          return summaryData !== undefined && Object.keys(summaryData).length > 0;
+        }),
+        take(1),
+        map((summaryData) => {
+          if (summaryData && this.isTitleAndMetaProcessed === false) {
+            const titleAndDescription = `PDB ${this.entryId()}: ${summaryData.entryTitle} | Protein Data Bank in Europe - PDBe`;
+            this.titleService.setTitle(titleAndDescription);
+            this.metaService.addTag({ name: 'description', content: titleAndDescription });
+            this.metaService.addTag({ name: 'author', content: 'Protein Data Bank in Europe - PDBe' });
+            this.metaService.addTag({ name: 'email', content: 'pdbegroup@gmail.com' });
+            this.metaService.addTag({ name: 'Distribution', content: 'Global' });
+            this.metaService.addTag({ name: 'Rating', content: 'General' });
+
+            this.metaService.addTag({ property: 'og:title', content: `PDB: ${this.entryId()} | Protein Data Bank in Europe - PDBe` });
+            this.metaService.addTag({ property: 'og:description', content: `Entry title: "${summaryData.entryTitle}"` });
+            this.metaService.addTag({ property: 'og:url', content: `${environment.baseUrl}pdbe//entry/pdb/1trn` });
+            this.metaService.addTag({
+              property: 'og:image',
+              content: `https://www.ebi.ac.uk/pdbe/static/entry/${this.entryId()}_deposited_chain_front_image-800x800.png`,
+            });
+            this.metaService.addTag({ property: 'og:image:alt', content: `PDBe ${this.entryId()} Structure` });
+            this.metaService.addTag({ property: 'og:type', content: 'website' });
+            this.metaService.addTag({ property: 'og:locale', content: 'en_GB' });
+            this.metaService.addTag({ property: 'og:site_name', content: 'PDBe Entry Pages' });
+
+            this.metaService.addTag({ name: 'twitter:card', content: 'summary_large_image' });
+            this.metaService.addTag({ name: 'twitter:title', content: titleAndDescription });
+            this.metaService.addTag({ name: 'twitter:description', content: titleAndDescription });
+            this.metaService.addTag({ name: 'twitter:url', content: `${environment.baseUrl}pdbe//entry/pdb/1trn` });
+            this.metaService.addTag({
+              name: 'twitter:image',
+              content: `https://www.ebi.ac.uk/pdbe/static/entry/${this.entryId()}_deposited_chain_front_image-800x800.png`,
+            });
+            this.metaService.addTag({ name: 'twitter:image:alt', content: `PDBe ${this.entryId()} Structure` });
+            this.metaService.addTag({ name: 'twitter:site', content: `PDBeurope` });
+
+            for (const linkObj of ENTRY_PAGES_LINKS) {
+              const linkEl = this.renderer.createElement('link');
+              this.renderer.setAttribute(linkEl, 'rel', linkObj.rel);
+              this.renderer.setAttribute(linkEl, 'type', linkObj.type);
+              this.renderer.setAttribute(linkEl, 'href', linkObj.href);
+              if (linkObj.sizes) this.renderer.setAttribute(linkEl, 'sizes', linkObj.sizes!);
+              if (linkObj.title) this.renderer.setAttribute(linkEl, 'title', linkObj.title!);
+              this.renderer.appendChild(document.head, linkEl);
+            }
+            this.isTitleAndMetaProcessed = true;
+          }
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -243,17 +410,14 @@ export class EntryMainPageComponent implements OnInit {
   }
 
   async selectTab(event: MatTabChangeEvent) {
-    const routeTabs = this.dataProcessing.routeTabs;
+    // const routeTabs = this.routeTabs;
     const tabName = routeTabs[event.index].id;
-    this.previousTab = `${tabName}`;
-    this.tabSwitchOrigin.set('main');
-    this.currentTab.set(tabName);
-    this.zone.onStable.pipe(take(1)).subscribe(async () => {
-      this.moveAndRenderMolstar(tabName, true);
+    this.scrollService.handleScrollPosition(this.tabGroup, event.index);
+    this.compCommunication.currentTabName.set(tabName);
+    this.gAS.logEntryPageEvents('ep_desktop_tab_switch', {
+      tab: tabName,
     });
-    setTimeout(() => {
-      this.doesTabHasData.set(this.compCommunication.getTabData(tabName)?.tableRows()?.length > 0);
-    }, 2000);
+
     this.router.navigate([], {
       queryParams: { activeTab: tabName },
       queryParamsHandling: 'merge',
@@ -262,92 +426,15 @@ export class EntryMainPageComponent implements OnInit {
     Clarity.event(`tab-access-${tabName}`);
   }
 
-  moveAndRenderMolstar(tabName: string, skippable: boolean) {
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) return;
+  public startTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.summaryTabTourSteps);
+  }
 
-    if (tabName === 'overview' || tabName === 'summary') {
-      this.actionQueue.addAction(
-        'tab change renderMolstarForOverview',
-        async () => {
-          await this.molstarState.renderMolstarForOverview(true);
-        },
-        skippable // skippable
-      );
-    } else if (tabName === 'model-quality') {
-      this.actionQueue.addAction(
-        'tab change renderMolstarForModelQuality',
-        async () => {
-          await this.molstarState.renderMolstarForModelQuality();
-        },
-        skippable // skippable
-      );
-      //
-    } else if (tabName === 'assemblies') {
-      this.actionQueue.addAction(
-        'renderMolstarForAssemblies-first-assembly',
-        async () => {
-          const assembliesData = this.compCommunication.processedAssemblies;
-          if (assembliesData.length === 0) return;
+  public openHelpModal(): void {
+    this.tutorialTourService.showHelpGuideModal.set(true);
+  }
 
-          await this.molstarState.renderMolstarForAssemblies();
-        },
-        skippable // skippable
-      );
-    } else if (tabName === 'macromolecules') {
-      this.actionQueue.addAction(
-        `renderMolstarForMacromolecules-first-macromolecule`,
-        async () => {
-          const macromoleculesData = this.compCommunication.processedMacromolecules;
-          if (macromoleculesData.length === 0) return;
-
-          // this is because we always reset to first macromolecule on tab switch (no state kept)
-          const firstMacromolecule = macromoleculesData[0];
-          const firstMolstarSelection = firstMacromolecule.additionalData.selections[0];
-
-          await this.molstarState.renderMolstarForMacromolecules(firstMacromolecule, firstMolstarSelection);
-        },
-        skippable // skippable
-      );
-    } else if (tabName === 'ligands') {
-      this.actionQueue.addAction(
-        `renderMolstarForLigands-first-ligand`,
-        async () => {
-          const ligandsData = this.compCommunication.processedLigandsAndModifications;
-          if (ligandsData.length === 0) return;
-
-          // this is because we always reset to first ligand on tab switch (no state kept)
-          const firstLigand = ligandsData[0];
-          const firstMolstarSelection = firstLigand.additionalData.selections[0];
-
-          await this.molstarState.renderMolstarForLigands(this.entryId(), firstLigand, firstMolstarSelection);
-        },
-        skippable // skippable
-      );
-    } else if (tabName === 'domains') {
-      this.actionQueue.addAction(
-        `renderMolstarForDomains-first-domain`,
-        async () => {
-          const domainsData = this.compCommunication.processedDomainsAsList;
-          if (domainsData.length === 0) return;
-
-          // this is because we always reset to first domain on tab switch (no state kept)
-          const firstDomain = domainsData[0];
-
-          await this.molstarState.renderMolstarForDomains(firstDomain);
-        },
-        skippable // skippable
-      );
-    } else {
-      this.actionQueue.addAction(
-        `moveMolstarToParent`,
-        async () => {
-          this.molstarState.molstarVisualisation.currentViewName = 'back-to-parent';
-          this.molstarState.molstarVisualisation.enforceMolstarInContainer('parent');
-          await new Promise((res) => setTimeout(res, 500)); // wait for Angular digest cycle completion
-        },
-        skippable
-      );
-    }
+  public closeHelpGuideModal(): void {
+    this.tutorialTourService.showHelpGuideModal.set(false);
   }
 }

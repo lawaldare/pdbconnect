@@ -1,3 +1,10 @@
+@if(tutorialTourService.showModelQualityTourBanner() && !isBannerCookies()){
+<section class="onboarding-tutorial-banner">
+  <img src="assets/img/light-star.svg" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startMQTabTour()">Take an on-page tour.</span></p>
+</section>
+}
+
 <div class="experiments-validation">
   <section class="left-side">
     @if (currentData() && processedData() && isHybrid()) {
@@ -6,16 +13,16 @@
       <button
         class="filter-btn"
         [ngClass]="currentData()!.generalInfo.methodName === expValdata.generalInfo.methodName ? 'active' : ''"
-        (click)="setData(expValdata)"
+        (click)="switchExperimentTypeTab(expValdata)"
       >
         {{ expValdata.generalInfo.methodName }}
       </button>
       }
     </div>
     }
-    <section class="exp-validation-info">
+    <section class="exp-validation-info" id="model-quality-data-side-tour">
       @if (currentData()) {
-      <h4 class="heading-4 title">
+      <h4 class="heading-4 title" id="test-tour-tour">
         {{ currentData()!.generalInfo.methodName }} @if (currentData()!.generalInfo.resolution) { • {{ currentData()!.generalInfo.resolution }} }
       </h4>
       <!-- ------------------- -->
@@ -207,8 +214,7 @@
           <article>
             @for (sourceOrganism of currentData()!.sampleInfo!.sourceOrganisms; track sourceOrganism) {
             <div>
-              <!-- <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">{{ sourceOrganism }}</a> -->
-              <a>
+              <a [href]="generateOrganismSearchUrl(sourceOrganism)">
                 <em>{{ sourceOrganism }}</em>
                 <i class="icon icon-common icon-search"></i>
               </a>
@@ -222,11 +228,10 @@
           <article>
             @for (expressionSystem of currentData()!.sampleInfo!.expressionSystem; track expressionSystem) {
             <div>
-              <!-- <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">{{ sourceOrganism }}</a> -->
-              <span>
+              <a [href]="generateExpSearchUrl(expressionSystem)">
                 <em>{{ expressionSystem }}</em>
-                <!-- <i class="icon icon-common icon-search"></i> -->
-              </span>
+                <i class="icon icon-common icon-search"></i>
+              </a>
             </div>
             }
           </article>
@@ -449,9 +454,6 @@
           <h5>Experimental raw data</h5>
           <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.expRawDataTooltip" />
         </div>
-        <!-- <h5 class="heading-5 entry-pgs-tooltip-hover" matTooltipClass="entry-pgs-tooltip" [matTooltip]="expRawDataTooltip" matTooltipPosition="below">
-          Experimental raw data
-        </h5> -->
         @for (table of currentData()?.experimentalRawData; track table) {
         <ag-grid-angular
           style="height: fit-content"
@@ -502,7 +504,12 @@
     </section>
   </section>
   <aside>
-    <div class="right-side" [class.sticky]="isSticky()" [style.width]="leftSideWidth">
+    <div class="right-side" [class.sticky]="isSticky()" [style.width]="leftSideWidth" id="molstar-side-tour">
+      @if (slowNetwork() === undefined || checkedWebGl() === undefined) {
+      <div [style.width]="'100%'">
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+      </div>
+      } @else if( isWebGlEnabled() && fastNetworkOrForceLoad()) {
       <div class="toolbar" [style.display]=" hasOutliers() ? '' : 'none'">
         <span>Highlight in 3D:</span>
         <div class="box">
@@ -524,12 +531,23 @@
       </div>
       <div class="container-3d">
         <div class="molstar-parent">
-          @if (!molstarFirstRenderFinished()) {
+          @if (!configForMolstar()) {
           <div [style.width]="'100%'">
             <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
           </div>
+          } @else if (configForMolstar()) {
+          <div class="molstar-container">
+            <div #popoutWrapper>
+              <lib-pdbe-molstar
+                #molstarComponent
+                [id]="'model-quality-molstar'"
+                [molstarConfig]="configForMolstar()"
+                [style.display]="processedWidth() ? '' : 'none'"
+                [height]="'100%'"
+              ></lib-pdbe-molstar>
+            </div>
+          </div>
           }
-          <div id="model-quality-molstar-container" class="molstar-container" [style.display]="processedWidth() ? '' : 'none'" #molstarContainer></div>
         </div>
       </div>
       <div class="legend">
@@ -552,6 +570,28 @@
         </div>
         }
       </div>
+      } @else if (!isWebGlEnabled()) {
+      <div class="molstar-not-loaded">
+        <img alt="WebGL not supported" src="assets/img/no_webgl.webp" />
+        <div>
+          <h4 class="heading-4">3D viewer not supported in this browser</h4>
+          <p>Your browser doesn’t support WebGL, which is required for the 3D structure.</p>
+          <a target="_blank" href="https://get.webgl.org/webgl2/enable.html">
+            Learn how to enable WebGL
+            <i class="icon icon-link icon-common"></i>
+          </a>
+        </div>
+      </div>
+      } @else if (isWebGlEnabled() && !fastNetworkOrForceLoad()) {
+      <div class="molstar-not-loaded">
+        <img alt="3D viewer paused" src="assets/img/paused_3d.webp" />
+        <div>
+          <h4 class="heading-4">3D viewer paused due to slow connection</h4>
+          <p>Loading may take longer than usual.</p>
+        </div>
+        <button class="vf-button vf-button--search-pdbe" (click)="toggleMolstar()">Load 3D anyway</button>
+      </div>
+      }
     </div>
   </aside>
 </div>

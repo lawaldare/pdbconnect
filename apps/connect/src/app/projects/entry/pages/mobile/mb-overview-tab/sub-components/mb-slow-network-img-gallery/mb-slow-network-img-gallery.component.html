@@ -1,0 +1,31 @@
+<div class="gallery">
+  <div class="gallery-container" *ngIf="images.length > 0">
+    <div class="gallery-image">
+      <!-- Arrows -->
+      <button class="arrow-left left" (click)="prev()">
+        <img src="/assets/images/mobile/left-mat-btn.svg" alt="arrow-left" />
+      </button>
+      <button class="arrow-right right" (click)="next()">
+        <img src="/assets/images/mobile/right-mat-btn.svg" alt="arrow-right" />
+      </button>
+      @if (!isImageLoaded(currentIndex())) {
+      <div class="loading-img">
+        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', width: '400px', height: '400px' }"></ngx-skeleton-loader>
+      </div>
+      }
+      <img
+        [src]="images[currentIndex()]"
+        [alt]="'image-' + currentIndex()"
+        (load)="onImageLoad(currentIndex())"
+        (error)="onImageError(currentIndex())"
+        [class.hidden]="!isImageLoaded(currentIndex())"
+      />
+    </div>
+    <!-- Dot indicators -->
+    <div class="gallery-nav">
+      <div class="dot-indicators">
+        <span *ngFor="let img of images; let i = index" [class.active]="i === currentIndex()" (click)="goTo(i)"></span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,10 +1,10 @@
 @if(entryPageView() === 'SUCCESS'){
 <section class="mobile-tabs-content">
-  @if(activeTab() === mbTabNames.Overview){
+  @if(activePage() === mbTabNames.Overview){
   <pdbc-mb-overview-tab />
-  } @if(activeTab() === mbTabNames.Molstar){
+  } @if(activePage() === mbTabNames.Molstar){
   <pdbc-mb-molstar-tab />
-  } @if(activeTab() === mbTabNames.Citation){
+  } @if(activePage() === mbTabNames.Citation){
   <pdbc-mb-citation-tab />
   }
 </section>
@@ -15,7 +15,7 @@
 } @else if(entryPageView() === 'ERROR') {
 <pdbc-error-page [asPage]="false" />
 }
-<footer>
+<!-- <footer>
   <div class="mobile-tabs">
     @for(tab of mbTabs; track tab.id){
     <div class="tab" (click)="selectFooterTab(tab.id)" [class.active]="activeTab() === tab.id">
@@ -24,4 +24,4 @@
     </div>
     }
   </div>
-</footer>
+</footer> -->

@@ -1,4 +1,5 @@
 <header>
+  @if (headerReady()) {
   <section class="title-info">
     <h1 class="heading-1">{{ entryId() }}</h1>
     <div class="information">
@@ -16,11 +17,14 @@
     </div>
   </section>
   <section class="action-buttons">
-    <pdbc-entry-dropdown [downloadable]="true" [islink]="false" [options]="downloadOptions()" title="Download files"></pdbc-entry-dropdown>
-    <pdbc-entry-dropdown [downloadable]="false" [islink]="true" [options]="viewOptions()" title="View files"></pdbc-entry-dropdown>
+    <pdbc-entry-dropdown
+      [searchTitle]="'Search all files'"
+      [downloadable]="true"
+      [islink]="false"
+      [options]="downloadOptions()"
+      title="Download files"
+    ></pdbc-entry-dropdown>
+    <pdbc-entry-dropdown [searchTitle]="'Search all files'" [downloadable]="false" [islink]="true" [options]="viewOptions()" title="View files"></pdbc-entry-dropdown>
   </section>
+  }
 </header>
-<section class="feedback">
-  <p>Tell us what you think of the new PDBe pages</p>
-  <button class="vf-button vf-button--search-pdbe" role="link" (click)="openFeedbackForm()">Share your feedback</button>
-</section>

@@ -1,18 +1,19 @@
-import { Component, computed, DestroyRef, inject, OnInit, Optional, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
-import { ValidationDataProcessingFacade } from '../../../components/model-quality-tab/validation-data.facade';
-import { MobileFacade } from '../mobile.facade';
-import { MainDataProcessingFacade } from '../../main/data-processing.facade';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { AssembliesRowData } from '../../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../../store/entry.selectors';
-import { MaterialModule } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { FormsModule } from '@angular/forms';
-import { MolstarForEntryPages } from '../../../helpers/molstar-for-entry-pages';
+import { filter, firstValueFrom, take } from 'rxjs';
+import { clearSelectionInMolstar } from '../../../helpers/molstar-helpers';
+import { MobileStateService } from '../mobile-state.service';
+import { EntryActions } from '../../../store/entry.actions';
+import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
+import { baseUrl } from '../../../entry-constant';
 
 @Component({
   selector: 'pdbc-mb-assemblies',
@@ -22,28 +23,24 @@ import { MolstarForEntryPages } from '../../../helpers/molstar-for-entry-pages';
 })
 export class MbAssembliesComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
-  private readonly destroyRef = inject(DestroyRef);
-  public readonly dataFacade = inject(ValidationDataProcessingFacade);
-  private readonly mbFacade = inject(MobileFacade);
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
-  public readonly signals = inject(ComponentCommunicationService);
+  private readonly state = inject(MobileStateService);
+  public readonly compCommunication = inject(ComponentCommunicationService);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
+  public readonly gAS = inject(GoogleAnalyticsService);
+  // public baseUrl = baseUrl;
+  public baseUrl = 'https://wwwdev.ebi.ac.uk/pdbe/';
+
   public expanded = signal<boolean>(false);
   public isChecked = signal<boolean>(false);
 
   public readonly symmetry = toSignal(this.globalStore.select(EntrySelectors.symmetry));
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
 
-  public readonly molstarVisualisation = inject(MolstarForEntryPages);
+  public readonly processedAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
 
   public readonly assemblyTableRows = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Assemblies') !== -1;
-
-    if (isLoaded && hasData) {
-      const tabData = this.signals.getTabData('Assemblies');
-      return tabData.tableRows() as AssembliesRowData[];
-    }
+    const rows = this.processedAssemblies();
+    if (rows) return rows;
     return [];
   });
 
@@ -65,7 +62,34 @@ export class MbAssembliesComponent implements OnInit {
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbAssembliesComponent>) {}
 
   async ngOnInit() {
-    await this.molstarVisualisation.renderTabsAssemblies();
+    /* 1. Fetch data */
+    // this.globalStore.dispatch(EntryActions.getSymmetry());
+    // this.globalStore.dispatch(EntryActions.getSummaryData());
+    // this.globalStore.dispatch(EntryActions.getAssemblies());
+    // this.globalStore.dispatch(EntryActions.getPreferredAssembly());
+    // this.globalStore.dispatch(EntryActions.getProcessedAssemblies());
+    this.applicationApiDispatcher.dispatchForList([
+      EntryActions.getSymmetry,
+      EntryActions.getSummaryData,
+      EntryActions.getAssemblies,
+      EntryActions.getPreferredAssembly,
+      EntryActions.getProcessedAssemblies,
+    ]);
+
+    /* 2. Draw in Molstar */
+    // Wait until first render is finished
+    await firstValueFrom(
+      this.compCommunication.mobileMolstarLoaded$.pipe(
+        filter((ready) => ready), // proceed when true
+        take(1)
+      )
+    );
+    if (this.compCommunication.mobileMolstarDisplay === 'assemblies') return;
+
+    const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
+    if (!instance) return;
+    await clearSelectionInMolstar(instance, 700);
+    this.compCommunication.mobileMolstarDisplay = 'assemblies';
   }
 
   toggleBottomsheetHeight() {
@@ -78,8 +102,7 @@ export class MbAssembliesComponent implements OnInit {
 
   public async closeBottomSheet() {
     this.bottomSheetRef.dismiss();
-    this.mbFacade.updateSelectedComponent(null);
-    this.mbFacade.updateSelectedTabName('');
-    await this.molstarVisualisation.resetMobileMolstarInitial();
+    this.state.updateSelectedComponent(null);
+    this.state.updateSelectedTabName('');
   }
 }

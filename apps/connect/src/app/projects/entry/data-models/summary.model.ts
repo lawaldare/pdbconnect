@@ -109,4 +109,5 @@ export interface ProcessedSummary {
   revisionDate: string;
   assemblies: Assembly[];
   relatedStructures: relatedStructure[];
+  experimentalMethods: string[];
 }

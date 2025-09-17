@@ -19,7 +19,7 @@ export class AuthorsStringDirective implements OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     const authors = changes['authors']?.currentValue;
 
-    const authorsArray = authors.split('.,').map((author: string) => author.trim().replace(',', ''));
+    const authorsArray = authors?.split('.,').map((author: string) => author.trim().replace(',', '')) ?? [];
 
     for (const text of authorsArray) {
       const a = this.renderer.createElement('a');

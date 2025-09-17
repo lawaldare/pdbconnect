@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { DestroyRef, inject, Injectable } from '@angular/core';
 import { ExperimentDetail } from '../../data-models/experimental-details.model';
 import { XRayRefine } from '../../data-models/x-ray-refine.model';
@@ -31,11 +33,9 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { UtilService } from '@pdbc/core';
 import { startWith, catchError, of, combineLatest, map, retry, mergeMap, Observable } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { OutlierResidues, ResidueWiseOutliersMolecule } from '../../data-models/residuewise-outliers.model';
-import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
 
-export type FlatOutlierResidue = OutlierResidues & { entity_id: number; chain_id: string; struct_asym_id: string };
-
+// TODO
+// move all logic here to store (effect, data-processing)
 @Injectable({
   providedIn: 'root',
 })

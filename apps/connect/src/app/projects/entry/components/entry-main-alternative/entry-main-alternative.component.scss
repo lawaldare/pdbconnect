@@ -18,6 +18,10 @@ main {
       width: 507px;
     }
   }
+
+  @media screen and (width <= 990px) {
+    flex-direction: column;
+  }
 }
 
 header {
@@ -49,18 +53,32 @@ header {
     font-size: 21px;
     font-weight: 500;
     line-height: 27.3px;
+    @media screen and (width <= 760px) {
+      font-size: 16px;
+    }
   }
 
   &__content {
     font-size: 16px;
     font-weight: 400;
     line-height: 27.2px;
+    @media screen and (width <= 760px) {
+      font-size: 14px;
+    }
+  }
+
+  @media screen and (width <= 990px) {
+    width: 100%;
   }
 }
 
 .summary {
   margin-top: 20px;
   width: 591px;
+
+  @media screen and (width <= 760px) {
+    width: 100%;
+  }
 
   &__content {
     display: flex;
@@ -71,8 +89,8 @@ header {
       font-size: 16px;
       font-weight: 500;
       line-height: 27.2px;
-      width: 148px;
-      min-width: 148px;
+      width: 90px;
+      min-width: 90px;
       align-self: flex-start;
     }
 
@@ -80,6 +98,10 @@ header {
       font-size: 16px;
       font-weight: 400;
       line-height: 27.2px;
+
+      a:first-child {
+        margin-right: 0 !important;
+      }
     }
   }
 }

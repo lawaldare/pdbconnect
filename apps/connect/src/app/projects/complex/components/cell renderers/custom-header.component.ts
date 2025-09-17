@@ -109,7 +109,7 @@ export class CustomHeaderComponent implements IHeaderAngularComp {
     this.isSorted.set(!!sort);
   }
 
-  refresh(params: IHeaderParams) {
+  refresh() {
     return false;
   }
 }

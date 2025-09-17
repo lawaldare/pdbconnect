@@ -20,28 +20,25 @@ import { ValidationTablesFacade } from './validation-tables.facade';
 import { AgGridAngular } from 'ag-grid-angular';
 
 import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
-import { modelQualityTooltips, OUTLIER_TYPE_LABELS } from '../../entry-constant';
+import { modelQualityTooltips, OUTLIER_TYPE_LABELS, tourIds } from '../../entry-constant';
 import { MaterialModule, UtilService } from '@pdbc/core';
-import { combineLatest, forkJoin, mergeMap, of, take } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, forkJoin, mergeMap, of, take, timer } from 'rxjs';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { Store } from '@ngrx/store';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
-import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { MolstarStateService } from '../../services/molstar-state.service';
-import { ActionQueueService } from '../../services/action-queue.service';
-import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-
-export interface ValueLabel {
-  value: string;
-  label: string;
-  shell?: string;
-}
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
+import { cameraResetInMolstar, drawSelectionInMolstar, Molstar370DefaultParams } from '../../helpers/molstar-helpers';
+import { OutlierDict, ValueLabel } from '../../store/data-processing/models/other-models';
+import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { TutorialTourService } from '../../services/tutorial-tour.service';
 
 /**
  * Examples that should be tested when looking at this component
@@ -74,29 +71,37 @@ export interface ValueLabel {
 @Component({
   selector: 'pdbc-experiments-validation',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, HelpIconWithTooltipComponent, StrucQualityGradientsComponent, NgxSkeletonLoaderModule],
+  imports: [
+    CommonModule,
+    AgGridAngular,
+    MaterialModule,
+    ReactiveFormsModule,
+    HelpIconWithTooltipComponent,
+    StrucQualityGradientsComponent,
+    NgxSkeletonLoaderModule,
+    MolstarComponent,
+  ],
   templateUrl: './experiments-validation.component.html',
   styleUrl: './experiments-validation.component.scss',
 })
 export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
+  public readonly utilService = inject(UtilService);
   public readonly renderer = inject(Renderer2);
   public readonly elementRef = inject(ElementRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   public readonly tableFacade = inject(ValidationTablesFacade);
-  private readonly actionQueue = inject(ActionQueueService);
+  private readonly compCommunication = inject(ComponentCommunicationService);
+  public readonly tutorialTourService = inject(TutorialTourService);
 
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
-
-  public readonly molstarState = inject(MolstarStateService);
   public readonly util = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
-  public readonly compCommunication = inject(ComponentCommunicationService);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly sourceOrganisms = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
   public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
+  public readonly outliersByModelId = toSignal(this.globalStore.select(EntrySelectors.outliersByModelId));
   public readonly experimentalMethod = toSignal(this.globalStore.select(EntrySelectors.experimentalMethod));
 
   // used in template
@@ -110,8 +115,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
   // tooltip constants
   public readonly modelQualityTooltips = modelQualityTooltips;
-
-  @ViewChild('molstarContainer') molstarContainer!: ElementRef;
 
   public readonly isSticky = signal<boolean>(false);
   public readonly validationTypes = [
@@ -128,7 +131,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly legends = [
     {
       label: '0 outliers',
-      color: '#A9ABAA',
+      color: '#D4D5D4',
     },
     {
       label: '1 outlier',
@@ -154,7 +157,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   // Signal for dynamic model index (default to 1)
   public modelIdx = signal<string>('1');
 
-  public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
   public molstarModelQualityRendered = signal(false);
 
   public isXray = linkedSignal({
@@ -172,8 +174,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public refinementRowData = signal<ValueLabel[]>([]);
 
   public hasOutliers = computed(() => {
-    const currentModelIdx = this.molstarState.currentModelId();
-    const allOutliers = this.molstarState.outliersByModelId();
+    const currentModelIdx = this.modelIdx();
+    const allOutliers = this.outliersByModelId();
     if (!currentModelIdx || !allOutliers) return false;
 
     const outliers = allOutliers[currentModelIdx];
@@ -182,21 +184,87 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     return true;
   });
 
+  private molstarReady = signal(false);
+  private _molstarComponent?: MolstarComponent;
+  @ViewChild('molstarComponent') set molstarComponent(ref: MolstarComponent | undefined) {
+    if (ref) {
+      this._molstarComponent = ref;
+      this.molstarReady.set(true);
+    }
+  }
+
+  public molstarFirstRenderFinished = computed(() => {
+    if (!this.molstarReady()) return false;
+    return this._molstarComponent?.firstLoadFinished() || false;
+  });
+  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+
+  public readonly slowNetwork = toSignal(
+    this.compCommunication.slowNetwork$,
+    { initialValue: undefined } // assume "unknown/loading" until we know
+  );
+
+  public readonly checkedWebGl = computed(() => this.compCommunication.checkedWebGlSupport);
+  public readonly isWebGlEnabled = computed(() => this.compCommunication.isWebGlEnabled);
+
+  public readonly fastNetworkOrForceLoad = computed(() => {
+    const isSlow = this.slowNetwork();
+    const forceLoad = this.compCommunication.forceLoad();
+    return isSlow === false || forceLoad === true;
+  });
+
+  public toggleMolstar() {
+    const forceLoad = this.compCommunication.forceLoad();
+    this.compCommunication.forceLoad.set(!forceLoad);
+  }
+
+  public readonly configForMolstar = computed(() => {
+    const entryId = this.entryId();
+    // const chainSelection = this.chainSelection();
+
+    if (!entryId) return undefined;
+
+    const configForMolstar = {
+      ...Molstar370DefaultParams,
+      moleculeId: this.entryId(),
+      bgColor: { r: 255, g: 255, b: 255 },
+      landscape: true,
+      subscribeEvents: true,
+      granularity: 'residue',
+      hideControls: true,
+      visualStyle: {
+        polymer: {
+          type: 'cartoon',
+          // 'color': 'entity-id',
+          color: 'uniform',
+          colorParams: { value: 0xd4d5d4 },
+        },
+      },
+      loadMaps: true,
+      mapSettings: { defaultView: 'selection-box' },
+      // ...(chainSelection && { 'selection': chainSelection }),
+    };
+
+    return configForMolstar;
+  });
+
+  public currentModelId$ = new BehaviorSubject<string>('1');
+  private modelIdObserver?: MutationObserver;
+
   constructor() {
     effect(() => {
-      const currentModelIdx = this.molstarState.currentModelId();
-      const allOutliers = this.molstarState.outliersByModelId();
-      const selectedValidationType = this.selectedValidationType();
-      const selectedSpecificIssueKindValue = this.selectedSpecificIssueKindValue();
+      const currentModelIdx = this.modelIdx();
+      const allOutliers = this.outliersByModelId();
 
       if (!currentModelIdx || !allOutliers) return;
+      // if (!allOutliers) return;
 
       const outliers = allOutliers[currentModelIdx];
       if (!outliers) return;
 
       const uniqueOutlierTypes = outliers.uniqueOutlierTypes;
 
-      if (this.modelIdx() !== currentModelIdx || this.specificIssueKinds().length === 0) {
+      if (this.specificIssueKinds().length === 0) {
         this.specificIssueKinds.set(
           [...uniqueOutlierTypes].map((type) => ({
             label: OUTLIER_TYPE_LABELS[type],
@@ -204,39 +272,79 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
           }))
         );
         this.selectedSpecificIssueKind.setValue(this.specificIssueKinds()[0].value);
-        this.modelIdx.set(currentModelIdx);
       }
 
       if (!this.molstarFirstRenderFinished()) return;
+      this.renderInMolstar(outliers);
+    });
+  }
+  private selectionData?: QueryParam[];
 
-      if (selectedValidationType.value !== this.molstarState.modelQualityValidationType()) {
-        this.molstarState.modelQualityValidationType.set(selectedValidationType.value);
-      }
+  private async renderInMolstar(outliers: OutlierDict) {
+    const selectedValidationType = this.selectedValidationType();
+    const selectedSpecificIssueKindValue = this.selectedSpecificIssueKindValue();
 
-      if (selectedValidationType.value !== 'issue_count') {
-        const issue = selectedSpecificIssueKindValue?.value || this.selectedSpecificIssueKind.value;
-        this.molstarState.modelQualitySpecificIssueKind.set(issue);
-      }
+    this.selectionData = [];
 
-      this.actionQueue.addAction(
-        'exp&val trigger renderMolstarForModelQuality',
-        async () => {
-          await this.molstarState.renderMolstarForModelQuality();
-        },
-        true
+    const colours: string[] = [];
+
+    const outlierList: QueryParam[][] = [];
+    if (selectedValidationType.value === 'issue_count') {
+      colours.push(...this.legends.map((legend) => legend.color));
+      outlierList.push(...[outliers.residuesWith1Outlier, outliers.residuesWith2Outliers, outliers.residuesWith3OrMoreOutliers]);
+    } else {
+      const specificIssue = selectedSpecificIssueKindValue?.value || this.selectedSpecificIssueKind.value;
+      colours.push('');
+      colours.push(this.legends.map((legend) => legend.color)[this.legends.length - 1]);
+      outlierList.push(...[outliers.molstarSelectionsByOutlierType[specificIssue]]);
+    }
+    for (let i = 0; i < outlierList.length; i++) {
+      const outlierResids = outlierList[i];
+      this.selectionData.push(
+        ...outlierResids.map((outlier) => {
+          return {
+            ...outlier,
+            color: colours[i + 1],
+            focus: false,
+          };
+        })
       );
+    }
+
+    const instance = this._molstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+    await drawSelectionInMolstar(instance, this.selectionData);
+
+    timer(500).subscribe(async () => {
+      await cameraResetInMolstar(instance);
     });
   }
 
   ngOnInit() {
+    /* 2a. Once molstar has rendered, initializes mutation observer for NMR model Id */
+    this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (finished) => {
+      if (finished) {
+        this.modelIdObserver = await initializeModelIdTracking(this.currentModelId$, this._molstarComponent?.getContainer());
+      }
+    });
+
+    /* 2b. Every time NMR model Id updates, data for smart seq viewer is refreshed */
+    this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
+      this.modelIdx.set(newModelId);
+    });
+
+    /* 3. (TODO: Refactor) Data processing for tab */
     combineLatest([
       this.globalStore.select(EntrySelectors.modelQualityXray),
       this.globalStore.select(EntrySelectors.experimentalDetails),
       this.globalStore.select(EntrySelectors.macroMolecules),
     ])
       .pipe(
+        filter(([xray, experimentalDetails, macroMolecules]) => {
+          return xray !== undefined && experimentalDetails !== undefined && macroMolecules !== undefined;
+        }),
         mergeMap(([xray, experimentalDetails, macroMolecules]) => {
-          if (experimentalDetails.length > 1) {
+          if (experimentalDetails && experimentalDetails.length > 1) {
             this.isHybrid.set(true);
           }
           const processedExpValData$ = this.dataFacade.processData().pipe(take(1));
@@ -274,22 +382,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       });
   }
 
-  @HostListener('window:scroll', ['$event'])
-  onWindowScroll() {
-    const scrollPosition = window.scrollY || document.documentElement.scrollTop;
-
-    const tabHeaderEl = document.querySelector('.mat-mdc-tab-header') as HTMLElement;
-    let threshold = 394;
-    if (tabHeaderEl) {
-      // Check if we've scrolled past the top of the tabs header
-      const offsetTop = tabHeaderEl.offsetTop;
-      const marginBottom = parseFloat(getComputedStyle(tabHeaderEl).marginBottom) || 0;
-      threshold = offsetTop + marginBottom;
-    }
-
-    this.isSticky.set(scrollPosition >= threshold);
-  }
-
   @HostListener('window:resize', ['$event'])
   onResize() {
     this.updateLeftSideWidth();
@@ -313,14 +405,36 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     this.selectedSpecificIssueKindValue.set(event.value); // trigger effect
   }
 
+  public isBannerCookies = signal(false);
+
   async ngAfterViewInit() {
     this.updateLeftSideWidth();
+    const tabHeaderEl = document.querySelector('.mat-mdc-tab-header');
+    if (!tabHeaderEl) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        this.isSticky.set(!entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+
+    observer.observe(tabHeaderEl);
+
+    const agreed = this.tutorialTourService.getCookie(tourIds.modelQuality);
+    if (agreed) {
+      this.isBannerCookies.set(true);
+    }
+  }
+
+  public startMQTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.modelQualityTabTourSteps);
   }
 
   /**
    * when a filter is clicked we changed the rendered data
    */
-  setData(data: ProcessedExperimentalDetails) {
+  switchExperimentTypeTab(data: ProcessedExperimentalDetails) {
     this.isXray.update((prev) => !prev);
     this.currentData.set(data);
   }
@@ -345,5 +459,13 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       }
     }
     return result;
+  }
+
+  public generateOrganismSearchUrl(term: string): string {
+    return this.utilService.generateQueryURL(term, 'q_organism_name');
+  }
+
+  public generateExpSearchUrl(term: string): string {
+    return this.utilService.generateQueryURL(term, 'organism_scientific_name');
   }
 }

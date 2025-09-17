@@ -65,7 +65,7 @@ export class GoTermsComponent {
       headerName: 'Name',
       field: 'name',
       cellRenderer: (params: any) =>
-        ` <a href="${environment.pdbeBaseUrl}entry/search/index?${this.goSearchCategories[params.data.category]}:${params.data.name}" target="_blank">${
+        ` <a href="${environment.baseUrl}pdbe/entry/search/index?${this.goSearchCategories[params.data.category]}:${params.data.name}" target="_blank">${
           params.data.name
         }
             <i class="icon icon-link icon-common" style="margin-left: 5px"></i>

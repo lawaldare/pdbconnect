@@ -1,35 +1,56 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild, OnInit } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild, OnInit, AfterViewInit } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { LigandsRowData, MacromoleculesRowData } from '../shared/interactive-tables/data-models-and-definitions/row-and-table.model';
-import { MolstarSelectionObj } from '@pdbe-lib/molstar-for-apps';
+import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
-import { dashboardStatLinks, INTX_NAME_COLORS } from '../../entry-constant';
-import { filter, first, firstValueFrom, map, timer } from 'rxjs';
+import { dashboardStatLinks, INTX_NAME_COLORS, tourIds } from '../../entry-constant';
+import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, map, take, tap, timer } from 'rxjs';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
-import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule, PopupWindowService, TruncateTextDirective, UtilService } from '@pdbc/core';
+import {
+  AG_Grid_Theme_Class,
+  DownloadFileTypeService,
+  GoogleAnalyticsService,
+  MaterialModule,
+  PopupWindowService,
+  ScriptLoaderService,
+  TruncateTextDirective,
+  UtilService,
+} from '@pdbc/core';
 import { CellMouseOverEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
 import { AgGridAngular } from 'ag-grid-angular';
 import { colDefs, gridOptions } from './ag-grid';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { MainDataProcessingFacade } from '../../pages/main/data-processing.facade';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { EntryActions } from '../../store/entry.actions';
-import { MolstarStateService } from '../../services/molstar-state.service';
-import { ActionQueueService } from '../../services/action-queue.service';
-import { Interaction } from '../../data-models/interaction.model';
-import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar';
+import { Interaction, InteractionFromAPI } from '../../data-models/interaction.model';
+import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
 import { Molecule } from '../../data-models/molecule.model';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
+import type { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions';
+import {
+  componentExistsInMolstar,
+  drawSelectionInMolstar,
+  Molstar370DefaultParams,
+  removeComponent,
+  showInteractivityFocusInMolstar,
+  zoomOutStructureInMolstar,
+} from '../../helpers/molstar-helpers';
+import { AggregatedApiService } from '../../../ligands/services/aggregated-api.service';
+import { Depiction } from '../../../ligands/data-models/structure.model';
+import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
+import { TutorialTourService } from '../../services/tutorial-tour.service';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -45,35 +66,44 @@ import { ToolTipComponent } from '@pdbe-lib/tool-tip';
     ReactiveFormsModule,
     TruncateTextDirective,
     ToolTipComponent,
+    MolstarComponent,
   ],
   templateUrl: './ligands-tab.component.html',
   styleUrl: './ligands-tab.component.scss',
 })
-export class LigandsTabComponent implements OnInit {
+export class LigandsTabComponent implements OnInit, AfterViewInit {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  public readonly molstarState = inject(MolstarStateService);
-  public molstarFirstRenderFinished = computed(() => this.molstarState.molstarFirstRenderFinished());
-  readonly molstarReady$ = toObservable(this.molstarFirstRenderFinished);
-
-  private readonly actionQueue = inject(ActionQueueService);
-
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
+  private readonly molstarPluginService = inject(MolstarPluginService);
+  private readonly scriptLoader = inject(ScriptLoaderService);
+  private readonly globalStore = inject(Store<EntryStoreState>);
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: MolstarSelectionObj } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
 
   public renderer = inject(Renderer2);
   public elementRef = inject(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
 
   public dashboardStatLinks = dashboardStatLinks;
+  public readonly gAS = inject(GoogleAnalyticsService);
+  private aggregatedApiService = inject(AggregatedApiService);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
-  public readonly tabDataLoaded = computed(() => this.dataProcessing.tabDataLoaded());
 
   public readonly selectedLigandIdx = toSignal(this.compCommunication.ligandSelection$);
+
+  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly interactionsObservable = this.globalStore.select(EntrySelectors.interactions);
+  public readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
+  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+  public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
+  public readonly chainToEntityId = toSignal(this.globalStore.select(EntrySelectors.macromolsChainsToEntityIds));
+  public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
+  public readonly ligandSummaryList = toSignal(this.globalStore.select(EntrySelectors.ligandPagesSummary));
+
+  public readonly tabDataLoaded = computed(() => this.processedLigands() !== undefined);
 
   public readonly util = inject(UtilService);
 
@@ -81,50 +111,122 @@ export class LigandsTabComponent implements OnInit {
 
   public initialColorCount = signal<number>(4);
 
+  public get isMobile(): boolean {
+    return window.innerWidth <= 768; // typical mobile breakpoint
+  }
+
   public readonly ligandTableRows = computed(() => {
-    const isLoaded = this.compCommunication.hasProcessedLigands();
-    if (!isLoaded) return [];
-    return this.compCommunication.processedLigandsAndModifications;
+    const rows = this.processedLigands();
+    if (rows === undefined) return [];
+    return rows;
   });
 
-  private previousDatumIdx?: number;
-  public currentLigandDatum = computed(() => {
-    const selectedIdx = this.selectedLigandIdx() ?? 0;
-    const rows = this.ligandTableRows();
-    const datum = rows[selectedIdx];
-    if (!datum) return;
+  // private previousDatumIdx?: number;
+  // public currentLigandDatum = computed(() => {
+  //   const selectedIdx = this.selectedLigandIdx() ?? 0;
+  //   const rows = this.ligandTableRows();
+  //   const datum = rows[selectedIdx];
+  //   if (!datum) return;
 
-    if (selectedIdx === this.previousDatumIdx) return datum;
-    this.previousDatumIdx = selectedIdx;
+  //   if (selectedIdx === this.previousDatumIdx) return datum;
+  //   this.previousDatumIdx = selectedIdx;
 
-    if (datum) {
-      this.triggerLigandUpdateSideEffects(datum);
-    }
-    return datum;
-  });
+  //   if (datum) {
+  //     this.triggerLigandUpdateSideEffects(datum);
+  //   }
+  //   return datum;
+  // });
+
+  public currentLigandDatum = signal<ProcessedLigandOrMod | undefined>(undefined);
 
   public selectionIdentifier = 'None';
   public selectionTypeText?: string;
 
   @ViewChild('ligandEnvContainer') ligandEnvContainer!: ElementRef;
-  private ligandEnvInstance: any;
-  private ligandEnvLoaded = false;
+  private ligandEv: any;
   public hasLigandEnv = false;
-  private ligandEnvSelection: {
-    resId: string;
-    chainId: string;
-  } = {
-    resId: '-1',
-    chainId: '-1',
-  };
 
-  private readonly globalStore = inject(Store<EntryStoreState>);
-  public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  public readonly interactionsObservable = this.globalStore.select(EntrySelectors.interactions);
-  public readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
+  private molstarReady = signal(false);
+  private _molstarComponent?: MolstarComponent;
+  @ViewChild('molstarComponent') set molstarComponent(ref: MolstarComponent | undefined) {
+    if (ref) {
+      this._molstarComponent = ref;
+      this.molstarReady.set(true);
+    }
+  }
+
+  public molstarFirstRenderFinished = computed(() => {
+    if (!this.molstarReady()) return false;
+    return this._molstarComponent?.firstLoadFinished() || false;
+  });
+  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+
+  public readonly slowNetwork = toSignal(
+    this.compCommunication.slowNetwork$,
+    { initialValue: undefined } // assume "unknown/loading" until we know
+  );
+
+  public readonly checkedWebGl = computed(() => this.compCommunication.checkedWebGlSupport);
+  public readonly isWebGlEnabled = computed(() => this.compCommunication.isWebGlEnabled);
+
+  public readonly fastNetworkOrForceLoad = computed(() => {
+    const isSlow = this.slowNetwork();
+    const forceLoad = this.compCommunication.forceLoad();
+    return isSlow === false || forceLoad === true;
+  });
+
+  public toggleMolstar() {
+    const forceLoad = this.compCommunication.forceLoad();
+    this.compCommunication.forceLoad.set(!forceLoad);
+  }
+
+  public readonly configForMolstar = computed(() => {
+    const summary = this.summaryData();
+    const entryId = this.entryId();
+
+    if (!summary || !entryId) return undefined;
+    const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
+    const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
+
+    const configForMolstar = {
+      ...Molstar370DefaultParams,
+      moleculeId: this.entryId(),
+      assemblyId: preferredAssemblyId,
+      bgColor: { r: 255, g: 255, b: 255 },
+      landscape: true,
+      subscribeEvents: true,
+      granularity: 'element',
+      // 'granularity': 'residue',
+      hideControls: true,
+      visualStyle: {
+        polymer: {
+          type: 'cartoon',
+          color: 'entity-id',
+          // 'color': 'uniform',
+          // 'colorParams': { value: Color(0xfefefe) },
+        },
+        het: {
+          type: 'ball-and-stick',
+          color: 'entity-id',
+        },
+      },
+      loadMaps: true,
+      mapSettings: { defaultView: 'selection-box' },
+    };
+
+    return configForMolstar;
+  });
+
+  private currentChainId = signal<string | undefined>(undefined);
+  private currentResidueId = signal<string | undefined>(undefined);
 
   public readonly isInitialInteractionsMoreThanOne = computed(() => {
-    const interaction = this.interactions();
+    const chainId = this.currentChainId();
+    const residueId = this.currentResidueId();
+    if (!chainId || !residueId) return false;
+    const interactionsFromApi = this.interactions();
+    if (!interactionsFromApi) return false;
+    const interaction = interactionsFromApi[chainId][residueId].interactions;
     return interaction && interaction.length > 1;
   });
 
@@ -135,11 +237,22 @@ export class LigandsTabComponent implements OnInit {
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
 
+  public interactionsRawData = signal<InteractionFromAPI | undefined>(undefined);
   public interactionsRowData = signal<Interaction[] | undefined>(undefined);
 
   public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
-  public selectionStats: { [key: string]: any } | undefined;
+  // public selectionStats: { [key: string]: any } | undefined;
+  public selectionStats = computed(() => {
+    const ligandSummaryList = this.ligandSummaryList();
+    const currentLig = this.currentLigandDatum();
+    if (ligandSummaryList && currentLig) {
+      const currentLigId = currentLig.id;
+      const datum = ligandSummaryList.find((eachLig) => eachLig.ligand_id === currentLigId);
+      if (datum) return datum as any;
+    }
+    return undefined;
+  });
 
   public ligandWeight = computed(() => {
     const datum = this.currentLigandDatum();
@@ -157,13 +270,13 @@ export class LigandsTabComponent implements OnInit {
     return undefined;
   });
 
-  @ViewChild('molstarContainer') molstarContainer!: ElementRef;
+  @ViewChild('popoutWrapper') popoutWrapper!: ElementRef;
   public readonly popService = inject(PopupWindowService);
 
   public popupMolstar(): void {
     const fullMode = this.popService.isMaximizedOnMac();
     if (!fullMode) {
-      this.popService.popOut(this.molstarContainer, 'ligand-molstar');
+      this.popService.popOut(this.popoutWrapper, 'ligand-molstar');
     }
   }
 
@@ -174,7 +287,7 @@ export class LigandsTabComponent implements OnInit {
     }));
   }
 
-  async triggerLigandUpdateSideEffects(ligand: LigandsRowData) {
+  async triggerLigandUpdateSideEffects(ligand: ProcessedLigandOrMod) {
     // update ligand dropdown options
     this.updateDropdownOptions(ligand);
 
@@ -185,11 +298,13 @@ export class LigandsTabComponent implements OnInit {
     await this.updateVisualsDisplayed(ligand);
 
     // update visualisations with data
-    await this.renderInMolstar(ligand);
-    await this.initOrRefreshLigandEnvViewer();
+    this.renderInMolstar(ligand);
+
+    // const interactionRawData = this.interactionsRawData();
+    // await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData);
   }
 
-  updateDropdownOptions(ligand: LigandsRowData) {
+  updateDropdownOptions(ligand: ProcessedLigandOrMod) {
     this.dropdownOptionsToMolstar = getLigandsDropdownOptions(ligand);
     this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
       return {
@@ -201,76 +316,168 @@ export class LigandsTabComponent implements OnInit {
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
   }
 
-  async updateVisualsDisplayed(ligand: LigandsRowData) {
+  async updateVisualsDisplayed(ligand: ProcessedLigandOrMod) {
     // modification is a special case for Ligands table in which lig env viewer is not displayed
     if (ligand.type.includes('modification') === false) {
       this.hasLigandEnv = true;
     } else {
       // if it is a ligand
       // we await destruction of current ligand env viewer (if there is one) and resetting of loading status vars
+      this.hasLigandEnv = false;
       await this.destroyLigandEnv();
     }
   }
 
-  async triggerLigandInteractionsSideEffects(interactions: Interaction[] | undefined) {
+  private selectionData?: QueryParam[];
+  private ligandSelection?: QueryParam[];
+  private residuesAsSticks?: QueryParam[];
+
+  async triggerLigandInteractionsSideEffects(rawInteractions: InteractionFromAPI | undefined) {
+    const interactions = rawInteractions ? rawInteractions.interactions : undefined;
     const ligand = this.currentLigandDatum();
     if (!ligand) return;
     if (interactions === undefined) return;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     if (!molstarSelection) return;
+    if (rawInteractions) await this.initOrRefreshLigandEnvViewer(ligand, rawInteractions);
 
     // await until molstar first render is finished
     await firstValueFrom(
-      this.molstarReady$.pipe(
+      this.molstarFirstRenderFinished$.pipe(
         filter((ready) => ready === true),
         first()
       )
     );
 
-    const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(
-      ligand,
-      molstarSelection,
-      interactions,
-      this.compCommunication.chainToEntityId()
-    );
+    const instance = this._molstarComponent?.getInstance() ?? null;
+    if (!instance) return;
 
-    const entityId = molstarSelection.entityId;
-    const chainId = molstarSelection.authChainId;
-    const residueId = molstarSelection.residues[0].authBegin;
+    if (!this.molstarPluginService.PDBeMolstarPluginClass) return;
+    await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
 
-    this.actionQueue.addAction(
-      `renderMolstarInteractions-${ligand.id}-${entityId}-${chainId}-${residueId}-${interactions.length}`,
-      async () => {
-        await this.molstarState.renderMolstarInteractions(residuesMolstarSelections, interactionsMolstarSelections);
-      },
-      false // skippable
-    );
+    const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(ligand, molstarSelection, interactions);
+
+    const pdbeInteractions = interactionsMolstarSelections as unknown as PDBeMolstarInteraction[];
+
+    const residueSelectionData: QueryParam[] = residuesMolstarSelections.map((resid) => {
+      // TODO: Once endpoint has entity_id data use it to map colours
+      return {
+        ...resid,
+        // type_symbol: ['C'],
+        representation: 'ball-and-stick',
+        // representationColor: '#d3d3d3',
+        focus: false,
+      };
+    });
+    this.residuesAsSticks = residueSelectionData;
+    this.selectionData = this.ligandSelection ? [...this.ligandSelection] : [];
+    this.selectionData.push(...residueSelectionData);
+    await this.onDrawSelectionInMolstar();
+
+    this.molstarSelectionMutex = this.molstarSelectionMutex.then(async () => {
+      await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
+      await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.loadInteractions(instance, { interactions: pdbeInteractions, structureId: 1 });
+    });
   }
 
+  private ligandEnvMutex = Promise.resolve();
+
+  constructor() {
+    this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+      await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js', true);
+      await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
+    });
+  }
+
+  public readonly tutorialTourService = inject(TutorialTourService);
+
   ngOnInit(): void {
-    this.interactionsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((interactions) => {
+    this.compCommunication.ligandSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
+      if (idx === undefined || idx === null) return;
+      const datum = this.ligandTableRows()[idx];
+      if (datum) {
+        this.currentLigandDatum.set(datum);
+        await this.triggerLigandUpdateSideEffects(datum);
+      }
+    });
+
+    this.interactionsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((allInteractions) => {
+      const chainId = this.currentChainId();
+      const residueId = this.currentResidueId();
+      if (!chainId || !residueId) return;
+      const interactionsFromApi = allInteractions[chainId][residueId];
       // only update if no search term
       if (!this.searchTerm.value) {
-        this.triggerLigandInteractionsSideEffects(interactions);
+        this.triggerLigandInteractionsSideEffects(interactionsFromApi);
       }
+      const interactions = interactionsFromApi.interactions;
+      this.interactionsRawData.set(interactionsFromApi);
       this.interactionsRowData.set(interactions);
     });
 
     this.searchTerm.valueChanges
       .pipe(
         map((searchQuery: string | null) => {
-          const interactions = this.interactions() ?? [];
-          return searchQuery ? this.filterItemsBySearchQuery(searchQuery, interactions) : interactions;
+          const chainId = this.currentChainId();
+          const residueId = this.currentResidueId();
+          if (!chainId || !residueId) return undefined;
+          const allInteractions = this.interactions();
+          if (!allInteractions || Object.keys(allInteractions).length === 0) return undefined;
+          if (Object.keys(allInteractions).indexOf(chainId) === -1) return undefined;
+          if (Object.keys(allInteractions[chainId]).indexOf(residueId) === -1) return undefined;
+          const interactionsFromApiToFilter = allInteractions[chainId][residueId] ?? [];
+          const filteredInteractions = searchQuery
+            ? this.filterItemsBySearchQuery(searchQuery, interactionsFromApiToFilter.interactions)
+            : interactionsFromApiToFilter.interactions;
+
+          const interactionsFromApiFiltered: InteractionFromAPI = {
+            ...interactionsFromApiToFilter,
+            interactions: filteredInteractions,
+          };
+          // interactionsFromApi.interactions = filteredInteractions;
+          // return searchQuery ? this.filterItemsBySearchQuery(searchQuery, interactionsFromApi.interactions) : interactionsFromApi.interactions;
+          return interactionsFromApiFiltered;
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((filtered: Interaction[] | undefined) => {
+      .subscribe((interactionsFromApiFiltered) => {
         if (this.noTermFiltering() === false) {
-          this.triggerLigandInteractionsSideEffects(filtered);
-          this.interactionsRowData.set(filtered);
+          this.interactionsRawData.set(interactionsFromApiFiltered);
+          this.triggerLigandInteractionsSideEffects(interactionsFromApiFiltered);
+          this.interactionsRowData.set(interactionsFromApiFiltered?.interactions);
         }
         this.noTermFiltering.set(false);
       });
+  }
+
+  public hasLoadedLigands = computed(() => this.processedLigands() !== undefined);
+  public hasLigands = computed(() => {
+    const rows = this.processedLigands();
+    if (rows === undefined) return false;
+    return rows.length > 0;
+  });
+
+  /**
+   * For ligand env viewer to always initialise
+   */
+  private viewReady = signal(false);
+
+  public isBannerCookies = signal(false);
+
+  ngAfterViewInit(): void {
+    this.viewReady.set(true);
+
+    setTimeout(() => {
+      const agreed = this.tutorialTourService.getCookie(tourIds.ligands);
+      this.tutorialTourService.hasLigands.set(this.hasLigands());
+      if (!agreed && this.hasLigands()) {
+        this.isBannerCookies.set(true);
+      }
+    }, 500);
+  }
+
+  public startLigandsTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.ligandsTabTourSteps);
   }
 
   public toggleColorList(): void {
@@ -278,34 +485,68 @@ export class LigandsTabComponent implements OnInit {
     this.initialColorCount.update((prev) => (prev === 4 ? colorList.length : 4));
   }
 
-  private async renderInMolstar(ligand: LigandsRowData) {
+  private async renderInMolstar(ligand: ProcessedLigandOrMod) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
-    const entityId = molstarSelection.entityId;
-    const chainId = molstarSelection.authChainId;
-    const residueId = molstarSelection.residues[0].authBegin;
+    const entityId = molstarSelection[0].entity_id;
+    const chainId = molstarSelection[0].auth_asym_id!;
+    const residueId = molstarSelection[0].auth_residue_number!;
+
+    this.currentChainId.set(chainId);
+    this.currentResidueId.set(`${residueId}`);
 
     this.noTermFiltering.set(true);
     this.searchTerm.setValue('');
+    this.interactionsRawData.set(undefined);
     this.interactionsRowData.set([]);
 
     this.globalStore.dispatch(
       EntryActions.getInteractions({
         chainId: chainId ?? '',
-        residueId: residueId,
+        residueId: `${residueId}`,
       })
     );
     if (ligand.type === 'modification') {
+      this.interactionsRawData.set(undefined);
       this.interactionsRowData.set(undefined);
     }
 
-    this.actionQueue.addAction(
-      `renderMolstarForLigands-${ligand.id}-${entityId}-${chainId}-${residueId}`,
-      async () => {
-        await this.molstarState.renderMolstarForLigands(this.entryId()!, ligand, molstarSelection);
-      },
-      false // skippable
+    // Wait until first render is finished
+    await firstValueFrom(
+      this.molstarFirstRenderFinished$.pipe(
+        filter((ready) => ready), // proceed when true
+        take(1)
+      )
     );
+
+    // Access Molstar instance
+    const instance = this._molstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+
+    const entityColor = ligand.molstarColorHex;
+    const componentQuery = ligand.type === 'modification' ? 'non-standard' : 'ligand';
+    const hasLigandsOrMod = await componentExistsInMolstar(instance, componentQuery);
+    this.ligandSelection = [
+      {
+        ...molstarSelection[0],
+        color: entityColor,
+        focus: true,
+        ...(hasLigandsOrMod === false && {
+          representation: 'ball-and-stick',
+          representationColor: ligand.molstarColorHex,
+        }),
+      },
+    ];
+    this.selectionData = [...this.ligandSelection];
+
+    const durationMs = this._molstarComponent ? 1200 : 0;
+    this.molstarSelectionMutex = this.molstarSelectionMutex.then(async () => {
+      await zoomOutStructureInMolstar(instance, durationMs);
+    });
+
+    timer(durationMs + 100).subscribe(async () => {
+      await this.onDrawSelectionInMolstar();
+    });
   }
 
   public async onDropdownSelect(event: string) {
@@ -313,44 +554,129 @@ export class LigandsTabComponent implements OnInit {
 
     // all possible rendering functions are called for a dashboard
     const ligand = this.currentLigandDatum()!;
-    await this.renderInMolstar(ligand);
-    await this.initOrRefreshLigandEnvViewer();
+    this.renderInMolstar(ligand);
+    const interactionRawData = this.interactionsRawData();
+    await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData);
   }
 
-  private async initOrRefreshLigandEnvViewer() {
-    // stop if this dashboard does not have ligand env viewer (initially false and then set in onTableRowSelection according to tabName input)
-    if (!this.hasLigandEnv) return;
-
+  private async waitForLigandEnvReady(maxWaitMs = 5000, intervalMs = 100, onlyDepiction = true): Promise<void> {
+    const start = Date.now();
+    while (Date.now() - start < maxWaitMs) {
+      const noInteractionsElement = document.querySelector('text.pdb-lig-env-svg-node');
+      noInteractionsElement?.remove();
+      if (onlyDepiction && this.ligandEv?.display?.depiction) return;
+      else if (onlyDepiction === false && this.ligandEv?.display?.nodes && this.ligandEv?.display?.links) {
+        return;
+      }
+      await new Promise((r) => setTimeout(r, intervalMs));
+    }
+    throw new Error('LigandEnv display nodes/links not ready within timeout');
+  }
+  private async initOrRefreshLigandEnvViewer(ligand: ProcessedLigandOrMod, interactionsRawData?: InteractionFromAPI) {
+    const ligandId = ligand.id;
     // ligand env viewer is only shown for ligands tab. data is retrieved from dropdown
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const resId = molstarSelection.residues[0].authBegin;
-    const chainId = molstarSelection.authChainId;
+    const resId = molstarSelection[0].auth_residue_number!;
+    const chainId = molstarSelection[0].auth_asym_id!;
 
-    // stop if ligand already loaded
-    if (this.ligandEnvSelection.resId === resId && this.ligandEnvSelection.chainId === chainId) {
-      return;
+    // this.resetLigEnvRenderer();
+    if (!this.viewReady()) {
+      await firstValueFrom(
+        toObservable(this.viewReady).pipe(
+          filter((ready) => ready),
+          take(1)
+        )
+      );
     }
-    if (this.ligandEnvLoaded === false) {
-      // on first rendering, create the element properly and set parameters
-      this.ligandEnvInstance = this.renderer.createElement('pdb-ligand-env');
-      this.renderer.setAttribute(this.ligandEnvInstance, 'pdb-id', this.entryId() ?? ''.toLowerCase());
-      this.renderer.setAttribute(this.ligandEnvInstance, 'pdb-res-id', `${resId}`);
-      this.renderer.setAttribute(this.ligandEnvInstance, 'pdb-chain-id', `${chainId}`);
-      this.renderer.setAttribute(this.ligandEnvInstance, 'environment', `development`);
-      const container = this.ligandEnvContainer.nativeElement;
-      this.renderer.appendChild(container, this.ligandEnvInstance);
-      this.ligandEnvLoaded = true;
-    } else {
-      // if rendering NOT for the first time, just set parameters
-      this.renderer.setAttribute(this.ligandEnvInstance, 'pdb-res-id', `${resId}`);
-      this.renderer.setAttribute(this.ligandEnvInstance, 'pdb-chain-id', `${chainId}`);
-      this.ligandEnvInstance.innerHTML = '';
-      this.ligandEnvInstance.connectedCallback();
+    const imageContainer = this.ligandEnvContainer.nativeElement;
+
+    this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+      const depiction = await firstValueFrom(this.aggregatedApiService.fetchDepiction(ligandId).pipe(takeUntilDestroyed(this.destroyRef)));
+
+      if (this.ligandEv) {
+        this.renderer.removeChild(imageContainer, this.ligandEv);
+        this.ligandEv = undefined;
+      }
+
+      const ligandComp = this.renderer.createElement('pdb-ligand-env');
+      // this.renderer.setAttribute(ligandComp, 'pdb-id', this.entryId() ?? ''.toLowerCase());
+      this.renderer.appendChild(imageContainer, ligandComp);
+      // ligandComp.display.initLigandInteraction = () => {
+      //   ligandComp.chainId = chainId;
+      // };
+      this.renderer.setProperty(ligandComp, 'depiction', depiction);
+      this.ligandEv = ligandComp;
+      this.ligandEv.display.initLigandInteraction = () => {
+        ligandComp.chainId = chainId;
+      };
+      this.ligandEv.pdbId = `${this.entryId()}`;
+      this.ligandEv.chainId = chainId;
+      this.ligandEv.resId = resId;
+      this.ligandEv.display.pdbId = `${this.entryId()}`;
+      this.ligandEv.display.chainId = chainId;
+      this.ligandEv.display.resId = resId;
+      await this.waitForLigandEnvReady(5000, 100, true);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      this.ligandEv.display.centerScene();
+    });
+    if (interactionsRawData) {
+      this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+        const dataToLigEnv: { [key: string]: InteractionFromAPI[] } = {};
+        const copiedInteractions = JSON.parse(JSON.stringify(interactionsRawData));
+        dataToLigEnv[`${this.entryId()}`] = [copiedInteractions];
+        this.ligandEv.display.addLigandInteractions(dataToLigEnv, false);
+
+        await this.waitForLigandEnvReady(5000, 100, false);
+        await new Promise((resolve) => setTimeout(resolve, 700));
+
+        this.ligandEv.display.centerScene();
+
+        // // configure interactivity for dynamic data load
+        const nodes = this.ligandEv.display.nodes;
+        nodes
+          .filter((datum: any) => !datum.residue.isLigand)
+          //   .on('mouseenter', null)
+          //   .on('mouseleave', null) // clear previous listeners
+          .on('mouseenter', (datum: any, i: number, g: any) => {
+            //     const g = document.querySelectorAll('.pdb-lig-env-svg-node');
+            this.ligandEv.display.nodeMouseoverEventHandler(datum, i, g);
+            const instance = this._molstarComponent?.getInstance() ?? null;
+            if (!instance) return;
+            const authorInsertionCode = datum.residue.authorInsertionCode.replaceAll(' ', '');
+            this.molstarSelectionMutex = this.molstarSelectionMutex.then(() =>
+              instance.visual.highlight({
+                data: [
+                  {
+                    auth_asym_id: datum.residue.chainId,
+                    auth_residue_number: datum.residue.authorResidueNumber,
+                    auth_ins_code_id: authorInsertionCode,
+                  },
+                ],
+              })
+            );
+          })
+          .on('mouseleave', (datum: any, i: number, g: any) => {
+            //     const g = document.querySelectorAll('.pdb-lig-env-svg-node');
+            //     this.ligandEv.display.nodeMouseoutEventHandler(datum, datum.index - 1, g);
+            this.ligandEv.display.nodeMouseoutEventHandler(datum, i, g);
+            const instance = this._molstarComponent?.getInstance() ?? null;
+            if (!instance) return;
+            this.molstarSelectionMutex = this.molstarSelectionMutex.then(() => instance.visual.clearHighlight());
+          });
+
+        // const links = this.ligandEv.display.links;
+        // links.selectAll('line').on('mouseenter', null).on('mouseleave', null); // clear previous listeners
+        // ... if there is ever a way to use Molstar to select the interactions
+        // .on('mouseenter', (ev: any, datum: any) => {
+        //   const g = document.querySelectorAll('.pdb-lig-env-svg-bond');
+        //   this.ligandEv.display.linkMouseOverEventHandler(datum, datum.index, g);
+        // })
+        // .on('mouseleave', (ev: any, datum: any) => {
+        //   const g = document.querySelectorAll('.pdb-lig-env-svg-bond');
+        //   this.ligandEv.display.linkMouseOutEventHandler(datum, datum.index, g);
+        // })
+      });
     }
-    this.ligandEnvSelection = {
-      resId: resId,
-      chainId: chainId ?? '',
-    };
   }
 
   public toggleSidebar() {
@@ -358,20 +684,18 @@ export class LigandsTabComponent implements OnInit {
   }
 
   private async destroyLigandEnv() {
-    // to destroy ligand env we use removeChild and reset all variables related to it's loading status
-    if (this.ligandEnvInstance) {
-      this.renderer.removeChild(this.elementRef.nativeElement, this.ligandEnvInstance);
-      // this.ligandEnvContainer.nativeElement.innerHTML = '';
-      this.ligandEnvInstance = undefined;
-    }
-    this.ligandEnvLoaded = false;
-    this.hasLigandEnv = false;
-    this.ligandEnvSelection = {
-      resId: '-1',
-      chainId: '-1',
-    };
-    // unfortunately needed so destruction happens syncronously
-    await firstValueFrom(timer(100));
+    this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+      // to destroy ligand env we use removeChild and reset all variables related to it's loading status
+      if (this.ligandEv) {
+        const imageContainer = this.ligandEnvContainer.nativeElement;
+        this.renderer.removeChild(imageContainer, this.ligandEv);
+        // this.ligandEnvContainer.nativeElement.innerHTML = '';
+        this.ligandEv = undefined;
+      }
+      this.hasLigandEnv = false;
+      // unfortunately needed so destruction happens syncronously
+      await firstValueFrom(timer(100));
+    });
   }
 
   private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
@@ -391,50 +715,90 @@ export class LigandsTabComponent implements OnInit {
     const data = event.api.getSelectedNodes()[0].data;
   }
 
-  onCellMouseOver(event: CellMouseOverEvent<Interaction>) {
+  private tableHoverMutex = Promise.resolve();
+  private molstarSelectionMutex = Promise.resolve();
+
+  async onDrawSelectionInMolstar() {
+    const instance = this._molstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+
+    this.molstarSelectionMutex = this.molstarSelectionMutex.then(async () => {
+      await drawSelectionInMolstar(instance, this.residuesAsSticks);
+      await drawSelectionInMolstar(instance, this.ligandSelection, undefined, true);
+      await showInteractivityFocusInMolstar(instance, this.ligandSelection);
+      await removeComponent(instance, 'structure-focus-target-sel');
+      await removeComponent(instance, 'structure-focus-surr-sel');
+    });
+    await this.molstarSelectionMutex;
+  }
+
+  async onCellMouseOver(event: CellMouseOverEvent<Interaction>) {
+    this.tableHoverMutex = this.tableHoverMutex.then(() => this._handleCellMouseOver(event));
+    await this.tableHoverMutex;
+  }
+
+  async onCellMouseOut() {
+    this.tableHoverMutex = this.tableHoverMutex.then(() => this._handleCellMouseOut());
+    await this.tableHoverMutex;
+  }
+
+  private async _handleCellMouseOver(event: CellMouseOverEvent<Interaction>) {
     const int = event.data; // fully typed
     if (!int) return;
-    // TODO: Add interactivity here somehow (Atom selections?)
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    // const entityId = molstarSelection.entityId;
-    const chainId = molstarSelection.authChainId;
-    const residueId = molstarSelection.residues[0].authBegin;
-    const resIns = molstarSelection.residues[0].authBeginIns;
 
-    const atomSelections = [
+    const instance = this._molstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const entityId = molstarSelection[0].entity_id;
+    const chainId = molstarSelection[0].auth_asym_id;
+    const residueId = molstarSelection[0].auth_residue_number!;
+    const resIns = molstarSelection[0].auth_ins_code_id;
+
+    const chainToEntityId = this.chainToEntityId();
+    if (!chainToEntityId) return;
+    const residEntityId = chainToEntityId[int.end.chain_id];
+
+    const atomSelections: QueryParam[] = [
       {
+        entity_id: `${entityId}`,
         auth_asym_id: chainId,
-        auth_seq_id: parseInt(residueId),
+        auth_seq_id: residueId,
         auth_ins_code_id: normalizeInsertionCode(resIns),
         atoms: int.ligand_atoms,
+        focus: true,
       },
       {
+        entity_id: `${residEntityId}`,
         auth_asym_id: int.end.chain_id,
         auth_seq_id: int.end.author_residue_number,
         auth_ins_code_id: normalizeInsertionCode(int.end.author_insertion_code),
         atoms: int.end.atom_names,
+        focus: true,
       },
     ];
 
-    this.actionQueue.addAction(
-      `zoomMolstarInteraction`,
-      async () => {
-        await this.molstarState.zoomMolstarInteraction(atomSelections);
-      },
-      true // skippable
-    );
+    await instance.visual.focus(atomSelections);
+    await instance.visual.highlight({ data: atomSelections });
   }
 
-  onCellMouseOut() {
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    this.actionQueue.addAction(
-      `zoomOutMolstarInteraction`,
-      async () => {
-        await this.molstarState.molstarVisualisation.focusLoci(molstarSelection, 50);
-        await this.molstarState.molstarVisualisation.clearHighlightLoci();
-      },
-      true // skippable
-    );
+  private async _handleCellMouseOut() {
+    const instance = this._molstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+
+    const ligand = this.currentLigandDatum();
+    if (!ligand) return;
+
+    if (!this.ligandSelection) return;
+
+    this.selectionData = [];
+    if (this.ligandSelection) this.selectionData.push(...this.ligandSelection);
+    if (this.residuesAsSticks) this.selectionData.push(...this.residuesAsSticks);
+
+    await instance.visual.focus(this.ligandSelection);
+    await showInteractivityFocusInMolstar(instance, this.ligandSelection);
+    await removeComponent(instance, 'structure-focus-target-sel');
+    await removeComponent(instance, 'structure-focus-surr-sel');
+    await instance.visual.clearHighlight();
   }
 
   public downloadCSV(): void {
@@ -454,22 +818,19 @@ export class LigandsTabComponent implements OnInit {
   }
 
   private getMoleculeName(chainId: string) {
-    const entityId = this.compCommunication.chainToEntityId()[chainId];
+    const chainToEntityId = this.chainToEntityId();
+    if (!chainToEntityId) return 'Undefined';
+
+    const entityId = chainToEntityId[chainId];
     if (!entityId) return 'Undefined';
 
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.compCommunication.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Macromolecules') !== -1;
-    if (!isLoaded || !hasData) return 'Undefined';
+    const macromolecules = this.macromolecules();
+    if (macromolecules === undefined || macromolecules.length === 0) return 'Undefined';
 
-    const tabData = this.compCommunication.getTabData('Macromolecules');
-    const macromolecules = tabData.tableRows() as MacromoleculesRowData[];
-    if (macromolecules.length === 0) return 'Undefined';
-
-    const mols = macromolecules.filter((mol) => mol.additionalData.molecule.entity_id === parseInt(entityId));
+    const mols = macromolecules.filter((mol) => mol.entity_id === parseInt(entityId));
     if (mols.length === 0) return 'Undefined';
 
-    return mols[0].name.molecule; //.replace(/\s/g, "_");
+    return mols[0].molecule_name[0]; //.replace(/\s/g, "_");
   }
 
   public mapSynonyms(synonyms: any[]): string {

@@ -1,0 +1,22 @@
+<h3>Macromolecules ({{macromoleculeTableRows().length}})</h3>
+@if(macromoleculeTableRows().length){ @for(row of macromoleculeTableRows().slice(0, macromoleculeInitialCount()); track row.index ){
+<section class="macro-row-card">
+  <p class="m-title">{{row.name.molecule}}</p>
+  <p class="text">{{row.name.chains.length}} chains</p>
+  @if(row.organisms.length){
+  <p class="text">Source organism:</p>
+  <p class="text">
+    @for (sourceOrganism of row.organisms; track sourceOrganism) {
+    <span>
+      <em><a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank"> {{ sourceOrganism }} </a></em>
+    </span>
+    }
+  </p>
+  }
+</section>
+
+} @if(macromoleculeTableRows().length > 5){
+<button class="vf-button vf-button--search-pdbe" (click)="toggleMacromoleculeList()">{{macromoleculeInitialCount() > 5 ? 'Hide' : 'Show'}} full list</button>
+} } @else if (loadedMacromolecules() === false) {
+<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+}

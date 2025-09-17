@@ -31,6 +31,10 @@
   }
 }
 
+.entry-page-search {
+  min-height: 63px;
+}
+
 .entry-page-logo,
 .entry-page-search {
   .container {
@@ -56,6 +60,10 @@
 }
 
 @media (width >= 768px) {
+  .entry-page-search {
+    min-height: 137.2px;
+  }
+
   .entry-page-container {
     max-width: 720px;
 

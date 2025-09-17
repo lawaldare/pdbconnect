@@ -41,7 +41,7 @@
   <p class="title">Source and domain accession</p>
   <p class="content">
     {{selectedDomain()?.resource}}
-    <a [href]="resourceUrls[selectedDomain()?.resource] + selectedDomain()?.additionalData?.accession" target="_blank">
+    <a [href]="getDomainUrl(selectedDomain())" target="_blank">
       {{selectedDomain()?.additionalData?.accession}}
       <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
     </a>
@@ -57,5 +57,14 @@
     Chain @for(chain of selectedDomain()?.additionalData?.segmentsResidNumbers; track chain; let islast = $last) { <span>{{chain.trim()}}</span>{{ islast ? '' : ','
     }} }
   </p>
-  } }
+  } } @else {
+  <header>
+    <section class="header">
+      <h2>No Domains data available</h2>
+      <div class="controls">
+        <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+      </div>
+    </section>
+  </header>
+  }
 </section>

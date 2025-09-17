@@ -8,21 +8,31 @@
   </svg>
 </button>
 <mat-menu #menu="matMenu" class="entry-dropdown-menu" yPosition="below">
+  @if (searchable()) {
   <div class="search-box" matMenuContent>
-    <input type="search" [formControl]="searchTerm" placeholder="Search all files" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()" />
+    <input
+      type="search"
+      [formControl]="searchTerm"
+      [placeholder]="searchTitle()"
+      (click)="$event.stopPropagation()"
+      (mousedown)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()"
+    />
     @if(!searchTerm.value){
     <i class="icon icon-common icon-search"></i>
     }
   </div>
-  @for(option of filteredOptions(); track index; let index = $index;){ @if(downloadable()){
-  <span class="group-name">{{option.group}}</span>
-  @for(d of option.items; track d.name){
-  <a class="url-link" mat-menu-item [href]="d.url" download (click)="optionDownloaded(d.name)">{{ d.name }}</a>
-  } } @else if(islink()) {
-  <span class="group-name">{{option.group}}</span>
-  @for(d of option.items; track d.name){
-  <a class="url-link" mat-menu-item [href]="d.url" target="_blank" (click)="optionViewed(d.name)">{{ d.name }}</a>
+  } @if (filteredOptions().length > 0) { @for (option of filteredOptions(); track index; let index = $index;) { @if (downloadable()) {
+  <span class="group-name">{{ option.group }}</span>
+  @for (d of option.items; track d.name) {
+  <a class="url-link" mat-menu-item [href]="d.url" download (click)="optionDownloaded(d.name)" (mousedown)="$event.stopPropagation()"> {{ d.name }} </a>
+  } } @else if (islink()) {
+  <span class="group-name">{{ option.group }}</span>
+  @for (d of option.items; track d.name) {
+  <a class="url-link" mat-menu-item [href]="d.url" target="_blank" (click)="optionViewed(d.name)" (mousedown)="$event.stopPropagation()"> {{ d.name }} </a>
   } } @else {
-  <span [ngClass]="{ small: issmall() }" mat-menu-item (click)="optionClicked(option.name)">{{ option.name }}</span>
-  } }
+  <span [ngClass]="{ small: issmall() }" mat-menu-item (click)="optionClicked(option.name)" (mousedown)="$event.stopPropagation()"> {{ option.name }} </span>
+  } } } @else {
+  <div class="no-items-found mat-mdc-menu-item" matMenuContent>No items found in dropdown</div>
+  }
 </mat-menu>

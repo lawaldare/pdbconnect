@@ -17,7 +17,7 @@ import { DownloadType } from '../../enums/downloadType.enum';
 })
 export class DataTypeBoxComponent implements OnInit {
   public readonly downloadService = inject(DownloadService);
-  private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
+  private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}pdbe/download/api/pdb/`;
 
   public readonly dataType = input.required<DataType>();
   public readonly downloadType = input.required<DownloadType>();

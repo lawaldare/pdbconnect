@@ -1,0 +1,35 @@
+@if(assemblyTableRows().length){
+<section class="structure-overview assembly">
+  @if(assemblyTableRows()[0].complexName){
+  <div class="info">
+    <p class="info__title">Complex name</p>
+    <p class="info__content">{{assemblyTableRows()[0].complexName}}</p>
+  </div>
+  } @if(assemblyTableRows()[0].multimericStates){
+  <div class="info">
+    <p class="info__title">Complex composition</p>
+    <p class="info__content">{{assemblyTableRows()[0].multimericStates}}</p>
+  </div>
+  } @if(assemblyTableRows()[0].complexId){
+  <div class="info">
+    <p class="info__title">PDBe complex ID</p>
+    <p class="info__content">
+      <a
+        [href]="baseUrl + 'pdbe-kb/complexes/' + assemblyTableRows()[0].complexId"
+        target="_blank"
+        (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
+        kb_website: 'complexes',
+        device_type: 'mobile',
+      })"
+        >{{assemblyTableRows()[0].complexId}}</a
+      >
+    </p>
+  </div>
+  } @if(assemblyTableRows().length > 1){
+  <p class="assembly-footer-text">
+    This entry contains {{assemblyTableRows().length - 1}} more complexes with different complex compositions. Alternative complexes are available on the desktop
+    version.
+  </p>
+  }
+</section>
+}

@@ -24,6 +24,7 @@ import { processEntityConservationDataFromAPI, processEntityConservationLineChar
   standalone: true,
   imports: [CommonModule, MatRadioButton, MaterialModule],
   templateUrl: './pv-conservation-track-block.component.html',
+  styleUrl: './pv-conservation-track-block.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ConservationTrackBlockComponent {

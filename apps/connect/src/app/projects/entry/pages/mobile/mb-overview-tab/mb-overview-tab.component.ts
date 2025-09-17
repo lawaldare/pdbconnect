@@ -2,132 +2,72 @@ import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal }
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { UtilService } from '@pdbc/core';
+import { GoogleAnalyticsService } from '@pdbc/core';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
-import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { MainDataProcessingFacade } from '../../main/data-processing.facade';
-import {
-  AssembliesRowData,
-  LigandsRowData,
-  MacromoleculesRowData,
-} from '../../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { combineLatest, filter, map } from 'rxjs';
-import { CitationDetail } from '../../../data-models/publication.model';
-import { StrucQualityGradientsComponent } from '../../../components/shared/struc-quality-gradients/struc-quality-gradients.component';
-import { DetailsDashboardFacade, MappedResidue } from '../../../components/shared/details-dashboard.facade';
 import { NavigationLink } from '../mb-citation-tab/mb-citation-tab.component';
+import { MolstarGalleryComponent } from '@pdbe-lib/molstar-for-apps';
+import { MobileFacade } from '../mobile.facade';
+import { MbStructureOverviewComponent } from './sub-components/mb-structure-overview/mb-structure-overview.component';
+import { MbPrimaryPublicationComponent } from './sub-components/mb-primary-publication/mb-primary-publication.component';
+import { MbModelQualitySummaryOverviewComponent } from './sub-components/mb-pdb-model-quality-summary/mb-pdb-model-quality-summary.component';
+import { MbOverviewAssemblyComponent } from './sub-components/mb-overview-assembly/mb-overview-assembly.component';
+import { MbOverviewMacromoleculesComponent } from './sub-components/mb-overview-macromolecules/mb-overview-macromolecules.component';
+import { MbOverviewLigandsAndModsComponent } from './sub-components/mb-overview-ligands-and-mods/mb-overview-ligands-and-mods.component';
+import { ComponentCommunicationService } from '../../../services/component-comm.service';
+import { MbSlowNetworkImageGalleryComponent } from './sub-components/mb-slow-network-img-gallery/mb-slow-network-img-gallery.component';
 
 @Component({
   selector: 'pdbc-mb-overview-tab',
-  imports: [CommonModule, NgxSkeletonLoaderModule, StrucQualityGradientsComponent],
+  imports: [
+    CommonModule,
+    NgxSkeletonLoaderModule,
+    MolstarGalleryComponent,
+    MbStructureOverviewComponent,
+    MbPrimaryPublicationComponent,
+    MbModelQualitySummaryOverviewComponent,
+    MbOverviewAssemblyComponent,
+    MbOverviewMacromoleculesComponent,
+    MbOverviewLigandsAndModsComponent,
+    MbSlowNetworkImageGalleryComponent,
+  ],
   templateUrl: './mb-overview-tab.component.html',
   styleUrls: ['../mb-citation-tab/mb-citation-tab.component.scss', './mb-overview-tab.component.scss'],
 })
 export class MbOverviewTabComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
-  public readonly util = inject(UtilService);
-  public readonly signals = inject(ComponentCommunicationService);
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
   private readonly destroyRef = inject(DestroyRef);
-  public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
+  private readonly mbFacade = inject(MobileFacade);
+  public readonly gAS = inject(GoogleAnalyticsService);
+  public readonly compCommunication = inject(ComponentCommunicationService);
 
+  // summary dispatch called in main.component.ts and used for related
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
-  public readonly organismScientificNames = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
-  public readonly qualityScores = toSignal(this.globalStore.select(EntrySelectors.summaryQualityScores));
-  public readonly resolutionValues = toSignal(this.globalStore.select(EntrySelectors.resolutionValues));
-  public readonly experimentalMethod = toSignal(this.globalStore.select(EntrySelectors.experimentalMethod));
-  public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
+  public readonly entryStoreId = toSignal(this.globalStore.select(EntrySelectors.entryId));
 
-  public readonly macromoleculeInitialCount = signal<number>(5);
-  public readonly ligandInitialCount = signal<number>(5);
+  public readonly slowNetwork = toSignal(
+    this.compCommunication.slowNetwork$,
+    { initialValue: undefined } // assume "unknown/loading" until we know
+  );
 
-  public readonly tabDataLoaded = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    return isLoaded;
-  });
+  public readonly checkedWebGl = computed(() => this.compCommunication.checkedWebGlSupport);
+  public readonly isWebGlEnabled = computed(() => this.compCommunication.isWebGlEnabled);
 
-  public readonly miniFilters = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
-    const tableDataKeys = Object.keys(tableData);
-    const hasData = tableDataKeys.indexOf('Ligands') !== -1 && tableDataKeys.indexOf('Macromolecules') !== -1;
-
-    if (isLoaded && hasData) {
-      const ligandTableData = this.signals.getTabData('Ligands');
-      const macromoleculeTableData = this.signals.getTabData('Macromolecules');
-      return [
-        ...macromoleculeTableData.tableFilters().filter((f) => !f.description.includes('All')),
-        ...ligandTableData.tableFilters().filter((f) => !f.description.includes('All')),
-      ];
-    }
-    return [];
-  });
-
-  public readonly assemblyTableRows = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Assemblies') !== -1;
-
-    if (isLoaded && hasData) {
-      const tabData = this.signals.getTabData('Assemblies');
-      return tabData.tableRows() as AssembliesRowData[];
-    }
-    return [];
-  });
-
-  public readonly macromoleculeTableRows = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Macromolecules') !== -1;
-    const mappedResiduesList = this.mappedResiduesSignal();
-
-    if (isLoaded && hasData) {
-      const tabData = this.signals.getTabData('Macromolecules');
-      const datum = tabData.tableRows() as MacromoleculesRowData[];
-      const mappedDatum = datum.map((data, index) => {
-        return {
-          ...data,
-          index,
-          mappedResidues: mappedResiduesList[index] ?? [],
-          organisms: [...new Set(data['organisms'])],
-        };
-      });
-      return mappedDatum;
-    }
-    return [];
-  });
-
-  public readonly ligandTableRows = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Ligands') !== -1;
-    if (isLoaded && hasData) {
-      const tabData = this.signals.getTabData('Ligands');
-      return tabData.tableRows() as LigandsRowData[];
-    }
-    return [];
-  });
-
-  public bestResidues = computed(() => {
-    const isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
-    const filteredIsoformsMapping: any[] = [];
-
-    isoformsMappingKeys.forEach((uniprot: string) => {
-      if (uniprot.indexOf('-') !== -1) {
-        filteredIsoformsMapping.push({ ...this.isoformsMapping()?.[uniprot], uniprot });
-      }
-    });
-
-    return filteredIsoformsMapping;
+  public readonly imageGallery = computed(() => {
+    const entryId = this.entryStoreId();
+    if (!entryId) return [];
+    // if (!this.slowNetwork()) return [];
+    return [
+      `https://www.ebi.ac.uk/pdbe/static/entry/${entryId.toLowerCase()}_deposited_chemically_distinct_molecules_front_image-800x800.png`,
+      `https://www.ebi.ac.uk/pdbe/static/entry/${entryId.toLowerCase()}_deposited_chemically_distinct_molecules_side_image-800x800.png`,
+      `https://www.ebi.ac.uk/pdbe/static/entry/${entryId.toLowerCase()}_deposited_chemically_distinct_molecules_top_image-800x800.png`,
+    ];
   });
 
   public readonly entryId = signal<string>('');
-  public readonly primaryPublication = signal<CitationDetail>({} as CitationDetail);
   public relatedEntries = signal<string[]>([]);
-  public residues = signal<MappedResidue[]>([]);
-  readonly mappedResiduesSignal = signal<MappedResidue[][]>([]);
 
   public isFullLinksDisplayed = signal<boolean>(false);
   public currentNavigationLink = signal<NavigationLink>({ id: 'structure-overview', title: 'Structure overview' });
@@ -141,9 +81,6 @@ export class MbOverviewTabComponent implements OnInit {
     { id: 'related-databases', title: 'Related databases and links' },
   ];
 
-  public initialCount = signal<number>(5);
-  public initialAuthorCount = signal<number>(5);
-
   @HostListener('window:scroll', [])
   onScroll() {
     this.navigationLinks.forEach((section) => {
@@ -155,14 +92,6 @@ export class MbOverviewTabComponent implements OnInit {
         }
       }
     });
-  }
-
-  public toggleRelatedEntriesList(): void {
-    this.initialCount.update((prev) => (prev === 5 ? this.relatedEntries().length : 5));
-  }
-
-  public toggleAuthorList(): void {
-    this.initialAuthorCount.update((prev) => (prev === 5 ? this.primaryPublication().author_list.length : 5));
   }
 
   public toggleNavigationLinks(): void {
@@ -178,45 +107,22 @@ export class MbOverviewTabComponent implements OnInit {
       const offsetTop = element.offsetTop;
       window.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
     }
-  }
-
-  public openFeedbackForm(): void {
-    window.open('https://docs.google.com/forms/d/e/1FAIpQLSe_cs6jrhCM8I7G8zsbtTQWEOjGmR07tC6aJDTrN62gyQ8e0A/viewform', '_blank');
-  }
-
-  public toggleMacromoleculeList(): void {
-    this.macromoleculeInitialCount.update((prev) => (prev === 5 ? this.macromoleculeTableRows().length : 5));
-  }
-
-  public toggleLigandList(): void {
-    this.ligandInitialCount.update((prev) => (prev === 5 ? this.ligandTableRows().length : 5));
+    this.gAS.logEntryPageEvents('ep_mobile_quick_access_click', {});
   }
 
   ngOnInit(): void {
-    combineLatest([
-      this.globalStore.select(EntrySelectors.primaryPublication).pipe(filter(Boolean)),
-      this.globalStore.select(EntrySelectors.entryId).pipe(filter(Boolean)),
-    ])
+    combineLatest([this.globalStore.select(EntrySelectors.entryId).pipe(filter(Boolean))])
       .pipe(
-        map(([primaryPublication, entryId]) => {
-          this.primaryPublication.set(primaryPublication);
+        map(([entryId]) => {
           this.entryId.set(entryId);
-
-          if (this.primaryPublication() !== undefined && this.primaryPublication().associated_entries) {
-            this.setRelatedEntries(this.primaryPublication()?.associated_entries ?? '');
-          }
         }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
   }
 
-  public generateOrganismSearchUrl(term: string): string {
-    return this.util.generateQueryURL(term, 'q_organism_name');
-  }
-
-  private setRelatedEntries(entries: string): void {
-    const mappedEntries = entries?.split(',').map((entry) => entry.trim()) ?? null;
-    this.relatedEntries.update(() => mappedEntries);
+  public openMolstarPage(): void {
+    this.mbFacade.selectPage('molstar');
+    this.gAS.logEntryPageEvents('ep_mobile_3d_btn_click', {});
   }
 }

@@ -77,7 +77,6 @@ export class InteractionTypeRendererComponent implements ICellRendererAngularCom
   }
   private generateInteractionType(types: string[]): void {
     this.value = types.map((type) => {
-      if (!INTX_NAME_STANDARDIZER[type as InteractionType]) console.log('type: ', type);
       return INTX_NAME_STANDARDIZER[type as InteractionType];
     });
   }

@@ -9,7 +9,7 @@ import { environment } from '../../../../environments/environment';
 
 export const LIGAND_STORE_STATE_KEY = 'ligand';
 
-const downloadBaseUrl = `${environment.pdbeBaseUrl}static/files/pdbechem_v2/`;
+const downloadBaseUrl = `${environment.baseUrl}pdbe/static/files/pdbechem_v2/`;
 
 const initialState: LigandStoreState = {
   ligandId: '',

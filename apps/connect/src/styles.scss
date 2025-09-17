@@ -10,17 +10,17 @@
 @import url('libs/core/src/lib/styles/button.scss');
 @import url('libs/core/src/lib/styles/material.scss');
 @import url('libs/core/src/lib/styles/ag-grid.scss');
-@import url('./assets/entry-styles/ag-grid-table-styles/all-tables.scss');
-@import url('./assets/entry-styles/topology-viewer/pdbe-topology-style.scss');
-@import url('./assets/entry-styles/lig-env-viewer/pdbe-lig-env-viewer.scss');
 
-/* @import url('./assets/entry-styles/protvista/protvista.scss'); */
-@import url('./assets/entry-styles/protvista/new-protvista.scss');
-@import url('./assets/entry-styles/extra/extra.scss');
+@import url('./assets/entry-styles/ag-grid-table-styles/table-exp-val-style.scss');
+@import url('./assets/entry-styles/extra/shared-styles.scss');
 
-@import url('https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.css');
-@import url('https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css');
-@import url('https://molstar.org/pdbe-molstar/build/pdbe-molstar.css');
+@import url('driver.js/dist/driver.css');
+
+// @import url('https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.min.css');
+// @import url('https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css');
+@import url('./assets/ebi/css/ebi-global.min.scss');
+
+/*  @import url('https://molstar.org/pdbe-molstar/build/pdbe-molstar.css'); */
 
 html,
 body {
@@ -30,7 +30,7 @@ body {
 body {
   font-family: 'IBM Plex Sans', sans-serif;
   margin: 0;
-  overflow-x: hidden;
+  overflow-x: hidden !important;
   line-height: 27.2px;
 }
 
@@ -50,10 +50,10 @@ a {
   }
 
   &:visited {
-    color: #563d82;
+    color: #3b6fb6;
 
     i {
-      color: #563d82;
+      color: #3b6fb6;
     }
   }
 
@@ -206,4 +206,81 @@ nightingale-navigation .container .brush .handle {
 
 .ngx-slider .ngx-slider-pointer::after {
   display: none !important;
+}
+
+.mobile-alternative {
+  display: none;
+
+  article {
+    padding: 8px;
+    box-shadow: 4px 5px 4px 0 rgb(0 0 0 / 25%);
+    border: 2px solid #d3cece;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    width: 99%;
+
+    .list {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      border-bottom: 1px solid #d0d0ce;
+      line-height: 22.4px;
+      color: #1a1c1a;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      a {
+        font-size: 14px;
+      }
+
+      .list-item-left {
+        width: 142px;
+        min-width: 142px;
+        padding: 8px 4px;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .search-box {
+    position: relative;
+    font-size: 16px;
+
+    input {
+      border: none;
+      border-bottom: 1px solid var(--Neutral-600, #707372);
+      box-shadow: none;
+      padding-left: 0;
+    }
+
+    .icon-search {
+      position: absolute;
+      right: 5px;
+      top: 12px;
+      color: #707372;
+    }
+  }
+
+  @media screen and (width <= 768px) {
+    display: block;
+    width: 100%;
+  }
+}
+
+section.onboarding-tutorial-banner {
+  display: flex;
+  align-items: center;
+  padding: 8px 20px;
+  background: #e7efdd;
+  margin-bottom: 12px;
+  gap: 12px;
+
+  span {
+    border-bottom-width: 1px;
+    border-bottom-style: dotted;
+    border-bottom-color: inherit;
+    cursor: pointer;
+  }
 }

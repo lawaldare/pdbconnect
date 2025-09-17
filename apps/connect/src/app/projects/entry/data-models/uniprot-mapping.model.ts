@@ -41,7 +41,7 @@ export interface UniProtMappingObj {
 
 export interface UniProtResidMapping {
   author_insertion_code: string;
-  author_residue_number: number;
+  author_residue_number: number | null;
   residue_number: number;
 }
 

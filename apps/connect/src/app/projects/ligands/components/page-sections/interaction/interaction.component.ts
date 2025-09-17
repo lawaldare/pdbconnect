@@ -41,6 +41,7 @@ export class InteractionComponent implements AfterViewInit {
   private readonly globalStore = inject(Store<LigandStoreState>);
 
   public interaction!: PDBIntxData; // eslint-disable-line @typescript-eslint/no-explicit-any
+  public atomNumber!: number;
 
   public ligandInstances = signal(0);
   public pdbstructures = signal(0);
@@ -59,6 +60,7 @@ export class InteractionComponent implements AfterViewInit {
           return forkJoin([this.aggregatedApiService.fetchDepiction(this.ligandId()), this.globalStore.select(LigandSelectors.navItems).pipe(take(1))]);
         }),
         mergeMap(([depiction, navItems]) => {
+          this.atomNumber = depiction.atoms.length;
           this.generateStructureStatistics();
           this.navItems.update(() => navItems);
           const imageContainer = this.imageContainer.nativeElement;
@@ -86,8 +88,9 @@ export class InteractionComponent implements AfterViewInit {
       .subscribe();
   }
 
-  public changeLigandEnvironmentFilters(filterString: string) {
+  public async changeLigandEnvironmentFilters(filterString: string) {
     this.renderer.setAttribute(this.ligandEv, 'contact-type', filterString);
+    await this.patchInteractivity();
   }
 
   private updateWhenNoInteraction(): void {
@@ -107,12 +110,47 @@ export class InteractionComponent implements AfterViewInit {
     this.googleAnalyticsService.logClickEvents('download_interaction', 'Interations', 'download_all_interaction', 'all_interactions');
   }
 
-  private createLigandEnvironment(container: ElementRef, prop: Depiction): void {
+  private async createLigandEnvironment(container: ElementRef, prop: Depiction): Promise<void> {
     const ligand = this.renderer.createElement('pdb-ligand-env');
     this.renderer.appendChild(container, ligand);
     this.renderer.setProperty(ligand, 'id', 'ligand-int-env');
     this.renderer.setProperty(ligand, 'depiction', prop);
     this.ligandEv = ligand;
+
+    // fix interactivity given d3.js version
+    await this.patchInteractivity();
+  }
+
+  private async patchInteractivity() {
+    await this.waitForLigandEnvReady(5000, 100, false);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const weights = this.ligandEv.display.depiction.weight;
+    const weightsCircles = weights.selectAll('circle');
+    weightsCircles
+      .on('mouseenter', null)
+      .on('mouseleave', null) // clear previous listeners
+      .on('mouseenter', (_ev: any, datum: any) => {
+        const datumIdx = weightsCircles.data().indexOf(datum);
+        const circle = weightsCircles.nodes()[datumIdx];
+        this.ligandEv.display.depiction.atomMouseEnterEventHandler(datum, circle, true);
+      })
+      .on('mouseleave', (_ev: any, _datum: any) => {
+        this.ligandEv.display.depiction.atomMouseLeaveEventHandler(true);
+      });
+  }
+
+  private async waitForLigandEnvReady(maxWaitMs = 5000, intervalMs = 100, onlyDepiction = true): Promise<void> {
+    const start = Date.now();
+    while (Date.now() - start < maxWaitMs) {
+      const noInteractionsElement = document.querySelector('text.pdb-lig-env-svg-node');
+      noInteractionsElement?.remove();
+      if (onlyDepiction && this.ligandEv?.display?.depiction) return;
+      else if (onlyDepiction === false && this.ligandEv?.display?.depiction && this.ligandEv?.display?.depiction?.weight) {
+        return;
+      }
+      await new Promise((r) => setTimeout(r, intervalMs));
+    }
+    throw new Error('LigandEnv display nodes/links not ready within timeout');
   }
 
   public toggleAtomNames(): void {

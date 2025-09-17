@@ -1,3 +1,5 @@
+/* eslint-disable @angular-eslint/prefer-inject */
+
 import { AfterViewInit, Component, ElementRef, Inject, Renderer2, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { XMLImageRendererService, MaterialModule } from '@pdbc/core';
@@ -46,6 +48,13 @@ export class CitationXmlImagesComponent implements AfterViewInit {
         },
       });
       main.sync(thumbnails);
+      // Scroll to top on slide change
+      main.on('moved', () => {
+        const activeSlide = document.querySelector('.splide__slide.is-active');
+        if (activeSlide) {
+          activeSlide.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
       main.mount();
       thumbnails.mount();
     }, 500);

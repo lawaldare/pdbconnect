@@ -21,10 +21,13 @@ const initialState: EntryStoreState = {
   entryId: '',
   summaryData: undefined,
   macroMolecules: undefined,
-  boundLigands: [],
+  macromolsDescriptions: undefined,
+  macromolsChainsToEntityIds: undefined,
+  boundLigands: undefined,
+  boundMolecules: undefined,
   organismScientificNames: [],
   hasRNA: false,
-  experimentalDetails: [],
+  experimentalDetails: undefined,
   resolutionValues: [],
   experimentalMethod: '',
   uniprotMapping: undefined,
@@ -56,21 +59,42 @@ const initialState: EntryStoreState = {
   experimentRawDataEMPIAR: [],
   experimentRawDataPDB: [],
   entryStatus: { ...entryStatusDefault },
-  interactions: [],
+  interactions: {},
+  residueListing: [],
   symmetry: [],
   polymerCoverage: undefined,
   ligandMonomers: undefined,
-  residueWiseOutliers: [],
-  entityPvUniprot: {} as APITrackData,
-  entityPvChains: {} as APITrackData,
-  entityPvDomains: {} as APITrackData,
-  entityPvRfam: {} as APITrackData,
-  entityPvSecondaryStructure: {} as APITrackData,
-  entityPvBindingSites: {} as APITrackData,
-  entityPvInterfaces: {} as APITrackData,
-  entityPvAnnotations: {} as APITrackData,
-  entityPvConservation: {} as APIConservationData,
-  entityPvVariation: {} as APIVariationData,
+  residueWiseOutliers: undefined,
+  outliersByModelId: undefined,
+  procAssembliesCards: undefined,
+  procAssembliesFilters: undefined,
+  processedAssemblies: undefined,
+  procMacromoleculesCards: undefined,
+  procMacromoleculesFilters: undefined,
+  processedMacromolecules: undefined,
+  procLigandsCards: undefined,
+  procLigandsFilters: undefined,
+  processedLigands: undefined,
+  procDomainsCards: undefined,
+  procDomainsFilters: undefined,
+  processedDomains: undefined,
+  procLLMCards: undefined,
+  processedDomainsWithMacromols: undefined,
+  processedMacromoleculesForLLM: undefined,
+  processedPrefAssembly: undefined,
+  ligandPagesSummary: undefined,
+  complexPagesSummary: undefined,
+  entityPvUniprot: {},
+  entityPvChains: {},
+  entityPvDomains: {},
+  entityPvRfam: {},
+  entityPvSecondaryStructure: {},
+  entityPvBindingSites: {},
+  entityPvInterfaces: {},
+  entityPvAnnotations: {},
+  entityPvConservation: {},
+  entityPvVariation: {},
+  llmAnnotations: undefined,
 };
 
 export const entryReducer = createReducer(
@@ -87,9 +111,28 @@ export const entryReducer = createReducer(
     ...state,
     symmetry: action.symmetry,
   })),
-  on(EntryActions.getInteractionsSuccess, (state, action) => ({
+  on(EntryActions.getInteractionsSuccess, (state, action) => {
+    const prevInteractions = state.interactions ?? {};
+
+    const prevChain = prevInteractions[action.chainId] ?? {};
+    const updatedChain = {
+      ...prevChain,
+      [action.residueId]: action.interactions,
+    };
+
+    const updatedInteractions = {
+      ...prevInteractions,
+      [action.chainId]: updatedChain,
+    };
+
+    return {
+      ...state,
+      interactions: updatedInteractions,
+    };
+  }),
+  on(EntryActions.getResidueListingSuccess, (state, action) => ({
     ...state,
-    interactions: action.interactions,
+    residueListing: action.residueListing,
   })),
   on(EntryActions.getPfamMappingSuccess, (state, action) => ({
     ...state,
@@ -102,6 +145,10 @@ export const entryReducer = createReducer(
   on(EntryActions.getECMappingSuccess, (state, action) => ({
     ...state,
     ecMapping: action.ecMapping,
+  })),
+  on(EntryActions.getLLMAnnotationsSuccess, (state, action) => ({
+    ...state,
+    llmAnnotations: action.llmAnnotations,
   })),
   on(EntryActions.getSummaryDataSuccess, (state, action) => ({
     ...state,
@@ -161,6 +208,8 @@ export const entryReducer = createReducer(
     macroMolecules: action.data.macroMolecules,
     boundLigands: action.data.boundLigands,
     organismScientificNames: action.data.organismScientificNames,
+    macromolsDescriptions: action.data.macromolsDescriptions,
+    macromolsChainsToEntityIds: action.data.macromolsChainsToEntityIds,
     hasRNA: action.data.hasRNA,
   })),
   on(EntryActions.getExperimentSuccess, (state, action) => ({
@@ -171,9 +220,37 @@ export const entryReducer = createReducer(
   })),
   on(EntryActions.getUniprotMappingSuccess, (state, action) => ({
     ...state,
-    uniprotMapping: action.data.uniprotMapping,
-    proteinPagesSummaryByUniProtIds: action.data.proteinPagesSummaryByUniProtIds,
+    uniprotMapping: action.uniprotMapping,
   })),
+  // on(EntryActions.getUniprotSummarySuccess, (state, action) => ({
+  //   ...state,
+  //   proteinPagesSummaryByUniProtIds: action.unpSummaryData,
+  // })),
+  on(EntryActions.getBoundMoleculesSuccess, (state, action) => ({
+    ...state,
+    boundMolecules: action.boundMolecules,
+  })),
+  on(EntryActions.getLigandSummarySuccess, (state, action) => ({
+    ...state,
+    ligandPagesSummary: action.ligandPagesSummary,
+  })),
+  on(EntryActions.getComplexSummarySuccess, (state, action) => ({
+    ...state,
+    complexPagesSummary: action.complexPagesSummary,
+  })),
+  on(EntryActions.getUniprotSummarySuccess, (state, action) => {
+    const prevData = state.proteinPagesSummaryByUniProtIds ?? {};
+
+    const updatedData = {
+      ...prevData,
+      [action.uniprotId]: action.unpSummaryData,
+    };
+
+    return {
+      ...state,
+      proteinPagesSummaryByUniProtIds: updatedData,
+    };
+  }),
   on(EntryActions.getValidationXrayRefineSuccess, (state, action) => ({
     ...state,
     validationXRayRefine: action.validationXRayRefine,
@@ -221,59 +298,214 @@ export const entryReducer = createReducer(
   })),
   on(EntryActions.getEntryResidueWiseOutliersSuccess, (state, action) => ({
     ...state,
-    residueWiseOutliers: action.residueWiseOutliers,
+    residueWiseOutliers: action.data.residueWiseOutliers,
+    outliersByModelId: action.data.outliersByModelId,
   })),
-  on(EntryActions.getEntryProtvistaUniprotMappingSuccess, (state, action) => ({
+  on(EntryActions.getProcessedAssembliesSuccess, (state, action) => ({
     ...state,
-    entityPvUniprot: action.entityPvUniprot,
+    processedAssemblies: action.processedAssemblies,
   })),
-  on(EntryActions.getEntryProtvistaChainsSuccess, (state, action) => ({
+  on(EntryActions.getProcAssembliesFiltersSuccess, (state, action) => ({
     ...state,
-    entityPvChains: action.entityPvChains,
+    procAssembliesFilters: action.procAssembliesFilters,
   })),
-  on(EntryActions.getEntryProtvistaDomainsSuccess, (state, action) => ({
+  on(EntryActions.getProcAssembliesCardsSuccess, (state, action) => ({
     ...state,
-    entityPvDomains: action.entityPvDomains,
+    procAssembliesCards: action.procAssembliesCards,
   })),
-  on(EntryActions.getEntryProtvistaRfamSuccess, (state, action) => ({
+  on(EntryActions.getProcessedMacromoleculesSuccess, (state, action) => ({
     ...state,
-    entityPvRfam: action.entityPvRfam,
+    processedMacromolecules: action.processedMacromolecules,
   })),
-  on(EntryActions.getEntryProtvistaSecondaryStructureSuccess, (state, action) => ({
+  on(EntryActions.getProcMacromoleculesFiltersSuccess, (state, action) => ({
     ...state,
-    entityPvSecondaryStructure: action.entityPvSecondaryStructure,
+    procMacromoleculesFilters: action.procMacromoleculesFilters,
   })),
-  on(EntryActions.getEntryProtvistaBindingSitesSuccess, (state, action) => ({
+  on(EntryActions.getProcMacromoleculesCardsSuccess, (state, action) => ({
     ...state,
-    entityPvBindingSites: action.entityPvBindingSites,
+    procMacromoleculesCards: action.procMacromoleculesCards,
   })),
-  on(EntryActions.getEntryProtvistaInterfacesSuccess, (state, action) => ({
+  on(EntryActions.getProcessedLigandsSuccess, (state, action) => ({
     ...state,
-    entityPvInterfaces: action.entityPvInterfaces,
+    processedLigands: action.processedLigands,
   })),
-  on(EntryActions.getEntryProtvistaAnnotationsSuccess, (state, action) => ({
+  on(EntryActions.getProcLigandsFiltersSuccess, (state, action) => ({
     ...state,
-    entityPvAnnotations: action.entityPvAnnotations,
+    procLigandsFilters: action.procLigandsFilters,
   })),
-  on(EntryActions.getEntryProtvistaConservationSuccess, (state, action) => ({
+  on(EntryActions.getProcLigandsCardsSuccess, (state, action) => ({
     ...state,
-    entityPvConservation: action.entityPvConservation,
+    procLigandsCards: action.procLigandsCards,
   })),
-  on(EntryActions.getEntryProtvistaVariationSuccess, (state, action) => ({
+  on(EntryActions.getProcessedDomainsSuccess, (state, action) => ({
     ...state,
-    entityPvVariation: action.entityPvVariation,
+    processedDomains: action.processedDomains,
   })),
+  on(EntryActions.getProcDomainsFiltersSuccess, (state, action) => ({
+    ...state,
+    procDomainsFilters: action.procDomainsFilters,
+  })),
+  on(EntryActions.getProcDomainsCardsSuccess, (state, action) => ({
+    ...state,
+    procDomainsCards: action.procDomainsCards,
+  })),
+  on(EntryActions.getProcessedMacromolsForLLMSuccess, (state, action) => ({
+    ...state,
+    processedMacromoleculesForLLM: action.processedMacromoleculesForLLM,
+  })),
+  on(EntryActions.getProcLLMCardsSuccess, (state, action) => ({
+    ...state,
+    procLLMCards: action.procLLMCards,
+  })),
+  on(EntryActions.getProcessedDomainsWithMacromolsSuccess, (state, action) => ({
+    ...state,
+    processedDomainsWithMacromols: action.processedDomainsWithMacromols,
+  })),
+  on(EntryActions.getProcessedPrefAssemblySuccess, (state, action) => ({
+    ...state,
+    processedPrefAssembly: action.processedPrefAssembly,
+  })),
+  on(EntryActions.getEntryProtvistaUniprotMappingSuccess, (state, action) => {
+    const prevTrackData = state.entityPvUniprot ?? {};
+
+    const updatedTrackData = {
+      ...prevTrackData,
+      [action.entityId]: action.entityPvUniprot,
+    };
+
+    return {
+      ...state,
+      entityPvUniprot: updatedTrackData,
+    };
+  }),
+  on(EntryActions.getEntryProtvistaChainsSuccess, (state, action) => {
+    const prevTrackData = state.entityPvChains ?? {};
+
+    const updatedTrackData = {
+      ...prevTrackData,
+      [action.entityId]: action.entityPvChains,
+    };
+
+    return {
+      ...state,
+      entityPvChains: updatedTrackData,
+    };
+  }),
+  on(EntryActions.getEntryProtvistaDomainsSuccess, (state, action) => {
+    const prevTrackData = state.entityPvDomains ?? {};
+
+    const updatedTrackData = {
+      ...prevTrackData,
+      [action.entityId]: action.entityPvDomains,
+    };
+
+    return {
+      ...state,
+      entityPvDomains: updatedTrackData,
+    };
+  }),
+  on(EntryActions.getEntryProtvistaRfamSuccess, (state, action) => {
+    const prevTrackData = state.entityPvRfam ?? {};
+
+    const updatedTrackData = {
+      ...prevTrackData,
+      [action.entityId]: action.entityPvRfam,
+    };
+
+    return {
+      ...state,
+      entityPvRfam: updatedTrackData,
+    };
+  }),
+  on(EntryActions.getEntryProtvistaSecondaryStructureSuccess, (state, action) => {
+    const prevTrackData = state.entityPvSecondaryStructure ?? {};
+
+    const updatedTrackData = {
+      ...prevTrackData,
+      [action.entityId]: action.entityPvSecondaryStructure,
+    };
+
+    return {
+      ...state,
+      entityPvSecondaryStructure: updatedTrackData,
+    };
+  }),
+  on(EntryActions.getEntryProtvistaBindingSitesSuccess, (state, action) => {
+    const prevTrackData = state.entityPvBindingSites ?? {};
+
+    const updatedTrackData = {
+      ...prevTrackData,
+      [action.entityId]: action.entityPvBindingSites,
+    };
+
+    return {
+      ...state,
+      entityPvBindingSites: updatedTrackData,
+    };
+  }),
+  on(EntryActions.getEntryProtvistaInterfacesSuccess, (state, action) => {
+    const prevTrackData = state.entityPvInterfaces ?? {};
+
+    const updatedTrackData = {
+      ...prevTrackData,
+      [action.entityId]: action.entityPvInterfaces,
+    };
+
+    return {
+      ...state,
+      entityPvInterfaces: updatedTrackData,
+    };
+  }),
+  on(EntryActions.getEntryProtvistaAnnotationsSuccess, (state, action) => {
+    const prevTrackData = state.entityPvAnnotations ?? {};
+
+    const updatedTrackData = {
+      ...prevTrackData,
+      [action.entityId]: action.entityPvAnnotations,
+    };
+
+    return {
+      ...state,
+      entityPvAnnotations: updatedTrackData,
+    };
+  }),
+  on(EntryActions.getEntryProtvistaConservationSuccess, (state, action) => {
+    const prevTrackData = state.entityPvConservation ?? {};
+
+    const updatedTrackData = {
+      ...prevTrackData,
+      [action.entityId]: action.entityPvConservation,
+    };
+
+    return {
+      ...state,
+      entityPvConservation: updatedTrackData,
+    };
+  }),
+  on(EntryActions.getEntryProtvistaVariationSuccess, (state, action) => {
+    const prevTrackData = state.entityPvVariation ?? {};
+
+    const updatedTrackData = {
+      ...prevTrackData,
+      [action.entityId]: action.entityPvVariation,
+    };
+
+    return {
+      ...state,
+      entityPvVariation: updatedTrackData,
+    };
+  }),
   on(EntryActions.clearEntityProtvistaData, (state) => ({
     ...state,
-    entityPvUniprot: {} as APITrackData,
-    entityPvChains: {} as APITrackData,
-    entityPvDomains: {} as APITrackData,
-    entityPvRfam: {} as APITrackData,
-    entityPvSecondaryStructure: {} as APITrackData,
-    entityPvBindingSites: {} as APITrackData,
-    entityPvInterfaces: {} as APITrackData,
-    entityPvAnnotations: {} as APITrackData,
-    entityPvConservation: {} as APIConservationData,
-    entityPvVariation: {} as APIVariationData,
+    entityPvUniprot: {},
+    entityPvChains: {},
+    entityPvDomains: {},
+    entityPvRfam: {},
+    entityPvSecondaryStructure: {},
+    entityPvBindingSites: {},
+    entityPvInterfaces: {},
+    entityPvAnnotations: {},
+    entityPvConservation: {},
+    entityPvVariation: {},
   }))
 );

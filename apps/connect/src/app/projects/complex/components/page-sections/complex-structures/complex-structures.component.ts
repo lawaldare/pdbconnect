@@ -1,25 +1,32 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Assembly } from '../../../models/complex-structure.model';
 import { AG_Grid_Theme_Class, DownloadFileTypeService, DownloadService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { SelectionChangedEvent } from 'ag-grid-community';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
 import { environment } from '../../../../../../environments/environment';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { map } from 'rxjs';
+import { PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'pdbc-complex-structures',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MolstarComponent, MaterialModule],
+  imports: [CommonModule, AgGridAngular, MolstarComponent, MaterialModule, ReactiveFormsModule],
   templateUrl: './complex-structures.component.html',
   styleUrls: ['./complex-structures.component.scss'],
 })
 export class ComplexStructuresComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public readonly summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
   public readonly gridOptions = gridOptions;
@@ -28,7 +35,7 @@ export class ComplexStructuresComponent implements OnInit {
   public readonly initialState = initialState;
   public readonly rowSelection = rowSelection;
 
-  private readonly fileDownloadUrl = `${environment.pdbeBaseUrl}download/api/pdb/`;
+  private readonly fileDownloadUrl = `${environment.baseUrl}pdbe/download/api/pdb/`;
   private readonly downloadService = inject(DownloadService);
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
 
@@ -40,6 +47,15 @@ export class ComplexStructuresComponent implements OnInit {
   public height = '400px';
 
   private selectedRowPDBId = signal<string>('');
+
+  public searchTerm = new FormControl('');
+
+  public structuresLength = computed(() => this.rowData().length);
+  public structuresPageSize = signal<number>(5);
+  public structuresPageSizeOptions = computed(() => [5, 10, 20, 50, 100]);
+  public structuresPage: Assembly[] = [];
+
+  private unfilteredStructures: Assembly[] = [];
 
   rowClassRules = {
     'highlight-row': (params: any) => params.data.id === this.selectedRowPDBId(),
@@ -54,6 +70,26 @@ export class ComplexStructuresComponent implements OnInit {
       hideCanvasControls: ['expand', 'animation', 'controlToggle'],
       landscape: true,
     };
+
+    this.structuresPage = this.rowData().slice(0, this.structuresPageSize());
+    this.unfilteredStructures = this.rowData();
+
+    this.searchTerm.valueChanges
+      .pipe(
+        map((searchQuery) => {
+          if (searchQuery) {
+            return this.filterItemsBySearchQuery(searchQuery, this.unfilteredStructures);
+          } else {
+            return this.unfilteredStructures;
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((data) => {
+        console.log(data);
+        // this.structureRowData.update(() => data);
+        this.structuresPage = data.slice(0, this.structuresPageSize());
+      });
   }
 
   public onSelectionChanged(event: SelectionChangedEvent) {
@@ -61,6 +97,12 @@ export class ComplexStructuresComponent implements OnInit {
     const moleculeId = data.pdb_id;
     const assemblyId = data.assembly_id;
     this.config = { ...this.config, moleculeId, assemblyId };
+  }
+
+  public handlePageEvent(event: PageEvent) {
+    const startIndex = event.pageIndex * event.pageSize;
+    const endIndex = startIndex + event.pageSize;
+    this.structuresPage = this.rowData().slice(startIndex, endIndex);
   }
 
   public downloadMMCIF(): void {
@@ -72,7 +114,7 @@ export class ComplexStructuresComponent implements OnInit {
     } else {
       //go to download service
       localStorage.setItem('pdbIds', pdbIds);
-      const url = `${environment.pdbeBaseUrl}download/docs`;
+      const url = `${environment.baseUrl}pdbe/download/docs`;
       window.open(url);
     }
   }
@@ -88,5 +130,17 @@ export class ComplexStructuresComponent implements OnInit {
       };
     });
     this.downloadFileTypeService.downloadCSV(mappedData, 'structures');
+  }
+
+  private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
+    return items.filter((item) => {
+      const searchQueryLower = searchQuery.toLocaleLowerCase();
+      const pdb = item.pdb_id;
+      const expMethod = item.experimental_method;
+      const title = item.title;
+      const resolution = String(item.resolution);
+      const rowString = pdb + expMethod + title + resolution;
+      return rowString.toLocaleLowerCase().indexOf(searchQueryLower) !== -1;
+    });
   }
 }

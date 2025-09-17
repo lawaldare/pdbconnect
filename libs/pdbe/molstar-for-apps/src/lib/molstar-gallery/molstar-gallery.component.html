@@ -1,0 +1,18 @@
+<div class="gallery-container">
+  <div id="viewer-section" class="molstar-frozen">
+    <!-- Molstar container -->
+    <div id="my-viewer-cover"></div>
+    <button (click)="previous()" class="arrow-left left"><img src="/assets/images/mobile/left-mat-btn.svg" alt="arrow-left" /></button>
+    <div id="my-viewer"></div>
+    <button (click)="next()" class="arrow-right right"><img src="/assets/images/mobile/right-mat-btn.svg" alt="arrow-left" /></button>
+  </div>
+
+  <div class="gallery-nav">
+    <div class="dot-indicators">
+      @for(view of views; let index = $index; track $index){
+      <span [class.active]="index === currentIndex" (click)="setView(index)"></span>
+      }
+      <!-- <span *ngFor="let view of views; let i = index" [class.active]="i === currentIndex" (click)="setView(i)"></span> -->
+    </div>
+  </div>
+</div>

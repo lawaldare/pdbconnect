@@ -11,11 +11,12 @@ import { LigandActions } from '../../../store/ligand.actions';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { NotificationComponent } from '@pdbc/notification';
+import { DataPrivacyBannerComponent } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-ligand-wrapper',
   standalone: true,
-  imports: [LigandsMainPageComponent, ClcPrdMainComponent, PdbeHeaderLogoMenuComponent, PdbeHeaderSearchComponent, NotificationComponent],
+  imports: [LigandsMainPageComponent, ClcPrdMainComponent, PdbeHeaderLogoMenuComponent, PdbeHeaderSearchComponent, NotificationComponent, DataPrivacyBannerComponent],
   templateUrl: './ligand-wrapper.component.html',
   styleUrl: './ligand-wrapper.component.scss',
 })

@@ -1,0 +1,150 @@
+@import url('https://cdn.jsdelivr.net/npm/pdbe-molstar@3.7.0/build/pdbe-molstar-light.css');
+
+.gallery-nav {
+  display: flex;
+  height: 35px;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  align-self: stretch;
+  margin-top: 15px;
+}
+
+.gallery-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.molstar-gallery {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 400px;
+  height: 400px;
+  position: relative;
+}
+
+.arrow-left {
+  padding: 8px;
+  font-size: 24px;
+  cursor: pointer;
+  position: absolute;
+  top: 165px;
+  left: -3px;
+  z-index: 3;
+}
+
+.arrow-right {
+  padding: 8px;
+  font-size: 24px;
+  cursor: pointer;
+  position: absolute;
+  top: 165px;
+  right: -3px;
+  z-index: 3;
+}
+
+.dot-indicators {
+  display: flex;
+  gap: 16px;
+}
+
+.dot-indicators span {
+  width: 20px;
+  height: 20px;
+  background-color: #d0debb;
+  border-radius: 50%;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.dot-indicators .active {
+  background-color: #056643;
+}
+
+.dot-indicators span:hover {
+  background-color: #056643;
+  box-shadow: 0 0 0 5px #d0debb; /* Outer ring */
+}
+
+.molstar-frozen {
+  position: relative;
+  width: 100%;
+  height: 383px;
+}
+
+.molstar-frozen #my-viewer {
+  position: relative;
+  inset: 0;
+  width: 100%;
+  height: 400px;
+}
+
+#my-viewer {
+  position: fixed;
+  inset: 20px;
+}
+
+#my-viewer-cover {
+  width: 100%;
+  height: 383px;
+  position: absolute;
+  z-index: 3;
+  background-color: transparent;
+  display: none;
+}
+
+.molstar-frozen #my-viewer-cover {
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  align-items: center;
+}
+
+.button {
+  font-family: sans-serif;
+  cursor: pointer;
+  padding: 5px;
+  text-decoration: underline dotted;
+}
+
+// #myViewerCloseButton {
+//   position: fixed;
+//   top: 8px;
+//   right: 10px;
+//   font-family: sans-serif;
+//   font-weight: bold;
+//   font-size: 150%;
+//   width: 1em;
+//   height: 1em;
+//   text-align: center;
+//   cursor: pointer;
+// }
+
+// .molstar-frozen #myViewerCloseButton {
+//   display: none;
+// }
+
+// #viewButtons {
+//   width: 250px;
+//   padding: 10px;
+//   align-content: center;
+//   justify-content: center;
+//   text-align: center;
+//   font-family: sans-serif;
+// }
+
+button {
+  margin-right: 8px;
+  margin-bottom: 8px;
+  padding: 1px;
+  padding-inline: 4px;
+}
+
+.molstar-frozen .msp-viewport-controls-buttons,
+.molstar-frozen .msp-viewport-controls-panel,
+.molstar-frozen .msp-viewport-top-left-controls {
+  display: none !important;
+}

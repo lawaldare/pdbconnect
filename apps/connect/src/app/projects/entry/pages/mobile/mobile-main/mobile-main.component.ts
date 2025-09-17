@@ -9,14 +9,8 @@ import Clarity from '@microsoft/clarity';
 import { EntryUtilService } from '../../../services/entry-util.service';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ErrorPageComponent } from '../../../../../error-page/error-page.component';
-
-export enum MobileTabNames {
-  Overview = 'overview',
-  Molstar = 'molstar',
-  Citation = 'citation',
-}
-
-type MobileTabName = 'overview' | 'molstar' | 'citation';
+import { MobileTabNames, MobileTabName } from '../mobile-tab.model';
+import { GoogleAnalyticsService } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-mobile-main',
@@ -29,11 +23,15 @@ export class MobileMainComponent {
   private readonly route = inject(ActivatedRoute);
   public activeTab = signal<string>('overview');
 
+  public readonly gAS = inject(GoogleAnalyticsService);
+
   public readonly util = inject(EntryUtilService);
 
   public entryPageView = this.util.entryPageView;
 
   private readonly mbFacade = inject(MobileFacade);
+
+  public readonly activePage = this.mbFacade.activePage;
 
   public readonly mbTabNames = MobileTabNames;
 
@@ -57,14 +55,19 @@ export class MobileMainComponent {
       const tabId = params['activeTab'];
       const tabIndex = this.mbTabs.findIndex((tab) => tab.id === tabId);
       if (tabIndex >= 0) {
-        this.activeTab.set(tabId);
-        this.mbFacade.updateSelectedMobileTabName(tabId);
+        // this.activeTab.set(tabId);
+        this.mbFacade.updateActivePage(tabId);
+        this.mbFacade.updateSelectedPageName(tabId);
       }
+      this.gAS.logEntryPageEvents('ep_mobile_3d_access', {
+        tab: tabId,
+      });
     });
   }
 
   public selectFooterTab(tabId: MobileTabName) {
     this.activeTab.set(tabId);
+    this.mbFacade.updateActivePage(tabId);
     this.router.navigate([], {
       queryParams: { activeTab: tabId },
       queryParamsHandling: 'merge',

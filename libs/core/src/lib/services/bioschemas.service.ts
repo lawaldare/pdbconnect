@@ -1,11 +1,11 @@
 import { DOCUMENT } from '@angular/common';
-import { EnvironmentInjector, Inject, Injectable, Renderer2 } from '@angular/core';
+import { Inject, Injectable, Renderer2 } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BioschemasService {
-  constructor(@Inject(DOCUMENT) private document: Document, private environmentInjector: EnvironmentInjector) {}
+  constructor(@Inject(DOCUMENT) private document: Document) {}
 
   /**
    * Set JSON-LD Microdata on the Document Body.

@@ -1,9 +1,11 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { SelectionChangedEvent } from 'ag-grid-community';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
@@ -12,18 +14,9 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { PARAMS } from '../../../complex.constant';
 import { drawHistogram } from './histogram';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
-
-export interface PISAAssemblyParam {
-  dissociation_energy: number;
-  accessible_surface_area: number;
-  buried_surface_area: number;
-  dissociation_entropy: number;
-  dissociation_area: number;
-  solvation_energy_gain: number;
-  pdb_id: string;
-  assembly_id: string;
-  [key: string]: any;
-}
+import { PISAAssemblyParam } from '../../../models/pisa-assembly-param.model';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'pdbc-complex-pisa',
@@ -72,8 +65,52 @@ export class ComplexPISAComponent implements OnInit {
     { label: 'Dissociation Entropy', value: 'dissociation_entropy' },
   ];
 
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  public structuresLength = computed(() => (this.rowData() ?? []).length);
+  public structuresPageSize = signal<number>(5);
+  public structuresPageSizeOptions = computed(() => [5, 10, 20, 50, 100]);
+  public structuresPage: PISAAssemblyParam[] = [];
+
+  private unfilteredStructures: PISAAssemblyParam[] = [];
+  public searchTerm = new FormControl('');
+  private readonly destroyRef = inject(DestroyRef);
+
   ngOnInit(): void {
     this.stats.set(this.getMinMaxStats(this.pisa() as PISAAssemblyParam[]));
+
+    this.structuresPage = (this.rowData() ?? []).slice(0, this.structuresPageSize());
+    this.unfilteredStructures = this.rowData() ?? [];
+
+    this.searchTerm.valueChanges
+      .pipe(
+        map((searchQuery) => {
+          if (searchQuery) {
+            return this.filterItemsBySearchQuery(searchQuery, this.unfilteredStructures);
+          } else {
+            return this.unfilteredStructures;
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((data) => {
+        console.log(data);
+        // this.structureRowData.update(() => data);
+        this.structuresPage = data.slice(0, this.structuresPageSize());
+      });
+  }
+
+  private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
+    return items.filter((item) => {
+      const pdb = item.pdb_id.toLocaleLowerCase();
+      return pdb.indexOf(searchQuery.toLocaleLowerCase()) !== -1;
+    });
+  }
+
+  public handlePageEvent(event: PageEvent) {
+    const startIndex = event.pageIndex * event.pageSize;
+    const endIndex = startIndex + event.pageSize;
+    this.structuresPage = (this.rowData() ?? []).slice(startIndex, endIndex);
   }
 
   getPropertyValue(key: keyof PISAAssemblyParam): number {

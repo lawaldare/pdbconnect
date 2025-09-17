@@ -2,7 +2,7 @@
   @if(assemblyTableRows().length){
   <header>
     <section class="header">
-      <h2>Assembly (preferred)</h2>
+      <h2>Complex (preferred)</h2>
       <div class="controls">
         <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
         <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
@@ -21,7 +21,7 @@
 
   @if(preferredAssembly().complexName){
   <article>
-    <p>Assembly name</p>
+    <p>Complex name</p>
     <p class="content">{{preferredAssembly().complexName}}</p>
   </article>
   }
@@ -41,7 +41,15 @@
   <article>
     <p>PDBe complex ID</p>
     <p class="content">
-      <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/complexes/' + preferredAssembly().complexId" target="_blank">{{preferredAssembly().complexId}}</a>
+      <a
+        [href]="baseUrl + 'pdbe-kb/complexes/' + preferredAssembly().complexId"
+        target="_blank"
+        (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
+        kb_website: 'complexes',
+        device_type: 'mobile',
+      })"
+        >{{preferredAssembly().complexId}}</a
+      >
     </p>
   </article>
   }
@@ -94,7 +102,7 @@
   <!-- Assembly symmetry -->
   @if(preferredSymmetry()?.type){
   <article>
-    <p>Assembly symmetry</p>
+    <p>Complex symmetry</p>
     <p class="content">{{preferredSymmetry()?.type}} - {{preferredSymmetry()?.symbol}}</p>
   </article>
   }
@@ -109,9 +117,18 @@
   }
 
   <footer>
-    This entry contains {{assemblyTableRows().length - 1}} more assemblies with different assembly compositions. Alternative assemblies are available on the desktop
+    This entry contains {{assemblyTableRows().length - 1}} more complexes with different complex compositions. Alternative complexes are available on the desktop
     version.
   </footer>
 
-  } }
+  } } @else {
+  <header>
+    <section class="header">
+      <h2>No Complexes data available</h2>
+      <div class="controls">
+        <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+      </div>
+    </section>
+  </header>
+  }
 </section>

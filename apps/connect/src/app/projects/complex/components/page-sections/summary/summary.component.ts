@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Component, computed, inject, linkedSignal, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ParticipantDirective } from '../../../directives/participants.directive';
@@ -11,7 +13,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { map } from 'rxjs';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { environment } from '../../../../../../environments/environment';
 import { ComplexUtilService } from '../../../services/complex-util.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DiffSymmetryDialogComponent } from '../../section-components/diff-symmetry-dialog/diff-symmetry-dialog.component';

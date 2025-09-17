@@ -1,19 +1,21 @@
-import { AfterViewInit, Component, computed, inject, Optional, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { DetailsDashboardFacade } from '../../../components/shared/details-dashboard.facade';
-import { DomainsRowData } from '../../../components/shared/interactive-tables/data-models-and-definitions/row-and-table.model';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { MainDataProcessingFacade } from '../../main/data-processing.facade';
 import { ViewState } from '../mb-macromolecules/mb-macromolecule.component';
-import { MobileFacade } from '../mobile.facade';
 import { resourceUrls } from '../../../entry-constant';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
-import { MolstarForEntryPages } from '../../../helpers/molstar-for-entry-pages';
+import { debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
+import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
+import { MobileStateService } from '../mobile-state.service';
+import { EntryActions } from '../../../store/entry.actions';
+import { ProcessedDomain } from '../../../store/data-processing/models/processed-entities.model';
+import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
 
 @Component({
   selector: 'pdbc-mb-domains',
@@ -21,15 +23,15 @@ import { MolstarForEntryPages } from '../../../helpers/molstar-for-entry-pages';
   templateUrl: './mb-domains.component.html',
   styleUrls: ['../common-mb-header.scss', './mb-domains.component.scss'],
 })
-export class MbDomainsComponent implements AfterViewInit {
-  private readonly mbFacade = inject(MobileFacade);
-  public readonly dataProcessing = inject(MainDataProcessingFacade);
-  public readonly signals = inject(ComponentCommunicationService);
-  public readonly detailsDashboardFacade = inject(DetailsDashboardFacade);
+export class MbDomainsComponent implements OnInit {
+  private readonly state = inject(MobileStateService);
   private readonly globalStore = inject(Store<EntryStoreState>);
+  public readonly compCommunication = inject(ComponentCommunicationService);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  public readonly molstarVisualisation = inject(MolstarForEntryPages);
+  public readonly processedDomainsObs$ = this.globalStore.select(EntrySelectors.processedDomains);
+  public readonly processedDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomains));
 
   public readonly resourceUrls = resourceUrls;
 
@@ -37,28 +39,55 @@ export class MbDomainsComponent implements AfterViewInit {
   public viewStates = ViewState;
   public selectedDomain = signal<any>({});
   public expanded = signal<boolean>(false);
-  public title = this.mbFacade.domainTitle;
+  public title = this.state.domainTitle;
 
   public dropdownOptions: DownloadOption[] = [];
   public dropdownSelected!: string;
 
   public readonly domainTableRows = computed(() => {
-    const isLoaded = this.dataProcessing.tabDataLoaded();
-    const tableData = this.signals.tabTableData();
-    const hasData = Object.keys(tableData).indexOf('Domains') !== -1;
-
-    if (isLoaded && hasData) {
-      const tabData = this.signals.getTabData('Domains');
-      const datum = tabData.tableRows() as DomainsRowData[];
-      return datum;
-    }
-    return [];
+    const rows = this.processedDomains();
+    if (rows === undefined) return [];
+    return rows;
   });
 
-  constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbDomainsComponent>) {}
-
-  async ngAfterViewInit() {
-    await this.molstarVisualisation.resetMobileMolstarInitial();
+  constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbDomainsComponent>) {
+    this.processedDomainsObs$
+      .pipe(
+        debounceTime(50),
+        distinctUntilChanged(),
+        filter((hasDom) => hasDom !== undefined)
+      )
+      .subscribe(async (hasDom) => {
+        // Wait until mobileMolstarLoaded$ is true before proceeding
+        await firstValueFrom(
+          this.compCommunication.mobileMolstarLoaded$.pipe(
+            filter((ready) => ready), // Proceed only when it's true
+            take(1) // Take the first value, then complete
+          )
+        );
+        this.renderInMolstar(undefined);
+      });
+  }
+  ngOnInit(): void {
+    // /* 1. Fetch data */
+    // this.globalStore.dispatch(EntryActions.getSummaryData());
+    // this.globalStore.dispatch(EntryActions.getAssemblies());
+    // this.globalStore.dispatch(EntryActions.getCathMapping());
+    // this.globalStore.dispatch(EntryActions.getPfamMapping());
+    // this.globalStore.dispatch(EntryActions.getScop175Mapping());
+    // this.globalStore.dispatch(EntryActions.getEntryPolymerCoverage());
+    // this.globalStore.dispatch(EntryActions.getEntryMolecules());
+    // this.globalStore.dispatch(EntryActions.getProcessedDomains());
+    this.applicationApiDispatcher.dispatchForList([
+      EntryActions.getSummaryData,
+      EntryActions.getAssemblies,
+      EntryActions.getCathMapping,
+      EntryActions.getPfamMapping,
+      EntryActions.getScop175Mapping,
+      EntryActions.getEntryPolymerCoverage,
+      EntryActions.getEntryMolecules,
+      EntryActions.getProcessedDomains,
+    ]);
   }
 
   toggleBottomsheetHeight() {
@@ -71,26 +100,71 @@ export class MbDomainsComponent implements AfterViewInit {
 
   public async closeBottomSheet() {
     this.bottomSheetRef.dismiss();
-    this.mbFacade.updateSelectedComponent(null);
-    this.mbFacade.updateSelectedTabName('');
-    await this.molstarVisualisation.resetMobileMolstarInitial();
+    this.state.updateSelectedComponent(null);
+    this.state.updateSelectedTabName('');
   }
 
-  public navigateToDetail(data: DomainsRowData) {
+  public navigateToDetail(data: ProcessedDomain) {
     this.currentViewState.set(ViewState.Detail);
     this.selectedDomain.set(data);
-    this.mbFacade.updateSelectedDomainTitle(data.accessionName);
-    this.init();
+    this.state.updateSelectedDomainTitle(data.accessionName);
+    this.updateCurrentDomain();
   }
 
-  private async init(): Promise<void> {
+  private async updateCurrentDomain(): Promise<void> {
     const selection = this.selectedDomain().additionalData.selections[0];
-    await this.molstarVisualisation.renderTabsDomains(selection);
+    this.renderInMolstar(this.selectedDomain());
   }
 
   public async goBackToList() {
     this.currentViewState.set(ViewState.List);
-    this.mbFacade.updateSelectedDomainTitle('Domains');
-    await this.molstarVisualisation.resetMobileMolstarInitial();
+    this.state.updateSelectedDomainTitle('Domains');
+    this.renderInMolstar(undefined);
+  }
+
+  private selectionData?: QueryParam[];
+
+  private async renderInMolstar(domain?: ProcessedDomain) {
+    await firstValueFrom(
+      this.compCommunication.mobileMolstarLoaded$.pipe(
+        filter((ready) => ready), // proceed when true
+        take(1)
+      )
+    );
+
+    const durationMs = this.compCommunication.mobileMolstar ? 200 : 0;
+    const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
+    if (!instance) return;
+
+    if (!domain) {
+      if (this.compCommunication.mobileMolstarDisplay === 'domains') return;
+      await clearSelectionInMolstar(instance, durationMs);
+      this.compCommunication.mobileMolstarDisplay = 'domains';
+      return;
+    }
+
+    // TODO: Add domain dropdown to mobile domains too
+    const molstarSelection = domain.additionalData.selections[0];
+    const domainColor = '#B5CB93'; // domain.molstarColorHex;
+    this.selectionData = molstarSelection.map((eachSelection) => {
+      return {
+        ...eachSelection,
+        color: domainColor,
+        focus: true,
+      };
+    });
+
+    await zoomOutStructureInMolstar(instance, durationMs);
+
+    timer(durationMs + 100).subscribe(async () => {
+      await drawSelectionInMolstar(instance, this.selectionData, '#FEFEFE');
+    });
+    this.compCommunication.mobileMolstarDisplay = 'domains-specific';
+  }
+
+  public getDomainUrl(domain?: ProcessedDomain) {
+    if (!domain) return '';
+    if (domain.resource.includes('SCOP')) return resourceUrls[domain.resource];
+    return resourceUrls[domain.resource] + domain.additionalData?.accession;
   }
 }

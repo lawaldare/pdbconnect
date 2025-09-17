@@ -24,42 +24,14 @@ export const mobileHeaderConfig = {
 };
 
 export const pdbeSearchConfig = {
-  examples: ['1trn', '1cbs', '7v08', '4v99', '4aqd'],
+  // examples: ['1trn', '1cbs', '7v08', '4v99', '6nrv'],
+  examples: ['2dn2', '8b0x', '7l35', '5cxt', '6qvt', '3ah8'],
   backgroundColor: '#007B53',
   hasAdvancedSearch: true,
   buttonText: 'Search',
   placeholderText: 'View PDBe entry by PDB entry ID',
   type: ThemeType.PDBE,
 };
-
-// export const currentTab = 'Assemblies';
-export const allTabs = [
-  {
-    name: 'Assemblies',
-    display: 'Assemblies',
-  },
-  {
-    name: 'Macromolecules',
-    display: 'Macromolecules',
-  },
-  {
-    name: 'Ligands',
-    display: 'Ligands and Environments',
-  },
-  {
-    name: 'Domains',
-    display: 'Domains',
-  },
-  {
-    name: 'Experiments',
-    display: 'Experiments and Validation',
-  },
-  {
-    name: 'Citations',
-    display: 'Citations',
-  },
-];
-export const tableTabs = ['Assemblies', 'Macromolecules', 'Ligands', 'Domains'];
 
 export const ligandChipColors: {
   [key: string]: string;
@@ -81,17 +53,17 @@ Percentile-sliders comparing the quality scores of a model with other models in 
 These scores are harmonic means of absolute percentiles of geometric metrics (e.g. ramachandran, clashscore, sidechains) and reflections-based metrics (Rfree, RSRZ).
 Sometimes reflections-based metrics are absent due to unavailability of experimental data itself.`;
 
-export const assemblyTooltip = `Assembly refers to ‘quaternary structures’ representing a collection of associated macromolecules and small molecules.
+export const assemblyTooltip = `Complex (or assembly) refers to ‘quaternary structures’ representing a collection of associated macromolecules and small molecules.
 
-Preferred assembly is the smallest assembly containing all polymeric entities`;
+Preferred complex is the smallest complex containing all polymeric entities`;
 
-export const preferredAssemblyTooltip = `Preferred assembly is the smallest assembly containing all polymeric entities`;
+export const preferredAssemblyTooltip = `Preferred complex is the smallest complex containing all polymeric entities`;
 
-export const assemblyNameTooltip = `Name is the human-readable assigned denomination of a given unique assembly composition in the PDB archive.`;
+export const assemblyNameTooltip = `Name is the human-readable assigned denomination of a given unique complex composition in the PDB archive.`;
 
-export const complexIdTooltip = `Stable identifiers for each unique assembly composition across the PDB archive.`;
+export const complexIdTooltip = `Stable identifiers for each unique complex composition across the PDB archive.`;
 
-export const assemblyCompositionTooltip = `Description of the assembly composition according to their molecular stoichiometry`;
+export const assemblyCompositionTooltip = `Description of the complex composition according to their molecular stoichiometry`;
 
 export const ligandChipTooltips: { [key: string]: string } = {
   Unannotated: unannotatedTooltip,
@@ -130,7 +102,7 @@ export const depositionDateTooltip = 'Date when the coordinates were deposited t
 export const releaseDateTooltip = 'Date when the coordinates were released in the PDB archive';
 export const revisionDateTooltip = 'Date of the current version or last minor or major revision of a PDB entry';
 
-const baseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
+export const baseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
 const ligandBaseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe-srv/pdbechem/' : 'https://wwwdev.ebi.ac.uk/pdbe-srv/pdbechem/';
 
 /**
@@ -138,7 +110,32 @@ const ligandBaseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://ww
  */
 
 export const dashboardStatLinks = {
-  Assemblies: [],
+  Complexes: [
+    {
+      id: 'pdbs',
+      displayName: 'structures',
+      link: `${baseUrl}pdbe-kb/complexes/`,
+      linkSuffix: '?activeTab=structures',
+    },
+    {
+      id: 'ligands',
+      displayName: 'ligands',
+      link: `${baseUrl}pdbe-kb/complexes/`,
+      linkSuffix: '?activeTab=ligands',
+    },
+    {
+      id: 'supercomplexes',
+      displayName: 'supercomplexes',
+      link: `${baseUrl}pdbe-kb/complexes/`,
+      linkSuffix: '?activeTab=supercomplexes',
+    },
+    {
+      id: 'subcomplexes',
+      displayName: 'subcomplexes',
+      link: `${baseUrl}pdbe-kb/complexes/`,
+      linkSuffix: '?activeTab=subcomplexes',
+    },
+  ],
   Macromolecules: [
     {
       id: 'pdbs',
@@ -167,19 +164,19 @@ export const dashboardStatLinks = {
   ],
   Ligands: [
     {
-      id: 'pdbs',
+      id: 'bound_entries',
       displayName: 'bound structures',
       link: `${ligandBaseUrl}chemicalCompound/show/`,
       linkSuffix: '#structures-section',
     },
     {
-      id: 'ligands',
+      id: 'total_interactions',
       displayName: 'interaction statistics',
       link: `${ligandBaseUrl}chemicalCompound/show/`,
       linkSuffix: '#interaction-section',
     },
     {
-      id: 'similar_proteins',
+      id: 'related_ligands',
       displayName: 'related ligands',
       link: `${ligandBaseUrl}chemicalCompound/show/`,
       linkSuffix: '#related-ligand-section',
@@ -191,7 +188,7 @@ export const dashboardStatLinks = {
 export const resourceUrls: any = {
   CATH: 'https://www.cathdb.info/version/latest/superfamily/',
   SCOP: 'https://ftp.ebi.ac.uk/pub/databases/pdbe-kb/scop-legacy/',
-  Pfam: `https://www.ebi.ac.uk/pdbe/interpro/entry/pfam/`,
+  Pfam: `https://www.ebi.ac.uk/interpro/entry/pfam/`,
 };
 
 export const handleBarSrc = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjE5Ij4KICAgIDxyZWN0IHg9IjEiIHk9IjAiIHdpZHRoPSI2cHgiIGhlaWdodD0iMThweCIgc3R5bGU9ImZpbGw6IGRhcmtncmV5OyBzdHJva2U6IGJsYWNrOyBzdHJva2Utd2lkdGg6IDFweDsiPjwvcmVjdD4KPC9zdmc+`;
@@ -267,18 +264,18 @@ export const FILTERED_KELLY22_COLORBLIND_SCALE: string[] = [
 ];
 
 export const entryAssembliesTooltips = {
-  assemblyName: 'The assembly name is a descriptive label assigned to a specific molecular arrangement in the PDB archive.',
+  assemblyName: 'The complex name is a descriptive label assigned to a specific molecular arrangement in the PDB archive.',
   multimericState:
-    "This label describes the assembly's composition: the prefix (homo- or hetero-) indicates whether the macromolecules that make up the assembly are identical or different, and the suffix shows the total number of these macromolecules.",
-  pdbeComplexId: 'Stable identifiers for each unique assembly composition across the PDB archive.',
-  accessbileSurfaceArea: 'Surface area indicates the total solvent-accessible surface area of the assembly, in Å2.',
-  buriedSurfaceArea: "Buried area indicates, in Å2, the total solvent-accessible surface area of the assembly, buried upon formation of all assembly's interfaces.",
+    "This label describes the complex's composition: the prefix (homo- or hetero-) indicates whether the macromolecules that make up the complex are identical or different, and the suffix shows the total number of these macromolecules.",
+  pdbeComplexId: 'Stable identifiers for each unique complex composition across the PDB archive.',
+  accessbileSurfaceArea: 'Surface area indicates the total solvent-accessible surface area of the complex, in Å2.',
+  buriedSurfaceArea: "Buried area indicates, in Å2, the total solvent-accessible surface area of the complex, buried upon formation of all complex's interfaces.",
   dissociationEnergy:
-    'Indicates the free energy of assembly dissociation, in kcal/M. The free energy of dissociation corresponds to the free energy difference between dissociated and associated states. Positive values of ΔGdiss indicate that an external driving force should be applied in order to dissociate the assembly, therefore assemblies with ΔGdiss>0 are thermodynamically stable.',
+    'Indicates the free energy of complex dissociation, in kcal/mol. The free energy of dissociation corresponds to the free energy difference between dissociated and associated states. Positive values of ΔGdiss indicate that an external driving force should be applied in order to dissociate the complex, therefore complexes with ΔGdiss>0 are thermodynamically stable.',
   dissociationEntropy:
-    'Indicates the rigid-body entropy change at dissociation, in kcal/M. The entropy change corresponds to the lowest free energy way to dissociate the assembly into a set of stable assemblies or monomeric units.',
+    'Indicates the rigid-body entropy change at dissociation, in kcal/mol. The entropy change corresponds to the lowest free energy way to dissociate the complex into a set of stable complexes or monomeric units.',
   assemblySymmetry:
-    'Point group symmetry for the biological assembly. The symmetry group is calculated using the AnAnaS software. It detects five symmetry groups: cyclic, dihedral, tetrahedral, octahedral and icosahedral.',
+    'Point group symmetry for the biological complex. The symmetry group is calculated using the AnAnaS software. It detects five symmetry groups: cyclic, dihedral, tetrahedral, octahedral and icosahedral.',
 };
 
 export const entryDomainsTooltips = {
@@ -400,4 +397,26 @@ export const labelGroups = {
     'EDS map',
     'EDS difference map',
   ],
+};
+
+export const routeTabs = [
+  { label: 'Summary', id: 'summary' },
+  { label: 'Model Quality', id: 'model-quality' },
+  { label: 'Assemblies', id: 'assemblies' },
+  { label: 'Macromolecules', id: 'macromolecules' },
+  { label: 'Ligands and Environments', id: 'ligands' },
+  { label: 'Domains', id: 'domains' },
+  { label: 'Text Annotation (LLM)', id: 'llm' },
+  { label: 'Citations', id: 'citations' },
+];
+
+export const tourIds = {
+  summary: 'tour-summary',
+  modelQuality: 'tour-model-quality',
+  assemblies: 'tour-assemblies',
+  macromolecules: 'tour-macromolecules',
+  ligands: 'tour-ligands',
+  domains: 'tour-domains',
+  llm: 'tour-llm',
+  citations: 'tour-citations',
 };

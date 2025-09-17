@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit, Renderer2, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
@@ -8,8 +8,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { of, switchMap } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexStructuresComponent } from '../../page-sections/complex-structures/complex-structures.component';
-import { MaterialModule, TruncateTextDirective } from '@pdbc/core';
-import { headerComplexLogoMenuConfig, headerSearchComplexConfig, navComplexSections } from '../../../complex.constant';
+import { MaterialModule, ScrollPositionService, TruncateTextDirective } from '@pdbc/core';
+import { headerComplexLogoMenuConfig, headerSearchComplexConfig, idWarningTooltip } from '../../../complex.constant';
 import { ComplexPublicationsComponent } from '../../page-sections/complex-publications/complex-publications.component';
 import { ComplexLigandsComponent } from '../../page-sections/complex-ligands/complex-ligands.component';
 import { ComplexStoreState } from '../../../store/complex-store.model';
@@ -20,11 +20,13 @@ import { LoadingState } from '../../../../ligands/enums/loading-state.enum';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ComplexBioschemasService } from '../../../services/complex.bioschemas';
 import { complexRouteTabs } from '../../../complex.constant';
-import { MatTabChangeEvent } from '@angular/material/tabs';
+import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { SuperComplexesComponent } from '../../page-sections/complex-supercomplex/supercomplexes.component';
 import { SubComplexesComponent } from '../../page-sections/complex-subcomplex/subcomplexes.component';
 import { NotificationComponent } from '@pdbc/notification';
 import { ComplexPISAComponent } from '../../page-sections/complex-pisa/complex-pisa.component';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { DataPrivacyBannerComponent } from '@pdbc/core';
 
 @Component({
   selector: 'pdbc-main',
@@ -44,6 +46,8 @@ import { ComplexPISAComponent } from '../../page-sections/complex-pisa/complex-p
     MaterialModule,
     SuperComplexesComponent,
     NotificationComponent,
+    HelpIconWithTooltipComponent,
+    DataPrivacyBannerComponent,
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',
@@ -60,6 +64,7 @@ export class MainComponent implements OnInit {
   public readonly headerSearchConfig = headerSearchComplexConfig;
 
   private readonly globalStore = inject(Store<ComplexStoreState>);
+  public readonly scrollService = inject(ScrollPositionService);
 
   public summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
   public complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
@@ -69,6 +74,10 @@ export class MainComponent implements OnInit {
   public selectedTab = signal<number>(0);
 
   public showNotificationBanner = signal<boolean>(false);
+
+  public idWarningTooltip = idWarningTooltip;
+
+  @ViewChild('tabs') tabGroup!: MatTabGroup;
 
   constructor() {
     this.route.queryParams.subscribe((params) => {
@@ -106,6 +115,8 @@ export class MainComponent implements OnInit {
       queryParams: { activeTab: tabName },
       queryParamsHandling: 'merge',
     });
+
+    this.scrollService.handleScrollPosition(this.tabGroup, event.index);
   }
 
   private showNotification() {

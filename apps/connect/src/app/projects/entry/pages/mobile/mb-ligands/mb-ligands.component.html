@@ -28,29 +28,31 @@
       <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
     </div>
     <p class="row__content">{{row.codeAndName.name | truncate:40}}</p>
-    <!-- <span class="row__annotation">{{row.annotation.description}}</span> -->
-    @if(row.annotations.length){ @for(annotation of row.annotations; track annotation){
+    @if(row.type !== 'modification' && row.annotations.length){ @for(annotation of row.annotations; track annotation){
     <span class="row__annotation" [ngClass]="annotation">{{annotation | titlecase}}</span>
-    } } @if(!row.isModified && row.annotations.length === 0){
+    } } @if(row.type !== 'modification' && row.annotations.length === 0){
     <span class="row__annotation unannotated">Unannotated</span>
-    } @if(row.isModified){
+    } @if(row.type === 'modification'){
     <span class="row__annotation modification">Modification</span>
     }
   </div>
   } }
 
   <!-- 2nd Level Overlay -->
-  @if(currentViewState() === viewStates.Detail){ @if(selectedLigands().annotations.length){ @for(annotation of selectedLigands().annotations; track annotation){
+  @if(currentViewState() === viewStates.Detail){ @if(selectedLigands().type !== 'modification' && selectedLigands().annotations.length){ @for(annotation of
+  selectedLigands().annotations; track annotation){
   <span class="row__annotation" [ngClass]="annotation">{{annotation | titlecase}}</span>
-  } } @if(!selectedLigands().isModified && selectedLigands().annotations.length === 0){
+  } } @if(selectedLigands().type !== 'modification' && selectedLigands().annotations.length === 0){
   <span class="row__annotation unannotated">Unannotated</span>
-  } @if(selectedLigands().isModified){
+  } @if(selectedLigands().type === 'modification'){
   <span class="row__annotation modification">Modification</span>
   }
   <div class="chains">
     @if(dropdownOptions.length > 1){
     <div class="dropdown-container">
       <pdbc-entry-dropdown
+        [searchable]="false"
+        searchTitle="''"
         [downloadable]="false"
         [islink]="false"
         [options]="dropdownOptions"
@@ -74,5 +76,14 @@
   }
   <p class="title">Molecular weight</p>
   <p class="content">{{selectedLigands().additionalData.source.weight}} KDa</p>
-  }}
+  }} @else {
+  <header>
+    <section class="header">
+      <h2>No Ligands data available</h2>
+      <div class="controls">
+        <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+      </div>
+    </section>
+  </header>
+  }
 </section>

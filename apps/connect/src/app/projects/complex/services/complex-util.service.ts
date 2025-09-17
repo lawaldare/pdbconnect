@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Injectable } from '@angular/core';
 
 @Injectable({
@@ -15,6 +17,24 @@ export class ComplexUtilService {
         .map((c: any) => c.accession)
         .join(',')
         .toLocaleLowerCase();
+      const additionalName = item.additional_participants
+        .map((c: any) => c.name)
+        .join(',')
+        .toLocaleLowerCase();
+      const commonName = item.common_participants
+        .map((c: any) => c.name)
+        .join(',')
+        .toLocaleLowerCase();
+      const rowString = additionalAccession + commonAccession + additionalName + commonName;
+      return rowString.toLocaleLowerCase().indexOf(searchQueryLower) !== -1;
+    });
+  }
+
+  public filterItemsBySearchQueryComplexes(searchQuery: string, items: any[]): any[] {
+    return items.filter((item) => {
+      const searchQueryLower = searchQuery.toLocaleLowerCase();
+      const additionalAccession = item.pdb_complex_id.join(',').toLocaleLowerCase();
+      const commonAccession = item.name.join(',').toLocaleLowerCase();
       const additionalName = item.additional_participants
         .map((c: any) => c.name)
         .join(',')

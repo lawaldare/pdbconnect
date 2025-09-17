@@ -42,50 +42,83 @@
 
     <mat-tab label="Information">
       @if(selectedMacromolecule()?.additionalData?.molecule?.in_chains?.length){
-      <p class="title">Chains {{selectedMacromolecule().additionalData.molecule.in_chains.join(', ')}}</p>
-      } @if(selectedMacromolecule().additionalData.molecule.molecule_type){
+      <p class="title">Chains {{selectedMacromolecule()?.additionalData?.molecule?.in_chains?.join(', ')}}</p>
+      } @if(selectedMacromolecule()?.additionalData?.molecule?.molecule_type){
       <p class="title">Type</p>
       <p class="content">{{selectedMacromolecule()?.additionalData?.molecule?.molecule_type}}</p>
-      } @if(selectedMacromolecule().organisms.length){
-      <p class="title">Source organism</p>
+      } @if(uniqueOrganisms().length){
+      <p class="title">Source organism{{ uniqueOrganisms().length > 1 ? 's': '' }}</p>
       <p class="content">
-        @for (sourceOrganism of selectedMacromolecule()?.organisms; track sourceOrganism) {
+        @for (sourceOrganism of uniqueOrganisms(); track sourceOrganism) {
         <span>
           <em><a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank"> {{ sourceOrganism }} </a></em>
         </span>
         }
       </p>
-      } @let expressionSystem = selectedMacromolecule()?.additionalData?.molecule?.source?.[0]?.expression_host_scientific_name; @if(expressionSystem){
-      <p class="title">Expression System</p>
-      <p class="content">{{expressionSystem}}</p>
-      } @if(selectedMacromolecule()?.mappedResidues?.length){
+      } @if(uniqueExpSystems().length) {
+      <p class="title">Expression system{{ uniqueExpSystems().length > 1 ? 's': '' }}</p>
+      @for (expressionSystem of uniqueExpSystems(); track expressionSystem) {
+      <p class="content">
+        <em>{{expressionSystem}}</em>
+      </p>
+      } } @if(mappedResidues()?.length){
       <p class="title">UniProt mapping:</p>
       <p class="content">
-        @for(residue of selectedMacromolecule()?.mappedResidues; track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <= 2){
-        <span class="uniprot"
-          >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a>
-          <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">
-            View all {{residue?.pdbs | async}} structures
-            <i class="icon icon-link icon-common" style="margin-left: 12px"></i> </a
-        ></span>
-        <span class="uniprot"> (residues: {{residue.range.join(', ')}}; coverage: {{residue.coverage}}) </span>
-        } @else { @if(residue.open){
+        @for(residue of mappedResidues(); track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <= 2){
         <span class="uniprot">
-          Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a
-          ><a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">
-            View all {{residue?.pdbs | async}} structures
+          Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a>
+          @if (getNumberStructures(residue.uniprot)) {
+          <a
+            [href]="baseUrl + 'pdbe-kb/proteins/' + residue.uniprot"
+            target="_blank"
+            (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
+                kb_website: 'proteins',
+                device_type: 'mobile',
+              })"
+          >
+            View all {{ getNumberStructures(residue.uniprot) }} structures
             <i class="icon icon-link icon-common" style="margin-left: 12px"></i>
           </a>
+          }
         </span>
-        <span class="uniprot">(residues: {{range.join(', ')}}; coverage: {{residue.coverage}})</span>
+        <span class="uniprot"> (residues: {{residue.range.join(', ')}}; coverage: {{residue.coverage}} chain: {{ residue.chainId}}) </span>
+        } @else { @if(residue.open){
+        <span class="uniprot">
+          Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a> @if
+          (getNumberStructures(residue.uniprot)) {
+          <a
+            [href]="baseUrl + 'pdbe-kb/proteins/' + residue.uniprot"
+            target="_blank"
+            (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
+                kb_website: 'proteins',
+                device_type: 'mobile',
+              })"
+          >
+            View all {{ getNumberStructures(residue.uniprot) }} structures
+            <i class="icon icon-link icon-common" style="margin-left: 12px"></i>
+          </a>
+          }
+        </span>
+        <span class="uniprot">(residues: {{range.join(', ')}}; coverage: {{residue.coverage}} chain: {{ residue.chainId}} )</span>
         <span class="unprot residue-action-button" (click)="residue.open = !residue.open">show less</span>
         }@else {
         <span class="uniprot">
-          Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a
-          ><a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + residue.uniprot" target="_blank">
-            View all {{residue?.pdbs | async}} structures
-            <i class="icon icon-link icon-common" style="margin-left: 12px"></i> </a
-        ></span>
+          Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a> @if
+          (getNumberStructures(residue.uniprot)) {
+          <a
+            [href]="baseUrl + 'pdbe-kb/proteins/' + residue.uniprot"
+            target="_blank"
+            (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
+                kb_website: 'proteins',
+                device_type: 'mobile',
+              })"
+          >
+            View all {{ getNumberStructures(residue.uniprot) }} structures
+            <i class="icon icon-link icon-common" style="margin-left: 12px"></i>
+          </a>
+          }
+        </span>
+        <span class="uniprot">chain: {{residue.chainId}} </span>
         <span class="uniprot">residues: {{range.slice(0,2).join(', ')}}...</span>
         <span class="uniprot residue-action-button" (click)="residue.open = !residue.open">show all</span>
         } } } @for(residue of bestResidues(); track residue.name;){
@@ -95,10 +128,10 @@
       </p>
       } @if(selectedMacromolecule()?.additionalData?.molecule?.length){
       <p class="title">Length</p>
-      <p class="content">{{selectedMacromolecule().additionalData.molecule.length}} amino acids</p>
+      <p class="content">{{selectedMacromolecule()?.additionalData?.molecule?.length}} amino acids</p>
       } @if(selectedMacromolecule()?.additionalData?.molecule?.weight){
       <p class="title">Theoretical weight</p>
-      <p class="content">{{selectedMacromolecule().additionalData.molecule.weight}} KDa</p>
+      <p class="content">{{selectedMacromolecule()?.additionalData?.molecule?.weight}} KDa</p>
       }
     </mat-tab>
 
@@ -110,6 +143,8 @@
         <div class="dropdown-container">
           <!-- <span class="dropdown-title">{{ dropdownTitle }}</span> -->
           <pdbc-entry-dropdown
+            [searchable]="false"
+            searchTitle="''"
             [downloadable]="false"
             [islink]="false"
             [options]="dropdownOptions"
@@ -122,19 +157,13 @@
         <p>{{dropdownOptions[0].name}}</p>
         } @else {}
       </div>
-      @if (sequenceDetails.length > 0) {
+      @if (sequenceDetails()) {
       <div class="sequence-container">
-        @for (sequenceDetail of sequenceDetails; track sequenceDetail;) {
         <div class="title">
           <span class="text">FASTA sequence</span>
-          <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
+          <button (click)="copySequence(sequenceDetails())">Copy sequence</button>
         </div>
-        <div class="sequence">
-          @for (sequenceSegment of sequenceDetail.segments; track sequenceSegment) {
-          <span [style.background]="sequenceSegment.color ? sequenceSegment.color : ''">{{ sequenceSegment.sequence }}</span>
-          }
-        </div>
-        }
+        <div class="sequence">{{ sequenceDetails()?.fullSequence }}</div>
       </div>
       }
     </mat-tab>
@@ -146,12 +175,12 @@
 
       @if(structureDomains().length){
       <p class="title">Structure domains ({{structureDomains().length}}):</p>
-      @for(domain of structureDomains(); track domain.cathId){
-      <p class="content" style="margin-left: 16px !important">{{domain.cathTitle}}</p>
+      @for(domain of structureDomains(); track domain.domainId){
+      <p class="content" style="margin-left: 16px !important">{{domain.domainTitle}}</p>
       <p class="content" style="margin-left: 16px !important">
-        (CATH
-        <a [href]="'https://www.cathdb.info/version/latest/superfamily/' + domain.cathId" target="_blank">
-          {{domain.cathId}}
+        ({{domain.identity}}
+        <a [href]="domain.link" target="_blank">
+          {{domain.domainId}}
           <!-- <i class="icon icon-link icon-common" style="margin-left: 4px"></i> --> </a
         >)
       </p>
@@ -161,12 +190,12 @@
 
       @if(sequenceDomains().length){
       <p class="title" style="margin-top: 12px !important">Sequence domains ({{sequenceDomains().length}}):</p>
-      @for(domain of sequenceDomains(); track domain.cathId){
-      <p class="content" style="margin-left: 16px !important">{{domain.cathTitle}}</p>
+      @for(domain of sequenceDomains(); track domain.domainId){
+      <p class="content" style="margin-left: 16px !important">{{domain.domainTitle}}</p>
       <p class="content" style="margin-left: 16px !important">
         ({{domain.identity}}
-        <a [href]="'https://www.ebi.ac.uk/interpro/entry/pfam/' + domain.cathId" target="_blank">
-          {{domain.cathId}}
+        <a [href]="domain.link" target="_blank">
+          {{domain.domainId}}
           <!-- <i class="icon icon-link icon-common" style="margin-left: 4px"></i> --> </a
         >)
       </p>
@@ -210,5 +239,14 @@
     </mat-tab>
   </mat-tab-group>
 
-  } }
+  } } @else {
+  <header>
+    <section class="header">
+      <h2>No Macromolecules data available</h2>
+      <div class="controls">
+        <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+      </div>
+    </section>
+  </header>
+  }
 </section>

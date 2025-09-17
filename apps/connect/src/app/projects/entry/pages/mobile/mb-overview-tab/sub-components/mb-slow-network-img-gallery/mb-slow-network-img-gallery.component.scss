@@ -1,0 +1,102 @@
+.gallery {
+  display: flex;
+  justify-content: center;
+}
+
+.gallery-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-direction: column;
+
+  .gallery-image {
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 1 / 1; // keeps it square
+    position: relative; // anchor arrows here
+
+    img,
+    .loading-img {
+      width: 100%;
+      height: 100%;
+    }
+
+    img.arrow-right,
+    img.arrow-left {
+      width: 32px;
+      height: 33px;
+    }
+
+    img.hidden {
+      display: none;
+    }
+  }
+
+  .arrow-left,
+  .arrow-right {
+    padding: 8px;
+    font-size: 24px;
+    cursor: pointer;
+    position: absolute;
+    top: 50%; // keep arrows vertically centered
+    transform: translateY(-50%);
+    z-index: 3;
+    background: rgb(255 255 255 / 70%); // subtle background for visibility
+    border-radius: 50%;
+    border: none;
+  }
+
+  .arrow-left {
+    left: -3px;
+  }
+
+  .arrow-right {
+    right: -3px;
+  }
+
+  .gallery-nav {
+    display: flex;
+    height: 35px;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    align-self: stretch;
+    margin-top: 15px;
+
+    .dot-indicators {
+      display: flex;
+      gap: 16px;
+    }
+
+    .dot-indicators span {
+      width: 20px;
+      height: 20px;
+      background-color: #d0debb;
+      border-radius: 50%;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .dot-indicators .active {
+      background-color: #056643;
+    }
+
+    .dot-indicators span:hover {
+      background-color: #056643;
+      box-shadow: 0 0 0 5px #d0debb; /* Outer ring */
+    }
+  }
+}
+@media (width <= 600px) {
+  .arrow-left,
+  .arrow-right {
+    font-size: 18px;
+    padding: 6px;
+  }
+
+  .dot-indicators span {
+    width: 10px;
+    height: 10px;
+  }
+}

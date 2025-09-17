@@ -1,56 +1,81 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { inject, Injectable, signal, Type } from '@angular/core';
-import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { MobileTabNames } from './mobile-main/mobile-main.component';
+import { inject, Injectable, NgZone, signal, Type } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { Router } from '@angular/router';
+import Clarity from '@microsoft/clarity';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MobileTabName, MobileTabNames } from './mobile-tab.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MobileFacade {
-  public readonly signals = inject(ComponentCommunicationService);
+  private readonly router = inject(Router);
 
-  private _selectedTabName = signal<string>('');
-  public selectedTabName = this._selectedTabName.asReadonly();
+  private bottomSheet = inject(MatBottomSheet);
+  private readonly zone = inject(NgZone);
 
-  private _selectedMobileTabName$ = new BehaviorSubject<MobileTabNames>(MobileTabNames.Overview);
-  public selectedMobileTabName = this._selectedMobileTabName$.asObservable();
+  private _activePage = signal<string>('overview');
+  public activePage = this._activePage.asReadonly();
+
+  // private _selectedTabName = signal<string>('');
+  // public selectedTabName = this._selectedTabName.asReadonly();
+
+  private _selectedPageName$ = new BehaviorSubject<MobileTabNames>(MobileTabNames.Overview);
+  public selectedPageName = this._selectedPageName$.asObservable();
 
   private _selectedComponent = signal<Type<any> | null>(null);
   public selectedComponent = this._selectedComponent.asReadonly();
 
-  private _macromoleculeTitle = signal<string>('Macromolecule');
-  public macromoleculeTitle = this._macromoleculeTitle.asReadonly();
+  // private _macromoleculeTitle = signal<string>('Macromolecule');
+  // public macromoleculeTitle = this._macromoleculeTitle.asReadonly();
 
-  private _ligandTitle = signal<string>('Ligands');
-  public ligandTitle = this._ligandTitle.asReadonly();
+  // private _ligandTitle = signal<string>('Ligands');
+  // public ligandTitle = this._ligandTitle.asReadonly();
 
-  private _domainTitle = signal<string>('Ligands');
-  public domainTitle = this._domainTitle.asReadonly();
+  // private _domainTitle = signal<string>('Domains');
+  // public domainTitle = this._domainTitle.asReadonly();
 
   public molstarViewInstance = signal<any>(undefined);
 
-  public updateSelectedTabName(tabName: string) {
-    this._selectedTabName.set(tabName);
+  // public updateSelectedTabName(tabName: string) {
+  //   this._selectedTabName.set(tabName);
+  // }
+
+  public updateSelectedPageName(tabName: string) {
+    this._selectedPageName$.next(tabName as MobileTabNames);
   }
 
-  public updateSelectedMobileTabName(tabName: string) {
-    this._selectedMobileTabName$.next(tabName as MobileTabNames);
+  public updateActivePage(page: MobileTabName) {
+    this._activePage.set(page);
   }
 
   public updateSelectedComponent(component: Type<any> | null) {
     this._selectedComponent.set(component);
   }
 
-  public updateSelectedMacromoleculeTitle(title: string) {
-    this._macromoleculeTitle.set(title);
-  }
+  // public updateSelectedMacromoleculeTitle(title: string) {
+  //   this._macromoleculeTitle.set(title);
+  // }
 
-  public updateSelectedLigandTitle(title: string) {
-    this._ligandTitle.set(title);
-  }
+  // public updateSelectedLigandTitle(title: string) {
+  //   this._ligandTitle.set(title);
+  // }
 
-  public updateSelectedDomainTitle(title: string) {
-    this._domainTitle.set(title);
+  // public updateSelectedDomainTitle(title: string) {
+  //   this._domainTitle.set(title);
+  // }
+
+  public selectPage(pageId: MobileTabName) {
+    // this.activeTab.set(tabId);
+    this.updateActivePage(pageId);
+    this.router.navigate([], {
+      queryParams: { activeTab: pageId },
+      queryParamsHandling: 'merge',
+    });
+    window.scrollTo(0, 0);
+    window.scrollTo({ behavior: 'smooth' });
+    Clarity.event('mobile-footer-tab-change');
+    Clarity.event(`mobile-footer-tab-access-${pageId}`);
   }
 }
