@@ -119,7 +119,7 @@ export class EntryApiService {
   }
 
   public getUniprotMapping(entryId: string): Observable<UniProtMapping> {
-    return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.BASE_API_V1}mappings/uniprot/${entryId}`).pipe(
+    return this.http.get<Record<string, Record<string, UniProtMapping>>>(`${this.BASE_API_V2}mappings/uniprot/${entryId}`).pipe(
       map((data) => data[entryId]['UniProt']),
       catchError((error) => {
         if (error?.status === 404) {
