@@ -1,11 +1,58 @@
 import { Route } from '@angular/router';
 import { ErrorPageComponent } from './error-page/error-page.component';
 import { complexIdGuard } from './projects/complex/guards/complex.guard';
+import { TabRedirectComponent } from './projects/entry/redirects/all-redirects.component';
 
 // const hostname = document.location.hostname;
 // const isLocal = hostname === 'localhost';
 
 export const appRoutes: Route[] = [
+  {
+    path: 'pdb/:entryId/index',
+    redirectTo: 'pdb/:entryId',
+    pathMatch: 'full',
+  },
+  /**
+   * Redirection patches until Google search updates
+   */
+  {
+    path: 'pdb/:entryId/biology',
+    redirectTo: 'pdb/:entryId',
+    pathMatch: 'full',
+  },
+  {
+    path: 'pdb/:entryId/portfolio',
+    component: TabRedirectComponent,
+    data: { activeTab: 'summary' },
+  },
+  {
+    path: 'pdb/:entryId/citations',
+    component: TabRedirectComponent,
+    data: { activeTab: 'citations' },
+  },
+  {
+    path: 'pdb/:entryId/experiment',
+    component: TabRedirectComponent,
+    data: { activeTab: 'model-quality' },
+  },
+  {
+    path: 'pdb/:entryId/analysis',
+    component: TabRedirectComponent,
+    data: { activeTab: 'macromolecules' },
+  },
+  /**
+   * Redirection patches until we have routes for these two
+   */
+  {
+    path: 'pdb/:entryId/protein/:entityId',
+    component: TabRedirectComponent,
+    data: { activeTab: 'macromolecules' },
+  },
+  {
+    path: 'pdb/:entryId/bound/:boundId',
+    component: TabRedirectComponent,
+    data: { activeTab: 'ligands' },
+  },
   {
     path: 'pdb/:entryId',
     loadComponent: () => import('./projects/entry/pages/main/main.component').then((m) => m.EntryMainPageComponent),
