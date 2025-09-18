@@ -19,8 +19,11 @@ export class SearchPageComponent implements OnInit {
       // raw query string from the parent URL (e.g. ?searchParams=...)
       const queryString = window.location.search;
 
-      // ✅ important: point to /assets/adv-search/ (no index.html)
-      const fullUrl = `/assets/adv-search/${queryString}`;
+      // use __app_public_path__ that is set in index.html
+      const publicPath = (window as any).__app_public_path__ || '/';
+
+      // build the full iframe URL
+      const fullUrl = `${publicPath}assets/adv-search/${queryString}`;
 
       this.iframeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fullUrl);
     });
