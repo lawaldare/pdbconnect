@@ -2,11 +2,17 @@ import { Route } from '@angular/router';
 import { ErrorPageComponent } from './error-page/error-page.component';
 import { complexIdGuard } from './projects/complex/guards/complex.guard';
 import { TabRedirectComponent } from './projects/entry/redirects/all-redirects.component';
+import { SearchPageComponent } from './projects/entry/pages/search/search-page.component';
 
 // const hostname = document.location.hostname;
 // const isLocal = hostname === 'localhost';
 
 export const appRoutes: Route[] = [
+  {
+    path: 'search/index',
+    component: SearchPageComponent,
+    title: 'Search the PDB Archive < PDBe < EMBL-EBI',
+  },
   {
     path: 'pdb/:entryId/index',
     redirectTo: 'pdb/:entryId',
