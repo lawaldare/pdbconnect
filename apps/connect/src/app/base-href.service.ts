@@ -16,6 +16,8 @@ export class BaseHrefService {
       baseHref = '/pdbe/pdbe-kb/';
     } else if (pathname.includes('entry')) {
       baseHref = '/pdbe/entry/';
+    } else if (pathname.includes('search/index')) {
+      baseHref = '/pdbe/entry/';
     } else {
       const pathnamesArray = pathname.split('/');
       const mappedHref = `/${pathnamesArray[1]}/${pathnamesArray[2]}/`;
