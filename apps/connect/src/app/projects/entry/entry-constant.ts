@@ -103,8 +103,9 @@ export const releaseDateTooltip = 'Date when the coordinates were released in th
 export const revisionDateTooltip = 'Date of the current version or last minor or major revision of a PDB entry';
 
 export const baseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
-const complexBaseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://wwwdev.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
 const ligandBaseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe-srv/pdbechem/' : 'https://wwwdev.ebi.ac.uk/pdbe-srv/pdbechem/';
+
+const complexBaseUrl = 'https://wwwdev.ebi.ac.uk/pdbe/';
 
 /**
  * For dashboard details display of statistic links bar
