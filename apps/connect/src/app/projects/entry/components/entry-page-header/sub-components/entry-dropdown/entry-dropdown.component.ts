@@ -76,18 +76,24 @@ export class EntryDropdownComponent implements OnInit {
 
   public menuOpened() {
     const tag = this.facade.nameToEventTag(this.title());
-    Clarity.event(`file-menu-opened-${tag}`);
+    if ((window as any).clarity) {
+      Clarity.event(`file-menu-opened-${tag}`);
+    }
   }
 
   public optionDownloaded(optionName: string) {
     const tag = this.facade.nameToEventTag(optionName);
-    Clarity.event('file-downloaded');
-    Clarity.event(`file-downloaded-${tag}`);
+    if ((window as any).clarity) {
+      Clarity.event('file-downloaded');
+      Clarity.event(`file-downloaded-${tag}`);
+    }
   }
 
   public optionViewed(optionName: string) {
     const tag = this.facade.nameToEventTag(optionName);
-    Clarity.event('file-viewed');
-    Clarity.event(`file-viewed-${tag}`);
+    if ((window as any).clarity) {
+      Clarity.event('file-viewed');
+      Clarity.event(`file-viewed-${tag}`);
+    }
   }
 }

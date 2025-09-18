@@ -74,7 +74,9 @@ export class MobileMainComponent {
     });
     window.scrollTo(0, 0);
     window.scrollTo({ behavior: 'smooth' });
-    Clarity.event('mobile-footer-tab-change');
-    Clarity.event(`mobile-footer-tab-access-${tabId}`);
+    if ((window as any).clarity) {
+      Clarity.event('mobile-footer-tab-change');
+      Clarity.event(`mobile-footer-tab-access-${tabId}`);
+    }
   }
 }
