@@ -239,8 +239,11 @@ export class SearchAppComponent implements OnInit {
       url = 'https://www' + this.apiSearchConfig.env + '.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + unpAcc;
     } else {
       // there is no wwwdev search application
-      // url = 'https://www' + this.apiSearchConfig.env + '.ebi.ac.uk/pdbe/entry/search/index?';
-      url = 'https://www.ebi.ac.uk/pdbe/entry/search/index?';
+      url = 'https://www' + this.apiSearchConfig.env + '.ebi.ac.uk/pdbe/entry/search/index?';
+      // url = 'https://www.ebi.ac.uk/pdbe/entry/search/index?';
+      const hostname = document.location.hostname;
+      const isLocal = hostname === 'localhost';
+      if (isLocal) url = 'http://localhost:4200/search/index?';
       if (this.apiSearchConfig.view) url += 'view=' + this.apiSearchConfig.view + '&';
       url += resultRecord.var_name + ':' + this.utilService.escapeValue(resultRecord.value);
     }
