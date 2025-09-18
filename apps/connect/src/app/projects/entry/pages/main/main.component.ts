@@ -422,8 +422,10 @@ export class EntryMainPageComponent implements OnInit {
       queryParams: { activeTab: tabName },
       queryParamsHandling: 'merge',
     });
-    Clarity.event('tab-change');
-    Clarity.event(`tab-access-${tabName}`);
+    if ((window as any).clarity) {
+      Clarity.event('tab-change');
+      Clarity.event(`tab-access-${tabName}`);
+    }
   }
 
   public startTour(): void {
