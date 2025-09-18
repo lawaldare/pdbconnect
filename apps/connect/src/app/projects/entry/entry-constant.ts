@@ -103,6 +103,7 @@ export const releaseDateTooltip = 'Date when the coordinates were released in th
 export const revisionDateTooltip = 'Date of the current version or last minor or major revision of a PDB entry';
 
 export const baseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
+const complexBaseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://wwwdev.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';
 const ligandBaseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe-srv/pdbechem/' : 'https://wwwdev.ebi.ac.uk/pdbe-srv/pdbechem/';
 
 /**
@@ -114,25 +115,25 @@ export const dashboardStatLinks = {
     {
       id: 'pdbs',
       displayName: 'structures',
-      link: `${baseUrl}pdbe-kb/complexes/`,
+      link: `${complexBaseUrl}pdbe-kb/complexes/`,
       linkSuffix: '?activeTab=structures',
     },
     {
       id: 'ligands',
       displayName: 'ligands',
-      link: `${baseUrl}pdbe-kb/complexes/`,
+      link: `${complexBaseUrl}pdbe-kb/complexes/`,
       linkSuffix: '?activeTab=ligands',
     },
     {
       id: 'supercomplexes',
       displayName: 'supercomplexes',
-      link: `${baseUrl}pdbe-kb/complexes/`,
+      link: `${complexBaseUrl}pdbe-kb/complexes/`,
       linkSuffix: '?activeTab=supercomplexes',
     },
     {
       id: 'subcomplexes',
       displayName: 'subcomplexes',
-      link: `${baseUrl}pdbe-kb/complexes/`,
+      link: `${complexBaseUrl}pdbe-kb/complexes/`,
       linkSuffix: '?activeTab=subcomplexes',
     },
   ],
