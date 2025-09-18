@@ -2,9 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <script>
+      (function () {
+        var path = window.location.pathname;
+        var base = path.split('/assets/')[0] + '/';
+        window.__app_public_path__ = base;
+
+        // Ensure <base> tag exists and points to assets/adv-search/
+        var baseTag = document.querySelector('base');
+        if (!baseTag) {
+          baseTag = document.createElement('base');
+          document.head.prepend(baseTag);
+        }
+        baseTag.setAttribute('href', window.__app_public_path__ + 'assets/adv-search/');
+      })();
+    </script>
     <title>Search the PDB archive ‹ PDBe ‹ EMBL-EBI</title>
     <!-- <base href=""> -->
-    <base href="/assets/adv-search/" />
+    <!-- <base href="/assets/adv-search/" /> -->
     <meta name="description" content="PDBe / PDB Search" />
     <meta name="keywords" content="PDB, PDBe, search, proteins, search protein, protein structures" />
     <meta name="author" content="PDBe" />
