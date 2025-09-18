@@ -33,7 +33,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pdbe-molstar@3.3.2/build/pdbe-molstar.css" />
 
     <!-- App bundle CSS -->
-    <link rel="stylesheet" href="/assets/adv-search/styles.v3.2.1.bundle.css" />
+    <!-- <link rel="stylesheet" href="/assets/adv-search/styles.v3.2.1.bundle.css" /> -->
     <style>
       #masthead-black-bar {
         display: none;
@@ -66,10 +66,34 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/pdbe-molstar@3.3.2/build/pdbe-molstar-plugin.js"></script>
-    <script src="/assets/adv-search/inline.v3.2.1.bundle.js"></script>
-    <script src="/assets/adv-search/polyfills.v3.2.1.bundle.js"></script>
-    <script src="/assets/adv-search/scripts.v3.2.1.bundle.js"></script>
-    <script src="/assets/adv-search/main.v3.2.1.bundle.js"></script>
+    <!-- <script src="/assets/adv-search/inline.v3.2.1.bundle.js"></script> -->
+    <!-- <script src="/assets/adv-search/polyfills.v3.2.1.bundle.js"></script> -->
+    <!-- <script src="/assets/adv-search/scripts.v3.2.1.bundle.js"></script> -->
+    <!-- <script src="/assets/adv-search/main.v3.2.1.bundle.js"></script> -->
+    <script>
+      (function () {
+        var publicPath = window.__app_public_path__ || '/';
+        var scripts = [
+          'assets/adv-search/inline.v3.2.1.bundle.js',
+          'assets/adv-search/polyfills.v3.2.1.bundle.js',
+          'assets/adv-search/scripts.v3.2.1.bundle.js',
+          'assets/adv-search/main.v3.2.1.bundle.js',
+        ];
+        scripts.forEach(function (src) {
+          var s = document.createElement('script');
+          s.src = publicPath + src;
+          document.body.appendChild(s);
+        });
+
+        var styles = ['assets/adv-search/styles.v3.2.1.bundle.css'];
+        styles.forEach(function (href) {
+          var l = document.createElement('link');
+          l.rel = 'stylesheet';
+          l.href = publicPath + href;
+          document.head.appendChild(l);
+        });
+      })();
+    </script>
     <script src="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/js/script.js"></script>
 
     <!-- Google Analytics -->
