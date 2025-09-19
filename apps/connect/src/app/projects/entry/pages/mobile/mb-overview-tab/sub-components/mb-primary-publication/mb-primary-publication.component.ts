@@ -87,16 +87,7 @@ export class MbPrimaryPublicationComponent implements OnInit {
 
   public navigateToPageSection(event: Event, sectionId: string): void {
     event.preventDefault();
-    this.mbFacade.selectPage('citation');
-    setTimeout(() => {
-      const element = document.getElementById(sectionId);
-      const toc = document.querySelector('.table-of-contents') as HTMLElement;
-      if (element && toc) {
-        const offsetTop = element.offsetTop;
-        window.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
-      }
-    }, 500);
-
+    this.mbFacade.selectPage('citation', sectionId);
     this.logGAEvents(sectionId);
   }
 

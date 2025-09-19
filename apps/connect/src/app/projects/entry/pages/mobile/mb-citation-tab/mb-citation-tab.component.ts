@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
@@ -18,6 +18,7 @@ import { MobileFacade } from '../mobile.facade';
 import { MobileTabNames } from '../mobile-tab.model';
 import { EntryActions } from '../../../store/entry.actions';
 import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
+import { ActivatedRoute } from '@angular/router';
 
 export interface NavigationLink {
   id: string;
@@ -30,7 +31,7 @@ export interface NavigationLink {
   templateUrl: './mb-citation-tab.component.html',
   styleUrl: './mb-citation-tab.component.scss',
 })
-export class MbCitationTabComponent implements OnInit {
+export class MbCitationTabComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly util = inject(UtilService);
   private readonly entryAPIService = inject(EntryApiService);
@@ -38,6 +39,7 @@ export class MbCitationTabComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly mbFacade = inject(MobileFacade);
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
+  private readonly route = inject(ActivatedRoute);
 
   public readonly summary = signal<ProcessedSummary>({} as ProcessedSummary);
   public readonly entryId = signal<string>('');
@@ -63,7 +65,8 @@ export class MbCitationTabComponent implements OnInit {
   public initialCount = signal<number>(5);
   public initialAuthorCount = signal<number>(5);
 
-  @HostListener('window:scroll', [])
+  private bodyScrollHandler = this.onScroll.bind(this);
+
   onScroll() {
     this.navigationLinks.forEach((section) => {
       const element = document.getElementById(section.id);
@@ -110,6 +113,42 @@ export class MbCitationTabComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+
+    const sectionId$ = this.route.queryParams.pipe(
+      map((params) => params['sectionId']),
+      filter(Boolean)
+    );
+
+    combineLatest([
+      this.globalStore.select(EntrySelectors.primaryPublication).pipe(filter(Boolean)),
+      this.globalStore.select(EntrySelectors.articlesCiting).pipe(filter(Boolean)),
+      sectionId$,
+    ])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(([_, __, sectionId]) => {
+        queueMicrotask(() => {
+          requestAnimationFrame(() => {
+            const element = document.getElementById(sectionId);
+            const toc = document.querySelector('.table-of-contents') as HTMLElement;
+            if (element && toc) {
+              const offsetTop = element.offsetTop;
+
+              document.body.scrollTo({
+                top: offsetTop - toc.offsetHeight,
+                behavior: 'instant',
+              });
+            }
+          });
+        });
+      });
+  }
+
+  ngAfterViewInit() {
+    document.body.addEventListener('scroll', this.bodyScrollHandler, { passive: true });
+  }
+
+  ngOnDestroy() {
+    document.body.removeEventListener('scroll', this.bodyScrollHandler);
   }
 
   public toggleRelatedEntriesList(): void {
@@ -214,7 +253,7 @@ export class MbCitationTabComponent implements OnInit {
     const toc = document.querySelector('.table-of-contents') as HTMLElement;
     if (element && toc) {
       const offsetTop = element.offsetTop;
-      window.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
+      document.body.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
     }
   }
 
