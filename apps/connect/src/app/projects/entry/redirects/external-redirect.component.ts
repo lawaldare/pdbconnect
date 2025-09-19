@@ -6,6 +6,13 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ExternalRedirectComponent implements OnInit {
   ngOnInit() {
-    window.location.href = 'https://www.ebi.ac.uk/pdbe/';
+    const hostname = window.location.hostname;
+
+    let target = 'https://www.ebi.ac.uk/pdbe/'; // default to prod
+    if (hostname.includes('localhost') || hostname.includes('wwwdev')) {
+      target = 'https://wwwdev.ebi.ac.uk/pdbe/';
+    }
+
+    window.location.href = target;
   }
 }
