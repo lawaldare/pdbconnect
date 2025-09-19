@@ -66,11 +66,19 @@ export class MobileFacade {
   //   this._domainTitle.set(title);
   // }
 
-  public selectPage(pageId: MobileTabName) {
+  public selectPage(pageId: MobileTabName, sectionId?: string) {
     // this.activeTab.set(tabId);
     this.updateActivePage(pageId);
+
+    const queryParams: any = { activeTab: pageId };
+    if (sectionId) {
+      queryParams.sectionId = sectionId;
+    } else {
+      queryParams.sectionId = null;
+    }
+
     this.router.navigate([], {
-      queryParams: { activeTab: pageId },
+      queryParams: queryParams,
       queryParamsHandling: 'merge',
     });
     window.scrollTo(0, 0);
