@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
@@ -36,7 +36,7 @@ import { MbSlowNetworkImageGalleryComponent } from './sub-components/mb-slow-net
   templateUrl: './mb-overview-tab.component.html',
   styleUrls: ['../mb-citation-tab/mb-citation-tab.component.scss', './mb-overview-tab.component.scss'],
 })
-export class MbOverviewTabComponent implements OnInit {
+export class MbOverviewTabComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly destroyRef = inject(DestroyRef);
   private readonly mbFacade = inject(MobileFacade);
@@ -81,8 +81,9 @@ export class MbOverviewTabComponent implements OnInit {
     { id: 'related-databases', title: 'Related databases and links' },
   ];
 
-  @HostListener('window:scroll', [])
-  onScroll() {
+  private bodyScrollHandler = this.onScroll.bind(this);
+
+  private onScroll() {
     this.navigationLinks.forEach((section) => {
       const element = document.getElementById(section.id);
       if (element) {
@@ -105,7 +106,7 @@ export class MbOverviewTabComponent implements OnInit {
     const toc = document.querySelector('.table-of-contents') as HTMLElement;
     if (element && toc) {
       const offsetTop = element.offsetTop;
-      window.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
+      document.body.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
     }
     this.gAS.logEntryPageEvents('ep_mobile_quick_access_click', {});
   }
@@ -119,6 +120,14 @@ export class MbOverviewTabComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+  }
+
+  ngAfterViewInit() {
+    document.body.addEventListener('scroll', this.bodyScrollHandler, { passive: true });
+  }
+
+  ngOnDestroy() {
+    document.body.removeEventListener('scroll', this.bodyScrollHandler);
   }
 
   public openMolstarPage(): void {

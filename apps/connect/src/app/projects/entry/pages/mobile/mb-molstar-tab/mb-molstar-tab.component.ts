@@ -145,7 +145,10 @@ export class MbMolstarTabComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    // Angular materials body style patch
     document.body.style.top = '0px';
+    // Reset scroll
+    document.body.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
     this.mbFacade.selectedPageName.pipe(take(1)).subscribe(async (mobileTabName) => {
       if (mobileTabName === MobileTabNames.Molstar) {
         this.onTabClick(this.mobileTabChips[0]);

@@ -47,3 +47,7 @@
     }
   }
 }
+
+::ng-deep .mat-bottom-sheet-container > * > section {
+  padding-bottom: calc(25vh + env(safe-area-inset-bottom, 0px));
+}

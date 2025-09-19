@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, Optional, signal } from '@angular/core';
+import { afterNextRender, Component, computed, inject, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
@@ -109,6 +109,7 @@ export class MbDomainsComponent implements OnInit {
     this.selectedDomain.set(data);
     this.state.updateSelectedDomainTitle(data.accessionName);
     this.updateCurrentDomain();
+    this.scrollTabToTop();
   }
 
   private async updateCurrentDomain(): Promise<void> {
@@ -120,6 +121,14 @@ export class MbDomainsComponent implements OnInit {
     this.currentViewState.set(ViewState.List);
     this.state.updateSelectedDomainTitle('Domains');
     this.renderInMolstar(undefined);
+    this.scrollTabToTop();
+  }
+
+  private scrollTabToTop() {
+    const container = document.querySelector('.mat-bottom-sheet-container');
+    if (container) {
+      container.scrollTo({ top: 0, behavior: 'instant' });
+    }
   }
 
   private selectionData?: QueryParam[];

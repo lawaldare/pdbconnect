@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, computed, DestroyRef, effect, inject, OnInit, Optional, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnDestroy, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ViewState } from '../mb-macromolecules/mb-macromolecule.component';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
@@ -37,7 +37,7 @@ import { ApplicationAPIDispatcher } from '../../../services/application-api-disp
   templateUrl: './mb-ligands.component.html',
   styleUrls: ['../common-mb-header.scss', './mb-ligands.component.scss'],
 })
-export class MbLigandsComponent implements OnInit {
+export class MbLigandsComponent implements OnInit, OnDestroy {
   private readonly state = inject(MobileStateService);
 
   private readonly globalStore = inject(Store<EntryStoreState>);
@@ -67,6 +67,8 @@ export class MbLigandsComponent implements OnInit {
 
   public readonly processedLigandsObs$ = this.globalStore.select(EntrySelectors.processedLigands);
   public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
+
+  private hasInteractions = signal(false);
 
   public readonly LigandTableRows = computed(() => {
     const rows = this.processedLigands();
@@ -159,11 +161,13 @@ export class MbLigandsComponent implements OnInit {
       });
 
     this.interactionsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((allInteractions) => {
+      this.hasInteractions.set(false);
       const chainId = this.currentChainId();
       const residueId = this.currentResidueId();
       if (!chainId || !residueId) return;
       if (!allInteractions || Object.keys(allInteractions).length === 0) return;
       const interactions = allInteractions[chainId][residueId].interactions;
+      if (interactions.length > 0) this.hasInteractions.set(true);
       this.triggerLigandInteractionsSideEffects(interactions);
     });
   }
@@ -185,6 +189,14 @@ export class MbLigandsComponent implements OnInit {
       EntryActions.getModifications,
       EntryActions.getProcessedLigands,
     ]);
+  }
+
+  async ngOnDestroy(): Promise<void> {
+    if (this.hasInteractions() === true) {
+      const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
+      if (!instance) return;
+      await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
+    }
   }
 
   private async updateCurrentLigand() {
@@ -292,12 +304,21 @@ export class MbLigandsComponent implements OnInit {
     const title = `${data.codeAndName.count} X ${data.id}`;
     this.state.updateSelectedLigandTitle(title);
     this.updateCurrentLigand();
+    this.scrollTabToTop();
   }
 
   public async goBackToList() {
     this.currentViewState.set(ViewState.List);
     this.state.updateSelectedLigandTitle('Ligands');
     await this.renderInMolstar(undefined);
+    this.scrollTabToTop();
+  }
+
+  private scrollTabToTop() {
+    const container = document.querySelector('.mat-bottom-sheet-container');
+    if (container) {
+      container.scrollTo({ top: 0, behavior: 'instant' });
+    }
   }
 
   public async onDropdownSelect(event: string) {

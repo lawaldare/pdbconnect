@@ -466,12 +466,21 @@ export class MbMacromoleculeComponent implements OnInit {
     this.state.updateSelectedMacromoleculeTitle(moleculeName);
     this.selectedMacromolecule.set(data);
     this.updateMacromoleculeData();
+    this.scrollTabToTop();
   }
 
   public async goBackToList() {
     this.currentViewState.set(ViewState.List);
     this.state.updateSelectedMacromoleculeTitle('Macromolecules');
     await this.renderInMolstar(undefined);
+    this.scrollTabToTop();
+  }
+
+  private scrollTabToTop() {
+    const container = document.querySelector('.mat-bottom-sheet-container');
+    if (container) {
+      container.scrollTo({ top: 0, behavior: 'instant' });
+    }
   }
 
   public generateOrganismSearchUrl(term: string): string {
