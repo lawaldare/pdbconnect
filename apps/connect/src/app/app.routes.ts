@@ -3,6 +3,7 @@ import { ErrorPageComponent } from './error-page/error-page.component';
 import { complexIdGuard } from './projects/complex/guards/complex.guard';
 import { TabRedirectComponent } from './projects/entry/redirects/all-redirects.component';
 import { SearchPageComponent } from './projects/entry/pages/search/search-page.component';
+import { ExternalRedirectComponent } from './projects/entry/redirects/external-redirect.component';
 
 // const hostname = document.location.hostname;
 // const isLocal = hostname === 'localhost';
@@ -16,6 +17,19 @@ export const appRoutes: Route[] = [
   {
     path: 'pdb/:entryId/index',
     redirectTo: 'pdb/:entryId',
+    pathMatch: 'full',
+  },
+  /**
+   * Redirection patches to main page
+   */
+  {
+    path: 'pdb',
+    component: ExternalRedirectComponent,
+    pathMatch: 'full',
+  },
+  {
+    path: 'pdb/',
+    component: ExternalRedirectComponent,
     pathMatch: 'full',
   },
   /**
