@@ -161,26 +161,26 @@ export class EntryApiService {
 
   public getIsoformsMapping(entryId: string): Observable<UniProtMapping> {
     return this.http
-      .get<Record<string, Record<string, UniProtMapping>>>(`${this.BASE_API_V1}mappings/isoforms/${entryId}`)
+      .get<Record<string, Record<string, UniProtMapping>>>(`${this.BASE_API_V2}mappings/isoforms/${entryId}`)
       .pipe(map((data) => data[entryId]['UniProt']));
   }
 
   public getGOMapping(entryId: string): Observable<GOMapping> {
-    return this.http.get<Record<string, Record<string, GOMapping>>>(`${this.BASE_API_V1}mappings/go/${entryId}`).pipe(map((data) => data[entryId]['GO']));
+    return this.http.get<Record<string, Record<string, GOMapping>>>(`${this.BASE_API_V2}mappings/go/${entryId}`).pipe(map((data) => data[entryId]['GO']));
   }
 
   public getECMapping(entryId: string): Observable<ECMapping> {
-    return this.http.get<Record<string, Record<string, ECMapping>>>(`${this.BASE_API_V1}mappings/ec/${entryId}`).pipe(map((data) => data[entryId]['EC']));
+    return this.http.get<Record<string, Record<string, ECMapping>>>(`${this.BASE_API_V2}mappings/ec/${entryId}`).pipe(map((data) => data[entryId]['EC']));
   }
 
   public getInterproMapping(entryId: string): Observable<InterProMappings> {
     return this.http
-      .get<Record<string, Record<string, InterProMappings>>>(`${this.BASE_API_V1}mappings/interpro/${entryId}`)
+      .get<Record<string, Record<string, InterProMappings>>>(`${this.BASE_API_V2}mappings/interpro/${entryId}`)
       .pipe(map((data) => data[entryId]['InterPro']));
   }
 
   public getPfamMapping(entryId: string): Observable<PfamMappings> {
-    return this.http.get<Record<string, Record<string, PfamMappings>>>(`${this.BASE_API_V1}mappings/pfam/${entryId}`).pipe(
+    return this.http.get<Record<string, Record<string, PfamMappings>>>(`${this.BASE_API_V2}mappings/pfam/${entryId}`).pipe(
       map((data) => data[entryId]['Pfam']),
       catchError((error) => {
         if (error?.status === 404) {
@@ -192,7 +192,7 @@ export class EntryApiService {
   }
 
   public getCATHMapping(entryId: string): Observable<CathMappings> {
-    return this.http.get<Record<string, Record<string, CathMappings>>>(`${this.BASE_API_V1}mappings/cath/${entryId}`).pipe(
+    return this.http.get<Record<string, Record<string, CathMappings>>>(`${this.BASE_API_V2}mappings/cath/${entryId}`).pipe(
       map((data) => data[entryId]['CATH']),
       catchError((error) => {
         if (error?.status === 404) {
@@ -204,7 +204,7 @@ export class EntryApiService {
   }
 
   public getSCOP175Mapping(entryId: string): Observable<ScopMappings> {
-    return this.http.get<Record<string, Record<string, ScopMappings>>>(`${this.BASE_API_V1}mappings/scop/${entryId}`).pipe(
+    return this.http.get<Record<string, Record<string, ScopMappings>>>(`${this.BASE_API_V2}mappings/scop/${entryId}`).pipe(
       map((data) => data[entryId]['SCOP']),
       catchError((error) => {
         if (error?.status === 404) {
@@ -249,16 +249,16 @@ export class EntryApiService {
 
   public getValidationKeyStats(entryId: string): Observable<KeyValidationStats> {
     return this.http
-      .get<Record<string, KeyValidationStats>>(`${this.BASE_API_V1}validation/key_validation_stats/entry/${entryId}`)
+      .get<Record<string, KeyValidationStats>>(`${this.BASE_API_V2}validation/key_validation_stats/entry/${entryId}`)
       .pipe(map((data) => data[entryId]));
   }
 
   public getModelQualityXray(entryId: string): Observable<ModelQualityXray> {
-    return this.http.get<Record<string, ModelQualityXray>>(`${this.BASE_API_V1}validation/model_quality_xray/entry/${entryId}`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, ModelQualityXray>>(`${this.BASE_API_V2}validation/model_quality_xray/entry/${entryId}`).pipe(map((data) => data[entryId]));
   }
 
   public getValidationXRayRefine(entryId: string): Observable<XRayRefine> {
-    return this.http.get<Record<string, XRayRefine>>(`${this.BASE_API_V1}validation/xray_refine_data_stats/entry/${entryId}`).pipe(map((data) => data[entryId]));
+    return this.http.get<Record<string, XRayRefine>>(`${this.BASE_API_V2}validation/xray_refine_data_stats/entry/${entryId}`).pipe(map((data) => data[entryId]));
   }
 
   public getPreferredAssembly(entryId: string): Observable<ComplexDetails[]> {
@@ -334,7 +334,7 @@ export class EntryApiService {
 
   // Record<string, BestStructure[]>
   public getSummaryQualityScores(entryId: string): Observable<ProcessedQualityScores> {
-    return this.http.get<Record<string, SummaryQualityScores>>(`${this.BASE_API_V1}validation/summary_quality_scores/entry/${entryId}`).pipe(
+    return this.http.get<Record<string, SummaryQualityScores>>(`${this.BASE_API_V2}validation/summary_quality_scores/entry/${entryId}`).pipe(
       map((data) => {
         const datum = data[entryId];
 
@@ -393,7 +393,7 @@ export class EntryApiService {
 
   public getResidueWiseOutliers(entryId: string): Observable<ResidueWiseOutliersMolecule[]> {
     return this.http
-      .get<Record<string, { molecules: ResidueWiseOutliersMolecule[] }>>(`${this.BASE_API_V1}validation/residuewise_outlier_summary/entry/${entryId}`)
+      .get<Record<string, { molecules: ResidueWiseOutliersMolecule[] }>>(`${this.BASE_API_V2}validation/residuewise_outlier_summary/entry/${entryId}`)
       .pipe(
         map((data) => {
           return data[entryId]['molecules'] || [];
