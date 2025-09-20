@@ -15,6 +15,7 @@ export const gridOptions: GridOptions = {
     suppressMovable: true,
   },
   paginationPageSize: isSmallScreen ? 3 : 5,
+  suppressDragLeaveHidesColumns: true
 };
 
 export const colDefs: ColDef[] = [

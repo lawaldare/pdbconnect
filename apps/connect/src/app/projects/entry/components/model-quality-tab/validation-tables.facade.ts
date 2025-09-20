@@ -55,6 +55,7 @@ export class ValidationTablesFacade {
     paginationPageSizeSelector: false,
     enableCellTextSelection: true,
     suppressRowClickSelection: true,
+    suppressDragLeaveHidesColumns: true
   };
 
   /**
@@ -72,6 +73,7 @@ export class ValidationTablesFacade {
       paginationPageSizeSelector: false,
       enableCellTextSelection: true,
       suppressRowClickSelection: true,
+      suppressDragLeaveHidesColumns: true
     };
   }
 }
