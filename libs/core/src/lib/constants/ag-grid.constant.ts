@@ -49,6 +49,7 @@ export const agGridOptionsBase: GridOptions = {
   suppressColumnVirtualisation: false,
   singleClickEdit: true,
   tooltipShowDelay: 0,
+  suppressDragLeaveHidesColumns: true
 };
 
 export const autoSizeStrategy: SizeColumnsToFitGridStrategy | SizeColumnsToFitProvidedWidthStrategy | SizeColumnsToContentStrategy = {
