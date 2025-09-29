@@ -2,7 +2,7 @@ import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import type { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
 
 // Check InitParams and DefaultParams at:
-// https://github.com/molstar/pdbe-molstar/blob/v3.7.0/src/app/spec.ts
+// https://github.com/molstar/pdbe-molstar/blob/v3.7.2/src/app/spec.ts
 
 export const Molstar370DefaultParams = {
   moleculeId: undefined,

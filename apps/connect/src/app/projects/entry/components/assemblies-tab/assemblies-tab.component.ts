@@ -160,7 +160,7 @@ export class AssembliesTabComponent implements AfterViewInit {
     const assemblyId = assembly.assemblyId ? assembly.assemblyId : '1';
 
     // Check InitParams and DefaultParams at:
-    // https://github.com/molstar/pdbe-molstar/blob/v3.7.0/src/app/spec.ts
+    // https://github.com/molstar/pdbe-molstar/blob/v3.7.2/src/app/spec.ts
     const configForMolstar = {
       ...Molstar370DefaultParams,
       moleculeId: this.entryId(),

@@ -19,6 +19,7 @@
         [columnDefs]="colDefs"
         [gridOptions]="gridOptions"
         (selectionChanged)="onSelectionChanged($event)"
+        (gridReady)="onComplexStructureGridReady($event)"
         [paginationPageSizeSelector]="paginationPageSizeSelector()"
         [rowSelection]="rowSelection"
         [initialState]="initialState"
