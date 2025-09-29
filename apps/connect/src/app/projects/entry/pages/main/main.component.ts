@@ -201,15 +201,17 @@ export class EntryMainPageComponent implements OnInit {
 
   private testNetworkSpeed() {
     const customSettings = {
-      iterations: 1, // Run 1 test for better accuracy
-      retryDelay: 500, // Wait 1 second between retries
+      iterations: 5, // Run 5 test for better accuracy
+      retryDelay: 500, // Wait 0.5 seconds between retries
       file: {
         // path: 'https://www.ebi.ac.uk/pdbe/entry-files/download/10mh.bcif.gz',
         // size: 103402,        // 106KB in bytes
         // path: 'https://raw.githubusercontent.com/jrquick17/ng-speed-test/02c59e4afde67c35a5ba74014b91d44b33c0b3fe/demo/src/assets/500kb.jpg',
         // size: 500000,        // 106KB in bytes
-        path: 'https://www.ebi.ac.uk/pdbe/entry-files/download/3d12.bcif',
-        size: 401069,
+        // path: 'https://www.ebi.ac.uk/pdbe/entry-files/download/3d12.bcif',
+        // size: 401069,
+        path: 'https://www.ebi.ac.uk/pdbe/entry-files/download/7aym_validation.xml',
+        size: 85838, // 86KB in bytes
         shouldBustCache: true, // Prevent browser caching
       },
     };
@@ -233,7 +235,7 @@ export class EntryMainPageComponent implements OnInit {
       .subscribe({
         next: (speed) => {
           // speed is in Mbps
-          // console.log('Detected speed (Mbps): ', speed);
+          console.log('Detected speed (Mbps): ', speed);
           if (speed && speed < 7.5) this.compCommunication.slowNetwork$.next(true);
           else this.compCommunication.slowNetwork$.next(false);
         },
