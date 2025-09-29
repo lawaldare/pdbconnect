@@ -40,13 +40,15 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
     this.aggregatedApiService
       .fetchDepiction(this.ligand.chem_comp_id)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((depiction: Depiction) => {
+      .subscribe(async (depiction: Depiction) => {
         const ligand = this.renderer.createElement('pdb-ligand-env');
         this.renderer.appendChild(imageContainer, ligand);
-        this.renderer.setProperty(ligand, 'depiction', depiction);
-        this.renderer.setProperty(ligand, 'highlightSubstructure', this.ligand.substructure_match);
-        this.renderer.setAttribute(ligand, 'depiction-only', '');
-        this.ligandEv = ligand;
+        await customElements.whenDefined('pdb-ligand-env').then(() => {
+          this.renderer.setProperty(ligand, 'depiction', depiction);
+          this.renderer.setProperty(ligand, 'highlightSubstructure', this.ligand.substructure_match);
+          this.renderer.setAttribute(ligand, 'depiction-only', '');
+          this.ligandEv = ligand;
+        });
       });
   }
 
@@ -66,6 +68,7 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
 
     if (this.ligandEv) {
       this.renderer.removeChild(imageContainer, this.ligandEv);
+      this.ligandEv = undefined;
     }
   }
 
