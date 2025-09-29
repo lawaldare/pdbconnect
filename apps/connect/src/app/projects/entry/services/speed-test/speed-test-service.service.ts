@@ -60,6 +60,9 @@ export class SpeedTestServiceCustom {
 
           testResult.start();
 
+          // Cleanup any old performance entries for this URL
+          performance.clearResourceTimings();
+
           // Set a more aggressive timeout for the fetch request
           const fetchTimeout = setTimeout(() => {
             abortController.abort();
@@ -73,15 +76,29 @@ export class SpeedTestServiceCustom {
             signal: abortController.signal,
             cache: 'no-cache',
           })
-            .then((response) => {
+            .then(async (response) => {
               clearTimeout(fetchTimeout);
               if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
               }
-              return response.blob();
-            })
-            .then(() => {
-              testResult.end();
+              // Force full body read
+              await response.blob();
+
+              // Get resource timing from browser (true network time, CPU-throttle independent)
+              const entries = performance.getEntriesByName(filePath, 'resource') as PerformanceResourceTiming[];
+              const timing = entries[entries.length - 1];
+
+              if (timing) {
+                const duration = (timing.responseEnd - timing.startTime) / 1000; // seconds
+                const size = settings.file!.size; // bytes (expected size)
+
+                const bps = (size * 8) / duration;
+                testResult.speedBps = bps;
+              } else {
+                // fallback to Date.now timing if resourceTiming missing
+                testResult.end();
+              }
+
               observer.next(testResult);
               observer.complete();
             })
