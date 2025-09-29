@@ -240,6 +240,9 @@
             <section [style.display]="!hasTopologyViewer ? 'none' : '' " class="topology-viewer-container">
               <div class="topology-container" #topologyViewerContainer></div>
             </section>
+            <section [style.display]="!hasRNAViewer ? 'none' : '' " class="rna-viewer-container">
+              <div class="rna-container" #rnaViewerContainer style="float: left"></div>
+            </section>
           </section>
         </section>
         } @else if (!fastNetworkOrForceLoad()) {

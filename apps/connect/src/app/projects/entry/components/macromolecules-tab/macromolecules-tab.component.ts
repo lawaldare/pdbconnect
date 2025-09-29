@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, HostListener, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { dashboardStatLinks, tourIds } from '../../entry-constant';
@@ -35,9 +35,11 @@ import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.mod
 import { getUniProtsDataForMacromolecule } from '../../store/data-processing/macromolecule-processing';
 import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
 import { TutorialTourService } from '../../services/tutorial-tour.service';
+import { MacromoleculesTabFacade } from './macromolecules-tab.facade';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
+declare let PdbRnaViewerPlugin: any;
 @Component({
   selector: 'pdbc-macromolecules-tab',
   standalone: true,
@@ -60,6 +62,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly visInteractivity = inject(VisualisationInteractivityService);
+  private readonly macromoleculesTabFacade = inject(MacromoleculesTabFacade);
   private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
   private readonly scriptLoader = inject(ScriptLoaderService);
@@ -281,6 +284,10 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   @ViewChild('topologyViewerContainer') topologyViewerContainer!: ElementRef;
   private topologyViewerInstance: any;
 
+  public hasRNAViewer = false;
+  @ViewChild('rnaViewerContainer') rnaViewerContainer!: ElementRef;
+  private rnaViewerInstance: any;
+
   public sequenceDetails = signal<
     | {
         title: string;
@@ -347,6 +354,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   private modelIdObserver?: MutationObserver;
 
   private topolViewerMutex = Promise.resolve();
+  private rnaViewerMutex = Promise.resolve();
 
   public readonly tutorialTourService = inject(TutorialTourService);
   public hasLoadedMacromolecules = computed(() => this.processedMacromolecules() !== undefined);
@@ -359,11 +367,19 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public isBannerCookies = signal(false);
 
   ngAfterViewInit(): void {
+    this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
+      if (idx === undefined || idx === null) return;
+      const datum = this.macromoleculeTableRows()[idx];
+      if (datum) {
+        this.sequenceDetails.set(undefined);
+        this.currentMacromoleculeDatum.set(datum);
+        await this.triggerMacromoleculeUpdateSideEffects(datum);
+      }
+    });
     setTimeout(() => {
       this.tutorialTourService.hasMacromolecules.set(this.hasMacromolecules());
       const agreed = this.tutorialTourService.getCookie(tourIds.macromolecules);
       if (!agreed && this.hasMacromolecules()) {
-        console.log('hello');
         this.isBannerCookies.set(true);
       }
     }, 500);
@@ -371,6 +387,22 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public startMacromoleculesTabTour(): void {
     this.tutorialTourService.startTour(this.tutorialTourService.macromoleculeTabTourSteps);
+  }
+
+  @HostListener('document:PDB.RNA.viewer.mouseover', ['$event'])
+  @HostListener('document:PDB.RNA.viewer.mouseout', ['$event'])
+  @HostListener('document:PDB.RNA.viewer.click', ['$event'])
+  handleMouseEventsOnNucleotide(event: any) {
+    const instance = this._molstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return;
+
+    const entityId = macromolecule.additionalData.molecule.entity_id;
+    const chainId = this.dropdownSelected.split('Chain ')[1];
+
+    this.macromoleculesTabFacade.updateMolstarUI(event, instance, String(entityId), String(chainId));
   }
 
   ngOnInit() {
@@ -381,15 +413,19 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
     });
 
-    this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
-      if (idx === undefined || idx === null) return;
-      const datum = this.macromoleculeTableRows()[idx];
-      if (datum) {
-        this.sequenceDetails.set(undefined);
-        this.currentMacromoleculeDatum.set(datum);
-        await this.triggerMacromoleculeUpdateSideEffects(datum);
-      }
+    this.rnaViewerMutex = this.rnaViewerMutex.then(async () => {
+      await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-rna-viewer-plugin-0.2.0.js');
     });
+
+    // this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
+    //   if (idx === undefined || idx === null) return;
+    //   const datum = this.macromoleculeTableRows()[idx];
+    //   if (datum) {
+    //     this.sequenceDetails.set(undefined);
+    //     this.currentMacromoleculeDatum.set(datum);
+    //     await this.triggerMacromoleculeUpdateSideEffects(datum);
+    //   }
+    // });
     // once molstar has rendered, initializes mutation observer for NMR model Id
     this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (finished) => {
       if (finished) {
@@ -531,16 +567,19 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       this.selectionTypeText = 'protein';
       this.hasTopologyViewer = true;
       this.hasProtvista = true;
+      this.hasRNAViewer = false;
     }
 
     if (this.onlyTwoVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
       this.hasProtvista = true;
       this.hasTopologyViewer = false;
+      this.hasRNAViewer = macromolecule.additionalData.molecule.molecule_type === 'polyribonucleotide';
     }
 
     if (this.onlyMolstarVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
       this.hasProtvista = false;
       this.hasTopologyViewer = false;
+      this.hasRNAViewer = false;
     }
   }
 
@@ -597,6 +636,9 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     this.renderInMolstar(macromolecule);
     await this.initOrRefreshProtvista(macromolecule);
     await this.initOrRefreshTopologyViewer(macromolecule);
+    setTimeout(async () => {
+      await this.initOrRNATopologyViewer(macromolecule);
+    }, 500);
   }
 
   public selectionData?: QueryParam[];
@@ -673,6 +715,36 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
       //Call render method to display the 2D view
       this.topologyViewerInstance.render(topologyContainer, options);
+    });
+  }
+
+  private async initOrRNATopologyViewer(macromolecule: ProcessedMacromolecule) {
+    this.rnaViewerMutex = this.rnaViewerMutex.then(() => {
+      const rnaContainer = this.rnaViewerContainer?.nativeElement;
+
+      // stop if this dashboard does not have topology viewer (initially false and then set in onTableRowSelection according to tabName input)
+      if (!this.hasRNAViewer && rnaContainer) {
+        rnaContainer.innerHTML = '';
+        return;
+      }
+
+      // topology viewer is only currently shown for macromolecules
+      // const datum = this.currentMacromoleculeDatum();
+      const entityId = (macromolecule as ProcessedMacromolecule).additionalData.molecule.entity_id;
+      const chainId = this.dropdownSelected?.split('Chain ')[1];
+
+      // topology viewer load or reload in page is simple
+      this.rnaViewerInstance = new PdbRnaViewerPlugin();
+
+      const options = {
+        pdbId: this.entryId(),
+        entityId: `${entityId}`,
+        chainId: chainId,
+        subscribeEvents: true,
+      };
+
+      //Call render method to display the 2D view
+      this.rnaViewerInstance.render(rnaContainer, options);
     });
   }
 

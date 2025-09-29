@@ -1,0 +1,8 @@
+.rna-container {
+  width: 441px;
+  height: 320px;
+}
+
+::ng-deep section.rna-viewer-container > div > div:nth-child(2) {
+  width: 502px;
+}
