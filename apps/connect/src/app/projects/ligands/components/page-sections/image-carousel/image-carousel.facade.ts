@@ -96,21 +96,23 @@ export class ImageCarouselComponentFacade {
   }
 
   private setDepictionProperty(renderer: Renderer2, el: HTMLElement, index: number): void {
-    switch (index) {
-      case 0:
-        renderer.setProperty(el, 'atomNames', true);
-        renderer.setProperty(el, 'highlightSubstructure', '');
-        break;
+    customElements.whenDefined('pdb-ligand-env').then(() => {
+      switch (index) {
+        case 0:
+          renderer.setProperty(el, 'atomNames', true);
+          renderer.setProperty(el, 'highlightSubstructure', '');
+          break;
 
-      case 1:
-        renderer.setProperty(el, 'atomNames', false);
-        renderer.setProperty(el, 'highlightSubstructure', '');
-        break;
+        case 1:
+          renderer.setProperty(el, 'atomNames', false);
+          renderer.setProperty(el, 'highlightSubstructure', '');
+          break;
 
-      default:
-        renderer.setProperty(el, 'atomNames', false);
-        renderer.setProperty(el, 'highlightSubstructure', this.substructureAtoms[index - 2]);
-    }
+        default:
+          renderer.setProperty(el, 'atomNames', false);
+          renderer.setProperty(el, 'highlightSubstructure', this.substructureAtoms[index - 2]);
+      }
+    });
   }
 
   public onPreviousClick(renderer: Renderer2): void {
@@ -135,6 +137,7 @@ export class ImageCarouselComponentFacade {
   }
 
   private updateLigandImage(renderer: Renderer2): void {
+    if (!this.ligandEv) throw 'ERROR: Ligand Id not defined';
     this.setDepictionProperty(renderer, this.ligandEv, this.currentSlide());
     this.setDepictionDescription();
   }
@@ -147,21 +150,23 @@ export class ImageCarouselComponentFacade {
     this.aggregatedApiService
       .fetchDepiction(mappedLigandId)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((depiction: Depiction) => {
-        this.createLigandEnvironment(renderer, imageContainerRef, depiction);
+      .subscribe(async (depiction: Depiction) => {
+        await this.createLigandEnvironment(renderer, imageContainerRef, depiction);
         this.setDepictionDescription();
         this.updateLigandImage(renderer);
       });
   }
 
-  private createLigandEnvironment(renderer: Renderer2, container: ElementRef, depiction: Depiction): void {
+  private async createLigandEnvironment(renderer: Renderer2, container: ElementRef, depiction: Depiction): Promise<void> {
     const ligand = renderer.createElement('pdb-ligand-env');
     renderer.appendChild(container, ligand);
-    renderer.setProperty(ligand, 'depiction', depiction);
 
-    renderer.setAttribute(ligand, 'depiction-only', '');
-    renderer.setAttribute(ligand, 'zoom-on', 'true');
-    this.ligandEv = ligand;
+    await customElements.whenDefined('pdb-ligand-env').then(() => {
+      renderer.setProperty(ligand, 'depiction', depiction);
+      renderer.setAttribute(ligand, 'depiction-only', '');
+      renderer.setAttribute(ligand, 'zoom-on', 'true');
+      this.ligandEv = ligand;
+    });
   }
 
   public resetRenderer(renderer: Renderer2, imageContainer: ElementRef): void {
@@ -169,6 +174,7 @@ export class ImageCarouselComponentFacade {
 
     if (this.ligandEv) {
       renderer.removeChild(imageContainerRef, this.ligandEv);
+      this.ligandEv = undefined;
     }
 
     this.slides.set([]);

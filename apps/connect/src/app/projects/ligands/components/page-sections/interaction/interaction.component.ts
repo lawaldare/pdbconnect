@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction, LigandStructure } from '../../../data-models/structure.model';
 import { PDBIntxData } from '../../../data-models/interaction.model';
-import { catchError, combineLatest, EMPTY, forkJoin, map, mergeMap, switchMap, take, throwError } from 'rxjs';
+import { catchError, combineLatest, EMPTY, forkJoin, from, map, mergeMap, switchMap, take, throwError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -59,14 +59,13 @@ export class InteractionComponent implements AfterViewInit {
           this.showLigandHeatmap.set(true);
           return forkJoin([this.aggregatedApiService.fetchDepiction(this.ligandId()), this.globalStore.select(LigandSelectors.navItems).pipe(take(1))]);
         }),
-        mergeMap(([depiction, navItems]) => {
+        switchMap(([depiction, navItems]) => {
           this.atomNumber = depiction.atoms.length;
           this.generateStructureStatistics();
           this.navItems.update(() => navItems);
           const imageContainer = this.imageContainer.nativeElement;
           this.resetRenderer();
-          this.createLigandEnvironment(imageContainer, depiction);
-          return this.aggregatedApiService.fetchIntxData(this.ligandId());
+          return from(this.createLigandEnvironment(imageContainer, depiction)).pipe(switchMap(() => this.aggregatedApiService.fetchIntxData(this.ligandId())));
         }),
         map((intxDataUrl) => {
           const interaction = intxDataUrl.interactions;
@@ -74,6 +73,8 @@ export class InteractionComponent implements AfterViewInit {
           if (interaction && interaction?.[this.ligandId()]) {
             this.renderer.setProperty(this.ligandEv, 'interaction', interaction[this.ligandId()]);
             this.renderer.setProperty(this.ligandEv, 'contactType', '["TOTAL"]');
+            // fix interactivity given d3.js version
+            this.patchInteractivity();
           } else {
             this.updateWhenNoInteraction();
           }
@@ -89,7 +90,9 @@ export class InteractionComponent implements AfterViewInit {
   }
 
   public async changeLigandEnvironmentFilters(filterString: string) {
-    this.renderer.setAttribute(this.ligandEv, 'contact-type', filterString);
+    await customElements.whenDefined('pdb-ligand-env').then(async () => {
+      this.renderer.setAttribute(this.ligandEv, 'contact-type', filterString);
+    });
     await this.patchInteractivity();
   }
 
@@ -111,11 +114,13 @@ export class InteractionComponent implements AfterViewInit {
   }
 
   private async createLigandEnvironment(container: ElementRef, prop: Depiction): Promise<void> {
-    const ligand = this.renderer.createElement('pdb-ligand-env');
-    this.renderer.appendChild(container, ligand);
-    this.renderer.setProperty(ligand, 'id', 'ligand-int-env');
-    this.renderer.setProperty(ligand, 'depiction', prop);
-    this.ligandEv = ligand;
+    await customElements.whenDefined('pdb-ligand-env').then(async () => {
+      const ligand = this.renderer.createElement('pdb-ligand-env');
+      this.renderer.appendChild(container, ligand);
+      this.renderer.setProperty(ligand, 'id', 'ligand-int-env');
+      this.renderer.setProperty(ligand, 'depiction', prop);
+      this.ligandEv = ligand;
+    });
 
     // fix interactivity given d3.js version
     await this.patchInteractivity();
@@ -126,15 +131,16 @@ export class InteractionComponent implements AfterViewInit {
     await new Promise((resolve) => setTimeout(resolve, 300));
     const weights = this.ligandEv.display.depiction.weight;
     const weightsCircles = weights.selectAll('circle');
+    // dependent on d3 js version.
     weightsCircles
       .on('mouseenter', null)
       .on('mouseleave', null) // clear previous listeners
-      .on('mouseenter', (_ev: any, datum: any) => {
+      .on('mouseenter', (datum: any, _index: number, _nodes: any[]) => {
         const datumIdx = weightsCircles.data().indexOf(datum);
         const circle = weightsCircles.nodes()[datumIdx];
         this.ligandEv.display.depiction.atomMouseEnterEventHandler(datum, circle, true);
       })
-      .on('mouseleave', (_ev: any, _datum: any) => {
+      .on('mouseleave', (_datum: any, _index: number, _nodes: any[]) => {
         this.ligandEv.display.depiction.atomMouseLeaveEventHandler(true);
       });
   }
