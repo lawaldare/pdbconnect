@@ -150,7 +150,6 @@ export class EntryMainPageComponent implements OnInit {
   public entryStatusObs$ = toObservable(this.entryStatus);
 
   private readonly entryId = signal<string>('');
-  // public isDesktopObs$ = toObservable(this.isDesktop);
 
   public currentTabNameObs$ = toObservable(this.compCommunication.currentTabName);
 
