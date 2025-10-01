@@ -10,6 +10,32 @@
       Download table as CSV
       <i class="icon icon-common icon-download"></i>
     </button>
+    @if(pisaSliderReady()){
+    <section class="pisa-filters">
+      <mat-select [formControl]="selectedMethod">
+        <mat-option value="">All Methods</mat-option>
+        @for (method of methods(); track method) {
+        <mat-option [value]="method">{{method}}</mat-option>
+        }
+      </mat-select>
+      <mat-slider [min]="minResolutionBound()" [max]="maxResolutionBound()" [step]="0.1">
+        <input value="300" matSliderStartThumb [(ngModel)]="minResolutionBoundValue" />
+        <input value="400" matSliderEndThumb [(ngModel)]="maxResolutionBoundValue" />
+      </mat-slider>
+      <div class="pisa-filters-slider-input-box">
+        <span>Min</span>
+        <input type="number" step="0.1" matInput [(ngModel)]="minResolutionBoundValue" />
+      </div>
+      <div class="pisa-filters-slider-input-box">
+        <span>Max</span>
+        <input type="number" step="0.1" matInput [(ngModel)]="maxResolutionBoundValue" />
+      </div>
+      <button class="vf-button vf-button--primary vf-button--sm" (click)="applyFilters()">Apply</button>
+    </section>
+    }@else {
+    <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+    }
+
     <div class="pisa-table">
       <ag-grid-angular
         class="ag-theme-quartz"
@@ -17,6 +43,7 @@
         [columnDefs]="colDefs"
         [gridOptions]="gridOptions"
         (selectionChanged)="onSelectionChanged($event)"
+        (firstDataRendered)="onFirstDataRendered($event)"
         [paginationPageSizeSelector]="paginationPageSizeSelector()"
         [rowSelection]="rowSelection"
         [initialState]="initialState"
@@ -26,11 +53,13 @@
   @if(length > 10){
   <div class="charts">
     <section class="complex-sliders">
-      @for(property of pisaProperties; track property.value) {
+      @if(pisaSliderReady()){ @for(property of pisaProperties; track property.value) {
       <div class="complex-slider">
         <span class="title">{{property.label}}</span>
         <ngx-slider [value]="getPropertyValue(property.value)" [options]="getPropertyOptions(property.value)"></ngx-slider>
       </div>
+      } } @else {
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
       }
     </section>
     <section class="histogram">
@@ -102,6 +131,29 @@
   </mat-paginator>
 </div>
 
+} @else { @if(filterActionNoData()){
+<p>No pisa assemblies match your filters</p>
+<section class="pisa-filters">
+  <mat-select [formControl]="selectedMethod">
+    <mat-option value="">All Methods</mat-option>
+    @for (method of methods(); track method) {
+    <mat-option [value]="method">{{method}}</mat-option>
+    }
+  </mat-select>
+  <mat-slider [min]="minResolutionBound()" [max]="maxResolutionBound()" [step]="0.1">
+    <input value="300" matSliderStartThumb [(ngModel)]="minResolutionBoundValue" />
+    <input value="400" matSliderEndThumb [(ngModel)]="maxResolutionBoundValue" />
+  </mat-slider>
+  <div class="pisa-filters-slider-input-box">
+    <span>Min</span>
+    <input type="number" step="0.1" matInput [(ngModel)]="minResolutionBoundValue" />
+  </div>
+  <div class="pisa-filters-slider-input-box">
+    <span>Max</span>
+    <input type="number" step="0.1" matInput [(ngModel)]="maxResolutionBoundValue" />
+  </div>
+  <button class="vf-button vf-button--primary vf-button--sm" (click)="applyFilters()">Apply</button>
+</section>
 } @else {
-<h4>No structures data available yet!</h4>
-}
+<h4>No pisa assemblies available yet!</h4>
+} }

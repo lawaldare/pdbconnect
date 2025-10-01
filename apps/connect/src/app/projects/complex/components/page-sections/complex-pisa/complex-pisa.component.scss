@@ -84,6 +84,29 @@ div.pisa-table {
   }
 }
 
+.pisa-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+
+  @media screen and (width <= 768px) {
+    display: none;
+  }
+
+  &-slider-input-box {
+    margin-bottom: 26px;
+
+    input {
+      width: 70px !important;
+      margin-bottom: 0 !important;
+      border: 1px solid #d0d0ce;
+      height: 36px !important;
+      box-shadow: none !important;
+    }
+  }
+}
+
 .mat-mdc-select {
   width: 40% !important;
   border: 1px solid #d0d0ce;
@@ -91,6 +114,10 @@ div.pisa-table {
   font-size: 14px;
   font-weight: 500;
   line-height: 22.4px;
+}
+
+.mat-mdc-slider {
+  width: 100% !important;
 }
 
 ::ng-deep #histogram-svg {

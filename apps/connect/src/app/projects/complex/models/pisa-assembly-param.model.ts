@@ -9,5 +9,7 @@ export interface PISAAssemblyParam {
   solvation_energy_gain: number;
   pdb_id: string;
   assembly_id: string;
+  experimental_method: string;
+  resolution: number;
   [key: string]: any;
 }
