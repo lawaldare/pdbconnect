@@ -40,6 +40,8 @@ import { ApplicationAPIDispatcher } from '../../services/application-api-dispach
 import { SpeedTestServiceCustom } from '../../services/speed-test/speed-test-service.service';
 
 import { TutorialTourService } from '../../services/tutorial-tour.service';
+import { MetaTagService } from '../../services/meta-tag.service';
+import { EntryMainFacade } from './entry-main.facade';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -83,8 +85,8 @@ import { TutorialTourService } from '../../services/tutorial-tour.service';
 export class EntryMainPageComponent implements OnInit {
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
   private readonly route = inject(ActivatedRoute);
-  private readonly titleService = inject(Title);
-  private readonly metaService = inject(Meta);
+  private readonly metaTagService = inject(MetaTagService);
+  private readonly facade = inject(EntryMainFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
@@ -93,7 +95,6 @@ export class EntryMainPageComponent implements OnInit {
   private readonly entryBioschemasService = inject(EntryBioschemasService);
   private readonly renderer = inject(Renderer2);
   public readonly gAS = inject(GoogleAnalyticsService);
-  private readonly speedTest = inject(SpeedTestServiceCustom);
   public readonly tutorialTourService = inject(TutorialTourService);
 
   private procAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
@@ -149,8 +150,6 @@ export class EntryMainPageComponent implements OnInit {
   public entryStatusObs$ = toObservable(this.entryStatus);
 
   private readonly entryId = signal<string>('');
-  public isDesktop = signal(false);
-  public isDesktopObs$ = toObservable(this.isDesktop);
 
   public currentTabNameObs$ = toObservable(this.compCommunication.currentTabName);
 
@@ -158,28 +157,18 @@ export class EntryMainPageComponent implements OnInit {
 
   public selectedTabIndex = this.compCommunication.selectedTabIndex;
 
-  public showNotificationBanner = signal<boolean>(false);
+  public showNotificationBanner = this.facade.showNotificationBanner;
+  public isDesktop = this.facade.isDesktop;
+  public isDesktopObs$ = toObservable(this.isDesktop);
   public molstarHeight = '480px';
 
-  public readonly apiSearchConfig = {
-    additionalParams: 'rows=20000&json.nl=map&wt=json',
-    fields: 'value,num_pdb_entries,var_name',
-    group: 'group=true&group.field=category',
-    groupLimit: '25',
-    redirectOnClick: true,
-    resultBoxAlign: 'left',
-    searchUrl: 'https://www.ebi.ac.uk/pdbe/search/pdb-autocomplete/select',
-    sort: 'category+asc,num_pdb_entries+desc',
-    view: 'entries',
-    env: environment.production ? '' : 'dev',
-  };
+  public readonly apiSearchConfig = this.facade.apiSearchConfig;
 
   constructor() {
-    this.checkWindowWidth();
+    this.facade.checkWindowWidth();
     this.route.queryParams.subscribe((params) => {
       // Check for screen width <= 768px
       if (window.innerWidth <= 768) return;
-      // const routeTabs = this.routeTabs;
       const tabName = params['activeTab'] ?? 'summary';
       this.compCommunication.currentTabName.set(tabName);
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
@@ -190,90 +179,9 @@ export class EntryMainPageComponent implements OnInit {
     });
   }
 
-  private testProcessingPower() {
-    const t0 = performance.now();
-    for (let i = 0; i < 1e7; i++) Math.sqrt(i);
-    const t1 = performance.now();
-    const isCPUSlow = t1 - t0 > 40;
-    this.compCommunication.checkedCPUspeed.set(true); // fallback to slow mode
-    this.compCommunication.isCPUSlow.set(isCPUSlow);
-  }
-
-  private testNetworkSpeed() {
-    const customSettings = {
-      iterations: 5, // Run 5 test for better accuracy
-      retryDelay: 500, // Wait 0.5 seconds between retries
-      file: {
-        // path: 'https://www.ebi.ac.uk/pdbe/entry-files/download/10mh.bcif.gz',
-        // size: 103402,        // 106KB in bytes
-        // path: 'https://raw.githubusercontent.com/jrquick17/ng-speed-test/02c59e4afde67c35a5ba74014b91d44b33c0b3fe/demo/src/assets/500kb.jpg',
-        // size: 500000,        // 106KB in bytes
-        // path: 'https://www.ebi.ac.uk/pdbe/entry-files/download/3d12.bcif',
-        // size: 401069,
-        path: 'https://www.ebi.ac.uk/pdbe/entry-files/download/7aym_validation.xml',
-        size: 85838, // 86KB in bytes
-        shouldBustCache: true, // Prevent browser caching
-      },
-    };
-
-    this.speedTest.isOnline().subscribe((isOnline) => {
-      if (!isOnline) {
-        console.log('No internet connection');
-      }
-    });
-
-    this.speedTest
-      .getMbps(customSettings)
-      .pipe(
-        retry(5), // retry up to 5 times on error
-        catchError((err) => {
-          console.error('Speed test failed after retries', err);
-          this.compCommunication.slowNetwork$.next(true); // fallback to slow mode
-          return of(null); // emit a safe value
-        })
-      )
-      .subscribe({
-        next: (speed) => {
-          // speed is in Mbps
-          console.log('Detected speed (Mbps): ', speed);
-          if (speed && speed < 7.5) this.compCommunication.slowNetwork$.next(true);
-          else this.compCommunication.slowNetwork$.next(false);
-        },
-        error: (err) => {
-          console.error('Speed test failed', err);
-          // console.log('Setting default as slow network mode');
-          this.compCommunication.slowNetwork$.next(true);
-        },
-      });
-  }
-
-  private checkWebglEnabled() {
-    const isWebGlEnabled = this.detectWebglSupport() ? true : false;
-    this.compCommunication.checkedWebGlSupport.set(true); // fallback to slow mode
-    this.compCommunication.isWebGlEnabled.set(isWebGlEnabled);
-    return isWebGlEnabled;
-  }
-
-  private detectWebglSupport(): boolean {
-    try {
-      const canvas = document.createElement('canvas');
-      // Try WebGL2 first, fallback to WebGL1
-      return (
-        !!(window.WebGL2RenderingContext && canvas.getContext('webgl2')) ||
-        !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')))
-      );
-    } catch {
-      return false;
-    }
-  }
-
   @HostListener('window:resize', ['$event'])
   onResize(event: Event): void {
-    this.checkWindowWidth();
-  }
-
-  private checkWindowWidth(): void {
-    this.isDesktop.set(window.innerWidth > 768);
+    this.facade.checkWindowWidth();
   }
 
   ngOnInit(): void {
@@ -286,11 +194,9 @@ export class EntryMainPageComponent implements OnInit {
       Clarity.init(environment.clarityProjectId);
     }
 
-    this.showNotification();
-    this.checkWindowWidth();
-    // else {
-    // Clarity.init('yourProjectId'); // Replace with production ID when it's time
-    // }
+    this.facade.showNotification();
+    this.facade.checkWindowWidth();
+
     this.route.params
       .pipe(
         switchMap((params) => {
@@ -307,11 +213,11 @@ export class EntryMainPageComponent implements OnInit {
         mergeMap(async (status: StatusCode) => {
           if (status === 'REL') {
             this.util.setEntryStatus('SUCCESS');
-            this.buildMetaTags();
-            const isWebGlEnabled = this.checkWebglEnabled();
+            this.metaTagService.buildMetaTags(this.renderer);
+            const isWebGlEnabled = this.facade.checkWebglEnabled();
 
-            if (isWebGlEnabled) this.testNetworkSpeed();
-            this.testProcessingPower();
+            if (isWebGlEnabled) this.facade.testNetworkSpeed();
+            this.facade.testProcessingPower();
 
             // used in multiple tabs
             this.globalStore.dispatch(EntryActions.getSummaryData());
@@ -342,77 +248,7 @@ export class EntryMainPageComponent implements OnInit {
       .subscribe({});
   }
 
-  private isTitleAndMetaProcessed = false;
-
-  private buildMetaTags() {
-    this.globalStore
-      .select(EntrySelectors.summaryData)
-      .pipe(
-        filter((summaryData) => {
-          return summaryData !== undefined && Object.keys(summaryData).length > 0;
-        }),
-        take(1),
-        map((summaryData) => {
-          if (summaryData && this.isTitleAndMetaProcessed === false) {
-            const titleAndDescription = `PDB ${this.entryId()}: ${summaryData.entryTitle} | Protein Data Bank in Europe - PDBe`;
-            this.titleService.setTitle(titleAndDescription);
-            this.metaService.addTag({ name: 'description', content: titleAndDescription });
-            this.metaService.addTag({ name: 'author', content: 'Protein Data Bank in Europe - PDBe' });
-            this.metaService.addTag({ name: 'email', content: 'pdbegroup@gmail.com' });
-            this.metaService.addTag({ name: 'Distribution', content: 'Global' });
-            this.metaService.addTag({ name: 'Rating', content: 'General' });
-
-            this.metaService.addTag({ property: 'og:title', content: `PDB: ${this.entryId()} | Protein Data Bank in Europe - PDBe` });
-            this.metaService.addTag({ property: 'og:description', content: `Entry title: "${summaryData.entryTitle}"` });
-            this.metaService.addTag({ property: 'og:url', content: `${environment.baseUrl}pdbe//entry/pdb/1trn` });
-            this.metaService.addTag({
-              property: 'og:image',
-              content: `https://www.ebi.ac.uk/pdbe/static/entry/${this.entryId()}_deposited_chain_front_image-800x800.png`,
-            });
-            this.metaService.addTag({ property: 'og:image:alt', content: `PDBe ${this.entryId()} Structure` });
-            this.metaService.addTag({ property: 'og:type', content: 'website' });
-            this.metaService.addTag({ property: 'og:locale', content: 'en_GB' });
-            this.metaService.addTag({ property: 'og:site_name', content: 'PDBe Entry Pages' });
-
-            this.metaService.addTag({ name: 'twitter:card', content: 'summary_large_image' });
-            this.metaService.addTag({ name: 'twitter:title', content: titleAndDescription });
-            this.metaService.addTag({ name: 'twitter:description', content: titleAndDescription });
-            this.metaService.addTag({ name: 'twitter:url', content: `${environment.baseUrl}pdbe//entry/pdb/1trn` });
-            this.metaService.addTag({
-              name: 'twitter:image',
-              content: `https://www.ebi.ac.uk/pdbe/static/entry/${this.entryId()}_deposited_chain_front_image-800x800.png`,
-            });
-            this.metaService.addTag({ name: 'twitter:image:alt', content: `PDBe ${this.entryId()} Structure` });
-            this.metaService.addTag({ name: 'twitter:site', content: `PDBeurope` });
-
-            for (const linkObj of ENTRY_PAGES_LINKS) {
-              const linkEl = this.renderer.createElement('link');
-              this.renderer.setAttribute(linkEl, 'rel', linkObj.rel);
-              this.renderer.setAttribute(linkEl, 'type', linkObj.type);
-              this.renderer.setAttribute(linkEl, 'href', linkObj.href);
-              if (linkObj.sizes) this.renderer.setAttribute(linkEl, 'sizes', linkObj.sizes!);
-              if (linkObj.title) this.renderer.setAttribute(linkEl, 'title', linkObj.title!);
-              this.renderer.appendChild(document.head, linkEl);
-            }
-            this.isTitleAndMetaProcessed = true;
-          }
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe();
-  }
-
-  private showNotification() {
-    const href = document.location.href;
-    if (href.includes('dev.') || href.includes('wwwdev.')) {
-      this.showNotificationBanner.set(true);
-    } else {
-      this.showNotificationBanner.set(false);
-    }
-  }
-
   async selectTab(event: MatTabChangeEvent) {
-    // const routeTabs = this.routeTabs;
     const tabName = routeTabs[event.index].id;
     this.scrollService.handleScrollPosition(this.tabGroup, event.index);
     this.compCommunication.currentTabName.set(tabName);
