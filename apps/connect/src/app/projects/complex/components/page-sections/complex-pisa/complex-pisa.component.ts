@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -10,18 +10,20 @@ import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PARAMS } from '../../../complex.constant';
 import { drawHistogram } from './histogram';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { PISAAssemblyParam } from '../../../models/pisa-assembly-param.model';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { map } from 'rxjs';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { PisaFilterComponent } from './components/complex-pisa-filter/pisa-filter.component';
 
 @Component({
   selector: 'pdbc-complex-pisa',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, NgxSliderModule],
+  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, NgxSliderModule, FormsModule, NgxSkeletonLoaderModule, PisaFilterComponent],
   templateUrl: './complex-pisa.component.html',
   styleUrls: ['./complex-pisa.component.scss'],
 })
@@ -38,8 +40,9 @@ export class ComplexPISAComponent implements OnInit {
 
   public stats = signal<any>({});
 
-  public rowData = computed(() => {
-    return this.pisa();
+  public rowData = linkedSignal({
+    source: this.pisa,
+    computation: () => this.pisa() ?? [],
   });
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
 
@@ -75,9 +78,14 @@ export class ComplexPISAComponent implements OnInit {
   private unfilteredStructures: PISAAssemblyParam[] = [];
   public searchTerm = new FormControl('');
   private readonly destroyRef = inject(DestroyRef);
+  public pisaSliderReady = signal(false);
+  public filterActionNoData = signal(false);
 
   ngOnInit(): void {
-    this.stats.set(this.getMinMaxStats(this.pisa() as PISAAssemblyParam[]));
+    setTimeout(() => {
+      this.stats.set(this.getMinMaxStats(this.pisa() as PISAAssemblyParam[]));
+      this.pisaSliderReady.set(true);
+    }, 500);
 
     this.structuresPage = (this.rowData() ?? []).slice(0, this.structuresPageSize());
     this.unfilteredStructures = this.rowData() ?? [];
@@ -94,8 +102,6 @@ export class ComplexPISAComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((data) => {
-        console.log(data);
-        // this.structureRowData.update(() => data);
         this.structuresPage = data.slice(0, this.structuresPageSize());
       });
   }
@@ -126,21 +132,41 @@ export class ComplexPISAComponent implements OnInit {
   }
 
   public onSelectionChanged(event: SelectionChangedEvent) {
-    const data = event.api.getSelectedNodes()[0].data;
+    const selectedNodes = event.api.getSelectedNodes();
+    if (selectedNodes.length === 0) {
+      this.selectedRow.set({} as PISAAssemblyParam);
+      this.selectedRowParams.set('');
+      return;
+    }
+    const data = selectedNodes[0].data;
+    this.updatedSelectedRow(data);
+  }
+
+  private updatedSelectedRow(data: any) {
     this.selectedRow.set(data);
     const id = `${data.pdb_id}_${data.assembly_id}`;
     this.selectedRowParams.set(id);
     this.drawHistogram();
   }
 
+  public onRowDataUpdated(event: any) {
+    if (event.api.getDisplayedRowCount() > 0) {
+      const firstNode = event.api.getDisplayedRowAtIndex(0);
+      if (firstNode) {
+        firstNode.setSelected(true);
+        this.updatedSelectedRow(firstNode.data);
+      }
+    }
+  }
   private drawHistogram(): void {
     drawHistogram(this.mappedPisaData(), this.selectedRowParams(), this.pisaAssemblyProperty.value, '#histogram-svg');
   }
-
   public downloadCSV(): void {
     const mappedData: any = this.rowData()?.map((pisa: PISAAssemblyParam) => {
       return {
         ID: `${pisa.pdb_id}_${pisa.assembly_id}`,
+        'Experimental Method': pisa.experimental_method,
+        Resolution: pisa.resolution,
         'Accessible Surface Area': pisa.accessible_surface_area,
         'Buried Surface Area': pisa.buried_surface_area,
         'Solvation Energy Gain': pisa.solvation_energy_gain,
@@ -174,5 +200,24 @@ export class ComplexPISAComponent implements OnInit {
     });
 
     return result;
+  }
+
+  public applyFilters(data: any): void {
+    const { method, minValue, maxValue } = data;
+
+    const filteredData = this.pisa()?.filter((entry) => {
+      const inRange = entry.resolution >= minValue && entry.resolution <= maxValue;
+      const methodMatch = method === '' || entry.experimental_method === method;
+      return inRange && methodMatch;
+    });
+
+    if (filteredData?.length === 0) {
+      this.filterActionNoData.set(true);
+    } else {
+      this.filterActionNoData.set(false);
+    }
+    this.rowData.update(() => filteredData ?? []);
+    this.stats.set(this.getMinMaxStats(filteredData as PISAAssemblyParam[]));
+    this.drawHistogram();
   }
 }

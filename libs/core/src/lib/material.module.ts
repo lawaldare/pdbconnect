@@ -17,6 +17,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSliderModule } from '@angular/material/slider';
 
 @NgModule({
   exports: [
@@ -38,6 +39,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatBottomSheetModule,
     MatSlideToggleModule,
     MatIconModule,
+    MatSliderModule,
   ],
 })
 export class MaterialModule {}

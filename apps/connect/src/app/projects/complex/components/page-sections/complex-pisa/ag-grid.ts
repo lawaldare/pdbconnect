@@ -45,19 +45,19 @@ export const colDefs: ColDef[] = [
     headerComponentParams: { showHelpIcon: true, enableFilterButton: false, enableSorting: true, tooltipText: pisaTableTooltip.BSA },
   },
   {
-    headerName: 'Solv. ΔG (kcal /mol)',
+    headerName: 'Solv. ΔG (kcal/mol)',
     field: 'solvation_energy_gain',
     headerComponent: CustomHeaderComponent,
     headerComponentParams: { showHelpIcon: true, enableFilterButton: false, enableSorting: true, tooltipText: pisaTableTooltip.SEA },
   },
   {
-    headerName: 'Diss. ΔG (kcal /mol)',
+    headerName: 'Diss. ΔG (kcal/mol)',
     field: 'dissociation_energy',
     headerComponent: CustomHeaderComponent,
     headerComponentParams: { showHelpIcon: true, enableFilterButton: false, enableSorting: true, tooltipText: pisaTableTooltip.DEG },
   },
   {
-    headerName: 'Diss. TΔS (kcal /mol)',
+    headerName: 'Diss. TΔS (kcal/mol)',
     field: 'dissociation_entropy',
     headerComponent: CustomHeaderComponent,
     headerComponentParams: { showHelpIcon: true, enableFilterButton: false, enableSorting: true, tooltipText: pisaTableTooltip.DEP },
