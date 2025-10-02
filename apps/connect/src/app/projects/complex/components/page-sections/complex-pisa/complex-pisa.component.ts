@@ -165,6 +165,8 @@ export class ComplexPISAComponent implements OnInit {
     const mappedData: any = this.rowData()?.map((pisa: PISAAssemblyParam) => {
       return {
         ID: `${pisa.pdb_id}_${pisa.assembly_id}`,
+        'Experimental Method': pisa.experimental_method,
+        Resolution: pisa.resolution,
         'Accessible Surface Area': pisa.accessible_surface_area,
         'Buried Surface Area': pisa.buried_surface_area,
         'Solvation Energy Gain': pisa.solvation_energy_gain,
