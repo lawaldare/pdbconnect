@@ -3,9 +3,10 @@
   @let length = (rowData() ?? []).length;
   <section class="table" [style.width.%]="length < 10 ? 100 : 65">
     <p>
-      This table lists <a href="https://www.ebi.ac.uk/pdbe/pisa/" target="_blank">PISA</a>-derived properties for all assemblies of this complex. The slider and
-      histogram load values from the first row by default. Select a row to view and compare other assemblies.
+      This table lists the predicted <a href="https://www.ebi.ac.uk/pdbe/pisa/" target="_blank">PISA</a>-derived assembly properties for all instances of this
+      complex. The slider and histogram load values from the first row by default. Select a row to view and compare other assemblies.
     </p>
+
     <button class="vf-button vf-button--link" (click)="downloadCSV()">
       Download table as CSV
       <i class="icon icon-common icon-download"></i>

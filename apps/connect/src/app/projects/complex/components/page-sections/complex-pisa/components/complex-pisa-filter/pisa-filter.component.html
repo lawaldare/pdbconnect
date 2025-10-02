@@ -1,22 +1,25 @@
-<section class="pisa-filters">
-  <mat-select [formControl]="selectedMethod" (selectionChange)="onMethodChange($event.value)">
-    <mat-option value="">All Methods</mat-option>
-    @for (method of methods(); track method) {
-    <mat-option [value]="method">{{method}}</mat-option>
-    }
-  </mat-select>
-  <mat-slider [min]="minResolutionBound()" [max]="maxResolutionBound()" [step]="0.1" [disabled]="sliderDisabled()">
-    <input value="300" matSliderStartThumb [(ngModel)]="minResolutionBoundValue" />
-    <input value="400" matSliderEndThumb [(ngModel)]="maxResolutionBoundValue" />
-  </mat-slider>
-  <div class="pisa-filters-slider-input-box">
-    <span>Min</span>
-    <input type="number" step="0.1" matInput [(ngModel)]="minResolutionBoundValue" #minInputRef />
-  </div>
-  <div class="pisa-filters-slider-input-box">
-    <span>Max</span>
-    <input type="number" step="0.1" matInput [(ngModel)]="maxResolutionBoundValue" #maxInputRef />
-  </div>
-  <button class="vf-button vf-button--primary vf-button--sm" (click)="applyFilters()">Apply</button>
-  <button class="vf-button vf-button--search-pdbe vf-button--sm" (click)="resetFilters()">Reset</button>
-</section>
+<main>
+  <p>Select a method and/or resolution range (Å), then choose Apply. Reset returns to all data. Lower numbers are higher resolution</p>
+  <section class="pisa-filters">
+    <mat-select [formControl]="selectedMethod" (selectionChange)="onMethodChange($event.value)">
+      <mat-option value="">All Methods</mat-option>
+      @for (method of methods(); track method) {
+      <mat-option [value]="method">{{method}}</mat-option>
+      }
+    </mat-select>
+    <mat-slider [min]="minResolutionBound()" [max]="maxResolutionBound()" [step]="0.1" [disabled]="sliderDisabled()">
+      <input value="300" matSliderStartThumb [(ngModel)]="minResolutionBoundValue" />
+      <input value="400" matSliderEndThumb [(ngModel)]="maxResolutionBoundValue" />
+    </mat-slider>
+    <div class="pisa-filters-slider-input-box">
+      <span>Min(Å)</span>
+      <input type="number" step="0.1" matInput [(ngModel)]="minResolutionBoundValue" #minInputRef />
+    </div>
+    <div class="pisa-filters-slider-input-box">
+      <span>Max(Å)</span>
+      <input type="number" step="0.1" matInput [(ngModel)]="maxResolutionBoundValue" #maxInputRef />
+    </div>
+    <button class="vf-button vf-button--primary vf-button--sm" (click)="applyFilters()">Apply</button>
+    <button class="vf-button vf-button--search-pdbe vf-button--sm" (click)="resetFilters()">Reset</button>
+  </section>
+</main>
