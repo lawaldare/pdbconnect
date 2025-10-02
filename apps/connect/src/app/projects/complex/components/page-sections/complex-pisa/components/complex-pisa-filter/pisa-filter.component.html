@@ -12,11 +12,11 @@
       <input value="400" matSliderEndThumb [(ngModel)]="maxResolutionBoundValue" />
     </mat-slider>
     <div class="pisa-filters-slider-input-box">
-      <span>Min(Å)</span>
+      <span>Min (Å)</span>
       <input type="number" step="0.1" matInput [(ngModel)]="minResolutionBoundValue" #minInputRef />
     </div>
     <div class="pisa-filters-slider-input-box">
-      <span>Max(Å)</span>
+      <span>Max (Å)</span>
       <input type="number" step="0.1" matInput [(ngModel)]="maxResolutionBoundValue" #maxInputRef />
     </div>
     <button class="vf-button vf-button--primary vf-button--sm" (click)="applyFilters()">Apply</button>
