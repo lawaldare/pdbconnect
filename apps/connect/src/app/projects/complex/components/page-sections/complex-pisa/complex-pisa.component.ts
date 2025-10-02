@@ -4,7 +4,7 @@ import { Component, computed, DestroyRef, inject, linkedSignal, OnInit, signal, 
 import { CommonModule } from '@angular/common';
 import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
-import { FirstDataRenderedEvent, SelectionChangedEvent } from 'ag-grid-community';
+import { SelectionChangedEvent } from 'ag-grid-community';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
@@ -18,11 +18,12 @@ import { PISAAssemblyParam } from '../../../models/pisa-assembly-param.model';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { map } from 'rxjs';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { PisaFilterComponent } from './components/complex-pisa-filter/pisa-filter.component';
 
 @Component({
   selector: 'pdbc-complex-pisa',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, NgxSliderModule, FormsModule, NgxSkeletonLoaderModule],
+  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, NgxSliderModule, FormsModule, NgxSkeletonLoaderModule, PisaFilterComponent],
   templateUrl: './complex-pisa.component.html',
   styleUrls: ['./complex-pisa.component.scss'],
 })
@@ -36,13 +37,6 @@ export class ComplexPISAComponent implements OnInit {
   public readonly rowSelection = rowSelection;
 
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
-
-  public minResolutionBound = signal(0);
-  public maxResolutionBound = signal(0);
-  public minResolutionBoundValue = this.minResolutionBound();
-  public maxResolutionBoundValue = this.maxResolutionBound();
-  public methods = signal<string[]>([]);
-  public selectedMethod = new FormControl('', { nonNullable: true });
 
   public stats = signal<any>({});
 
@@ -89,12 +83,6 @@ export class ComplexPISAComponent implements OnInit {
 
   ngOnInit(): void {
     setTimeout(() => {
-      this.methods.set(this.getUniqueExperimentalMethods(this.pisa() ?? []));
-      const { min, max } = this.getResolutionRange(this.pisa() ?? []);
-      this.minResolutionBound.set(min);
-      this.maxResolutionBound.set(max);
-      this.minResolutionBoundValue = this.minResolutionBound();
-      this.maxResolutionBoundValue = this.maxResolutionBound();
       this.stats.set(this.getMinMaxStats(this.pisa() as PISAAssemblyParam[]));
       this.pisaSliderReady.set(true);
     }, 500);
@@ -143,47 +131,36 @@ export class ComplexPISAComponent implements OnInit {
     this.drawHistogram();
   }
 
-  // public onSelectionChanged(event: SelectionChangedEvent) {
-  //   const data = event.api.getSelectedNodes()[0].data;
-  //   this.selectedRow.set(data);
-  //   const id = `${data.pdb_id}_${data.assembly_id}`;
-  //   this.selectedRowParams.set(id);
-  //   this.drawHistogram();
-  // }
-
   public onSelectionChanged(event: SelectionChangedEvent) {
     const selectedNodes = event.api.getSelectedNodes();
-
     if (selectedNodes.length === 0) {
-      // Clear state when nothing is selected
       this.selectedRow.set({} as PISAAssemblyParam);
       this.selectedRowParams.set('');
       return;
     }
-
     const data = selectedNodes[0].data;
-    this.selectedRow.set(data);
+    this.updatedSelectedRow(data);
+  }
 
+  private updatedSelectedRow(data: any) {
+    this.selectedRow.set(data);
     const id = `${data.pdb_id}_${data.assembly_id}`;
     this.selectedRowParams.set(id);
-
     this.drawHistogram();
   }
 
-  public onFirstDataRendered(event: FirstDataRenderedEvent) {
+  public onRowDataUpdated(event: any) {
     if (event.api.getDisplayedRowCount() > 0) {
       const firstNode = event.api.getDisplayedRowAtIndex(0);
-      console.log('First node:', firstNode);
       if (firstNode) {
-        this.selectedRow.set(firstNode.data);
+        firstNode.setSelected(true);
+        this.updatedSelectedRow(firstNode.data);
       }
     }
   }
-
   private drawHistogram(): void {
     drawHistogram(this.mappedPisaData(), this.selectedRowParams(), this.pisaAssemblyProperty.value, '#histogram-svg');
   }
-
   public downloadCSV(): void {
     const mappedData: any = this.rowData()?.map((pisa: PISAAssemblyParam) => {
       return {
@@ -220,34 +197,18 @@ export class ComplexPISAComponent implements OnInit {
       }
     });
 
-    console.log(result);
-
     return result;
   }
 
-  private getUniqueExperimentalMethods(data: PISAAssemblyParam[]): string[] {
-    return [...new Set(data.map((entry) => entry.experimental_method))];
-  }
-
-  private getResolutionRange(data: PISAAssemblyParam[]): { min: number; max: number } {
-    const resolutions = data.map((entry) => entry.resolution);
-    const min = Math.min(...resolutions);
-    const max = Math.max(...resolutions);
-    return { min, max };
-  }
-
-  public applyFilters(): void {
-    // this.pisaSliderReady.set(false);
-    const method = this.selectedMethod.value;
-    const minValue = this.minResolutionBoundValue;
-    const maxValue = this.maxResolutionBoundValue;
+  public applyFilters(data: any): void {
+    const { method, minValue, maxValue } = data;
 
     const filteredData = this.pisa()?.filter((entry) => {
       const inRange = entry.resolution >= minValue && entry.resolution <= maxValue;
       const methodMatch = method === '' || entry.experimental_method === method;
       return inRange && methodMatch;
     });
-    console.log(filteredData);
+
     if (filteredData?.length === 0) {
       this.filterActionNoData.set(true);
     } else {
@@ -255,7 +216,6 @@ export class ComplexPISAComponent implements OnInit {
     }
     this.rowData.update(() => filteredData ?? []);
     this.stats.set(this.getMinMaxStats(filteredData as PISAAssemblyParam[]));
-    // this.pisaSliderReady.set(true);
     this.drawHistogram();
   }
 }

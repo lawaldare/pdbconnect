@@ -11,27 +11,7 @@
       <i class="icon icon-common icon-download"></i>
     </button>
     @if(pisaSliderReady()){
-    <section class="pisa-filters">
-      <mat-select [formControl]="selectedMethod">
-        <mat-option value="">All Methods</mat-option>
-        @for (method of methods(); track method) {
-        <mat-option [value]="method">{{method}}</mat-option>
-        }
-      </mat-select>
-      <mat-slider [min]="minResolutionBound()" [max]="maxResolutionBound()" [step]="0.1">
-        <input value="300" matSliderStartThumb [(ngModel)]="minResolutionBoundValue" />
-        <input value="400" matSliderEndThumb [(ngModel)]="maxResolutionBoundValue" />
-      </mat-slider>
-      <div class="pisa-filters-slider-input-box">
-        <span>Min</span>
-        <input type="number" step="0.1" matInput [(ngModel)]="minResolutionBoundValue" />
-      </div>
-      <div class="pisa-filters-slider-input-box">
-        <span>Max</span>
-        <input type="number" step="0.1" matInput [(ngModel)]="maxResolutionBoundValue" />
-      </div>
-      <button class="vf-button vf-button--primary vf-button--sm" (click)="applyFilters()">Apply</button>
-    </section>
+    <pdbc-pisa-filter (filterChange)="applyFilters($event)" />
     }@else {
     <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
     }
@@ -43,7 +23,7 @@
         [columnDefs]="colDefs"
         [gridOptions]="gridOptions"
         (selectionChanged)="onSelectionChanged($event)"
-        (firstDataRendered)="onFirstDataRendered($event)"
+        (rowDataUpdated)="onRowDataUpdated($event)"
         [paginationPageSizeSelector]="paginationPageSizeSelector()"
         [rowSelection]="rowSelection"
         [initialState]="initialState"
@@ -133,27 +113,7 @@
 
 } @else { @if(filterActionNoData()){
 <p>No pisa assemblies match your filters</p>
-<section class="pisa-filters">
-  <mat-select [formControl]="selectedMethod">
-    <mat-option value="">All Methods</mat-option>
-    @for (method of methods(); track method) {
-    <mat-option [value]="method">{{method}}</mat-option>
-    }
-  </mat-select>
-  <mat-slider [min]="minResolutionBound()" [max]="maxResolutionBound()" [step]="0.1">
-    <input value="300" matSliderStartThumb [(ngModel)]="minResolutionBoundValue" />
-    <input value="400" matSliderEndThumb [(ngModel)]="maxResolutionBoundValue" />
-  </mat-slider>
-  <div class="pisa-filters-slider-input-box">
-    <span>Min</span>
-    <input type="number" step="0.1" matInput [(ngModel)]="minResolutionBoundValue" />
-  </div>
-  <div class="pisa-filters-slider-input-box">
-    <span>Max</span>
-    <input type="number" step="0.1" matInput [(ngModel)]="maxResolutionBoundValue" />
-  </div>
-  <button class="vf-button vf-button--primary vf-button--sm" (click)="applyFilters()">Apply</button>
-</section>
+<pdbc-pisa-filter (filterChange)="applyFilters($event)" />
 } @else {
 <h4>No pisa assemblies available yet!</h4>
 } }
