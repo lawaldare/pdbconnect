@@ -36,6 +36,10 @@ body {
   line-height: 27.2px;
 }
 
+body.driver-active.driver-fade {
+  overflow: hidden !important;
+}
+
 a {
   color: #3b6fb6;
   font-size: 16px;
