@@ -42,6 +42,7 @@ import { SpeedTestServiceCustom } from '../../services/speed-test/speed-test-ser
 import { TutorialTourService } from '../../services/tutorial-tour.service';
 import { MetaTagService } from '../../services/meta-tag.service';
 import { EntryMainFacade } from './entry-main.facade';
+import { HelpIconForMolstarService } from '@pdbe-lib/molstar-for-apps';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -96,6 +97,7 @@ export class EntryMainPageComponent implements OnInit {
   private readonly renderer = inject(Renderer2);
   public readonly gAS = inject(GoogleAnalyticsService);
   public readonly tutorialTourService = inject(TutorialTourService);
+  public readonly helpIconForMolstarService = inject(HelpIconForMolstarService);
 
   private procAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
   private procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));

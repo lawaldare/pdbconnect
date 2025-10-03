@@ -121,7 +121,9 @@
 
 <lib-data-privacy-banner privacyNoticeUrl="assets/data-privacy/entry-pages-data-privacy.pdf" pageId="dataProtectionAgreedForEntryPages" />
 
+@if(helpIconForMolstarService.showHelpIcon()){
 <div class="help-button" (click)="openHelpModal()">Help</div>
+}
 
 <!-- Help Panel -->
 <div class="help-panel" [class.active]="tutorialTourService.showHelpGuideModal()">
