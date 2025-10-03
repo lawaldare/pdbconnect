@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild, OnInit, AfterViewInit } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild, AfterViewInit } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
@@ -71,7 +71,7 @@ import { TutorialTourService } from '../../services/tutorial-tour.service';
   templateUrl: './ligands-tab.component.html',
   styleUrl: './ligands-tab.component.scss',
 })
-export class LigandsTabComponent implements OnInit, AfterViewInit {
+export class LigandsTabComponent implements AfterViewInit {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly molstarPluginService = inject(MolstarPluginService);
@@ -391,7 +391,23 @@ export class LigandsTabComponent implements OnInit, AfterViewInit {
 
   public readonly tutorialTourService = inject(TutorialTourService);
 
-  ngOnInit(): void {
+  public hasLoadedLigands = computed(() => this.processedLigands() !== undefined);
+  public hasLigands = computed(() => {
+    const rows = this.processedLigands();
+    if (rows === undefined) return false;
+    return rows.length > 0;
+  });
+
+  /**
+   * For ligand env viewer to always initialise
+   */
+  private viewReady = signal(false);
+
+  public isBannerCookies = signal(false);
+
+  ngAfterViewInit(): void {
+    this.viewReady.set(true);
+
     this.compCommunication.ligandSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
       if (idx === undefined || idx === null) return;
       const datum = this.ligandTableRows()[idx];
@@ -448,24 +464,6 @@ export class LigandsTabComponent implements OnInit, AfterViewInit {
         }
         this.noTermFiltering.set(false);
       });
-  }
-
-  public hasLoadedLigands = computed(() => this.processedLigands() !== undefined);
-  public hasLigands = computed(() => {
-    const rows = this.processedLigands();
-    if (rows === undefined) return false;
-    return rows.length > 0;
-  });
-
-  /**
-   * For ligand env viewer to always initialise
-   */
-  private viewReady = signal(false);
-
-  public isBannerCookies = signal(false);
-
-  ngAfterViewInit(): void {
-    this.viewReady.set(true);
 
     setTimeout(() => {
       const agreed = this.tutorialTourService.getCookie(tourIds.ligands);
@@ -624,7 +622,12 @@ export class LigandsTabComponent implements OnInit, AfterViewInit {
         const dataToLigEnv: { [key: string]: InteractionFromAPI[] } = {};
         const copiedInteractions = JSON.parse(JSON.stringify(interactionsRawData));
         dataToLigEnv[`${this.entryId()}`] = [copiedInteractions];
-        this.ligandEv.display.addLigandInteractions(dataToLigEnv, false);
+        try {
+          this.ligandEv.display.addLigandInteractions(dataToLigEnv, false);
+        } catch (err) {
+          console.error('Failed to add ligand interactions:', err);
+          return;
+        }
 
         await this.waitForLigandEnvReady(5000, 100, false);
         await new Promise((resolve) => setTimeout(resolve, 700));
@@ -686,12 +689,16 @@ export class LigandsTabComponent implements OnInit, AfterViewInit {
   private async destroyLigandEnv() {
     this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
       // to destroy ligand env we use removeChild and reset all variables related to it's loading status
-      if (this.ligandEv) {
+      if (this.ligandEnvContainer && this.ligandEnvContainer.nativeElement) {
         const imageContainer = this.ligandEnvContainer.nativeElement;
         this.renderer.removeChild(imageContainer, this.ligandEv);
+      }
+
+      if (this.ligandEv) {
         // this.ligandEnvContainer.nativeElement.innerHTML = '';
         this.ligandEv = undefined;
       }
+
       this.hasLigandEnv = false;
       // unfortunately needed so destruction happens syncronously
       await firstValueFrom(timer(100));
