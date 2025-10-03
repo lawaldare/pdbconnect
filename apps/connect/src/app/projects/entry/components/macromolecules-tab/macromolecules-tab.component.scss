@@ -103,6 +103,14 @@ section.info {
     }
   }
 
+  & > article.source-organism {
+    display: block;
+
+    a {
+      display: block;
+    }
+  }
+
   &.dialog {
     article {
       display: block;
