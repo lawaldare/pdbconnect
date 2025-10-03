@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, inject, Input, input, OnChanges, 
 import { CommonModule } from '@angular/common';
 import { MolstarPluginService } from '../extension-for-pages/molstart-plugin.service';
 import type { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
+import { HelpIconForMolstarService } from '../help-icon-for-molstar.service';
 
 @Component({
   selector: 'lib-pdbe-molstar',
@@ -20,6 +21,7 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
   public firstLoadFinished = signal(false);
   private molstarViewInstance!: PDBeMolstarPlugin;
   private readonly molstarPluginService = inject(MolstarPluginService);
+  private readonly helpIconForMolstarService = inject(HelpIconForMolstarService);
 
   public isExpanded = false;
 
@@ -41,17 +43,19 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
     this.molstarViewInstance = pluginInstance;
 
     const container = this.viewContainer.nativeElement;
-    // await this.molstarViewInstance.render(container, this.molstarConfig);
     this.molstarActionsMutex = this.molstarActionsMutex.then(() => this.molstarViewInstance.render(container, this.molstarConfig));
 
     this.molstarViewInstance.events.loadComplete.subscribe((loaded: boolean) => {
       const eventName = `LibMolstarComponent-${this.id}`;
-      // console.log('loadComplete for ', eventName);
       if (loaded && !this.firstLoadFinished()) this.firstLoadFinished.set(true);
       if (loaded) {
-        // this.molstarViewInstance.plugin.managers.camera.orientAxes();
         window.dispatchEvent(new CustomEvent(eventName, { detail: { id: this.id, loaded } }));
       }
+
+      this.molstarViewInstance.plugin.layout.events.updated.subscribe(() => {
+        const expanded = this.molstarViewInstance.plugin.layout.state.isExpanded;
+        this.helpIconForMolstarService.toggleHelpIcon(expanded);
+      });
     });
   }
 
