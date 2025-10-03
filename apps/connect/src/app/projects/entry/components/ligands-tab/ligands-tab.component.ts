@@ -385,7 +385,7 @@ export class LigandsTabComponent implements AfterViewInit {
   constructor() {
     this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
       // await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js', true);
-      await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.0.0-min.js', true);
+      await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.1.0-beta-min.js', true);
     });
   }
 
