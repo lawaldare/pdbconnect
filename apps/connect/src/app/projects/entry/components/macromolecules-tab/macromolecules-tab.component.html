@@ -30,7 +30,7 @@
           } @if(uniqueOrganisms().length){
           <div class="info-row">
             <span class="micro-title"> Source organism{{ uniqueOrganisms().length > 1 ? 's': '' }} </span>
-            <article>
+            <article class="source-organism">
               @for (sourceOrganism of uniqueOrganisms(); track sourceOrganism) {
               <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">
                 <em>{{sourceOrganism}}</em>
