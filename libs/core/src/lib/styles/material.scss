@@ -13,9 +13,14 @@ thead {
 }
 
 .mat-mdc-dialog-panel.entry-Dialog {
-  max-width: 750px !important;
-  width: 750px !important;
+  max-width: 100% !important;
+  width: 100% !important;
   height: 600px !important;
+
+  mat-dialog-container {
+    width: 80% !important;
+    margin-left: 10% !important;
+  }
 }
 
 .mat-expansion-panel-spacing {
