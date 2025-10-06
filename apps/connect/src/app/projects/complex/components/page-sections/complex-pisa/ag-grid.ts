@@ -4,7 +4,7 @@ import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions, GridState } from 'ag-grid-community';
 import { CustomHeaderComponent } from '../../cell renderers/custom-header.component';
 import { pisaTableTooltip } from '../../../complex.constant';
-import { EntryPageExternalLinkRendererComponent } from './entry-page-link.component';
+import { ComplexPageExternalLinkRendererComponent } from '../../../shared/complex-page-external-link.component';
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
@@ -20,7 +20,7 @@ export const colDefs: ColDef[] = [
   {
     headerName: 'PDB',
     field: 'pdb_id',
-    cellRenderer: EntryPageExternalLinkRendererComponent,
+    cellRenderer: ComplexPageExternalLinkRendererComponent,
     flex: 0.6,
     filter: true,
   },
