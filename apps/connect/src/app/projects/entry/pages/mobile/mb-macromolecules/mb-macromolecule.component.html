@@ -61,67 +61,98 @@
       <p class="content">
         <em>{{expressionSystem}}</em>
       </p>
-      } } @if(mappedResidues()?.length){
-      <p class="title">UniProt mapping:</p>
+      } } @if(uniprotProcessedMappings()?.length) { @let mappings = uniprotProcessedMappings()!; @let firstMapping = mappings[0];
+      <p class="title">UniProt mapping{{ mappings.length > 1 ? 's': '' }}:</p>
       <p class="content">
-        @for(residue of mappedResidues(); track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <= 2){
+        @if (isUniprotMappingsBig() === false) {
         <span class="uniprot">
-          Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a>
-          @if (getNumberStructures(residue.uniprot)) {
+          Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + firstMapping.uniprotId" target="_blank">{{firstMapping.uniprotId}}</a>
+          @if (getNumberStructures(firstMapping.uniprotId)) {
           <a
-            [href]="baseUrl + 'pdbe-kb/proteins/' + residue.uniprot"
+            [href]="baseUrl + 'pdbe-kb/proteins/' + firstMapping.uniprotId"
             target="_blank"
             (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
-                kb_website: 'proteins',
-                device_type: 'mobile',
-              })"
+                  kb_website: 'proteins',
+                  device_type: 'mobile',
+                })"
           >
-            View all {{ getNumberStructures(residue.uniprot) }} structures
-            <i class="icon icon-link icon-common" style="margin-left: 12px"></i>
+            View all {{ getNumberStructures(firstMapping.uniprotId) }} structures
+            <i class="icon icon-link icon-common" style="margin-left: 6px"></i>
           </a>
           }
         </span>
-        <span class="uniprot"> (residues: {{residue.range.join(', ')}}; coverage: {{residue.coverage}} chain: {{ residue.chainId}}) </span>
-        } @else { @if(residue.open){
         <span class="uniprot">
-          Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a> @if
-          (getNumberStructures(residue.uniprot)) {
+          (chain{{ firstMapping.chainIds.length > 1 ? 's': '' }}: {{firstMapping.chainIds.join(', ')}}; residues: {{firstMapping.uniprotSegments.join(', ')}};
+          coverage: {{firstMapping.coverage}} identity: {{firstMapping.identity}})
+        </span>
+        } @else if (isUniprotMappingsClosed === true && firstMapping.uniprotSegments.length <= 2) {
+        <span class="uniprot">
+          Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + firstMapping.uniprotId" target="_blank">{{firstMapping.uniprotId}}</a>
+          @if (getNumberStructures(firstMapping.uniprotId)) {
           <a
-            [href]="baseUrl + 'pdbe-kb/proteins/' + residue.uniprot"
+            [href]="baseUrl + 'pdbe-kb/proteins/' + firstMapping.uniprotId"
             target="_blank"
             (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
-                kb_website: 'proteins',
-                device_type: 'mobile',
-              })"
+                  kb_website: 'proteins',
+                  device_type: 'mobile',
+                })"
           >
-            View all {{ getNumberStructures(residue.uniprot) }} structures
-            <i class="icon icon-link icon-common" style="margin-left: 12px"></i>
+            View all {{ getNumberStructures(firstMapping.uniprotId) }} structures
+            <i class="icon icon-link icon-common" style="margin-left: 6px"></i>
           </a>
           }
         </span>
-        <span class="uniprot">(residues: {{range.join(', ')}}; coverage: {{residue.coverage}} chain: {{ residue.chainId}} )</span>
-        <span class="unprot residue-action-button" (click)="residue.open = !residue.open">show less</span>
-        }@else {
         <span class="uniprot">
-          Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a> @if
-          (getNumberStructures(residue.uniprot)) {
+          (chain{{ firstMapping.chainIds.length > 1 ? 's': '' }}: {{firstMapping.chainIds.join(', ')}}; residues: {{firstMapping.uniprotSegments.join(', ')}};
+          coverage: {{firstMapping.coverage}} identity: {{firstMapping.identity}})
+        </span>
+        <span class="uniprot residue-action-button" (click)="isUniprotMappingsClosed = !isUniprotMappingsClosed">&nbsp;show all</span>
+        } @else if (isUniprotMappingsClosed === true && firstMapping.uniprotSegments.length > 2) {
+        <span class="uniprot">
+          Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + firstMapping.uniprotId" target="_blank">{{firstMapping.uniprotId}}</a>
+          @if (getNumberStructures(firstMapping.uniprotId)) {
           <a
-            [href]="baseUrl + 'pdbe-kb/proteins/' + residue.uniprot"
+            [href]="baseUrl + 'pdbe-kb/proteins/' + firstMapping.uniprotId"
             target="_blank"
             (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
-                kb_website: 'proteins',
-                device_type: 'mobile',
-              })"
+                  kb_website: 'proteins',
+                  device_type: 'mobile',
+                })"
           >
-            View all {{ getNumberStructures(residue.uniprot) }} structures
-            <i class="icon icon-link icon-common" style="margin-left: 12px"></i>
+            View all {{ getNumberStructures(firstMapping.uniprotId) }} structures
+            <i class="icon icon-link icon-common" style="margin-left: 6px"></i>
           </a>
           }
         </span>
-        <span class="uniprot">chain: {{residue.chainId}} </span>
-        <span class="uniprot">residues: {{range.slice(0,2).join(', ')}}...</span>
-        <span class="uniprot residue-action-button" (click)="residue.open = !residue.open">show all</span>
-        } } } @for(residue of bestResidues(); track residue.name;){
+        <span class="uniprot">
+          (chain{{ firstMapping.chainIds.length > 1 ? 's': '' }}: {{firstMapping.chainIds.join(', ')}}; residues: {{firstMapping.uniprotSegments.slice(0,2).join(',
+          ')}}...
+        </span>
+        <span class="uniprot residue-action-button" (click)="isUniprotMappingsClosed = !isUniprotMappingsClosed">&nbsp;show all</span>
+        } @else { @for(eachMapping of mappings; track eachMapping.uniprotId; let index = $index;) {
+        <span class="uniprot"
+          >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + eachMapping.uniprotId" target="_blank">{{eachMapping.uniprotId}}</a>
+          @if (getNumberStructures(eachMapping.uniprotId)) {
+          <a
+            [href]="baseUrl + 'pdbe-kb/proteins/' + eachMapping.uniprotId"
+            target="_blank"
+            (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
+                      kb_website: 'proteins',
+                      device_type: 'mobile',
+                    })"
+          >
+            View all {{ getNumberStructures(eachMapping.uniprotId) }} structures
+            <i class="icon icon-link icon-common" style="margin-left: 6px"></i>
+          </a>
+          }
+        </span>
+        <span class="uniprot"
+          >(chain{{ eachMapping.chainIds.length > 1 ? 's': '' }}: {{eachMapping.chainIds.join(', ')}}; residues: {{eachMapping.uniprotSegments.join(', ')}}; coverage:
+          {{eachMapping.coverage}} identity: {{eachMapping.identity}} )</span
+        >
+        }
+        <span class="uniprot residue-action-button" (click)="isUniprotMappingsClosed = !isUniprotMappingsClosed">show less</span>
+        } @for(residue of bestResidues(); track residue.name;){
         <span class="uniprot">Best match <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot + '/entry'" target="_blank">{{residue.uniprot}}</a></span>
         <span class="uniprot"> (residues: {{residue.mappings[0].unp_start}} - {{residue.mappings[0].unp_end}})</span>
         }

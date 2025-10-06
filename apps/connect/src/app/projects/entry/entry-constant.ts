@@ -290,6 +290,11 @@ export const entryDomainsTooltips = {
   segments: 'Segments represent continuous stretches of a sequence with sequential residue numbering, starting from 1 at the N-terminus.',
 };
 
+export const entryMacromoleculeTooltips = {
+  uniprotMappings:
+    'Shows how each PDB chain aligns to its Canonical UniProt sequences. Residue ranges are UniProt numbered, with coverage indicating the fraction of the UniProt sequence mapped, and identity showing sequence similarity between the PDB chain and UniProt.',
+};
+
 export const annotationsTooltips = {
   'reactant-like': `Assigned to ligands whose binding proteins are reported in the <a href="https://www.rhea-db.org/" target="_blank">Rhea database</a>, as participating in reactions, with a <a href="https://www.sciencedirect.com/science/article/pii/S0969212618300492" target="_blank">PARITY</a> similarity score to a reaction participant exceeding 0.7.`,
   'cofactor-like': `Assigned to ligands with a <a href="https://www.sciencedirect.com/science/article/pii/S0969212618300492" target="_blank">PARITY</a> similarity above the threshold for one of the 27 cofactor classes in the <a href="https://www.ebi.ac.uk/thornton-srv/databases/CoFactor/" target="_blank">CoFactor database</a>. The ligand’s binding proteins must also be enzymes associated with that cofactor class.`,

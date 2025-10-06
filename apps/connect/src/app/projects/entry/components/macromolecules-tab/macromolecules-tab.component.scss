@@ -96,10 +96,16 @@ section.info {
     display: block;
     line-height: 27.2px;
 
-    &.micro-title {
-      max-width: 140px;
-      width: 140px;
-      min-width: 140px;
+    &.micro-title.left {
+      max-width: 154px;
+      width: 154px;
+      min-width: 154px;
+    }
+
+    &.micro-title.right {
+      max-width: 100px;
+      width: 100px;
+      min-width: 100px;
     }
   }
 
@@ -137,6 +143,16 @@ article {
   align-items: center;
   gap: 5px;
   flex-wrap: wrap;
+
+  &.uniprot-mapping {
+    display: block;
+  }
+
+  *.residue-action-button {
+    color: #3b6fb6;
+    font-weight: 400;
+    cursor: pointer;
+  }
 }
 
 .stats-link-bar {

@@ -20,7 +20,7 @@ import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { SequenceDetail } from '../../../store/data-processing/models/other-models';
 import { EntryActions } from '../../../store/entry.actions';
 import { ProcessedMacromolecule } from '../../../store/data-processing/models/processed-entities.model';
-import { getUniProtsDataForMacromolecule } from '../../../store/data-processing/macromolecule-processing';
+import { getUniProtMappingsForMacromolecule } from '../../../store/data-processing/macromolecule-processing';
 import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
 import { baseUrl } from '../../../entry-constant';
 
@@ -96,8 +96,8 @@ export class MbMacromoleculeComponent implements OnInit {
     if (!polymerCoverage) return undefined;
 
     const mol = currentMacromoleculeDatum.additionalData.molecule;
-    const mappedUnps = getUniProtsDataForMacromolecule(mol, uniprotMappings, polymerCoverage);
-    return mappedUnps;
+    const mappedUnpsRows = getUniProtMappingsForMacromolecule(mol, uniprotMappings, polymerCoverage);
+    return mappedUnpsRows;
   });
 
   public uniprotsAllowed = computed(() => this.uniprotMappedData()?.uniprotAccsForMacromolecule);
@@ -144,30 +144,31 @@ export class MbMacromoleculeComponent implements OnInit {
     return [...new Set(expSystems.filter((expSystem) => expSystem !== null))];
   });
 
-  public mappedResidues = computed(() => {
+  public isUniprotMappingsClosed = true;
+  public isUniprotMappingsBig = computed(() => {
+    const currentMacromoleculeDatum = this.selectedMacromolecule();
+    const mappedUnps = this.uniprotMappedData();
+
+    if (!currentMacromoleculeDatum) return false;
+    if (!mappedUnps) return false;
+
+    const mappingsForChains = mappedUnps.labelUniProtMappings;
+
+    if (mappingsForChains.length > 1 || mappingsForChains[0].uniprotSegments.length > 2) {
+      return true;
+    }
+    return false;
+  });
+
+  public uniprotProcessedMappings = computed(() => {
     const currentMacromoleculeDatum = this.selectedMacromolecule();
     const mappedUnps = this.uniprotMappedData();
 
     if (!currentMacromoleculeDatum) return undefined;
     if (!mappedUnps) return undefined;
 
-    const mappingsForChains = mappedUnps.uniprotRangesByChainId;
-    const mappingsForAllChains = Object.values(mappingsForChains).flat();
-
-    // aggregate by (uniprot + range)
-    const aggregated: Record<string, (typeof mappingsForAllChains)[number]> = {};
-
-    for (const mapping of mappingsForAllChains) {
-      const key = `${mapping.uniprot}-${mapping.range.join(',')}`;
-
-      if (!aggregated[key]) {
-        aggregated[key] = { ...mapping, chainId: mapping.chainId };
-      } else {
-        // append chainId
-        aggregated[key].chainId += `,${mapping.chainId}`;
-      }
-    }
-    return Object.values(aggregated);
+    const mappingsForChains = mappedUnps.labelUniProtMappings;
+    return mappingsForChains;
   });
 
   public title = this.state.macromoleculeTitle;
