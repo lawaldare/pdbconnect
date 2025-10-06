@@ -3,8 +3,8 @@
 import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions, GridState } from 'ag-grid-community';
 import { TitleRendererComponent } from '../../cell renderers/structure-title.component';
-import { EntryPageExternalLinkRendererComponent } from './entry-page-link.component';
 import { CustomHeaderComponent } from '../../cell renderers/custom-header.component';
+import { ComplexPageExternalLinkRendererComponent } from '../../../shared/complex-page-external-link.component';
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
@@ -14,7 +14,7 @@ export const colDefs: ColDef[] = [
   {
     headerName: 'PDB',
     field: 'pdb_id',
-    cellRenderer: EntryPageExternalLinkRendererComponent,
+    cellRenderer: ComplexPageExternalLinkRendererComponent,
     width: 90,
     sortable: false,
   },
