@@ -26,7 +26,7 @@
     <section>
       <div class="left">
         Examples: @for(id of headerSearchConfig.examples; track id){
-        <a [ngClass]="chipBg" (click)="openID(getExampleValue(id))">{{ getExampleLabel(id) }}</a>
+        <span [ngClass]="chipBg" (click)="openID(getExampleValue(id))">{{ getExampleLabel(id) }}</span>
         }
       </div>
 
