@@ -1,7 +1,5 @@
 import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Molecule } from '../../../data-models/molecule.model';
-import { MappedResidue } from './other-models';
-
 export interface DomainsBoundaries {
   chain: string;
   entity: number;
@@ -40,6 +38,5 @@ export interface ProcessedMacromolecule {
     selections: QueryParam[][];
     selectionNames: string[];
   };
-  mappedResiduesByChain?: { [key: string]: MappedResidue };
   molstarColorHex?: string;
 }

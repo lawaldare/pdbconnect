@@ -4,10 +4,11 @@ import { UniProtMapping, UniProtMappingObj } from '../../data-models/uniprot-map
 import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
 import { getEntityToStructAsymsMapOfAssembly } from './assembly-processing';
 import { AssemblyData } from '../../data-models/assembly.model';
-import { Filter, MappedResidue } from './models/other-models';
+import { Filter, LabelUniProtMappingRows, UniProtMappingRows } from './models/other-models';
 import { PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
 import { DEFAULT_SET_25 } from '@pdbe-lib/molstar-for-apps';
 import { ProcessedMacromolecule } from './models/processed-entities.model';
+import { identity } from 'rxjs';
 
 export interface MacromoleculesDescriptions {
   macromoleculesDescription: string;
@@ -89,108 +90,144 @@ export function mapMacromoleculesChainsToEntityId(macromolecules: Molecule[], ve
   return chainToEntityId;
 }
 
-export function getUniProtsDataForMacromolecule(macromolecule: Molecule, uniprotMappings: UniProtMapping, polymerCoverage?: PolymerCoverageMolecule[]) {
+export function getUniProtMappingsForMacromolecule(macromolecule: Molecule, uniprotMappings: UniProtMapping, polymerCoverage?: PolymerCoverageMolecule[]) {
   if ((<any>polymerCoverage).empty === true) polymerCoverage = [];
   if ((<any>uniprotMappings).empty === true) uniprotMappings = {};
+
   let uniprotAccsForMacromolecule: string[] = [];
-  const uniprotRangesByChainId: { [key: string]: MappedResidue[] } = {};
-  for (const [uniprotAcc, uniprotDetails] of Object.entries(uniprotMappings)) {
-    for (const mapping of uniprotDetails.mappings) {
-      const entityId = mapping.entity_id;
-      const chainId = mapping.chain_id;
+  const labelUniProtMappings: LabelUniProtMappingRows[] = [];
+  const authUniProtMappings: UniProtMappingRows[] = [];
 
-      const validResidues = findAuthorNumber(mapping, uniprotDetails.mappings);
-      const authorStartResidue = validResidues.validStartAuthNum || patchAuthorNumberPolCov('first', entityId, chainId, polymerCoverage);
+  // For this macromolecule entity
+  const entityId = macromolecule.entity_id;
+  const allowedAsyms = macromolecule.in_chains;
+  const allowedStructAsyms = macromolecule.in_struct_asyms;
 
-      const authorStartInsCode = mapping.start.author_insertion_code;
-      const authorStartRange = `${authorStartResidue}${authorStartInsCode}`;
+  // Find coverage object for this entity
+  const entityCoverage = (polymerCoverage || []).find((pc) => pc.entity_id === entityId);
 
-      const authorEndResidue = validResidues.validEndAuthNum || patchAuthorNumberPolCov('last', entityId, chainId, polymerCoverage);
+  // group by uniprotId + chainId before row creation
+  const grouped: Record<string, { mappings: UniProtMappingObj[]; uniprotId: string; identity: number; coverage: number }> = {};
 
-      const authorEndInsCode = mapping.end.author_insertion_code;
-      const authorEndRange = `${authorEndResidue}${authorEndInsCode}`;
+  Object.entries(uniprotMappings).forEach(([uniprotId, uniprot]) => {
+    for (const mapping of uniprot.mappings) {
+      if (mapping.entity_id !== entityId) return;
+      // filter for preferredAssembly given that macromolecule already has filtered fields
+      if (allowedAsyms.indexOf(mapping.chain_id) === -1) continue;
+      if (allowedStructAsyms.indexOf(mapping.struct_asym_id) === -1) continue;
 
-      if (entityId != macromolecule.entity_id) continue;
-      if (!macromolecule.in_chains.includes(chainId)) continue;
-
-      uniprotAccsForMacromolecule.push(uniprotAcc);
-      const chainIdKeys = [...Object.keys(uniprotRangesByChainId)];
-      if (!chainIdKeys.includes(chainId)) {
-        uniprotRangesByChainId[chainId] = [];
+      const identity = mapping.identity;
+      const coverage = mapping.coverage;
+      const key = `${uniprotId}|${mapping.chain_id}|${identity}|${coverage}`;
+      if (!grouped[key]) {
+        grouped[key] = { mappings: [], uniprotId, identity, coverage };
       }
-      const allUniProts = uniprotRangesByChainId[chainId].map((mapped) => mapped.uniprot);
-      let idxOfUniProt = allUniProts.indexOf(uniprotAcc);
-      if (idxOfUniProt === -1) {
-        uniprotRangesByChainId[chainId].push({
-          range: [],
-          coverage: Math.round(mapping.coverage * 100) + '%',
-          chainId: chainId,
-          uniprot: uniprotAcc,
-          open: false,
-        });
-        idxOfUniProt = uniprotRangesByChainId[chainId].length - 1;
-      }
-      uniprotRangesByChainId[chainId][idxOfUniProt]['range'].push(`${authorStartRange} — ${authorEndRange}`);
+      grouped[key].mappings.push(mapping);
+      uniprotAccsForMacromolecule.push(uniprotId);
     }
-  }
+  });
+
+  // process grouped sets
+  Object.values(grouped).forEach(({ uniprotId, identity, coverage, mappings }) => {
+    const chainId = mappings[0].chain_id;
+    const structAsymId = mappings[0].struct_asym_id;
+
+    const coverageStr = (coverage * 100).toFixed(1) + '%';
+    const identityStr = (identity * 100).toFixed(1) + '%';
+
+    // Collect all UniProt and label segments
+    const uniprotSegments = mappings.map((m) => `${m.unp_start} — ${m.unp_end}`);
+    const labelSegments = mappings.map((m) => `${m.start.residue_number} — ${m.end.residue_number}`);
+
+    // Auth segments from mapping if possible, else fallback using polymerCoverage
+    let authSegments: string[] = [];
+    let hasNonObserved = false;
+    for (const mapping of mappings) {
+      if (mapping.start?.author_residue_number != null && mapping.end?.author_residue_number != null) {
+        authSegments = [
+          `${mapping.start.author_residue_number}${mapping.start.author_insertion_code || ''} — ${mapping.end.author_residue_number}${
+            mapping.end.author_insertion_code || ''
+          }`,
+        ];
+      } else if (entityCoverage) {
+        const chainCoverage = entityCoverage.chains.find((c) => c.chain_id === chainId && c.struct_asym_id === structAsymId);
+        if (chainCoverage) {
+          authSegments = chainCoverage.observed.map(
+            (seg) =>
+              `${seg.start.author_residue_number}${seg.start.author_insertion_code || ''} — ${seg.end.author_residue_number}${seg.end.author_insertion_code || ''}`
+          );
+          hasNonObserved = true;
+        }
+      }
+    }
+
+    const labelOnlyRow: LabelUniProtMappingRows = {
+      uniprotId,
+      isCanonical: true,
+      coverage: coverageStr,
+      identity: identityStr,
+      chainIds: [chainId],
+      uniprotSegments,
+      labelSegments,
+    };
+
+    const row: UniProtMappingRows = {
+      uniprotId,
+      isCanonical: true,
+      coverage: coverageStr,
+      identity: identityStr,
+      chainIds: [chainId],
+      uniprotSegments,
+      authSegments,
+      hasNonObserved,
+      labelSegments,
+    };
+
+    // merge rows if same uniprot + label segments
+    const existingLabel = labelUniProtMappings.find(
+      (r) =>
+        r.uniprotId === labelOnlyRow.uniprotId &&
+        r.labelSegments.length === labelOnlyRow.labelSegments.length &&
+        r.labelSegments.every((v, i) => v === labelOnlyRow.labelSegments[i])
+    );
+    if (existingLabel) {
+      if (!existingLabel.chainIds.includes(chainId)) {
+        existingLabel.chainIds.push(chainId);
+      }
+      labelOnlyRow.uniprotSegments.forEach((seg) => {
+        if (!existingLabel.uniprotSegments.includes(seg)) {
+          existingLabel.uniprotSegments.push(seg);
+        }
+      });
+    } else {
+      labelUniProtMappings.push(labelOnlyRow);
+    }
+
+    // merge rows if same uniprot + auth segments
+    const existingAuth = authUniProtMappings.find(
+      (r) => r.uniprotId === row.uniprotId && r.authSegments.length === row.authSegments.length && r.authSegments.every((v, i) => v === row.authSegments[i])
+    );
+    if (existingAuth) {
+      if (!existingAuth.chainIds.includes(chainId)) {
+        existingAuth.chainIds.push(chainId);
+      }
+      row.uniprotSegments.forEach((seg) => {
+        if (!existingAuth.uniprotSegments.includes(seg)) {
+          existingAuth.uniprotSegments.push(seg);
+        }
+      });
+      row.labelSegments.forEach((seg) => {
+        if (!existingAuth.labelSegments.includes(seg)) {
+          existingAuth.labelSegments.push(seg);
+        }
+      });
+    } else {
+      authUniProtMappings.push(row);
+    }
+  });
+
   uniprotAccsForMacromolecule = [...new Set(uniprotAccsForMacromolecule)];
-  return {
-    uniprotAccsForMacromolecule,
-    uniprotRangesByChainId,
-  };
-}
-
-export function findAuthorNumber(mapping: UniProtMappingObj, mappings: UniProtMappingObj[]) {
-  let validStartAuthNum: number | null = mapping.start.author_residue_number;
-  let validEndAuthNum: number | null = mapping.end.author_residue_number;
-  if (validStartAuthNum === null) {
-    const validStartMappings = mappings.filter((eachMapping) => {
-      return (
-        eachMapping.entity_id === mapping.entity_id &&
-        eachMapping.start.residue_number === mapping.start.residue_number &&
-        eachMapping.start.author_residue_number !== null
-      );
-    });
-    if (validStartMappings.length > 0) {
-      validStartAuthNum = validStartMappings[0].start.author_residue_number;
-    }
-  }
-  if (validEndAuthNum === null) {
-    const validEndMappings = mappings.filter((eachMapping) => {
-      return (
-        eachMapping.entity_id === mapping.entity_id && eachMapping.end.residue_number === mapping.end.residue_number && eachMapping.end.author_residue_number !== null
-      );
-    });
-    if (validEndMappings.length > 0) {
-      validEndAuthNum = validEndMappings[0].end.author_residue_number;
-    }
-  }
-  return { validStartAuthNum, validEndAuthNum };
-}
-
-export function patchAuthorNumberPolCov(patchType: 'first' | 'last', entityId: number, chainId: string, polymerCoverage?: PolymerCoverageMolecule[]) {
-  if (!polymerCoverage) return null;
-  if ((<any>polymerCoverage).empty === true) polymerCoverage = [];
-
-  const polymerCoverageForEntity = polymerCoverage.filter((polmol) => polmol.entity_id == entityId);
-  if (polymerCoverageForEntity.length === 0) return null;
-
-  const polymerCoverageForChainId = polymerCoverageForEntity[0].chains
-    .filter((polChain) => polChain.observed.length > 0)
-    .filter((polChain) => polChain.chain_id === chainId);
-  if (polymerCoverageForChainId.length === 0) return null;
-
-  const observedSegments = polymerCoverageForChainId[0].observed;
-  const firstSegment = observedSegments[0];
-  const lastSegment = observedSegments[observedSegments.length - 1];
-
-  const start_author_residue_number = firstSegment.start.author_residue_number.toString();
-  const end_author_residue_number = lastSegment.end.author_residue_number.toString();
-  const start_author_insertion_code = firstSegment.start.author_insertion_code || '';
-  const end_author_insertion_code = lastSegment.end.author_insertion_code || '';
-
-  if (patchType === 'first') return `${start_author_residue_number}${start_author_insertion_code}`;
-  else return `${end_author_residue_number}${end_author_insertion_code}`;
+  return { uniprotAccsForMacromolecule, labelUniProtMappings, authUniProtMappings };
 }
 
 export function filterPolymerCoverageByPreferredAssembly(polymerCoverage: PolymerCoverageMolecule[], preferredAssembly: AssemblyData) {

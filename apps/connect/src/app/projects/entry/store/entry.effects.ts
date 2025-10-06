@@ -25,7 +25,7 @@ import {
   generateMacromoleculesCards,
   generateMacromoleculesTableFilters,
   generateProcessedMacromolecules,
-  getUniProtsDataForMacromolecule,
+  getUniProtMappingsForMacromolecule,
   mapMacromoleculesChainsToEntityId,
   processMacromoleculesDescriptions,
 } from './data-processing/macromolecule-processing';
@@ -1296,7 +1296,7 @@ export class EntryEffects {
         const macromoleculesForPrefAssembly = filterMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
         const polymerCoverageForPrefAssembly = filterPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
         const filteredMacromolecules = macromoleculesForPrefAssembly.filter((macromolecule) => {
-          const uniprotData = getUniProtsDataForMacromolecule(macromolecule, uniprotMappings, polymerCoverageForPrefAssembly);
+          const uniprotData = getUniProtMappingsForMacromolecule(macromolecule, uniprotMappings, polymerCoverageForPrefAssembly);
           const macromoleculeUniProts = uniprotData.uniprotAccsForMacromolecule;
           const hasUniProtInCommon = macromoleculeUniProts.some((unp) => llmUniProtIds.has(unp));
           const hasChainsInCommon = macromolecule.in_chains.some((ch) => chainIds.has(ch));
@@ -1355,7 +1355,7 @@ export class EntryEffects {
         const macromoleculesForPrefAssembly = filterMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
         const polymerCoverageForPrefAssembly = filterPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
         const filteredMacromolecules = macromoleculesForPrefAssembly.filter((macromolecule) => {
-          const uniprotData = getUniProtsDataForMacromolecule(macromolecule, uniprotMappings, polymerCoverageForPrefAssembly);
+          const uniprotData = getUniProtMappingsForMacromolecule(macromolecule, uniprotMappings, polymerCoverageForPrefAssembly);
           const macromoleculeUniProts = uniprotData.uniprotAccsForMacromolecule;
           const hasUniProtInCommon = macromoleculeUniProts.some((unp) => llmUniProtIds.has(unp));
           const hasChainsInCommon = macromolecule.in_chains.some((ch) => chainIds.has(ch));

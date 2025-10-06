@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { dashboardStatLinks, tourIds } from '../../entry-constant';
+import { dashboardStatLinks, entryMacromoleculeTooltips, tourIds } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -14,6 +14,8 @@ import { AG_Grid_Theme_Class, MaterialModule, UtilService } from '@pdbc/core';
 import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../helpers/processed-data-to-controls';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { ComponentType } from '@angular/cdk/overlay';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
@@ -37,8 +39,10 @@ import { drawSelectionInMolstar, Molstar370DefaultParams, zoomOutStructureInMols
 import { SequenceDetail } from '../../store/data-processing/models/other-models';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
-import { getUniProtsDataForMacromolecule } from '../../store/data-processing/macromolecule-processing';
+import { getUniProtMappingsForMacromolecule } from '../../store/data-processing/macromolecule-processing';
 import { TutorialTourService } from '../../services/tutorial-tour.service';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { UnpMappingListComponent } from '../shared/unp-mapping-list/unp-mapping-list.component';
 
 @Component({
   selector: 'pdbc-llm-tab',
@@ -54,6 +58,7 @@ import { TutorialTourService } from '../../services/tutorial-tour.service';
     AgGridAngular,
     SmartSeqViewerComponent,
     MolstarComponent,
+    HelpIconWithTooltipComponent,
   ],
   templateUrl: './llm-tab.component.html',
   styleUrl: './llm-tab.component.scss',
@@ -61,6 +66,7 @@ import { TutorialTourService } from '../../services/tutorial-tour.service';
 export class LLMTabComponent implements OnInit, AfterViewInit {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
+  private readonly dialog = inject(MatDialog);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
 
@@ -82,6 +88,8 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
   public readonly uniprotMappings = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
   public readonly polymerCoverage = toSignal(this.globalStore.select(EntrySelectors.polymerCoverage));
 
+  public readonly entryMacromoleculeTooltips = entryMacromoleculeTooltips;
+
   public selectionStats: { [key: string]: any } | undefined;
 
   public filteredLLMAnnotations = signal<LLMAnnotation[]>([]);
@@ -100,8 +108,9 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     if (!polymerCoverage) return undefined;
 
     const mol = currentMacromoleculeDatum.additionalData.molecule;
-    const mappedUnps = getUniProtsDataForMacromolecule(mol, uniprotMappings, polymerCoverage);
-    return mappedUnps;
+    const mappedUnpsRows = getUniProtMappingsForMacromolecule(mol, uniprotMappings, polymerCoverage);
+
+    return mappedUnpsRows;
   });
 
   public uniprotsAllowed = computed(() => this.uniprotMappedData()?.uniprotAccsForMacromolecule);
@@ -151,7 +160,25 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     return [...new Set(macromolecule['organisms'].filter((organism) => organism !== null))];
   });
 
-  public mappedResidues = computed(() => {
+  public isUniprotMappingsClosed = true;
+  public isUniprotMappingsBig = computed(() => {
+    const currentMacromoleculeDatum = this.currentMacromoleculeDatum();
+    const currentChain = this.currentSelectionChainId();
+    const mappedUnps = this.uniprotMappedData();
+
+    if (!currentMacromoleculeDatum) return false;
+    if (!mappedUnps) return false;
+    if (!currentChain) return false;
+
+    const mappingsForChains = mappedUnps.labelUniProtMappings.filter((mapped) => mapped.chainIds.indexOf(currentChain) > -1);
+
+    if (mappingsForChains.length > 1 || mappingsForChains[0].uniprotSegments.length > 2) {
+      return true;
+    }
+    return false;
+  });
+
+  public uniprotProcessedMappings = computed(() => {
     const currentMacromoleculeDatum = this.currentMacromoleculeDatum();
     const currentChain = this.currentSelectionChainId();
     const mappedUnps = this.uniprotMappedData();
@@ -160,8 +187,8 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     if (!mappedUnps) return undefined;
     if (!currentChain) return undefined;
 
-    const mappingsForChains = mappedUnps.uniprotRangesByChainId;
-    return mappingsForChains[currentChain];
+    const mappingsForChains = mappedUnps.labelUniProtMappings;
+    return mappingsForChains.filter((mapped) => mapped.chainIds.indexOf(currentChain) > -1);
   });
 
   public macromoleculeSequence = computed(() => this.sequenceDetails()?.fullSequence);
@@ -531,6 +558,17 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
 
     timer(durationMs + 100).subscribe(async () => {
       await drawSelectionInMolstar(instance, this.selectionData);
+    });
+  }
+
+  public openDialog(type: string) {
+    const macromolecule = this.currentMacromoleculeDatum() as ProcessedMacromolecule;
+    const component: ComponentType<UnpMappingListComponent> = UnpMappingListComponent;
+    const dialogData = this.uniprotMappedData();
+    this.dialog.open(component, {
+      disableClose: false,
+      panelClass: 'entry-Dialog',
+      data: dialogData,
     });
   }
 }
