@@ -1,5 +1,5 @@
 <pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig" />
-<pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
+<!-- <pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" /> -->
 
 <main>
   @if(showNotificationBanner()){
@@ -12,10 +12,20 @@
         @if(summaryData()?.name){
         <header>
           <h1 class="heading-1" libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="50"></h1>
-          <a class="vf-button vf-button--link" href="https://www.nature.com/articles/s41597-023-02778-9" target="_blank">
-            Methodology
-            <i class="icon icon-link icon-common"></i>
-          </a>
+          <div class="links">
+            <a class="vf-button vf-button--link" href="https://wwwdev.ebi.ac.uk/pdbe/aggregated-api/#/Complex" target="_blank">
+              API
+              <i class="icon icon-link icon-common"></i>
+            </a>
+            <a class="vf-button vf-button--link" href="https://github.com/PDBe-KB/pdbe-assemblies-analysis" target="_blank">
+              Analysis
+              <i class="icon icon-link icon-common"></i>
+            </a>
+            <a class="vf-button vf-button--link" href="https://www.nature.com/articles/s41597-023-02778-9" target="_blank">
+              Methodology
+              <i class="icon icon-link icon-common"></i>
+            </a>
+          </div>
         </header>
         } @if(complexId()){
         <div class="sub-header">

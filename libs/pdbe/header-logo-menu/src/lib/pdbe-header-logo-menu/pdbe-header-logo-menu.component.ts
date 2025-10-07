@@ -20,6 +20,7 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   @Input() headerConfig!: HeaderLogoMenuConfig;
   public headerLogoSrc = '';
   public isMobile = signal(false);
+  // public isComplexPage = signal(this.headerConfig.isComplexPage ?? false);
 
   public links!: Link[];
 
