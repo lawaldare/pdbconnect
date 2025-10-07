@@ -434,7 +434,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
     /* 2. Fetch topol viewer mutex inside Promise */
     this.topolViewerMutex = this.topolViewerMutex.then(async () => {
-      await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
+      // await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
+      await this.scriptLoader.loadScript('./assets/pdb-topology-viewer-component-3.0.0.js');
     });
 
     this.rnaViewerMutex = this.rnaViewerMutex.then(async () => {
