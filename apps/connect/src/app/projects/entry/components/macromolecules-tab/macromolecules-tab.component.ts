@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, computed, DestroyRef, ElementRef, HostListener, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { dashboardStatLinks, tourIds } from '../../entry-constant';
+import { dashboardStatLinks, entryMacromoleculeTooltips, tourIds } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -32,10 +32,12 @@ import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-track
 import { drawSelectionInMolstar, Molstar370DefaultParams, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
-import { getUniProtsDataForMacromolecule } from '../../store/data-processing/macromolecule-processing';
+import { getUniProtMappingsForMacromolecule } from '../../store/data-processing/macromolecule-processing';
 import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
 import { TutorialTourService } from '../../services/tutorial-tour.service';
 import { MacromoleculesTabFacade } from './macromolecules-tab.facade';
+import { UnpMappingListComponent } from '../shared/unp-mapping-list/unp-mapping-list.component';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -54,6 +56,7 @@ declare let PdbRnaViewerPlugin: any;
     EntryPgProtvistaComponent,
     SmartSeqViewerComponent,
     MolstarComponent,
+    HelpIconWithTooltipComponent,
   ],
   templateUrl: './macromolecules-tab.component.html',
   styleUrl: './macromolecules-tab.component.scss',
@@ -87,6 +90,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
   public readonly tabDataLoaded = computed(() => this.processedMacromolecules() !== undefined);
+
+  public readonly entryMacromoleculeTooltips = entryMacromoleculeTooltips;
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
@@ -244,8 +249,9 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     if (!polymerCoverage) return undefined;
 
     const mol = currentMacromoleculeDatum.additionalData.molecule;
-    const mappedUnps = getUniProtsDataForMacromolecule(mol, uniprotMappings, polymerCoverage);
-    return mappedUnps;
+    const mappedUnpsRows = getUniProtMappingsForMacromolecule(mol, uniprotMappings, polymerCoverage);
+
+    return mappedUnpsRows;
   });
 
   public uniprotsAllowed = computed(() => this.uniprotMappedData()?.uniprotAccsForMacromolecule);
@@ -324,7 +330,25 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return [...new Set(expSystems.filter((expSystem) => expSystem !== null))];
   });
 
-  public mappedResidues = computed(() => {
+  public isUniprotMappingsClosed = true;
+  public isUniprotMappingsBig = computed(() => {
+    const currentMacromoleculeDatum = this.currentMacromoleculeDatum();
+    const currentChain = this.currentSelectionChainId();
+    const mappedUnps = this.uniprotMappedData();
+
+    if (!currentMacromoleculeDatum) return false;
+    if (!mappedUnps) return false;
+    if (!currentChain) return false;
+
+    const mappingsForChains = mappedUnps.labelUniProtMappings.filter((mapped) => mapped.chainIds.indexOf(currentChain) > -1);
+
+    if (mappingsForChains.length > 1 || mappingsForChains[0].uniprotSegments.length > 2) {
+      return true;
+    }
+    return false;
+  });
+
+  public uniprotProcessedMappings = computed(() => {
     const currentMacromoleculeDatum = this.currentMacromoleculeDatum();
     const currentChain = this.currentSelectionChainId();
     const mappedUnps = this.uniprotMappedData();
@@ -333,8 +357,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     if (!mappedUnps) return undefined;
     if (!currentChain) return undefined;
 
-    const mappingsForChains = mappedUnps.uniprotRangesByChainId;
-    return mappingsForChains[currentChain];
+    const mappingsForChains = mappedUnps.labelUniProtMappings;
+    return mappingsForChains.filter((mapped) => mapped.chainIds.indexOf(currentChain) > -1);
   });
 
   public altSequences = signal<AlternativeNumbering[] | undefined>(undefined);
@@ -611,11 +635,28 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public openDialog(type: string) {
     const macromolecule = this.currentMacromoleculeDatum() as ProcessedMacromolecule;
-    const component: ComponentType<any> = type === 'ec' ? EcNumbersComponent : GoTermsComponent;
+    let component: ComponentType<any>;
+    let dialogData: any = {};
+    switch (type) {
+      case 'ec':
+        component = EcNumbersComponent;
+        dialogData = { entityId: macromolecule.additionalData.molecule.entity_id };
+        break;
+      case 'go':
+        component = GoTermsComponent;
+        dialogData = { entityId: macromolecule.additionalData.molecule.entity_id };
+        break;
+      case 'uniprot':
+        component = UnpMappingListComponent;
+        dialogData = this.uniprotMappedData()!;
+        break;
+      default:
+        throw new Error(`Unknown dialog type: ${type}`);
+    }
     this.dialog.open(component, {
       disableClose: false,
       panelClass: 'entry-Dialog',
-      data: { entityId: macromolecule.additionalData.molecule.entity_id },
+      data: dialogData,
     });
   }
 

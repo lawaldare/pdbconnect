@@ -1,0 +1,23 @@
+<div class="toolbar">
+  <p>UniProt mappings</p>
+  <img src="assets/icons/close.png" alt="close icon" role="button" (click)="dialogRef.close()" />
+</div>
+
+<div class="action-buttons">
+  @for(filter of filters; track filter.category){
+  <button [class.selected]="selectedCategory() === filter.id" (click)="selectCategory(filter)">{{filter.value}} {{filter.category}}</button>
+  }
+  <button class="download-btn" (click)="downloadCSV()">Download CSV</button>
+</div>
+
+<div style="margin-top: 5px; height: 600px; padding: 16px">
+  <ag-grid-angular
+    class="ag-theme-quartz"
+    [rowData]="rowData()"
+    [columnDefs]="colDefs"
+    [defaultColDef]="defaultColDef"
+    [gridOptions]="gridOptions"
+    [paginationPageSizeSelector]="paginationPageSizeSelector()"
+    [autoSizeStrategy]="autoSizeStrategy"
+  />
+</div>

@@ -46,12 +46,25 @@ export interface SequenceDetail {
   }[];
 }
 
-export interface MappedResidue {
-  range: string[];
+export interface LabelUniProtMappingRows {
+  uniprotId: string;
+  isCanonical: boolean;
   coverage: string;
-  chainId: string;
-  uniprot: string;
-  open: boolean;
+  identity: string;
+  chainIds: string[];
+  uniprotSegments: string[];
+  labelSegments: string[];
+}
+export interface UniProtMappingRows {
+  uniprotId: string;
+  isCanonical: boolean;
+  coverage: string;
+  identity: string;
+  chainIds: string[];
+  uniprotSegments: string[];
+  authSegments: string[];
+  hasNonObserved: boolean;
+  labelSegments: string[];
 }
 
 export enum MobileTabChips {

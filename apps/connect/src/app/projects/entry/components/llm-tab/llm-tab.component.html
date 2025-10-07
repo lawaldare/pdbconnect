@@ -60,33 +60,44 @@
           }
         </article>
       </div>
-      } @if(mappedResidues()?.length){
+      } @if(uniprotProcessedMappings()?.length) { @let mappings = uniprotProcessedMappings()!; @let firstMapping = mappings[0];
       <div class="info-row">
-        <span class="micro-title"> UniProt mapping </span>
-        <article class="uniport-mapping">
-          @for(residue of mappedResidues()!; track residue.uniprot; let index = $index;){ @let range = residue.range; @if(range.length <= 2){
+        <span class="micro-title left">
+          UniProt mapping{{ mappings.length > 1 ? 's': '' }}
+          <lib-help-icon-with-tooltip [tooltipText]="entryMacromoleculeTooltips.uniprotMappings" />
+        </span>
+        <article class="uniprot-mapping">
+          @if (isUniprotMappingsBig() === false) {
           <span
-            >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a> (residues:
-            {{residue.range.join(',')}}; coverage: {{residue.coverage}})</span
+            >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + firstMapping.uniprotId" target="_blank">{{firstMapping.uniprotId}}</a> (residues:
+            {{firstMapping.uniprotSegments.join(', ')}}; coverage: {{firstMapping.coverage}} identity: {{firstMapping.identity}})</span
           >
-          } @else { @if(residue.open){
+          } @else if (isUniprotMappingsClosed === true && firstMapping.uniprotSegments.length <= 2) {
+          <span
+            >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + firstMapping.uniprotId" target="_blank">{{firstMapping.uniprotId}}</a> (residues:
+            {{firstMapping.uniprotSegments.join(', ')}}; coverage: {{firstMapping.coverage}} identity: {{firstMapping.identity}})</span
+          >
+          <span class="residue-action-button" (click)="isUniprotMappingsClosed = !isUniprotMappingsClosed">&nbsp;show all</span>
+          } @else if (isUniprotMappingsClosed === true && firstMapping.uniprotSegments.length > 2) {
+          <span
+            >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + firstMapping.uniprotId" target="_blank">{{firstMapping.uniprotId}}</a> (residues:
+            {{firstMapping.uniprotSegments.slice(0,2).join(', ')}}...
+          </span>
+          <span class="residue-action-button" (click)="isUniprotMappingsClosed = !isUniprotMappingsClosed">&nbsp;show all</span>
+          } @else { @for(eachMapping of mappings; track eachMapping.uniprotId; let index = $index;) {
           <div>
-            Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a>
-            (residues: {{range.join(', ')}}; coverage: {{residue.coverage}})
-            <span class="residue-action-button" (click)="residue.open = !residue.open">show less</span>
+            Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + eachMapping.uniprotId" target="_blank">{{eachMapping.uniprotId}}</a> (residues:
+            {{eachMapping.uniprotSegments.join(', ')}}; coverage: {{eachMapping.coverage}} identity: {{eachMapping.identity}})
           </div>
-          }@else {
-          <div>
-            Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + residue.uniprot" target="_blank">{{residue.uniprot}}</a>
-            residues: {{range.slice(0,2).join(', ')}}...
-            <span class="residue-action-button" (click)="residue.open = !residue.open">show all</span>
-          </div>
-          } } } @for(res of bestResidues(); track res.name;){
+          }
+          <span class="residue-action-button" (click)="isUniprotMappingsClosed = !isUniprotMappingsClosed">show less</span>
+          } @for(res of bestResidues(); track res.name;){
           <span
             >Best match <a [href]="'https://www.uniprot.org/uniprotkb/' + res.uniprot" target="_blank">{{res.uniprot}}</a> (residues: {{res.mappings[0].unp_start}} -
             {{res.mappings[0].unp_end}})</span
           >
           }
+          <div class="residue-action-button" (click)="openDialog('uniprot')">View mapping{{ mappings.length > 1 ? 's': '' }} details</div>
         </article>
       </div>
       }
