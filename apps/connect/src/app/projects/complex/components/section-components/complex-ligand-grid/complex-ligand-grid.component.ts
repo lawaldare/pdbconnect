@@ -47,7 +47,7 @@ export class ComplexLigandGridComponent implements AfterViewInit {
       .subscribe((depiction: Depiction) => {
         const ligand = this.renderer.createElement('pdb-ligand-env');
         this.renderer.appendChild(imageContainer, ligand);
-        this.renderer.setProperty(ligand, 'depiction', depiction);
+        setTimeout(() => this.renderer.setProperty(ligand, 'depiction', depiction), 250);
         this.renderer.setAttribute(ligand, 'depiction-only', '');
         this.ligandEv = ligand;
       });
