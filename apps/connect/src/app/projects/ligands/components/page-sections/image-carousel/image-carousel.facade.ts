@@ -158,15 +158,13 @@ export class ImageCarouselComponentFacade {
   }
 
   private async createLigandEnvironment(renderer: Renderer2, container: ElementRef, depiction: Depiction): Promise<void> {
+    await customElements.whenDefined('pdb-ligand-env');
     const ligand = renderer.createElement('pdb-ligand-env');
+    ligand.zoomControlsOff = true;
     renderer.appendChild(container, ligand);
-
-    await customElements.whenDefined('pdb-ligand-env').then(() => {
-      renderer.setProperty(ligand, 'depiction', depiction);
-      renderer.setAttribute(ligand, 'depiction-only', '');
-      renderer.setAttribute(ligand, 'zoom-on', 'true');
-      this.ligandEv = ligand;
-    });
+    renderer.setProperty(ligand, 'depiction', depiction);
+    renderer.setAttribute(ligand, 'depiction-only', '');
+    this.ligandEv = ligand;
   }
 
   public resetRenderer(renderer: Renderer2, imageContainer: ElementRef): void {
