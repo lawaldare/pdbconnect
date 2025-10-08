@@ -36,13 +36,13 @@ export class OEMCDirective implements OnChanges {
       const anchorText = this.renderer.createText(`${value} `);
       this.renderer.appendChild(anchor, anchorText);
 
-      const icon = this.renderer.createElement('i');
-      this.renderer.addClass(icon, 'icon');
-      this.renderer.addClass(icon, 'icon-link');
-      this.renderer.addClass(icon, 'icon-common');
-      this.renderer.setStyle(icon, 'margin-right', '20px');
+      // const icon = this.renderer.createElement('i');
+      // this.renderer.addClass(icon, 'icon');
+      // this.renderer.addClass(icon, 'icon-link');
+      // this.renderer.addClass(icon, 'icon-common');
+      // this.renderer.setStyle(icon, 'margin-right', '20px');
 
-      this.renderer.appendChild(anchor, icon);
+      // this.renderer.appendChild(anchor, icon);
       this.renderer.appendChild(li, anchor);
       const lastText = this.renderer.createText(`PDB entries)`);
       this.renderer.appendChild(li, lastText);

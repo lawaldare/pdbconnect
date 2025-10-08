@@ -200,14 +200,15 @@ nightingale-navigation .container .brush .handle {
 .ngx-slider .ngx-slider-bar {
   height: 10px !important;
   background: #afe2f2;
-  background: linear-gradient(90deg, rgb(175 226 242 / 100%) 0%, rgb(66 159 191 / 100%) 100%) !important;
+  background: linear-gradient(90deg, #d9e9f6 0%, #4a90e2 100%) !important;
 }
 
 .ngx-slider .ngx-slider-pointer {
   width: 15px !important;
   height: 15px !important;
   top: -3px !important;
-  background: #000000 !important;
+  background: #e94e3c !important;
+  border: 1px solid #ffffff !important;
 }
 
 .ngx-slider .ngx-slider-pointer::after {

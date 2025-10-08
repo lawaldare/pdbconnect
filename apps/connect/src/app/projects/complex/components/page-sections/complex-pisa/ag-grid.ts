@@ -18,19 +18,11 @@ export const gridOptions: GridOptions = {
 
 export const colDefs: ColDef[] = [
   {
-    headerName: 'PDB',
+    headerName: 'PDB and complex',
     field: 'pdb_id',
     cellRenderer: ComplexPageExternalLinkRendererComponent,
-    flex: 0.6,
+    flex: 0.9,
     filter: true,
-  },
-  {
-    headerName: 'ID',
-    field: 'assembly_id',
-    flex: 0.4,
-    headerComponent: CustomHeaderComponent,
-    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, tooltipText: 'Assembly identifier' },
-    sortable: false,
   },
   {
     headerName: 'Acc. SA (Å²)',
