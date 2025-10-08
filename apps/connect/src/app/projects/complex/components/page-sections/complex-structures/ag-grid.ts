@@ -15,7 +15,7 @@ export const colDefs: ColDef[] = [
     field: 'pdb_id',
     cellRenderer: ComplexPageExternalLinkRendererComponent,
     width: 170,
-    sortable: false,
+    sortable: true,
   },
   {
     headerName: 'Title',
