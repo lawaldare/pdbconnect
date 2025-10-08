@@ -2,14 +2,16 @@
 <div id="structures-section">
   <header>
     <h5 class="title">{{rowData().length}} assemblies representing this complex in the PDB</h5>
-    <button class="vf-button vf-button--link" (click)="downloadCSV()">
-      Download structures (csv)
-      <i class="icon icon-common icon-download"></i>
+    <button mat-button [matMenuTriggerFor]="menu">
+      <span>Download files</span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M7 10.5L12 15.5L17 10.5H7Z" fill="black" />
+      </svg>
     </button>
-    <button class="vf-button vf-button--link" (click)="downloadMMCIF()">
-      Download coordinates (mmCIF)
-      <i class="icon icon-common icon-download"></i>
-    </button>
+    <mat-menu #menu="matMenu" class="entry-dropdown-menu" yPosition="below">
+      <span mat-menu-item (click)="downloadCSV()">Download table (csv)</span>
+      <span mat-menu-item (click)="downloadMMCIF()">Download coordinates (mmCIF)</span>
+    </mat-menu>
   </header>
   <section>
     <div class="table">

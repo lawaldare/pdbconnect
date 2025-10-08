@@ -17,6 +17,12 @@
   align-self: stretch;
 }
 
+section.actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .search-box {
   position: relative;
   width: 350px;
@@ -41,4 +47,18 @@ h3,
 h4,
 p {
   margin-bottom: 20px !important;
+}
+
+button {
+  display: inline-flex;
+  padding: 4px 12px;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--Neutral-300, #d0d0ce);
+  background: var(--Neutral-0, #fff);
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 26.6px;
+  height: 35px;
 }
