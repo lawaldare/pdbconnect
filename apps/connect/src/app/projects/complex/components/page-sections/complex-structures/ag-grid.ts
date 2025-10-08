@@ -3,7 +3,6 @@
 import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions, GridState } from 'ag-grid-community';
 import { TitleRendererComponent } from '../../cell renderers/structure-title.component';
-import { CustomHeaderComponent } from '../../cell renderers/custom-header.component';
 import { ComplexPageExternalLinkRendererComponent } from '../../../shared/complex-page-external-link.component';
 
 export const gridOptions: GridOptions = {
@@ -12,20 +11,11 @@ export const gridOptions: GridOptions = {
 
 export const colDefs: ColDef[] = [
   {
-    headerName: 'PDB',
+    headerName: 'PDB and complex',
     field: 'pdb_id',
     cellRenderer: ComplexPageExternalLinkRendererComponent,
-    width: 90,
+    width: 170,
     sortable: false,
-  },
-  {
-    headerName: 'ID',
-    field: 'assembly_id',
-    width: 80,
-    headerComponent: CustomHeaderComponent,
-    headerComponentParams: { showHelpIcon: true, tooltipText: 'Assembly identifier' },
-    sortable: false,
-    filter: false,
   },
   {
     headerName: 'Title',
@@ -33,7 +23,7 @@ export const colDefs: ColDef[] = [
     cellRenderer: TitleRendererComponent,
     width: 240,
   },
-  { headerName: 'Exp. method', field: 'experimental_method', width: 170 },
+  { headerName: 'Method', field: 'experimental_method', width: 170 },
   {
     headerName: 'Res. (Å)',
     field: 'resolution',

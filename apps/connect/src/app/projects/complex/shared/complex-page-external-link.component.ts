@@ -7,8 +7,8 @@ import { Component } from '@angular/core';
   template: `
     @if (value) {
       <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + value + '?activeTab=assemblies'" target="_blank" (click)="setRedirect()">
-        {{ value }}
-        <i class="icon icon-link icon-common" style="margin-left: 5px;"></i>
+        {{ value }}_{{ assemblyId }}
+        <!-- <i class="icon icon-link icon-common" style="margin-left: 5px;"></i> -->
       </a>
     } @else {
       <p>Unmapped</p>

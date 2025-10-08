@@ -6,7 +6,7 @@
       <div class="info-row-content">
         <a [href]="baseUrl + 'complexportal/complex/' + summaryData()?.complex_portal_id" target="_blank">
           {{ summaryData()?.complex_portal_id }}
-          <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
+          <!-- <i class="icon icon-link icon-common" style="margin-left: 5px"></i> -->
         </a>
       </div>
     </div>
@@ -72,7 +72,7 @@
     </div>
     }
     <div class="info-row">
-      <span class="info-row-title">Experimental methods</span>
+      <span class="info-row-title">Methods overview</span>
       <div class="info-row-content" pdbcOEMC [data]="summaryData()?.unique_observed_experimental_methods_with_counts ?? {}" [complexId]="complexId() ?? ''"></div>
     </div>
     <!-- <div class="info-row">
