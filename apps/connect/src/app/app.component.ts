@@ -40,7 +40,7 @@ export class AppComponent implements OnInit {
     this.init();
 
     // d3 js is currently always imported
-    await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js');
+    // await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js');
 
     const pathName = window.location.pathname;
     if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
