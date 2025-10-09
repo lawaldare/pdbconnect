@@ -14,6 +14,7 @@ export const INTX_NAME_STANDARDIZER = {
   ionic: 'Ionic',
   metal_complex: 'Metal complex',
   aromatic: 'Aromatic',
+  FF: 'Plane-Plane',
   hydrophobic: 'Hydrophobic',
   carbonyl: 'Carbonyl',
   polar: 'Polar',

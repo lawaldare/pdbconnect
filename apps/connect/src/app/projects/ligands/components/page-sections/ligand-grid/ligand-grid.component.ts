@@ -41,14 +41,14 @@ export class LigandGridComponent implements OnChanges, AfterViewInit {
       .fetchDepiction(this.ligand.chem_comp_id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(async (depiction: Depiction) => {
+        await customElements.whenDefined('pdb-ligand-env');
         const ligand = this.renderer.createElement('pdb-ligand-env');
+        ligand.zoomControlsOff = true;
         this.renderer.appendChild(imageContainer, ligand);
-        await customElements.whenDefined('pdb-ligand-env').then(() => {
-          this.renderer.setProperty(ligand, 'depiction', depiction);
-          this.renderer.setProperty(ligand, 'highlightSubstructure', this.ligand.substructure_match);
-          this.renderer.setAttribute(ligand, 'depiction-only', '');
-          this.ligandEv = ligand;
-        });
+        this.renderer.setProperty(ligand, 'depiction', depiction);
+        this.renderer.setProperty(ligand, 'highlightSubstructure', this.ligand.substructure_match);
+        this.renderer.setAttribute(ligand, 'depiction-only', '');
+        this.ligandEv = ligand;
       });
   }
 
