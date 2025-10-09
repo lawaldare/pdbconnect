@@ -10,20 +10,17 @@
       <i class="icon icon-common icon-search"></i>
       }
     </div>
-    <button mat-button [matMenuTriggerFor]="menu">
-      <span>Sort by</span>
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M7 10.5L12 15.5L17 10.5H7Z" fill="black" />
-      </svg>
-    </button>
-    <mat-menu #menu="matMenu" class="entry-dropdown-menu" yPosition="below">
-      <span mat-menu-item (click)="sortByFunctional()">Functional ligand type</span>
-      <span mat-menu-item (click)="sortByFrequency()">Frequency (PDB entries)</span>
-    </mat-menu>
+    <div class="sort-box">
+      <span>Sort by:</span>
+      <mat-select [formControl]="selectedSortBy" (selectionChange)="onSortTypeChange($event.value)">
+        <mat-option value="functional">Functional ligand type</mat-option>
+        <mat-option value="frequency">Frequency (PDB entries)</mat-option>
+      </mat-select>
+    </div>
   </section>
   <div class="grid-container">
     @for (ligand of ligandsPage(); track ligand.ligandId) {
-    <pdbc-complex-ligand-grid [ligand]="ligand" [complexId]="complexId() ?? ''" />
+    <pdbc-complex-ligand-grid [ligand]="ligand" [complexId]="complexId() ?? ''" #ligandGrid />
     }
   </div>
   <mat-paginator
