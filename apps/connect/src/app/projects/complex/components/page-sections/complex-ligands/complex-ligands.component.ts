@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ComplexLigandGridComponent } from '../../section-components/complex-ligand-grid/complex-ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
@@ -36,6 +36,10 @@ export class ComplexLigandsComponent implements OnInit {
   public searchTerm = new FormControl('');
 
   private readonly destroyRef = inject(DestroyRef);
+
+  public selectedSortBy = new FormControl('functional', { nonNullable: true });
+
+  @ViewChild('ligandGrid', { read: ComplexLigandGridComponent }) public ligandGrid!: ComplexLigandGridComponent;
 
   ngOnInit(): void {
     this.globalStore.select(ComplexSelectors.complexLigands).subscribe((ligands) => {
@@ -80,19 +84,29 @@ export class ComplexLigandsComponent implements OnInit {
     this.ligandsPage.update(() => (this.ligands() ?? []).slice(0, this.ligandsPageSize()));
   }
 
-  public sortByFunctional(): void {
+  private sortByFunctional(): void {
     this.globalStore.select(ComplexSelectors.complexLigands).subscribe((ligands) => {
       if (ligands.length > 0) {
         this.updateUI(ligands);
       }
     });
   }
-  public sortByFrequency(): void {
+  private sortByFrequency(): void {
     this.globalStore.select(ComplexSelectors.complexLigands).subscribe((ligands) => {
       if (ligands && ligands.length > 0) {
         const updateLigands = [...ligands].sort((a, b) => b.num_pdb_entries - a.num_pdb_entries);
         this.updateUI(updateLigands);
       }
     });
+  }
+
+  public onSortTypeChange(value: string) {
+    if (value === 'functional') {
+      this.sortByFunctional();
+    } else if (value === 'frequency') {
+      this.sortByFrequency();
+    }
+
+    this.ligandGrid.renderLigandImg();
   }
 }

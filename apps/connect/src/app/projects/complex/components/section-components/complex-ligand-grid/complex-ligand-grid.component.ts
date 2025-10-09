@@ -38,13 +38,15 @@ export class ComplexLigandGridComponent implements AfterViewInit {
   public drugTooltip = drugTooltip;
   public reactantTooltip = reactantTooltip;
 
-  renderLigandImg() {
+  renderLigandImg(): void {
     this.resetRenderer();
     const imageContainer = this.imageContainer.nativeElement;
     this.aggregatedApiService
       .fetchDepiction(this.ligand().ligandId)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((depiction: Depiction) => {
+      .subscribe(async (depiction: Depiction) => {
+        console.log(depiction);
+        await customElements.whenDefined('pdb-ligand-env');
         const ligand = this.renderer.createElement('pdb-ligand-env');
         this.renderer.appendChild(imageContainer, ligand);
         setTimeout(() => this.renderer.setProperty(ligand, 'depiction', depiction), 250);
