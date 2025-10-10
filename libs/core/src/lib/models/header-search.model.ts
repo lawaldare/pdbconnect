@@ -12,8 +12,8 @@ export interface HeaderSearchConfig {
   backgroundColor?: string;
   type?: string;
   examples?: string[] | ValueLabel[];
-  isHomepage?: boolean;
   placeholderText?: string;
+  isOnComplexPage?: boolean;
 }
 
 export interface UISearchConfig {

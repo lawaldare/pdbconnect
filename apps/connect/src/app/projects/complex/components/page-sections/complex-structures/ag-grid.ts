@@ -14,14 +14,14 @@ export const colDefs: ColDef[] = [
     headerName: 'PDB and complex',
     field: 'pdb_id',
     cellRenderer: ComplexPageExternalLinkRendererComponent,
-    width: 170,
+    width: 140,
     sortable: true,
   },
   {
     headerName: 'Title',
     field: 'title',
     cellRenderer: TitleRendererComponent,
-    width: 240,
+    width: 270,
   },
   { headerName: 'Method', field: 'experimental_method', width: 170 },
   {

@@ -31,7 +31,6 @@ export const ligandHomePageSeaderSearchConfig = {
   backgroundColor: '',
   type: ThemeType.PDBEKB,
   placeholderText: 'View PDBe-KB ligand by PDB ligand ID (CCD/PRD/CLC)',
-  isHomepage: true,
 };
 
 export const headerLogoMenuConfig = {

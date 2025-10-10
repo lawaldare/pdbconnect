@@ -108,10 +108,12 @@ export class InteractiveTablesComponent implements OnInit {
     if (localStorage['assemblyId']) {
       const assemblyId = localStorage.getItem('assemblyId');
       const card = this.rowCards().find((c: any) => c.assemblyId === assemblyId);
-      this.onCardClick(card);
-      setTimeout(() => {
-        localStorage.removeItem('assemblyId');
-      }, 5000);
+      if (card) {
+        this.onCardClick(card);
+        setTimeout(() => {
+          localStorage.removeItem('assemblyId');
+        }, 5000);
+      }
     }
   }
 

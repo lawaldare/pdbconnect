@@ -94,3 +94,9 @@ section.feedback {
     }
   }
 }
+
+a.vf-button.vf-button--link:focus,
+a.vf-button.vf-button--link:active,
+a.vf-button.vf-button--link:hover {
+  transform: none !important;
+}
