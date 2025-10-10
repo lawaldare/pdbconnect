@@ -86,7 +86,7 @@ export class ComplexLigandsComponent implements OnInit {
 
   private sortByFunctional(): void {
     this.globalStore.select(ComplexSelectors.complexLigands).subscribe((ligands) => {
-      if (ligands.length > 0) {
+      if (ligands && ligands.length > 0) {
         this.updateUI(ligands);
       }
     });
@@ -107,6 +107,6 @@ export class ComplexLigandsComponent implements OnInit {
       this.sortByFrequency();
     }
 
-    this.ligandGrid.renderLigandImg();
+    // this.ligandGrid.renderLigandImg();
   }
 }

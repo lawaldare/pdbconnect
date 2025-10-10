@@ -27,6 +27,7 @@ import { NotificationComponent } from '@pdbc/notification';
 import { ComplexPISAComponent } from '../../page-sections/complex-pisa/complex-pisa.component';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { DataPrivacyBannerComponent } from '@pdbc/core';
+import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 
 @Component({
   selector: 'pdbc-main',
@@ -34,7 +35,7 @@ import { DataPrivacyBannerComponent } from '@pdbc/core';
   imports: [
     CommonModule,
     PdbeHeaderLogoMenuComponent,
-    // PdbeHeaderSearchComponent,
+    PdbeHeaderSearchComponent,
     SummaryComponent,
     ComplexStructuresComponent,
     ComplexPISAComponent,

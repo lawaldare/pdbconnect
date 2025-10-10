@@ -19,8 +19,8 @@
     </div>
   </section>
   <div class="grid-container">
-    @for (ligand of ligandsPage(); track ligand.ligandId) {
-    <pdbc-complex-ligand-grid [ligand]="ligand" [complexId]="complexId() ?? ''" #ligandGrid />
+    @for (ligand of ligandsPage(); track $index) {
+    <pdbc-complex-ligand-grid [ligand]="ligand" [complexId]="complexId() ?? ''" />
     }
   </div>
   <mat-paginator

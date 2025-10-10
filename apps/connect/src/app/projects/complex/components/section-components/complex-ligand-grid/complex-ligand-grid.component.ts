@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, DestroyRef, ElementRef, inject, input, Renderer2, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, effect, ElementRef, inject, input, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AggregatedApiService } from '../../../../ligands/services/aggregated-api.service';
 import { RouterModule } from '@angular/router';
@@ -38,7 +38,16 @@ export class ComplexLigandGridComponent implements AfterViewInit {
   public drugTooltip = drugTooltip;
   public reactantTooltip = reactantTooltip;
 
-  renderLigandImg(): void {
+  constructor() {
+    effect(() => {
+      const ligand = this.ligand();
+      if (ligand && this.imageContainer) {
+        this.renderLigandImg();
+      }
+    });
+  }
+
+  private renderLigandImg(): void {
     this.resetRenderer();
     const imageContainer = this.imageContainer.nativeElement;
     this.aggregatedApiService
@@ -50,7 +59,6 @@ export class ComplexLigandGridComponent implements AfterViewInit {
         ligand.zoomControlsOff = true;
         this.renderer.appendChild(imageContainer, ligand);
         this.renderer.setProperty(ligand, 'depiction', depiction);
-        // setTimeout(() => this.renderer.setProperty(ligand, 'depiction', depiction), 250);
         this.renderer.setAttribute(ligand, 'depiction-only', '');
         this.ligandEv = ligand;
       });
