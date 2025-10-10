@@ -51,7 +51,7 @@ export class PisaFilterComponent implements OnInit {
   }
 
   private getResolutionRange(data: PISAAssemblyParam[]): { min: number; max: number } {
-    const resolutions = data.map((entry) => +entry.resolution.toFixed(2)).filter((r) => r != null && !isNaN(r));
+    const resolutions = data.map((entry) => +entry.resolution?.toFixed(2)).filter((r) => r != null && !isNaN(r));
 
     if (resolutions.length === 0) {
       return { min: 0, max: 0 };
