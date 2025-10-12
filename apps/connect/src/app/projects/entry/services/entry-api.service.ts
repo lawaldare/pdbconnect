@@ -90,7 +90,7 @@ export class EntryApiService {
 
   public getEntryStatus(entryId: string): Observable<EntryStatus> {
     // for testing on wwwdev
-    return this.http.get<Record<string, EntryStatus[]>>(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/status/${entryId}`).pipe(map((data) => data[entryId][0]));
+    return this.http.get<Record<string, EntryStatus[]>>(`https://www.ebi.ac.uk/pdbe/api/v2/pdb/entry/status/${entryId}`).pipe(map((data) => data[entryId][0]));
 
     // return this.http.get<Record<string, EntryStatus[]>>(`${this.BASE_API_V2}pdb/entry/status/${entryId}`).pipe(map((data) => data[entryId][0]));
 
@@ -309,7 +309,7 @@ export class EntryApiService {
   }
 
   public getPisaAssembly(entryId: string, assemblyId: string): Observable<PisaAssembly> {
-    return this.http.get<Record<string, PisaAssembly>>(`https://www.ebi.ac.uk/pdbe/api/pisa/assembly/${entryId}/${assemblyId}`).pipe(
+    return this.http.get<Record<string, PisaAssembly>>(`https://www.ebi.ac.uk/pdbe/api/v2/pisa/assembly/${entryId}/${assemblyId}`).pipe(
       map((data) => data[entryId]),
       catchError((error) => {
         if (error?.status === 404) {
