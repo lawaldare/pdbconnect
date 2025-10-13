@@ -7832,8 +7832,6 @@ var __webpack_modules__ = {
                     .attr('xmlns', 'http://www.w3.org/2000/svg')
                     .attr('width', '100%')
                     .attr('height', '100%')),
-                  console.log('uiParameters?.zoom '),
-                  console.log(null == t ? void 0 : t.zoom),
                   !1 !== (null == t ? void 0 : t.zoom) &&
                     ((this.zoomHandler = this.getZoomHandler()),
                     this.svg.call(this.zoomHandler),
