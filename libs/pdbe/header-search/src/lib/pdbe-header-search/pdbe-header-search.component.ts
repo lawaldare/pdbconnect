@@ -51,11 +51,6 @@ export class PdbeHeaderSearchComponent implements OnInit {
     this.utilService.redirectToSearchTerm(value);
   }
 
-  public onHomepageSubmit(form: FormGroup): void {
-    const value = form.value.searchTerm;
-    this.utilService.redirectToHomepageSearchTerm(value);
-  }
-
   public openID(ligandId: string): void {
     this.utilService.redirectToSearchTerm(ligandId);
     this.googleAnalyticsService.logClickEvents('example_click', 'Search Examples Links', 'navigate_to_example', ligandId);

@@ -1,7 +1,7 @@
 <section [ngStyle]="{ background: headerSearchConfig.backgroundColor }">
   <div class="container" [ngStyle]="{'height': isOnComplexPage() ? '77px' : '130px'}">
     @if(!isOnComplexPage()){
-    <form [formGroup]="form" (ngSubmit)="onHomepageSubmit(form)">
+    <form [formGroup]="form" (ngSubmit)="onSubmit(form)">
       <input type="text" class="input-field" formControlName="searchTerm" [placeholder]="headerSearchConfig.placeholderText" />
       <button class="vf-button vf-button--search-{{ buttonTheme }}">Explore</button>
       <button class="vf-button vf-button--search-{{ buttonTheme }} mobile">
