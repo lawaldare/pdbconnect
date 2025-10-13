@@ -2,6 +2,7 @@ export interface HeaderLogoMenuConfig {
   backgroundColor?: string;
   logoType?: string;
   headerTitle?: string;
+  isComplexPage?: boolean;
   isHomePage?: boolean;
   urls?: {
     name: string;

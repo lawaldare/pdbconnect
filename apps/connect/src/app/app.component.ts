@@ -40,7 +40,7 @@ export class AppComponent implements OnInit {
     this.init();
 
     // d3 js is currently always imported
-    await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js');
+    // await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js');
 
     const pathName = window.location.pathname;
     if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
@@ -59,7 +59,7 @@ export class AppComponent implements OnInit {
       // await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
     } else {
       // ligand env component is always imported for other pages
-      await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-2.1.0-beta-min.js', true);
+      await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-3.0.0-min.js', true);
     }
 
     // Heatmap components is only imported for Ligand pages (route has chemicalCompound)
@@ -86,7 +86,7 @@ export class AppComponent implements OnInit {
   }
 
   private async runAbsolutePath() {
-    await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-2.1.0-beta-min.js'), true);
+    await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-3.0.0-min.js'), true);
     await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.min.js'), true);
   }
 }

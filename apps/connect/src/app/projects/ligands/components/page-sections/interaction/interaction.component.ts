@@ -73,8 +73,6 @@ export class InteractionComponent implements AfterViewInit {
           if (interaction && interaction?.[this.ligandId()]) {
             this.renderer.setProperty(this.ligandEv, 'interaction', interaction[this.ligandId()]);
             this.renderer.setProperty(this.ligandEv, 'contactType', '["TOTAL"]');
-            // fix interactivity given d3.js version
-            this.patchInteractivity();
           } else {
             this.updateWhenNoInteraction();
           }
@@ -93,7 +91,6 @@ export class InteractionComponent implements AfterViewInit {
     await customElements.whenDefined('pdb-ligand-env').then(async () => {
       this.renderer.setAttribute(this.ligandEv, 'contact-type', filterString);
     });
-    await this.patchInteractivity();
   }
 
   private updateWhenNoInteraction(): void {
@@ -114,49 +111,13 @@ export class InteractionComponent implements AfterViewInit {
   }
 
   private async createLigandEnvironment(container: ElementRef, prop: Depiction): Promise<void> {
-    await customElements.whenDefined('pdb-ligand-env').then(async () => {
-      const ligand = this.renderer.createElement('pdb-ligand-env');
-      this.renderer.appendChild(container, ligand);
-      this.renderer.setProperty(ligand, 'id', 'ligand-int-env');
-      this.renderer.setProperty(ligand, 'depiction', prop);
-      this.ligandEv = ligand;
-    });
-
-    // fix interactivity given d3.js version
-    await this.patchInteractivity();
-  }
-
-  private async patchInteractivity() {
-    await this.waitForLigandEnvReady(5000, 100, false);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    const weights = this.ligandEv.display.depiction.weight;
-    const weightsCircles = weights.selectAll('circle');
-    // dependent on d3 js version.
-    weightsCircles
-      .on('mouseenter', null)
-      .on('mouseleave', null) // clear previous listeners
-      .on('mouseenter', (datum: any, _index: number, _nodes: any[]) => {
-        const datumIdx = weightsCircles.data().indexOf(datum);
-        const circle = weightsCircles.nodes()[datumIdx];
-        this.ligandEv.display.depiction.atomMouseEnterEventHandler(datum, circle, true);
-      })
-      .on('mouseleave', (_datum: any, _index: number, _nodes: any[]) => {
-        this.ligandEv.display.depiction.atomMouseLeaveEventHandler(true);
-      });
-  }
-
-  private async waitForLigandEnvReady(maxWaitMs = 5000, intervalMs = 100, onlyDepiction = true): Promise<void> {
-    const start = Date.now();
-    while (Date.now() - start < maxWaitMs) {
-      const noInteractionsElement = document.querySelector('text.pdb-lig-env-svg-node');
-      noInteractionsElement?.remove();
-      if (onlyDepiction && this.ligandEv?.display?.depiction) return;
-      else if (onlyDepiction === false && this.ligandEv?.display?.depiction && this.ligandEv?.display?.depiction?.weight) {
-        return;
-      }
-      await new Promise((r) => setTimeout(r, intervalMs));
-    }
-    throw new Error('LigandEnv display nodes/links not ready within timeout');
+    await customElements.whenDefined('pdb-ligand-env');
+    const ligand = this.renderer.createElement('pdb-ligand-env');
+    ligand.zoomControlsOff = true;
+    this.renderer.appendChild(container, ligand);
+    this.renderer.setProperty(ligand, 'id', 'ligand-int-env');
+    this.renderer.setProperty(ligand, 'depiction', prop);
+    this.ligandEv = ligand;
   }
 
   public toggleAtomNames(): void {

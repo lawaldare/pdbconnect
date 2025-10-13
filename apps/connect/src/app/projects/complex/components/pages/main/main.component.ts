@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, OnInit, Renderer2, signal, ViewChild } f
 import { CommonModule } from '@angular/common';
 
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
-import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
+// import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { SummaryComponent } from '../../page-sections/summary/summary.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of, switchMap } from 'rxjs';
@@ -27,6 +27,7 @@ import { NotificationComponent } from '@pdbc/notification';
 import { ComplexPISAComponent } from '../../page-sections/complex-pisa/complex-pisa.component';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { DataPrivacyBannerComponent } from '@pdbc/core';
+import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 
 @Component({
   selector: 'pdbc-main',
@@ -60,7 +61,7 @@ export class MainComponent implements OnInit {
   private readonly bioschemasService = inject(ComplexBioschemasService);
   private readonly renderer = inject(Renderer2);
 
-  public readonly headerLogoMenuConfig = headerComplexLogoMenuConfig;
+  public readonly headerLogoMenuConfig = { ...headerComplexLogoMenuConfig, isComplexPage: true };
   public readonly headerSearchConfig = headerSearchComplexConfig;
 
   private readonly globalStore = inject(Store<ComplexStoreState>);

@@ -322,6 +322,7 @@ export const INTX_NAME_COLORS: Record<string, string> = {
   HALOGENPI: '#C0BD7F',
   METSULPHURPI: '#C0BD7F',
   plane_plane: '#92AE31',
+  FF: '#92AE31',
   AMIDEAMIDE: '#2B3514',
   AMIDERING: '#C0BD7F',
   weak_polar: '#96CDE6',

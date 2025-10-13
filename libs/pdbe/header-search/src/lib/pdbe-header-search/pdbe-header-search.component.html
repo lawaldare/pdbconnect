@@ -1,17 +1,6 @@
 <section [ngStyle]="{ background: headerSearchConfig.backgroundColor }">
-  <div class="container">
-    @if(headerSearchConfig.isHomepage){
-    <form [formGroup]="form" (ngSubmit)="onHomepageSubmit(form)">
-      <input type="text" class="input-field" formControlName="searchTerm" [placeholder]="headerSearchConfig.placeholderText" />
-      <button class="vf-button vf-button--search-{{ buttonTheme }}">Explore</button>
-      <button class="vf-button vf-button--search-{{ buttonTheme }} mobile">
-        <i class="icon icon-common icon-search"></i>
-      </button>
-      @if(form.controls.searchTerm.value){
-      <i class="icon icon-common icon-times"></i>
-      }
-    </form>
-    } @else {
+  <div class="container" [ngStyle]="{'height': isOnComplexPage() ? '77px' : '130px'}">
+    @if(!isOnComplexPage()){
     <form [formGroup]="form" (ngSubmit)="onSubmit(form)">
       <input type="text" class="input-field" formControlName="searchTerm" [placeholder]="headerSearchConfig.placeholderText" />
       <button class="vf-button vf-button--search-{{ buttonTheme }}">Explore</button>
@@ -23,6 +12,7 @@
       }
     </form>
     }
+
     <section>
       <div class="left">
         Examples: @for(id of headerSearchConfig.examples; track id){

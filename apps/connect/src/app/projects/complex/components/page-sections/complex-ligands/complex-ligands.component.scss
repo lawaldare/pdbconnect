@@ -17,6 +17,18 @@
   align-self: stretch;
 }
 
+section.actions {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+
+  .sort-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
 .search-box {
   position: relative;
   width: 350px;
@@ -41,4 +53,13 @@ h3,
 h4,
 p {
   margin-bottom: 20px !important;
+}
+
+.mat-mdc-select {
+  width: 200px !important;
+  border: 1px solid #d0d0ce;
+  padding: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22.4px;
 }

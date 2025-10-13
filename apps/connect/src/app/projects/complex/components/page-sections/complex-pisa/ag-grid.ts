@@ -4,7 +4,7 @@ import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions, GridState } from 'ag-grid-community';
 import { CustomHeaderComponent } from '../../cell renderers/custom-header.component';
 import { pisaTableTooltip } from '../../../complex.constant';
-import { EntryPageExternalLinkRendererComponent } from './entry-page-link.component';
+import { ComplexPageExternalLinkRendererComponent } from '../../../shared/complex-page-external-link.component';
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
@@ -18,19 +18,11 @@ export const gridOptions: GridOptions = {
 
 export const colDefs: ColDef[] = [
   {
-    headerName: 'PDB',
+    headerName: 'PDB and complex',
     field: 'pdb_id',
-    cellRenderer: EntryPageExternalLinkRendererComponent,
-    flex: 0.6,
+    cellRenderer: ComplexPageExternalLinkRendererComponent,
+    flex: 0.9,
     filter: true,
-  },
-  {
-    headerName: 'ID',
-    field: 'assembly_id',
-    flex: 0.4,
-    headerComponent: CustomHeaderComponent,
-    headerComponentParams: { showHelpIcon: true, enableFilterButton: false, tooltipText: 'Assembly identifier' },
-    sortable: false,
   },
   {
     headerName: 'Acc. SA (Å²)',

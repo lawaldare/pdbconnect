@@ -12,7 +12,7 @@ import { ComplexInteraction } from '../../models/complex-structure.model';
     <span style="display:block; margin-bottom: 5px;">
       <a role="button" (click)="openComplexPage(data.pdb_complex_id)">
         {{ data.pdb_complex_id }}
-        <i class="icon icon-link icon-common" style="margin-left: 5px;"></i>
+        <!-- <i class="icon icon-link icon-common" style="margin-left: 5px;"></i> -->
       </a>
     </span>
 

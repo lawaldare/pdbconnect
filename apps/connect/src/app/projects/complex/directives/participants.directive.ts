@@ -42,14 +42,14 @@ export class ParticipantDirective implements OnChanges {
 
         const list = this.renderer.createElement('li');
 
-        const icon = this.renderer.createElement('i');
-        this.renderer.addClass(icon, 'icon');
-        this.renderer.addClass(icon, 'icon-link');
-        this.renderer.addClass(icon, 'icon-common');
-        this.renderer.setStyle(icon, 'margin-left', '5px');
-        this.renderer.setStyle(icon, 'margin-right', '15px');
+        // const icon = this.renderer.createElement('i');
+        // this.renderer.addClass(icon, 'icon');
+        // this.renderer.addClass(icon, 'icon-link');
+        // this.renderer.addClass(icon, 'icon-common');
+        // this.renderer.setStyle(icon, 'margin-left', '5px');
+        // this.renderer.setStyle(icon, 'margin-right', '15px');
 
-        this.renderer.appendChild(anchorTag, icon);
+        // this.renderer.appendChild(anchorTag, icon);
         this.renderer.appendChild(list, anchorTag);
         this.renderer.appendChild(list, textTag);
 

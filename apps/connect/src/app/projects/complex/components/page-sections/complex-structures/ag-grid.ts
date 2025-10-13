@@ -3,8 +3,7 @@
 import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions, GridState } from 'ag-grid-community';
 import { TitleRendererComponent } from '../../cell renderers/structure-title.component';
-import { EntryPageExternalLinkRendererComponent } from './entry-page-link.component';
-import { CustomHeaderComponent } from '../../cell renderers/custom-header.component';
+import { ComplexPageExternalLinkRendererComponent } from '../../../shared/complex-page-external-link.component';
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
@@ -12,28 +11,19 @@ export const gridOptions: GridOptions = {
 
 export const colDefs: ColDef[] = [
   {
-    headerName: 'PDB',
+    headerName: 'PDB and complex',
     field: 'pdb_id',
-    cellRenderer: EntryPageExternalLinkRendererComponent,
-    width: 90,
-    sortable: false,
-  },
-  {
-    headerName: 'ID',
-    field: 'assembly_id',
-    width: 80,
-    headerComponent: CustomHeaderComponent,
-    headerComponentParams: { showHelpIcon: true, tooltipText: 'Assembly identifier' },
-    sortable: false,
-    filter: false,
+    cellRenderer: ComplexPageExternalLinkRendererComponent,
+    width: 140,
+    sortable: true,
   },
   {
     headerName: 'Title',
     field: 'title',
     cellRenderer: TitleRendererComponent,
-    width: 240,
+    width: 270,
   },
-  { headerName: 'Exp. method', field: 'experimental_method', width: 170 },
+  { headerName: 'Method', field: 'experimental_method', width: 170 },
   {
     headerName: 'Res. (Å)',
     field: 'resolution',

@@ -101,6 +101,20 @@ export class InteractiveTablesComponent implements OnInit {
         if (llmCards !== undefined) this.setCards(llmCards);
       });
     }
+    this.setSelectedAssemblyFromComplexPage();
+  }
+
+  private setSelectedAssemblyFromComplexPage(): void {
+    if (localStorage['assemblyId']) {
+      const assemblyId = localStorage.getItem('assemblyId');
+      const card = this.rowCards().find((c: any) => c.assemblyId === assemblyId);
+      if (card) {
+        this.onCardClick(card);
+        setTimeout(() => {
+          localStorage.removeItem('assemblyId');
+        }, 5000);
+      }
+    }
   }
 
   private setCards(cards: AssemblyUICard[] | LigandOrModUICard[] | MacromoleculeUICard[] | DomainUICard[]) {

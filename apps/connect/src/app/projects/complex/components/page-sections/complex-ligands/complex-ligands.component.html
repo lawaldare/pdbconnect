@@ -3,14 +3,23 @@
   <p>The ligands, if present, are those observed bound directly to the preferred assemblies representing this complex in the PDB.</p>
   @if (ligands().length) {
 
-  <div class="search-box">
-    <input type="search" [formControl]="searchTerm" placeholder="Search by ligand name or id" />
-    @if (!searchTerm.value) {
-    <i class="icon icon-common icon-search"></i>
-    }
-  </div>
+  <section class="actions">
+    <div class="search-box">
+      <input type="search" [formControl]="searchTerm" placeholder="Search by ligand name or id" />
+      @if (!searchTerm.value) {
+      <i class="icon icon-common icon-search"></i>
+      }
+    </div>
+    <div class="sort-box">
+      <span>Sort by:</span>
+      <mat-select [formControl]="selectedSortBy" (selectionChange)="onSortTypeChange($event.value)">
+        <mat-option value="functional">Functional ligand type</mat-option>
+        <mat-option value="frequency">Frequency (PDB entries)</mat-option>
+      </mat-select>
+    </div>
+  </section>
   <div class="grid-container">
-    @for (ligand of ligandsPage(); track ligand.ligandId) {
+    @for (ligand of ligandsPage(); track $index) {
     <pdbc-complex-ligand-grid [ligand]="ligand" [complexId]="complexId() ?? ''" />
     }
   </div>
