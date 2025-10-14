@@ -552,7 +552,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
     this.sequenceDetails.set(undefined);
-    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
     await this.updateBackgroundAnnotation();
   }
@@ -627,7 +628,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     if (!macromolecule) return;
 
     this.sequenceDetails.set(undefined);
-    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
 
     await this.renderVisualisations(macromolecule);
