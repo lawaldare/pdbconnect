@@ -37,7 +37,6 @@
 
 ::ng-deep .pv-protvista .pv-track-row.btns {
   display: flex;
-  margin-bottom: 4px;
   margin-top: 6px;
 }
 
@@ -61,7 +60,7 @@
   flex-direction: column;
   width: 80%;
   background: #ffffff;
-  z-index: 3;
+  z-index: 6;
 }
 
 ::ng-deep .pv-protvista .pv-track-col.small {
@@ -76,6 +75,9 @@
   width: 80%;
   display: flex;
   gap: 8px;
+  z-index: 6;
+  padding-bottom: 4px;
+  background: #fff;
 }
 
 ::ng-deep .pv-protvista .pv-track-container.no-data {
@@ -97,6 +99,10 @@
   line-height: 18px;
   justify-content: flex-start;
   cursor: pointer;
+}
+
+::ng-deep .pv-protvista .pv-track-label-col > p {
+  line-break: anywhere;
 }
 
 ::ng-deep .pv-protvista .pv-track-label-col.nested {
@@ -162,6 +168,9 @@
 /* Custom Tracks separation border */
 ::ng-deep .pv-protvista .always-on-top .custom-row {
   border-bottom: 1px solid #000;
+  z-index: 3;
+  position: relative;
+  background: #fff;
 }
 
 /* Custom Tracks maximum row height */

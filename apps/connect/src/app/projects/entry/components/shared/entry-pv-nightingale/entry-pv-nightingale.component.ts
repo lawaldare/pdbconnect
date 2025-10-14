@@ -34,6 +34,7 @@ import {
   APITrackFragment,
   APIVariationData,
   ConservationTrackBlockComponent,
+  CustomTrackPayload,
   MapCustomDataPanelComponent,
   NestedTrackBlockComponent,
   PanelResidueDatum,
@@ -55,7 +56,8 @@ import { Store } from '@ngrx/store';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { consumerPollProducersForChange } from '@angular/core/primitives/signals';
+import { Overlay, OverlayRef } from '@angular/cdk/overlay';
+import { ComponentPortal } from '@angular/cdk/portal';
 
 /**
  * Helper to decode rawHTML from API endpoints (tooltipContent)
@@ -87,8 +89,6 @@ export interface FixedSelectionInput {
   imports: [
     CommonModule,
     MaterialModule,
-    SearchResiduePanelComponent,
-    MapCustomDataPanelComponent,
     TrackBlockComponent,
     NestedTrackBlockComponent,
     ConservationTrackBlockComponent,
@@ -102,6 +102,7 @@ export interface FixedSelectionInput {
 })
 export class EntryPgProtvistaComponent implements AfterViewInit {
   // Component inputs (can be bound from parent)
+  public readonly tabName = input<string>('default');
   public readonly entryId = input<string>('1trn');
   public readonly entityId = input<string>('1');
   private entityIdObs = toObservable(this.entityId);
@@ -120,6 +121,8 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   public elementRef = inject(ElementRef);
   private zone = inject(NgZone);
   private readonly destroyRef = inject(DestroyRef);
+  private overlayRef?: OverlayRef;
+  private overlay = inject(Overlay);
 
   public readonly gAS = inject(GoogleAnalyticsService);
   public readonly compCommunication = inject(ComponentCommunicationService);
@@ -162,7 +165,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     if (this.loadedAnyTracksAPIData() || this.loadedConservationAPIData() || this.loadedVariationAPIData()) {
       return 'any-tracks-loaded';
     }
-    if (!this.loadedAnyTracksAPIData() || !this.loadedConservationAPIData() || !this.loadedVariationAPIData()) {
+    if (!this.loadedAnyTracksAPIData() && !this.loadedConservationAPIData() && !this.loadedVariationAPIData()) {
       return 'no-tracks-loaded';
     }
     return 'ready';
@@ -273,6 +276,8 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   public mapPanelPosition = { top: 0, left: 0 };
 
   public customRawTrackData = '';
+  public mapYDataNumberingScheme: 'uniprot' | 'residue' | 'author' = 'residue';
+  public mapYDataUnpAcc: string | null = null;
 
   public showZoomHint = signal(true);
 
@@ -281,17 +286,17 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   public selectedFromExternal: string[] = [];
   public panelResidueData: PanelResidueDatum[] = [];
 
-  // height for the scrollable tracks div is automatically calculated from parent's total height - fixed header height
-  public calculatedHeight = computed(() => {
-    const header = document.getElementById('pv-header-controls');
-    if (!header) return undefined;
-    const headerHeight = header.getBoundingClientRect().height;
-    const height = this.elementRef.nativeElement.parentNode.getBoundingClientRect().height;
-    if (this.loadedAllTracksAPIData() && this.loadedVariationAPIData() && this.loadedConservationAPIData()) {
-      return height - headerHeight;
-    }
-    return undefined;
-  });
+  // // height for the scrollable tracks div is automatically calculated from parent's total height - fixed header height
+  // public calculatedHeight = computed(() => {
+  //   const header = document.getElementById('pv-header-controls');
+  //   if (!header) return undefined;
+  //   const headerHeight = header.getBoundingClientRect().height;
+  //   const height = this.elementRef.nativeElement.parentNode.getBoundingClientRect().height;
+  //   if (this.loadedAllTracksAPIData() && this.loadedVariationAPIData() && this.loadedConservationAPIData()) {
+  //     return height - headerHeight;
+  //   }
+  //   return undefined;
+  // });
 
   private firstDataLoad = signal(false);
 
@@ -388,8 +393,8 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     this.tooltipService.setRelativeElement(this.elementRef.nativeElement);
 
     // 2 - Configure tooltipService with a container div inside the scrollable area
-    const scrollContainer = document.getElementById('pv-scrollable');
-    const tooltipContainer = document.getElementById('pv-tooltips-container');
+    const scrollContainer = document.querySelector(`#${this.tabName()} #pv-scrollable`) as HTMLElement;
+    const tooltipContainer = document.querySelector(`#${this.tabName()} #pv-tooltips-container`) as HTMLElement;
 
     // 2.1 - Pass DOM references to tooltipService
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -455,6 +460,9 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
 
         const hasData = uniprotData === null ? 'empty' : 'has-data';
         this.loadingStatusPerTrack.update((state) => ({ ...state, uniprot: `ready-${hasData}` }));
+        if (this.loadedAnyTracksAPIData() === false) {
+          this.loadedAnyTracksAPIData.set(true);
+        }
       });
 
     // --- Validation (chains)
@@ -474,6 +482,9 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
 
         const hasData = chainsData === null ? 'empty' : 'has-data';
         this.loadingStatusPerTrack.update((state) => ({ ...state, validation: `ready-${hasData}` }));
+        if (this.loadedAnyTracksAPIData() === false) {
+          this.loadedAnyTracksAPIData.set(true);
+        }
       });
 
     // --- Domains + Rfam (nested block)
@@ -504,11 +515,22 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
           this.domainResourcesList.set([]);
           this.domainsByResource.set([]);
         }
+        if (domainsData) {
+          const tooltipsDomains = extractTooltips(domainsData);
+          for (const [k, v] of Object.entries(tooltipsDomains)) this.tooltips[k] = v;
+        }
+        if (rfamData) {
+          const tooltipsRfam = extractTooltips(rfamData);
+          for (const [k, v] of Object.entries(tooltipsRfam)) this.tooltips[k] = v;
+        }
 
         const hasDataDomains = domainsData === null ? 'empty' : 'has-data';
         const hasDataRfam = rfamData === null ? 'empty' : 'has-data';
         this.loadingStatusPerTrack.update((state) => ({ ...state, domains: `ready-${hasDataDomains}` }));
         this.loadingStatusPerTrack.update((state) => ({ ...state, rfam: `ready-${hasDataRfam}` }));
+        if (this.loadedAnyTracksAPIData() === false) {
+          this.loadedAnyTracksAPIData.set(true);
+        }
       });
 
     // --- Secondary structure
@@ -537,6 +559,9 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
 
         const tooltips = extractTooltips(secondaryData);
         for (const [k, v] of Object.entries(tooltips)) this.tooltips[k] = v;
+        if (this.loadedAnyTracksAPIData() === false) {
+          this.loadedAnyTracksAPIData.set(true);
+        }
       });
 
     // --- Binding sites
@@ -556,6 +581,9 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
 
         const hasData = bindingData === null ? 'empty' : 'has-data';
         this.loadingStatusPerTrack.update((state) => ({ ...state, binding: `ready-${hasData}` }));
+        if (this.loadedAnyTracksAPIData() === false) {
+          this.loadedAnyTracksAPIData.set(true);
+        }
       });
 
     // --- Interfaces
@@ -575,6 +603,9 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
 
         const hasData = interfacesData === null ? 'empty' : 'has-data';
         this.loadingStatusPerTrack.update((state) => ({ ...state, interfaces: `ready-${hasData}` }));
+        if (this.loadedAnyTracksAPIData() === false) {
+          this.loadedAnyTracksAPIData.set(true);
+        }
       });
 
     // --- Annotations
@@ -613,6 +644,9 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
         const hasData = preProcessedVariationData !== undefined ? 'has-data' : 'empty';
         this.loadingStatusPerTrack.update((state) => ({ ...state, variation: `ready-${hasData}` }));
         this.loadedVariationAPIData.set(true);
+        if (this.loadedAnyTracksAPIData() === false) {
+          this.loadedAnyTracksAPIData.set(true);
+        }
       });
 
     // --- Conservation
@@ -639,81 +673,185 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
       });
   }
 
+  /**
+   * Dispatches a custom 'nightingale' zoom event for resetting things
+   */
+  resetZoom() {
+    if (!this.sequence) return;
+    const nightingaleNavigation = document.querySelector(`#${this.tabName()} nightingale-navigation`);
+    if (nightingaleNavigation) {
+      const eventObj = new CustomEvent('change', {
+        detail: {
+          'display-start': 1,
+          'display-end': this.sequence.length,
+          cancelMe: true,
+        },
+        bubbles: true,
+        cancelable: true,
+      });
+      nightingaleNavigation.dispatchEvent(eventObj);
+    }
+  }
+
   reloadVisualisation() {
     this.setupFixedSelectionTrack();
     this.setupTooltipServices();
     const entityId = this.entityId();
     this.getProtvistaData(entityId);
     this.processProtvistaData(entityId);
+    this.resetZoom();
   }
 
   async ngAfterViewInit() {
     this.reloadVisualisation();
   }
 
-  openSearchPanel() {
-    // 1 - Get reference to the search button and component's host bounding box
-    const btn = document.getElementById('search-residue-btn');
-    const hostRect = this.elementRef.nativeElement.getBoundingClientRect();
+  // openSearchPanel() {
+  //   // 1 - Get reference to the search button and component's host bounding box
+  //   const btn = document.getElementById('search-residue-btn');
+  //   const hostRect = this.elementRef.nativeElement.getBoundingClientRect();
 
-    // panel position was previously calculated based on mouse position relative to host (absolute position)
-    // const top = this.latestMouseY - hostRect.top + 6;
-    // const left = this.latestMouseX - hostRect.left ;
+  //   // panel position was previously calculated based on mouse position relative to host (absolute position)
+  //   // const top = this.latestMouseY - hostRect.top + 6;
+  //   // const left = this.latestMouseX - hostRect.left ;
 
-    // 2 - If the button exists, calculate panel position relative to host (absolute position)
-    if (btn) {
-      const btnRect = btn.getBoundingClientRect();
-      // top was previously calculated based on button position
-      // const top = btnRect.bottom - hostRect.top + 6;
-      // left was previously calculated based on button position
-      // const left = btnRect.left - hostRect.left;
+  //   // 2 - If the button exists, calculate panel position relative to host (absolute position)
+  //   if (btn) {
+  //     const btnRect = btn.getBoundingClientRect();
+  //     // top was previously calculated based on button position
+  //     // const top = btnRect.bottom - hostRect.top + 6;
+  //     // left was previously calculated based on button position
+  //     // const left = btnRect.left - hostRect.left;
 
-      const top = 0; // fixed to very top of host (absolute position)
-      const left = 70;
+  //     const top = 0; // fixed to very top of host (absolute position)
+  //     const left = 70;
 
-      // 3 - Update panel position state
-      this.searchPanelPosition = { top, left };
-    }
+  //     // 3 - Update panel position state
+  //     this.searchPanelPosition = { top, left };
+  //   }
 
-    // 4 - Show search panel and hide map panel
-    this.showSearchPanel = true;
-    this.showMapPanel = false;
-  }
+  //   // 4 - Show search panel and hide map panel
+  //   this.showSearchPanel = true;
+  //   this.showMapPanel = false;
+  // }
 
-  openMapPanel() {
-    // 1 - Get reference to the map button and component's host bounding box
-    const btn = document.getElementById('map-data-btn');
-    const hostRect = this.elementRef.nativeElement.getBoundingClientRect();
+  // openMapPanel() {
+  //   // 1 - Get reference to the map button and component's host bounding box
+  //   const btn = document.getElementById('map-data-btn');
+  //   const hostRect = this.elementRef.nativeElement.getBoundingClientRect();
 
-    // panel position was previously calculated based on mouse position relative to host (absolute position)
-    // const top = this.latestMouseY - hostRect.top + 6;
-    // const left = this.latestMouseX - hostRect.left ;
+  //   // panel position was previously calculated based on mouse position relative to host (absolute position)
+  //   // const top = this.latestMouseY - hostRect.top + 6;
+  //   // const left = this.latestMouseX - hostRect.left ;
 
-    // 2 - If the button exists, calculate panel position relative to host
-    if (btn) {
-      const btnRect = btn.getBoundingClientRect();
-      // top was previously calculated based on button position
-      // const top = btnRect.bottom - hostRect.top + 16;
-      // left was previously calculated based on button position
-      // const left = btnRect.left - hostRect.left;
+  //   // 2 - If the button exists, calculate panel position relative to host
+  //   if (btn) {
+  //     const btnRect = btn.getBoundingClientRect();
+  //     // top was previously calculated based on button position
+  //     // const top = btnRect.bottom - hostRect.top + 16;
+  //     // left was previously calculated based on button position
+  //     // const left = btnRect.left - hostRect.left;
 
-      const top = 0; // fixed to very top of host (absolute position)
-      const left = 70;
+  //     const top = 0; // fixed to very top of host (absolute position)
+  //     const left = 70;
 
-      // 3 - Update panel position state
-      this.mapPanelPosition = { top, left };
-    }
+  //     // 3 - Update panel position state
+  //     this.mapPanelPosition = { top, left };
+  //   }
 
-    // 4 - Show map panel and hide search panel
-    this.showMapPanel = true;
-    this.showSearchPanel = false;
+  //   // 4 - Show map panel and hide search panel
+  //   this.showMapPanel = true;
+  //   this.showSearchPanel = false;
 
-    this.gAS.logEntryPageEvents('ep_map_data', {
-      tab: this.compCommunication.currentTabName() ?? '',
+  //   this.gAS.logEntryPageEvents('ep_map_data', {
+  //     tab: this.compCommunication.currentTabName() ?? '',
+  //   });
+  // }
+
+  openPanel(event: MouseEvent, panelType: 'highlight' | 'map') {
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    // const position = { top: rect.bottom + 8, left: rect.left };
+
+    // close existing if open
+    if (this.overlayRef) this.overlayRef.dispose();
+
+    this.overlayRef = this.overlay.create({
+      hasBackdrop: true,
+      // hasBackdrop: false,
+      backdropClass: 'dark-backdrop',
+      positionStrategy: this.overlay.position().global().centerHorizontally().centerVertically(),
+      // .top(`${position.top}px`)
+      // .left(`${position.left}px`),
+      // scrollStrategy: this.overlay.scrollStrategies.reposition(),
+      // panelClass: 'fixed-overlay-pane',
+      scrollStrategy: this.overlay.scrollStrategies.block(),
     });
+    if (panelType === 'highlight') {
+      const portal = new ComponentPortal(SearchResiduePanelComponent);
+      const compRef = this.overlayRef.attach(portal);
+
+      // Inputs
+      compRef.instance.residueData = this.panelResidueData;
+      compRef.instance.selectedResidues = this.selectedResidues;
+      compRef.instance.panelPosition = { top: 0, left: 0 };
+
+      // Outputs
+      compRef.instance.selectedResiduesChange.subscribe((payload: string[]) => {
+        this.onSelectedResiduesChange(payload);
+      });
+      compRef.instance.close.subscribe(() => {
+        this.overlayRef?.dispose();
+      });
+    } else if (panelType === 'map') {
+      const portal = new ComponentPortal(MapCustomDataPanelComponent);
+      const compRef = this.overlayRef.attach(portal);
+
+      // Inputs
+      compRef.instance.residueData = this.panelResidueData;
+      compRef.instance.customRawTrackData = this.customRawTrackData;
+      compRef.instance.numberingScheme = this.mapYDataNumberingScheme;
+      compRef.instance.selectedUnpAcc = this.mapYDataUnpAcc;
+      compRef.instance.panelPosition = { top: 0, left: 0 };
+
+      // Outputs
+      compRef.instance.customRawTrackDataChange.subscribe((payload: CustomTrackPayload) => {
+        this.onCustomRawTrackDataChange(payload);
+      });
+      compRef.instance.close.subscribe(() => {
+        this.overlayRef?.dispose();
+      });
+    }
+
+    this.overlayRef.backdropClick().subscribe(() => this.overlayRef?.dispose());
   }
 
+  /**
+   * Close pinned tooltip
+   */
+  closePinnedTooltip() {
+    const closeBtn = document.querySelector(`#${this.tabName()} .manual-tooltip.pinned-tooltip > div > .close-btn`);
+    if (closeBtn) (<HTMLElement>closeBtn).click();
+  }
+
+  /**
+   * Collapses all tracks
+   */
+  collapseAllTracks() {
+    const expandedTracks = document.querySelectorAll(`#${this.tabName()} .expanded > .pv-track-label-col.hoverable`);
+    for (let idx = 0; idx < expandedTracks.length; idx++) {
+      const expandedTrack = expandedTracks[idx] as HTMLElement;
+      expandedTrack.click();
+    }
+  }
+
+  /**
+   * Resets whole visualisation
+   */
   resetVisualization() {
+    // 0 - Close all tracks and close tooltips
+    this.closePinnedTooltip();
+    this.collapseAllTracks();
+
     // 1 - Reset per-track loading statuses
     this.loadingStatusPerTrack.set({
       uniprot: 'not-loaded',
@@ -822,7 +960,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     if (this.chainId() && this.chainId() !== eventChainId) return;
 
     // 4 - Dispatch highlight change event to Nightingale navigation component
-    const nightingaleNavigation = document.querySelector('nightingale-navigation');
+    const nightingaleNavigation = document.querySelector(`#${this.tabName()} nightingale-navigation`);
     if (nightingaleNavigation) {
       const eventObj = new CustomEvent('change', {
         detail: {
@@ -845,7 +983,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     if (!this.externalInteractivity()) return;
 
     // 2 - Clear highlight on Nightingale navigation when external component unhovers
-    const nightingaleNavigation = document.querySelector('nightingale-navigation');
+    const nightingaleNavigation = document.querySelector(`#${this.tabName()} nightingale-navigation`);
     if (nightingaleNavigation) {
       const eventObj = new CustomEvent('change', {
         detail: {
@@ -1033,7 +1171,8 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     // to identify the content to be shown on a pinned tooltip
     if (!this.tooltipService.tooltipElement) return;
     const tooltipContent = this.tooltipService.tooltipElement.innerHTML;
-    this.tooltipService.showPinnedTooltip(target, tooltipContent, { x: coords[0], y: coords[1] });
+    const isCustomData = target.classList.contains('custom-row');
+    this.tooltipService.showPinnedTooltip(target, tooltipContent, { x: coords[0], y: coords[1] }, isCustomData);
 
     // 1.1 - Reset any externally triggered highlight events
     this.removeFromExternal();
@@ -1129,7 +1268,8 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
 
     // 5 - Display hover tooltip if content is available
     if (tooltipContent && highlightContent) {
-      this.tooltipService.showManualTooltip(target, tooltipContent, highlightContent, { x: coords[0], y: coords[1] });
+      const isCustomData = target.classList.contains('custom-row');
+      this.tooltipService.showManualTooltip(target, tooltipContent, highlightContent, { x: coords[0], y: coords[1] }, isCustomData);
     }
 
     // 6 - If external interactivity is enabled, trigger hover event
@@ -1217,12 +1357,15 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     this.highlightService.triggerDynamicFixedHighlight();
   }
 
-  onCustomRawTrackDataChange(newRawTrackData: string) {
+  onCustomRawTrackDataChange(payload: CustomTrackPayload) {
+    const { rawText, numberingScheme, selectedUniProtAccession } = payload;
     // 1 - Update local raw text input value
-    this.customRawTrackData = newRawTrackData;
+    this.customRawTrackData = rawText;
+    this.mapYDataNumberingScheme = numberingScheme;
+    this.mapYDataUnpAcc = selectedUniProtAccession;
 
     // 2 - Parse multiline raw input into individual lines
-    const lines = newRawTrackData.split('\n').map((l) => l.trim());
+    const lines = rawText.split('\n').map((l) => l.trim());
     const features: NightingaleFeature[] = [];
 
     // 3 - Variables to track current block of data
@@ -1230,6 +1373,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
     let currentResidues = '';
     let trackId = -1;
     let trackColor = '#333333';
+    let unpTrack = '';
 
     for (const line of lines) {
       if (line.startsWith('Track:')) {
@@ -1243,9 +1387,21 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
 
         const fragments = currentResidues.split(',').map((r) => {
           const [startStr, endStr] = r.trim().split('-');
-          const start = parseInt(startStr);
-          const end = endStr ? parseInt(endStr) : start;
-          const tooltipContent = `Custom data track: ${currentTrack}<br>Residues: ${start} - ${end}`;
+          let start = parseInt(startStr);
+          let end = endStr ? parseInt(endStr) : start;
+
+          // Apply conversion if necessary
+          if (numberingScheme === 'uniprot' && selectedUniProtAccession) {
+            const startDatum = this.panelResidueData.find((d) => d.uniprotIdx === `${selectedUniProtAccession}:${start}`);
+            const endDatum = this.panelResidueData.find((d) => d.uniprotIdx === `${selectedUniProtAccession}:${end}`);
+            start = startDatum ? parseInt(startDatum.resId) : start;
+            end = endDatum ? parseInt(endDatum.resId) : end;
+            const unpStart = parseInt(startStr);
+            const unpEnd = endStr ? parseInt(endStr) : start;
+            unpTrack = `<br><a target="_blank" href="https://www.uniprot.org/uniprot/${selectedUniProtAccession}">UniProt ${selectedUniProtAccession}</a>: ${unpStart} - ${unpEnd}`;
+          }
+
+          const tooltipContent = `Custom data track: ${currentTrack}<br>Residues: ${start} - ${end}${unpTrack}`;
           return { start, end, tooltipContent };
         });
 

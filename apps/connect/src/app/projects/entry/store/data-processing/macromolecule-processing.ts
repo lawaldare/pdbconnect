@@ -127,7 +127,7 @@ export function getUniProtMappingsForMacromolecule(macromolecule: Molecule, unip
     }
   });
 
-  // process grouped sets
+  // process grouped sets (same uniprot, same chain, same identity, same coverage)
   Object.values(grouped).forEach(({ uniprotId, identity, coverage, mappings }) => {
     const chainId = mappings[0].chain_id;
     const structAsymId = mappings[0].struct_asym_id;
@@ -136,28 +136,80 @@ export function getUniProtMappingsForMacromolecule(macromolecule: Molecule, unip
     const identityStr = (identity * 100).toFixed(1) + '%';
 
     // Collect all UniProt and label segments
-    const uniprotSegments = mappings.map((m) => `${m.unp_start} — ${m.unp_end}`);
-    const labelSegments = mappings.map((m) => `${m.start.residue_number} — ${m.end.residue_number}`);
+    const uniprotSegments = mappings.map((m) => {
+      if (m.unp_start === m.unp_end) return `${m.unp_start}`;
+      else return `${m.unp_start} — ${m.unp_end}`;
+    });
+    const labelSegments = mappings.map((m) => {
+      if (m.start.residue_number === m.end.residue_number) return `${m.start.residue_number}`;
+      else return `${m.start.residue_number} — ${m.end.residue_number}`;
+    });
 
     // Auth segments from mapping if possible, else fallback using polymerCoverage
-    let authSegments: string[] = [];
+    const authSegments: string[] = [];
     let hasNonObserved = false;
     for (const mapping of mappings) {
-      if (mapping.start?.author_residue_number != null && mapping.end?.author_residue_number != null) {
-        authSegments = [
-          `${mapping.start.author_residue_number}${mapping.start.author_insertion_code || ''} — ${mapping.end.author_residue_number}${
-            mapping.end.author_insertion_code || ''
-          }`,
-        ];
-      } else if (entityCoverage) {
-        const chainCoverage = entityCoverage.chains.find((c) => c.chain_id === chainId && c.struct_asym_id === structAsymId);
-        if (chainCoverage) {
-          authSegments = chainCoverage.observed.map(
-            (seg) =>
-              `${seg.start.author_residue_number}${seg.start.author_insertion_code || ''} — ${seg.end.author_residue_number}${seg.end.author_insertion_code || ''}`
-          );
-          hasNonObserved = true;
+      const labelStart = mapping.start.residue_number;
+      const labelEnd = mapping.end.residue_number;
+      const chainCoverage = entityCoverage?.chains.find((c) => c.chain_id === chainId && c.struct_asym_id === structAsymId);
+
+      // if mapping has author numbering, just take it
+      let start = mapping.start?.author_residue_number != null ? `${mapping.start.author_residue_number}${mapping.start.author_insertion_code || ''}` : null;
+      let end = mapping.end?.author_residue_number != null ? `${mapping.end.author_residue_number}${mapping.end.author_insertion_code || ''}` : null;
+
+      // but if it does not ...
+      if ((start === null || end === null) && chainCoverage) {
+        hasNonObserved = true;
+        // first sort out data from observed segments
+        const sortedSegments = [...chainCoverage.observed].sort((a, b) => a.start.residue_number - b.start.residue_number);
+
+        // if we are looking just for start auth
+        if (start === null && end !== null) {
+          // we take the first segment with bigger label start than mapping label start
+          // e.g we have: [0, 4], [10, 38], [50, 70] (label segments)
+          // and 5 as mapping label start, we should take 10
+          const seg = sortedSegments.find((seg) => seg.start.residue_number >= labelStart);
+
+          if (seg) {
+            start = `${seg.start.author_residue_number}${seg.start.author_insertion_code || ''}`;
+            if (start === end) authSegments.push(`${start}`);
+            else authSegments.push(`${start} — ${end}`);
+          }
         }
+        // if we are looking just for end auth
+        else if (end === null && start !== null) {
+          // we take the first segment with smaller label end than mapping label emd
+          // e.g we have: [0, 4], [10, 38], [50, 70] (label segments)
+          // and 5 as mapping label end, we should take 4
+          const seg = sortedSegments.find((seg) => seg.end.residue_number <= labelEnd);
+
+          if (seg) {
+            end = `${seg.end.author_residue_number}${seg.end.author_insertion_code || ''}`;
+            if (start === end) authSegments.push(`${start}`);
+            else authSegments.push(`${start} — ${end}`);
+          }
+        }
+        // if we are looking for both
+        else if (start === null && end == null) {
+          // we take everything between label start and label end
+          // e.g we have: [0, 4], [10, 38], [50, 70] (label segments)
+          // and 5-81 as mapping label start and end, we should take [10, 38], [50, 70]
+          const segmentsBetween = sortedSegments.filter(
+            (seg) =>
+              seg.end.residue_number >= labelStart && // segment overlaps or follows the label start
+              seg.start.residue_number <= labelEnd // segment starts before the label end
+          );
+
+          for (const seg of segmentsBetween) {
+            const segStart = `${seg.start.author_residue_number}${seg.start.author_insertion_code || ''}`;
+            const segEnd = `${seg.end.author_residue_number}${seg.end.author_insertion_code || ''}`;
+            if (segStart === segEnd) authSegments.push(`${segStart}`);
+            else authSegments.push(`${segStart} — ${segEnd}`);
+          }
+        }
+      } else if (start !== null && end !== null) {
+        if (start === end) authSegments.push(`${start}`);
+        else authSegments.push(`${start} — ${end}`);
       }
     }
 
@@ -183,10 +235,12 @@ export function getUniProtMappingsForMacromolecule(macromolecule: Molecule, unip
       labelSegments,
     };
 
-    // merge rows if same uniprot + label segments
+    // in rows from other uniprot ids + chains if same uniprot look for equal label segments
     const existingLabel = labelUniProtMappings.find(
       (r) =>
         r.uniprotId === labelOnlyRow.uniprotId &&
+        r.coverage === labelOnlyRow.coverage &&
+        r.identity === labelOnlyRow.identity &&
         r.labelSegments.length === labelOnlyRow.labelSegments.length &&
         r.labelSegments.every((v, i) => v === labelOnlyRow.labelSegments[i])
     );
@@ -203,9 +257,14 @@ export function getUniProtMappingsForMacromolecule(macromolecule: Molecule, unip
       labelUniProtMappings.push(labelOnlyRow);
     }
 
-    // merge rows if same uniprot + auth segments
+    // in rows from other uniprot ids + chains if same uniprot look for equal auth segments
     const existingAuth = authUniProtMappings.find(
-      (r) => r.uniprotId === row.uniprotId && r.authSegments.length === row.authSegments.length && r.authSegments.every((v, i) => v === row.authSegments[i])
+      (r) =>
+        r.uniprotId === row.uniprotId &&
+        r.coverage === row.coverage &&
+        r.identity === row.identity &&
+        r.authSegments.length === row.authSegments.length &&
+        r.authSegments.every((v, i) => v === row.authSegments[i])
     );
     if (existingAuth) {
       if (!existingAuth.chainIds.includes(chainId)) {

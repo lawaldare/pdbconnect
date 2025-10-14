@@ -9,5 +9,5 @@ export { PvFixedHighlightService } from './lib/pv-nightingale-components/service
 export { APITrackData, APITrackDatum, APITrackItem, APITrackFragment } from './lib/pv-nightingale-components/models/pv-api-general-track-data.model';
 export { APIConservationData } from './lib/pv-nightingale-components/models/pv-api-conservation-track-data.model';
 export { APIVariationData } from './lib/pv-nightingale-components/models/pv-api-variation-track-data.model';
-export { PanelResidueDatum } from './lib/pv-nightingale-components/models/pv-search-residue-data.model';
+export { PanelResidueDatum, CustomTrackPayload } from './lib/pv-nightingale-components/models/pv-search-residue-data.model';
 export { NightingaleSequenceConservation } from './lib/pv-nightingale-components/components/expandable-tracks/pv-conservation-block/pv-conservation-api-processing';

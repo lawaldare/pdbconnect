@@ -1,12 +1,17 @@
 .search-residue-panel {
-  position: absolute;
-  z-index: 4;
+  // position: absolute;
+  // z-index: 4;
   background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 12px;
-  width: 420px;
-  max-height: 400px;
+
+  // width: 420px;
+  width: 40vw;
+
+  // max-height: 400px;
+  min-height: 50vh;
+  max-height: 80vh;
   overflow-y: auto;
   font-family: 'IBM Plex Sans', Arial, sans-serif;
   box-shadow: 0 5px 12px rgb(0 0 0 / 15%);
@@ -50,6 +55,7 @@
   }
 
   .autocomplete-list {
+    // margin: 0 0 8px;
     margin: 0 0 8px;
     max-height: 200px;
     overflow-y: auto;
@@ -57,6 +63,8 @@
     padding: 0;
     border: 1px solid #ddd;
     border-radius: 4px;
+    position: absolute; // added
+    background: #fff; // added
 
     li {
       padding: 8px 10px;

@@ -146,13 +146,14 @@ export class TrackBlockComponent implements OnDestroy {
     const subtrackLabel = (subtrack as any).label;
     const subtrackTitle = subtrackLabel ? subtrackLabel : subtrack.accession;
     const nestedClass = this.isNested ? 'nested' : '';
+    const customRowClass = this.isCustomData ? 'custom-row' : '';
     return `
-        <div class="pv-track-row non-header-track">
+        <div class="pv-track-row non-header-track ${customRowClass}">
           <div class="pv-track-label-col hoverable subtrack dynamic-track ${nestedClass}" name="${trackName}-${subtrackTitle}"></div>
           <div class="pv-track-container">
             <nightingale-track-canvas
               id="cv-${trackName}-subtrack-${index}"
-              class="with-fixed-highlight"
+              class="with-fixed-highlight ${customRowClass}"
               length="${this.sequenceLength}"
               height="40"
               margin-left="0"
@@ -216,7 +217,7 @@ export class TrackBlockComponent implements OnDestroy {
     const tooltipContent = this.isCustomData ? `Custom data track: ${nameAttribute.split(`${trackName}-`)[1]}` : this.tooltips[tooltipId];
 
     this.renderer.listen(img, 'mouseenter', () => {
-      this.tooltipService.showManualTooltip(img, tooltipContent, '', { x: this.latestMouseX, y: this.latestMouseY });
+      this.tooltipService.showManualTooltip(img, tooltipContent, '', { x: this.latestMouseX, y: this.latestMouseY }, this.isCustomData);
     });
 
     this.renderer.appendChild(span, img);

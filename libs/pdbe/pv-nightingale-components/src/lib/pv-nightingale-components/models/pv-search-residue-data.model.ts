@@ -4,3 +4,8 @@ export interface PanelResidueDatum {
   uniprotIdx?: string;
   authorIdx?: string;
 }
+export interface CustomTrackPayload {
+  rawText: string;
+  numberingScheme: 'residue' | 'author' | 'uniprot';
+  selectedUniProtAccession: string | null;
+}

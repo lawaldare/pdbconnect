@@ -29,6 +29,16 @@ Residues: 1, 37, 150
     </label>
     }
   </div>
+  <!-- Show UniProt accession selector -->
+  <div *ngIf="numberingScheme === 'uniprot' && uniprotAccessions().length > 1" class="uniprot-select">
+    <label>
+      Select UniProt accession to map:
+      <select [(ngModel)]="selectedUniProtAccession" (ngModelChange)="validateInput()" style="width: 50%">
+        <option [ngValue]="null" disabled selected>-- choose accession --</option>
+        <option *ngFor="let acc of uniprotAccessions()" [ngValue]="acc">{{ acc }}</option>
+      </select>
+    </label>
+  </div>
 
   <textarea [(ngModel)]="customRawTrackData" (input)="onInputChange($event)" rows="10" placeholder="{{ sampleTemplate }}"></textarea>
 
@@ -39,6 +49,13 @@ Residues: 1, 37, 150
     <div class="error-item">✅ data validated successfully</div>
   </div>
 
-  <button class="add-btn" [disabled]="validationErrors.length > 0 || customRawTrackData.length === 0" (click)="sendToPlot()">Map custom data in plot</button>
+  <button
+    class="add-btn"
+    [disabled]="validationErrors.length > 0 || customRawTrackData.length === 0 || (numberingScheme === 'uniprot' && !selectedUniProtAccession())"
+    (click)="sendToPlot()"
+  >
+    Map custom data in plot
+  </button>
+
   <button class="add-btn" (click)="clearData()" style="margin-left: 4px">Clear data</button>
 </div>
