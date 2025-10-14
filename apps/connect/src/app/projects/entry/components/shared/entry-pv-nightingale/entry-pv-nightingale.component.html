@@ -7,7 +7,7 @@
 </div>
 }
 <!-- Do not add @if because this needs to be always rendered for tooltips to work -->
-<div class="pdbe-protvista" [ngStyle]="{ display: loadingStatus() !== 'invalid' ? '' : 'none' }">
+<div [id]="tabName()" class="pdbe-protvista" [ngStyle]="{ display: loadingStatus() !== 'invalid' && loadingStatus() !== 'no-tracks-loaded' ? '' : 'none' }">
   <!-- Protvista manager for events and attribute management between components -->
   <nightingale-manager>
     <div class="pv-protvista elements-container">
@@ -18,9 +18,9 @@
         <div class="pv-track-row btns">
           <div class="pv-track-col small"></div>
           <div class="pv-track-container btns">
-            <button id="search-residue-btn" class="pv-link-btn" (click)="openSearchPanel()">Find and highlight residues</button>
+            <button id="search-residue-btn" class="pv-link-btn" (click)="openPanel($event, 'highlight')">Find and highlight residues</button>
             <!-- Control that opens panel for user custom data -->
-            <button id="map-data-btn" class="pv-link-btn" (click)="openMapPanel()">Map your data</button>
+            <button id="map-data-btn" class="pv-link-btn" (click)="openPanel($event, 'map')">Map your data</button>
             <button class="pv-link-btn" (click)="resetVisualization()">Reset visualisation</button>
           </div>
         </div>
@@ -77,10 +77,19 @@
         }
       </div>
       <!-- Div for scrollable Protvista elements -->
-      <div id="pv-scrollable" class="scrollable" (scroll)="onPvScroll($event)" [style.maxHeight.px]="calculatedHeight()">
+      <!-- <div id="pv-scrollable" class="scrollable" (scroll)="onPvScroll($event)" [style.maxHeight.px]="calculatedHeight()"> -->
+      <div id="pv-scrollable" class="scrollable" (scroll)="onPvScroll($event)">
         <!-- For most "normal" tracks -->
         @for (trackBlock of trackBlocks(); track $index) { @if (loadingStatusPerTrack()[namesToStatus[trackBlock.name]] === 'not-loaded') {
-        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '50px', 'margin-top': '8px' }" />
+        <div class="pv-track-row no-data">
+          <div class="pv-track-label-col">
+            <span class="expand-icon" style="visibility: hidden">▸</span>
+            {{ trackBlock.name }}
+          </div>
+          <div class="pv-track-container no-data">
+            <ngx-skeleton-loader style="width: 100%" count="1" [theme]="{ 'border-radius': '0', height: '50px', 'margin-top': '8px' }" />
+          </div>
+        </div>
         } @else if (loadingStatusPerTrack()[namesToStatus[trackBlock.name]] === 'ready-has-data' && trackBlock.data) {
         <lib-pv-track-block
           [trackName]="trackBlock.name"
@@ -102,7 +111,15 @@
 
         <!-- For nested "normal" tracks -->
         @for (trackNestedBlock of trackNestedBlocks(); track $index) { @if (loadingStatusPerTrack()[namesToStatus[trackNestedBlock.name]] === 'not-loaded') {
-        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '50px', 'margin-top': '8px' }" />
+        <div class="pv-track-row no-data">
+          <div class="pv-track-label-col">
+            <span class="expand-icon" style="visibility: hidden">▸</span>
+            {{ trackNestedBlock.name }}
+          </div>
+          <div class="pv-track-container no-data">
+            <ngx-skeleton-loader style="width: 100%" count="1" [theme]="{ 'border-radius': '0', height: '50px', 'margin-top': '8px' }" />
+          </div>
+        </div>
         } @else if (trackNestedBlock.data.length > 0) {
         <lib-pv-nested-track-block
           [trackName]="trackNestedBlock.name"
@@ -125,7 +142,15 @@
 
         <!-- For special conservation track -->
         @if (loadingStatusPerTrack()['conservation'] === 'not-loaded') {
-        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '50px', 'margin-top': '8px' }" />
+        <div class="pv-track-row no-data">
+          <div class="pv-track-label-col">
+            <span class="expand-icon" style="visibility: hidden">▸</span>
+            Conservation
+          </div>
+          <div class="pv-track-container no-data">
+            <ngx-skeleton-loader style="width: 100%" count="1" [theme]="{ 'border-radius': '0', height: '50px', 'margin-top': '8px' }" />
+          </div>
+        </div>
         } @else if (loadingStatusPerTrack()['conservation'] === 'ready-has-data' && originalConservationData()) {
         <lib-conservation-track-block
           [sequenceLength]="sequenceLength!"
@@ -147,7 +172,15 @@
 
         <!-- For special variation track  -->
         @if (loadingStatusPerTrack()['variation'] === 'not-loaded') {
-        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '50px', 'margin-top': '8px' }" />
+        <div class="pv-track-row no-data">
+          <div class="pv-track-label-col">
+            <span class="expand-icon" style="visibility: hidden">▸</span>
+            Variation
+          </div>
+          <div class="pv-track-container no-data">
+            <ngx-skeleton-loader style="width: 100%" count="1" [theme]="{ 'border-radius': '0', height: '50px', 'margin-top': '8px' }" />
+          </div>
+        </div>
         } @else if (loadingStatusPerTrack()['variation'] === 'ready-has-data' && originalVariationData()) {
         <lib-variation-track-block
           [chainId]="chainId()"
@@ -172,23 +205,25 @@
         <!-- Container for Tooltips (dynamic) and Panels of top Controls -->
         <div id="pv-tooltips-container">
           <!-- Control Panel for Searching (highlighting) residues -->
-          <lib-search-residue-panel
+          <!-- <lib-search-residue-panel
             *ngIf="showSearchPanel"
             [residueData]="panelResidueData"
             [selectedResidues]="selectedResidues"
             [panelPosition]="searchPanelPosition"
             (selectedResiduesChange)="onSelectedResiduesChange($event)"
             (close)="showSearchPanel = false"
-          />
+          /> -->
           <!-- Control Panel for user custom data -->
-          <lib-map-custom-data-panel
+          <!-- <lib-map-custom-data-panel
             *ngIf="showMapPanel"
             [residueData]="panelResidueData"
             [customRawTrackData]="customRawTrackData"
+            [numberingScheme]="mapYDataNumberingScheme"
+            [selectedUnpAcc]="mapYDataUnpAcc"
             [panelPosition]="mapPanelPosition"
             (customRawTrackDataChange)="onCustomRawTrackDataChange($event)"
             (close)="showMapPanel = false"
-          />
+          /> -->
         </div>
       </div>
     </div>

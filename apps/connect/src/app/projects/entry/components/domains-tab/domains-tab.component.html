@@ -130,6 +130,7 @@
       <section class="protvista-container" [class.collapsed]="!isSidebarDisplayed()">
         @if(entryId() && currentSelectionEntityId() && protvistaDomainSelection()) {
         <pdbc-entry-pg-protvista
+          tabName="domains"
           [entryId]="entryId()!"
           [entityId]="currentSelectionEntityId()!"
           [chainId]="currentSelectionChainId()!"

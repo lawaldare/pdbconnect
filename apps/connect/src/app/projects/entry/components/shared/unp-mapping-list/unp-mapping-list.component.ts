@@ -21,7 +21,7 @@ interface Filter {
 
 @Component({
   selector: 'pdbc-unp-mapping-list',
-  imports: [CommonModule, AgGridAngular, TableHeaderWithTooltipComponent],
+  imports: [CommonModule, AgGridAngular],
   templateUrl: './unp-mapping-list.component.html',
   styleUrl: './unp-mapping-list.component.scss',
 })

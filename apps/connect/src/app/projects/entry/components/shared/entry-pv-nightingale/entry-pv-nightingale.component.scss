@@ -42,8 +42,8 @@
   }
 
   .scrollable {
-    // max-height: is calculated dynamically on .ts file;
     overflow-y: auto;
+    max-height: 700px; // has to be same as parent of component
   }
 }
 

@@ -74,11 +74,12 @@ export class PvTooltipService {
    * tooltips (see: showPinnedTooltip) are possible
    * @param coords Optional absolute screen coordinates for custom tooltip position
    */
-  showManualTooltip(target: HTMLElement, message: string, highlight: string, coords: { x: number; y: number }) {
+  async showManualTooltip(target: HTMLElement, message: string, highlight: string, coords: { x: number; y: number }, customData?: boolean) {
     if (!this.container) return;
     if (!this.tooltipElement) {
       this.tooltipElement = this.renderer.createElement('div');
       this.tooltipElement!.classList.add('manual-tooltip');
+      if (customData) this.tooltipElement!.classList.add('custom-row');
       this.container!.appendChild(this.tooltipElement!);
     }
 
@@ -93,22 +94,30 @@ export class PvTooltipService {
     this.tooltipElement!.style.opacity = '0';
 
     const { coordX, coordY } = this.getTooltipCoords(coords);
+    const zIndex = customData ? '4' : '2';
 
     Object.assign(this.tooltipElement!.style, {
       position: 'absolute',
       top: `${coordY}px`,
       left: `${coordX}px`,
-      zIndex: '2',
+      zIndex,
       pointerEvents: 'none',
       transition: 'opacity 0.15s ease-in-out',
     });
 
-    requestAnimationFrame(() => {
-      if (this.tooltipElement) this.tooltipElement.style.opacity = '1';
-      this.tooltipVisible = true;
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        if (this.tooltipElement) this.tooltipElement.style.opacity = '1';
+        this.tooltipVisible = true;
+        resolve();
+      });
     });
 
     target.addEventListener('mouseleave', () => this.hideManualTooltip());
+
+    if (!target.matches(':hover')) {
+      this.hideManualTooltip();
+    }
 
     this.messageToHighlight[message] = highlight;
   }
@@ -140,7 +149,7 @@ export class PvTooltipService {
    * set in showManualTooltip
    * @param coords Optional custom coordinates for positioning
    */
-  showPinnedTooltip(target: HTMLElement, message: string, coords: { x: number; y: number }) {
+  showPinnedTooltip(target: HTMLElement, message: string, coords: { x: number; y: number }, customData?: boolean) {
     if (!this.container) return;
     this.pinnedTooltipElement?.remove();
     if (this.pinnedTooltipFadeOutTimeout) {
@@ -150,6 +159,7 @@ export class PvTooltipService {
 
     const tooltip = this.renderer.createElement('div');
     tooltip.classList.add('manual-tooltip', 'pinned-tooltip');
+    if (customData) tooltip.classList.add('custom-row');
     tooltip.innerHTML = `
       <div class="tooltip-header">
         <button class="close-btn">✖</button>
@@ -158,6 +168,7 @@ export class PvTooltipService {
     `;
 
     const { coordX, coordY } = this.getTooltipCoords(coords);
+    const zIndex = customData ? '5' : '1';
 
     this.pinnedTooltipInitialTop = coordY;
     this.pinnedTooltipInitialLeft = coordX;
@@ -167,7 +178,7 @@ export class PvTooltipService {
       position: 'absolute',
       top: `${coordY}px`,
       left: `${coordX}px`,
-      zIndex: '1',
+      zIndex,
     });
 
     this.container!.appendChild(tooltip);
@@ -196,14 +207,28 @@ export class PvTooltipService {
   private getTooltipCoords(coords: { x: number; y: number }) {
     const hostRect = this.relativeElement!.getBoundingClientRect();
 
+    // initial coordinates relative to host
     let coordX = coords.x + 2 - hostRect.left;
-    const coordY = coords.y + 2 - hostRect.top + 6;
+    let coordY = coords.y + 2 - hostRect.top + 6;
 
-    const tooltipWidth = this.tooltipElement!.offsetWidth;
+    const tooltipEl = this.tooltipElement ?? this.pinnedTooltipElement;
+    if (!tooltipEl) return { coordX, coordY };
+
+    const tooltipWidth = tooltipEl.offsetWidth;
+    const tooltipHeight = tooltipEl.offsetHeight;
+
     const containerWidth = this.scrollContainer!.clientWidth;
+    const containerHeight = this.scrollContainer!.clientHeight;
 
+    // Flip horizontally if overflowing right
     if (coordX + tooltipWidth > containerWidth) {
-      coordX = coordX - tooltipWidth - 10;
+      // coordX = coordX - tooltipWidth - 10;
+      coordX = Math.max(2, coordX - tooltipWidth - 10);
+    }
+
+    // Flip vertically if overflowing bottom
+    if (coordY + tooltipHeight > containerHeight) {
+      coordY = Math.max(2, coordY - tooltipHeight - 10);
     }
 
     return { coordX, coordY };
@@ -216,6 +241,7 @@ export class PvTooltipService {
   movePinnedTooltip() {
     if (!this.container) return;
     if (!this.pinnedTooltipElement) return;
+    if (this.pinnedTooltipElement.classList.contains('custom-row')) return;
 
     const scrollTop = this.scrollContainer!.scrollTop;
     const scrollDelta = scrollTop - this.lastScrollTop;

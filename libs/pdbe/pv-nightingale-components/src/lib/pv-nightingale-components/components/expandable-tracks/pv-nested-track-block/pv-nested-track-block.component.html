@@ -10,6 +10,7 @@
         <nightingale-track-canvas
           [id]="trackName + '-track'"
           [data]="allMutableSubtracks()"
+          [ngClass]="{ 'custom-row': isCustomData }"
           [length]="sequenceLength"
           height="40"
           margin-left="0"

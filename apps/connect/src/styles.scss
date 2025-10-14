@@ -148,6 +148,10 @@ nightingale-navigation .container .brush .handle {
   }
 }
 
+.dark-backdrop {
+  background: rgb(0 0 0 / 50%); /* semi-transparent black */
+}
+
 .ngx-pagination {
   li {
     a {

@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PanelResidueDatum } from '../../../models/pv-search-residue-data.model';
+import { CustomTrackPayload, PanelResidueDatum } from '../../../models/pv-search-residue-data.model';
 import { MaterialModule } from '@pdbc/core';
 
 @Component({
@@ -30,28 +30,17 @@ export class MapCustomDataPanelComponent {
   @Input() panelPosition: { top: number; left: number } = { top: 0, left: 0 };
 
   /**
-   * Input/Output: Raw text value the user types for track + residue range mapping.
+   * Input: Raw text value the user types for track + residue range mapping.
    */
   @Input() customRawTrackData = '';
-  @Output() customRawTrackDataChange = new EventEmitter<string>();
 
   /**
-   * Output: Emit when the user closes the panel.
-   */
-  @Output() close = new EventEmitter<void>();
-
-  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
-
-  public resNumTooltip = `Sequential numbering (e.g. "45" for 45th residue of sequence)`;
-  public uniprotNumTooltip = `UniProt numbering with mandatory accession prefix (e.g. "P12345:45"). Please note this accession can differ for fusion proteins`;
-
-  /**
-   * Computed signal: Whether any residue has UniProt info, to conditionally show the numbering option.
-   */
-  public readonly hasUniProtData = computed(() => this._residueData().some((resDatum) => !!resDatum.uniprotIdx));
-
-  /**
-   * Internal: Current numbering scheme selected.
+   * Internal state: Current numbering scheme selected by the user.
+   * This determines how residue identifiers are interpreted and validated.
+   * Possible values:
+   *  - 'residue': Sequential residue numbering (default)
+   *  - 'author':  Author-provided numbering
+   *  - 'uniprot': UniProt-based numbering (with optional accession prefix)
    */
   private _numberingScheme: 'residue' | 'author' | 'uniprot' = 'residue';
 
@@ -60,12 +49,96 @@ export class MapCustomDataPanelComponent {
   }
 
   /**
-   * When user changes numbering scheme, re-validate the current input.
+   * Input binding for the numbering scheme.
+   * When changed externally (by the parent component),
+   * this setter updates the internal state and revalidates the current input.
+   *
+   * If 'uniprot' is selected:
+   *  - Auto-selects the UniProt accession when there is exactly one available.
+   *  - Resets the selection if multiple accessions exist and none match.
+   *
+   * Always triggers input validation after updating.
    */
-  set numberingScheme(value: 'residue' | 'author' | 'uniprot') {
+  @Input() set numberingScheme(value: 'residue' | 'author' | 'uniprot') {
     this._numberingScheme = value;
+
+    if (value === 'uniprot') {
+      const accessions = this.uniprotAccessions();
+      if (accessions.length === 1) {
+        this.selectedUniProtAccession.set(accessions[0]);
+      } else if (!accessions.includes(this.selectedUniProtAccession()!)) {
+        this.selectedUniProtAccession.set(null);
+      }
+    }
     this.validateInput();
   }
+
+  /**
+   * Backing field for the currently selected UniProt accession.
+   * This is used when the numbering scheme is 'uniprot' and multiple
+   * accessions are available for mapping residue identifiers.
+   */
+  private _selectedUnpAcc: string | null = null;
+
+  /**
+   * Input binding for the selected UniProt accession.
+   * Keeps the internal signal `selectedUniProtAccession` synchronized
+   * with the parent component's state.
+   *
+   * This allows parent components to control which UniProt accession
+   * is active (e.g. via [(selectedUnpAcc)] two-way binding).
+   */
+  @Input() set selectedUnpAcc(value: string | null) {
+    this._selectedUnpAcc = value;
+    this.selectedUniProtAccession.set(value);
+  }
+
+  get selectedUnpAcc(): string | null {
+    return this._selectedUnpAcc;
+  }
+
+  /**
+   * Emits parsed and validated custom track data (and related metadata)
+   * whenever the user clicks "Map custom data in plot" or clears the input.
+   *
+   * The emitted payload includes:
+   *  - rawText: the multiline user input
+   *  - numberingScheme: current numbering mode ('residue' | 'author' | 'uniprot')
+   *  - selectedUniProtAccession: active accession (if applicable)
+   */
+  @Output() customRawTrackDataChange = new EventEmitter<CustomTrackPayload>();
+
+  /**
+   * Output: Emit when the user closes the panel.
+   */
+  @Output() close = new EventEmitter<void>();
+
+  /**
+   * Computed signal: picks up unique list  of UniProt accessions
+   */
+  public readonly uniprotAccessions = computed(() => {
+    const accessions = new Set<string>();
+    for (const resDatum of this._residueData()) {
+      const idx = resDatum.uniprotIdx;
+      if (idx && idx.includes(':')) {
+        accessions.add(idx.split(':')[0]);
+      }
+    }
+    return Array.from(accessions);
+  });
+
+  // Signal: represents the selected UniProt accession for numbering parsing
+  public selectedUniProtAccession = signal<string | null>(null);
+
+  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
+
+  public resNumTooltip = 'Sequential numbering (e.g. "45" for 45th residue of sequence)';
+  public uniprotNumTooltip = 'UniProt numbering (e.g. "45" for 45th residue of UniProt sequence)';
+
+  /**
+   * Computed signal: Whether any residue has UniProt info, to conditionally show the numbering option.
+   */
+  public readonly hasUniProtData = computed(() => this._residueData().some((resDatum) => !!resDatum.uniprotIdx));
 
   /**
    * Stores the list of validation errors to show in the UI.
@@ -93,7 +166,11 @@ export class MapCustomDataPanelComponent {
   sendToPlot() {
     this.validateInput();
     if (this.validationErrors.length === 0) {
-      this.customRawTrackDataChange.emit(this.customRawTrackData);
+      this.customRawTrackDataChange.emit({
+        rawText: this.customRawTrackData,
+        numberingScheme: this.numberingScheme,
+        selectedUniProtAccession: this.selectedUniProtAccession(),
+      });
     }
     this.closePanel();
   }
@@ -103,7 +180,11 @@ export class MapCustomDataPanelComponent {
    */
   clearData() {
     this.customRawTrackData = '';
-    this.customRawTrackDataChange.emit(this.customRawTrackData);
+    this.customRawTrackDataChange.emit({
+      rawText: this.customRawTrackData,
+      numberingScheme: this.numberingScheme,
+      selectedUniProtAccession: this.selectedUniProtAccession(),
+    });
   }
 
   /**
@@ -167,6 +248,9 @@ export class MapCustomDataPanelComponent {
     } else if (correctTrackLines > correctResiduesLines) {
       this.validationErrors.push(`There are tracks with missing valid 'Residues:' lines.`);
     }
+    if (this.numberingScheme === 'uniprot' && this.selectedUniProtAccession === null) {
+      this.validationErrors.push(`Missing UniProt id selection`);
+    }
   }
 
   /**
@@ -176,8 +260,11 @@ export class MapCustomDataPanelComponent {
     switch (this.numberingScheme) {
       case 'author':
         return new Set(this.residueData.map((resDatum) => resDatum.authorIdx!));
-      case 'uniprot':
-        return new Set(this.residueData.map((resDatum) => resDatum.uniprotIdx!));
+      case 'uniprot': {
+        const selectedAcc = this.selectedUniProtAccession();
+        const relevant = this.residueData.filter((resDatum) => resDatum.uniprotIdx && (!selectedAcc || resDatum.uniprotIdx.startsWith(selectedAcc + ':')));
+        return new Set(relevant.map((resDatum) => resDatum.uniprotIdx!.split(':')[1]));
+      }
       case 'residue':
       default:
         return new Set(this.residueData.map((resDatum) => resDatum.resId));

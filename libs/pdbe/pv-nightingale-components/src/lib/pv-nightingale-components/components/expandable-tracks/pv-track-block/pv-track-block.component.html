@@ -18,6 +18,7 @@
           highlight-color="#FFEB3B66"
           highlight-event="onmouseover"
           [fixedHighlight]="selectionHighlight()"
+          [ngClass]="isCustomData ? 'custom-row' : ''"
           use-ctrl-to-zoom
         ></nightingale-track-canvas>
       </div>

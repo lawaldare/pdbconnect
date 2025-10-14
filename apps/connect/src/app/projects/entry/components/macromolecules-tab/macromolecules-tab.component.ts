@@ -287,11 +287,11 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public currentSelectionChainId = signal<string | undefined>(undefined);
 
   public hasTopologyViewer = false;
-  @ViewChild('topologyViewerContainer') topologyViewerContainer!: ElementRef;
+  @ViewChild('topologyViewerContainer', { static: false }) topologyViewerContainer!: ElementRef;
   private topologyViewerInstance: any;
 
   public hasRNAViewer = false;
-  @ViewChild('rnaViewerContainer') rnaViewerContainer!: ElementRef;
+  @ViewChild('rnaViewerContainer', { static: false }) rnaViewerContainer!: ElementRef;
   private rnaViewerInstance: any;
 
   public sequenceDetails = signal<
@@ -435,7 +435,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     /* 2. Fetch topol viewer mutex inside Promise */
     this.topolViewerMutex = this.topolViewerMutex.then(async () => {
       // await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
-      await this.scriptLoader.loadScript('./assets/pdb-topology-viewer-component-3.0.0.js');
+      await this.scriptLoader.loadScript('./assets/pdb-topology-viewer-component-3.0.1.js');
     });
 
     this.rnaViewerMutex = this.rnaViewerMutex.then(async () => {
@@ -677,8 +677,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   private async renderVisualisations(macromolecule: ProcessedMacromolecule) {
     this.renderInMolstar(macromolecule);
     await this.initOrRefreshProtvista(macromolecule);
-    await this.initOrRefreshTopologyViewer(macromolecule);
     setTimeout(async () => {
+      await this.initOrRefreshTopologyViewer(macromolecule);
       await this.initOrRNATopologyViewer(macromolecule);
     }, 500);
   }
@@ -732,7 +732,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   private async initOrRefreshTopologyViewer(macromolecule: ProcessedMacromolecule) {
     this.topolViewerMutex = this.topolViewerMutex.then(() => {
-      const topologyContainer = this.topologyViewerContainer.nativeElement;
+      const topologyContainer = this.topologyViewerContainer?.nativeElement;
 
       // stop if this dashboard does not have topology viewer (initially false and then set in onTableRowSelection according to tabName input)
       if (!this.hasTopologyViewer && topologyContainer) {
