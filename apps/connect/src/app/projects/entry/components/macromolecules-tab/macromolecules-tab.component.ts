@@ -473,6 +473,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
         // if protein is not chimeric (single uniprotAccession), set this as selectionUniprotId
         if (unpsList.length === 1) {
           this.selectionUniprotId = unpsList[0];
+          // reset previous selection stats
+          this.selectionStats.set(undefined);
           // dispatch call to API endpoint and when finished triggers
           // constructor this.proteinsStatsObservable.pipe(...)
           this.globalStore.dispatch(
