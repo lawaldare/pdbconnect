@@ -190,7 +190,11 @@ export class LigandsTabComponent implements AfterViewInit {
 
     const configForMolstar = {
       ...Molstar370DefaultParams,
-      moleculeId: this.entryId(),
+      customData: {
+        url: `https://www.ebi.ac.uk/pdbe/model-server/v1/${this.entryId()}/full?data_source=pdb-h&encoding=bcif`,
+        format: 'cif',
+        binary: true,
+      },
       assemblyId: preferredAssemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
       landscape: true,
