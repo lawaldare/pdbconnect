@@ -11,43 +11,48 @@
       175: (t, e, n) => {
         Object.defineProperty(e, '__esModule', { value: !0 }), (e.CustomEvents = void 0);
         var i,
-          r = n(655);
-        ((i = e.CustomEvents || (e.CustomEvents = {})).create = function (t) {
-          for (var e = {}, n = 0, i = t.length; n < i; n++) {
-            var r = t[n],
-              o = void 0;
-            'function' == typeof MouseEvent
-              ? (o = new MouseEvent(r, { view: window, bubbles: !0, cancelable: !0 }))
-              : 'function' == typeof document.createEvent && (o = document.createEvent('MouseEvents')).initEvent(r, !0, !0),
-              (e[r] = o);
-          }
-          return e;
-        }),
+          r,
+          o = n(655);
+        (i = e.CustomEvents || (e.CustomEvents = {})),
+          (r = !1),
+          (i.create = function (t) {
+            for (var e = {}, n = 0, i = t.length; n < i; n++) {
+              var r = t[n],
+                o = void 0;
+              'function' == typeof MouseEvent
+                ? (o = new MouseEvent(r, { view: window, bubbles: !0, cancelable: !0 }))
+                : 'function' == typeof document.createEvent && (o = document.createEvent('MouseEvents')).initEvent(r, !0, !0),
+                (e[r] = o);
+            }
+            return e;
+          }),
           (i.dispatchCustomEvent = function (t, e, n) {
             (t.eventData = e), n.dispatchEvent(t);
           }),
           (i.subscribeToComponentEvents = function (t) {
-            document.addEventListener('protvista-click', function (e) {
-              return (0, r.__awaiter)(this, void 0, void 0, function () {
-                var n, i;
-                return (0, r.__generator)(this, function (r) {
-                  switch (r.label) {
-                    case 0:
-                      return void 0 === e.detail
-                        ? [3, 2]
-                        : ((n = parseInt(e.detail.start)), (i = parseInt(e.detail.end)), [4, t.selectResidueRange(n, i, void 0, !0)]);
-                    case 1:
-                      r.sent(), (r.label = 2);
-                    case 2:
-                      return [2];
-                  }
-                });
-              });
-            }),
-              document.addEventListener('protvista-mouseover', function (e) {
-                return (0, r.__awaiter)(this, void 0, void 0, function () {
+            r ||
+              ((r = !0),
+              document.addEventListener('protvista-click', function (e) {
+                return (0, o.__awaiter)(this, void 0, void 0, function () {
                   var n, i;
-                  return (0, r.__generator)(this, function (r) {
+                  return (0, o.__generator)(this, function (r) {
+                    switch (r.label) {
+                      case 0:
+                        return void 0 === e.detail
+                          ? [3, 2]
+                          : ((n = parseInt(e.detail.start)), (i = parseInt(e.detail.end)), [4, t.selectResidueRange(n, i, void 0, !0)]);
+                      case 1:
+                        r.sent(), (r.label = 2);
+                      case 2:
+                        return [2];
+                    }
+                  });
+                });
+              }),
+              document.addEventListener('protvista-mouseover', function (e) {
+                return (0, o.__awaiter)(this, void 0, void 0, function () {
+                  var n, i;
+                  return (0, o.__generator)(this, function (r) {
                     return void 0 !== e.detail && ((n = parseInt(e.detail.start)), (i = parseInt(e.detail.end)), t.highlightResidueRange(n, i, void 0, !0)), [2];
                   });
                 });
@@ -56,13 +61,19 @@
                 t.clearHighlight(!0);
               }),
               document.addEventListener('PDB.molstar.click', function (e) {
-                return (0, r.__awaiter)(this, void 0, void 0, function () {
-                  return (0, r.__generator)(this, function (n) {
+                return (0, o.__awaiter)(this, void 0, void 0, function () {
+                  return (0, o.__generator)(this, function (n) {
                     switch (n.label) {
                       case 0:
-                        return void 0 === e.eventData || void 0 === e.eventData.residueNumber || e.eventData.auth_asym_id !== t.options.chainId
-                          ? [3, 2]
-                          : [4, t.toggleResidue(e.eventData.residueNumber, void 0, !0)];
+                        return (
+                          console.log('e'),
+                          console.log(e),
+                          console.log('pluginCtx.options.chainId'),
+                          console.log(t.options.chainId),
+                          void 0 === e.eventData || void 0 === e.eventData.residueNumber || e.eventData.auth_asym_id !== t.options.chainId
+                            ? [3, 2]
+                            : (console.log('toggle'), [4, t.toggleResidue(e.eventData.residueNumber, void 0, !0)])
+                        );
                       case 1:
                         n.sent(), (n.label = 2);
                       case 2:
@@ -81,8 +92,8 @@
                 t.clearHighlight(!0);
               }),
               document.addEventListener('PDBe.deselect', function (e) {
-                return (0, r.__awaiter)(this, void 0, void 0, function () {
-                  return (0, r.__generator)(this, function (e) {
+                return (0, o.__awaiter)(this, void 0, void 0, function () {
+                  return (0, o.__generator)(this, function (e) {
                     switch (e.label) {
                       case 0:
                         return [4, t.clearSelection(void 0, !0)];
@@ -91,7 +102,7 @@
                     }
                   });
                 });
-              });
+              }));
           });
       },
       345: (t, e, n) => {
@@ -165,47 +176,47 @@
           s = n(819);
         n(751);
         var a = (function () {
-          function t(t) {
-            this.pdbId = t;
+          function t(e) {
+            (t.pdbId = e), (t.initialized = !0);
           }
           return (
-            (t.prototype.applyButtonActions = function () {
-              var e = this,
+            (t.applyButtonActions = function () {
+              var e = t.pdbId,
                 n = (0, o.select)('.rnaTopoSvg'),
                 i = (0, s.zoom)().on('zoom', function (t) {
-                  (0, o.select)('.rnaTopoSvg_' + e.pdbId).attr('transform', t.transform.toString()),
-                    (0, o.select)('.rnaTopoSvgHighlight_' + e.pdbId).attr('transform', t.transform.toString()),
-                    (0, o.select)('.rnaTopoSvgSelection_' + e.pdbId).attr('transform', t.transform.toString());
+                  (0, o.select)('.rnaTopoSvg_' + e).attr('transform', t.transform.toString()),
+                    (0, o.select)('.rnaTopoSvgHighlight_' + e).attr('transform', t.transform.toString()),
+                    (0, o.select)('.rnaTopoSvgSelection_' + e).attr('transform', t.transform.toString());
                 });
               (t.zoomBehavior = i),
                 (0, o.select)('.rnaTopoSvg').call(i).on('dblclick.zoom', null).on('wheel.zoom', null).on('mousewheel.zoom', null),
-                (0, o.select)('#rnaTopologyZoomIn-' + this.pdbId).on('click', function (t) {
+                (0, o.select)('#rnaTopologyZoomIn-' + e).on('click', function (t) {
                   t.stopPropagation(), i.scaleBy(n.transition().duration(300), 1.2);
                 }),
-                (0, o.select)('#rnaTopologyZoomOut-' + this.pdbId).on('click', function (t) {
+                (0, o.select)('#rnaTopologyZoomOut-' + e).on('click', function (t) {
                   var r;
                   t.stopPropagation();
-                  var a = null === (r = (0, o.select)('.rnaTopoSvg_' + e.pdbId).node()) || void 0 === r ? void 0 : r.getAttribute('transform');
+                  var a = null === (r = (0, o.select)('.rnaTopoSvg_' + e).node()) || void 0 === r ? void 0 : r.getAttribute('transform');
                   if (a && '' !== a) {
                     var u = +a.match(/.+scale\((.*)\)/)[1];
                     if (u <= 1 || u - 0.3 <= 1) return void n.transition().duration(300).call(i.transform, s.zoomIdentity);
                   }
                   i.scaleBy((0, o.select)('.rnaTopoSvg').transition().duration(300), 0.8);
                 }),
-                (0, o.select)('#rnaTopologyReset-' + this.pdbId).on('click', function (t) {
+                (0, o.select)('#rnaTopologyReset-' + e).on('click', function (t) {
                   t.stopPropagation(), n.transition().duration(300).call(i.transform, s.zoomIdentity);
                 }),
-                (0, o.select)('.pdb-rna-view-container-' + this.pdbId).on('click', function (n) {
-                  n.stopPropagation(), t.clearHighlight(), t.clearSelection(e.pdbId);
-                  var i = document.getElementById(e.pdbId + '-rnaTopologyTooltip');
+                (0, o.select)('.pdb-rna-view-container-' + e).on('click', function (n) {
+                  n.stopPropagation(), t.clearHighlight(), t.clearSelection(e);
+                  var i = document.getElementById(e + '-rnaTopologyTooltip');
                   i && (i.style.display = 'none');
-                  var r = document.getElementById(e.pdbId + '-rnaTopologyTooltipHighlight');
+                  var r = document.getElementById(e + '-rnaTopologyTooltipHighlight');
                   r && (r.style.display = 'none');
                 });
             }),
             (t.unSelectNucleotide = function (e, n, o, s, a, u, l, c, h) {
               return (0, i.__awaiter)(this, void 0, void 0, function () {
-                var c, p;
+                var c, p, d;
                 return (0, i.__generator)(this, function (i) {
                   switch (i.label) {
                     case 0:
@@ -214,12 +225,12 @@
                       i.sent(), (i.label = 2);
                     case 2:
                       return (
-                        (document.getElementById(e + '-rnaTopologyTooltip').style.display = 'none'),
+                        (c = document.getElementById(e + '-rnaTopologyTooltip')) && (c.style.display = 'none'),
                         u ||
                           h ||
-                          ((c = { pdbId: e, auth_asym_id: o, label_seq_id: s, entityId: n }),
-                          (p = s ? document.querySelector('.rnaview_' + e + '_' + s) : document.querySelector('.rnaTopoSvg_' + e)),
-                          r.CustomEvents.dispatchCustomEvent(t.pdbevents['PDB.RNA.viewer.deselect'], c, p)),
+                          ((p = { pdbId: e, auth_asym_id: o, label_seq_id: s, entityId: n }),
+                          (d = s ? document.querySelector('.rnaview_' + e + '_' + s) : document.querySelector('.rnaTopoSvg_' + e)),
+                          r.CustomEvents.dispatchCustomEvent(t.pdbevents['PDB.RNA.viewer.deselect'], p, d)),
                         [2]
                       );
                   }
@@ -228,7 +239,7 @@
             }),
             (t.showCheckboxes = function () {
               var t = document.getElementById('checkboxes');
-              this.expanded ? ((t.style.display = 'none'), (this.expanded = !1)) : ((t.style.display = 'block'), (this.expanded = !0));
+              t && (this.expanded ? ((t.style.display = 'none'), (this.expanded = !1)) : ((t.style.display = 'block'), (this.expanded = !0)));
             }),
             (t.clearHighlight = function () {
               document.querySelectorAll('.rnaTopo-hover').forEach(function (t) {
@@ -236,17 +247,18 @@
               });
             }),
             (t.clearSelection = function (t, e) {
-              document.querySelector('.rnaTopoSvgSelection_' + t).innerHTML = '';
-              var n = document.querySelectorAll('.rnaTopo-selected'),
-                i = [];
+              var n = document.querySelector('.rnaTopoSvgSelection_' + t);
+              n && (n.innerHTML = '');
+              var i = document.querySelectorAll('.rnaTopo-selected'),
+                r = [];
               if (void 0 !== e) {
-                var r = Array.isArray(e) ? e : [e];
-                i = r.map(function (e) {
+                var o = Array.isArray(e) ? e : [e];
+                r = o.map(function (e) {
                   return '.rnaview_' + t + '_' + e;
                 });
               }
-              n.forEach(function (t) {
-                i.some(function (e) {
+              i.forEach(function (t) {
+                r.some(function (e) {
                   return t.matches(e);
                 }) ||
                   null == t ||
@@ -255,51 +267,51 @@
             }),
             (t.showTooltip = function (e, n, i, o, s, a, u, l, c, h) {
               var p = document.getElementById('tooltip');
-              (p.id = 'tooltip'),
-                (p.innerHTML = a),
-                (p.style.display = 'block'),
-                (p.style.left = s.layerX + 'px'),
-                (p.style.top = s.layerY + 'px'),
-                (this.tooltipSelectedColor = l),
-                (this.tooltipSelectedWidth = parseFloat(h)),
-                (this.fillColor = c),
-                document
-                  .querySelector('svg.rnaTopoSvg')
-                  .getElementsByClassName(u)[0]
-                  .setAttribute('stroke-width', 2.5 * parseFloat(h)),
-                document.querySelector('svg.rnaTopoSvg').getElementsByClassName(u)[0].setAttribute('stroke', 'orange'),
-                document.querySelector('svg.rnaTopoSvg').getElementsByClassName(u)[0].setAttribute('fill', 'orange');
-              var d = {
-                  pdbId: e,
-                  label_seq_ids: o.split(' - ').map(function (t) {
-                    return parseInt(t);
-                  }),
-                  entityId: n,
-                },
-                f = document.querySelector('.rnaTopoSvg_' + e);
-              r.CustomEvents.dispatchCustomEvent(t.pdbevents['PDB.RNA.viewer.click'], d, f);
+              if (p) {
+                (p.id = 'tooltip'),
+                  (p.innerHTML = a),
+                  (p.style.display = 'block'),
+                  (p.style.left = s.layerX + 'px'),
+                  (p.style.top = s.layerY + 'px'),
+                  (this.tooltipSelectedColor = l),
+                  (this.tooltipSelectedWidth = parseFloat(h)),
+                  (this.fillColor = c);
+                var d = document.querySelector('svg.rnaTopoSvg');
+                d &&
+                  (d.getElementsByClassName(u)[0].setAttribute('stroke-width', 2.5 * parseFloat(h)),
+                  d.getElementsByClassName(u)[0].setAttribute('stroke', 'orange'),
+                  d.getElementsByClassName(u)[0].setAttribute('fill', 'orange'));
+                var f = {
+                    pdbId: e,
+                    label_seq_ids: o.split(' - ').map(function (t) {
+                      return parseInt(t);
+                    }),
+                    entityId: n,
+                  },
+                  v = document.querySelector('.rnaTopoSvg_' + e);
+                r.CustomEvents.dispatchCustomEvent(t.pdbevents['PDB.RNA.viewer.click'], f, v);
+              }
             }),
             (t.hideTooltip = function (e, n, i, o, s) {
-              (document.getElementById('tooltip').style.display = 'none'),
-                document.querySelector('svg.rnaTopoSvg').getElementsByClassName(s)[0].setAttribute('stroke-width', this.tooltipSelectedWidth),
-                document
-                  .querySelector('svg.rnaTopoSvg')
-                  .getElementsByClassName(s)[0]
-                  .setAttribute('stroke', '' + this.tooltipSelectedColor),
-                document
-                  .querySelector('svg.rnaTopoSvg')
-                  .getElementsByClassName(s)[0]
-                  .setAttribute('fill', '' + this.fillColor);
-              var a = {
-                  pdbId: e,
-                  auth_asym_id: i,
-                  label_seq_ids: o.split(' - ').map(function (t) {
-                    return parseInt(t);
-                  }),
-                  entityId: n,
-                },
-                u = document.querySelector('.rnaTopoSvg_' + e);
-              r.CustomEvents.dispatchCustomEvent(t.pdbevents['PDB.RNA.viewer.deselect'], a, u);
+              var a = document.getElementById('tooltip');
+              if (a) {
+                a.style.display = 'none';
+                var u = document.querySelector('svg.rnaTopoSvg');
+                u &&
+                  (u.getElementsByClassName(s)[0].setAttribute('stroke-width', this.tooltipSelectedWidth),
+                  u.getElementsByClassName(s)[0].setAttribute('stroke', '' + this.tooltipSelectedColor),
+                  u.getElementsByClassName(s)[0].setAttribute('fill', '' + this.fillColor));
+                var l = {
+                    pdbId: e,
+                    auth_asym_id: i,
+                    label_seq_ids: o.split(' - ').map(function (t) {
+                      return parseInt(t);
+                    }),
+                    entityId: n,
+                  },
+                  c = document.querySelector('.rnaTopoSvg_' + e);
+                r.CustomEvents.dispatchCustomEvent(t.pdbevents['PDB.RNA.viewer.deselect'], l, c);
+              }
             }),
             (t.transitionEnd = function (t) {
               return (0, i.__awaiter)(this, void 0, void 0, function () {
@@ -325,50 +337,43 @@
                 return (0, i.__generator)(this, function (h) {
                   switch (h.label) {
                     case 0:
-                      return (
-                        (r = (0, o.select)('.rnaTopoSvg')),
-                        (a = r.node()) && document.querySelector('.rnaTopoSvg_' + e)
-                          ? ((u = function () {
-                              return (0, i.__awaiter)(c, void 0, void 0, function () {
-                                var o, u, l, c, h, p, d, f, v, g, y, m, _, b, w, S, x, E, I, k, M, A;
-                                return (0, i.__generator)(this, function (i) {
-                                  switch (i.label) {
-                                    case 0:
-                                      for (
-                                        o = void 0, u = void 0, l = void 0, c = void 0, h = 0, p = 0, d = 0, f = a.viewBox.baseVal, v = 0, g = n;
-                                        v < g.length;
-                                        v++
-                                      )
-                                        (y = g[v]),
-                                          (m = document.querySelector('.rnaview_' + e + '_' + y)) &&
-                                            ((_ = m.getBBox()),
-                                            (b = m.getBoundingClientRect()),
-                                            void 0 === o && 'text' === m.nodeName && ((o = b.height), (S = a.clientHeight), (c = (0.05 * S) / o)),
-                                            void 0 === u &&
-                                              void 0 === l &&
-                                              'path' === m.nodeName &&
-                                              ((u = b.height), (l = b.width), (w = Math.max(u, l)), (S = a.clientHeight), (c = (0.05 * S) / w)),
-                                            (h += _.x + _.width / 2),
-                                            (p += _.y + _.height / 2),
-                                            (d += 1));
-                                      return (
-                                        (x = h / d),
-                                        (E = p / d),
-                                        (I = f.width / 2 - c * x),
-                                        (k = f.height / 2 - c * E),
-                                        (M = s.zoomIdentity.translate(I, k).scale(c)),
-                                        (A = r.transition().duration(500).call(t.zoomBehavior.transform, M)),
-                                        [4, t.transitionEnd(A)]
-                                      );
-                                    case 1:
-                                      return i.sent(), (t.zoomed = !0), [2];
-                                  }
-                                });
+                      return (r = (0, o.select)('.rnaTopoSvg')) && (a = r.node()) && document.querySelector('.rnaTopoSvg_' + e)
+                        ? ((u = function () {
+                            return (0, i.__awaiter)(c, void 0, void 0, function () {
+                              var o, u, l, c, h, p, d, f, v, g, y, m, _, b, w, S, x, E, I, k, M, A;
+                              return (0, i.__generator)(this, function (i) {
+                                switch (i.label) {
+                                  case 0:
+                                    for (o = void 0, u = void 0, l = void 0, c = void 0, h = 0, p = 0, d = 0, f = a.viewBox.baseVal, v = 0, g = n; v < g.length; v++)
+                                      (y = g[v]),
+                                        (m = document.querySelector('.rnaview_' + e + '_' + y)) &&
+                                          ((_ = m.getBBox()),
+                                          (b = m.getBoundingClientRect()),
+                                          void 0 === o && 'text' === m.nodeName && ((o = b.height), (S = a.clientHeight), (c = (0.05 * S) / o)),
+                                          void 0 === u &&
+                                            void 0 === l &&
+                                            'path' === m.nodeName &&
+                                            ((u = b.height), (l = b.width), (w = Math.max(u, l)), (S = a.clientHeight), (c = (0.05 * S) / w)),
+                                          (h += _.x + _.width / 2),
+                                          (p += _.y + _.height / 2),
+                                          (d += 1));
+                                    return (
+                                      (x = h / d),
+                                      (E = p / d),
+                                      (I = f.width / 2 - c * x),
+                                      (k = f.height / 2 - c * E),
+                                      (M = s.zoomIdentity.translate(I, k).scale(c)),
+                                      (A = r.transition().duration(500).call(t.zoomBehavior.transform, M)),
+                                      [4, t.transitionEnd(A)]
+                                    );
+                                  case 1:
+                                    return i.sent(), (t.zoomed = !0), [2];
+                                }
                               });
-                            }),
-                            t.zoomed ? ((l = r.transition().duration(500).call(t.zoomBehavior.transform, s.zoomIdentity)), [4, t.transitionEnd(l)]) : [3, 3])
-                          : [2]
-                      );
+                            });
+                          }),
+                          t.zoomed ? ((l = r.transition().duration(500).call(t.zoomBehavior.transform, s.zoomIdentity)), [4, t.transitionEnd(l)]) : [3, 3])
+                        : [2];
                     case 1:
                       return h.sent(), [4, u()];
                     case 2:
@@ -408,6 +413,7 @@
                 n[s] === o + 1 || (r === o ? i.push('' + r) : i.push(r + ' - ' + o), (r = n[s])), (o = n[s]);
               return r === o ? i.push('' + r) : i.push(r + ' - ' + o), 'Residues ' + i.join(', ');
             }),
+            (t.initialized = !1),
             (t.pdbevents = r.CustomEvents.create(['PDB.RNA.viewer.click', 'PDB.RNA.viewer.mouseover', 'PDB.RNA.viewer.mouseout', 'PDB.RNA.viewer.deselect'])),
             (t.tooltipSelectedColor = ''),
             (t.tooltipSelectedWidth = 0),
@@ -424,24 +430,21 @@
                 null == v || v.classList.add('rnaTopo-hover');
               }
               var g = document.getElementById(e + '-rnaTopologyTooltipHighlight');
-              g.style.display = 'inline';
+              g && (g.style.display = 'inline');
               var y = t.buildResidueLabel(h, a);
-              if (((g.innerHTML = '<strong>' + (s ? 'Unobserved ' : '') + y + '</strong>'), !s && !c)) {
+              if ((g && (g.innerHTML = '<strong>' + (s ? 'Unobserved ' : '') + y + '</strong>'), !s && !c)) {
                 var m = { pdbId: e, auth_asym_id: i, label_seq_ids: h, entityId: n },
                   _ = document.querySelector('.rnaTopoSvg_' + e);
                 r.CustomEvents.dispatchCustomEvent(t.pdbevents['PDB.RNA.viewer.mouseover'], m, _);
               }
             }),
             (t.unHighlightNucleotide = function (e, n, i, o, s, a, u) {
-              if (
-                (null == a || a.stopImmediatePropagation(),
-                t.clearHighlight(),
-                (document.getElementById(e + '-rnaTopologyTooltipHighlight').style.display = 'none'),
-                !s && !u)
-              ) {
-                var l = { pdbId: e, auth_asym_id: i, label_seq_id: o, entityId: n },
-                  c = o ? document.querySelector('.rnaview_' + e + '_' + o) : document.querySelector('.rnaTopoSvg_' + e);
-                r.CustomEvents.dispatchCustomEvent(t.pdbevents['PDB.RNA.viewer.mouseout'], l, c);
+              null == a || a.stopImmediatePropagation(), t.clearHighlight();
+              var l = document.getElementById(e + '-rnaTopologyTooltipHighlight');
+              if ((l && (l.style.display = 'none'), !s && !u)) {
+                var c = { pdbId: e, auth_asym_id: i, label_seq_id: o, entityId: n },
+                  h = o ? document.querySelector('.rnaview_' + e + '_' + o) : document.querySelector('.rnaTopoSvg_' + e);
+                r.CustomEvents.dispatchCustomEvent(t.pdbevents['PDB.RNA.viewer.mouseout'], c, h);
               }
             }),
             (t.toggleNucleotide = function (e, n, r, o, s, a, u, l, c, h, p) {
@@ -497,9 +500,9 @@
                       i.sent(), (i.label = 4);
                     case 4:
                       return (
-                        ((w = document.getElementById(e + '-rnaTopologyTooltip')).style.display = 'inline'),
+                        (w = document.getElementById(e + '-rnaTopologyTooltip')) && (w.style.display = 'inline'),
                         (S = t.buildResidueLabel(f, l)),
-                        (w.innerHTML = '<strong>' + (u ? 'Unobserved ' : '') + 'Selected ' + S + '</strong>'),
+                        w && (w.innerHTML = '<strong>' + (u ? 'Unobserved ' : '') + 'Selected ' + S + '</strong>'),
                         u ||
                           d ||
                           ((x = { pdbId: e, auth_asym_id: o, label_seq_ids: f, entityId: n }),
@@ -534,7 +537,7 @@
                 }),
                 (this.containerElement = t),
                 (this.pluginOptions = e),
-                (this.uiActionsService = new i.UiActionsService(this.pluginOptions.pdbId));
+                !1 === i.UiActionsService.initialized ? new i.UiActionsService(this.pluginOptions.pdbId) : (i.UiActionsService.pdbId = this.pluginOptions.pdbId);
             }
             return (
               (t.prototype.render = function (t, e, n) {
@@ -559,26 +562,28 @@
                   this.bindBpListDialog(),
                   this.bindBpFilterBtn(),
                   this.bindHelpIcons(),
-                  this.uiActionsService.applyButtonActions();
+                  i.UiActionsService.applyButtonActions();
               }),
               (t.prototype.changeBP = function (t) {
                 var e = this;
                 (this.displayBaseStrs = ''), (this.displayNestedBaseStrs = '');
-                var n = this.containerElement.querySelector('#Checkbox_All').checked;
-                'All' == t
-                  ? this.baseStrs.forEach(function (t, i) {
-                      e.baseStrs.set(i, [n, t[1]]),
-                        e.nestedBaseStrs.set(i, [n, e.nestedBaseStrs.get(i)[1]]),
-                        (document.getElementById('Checkbox_' + i).checked = n),
-                        n && ((e.displayBaseStrs += t[1].join('')), (e.displayNestedBaseStrs += e.nestedBaseStrs.get(i)[1].join('')));
-                    })
-                  : (this.baseStrs.get(t)[0]
-                      ? (this.baseStrs.set(t, [!1, this.baseStrs.get(t)[1]]), this.nestedBaseStrs.set(t, [!1, this.nestedBaseStrs.get(t)[1]]))
-                      : (this.baseStrs.set(t, [!0, this.baseStrs.get(t)[1]]), this.nestedBaseStrs.set(t, [!0, this.nestedBaseStrs.get(t)[1]])),
-                    this.baseStrs.forEach(function (t, n) {
-                      t[0] && ((e.displayBaseStrs += t[1].join('')), (e.displayNestedBaseStrs += e.nestedBaseStrs.get(n)[1].join('')));
-                    })),
-                  this.pathOrNucleotide();
+                var n = this.containerElement.querySelector('#Checkbox_All');
+                if (n) {
+                  var i = n.checked;
+                  'All' == t
+                    ? this.baseStrs.forEach(function (t, n) {
+                        e.baseStrs.set(n, [i, t[1]]), e.nestedBaseStrs.set(n, [i, e.nestedBaseStrs.get(n)[1]]);
+                        var r = document.getElementById('Checkbox_' + n);
+                        r && ((r.checked = i), i && ((e.displayBaseStrs += t[1].join('')), (e.displayNestedBaseStrs += e.nestedBaseStrs.get(n)[1].join(''))));
+                      })
+                    : (this.baseStrs.get(t)[0]
+                        ? (this.baseStrs.set(t, [!1, this.baseStrs.get(t)[1]]), this.nestedBaseStrs.set(t, [!1, this.nestedBaseStrs.get(t)[1]]))
+                        : (this.baseStrs.set(t, [!0, this.baseStrs.get(t)[1]]), this.nestedBaseStrs.set(t, [!0, this.nestedBaseStrs.get(t)[1]])),
+                      this.baseStrs.forEach(function (t, n) {
+                        t[0] && ((e.displayBaseStrs += t[1].join('')), (e.displayNestedBaseStrs += e.nestedBaseStrs.get(n)[1].join('')));
+                      })),
+                    this.pathOrNucleotide();
+                }
               }),
               (t.prototype.createBPDropdown = function () {
                 var t,
@@ -595,8 +600,10 @@
                       i % 2 == 1 && (n += '</tr>'),
                       (i += 1);
                   }),
-                    (n += '</table>'),
-                    (document.getElementById('checkboxes').innerHTML = n),
+                    (n += '</table>');
+                  var r = document.getElementById('checkboxes');
+                  if (!r) return;
+                  (r.innerHTML = n),
                     null === (t = document.getElementById('Checkbox_All')) || void 0 === t || t.addEventListener('change', this.changeBP.bind(this, 'All')),
                     this.baseStrs.forEach(function (t, n) {
                       var i;
@@ -606,9 +613,12 @@
               }),
               (t.prototype.createModeDropdown = function () {
                 var t = this.containerElement.querySelector('.menuSelectbox');
-                (t.innerHTML = '<option value="0">View as Nucleotides</option><option value="1">View as Path</option></option>'),
-                  t.addEventListener('change', this.pathOrNucleotide.bind(this)),
-                  this.containerElement.querySelector('#nestedBP').addEventListener('change', this.pathOrNucleotide.bind(this));
+                if (t) {
+                  (t.innerHTML = '<option value="0">View as Nucleotides</option><option value="1">View as Path</option></option>'),
+                    t.addEventListener('change', this.pathOrNucleotide.bind(this));
+                  var e = this.containerElement.querySelector('#nestedBP');
+                  e && e.addEventListener('change', this.pathOrNucleotide.bind(this));
+                }
               }),
               (t.prototype.bindBpFilterBtn = function () {
                 var t,
@@ -620,7 +630,9 @@
                     null === (t = document.querySelector('.menu-dropdown')) || void 0 === t || t.classList.toggle('show'),
                       null === (n = document.getElementById('bpFilterBtnIcon')) || void 0 === n || n.classList.toggle('active');
                     var i = document.getElementById('checkboxes');
-                    e.checkboxesExpanded ? ((i.style.display = 'none'), (e.checkboxesExpanded = !1)) : ((i.style.display = 'block'), (e.checkboxesExpanded = !0));
+                    e.checkboxesExpanded
+                      ? (i && (i.style.display = 'none'), (e.checkboxesExpanded = !1))
+                      : (i && (i.style.display = 'block'), (e.checkboxesExpanded = !0));
                   });
               }),
               (t.prototype.bindHelpIcons = function () {
@@ -729,17 +741,20 @@
                 return (1 - n) * t + n * e;
               }),
               (t.prototype.pathOrNucleotide = function () {
-                var t = this.containerElement.querySelector('.menuSelectbox'),
-                  e = parseInt(t.value);
-                if (this.containerElement.querySelector('#nestedBP').checked) var n = this.displayNestedBaseStrs;
-                else n = this.displayBaseStrs;
-                0 == e
-                  ? (document.querySelector('svg.rnaTopoSvg').getElementsByClassName('rnaTopoSvg_' + this.pluginOptions.pdbId)[0].innerHTML =
-                      this.nucleotideStrs.join('') + n)
-                  : 1 == e &&
-                    (document.querySelector('svg.rnaTopoSvg').getElementsByClassName('rnaTopoSvg_' + this.pluginOptions.pdbId)[0].innerHTML =
-                      this.pathStrs.join('') + n),
-                  this.renderBpListDialog(!1);
+                var t = this.containerElement.querySelector('.menuSelectbox');
+                if (t) {
+                  var e = parseInt(t.value),
+                    n = this.containerElement.querySelector('#nestedBP');
+                  if (n) {
+                    if (n.checked) var i = this.displayNestedBaseStrs;
+                    else i = this.displayBaseStrs;
+                    var r = document.querySelector('svg.rnaTopoSvg');
+                    0 == e && r
+                      ? (r.getElementsByClassName('rnaTopoSvg_' + this.pluginOptions.pdbId)[0].innerHTML = this.nucleotideStrs.join('') + i)
+                      : 1 == e && r && (r.getElementsByClassName('rnaTopoSvg_' + this.pluginOptions.pdbId)[0].innerHTML = this.pathStrs.join('') + i),
+                      this.renderBpListDialog(!1);
+                  }
+                }
               }),
               (t.prototype.calcBaseStrs = function (e, n, i) {
                 var r = +e.seq_id1,
@@ -932,8 +947,8 @@
                               '"></path>'
                           );
                   else if ('tWW' == s) {
-                    var T = t.linearlyInterpolate(m, x, 1 - i / 3 / (y / 2)),
-                      B = t.linearlyInterpolate(_, E, 1 - i / 3 / (y / 2)),
+                    var B = t.linearlyInterpolate(m, x, 1 - i / 3 / (y / 2)),
+                      T = t.linearlyInterpolate(_, E, 1 - i / 3 / (y / 2)),
                       O = t.linearlyInterpolate(x, b, i / 3 / (y / 2)),
                       N = t.linearlyInterpolate(E, w, i / 3 / (y / 2));
                     n.get(s)[1].push(
@@ -943,9 +958,9 @@
                         ' ' +
                         _ +
                         ' ' +
-                        T +
-                        ' ' +
                         B +
+                        ' ' +
+                        T +
                         '\n                    M ' +
                         (x - i / 3) +
                         ' ' +
@@ -1887,27 +1902,27 @@
             null == n ? delete this[t] : (this[t] = n);
           };
         }
-        function T(t) {
+        function B(t) {
           return t.trim().split(/^|\s+/);
         }
-        function B(t) {
+        function T(t) {
           return t.classList || new O(t);
         }
         function O(t) {
-          (this._node = t), (this._names = T(t.getAttribute('class') || ''));
+          (this._node = t), (this._names = B(t.getAttribute('class') || ''));
         }
         function N(t, e) {
-          for (var n = B(t), i = -1, r = e.length; ++i < r; ) n.add(e[i]);
+          for (var n = T(t), i = -1, r = e.length; ++i < r; ) n.add(e[i]);
         }
         function C(t, e) {
-          for (var n = B(t), i = -1, r = e.length; ++i < r; ) n.remove(e[i]);
+          for (var n = T(t), i = -1, r = e.length; ++i < r; ) n.remove(e[i]);
         }
         function P(t) {
           return function () {
             N(this, t);
           };
         }
-        function q(t) {
+        function z(t) {
           return function () {
             C(this, t);
           };
@@ -1925,7 +1940,7 @@
             this.textContent = t;
           };
         }
-        function z(t) {
+        function q(t) {
           return function () {
             var e = t.apply(this, arguments);
             this.textContent = null == e ? '' : e;
@@ -2200,15 +2215,15 @@
             return arguments.length > 1 ? this.each((null == e ? k : 'function' == typeof e ? A : M)(t, e)) : this.node()[t];
           },
           classed: function (t, e) {
-            var n = T(t + '');
+            var n = B(t + '');
             if (arguments.length < 2) {
-              for (var i = B(this.node()), r = -1, o = n.length; ++r < o; ) if (!i.contains(n[r])) return !1;
+              for (var i = T(this.node()), r = -1, o = n.length; ++r < o; ) if (!i.contains(n[r])) return !1;
               return !0;
             }
-            return this.each(('function' == typeof e ? D : e ? P : q)(n, e));
+            return this.each(('function' == typeof e ? D : e ? P : z)(n, e));
           },
           text: function (t) {
-            return arguments.length ? this.each(null == t ? H : ('function' == typeof t ? z : L)(t)) : this.node().textContent;
+            return arguments.length ? this.each(null == t ? H : ('function' == typeof t ? q : L)(t)) : this.node().textContent;
           },
           html: function (t) {
             return arguments.length ? this.each(null == t ? Z : ('function' == typeof t ? j : R)(t)) : this.node().innerHTML;
@@ -2327,7 +2342,7 @@
         n.d(e, { Z: () => i });
       },
       751: (t, e, n) => {
-        n.r(e), n.d(e, { active: () => ue, interrupt: () => T, transition: () => ne });
+        n.r(e), n.d(e, { active: () => ue, interrupt: () => B, transition: () => ne });
         var i,
           r,
           o = n(434),
@@ -2483,7 +2498,7 @@
           if (!n || !(n = n[e])) throw new Error('transition not found');
           return n;
         }
-        function T(t, e) {
+        function B(t, e) {
           var n,
             i,
             r,
@@ -2501,7 +2516,7 @@
             s && delete t.__transition;
           }
         }
-        function B(t, e) {
+        function T(t, e) {
           return (
             (t = +t),
             (e = +e),
@@ -2523,7 +2538,7 @@
             { translateX: r, translateY: o, rotate: Math.atan2(e, t) * N, skewX: Math.atan(u) * N, scaleX: s, scaleY: a }
           );
         }
-        function q(t, e, n, i) {
+        function z(t, e, n, i) {
           function r(t) {
             return t.length ? t.pop() + ' ' : '';
           }
@@ -2536,21 +2551,21 @@
               (function (t, i, r, o, s, a) {
                 if (t !== r || i !== o) {
                   var u = s.push('translate(', null, e, null, n);
-                  a.push({ i: u - 4, x: B(t, r) }, { i: u - 2, x: B(i, o) });
+                  a.push({ i: u - 4, x: T(t, r) }, { i: u - 2, x: T(i, o) });
                 } else (r || o) && s.push('translate(' + r + e + o + n);
               })(o.translateX, o.translateY, s.translateX, s.translateY, a, u),
               (function (t, e, n, o) {
                 t !== e
-                  ? (t - e > 180 ? (e += 360) : e - t > 180 && (t += 360), o.push({ i: n.push(r(n) + 'rotate(', null, i) - 2, x: B(t, e) }))
+                  ? (t - e > 180 ? (e += 360) : e - t > 180 && (t += 360), o.push({ i: n.push(r(n) + 'rotate(', null, i) - 2, x: T(t, e) }))
                   : e && n.push(r(n) + 'rotate(' + e + i);
               })(o.rotate, s.rotate, a, u),
               (function (t, e, n, o) {
-                t !== e ? o.push({ i: n.push(r(n) + 'skewX(', null, i) - 2, x: B(t, e) }) : e && n.push(r(n) + 'skewX(' + e + i);
+                t !== e ? o.push({ i: n.push(r(n) + 'skewX(', null, i) - 2, x: T(t, e) }) : e && n.push(r(n) + 'skewX(' + e + i);
               })(o.skewX, s.skewX, a, u),
               (function (t, e, n, i, o, s) {
                 if (t !== n || e !== i) {
                   var a = o.push(r(o) + 'scale(', null, ',', null, ')');
-                  s.push({ i: a - 4, x: B(t, n) }, { i: a - 2, x: B(e, i) });
+                  s.push({ i: a - 4, x: T(t, n) }, { i: a - 2, x: T(e, i) });
                 } else (1 === n && 1 === i) || o.push(r(o) + 'scale(' + n + ',' + i + ')');
               })(o.scaleX, o.scaleY, s.scaleX, s.scaleY, a, u),
               (o = s = null),
@@ -2561,7 +2576,7 @@
             );
           };
         }
-        var D = q(
+        var D = z(
             function (t) {
               const e = new ('function' == typeof DOMMatrix ? DOMMatrix : WebKitCSSMatrix)(t + '');
               return e.isIdentity ? C : P(e.a, e.b, e.c, e.d, e.e, e.f);
@@ -2570,7 +2585,7 @@
             'px)',
             'deg)'
           ),
-          H = q(
+          H = z(
             function (t) {
               return null == t
                 ? C
@@ -2583,7 +2598,7 @@
             ')'
           ),
           L = n(888);
-        function z(t, e) {
+        function q(t, e) {
           var n, i;
           return function () {
             var r = M(this, t),
@@ -3077,7 +3092,7 @@
             u = [];
           for (t += '', e += ''; (n = Et.exec(t)) && (i = It.exec(e)); )
             (r = i.index) > o && ((r = e.slice(o, r)), a[s] ? (a[s] += r) : (a[++s] = r)),
-              (n = n[0]) === (i = i[0]) ? (a[s] ? (a[s] += i) : (a[++s] = i)) : ((a[++s] = null), u.push({ i: s, x: B(n, i) })),
+              (n = n[0]) === (i = i[0]) ? (a[s] ? (a[s] += i) : (a[++s] = i)) : ((a[++s] = null), u.push({ i: s, x: T(n, i) })),
               (o = It.lastIndex);
           return (
             o < e.length && ((r = e.slice(o)), a[s] ? (a[s] += r) : (a[++s] = r)),
@@ -3102,19 +3117,19 @@
         }
         function Mt(t, e) {
           var n;
-          return ('number' == typeof e ? B : e instanceof st ? St : (n = st(e)) ? ((e = n), St) : kt)(t, e);
+          return ('number' == typeof e ? T : e instanceof st ? St : (n = st(e)) ? ((e = n), St) : kt)(t, e);
         }
         function At(t) {
           return function () {
             this.removeAttribute(t);
           };
         }
-        function Tt(t) {
+        function Bt(t) {
           return function () {
             this.removeAttributeNS(t.space, t.local);
           };
         }
-        function Bt(t, e, n) {
+        function Tt(t, e, n) {
           var i,
             r,
             o = n + '';
@@ -3157,7 +3172,7 @@
             this.setAttribute(t, e.call(this, n));
           };
         }
-        function qt(t, e) {
+        function zt(t, e) {
           return function (n) {
             this.setAttributeNS(t.space, t.local, e.call(this, n));
           };
@@ -3166,7 +3181,7 @@
           var n, i;
           function r() {
             var r = e.apply(this, arguments);
-            return r !== i && (n = (i = r) && qt(t, r)), n;
+            return r !== i && (n = (i = r) && zt(t, r)), n;
           }
           return (r._value = e), r;
         }
@@ -3183,7 +3198,7 @@
             k(this, t).delay = +e.apply(this, arguments);
           };
         }
-        function zt(t, e) {
+        function qt(t, e) {
           return (
             (e = +e),
             function () {
@@ -3340,7 +3355,7 @@
               i = 'transform' === n ? H : Mt;
             return this.attrTween(
               t,
-              'function' == typeof e ? (n.local ? Ct : Nt)(n, i, R(this, 'attr.' + t, e)) : null == e ? (n.local ? Tt : At)(n) : (n.local ? Ot : Bt)(n, i, e)
+              'function' == typeof e ? (n.local ? Ct : Nt)(n, i, R(this, 'attr.' + t, e)) : null == e ? (n.local ? Bt : At)(n) : (n.local ? Ot : Tt)(n, i, e)
             );
           },
           attrTween: function (t, e) {
@@ -3459,11 +3474,11 @@
               for (var i, r = A(this.node(), n).tween, o = 0, s = r.length; o < s; ++o) if ((i = r[o]).name === t) return i.value;
               return null;
             }
-            return this.each((null == e ? z : Z)(n, t, e));
+            return this.each((null == e ? q : Z)(n, t, e));
           },
           delay: function (t) {
             var e = this._id;
-            return arguments.length ? this.each(('function' == typeof t ? Lt : zt)(e, t)) : A(this.node(), e).delay;
+            return arguments.length ? this.each(('function' == typeof t ? Lt : qt)(e, t)) : A(this.node(), e).delay;
           },
           duration: function (t) {
             var e = this._id;
@@ -3522,7 +3537,7 @@
         }
         (o.ZP.prototype.interrupt = function (t) {
           return this.each(function () {
-            T(this, t);
+            B(this, t);
           });
         }),
           (o.ZP.prototype.transition = function (t) {
@@ -3727,13 +3742,13 @@
               [-1 / 0, -1 / 0],
               [1 / 0, 1 / 0],
             ],
-            T = 250,
-            B = l,
+            B = 250,
+            T = l,
             O = (0, i.Z)('start', 'zoom', 'end'),
             N = 500,
             C = 0,
             P = 10;
-          function q(t) {
+          function z(t) {
             t.property('__zoom', w)
               .on('wheel.zoom', j)
               .on('mousedown.zoom', U)
@@ -3755,7 +3770,7 @@
           function L(t) {
             return [(+t[0][0] + +t[1][0]) / 2, (+t[0][1] + +t[1][1]) / 2];
           }
-          function z(t, e, n, i) {
+          function q(t, e, n, i) {
             t.on('start.zoom', function () {
               Z(this, arguments).event(i).start();
             })
@@ -3771,7 +3786,7 @@
                   l = Math.max(s[1][0] - s[0][0], s[1][1] - s[0][1]),
                   c = t.__zoom,
                   h = 'function' == typeof e ? e.apply(t, r) : e,
-                  p = B(c.invert(a).concat(l / c.k), h.invert(a).concat(l / h.k));
+                  p = T(c.invert(a).concat(l / c.k), h.invert(a).concat(l / h.k));
                 return function (t) {
                   if (1 === t) t = h;
                   else {
@@ -3835,7 +3850,7 @@
                 s = n.invert(i),
                 a = n.k * (t.shiftKey ? 0.5 : 2),
                 l = g(H(D(n, a), i, s), u.apply(this, e), A);
-              m(t), T > 0 ? (0, r.Z)(this).transition().duration(T).call(z, l, i, t) : (0, r.Z)(this).call(q.transform, l, i, t);
+              m(t), B > 0 ? (0, r.Z)(this).transition().duration(B).call(q, l, i, t) : (0, r.Z)(this).call(z.transform, l, i, t);
             }
           }
           function V(n, ...i) {
@@ -3916,11 +3931,11 @@
             }
           }
           return (
-            (q.transform = function (t, e, n, i) {
+            (z.transform = function (t, e, n, i) {
               var r = t.selection ? t.selection() : t;
               r.property('__zoom', w),
                 t !== r
-                  ? z(t, e, n, i)
+                  ? q(t, e, n, i)
                   : r.interrupt().each(function () {
                       Z(this, arguments)
                         .event(i)
@@ -3929,8 +3944,8 @@
                         .end();
                     });
             }),
-            (q.scaleBy = function (t, e, n, i) {
-              q.scaleTo(
+            (z.scaleBy = function (t, e, n, i) {
+              z.scaleTo(
                 t,
                 function () {
                   var t = this.__zoom.k,
@@ -3941,8 +3956,8 @@
                 i
               );
             }),
-            (q.scaleTo = function (t, e, n, i) {
-              q.transform(
+            (z.scaleTo = function (t, e, n, i) {
+              z.transform(
                 t,
                 function () {
                   var t = u.apply(this, arguments),
@@ -3956,8 +3971,8 @@
                 i
               );
             }),
-            (q.translateBy = function (t, e, n, i) {
-              q.transform(
+            (z.translateBy = function (t, e, n, i) {
+              z.transform(
                 t,
                 function () {
                   return g(
@@ -3970,8 +3985,8 @@
                 i
               );
             }),
-            (q.translateTo = function (t, e, n, i, r) {
-              q.transform(
+            (z.translateTo = function (t, e, n, i, r) {
+              z.transform(
                 t,
                 function () {
                   var t = u.apply(this, arguments),
@@ -4012,19 +4027,19 @@
               },
               emit: function (t) {
                 var e = (0, r.Z)(this.that).datum();
-                O.call(t, this.that, new d(t, { sourceEvent: this.sourceEvent, target: q, type: t, transform: this.that.__zoom, dispatch: O }), e);
+                O.call(t, this.that, new d(t, { sourceEvent: this.sourceEvent, target: z, type: t, transform: this.that.__zoom, dispatch: O }), e);
               },
             }),
-            (q.wheelDelta = function (t) {
-              return arguments.length ? ((I = 'function' == typeof t ? t : p(+t)), q) : I;
+            (z.wheelDelta = function (t) {
+              return arguments.length ? ((I = 'function' == typeof t ? t : p(+t)), z) : I;
             }),
-            (q.filter = function (t) {
-              return arguments.length ? ((o = 'function' == typeof t ? t : p(!!t)), q) : o;
+            (z.filter = function (t) {
+              return arguments.length ? ((o = 'function' == typeof t ? t : p(!!t)), z) : o;
             }),
-            (q.touchable = function (t) {
-              return arguments.length ? ((k = 'function' == typeof t ? t : p(!!t)), q) : k;
+            (z.touchable = function (t) {
+              return arguments.length ? ((k = 'function' == typeof t ? t : p(!!t)), z) : k;
             }),
-            (q.extent = function (t) {
+            (z.extent = function (t) {
               return arguments.length
                 ? ((u =
                     'function' == typeof t
@@ -4033,40 +4048,40 @@
                           [+t[0][0], +t[0][1]],
                           [+t[1][0], +t[1][1]],
                         ])),
-                  q)
+                  z)
                 : u;
             }),
-            (q.scaleExtent = function (t) {
-              return arguments.length ? ((M[0] = +t[0]), (M[1] = +t[1]), q) : [M[0], M[1]];
+            (z.scaleExtent = function (t) {
+              return arguments.length ? ((M[0] = +t[0]), (M[1] = +t[1]), z) : [M[0], M[1]];
             }),
-            (q.translateExtent = function (t) {
+            (z.translateExtent = function (t) {
               return arguments.length
-                ? ((A[0][0] = +t[0][0]), (A[1][0] = +t[1][0]), (A[0][1] = +t[0][1]), (A[1][1] = +t[1][1]), q)
+                ? ((A[0][0] = +t[0][0]), (A[1][0] = +t[1][0]), (A[0][1] = +t[0][1]), (A[1][1] = +t[1][1]), z)
                 : [
                     [A[0][0], A[0][1]],
                     [A[1][0], A[1][1]],
                   ];
             }),
-            (q.constrain = function (t) {
-              return arguments.length ? ((g = t), q) : g;
+            (z.constrain = function (t) {
+              return arguments.length ? ((g = t), z) : g;
             }),
-            (q.duration = function (t) {
-              return arguments.length ? ((T = +t), q) : T;
+            (z.duration = function (t) {
+              return arguments.length ? ((B = +t), z) : B;
             }),
-            (q.interpolate = function (t) {
-              return arguments.length ? ((B = t), q) : B;
+            (z.interpolate = function (t) {
+              return arguments.length ? ((T = t), z) : T;
             }),
-            (q.on = function () {
+            (z.on = function () {
               var t = O.on.apply(O, arguments);
-              return t === O ? q : t;
+              return t === O ? z : t;
             }),
-            (q.clickDistance = function (t) {
-              return arguments.length ? ((C = (t = +t) * t), q) : Math.sqrt(C);
+            (z.clickDistance = function (t) {
+              return arguments.length ? ((C = (t = +t) * t), z) : Math.sqrt(C);
             }),
-            (q.tapDistance = function (t) {
-              return arguments.length ? ((P = +t), q) : P;
+            (z.tapDistance = function (t) {
+              return arguments.length ? ((P = +t), z) : P;
             }),
-            q
+            z
           );
         }
         g.prototype = f.prototype;
