@@ -41,6 +41,8 @@
                 [hasSeqViewer]="true"
                 [hasNewProtvista]="true"
                 [hasLLMTable]="false"
+                [checkRNATopoViewer]="true"
+                [checkTopoViewer]="true"
               />
             </ng-template>
           </mat-tab>
@@ -70,6 +72,8 @@
                 [hasSeqViewer]="true"
                 [hasNewProtvista]="true"
                 [hasLLMTable]="false"
+                [checkRNATopoViewer]="false"
+                [checkTopoViewer]="false"
               />
             </ng-template>
           </mat-tab>
@@ -85,7 +89,16 @@
             </ng-template>
             <ng-template matTabContent>
               @if(llmAnnotations()!== undefined){ @if(llmAnnotations()!.length > 0){
-              <pdbc-llm-tab #LLMTabComp pdbcVisualisationInteractivity [parentType]="'llm'" [hasSeqViewer]="true" [hasNewProtvista]="true" [hasLLMTable]="true" />
+              <pdbc-llm-tab
+                #LLMTabComp
+                pdbcVisualisationInteractivity
+                [parentType]="'llm'"
+                [hasSeqViewer]="true"
+                [hasNewProtvista]="true"
+                [hasLLMTable]="true"
+                [checkRNATopoViewer]="false"
+                [checkTopoViewer]="false"
+              />
               } @else {
               <h5>
                 The residue and annotation lists are empty likely because the publication text either lacked explicit residue mentions, used mismatched numbering, or

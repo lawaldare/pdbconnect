@@ -10,4 +10,6 @@ export class VisualisationInteractivityService {
   public currentMolstarComponent?: MolstarComponent;
   public currentSelectionEntityId = signal<string | undefined>(undefined);
   public currentSelectionChainId = signal<string | undefined>(undefined);
+  public hasTopoViewer = signal<boolean>(false);
+  public hasRNATopoViewer = signal<boolean>(false);
 }
