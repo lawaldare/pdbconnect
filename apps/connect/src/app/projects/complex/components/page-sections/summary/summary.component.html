@@ -60,13 +60,14 @@
       </span>
       <div class="info-row-content" style="display: block">
         @for(ligand of mappedLigands(); track ligand.ligandId; let islast = $last){
-        <a
+        <span
+          class="cofactor-link"
           matTooltipClass="complex-name-tooltip"
           [matTooltip]="ligand.name"
           matTooltipPosition="above"
           (click)="openLigandPage(ligand.ligandId)"
           style="display: inline"
-          >{{ ligand.ligandId }}</a
+          >{{ ligand.ligandId }}</span
         >{{ islast ? '' : ', ' }} }
       </div>
     </div>
