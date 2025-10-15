@@ -600,7 +600,7 @@ export class SmartSequenceVisualisation {
   }
 
   private triggerExternalEvents(eventType: 'hover' | 'click', residueIndex?: number) {
-    if (!this.entityId || !this.chainId) {
+    if (this.entityId === undefined || this.chainId === undefined) {
       console.warn('Cannot trigger external events without entityId and chainId');
       return;
     }
@@ -1242,7 +1242,7 @@ export class SmartSequenceVisualisation {
   }
 
   private registerExternalEventsListeners() {
-    if (!this.externalEvents || !this.entityId || !this.chainId) return;
+    if (!this.externalEvents || this.entityId === undefined || this.chainId === undefined) return;
 
     const relevantEvents: [string, EventListener][] = [
       ['PDB.RNA.viewer.mouseover', this.handleExternalMouseoverEvent.bind(this)],

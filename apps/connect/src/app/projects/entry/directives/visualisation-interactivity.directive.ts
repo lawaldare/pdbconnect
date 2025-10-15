@@ -109,7 +109,7 @@ export class VisualisationInteractivityDirective {
     const chainId = this.visInteractivity.currentSelectionChainId();
     const residueNumber = eventData.residueNumber;
 
-    if (!entityId || !chainId) return;
+    if (entityId === undefined || chainId === undefined) return;
     const clickData = {
       entity_id: entityId,
       auth_asym_id: chainId,
@@ -188,8 +188,8 @@ export class VisualisationInteractivityDirective {
 
       // if clicks in other residues/entity do not propagate evt to seq. viewer
       if (
-        !this.visInteractivity.currentSelectionEntityId() ||
-        !this.visInteractivity.currentSelectionChainId() ||
+        this.visInteractivity.currentSelectionEntityId() === undefined ||
+        this.visInteractivity.currentSelectionChainId() === undefined ||
         clickData.entity_id !== this.visInteractivity.currentSelectionEntityId() ||
         clickData.auth_asym_id !== this.visInteractivity.currentSelectionChainId()
       )
