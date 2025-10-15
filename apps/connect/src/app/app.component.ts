@@ -9,7 +9,6 @@ import { filter } from 'rxjs';
 import { environment } from '../environments/environment';
 import { ScriptLoaderService, UtilService } from '@pdbc/core';
 import { LigandsAssetPathService } from './projects/ligands/services/assets-path.service';
-import { accented } from 'accented';
 
 declare const gtag: any;
 @Component({
@@ -66,10 +65,6 @@ export class AppComponent implements OnInit {
     // Heatmap components is only imported for Ligand pages (route has chemicalCompound)
     if (pathName.includes(`/chemicalCompound/`)) {
       await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.min.js', true);
-    }
-
-    if (this.isLocalhost && pathName.includes(`/complexes/`)) {
-      accented();
     }
   }
 
