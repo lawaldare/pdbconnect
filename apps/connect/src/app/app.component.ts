@@ -9,6 +9,7 @@ import { filter } from 'rxjs';
 import { environment } from '../environments/environment';
 import { ScriptLoaderService, UtilService } from '@pdbc/core';
 import { LigandsAssetPathService } from './projects/ligands/services/assets-path.service';
+import { accented } from 'accented';
 
 declare const gtag: any;
 @Component({
@@ -44,12 +45,12 @@ export class AppComponent implements OnInit {
 
     const pathName = window.location.pathname;
     if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
-      this.runAbsolutePath();
+      this.runAbsolutePath(pathName);
       return;
     }
 
     if (pathName.includes(`/pdbe-kb/`)) {
-      this.runAbsolutePath();
+      this.runAbsolutePath(pathName);
       return;
     }
 
@@ -65,6 +66,10 @@ export class AppComponent implements OnInit {
     // Heatmap components is only imported for Ligand pages (route has chemicalCompound)
     if (pathName.includes(`/chemicalCompound/`)) {
       await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.min.js', true);
+    }
+
+    if (this.isLocalhost && pathName.includes(`/complexes/`)) {
+      accented();
     }
   }
 
@@ -85,8 +90,10 @@ export class AppComponent implements OnInit {
     document.body.appendChild(gtagEl);
   }
 
-  private async runAbsolutePath() {
+  private async runAbsolutePath(pathName: string) {
     await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-3.0.0-min.js'), true);
-    await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.min.js'), true);
+    if (pathName.includes(`/chemicalCompound/`)) {
+      await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.min.js'), true);
+    }
   }
 }

@@ -28,6 +28,7 @@ import { ComplexPISAComponent } from '../../page-sections/complex-pisa/complex-p
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { DataPrivacyBannerComponent } from '@pdbc/core';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
+import { ComplexMetaTagService } from '../../../services/complex-meta-tag.service';
 
 @Component({
   selector: 'pdbc-main',
@@ -59,6 +60,7 @@ export class MainComponent implements OnInit {
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly bioschemasService = inject(ComplexBioschemasService);
+  private readonly complexMetaTagService = inject(ComplexMetaTagService);
   private readonly renderer = inject(Renderer2);
 
   public readonly headerLogoMenuConfig = { ...headerComplexLogoMenuConfig, isComplexPage: true };
@@ -106,6 +108,7 @@ export class MainComponent implements OnInit {
       )
       .subscribe(() => {
         this.bioschemasService.buildBioschemasJSON(this.renderer);
+        this.complexMetaTagService.buildMetaTags();
       });
   }
 
