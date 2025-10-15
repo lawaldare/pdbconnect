@@ -59,7 +59,7 @@ export class AppComponent implements OnInit {
       // await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
     } else {
       // ligand env component is always imported for other pages
-      await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-3.0.0-terser.min.js', true);
+      await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-3.0.0-min.js', true);
     }
 
     // Heatmap components is only imported for Ligand pages (route has chemicalCompound)
@@ -86,7 +86,7 @@ export class AppComponent implements OnInit {
   }
 
   private async runAbsolutePath(pathName: string) {
-    await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-3.0.0-terser.min.js'), true);
+    await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-3.0.0-min.js'), true);
     if (pathName.includes(`/chemicalCompound/`)) {
       await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.min.js'), true);
     }
