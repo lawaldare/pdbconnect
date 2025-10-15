@@ -289,8 +289,8 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
 
   @HostListener('document:llm-reset-list', ['$event'])
   public resetAnnotationList() {
-    const letter = this.dropdownSelected.split(' ')[1];
-    const groupedAnnotations = this.groupedFilteredLLMAnnotations()[letter];
+    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const groupedAnnotations = this.groupedFilteredLLMAnnotations()[chainId];
     this.filteredLLMAnnotations.update(() => groupedAnnotations);
   }
 
@@ -415,7 +415,8 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
     await this.updateDropdownOptions(macromolecule);
-    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    const chainId = this.dropdownSelected.split('Chain ')[1];
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
     await this.renderVisualisations(macromolecule);
     await this.updateBackgroundAnnotation();
@@ -432,12 +433,12 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
 
-    const letter = this.dropdownSelected.split(' ')[1];
-    const groupedAnnotations = this.groupedFilteredLLMAnnotations()[letter];
+    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const groupedAnnotations = this.groupedFilteredLLMAnnotations()[chainId];
     this.filteredLLMAnnotations.update(() => groupedAnnotations);
     this.groupedAnnotations.update(() => groupedAnnotations);
 
-    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
     await this.updateBackgroundAnnotation();
   }
@@ -493,8 +494,8 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return;
-
-    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
 
     if (macromolecule) await this.renderVisualisations(macromolecule);

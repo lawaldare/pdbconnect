@@ -14,7 +14,8 @@ export class VisualisationInteractivityDirective {
   @Input({ required: true }) hasSeqViewer = false;
   @Input({ required: true }) hasNewProtvista = false;
   @Input({ required: true }) hasLLMTable = false;
-  // TODO @Input({required: true}) hasTopologyViewer: boolean = false;
+  @Input({ required: true }) checkTopoViewer = false;
+  @Input({ required: true }) checkRNATopoViewer = false;
 
   public readonly visInteractivity = inject(VisualisationInteractivityService);
 
@@ -66,6 +67,11 @@ export class VisualisationInteractivityDirective {
       document.dispatchEvent(eventObj);
     }
 
+    if (this.checkRNATopoViewer && this.visInteractivity.hasRNATopoViewer()) {
+      const eventObj = new CustomEvent('PDBe.deselect');
+      document.dispatchEvent(eventObj);
+    }
+
     const instance = this.visInteractivity.currentMolstarComponent?.getInstance() ?? null;
     if (!instance) return;
 
@@ -103,7 +109,7 @@ export class VisualisationInteractivityDirective {
     const chainId = this.visInteractivity.currentSelectionChainId();
     const residueNumber = eventData.residueNumber;
 
-    if (!entityId || !chainId) return;
+    if (entityId === undefined || chainId === undefined) return;
     const clickData = {
       entity_id: entityId,
       auth_asym_id: chainId,
@@ -182,8 +188,8 @@ export class VisualisationInteractivityDirective {
 
       // if clicks in other residues/entity do not propagate evt to seq. viewer
       if (
-        !this.visInteractivity.currentSelectionEntityId() ||
-        !this.visInteractivity.currentSelectionChainId() ||
+        this.visInteractivity.currentSelectionEntityId() === undefined ||
+        this.visInteractivity.currentSelectionChainId() === undefined ||
         clickData.entity_id !== this.visInteractivity.currentSelectionEntityId() ||
         clickData.auth_asym_id !== this.visInteractivity.currentSelectionChainId()
       )
@@ -281,6 +287,7 @@ export class VisualisationInteractivityDirective {
   @HostListener('document:protvista-close-pin', ['$event'])
   private async handleProtvistaClosePin(event: CustomEvent) {
     if (!this.hasNewProtvista) return;
+
     const selection = this.visInteractivity.currentSelectionData();
     const instance = this.visInteractivity.currentMolstarComponent?.getInstance() ?? null;
 
@@ -289,10 +296,63 @@ export class VisualisationInteractivityDirective {
     // if after opening pin, res has been selected in smart seq viewer, abort
     if (this.lastClickedResidue !== undefined) return;
 
+    if (this.checkRNATopoViewer && this.visInteractivity.hasRNATopoViewer()) {
+      const eventObj = new CustomEvent('PDBe.deselect');
+      document.dispatchEvent(eventObj);
+    }
+
     const dataToFocus = selection ? [...selection] : [];
     const selectionData = this.applyFocus(dataToFocus, true)!;
 
     await clearInteractivityFocusInMolstar(instance);
     await drawSelectionInMolstar(instance, selectionData);
+  }
+
+  @HostListener('document:PDB.RNA.viewer.mouseover', ['$event'])
+  private async handleRNATopoViewerMouseover(event: any) {
+    const instance = this.visInteractivity.currentMolstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+    const residueNumbers = event.eventData.label_seq_ids ? event.eventData.label_seq_ids : [event.eventData.label_seq_id];
+    const data = residueNumbers.map((num: number) => {
+      return {
+        entity_id: event.eventData.entityId,
+        auth_asym_id: event.eventData.auth_asym_id,
+        residue_number: num,
+      };
+    });
+    await instance.visual.highlight({ data });
+  }
+
+  @HostListener('document:PDB.RNA.viewer.mouseout', ['$event'])
+  private async handleRNATopoViewerMouseout(event: CustomEvent) {
+    const instance = this.visInteractivity.currentMolstarComponent?.getInstance() ?? null;
+    if (!instance) return;
+    await instance.visual.clearHighlight();
+  }
+
+  @HostListener('document:PDB.RNA.viewer.click', ['$event'])
+  private async handleRNATopoViewerClick(event: any) {
+    const residueNumbers = event.eventData.label_seq_ids ? event.eventData.label_seq_ids : [event.eventData.label_seq_id];
+    if (residueNumbers.length === 1) {
+      const clickData = {
+        entity_id: event.eventData.entityId,
+        auth_asym_id: event.eventData.auth_asym_id,
+        residue_number: residueNumbers[0],
+      };
+      this.handleSelectionOnMolstarResClick(clickData);
+    }
+  }
+
+  @HostListener('document:PDB.RNA.viewer.deselect', ['$event'])
+  private async handleRNATopoViewerDeselect(event: any) {
+    const residueNumbers = event.eventData.label_seq_ids ? event.eventData.label_seq_ids : [event.eventData.label_seq_id];
+    if (residueNumbers.length === 1) {
+      const clickData = {
+        entity_id: event.eventData.entityId,
+        auth_asym_id: event.eventData.auth_asym_id,
+        residue_number: residueNumbers[0],
+      };
+      this.handleSelectionOnMolstarResClick(clickData);
+    }
   }
 }

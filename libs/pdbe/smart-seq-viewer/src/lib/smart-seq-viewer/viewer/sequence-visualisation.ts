@@ -600,7 +600,7 @@ export class SmartSequenceVisualisation {
   }
 
   private triggerExternalEvents(eventType: 'hover' | 'click', residueIndex?: number) {
-    if (!this.entityId || !this.chainId) {
+    if (this.entityId === undefined || this.chainId === undefined) {
       console.warn('Cannot trigger external events without entityId and chainId');
       return;
     }
@@ -720,9 +720,9 @@ export class SmartSequenceVisualisation {
 
     const entityId = detail.entity_id || detail.entityId;
     const chainId = detail.auth_asym_id || detail.chainId;
-    const residueNumber = detail.residueNumber || parseInt(detail.start);
+    const residueNumber = detail.residueNumber || parseInt(detail.start) || detail.label_seq_ids?.[0];
 
-    if (entityId !== this.entityId || chainId !== this.chainId) return;
+    if (entityId !== this.entityId || chainId !== this.chainId || residueNumber === undefined) return;
 
     this.currentHoveredResidue = residueNumber;
     const annotations = this.getAnnotationsForResidue(residueNumber);
@@ -754,9 +754,9 @@ export class SmartSequenceVisualisation {
 
     const entityId = detail[entityKey] !== 'ignore' ? detail[entityKey] : this.entityId;
     const chainId = detail[chainKey] !== 'ignore' ? detail[chainKey] : this.chainId;
-    const residueNumber = detail.residueNumber || parseInt(detail.start);
+    const residueNumber = detail.residueNumber || parseInt(detail.start) || detail.label_seq_id;
 
-    if (entityId !== this.entityId || chainId !== this.chainId) return;
+    if (entityId !== this.entityId || chainId !== this.chainId || residueNumber === undefined) return;
 
     if (detail.unselect !== 'ignore') {
       const doNotReport = detail.doNotReport;
@@ -1242,13 +1242,15 @@ export class SmartSequenceVisualisation {
   }
 
   private registerExternalEventsListeners() {
-    if (!this.externalEvents || !this.entityId || !this.chainId) return;
+    if (!this.externalEvents || this.entityId === undefined || this.chainId === undefined) return;
 
     const relevantEvents: [string, EventListener][] = [
+      ['PDB.RNA.viewer.mouseover', this.handleExternalMouseoverEvent.bind(this)],
       ['PDB.topologyViewer.mouseover', this.handleExternalMouseoverEvent.bind(this)],
       ['PDB.molstar.mouseover', this.handleExternalMouseoverEvent.bind(this)],
       // ['protvista-mouseover', this.handleExternalMouseoverEvent.bind(this)],
 
+      ['PDB.RNA.viewer.mouseout', this.handleExternalMouseoutEvent.bind(this)],
       ['PDB.topologyViewer.mouseout', this.handleExternalMouseoutEvent.bind(this)],
       ['PDB.molstar.mouseout', this.handleExternalMouseoutEvent.bind(this)],
       // ['protvista-mouseout', this.handleExternalMouseoutEvent.bind(this)],

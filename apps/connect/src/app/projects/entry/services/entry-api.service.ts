@@ -131,7 +131,9 @@ export class EntryApiService {
   }
 
   public getSummaryStats(uniprotId: string): Observable<SummaryStats> {
-    return this.http.get<Record<string, SummaryStats>>(`${this.BASE_API_V2}uniprot/summary_stats/${uniprotId}`).pipe(map((data) => data[uniprotId]));
+    return this.http
+      .get<Record<string, SummaryStats>>(`https://www.ebi.ac.uk/pdbe/graph-api/uniprot/summary_stats/${uniprotId}`)
+      .pipe(map((data) => data[uniprotId]));
   }
 
   public getLigandSummaryStats(entryId: string): Observable<LigandSummaryStats[]> {
@@ -309,7 +311,8 @@ export class EntryApiService {
   }
 
   public getPisaAssembly(entryId: string, assemblyId: string): Observable<PisaAssembly> {
-    return this.http.get<Record<string, PisaAssembly>>(`${this.BASE_API_V2}pisa/assembly/${entryId}/${assemblyId}`).pipe(
+    // return this.http.get<Record<string, PisaAssembly>>(`${this.BASE_API_V2}pisa/assembly/${entryId}/${assemblyId}`).pipe(
+    return this.http.get<Record<string, PisaAssembly>>(`https://www.ebi.ac.uk/pdbe/api/pisa/assembly/${entryId}/${assemblyId}`).pipe(
       map((data) => data[entryId]),
       catchError((error) => {
         if (error?.status === 404) {

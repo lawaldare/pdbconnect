@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, HostListener, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { dashboardStatLinks, entryMacromoleculeTooltips, tourIds } from '../../entry-constant';
@@ -413,22 +413,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     this.tutorialTourService.startTour(this.tutorialTourService.macromoleculeTabTourSteps);
   }
 
-  @HostListener('document:PDB.RNA.viewer.mouseover', ['$event'])
-  @HostListener('document:PDB.RNA.viewer.mouseout', ['$event'])
-  @HostListener('document:PDB.RNA.viewer.click', ['$event'])
-  handleMouseEventsOnNucleotide(event: any) {
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-
-    const macromolecule = this.currentMacromoleculeDatum();
-    if (!macromolecule) return;
-
-    const entityId = macromolecule.additionalData.molecule.entity_id;
-    const chainId = this.dropdownSelected.split('Chain ')[1];
-
-    this.macromoleculesTabFacade.updateMolstarUI(event, instance, String(entityId), String(chainId));
-  }
-
   ngOnInit() {
     /* 1. Fetch tab data*/
 
@@ -439,7 +423,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     });
 
     this.rnaViewerMutex = this.rnaViewerMutex.then(async () => {
-      await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-rna-viewer-plugin-0.2.0.js');
+      await this.scriptLoader.loadScript('./assets/pdb-rna-viewer-plugin-0.3.1.js');
     });
 
     // this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
@@ -473,6 +457,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
         // if protein is not chimeric (single uniprotAccession), set this as selectionUniprotId
         if (unpsList.length === 1) {
           this.selectionUniprotId = unpsList[0];
+          // reset previous selection stats
+          this.selectionStats.set(undefined);
           // dispatch call to API endpoint and when finished triggers
           // constructor this.proteinsStatsObservable.pipe(...)
           this.globalStore.dispatch(
@@ -552,7 +538,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
     this.sequenceDetails.set(undefined);
-    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
     await this.updateBackgroundAnnotation();
   }
@@ -593,18 +580,25 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       this.hasTopologyViewer = true;
       this.hasProtvista = true;
       this.hasRNAViewer = false;
+      this.visInteractivity.hasTopoViewer.set(true);
+      this.visInteractivity.hasRNATopoViewer.set(false);
     }
 
     if (this.onlyTwoVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
+      const isRNA = macromolecule.additionalData.molecule.molecule_type === 'polyribonucleotide';
       this.hasProtvista = true;
       this.hasTopologyViewer = false;
-      this.hasRNAViewer = macromolecule.additionalData.molecule.molecule_type === 'polyribonucleotide';
+      this.hasRNAViewer = isRNA;
+      this.visInteractivity.hasTopoViewer.set(false);
+      this.visInteractivity.hasRNATopoViewer.set(isRNA);
     }
 
     if (this.onlyMolstarVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
       this.hasProtvista = false;
       this.hasTopologyViewer = false;
       this.hasRNAViewer = false;
+      this.visInteractivity.hasTopoViewer.set(false);
+      this.visInteractivity.hasRNATopoViewer.set(false);
     }
   }
 
@@ -627,7 +621,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     if (!macromolecule) return;
 
     this.sequenceDetails.set(undefined);
-    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected);
+    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
 
     await this.renderVisualisations(macromolecule);
