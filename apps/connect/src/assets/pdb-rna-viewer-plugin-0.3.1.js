@@ -12,9 +12,11 @@
         Object.defineProperty(e, '__esModule', { value: !0 }), (e.CustomEvents = void 0);
         var i,
           r,
-          o = n(655);
+          o,
+          s = n(655);
         (i = e.CustomEvents || (e.CustomEvents = {})),
           (r = !1),
+          (o = null),
           (i.create = function (t) {
             for (var e = {}, n = 0, i = t.length; n < i; n++) {
               var r = t[n],
@@ -30,79 +32,74 @@
             (t.eventData = e), n.dispatchEvent(t);
           }),
           (i.subscribeToComponentEvents = function (t) {
-            r ||
-              ((r = !0),
-              document.addEventListener('protvista-click', function (e) {
-                return (0, o.__awaiter)(this, void 0, void 0, function () {
-                  var n, i;
-                  return (0, o.__generator)(this, function (r) {
-                    switch (r.label) {
-                      case 0:
-                        return void 0 === e.detail
-                          ? [3, 2]
-                          : ((n = parseInt(e.detail.start)), (i = parseInt(e.detail.end)), [4, t.selectResidueRange(n, i, void 0, !0)]);
-                      case 1:
-                        r.sent(), (r.label = 2);
-                      case 2:
-                        return [2];
-                    }
-                  });
-                });
-              }),
-              document.addEventListener('protvista-mouseover', function (e) {
-                return (0, o.__awaiter)(this, void 0, void 0, function () {
-                  var n, i;
-                  return (0, o.__generator)(this, function (r) {
-                    return void 0 !== e.detail && ((n = parseInt(e.detail.start)), (i = parseInt(e.detail.end)), t.highlightResidueRange(n, i, void 0, !0)), [2];
-                  });
-                });
-              }),
-              document.addEventListener('protvista-mouseout', function (e) {
-                t.clearHighlight(!0);
-              }),
-              document.addEventListener('PDB.molstar.click', function (e) {
-                return (0, o.__awaiter)(this, void 0, void 0, function () {
-                  return (0, o.__generator)(this, function (n) {
-                    switch (n.label) {
-                      case 0:
-                        return (
-                          console.log('e'),
-                          console.log(e),
-                          console.log('pluginCtx.options.chainId'),
-                          console.log(t.options.chainId),
-                          void 0 === e.eventData || void 0 === e.eventData.residueNumber || e.eventData.auth_asym_id !== t.options.chainId
+            (o = t),
+              r ||
+                ((r = !0),
+                document.addEventListener('protvista-click', function (t) {
+                  return (0, s.__awaiter)(this, void 0, void 0, function () {
+                    var e, n;
+                    return (0, s.__generator)(this, function (i) {
+                      switch (i.label) {
+                        case 0:
+                          return void 0 === t.detail
                             ? [3, 2]
-                            : (console.log('toggle'), [4, t.toggleResidue(e.eventData.residueNumber, void 0, !0)])
-                        );
-                      case 1:
-                        n.sent(), (n.label = 2);
-                      case 2:
-                        return [2];
-                    }
+                            : ((e = parseInt(t.detail.start)), (n = parseInt(t.detail.end)), [4, o.selectResidueRange(e, n, void 0, !0)]);
+                        case 1:
+                          i.sent(), (i.label = 2);
+                        case 2:
+                          return [2];
+                      }
+                    });
                   });
-                });
-              }),
-              document.addEventListener('PDB.molstar.mouseover', function (e) {
-                void 0 !== e.eventData &&
-                  void 0 !== e.eventData.residueNumber &&
-                  e.eventData.auth_asym_id === t.options.chainId &&
-                  t.highlightResidue(e.eventData.residueNumber, void 0, !0);
-              }),
-              document.addEventListener('PDB.molstar.mouseout', function () {
-                t.clearHighlight(!0);
-              }),
-              document.addEventListener('PDBe.deselect', function (e) {
-                return (0, o.__awaiter)(this, void 0, void 0, function () {
-                  return (0, o.__generator)(this, function (e) {
-                    switch (e.label) {
-                      case 0:
-                        return [4, t.clearSelection(void 0, !0)];
-                      case 1:
-                        return e.sent(), [2];
-                    }
+                }),
+                document.addEventListener('protvista-mouseover', function (t) {
+                  return (0, s.__awaiter)(this, void 0, void 0, function () {
+                    var e, n;
+                    return (0, s.__generator)(this, function (i) {
+                      return void 0 !== t.detail && ((e = parseInt(t.detail.start)), (n = parseInt(t.detail.end)), o.highlightResidueRange(e, n, void 0, !0)), [2];
+                    });
                   });
-                });
-              }));
+                }),
+                document.addEventListener('protvista-mouseout', function (t) {
+                  o.clearHighlight(!0);
+                }),
+                document.addEventListener('PDB.molstar.click', function (t) {
+                  return (0, s.__awaiter)(this, void 0, void 0, function () {
+                    return (0, s.__generator)(this, function (e) {
+                      switch (e.label) {
+                        case 0:
+                          return void 0 === t.eventData || void 0 === t.eventData.residueNumber || t.eventData.auth_asym_id !== o.options.chainId
+                            ? [3, 2]
+                            : [4, o.toggleResidue(t.eventData.residueNumber, void 0, !0)];
+                        case 1:
+                          e.sent(), (e.label = 2);
+                        case 2:
+                          return [2];
+                      }
+                    });
+                  });
+                }),
+                document.addEventListener('PDB.molstar.mouseover', function (t) {
+                  void 0 !== t.eventData &&
+                    void 0 !== t.eventData.residueNumber &&
+                    t.eventData.auth_asym_id === o.options.chainId &&
+                    o.highlightResidue(t.eventData.residueNumber, void 0, !0);
+                }),
+                document.addEventListener('PDB.molstar.mouseout', function () {
+                  o.clearHighlight(!0);
+                }),
+                document.addEventListener('PDBe.deselect', function (t) {
+                  return (0, s.__awaiter)(this, void 0, void 0, function () {
+                    return (0, s.__generator)(this, function (t) {
+                      switch (t.label) {
+                        case 0:
+                          return [4, o.clearSelection(void 0, !0)];
+                        case 1:
+                          return t.sent(), [2];
+                      }
+                    });
+                  });
+                }));
           });
       },
       345: (t, e, n) => {
