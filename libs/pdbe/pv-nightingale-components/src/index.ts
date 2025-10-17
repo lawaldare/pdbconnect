@@ -1,3 +1,4 @@
+export { ProtvistaWrapperComponent } from './lib/pv-nightingale-components/components/new-protvista/pv-angular-wrapper/pv-angular-wrapper.component';
 export { MapCustomDataPanelComponent } from './lib/pv-nightingale-components/components/action-modals/pv-map-custom-data-panel/pv-map-custom-data-panel.component';
 export { SearchResiduePanelComponent } from './lib/pv-nightingale-components/components/action-modals/pv-search-residue-panel/pv-search-residue-panel.component';
 export { ConservationTrackBlockComponent } from './lib/pv-nightingale-components/components/expandable-tracks/pv-conservation-block/pv-conservation-track-block.component';
