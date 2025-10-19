@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, computed, DestroyRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { SelectionChangedEvent } from 'ag-grid-community';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
@@ -16,9 +15,9 @@ import { drawHistogram } from './histogram';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { PISAAssemblyParam } from '../../../models/pisa-assembly-param.model';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { map } from 'rxjs';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { PisaFilterComponent } from './components/complex-pisa-filter/pisa-filter.component';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'pdbc-complex-pisa',
@@ -73,11 +72,19 @@ export class ComplexPISAComponent implements OnInit {
   public structuresLength = computed(() => (this.rowData() ?? []).length);
   public structuresPageSize = signal<number>(5);
   public structuresPageSizeOptions = computed(() => [5, 10, 20, 50, 100]);
-  public structuresPage: PISAAssemblyParam[] = [];
 
-  private unfilteredStructures: PISAAssemblyParam[] = [];
-  public searchTerm = new FormControl('');
-  private readonly destroyRef = inject(DestroyRef);
+  public searchTerm = signal('');
+  private unfilteredStructures = computed(() => this.rowData() ?? []);
+  public structuresPage = linkedSignal({
+    source: this.searchTerm,
+    computation: () => {
+      if (!this.searchTerm().trim()) {
+        return this.unfilteredStructures().slice(0, this.structuresPageSize());
+      }
+      return this.filterItemsBySearchQuery(this.searchTerm(), this.unfilteredStructures()).slice(0, this.structuresPageSize());
+    },
+  });
+
   public pisaSliderReady = signal(false);
   public filterActionNoData = signal(false);
 
@@ -86,24 +93,6 @@ export class ComplexPISAComponent implements OnInit {
       this.stats.set(this.getMinMaxStats(this.pisa() as PISAAssemblyParam[]));
       this.pisaSliderReady.set(true);
     }, 500);
-
-    this.structuresPage = (this.rowData() ?? []).slice(0, this.structuresPageSize());
-    this.unfilteredStructures = this.rowData() ?? [];
-
-    this.searchTerm.valueChanges
-      .pipe(
-        map((searchQuery) => {
-          if (searchQuery) {
-            return this.filterItemsBySearchQuery(searchQuery, this.unfilteredStructures);
-          } else {
-            return this.unfilteredStructures;
-          }
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((data) => {
-        this.structuresPage = data.slice(0, this.structuresPageSize());
-      });
   }
 
   private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
@@ -116,7 +105,7 @@ export class ComplexPISAComponent implements OnInit {
   public handlePageEvent(event: PageEvent) {
     const startIndex = event.pageIndex * event.pageSize;
     const endIndex = startIndex + event.pageSize;
-    this.structuresPage = (this.rowData() ?? []).slice(startIndex, endIndex);
+    this.structuresPage.set(this.rowData().slice(startIndex, endIndex) ?? []);
   }
 
   getPropertyValue(key: keyof PISAAssemblyParam): number {
@@ -205,7 +194,7 @@ export class ComplexPISAComponent implements OnInit {
   public applyFilters(data: any): void {
     const { method, minValue, maxValue } = data;
 
-    const filteredData = this.pisa()?.filter((entry) => {
+    const filteredData = this.pisa()?.filter((entry: any) => {
       const inRange = entry.resolution >= minValue && entry.resolution <= maxValue;
       const methodMatch = method === '' || entry.experimental_method === method;
       return inRange && methodMatch;

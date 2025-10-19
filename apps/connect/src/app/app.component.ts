@@ -44,12 +44,12 @@ export class AppComponent implements OnInit {
 
     const pathName = window.location.pathname;
     if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
-      this.runAbsolutePath();
+      this.runAbsolutePath(pathName);
       return;
     }
 
     if (pathName.includes(`/pdbe-kb/`)) {
-      this.runAbsolutePath();
+      this.runAbsolutePath(pathName);
       return;
     }
 
@@ -85,8 +85,10 @@ export class AppComponent implements OnInit {
     document.body.appendChild(gtagEl);
   }
 
-  private async runAbsolutePath() {
+  private async runAbsolutePath(pathName: string) {
     await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-3.0.0-min.js'), true);
-    await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.min.js'), true);
+    if (pathName.includes(`/chemicalCompound/`)) {
+      await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.min.js'), true);
+    }
   }
 }
