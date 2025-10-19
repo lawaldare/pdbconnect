@@ -13,14 +13,14 @@ import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
 import { environment } from '../../../../../../environments/environment';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { map } from 'rxjs';
 import { PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'pdbc-complex-structures',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MolstarComponent, MaterialModule, ReactiveFormsModule],
+  imports: [CommonModule, AgGridAngular, MolstarComponent, MaterialModule, ReactiveFormsModule, FormsModule],
   templateUrl: './complex-structures.component.html',
   styleUrls: ['./complex-structures.component.scss'],
 })
@@ -41,7 +41,51 @@ export class ComplexStructuresComponent implements OnInit {
   private readonly downloadService = inject(DownloadService);
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
 
-  public rowData = computed(() => this.summaryData()?.assemblies as Assembly[]);
+  public rowData = computed(() => {
+    const value = this.selectedBM();
+    const assemblies = this.summaryData()?.assemblies as Assembly[];
+    if (value === 'all') {
+      return assemblies;
+    }
+
+    return assemblies.filter((assembly) => assembly.bound_macromolecules.includes(value));
+  });
+  public uniqueBoundMacromolecules = computed(() => {
+    const data = this.summaryData();
+    return data?.unique_bound_macromolecules;
+  });
+  public assembliesWithBoundMacromolecules = computed(() => {
+    const assemblies = this.summaryData()?.assemblies;
+    return assemblies?.filter((assembly) => assembly.bound_macromolecules.length > 0);
+  });
+  public selectedBM = signal('all');
+  public boundMacromolecules = computed(() => {
+    const assemblies = this.assembliesWithBoundMacromolecules();
+    const result = assemblies?.reduce((acc: any, assembly) => {
+      for (const bound of assembly.bound_macromolecules) {
+        if (!acc[bound]) {
+          acc[bound] = 1;
+        } else {
+          acc[bound]++;
+        }
+      }
+      return acc;
+    }, {});
+
+    const mappedOptions = Object.entries(result).reduce(
+      (acc: any[], [macromolecule, count]) => {
+        acc.push({
+          label: `${macromolecule.toUpperCase()} (${count})`,
+          value: macromolecule,
+        });
+        return acc;
+      },
+      [{ label: `ALL (${assemblies?.length})`, value: 'all' }]
+    );
+
+    return mappedOptions;
+  });
+
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
 
   public config!: any;
@@ -88,14 +132,20 @@ export class ComplexStructuresComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((data) => {
-        console.log(data);
-        // this.structureRowData.update(() => data);
         this.structuresPage = data.slice(0, this.structuresPageSize());
       });
   }
 
   public onSelectionChanged(event: SelectionChangedEvent) {
-    const data = event.api.getSelectedNodes()[0].data;
+    const selectedNodes = event.api.getSelectedNodes();
+    if (selectedNodes.length === 0) {
+      return;
+    }
+    const data = selectedNodes[0].data;
+    this.updatedSelectedRow(data);
+  }
+
+  private updatedSelectedRow(data: any) {
     const moleculeId = data.pdb_id;
     const assemblyId = data.assembly_id;
     this.config = { ...this.config, moleculeId, assemblyId };
@@ -154,4 +204,16 @@ export class ComplexStructuresComponent implements OnInit {
       return rowString.toLocaleLowerCase().indexOf(searchQueryLower) !== -1;
     });
   }
+
+  public onRowDataUpdated(event: any) {
+    if (event.api.getDisplayedRowCount() > 0) {
+      const firstNode = event.api.getDisplayedRowAtIndex(0);
+      if (firstNode) {
+        firstNode.setSelected(true);
+        // this.updatedSelectedRow(firstNode.data);
+      }
+    }
+  }
+
+  // public onBMChange(value: string): void {}
 }

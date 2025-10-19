@@ -49,7 +49,8 @@
       </span>
       <div class="info-row-content">
         {{ summaryData()?.symmetry | symmetry }} @if(diffSymmetries().length){ There are
-        <span class="diff-symbol" role="button" (click)="openDiffSymmetryDialog()">{{ diffSymmetries().length }}</span> PDB assemblies with different symmetry. }
+        <span class="diff-symbol" role="button" (click)="openDiffSymmetryDialog()">{{ diffSymmetries().length }}</span> PDB assemblies with missing or different
+        symmetry. }
       </div>
     </div>
     } @if(mappedLigands()?.length){
@@ -69,6 +70,11 @@
           >{{ ligand.ligandId }}</a
         >{{ islast ? '' : ', ' }} }
       </div>
+    </div>
+    } @if(uniqueBoundMacromolecules()){
+    <div class="info-row">
+      <span class="info-row-title">Unique bound macromolecules</span>
+      <div class="info-row-content">{{uniqueBoundMacromolecules()}}</div>
     </div>
     }
     <div class="info-row">
