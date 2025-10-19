@@ -1,35 +1,34 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Assembly } from '../../../models/complex-structure.model';
 import { AG_Grid_Theme_Class, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridApi, GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { map } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { ComplexStructureFacade } from './complex-structure.facade';
 
 @Component({
   selector: 'pdbc-complex-structures',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MolstarComponent, MaterialModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, AgGridAngular, MolstarComponent, MaterialModule, FormsModule],
   templateUrl: './complex-structures.component.html',
   styleUrls: ['./complex-structures.component.scss'],
 })
 export class ComplexStructuresComponent implements OnInit {
-  private readonly destroyRef = inject(DestroyRef);
   private readonly facade = inject(ComplexStructureFacade);
-
   private readonly globalStore = inject(Store<ComplexStoreState>);
+
   public readonly summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
+
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
@@ -91,14 +90,20 @@ export class ComplexStructuresComponent implements OnInit {
 
   private selectedRowPDBId = signal<string>('');
 
-  public searchTerm = new FormControl('');
-
   public structuresLength = computed(() => this.rowData().length);
   public structuresPageSize = signal<number>(5);
   public structuresPageSizeOptions = computed(() => [5, 10, 20, 50, 100]);
-  public structuresPage: Assembly[] = [];
-
-  private unfilteredStructures: Assembly[] = [];
+  public searchTerm = signal('');
+  private unfilteredStructures = computed(() => this.rowData() ?? []);
+  public structuresPage = linkedSignal({
+    source: this.searchTerm,
+    computation: () => {
+      if (!this.searchTerm().trim()) {
+        return this.unfilteredStructures().slice(0, this.structuresPageSize());
+      }
+      return this.facade.filterItemsBySearchQuery(this.searchTerm(), this.unfilteredStructures()).slice(0, this.structuresPageSize());
+    },
+  });
 
   rowClassRules = {
     'highlight-row': (params: any) => params.data.id === this.selectedRowPDBId(),
@@ -113,24 +118,6 @@ export class ComplexStructuresComponent implements OnInit {
       hideCanvasControls: ['expand', 'animation', 'controlToggle'],
       landscape: true,
     };
-
-    this.structuresPage = this.rowData().slice(0, this.structuresPageSize());
-    this.unfilteredStructures = this.rowData();
-
-    this.searchTerm.valueChanges
-      .pipe(
-        map((searchQuery) => {
-          if (searchQuery) {
-            return this.facade.filterItemsBySearchQuery(searchQuery, this.unfilteredStructures);
-          } else {
-            return this.unfilteredStructures;
-          }
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((data) => {
-        this.structuresPage = data.slice(0, this.structuresPageSize());
-      });
   }
 
   public onSelectionChanged(event: SelectionChangedEvent) {
@@ -151,7 +138,7 @@ export class ComplexStructuresComponent implements OnInit {
   public handlePageEvent(event: PageEvent) {
     const startIndex = event.pageIndex * event.pageSize;
     const endIndex = startIndex + event.pageSize;
-    this.structuresPage = this.rowData().slice(startIndex, endIndex);
+    this.structuresPage.set(this.rowData().slice(startIndex, endIndex) ?? []);
   }
 
   public downloadMMCIF(): void {
