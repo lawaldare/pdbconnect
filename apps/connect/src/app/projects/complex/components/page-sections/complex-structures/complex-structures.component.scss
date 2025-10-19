@@ -32,6 +32,10 @@ section.filter {
   display: block;
   width: 40%;
 
+  @media screen and (width <= 768px) {
+    display: none;
+  }
+
   .filter-action {
     display: flex;
     align-items: center;
