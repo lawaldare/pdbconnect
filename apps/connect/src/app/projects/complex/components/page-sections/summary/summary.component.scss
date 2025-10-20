@@ -135,3 +135,7 @@ p.view-more {
     }
   }
 }
+
+::ng-deep .msp-plugin .msp-layout-standard {
+  border: none !important;
+}
