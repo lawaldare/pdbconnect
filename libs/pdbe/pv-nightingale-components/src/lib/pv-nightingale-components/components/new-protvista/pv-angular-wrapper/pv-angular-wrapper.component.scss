@@ -1,4 +1,14 @@
+@import url('./new-protvista.scss');
+
 #new-protvista {
   width: 100%;
   max-width: 100%;
+  min-height: 480px;
+  height: auto;
+  overflow-y: clip;
+
+  //   position: relative; /* Required for absolute children to position against it */
+  //   display: block;
+  //   /* max-height: inherit; */
+  //   overflow: clip;
 }
