@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, computed, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ComplexStoreState } from '../../../store/complex-store.model';
@@ -9,8 +9,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { AG_Grid_Theme_Class, MaterialModule, UtilService } from '@pdbc/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { map } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 import { ComplexUtilService } from '../../../services/complex-util.service';
 import { AgGridAngular } from 'ag-grid-angular';
 import { gridOptions, colDefs, rowSelection } from './ag-grid';
@@ -23,11 +22,11 @@ import { MbComplexComponent } from '../mb-complex-components';
 @Component({
   selector: 'pdbc-subcomplexes',
   standalone: true,
-  imports: [CommonModule, NgxSkeletonLoaderModule, MaterialModule, ReactiveFormsModule, AgGridAngular, HelpIconWithTooltipComponent, MbComplexComponent],
+  imports: [CommonModule, NgxSkeletonLoaderModule, MaterialModule, FormsModule, AgGridAngular, HelpIconWithTooltipComponent, MbComplexComponent],
   templateUrl: './subcomplexes.component.html',
   styleUrl: '../sub-and-super-complex.scss',
 })
-export class SubComplexesComponent implements OnInit {
+export class SubComplexesComponent {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
   private utilService = inject(ComplexUtilService);
@@ -48,22 +47,22 @@ export class SubComplexesComponent implements OnInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public subcomplexInteractions = toSignal(this.globalStore.select(ComplexSelectors.subComplexInteractions));
 
-  public rowData = linkedSignal({
-    source: this.subcomplexInteractions,
-    computation: () => this.subcomplexInteractions() ?? [],
+  public searchTerm = signal('');
+
+  public rowData = computed(() => {
+    const value = this.searchTerm();
+    const interactions = this.subcomplexInteractions() ?? [];
+    if (value.trim()) {
+      return this.utilService.filterItemsBySearchQuery(value.trim(), interactions);
+    } else {
+      return interactions;
+    }
   });
 
   public structuresPage = linkedSignal({
     source: this.rowData,
     computation: () => (this.rowData() ?? []).slice(0, this.structuresPageSize()),
   });
-
-  public unfilteredComplexes = linkedSignal({
-    source: this.subcomplexInteractions,
-    computation: () => this.subcomplexInteractions() ?? [],
-  });
-
-  public searchTerm = new FormControl('');
 
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
@@ -82,22 +81,6 @@ export class SubComplexesComponent implements OnInit {
   public structuresPageSize = signal<number>(5);
   public structuresPageSizeOptions = computed(() => [5, 10, 20, 50, 100]);
 
-  ngOnInit(): void {
-    this.searchTerm.valueChanges
-      .pipe(
-        map((searchQuery: string | null) => {
-          if (searchQuery) {
-            return this.utilService.filterItemsBySearchQuery(searchQuery, this.unfilteredComplexes());
-          } else {
-            return this.unfilteredComplexes();
-          }
-        })
-      )
-      .subscribe((data: any) => {
-        this.rowData.update(() => data ?? []);
-      });
-  }
-
   public openComplexPage(complexId: string): void {
     this.util.redirectToSearchTerm(complexId, '_blank');
   }
@@ -109,11 +92,28 @@ export class SubComplexesComponent implements OnInit {
   }
 
   public async onSelectionChanged(event: SelectionChangedEvent) {
+    const selectedNodes = event.api.getSelectedNodes();
+    if (selectedNodes.length === 0) {
+      return;
+    }
+    const data = selectedNodes[0].data;
+    await this.updatedSelectedRow(data);
+  }
+
+  private async updatedSelectedRow(data: any) {
     if (this.currentComplexId()) {
       await this.superpositionService.deleteComplex(this.currentComplexId());
     }
-    const data = event.api.getSelectedNodes()[0].data;
     this.currentComplexId.set(data.pdb_complex_id);
     await this.superpositionService.loadComplex(data.pdb_complex_id, 'subcomplex');
+  }
+  public async onRowDataUpdated(event: any) {
+    if (event.api.getDisplayedRowCount() > 0) {
+      const firstNode = event.api.getDisplayedRowAtIndex(0);
+      if (firstNode) {
+        firstNode.setSelected(true);
+        await this.updatedSelectedRow(firstNode.data);
+      }
+    }
   }
 }
