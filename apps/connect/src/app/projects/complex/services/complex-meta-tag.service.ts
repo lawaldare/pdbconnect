@@ -1,0 +1,76 @@
+import { DestroyRef, inject, Injectable, Renderer2, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { Title, Meta } from '@angular/platform-browser';
+import { Store } from '@ngrx/store';
+import { filter, take, map } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { ComplexSelectors } from '../store/complex.selectors';
+import { ComplexStoreState } from '../store/complex-store.model';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ComplexMetaTagService {
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly globalStore = inject(Store<ComplexStoreState>);
+  private complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
+
+  public buildMetaTags(): void {
+    this.globalStore
+      .select(ComplexSelectors.complexData)
+      .pipe(
+        filter((complexData) => {
+          return complexData !== undefined && Object.keys(complexData).length > 0;
+        }),
+        take(1),
+        map((complexData) => {
+          if (complexData) {
+            const titleAndDescription = `PDB ${this.complexId()}: ${complexData.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`;
+            this.titleService.setTitle(titleAndDescription);
+            this.metaService.addTag({ name: 'description', content: titleAndDescription });
+            this.metaService.addTag({ name: 'author', content: 'Protein Data Bank in Europe Knowledge Base - PDBe-KB' });
+            this.metaService.addTag({ name: 'email', content: 'pdbegroup@gmail.com' });
+            this.metaService.addTag({ name: 'Distribution', content: 'Global' });
+            this.metaService.addTag({ name: 'Rating', content: 'General' });
+
+            this.metaService.addTag({ property: 'og:title', content: `PDB: ${this.complexId()} | Protein Data Bank in Europe Knowledge Base - PDBe-KB` });
+            this.metaService.addTag({ property: 'og:description', content: `Entry title: "${complexData.name}"` });
+            this.metaService.addTag({ property: 'og:url', content: `${environment.baseUrl}pdbe/pdbe-kb/complexes/${this.complexId()}` });
+            // this.metaService.addTag({
+            // 	property: 'og:image',
+            // 	content: `https://www.ebi.ac.uk/pdbe/static/entry/${this.entryId()}_deposited_chain_front_image-800x800.png`,
+            // });
+            // this.metaService.addTag({ property: 'og:image:alt', content: `PDBe ${this.entryId()} Structure` });
+            this.metaService.addTag({ property: 'og:type', content: 'website' });
+            this.metaService.addTag({ property: 'og:locale', content: 'en_GB' });
+            this.metaService.addTag({ property: 'og:site_name', content: 'PDBe-KB Complex Pages' });
+
+            this.metaService.addTag({ name: 'twitter:card', content: 'summary_large_image' });
+            this.metaService.addTag({ name: 'twitter:title', content: titleAndDescription });
+            this.metaService.addTag({ name: 'twitter:description', content: titleAndDescription });
+            this.metaService.addTag({ name: 'twitter:url', content: `${environment.baseUrl}pdbe/pdbe-kb/complexes/${this.complexId()}` });
+            // this.metaService.addTag({
+            // 	name: 'twitter:image',
+            // 	content: `https://www.ebi.ac.uk/pdbe/static/entry/${this.entryId()}_deposited_chain_front_image-800x800.png`,
+            // });
+            // this.metaService.addTag({ name: 'twitter:image:alt', content: `PDBe ${this.entryId()} Structure` });
+            // this.metaService.addTag({ name: 'twitter:site', content: `PDBeurope` });
+
+            // for (const linkObj of ENTRY_PAGES_LINKS) {
+            // 	const linkEl = renderer.createElement('link');
+            // 	renderer.setAttribute(linkEl, 'rel', linkObj.rel);
+            // 	renderer.setAttribute(linkEl, 'type', linkObj.type);
+            // 	renderer.setAttribute(linkEl, 'href', linkObj.href);
+            // 	if (linkObj.sizes) renderer.setAttribute(linkEl, 'sizes', linkObj.sizes!);
+            // 	if (linkObj.title) renderer.setAttribute(linkEl, 'title', linkObj.title!);
+            // 	renderer.appendChild(document.head, linkEl);
+            // }
+          }
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
+  }
+}

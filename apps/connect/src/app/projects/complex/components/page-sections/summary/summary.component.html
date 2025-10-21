@@ -49,7 +49,8 @@
       </span>
       <div class="info-row-content">
         {{ summaryData()?.symmetry | symmetry }} @if(diffSymmetries().length){ There are
-        <span class="diff-symbol" role="button" (click)="openDiffSymmetryDialog()">{{ diffSymmetries().length }}</span> PDB assemblies with different symmetry. }
+        <span class="diff-symbol" role="button" (click)="openDiffSymmetryDialog()">{{ diffSymmetries().length }}</span> PDB assemblies with missing or different
+        symmetry. }
       </div>
     </div>
     } @if(mappedLigands()?.length){
@@ -60,15 +61,21 @@
       </span>
       <div class="info-row-content" style="display: block">
         @for(ligand of mappedLigands(); track ligand.ligandId; let islast = $last){
-        <a
+        <span
+          class="cofactor-link"
           matTooltipClass="complex-name-tooltip"
           [matTooltip]="ligand.name"
           matTooltipPosition="above"
           (click)="openLigandPage(ligand.ligandId)"
           style="display: inline"
-          >{{ ligand.ligandId }}</a
+          >{{ ligand.ligandId }}</span
         >{{ islast ? '' : ', ' }} }
       </div>
+    </div>
+    } @if(uniqueBoundMacromolecules()){
+    <div class="info-row">
+      <span class="info-row-title">Unique bound macromolecules</span>
+      <div class="info-row-content">{{uniqueBoundMacromolecules()}}</div>
     </div>
     }
     <div class="info-row">
