@@ -78,7 +78,7 @@ export const EXPERIMENTAL_INFO_DATA_QUALITY_COLUMN_DEFS: ColDef[] = [
     resizable: false,
   },
   {
-    headerName: 'Outer shell',
+    headerName: 'Inner shell',
     field: 'shell',
     cellRenderer: ExperimentalInfoValueRendererComponent,
     flex: 1,
