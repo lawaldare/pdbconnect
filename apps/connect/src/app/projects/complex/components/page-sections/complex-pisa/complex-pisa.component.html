@@ -1,6 +1,6 @@
-@if(rowData()?.length){
+@if(rowData().length){
 <div class="pisa-section">
-  @let length = (rowData() ?? []).length;
+  @let length = rowData().length;
   <section class="table" [style.width.%]="length < 10 ? 100 : 65">
     <p>
       This table lists the predicted <a href="https://www.ebi.ac.uk/pdbe/pisa/" target="_blank">PISA</a>-derived assembly properties for all instances of this
@@ -60,10 +60,10 @@
 <div class="mobile-alternative">
   <p>This table lists <a href="https://www.ebi.ac.uk/pdbe/pisa/" target="_blank">PISA</a>-derived properties for all assemblies of this complex.</p>
   <div class="search-box">
-    <input type="search" [formControl]="searchTerm" placeholder="Search..." />
+    <input type="search" [(ngModel)]="searchTerm" placeholder="Search..." />
     <i class="icon icon-common icon-search"> </i>
   </div>
-  @for(structure of structuresPage; track structure){
+  @for(structure of structuresPage(); track structure){
   <article>
     <div class="list">
       <p class="list-item-left">PDB</p>

@@ -41,7 +41,8 @@ header {
   align-items: center;
   gap: 12px;
 
-  h4 {
+  h2 {
+    font-size: 25px;
     @media screen and (width <= 768px) {
       font-size: 14px;
     }

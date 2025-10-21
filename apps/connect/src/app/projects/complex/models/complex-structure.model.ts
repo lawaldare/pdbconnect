@@ -22,6 +22,7 @@ export interface Assembly {
   resolution: number;
   symmetry: Symmetry;
   title: string;
+  bound_macromolecules: string[];
 }
 export interface ComplexData {
   name: string | null;
@@ -38,6 +39,7 @@ export interface ComplexData {
   supercomplexes: string[];
   complexId: string;
   polymer_composition: string;
+  unique_bound_macromolecules: string[];
 }
 
 type RelationshipType = 'sub-complex' | 'super-complex';

@@ -32,6 +32,22 @@ ul {
     cursor: pointer;
   }
 
+  span.cofactor-link {
+    color: #3b6fb6;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 27.2px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      color: #193f90;
+      text-decoration: underline;
+      border: none !important;
+    }
+  }
+
   ul {
     margin-left: 0 !important;
   }
@@ -118,4 +134,8 @@ p.view-more {
       }
     }
   }
+}
+
+::ng-deep .msp-plugin .msp-layout-standard {
+  border: none !important;
 }

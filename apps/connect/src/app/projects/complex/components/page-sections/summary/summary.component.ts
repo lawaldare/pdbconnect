@@ -66,6 +66,7 @@ export class SummaryComponent implements OnInit {
 
   public participants = signal<Participant[]>(this.summaryData()?.participants.slice(0, 4) ?? []);
   public respresentStructure = computed(() => this.summaryData()?.representative_structure);
+  public uniqueBoundMacromolecules = computed(() => this.summaryData()?.unique_bound_macromolecules?.join(', ') ?? '');
   public textIcon = signal<string>('more');
   public baseUrl = 'https://www.ebi.ac.uk/';
 
