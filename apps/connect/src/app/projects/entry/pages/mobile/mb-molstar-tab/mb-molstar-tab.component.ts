@@ -179,7 +179,7 @@ export class MbMolstarTabComponent implements AfterViewInit {
       });
     }
 
-    this.gAS.logEntryPageEvents('ep_mobile_3d_tab_switch', {
+    this.gAS.logPageEvents('ep_mobile_3d_tab_switch', {
       tab: chip.id,
     });
   }

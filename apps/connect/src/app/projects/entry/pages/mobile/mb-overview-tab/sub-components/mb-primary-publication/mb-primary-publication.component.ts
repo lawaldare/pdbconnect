@@ -80,7 +80,7 @@ export class MbPrimaryPublicationComponent implements OnInit {
 
   public navigateToCitationPage(): void {
     this.mbFacade.selectPage('citation');
-    this.gAS.logEntryPageEvents('ep_mobile_citations_link_click', {
+    this.gAS.logPageEvents('ep_mobile_citations_link_click', {
       page_section: 'abstract',
     });
   }
@@ -108,7 +108,7 @@ export class MbPrimaryPublicationComponent implements OnInit {
         break;
     }
 
-    this.gAS.logEntryPageEvents('ep_mobile_citations_link_click', {
+    this.gAS.logPageEvents('ep_mobile_citations_link_click', {
       page_section: eventName,
     });
   }

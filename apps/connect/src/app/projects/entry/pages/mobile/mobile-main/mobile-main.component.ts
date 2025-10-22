@@ -59,7 +59,7 @@ export class MobileMainComponent {
         this.mbFacade.updateActivePage(tabId);
         this.mbFacade.updateSelectedPageName(tabId);
       }
-      this.gAS.logEntryPageEvents('ep_mobile_3d_access', {
+      this.gAS.logPageEvents('ep_mobile_3d_access', {
         tab: tabId,
       });
     });

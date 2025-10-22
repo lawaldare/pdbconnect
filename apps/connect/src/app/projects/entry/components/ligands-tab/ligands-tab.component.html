@@ -85,7 +85,7 @@
       <a
         [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix"
         target="_blank"
-        (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
+        (click)="gAS.logPageEvents('ep_go_to_kb', {
         kb_website: 'ligands',
         device_type: isMobile ? 'mobile' : 'desktop',
       })"

@@ -21,6 +21,9 @@ export const colDefs: ColDef[] = [
     headerName: 'PDB and complex',
     field: 'pdb_id',
     cellRenderer: ComplexPageExternalLinkRendererComponent,
+    cellRendererParams: {
+      tab: 'PISA',
+    },
     flex: 0.9,
     filter: true,
   },
