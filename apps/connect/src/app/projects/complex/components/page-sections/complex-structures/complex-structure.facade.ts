@@ -58,7 +58,6 @@ export class ComplexStructureFacade {
 
   public onFilterChanged(event: any) {
     const columnId = event.columns[0].colId;
-    console.log('Filtered column:', columnId);
     if (columnId === 'title') {
       this.gAS.logPageEvents('cp_filter_title', {
         tab: 'structures',
