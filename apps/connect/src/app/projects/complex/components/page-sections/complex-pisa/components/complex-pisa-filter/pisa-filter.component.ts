@@ -3,7 +3,7 @@
 import { Component, ElementRef, inject, OnInit, output, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { MaterialModule } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ComplexSelectors } from '../../../../../store/complex.selectors';
@@ -27,6 +27,7 @@ export class PisaFilterComponent implements OnInit {
   public selectedMethod = new FormControl('', { nonNullable: true });
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public readonly pisa = toSignal(this.globalStore.select(ComplexSelectors.pisa));
+  private readonly gAS = inject(GoogleAnalyticsService);
 
   @ViewChild('minInputRef', { read: ElementRef }) public minInputRef!: ElementRef;
   @ViewChild('maxInputRef', { read: ElementRef }) public maxInputRef!: ElementRef;
@@ -65,6 +66,10 @@ export class PisaFilterComponent implements OnInit {
     const method = this.selectedMethod.value;
     const minValue = this.minResolutionBoundValue;
     const maxValue = this.maxResolutionBoundValue;
+
+    this.gAS.logPageEvents('cp_pisa_filter', {
+      tab: 'PISA',
+    });
 
     this.filterChange.emit({ method, minValue, maxValue });
   }

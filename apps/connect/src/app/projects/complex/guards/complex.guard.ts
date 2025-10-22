@@ -11,8 +11,30 @@ export const complexIdGuard: CanActivateFn = (route) => {
   const apiService = inject(ComplexAPIService);
   const util = inject(ComplexUtilService);
 
-  if (complexId?.includes('PDB-CPX')) {
+  if (complexId?.toUpperCase().startsWith('PDB-CPX')) {
     return true;
+  }
+
+  if (complexId?.toUpperCase().startsWith('CPX')) {
+    return apiService.getSummaryForComplexData(complexId ?? '', 'complex_portal_id').pipe(
+      map((response: any) => {
+        const complexId = response.pdb_complex_id;
+        if (complexId) {
+          const path = `/complexes/${complexId}`;
+          router.navigateByUrl(path);
+          return false;
+        } else {
+          console.error('No valid complex ID found');
+          router.navigateByUrl('/error');
+          return false;
+        }
+      }),
+      catchError((error) => {
+        console.error('API call failed', error);
+        router.navigateByUrl('/error');
+        return of(false);
+      })
+    );
   }
 
   return apiService.getComplexSummaryStats(complexId ?? '').pipe(

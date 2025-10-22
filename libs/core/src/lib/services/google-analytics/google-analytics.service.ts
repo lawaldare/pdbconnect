@@ -17,7 +17,7 @@ export class GoogleAnalyticsService {
     // console.log('gtag event captured...');
   }
 
-  public logEntryPageEvents(event: string, params: Record<string, string>): void {
+  public logPageEvents(event: string, params: Record<string, string>): void {
     gtag('event', event, params);
   }
 }

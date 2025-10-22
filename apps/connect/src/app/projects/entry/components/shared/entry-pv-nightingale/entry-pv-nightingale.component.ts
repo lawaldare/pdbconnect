@@ -763,7 +763,7 @@ export class EntryPgProtvistaComponent implements AfterViewInit {
   //   this.showMapPanel = true;
   //   this.showSearchPanel = false;
 
-  //   this.gAS.logEntryPageEvents('ep_map_data', {
+  //   this.gAS.logPageEvents('ep_map_data', {
   //     tab: this.compCommunication.currentTabName() ?? '',
   //   });
   // }

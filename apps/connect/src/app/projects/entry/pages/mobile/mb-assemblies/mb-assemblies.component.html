@@ -44,7 +44,7 @@
       <a
         [href]="baseUrl + 'pdbe-kb/complexes/' + preferredAssembly().complexId"
         target="_blank"
-        (click)="gAS.logEntryPageEvents('ep_go_to_kb', {
+        (click)="gAS.logPageEvents('ep_go_to_kb', {
         kb_website: 'complexes',
         device_type: 'mobile',
       })"

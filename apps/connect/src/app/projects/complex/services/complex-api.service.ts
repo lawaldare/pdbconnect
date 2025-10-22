@@ -31,8 +31,8 @@ export class ComplexAPIService {
 
   private readonly AggregatedApiUrl = `${environment.baseUrl}pdbe/api/v2/`;
 
-  public getSummaryForComplexData(complexId: string): Observable<ComplexData> {
-    return this.http.get<ComplexData>(`${this.AggregatedApiUrl}complex/details/${complexId}?id_type=pdb_complex_id`).pipe(
+  public getSummaryForComplexData(complexId: string, idType = 'pdb_complex_id'): Observable<ComplexData> {
+    return this.http.get<ComplexData>(`${this.AggregatedApiUrl}complex/details/${complexId}?id_type=${idType}`).pipe(
       map((response: any) => {
         return {
           ...response[complexId][0],

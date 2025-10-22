@@ -664,7 +664,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     if (!sequenceDetail) return;
     const text = `${sequenceDetail.title}\r\n${sequenceDetail.fullSequence}`;
     this.utilService.copy(text);
-    this.gAS.logEntryPageEvents('ep_copy_seq', {
+    this.gAS.logPageEvents('ep_copy_seq', {
       tab: 'macromolecules',
     });
   }
