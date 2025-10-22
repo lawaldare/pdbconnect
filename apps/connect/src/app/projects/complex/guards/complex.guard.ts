@@ -1,7 +1,7 @@
 // complex-id.guard.ts
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
-import { catchError, map, of } from 'rxjs';
+import { catchError, map, of, tap } from 'rxjs';
 import { ComplexAPIService } from '../services/complex-api.service';
 import { ComplexUtilService } from '../services/complex-util.service';
 
@@ -11,28 +11,28 @@ export const complexIdGuard: CanActivateFn = (route) => {
   const apiService = inject(ComplexAPIService);
   const util = inject(ComplexUtilService);
 
+  console.log('complexIdGuard triggered for:', complexId);
+
   if (complexId?.toUpperCase().startsWith('PDB-CPX')) {
     return true;
   }
 
   if (complexId?.toUpperCase().startsWith('CPX')) {
-    return apiService.getSummaryForComplexData(complexId ?? '', 'complex_portal_id').pipe(
+    const upperCaseComplexId = complexId.toUpperCase();
+    return apiService.getSummaryForComplexData(upperCaseComplexId, 'complex_portal_id').pipe(
       map((response: any) => {
         const complexId = response.pdb_complex_id;
         if (complexId) {
           const path = `/complexes/${complexId}`;
-          router.navigateByUrl(path);
-          return false;
+          return router.createUrlTree([path]);
         } else {
           console.error('No valid complex ID found');
-          router.navigateByUrl('/error');
-          return false;
+          return router.createUrlTree(['/error']);
         }
       }),
       catchError((error) => {
         console.error('API call failed', error);
-        router.navigateByUrl('/error');
-        return of(false);
+        return of(router.createUrlTree(['/error']));
       })
     );
   }
@@ -41,20 +41,16 @@ export const complexIdGuard: CanActivateFn = (route) => {
     map((response) => {
       const complexId = util.findComplexId(response);
       if (complexId) {
-        // const hostname = document.location.hostname;
         const path = `/complexes/${complexId}`;
-        router.navigateByUrl(path);
-        return false;
+        return router.createUrlTree([path]);
       } else {
         console.error('No valid complex ID found');
-        router.navigateByUrl('/error');
-        return false;
+        return router.createUrlTree(['/error']);
       }
     }),
     catchError((error) => {
       console.error('API call failed', error);
-      router.navigateByUrl('/error');
-      return of(false);
+      return of(router.createUrlTree(['/error']));
     })
   );
 };

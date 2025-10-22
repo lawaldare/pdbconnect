@@ -34,6 +34,7 @@ export class ComplexAPIService {
   public getSummaryForComplexData(complexId: string, idType = 'pdb_complex_id'): Observable<ComplexData> {
     return this.http.get<ComplexData>(`${this.AggregatedApiUrl}complex/details/${complexId}?id_type=${idType}`).pipe(
       map((response: any) => {
+        console.log('API response for complex details:', response);
         return {
           ...response[complexId][0],
           complexId: complexId,
