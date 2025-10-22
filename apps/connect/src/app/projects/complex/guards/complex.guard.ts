@@ -11,8 +11,6 @@ export const complexIdGuard: CanActivateFn = (route) => {
   const apiService = inject(ComplexAPIService);
   const util = inject(ComplexUtilService);
 
-  console.log('complexIdGuard triggered for:', complexId);
-
   if (complexId?.toUpperCase().startsWith('PDB-CPX')) {
     return true;
   }
