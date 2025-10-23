@@ -4,8 +4,8 @@ import * as d3 from 'd3';
 export const headerSearchComplexConfig = {
   examples: [
     {
-      label: 'Hemoglobin HbA (PDB-CPX-154652)',
-      value: 'PDB-CPX-154652',
+      label: 'Hemoglobin HbA (PDB-CPX-143959)',
+      value: 'PDB-CPX-143959',
     },
     {
       label: 'Cyclin A2-CDK2 (PDB-CPX-148886)',
