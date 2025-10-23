@@ -71,6 +71,7 @@ build:
     - when: always
   script:
     - npx nx run-many -t build --parallel=3 --exclude=playground -c $BUILD_CONF
+    - node ./bin/copy-assets.js
     - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
     - cat dynamic-gitlab-ci.yml
   artifacts:
