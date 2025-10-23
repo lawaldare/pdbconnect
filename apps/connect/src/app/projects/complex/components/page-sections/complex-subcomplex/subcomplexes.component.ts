@@ -113,9 +113,7 @@ export class SubComplexesComponent implements AfterViewInit {
 
   private async updatedSelectedRow(data: any) {
     if (this.currentComplexId()) {
-      setTimeout(async () => {
-        await this.superpositionService.deleteComplex(this.currentComplexId());
-      }, 1000);
+      await this.superpositionService.deleteComplex(this.currentComplexId());
     }
     this.currentComplexId.set(data.pdb_complex_id);
     await this.superpositionService.loadComplex(data.pdb_complex_id, 'subcomplex');

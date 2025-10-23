@@ -113,19 +113,18 @@ export class SuperComplexesComponent implements AfterViewInit {
 
   private async updatedSelectedRow(data: any) {
     if (this.currentComplexId()) {
-      setTimeout(async () => {
-        await this.superpositionService.deleteComplex(this.currentComplexId());
-      }, 1000);
+      await this.superpositionService.deleteComplex(this.currentComplexId());
     }
     this.currentComplexId.set(data.pdb_complex_id);
-    await this.superpositionService.loadComplex(data.pdb_complex_id, 'subcomplex');
+    setTimeout(async () => {
+      await this.superpositionService.loadComplex(data.pdb_complex_id, 'supercomplex');
+    }, 1000);
   }
   public async onRowDataUpdated(event: any) {
     if (event.api.getDisplayedRowCount() > 0) {
       const firstNode = event.api.getDisplayedRowAtIndex(0);
       if (firstNode) {
         firstNode.setSelected(true);
-        await this.updatedSelectedRow(firstNode.data);
       }
     }
   }

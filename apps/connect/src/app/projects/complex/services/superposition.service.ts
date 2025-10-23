@@ -27,17 +27,17 @@ export class SuperpositionService {
   public baseRfamMappings = {};
   public rfamMappings: any = {};
 
-  public selectedComplexData = signal<string>(this.complexData() ?? ({} as any));
-  public selectedComplexId = signal<string>(this.complexId() ?? '');
-  private currentComplexData = signal<any>(null);
+  // public selectedComplexData = signal<string>(this.complexData() ?? ({} as any));
+  // public selectedComplexId = signal<string>(this.complexId() ?? '');
+  // private currentComplexData = signal<any>(null);
 
   public isLoading = signal(false);
 
-  private fetchComplexData(id: string) {
-    this.complexAPIService.getSummaryForComplexData(id).subscribe((data) => {
-      this.currentComplexData.set(data);
-    });
-  }
+  // private fetchComplexData(id: string) {
+  //   this.complexAPIService.getSummaryForComplexData(id).subscribe((data) => {
+  //     this.currentComplexData.set(data);
+  //   });
+  // }
 
   async loadInitialComplexView(container: HTMLElement): Promise<void> {
     await this.molstarPluginService.loadPlugin();
@@ -91,7 +91,6 @@ export class SuperpositionService {
   }
 
   public async loadComplex(id: string, kind: string) {
-    this.fetchComplexData(id);
     this.complexAPIService
       .getSummaryForComplexData(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
