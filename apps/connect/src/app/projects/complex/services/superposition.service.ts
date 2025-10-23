@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { DestroyRef, inject, Injectable, signal } from '@angular/core';
-import { ScriptLoaderService } from '@pdbc/core';
 import { ComplexStoreState } from '../store/complex-store.model';
 import { Store } from '@ngrx/store';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexSelectors } from '../store/complex.selectors';
 import { ComplexAPIService } from './complex-api.service';
+import { MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 
 declare let PDBeMolstarPlugin: any;
 
@@ -14,7 +14,7 @@ declare let PDBeMolstarPlugin: any;
   providedIn: 'root',
 })
 export class SuperpositionService {
-  private readonly scriptLoaderService = inject(ScriptLoaderService);
+  private readonly molstarPluginService = inject(MolstarPluginService);
   private readonly globalStore = inject(Store<ComplexStoreState>);
   private complexAPIService = inject(ComplexAPIService);
   private readonly destroyRef = inject(DestroyRef);
@@ -40,8 +40,8 @@ export class SuperpositionService {
   }
 
   async loadInitialComplexView(container: HTMLElement): Promise<void> {
+    await this.molstarPluginService.loadPlugin();
     this.isLoading.set(true);
-    // await this.scriptLoaderService.loadScript('https://molstar.org/pdbe-molstar/build/pdbe-molstar-plugin.js');
     const complexData = this.complexData();
     if (complexData) {
       const { pdb_id, assembly_id } = complexData.representative_structure;

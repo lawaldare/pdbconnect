@@ -38,7 +38,7 @@ import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { cameraResetInMolstar, drawSelectionInMolstar, Molstar370DefaultParams } from '../../helpers/molstar-helpers';
 import { OutlierDict, ValueLabel } from '../../store/data-processing/models/other-models';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { TutorialTourService } from '../../services/tutorial-tour.service';
+import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 
 /**
  * Examples that should be tested when looking at this component
@@ -92,7 +92,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly dataFacade = inject(ValidationDataProcessingFacade);
   public readonly tableFacade = inject(ValidationTablesFacade);
   private readonly compCommunication = inject(ComponentCommunicationService);
-  public readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(EntryPageTutorialTourService);
 
   public readonly util = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);

@@ -34,7 +34,7 @@ import { VisualisationInteractivityService } from '../../services/vis-interactiv
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 import { getUniProtMappingsForMacromolecule } from '../../store/data-processing/macromolecule-processing';
 import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
-import { TutorialTourService } from '../../services/tutorial-tour.service';
+import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { MacromoleculesTabFacade } from './macromolecules-tab.facade';
 import { UnpMappingListComponent } from '../shared/unp-mapping-list/unp-mapping-list.component';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
@@ -380,7 +380,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   private topolViewerMutex = Promise.resolve();
   private rnaViewerMutex = Promise.resolve();
 
-  public readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(EntryPageTutorialTourService);
   public hasLoadedMacromolecules = computed(() => this.processedMacromolecules() !== undefined);
   public hasMacromolecules = computed(() => {
     const rows = this.processedMacromolecules();

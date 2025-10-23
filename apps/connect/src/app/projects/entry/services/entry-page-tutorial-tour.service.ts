@@ -6,7 +6,7 @@ import { tourIds } from '../entry-constant';
 @Injectable({
   providedIn: 'root',
 })
-export class TutorialTourService {
+export class EntryPageTutorialTourService {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public showSummaryTourBanner = signal(true);
   public showModelQualityTourBanner = signal(true);

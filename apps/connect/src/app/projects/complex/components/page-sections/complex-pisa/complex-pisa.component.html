@@ -1,4 +1,9 @@
-@if(rowData().length){
+@if(tutorialTourService.showPISATourBanner() && isBannerCookies()){
+<section class="onboarding-tutorial-banner structures">
+  <img src="assets/img/light-star.svg" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startPISATabTour()">Take an on-page tour.</span></p>
+</section>
+} @if(rowData().length){
 <div class="pisa-section">
   @let length = rowData().length;
   <section class="table" [style.width.%]="length < 10 ? 100 : 65">
@@ -11,28 +16,30 @@
       Download table as CSV
       <i class="icon icon-common icon-download"></i>
     </button>
-    @if(pisaSliderReady()){
-    <pdbc-pisa-filter (filterChange)="applyFilters($event)" />
-    }@else {
-    <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
-    }
+    <div id="pisa-table-tour">
+      @if(pisaSliderReady()){
+      <pdbc-pisa-filter (filterChange)="applyFilters($event)" />
+      }@else {
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+      }
 
-    <div class="pisa-table">
-      <ag-grid-angular
-        class="ag-theme-quartz"
-        [rowData]="rowData()"
-        [columnDefs]="colDefs"
-        [gridOptions]="gridOptions"
-        (selectionChanged)="onSelectionChanged($event)"
-        (rowDataUpdated)="onRowDataUpdated($event)"
-        [paginationPageSizeSelector]="paginationPageSizeSelector()"
-        [rowSelection]="rowSelection"
-        [initialState]="initialState"
-      />
+      <div class="pisa-table">
+        <ag-grid-angular
+          class="ag-theme-quartz"
+          [rowData]="rowData()"
+          [columnDefs]="colDefs"
+          [gridOptions]="gridOptions"
+          (selectionChanged)="onSelectionChanged($event)"
+          (rowDataUpdated)="onRowDataUpdated($event)"
+          [paginationPageSizeSelector]="paginationPageSizeSelector()"
+          [rowSelection]="rowSelection"
+          [initialState]="initialState"
+        />
+      </div>
     </div>
   </section>
   @if(length > 10){
-  <div class="charts">
+  <div class="charts" id="pisa-charts-tour">
     <section class="complex-sliders">
       @if(pisaSliderReady()){ @for(property of pisaProperties; track property.value) {
       <div class="complex-slider">

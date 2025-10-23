@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, computed, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -10,7 +10,7 @@ import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { PARAMS } from '../../../complex.constant';
+import { PARAMS, tourIds } from '../../../complex.constant';
 import { drawHistogram } from './histogram';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { PISAAssemblyParam } from '../../../models/pisa-assembly-param.model';
@@ -18,6 +18,7 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { PisaFilterComponent } from './components/complex-pisa-filter/pisa-filter.component';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { ComplexPageTutorialTourService } from '../../../services/complex-page-tutorial-tour.service';
 
 @Component({
   selector: 'pdbc-complex-pisa',
@@ -26,7 +27,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
   templateUrl: './complex-pisa.component.html',
   styleUrls: ['./complex-pisa.component.scss'],
 })
-export class ComplexPISAComponent implements OnInit {
+export class ComplexPISAComponent implements OnInit, AfterViewInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public readonly pisa = toSignal(this.globalStore.select(ComplexSelectors.pisa));
   public readonly gridOptions = gridOptions;
@@ -36,12 +37,17 @@ export class ComplexPISAComponent implements OnInit {
   public readonly rowSelection = rowSelection;
 
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
+  public readonly tutorialTourService = inject(ComplexPageTutorialTourService);
 
   public stats = signal<any>({});
 
   public rowData = linkedSignal({
     source: this.pisa,
     computation: () => this.pisa() ?? [],
+  });
+  private HasPisaData = computed(() => {
+    const rows = this.rowData();
+    return rows.length > 0;
   });
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
 
@@ -208,5 +214,21 @@ export class ComplexPISAComponent implements OnInit {
     this.rowData.update(() => filteredData ?? []);
     this.stats.set(this.getMinMaxStats(filteredData as PISAAssemblyParam[]));
     this.drawHistogram();
+  }
+
+  public isBannerCookies = signal(false);
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.tutorialTourService.hasPisaData.set(this.HasPisaData());
+      const agreed = this.tutorialTourService.getCookie(tourIds.pisa);
+      if (!agreed && this.HasPisaData()) {
+        this.isBannerCookies.set(true);
+      }
+    }, 500);
+  }
+
+  public startPISATabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.pisaTabTourSteps);
   }
 }

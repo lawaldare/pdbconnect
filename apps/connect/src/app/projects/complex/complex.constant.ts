@@ -57,6 +57,16 @@ export const complexRouteTabs = [
   { label: 'Citations', id: 'citations' },
 ];
 
+export const tourIds = {
+  summary: 'tour-complex-summary',
+  structures: 'tour-complex-structures',
+  pisa: 'tour-complex-pisa',
+  ligands: 'tour-complex-ligands',
+  subcomplexes: 'tour-complex-subcomplexes',
+  supercomplexes: 'tour-complex-supercomplexes',
+  citations: 'tour-complex-citations',
+};
+
 export const complexSummaryTabTooltips = {
   polymerComposition: 'Shows the total number of each polymer type in the complex: protein, RNA, DNA, or hybrid DNA/RNA. Counts come from component stoichiometry.',
   globalSymmetry:

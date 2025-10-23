@@ -22,7 +22,7 @@ import { Molecule } from '../../data-models/molecule.model';
 import { EntryActions } from '../../store/entry.actions';
 import { ProcessedDomain, ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
 import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
-import { TutorialTourService } from '../../services/tutorial-tour.service';
+import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 
 type NestedDomainsData = Array<{
   macromolecule: ProcessedMacromolecule;
@@ -42,7 +42,7 @@ export class SummaryTabComponent implements AfterViewInit {
   public readonly util = inject(UtilService);
   private readonly compCommunication = inject(ComponentCommunicationService);
 
-  public readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(EntryPageTutorialTourService);
 
   public readonly gAS = inject(GoogleAnalyticsService);
   public baseUrl = baseUrl;

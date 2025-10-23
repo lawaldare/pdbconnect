@@ -40,7 +40,7 @@ import { SequenceDetail } from '../../store/data-processing/models/other-models'
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
 import { getUniProtMappingsForMacromolecule } from '../../store/data-processing/macromolecule-processing';
-import { TutorialTourService } from '../../services/tutorial-tour.service';
+import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { UnpMappingListComponent } from '../shared/unp-mapping-list/unp-mapping-list.component';
 
@@ -358,7 +358,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
       });
   }
 
-  public readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(EntryPageTutorialTourService);
   private procLLMMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromoleculesForLLM));
   public hasLoadedAnnotations = computed(() => this.procLLMMacromolecules() !== undefined);
   public hasAnnotations = computed(() => {

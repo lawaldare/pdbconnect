@@ -50,7 +50,7 @@ import {
 import { AggregatedApiService } from '../../../ligands/services/aggregated-api.service';
 import { Depiction } from '../../../ligands/data-models/structure.model';
 import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
-import { TutorialTourService } from '../../services/tutorial-tour.service';
+import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -393,7 +393,7 @@ export class LigandsTabComponent implements AfterViewInit {
     });
   }
 
-  public readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(EntryPageTutorialTourService);
 
   public hasLoadedLigands = computed(() => this.processedLigands() !== undefined);
   public hasLigands = computed(() => {

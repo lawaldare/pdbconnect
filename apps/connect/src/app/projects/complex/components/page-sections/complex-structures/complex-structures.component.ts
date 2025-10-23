@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, computed, inject, linkedSignal, OnInit, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, inject, linkedSignal, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Assembly } from '../../../models/complex-structure.model';
 import { AG_Grid_Theme_Class, MaterialModule } from '@pdbc/core';
@@ -15,6 +15,8 @@ import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
 import { FormsModule } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { ComplexStructureFacade } from './complex-structure.facade';
+import { ComplexPageTutorialTourService } from '../../../services/complex-page-tutorial-tour.service';
+import { tourIds } from '../../../complex.constant';
 
 @Component({
   selector: 'pdbc-complex-structures',
@@ -23,9 +25,10 @@ import { ComplexStructureFacade } from './complex-structure.facade';
   templateUrl: './complex-structures.component.html',
   styleUrls: ['./complex-structures.component.scss'],
 })
-export class ComplexStructuresComponent implements OnInit {
+export class ComplexStructuresComponent implements OnInit, AfterViewInit {
   private readonly facade = inject(ComplexStructureFacade);
   private readonly globalStore = inject(Store<ComplexStoreState>);
+  public readonly tutorialTourService = inject(ComplexPageTutorialTourService);
 
   public readonly summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
 
@@ -45,6 +48,10 @@ export class ComplexStructuresComponent implements OnInit {
     }
 
     return assemblies.filter((assembly) => assembly.bound_macromolecules.includes(value));
+  });
+  private hasStructures = computed(() => {
+    const rows = this.rowData();
+    return rows.length > 0;
   });
   public uniqueBoundMacromolecules = computed(() => {
     const data = this.summaryData();
@@ -118,6 +125,22 @@ export class ComplexStructuresComponent implements OnInit {
       hideCanvasControls: ['expand', 'animation', 'controlToggle'],
       landscape: true,
     };
+  }
+
+  public isBannerCookies = signal(false);
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.tutorialTourService.hasStructures.set(this.hasStructures());
+      const agreed = this.tutorialTourService.getCookie(tourIds.structures);
+      if (!agreed && this.hasStructures()) {
+        this.isBannerCookies.set(true);
+      }
+    }, 500);
+  }
+
+  public startStructuresTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.structuresTabTourSteps);
   }
 
   public onSelectionChanged(event: SelectionChangedEvent) {

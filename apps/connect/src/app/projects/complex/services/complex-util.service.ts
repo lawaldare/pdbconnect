@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
@@ -71,5 +71,12 @@ export class ComplexUtilService {
         return obj.pdb_complex_id;
       }
     }
+  }
+
+  private _currentComplexTabName = signal<string>('summary');
+  public currentComplexTabName = this._currentComplexTabName.asReadonly();
+
+  public updateCurrentComplexTabName(tabName: string): void {
+    this._currentComplexTabName.set(tabName);
   }
 }
