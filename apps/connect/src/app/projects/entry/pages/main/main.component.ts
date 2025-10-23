@@ -175,7 +175,7 @@ export class EntryMainPageComponent implements OnInit {
       this.compCommunication.currentTabName.set(tabName);
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.compCommunication.updateSelectedTabIndex(tabIndex);
-      this.gAS.logEntryPageEvents('ep_desktop_tab_access', {
+      this.gAS.logPageEvents('ep_desktop_tab_access', {
         tab: tabName,
       });
     });
@@ -254,7 +254,7 @@ export class EntryMainPageComponent implements OnInit {
     const tabName = routeTabs[event.index].id;
     this.scrollService.handleScrollPosition(this.tabGroup, event.index);
     this.compCommunication.currentTabName.set(tabName);
-    this.gAS.logEntryPageEvents('ep_desktop_tab_switch', {
+    this.gAS.logPageEvents('ep_desktop_tab_switch', {
       tab: tabName,
     });
 

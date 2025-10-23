@@ -609,7 +609,7 @@ export class SummaryTabComponent implements AfterViewInit {
   }
 
   public onOpenAccordionPanel(tabName: string) {
-    this.gAS.logEntryPageEvents('ep_overview_click', {
+    this.gAS.logPageEvents('ep_overview_click', {
       tab_name: tabName,
     });
     this.lastOpenedAccordionName.set(tabName);

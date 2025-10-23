@@ -3,7 +3,7 @@
 import { AfterViewInit, Component, computed, inject, linkedSignal, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Assembly } from '../../../models/complex-structure.model';
-import { AG_Grid_Theme_Class, MaterialModule } from '@pdbc/core';
+import { AG_Grid_Theme_Class, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridApi, GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
@@ -31,6 +31,7 @@ export class ComplexStructuresComponent implements OnInit, AfterViewInit {
   public readonly tutorialTourService = inject(ComplexPageTutorialTourService);
 
   public readonly summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
+  private readonly gAS = inject(GoogleAnalyticsService);
 
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
@@ -166,6 +167,10 @@ export class ComplexStructuresComponent implements OnInit, AfterViewInit {
 
   public downloadMMCIF(): void {
     this.facade.downloadMMCIF(this.gridApi);
+    this.gAS.logPageEvents('cp_download', {
+      tab: 'structures',
+      data: '.mmcif',
+    });
   }
 
   public onComplexStructureGridReady(event: GridReadyEvent<any>) {
@@ -174,14 +179,17 @@ export class ComplexStructuresComponent implements OnInit, AfterViewInit {
 
   public downloadCSV(): void {
     this.facade.downloadCSV(this.gridApi);
+    this.gAS.logPageEvents('cp_download', {
+      tab: 'structures',
+      data: '.csv',
+    });
+  }
+
+  public onFilterChanged(event: any) {
+    this.facade.onFilterChanged(event);
   }
 
   public onRowDataUpdated(event: any) {
-    if (event.api.getDisplayedRowCount() > 0) {
-      const firstNode = event.api.getDisplayedRowAtIndex(0);
-      if (firstNode) {
-        firstNode.setSelected(true);
-      }
-    }
+    this.facade.onRowDataUpdated(event);
   }
 }

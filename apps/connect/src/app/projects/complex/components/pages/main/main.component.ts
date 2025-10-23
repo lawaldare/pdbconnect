@@ -8,7 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { of, switchMap } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexStructuresComponent } from '../../page-sections/complex-structures/complex-structures.component';
-import { MaterialModule, ScrollPositionService, TruncateTextDirective } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule, ScrollPositionService, TruncateTextDirective } from '@pdbc/core';
 import { headerComplexLogoMenuConfig, headerSearchComplexConfig, idWarningTooltip } from '../../../complex.constant';
 import { ComplexPublicationsComponent } from '../../page-sections/complex-publications/complex-publications.component';
 import { ComplexLigandsComponent } from '../../page-sections/complex-ligands/complex-ligands.component';
@@ -60,6 +60,7 @@ import { ComplexUtilService } from '../../../services/complex-util.service';
 export class MainComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly gAS = inject(GoogleAnalyticsService);
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly bioschemasService = inject(ComplexBioschemasService);
@@ -96,6 +97,9 @@ export class MainComponent implements OnInit {
       this.complexUtilService.updateCurrentComplexTabName(tabName ?? 'summary');
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.selectedTab.set(tabIndex);
+      this.gAS.logPageEvents('cp_tab_access', {
+        tab: tabName,
+      });
     });
   }
 
@@ -124,6 +128,11 @@ export class MainComponent implements OnInit {
     const routeTabs = complexRouteTabs;
     const tabName = routeTabs[event.index].id;
     this.complexUtilService.updateCurrentComplexTabName(tabName ?? 'summary');
+
+    this.gAS.logPageEvents('cp_tab_switch', {
+      tab: tabName,
+    });
+
     this.router.navigate([], {
       queryParams: { activeTab: tabName },
       queryParamsHandling: 'merge',

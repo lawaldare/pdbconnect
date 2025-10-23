@@ -8,7 +8,7 @@ import { ComplexSelectors } from '../../../store/complex.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { AG_Grid_Theme_Class, MaterialModule, UtilService } from '@pdbc/core';
+import { AG_Grid_Theme_Class, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { FormsModule } from '@angular/forms';
 import { ComplexUtilService } from '../../../services/complex-util.service';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -33,6 +33,7 @@ export class SuperComplexesComponent implements AfterViewInit {
   private utilService = inject(ComplexUtilService);
   private readonly superpositionService = inject(SuperpositionService);
   private readonly util = inject(UtilService);
+  private readonly gAS = inject(GoogleAnalyticsService);
 
   public initialized = false;
 
@@ -99,6 +100,9 @@ export class SuperComplexesComponent implements AfterViewInit {
   }
 
   public async onSelectionChanged(event: SelectionChangedEvent) {
+    this.gAS.logPageEvents('cp_interactions', {
+      tab: 'supercomplexes',
+    });
     const selectedNodes = event.api.getSelectedNodes();
     if (selectedNodes.length === 0) {
       return;

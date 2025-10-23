@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { DownloadFileTypeService, DownloadService } from '@pdbc/core';
+import { DownloadFileTypeService, DownloadService, GoogleAnalyticsService } from '@pdbc/core';
 import { GridApi } from 'ag-grid-community';
 import { environment } from '../../../../../../environments/environment';
 
@@ -10,6 +10,7 @@ export class ComplexStructureFacade {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   private readonly downloadService = inject(DownloadService);
   private readonly fileDownloadUrl = `${environment.baseUrl}pdbe/download/api/pdb/`;
+  private readonly gAS = inject(GoogleAnalyticsService);
 
   public filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
     return items.filter((item) => {
@@ -52,6 +53,24 @@ export class ComplexStructureFacade {
       localStorage.setItem('pdbIds', pdbIds);
       const url = `${environment.baseUrl}pdbe/download/docs`;
       window.open(url);
+    }
+  }
+
+  public onFilterChanged(event: any) {
+    const columnId = event.columns[0].colId;
+    if (columnId === 'title') {
+      this.gAS.logPageEvents('cp_filter_title', {
+        tab: 'structures',
+      });
+    }
+  }
+
+  public onRowDataUpdated(event: any) {
+    if (event.api.getDisplayedRowCount() > 0) {
+      const firstNode = event.api.getDisplayedRowAtIndex(0);
+      if (firstNode) {
+        firstNode.setSelected(true);
+      }
     }
   }
 }

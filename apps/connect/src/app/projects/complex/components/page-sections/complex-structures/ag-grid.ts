@@ -14,6 +14,9 @@ export const colDefs: ColDef[] = [
     headerName: 'PDB and complex',
     field: 'pdb_id',
     cellRenderer: ComplexPageExternalLinkRendererComponent,
+    cellRendererParams: {
+      tab: 'structures',
+    },
     width: 140,
     sortable: true,
   },

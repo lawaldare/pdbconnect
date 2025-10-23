@@ -108,7 +108,7 @@ export class MbOverviewTabComponent implements OnInit, AfterViewInit, OnDestroy 
       const offsetTop = element.offsetTop;
       document.body.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
     }
-    this.gAS.logEntryPageEvents('ep_mobile_quick_access_click', {});
+    this.gAS.logPageEvents('ep_mobile_quick_access_click', {});
   }
 
   ngOnInit(): void {
@@ -132,6 +132,6 @@ export class MbOverviewTabComponent implements OnInit, AfterViewInit, OnDestroy 
 
   public openMolstarPage(): void {
     this.mbFacade.selectPage('molstar');
-    this.gAS.logEntryPageEvents('ep_mobile_3d_btn_click', {});
+    this.gAS.logPageEvents('ep_mobile_3d_btn_click', {});
   }
 }
