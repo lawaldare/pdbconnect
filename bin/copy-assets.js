@@ -2,28 +2,47 @@ import fs from 'fs';
 import path from 'path';
 
 const distRoot = 'dist/apps';
-const nxJson = JSON.parse(fs.readFileSync('workspace.json', 'utf8'));
 
-// Utility: make dir recursively
+// Utility: create directory recursively
 const mkdirp = (dir) => fs.mkdirSync(dir, { recursive: true });
 
-// Map of appName → baseHref
-// You can extend this if some apps use special paths
+// Map of appName → baseHref(s)
+// Extend this if you add other PDBe apps in the future
 const baseHrefMap = {
   connect: ['/pdbe/entry/', '/pdbe/pdbe-kb/', '/pdbe/connect/'],
-  // entry: ["/pdbe/entry/"], // Example of individual mapping if needed
+  // entry: ['/pdbe/entry/'], // example
 };
 
-for (const [appName, app] of Object.entries(nxJson.projects)) {
-  const outDir = path.join(distRoot, appName);
-  const srcAssets = path.join(outDir, 'assets');
-  if (!fs.existsSync(srcAssets)) continue;
+// ✅ Step 1 — find built apps that contain an assets folder
+if (!fs.existsSync(distRoot)) {
+  console.warn('⚠️ No dist/apps directory found. Did you run Nx build?');
+  process.exit(0);
+}
 
+const builtApps = fs.readdirSync(distRoot).filter((dir) => fs.existsSync(path.join(distRoot, dir, 'assets')));
+
+if (builtApps.length === 0) {
+  console.warn('⚠️ No built apps with assets found — skipping.');
+  process.exit(0);
+}
+
+console.log('🧠 Built apps with assets:', builtApps.join(', '));
+
+// ✅ Step 2 — copy assets into each configured baseHref
+for (const appName of builtApps) {
+  const appDist = path.join(distRoot, appName);
+  const srcAssets = path.join(appDist, 'assets');
   const baseHrefs = baseHrefMap[appName] || ['/pdbe/entry/'];
+
   for (const href of baseHrefs) {
-    const target = path.join(outDir, href, 'assets');
+    // Normalize /pdbe/entry/ → pdbe/entry
+    const cleanHref = href.replace(/^\/|\/$/g, '');
+    const target = path.join(appDist, cleanHref, 'assets');
+
     mkdirp(target);
     fs.cpSync(srcAssets, target, { recursive: true });
-    console.log(`✅ Copied assets for ${appName} → ${href}`);
+    console.log(`✅ Copied assets for ${appName} → ${target}`);
   }
 }
+
+console.log('🎉 Asset duplication complete for PDBe environments.');
