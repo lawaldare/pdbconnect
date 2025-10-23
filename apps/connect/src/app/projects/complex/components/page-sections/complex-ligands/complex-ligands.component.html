@@ -1,6 +1,6 @@
 @if(tutorialTourService.showLigandsTourBanner() && isBannerCookies()){
 <section class="onboarding-tutorial-banner structures">
-  <img src="assets/img/light-star.svg" alt="light start icon" />
+  <img [src]="'img/light-star.svg' | asset" alt="light start icon" />
   <p style="margin: 0 !important">We have redesigned this page to enhance your experience. <span (click)="startLigandsTabTour()">Take an on-page tour.</span></p>
 </section>
 }

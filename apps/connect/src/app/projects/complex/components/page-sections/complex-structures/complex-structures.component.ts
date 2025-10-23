@@ -3,7 +3,7 @@
 import { AfterViewInit, Component, computed, inject, linkedSignal, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Assembly } from '../../../models/complex-structure.model';
-import { AG_Grid_Theme_Class, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
+import { AG_Grid_Theme_Class, AssetPipe, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridApi, GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
@@ -21,7 +21,7 @@ import { tourIds } from '../../../complex.constant';
 @Component({
   selector: 'pdbc-complex-structures',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MolstarComponent, MaterialModule, FormsModule],
+  imports: [CommonModule, AgGridAngular, MolstarComponent, MaterialModule, FormsModule, AssetPipe],
   templateUrl: './complex-structures.component.html',
   styleUrls: ['./complex-structures.component.scss'],
 })
