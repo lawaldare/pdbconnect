@@ -1,16 +1,16 @@
 /* You can add global styles to this file, and also import other style files */
-@import url('@splidejs/splide/css');
-@import url('@splidejs/splide/css/core');
-@import url('ag-grid-community/styles/ag-grid.css');
-@import url('ag-grid-community/styles/ag-theme-quartz.css');
-@import url('driver.js/dist/driver.css');
-@import url('https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css');
+@import '@splidejs/splide/css';
+@import '@splidejs/splide/css/core';
+@import 'ag-grid-community/styles/ag-grid.css';
+@import 'ag-grid-community/styles/ag-theme-quartz.css';
+@import 'driver.js/dist/driver.css';
+@import 'https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css';
 
-@import url('index');
-@import url('./assets/entry-styles/ag-grid-table-styles/table-exp-val-style');
-@import url('./assets/entry-styles/extra/shared-styles');
-@import url('./assets/ebi/css/ebi-global.min');
-@import url('./assets/ebi/css/pdb-rna-viewer-0.3.1-for-ep.min.css');
+@import 'index';
+@import './assets/entry-styles/ag-grid-table-styles/table-exp-val-style';
+@import './assets/entry-styles/extra/shared-styles';
+@import './assets/ebi/css/ebi-global.min';
+@import './assets/ebi/css/pdb-rna-viewer-0.3.1-for-ep.min.css';
 
 /* @import url('https://molstar.org/pdbe-molstar/build/pdbe-molstar.css'); */
 // @import url('https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.min.css');
