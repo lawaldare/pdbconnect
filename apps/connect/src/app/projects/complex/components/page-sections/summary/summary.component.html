@@ -1,3 +1,9 @@
+@if(tutorialTourService.showSummaryTourBanner() && !isBannerCookies()){
+<section class="onboarding-tutorial-banner">
+  <img [src]="'img/light-star.svg' | asset" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startSummaryTabTour()">Take an on-page tour.</span></p>
+</section>
+}
 <div class="summary-section">
   <section class="details">
     @if(summaryData()?.complex_portal_id){
@@ -74,7 +80,10 @@
     </div>
     } @if(uniqueBoundMacromolecules()){
     <div class="info-row">
-      <span class="info-row-title">Unique bound macromolecules</span>
+      <span class="info-row-title">
+        Unique bound macromolecules
+        <lib-help-icon-with-tooltip [tooltipText]="complexSummaryTabTooltips.uniqueBoundMacromolecules" />
+      </span>
       <div class="info-row-content">{{uniqueBoundMacromolecules()}}</div>
     </div>
     }

@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { DestroyRef, inject, Injectable, signal } from '@angular/core';
-import { ScriptLoaderService } from '@pdbc/core';
 import { ComplexStoreState } from '../store/complex-store.model';
 import { Store } from '@ngrx/store';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexSelectors } from '../store/complex.selectors';
 import { ComplexAPIService } from './complex-api.service';
+import { MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 
 declare let PDBeMolstarPlugin: any;
 
@@ -14,7 +14,7 @@ declare let PDBeMolstarPlugin: any;
   providedIn: 'root',
 })
 export class SuperpositionService {
-  private readonly scriptLoaderService = inject(ScriptLoaderService);
+  private readonly molstarPluginService = inject(MolstarPluginService);
   private readonly globalStore = inject(Store<ComplexStoreState>);
   private complexAPIService = inject(ComplexAPIService);
   private readonly destroyRef = inject(DestroyRef);
@@ -27,21 +27,21 @@ export class SuperpositionService {
   public baseRfamMappings = {};
   public rfamMappings: any = {};
 
-  public selectedComplexData = signal<string>(this.complexData() ?? ({} as any));
-  public selectedComplexId = signal<string>(this.complexId() ?? '');
-  private currentComplexData = signal<any>(null);
+  // public selectedComplexData = signal<string>(this.complexData() ?? ({} as any));
+  // public selectedComplexId = signal<string>(this.complexId() ?? '');
+  // private currentComplexData = signal<any>(null);
 
   public isLoading = signal(false);
 
-  private fetchComplexData(id: string) {
-    this.complexAPIService.getSummaryForComplexData(id).subscribe((data) => {
-      this.currentComplexData.set(data);
-    });
-  }
+  // private fetchComplexData(id: string) {
+  //   this.complexAPIService.getSummaryForComplexData(id).subscribe((data) => {
+  //     this.currentComplexData.set(data);
+  //   });
+  // }
 
   async loadInitialComplexView(container: HTMLElement): Promise<void> {
+    await this.molstarPluginService.loadPlugin();
     this.isLoading.set(true);
-    // await this.scriptLoaderService.loadScript('https://molstar.org/pdbe-molstar/build/pdbe-molstar-plugin.js');
     const complexData = this.complexData();
     if (complexData) {
       const { pdb_id, assembly_id } = complexData.representative_structure;
@@ -91,7 +91,6 @@ export class SuperpositionService {
   }
 
   public async loadComplex(id: string, kind: string) {
-    this.fetchComplexData(id);
     this.complexAPIService
       .getSummaryForComplexData(id)
       .pipe(takeUntilDestroyed(this.destroyRef))

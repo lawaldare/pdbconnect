@@ -16,7 +16,7 @@ import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/c
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { filter, firstValueFrom, take, timer } from 'rxjs';
 import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
-import { TutorialTourService } from '../../services/tutorial-tour.service';
+import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
@@ -28,7 +28,7 @@ import { TutorialTourService } from '../../services/tutorial-tour.service';
 export class AssembliesTabComponent implements AfterViewInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly gAS = inject(GoogleAnalyticsService);
-  public readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(EntryPageTutorialTourService);
 
   public dashboardStatLinks = dashboardStatLinks;
 

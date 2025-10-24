@@ -1,4 +1,4 @@
-@import url('libs/core/src/lib/styles/pdb_connect.scss');
+@import 'libs/core/src/lib/styles/pdb_connect.scss';
 
 main {
   .container {
@@ -21,6 +21,10 @@ header {
   }
 
   .links {
+    width: 300px;
+    min-width: 300px;
+    max-width: 300px;
+
     a {
       font-size: 18px;
       margin-left: 25px;

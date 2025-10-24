@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, computed, inject, linkedSignal, OnInit, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, inject, linkedSignal, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Assembly } from '../../../models/complex-structure.model';
-import { AG_Grid_Theme_Class, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
+import { AG_Grid_Theme_Class, AssetPipe, GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridApi, GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
@@ -15,17 +15,20 @@ import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
 import { FormsModule } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { ComplexStructureFacade } from './complex-structure.facade';
+import { ComplexPageTutorialTourService } from '../../../services/complex-page-tutorial-tour.service';
+import { tourIds } from '../../../complex.constant';
 
 @Component({
   selector: 'pdbc-complex-structures',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MolstarComponent, MaterialModule, FormsModule],
+  imports: [CommonModule, AgGridAngular, MolstarComponent, MaterialModule, FormsModule, AssetPipe],
   templateUrl: './complex-structures.component.html',
   styleUrls: ['./complex-structures.component.scss'],
 })
-export class ComplexStructuresComponent implements OnInit {
+export class ComplexStructuresComponent implements OnInit, AfterViewInit {
   private readonly facade = inject(ComplexStructureFacade);
   private readonly globalStore = inject(Store<ComplexStoreState>);
+  public readonly tutorialTourService = inject(ComplexPageTutorialTourService);
 
   public readonly summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
   private readonly gAS = inject(GoogleAnalyticsService);
@@ -45,7 +48,15 @@ export class ComplexStructuresComponent implements OnInit {
       return assemblies;
     }
 
+    if (value === 'all-bound') {
+      return assemblies.filter((assembly) => assembly.bound_macromolecules.length > 0);
+    }
+
     return assemblies.filter((assembly) => assembly.bound_macromolecules.includes(value));
+  });
+  private hasStructures = computed(() => {
+    const rows = this.rowData();
+    return rows.length > 0;
   });
   public uniqueBoundMacromolecules = computed(() => {
     const data = this.summaryData();
@@ -57,6 +68,7 @@ export class ComplexStructuresComponent implements OnInit {
   });
   public selectedBM = signal('all');
   public boundMacromolecules = computed(() => {
+    const allAssemblies = this.summaryData()?.assemblies as Assembly[];
     const assemblies = this.assembliesWithBoundMacromolecules();
     const result = assemblies?.reduce((acc: any, assembly) => {
       for (const bound of assembly.bound_macromolecules) {
@@ -72,12 +84,15 @@ export class ComplexStructuresComponent implements OnInit {
     const mappedOptions = Object.entries(result).reduce(
       (acc: any[], [macromolecule, count]) => {
         acc.push({
-          label: `${macromolecule.charAt(0).toUpperCase() + macromolecule.slice(1)} (${count})`,
+          label: `${macromolecule} (${count})`,
           value: macromolecule,
         });
         return acc;
       },
-      [{ label: `All (${assemblies?.length})`, value: 'all' }]
+      [
+        { label: `All (${allAssemblies?.length})`, value: 'all' },
+        { label: `All bound (${assemblies?.length})`, value: 'all-bound' },
+      ]
     );
 
     return mappedOptions;
@@ -119,6 +134,22 @@ export class ComplexStructuresComponent implements OnInit {
       hideCanvasControls: ['expand', 'animation', 'controlToggle'],
       landscape: true,
     };
+  }
+
+  public isBannerCookies = signal(false);
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.tutorialTourService.hasStructures.set(this.hasStructures());
+      const agreed = this.tutorialTourService.getCookie(tourIds.structures);
+      if (!agreed && this.hasStructures()) {
+        this.isBannerCookies.set(true);
+      }
+    }, 500);
+  }
+
+  public startStructuresTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.structuresTabTourSteps);
   }
 
   public onSelectionChanged(event: SelectionChangedEvent) {

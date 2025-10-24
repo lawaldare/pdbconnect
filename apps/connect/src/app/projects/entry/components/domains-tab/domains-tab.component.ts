@@ -29,7 +29,7 @@ import { SequenceDetail } from '../../store/data-processing/models/other-models'
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { Molecule } from '../../data-models/molecule.model';
 import { ProcessedDomain } from '../../store/data-processing/models/processed-entities.model';
-import { TutorialTourService } from '../../services/tutorial-tour.service';
+import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 
 @Component({
   selector: 'pdbc-domains-tab',
@@ -183,7 +183,7 @@ export class DomainsTabComponent implements AfterViewInit {
 
   @ViewChild('popoutWrapper') popoutWrapper!: ElementRef;
 
-  public readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(EntryPageTutorialTourService);
   private processedDomainsWithMacrols = toSignal(this.globalStore.select(EntrySelectors.processedDomainsWithMacromols));
   public hasLoadedDomains = computed(() => this.processedDomainsWithMacrols() !== undefined);
   public hasDomains = computed(() => {

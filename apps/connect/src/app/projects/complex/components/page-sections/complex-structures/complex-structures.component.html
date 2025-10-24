@@ -1,4 +1,9 @@
-@if(rowData().length){
+@if(tutorialTourService.showStructuresTourBanner() && isBannerCookies()){
+<section class="onboarding-tutorial-banner structures">
+  <img [src]="'img/light-star.svg' | asset" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startStructuresTabTour()">Take an on-page tour.</span></p>
+</section>
+} @if(rowData().length){
 <div id="structures-section">
   <header>
     <h5 class="title">{{rowData().length}} assemblies representing this complex in the PDB</h5>
@@ -14,7 +19,7 @@
     </mat-menu>
   </header>
   @if(uniqueBoundMacromolecules()?.length && boundMacromolecules().length){
-  <section class="filter">
+  <section class="filter" id="structure-bound-filters-tour">
     <p>{{uniqueBoundMacromolecules()?.length}} unique bound macromolecules found in {{assembliesWithBoundMacromolecules()?.length}} assemblies</p>
     <div class="filter-action">
       <p>Filter by bound macromolecule:</p>
@@ -27,7 +32,7 @@
     </div>
   </section>
   }
-  <section>
+  <section id="structure-table-tour">
     <div class="table">
       <ag-grid-angular
         class="ag-theme-quartz"

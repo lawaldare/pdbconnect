@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ComplexLigandGridComponent } from '../../section-components/complex-ligand-grid/complex-ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
@@ -11,17 +11,20 @@ import { ComplexSelectors } from '../../../store/complex.selectors';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { map } from 'rxjs';
 import { ComplexLigand } from '../../../models/complex-ligands.model';
-import { MaterialModule } from '@pdbc/core';
+import { AssetPipe, MaterialModule } from '@pdbc/core';
+import { ComplexPageTutorialTourService } from '../../../services/complex-page-tutorial-tour.service';
+import { tourIds } from '../../../complex.constant';
 
 @Component({
   selector: 'pdbc-complex-ligands',
   standalone: true,
-  imports: [CommonModule, ComplexLigandGridComponent, MatPaginator, ReactiveFormsModule, MaterialModule],
+  imports: [CommonModule, AssetPipe, ComplexLigandGridComponent, MatPaginator, ReactiveFormsModule, MaterialModule],
   templateUrl: './complex-ligands.component.html',
   styleUrl: './complex-ligands.component.scss',
 })
-export class ComplexLigandsComponent implements OnInit {
+export class ComplexLigandsComponent implements OnInit, AfterViewInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
+  public readonly tutorialTourService = inject(ComplexPageTutorialTourService);
 
   public ligandsPageSize = signal<number>(6);
 
@@ -32,6 +35,11 @@ export class ComplexLigandsComponent implements OnInit {
 
   public ligandsLength = signal<number>(0);
   public ligandsPageSizeOptions = computed(() => [6, 12, 18]);
+
+  public hasLigands = computed(() => {
+    const numberOfLigands = this.ligandsLength();
+    return numberOfLigands > 0;
+  });
 
   public searchTerm = new FormControl('');
 
@@ -108,5 +116,21 @@ export class ComplexLigandsComponent implements OnInit {
     }
 
     // this.ligandGrid.renderLigandImg();
+  }
+
+  public isBannerCookies = signal(false);
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.tutorialTourService.hasLigands.set(this.hasLigands());
+      const agreed = this.tutorialTourService.getCookie(tourIds.ligands);
+      if (!agreed && this.hasLigands()) {
+        this.isBannerCookies.set(true);
+      }
+    }, 500);
+  }
+
+  public startLigandsTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.ligandsTabTourSteps);
   }
 }

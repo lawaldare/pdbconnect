@@ -39,7 +39,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { ApplicationAPIDispatcher } from '../../services/application-api-dispacher.service';
 import { SpeedTestServiceCustom } from '../../services/speed-test/speed-test-service.service';
 
-import { TutorialTourService } from '../../services/tutorial-tour.service';
+import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { MetaTagService } from '../../services/meta-tag.service';
 import { EntryMainFacade } from './entry-main.facade';
 import { HelpIconForMolstarService } from '@pdbe-lib/molstar-for-apps';
@@ -96,7 +96,7 @@ export class EntryMainPageComponent implements OnInit {
   private readonly entryBioschemasService = inject(EntryBioschemasService);
   private readonly renderer = inject(Renderer2);
   public readonly gAS = inject(GoogleAnalyticsService);
-  public readonly tutorialTourService = inject(TutorialTourService);
+  public readonly tutorialTourService = inject(EntryPageTutorialTourService);
   public readonly helpIconForMolstarService = inject(HelpIconForMolstarService);
 
   private procAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
@@ -192,9 +192,7 @@ export class EntryMainPageComponent implements OnInit {
     document.body.style.overflowX = 'hidden'; // <body>
     document.body.style.width = '100%';
 
-    if (environment.production === false) {
-      Clarity.init(environment.clarityProjectId);
-    }
+    Clarity.init(environment.clarityProjectId);
 
     this.facade.showNotification();
     this.facade.checkWindowWidth();

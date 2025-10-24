@@ -8,12 +8,8 @@ export const headerSearchComplexConfig = {
       value: 'PDB-CPX-154652',
     },
     {
-      label: 'Cyclin A2-CDK2 (PDB-CPX-148886)',
-      value: 'PDB-CPX-148886',
-    },
-    {
-      label: 'Succinyl-CoA synthetase (2nu8)',
-      value: '2nu8',
+      label: 'SARS-CoV-2 post-fusion S2 spike (CPX-7043)',
+      value: 'CPX-7043',
     },
     {
       label: 'Aspartate carbamoyltransferase (4fyy)',
@@ -57,14 +53,26 @@ export const complexRouteTabs = [
   { label: 'Citations', id: 'citations' },
 ];
 
+export const tourIds = {
+  summary: 'tour-complex-summary',
+  structures: 'tour-complex-structures',
+  pisa: 'tour-complex-pisa',
+  ligands: 'tour-complex-ligands',
+  subcomplexes: 'tour-complex-subcomplexes',
+  supercomplexes: 'tour-complex-supercomplexes',
+  citations: 'tour-complex-citations',
+};
+
 export const complexSummaryTabTooltips = {
   polymerComposition: 'Shows the total number of each polymer type in the complex: protein, RNA, DNA, or hybrid DNA/RNA. Counts come from component stoichiometry.',
   globalSymmetry:
     'Displays the symmetry most often observed for this complex (identified with AnAnaS). PDB assemblies with different or missing symmetry are listed separately.',
   observedCofactors:
-    'Lists every unique cofactor bound to the complex. A ligand is marked as a cofactor when it matches a class in the CoFactor database and binds a protein with a recognised enzymatic role.',
+    'Lists all unique cofactors observed bound across all instances of this complex. A ligand is marked as a cofactor when it matches a class in the CoFactor database and binds a protein with a recognised enzymatic role.',
   component:
-    'Shows every macromolecule in the complex with its copy number. Mapped proteins link to UniProt while mapped RNAs link to Rfam. Unmapped macromolecules are displayed as type_PDB_entityID (for example, antibody_5mv4_1), where type refers to the molecule class: protein, DNA, RNA, or antibody.',
+    'Shows every macromolecule in the complex with its copy number. Mapped proteins link to UniProt while mapped RNAs link to Rfam. Unmapped macromolecules are displayed as type_PDB_entityID_stoichiometry (for example, Protein_3qwr_3_1), where type refers to the polymer type: Protein, DNA, DNA/RNA or RNA.',
+  uniqueBoundMacromolecules:
+    'Lists all unique additional macromolecules observed bound across all instances of this complex. A bound macromolecule can be one of seven types: antibody, peptide (less than 20 amino acids and unmapped), mRNA (only in ribosome complexes), tRNA (only in ribosome complexes), short nucleic acid fragments (less than 25 nucleotides and unmapped).',
 };
 
 export const PARAMS = [

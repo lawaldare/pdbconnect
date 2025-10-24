@@ -11,7 +11,7 @@
       <section class="hero">
         @if(summaryData()?.name){
         <header>
-          <h1 class="heading-1" libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="50"></h1>
+          <h1 class="heading-1" libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="30"></h1>
           <div class="links">
             <a class="vf-button vf-button--link" href="https://wwwdev.ebi.ac.uk/pdbe/aggregated-api/#/Complex" target="_blank">
               API
@@ -42,26 +42,47 @@
         <button class="vf-button vf-button--search-pdbe" role="link" (click)="openFeedbackForm()">Share your feedback</button>
       </section>
       <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)" #tabs>
-        <mat-tab label="Summary">
-          <pdbc-summary />
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span id="summary-label-tour">Summary</span>
+          </ng-template>
+          <ng-template matTabContent> <pdbc-summary /> </ng-template>
         </mat-tab>
-        <mat-tab label="Structures">
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span id="structures-label-tour">Structures</span>
+          </ng-template>
           <ng-template matTabContent> <pdbc-complex-structures /> </ng-template>
         </mat-tab>
-        <mat-tab label="PISA">
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span id="pisa-label-tour">PISA</span>
+          </ng-template>
           <ng-template matTabContent> <pdbc-complex-pisa /> </ng-template>
         </mat-tab>
-        <mat-tab label="Ligands">
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span id="ligands-label-tour">Ligands</span>
+          </ng-template>
           <ng-template matTabContent> <pdbc-complex-ligands /> </ng-template>
         </mat-tab>
-        <mat-tab label="Subcomplexes">
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span id="subcomplexes-label-tour">Subcomplexes</span>
+          </ng-template>
           <ng-template matTabContent> <pdbc-subcomplexes /> </ng-template>
         </mat-tab>
-        <mat-tab label="Supercomplexes">
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span id="supercomplexes-label-tour">Supercomplexes</span>
+          </ng-template>
           <ng-template matTabContent> <pdbc-supercomplexes /> </ng-template>
         </mat-tab>
-        <mat-tab label="Citations">
-          <pdbc-complex-publications />
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span id="citations-label-tour">Citations</span>
+          </ng-template>
+          <ng-template matTabContent> <pdbc-complex-publications /> </ng-template>
         </mat-tab>
       </mat-tab-group>
     </article>
@@ -79,3 +100,22 @@
   privacyNoticeUrl="https://www.ebi.ac.uk/data-protection/privacy-notice/embl-ebi-public-website/"
   pageId="dataProtectionAgreedForComplexPages"
 />
+
+@if(helpIconForMolstarService.showHelpIcon()){
+<div class="help-button" (click)="openHelpModal()">Help</div>
+}
+
+<!-- Help Panel -->
+<div class="help-panel" [class.active]="tutorialTourService.showHelpGuideModal()">
+  <div class="help-header">
+    <span>Help</span>
+    <span class="close-btn" (click)="closeHelpGuideModal()">&times;</span>
+  </div>
+  <div class="help-body">
+    <span class="action" (click)="tutorialTourService.startTourFromHelp()">Take on-page tour</span>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeSy9zqhqm5n46GtjKizNKOipoRgmj9juweopKUHY2lQc-dyQ/viewform" target="_blank"
+      >Give your feedback <i style="margin-left: 5px" class="icon icon-link icon-common"></i
+    ></a>
+    <p>We’re working to add more content to the Help section. Stay tuned!</p>
+  </div>
+</div>

@@ -29,6 +29,9 @@ import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { DataPrivacyBannerComponent } from '@pdbc/core';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { ComplexMetaTagService } from '../../../services/complex-meta-tag.service';
+import { ComplexPageTutorialTourService } from '../../../services/complex-page-tutorial-tour.service';
+import { HelpIconForMolstarService } from '@pdbe-lib/molstar-for-apps';
+import { ComplexUtilService } from '../../../services/complex-util.service';
 
 @Component({
   selector: 'pdbc-main',
@@ -62,10 +65,14 @@ export class MainComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly bioschemasService = inject(ComplexBioschemasService);
   private readonly complexMetaTagService = inject(ComplexMetaTagService);
+  private readonly complexUtilService = inject(ComplexUtilService);
   private readonly renderer = inject(Renderer2);
 
   public readonly headerLogoMenuConfig = { ...headerComplexLogoMenuConfig, isComplexPage: true };
   public readonly headerSearchConfig = headerSearchComplexConfig;
+
+  public readonly tutorialTourService = inject(ComplexPageTutorialTourService);
+  public readonly helpIconForMolstarService = inject(HelpIconForMolstarService);
 
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public readonly scrollService = inject(ScrollPositionService);
@@ -87,6 +94,7 @@ export class MainComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       const routeTabs = complexRouteTabs;
       const tabName = params['activeTab'];
+      this.complexUtilService.updateCurrentComplexTabName(tabName ?? 'summary');
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.selectedTab.set(tabIndex);
       this.gAS.logPageEvents('cp_tab_access', {
@@ -119,6 +127,7 @@ export class MainComponent implements OnInit {
   public selectTab(event: MatTabChangeEvent) {
     const routeTabs = complexRouteTabs;
     const tabName = routeTabs[event.index].id;
+    this.complexUtilService.updateCurrentComplexTabName(tabName ?? 'summary');
 
     this.gAS.logPageEvents('cp_tab_switch', {
       tab: tabName,
@@ -143,5 +152,13 @@ export class MainComponent implements OnInit {
 
   public openFeedbackForm(): void {
     window.open('https://docs.google.com/forms/d/e/1FAIpQLSeSy9zqhqm5n46GtjKizNKOipoRgmj9juweopKUHY2lQc-dyQ/viewform', '_blank');
+  }
+
+  public openHelpModal(): void {
+    this.tutorialTourService.showHelpGuideModal.set(true);
+  }
+
+  public closeHelpGuideModal(): void {
+    this.tutorialTourService.showHelpGuideModal.set(false);
   }
 }

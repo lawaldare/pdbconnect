@@ -1,3 +1,10 @@
+@if(tutorialTourService.showSubcomplexesTourBanner() && isBannerCookies()){
+<section class="onboarding-tutorial-banner">
+  <img [src]="'img/light-star.svg' | asset" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startSubcomplexesTabTour()">Take an on-page tour.</span></p>
+</section>
+}
+
 <div id="interaction-section">
   <h5>{{rowData().length}} subcomplexes</h5>
   <p>
@@ -7,7 +14,7 @@
   </p>
 
   @if ((subcomplexInteractions() ?? []).length) {
-  <div class="search-box">
+  <div class="search-box" id="subcomplexes-search-tour">
     <input type="search" [(ngModel)]="searchTerm" placeholder="Search by component accession or name" />
     @if (!searchTerm()) {
     <i class="icon icon-common icon-search"></i>
@@ -16,7 +23,7 @@
   @if(rowData().length){
 
   <section class="table">
-    <div class="table-section">
+    <div class="table-section" id="subcomplexes-table-tour">
       <ag-grid-angular
         class="ag-theme-quartz"
         [rowData]="rowData()"

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, computed, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ComplexStoreState } from '../../../store/complex-store.model';
@@ -8,7 +8,7 @@ import { ComplexSelectors } from '../../../store/complex.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { AG_Grid_Theme_Class, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
+import { AG_Grid_Theme_Class, AssetPipe, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { FormsModule } from '@angular/forms';
 import { ComplexUtilService } from '../../../services/complex-util.service';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -16,17 +16,18 @@ import { gridOptions, colDefs, rowSelection } from './ag-grid';
 import { SelectionChangedEvent } from 'ag-grid-community';
 import { SuperpositionService } from '../../../services/superposition.service';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { superpositionTooltip } from '../../../complex.constant';
+import { superpositionTooltip, tourIds } from '../../../complex.constant';
 import { MbComplexComponent } from '../mb-complex-components';
+import { ComplexPageTutorialTourService } from '../../../services/complex-page-tutorial-tour.service';
 
 @Component({
   selector: 'pdbc-subcomplexes',
   standalone: true,
-  imports: [CommonModule, NgxSkeletonLoaderModule, MaterialModule, FormsModule, AgGridAngular, HelpIconWithTooltipComponent, MbComplexComponent],
+  imports: [CommonModule, AssetPipe, NgxSkeletonLoaderModule, MaterialModule, FormsModule, AgGridAngular, HelpIconWithTooltipComponent, MbComplexComponent],
   templateUrl: './subcomplexes.component.html',
   styleUrl: '../sub-and-super-complex.scss',
 })
-export class SubComplexesComponent {
+export class SubComplexesComponent implements AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
   private utilService = inject(ComplexUtilService);
@@ -47,6 +48,7 @@ export class SubComplexesComponent {
 
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public subcomplexInteractions = toSignal(this.globalStore.select(ComplexSelectors.subComplexInteractions));
+  public readonly tutorialTourService = inject(ComplexPageTutorialTourService);
 
   public searchTerm = signal('');
 
@@ -58,6 +60,11 @@ export class SubComplexesComponent {
     } else {
       return interactions;
     }
+  });
+
+  public hasSubcomplexes = computed(() => {
+    const rows = this.rowData();
+    return rows.length > 0;
   });
 
   public structuresPage = linkedSignal({
@@ -109,7 +116,9 @@ export class SubComplexesComponent {
       await this.superpositionService.deleteComplex(this.currentComplexId());
     }
     this.currentComplexId.set(data.pdb_complex_id);
-    await this.superpositionService.loadComplex(data.pdb_complex_id, 'subcomplex');
+    setTimeout(async () => {
+      await this.superpositionService.loadComplex(data.pdb_complex_id, 'subcomplex');
+    }, 1000);
   }
   public async onRowDataUpdated(event: any) {
     if (event.api.getDisplayedRowCount() > 0) {
@@ -119,5 +128,21 @@ export class SubComplexesComponent {
         await this.updatedSelectedRow(firstNode.data);
       }
     }
+  }
+
+  public isBannerCookies = signal(false);
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.tutorialTourService.hasSubcomplexes.set(this.hasSubcomplexes());
+      const agreed = this.tutorialTourService.getCookie(tourIds.subcomplexes);
+      if (!agreed && this.hasSubcomplexes()) {
+        this.isBannerCookies.set(true);
+      }
+    }, 500);
+  }
+
+  public startSubcomplexesTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.subcomplexesTabTourSteps);
   }
 }

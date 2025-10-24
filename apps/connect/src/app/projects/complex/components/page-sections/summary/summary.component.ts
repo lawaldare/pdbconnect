@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, computed, inject, linkedSignal, OnInit, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, inject, linkedSignal, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ParticipantDirective } from '../../../directives/participants.directive';
 import { ComplexSymmetryPipe } from '../../../pipes/symmetry.pipe';
 import { Assembly, ComplexData, Participant } from '../../../models/complex-structure.model';
 import { OEMCDirective } from '../../../directives/oemc.directive';
-import { MaterialModule } from '@pdbc/core';
+import { AssetPipe, MaterialModule } from '@pdbc/core';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -17,19 +17,22 @@ import { ComplexUtilService } from '../../../services/complex-util.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DiffSymmetryDialogComponent } from '../../section-components/diff-symmetry-dialog/diff-symmetry-dialog.component';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { complexSummaryTabTooltips } from '../../../complex.constant';
+import { complexSummaryTabTooltips, tourIds } from '../../../complex.constant';
+import { ComplexPageTutorialTourService } from '../../../services/complex-page-tutorial-tour.service';
 
 @Component({
   selector: 'pdbc-summary',
   standalone: true,
-  imports: [CommonModule, HelpIconWithTooltipComponent, MolstarComponent, MaterialModule, ParticipantDirective, ComplexSymmetryPipe, OEMCDirective],
+  imports: [CommonModule, AssetPipe, HelpIconWithTooltipComponent, MolstarComponent, MaterialModule, ParticipantDirective, ComplexSymmetryPipe, OEMCDirective],
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss'],
 })
-export class SummaryComponent implements OnInit {
+export class SummaryComponent implements OnInit, AfterViewInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
   public ligands = toSignal(this.globalStore.select(ComplexSelectors.complexLigands));
+
+  public readonly tutorialTourService = inject(ComplexPageTutorialTourService);
 
   private readonly utilService = inject(ComplexUtilService);
   private readonly dialog = inject(MatDialog);
@@ -77,6 +80,19 @@ export class SummaryComponent implements OnInit {
       assemblyId: Number(this.respresentStructure()?.assembly_id),
       hideControls: true,
     };
+  }
+
+  public isBannerCookies = signal(false);
+
+  ngAfterViewInit(): void {
+    const agreed = this.tutorialTourService.getCookie(tourIds.summary);
+    if (agreed) {
+      this.isBannerCookies.set(true);
+    }
+  }
+
+  public startSummaryTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.summaryTabTourSteps);
   }
 
   private countPdbIdExperimentalMethod(data: Assembly[]) {
