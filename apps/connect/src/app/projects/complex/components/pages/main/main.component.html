@@ -11,7 +11,7 @@
       <section class="hero">
         @if(summaryData()?.name){
         <header>
-          <h1 class="heading-1" libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="50"></h1>
+          <h1 class="heading-1" libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="30"></h1>
           <div class="links">
             <a class="vf-button vf-button--link" href="https://wwwdev.ebi.ac.uk/pdbe/aggregated-api/#/Complex" target="_blank">
               API

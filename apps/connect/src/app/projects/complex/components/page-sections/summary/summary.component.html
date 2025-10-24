@@ -80,7 +80,10 @@
     </div>
     } @if(uniqueBoundMacromolecules()){
     <div class="info-row">
-      <span class="info-row-title">Unique bound macromolecules</span>
+      <span class="info-row-title">
+        Unique bound macromolecules
+        <lib-help-icon-with-tooltip [tooltipText]="complexSummaryTabTooltips.uniqueBoundMacromolecules" />
+      </span>
       <div class="info-row-content">{{uniqueBoundMacromolecules()}}</div>
     </div>
     }

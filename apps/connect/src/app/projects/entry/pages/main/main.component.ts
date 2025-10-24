@@ -192,9 +192,7 @@ export class EntryMainPageComponent implements OnInit {
     document.body.style.overflowX = 'hidden'; // <body>
     document.body.style.width = '100%';
 
-    if (environment.production === false) {
-      Clarity.init(environment.clarityProjectId);
-    }
+    Clarity.init(environment.clarityProjectId);
 
     this.facade.showNotification();
     this.facade.checkWindowWidth();

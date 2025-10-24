@@ -48,6 +48,10 @@ export class ComplexStructuresComponent implements OnInit, AfterViewInit {
       return assemblies;
     }
 
+    if (value === 'all-bound') {
+      return assemblies.filter((assembly) => assembly.bound_macromolecules.length > 0);
+    }
+
     return assemblies.filter((assembly) => assembly.bound_macromolecules.includes(value));
   });
   private hasStructures = computed(() => {
@@ -64,6 +68,7 @@ export class ComplexStructuresComponent implements OnInit, AfterViewInit {
   });
   public selectedBM = signal('all');
   public boundMacromolecules = computed(() => {
+    const allAssemblies = this.summaryData()?.assemblies as Assembly[];
     const assemblies = this.assembliesWithBoundMacromolecules();
     const result = assemblies?.reduce((acc: any, assembly) => {
       for (const bound of assembly.bound_macromolecules) {
@@ -79,12 +84,15 @@ export class ComplexStructuresComponent implements OnInit, AfterViewInit {
     const mappedOptions = Object.entries(result).reduce(
       (acc: any[], [macromolecule, count]) => {
         acc.push({
-          label: `${macromolecule.charAt(0).toUpperCase() + macromolecule.slice(1)} (${count})`,
+          label: `${macromolecule} (${count})`,
           value: macromolecule,
         });
         return acc;
       },
-      [{ label: `All (${assemblies?.length})`, value: 'all' }]
+      [
+        { label: `All (${allAssemblies?.length})`, value: 'all' },
+        { label: `All bound (${assemblies?.length})`, value: 'all-bound' },
+      ]
     );
 
     return mappedOptions;
