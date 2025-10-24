@@ -6,10 +6,10 @@
 @import url('driver.js/dist/driver.css');
 @import url('https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css');
 
-@import url('libs/core/src/lib/styles/index');
-@import url('./assets/entry-styles/ag-grid-table-styles/table-exp-val-style.scss');
-@import url('./assets/entry-styles/extra/shared-styles.scss');
-@import url('./assets/ebi/css/ebi-global.min.scss');
+@import url('index');
+@import url('./assets/entry-styles/ag-grid-table-styles/table-exp-val-style');
+@import url('./assets/entry-styles/extra/shared-styles');
+@import url('./assets/ebi/css/ebi-global.min');
 @import url('./assets/ebi/css/pdb-rna-viewer-0.3.1-for-ep.min.css');
 
 /* @import url('https://molstar.org/pdbe-molstar/build/pdbe-molstar.css'); */
