@@ -2,6 +2,7 @@ import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import { ComplexData, ComplexInteraction } from '../models/complex-structure.model';
 import { ComplexLigand } from '../models/complex-ligands.model';
 import { PISAAssemblyParam } from '../models/pisa-assembly-param.model';
+import { ComplexIdHistory } from '../models/complexId-history.model';
 
 export const ComplexActions = createActionGroup({
   source: 'Ligands Page',
@@ -12,6 +13,9 @@ export const ComplexActions = createActionGroup({
     'Get Ligands For Complexes': emptyProps(),
     'Get Ligands For Complexes Success': props<{ complexLigands: ComplexLigand[] }>(),
     'Get Ligands For Complexes Failure': emptyProps(),
+    'Get ComplexId History': emptyProps(),
+    'Get ComplexId History Success': props<{ history: ComplexIdHistory }>(),
+    'Get ComplexId History Failure': emptyProps(),
     'Get ComplexInteractions': emptyProps(),
     'Get ComplexInteractions Success': props<{ subComplexInteractions: ComplexInteraction[]; superComplexInteractions: ComplexInteraction[] }>(),
     'Get ComplexInteractions Failure': emptyProps(),

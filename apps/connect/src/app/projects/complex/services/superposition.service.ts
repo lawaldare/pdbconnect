@@ -7,6 +7,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexSelectors } from '../store/complex.selectors';
 import { ComplexAPIService } from './complex-api.service';
 import { MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
+import { filter } from 'rxjs';
 
 declare let PDBeMolstarPlugin: any;
 
@@ -19,7 +20,7 @@ export class SuperpositionService {
   private complexAPIService = inject(ComplexAPIService);
   private readonly destroyRef = inject(DestroyRef);
 
-  public complexData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
+  public complexData = toSignal(this.globalStore.select(ComplexSelectors.complexData).pipe(filter(Boolean)));
   public complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
 
   public viewerInstance: any;

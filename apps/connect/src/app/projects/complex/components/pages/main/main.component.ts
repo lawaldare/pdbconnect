@@ -5,7 +5,7 @@ import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 // import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { SummaryComponent } from '../../page-sections/summary/summary.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of, switchMap } from 'rxjs';
+import { EMPTY, filter, map, mergeMap, of, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexStructuresComponent } from '../../page-sections/complex-structures/complex-structures.component';
 import { GoogleAnalyticsService, MaterialModule, ScrollPositionService, TruncateTextDirective } from '@pdbc/core';
@@ -23,16 +23,22 @@ import { complexRouteTabs } from '../../../complex.constant';
 import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { SuperComplexesComponent } from '../../page-sections/complex-supercomplex/supercomplexes.component';
 import { SubComplexesComponent } from '../../page-sections/complex-subcomplex/subcomplexes.component';
-import { NotificationComponent } from '@pdbc/notification';
+// import { NotificationComponent } from '@pdbc/notification';
 import { ComplexPISAComponent } from '../../page-sections/complex-pisa/complex-pisa.component';
-import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { DataPrivacyBannerComponent } from '@pdbc/core';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { ComplexMetaTagService } from '../../../services/complex-meta-tag.service';
 import { ComplexPageTutorialTourService } from '../../../services/complex-page-tutorial-tour.service';
 import { HelpIconForMolstarService } from '@pdbe-lib/molstar-for-apps';
 import { ComplexUtilService } from '../../../services/complex-util.service';
+import { ComplexIdHistory } from '../../../models/complexId-history.model';
+import { environment } from '../../../../../../environments/environment';
 
+enum ComplexIdHistoryStatus {
+  Active = 'active',
+  Superseded = 'superseded',
+  Obsolete = 'obsolete',
+}
 @Component({
   selector: 'pdbc-main',
   standalone: true,
@@ -50,8 +56,7 @@ import { ComplexUtilService } from '../../../services/complex-util.service';
     NgxSkeletonLoaderModule,
     MaterialModule,
     SuperComplexesComponent,
-    NotificationComponent,
-    HelpIconWithTooltipComponent,
+    // NotificationComponent,
     DataPrivacyBannerComponent,
   ],
   templateUrl: './main.component.html',
@@ -77,16 +82,24 @@ export class MainComponent implements OnInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public readonly scrollService = inject(ScrollPositionService);
 
-  public summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
+  public summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData).pipe(filter(Boolean)));
   public complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
   public loaded = toSignal(this.globalStore.select(ComplexSelectors.loadingState));
 
   public readonly status = LoadingState;
   public selectedTab = signal<number>(0);
 
-  public showNotificationBanner = signal<boolean>(false);
+  public readonly complexIdHistoryStatus = ComplexIdHistoryStatus;
+
+  public historyMessage = signal<string>('');
+  public history = signal<ComplexIdHistory>(null as any);
+  public environment = environment;
+
+  // public showNotificationBanner = signal<boolean>(false);
 
   public idWarningTooltip = idWarningTooltip;
+
+  public pageView = signal<string>('INITIAL');
 
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
@@ -104,17 +117,30 @@ export class MainComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.showNotification();
+    // this.showNotification();
     this.route.params
       .pipe(
         switchMap((params) => {
           const complexId = params['complexId'].toUpperCase();
           this.globalStore.dispatch(ComplexActions.setCurrentComplexId({ complexId }));
-          this.globalStore.dispatch(ComplexActions.getComplexData());
-          this.globalStore.dispatch(ComplexActions.getLigandsForComplexes());
-          this.globalStore.dispatch(ComplexActions.getComplexInteractions());
-          this.globalStore.dispatch(ComplexActions.getPISAAssembliesParams());
-          return of({});
+          this.globalStore.dispatch(ComplexActions.getComplexIdHistory());
+          return this.globalStore.select(ComplexSelectors.history).pipe(
+            tap((history) => console.log('Complex ID history:', history)),
+            filter(Boolean)
+          );
+        }),
+        mergeMap((history: ComplexIdHistory) => {
+          this.history.set(history);
+          if (history.status === this.complexIdHistoryStatus.Superseded) {
+            this.historyMessage.set(`${history.query_id} has been superseded since ${history.canonical.effective_date} by ${history.canonical.id}`);
+            this.router.navigate(['/complexes', history.canonical.id]);
+            this.globalStore.dispatch(ComplexActions.setCurrentComplexId({ complexId: history.canonical.id }));
+            this.dispatchCoreActions();
+          } else if (history.canonical.status === this.complexIdHistoryStatus.Active) {
+            this.pageView.set('SUCCESS');
+            this.dispatchCoreActions();
+          }
+          return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -122,6 +148,13 @@ export class MainComponent implements OnInit {
         this.bioschemasService.buildBioschemasJSON(this.renderer);
         this.complexMetaTagService.buildMetaTags();
       });
+  }
+
+  private dispatchCoreActions() {
+    this.globalStore.dispatch(ComplexActions.getComplexData());
+    this.globalStore.dispatch(ComplexActions.getLigandsForComplexes());
+    this.globalStore.dispatch(ComplexActions.getComplexInteractions());
+    this.globalStore.dispatch(ComplexActions.getPISAAssembliesParams());
   }
 
   public selectTab(event: MatTabChangeEvent) {
@@ -141,18 +174,18 @@ export class MainComponent implements OnInit {
     this.scrollService.handleScrollPosition(this.tabGroup, event.index);
   }
 
-  private showNotification() {
-    const href = document.location.href;
-    if (href.includes('dev.') || href.includes('wwwdev.')) {
-      this.showNotificationBanner.set(true);
-    } else {
-      this.showNotificationBanner.set(false);
-    }
-  }
+  // private showNotification() {
+  //   const href = document.location.href;
+  //   if (href.includes('dev.') || href.includes('wwwdev.')) {
+  //     this.showNotificationBanner.set(true);
+  //   } else {
+  //     this.showNotificationBanner.set(false);
+  //   }
+  // }
 
-  public openFeedbackForm(): void {
-    window.open('https://docs.google.com/forms/d/e/1FAIpQLSeSy9zqhqm5n46GtjKizNKOipoRgmj9juweopKUHY2lQc-dyQ/viewform', '_blank');
-  }
+  // public openFeedbackForm(): void {
+  //   window.open('https://docs.google.com/forms/d/e/1FAIpQLSeSy9zqhqm5n46GtjKizNKOipoRgmj9juweopKUHY2lQc-dyQ/viewform', '_blank');
+  // }
 
   public openHelpModal(): void {
     this.tutorialTourService.showHelpGuideModal.set(true);

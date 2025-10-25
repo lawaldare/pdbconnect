@@ -6,23 +6,6 @@ import { environment } from '../../../../environments/environment';
 import { Observable, map } from 'rxjs';
 import { ComplexData, ComplexInteraction } from '../models/complex-structure.model';
 
-const addRandomBoundMacromolecules = (data: any) => {
-  const macromolecules = ['antibody', 'shDNA', 'shRNA', 'peptide'];
-
-  return data.map((item: any) => {
-    // Pick a random subset of macromolecules (1 to all)
-    const count = Math.floor(Math.random() * (macromolecules.length + 1));
-
-    // Shuffle and take a slice of that count
-    const selected = macromolecules.sort(() => 0.5 - Math.random()).slice(0, count);
-
-    return {
-      ...item,
-      bound_macromolecules: selected,
-    };
-  });
-};
-
 @Injectable({
   providedIn: 'root',
 })
@@ -37,8 +20,6 @@ export class ComplexAPIService {
         return {
           ...response[complexId][0],
           complexId: complexId,
-          unique_bound_macromolecules: ['antibody', 'peptide', 'shDNA', 'shRNA'],
-          assemblies: addRandomBoundMacromolecules(response[complexId][0].assemblies),
         };
       })
     );
@@ -46,6 +27,14 @@ export class ComplexAPIService {
 
   public getLigandsForComplexPages(complexId: string): Observable<any> {
     return this.http.get<any>(`${this.AggregatedApiUrl}complex/bound_molecules_summary/${complexId}`).pipe(map((response: any) => response[complexId]));
+  }
+
+  public getComplexIdHistory(complexId: string): Observable<any> {
+    return this.http.get<any>(`${this.AggregatedApiUrl}complex/id_history/${complexId}`).pipe(
+      map((response: any) => {
+        return response[complexId];
+      })
+    );
   }
 
   public getComplexSummaryStats(pdbId: string): Observable<any> {

@@ -3,7 +3,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { catchError, mergeMap, of, switchMap, take, tap } from 'rxjs';
+import { catchError, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
 
 import { ComplexAPIService } from '../services/complex-api.service';
 import { ComplexStoreState } from './complex-store.model';
@@ -34,6 +34,24 @@ export class ComplexEffects {
       return 0;
     });
   }
+
+  getComplexIdHistory$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ComplexActions.getComplexIdHistory),
+      switchMap(() => this.store.select(ComplexSelectors.complexId).pipe(take(1))),
+      mergeMap((complexId: string) =>
+        this.complexAPIService.getComplexIdHistory(complexId).pipe(
+          map((history) => ComplexActions.getComplexIdHistorySuccess({ history })),
+          catchError((error) => {
+            console.error('Error fetching complexId history:', error);
+            // this.entryUtilService.setError(error.status);
+            // this.entryUtilService.setEntryStatus('ERROR');
+            return of(ComplexActions.getComplexIdHistoryFailure());
+          })
+        )
+      )
+    )
+  );
 
   getComplexData$ = createEffect(() =>
     this.actions$.pipe(
@@ -117,6 +135,7 @@ export class ComplexEffects {
               return acc;
             }, []);
             const sortedPisa = pisa.sort((a, b) => a.pdb_id.localeCompare(b.pdb_id));
+            console.log('Sorted PISA Assemblies:', sortedPisa);
             return of(ComplexActions.getPISAAssembliesParamsSuccess({ pisa: sortedPisa }));
           }),
           catchError(() => of(ComplexActions.getLigandsForComplexesFailure()))

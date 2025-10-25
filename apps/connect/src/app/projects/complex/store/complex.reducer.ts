@@ -1,6 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
 import { ComplexStoreState } from './complex-store.model';
-import { ComplexData } from '../models/complex-structure.model';
 import { ComplexActions } from './complex.actions';
 import { LoadingState } from '../../ligands/enums/loading-state.enum';
 
@@ -8,12 +7,13 @@ export const COMPLEX_STORE_STATE_KEY = 'complex';
 
 const initialState: ComplexStoreState = {
   complexId: '',
-  complexData: {} as ComplexData,
+  complexData: null,
   pisa: [],
   loadingState: LoadingState.SUCCESS,
   complexLigands: [],
   subComplexInteractions: [],
   superComplexInteractions: [],
+  history: null,
 };
 
 export const complexReducer = createReducer(
@@ -42,5 +42,9 @@ export const complexReducer = createReducer(
   on(ComplexActions.toggleLoader, (state, action) => ({
     ...state,
     loadingState: action.status,
+  })),
+  on(ComplexActions.getComplexIdHistorySuccess, (state, action) => ({
+    ...state,
+    history: action.history,
   }))
 );
