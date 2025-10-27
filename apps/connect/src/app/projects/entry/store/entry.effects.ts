@@ -747,7 +747,7 @@ export class EntryEffects {
           catchError((error) => {
             console.error('Error fetching entry status:', error);
             this.entryUtilService.setError(error.status);
-            this.entryUtilService.setEntryStatus('ERROR');
+            this.entryUtilService.setPageView('ERROR');
             return of(EntryActions.getEntryStatusFailure());
           })
         )

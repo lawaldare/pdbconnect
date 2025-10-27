@@ -4,12 +4,14 @@ import { inject } from '@angular/core';
 import { catchError, map, of, tap } from 'rxjs';
 import { ComplexAPIService } from '../services/complex-api.service';
 import { ComplexUtilService } from '../services/complex-util.service';
+import { EntryUtilService } from '../../entry/services/entry-util.service';
 
 export const complexIdGuard: CanActivateFn = (route) => {
   const router = inject(Router);
   const complexId = route.paramMap.get('complexId');
   const apiService = inject(ComplexAPIService);
   const util = inject(ComplexUtilService);
+  const entryUtilService = inject(EntryUtilService);
 
   if (complexId?.toUpperCase().startsWith('PDB-CPX')) {
     return true;
@@ -25,12 +27,18 @@ export const complexIdGuard: CanActivateFn = (route) => {
           return router.createUrlTree([path]);
         } else {
           console.error('No valid complex ID found');
-          return router.createUrlTree(['/error']);
+          return router.createUrlTree(['/error'], {
+            queryParams: { from: 'complex' },
+          });
         }
       }),
       catchError((error) => {
         console.error('API call failed', error);
-        return of(router.createUrlTree(['/error']));
+        return of(
+          router.createUrlTree(['/error'], {
+            queryParams: { from: 'complex' },
+          })
+        );
       })
     );
   }
@@ -43,12 +51,19 @@ export const complexIdGuard: CanActivateFn = (route) => {
         return router.createUrlTree([path]);
       } else {
         console.error('No valid complex ID found');
-        return router.createUrlTree(['/error']);
+        return router.createUrlTree(['/error'], {
+          queryParams: { from: 'complex' },
+        });
       }
     }),
     catchError((error) => {
       console.error('API call failed', error);
-      return of(router.createUrlTree(['/error']));
+      entryUtilService.setPageView('ERROR');
+      return of(
+        router.createUrlTree(['/error'], {
+          queryParams: { from: 'complex' },
+        })
+      );
     })
   );
 };

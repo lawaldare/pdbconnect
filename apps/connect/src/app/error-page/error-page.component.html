@@ -1,4 +1,21 @@
-@if(asPage()){
+@if(isComplexPage()){
+<pdbc-pdbe-header-logo-menu [headerConfig]="headerSearchLogoMenuConfig" />
+<pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
+<div class="container">
+  <h3>No results</h3>
+  <p>
+    We couldn’t find any matches for your search. <br />
+    This may happen if you used a UniProt or Rfam accession, complex name or organism name, which are not yet supported.
+  </p>
+  <p>Please try searching again using one of the following valid identifiers:</p>
+  <ul>
+    <li>PDBe complex ID (for example, PDB-CPX-140202)</li>
+    <li>PDB entry ID (for example, 7tpc)</li>
+    <li>Complex Portal ID (for example, CPX-7043).</li>
+  </ul>
+</div>
+
+} @else { @if(asPage()){
 <pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig" />
 }
 
@@ -12,9 +29,10 @@
       <h1>!</h1>
     </header>
     <h2>{{statusCode()}} - {{error().title}}</h2>
-    <p class="errormsg">{{error().message}}</p>
+    <p class="errormsg entry">{{error().message}}</p>
     @if(statusCode() > 500){
-    <p>Go to <a href="https://www.ebi.ac.uk/about/contact/support/pdbe" target="_blank">support</a></p>
+    <p class="entry">Go to <a href="https://www.ebi.ac.uk/about/contact/support/pdbe" target="_blank">support</a></p>
     }
   </div>
 </section>
+}

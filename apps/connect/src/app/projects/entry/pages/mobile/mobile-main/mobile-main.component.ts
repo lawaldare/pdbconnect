@@ -27,7 +27,7 @@ export class MobileMainComponent {
 
   public readonly util = inject(EntryUtilService);
 
-  public entryPageView = this.util.entryPageView;
+  public pageView = this.util.pageView;
 
   private readonly mbFacade = inject(MobileFacade);
 

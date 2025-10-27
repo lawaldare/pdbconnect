@@ -1,4 +1,4 @@
-@import url('libs/core/src/lib/styles/pdb_connect.scss');
+@import 'libs/core/src/lib/styles/pdb_connect.scss';
 
 section {
   display: flex;
@@ -42,11 +42,14 @@ h2 {
 
 p {
   color: #000;
-  font-size: 20px;
   font-weight: 400;
   margin-bottom: 20px;
   margin-top: 15px !important;
+}
+
+p.entry {
   text-align: center;
+  font-size: 20px;
 }
 
 @media only screen and (width <= 767px) {

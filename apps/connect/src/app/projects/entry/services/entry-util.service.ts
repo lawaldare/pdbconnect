@@ -5,7 +5,7 @@ export interface Error {
   message: string;
 }
 
-export type EntryPageView = 'LOADING' | 'SUCCESS' | 'ERROR' | 'OTHER';
+export type PageView = 'LOADING' | 'SUCCESS' | 'ERROR' | 'OTHER';
 
 @Injectable({
   providedIn: 'root',
@@ -14,14 +14,14 @@ export class EntryUtilService {
   private _errorStatusCode = signal<number>(404);
   public errorStatusCode = this._errorStatusCode.asReadonly();
 
-  private _entryPageView = signal<EntryPageView>('LOADING');
-  public entryPageView = this._entryPageView.asReadonly();
+  private _pageView = signal<PageView>('LOADING');
+  public pageView = this._pageView.asReadonly();
 
   public setError(errorStatusCode: number) {
     this._errorStatusCode.set(errorStatusCode);
   }
 
-  public setEntryStatus(status: EntryPageView) {
-    this._entryPageView.set(status);
+  public setPageView(view: PageView) {
+    this._pageView.set(view);
   }
 }

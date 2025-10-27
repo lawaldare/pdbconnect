@@ -4,7 +4,7 @@
     <pdb-search-app class="entry-page-search" [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" />
     @if(showNotificationBanner()) {
     <lib-notification />
-    } @if (entryPageView() === 'SUCCESS' && isDesktop()) {
+    } @if (pageView() === 'SUCCESS' && isDesktop()) {
     <section class="entry-page-container container-padding">
       <pdbc-entry-page-header />
       <main>
@@ -113,11 +113,11 @@
         </mat-tab-group>
       </main>
     </section>
-    } @else if (entryPageView() === 'LOADING') {
+    } @else if (pageView() === 'LOADING') {
     <section class="entry-page-container">
       <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
     </section>
-    } @else if(entryPageView() === 'ERROR') {
+    } @else if(pageView() === 'ERROR') {
     <pdbc-error-page [asPage]="false" />
     }
   </section>
@@ -128,7 +128,7 @@
   <pdbc-mobile-main />
   }
 </div>
-@if (entryPageView() === 'OTHER') {
+@if (pageView() === 'OTHER') {
 <pdbc-entry-main-alternative [entryStatus]="entryStatus()" />
 }
 

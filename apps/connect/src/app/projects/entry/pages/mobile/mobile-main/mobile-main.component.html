@@ -1,4 +1,4 @@
-@if(entryPageView() === 'SUCCESS'){
+@if(pageView() === 'SUCCESS'){
 <section class="mobile-tabs-content">
   @if(activePage() === mbTabNames.Overview){
   <pdbc-mb-overview-tab />
@@ -8,11 +8,11 @@
   <pdbc-mb-citation-tab />
   }
 </section>
-}@else if (entryPageView() === 'LOADING') {
+}@else if (pageView() === 'LOADING') {
 <section class="entry-page-container">
   <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
 </section>
-} @else if(entryPageView() === 'ERROR') {
+} @else if(pageView() === 'ERROR') {
 <pdbc-error-page [asPage]="false" />
 }
 <!-- <footer>
