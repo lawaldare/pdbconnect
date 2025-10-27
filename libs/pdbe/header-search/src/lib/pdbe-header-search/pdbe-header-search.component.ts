@@ -16,7 +16,7 @@ import { RouterModule } from '@angular/router';
 })
 export class PdbeHeaderSearchComponent implements OnInit {
   @Input() headerSearchConfig!: HeaderSearchConfig;
-  public isOnComplexPage = input(false);
+  // public isOnComplexPage = input(false);
   searchTermStream = new Subject<string>();
   private fb = inject(FormBuilder);
 
