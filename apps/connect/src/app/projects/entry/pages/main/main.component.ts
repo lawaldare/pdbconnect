@@ -147,7 +147,7 @@ export class EntryMainPageComponent implements OnInit {
   public readonly pdbeSearchConfig = pdbeSearchConfig;
   public readonly mobileHeaderConfig = mobileHeaderConfig;
 
-  public entryPageView = this.util.entryPageView;
+  public pageView = this.util.pageView;
   public entryStatus = signal<EntryStatus>({ status_code: 'INITIAL' } as EntryStatus);
   public entryStatusObs$ = toObservable(this.entryStatus);
 
@@ -212,7 +212,7 @@ export class EntryMainPageComponent implements OnInit {
         }),
         mergeMap(async (status: StatusCode) => {
           if (status === 'REL') {
-            this.util.setEntryStatus('SUCCESS');
+            this.util.setPageView('SUCCESS');
             this.metaTagService.buildMetaTags(this.renderer);
             const isWebGlEnabled = this.facade.checkWebglEnabled();
 
@@ -225,7 +225,7 @@ export class EntryMainPageComponent implements OnInit {
             this.globalStore.dispatch(EntryActions.getPrimaryPublication());
             this.entryBioschemasService.buildBioschemasJSON(this.renderer);
           } else if (status !== 'INITIAL') {
-            this.util.setEntryStatus('OTHER');
+            this.util.setPageView('OTHER');
           }
           return EMPTY;
         }),

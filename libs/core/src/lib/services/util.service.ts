@@ -148,7 +148,10 @@ export class UtilService {
   public redirectToSearchTerm(value: string, target = '_self'): void {
     const trimmedValue = value.trim();
     const hrefArray = window.location.href.split('/');
-    hrefArray.pop();
+    const removedString = hrefArray.pop();
+    if (removedString?.includes('?from=complex')) {
+      hrefArray.push('complexes');
+    }
     hrefArray.push(trimmedValue);
     const href = hrefArray.join('/');
     window.open(href, target);
