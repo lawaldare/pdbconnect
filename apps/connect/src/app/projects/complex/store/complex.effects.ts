@@ -44,8 +44,6 @@ export class ComplexEffects {
           map((history) => ComplexActions.getComplexIdHistorySuccess({ history })),
           catchError((error) => {
             console.error('Error fetching complexId history:', error);
-            // this.entryUtilService.setError(error.status);
-            // this.entryUtilService.setEntryStatus('ERROR');
             return of(ComplexActions.getComplexIdHistoryFailure());
           })
         )
@@ -135,7 +133,6 @@ export class ComplexEffects {
               return acc;
             }, []);
             const sortedPisa = pisa.sort((a, b) => a.pdb_id.localeCompare(b.pdb_id));
-            console.log('Sorted PISA Assemblies:', sortedPisa);
             return of(ComplexActions.getPISAAssembliesParamsSuccess({ pisa: sortedPisa }));
           }),
           catchError(() => of(ComplexActions.getLigandsForComplexesFailure()))

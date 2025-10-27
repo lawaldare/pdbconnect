@@ -124,10 +124,7 @@ export class MainComponent implements OnInit {
           const complexId = params['complexId'].toUpperCase();
           this.globalStore.dispatch(ComplexActions.setCurrentComplexId({ complexId }));
           this.globalStore.dispatch(ComplexActions.getComplexIdHistory());
-          return this.globalStore.select(ComplexSelectors.history).pipe(
-            tap((history) => console.log('Complex ID history:', history)),
-            filter(Boolean)
-          );
+          return this.globalStore.select(ComplexSelectors.history).pipe(filter(Boolean));
         }),
         mergeMap((history: ComplexIdHistory) => {
           this.history.set(history);

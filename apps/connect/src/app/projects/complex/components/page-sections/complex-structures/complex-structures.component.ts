@@ -61,7 +61,6 @@ export class ComplexStructuresComponent implements OnInit, AfterViewInit {
   });
   public uniqueBoundMacromolecules = computed(() => {
     const data = this.summaryData();
-    console.log(data);
     return data?.unique_bound_macromolecules;
   });
   public assembliesWithBoundMacromolecules = computed(() => {

@@ -5,6 +5,7 @@
   <!-- @if(showNotificationBanner()){
   <lib-notification />
   } -->
+  @if(history()){
   <div class="container">
     @if(history().canonical.status === complexIdHistoryStatus.Active){ @if(loaded() === status.SUCCESS){
     <article>
@@ -104,6 +105,7 @@
     </div>
     }
   </div>
+  }
 </main>
 
 <lib-data-privacy-banner
