@@ -176,3 +176,7 @@ section {
 .onboarding-tutorial-banner.structures {
   justify-content: flex-start;
 }
+
+::ng-deep .msp-plugin .msp-layout-standard {
+  border: none !important;
+}

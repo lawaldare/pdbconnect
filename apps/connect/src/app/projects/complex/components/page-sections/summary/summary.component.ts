@@ -11,7 +11,7 @@ import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ComplexSelectors } from '../../../store/complex.selectors';
-import { map } from 'rxjs';
+import { filter, map, tap } from 'rxjs';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { ComplexUtilService } from '../../../services/complex-util.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -56,6 +56,7 @@ export class SummaryComponent implements OnInit, AfterViewInit {
 
   public summaryData = toSignal(
     this.globalStore.select(ComplexSelectors.complexData).pipe(
+      filter(Boolean),
       map((data) => {
         this.checkForDifferentSymmetrySymbols(data);
         return {

@@ -9,7 +9,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
-import { catchError, combineLatest, map, Observable, of } from 'rxjs';
+import { catchError, combineLatest, filter, map, Observable, of } from 'rxjs';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
@@ -21,7 +21,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 })
 export class ComplexPublicationsComponent implements OnInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
-  public summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
+  public summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData).pipe(filter(Boolean)));
   public complexAPIService = inject(ComplexAPIService);
   public complexPublications = signal<Publication[]>([]);
 

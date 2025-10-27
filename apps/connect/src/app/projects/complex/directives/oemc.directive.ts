@@ -44,7 +44,8 @@ export class OEMCDirective implements OnChanges {
 
       // this.renderer.appendChild(anchor, icon);
       this.renderer.appendChild(li, anchor);
-      const lastText = this.renderer.createText(`PDB entries)`);
+      const lastTextContent = value <= 1 ? 'PDB entry)' : 'PDB entries)';
+      const lastText = this.renderer.createText(lastTextContent);
       this.renderer.appendChild(li, lastText);
       this.renderer.appendChild(orderedList, li);
     }

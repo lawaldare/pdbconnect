@@ -17,6 +17,7 @@ import { PageEvent } from '@angular/material/paginator';
 import { ComplexStructureFacade } from './complex-structure.facade';
 import { ComplexPageTutorialTourService } from '../../../services/complex-page-tutorial-tour.service';
 import { tourIds } from '../../../complex.constant';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'pdbc-complex-structures',
@@ -30,7 +31,7 @@ export class ComplexStructuresComponent implements OnInit, AfterViewInit {
   private readonly globalStore = inject(Store<ComplexStoreState>);
   public readonly tutorialTourService = inject(ComplexPageTutorialTourService);
 
-  public readonly summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
+  public readonly summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData).pipe(filter(Boolean)));
   private readonly gAS = inject(GoogleAnalyticsService);
 
   public readonly gridOptions = gridOptions;

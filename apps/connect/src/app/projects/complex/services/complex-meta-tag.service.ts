@@ -21,9 +21,7 @@ export class ComplexMetaTagService {
     this.globalStore
       .select(ComplexSelectors.complexData)
       .pipe(
-        filter((complexData) => {
-          return complexData !== undefined && Object.keys(complexData).length > 0;
-        }),
+        filter(Boolean),
         take(1),
         map((complexData) => {
           if (complexData) {

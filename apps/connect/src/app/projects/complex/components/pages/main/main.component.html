@@ -1,19 +1,20 @@
 <pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig" />
-<pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" [isOnComplexPage]="true" />
+<pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
 
 <main>
-  @if(showNotificationBanner()){
+  <!-- @if(showNotificationBanner()){
   <lib-notification />
-  }
+  } -->
+  @if(history()){
   <div class="container">
-    @if(loaded() === status.SUCCESS){
+    @if(history().canonical.status === complexIdHistoryStatus.Active){ @if(loaded() === status.SUCCESS){
     <article>
       <section class="hero">
         @if(summaryData()?.name){
         <header>
           <h1 class="heading-1" libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="30"></h1>
           <div class="links">
-            <a class="vf-button vf-button--link" href="https://wwwdev.ebi.ac.uk/pdbe/aggregated-api/#/Complex" target="_blank">
+            <a class="vf-button vf-button--link" href="{{environment.baseUrl}}/pdbe/aggregated-api/#/Complex" target="_blank">
               API
               <i class="icon icon-link icon-common"></i>
             </a>
@@ -30,17 +31,16 @@
         } @if(complexId()){
         <div class="sub-header">
           <h2>{{ complexId() }}</h2>
-          <div class="warning">
-            This ID is temporary and might change
-            <lib-help-icon-with-tooltip [tooltipText]="idWarningTooltip" />
-          </div>
+          @if(historyMessage()){
+          <div class="warning">{{historyMessage()}}</div>
+          }
         </div>
         }
       </section>
-      <section class="feedback">
+      <!-- <section class="feedback">
         <p>Tell us what you think of the new PDBe-KB Complex pages</p>
         <button class="vf-button vf-button--search-pdbe" role="link" (click)="openFeedbackForm()">Share your feedback</button>
-      </section>
+      </section> -->
       <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)" #tabs>
         <mat-tab>
           <ng-template mat-tab-label>
@@ -92,8 +92,20 @@
       <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '50px', width: '100px' }"></ngx-skeleton-loader>
       <ngx-skeleton-loader count="4" [theme]="{ 'border-radius': '0', height: '450px' }"></ngx-skeleton-loader>
     </div>
+    } } @else if(history().canonical.status === complexIdHistoryStatus.Obsolete){
+    <div class="obsolete-message">
+      <h2>This complex is obsolete.</h2>
+      <p>The complex <strong>{{history().query_id}}</strong> you have requested is retired and has no active page.</p>
+    </div>
+    } @else {
+    <div class="loader">
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '50px', width: '450px' }"></ngx-skeleton-loader>
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '50px', width: '100px' }"></ngx-skeleton-loader>
+      <ngx-skeleton-loader count="4" [theme]="{ 'border-radius': '0', height: '450px' }"></ngx-skeleton-loader>
+    </div>
     }
   </div>
+  }
 </main>
 
 <lib-data-privacy-banner

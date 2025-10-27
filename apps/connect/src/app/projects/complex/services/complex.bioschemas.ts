@@ -7,6 +7,7 @@ import { ComplexStoreState } from '../store/complex-store.model';
 import { ComplexSelectors } from '../store/complex.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ComplexInteraction, Participant } from '../models/complex-structure.model';
+import { filter } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +21,7 @@ export class ComplexBioschemasService {
   public buildBioschemasJSON(renderer: Renderer2): void {
     runInInjectionContext(this.environmentInjector, () => {
       const complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
-      const complexData = toSignal(this.globalStore.select(ComplexSelectors.complexData));
+      const complexData = toSignal(this.globalStore.select(ComplexSelectors.complexData).pipe(filter(Boolean)));
       const complexLigands = toSignal(this.globalStore.select(ComplexSelectors.complexLigands));
       const superComplexInteractions = toSignal(this.globalStore.select(ComplexSelectors.superComplexInteractions));
 

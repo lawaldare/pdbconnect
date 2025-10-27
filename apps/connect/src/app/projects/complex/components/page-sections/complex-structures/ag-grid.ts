@@ -24,9 +24,9 @@ export const colDefs: ColDef[] = [
     headerName: 'Title',
     field: 'title',
     cellRenderer: TitleRendererComponent,
-    width: 270,
+    width: 310,
   },
-  { headerName: 'Method', field: 'experimental_method', width: 170 },
+  { headerName: 'Method', field: 'experimental_method', width: 130 },
   {
     headerName: 'Res. (Å)',
     field: 'resolution',

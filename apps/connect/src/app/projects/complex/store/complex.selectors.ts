@@ -13,4 +13,5 @@ export const ComplexSelectors = {
   subComplexInteractions: createSelector(complexStoreState, (state: ComplexStoreState) => state.subComplexInteractions),
   superComplexInteractions: createSelector(complexStoreState, (state: ComplexStoreState) => state.superComplexInteractions),
   pisa: createSelector(complexStoreState, (state: ComplexStoreState) => state.pisa),
+  history: createSelector(complexStoreState, (state: ComplexStoreState) => state.history),
 };
