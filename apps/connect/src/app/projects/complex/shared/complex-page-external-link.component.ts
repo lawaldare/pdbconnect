@@ -2,12 +2,13 @@ import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community/';
 import { Component, inject } from '@angular/core';
 import { GoogleAnalyticsService } from '@pdbc/core';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   standalone: true,
   template: `
     @if (value) {
-      <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + value + '?activeTab=assemblies'" target="_blank" (click)="setRedirect()">
+      <a [href]="environment.baseUrl + 'pdbe/entry/pdb/' + value + '?activeTab=assemblies'" target="_blank" (click)="setRedirect()">
         {{ value }}_{{ assemblyId }}
         <!-- <i class="icon icon-link icon-common" style="margin-left: 5px;"></i> -->
       </a>
@@ -18,6 +19,8 @@ import { GoogleAnalyticsService } from '@pdbc/core';
 })
 export class ComplexPageExternalLinkRendererComponent implements ICellRendererAngularComp {
   private readonly gAS = inject(GoogleAnalyticsService);
+
+  public environment = environment;
 
   // Init Cell Value
   public value!: string;

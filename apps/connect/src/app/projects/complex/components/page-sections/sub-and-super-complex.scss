@@ -114,3 +114,7 @@ section {
     margin: 0 !important;
   }
 }
+
+::ng-deep .msp-plugin .msp-layout-standard {
+  border: none !important;
+}
