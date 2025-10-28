@@ -3,5 +3,7 @@ export const environment = {
   debug: false,
   baseUrl: 'https://wwwint.ebi.ac.uk/',
   googleAnalyticsTag: 'G-V1BCXVELRY',
-  clarityProjectId: 'rig9276nz7',
+  clarityProjectIdForEntryPages: 'rig9276nz7',
+  clarityProjectIdForLigandPages: 'tx7303fj1j',
+  clarityProjectIdForComplexPages: 'tx73tvvns4',
 };

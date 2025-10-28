@@ -8,7 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EMPTY, filter, map, mergeMap, of, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexStructuresComponent } from '../../page-sections/complex-structures/complex-structures.component';
-import { GoogleAnalyticsService, MaterialModule, ScrollPositionService, TruncateTextDirective } from '@pdbc/core';
+import { ClarityConsentService, GoogleAnalyticsService, MaterialModule, ScrollPositionService, TruncateTextDirective } from '@pdbc/core';
 import { headerComplexLogoMenuConfig, headerSearchComplexConfig, idWarningTooltip } from '../../../complex.constant';
 import { ComplexPublicationsComponent } from '../../page-sections/complex-publications/complex-publications.component';
 import { ComplexLigandsComponent } from '../../page-sections/complex-ligands/complex-ligands.component';
@@ -33,6 +33,7 @@ import { HelpIconForMolstarService } from '@pdbe-lib/molstar-for-apps';
 import { ComplexUtilService } from '../../../services/complex-util.service';
 import { ComplexIdHistory } from '../../../models/complexId-history.model';
 import { environment } from '../../../../../../environments/environment';
+import Clarity from '@microsoft/clarity';
 
 enum ComplexIdHistoryStatus {
   Active = 'active',
@@ -66,6 +67,7 @@ export class MainComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly gAS = inject(GoogleAnalyticsService);
+  public readonly clarityConsentService = inject(ClarityConsentService);
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly bioschemasService = inject(ComplexBioschemasService);
@@ -118,6 +120,10 @@ export class MainComponent implements OnInit {
 
   ngOnInit(): void {
     // this.showNotification();
+
+    Clarity.init(environment.clarityProjectIdForComplexPages);
+    this.clarityConsentService.init(environment.clarityProjectIdForComplexPages);
+
     this.route.params
       .pipe(
         switchMap((params) => {

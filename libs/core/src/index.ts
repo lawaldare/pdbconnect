@@ -25,4 +25,5 @@ export * from './lib/pipes/asset.pipe';
 export * from './lib/services/script-loader.service';
 export * from './lib/services/popup-window.service';
 export * from './lib/services/scroll-position.service';
+export * from './lib/services/clarity-consent.service';
 export * from './lib/data-privacy-banner.component';
