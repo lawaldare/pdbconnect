@@ -6,6 +6,11 @@
   text-decoration: underline;
 }
 
+/*
+* Warning: class name also internally used by Protvista so thread with care
+* when changing it (See: ::ng-deep .pv-protvista .container for patching)
+* (especially padding)
+*/
 .container {
   width: 100%;
   padding: 22px 34px;
