@@ -26,6 +26,14 @@ button {
   margin-right: 10px;
 }
 
+::ng-deep .intx-component-container .container {
+  width: initial;
+  padding: initial;
+  margin-right: initial;
+  margin-left: initial;
+  max-width: initial;
+}
+
 .intx-component-container {
   display: flex;
   width: 100%;
