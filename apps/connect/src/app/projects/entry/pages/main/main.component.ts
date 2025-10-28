@@ -1,14 +1,14 @@
-import { AfterViewInit, Component, computed, DestroyRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, HostListener, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { SearchAppComponent } from '@pdbc/search-app';
 
-import { catchError, combineLatest, EMPTY, filter, map, mergeMap, of, retry, switchMap, take, tap } from 'rxjs';
+import { combineLatest, EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { DataPrivacyBannerComponent, GoogleAnalyticsService, MaterialModule, ScrollPositionService } from '@pdbc/core';
+import { ClarityConsentService, DataPrivacyBannerComponent, GoogleAnalyticsService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
-import { ENTRY_PAGES_LINKS, mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig, routeTabs, tourIds } from '../../entry-constant';
+import { mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig, routeTabs, tourIds } from '../../entry-constant';
 import { EntryStatus, StatusCode } from '../../data-models/status.model';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { EntryMainAlternativeComponent } from '../../components/entry-main-alternative/entry-main-alternative.component';
@@ -35,9 +35,7 @@ import { LLMTabComponent } from '../../components/llm-tab/llm-tab.component';
 import { VisualisationInteractivityDirective } from '../../directives/visualisation-interactivity.directive';
 import { EntryBioschemasService } from '../../services/entry.bioschemas';
 import { ErrorPageComponent } from '../../../../error-page/error-page.component';
-import { Meta, Title } from '@angular/platform-browser';
 import { ApplicationAPIDispatcher } from '../../services/application-api-dispacher.service';
-import { SpeedTestServiceCustom } from '../../services/speed-test/speed-test-service.service';
 
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { MetaTagService } from '../../services/meta-tag.service';
@@ -98,6 +96,7 @@ export class EntryMainPageComponent implements OnInit {
   public readonly gAS = inject(GoogleAnalyticsService);
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);
   public readonly helpIconForMolstarService = inject(HelpIconForMolstarService);
+  public readonly clarityConsentService = inject(ClarityConsentService);
 
   private procAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
   private procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
@@ -192,7 +191,8 @@ export class EntryMainPageComponent implements OnInit {
     document.body.style.overflowX = 'hidden'; // <body>
     document.body.style.width = '100%';
 
-    Clarity.init(environment.clarityProjectId);
+    Clarity.init(environment.clarityProjectIdForEntryPages);
+    this.clarityConsentService.init(environment.clarityProjectIdForEntryPages);
 
     this.facade.showNotification();
     this.facade.checkWindowWidth();
