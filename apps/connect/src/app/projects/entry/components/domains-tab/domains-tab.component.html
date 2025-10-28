@@ -129,15 +129,28 @@
     <section class="domain-charts" [class.collapsed]="!isSidebarDisplayed()">
       <section class="protvista-container" [class.collapsed]="!isSidebarDisplayed()">
         @if(entryId() && currentSelectionEntityId() && protvistaDomainSelection()) {
-        <pdbc-entry-pg-protvista
+        <!-- <pdbc-entry-pg-protvista
           tabName="domains"
           [entryId]="entryId()!"
           [entityId]="currentSelectionEntityId()!"
           [chainId]="currentSelectionChainId()!"
           [externalInteractivity]="true"
           [fixedSelectionInput]="protvistaDomainSelection()!"
-        ></pdbc-entry-pg-protvista>
-        }
+        ></pdbc-entry-pg-protvista> -->
+        @if (macromolSequence() && currentSelectionChainId() && currentDomainsFeature() && loadingStatus() === 'any-tracks-loaded') {
+        <lib-pv-angular-wrapper
+          containerId="domains-pv"
+          [sequence]="macromolSequence()!"
+          [data]="protvistaData()!"
+          [entryId]="entryId()!"
+          [entityId]="currentSelectionEntityId()!"
+          [chainId]="currentSelectionChainId()!"
+          [tooltips]="protvistaTooltips()"
+          [externalEvents]="true"
+          customTrackControls="sticky"
+        ></lib-pv-angular-wrapper>
+        <!-- customTrackControls="scroll-1" -->
+        } }
       </section>
       <section class="molstar-details-container" [class.collapsed]="!isSidebarDisplayed()">
         @if (!configForMolstar() || checkedWebGl() === undefined) {

@@ -229,16 +229,18 @@
         }
         <section [style.display]="slowNetwork() === false || fastNetworkOrForceLoad() ? '' : 'none' " class="chart-area" [class.collapsed]="!isSidebarDisplayed()">
           <section [style.display]="!hasProtvista ? 'none' : '' " class="protvista-container" [class.collapsed]="!isSidebarDisplayed()">
-            @let molTypeForChart = currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_type; @if(entryId() && currentSelectionEntityId() &&
-            molTypeForChart) {
-            <pdbc-entry-pg-protvista
-              tabName="proteins"
+            @if (macromolSequence() && currentSelectionChainId() && loadingStatus() === 'any-tracks-loaded') {
+            <lib-pv-angular-wrapper
+              containerId="macromolecules-pv"
+              [sequence]="macromolSequence()!"
+              [data]="protvistaData()!"
               [entryId]="entryId()!"
               [entityId]="currentSelectionEntityId()!"
               [chainId]="currentSelectionChainId()!"
-              [externalInteractivity]="true"
-              [isNucleic]="molTypeForChart.includes('nucleotide')"
-            ></pdbc-entry-pg-protvista>
+              [tooltips]="protvistaTooltips()"
+              [externalEvents]="true"
+              customTrackControls="sticky"
+            ></lib-pv-angular-wrapper>
             }
           </section>
           <section class="molstar-topol-container" [class.collapsed]="!isSidebarDisplayed()">

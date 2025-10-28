@@ -42,7 +42,8 @@ export class PvDataProcessingFacade {
   public originalVariationData = signal<APIVariationData | undefined>(undefined);
 
   // some API data from tracks is saved in a tooltips dictionary
-  public tooltips: { [key: string]: string } = {};
+  public tooltips = signal<{ [key: string]: string }>({});
+
   // sequence and/or sequence length for Nightingale tracks
   public sequence = signal<string | undefined>(undefined);
   public sequenceLength?: number;
@@ -155,7 +156,7 @@ export class PvDataProcessingFacade {
         this.uniprotTracks.set(extractOtherTracks('UniProt', uniprotData));
 
         const tooltips = extractTooltips(uniprotData);
-        for (const [k, v] of Object.entries(tooltips)) this.tooltips[k] = v;
+        this.tooltips.update((current) => ({ ...current, ...tooltips }));
 
         const sequence = this.sequence()!;
         const panelResidueData = sequenceToPanelData(sequence, this.uniprotTracks() || undefined, isNucleic);
@@ -181,7 +182,7 @@ export class PvDataProcessingFacade {
         this.validationTracks.set(extractOtherTracks('Validation', chainsData));
 
         const tooltips = extractTooltips(chainsData);
-        for (const [k, v] of Object.entries(tooltips)) this.tooltips[k] = v;
+        this.tooltips.update((current) => ({ ...current, ...tooltips }));
 
         const hasData = chainsData === null ? 'empty' : 'has-data';
         this.loadingStatusPerTrack.update((state) => ({ ...state, validation: `ready-${hasData}` }));
@@ -220,11 +221,11 @@ export class PvDataProcessingFacade {
         }
         if (domainsData) {
           const tooltipsDomains = extractTooltips(domainsData);
-          for (const [k, v] of Object.entries(tooltipsDomains)) this.tooltips[k] = v;
+          this.tooltips.update((current) => ({ ...current, ...tooltipsDomains }));
         }
         if (rfamData) {
           const tooltipsRfam = extractTooltips(rfamData);
-          for (const [k, v] of Object.entries(tooltipsRfam)) this.tooltips[k] = v;
+          this.tooltips.update((current) => ({ ...current, ...tooltipsRfam }));
         }
 
         const hasDataDomains = domainsData === null ? 'empty' : 'has-data';
@@ -246,7 +247,8 @@ export class PvDataProcessingFacade {
       .subscribe((sec) => {
         const secondaryData = clean(sec);
         this.setSequenceFromTrackData(secondaryData);
-        this.secStrTracks.set(extractOtherTracks('Secondary structure', secondaryData));
+        const secTracks = extractOtherTracks('Secondary structure', secondaryData);
+        this.secStrTracks.set(secTracks);
 
         if (secondaryData) {
           const biophysical = extractBiophysicalResources(secondaryData);
@@ -256,12 +258,12 @@ export class PvDataProcessingFacade {
           this.biophysicalResourcesList.set([]);
           this.biophysicalByResource.set([]);
         }
-
+        // TODO: split secondary vs biophysical
         const hasData = secondaryData === null ? 'empty' : 'has-data';
         this.loadingStatusPerTrack.update((state) => ({ ...state, secondary: `ready-${hasData}` }));
 
         const tooltips = extractTooltips(secondaryData);
-        for (const [k, v] of Object.entries(tooltips)) this.tooltips[k] = v;
+        this.tooltips.update((current) => ({ ...current, ...tooltips }));
         if (this.loadedAnyTracksAPIData() === false) {
           this.loadedAnyTracksAPIData.set(true);
         }
@@ -280,7 +282,7 @@ export class PvDataProcessingFacade {
         this.ligandBindingTracks.set(extractOtherTracks('Ligand binding sites', bindingData));
 
         const tooltips = extractTooltips(bindingData);
-        for (const [k, v] of Object.entries(tooltips)) this.tooltips[k] = v;
+        this.tooltips.update((current) => ({ ...current, ...tooltips }));
 
         const hasData = bindingData === null ? 'empty' : 'has-data';
         this.loadingStatusPerTrack.update((state) => ({ ...state, binding: `ready-${hasData}` }));
@@ -302,7 +304,7 @@ export class PvDataProcessingFacade {
         this.interfacesTracks.set(extractOtherTracks('Interaction interfaces', interfacesData));
 
         const tooltips = extractTooltips(interfacesData);
-        for (const [k, v] of Object.entries(tooltips)) this.tooltips[k] = v;
+        this.tooltips.update((current) => ({ ...current, ...tooltips }));
 
         const hasData = interfacesData === null ? 'empty' : 'has-data';
         this.loadingStatusPerTrack.update((state) => ({ ...state, interfaces: `ready-${hasData}` }));
@@ -377,6 +379,8 @@ export class PvDataProcessingFacade {
   }
 
   processNewData(entityId: string, isNucleic: boolean) {
+    console.log('processNewData');
+    console.log({ entityId, isNucleic });
     // 1 - Reset per-track loading statuses
     this.loadingStatusPerTrack.set({
       uniprot: 'not-loaded',
@@ -410,7 +414,9 @@ export class PvDataProcessingFacade {
 
     this.sequence.set(undefined);
     this.sequenceLength = undefined;
-    this.tooltips = {};
+    this.tooltips.set({});
+    const aaProbsTooltip = 'The amino acid probabilities are calculated using HMM profiles based on multiple sequence alignments. Click to see more details...';
+    this.tooltips.update((current) => ({ ...current, ...{ 'aa-probs': aaProbsTooltip } }));
     this.panelResidueData = [];
 
     // 3 - Clear original conservation/variation signal data

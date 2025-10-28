@@ -12,7 +12,12 @@
     "checkJs": false
   },
   "files": [],
-  "include": ["src/**/*.ts", "src/**/*.js", "src/assets/heatmap-components-v0.2.min.js"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js",
+    "src/assets/heatmap-components-v0.2.min.js",
+    "../../libs/pdbe/pv-nightingale-components/src/lib/pv-nightingale-components/components/new-protvista/pv-angular-wrapper/pv-entry-api.facade-new.ts"
+  ],
   "references": [
     {
       "path": "./tsconfig.app.json"

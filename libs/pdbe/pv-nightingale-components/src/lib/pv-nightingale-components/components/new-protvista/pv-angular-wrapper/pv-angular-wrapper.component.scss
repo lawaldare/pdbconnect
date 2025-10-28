@@ -7,8 +7,11 @@
   height: auto;
   overflow-y: clip;
 
-  //   position: relative; /* Required for absolute children to position against it */
-  //   display: block;
   //   /* max-height: inherit; */
-  //   overflow: clip;
+}
+
+.relative-container {
+  position: relative; /* Required for absolute children to position against it */
+  display: block;
+  overflow: clip;
 }

@@ -4,7 +4,8 @@
 
 ::ng-deep .pv-protvista.elements-container {
   width: 100%;
-  min-height: 480px;
+
+  /* min-height: 480px; */
   height: auto;
   overflow-y: clip;
 }
@@ -16,7 +17,6 @@
 
 ::ng-deep .pv-protvista .scrollable {
   overflow-y: auto;
-  max-height: 700px;
 }
 
 /* ==========================================================================
@@ -54,6 +54,7 @@
   display: flex;
   align-content: center;
   flex-wrap: wrap;
+  align-items: flex-start;
 }
 
 ::ng-deep .pv-protvista .pv-track-row > .collapsible {
@@ -92,6 +93,15 @@
   width: 20%;
 }
 
+::ng-deep .pv-protvista .pv-track-col.controls {
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-top: 5px;
+  padding-right: 12px;
+  z-index: 6;
+}
+
 ::ng-deep .pv-protvista .pv-track-container {
   width: 80%;
 }
@@ -110,9 +120,16 @@
   align-items: center;
   padding-left: 4px;
   font-size: 14px;
+  min-height: 40px;
+  line-height: 18px;
 }
 
-::ng-deep .pv-protvista .pv-track-label-col {
+::ng-deep .pv-protvista .pv-track-container.custom-data {
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
+/*  ::ng-deep .pv-protvista .pv-track-label-col {
   width: 20%;
   margin-top: 2px;
   margin-bottom: 2px;
@@ -124,6 +141,73 @@
   line-height: 18px;
   justify-content: flex-start;
   cursor: pointer;
+  padding-right: 12px;
+} */
+
+::ng-deep .pv-protvista nightingale-navigation .container .brush .handle {
+  fill: #a9a9a9;
+  stroke: #000000;
+  stroke-width: 1px;
+  height: 18px;
+  y: 0;
+}
+
+::ng-deep .pv-protvista .pv-track-label-col {
+  width: 20%;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 18px;
+  justify-content: flex-start;
+  cursor: pointer;
+  padding-right: 12px;
+}
+
+::ng-deep .pv-protvista .pv-track-label-col > .track-title {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+::ng-deep .pv-protvista .pv-track-label-col > .track-btns {
+  margin-top: 4px;
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+
+  button.in-3d-btn {
+    display: flex;
+    padding: 0 4px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    background: #f3f3f3;
+    color: #3b6fb6;
+    cursor: pointer;
+
+    /* Small body text */
+    font-family: 'IBM Plex Sans';
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 22.4px; /* 160% */
+  }
+
+  button.in-3d-btn.active {
+    color: #193f90;
+    font-weight: 500;
+    background: #b9d4f1;
+  }
+}
+
+::ng-deep .pv-protvista .pv-track-label-col.label-only {
+  cursor: default;
 }
 
 ::ng-deep .pv-protvista .pv-track-label-col > p {
@@ -136,27 +220,41 @@
 
 ::ng-deep .pv-protvista .pv-track-label-col.subtrack {
   padding-left: 12px;
-  cursor: default;
 }
 
 ::ng-deep .pv-protvista .pv-track-label-col.nested.subtrack {
   padding-left: 16px;
-  cursor: default;
 }
 
 ::ng-deep .pv-protvista .pv-track-label-col.variation {
   flex-direction: column;
   align-items: flex-start;
   overflow-x: auto;
+  padding-left: 0;
 }
 
 ::ng-deep .pv-protvista nightingale-scrollbox {
   width: 100%;
 }
 
-::ng-deep .pv-protvista .pv-track-label-col > .expand-icon {
+::ng-deep .pv-protvista .expand-icon {
   display: flex;
-  width: 14px;
+  min-width: 14px;
+}
+
+::ng-deep .pv-protvista .action-icon {
+  width: 24px;
+  height: 24px;
+  padding: 3px;
+  cursor: pointer;
+}
+
+::ng-deep .pv-protvista .action-icon:hover {
+  background-color: #d1e3f6;
+}
+
+::ng-deep .pv-protvista .yscale-wrapper {
+  display: flex;
 }
 
 /* ==========================================================================
@@ -192,10 +290,16 @@
 
 /* Custom Tracks separation border */
 ::ng-deep .pv-protvista .always-on-top .custom-row {
-  border-bottom: 1px solid #000;
+  /* border-bottom: 1px solid #000; */
   z-index: 3;
   position: relative;
   background: #fff;
+}
+
+::ng-deep .pv-protvista .always-on-top img.custom-row {
+  z-index: 3;
+  position: relative;
+  background: transparent;
 }
 
 /* Custom Tracks maximum row height */
@@ -290,9 +394,9 @@ with extra ajustments for close button */
     margin: 4px;
   }
 
-  @media (width <= 1140px) {
+  /* @media (width <= 1140px) {
     font-size: 0.65rem;
-  }
+  } */
 }
 
 ::ng-deep .pv-protvista .icon {
@@ -373,6 +477,71 @@ with extra ajustments for close button */
   margin-left: 2px;
 }
 
+::ng-deep .pv-protvista .pv-radio-group > label {
+  font-size: 12px;
+  line-height: 18px;
+  display: flex;
+}
+
+::ng-deep .pv-protvista .pv-checkbox-group > label {
+  font-size: 12px;
+  line-height: 18px;
+  display: flex;
+}
+
+::ng-deep .pv-protvista .skeleton-loader {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 40px;
+  margin-top: 8px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #f5f5f5 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 8.2s infinite linear;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+::ng-deep .pv-protvista .custom-btn-control {
+  display: flex;
+}
+
+::ng-deep .pv-protvista #pv-add-custom-btn {
+  /* width: 100%; */
+  flex: 1;
+  background: #f3f3f3;
+  color: #3b6fb6;
+  text-align: center;
+  cursor: pointer;
+
+  /* Small body text */
+  font-family: 'IBM Plex Sans';
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22.4px; /* 160% */
+}
+
+::ng-deep .pv-protvista .heatmap-tooltip-box {
+  display: none !important;
+}
+
+::ng-deep .pv-protvista .heatmap-pinned-tooltip-box {
+  display: none !important;
+}
+
+/** ::ng-deep .pv-protvista .pv-track-label-col.subtrack.variation > p {
+  white-space: pre;
+} */
+
 /** ::ng-deep .pv-protvista g.highlighted > rect:not(:last-child) {
   fill: #ffffff66;
 } */
@@ -381,7 +550,7 @@ with extra ajustments for close button */
    RESPONSIVENESS
    ========================================================================== */
 
-@media screen and (width <= 1240px) {
+/* @media screen and (width <= 1240px) {
   ::ng-deep .pv-protvista .pv-track-label-col {
     font-size: 0.8rem;
     word-break: normal;
@@ -395,4 +564,4 @@ with extra ajustments for close button */
   ::ng-deep .pv-protvista .pv-track-container.no-data {
     font-size: 12px;
   }
-}
+} */
