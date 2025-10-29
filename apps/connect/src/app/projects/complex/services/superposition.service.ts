@@ -57,8 +57,7 @@ export class SuperpositionService {
         sequencePanel: false,
         hideStructure: ['water'],
         hideControls: true,
-        // hideCanvasControls: ['animation', 'controlToggle', 'controlInfo', 'selection', 'trajectory'],
-        landscape: true,
+        hideCanvasControls: ['animation'],
       };
       const options = {
         ...defaultOptions,
@@ -66,8 +65,7 @@ export class SuperpositionService {
         assemblyId: assembly_id,
         customData: undefined,
       };
-      // const layout = [{ target: container, component: PDBeMolstarPlugin.UIComponents.FullLayoutNoControlsUnlessExpanded }];
-      // await viewerInstance.render(layout, options);
+      // const layout = [{ target: container, component: this.molstarPluginService.getClass().UIComponents.FullLayoutNoControlsUnlessExpanded }];
       await this.viewerInstance.render(container, options);
       await this.viewerInstance.events.loadComplete.subscribe(() => {
         this.isLoading.set(false);
