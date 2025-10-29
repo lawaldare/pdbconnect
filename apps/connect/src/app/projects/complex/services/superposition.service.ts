@@ -49,10 +49,11 @@ export class SuperpositionService {
       this.baseComponents = complexData.participants.map((p: any) => p.accession);
       this.baseRfamMappings = await this.getRfamMappings(pdb_id);
 
-      this.viewerInstance = new PDBeMolstarPlugin();
+      const pluginInstance = this.molstarPluginService.createInstance();
+      this.viewerInstance = pluginInstance;
 
       const defaultOptions = {
-        bgColor: 'white',
+        bgColor: { r: 255, g: 255, b: 255 },
         sequencePanel: false,
         hideStructure: ['water'],
         hideControls: true,
