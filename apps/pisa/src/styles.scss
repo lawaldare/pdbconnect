@@ -1,0 +1,51 @@
+/* You can add global styles to this file, and also import other style files */
+@import 'ag-grid-community/styles/ag-grid.css';
+@import 'ag-grid-community/styles/ag-theme-quartz.css';
+@import 'https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css';
+@import 'libs/core/src/lib/styles/ag-grid-table-styles/table-exp-val-style';
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  margin: 0;
+  overflow-x: hidden !important;
+  line-height: 27.2px;
+}
+
+a {
+  color: #3b6fb6;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 27.2px;
+  text-decoration: none;
+  border: none;
+
+  &:focus {
+    // border: 1px solid #193f90;
+    border: none;
+    outline: none;
+    text-shadow: none;
+  }
+
+  &:visited {
+    color: #3b6fb6;
+
+    i {
+      color: #3b6fb6;
+    }
+  }
+
+  &:hover {
+    color: #193f90;
+    text-decoration: underline;
+    border: none !important;
+  }
+}
+
+p {
+  margin: 0 !important;
+}
