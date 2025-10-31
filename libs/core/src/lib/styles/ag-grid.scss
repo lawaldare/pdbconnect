@@ -41,6 +41,11 @@ ag-grid-angular {
   .ag-row {
     border: none;
     cursor: pointer;
+
+    &.row-group-band {
+      cursor: default;
+      pointer-events: none;
+    }
   }
 
   .ag-sticky-bottom {

@@ -1,13 +1,16 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { NxWelcome } from './nx-welcome';
+import { VfEbiHeaderComponent } from '@vf-lib/ebi-header';
+import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
+import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
+import { pisaLogoConfig } from './pisa-constant';
 
 @Component({
-  imports: [NxWelcome, RouterModule],
+  imports: [VfEbiHeaderComponent, VfEbiFooterComponent, RouterModule, PdbeHeaderLogoMenuComponent],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
-  protected title = 'pisa';
+  public readonly pisaLogoConfig = pisaLogoConfig;
 }

@@ -19,7 +19,8 @@
         "assets": [
           {
             "glob": "**/*",
-            "input": "apps/pisa/public"
+            "input": "apps/pisa/src/assets",
+            "output": "assets"
           }
         ],
         "styles": ["@angular/material/prebuilt-themes/indigo-pink.css", "apps/pisa/src/styles.scss"]

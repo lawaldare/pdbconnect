@@ -1,0 +1,15 @@
+<div class="table">
+  <ag-grid-angular
+    class="ag-theme-quartz"
+    [rowData]="rowData"
+    [columnDefs]="colDefs"
+    [gridOptions]="gridOptions"
+    (selectionChanged)="onSelectionChanged($event)"
+    (rowDataUpdated)="onRowDataUpdated($event)"
+    (filterChanged)="onFilterChanged($event)"
+    (gridReady)="onComplexStructureGridReady($event)"
+    [paginationPageSizeSelector]="paginationPageSizeSelector()"
+    [rowSelection]="rowSelection"
+    [initialState]="initialState"
+  />
+</div>

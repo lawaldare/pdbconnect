@@ -3,6 +3,7 @@
 @import 'ag-grid-community/styles/ag-theme-quartz.css';
 @import 'https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css';
 @import 'libs/core/src/lib/styles/ag-grid-table-styles/table-exp-val-style';
+@import 'libs/core/src/lib/styles/ag-grid';
 
 html,
 body {
@@ -48,4 +49,27 @@ a {
 
 p {
   margin: 0 !important;
+}
+
+.container {
+  width: 100%;
+  padding: 22px 34px;
+  margin-right: auto;
+  margin-left: auto;
+
+  @media (width <= 575px) {
+    padding: 10px;
+  }
+
+  @media (width >= 768px) {
+    max-width: 720px;
+  }
+
+  @media (width >= 992px) {
+    max-width: 960px;
+  }
+
+  @media (width >= 1200px) {
+    max-width: 1440px;
+  }
 }
