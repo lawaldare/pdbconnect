@@ -23,7 +23,11 @@
             "output": "assets"
           }
         ],
-        "styles": ["@angular/material/prebuilt-themes/indigo-pink.css", "apps/pisa/src/styles.scss"]
+        "styles": ["@angular/material/prebuilt-themes/indigo-pink.css", "apps/pisa/src/styles.scss"],
+        "scripts": [],
+        "stylePreprocessorOptions": {
+          "includePaths": ["libs/core/src/lib/styles"]
+        }
       },
       "configurations": {
         "production": {
