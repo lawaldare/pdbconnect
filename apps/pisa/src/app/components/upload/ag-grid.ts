@@ -10,7 +10,13 @@ export const gridOptions: GridOptions = {
     sortable: false,
   },
 
-  getRowClass: (params) => (params.data?.groupHeader ? 'row-group-band' : params.data?.highlight ? 'highlight-row' : ''),
+  // getRowClass: (params) => (params.data?.groupHeader ? 'row-group-band' : params.data?.highlight ? 'highlight-row' : ''),
+  getRowClass: (params) => {
+    const d = params.data;
+    if (d?.groupHeader) return 'row-group-band';
+    if (d?.lastInGroup) return 'last-in-group-row';
+    return '';
+  },
 
   onCellClicked: (params) => {
     if (params.data?.groupHeader) {

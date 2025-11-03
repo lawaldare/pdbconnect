@@ -12,7 +12,7 @@ import { GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
   styleUrl: './upload.scss',
 })
 export class Upload {
-  public readonly rowData = [
+  public readonly rowData = this.markLastInGroup([
     { groupHeader: 'PQS set 1 (stable)' },
     { size: 4, formula: 'A2B2a4', composition: 'ACBD[HEM]4', surface: 23290, buried: 11280, dGint: -106.4, dGdiss: 7.9 },
     { size: 4, formula: 'A2B2a4', composition: 'ACBD[HEM]4', surface: 23290, buried: 11280, dGint: -106.4, dGdiss: 7.9, highlight: true },
@@ -20,7 +20,7 @@ export class Upload {
     { size: 4, formula: 'A2B2a4', composition: 'ACBD[HEM]4', surface: 23290, buried: 11280, dGint: -106.4, dGdiss: 7.9 },
     { groupHeader: 'PQS set 2' },
     { size: 4, formula: 'A2B2a4', composition: 'ACBD[HEM]4', surface: 13310, buried: 3970, dGint: -49.1, dGdiss: 2.2 },
-  ];
+  ]);
 
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
@@ -53,5 +53,21 @@ export class Upload {
 
   public onComplexStructureGridReady(event: GridReadyEvent<any>) {
     console.log('Complex structure grid ready:', event);
+  }
+
+  private markLastInGroup(rows: any[]) {
+    let lastHeaderIndex = -1;
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      if (r.groupHeader) {
+        lastHeaderIndex = i;
+      } else {
+        const next = rows[i + 1];
+        if (!next || next.groupHeader) {
+          r.lastInGroup = true; // 👈 add marker
+        }
+      }
+    }
+    return rows;
   }
 }

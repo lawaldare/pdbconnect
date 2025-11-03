@@ -46,6 +46,10 @@ ag-grid-angular {
       cursor: default;
       pointer-events: none;
     }
+
+    &.last-in-group-row {
+      border-bottom: 1px solid #d0d0ce;
+    }
   }
 
   .ag-sticky-bottom {
@@ -98,6 +102,12 @@ ag-grid-angular {
 
   .ag-row-hover:not(.ag-full-width-row)::before,
   .ag-row-hover.ag-full-width-row.ag-row-group::before {
+    background-color: #fff !important;
+  }
+}
+
+#pisa-grid {
+  .ag-row-odd {
     background-color: #fff !important;
   }
 }
