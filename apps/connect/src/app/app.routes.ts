@@ -5,9 +5,6 @@ import { TabRedirectComponent } from './projects/entry/redirects/all-redirects.c
 import { SearchPageComponent } from './projects/entry/pages/search/search-page.component';
 import { ExternalRedirectComponent } from './projects/entry/redirects/external-redirect.component';
 
-// const hostname = document.location.hostname;
-// const isLocal = hostname === 'localhost';
-
 export const appRoutes: Route[] = [
   {
     path: 'search/index',
