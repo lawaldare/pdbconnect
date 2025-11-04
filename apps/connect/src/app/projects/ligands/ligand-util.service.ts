@@ -132,4 +132,11 @@ export class LigandUtilService {
 
     return forkJoin(batchRequests).pipe(map((responses) => Object.assign({}, ...responses)));
   }
+
+  private _currentligandTabName = signal<string>('summary');
+  public currentligandTabName = this._currentligandTabName.asReadonly();
+
+  public updateLigandComplexTabName(tabName: string): void {
+    this._currentligandTabName.set(tabName);
+  }
 }

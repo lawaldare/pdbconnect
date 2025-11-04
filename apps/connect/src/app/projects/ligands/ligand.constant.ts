@@ -1,5 +1,14 @@
 import { ThemeType } from '@pdbc/core';
 
+export const ligandRouteTabs = [
+  { label: 'Summary', id: 'summary' },
+  { label: 'Physicochemical properties', id: 'properties' },
+  { label: 'Bound structures', id: 'bound' },
+  { label: 'Interactions statistics', id: 'statistics' },
+  { label: 'Related ligands', id: 'ligands' },
+  { label: 'Ligand-specific databases', id: 'databases' },
+];
+
 export const navSections = [
   { sectionId: 'description-section', sectionName: 'Description', isSubSection: false },
   { sectionId: 'properties-section', sectionName: 'Physicochemical properties', isSubSection: false },

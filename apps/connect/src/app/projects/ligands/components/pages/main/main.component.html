@@ -1,60 +1,86 @@
-<main>
-  <div class="container">
-    <pdbc-pdbe-nav-menu [highlightColor]="'#B6D0CF'" [navSections]="navSections() ?? []" />
-    <article>
-      @if(redirectText$ | async; as text){
-      <div class="redirect-text" [innerHTML]="text"></div>
-      } @if(loaded() === status.SUCCESS){
-      <section class="hero">
-        <header>
-          <h2>{{ ligandId() }}</h2>
-          <div class="annotations">
-            @for(annotation of annotations(); track annotation){ @if(annotation === 'cofactor-like'){
-            <span class="cofactor-like" matTooltipClass="complex-name-tooltip" [matTooltip]="cofactorTooltip" matTooltipPosition="below">Cofactor-like</span>
-            } @if(annotation === 'drug-like'){
-            <span class="drug-like" matTooltipClass="complex-name-tooltip" [matTooltip]="drugTooltip" matTooltipPosition="below">Drug-like</span>
-            } @if(annotation === 'reactant-like'){
-            <p class="reactant-like" matTooltipClass="complex-name-tooltip" [matTooltip]="reactantTooltip" matTooltipPosition="below">Reactant-like</p>
-            } }
-          </div>
-        </header>
-        <h3>{{ description()?.name }}</h3>
-        <div class="action-buttons">
-          <button class="vf-button vf-button--primary vf-button--sm" (click)="openMolstarDialog()">View 3D</button>
-          <lib-dropdown-menu
-            [options]="downloadOptions()"
-            title="Download as"
-            (click)="googleAnalyticsService.logClickEvents('download_dropdown_open', 'Interaction', 'open_dropdown', 'Download as')"
-          ></lib-dropdown-menu>
-        </div>
-      </section>
-      <section class="description">
-        <pdbc-description />
-        <pdbc-image-carousel #imageCarouselRef />
-      </section>
+<pdbc-pdbe-header-logo-menu [headerConfig]="headerLogoMenuConfig" />
+<pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
 
-      <section class="property">
-        <pdbc-properties />
-      </section>
-      <section class="structure">
-        <pdbc-structures />
-      </section>
-      <section class="interaction">
-        <pdbc-interaction />
-      </section>
-      <section class="related-ligands">
-        <pdbc-related-ligands />
-      </section>
-      <section class="ligand-specific-databases">
-        <pdbc-ligand-specific-databases />
-      </section>
-      } @else if(loaded() === status.LOADING) {
-      <div class="loader">
-        <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px', width: '150px' }"></ngx-skeleton-loader>
-        <ngx-skeleton-loader count="2" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
-        <ngx-skeleton-loader count="2" [theme]="{ 'border-radius': '0', height: '450px' }"></ngx-skeleton-loader>
+<main>
+  @if(showNotificationBanner()){
+  <lib-notification />
+  }
+  <div class="container">
+    @if(redirectText$ | async; as text){
+    <div class="redirect-text" [innerHTML]="text"></div>
+    } @if(loaded() === status.SUCCESS){
+    <section class="hero">
+      <header>
+        <h2>{{ ligandId() }}</h2>
+        <div class="annotations">
+          @for(annotation of annotations(); track annotation){ @if(annotation === 'cofactor-like'){
+          <span class="cofactor-like" matTooltipClass="complex-name-tooltip" [matTooltip]="cofactorTooltip" matTooltipPosition="below">Cofactor-like</span>
+          } @if(annotation === 'drug-like'){
+          <span class="drug-like" matTooltipClass="complex-name-tooltip" [matTooltip]="drugTooltip" matTooltipPosition="below">Drug-like</span>
+          } @if(annotation === 'reactant-like'){
+          <p class="reactant-like" matTooltipClass="complex-name-tooltip" [matTooltip]="reactantTooltip" matTooltipPosition="below">Reactant-like</p>
+          } }
+        </div>
+      </header>
+      <h3>{{ description()?.name }}</h3>
+      <div class="action-buttons">
+        <button class="vf-button vf-button--primary vf-button--sm" (click)="openMolstarDialog()">View 3D</button>
+        <lib-dropdown-menu
+          [options]="downloadOptions()"
+          title="Download as"
+          (click)="googleAnalyticsService.logClickEvents('download_dropdown_open', 'Interaction', 'open_dropdown', 'Download as')"
+        ></lib-dropdown-menu>
       </div>
-      }
-    </article>
+    </section>
+    <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)" #tabs>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span id="ligand-summary-label-tour">Summary</span>
+        </ng-template>
+        <ng-template matTabContent> <pdbc-ligand-summary /> </ng-template>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span id="ligand-properties-label-tour">Physiochemical properties</span>
+        </ng-template>
+        <ng-template matTabContent> <pdbc-properties /> </ng-template>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span id="ligand-bound-label-tour">Bound structures</span>
+        </ng-template>
+        <ng-template matTabContent> <pdbc-structures /> </ng-template>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span id="ligand-interaction-label-tour">Interaction statistics</span>
+        </ng-template>
+        <ng-template matTabContent> <pdbc-interaction /> </ng-template>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span id="ligand-related-label-tour">Related ligands</span>
+        </ng-template>
+        <ng-template matTabContent> <pdbc-related-ligands /> </ng-template>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span id="ligand-database-label-tour">Ligand-specific databases</span>
+        </ng-template>
+        <ng-template matTabContent> <pdbc-ligand-specific-databases /> </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+    } @else if(loaded() === status.LOADING) {
+    <div class="loader">
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px', width: '150px' }"></ngx-skeleton-loader>
+      <ngx-skeleton-loader count="2" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+      <ngx-skeleton-loader count="2" [theme]="{ 'border-radius': '0', height: '450px' }"></ngx-skeleton-loader>
+    </div>
+    }
   </div>
 </main>
+
+<lib-data-privacy-banner
+  privacyNoticeUrl="https://www.ebi.ac.uk/data-protection/privacy-notice/embl-ebi-public-website/"
+  pageId="dataProtectionAgreedForLigandPages"
+/>

@@ -57,12 +57,11 @@ export class InteractionComponent implements AfterViewInit {
         switchMap((id) => {
           this.ligandId.set(id);
           this.showLigandHeatmap.set(true);
-          return forkJoin([this.aggregatedApiService.fetchDepiction(this.ligandId()), this.globalStore.select(LigandSelectors.navItems).pipe(take(1))]);
+          return this.aggregatedApiService.fetchDepiction(this.ligandId());
         }),
-        switchMap(([depiction, navItems]) => {
+        switchMap((depiction) => {
           this.atomNumber = depiction.atoms.length;
           this.generateStructureStatistics();
-          this.navItems.update(() => navItems);
           const imageContainer = this.imageContainer.nativeElement;
           this.resetRenderer();
           return from(this.createLigandEnvironment(imageContainer, depiction)).pipe(switchMap(() => this.aggregatedApiService.fetchIntxData(this.ligandId())));
@@ -73,13 +72,10 @@ export class InteractionComponent implements AfterViewInit {
           if (interaction && interaction?.[this.ligandId()]) {
             this.renderer.setProperty(this.ligandEv, 'interaction', interaction[this.ligandId()]);
             this.renderer.setProperty(this.ligandEv, 'contactType', '["TOTAL"]');
-          } else {
-            this.updateWhenNoInteraction();
           }
           return EMPTY;
         }),
         catchError(() => {
-          this.updateWhenNoInteraction();
           return throwError('Failed to fetch interaction data');
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -93,17 +89,11 @@ export class InteractionComponent implements AfterViewInit {
     });
   }
 
-  private updateWhenNoInteraction(): void {
-    this.showLigandHeatmap.set(false);
-    const tempNavsections = this.navItems().filter((section) => section.sectionId !== 'interaction-section');
-    this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
-  }
-
   public downloadInteraction(): void {
     if (this.interaction && this.interaction?.[this.ligandId()]) {
       this.ligandUtilService.downloadJSON(this.interaction, `interaction_${this.ligandId()}`);
     } else {
-      this._snackBar.open(`No interaction data for ${this.ligandId}`, 'Dismiss', {
+      this._snackBar.open(`No interaction data for ${this.ligandId()}`, 'Dismiss', {
         duration: 3000,
       });
     }
