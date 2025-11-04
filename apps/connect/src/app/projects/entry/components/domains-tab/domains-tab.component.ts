@@ -84,6 +84,8 @@ export class DomainsTabComponent implements AfterViewInit {
         status: 'ready-has-data',
         isSticky: true,
         isCustomData: true,
+        isExpandable: false,
+        isCustomFixed: true,
       },
       {
         id: 'uniprot',

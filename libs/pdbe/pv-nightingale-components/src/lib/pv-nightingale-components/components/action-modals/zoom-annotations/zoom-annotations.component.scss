@@ -1,0 +1,175 @@
+.add-custom-track {
+  bottom: 35%;
+  right: 35%;
+  width: 289px;
+  position: absolute;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.25);
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 12px;
+  box-sizing: border-box;
+  text-align: left;
+  font-size: 16px;
+  color: #1a1c1a;
+  font-family: 'IBM Plex Sans';
+  z-index: 1000;
+}
+
+/* When viewport width is 1000px or below */
+@media (max-width: 1000px) {
+  .add-custom-track {
+    bottom: 55%;
+    right: 25%;
+  }
+}
+
+.model-coordinates {
+  position: relative;
+  line-height: 27.2px;
+}
+.row-parent {
+  width: 330px;
+  display: none;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.row2 {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  gap: 8px;
+  color: #54585a;
+}
+.row3 {
+  align-self: stretch;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 8px 20px;
+  gap: 8px;
+}
+.divider {
+  align-self: stretch;
+  height: 1px;
+  position: relative;
+  background-color: #e8e7df;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.row-group {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 19px;
+}
+.dialog-header {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0px;
+  gap: -36px;
+}
+.add-your-annotation {
+  position: relative;
+  line-height: 26.6px;
+  font-weight: 500;
+}
+.row-child {
+  width: 16px;
+  cursor: pointer;
+}
+.dialogue-body {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 4px 0px;
+  gap: 4px;
+  font-size: 16px;
+}
+.track-one {
+  align-self: stretch;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.text-field {
+  flex: 1;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.description {
+  position: relative;
+  font-size: 14px;
+  line-height: 22.4px;
+  color: #54585a;
+}
+.text-field-inner {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+.input-text-wrapper {
+  flex: 1;
+  background-color: #fff;
+  border: 1px solid #d0d0ce;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+}
+.input-text {
+  flex: 1;
+  position: relative;
+  line-height: 27.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.error-message {
+  color: #b20c35;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.input-error {
+  border-color: #b20c35 !important;
+  outline: none;
+}
+.input-text.input-error:focus {
+  border-color: #b20c35 !important;
+  box-shadow: 0 0 0 1px #b20c35;
+}
+.input-text.input-error:hover {
+  border-color: #b20c35 !important;
+  box-shadow: 0 0 0 1px #b20c35;
+}
+.we-do-not {
+  align-self: stretch;
+  position: relative;
+  font-size: 14px;
+  line-height: 22.4px;
+  font-weight: 500;
+  color: #54585a;
+}
+.dialog-footer {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px 0px;
+  gap: 8px;
+  font-size: 18px;
+}
+.button-wrapper {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}

@@ -1,28 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, inject, input, OnDestroy, output, ViewChild } from '@angular/core';
-// import { NewProtvistaTrackData } from '../pv-new-protvista/track-data.model';
-// import { NewProtvistaVisualisation } from '../pv-new-protvista/new-protvista-core';
 import { ScriptLoaderService } from '@pdbc/core';
-// import { getColorByType } from '@nightingale-elements/nightingale-track';
-// import { drawRange, drawSymbol, drawUnknown } from './draw-shapes';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, debounceTime, distinctUntilChanged, map, Subscription } from 'rxjs';
-// import { patchTrackCanvas } from './patch-track-canvas';
 import { deepClone } from './deep-clone';
 import { NewProtvistaColourEvent, NewProtvistaDialogEvent } from '../pv-new-protvista/track-data.model';
+import { NewProtvistaVisualisation } from '../pv-new-protvista/new-protvista-core';
+import { PvZoomResiduesModalComponent } from '../../action-modals/zoom-annotations/zoom-annotations.component';
+import { PvAddCustomTracksModalComponent } from '../../action-modals/add-annotations/add-annotations.component';
+import { PvEditCustomTracksModalComponent } from '../../action-modals/edit-annotations/edit-annotations.component';
 
-// import '@nightingale-elements/nightingale-manager';
-// import '@nightingale-elements/nightingale-navigation';
-// import '@nightingale-elements/nightingale-sequence';
-// import '@nightingale-elements/nightingale-track-canvas';
-// import '@nightingale-elements/nightingale-scrollbox';
-// import '@nightingale-elements/nightingale-linegraph-track';
-// import '@nightingale-elements/nightingale-conservation-track';
-// import '@nightingale-elements/nightingale-variation';
-
+const PAUL_TOL_COLORBLIND_SCALE: string[] = ['#332288', '#117733', '#44AA99', '#88CCEE', '#DDCC77', '#CC6677', '#AA4499', '#882255'];
 @Component({
   selector: 'lib-pv-angular-wrapper',
-  imports: [CommonModule],
+  imports: [CommonModule, PvZoomResiduesModalComponent, PvAddCustomTracksModalComponent, PvEditCustomTracksModalComponent],
   templateUrl: './pv-angular-wrapper.component.html',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   styleUrl: './pv-angular-wrapper.component.scss',
@@ -58,9 +49,145 @@ export class ProtvistaWrapperComponent implements AfterViewInit, OnDestroy {
   public openSearchHighlightEvent = output<NewProtvistaDialogEvent | null>();
   public colourIn3DEvent = output<NewProtvistaColourEvent | null>();
 
+  /**
+   * For EP: dialogues managed by this component
+   */
+  public isAddDialogOpen = false;
+  public isEditDialogOpen = false;
+  public isZoomDialogOpen = false;
+  public seqLength?: number;
+  public customTracks: any[] = [];
+  public customRawData: { trackName: string; residueRanges: string }[] = [];
+  private customTrackCounter = 0;
+
+  public closeAddTrackDialog() {
+    this.isAddDialogOpen = false;
+  }
+
+  public closeZoomDialog() {
+    this.isZoomDialogOpen = false;
+  }
+
+  public closeEditTrackDialog() {
+    this.isEditDialogOpen = false;
+  }
+
+  public mapYourData(rawData: any) {
+    this.customRawData.push(rawData);
+    const trackName = rawData.trackName.length >= 15 ? rawData.trackName.slice(0, 15) + '...' : rawData.trackName;
+    const trackId = this.customTrackCounter++;
+    const trackColor = PAUL_TOL_COLORBLIND_SCALE[trackId % PAUL_TOL_COLORBLIND_SCALE.length];
+
+    // TODO for datum of rawData
+    const segments: string[] = rawData.residueRanges.split(',');
+    const fragments = segments.map((segmentString: string) => {
+      let start = segmentString.trim();
+      let end = segmentString.trim();
+      if (segmentString.includes('-')) {
+        start = start.split('-')[0];
+        end = end.split('-')[1];
+      }
+      const tooltipContent = `
+        Track name: <b>${rawData.trackName}</b><br>
+        Residues: <b>${segmentString}</b>
+      `;
+      return {
+        start: parseInt(start),
+        end: parseInt(end),
+        tooltipContent,
+      };
+    });
+
+    const trackData = {
+      id: `custom-${trackId}`,
+      type: 'TrackCanvas',
+      name: trackName,
+      status: 'ready-has-data',
+      isSticky: true,
+      isCustomData: true,
+      isExpandable: true,
+      colourIn3DControl: false,
+      positionIndex: undefined,
+      rawData,
+      data: [
+        {
+          accession: `custom-track-${trackId}`,
+          label: rawData.trackName,
+          color: trackColor,
+          locations: [
+            {
+              fragments,
+            },
+          ],
+        },
+      ],
+    };
+    this.customTracks.push(trackData);
+
+    const eventObj = new CustomEvent('PDBe.NewProtvista.SetCustomData', {
+      detail: {
+        data: this.customTracks,
+      },
+      bubbles: true,
+      cancelable: true,
+    });
+
+    document.dispatchEvent(eventObj);
+    this.isAddDialogOpen = false;
+  }
+
+  public async zoomAndHighlightTrack(event: any) {
+    if (!this.visInstance || !this.visInstance.containerElement) return;
+    // first we wait untl nightingale navigation is rendered
+    const nightingaleNavigation = this.visInstance.containerElement.querySelector('nightingale-navigation');
+    if (!nightingaleNavigation) return;
+
+    // we then just dispatch events to each and let them bubble
+    if (event.type === 'highlight') {
+      const eventObj = new CustomEvent('change', {
+        detail: {
+          highlight: `${event.start}:${event.end}`,
+        },
+        bubbles: true,
+        cancelable: true,
+      });
+      nightingaleNavigation.dispatchEvent(eventObj);
+    }
+    if (event.type === 'zoom') {
+      const eventObj = new CustomEvent('change', {
+        detail: {
+          'display-start': event.start,
+          'display-end': event.end,
+        },
+        bubbles: true,
+        cancelable: true,
+      });
+      nightingaleNavigation.dispatchEvent(eventObj);
+      this.isZoomDialogOpen = false;
+    }
+  }
+
+  public editAnnotationsTrack(event: any) {
+    const updatedCustomTracks = event.customTracks;
+    this.customTracks = updatedCustomTracks;
+    // this.customTracks.push(trackData);
+
+    const eventObj = new CustomEvent('PDBe.NewProtvista.SetCustomData', {
+      detail: {
+        data: this.customTracks,
+      },
+      bubbles: true,
+      cancelable: true,
+    });
+
+    document.dispatchEvent(eventObj);
+    this.isEditDialogOpen = false;
+    //add logic to update the actual tracks and do testing with various scenarios
+  }
+
   // Instance reference to cleanup
   // private afterViewInit = false;
-  private visInstance?: any;
+  private visInstance?: NewProtvistaVisualisation;
 
   // Loaded components state
   private hasLoadedNightingale = false;
@@ -139,6 +266,7 @@ export class ProtvistaWrapperComponent implements AfterViewInit, OnDestroy {
         // destroy old one
         this.visInstance?.destroy();
         this.visInstance = undefined;
+        this.seqLength = undefined;
 
         const deepCopyData = deepClone(this.data());
         const deepCopyTooltips = deepClone(this.tooltips());
@@ -156,14 +284,33 @@ export class ProtvistaWrapperComponent implements AfterViewInit, OnDestroy {
           this.externalEvents(),
           this.customTrackControls()
         );
-        await this.visInstance.start();
+        this.seqLength = identity.sequence.length;
+        await this.visInstance!.start();
 
         if (this.visInstance) {
-          this.subs.add(this.visInstance.addCustomTrack$.pipe(distinctUntilChanged()).subscribe((evt: any) => this.addCustomTrackEvent.emit(evt)));
+          this.subs.add(
+            this.visInstance.addCustomTrack$.pipe(distinctUntilChanged()).subscribe((evt: any) => {
+              this.addCustomTrackEvent.emit(evt);
+              if (evt === null) return;
+              this.isAddDialogOpen = true;
+            })
+          );
 
-          this.subs.add(this.visInstance.editCustomTracks$.pipe(distinctUntilChanged()).subscribe((evt: any) => this.editCustomTracksEvent.emit(evt)));
+          this.subs.add(
+            this.visInstance.editCustomTracks$.pipe(distinctUntilChanged()).subscribe((evt: any) => {
+              this.editCustomTracksEvent.emit(evt);
+              if (evt === null) return;
+              this.isEditDialogOpen = true;
+            })
+          );
 
-          this.subs.add(this.visInstance.openSearchHighlight$.pipe(distinctUntilChanged()).subscribe((evt: any) => this.openSearchHighlightEvent.emit(evt)));
+          this.subs.add(
+            this.visInstance.openSearchHighlight$.pipe(distinctUntilChanged()).subscribe((evt: any) => {
+              this.openSearchHighlightEvent.emit(evt);
+              if (evt === null) return;
+              this.isZoomDialogOpen = true;
+            })
+          );
 
           this.subs.add(this.visInstance.colourIn3D$.pipe(distinctUntilChanged()).subscribe((evt: any) => this.colourIn3DEvent.emit(evt)));
         }
@@ -229,5 +376,6 @@ export class ProtvistaWrapperComponent implements AfterViewInit, OnDestroy {
     this.subs.unsubscribe();
     this.visInstance?.destroy();
     this.visInstance = undefined;
+    this.seqLength = undefined;
   }
 }
