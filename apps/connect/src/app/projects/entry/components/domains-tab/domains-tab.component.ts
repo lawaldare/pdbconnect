@@ -527,4 +527,9 @@ export class DomainsTabComponent implements AfterViewInit {
     ]);
     this.protvistaDataFacade.processNewData(`${entityId}`, false);
   }
+  openedAddCustomTrack() {
+    this.gAS.logPageEvents('ep_map_data', {
+      tab: this.compCommunication.currentTabName() ?? '',
+    });
+  }
 }

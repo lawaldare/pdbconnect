@@ -924,4 +924,10 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     const weight = this.currentMacromoleculeDatum()?.additionalData.molecule.weight;
     return weight !== undefined ? +(weight / 1000).toFixed(3) : undefined;
   }
+
+  openedAddCustomTrack() {
+    this.gAS.logPageEvents('ep_map_data', {
+      tab: this.compCommunication.currentTabName() ?? '',
+    });
+  }
 }
