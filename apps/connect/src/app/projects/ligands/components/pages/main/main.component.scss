@@ -1,22 +1,8 @@
-@import url('libs/core/src/lib/styles/pdb_connect.scss');
+@import 'libs/core/src/lib/styles/pdb_connect';
 
 main {
   .container {
-    display: flex;
-    gap: 28px;
     padding-top: 10px;
-
-    @media screen and (width <= 768px) {
-      gap: 0;
-    }
-
-    pdbc-pdbe-nav-menu {
-      width: 220px;
-
-      @media screen and (width <= 768px) {
-        display: none;
-      }
-    }
 
     header {
       display: flex;
@@ -36,11 +22,11 @@ main {
     }
 
     article {
-      width: calc(100% - 248px);
+      // width: calc(100% - 248px);
 
-      @media screen and (width <= 768px) {
-        width: 100%;
-      }
+      // @media screen and (width <= 768px) {
+      //   width: 100%;
+      // }
     }
 
     .loader {
