@@ -57,7 +57,7 @@ export function renderVariationTrack(
     case 'not-loaded':
       varTrackRow.classList.add('pv-track-row');
       varTrackRow.classList.add('no-data');
-      varTrackRow.innerHTML = getLoadingDataHTML(varTrackData.name);
+      varTrackRow.innerHTML = getLoadingDataHTML(varTrackData.name, extraMarginLeft, extraMarginRight);
       break;
 
     default:

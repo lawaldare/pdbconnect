@@ -61,6 +61,7 @@ export interface NewProtvistaTrackDatumHeatmapSeqTrack extends CommonParams {
   yScaleText?: string;
   mirrorYScale?: boolean;
   tooltipContentFn?: (d: any) => string;
+  customColourScale?: (d: any) => string;
 }
 
 export type NewProtvistaTrackDatum =

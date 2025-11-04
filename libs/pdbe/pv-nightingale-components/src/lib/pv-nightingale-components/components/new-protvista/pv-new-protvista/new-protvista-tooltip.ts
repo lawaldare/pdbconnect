@@ -5,7 +5,9 @@ export class NewProtvistaTooltip {
   pinnedTooltipElement: HTMLDivElement | null = null;
 
   pinnedTooltipInitialTop = 0;
-  pinnedTooltipInitialLeft = 0;
+  pinnedTooltipLastLeft = 0;
+  pinnedTooltipResidueApprox?: number;
+  pinnedTooltipZoomRange?: { start: number; end: number };
   tooltipVisible = false;
   tooltipFadeOutTimeout: number | null = null;
   pinnedTooltipFadeOutTimeout: number | null = null;
@@ -14,6 +16,8 @@ export class NewProtvistaTooltip {
   private lastHoverTarget?: Element;
   private hoverTooltipLeaveHandler?: (e: Event) => void;
 
+  private lastClickedResPos?: number;
+  private lastClickedResPosFrom?: number;
   private lastPinnedCloseBtn?: Element;
   private pinnedTooltipCloseHandler?: EventListener;
 
@@ -27,7 +31,7 @@ export class NewProtvistaTooltip {
   /**
    * Displays a hover-based tooltip near the target element
    */
-  async showHoverTooltip(target: HTMLElement, message: string, coords: { x: number; y: number }, customData?: boolean) {
+  async showHoverTooltip(target: HTMLElement, message: string, coords: { x: number; y: number }, _hoveredResPos: number, customData?: boolean) {
     if (!this.container) return;
 
     if (!this.tooltipElement) {
@@ -101,7 +105,15 @@ export class NewProtvistaTooltip {
   /**
    * Displays a pinned tooltip (persistent, e.g. click)
    */
-  showPinnedTooltip(_target: HTMLElement, message: string, coords: { x: number; y: number }, customData?: boolean) {
+  showPinnedTooltip(
+    target: HTMLElement,
+    message: string,
+    coords: { x: number; y: number },
+    clickedResPos: number,
+    customData?: boolean,
+    zoomStart?: number,
+    zoomEnd?: number
+  ) {
     if (!this.container) return;
 
     // Remove old pinned tooltip
@@ -123,10 +135,17 @@ export class NewProtvistaTooltip {
     `;
 
     const { coordX, coordY } = this.getTooltipCoords(coords);
+    const trackRect = this.relativeElement.getBoundingClientRect();
+    const fractionAcrossVisible = (coords.x - trackRect.left) / trackRect.width;
+    if (zoomStart != null && zoomEnd != null) {
+      this.pinnedTooltipZoomRange = { start: zoomStart, end: zoomEnd };
+      this.pinnedTooltipResidueApprox = zoomStart + fractionAcrossVisible * (zoomEnd - zoomStart);
+    }
+
     const zIndex = customData ? '5' : '1';
 
     this.pinnedTooltipInitialTop = coordY;
-    this.pinnedTooltipInitialLeft = coordX;
+    this.pinnedTooltipLastLeft = coordX;
     this.lastScrollTop = this.scrollContainer?.scrollTop ?? 0;
 
     Object.assign(tooltip.style, {
@@ -135,6 +154,10 @@ export class NewProtvistaTooltip {
       left: `${coordX}px`,
       zIndex,
     });
+
+    this.lastClickedResPos = clickedResPos;
+    const seqTrack = this.relativeElement.querySelector('nightingale-sequence') as any;
+    this.lastClickedResPosFrom = seqTrack.getXFromSeqPosition(clickedResPos);
 
     this.container.appendChild(tooltip);
     this.pinnedTooltipElement = tooltip;
@@ -180,7 +203,7 @@ export class NewProtvistaTooltip {
   /**
    * Moves pinned tooltip during scroll
    */
-  movePinnedTooltip() {
+  movePinnedTooltipVertical() {
     if (!this.scrollContainer || !this.pinnedTooltipElement) return;
     if (this.pinnedTooltipElement.classList.contains('custom-row')) return;
 
@@ -190,8 +213,43 @@ export class NewProtvistaTooltip {
 
     Object.assign(this.pinnedTooltipElement.style, {
       top: `${newTop}px`,
-      left: `${this.pinnedTooltipInitialLeft}px`,
+      left: `${this.pinnedTooltipLastLeft}px`,
     });
+  }
+
+  // /**
+  //  * Moves pinned tooltip during scroll
+  //  */
+  // movePinnedTooltipHorizontal(visContainer: HTMLElement, newZoomStart: number, newZoomEnd: number) {
+  //   if (!this.pinnedTooltipElement || this.pinnedTooltipResidueApprox == null) return;
+
+  //   const trackRect = this.relativeElement.getBoundingClientRect();
+
+  //   // Compute where that residue would now appear in the new zoomed view
+  //   const frac = (this.pinnedTooltipResidueApprox - newZoomStart) / (newZoomEnd - newZoomStart);
+  //   // const clampedFrac = Math.max(0, Math.min(1, frac)); // clamp to [0,1]
+  //   // const newLeft = trackRect.left + clampedFrac * trackRect.width;
+  //   const newLeft = trackRect.left + frac * trackRect.width;
+  //   const relLeft = newLeft - trackRect.left;
+
+  //   this.pinnedTooltipLastLeft = relLeft;
+  //   this.pinnedTooltipElement.style.left = `${relLeft}px`;
+  // }
+
+  /**
+   * Moves pinned tooltip during scroll
+   */
+  movePinnedTooltipHorizontal() {
+    if (!this.pinnedTooltipElement || this.lastClickedResPos === undefined || this.lastClickedResPosFrom === undefined) return;
+    // use nightingale functions to get delta
+    const seqTrack = this.relativeElement.querySelector('nightingale-sequence') as any;
+    const lastPos = this.lastClickedResPos;
+    const newPosX = seqTrack.getXFromSeqPosition(lastPos);
+    const deltaX = this.lastClickedResPosFrom - newPosX;
+    // save state and move tooltip
+    this.lastClickedResPosFrom = newPosX + 0;
+    this.pinnedTooltipLastLeft -= deltaX;
+    this.pinnedTooltipElement.style.left = `${this.pinnedTooltipLastLeft}px`;
   }
 
   /**
@@ -213,5 +271,27 @@ export class NewProtvistaTooltip {
 
       document.dispatchEvent(new CustomEvent('protvista-close-pin'));
     }, 150);
+  }
+
+  hideHeatmapTooltip(container: HTMLElement, trackId?: string) {
+    var closeBtns = container.querySelectorAll('.heatmap-pinned-tooltip-close');
+    for (const closeBtn of Array.from(closeBtns)) {
+      const btnEl = closeBtn as HTMLElement;
+
+      if (!trackId) {
+        btnEl.click();
+        continue;
+      }
+      // Try to find the tooltip-data element within the sibling `.heatmap-pinned-tooltip-content`
+      const tooltipContent = btnEl.parentElement?.querySelector('.heatmap-pinned-tooltip-content');
+      const tooltipDataEl = tooltipContent?.querySelector('.tooltip-data') as HTMLElement | null;
+
+      const tooltipTrackId = tooltipDataEl?.getAttribute('data-trackid');
+
+      // Close tooltips that do NOT match the provided trackId
+      if (tooltipTrackId !== trackId) {
+        btnEl.click();
+      }
+    }
   }
 }

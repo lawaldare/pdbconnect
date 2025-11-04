@@ -111,7 +111,8 @@ export function renderTrackForDatum(
     if (hasYScale) {
       const yScaleText = heatmapSeqTrackData.yScaleText !== undefined ? heatmapSeqTrackData.yScaleText : 'Amino acids';
       const trackHeight = heatmapSeqTrackData.trackHeight ? heatmapSeqTrackData.trackHeight : 40;
-      renderHeatmapYScale(heatmapSeqTrackData.id, heatmapSeqTrackData.yDomain, trackHeight, yScaleText, heatmapSeqTrackData.heatmapType);
+      const mirrorYScale = heatmapSeqTrackData.mirrorYScale ? heatmapSeqTrackData.mirrorYScale : false;
+      renderHeatmapYScale(heatmapSeqTrackData.id, heatmapSeqTrackData.yDomain, trackHeight, yScaleText, heatmapSeqTrackData.heatmapType, mirrorYScale);
     }
   }
 }

@@ -3,5 +3,6 @@ export function renderTooltipsDiv(containerElementChild: HTMLElement) {
   if (!scrollableContainer) return;
   const containerTrackRow = document.createElement('div');
   containerTrackRow.id = 'pv-tooltips-container';
-  scrollableContainer.appendChild(containerTrackRow);
+  // scrollableContainer.appendChild(containerTrackRow);
+  scrollableContainer.insertBefore(containerTrackRow, scrollableContainer.firstChild);
 }

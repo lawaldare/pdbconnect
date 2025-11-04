@@ -1,6 +1,6 @@
 export function insertTrackAtPosition(newTrack: HTMLElement, parent: Element, insertAt?: number) {
   // Find insertion reference
-  const mainTracks = parent.querySelectorAll('.pv-track-row.main-track');
+  const mainTracks = parent.querySelectorAll('.main-track');
   const index = insertAt ?? mainTracks.length; // default: end
   const refNode = mainTracks[index] ?? null;
 

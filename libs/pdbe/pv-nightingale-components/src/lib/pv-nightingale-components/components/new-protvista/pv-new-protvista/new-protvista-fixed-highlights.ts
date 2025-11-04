@@ -31,16 +31,16 @@ export class NewProtvistaFixedHighlights {
       (toHighlightElement as any).fixedHighlight = this.selectionHighlight;
     }
 
-    // show reset button if highlight or zoom on
-    const nav = this.container.querySelector<Element>(`nightingale-navigation`);
-    if (!nav) return;
-    const navStart = parseInt(nav.getAttribute('display-start') as string);
-    const navEnd = parseInt(nav.getAttribute('display-end') as string);
-    const hasZoom = navStart !== 1 || navEnd !== this.sequenceLength;
-    const hasHighlight = this.selectionHighlight.length > 0;
-    const resetBtn = this.container.querySelector<HTMLElement>('#pv-reset-btn');
-    if (resetBtn && (hasHighlight || hasZoom)) resetBtn.style.display = '';
-    else if (resetBtn && !hasHighlight && !hasZoom) resetBtn.style.display = 'none';
+    // // show reset button if highlight or zoom on
+    // const nav = this.container.querySelector<Element>(`nightingale-navigation`);
+    // if (!nav) return;
+    // const navStart = parseInt(nav.getAttribute('display-start') as string);
+    // const navEnd = parseInt(nav.getAttribute('display-end') as string);
+    // const hasZoom = navStart !== 1 || navEnd !== this.sequenceLength;
+    // const hasHighlight = this.selectionHighlight.length > 0;
+    // const resetBtn = this.container.querySelector<HTMLElement>('#pv-reset-btn');
+    // if (resetBtn && (hasHighlight || hasZoom)) resetBtn.style.display = '';
+    // else if (resetBtn && !hasHighlight && !hasZoom) resetBtn.style.display = 'none';
   }
 
   onSelectedResiduesChange(newSelection: string[]) {

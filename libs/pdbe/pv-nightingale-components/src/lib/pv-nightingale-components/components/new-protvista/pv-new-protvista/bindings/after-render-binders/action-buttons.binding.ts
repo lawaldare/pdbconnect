@@ -1,7 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import { NewProtvistaFixedHighlights } from '../../new-protvista-fixed-highlights';
 import { NewProtvistaTooltip } from '../../new-protvista-tooltip';
-import { updateHeatmapXScale } from '../../rendering/others/render-heatmap-scale';
 import { NewProtvistaDialogEvent } from '../../track-data.model';
 import { ProtvistaGenericBinding } from '../abstract/generic-obj.bind';
 
@@ -33,17 +32,12 @@ export class ProtvistaActBtnsBinding extends ProtvistaGenericBinding {
             detail: {
               'display-start': 1,
               'display-end': sequenceLength,
-              cancelMe: true,
             },
             bubbles: true,
             cancelable: true,
           });
           nightingaleNavigation.dispatchEvent(eventObj);
         }
-
-        // hide tooltips
-        this.tooltip.hideHoverTooltip();
-        this.tooltip.hidePinnedTooltip();
 
         // remove pinned tooltip highlight
         this.highlights.fixedTooltipSelection = '';
@@ -54,15 +48,6 @@ export class ProtvistaActBtnsBinding extends ProtvistaGenericBinding {
         // refresh highlights on screen
         this.highlights.createHighlightText();
         this.highlights.triggerFixedHighlight();
-
-        // update heatmap xscale if exists
-        const heatmaps = container.querySelectorAll<any>('.sequence-heatmap-vis');
-        if (!heatmaps.length) return;
-        for (const heatmapTrack of Array.from(heatmaps)) {
-          const trackId = heatmapTrack.getAttribute('id').split('-heatmap-track')[0];
-          const xScaleSvg = container.querySelector(`#${trackId}-heatmap-xscale`);
-          if (xScaleSvg) updateHeatmapXScale(trackId, [1, sequenceLength]);
-        }
       };
       resetBtn.addEventListener('click', resetHandler);
       this.elementListeners.push({ element: resetBtn, handlers: { type: 'click', listener: resetHandler } });
@@ -81,17 +66,6 @@ export class ProtvistaActBtnsBinding extends ProtvistaGenericBinding {
           width: rect.width,
           height: rect.height,
         };
-
-        // // Emit event to open Search/Highlight modal (Angular/Page side)
-        // const eventObj = new CustomEvent('PDBe.NewProtvista.OpenSearchHighlight', {
-        //   detail: {
-        //     open: true,
-        //     position: coords, // include the position
-        //   },
-        //   bubbles: true,
-        //   cancelable: true,
-        // });
-        // document.dispatchEvent(eventObj);
         eventStreams.openSearchHighlight$?.next({ open: true, position: coords });
       };
       searchHighlightBtn.addEventListener('click', searchHighlightHandler);
@@ -111,17 +85,6 @@ export class ProtvistaActBtnsBinding extends ProtvistaGenericBinding {
           width: rect.width,
           height: rect.height,
         };
-
-        // // Emit event to open Edit modal (Angular/Page side)
-        // const eventObj = new CustomEvent('PDBe.NewProtvista.OpenEditTrack', {
-        //   detail: {
-        //     open: true,
-        //     position: coords, // include the position
-        //   },
-        //   bubbles: true,
-        //   cancelable: true,
-        // });
-        // document.dispatchEvent(eventObj);
         eventStreams.editCustomTracks$?.next({ open: true, position: coords });
       };
       editCustomBtn.addEventListener('click', editCustomHandler);
@@ -142,17 +105,6 @@ export class ProtvistaActBtnsBinding extends ProtvistaGenericBinding {
           width: rect.width,
           height: rect.height,
         };
-
-        // // Emit event to open Edit modal (Angular/Page side)
-        // const eventObj = new CustomEvent('PDBe.NewProtvista.OpenAddTrack', {
-        //   detail: {
-        //     open: true,
-        //     position: coords, // include the position
-        //   },
-        //   bubbles: true,
-        //   cancelable: true,
-        // });
-        // document.dispatchEvent(eventObj);
         eventStreams.addCustomTrack$?.next({ open: true, position: coords });
       };
       addCustomBtn.addEventListener('click', addCustomHandler);

@@ -65,7 +65,7 @@ export function renderHeatmapSeqTrack(
 
     case 'not-loaded':
       heatmapSeqTrackRow.classList.add('no-data');
-      heatmapSeqTrackRow.innerHTML = getLoadingDataHTML(heatmapSeqTrackData.name);
+      heatmapSeqTrackRow.innerHTML = getLoadingDataHTML(heatmapSeqTrackData.name, extraMarginLeft, extraMarginRight, trackHeight);
       break;
 
     default:

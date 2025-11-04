@@ -17,7 +17,7 @@ export class ProtvistaOnScrollMovePinTooltip extends ProtvistaGenericBinding {
       // 2.1 - repositioning does NOT happen for tooltips of custom data tracks (fixed in host)
       const tooltipContent = this.tooltip.pinnedTooltipElement.innerHTML;
       if (!tooltipContent.includes('Custom data track:')) {
-        this.tooltip.movePinnedTooltip();
+        this.tooltip.movePinnedTooltipVertical();
       }
     };
 

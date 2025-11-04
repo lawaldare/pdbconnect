@@ -25,7 +25,7 @@ export class ProtvistaHelpTooltipsBinding extends ProtvistaGenericBinding {
         // const coords = [this.latestMouseX, this.latestMouseY];
         const mouseEvent = event as MouseEvent;
         const coords = { x: mouseEvent.clientX, y: mouseEvent.clientY };
-        this.tooltip.showHoverTooltip(icon, tooltipContent, coords, isCustomData);
+        this.tooltip.showHoverTooltip(icon, tooltipContent, coords, -1, isCustomData);
       };
 
       const onMouseLeave = () => this.tooltip.hideHoverTooltip();
@@ -35,7 +35,7 @@ export class ProtvistaHelpTooltipsBinding extends ProtvistaGenericBinding {
         if (touchEvent.touches.length > 0) {
           // const coords = [this.latestMouseX, this.latestMouseY];
           const coords = { x: touchEvent.touches[0].clientX, y: touchEvent.touches[0].clientY };
-          this.tooltip.showHoverTooltip(icon, tooltipContent, coords, isCustomData);
+          this.tooltip.showHoverTooltip(icon, tooltipContent, coords, -1, isCustomData);
         }
       };
 

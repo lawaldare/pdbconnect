@@ -2,6 +2,7 @@ import { NewProtvistaFixedHighlights } from '../../new-protvista-fixed-highlight
 import { NewProtvistaTooltip } from '../../new-protvista-tooltip';
 import { ProtvistaGenericBinding } from '../abstract/generic-obj.bind';
 import { ProtvistaDocMouseTracking } from './doc-mouse-track.binding';
+import { ProtvistaOnTrackZoom } from './doc-on-track-zoom.binding';
 import { APITrackFragment } from '../../../../../models/pv-api-general-track-data.model';
 import { type Feature as NightingaleFeature } from '@nightingale-elements/nightingale-track';
 
@@ -14,7 +15,8 @@ export class ProtvistaOnTrackMouseEvents extends ProtvistaGenericBinding {
     private tooltip: NewProtvistaTooltip,
     private highlights: NewProtvistaFixedHighlights,
     private triggerExternal: boolean,
-    private mouseTracker: ProtvistaDocMouseTracking
+    private mouseTracker: ProtvistaDocMouseTracking,
+    private zoomEvts: ProtvistaOnTrackZoom
   ) {
     super();
   }
@@ -74,13 +76,17 @@ export class ProtvistaOnTrackMouseEvents extends ProtvistaGenericBinding {
     document.dispatchEvent(eventObj2);
   }
 
-  handleNightingaleClick(target: HTMLElement, coords: number[], feature: any) {
+  handleNightingaleClick(target: HTMLElement, coords: number[], detail: any, zoomStart?: number, zoomEnd?: number) {
     if (!this.tooltip.tooltipElement) return;
     const tooltipContent = this.tooltip.tooltipElement.innerHTML;
     const isCustomData = target.classList.contains('custom-row');
+    const feature = detail.feature;
+
+    const xCoordsDetail = detail.parentEvent.offsetX;
+    const xCoordsDetailAsResPos = (target as any).getSeqPositionFromX(xCoordsDetail);
 
     // Show pinned tooltip
-    this.tooltip.showPinnedTooltip(target, tooltipContent, { x: coords[0], y: coords[1] }, isCustomData);
+    this.tooltip.showPinnedTooltip(target, tooltipContent, { x: coords[0], y: coords[1] }, xCoordsDetailAsResPos, isCustomData, zoomStart, zoomEnd);
 
     // TODO: search highlight related reset any externally triggered highlight (e.g., SmartSeq select)
     // if (removeFromExternal) {
@@ -192,7 +198,9 @@ export class ProtvistaOnTrackMouseEvents extends ProtvistaGenericBinding {
     // --- Render tooltip if content available ---
     if (tooltipContent && highlightContent) {
       const isCustomData = target.classList.contains('custom-row');
-      this.tooltip.showHoverTooltip(target, tooltipContent, { x: coords[0], y: coords[1] }, isCustomData);
+      const xCoordsDetail = detail.parentEvent.offsetX;
+      const xCoordsDetailAsResPos = (target as any).getSeqPositionFromX(xCoordsDetail);
+      this.tooltip.showHoverTooltip(target, tooltipContent, { x: coords[0], y: coords[1] }, xCoordsDetailAsResPos, isCustomData);
     }
     if (this.triggerExternal && startPos && endPos) {
       this.triggerExternalMouseOverEvents(startPos, endPos);
@@ -200,7 +208,7 @@ export class ProtvistaOnTrackMouseEvents extends ProtvistaGenericBinding {
     return highlightContent;
   }
 
-  override bind(_container: HTMLElement) {
+  override bind(container: HTMLElement) {
     const onChangeEvt = (event: Event) => {
       if (!event.target) return;
       const target = event.target as HTMLElement;
@@ -223,7 +231,8 @@ export class ProtvistaOnTrackMouseEvents extends ProtvistaGenericBinding {
 
       if (eventType === 'click') {
         if (this.lastHighlightText) this.highlights.fixedTooltipSelection = this.lastHighlightText;
-        this.handleNightingaleClick(target, coords, feature);
+        this.handleNightingaleClick(target, coords, detail, this.zoomEvts.lastZoomStart, this.zoomEvts.lastZoomEnd);
+        this.tooltip.hideHeatmapTooltip(container);
       } else if (eventType === 'mouseover') {
         const highlightText = this.handleNightingaleHover(target, coords, detail);
         this.lastHighlightText = highlightText;

@@ -32,13 +32,14 @@ export function getHeatmapSeqTrackHTML(
 
   const headerColClasses = isExpandable ? 'hoverable toggle-expansion collapsed' : 'label-only';
 
-  extraMarginLeft = extraMarginLeft !== undefined ? extraMarginLeft : 0;
-  if (hasYScale) extraMarginLeft -= 20;
-  const marginLeft = extraMarginLeft ? extraMarginLeft + 0 : 0;
+  let extraMarginLeftValue = extraMarginLeft !== undefined ? extraMarginLeft : 0;
+  if (hasYScale) extraMarginLeftValue -= 20;
+  const marginLeft = extraMarginLeft !== undefined ? extraMarginLeftValue + 0 : 0;
 
-  extraMarginRight = extraMarginRight !== undefined ? extraMarginRight : 0;
-  if (hasYScale) extraMarginRight -= 20;
-  const marginRight = extraMarginRight ? extraMarginRight + 10 : 10;
+  let extraMarginRightValue = extraMarginRight !== undefined ? extraMarginRight : 0;
+  if (hasYScale) extraMarginRightValue -= 20;
+  if (!hasYScale && extraMarginRight !== undefined) extraMarginRightValue -= 30;
+  const marginRight = extraMarginRight ? extraMarginRightValue + 10 : 10;
 
   // Added controls for sending colour in 3D event
   const colourIn3DHTML = colourIn3DControl
@@ -54,7 +55,7 @@ export function getHeatmapSeqTrackHTML(
     <!-- added for dev ref <div class="pv-track-row"> is rendered by appendChild -->
       <div class="collapsible">
         <div class="pv-track-row non-header-track track collapsed" style="align-content: flex-start">
-          <div class="pv-track-label-col ${headerColClasses} not-empty ${nonExpandableClass}" track-id="${trackId}" style="margin-top: 10px; align-items: flex-start">
+          <div class="pv-track-label-col ${headerColClasses} not-empty ${nonExpandableClass}" track-id="${trackId}" style="padding-top: 10px; align-items: flex-start">
             <div class="track-title">
               ${expansionIcons}
               ${trackName}

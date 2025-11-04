@@ -35,12 +35,11 @@ export function renderColouredSeqTrack(
   }
   colourSeqTrackRow.classList.add('main-track');
 
-  const trackHeight = colourSeqTrackData.trackHeight !== undefined ? colourSeqTrackData.trackHeight : 40;
-  const isExpandable = colourSeqTrackData.isExpandable !== undefined ? colourSeqTrackData.isExpandable : true;
-
   // Update content depending on status
   switch (colourSeqTrackData.status) {
     case 'ready-has-data':
+      const trackHeight = colourSeqTrackData.trackHeight !== undefined ? colourSeqTrackData.trackHeight : 40;
+      const isExpandable = colourSeqTrackData.isExpandable !== undefined ? colourSeqTrackData.isExpandable : true;
       colourSeqTrackRow.innerHTML = getColouredSeqTrackHTML(
         colourSeqTrackData.id,
         colourSeqTrackData.name,
@@ -62,7 +61,7 @@ export function renderColouredSeqTrack(
 
     case 'not-loaded':
       colourSeqTrackRow.classList.add('no-data');
-      colourSeqTrackRow.innerHTML = getLoadingDataHTML(colourSeqTrackData.name);
+      colourSeqTrackRow.innerHTML = getLoadingDataHTML(colourSeqTrackData.name, extraMarginLeft, extraMarginRight);
       break;
 
     default:

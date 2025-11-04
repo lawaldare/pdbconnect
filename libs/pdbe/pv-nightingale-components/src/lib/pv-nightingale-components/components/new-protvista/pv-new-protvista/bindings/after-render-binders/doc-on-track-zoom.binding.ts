@@ -6,10 +6,14 @@ import { ProtvistaGenericBinding } from '../abstract/generic-obj.bind';
 export class ProtvistaOnTrackZoom extends ProtvistaGenericBinding {
   constructor(
     private tooltip: NewProtvistaTooltip,
-    private highlights: NewProtvistaFixedHighlights
+    private highlights: NewProtvistaFixedHighlights,
+    public lastZoomStart: number,
+    public lastZoomEnd: number
   ) {
     super();
   }
+  private movePinnedTooltipTimeout?: number;
+  private isWaiting = false;
 
   private normalizeZoomValue(value: any): number {
     const num = Number(value);
@@ -31,6 +35,27 @@ export class ProtvistaOnTrackZoom extends ProtvistaGenericBinding {
     }
   }
 
+  private debouncedMovePinnedTooltipHorizontal() {
+    // if we're not currently waiting → schedule the first fire (leading)
+    if (!this.isWaiting) {
+      this.isWaiting = true;
+      window.setTimeout(() => {
+        this.tooltip.movePinnedTooltipHorizontal();
+      }, 80);
+    }
+
+    // Clear previous scheduled call
+    if (this.movePinnedTooltipTimeout) {
+      clearTimeout(this.movePinnedTooltipTimeout);
+    }
+
+    // Schedule a new one
+    this.movePinnedTooltipTimeout = window.setTimeout(() => {
+      this.isWaiting = false;
+      this.tooltip.movePinnedTooltipHorizontal();
+    }, 80); // Adjust delay (in ms) — 50–120 ms usually feels right
+  }
+
   override bind(container: HTMLElement, sequenceLength: number) {
     const onZoomEvt = (event: Event) => {
       if (!event.target) return;
@@ -48,7 +73,12 @@ export class ProtvistaOnTrackZoom extends ProtvistaGenericBinding {
       if (detail['display-start'] && detail['display-end']) {
         // hide tooltips
         this.tooltip.hideHoverTooltip();
-        this.tooltip.hidePinnedTooltip();
+        // this.tooltip.hidePinnedTooltip();
+        // this.tooltip.movePinnedTooltipHorizontal(container, detail['display-start'], detail['display-end']);
+        // this.tooltip.movePinnedTooltipHorizontal();
+        this.debouncedMovePinnedTooltipHorizontal();
+        this.lastZoomStart = detail['display-start'];
+        this.lastZoomEnd = detail['display-end'];
 
         // remove pinned tooltip highlight
         this.highlights.fixedTooltipSelection = '';
@@ -66,8 +96,8 @@ export class ProtvistaOnTrackZoom extends ProtvistaGenericBinding {
 
         // show reset button if zoom on
         const resetBtn = container.querySelector<HTMLElement>('#pv-reset-btn');
-        if (resetBtn && hasZoom) resetBtn.style.display = '';
-        else if (resetBtn) resetBtn.style.display = 'none';
+        if (resetBtn && hasZoom === true) resetBtn.style.display = '';
+        else if (resetBtn && hasZoom === false) resetBtn.style.display = 'none';
 
         // adjust heatmap scale if exists
         this.adjustHeatmapXScale(container, start, end);

@@ -78,8 +78,8 @@ export class NewProtvistaVisualisation {
 
   private async processData(data: NewProtvistaTrackDatum[]) {
     for (let i = 0; i < data.length; i++) {
-      const datum = data[i];
-      const plotData = data[i].data;
+      let datum = data[i];
+      let plotData = data[i].data;
 
       // Save the old status (if any)
       const previousStatus = this.trackStatusMap.get(datum.id);
@@ -91,7 +91,7 @@ export class NewProtvistaVisualisation {
       }
       if (datum.type === 'TrackVariation' && datum.status === 'ready-has-data' && plotData && this.processedVar === false) {
         (data[i] as NewProtvistaTrackDatumVarTrack).srcData = JSON.parse(JSON.stringify(plotData));
-        const processedData = filterEntityVariationData(plotData as APIVariationData, this.chainId);
+        let processedData = filterEntityVariationData(plotData as APIVariationData, this.chainId);
         (data[i] as NewProtvistaTrackDatumVarTrack).data = processEntityVariationDataFromAPI(processedData, []);
         (data[i] as NewProtvistaTrackDatumVarTrack).aggChartData = processEntityVariationLineChartDataFromAPI(plotData as APIVariationData, []);
         this.processedVar = true;
@@ -136,7 +136,16 @@ export class NewProtvistaVisualisation {
 
     this.highlights = new NewProtvistaFixedHighlights(this.containerElement, this.sequence.length);
     this.tooltip = new NewProtvistaTooltip(this.containerElement, tooltipContainer, scrollContainer, this.highlights);
-    this.bindingDataAndEvents = new ProtvistaBindingManager(this.entryId, this.entityId, this.chainId, this.externalEvents ?? false, this.tooltip, this.highlights);
+    this.bindingDataAndEvents = new ProtvistaBindingManager(
+      this.entryId,
+      this.entityId,
+      this.chainId,
+      this.sequence.length,
+      this.externalEvents ?? false,
+      this.tooltip,
+      this.highlights,
+      scrollContainer
+    );
 
     this.bindingDataAndEvents.bindAfterRender(
       this.containerElement,
@@ -156,7 +165,6 @@ export class NewProtvistaVisualisation {
     for (const datum of this.data) {
       await this.bindingDataAndEvents.bindAnyTrackDatum(datum, this.containerElement, this.chainId, this.tooltipsData, this.extraMarginLeft, this.extraMarginRight);
     }
-
     this.setupCustomData();
   }
 

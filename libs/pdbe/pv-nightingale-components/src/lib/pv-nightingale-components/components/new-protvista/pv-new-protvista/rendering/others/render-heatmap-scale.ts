@@ -7,7 +7,7 @@ function getSvgWidth(trackId: string, hasYScale: boolean, mirrorYScale: boolean)
   // Get parent width for axis range
   const defaultMarginRight = mirrorYScale ? 20 : 10;
   const yScaleWidth = 20;
-  const delta = hasYScale ? yScaleWidth + defaultMarginRight : defaultMarginRight;
+  let delta = hasYScale ? yScaleWidth + defaultMarginRight : defaultMarginRight;
   const width = trackWrapper.getBoundingClientRect().width - delta;
   return width;
 }
@@ -65,7 +65,7 @@ export function renderHeatmapXScale(trackId: string, sequenceLength: number, xSc
   const gxAxis = svgChart.append('g').attr('class', 'x-axis').attr('transform', `translate(0, 0)`).call(xAxis);
 
   // Add labels
-  svgChart
+  const xAxisTitle = svgChart
     .append('text')
     .attr('x', width / 2)
     .attr('y', 35)
@@ -74,7 +74,7 @@ export function renderHeatmapXScale(trackId: string, sequenceLength: number, xSc
     .text(xScaleText);
 
   // Save references directly on the DOM node for future updates
-  (trackWrapper as any).__heatmapXScale = { x, start, end, xAxis, gxAxis, svgChart, width, hasYScale, mirrorYScale };
+  (trackWrapper as any).__heatmapXScale = { x, start, end, xAxis, gxAxis, xAxisTitle, svgChart, width, hasYScale, mirrorYScale };
 }
 
 /**
@@ -89,7 +89,7 @@ export function updateHeatmapXScale(trackId: string, newDomain: [number, number]
     console.warn(`No heatmap X-scale data found for track #${trackId}`);
     return;
   }
-  const { x, xAxis, gxAxis, svgChart, hasYScale, mirrorYScale } = stored;
+  const { x, xAxis, gxAxis, xAxisTitle, svgChart, hasYScale, mirrorYScale } = stored;
   const [start, end] = newDomain;
 
   const width = getSvgWidth(trackId, hasYScale, mirrorYScale);
@@ -99,6 +99,7 @@ export function updateHeatmapXScale(trackId: string, newDomain: [number, number]
   if (start >= end) return;
 
   svgChart.attr('width', width);
+  xAxisTitle.attr('x', width / 2);
 
   // Apply +0.5 offset so ticks are centered over residues
   const adjustedStart = start - 0.5;
@@ -128,7 +129,7 @@ export function updateHeatmapXScale(trackId: string, newDomain: [number, number]
   stored.end = end;
 }
 
-export function renderHeatmapYScale(trackId: string, yDomain: string[], trackHeight: number, yScaleText: string, heatmapType?: string) {
+export function renderHeatmapYScale(trackId: string, yDomain: string[], trackHeight: number, yScaleText: string, heatmapType?: string, mirrorYScale?: boolean) {
   if (heatmapType !== 'PDBeLigands') {
     const wrapper = document.getElementById(`${trackId}-yscale-wrapper`);
     if (!wrapper) {
@@ -140,13 +141,19 @@ export function renderHeatmapYScale(trackId: string, yDomain: string[], trackHei
     wrapper.querySelectorAll<SVGSVGElement>('.heatmap-yscale-svg').forEach((el) => el.remove());
 
     // Create shared Y scale
-    const y = scalePoint().domain(yDomain).range([0, trackHeight]).padding(0.5);
+    const yUnit = trackHeight / yDomain.length / 2;
+    const y = scalePoint()
+      .domain(yDomain)
+      .range([yUnit, trackHeight - yUnit])
+      .padding(0);
 
     const svgLeft = select(wrapper)
       .insert('svg', ':first-child') // prepend
       .attr('class', 'heatmap-yscale-svg heatmap-yscale-left')
       .attr('width', 20)
       .attr('height', trackHeight)
+      .style('z-index', 8)
+      .style('background', '#ffffff80')
       .style('overflow', 'visible');
 
     const yAxisLeft = axisLeft(y);
@@ -165,30 +172,38 @@ export function renderHeatmapYScale(trackId: string, yDomain: string[], trackHei
       .style('font-size', '14px')
       .text(yScaleText);
 
-    /** ───────────── RIGHT AXIS ───────────── */
-    const svgRight = select(wrapper)
-      .append('svg') // append to end
-      .attr('class', 'heatmap-yscale-svg heatmap-yscale-right')
-      .attr('width', 20)
-      .attr('height', trackHeight)
-      .style('overflow', 'visible');
-
-    const yAxisRight = axisRight(y);
-    const gyAxisRight = svgRight
-      .append('g')
-      .attr('class', 'y-axis-right')
-      .attr('transform', 'translate(0, 0)') // small offset
-      .call(yAxisRight);
-    (wrapper as any).__heatmapYScale = {
+    let heatmapYScale: any = {
       y,
       yAxisLeft,
-      yAxisRight,
+      yAxisRight: undefined,
       gyAxisLeft,
-      gyAxisRight,
+      gyAxisRight: undefined,
       svgLeft,
-      svgRight,
+      svgRight: undefined,
       trackHeight,
       yDomain,
     };
+    if (mirrorYScale) {
+      /** ───────────── RIGHT AXIS ───────────── */
+      const svgRight = select(wrapper)
+        .append('svg') // append to end
+        .attr('class', 'heatmap-yscale-svg heatmap-yscale-right')
+        .attr('width', 20)
+        .attr('height', trackHeight)
+        .style('z-index', 8)
+        .style('background', '#ffffff80')
+        .style('overflow', 'visible');
+
+      const yAxisRight = axisRight(y);
+      const gyAxisRight = svgRight
+        .append('g')
+        .attr('class', 'y-axis-right')
+        .attr('transform', 'translate(0, 0)') // small offset
+        .call(yAxisRight);
+      heatmapYScale['yAxisRight'] = yAxisRight;
+      heatmapYScale['gyAxisRight'] = gyAxisRight;
+      heatmapYScale['svgRight'] = svgRight;
+    }
+    (wrapper as any).__heatmapYScale = heatmapYScale;
   }
 }

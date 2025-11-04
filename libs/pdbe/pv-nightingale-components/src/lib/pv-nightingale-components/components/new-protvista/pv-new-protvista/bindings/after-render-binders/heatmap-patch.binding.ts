@@ -48,6 +48,8 @@ export class HeatmapPatches extends ProtvistaGenericBinding {
     // Disconnect all active observers to avoid memory leaks
     for (const observer of this.observers) observer.disconnect();
     this.observers = [];
+
+    // Remove registered element listeners (generic base cleanup)
     for (const { element, handlers } of this.elementListeners) {
       if (element) element.removeEventListener(handlers.type, handlers.listener);
       else document.removeEventListener(handlers.type, handlers.listener);

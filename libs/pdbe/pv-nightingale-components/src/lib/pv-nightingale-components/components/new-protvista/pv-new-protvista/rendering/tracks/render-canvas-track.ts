@@ -60,7 +60,7 @@ export function renderTrackAsCanvas(
     trackRow.innerHTML = getNoDataHTML(trackData.name);
   } else if (trackData.status === 'not-loaded') {
     trackRow.classList.add('no-data');
-    trackRow.innerHTML = getLoadingDataHTML(trackData.name);
+    trackRow.innerHTML = getLoadingDataHTML(trackData.name, extraMarginLeft, extraMarginRight);
   } else {
     console.warn(`Unknown track status: ${trackData.status}`);
     trackRow.classList.add('no-data');

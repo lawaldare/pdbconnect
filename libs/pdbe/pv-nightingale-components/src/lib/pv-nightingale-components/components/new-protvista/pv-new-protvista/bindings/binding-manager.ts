@@ -1,6 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
 import { NewProtvistaFixedHighlights } from '../new-protvista-fixed-highlights';
-import { NewProtvistaRenderer } from '../new-protvista-renderer';
 import { NewProtvistaTooltip } from '../new-protvista-tooltip';
 import {
   NewProtvistaColourEvent,
@@ -27,6 +26,7 @@ import { SetTracksDataBinding } from './for-tracks-binders/set-tracks-data.bindi
 import { ProtvistaVarControllers } from './for-tracks-binders/variation-controllers.binding';
 import { type Feature as NightingaleFeature } from '@nightingale-elements/nightingale-track';
 import { ColourIn3DButtonBinding } from './after-render-binders/colour-in-3d-btn.binding';
+import { scaleLinear } from 'd3';
 
 export class ProtvistaBindingManager {
   public actionButtonsBinder: ProtvistaActBtnsBinding;
@@ -46,18 +46,43 @@ export class ProtvistaBindingManager {
 
   public boundAfterRender: Array<ProtvistaGenericBinding> = [];
 
-  constructor(entryId: string, entityId: string, chainId: string, triggerExternal: boolean, tooltip: NewProtvistaTooltip, highlights: NewProtvistaFixedHighlights) {
+  constructor(
+    entryId: string,
+    entityId: string,
+    chainId: string,
+    sequenceLength: number,
+    triggerExternal: boolean,
+    tooltip: NewProtvistaTooltip,
+    highlights: NewProtvistaFixedHighlights,
+    private scrollContainer: HTMLElement
+  ) {
     this.documentMouseTrackBinder = new ProtvistaDocMouseTracking();
     this.actionButtonsBinder = new ProtvistaActBtnsBinding(tooltip, highlights);
     this.helpTooltipsBinder = new ProtvistaHelpTooltipsBinding(tooltip);
-    this.documentOnTrackZoomBinder = new ProtvistaOnTrackZoom(tooltip, highlights);
+    this.documentOnTrackZoomBinder = new ProtvistaOnTrackZoom(tooltip, highlights, 1, sequenceLength);
     this.onScrollMovePinTooltipBinder = new ProtvistaOnScrollMovePinTooltip(tooltip);
-    this.onTrackMouseEventsBinder = new ProtvistaOnTrackMouseEvents(entityId, chainId, tooltip, highlights, triggerExternal, this.documentMouseTrackBinder);
+    this.onTrackMouseEventsBinder = new ProtvistaOnTrackMouseEvents(
+      entityId,
+      chainId,
+      tooltip,
+      highlights,
+      triggerExternal,
+      this.documentMouseTrackBinder,
+      this.documentOnTrackZoomBinder
+    );
     this.toggleTrackExpansionBinder = new ProtvistaToggleTrackExpansion(highlights);
     if (triggerExternal) {
       this.externalEvtsListenersBinder = new ProtvistaExternalMouseEventsListeners(entryId, entityId, chainId, highlights);
     }
-    this.setTracksDataBinder = new SetTracksDataBinding(this.helpTooltipsBinder, highlights, tooltip, this.documentMouseTrackBinder);
+    this.setTracksDataBinder = new SetTracksDataBinding(
+      this.helpTooltipsBinder,
+      highlights,
+      tooltip,
+      this.onTrackMouseEventsBinder,
+      undefined,
+      undefined,
+      this.scrollContainer
+    );
     this.conservationTrackControllers = new ProtvistaConsControllers();
     this.variationTrackControllers = new ProtvistaVarControllers(this.setTracksDataBinder);
   }
@@ -155,7 +180,7 @@ export class ProtvistaBindingManager {
         extraMarginRight
       );
     } else if (datum.type === 'NestedTrackCanvas' && datum.data) {
-      const nestedTrackData = datum as NewProtvistaTrackDatumNestedTrack;
+      let nestedTrackData = datum as NewProtvistaTrackDatumNestedTrack;
       this.setTracksDataBinder.setTrackCanvasData(
         containerElement,
         nestedTrackData.name,
@@ -183,26 +208,27 @@ export class ProtvistaBindingManager {
         );
       }
     } else if (datum.type === 'TrackConservation') {
-      const conservationData = datum as NewProtvistaTrackDatumConsTrack;
+      let conservationData = datum as NewProtvistaTrackDatumConsTrack;
       this.setTracksDataBinder.setTrackConservationData(containerElement, conservationData.id, conservationData.data, conservationData.aggChartData);
       this.conservationTrackControllers.bindOrRebind(containerElement);
     } else if (datum.type === 'TrackVariation') {
-      const variationData = datum as NewProtvistaTrackDatumVarTrack;
+      let variationData = datum as NewProtvistaTrackDatumVarTrack;
       this.setTracksDataBinder.setTrackVariationData(containerElement, variationData.id, variationData.data, variationData.aggChartData);
       this.variationTrackControllers.bindOrRebind(containerElement, chainId, variationData.id, variationData.srcData);
     } else if (datum.type === 'TrackColouredSequence') {
-      const colouredSeqData = datum as NewProtvistaTrackDatumColourSeqTrack;
+      let colouredSeqData = datum as NewProtvistaTrackDatumColourSeqTrack;
       this.setTracksDataBinder.setTrackColouredSequenceData(containerElement, colouredSeqData.id, colouredSeqData.data);
     } else if (datum.type === 'TrackHeatmapSequence') {
-      const heatmapData = datum as NewProtvistaTrackDatumHeatmapSeqTrack;
+      let heatmapData = datum as NewProtvistaTrackDatumHeatmapSeqTrack;
       const trackTooltipFn =
         heatmapData.tooltipContentFn !== undefined
           ? heatmapData.tooltipContentFn
-          : (d: any) => {
-              return `x: ${JSON.stringify(d.cell.x)} (index ${d.cell.xIndex}) <br> y: ${JSON.stringify(d.cell.y)} (index ${
-                d.cell.yIndex
-              }) <br> score: ${JSON.stringify(d.cell.datum.score)}`;
+          : (d: any, x: number, y: number, xIndex: number, yIndex: number) => {
+              return `x: ${JSON.stringify(x)} (index ${xIndex}) <br> y: ${JSON.stringify(y)} (index ${yIndex}) <br> score: ${JSON.stringify(d.score)}`;
             };
+      const customColourScale =
+        heatmapData.customColourScale !== undefined ? heatmapData.customColourScale : scaleLinear(heatmapData.checkpoints, heatmapData.colours);
+
       await this.setTracksDataBinder.setTrackHeatmapSequenceData(
         containerElement,
         heatmapData.id,
@@ -211,7 +237,8 @@ export class ProtvistaBindingManager {
         heatmapData.yDomain,
         heatmapData.checkpoints,
         heatmapData.colours,
-        trackTooltipFn
+        trackTooltipFn,
+        customColourScale
       );
     }
   }

@@ -48,7 +48,7 @@ export function renderConservationTrack(
     case 'not-loaded':
       consTrackRow.classList.add('pv-track-row');
       consTrackRow.classList.add('no-data');
-      consTrackRow.innerHTML = getLoadingDataHTML(consTrackData.name);
+      consTrackRow.innerHTML = getLoadingDataHTML(consTrackData.name, extraMarginLeft, extraMarginRight);
       break;
 
     default:

@@ -75,7 +75,7 @@ export function renderNestedTrackAsCanvas(
     nestedTrackRow.innerHTML = getNoDataHTML(nestedTrackData.name);
   } else if (nestedTrackData.status === 'not-loaded') {
     nestedTrackRow.classList.add('no-data');
-    nestedTrackRow.innerHTML = getLoadingDataHTML(nestedTrackData.name);
+    nestedTrackRow.innerHTML = getLoadingDataHTML(nestedTrackData.name, extraMarginLeft, extraMarginRight);
   } else {
     console.warn(`Unknown track status: ${nestedTrackData.status}`);
     nestedTrackRow.classList.add('no-data');
