@@ -70,19 +70,8 @@ build:
       when: never
     - when: always
   script:
-    # - npx nx run-many -t build --parallel=3 --exclude=playground -c $BUILD_CONF
-    # - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
-    # - cat dynamic-gitlab-ci.yml
-    - |
-      AFFECTED=$(npx nx show projects --affected --type=app --base=$NX_BASE --head=$NX_HEAD --exclude=playground)
-      if [ -z "$AFFECTED" ]; then
-        echo "No affected apps detected. Skipping build."
-        echo "stages: []" > dynamic-gitlab-ci.yml
-      else
-        echo "Building affected apps: $AFFECTED"
-        npx nx affected -t build --base=$NX_BASE --head=$NX_HEAD --parallel=3 -c $BUILD_CONF --exclude=playground --source-map=false
-        node ./bin/index.js "$AFFECTED"
-      fi
+    - npx nx run-many -t build --parallel=3 --exclude=playground -c $BUILD_CONF
+    - node ./bin/index.js "$(npx nx show projects --json --type=app --exclude=playground)"
     - cat dynamic-gitlab-ci.yml
   artifacts:
     paths:
