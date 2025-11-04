@@ -1,8 +1,11 @@
-export function renderTooltipsDiv(containerElementChild: HTMLElement) {
+export function renderTooltipsDiv(containerElementChild: HTMLElement, maxHeight: string) {
   const scrollableContainer = containerElementChild.querySelector('#pv-scrollable');
   if (!scrollableContainer) return;
   const containerTrackRow = document.createElement('div');
   containerTrackRow.id = 'pv-tooltips-container';
-  // scrollableContainer.appendChild(containerTrackRow);
-  scrollableContainer.insertBefore(containerTrackRow, scrollableContainer.firstChild);
+  if (maxHeight === 'none') {
+    scrollableContainer.insertBefore(containerTrackRow, scrollableContainer.firstChild);
+  } else {
+    scrollableContainer.appendChild(containerTrackRow);
+  }
 }

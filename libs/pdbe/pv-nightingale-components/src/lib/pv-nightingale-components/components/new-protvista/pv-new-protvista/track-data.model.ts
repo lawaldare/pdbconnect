@@ -12,6 +12,7 @@ type CommonParams = {
   status: string;
   isExpandable?: boolean;
   isSticky?: boolean;
+  isCustomFixed?: boolean;
   isCustomData?: boolean;
   positionIndex?: number;
   trackHeight?: number;

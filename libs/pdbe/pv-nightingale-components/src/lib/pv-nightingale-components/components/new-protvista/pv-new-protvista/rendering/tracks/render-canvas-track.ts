@@ -17,7 +17,8 @@ export function renderTrackAsCanvas(
   trackId?: string,
   extraMarginLeft?: number,
   extraMarginRight?: number,
-  colourIn3DControl?: boolean
+  colourIn3DControl?: boolean,
+  isCustomFixed?: boolean
 ) {
   const trackContainer = containerElementChild?.querySelector(selector);
   if (!trackContainer) return;
@@ -39,6 +40,7 @@ export function renderTrackAsCanvas(
     if (isCustomData) trackRow.classList.add('custom-row');
   }
   if (!isNested) trackRow.classList.add('main-track');
+  if (isCustomFixed) trackRow.classList.add('custom-fixed');
 
   if (trackData.status === 'ready-has-data' && trackData.data && (trackData.data as NightingaleFeature[]).length > 0) {
     const trackHeight = trackData.trackHeight !== undefined ? trackData.trackHeight : 40;

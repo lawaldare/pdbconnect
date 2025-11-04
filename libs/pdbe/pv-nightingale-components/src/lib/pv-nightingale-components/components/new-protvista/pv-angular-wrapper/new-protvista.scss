@@ -326,7 +326,8 @@
     0 5px 5px -3px rgb(0 0 0 / 20%),
     0 8px 10px 1px rgb(0 0 0 / 14%),
     0 3px 14px 2px rgb(0 0 0 / 12%);
-  max-width: 30%;
+  max-width: 40%;
+  overflow: scroll;
   max-height: unset;
   border-radius: 0;
 }
@@ -371,7 +372,7 @@ with extra ajustments for close button */
 /* ==========================================================================
    VISUAL ELEMENTS (Icons, Legend, Buttons, Sequence Text)
    ========================================================================== */
-::ng-deep .navigation-zoom-hint {
+::ng-deep .pv-protvista .navigation-zoom-hint {
   position: absolute;
   top: 0;
   left: 0;
@@ -573,10 +574,14 @@ with extra ajustments for close button */
    RESPONSIVENESS
    ========================================================================== */
 
-/* @media screen and (width <= 1240px) {
+@media screen and (width <= 1240px) {
   ::ng-deep .pv-protvista .pv-track-label-col {
     font-size: 0.8rem;
     word-break: normal;
+  }
+
+  ::ng-deep .pv-protvista .navigation-zoom-hint {
+    font-size: 0.69rem;
   }
 
   ::ng-deep .pv-protvista .pv-link-btn {
@@ -587,4 +592,4 @@ with extra ajustments for close button */
   ::ng-deep .pv-protvista .pv-track-container.no-data {
     font-size: 12px;
   }
-} */
+}

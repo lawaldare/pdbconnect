@@ -24,7 +24,7 @@ export class NewProtvistaVisualisation {
   private renderer = new NewProtvistaRenderer();
   private tooltip: NewProtvistaTooltip | null = null;
   private highlights: NewProtvistaFixedHighlights | null = null;
-  private containerElement: HTMLElement | null = null;
+  public containerElement: HTMLElement | null = null;
 
   /** Status and processing state */
   private trackStatusMap: Map<string, string> = new Map();
@@ -192,10 +192,20 @@ export class NewProtvistaVisualisation {
 
       // Remove old custom tracks first
       const oldCustomRows = this.renderer.containerElementChild.querySelectorAll('.pv-track-row.custom-row');
-      oldCustomRows.forEach((el) => el.remove());
+      oldCustomRows.forEach((el) => {
+        if (!el.classList.contains('controls') && !el.classList.contains('custom-fixed')) el.remove();
+      });
 
       // render new custom data
       this.customData = (event as CustomEvent).detail.data;
+
+      // show/hide edit button based on data presense/absence
+      const editCustomBtn = this.renderer.containerElementChild.querySelector<HTMLElement>(`#pv-edit-custom-btn`);
+      if (editCustomBtn && this.customData.length > 0) {
+        editCustomBtn.style.display = '';
+      } else if (editCustomBtn) {
+        editCustomBtn.style.display = 'none';
+      }
       renderCustomData(this.renderer.containerElementChild, this.customData, this.sequence.length, this.extraMarginLeft, this.extraMarginRight);
       for (const datum of this.customData) {
         await this.bindingDataAndEvents.bindAnyTrackDatum(datum, this.containerElement, this.chainId, this.tooltipsData, this.extraMarginLeft, this.extraMarginRight);

@@ -54,7 +54,8 @@ export class NewProtvistaTooltip {
     this.tooltipElement.style.opacity = '0';
 
     const { coordX, coordY } = this.getTooltipCoords(coords);
-    const zIndex = customData ? '4' : '2';
+    let zIndex = customData ? '4' : '2';
+    if (target.classList.contains('help-icon')) zIndex = '9';
 
     Object.assign(this.tooltipElement.style, {
       position: 'absolute',

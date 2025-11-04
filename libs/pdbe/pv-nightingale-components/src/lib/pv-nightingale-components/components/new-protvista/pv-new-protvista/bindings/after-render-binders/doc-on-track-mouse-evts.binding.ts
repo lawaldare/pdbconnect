@@ -139,7 +139,9 @@ export class ProtvistaOnTrackMouseEvents extends ProtvistaGenericBinding {
     this.highlights.triggerFixedHighlight();
   }
 
-  triggerExternalMouseOverEvents(start: number, end: number) {
+  triggerExternalMouseOverEvents(start: number, end: number, feature?: NightingaleFeature) {
+    if (!feature) feature = {} as any;
+
     const eventObj = new CustomEvent('protvista-mouseover', {
       detail: {
         start: `${start}`,
@@ -147,6 +149,7 @@ export class ProtvistaOnTrackMouseEvents extends ProtvistaGenericBinding {
         feature: {
           entityId: this.entityId,
           chainId: this.chainId,
+          ...feature,
         },
       },
       bubbles: true,
@@ -203,7 +206,7 @@ export class ProtvistaOnTrackMouseEvents extends ProtvistaGenericBinding {
       this.tooltip.showHoverTooltip(target, tooltipContent, { x: coords[0], y: coords[1] }, xCoordsDetailAsResPos, isCustomData);
     }
     if (this.triggerExternal && startPos && endPos) {
-      this.triggerExternalMouseOverEvents(startPos, endPos);
+      this.triggerExternalMouseOverEvents(startPos, endPos, feature);
     }
     return highlightContent;
   }

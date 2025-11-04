@@ -44,7 +44,7 @@ export class NewProtvistaRenderer {
       renderTrackForDatum(this.containerElementChild, containerSelector, datum, sequenceLength, extraMarginLeft, extraMarginRight);
     }
     renderCustomDataControls(this.containerElementChild, customTrackControls, extraMarginLeft, extraMarginRight);
-    renderTooltipsDiv(this.containerElementChild);
+    renderTooltipsDiv(this.containerElementChild, maxHeight);
     if (maxHeight !== 'none') {
       renderScrollSpaceDiv(this.containerElementChild, maxHeight);
     }

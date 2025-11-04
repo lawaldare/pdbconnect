@@ -37,7 +37,8 @@ export function renderTrackForDatum(
       `${datum.id}-track-container`,
       extraMarginLeft,
       extraMarginRight,
-      colourIn3DControl
+      colourIn3DControl,
+      datum.isCustomFixed
     );
   } else if (datum.type === 'NestedTrackCanvas') {
     renderNestedTrackAsCanvas(
