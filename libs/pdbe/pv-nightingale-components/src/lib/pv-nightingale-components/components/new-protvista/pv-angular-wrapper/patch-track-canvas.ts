@@ -2,7 +2,16 @@ import { drawRange, drawSymbol, drawUnknown } from './draw-shapes';
 import { getColorByType } from '@nightingale-elements/nightingale-track';
 
 export function patchTrackCanvas() {
+  // Ensure base class is defined
   const OriginalTrackCanvas = customElements.get('nightingale-track-canvas') as any;
+  if (!OriginalTrackCanvas) {
+    console.warn('⚠️ nightingale-track-canvas not yet loaded — patchTrackCanvas deferred');
+    return;
+  }
+
+  // Avoid redefining if already done
+  if (customElements.get('nightingale-track-canvas-patched')) return;
+
   class PatchedTrackCanvas extends OriginalTrackCanvas {
     drawCanvasContent() {
       // Magic number from packages/nightingale-track/src/FeatureShape.ts:

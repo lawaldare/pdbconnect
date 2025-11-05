@@ -22,7 +22,7 @@ import { BehaviorSubject } from 'rxjs';
 
 export class NewProtvistaVisualisation {
   private renderer = new NewProtvistaRenderer();
-  private tooltip: NewProtvistaTooltip | null = null;
+  public tooltip: NewProtvistaTooltip | null = null;
   private highlights: NewProtvistaFixedHighlights | null = null;
   public containerElement: HTMLElement | null = null;
 
@@ -62,7 +62,8 @@ export class NewProtvistaVisualisation {
     tooltipsData: { [key: string]: string },
     private maxHeight: string,
     private externalEvents: boolean,
-    private customTrackControls?: string
+    private customTrackControls?: string,
+    private sequenceForLigands?: boolean
     // private pdbeEvents?: boolean, // TODO
   ) {
     this.data = data;
@@ -119,9 +120,11 @@ export class NewProtvistaVisualisation {
     this.extraMarginLeft = this.hasHeatmapYScale ? 20 : 0;
     this.extraMarginRight = this.mirrorYScale ? 10 : 0;
     this.hasIn3DBtn = this.data.some((datum) => datum.colourIn3DControl !== undefined);
+    const sequenceForLigands = this.sequenceForLigands ? true : false;
 
     this.containerElement = document.getElementById(this.containerId);
     if (!this.containerElement) throw new Error('Invalid container');
+
     this.renderer.initialRender(
       this.containerElement,
       this.sequence,
@@ -129,18 +132,21 @@ export class NewProtvistaVisualisation {
       this.maxHeight,
       this.customTrackControls,
       this.extraMarginLeft,
-      this.extraMarginRight
+      this.extraMarginRight,
+      sequenceForLigands
     );
     const scrollContainer = this.containerElement.querySelector(`#pv-scrollable`) as HTMLElement;
     const tooltipContainer = this.containerElement.querySelector(`#pv-tooltips-container`) as HTMLElement;
 
-    this.highlights = new NewProtvistaFixedHighlights(this.containerElement, this.sequence.length);
+    const sequenceLength = this.sequenceForLigands ? this.sequence.split(',').length : this.sequence.length;
+
+    this.highlights = new NewProtvistaFixedHighlights(this.containerElement, sequenceLength);
     this.tooltip = new NewProtvistaTooltip(this.containerElement, tooltipContainer, scrollContainer, this.highlights);
     this.bindingDataAndEvents = new ProtvistaBindingManager(
       this.entryId,
       this.entityId,
       this.chainId,
-      this.sequence.length,
+      sequenceLength,
       this.externalEvents ?? false,
       this.tooltip,
       this.highlights,
@@ -149,7 +155,7 @@ export class NewProtvistaVisualisation {
 
     this.bindingDataAndEvents.bindAfterRender(
       this.containerElement,
-      this.sequence.length,
+      sequenceLength,
       this.tooltipsData,
       this.hasHeatmapTracks,
       this.extraMarginLeft,
@@ -173,7 +179,7 @@ export class NewProtvistaVisualisation {
     if (!this.bindingDataAndEvents) return;
 
     const containerId = `${datum.id}-track-container`;
-    const sequenceLength = this.sequence.length;
+    const sequenceLength = this.sequenceForLigands ? this.sequence.split(',').length : this.sequence.length;
 
     // Re-render the track in place
     this.renderer.reRenderTrack(containerId, datum, sequenceLength, this.extraMarginLeft, this.extraMarginRight);
@@ -206,7 +212,8 @@ export class NewProtvistaVisualisation {
       } else if (editCustomBtn) {
         editCustomBtn.style.display = 'none';
       }
-      renderCustomData(this.renderer.containerElementChild, this.customData, this.sequence.length, this.extraMarginLeft, this.extraMarginRight);
+      const sequenceLength = this.sequenceForLigands ? this.sequence.split(',').length : this.sequence.length;
+      renderCustomData(this.renderer.containerElementChild, this.customData, sequenceLength, this.extraMarginLeft, this.extraMarginRight);
       for (const datum of this.customData) {
         await this.bindingDataAndEvents.bindAnyTrackDatum(datum, this.containerElement, this.chainId, this.tooltipsData, this.extraMarginLeft, this.extraMarginRight);
       }

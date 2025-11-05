@@ -22,15 +22,16 @@ export class NewProtvistaRenderer {
     maxHeight: string,
     customTrackControls: string | undefined,
     extraMarginLeft: number,
-    extraMarginRight: number
+    extraMarginRight: number,
+    sequenceForLigands: boolean
   ): void {
-    const sequenceLength = sequence.length;
+    const sequenceLength = sequenceForLigands ? sequence.split(',').length : sequence.length;
     this.containerElementChild = document.createElement('div');
     this.containerElementChild.innerHTML = `
       <nightingale-manager>
         <div class="pv-protvista elements-container">
           <div id="pv-sticky" class="always-on-top">
-            ${renderStickyHeaderContent(sequence, sequenceLength, extraMarginLeft, extraMarginRight)}
+            ${renderStickyHeaderContent(sequence, sequenceLength, sequenceForLigands, extraMarginLeft, extraMarginRight)}
           </div>
           <div id="pv-scrollable" class="scrollable" style="max-height: ${maxHeight};"></div>
         </div>

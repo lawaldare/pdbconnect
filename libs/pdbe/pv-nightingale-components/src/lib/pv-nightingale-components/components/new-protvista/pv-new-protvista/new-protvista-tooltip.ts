@@ -218,32 +218,15 @@ export class NewProtvistaTooltip {
     });
   }
 
-  // /**
-  //  * Moves pinned tooltip during scroll
-  //  */
-  // movePinnedTooltipHorizontal(visContainer: HTMLElement, newZoomStart: number, newZoomEnd: number) {
-  //   if (!this.pinnedTooltipElement || this.pinnedTooltipResidueApprox == null) return;
-
-  //   const trackRect = this.relativeElement.getBoundingClientRect();
-
-  //   // Compute where that residue would now appear in the new zoomed view
-  //   const frac = (this.pinnedTooltipResidueApprox - newZoomStart) / (newZoomEnd - newZoomStart);
-  //   // const clampedFrac = Math.max(0, Math.min(1, frac)); // clamp to [0,1]
-  //   // const newLeft = trackRect.left + clampedFrac * trackRect.width;
-  //   const newLeft = trackRect.left + frac * trackRect.width;
-  //   const relLeft = newLeft - trackRect.left;
-
-  //   this.pinnedTooltipLastLeft = relLeft;
-  //   this.pinnedTooltipElement.style.left = `${relLeft}px`;
-  // }
-
   /**
    * Moves pinned tooltip during scroll
    */
   movePinnedTooltipHorizontal() {
     if (!this.pinnedTooltipElement || this.lastClickedResPos === undefined || this.lastClickedResPosFrom === undefined) return;
     // use nightingale functions to get delta
-    const seqTrack = this.relativeElement.querySelector('nightingale-sequence') as any;
+    let seqTrack = this.relativeElement.querySelector('nightingale-sequence') as any;
+    if (!seqTrack) seqTrack = this.relativeElement.querySelector('nightingale-sequence-patched') as any;
+    if (!seqTrack) return;
     const lastPos = this.lastClickedResPos;
     const newPosX = seqTrack.getXFromSeqPosition(lastPos);
     const deltaX = this.lastClickedResPosFrom - newPosX;

@@ -9,6 +9,7 @@ import { NewProtvistaVisualisation } from '../pv-new-protvista/new-protvista-cor
 import { PvZoomResiduesModalComponent } from '../../action-modals/zoom-annotations/zoom-annotations.component';
 import { PvAddCustomTracksModalComponent } from '../../action-modals/add-annotations/add-annotations.component';
 import { PvEditCustomTracksModalComponent } from '../../action-modals/edit-annotations/edit-annotations.component';
+import { patchLigandsSequence } from './patch-ligands-sequence';
 
 const PAUL_TOL_COLORBLIND_SCALE: string[] = ['#332288', '#117733', '#44AA99', '#88CCEE', '#DDCC77', '#CC6677', '#AA4499', '#882255'];
 @Component({
@@ -33,6 +34,7 @@ export class ProtvistaWrapperComponent implements AfterViewInit, OnDestroy {
   public readonly tooltips = input<{ [key: string]: string }>({});
   public readonly externalEvents = input<boolean>(true);
   public readonly customTrackControls = input<string>('');
+  public readonly ligandsSeqMode = input<boolean>(false);
 
   // As observables
   private containerId$ = toObservable(this.containerId);
@@ -282,9 +284,11 @@ export class ProtvistaWrapperComponent implements AfterViewInit, OnDestroy {
           deepCopyTooltips,
           this.maxHeight(), // must be in pixels or none
           this.externalEvents(),
-          this.customTrackControls()
+          this.customTrackControls(),
+          this.ligandsSeqMode()
         );
-        this.seqLength = identity.sequence.length;
+        if (this.ligandsSeqMode() === false) this.seqLength = identity.sequence.length;
+        if (this.ligandsSeqMode() === true) this.seqLength = identity.sequence.split(',').length;
         await this.visInstance!.start();
 
         if (this.visInstance) {
@@ -363,10 +367,14 @@ export class ProtvistaWrapperComponent implements AfterViewInit, OnDestroy {
     // dynamically load components if not in customElements
     for (const componentName of componentsToLoadList) {
       if (customElements.get(componentName) === undefined) {
-        await this.scriptLoader.loadScript(`https://cdn.jsdelivr.net/npm/@nightingale-elements/${componentName}@5.6.0/+esm`, true);
+        const version = componentName.includes('sequence-heatmap') ? '5.6.2' : '5.6.0';
+        await this.scriptLoader.loadScript(`https://cdn.jsdelivr.net/npm/@nightingale-elements/${componentName}@${version}/+esm`, true);
         await customElements.whenDefined(componentName);
         // nightingale-track-canvas has one function patched to support old protvista endpoints
       }
+      // patch if atoms instead of residues for sequence viewer
+      if (componentName === 'nightingale-sequence' && this.ligandsSeqMode() === true) patchLigandsSequence();
+      // patch for pdbe protvista endpoints
       if (componentName === 'nightingale-track-canvas' && customElements.get('nightingale-track-canvas-patched') === undefined) patchTrackCanvas();
     }
     this.hasLoadedNightingale = true;
