@@ -16,7 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { ComplexStructureFacade } from './complex-structure.facade';
 import { ComplexPageTutorialTourService } from '../../../services/complex-page-tutorial-tour.service';
-import { tourIds } from '../../../complex.constant';
+import { baseUrl, tourIds } from '../../../complex.constant';
 import { filter } from 'rxjs';
 
 @Component({
@@ -39,6 +39,7 @@ export class ComplexStructuresComponent implements OnInit, AfterViewInit {
   public readonly colDefs = colDefs;
   public readonly initialState = initialState;
   public readonly rowSelection = rowSelection;
+  public baseUrl = baseUrl;
 
   private gridApi!: GridApi;
 
