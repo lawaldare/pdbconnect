@@ -27,8 +27,7 @@ export class MbAssembliesComponent implements OnInit {
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
   public readonly gAS = inject(GoogleAnalyticsService);
-  // public baseUrl = baseUrl;
-  public baseUrl = 'https://wwwdev.ebi.ac.uk/pdbe/';
+  public baseUrl = baseUrl;
 
   public expanded = signal<boolean>(false);
   public isChecked = signal<boolean>(false);
