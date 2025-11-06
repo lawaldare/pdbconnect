@@ -189,7 +189,7 @@ export class ProtvistaWrapperComponent implements AfterViewInit, OnDestroy {
 
   // Instance reference to cleanup
   // private afterViewInit = false;
-  private visInstance?: NewProtvistaVisualisation;
+  public visInstance?: NewProtvistaVisualisation;
 
   // Loaded components state
   private hasLoadedNightingale = false;

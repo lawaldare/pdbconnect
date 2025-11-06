@@ -1,3 +1,6 @@
+@if(visInstance === undefined) {
+<div class="skeleton-loader" [ngStyle]="{ height : maxHeight() }"></div>
+}
 <div #containerElement class="relative-container" [id]="containerId()"></div>
 @if (isAddDialogOpen && this.seqLength !== undefined) {
 <lib-add-custom-modal [sequenceLength]="seqLength" (closeDialog)="closeAddTrackDialog()" (addAnnotations)="mapYourData($event)"></lib-add-custom-modal>
