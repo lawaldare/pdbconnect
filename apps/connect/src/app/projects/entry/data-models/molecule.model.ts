@@ -17,6 +17,9 @@ export interface Molecule {
   source: MoleculeSource[];
   synonym: string;
   weight: number;
+  // augmented data from processing not in API
+  in_struct_asyms_in_pref_assembly: boolean[];
+  in_chains_in_pref_assembly: boolean[];
 }
 
 export interface MoleculeSource {

@@ -21,6 +21,24 @@
       }
       <section class="info">
         <div class="info-grouped left">
+          <div class="info-row">
+            <span class="micro-title left"> Chains </span>
+            <article style="word-break: break-word">
+              @let chainList = currentMacromoleculeDatum()!.additionalData!.molecule!.in_chains; @if (chainList.length > 30 && collapsedChains === true) {
+              <div style="word-break: break-word">
+                {{ chainList.slice(0, 30).join(', ') }}
+                <span class="residue-action-button" (click)="collapsedChains = !collapsedChains">&nbsp;show all {{ chainList.length }} chains</span>
+              </div>
+              } @else if (chainList.length > 30) {
+              <div style="word-break: break-word">
+                {{ chainList.join(', ') }}
+                <span class="residue-action-button" (click)="collapsedChains = !collapsedChains">&nbsp;show less</span>
+              </div>
+              } @else {
+              <div style="word-break: break-word">{{ chainList.join(', ') }}</div>
+              }
+            </article>
+          </div>
           @let type = currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_type; @if(type){
           <div class="info-row">
             <span class="micro-title left"> Type </span>
