@@ -306,6 +306,20 @@ export function filterPolymerCoverageByPreferredAssembly(polymerCoverage: Polyme
     .filter((polymer) => polymer.chains.length > 0);
 }
 
+export function mapPolymerCoverageByPreferredAssembly(polymerCoverage: PolymerCoverageMolecule[], preferredAssembly: AssemblyData) {
+  if ((<any>polymerCoverage).empty === true) polymerCoverage = [];
+  const assemblyEntitiesMap = getEntityToStructAsymsMapOfAssembly(preferredAssembly);
+
+  return polymerCoverage.map((polymer) => {
+    const allowedAsyms = assemblyEntitiesMap.get(polymer.entity_id)!;
+    const in_chains_in_pref_assembly = polymer.chains.map((chain) => allowedAsyms.includes(chain.struct_asym_id));
+    return {
+      ...polymer,
+      ...in_chains_in_pref_assembly,
+    };
+  });
+}
+
 export function filterMacromoleculesByPreferredAssembly(macromolecules: Molecule[], preferredAssembly: AssemblyData): Molecule[] {
   // Create a quick lookup map for assembly entities by entity_id
   const preferredAssemblyEntitiesMap = getEntityToStructAsymsMapOfAssembly(preferredAssembly);
@@ -341,10 +355,44 @@ export function filterMacromoleculesByPreferredAssembly(macromolecules: Molecule
   );
 }
 
+export function mapMacromoleculesByPreferredAssembly(macromolecules: Molecule[], preferredAssembly: AssemblyData): Molecule[] {
+  const preferredAssemblyEntitiesMap = getEntityToStructAsymsMapOfAssembly(preferredAssembly);
+  return macromolecules.map((molecule) => {
+    // Get list of struct_asyms of preferred assembly
+    const allowedAsyms = preferredAssemblyEntitiesMap.get(molecule.entity_id)!;
+
+    // Filter the in_struct_asyms and in_chains to only
+    // include those present in the preferred assembly entity
+    const in_struct_asyms_in_pref_assembly: boolean[] = [];
+    const in_chains_in_pref_assembly: boolean[] = [];
+
+    molecule.in_struct_asyms.forEach((asymId, idx) => {
+      if (allowedAsyms.includes(asymId)) {
+        in_struct_asyms_in_pref_assembly.push(true);
+        in_chains_in_pref_assembly.push(true); // Keep corresponding chain
+      } else {
+        in_struct_asyms_in_pref_assembly.push(false);
+        in_chains_in_pref_assembly.push(false); // Keep corresponding chain
+      }
+    });
+
+    return {
+      ...molecule,
+      in_struct_asyms_in_pref_assembly,
+      in_chains_in_pref_assembly,
+    };
+  });
+}
+
 export function generateMolstarSelectionsForMacromolecule(macromolecule: Molecule, carbohydrate?: CarbohydrateMolecule, verbose = false) {
   const selectionNames: string[] = [];
   const selections: QueryParam[][] = [];
-  for (const chainId of macromolecule.in_chains) {
+  for (let chain_idx = 0; chain_idx < macromolecule.in_chains.length; chain_idx++) {
+    const chainId = macromolecule.in_chains[chain_idx];
+
+    // skip entries not in preferred assembly
+    if (macromolecule.in_chains_in_pref_assembly?.[chain_idx] === false) continue;
+
     const molstarSelection: QueryParam[] = [];
     if (macromolecule.molecule_type.includes('carbohydrate') === false) {
       molstarSelection.push({

@@ -315,6 +315,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public currentMacromoleculeDatum = signal<ProcessedMacromolecule | undefined>(undefined);
 
+  public collapsedChains = true;
+
   public uniqueOrganisms = computed(() => {
     const macromolecule = this.currentMacromoleculeDatum();
     if (macromolecule === undefined) return [];
