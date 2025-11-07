@@ -76,6 +76,7 @@ export class InteractionComponent implements AfterViewInit {
           return EMPTY;
         }),
         catchError(() => {
+          this.showLigandHeatmap.set(false);
           return throwError('Failed to fetch interaction data');
         }),
         takeUntilDestroyed(this.destroyRef)
