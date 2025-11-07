@@ -7,7 +7,7 @@ import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold, StereoIsomer } 
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { forkJoin, mergeMap, map, combineLatest, startWith, filter } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { GoogleAnalyticsService } from '@pdbc/core';
@@ -65,6 +65,8 @@ export class RelatedLigandsComponent implements OnInit {
   public similarityTo = new FormControl(100);
 
   private relatedLigand!: any;
+
+  public ligandId = toSignal(this.globalStore.select(LigandSelectors.ligandId));
 
   public readonly skeletonTheme = {
     'border-radius': '0px',
