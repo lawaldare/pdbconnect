@@ -59,9 +59,7 @@
     <div class="legend-row-block">
       <div class="legend-title">
         Ligand interactions
-        <lib-tool-tip>
-          <p>Percentage of interactions by ligand atom compared to the total interactions of the ligand</p>
-        </lib-tool-tip>
+        <lib-help-icon-with-tooltip tooltipText="Percentage of interactions by ligand atom compared to the total interactions of the ligand" />
       </div>
       @if (atomDomainMap && atomColorMap) {
       <div class="legend-category-plot">
@@ -80,9 +78,9 @@
     <div class="legend-row-block">
       <div class="legend-title">
         Amino acid interactions
-        <lib-tool-tip>
-          <p>Percentage of interactions between ligand atom-amino acid pair compared to the total interactions of the amino acid</p>
-        </lib-tool-tip>
+        <lib-help-icon-with-tooltip
+          tooltipText="Percentage of interactions between ligand atom-amino acid pair compared to the total interactions of the amino acid"
+        />
       </div>
       @if (residDomainMap && residColorMap) {
       <div class="legend-category-plot">

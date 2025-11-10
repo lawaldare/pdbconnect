@@ -7,7 +7,7 @@ import type NightingaleSequenceHeatmap from '@nightingale-elements/nightingale-s
 import * as d3 from 'd3';
 import { MatRadioButton } from '@angular/material/radio';
 import { MatCheckbox } from '@angular/material/checkbox';
-import { ToolTipComponent } from '@pdbe-lib/tool-tip';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { InteractionsApiService } from './interactions-heatmap.service';
 import { ViewerData } from './data-models/viewer-data';
 import { INTX_NAME_STANDARDIZER, processInitialData, sortAAsByIntFreq, sortAAsByType, filterRescaleData } from './interactions-heatmap-data-processing';
@@ -18,7 +18,7 @@ import { ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
 @Component({
   selector: 'lib-interactions-heatmap',
   standalone: true,
-  imports: [CommonModule, MatRadioButton, MatCheckbox, ToolTipComponent, ProtvistaWrapperComponent],
+  imports: [CommonModule, MatRadioButton, MatCheckbox, HelpIconWithTooltipComponent, ProtvistaWrapperComponent],
   templateUrl: './interactions-heatmap.component.html',
   styleUrl: './interactions-heatmap.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
