@@ -2,7 +2,6 @@ import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
   inject,
-  ChangeDetectorRef,
   HostListener,
   Output,
   EventEmitter,
@@ -12,7 +11,6 @@ import {
   signal,
   computed,
   DestroyRef,
-  OnInit,
   AfterViewInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -26,7 +24,7 @@ import NightingaleSequenceHeatmap from '@nightingale-elements/nightingale-sequen
 import * as d3 from 'd3';
 import { MatRadioButton } from '@angular/material/radio';
 import { MatCheckbox } from '@angular/material/checkbox';
-import { ToolTipComponent } from '@pdbe-lib/tool-tip';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { InteractionsApiService } from './interactions-heatmap.service';
 import { ViewerData } from './data-models/viewer-data';
 import { INTX_NAME_STANDARDIZER, processInitialData, sortAAsByIntFreq, sortAAsByType, filterRescaleData } from './interactions-heatmap-data-processing';
@@ -41,7 +39,7 @@ const _nightingaleRefs = [NightingaleManager, NightingaleNavigation, Nightingale
 @Component({
   selector: 'lib-interactions-heatmap',
   standalone: true,
-  imports: [CommonModule, MatRadioButton, MatCheckbox, ToolTipComponent],
+  imports: [CommonModule, MatRadioButton, MatCheckbox, HelpIconWithTooltipComponent],
   templateUrl: './interactions-heatmap.component.html',
   styleUrl: './interactions-heatmap.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
