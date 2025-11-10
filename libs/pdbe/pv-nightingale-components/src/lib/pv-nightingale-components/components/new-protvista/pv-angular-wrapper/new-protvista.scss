@@ -546,8 +546,8 @@ with extra ajustments for close button */
 }
 
 ::ng-deep .pv-protvista .heatmap-pinned-tooltip-close {
-  top: 10px;
-  right: 0;
+  top: 5px;
+  right: 1px;
   background-color: #00000000;
   border: solid #00000000 1px;
 
@@ -570,7 +570,7 @@ with extra ajustments for close button */
   font-family: 'IBM Plex Sans', Arial, Helvetica, sans-serif;
   font-size: 16px;
   line-height: 27px;
-  padding: 10px;
+  padding: 14px;
 }
 
 ::ng-deep .pv-protvista g.highlighted rect {

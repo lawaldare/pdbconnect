@@ -13,7 +13,7 @@ export function renderAddCustomTrackControls(isSticky: boolean, extraMarginLeft?
         </div>
       </div>
       <div class="pv-track-container custom-data custom-btn-control">
-        <button id="pv-add-custom-btn" style="margin-left: ${marginLeft}px; margin-right: ${marginRight}px;">+ Add custom annotation track</button>
+        <button id="pv-add-custom-btn" style="margin-left: ${marginLeft}px; margin-right: ${marginRight}px;">+  Map your residues</button>
       </div>
   </div>`;
 }
