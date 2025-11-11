@@ -57,13 +57,6 @@ export class InteractiveTablesComponent implements OnInit {
   public originalRowCards = signal<any>([]);
   public rowCards = signal<any>([]);
 
-  constructor() {
-    // this.route.queryParams.subscribe((params) => {
-    //   console.log('PARAMS', params);
-    //   console.log('ROW CARDS', this.rowCards());
-    // });
-  }
-
   ngOnInit(): void {
     if (this.tabName() === 'Macromolecules') {
       this.globalStore.dispatch(EntryActions.getProcMacromoleculesCards());
@@ -136,8 +129,6 @@ export class InteractiveTablesComponent implements OnInit {
       let activeCard: any = null;
       let activeIndex = 0;
 
-      console.log('VALUE', value);
-
       if (value) {
         switch (this.tabName()) {
           case 'Assemblies':
@@ -161,11 +152,9 @@ export class InteractiveTablesComponent implements OnInit {
             activeIndex = this.rowCards().findIndex((c: any) => c.entityId == value);
             break;
           default:
-            console.log('No tab name found');
+            console.warn('No tab name found');
             break;
         }
-
-        console.log(activeCard, activeIndex);
 
         this.selectedRowCard.set(activeCard);
         this.loadSelectionFromTable(activeIndex);
@@ -203,7 +192,7 @@ export class InteractiveTablesComponent implements OnInit {
         queryParamValue = card.entityId;
         break;
       default:
-        console.log('No tab name found');
+        console.warn('No tab name found');
         break;
     }
 
@@ -214,7 +203,6 @@ export class InteractiveTablesComponent implements OnInit {
       queryParamsHandling: '',
     });
 
-    console.log('onCardClick', card, queryParam, this.tabName());
     this.selectedRowCard.set(card);
     this.loadSelectionFromTable(card.index);
   }
