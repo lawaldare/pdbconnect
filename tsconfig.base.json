@@ -15,7 +15,6 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@nightingale-elements/nightingale-new-core-adam": ["temp/custom-nightingale-builds/pdbe-pv-new-core/index.js"],
       "@pdbc/core": ["libs/core/src/index.ts"],
       "@pdbc/help-icon-with-tooltip": ["libs/pdbe/help-icon-with-tooltip/src/index.ts"],
       "@pdbc/interaction-heatmap": ["libs/pdbe/interaction-heatmap/src/index.ts"],
@@ -35,8 +34,6 @@
       "@pdbe-lib/styles": ["libs/pdbe/styles/src/index.ts"],
       "@pdbe-lib/swagger-docs": ["libs/pdbe/swagger-docs/src/index.ts"],
       "@pdbe-lib/tool-tip": ["libs/pdbe/tool-tip/src/index.ts"],
-      "@pdbe-nightingale-conservation": ["temp/custom-nightingale-builds/pdbe-pv-conservation/index.js"],
-      "@pdbe-nightingale-track-canvas": ["temp/custom-nightingale-builds/pdbe-track-canvas/index.js"],
       "@vf-lib/ebi-footer": ["libs/vf/ebi-footer/src/index.ts"],
       "@vf-lib/ebi-header": ["libs/vf/ebi-header/src/index.ts"]
     }

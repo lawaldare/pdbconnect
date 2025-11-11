@@ -1,11 +1,17 @@
 .interactions-heatmap-container {
   // width: 661px;
   // height: 390px;
+  width: 100%;
   display: flex;
 
   @media screen and (width <= 768px) {
     display: none;
   }
+}
+
+.visualisation-column {
+  // width: 581px;
+  width: 100%;
 }
 
 .hm-left-column {
@@ -34,11 +40,7 @@
   display: flex;
 
   .controls-sort-filter {
-    width: 180px;
-
-    .controls-row {
-      margin-top: 10px;
-    }
+    width: 210px;
 
     .controls-row {
       margin-top: 10px;
@@ -60,6 +62,7 @@
       padding-top: 8px;
       max-height: 266px;
       overflow: auto;
+      width: 210px;
 
       mat-checkbox {
         margin-bottom: 4px;
@@ -70,7 +73,10 @@
   #hm-aa-legend {
     width: 30px;
     height: 390px;
-    margin-top: 50px;
+    margin-top: 14px;
+    position: relative;
+    left: 18px;
+    z-index: 10;
 
     .each-aa-box {
       height: 19.5px;
@@ -147,46 +153,6 @@
   }
 }
 
-.heatmap-container-atoms {
-  width: 661px;
-  height: 23px;
-}
-
-.heatmap-container {
-  width: 661px;
-  height: 390px;
-}
-
-.heatmap-main {
-  width: 661px;
-  height: 390px;
-  position: absolute;
-  z-index: 1;
-  line-height: 1;
-}
-
-.heatmap-main-atoms {
-  width: 661px;
-  height: 23px;
-  position: absolute;
-  z-index: 1;
-  line-height: 1;
-}
-
-.hotmap-pinned-tooltip-content {
-  line-height: 1;
-}
-
-// Patch for some strange discrepancies in display between localhost and production
-// (display is block in localhost and unset in production)
-nightingale-manager {
-  display: block !important;
-}
-
-nightingale-navigation {
-  margin-top: 4px;
-}
-
 #ligand-atoms-sequence {
   margin-top: -10px;
 }
@@ -196,9 +162,9 @@ nightingale-navigation {
 }
 
 .heatmap-marker-y {
-  color: white;
-  background-color: white;
-  fill: white;
+  color: #fff;
+  background-color: #fff;
+  fill: #fff;
 }
 
 ::ng-deep .mdc-label {
@@ -225,4 +191,47 @@ nightingale-navigation {
 
 .exploring-finger {
   animation: moveFingerRightToLeft 2s infinite ease-in-out;
+}
+
+// Protvista for ligands CSS overrides
+
+::ng-deep lib-zoom-residues-modal {
+  position: relative;
+}
+
+::ng-deep .zoom-custom-track {
+  bottom: 0 !important;
+  right: 0 !important;
+  translate: 100% -100%;
+}
+
+::ng-deep .pv-protvista .pv-track-col.controls {
+  gap: 2px !important;
+  padding-right: 2px !important;
+}
+
+::ng-deep .pv-protvista .pv-track-label-col {
+  width: 52px !important;
+}
+
+::ng-deep .pv-protvista .pv-track-col.small {
+  width: 52px !important;
+}
+
+::ng-deep .pv-protvista .pv-track-container {
+  width: calc(100% - 52px) !important;
+}
+
+::ng-deep .pv-protvista g.highlighted rect {
+  fill: none !important;
+  stroke: #000 !important;
+  stroke-width: 1px !important;
+}
+
+::ng-deep .pv-protvista .heatmap-pinned-tooltip-content {
+  line-height: 1 !important;
+}
+
+::ng-deep .pv-protvista .heatmap-tooltip-content {
+  line-height: 1 !important;
 }

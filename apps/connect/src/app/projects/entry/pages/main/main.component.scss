@@ -1,4 +1,4 @@
-@import url('libs/core/src/lib/styles/pdb_connect.scss');
+@import 'libs/core/src/lib/styles/pdb_connect.scss';
 
 ngx-skeleton-loader {
   width: 100%;
@@ -65,4 +65,22 @@ section.container {
 
 ::ng-deep .msp-plugin .msp-layout-standard {
   border: none !important;
+}
+
+::ng-deep .complex-name-tooltip {
+  .mdc-tooltip__surface {
+    background-color: #fff !important;
+    color: #1a1c1a !important;
+    font-size: 16px !important;
+    line-height: 27px;
+    padding: 10px;
+    box-shadow:
+      0 5px 5px -3px rgb(0 0 0 / 20%),
+      0 8px 10px 1px rgb(0 0 0 / 14%),
+      0 3px 14px 2px rgb(0 0 0 / 12%);
+
+    // white-space: nowrap;
+    max-width: 400px !important;
+    max-height: unset !important;
+  }
 }

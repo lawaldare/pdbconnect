@@ -48,6 +48,10 @@ button {
     gap: 0;
   }
 
+  lib-interactions-heatmap {
+    width: 100%;
+  }
+
   ::ng-deep pdbe-ligand-interactions .heatmap-container {
     width: 563px;
 
