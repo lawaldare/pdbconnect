@@ -1,6 +1,7 @@
 .interactions-heatmap-container {
   // width: 661px;
   // height: 390px;
+  width: 100%;
   display: flex;
 
   @media screen and (width <= 768px) {
@@ -9,7 +10,8 @@
 }
 
 .visualisation-column {
-  width: 581px;
+  // width: 581px;
+  width: 100%;
 }
 
 .hm-left-column {
@@ -160,9 +162,9 @@
 }
 
 .heatmap-marker-y {
-  color: white;
-  background-color: white;
-  fill: white;
+  color: #fff;
+  background-color: #fff;
+  fill: #fff;
 }
 
 ::ng-deep .mdc-label {
@@ -222,7 +224,7 @@
 
 ::ng-deep .pv-protvista g.highlighted rect {
   fill: none !important;
-  stroke: black !important;
+  stroke: #000 !important;
   stroke-width: 1px !important;
 }
 
