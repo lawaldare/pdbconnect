@@ -1,0 +1,17 @@
+@if(visInstance === undefined) {
+<div class="skeleton-loader" [ngStyle]="{ height : maxHeight() }"></div>
+}
+<div #containerElement class="relative-container" [id]="containerId()"></div>
+@if (isAddDialogOpen && this.seqLength !== undefined) {
+<lib-add-custom-modal [sequenceLength]="seqLength" (closeDialog)="closeAddTrackDialog()" (addAnnotations)="mapYourData($event)"></lib-add-custom-modal>
+} @if (isZoomDialogOpen && this.seqLength !== undefined) {
+<lib-zoom-residues-modal [sequenceLength]="seqLength" (closeDialog)="closeZoomDialog()" (zoomAnnotations)="zoomAndHighlightTrack($event)"></lib-zoom-residues-modal>
+} @if (isEditDialogOpen && this.seqLength !== undefined) {
+<lib-edit-custom-modal
+  [sequenceLength]="seqLength"
+  [customRawData]="customRawData"
+  [customTracks]="customTracks"
+  (closeDialog)="closeEditTrackDialog()"
+  (editAnnotations)="editAnnotationsTrack($event)"
+></lib-edit-custom-modal>
+}

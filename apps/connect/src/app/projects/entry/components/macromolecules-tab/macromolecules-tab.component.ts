@@ -14,7 +14,6 @@ import { GoogleAnalyticsService, MaterialModule, ScriptLoaderService, UtilServic
 import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../helpers/processed-data-to-controls';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { EntryPgProtvistaComponent } from '../shared/entry-pv-nightingale/entry-pv-nightingale.component';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { ComponentType } from '@angular/cdk/overlay';
 import { EcNumbersComponent } from '../shared/ec-numbers/ec-numbers.component';
@@ -38,6 +37,8 @@ import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial
 import { MacromoleculesTabFacade } from './macromolecules-tab.facade';
 import { UnpMappingListComponent } from '../shared/unp-mapping-list/unp-mapping-list.component';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { PvDataProcessingFacade } from '../shared/entry-pv-nightingale/pv-entry-api.facade';
+import { ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -53,10 +54,10 @@ declare let PdbRnaViewerPlugin: any;
     ReactiveFormsModule,
     InteractiveTablesComponent,
     NgxSkeletonLoaderModule,
-    EntryPgProtvistaComponent,
     SmartSeqViewerComponent,
     MolstarComponent,
     HelpIconWithTooltipComponent,
+    ProtvistaWrapperComponent,
   ],
   templateUrl: './macromolecules-tab.component.html',
   styleUrl: './macromolecules-tab.component.scss',
@@ -85,6 +86,120 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly uniprotMappings = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
   public readonly polymerCoverage = toSignal(this.globalStore.select(EntrySelectors.polymerCoverage));
+
+  private protvistaDataFacade = inject(PvDataProcessingFacade);
+  public macromolSequence = this.protvistaDataFacade.sequence;
+  public loadingStatus = this.protvistaDataFacade.loadingStatus;
+  public macromolIsNucleic = signal(false);
+
+  public readonly protvistaTooltips = computed(() => this.protvistaDataFacade.tooltips());
+  public readonly protvistaData = computed(() => {
+    const domainsByResource = this.protvistaDataFacade.domainsByResource();
+    const domainResourcesList = this.protvistaDataFacade.domainResourcesList();
+    const mergedDomainsList = domainsByResource.flat();
+
+    const biophysicalResourcesList = this.protvistaDataFacade.biophysicalResourcesList();
+    const biophysicalByResource = this.protvistaDataFacade.biophysicalByResource();
+    const mergedBiophysicalList = biophysicalByResource.flat();
+
+    const isNucleic = this.macromolIsNucleic();
+
+    return [
+      {
+        id: 'uniprot',
+        type: 'TrackCanvas',
+        name: 'UniProt',
+        data: this.protvistaDataFacade.uniprotTracks(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['uniprot'],
+        // colourIn3DControl: true,
+      },
+      {
+        id: 'validation',
+        type: 'TrackCanvas',
+        name: 'Validation',
+        data: this.protvistaDataFacade.validationTracks(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['validation'],
+      },
+      {
+        id: 'secondary',
+        type: 'TrackCanvas',
+        name: 'Secondary structure',
+        data: this.protvistaDataFacade.secStrTracks(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['secondary'],
+      },
+      {
+        id: 'binding',
+        type: 'TrackCanvas',
+        name: 'Ligand binding sites',
+        data: this.protvistaDataFacade.ligandBindingTracks(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['binding'],
+      },
+      {
+        id: 'interfaces',
+        type: 'TrackCanvas',
+        name: 'Interaction interfaces',
+        data: this.protvistaDataFacade.interfacesTracks(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['interfaces'],
+      },
+      {
+        id: isNucleic ? 'familes' : 'domains',
+        type: 'NestedTrackCanvas',
+        name: isNucleic ? 'Families' : 'Domains',
+        data: mergedDomainsList,
+        childData: domainsByResource.map((data, i) => {
+          const rawId = domainResourcesList[i];
+          const sanitizedId = rawId
+            .toLowerCase()
+            .replace(/\s+/g, '') // remove all whitespace
+            .replace(/[^a-z0-9]/g, ''); // remove anything not a–z or 0–9
+
+          return {
+            id: `${sanitizedId}_${i}`,
+            name: domainResourcesList[i],
+            data,
+            status: this.protvistaDataFacade.loadingStatusPerTrack()[isNucleic ? 'rfam' : 'domains'],
+            // colourIn3DControl: true,
+          };
+        }),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()[isNucleic ? 'rfam' : 'domains'],
+      },
+      {
+        id: 'biophysical',
+        type: 'NestedTrackCanvas',
+        name: 'Biophysical parameters',
+        data: mergedBiophysicalList,
+        childData: biophysicalByResource.map((data, i) => {
+          const rawId = biophysicalResourcesList[i];
+          const sanitizedId = rawId
+            .toLowerCase()
+            .replace(/\s+/g, '_') // remove all whitespace
+            .replace(/[^a-z0-9]/g, ''); // remove anything not a–z or 0–9
+
+          return {
+            id: `${sanitizedId}_${i}`,
+            name: biophysicalResourcesList[i],
+            data,
+            status: this.protvistaDataFacade.loadingStatusPerTrack()['secondary'],
+          };
+        }),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['secondary'],
+      },
+      {
+        id: 'conservation',
+        type: 'TrackConservation',
+        name: 'Conservation',
+        data: this.protvistaDataFacade.originalConservationData(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['conservation'],
+      },
+      {
+        id: 'variation',
+        type: 'TrackVariation',
+        name: 'Variation',
+        data: this.protvistaDataFacade.originalVariationData(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['variation'],
+      },
+    ];
+  });
 
   public readonly gAS = inject(GoogleAnalyticsService);
 
@@ -725,6 +840,9 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     this.currentSelectionChainId.set(chainId);
     this.visInteractivity.currentSelectionEntityId.set(`${entityId}`);
     this.visInteractivity.currentSelectionChainId.set(chainId);
+    const isNucleic = macromolecule?.additionalData?.molecule?.molecule_type.includes('nucleotide');
+    this.macromolIsNucleic.set(isNucleic);
+    this.protvistaDataFacade.processNewData(`${entityId}`, isNucleic);
   }
 
   private async initOrRefreshTopologyViewer(macromolecule: ProcessedMacromolecule) {
@@ -805,5 +923,11 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public getRoundedWeight(): number | undefined {
     const weight = this.currentMacromoleculeDatum()?.additionalData.molecule.weight;
     return weight !== undefined ? +(weight / 1000).toFixed(3) : undefined;
+  }
+
+  openedAddCustomTrack() {
+    this.gAS.logPageEvents('ep_map_data', {
+      tab: this.compCommunication.currentTabName() ?? '',
+    });
   }
 }

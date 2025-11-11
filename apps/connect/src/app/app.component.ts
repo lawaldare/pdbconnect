@@ -61,11 +61,6 @@ export class AppComponent implements OnInit {
       // ligand env component is always imported for other pages
       await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-3.0.0-min.js', true);
     }
-
-    // Heatmap components is only imported for Ligand pages (route has chemicalCompound)
-    if (pathName.includes(`/chemicalCompound/`)) {
-      await this.scriptLoader.loadScript('./assets/heatmap-components-v0.2.min.js', true);
-    }
   }
 
   private init(): void {
@@ -87,8 +82,5 @@ export class AppComponent implements OnInit {
 
   private async runAbsolutePath(pathName: string) {
     await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-3.0.0-min.js'), true);
-    if (pathName.includes(`/chemicalCompound/`)) {
-      await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/heatmap-components-v0.2.min.js'), true);
-    }
   }
 }
