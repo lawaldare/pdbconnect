@@ -271,7 +271,7 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
                     hasYScale: false,
                     tooltipContentFn: (d: any, x: number, y: number) => {
                       if (!d) return '';
-                      let tooltipContent = `
+                      const tooltipContent = `
                         <div class="tooltip-data" data-trackid="atoms-hm" style="display: none"></div>
                         Ligand atom: <b>${d['atomName']}</b><br>
                         Atom-wise interactions: <b>${d['score'].toFixed(2)}%</b><br>
@@ -297,7 +297,7 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
                     hasYScale: false,
                     tooltipContentFn: (d: any, x: number, y: number) => {
                       if (!d) return '';
-                      let tooltipContent = `
+                      const tooltipContent = `
                         <div class="tooltip-data" data-trackid="resids-hm" style="display: none"></div>
                         Ligand atom: <b>${d['atomName']}</b><br>
                         Amino acid: <b>${d['residue']}</b><br>
