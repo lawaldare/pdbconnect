@@ -1,5 +1,5 @@
-@import url('./pdbe-topology-style.scss');
-@import url('./pdbe-rna-style.scss');
+@import './pdbe-topology-style.scss';
+@import './pdbe-rna-style.scss';
 
 main {
   display: flex;
@@ -274,7 +274,7 @@ section.chart-area {
       position: relative;
       width: 100%;
       min-height: 337px;
-      z-index: 3;
+      z-index: 8;
 
       &.big {
         flex: 1;
