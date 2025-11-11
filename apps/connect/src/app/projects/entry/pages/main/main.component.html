@@ -31,6 +31,15 @@
               <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
               } @else if(hasMacromolecules() === false) {
               <div class="tab-tag na">N/A</div>
+              } @else if (hasMacromolecules() === true) {
+              <div
+                class="tab-tag new"
+                matTooltipClass="complex-name-tooltip"
+                [matTooltip]="'A new Protvista version is now available on this tab, with improved visualization and interactivity features.'"
+                matTooltipPosition="below"
+              >
+                New
+              </div>
               }
             </ng-template>
             <ng-template matTabContent>
@@ -62,6 +71,15 @@
               <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
               } @else if(hasDomains() === false) {
               <div class="tab-tag na">N/A</div>
+              } @else if (hasDomains() === true) {
+              <div
+                class="tab-tag new"
+                matTooltipClass="complex-name-tooltip"
+                [matTooltip]="'A new Protvista version is now available on this tab, with improved visualization and interactivity features.'"
+                matTooltipPosition="below"
+              >
+                New
+              </div>
               }
             </ng-template>
             <ng-template matTabContent>
@@ -84,7 +102,14 @@
               } @else if(hasAnnotations() === false) {
               <div class="tab-tag na">N/A</div>
               } @else if(hasAnnotations() === true) {
-              <div class="tab-tag new">New</div>
+              <div
+                class="tab-tag new"
+                matTooltipClass="complex-name-tooltip"
+                [matTooltip]="'Explore residue-level annotations mined from the primary publication by our AI methods.'"
+                matTooltipPosition="below"
+              >
+                New
+              </div>
               }
             </ng-template>
             <ng-template matTabContent>
