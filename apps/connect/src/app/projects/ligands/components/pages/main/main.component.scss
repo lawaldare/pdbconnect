@@ -6,17 +6,23 @@ main {
 
     header {
       display: flex;
-      gap: 16px;
       align-items: center;
+      justify-content: space-between;
 
-      .annotations {
+      .left-aligned {
         display: flex;
-        gap: 16px;
         align-items: center;
+        gap: 16px;
 
-        span {
-          font-size: 14px;
-          line-height: 22.4px;
+        .annotations {
+          display: flex;
+          gap: 16px;
+          align-items: center;
+
+          span {
+            font-size: 14px;
+            line-height: 22.4px;
+          }
         }
       }
     }
@@ -39,7 +45,7 @@ main {
     }
 
     .hero {
-      padding: 12px 0 32px;
+      padding: 12px 0;
 
       h2 {
         font-size: 42px;
@@ -51,7 +57,6 @@ main {
         font-size: 24px;
         font-weight: 500;
         line-height: 31.2px;
-        margin-bottom: 16px;
       }
 
       .action-buttons {

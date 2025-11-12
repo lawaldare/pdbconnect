@@ -11,31 +11,30 @@
     } @if(loaded() === status.SUCCESS){
     <section class="hero">
       <header>
-        <h2>{{ ligandId() }}</h2>
-        <div class="annotations">
-          @for(annotation of annotations(); track annotation){ @if(annotation === 'cofactor-like'){
-          <span class="cofactor-like" matTooltipClass="complex-name-tooltip" [matTooltip]="cofactorTooltip" matTooltipPosition="below">Cofactor-like</span>
-          } @if(annotation === 'drug-like'){
-          <span class="drug-like" matTooltipClass="complex-name-tooltip" [matTooltip]="drugTooltip" matTooltipPosition="below">Drug-like</span>
-          } @if(annotation === 'reactant-like'){
-          <p class="reactant-like" matTooltipClass="complex-name-tooltip" [matTooltip]="reactantTooltip" matTooltipPosition="below">Reactant-like</p>
-          } }
+        <div class="left-aligned">
+          <h2>{{ ligandId() }}</h2>
+          <div class="annotations">
+            @for(annotation of annotations(); track annotation){ @if(annotation === 'cofactor-like'){
+            <span class="cofactor-like" matTooltipClass="complex-name-tooltip" [matTooltip]="cofactorTooltip" matTooltipPosition="below">Cofactor-like</span>
+            } @if(annotation === 'drug-like'){
+            <span class="drug-like" matTooltipClass="complex-name-tooltip" [matTooltip]="drugTooltip" matTooltipPosition="below">Drug-like</span>
+            } @if(annotation === 'reactant-like'){
+            <p class="reactant-like" matTooltipClass="complex-name-tooltip" [matTooltip]="reactantTooltip" matTooltipPosition="below">Reactant-like</p>
+            } }
+          </div>
         </div>
-      </header>
-      <h3>{{ description()?.name }}</h3>
-      <div class="action-buttons">
-        <button class="vf-button vf-button--primary vf-button--sm" (click)="openMolstarDialog()">View 3D</button>
         <lib-dropdown-menu
           [options]="downloadOptions()"
           title="Download as"
           (click)="googleAnalyticsService.logClickEvents('download_dropdown_open', 'Interaction', 'open_dropdown', 'Download as')"
         ></lib-dropdown-menu>
-      </div>
+      </header>
+      <h3>{{ description()?.name }}</h3>
     </section>
     <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)" #tabs>
       <mat-tab>
         <ng-template mat-tab-label>
-          <span id="ligand-summary-label-tour">Summary</span>
+          <span id="ligand-summary-label-tour">Description</span>
         </ng-template>
         <ng-template matTabContent> <pdbc-ligand-summary /> </ng-template>
       </mat-tab>

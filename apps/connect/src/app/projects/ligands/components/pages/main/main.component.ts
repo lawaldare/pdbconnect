@@ -7,28 +7,18 @@ import { RelatedLigandsComponent } from '../../page-sections/related-ligands/rel
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { mergeMap, switchMap, take } from 'rxjs/operators';
+import { mergeMap, switchMap } from 'rxjs/operators';
 import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig, ligandRouteTabs, navSections, reactantTooltip } from '../../../ligand.constant';
-import {
-  ClarityConsentService,
-  DataLayerService,
-  DataPrivacyBannerComponent,
-  GoogleAnalyticsService,
-  MaterialModule,
-  NavSection,
-  ScrollPositionService,
-} from '@pdbc/core';
+import { ClarityConsentService, DataLayerService, DataPrivacyBannerComponent, GoogleAnalyticsService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
-import { combineLatest, EMPTY, forkJoin, of } from 'rxjs';
-import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
+import { combineLatest, EMPTY } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LoadingState } from '../../../enums/loading-state.enum';
-import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandStructure } from '../../../data-models/structure.model';
 import { LigandActions } from '../../../store/ligand.actions';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -73,7 +63,6 @@ export class LigandsMainPageComponent implements OnInit {
   private readonly renderer = inject(Renderer2);
   public readonly ligandUtilService = inject(LigandUtilService);
   private readonly globalStore = inject(Store<LigandStoreState>);
-  private readonly dialog = inject(MatDialog);
 
   public navSections = toSignal(this.globalStore.select(LigandSelectors.navItems));
   public readonly scrollService = inject(ScrollPositionService);
@@ -97,8 +86,6 @@ export class LigandsMainPageComponent implements OnInit {
   public ligandId = signal<string>('');
 
   public readonly status = LoadingState;
-
-  private fragments = toSignal(this.globalStore.select(LigandSelectors.fragments));
 
   public selectedTab = signal<number>(0);
   public showNotificationBanner = signal<boolean>(false);
@@ -162,18 +149,6 @@ export class LigandsMainPageComponent implements OnInit {
 
   private generateSchemaData(): void {
     this.bioschemasService.buildBioschemasJSON(this.renderer);
-  }
-
-  public openMolstarDialog(): void {
-    this.googleAnalyticsService.logClickEvents('view_3d_button_click', 'Interaction', 'view_3d', 'View 3D');
-    this.dialog.open(MolstarDialogComponent, {
-      disableClose: false,
-      panelClass: 'molstarDialog',
-      data: {
-        moleculeId: this.ligandId(),
-        fragments: this.fragments,
-      },
-    });
   }
 
   public selectTab(event: MatTabChangeEvent) {
