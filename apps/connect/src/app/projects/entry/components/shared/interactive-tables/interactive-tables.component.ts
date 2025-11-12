@@ -163,8 +163,6 @@ export class InteractiveTablesComponent implements OnInit {
         this.loadSelectionFromTable(0);
       }
     });
-    // this.selectedRowCard.set(this.rowCards()[0]);
-    // this.loadSelectionFromTable(0);
   }
 
   private setFilters(filters: Filter[]) {
