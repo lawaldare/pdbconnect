@@ -258,7 +258,7 @@ export class EntryMainPageComponent implements OnInit {
 
     this.router.navigate([], {
       queryParams: { activeTab: tabName },
-      queryParamsHandling: 'merge',
+      queryParamsHandling: '',
     });
     if ((window as any).clarity) {
       Clarity.event('tab-change');

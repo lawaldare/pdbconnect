@@ -16,6 +16,7 @@ import { MacromoleculeUICard } from '../../../store/data-processing/macromolecul
 import { LigandOrModUICard } from '../../../store/data-processing/ligand-processing';
 import { DomainUICard } from '../../../store/data-processing/domain-processing';
 import { AssemblyUICard } from '../../../store/data-processing/assembly-processing';
+import { ActivatedRoute, Router } from '@angular/router';
 @Component({
   selector: 'pdbc-interactive-tables',
   standalone: true,
@@ -28,6 +29,8 @@ export class InteractiveTablesComponent implements OnInit {
 
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly globalStore = inject(Store<EntryStoreState>);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   public readonly resourceUrls = resourceUrls;
   public readonly annotationsTooltips: any = annotationsTooltips;
@@ -109,7 +112,7 @@ export class InteractiveTablesComponent implements OnInit {
       const assemblyId = localStorage.getItem('assemblyId');
       const card = this.rowCards().find((c: any) => c.assemblyId === assemblyId);
       if (card) {
-        this.onCardClick(card);
+        this.onCardClick(card, 'id');
         setTimeout(() => {
           localStorage.removeItem('assemblyId');
         }, 5000);
@@ -120,8 +123,48 @@ export class InteractiveTablesComponent implements OnInit {
   private setCards(cards: AssemblyUICard[] | LigandOrModUICard[] | MacromoleculeUICard[] | DomainUICard[]) {
     this.originalRowCards.set([...cards]);
     this.rowCards.set([...cards]);
-    this.selectedRowCard.set(this.rowCards()[0]);
-    this.loadSelectionFromTable(0);
+    this.route.queryParams.subscribe((params) => {
+      const value = Object.values(params)[1];
+
+      let activeCard: any = null;
+      let activeIndex = 0;
+
+      if (value) {
+        switch (this.tabName()) {
+          case 'Assemblies':
+            activeCard = this.rowCards().find((c: any) => c.assemblyId == value);
+            activeIndex = this.rowCards().findIndex((c: any) => c.assemblyId == value);
+            break;
+          case 'Macromolecules':
+            activeCard = this.rowCards().find((c: any) => c.entityId == value);
+            activeIndex = this.rowCards().findIndex((c: any) => c.entityId == value);
+            break;
+          case 'Ligands':
+            activeCard = this.rowCards().find((c: any) => c.chemCompId == value);
+            activeIndex = this.rowCards().findIndex((c: any) => c.chemCompId == value);
+            break;
+          case 'Domains':
+            activeCard = this.rowCards().find((c: any) => c.index == value);
+            activeIndex = this.rowCards().findIndex((c: any) => c.index == value);
+            break;
+          case 'LLM':
+            activeCard = this.rowCards().find((c: any) => c.entityId == value);
+            activeIndex = this.rowCards().findIndex((c: any) => c.entityId == value);
+            break;
+          default:
+            console.warn('No tab name found');
+            break;
+        }
+
+        this.selectedRowCard.set(activeCard);
+        this.loadSelectionFromTable(activeIndex);
+      } else {
+        this.selectedRowCard.set(this.rowCards()[0]);
+        this.loadSelectionFromTable(0);
+      }
+    });
+    // this.selectedRowCard.set(this.rowCards()[0]);
+    // this.loadSelectionFromTable(0);
   }
 
   private setFilters(filters: Filter[]) {
@@ -129,7 +172,37 @@ export class InteractiveTablesComponent implements OnInit {
     this.selectedFilter.set(this.filters()[0]);
   }
 
-  onCardClick(card: any): void {
+  public onCardClick(card: any, queryParam: string): void {
+    let queryParamValue = '';
+
+    switch (this.tabName()) {
+      case 'Assemblies':
+        queryParamValue = card.assemblyId;
+        break;
+      case 'Macromolecules':
+        queryParamValue = card.entityId;
+        break;
+      case 'Ligands':
+        queryParamValue = card.chemCompId;
+        break;
+      case 'Domains':
+        queryParamValue = card.index;
+        break;
+      case 'LLM':
+        queryParamValue = card.entityId;
+        break;
+      default:
+        console.warn('No tab name found');
+        break;
+    }
+
+    const activeTab = this.tabName().toLowerCase();
+
+    this.router.navigate([], {
+      queryParams: { activeTab, [queryParam]: queryParamValue },
+      queryParamsHandling: '',
+    });
+
     this.selectedRowCard.set(card);
     this.loadSelectionFromTable(card.index);
   }

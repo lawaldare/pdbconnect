@@ -74,6 +74,11 @@ export const appRoutes: Route[] = [
     data: { activeTab: 'ligands' },
   },
   {
+    path: 'pdb/:entryId/modified/:boundId',
+    component: TabRedirectComponent,
+    data: { activeTab: 'ligands' },
+  },
+  {
     path: 'pdb/:entryId',
     loadComponent: () => import('./projects/entry/pages/main/main.component').then((m) => m.EntryMainPageComponent),
     title: 'PDBe Entry Pages',
