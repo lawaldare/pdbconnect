@@ -8,7 +8,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { mergeMap, switchMap } from 'rxjs/operators';
-import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig, ligandRouteTabs, navSections, reactantTooltip } from '../../../ligand.constant';
+import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig, ligandRouteTabs, reactantTooltip } from '../../../ligand.constant';
 import { ClarityConsentService, DataLayerService, DataPrivacyBannerComponent, GoogleAnalyticsService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandUtilService } from '../../../ligand-util.service';
@@ -29,6 +29,8 @@ import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { NotificationComponent } from '@pdbc/notification';
 import Clarity from '@microsoft/clarity';
 import { environment } from '../../../../../../environments/environment';
+import { HelpIconForMolstarService } from '@pdbe-lib/molstar-for-apps';
+import { LigandPageTutorialTourService } from '../../../services/ligands-page-tutorial-tour.service';
 
 @Component({
   selector: 'pdbc-main',
@@ -57,6 +59,9 @@ export class LigandsMainPageComponent implements OnInit {
   public readonly dlService = inject(DataLayerService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly bioschemasService = inject(LigandsBioschemasService);
+  public readonly helpIconForMolstarService = inject(HelpIconForMolstarService);
+  public readonly tutorialTourService = inject(LigandPageTutorialTourService);
+
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -97,7 +102,7 @@ export class LigandsMainPageComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       const routeTabs = ligandRouteTabs;
       const tabName = params['activeTab'];
-      this.ligandUtilService.updateLigandComplexTabName(tabName ?? 'summary');
+      this.ligandUtilService.updateLigandTabName(tabName ?? 'description');
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.selectedTab.set(tabIndex);
       // this.gAS.logPageEvents('cp_tab_access', {
@@ -154,7 +159,7 @@ export class LigandsMainPageComponent implements OnInit {
   public selectTab(event: MatTabChangeEvent) {
     const routeTabs = ligandRouteTabs;
     const tabName = routeTabs[event.index].id;
-    this.ligandUtilService.updateLigandComplexTabName(tabName ?? 'summary');
+    this.ligandUtilService.updateLigandTabName(tabName ?? 'description');
 
     // this.gAS.logPageEvents('cp_tab_switch', {
     //   tab: tabName,
@@ -175,5 +180,13 @@ export class LigandsMainPageComponent implements OnInit {
     } else {
       this.showNotificationBanner.set(false);
     }
+  }
+
+  public openHelpModal(): void {
+    this.tutorialTourService.showHelpGuideModal.set(true);
+  }
+
+  public closeHelpGuideModal(): void {
+    this.tutorialTourService.showHelpGuideModal.set(false);
   }
 }

@@ -1,5 +1,5 @@
 <div class="interactions-heatmap-container">
-  <div class="hm-left-column">
+  <div class="hm-left-column" id="heatmap-sort-filter-tour">
     <div class="hm-left-row" style="height: 40px"></div>
     <div class="hm-left-row" style="height: 40px">
       <p class="hm-left-title" style="padding-top: 8px">Ligand atoms</p>
@@ -36,7 +36,7 @@
       </div>
     </div>
   </div>
-  <div class="visualisation-column">
+  <div class="visualisation-column" id="amino-heatmap-tour">
     @if (atomNamesString() && protvistaData()) {
     <lib-pv-angular-wrapper
       containerId="ligands-heatmap-pv"

@@ -136,7 +136,7 @@ export class LigandUtilService {
   private _currentligandTabName = signal<string>('summary');
   public currentligandTabName = this._currentligandTabName.asReadonly();
 
-  public updateLigandComplexTabName(tabName: string): void {
+  public updateLigandTabName(tabName: string): void {
     this._currentligandTabName.set(tabName);
   }
 }

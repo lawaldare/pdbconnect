@@ -1,4 +1,9 @@
-@if (showLigandHeatmap()) {
+@if (tutorialTourService.showStructuresTourBanner() && isBannerCookies()) {
+<section class="onboarding-tutorial-banner">
+  <img [src]="'img/light-star.svg' | asset" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startInteractionsTabTour()">Take an on-page tour.</span></p>
+</section>
+} @if (showLigandHeatmap()) {
 
 <div id="interaction-section">
   <article>
@@ -18,7 +23,7 @@
       [interactions]="interaction"
       [atomNumber]="atomNumber"
     />
-    <div class="ligandEnv-container">
+    <div class="ligandEnv-container" id="ligand-2d-image-tour">
       <div class="ligandEnv-header">
         <h4>
           Atom-wise interactions of {{ ligandId() }} molecule

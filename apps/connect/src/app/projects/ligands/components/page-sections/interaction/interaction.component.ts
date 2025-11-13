@@ -5,7 +5,7 @@ import { Depiction, LigandStructure } from '../../../data-models/structure.model
 import { PDBIntxData } from '../../../data-models/interaction.model';
 import { catchError, combineLatest, EMPTY, forkJoin, from, map, mergeMap, switchMap, take, throwError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
+import { AssetPipe, GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { LigandStoreState } from '../../../store/ligand-store.model';
@@ -15,11 +15,13 @@ import { LigandActions } from '../../../store/ligand.actions';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { InteractionsHeatmapComponent } from '@pdbc/interaction-heatmap';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { LigandPageTutorialTourService } from '../../../services/ligands-page-tutorial-tour.service';
+import { tourIds } from '../../../ligand.constant';
 
 @Component({
   selector: 'pdbc-interaction',
   standalone: true,
-  imports: [CommonModule, MaterialModule, InteractionsHeatmapComponent, ToolTipComponent],
+  imports: [CommonModule, MaterialModule, InteractionsHeatmapComponent, AssetPipe, ToolTipComponent],
   templateUrl: './interaction.component.html',
   styleUrl: './interaction.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -40,6 +42,7 @@ export class InteractionComponent implements AfterViewInit {
   private readonly _snackBar = inject(MatSnackBar);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly globalStore = inject(Store<LigandStoreState>);
+  public readonly tutorialTourService = inject(LigandPageTutorialTourService);
 
   public interaction!: PDBIntxData; // eslint-disable-line @typescript-eslint/no-explicit-any
   public atomNumber!: number;
@@ -83,6 +86,14 @@ export class InteractionComponent implements AfterViewInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+
+    setTimeout(() => {
+      this.tutorialTourService.hasInteractions.set(this.showLigandHeatmap());
+      const agreed = this.tutorialTourService.getCookie(tourIds.interactions);
+      if (!agreed && this.showLigandHeatmap()) {
+        this.isBannerCookies.set(true);
+      }
+    }, 500);
   }
 
   public async changeLigandEnvironmentFilters(filterString: string) {
@@ -136,5 +147,11 @@ export class InteractionComponent implements AfterViewInit {
 
   public onToggleChange(event: MatSlideToggleChange): void {
     this.renderer.setProperty(this.ligandEv, 'atomNames', event.checked);
+  }
+
+  public isBannerCookies = signal(false);
+
+  public startInteractionsTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.interactionsTabTourSteps);
   }
 }

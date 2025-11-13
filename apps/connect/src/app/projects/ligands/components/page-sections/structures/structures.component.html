@@ -1,3 +1,10 @@
+@if (tutorialTourService.showStructuresTourBanner() && isBannerCookies()) {
+<section class="onboarding-tutorial-banner">
+  <img [src]="'img/light-star.svg' | asset" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startStructuresTabTour()">Take an on-page tour.</span></p>
+</section>
+}
+
 <div id="structures-section">
   <header>
     <button class="vf-button vf-button--link" (click)="downloadCSV()">
@@ -16,11 +23,14 @@
   }
   <section class="filter">
     <div class="group">
-      <p>Found as a bound ligand in {{numberOfProteins()}} distinct proteins and {{numberOfPDBStructures()}} PDB Structures. Group data by:</p>
-      <mat-radio-group id="structure-checkbox" aria-label="Select an option" [formControl]="filter" (change)="onChange($event)">
-        <mat-radio-button value="proteins">Proteins</mat-radio-button>
-        <mat-radio-button value="structures">Structures</mat-radio-button>
-      </mat-radio-group>
+      <p>Found as a bound ligand in {{numberOfProteins()}} distinct proteins and {{numberOfPDBStructures()}} PDB Structures.</p>
+      <div class="filter-tool" id="structures-groupby-tour" style="margin-left: 5px">
+        <span>Group data by:</span>
+        <mat-radio-group id="structure-checkbox" aria-label="Select an option" [formControl]="filter" (change)="onChange($event)">
+          <mat-radio-button value="proteins">Proteins</mat-radio-button>
+          <mat-radio-button value="structures">Structures</mat-radio-button>
+        </mat-radio-group>
+      </div>
     </div>
   </section>
   <section class="table-wrapper">

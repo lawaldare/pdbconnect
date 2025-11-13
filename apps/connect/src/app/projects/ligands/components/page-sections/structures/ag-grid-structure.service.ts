@@ -52,6 +52,7 @@ export class AgGridStructureService {
     {
       headerName: 'Protein Overview',
       field: 'uniprot_id',
+      headerClass: 'protein-overview-header',
       cellRenderer: ExternalLinkRendererComponent,
       // width: 160,
       sortable: false,
@@ -108,6 +109,7 @@ export class AgGridStructureService {
     {
       headerName: 'Ligand function',
       field: 'annotations',
+      headerClass: 'ligand-function-header',
       cellRenderer: LigandAnnotationRendererComponent,
       sortable: false,
       filter: 'agTextColumnFilter',
