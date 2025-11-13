@@ -255,19 +255,24 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     this.compCommunication.forceLoad.set(!forceLoad);
   }
 
+  public inPrefAssembly = signal(true);
+
   public readonly configForMolstar = computed(() => {
     const summary = this.summaryData();
     const entryId = this.entryId();
+    const inPrefAssembly = this.inPrefAssembly();
     // const chainSelection = this.chainSelection();
 
     if (!summary || !entryId) return undefined;
+
     const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
     const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
+    const assemblyId = inPrefAssembly ? preferredAssemblyId : undefined;
 
     const configForMolstar = {
       ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
-      assemblyId: preferredAssemblyId,
+      assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
       landscape: true,
       subscribeEvents: true,
@@ -285,7 +290,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       mapSettings: { defaultView: 'selection-box' },
       // ...(chainSelection && { 'selection': chainSelection }),
     };
-
     return configForMolstar;
   });
   public molstarHeight = '100%';
@@ -622,7 +626,13 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     await this.updateDropdownOptions(macromolecule);
 
     // updates shown sequence on new macromolecule
-    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
+
+    // check whether chain is in pref assembly
+    const chainIdIdx = macromolecule.additionalData.selections.findIndex((sel) => sel[0].auth_asym_id === chainId);
+    const inPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly[chainIdIdx];
+    this.inPrefAssembly.set(inPrefAssembly);
+
     const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
 
@@ -655,7 +665,13 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
     this.sequenceDetails.set(undefined);
-    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
+
+    // check whether chain is in pref assembly
+    const chainIdIdx = macromolecule.additionalData.selections.findIndex((sel) => sel[0].auth_asym_id === chainId);
+    const inPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly[chainIdIdx];
+    this.inPrefAssembly.set(inPrefAssembly);
+
     const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
     await this.updateBackgroundAnnotation();
@@ -683,7 +699,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     }
 
     const entityId = macromolecule.additionalData.molecule.entity_id;
-    const chainId = this.dropdownSelected.split('Chain ')[1];
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
     const modelId = this.currentModelId$.value || '1';
     const annotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
     this.backgroundAnnotation.set(annotation);
@@ -738,7 +754,13 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     if (!macromolecule) return;
 
     this.sequenceDetails.set(undefined);
-    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
+
+    // check whether chain is in pref assembly
+    const chainIdIdx = macromolecule.additionalData.selections.findIndex((sel) => sel[0].auth_asym_id === chainId);
+    const inPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly[chainIdIdx];
+    this.inPrefAssembly.set(inPrefAssembly);
+
     const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
 
@@ -834,7 +856,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     if (!this.hasProtvista) return;
     // const datum = this.currentMacromoleculeDatum();
     const entityId = macromolecule.additionalData.molecule.entity_id;
-    const chainId = this.dropdownSelected.split('Chain ')[1];
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
     this.currentSelectionEntityId.set(`${entityId}`);
     this.currentSelectionChainId.set(chainId);
@@ -858,7 +880,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       // topology viewer is only currently shown for macromolecules
       // const datum = this.currentMacromoleculeDatum();
       const entityId = (macromolecule as ProcessedMacromolecule).additionalData.molecule.entity_id;
-      const chainId = this.dropdownSelected?.split('Chain ')[1];
+      const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
       // topology viewer load or reload in page is simple
       this.topologyViewerInstance = new PdbTopologyViewerPlugin();
@@ -888,7 +910,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       // topology viewer is only currently shown for macromolecules
       // const datum = this.currentMacromoleculeDatum();
       const entityId = (macromolecule as ProcessedMacromolecule).additionalData.molecule.entity_id;
-      const chainId = this.dropdownSelected?.split('Chain ')[1];
+      const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
       // topology viewer load or reload in page is simple
       this.rnaViewerInstance = new PdbRnaViewerPlugin();

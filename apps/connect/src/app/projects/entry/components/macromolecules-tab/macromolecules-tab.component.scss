@@ -1,5 +1,5 @@
-@import './pdbe-topology-style.scss';
-@import './pdbe-rna-style.scss';
+@import './pdbe-topology-style';
+@import './pdbe-rna-style';
 
 main {
   display: flex;
@@ -24,6 +24,24 @@ main {
   .tab-content {
     width: calc(100% - 268px);
     max-width: 1104px;
+  }
+}
+
+section.info-banner {
+  border-left: 4px solid #e58c17;
+  padding-left: 4px;
+  margin-top: 12px;
+  margin-bottom: 16px;
+
+  p {
+    color: #1a1c1a;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22.4px;
+  }
+
+  a {
+    font-size: 14px;
   }
 }
 

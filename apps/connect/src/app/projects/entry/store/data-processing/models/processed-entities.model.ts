@@ -37,6 +37,7 @@ export interface ProcessedMacromolecule {
     molecule: Molecule;
     selections: QueryParam[][];
     selectionNames: string[];
+    selectionsInPrefAssembly: boolean[];
   };
   molstarColorHex?: string;
 }

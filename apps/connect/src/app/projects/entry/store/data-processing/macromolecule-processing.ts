@@ -387,11 +387,13 @@ export function mapMacromoleculesByPreferredAssembly(macromolecules: Molecule[],
 export function generateMolstarSelectionsForMacromolecule(macromolecule: Molecule, carbohydrate?: CarbohydrateMolecule, verbose = false) {
   const selectionNames: string[] = [];
   const selections: QueryParam[][] = [];
+  const selectionsInPrefAssembly: boolean[] = [];
   for (let chain_idx = 0; chain_idx < macromolecule.in_chains.length; chain_idx++) {
     const chainId = macromolecule.in_chains[chain_idx];
 
-    // skip entries not in preferred assembly
-    if (macromolecule.in_chains_in_pref_assembly?.[chain_idx] === false) continue;
+    // add flag for not in preferred assembly
+    if (macromolecule.in_chains_in_pref_assembly?.[chain_idx] === false) selectionsInPrefAssembly.push(false);
+    else selectionsInPrefAssembly.push(true);
 
     const molstarSelection: QueryParam[] = [];
     if (macromolecule.molecule_type.includes('carbohydrate') === false) {
@@ -419,7 +421,7 @@ export function generateMolstarSelectionsForMacromolecule(macromolecule: Molecul
   if (selections.length === 0 && verbose) {
     console.warn(`WARNING: No selections could be generated for macromolecule: ${macromolecule.molecule_name[0]} (${macromolecule.entity_id})`);
   }
-  return { selections, selectionNames };
+  return { selections, selectionNames, selectionsInPrefAssembly };
 }
 
 export interface MacromoleculeUICard {
@@ -520,6 +522,7 @@ export function generateProcessedMacromolecules(macromolecules: Molecule[], carb
 
     const selectionNames = selectionData.selectionNames;
     const molstarSelections: QueryParam[][] = selectionData.selections;
+    const selectionsInPrefAssembly = selectionData.selectionsInPrefAssembly;
 
     const colorEntityIdx = molecule.entity_id - 1;
 
@@ -534,7 +537,8 @@ export function generateProcessedMacromolecules(macromolecules: Molecule[], carb
       additionalData: {
         molecule: molecule,
         selections: molstarSelections,
-        selectionNames: selectionNames,
+        selectionNames,
+        selectionsInPrefAssembly,
       },
       molstarColorHex: DEFAULT_SET_25[colorEntityIdx % DEFAULT_SET_25.length],
     });

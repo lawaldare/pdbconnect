@@ -22,8 +22,15 @@ export function getDomainChainDropdownOptions(datum: ProcessedDomain) {
 
 export function getMacromoleculeChainDropdownOptions(datum: ProcessedMacromolecule) {
   const dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
-  for (const selection of datum.additionalData.selections) {
-    dropdownOptionsToMolstar[`Chain ${selection[0].auth_asym_id!}`] = selection;
+  const selections = datum.additionalData.selections;
+  const selectionsInPrefAssembly = datum.additionalData.selectionsInPrefAssembly;
+  for (let selectionIdx = 0; selectionIdx < selections.length; selectionIdx++) {
+    const selection = selections[selectionIdx];
+    const inPrefAssembly = selectionsInPrefAssembly[selectionIdx];
+    const selectionKey = inPrefAssembly
+      ? `Chain ${selection[0].auth_asym_id!}`
+      : `Chain ${selection[0].auth_asym_id!} <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px;" />`;
+    dropdownOptionsToMolstar[selectionKey] = selection;
   }
   return dropdownOptionsToMolstar;
 }
