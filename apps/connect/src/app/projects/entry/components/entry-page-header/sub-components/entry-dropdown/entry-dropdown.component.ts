@@ -8,6 +8,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { map } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EntryDropdownFacade } from './entry-dropdown.facade';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'pdbc-entry-dropdown',
@@ -26,6 +27,7 @@ export class EntryDropdownComponent implements OnInit {
    */
   private readonly destroyRef = inject(DestroyRef);
   private readonly facade = inject(EntryDropdownFacade);
+  private readonly sanitizer = inject(DomSanitizer);
 
   public readonly title = input.required<string>();
 
@@ -95,5 +97,9 @@ export class EntryDropdownComponent implements OnInit {
       Clarity.event('file-viewed');
       Clarity.event(`file-viewed-${tag}`);
     }
+  }
+
+  sanitize(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 }
