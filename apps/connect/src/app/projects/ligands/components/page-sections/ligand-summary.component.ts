@@ -18,7 +18,7 @@ import { ImageCarouselComponent } from './image-carousel/image-carousel.componen
       section.description {
         display: flex;
         justify-content: space-between;
-        padding-bottom: 40px;
+        padding-bottom: 60px;
         gap: 12px;
 
         @media screen and (width <= 768px) {

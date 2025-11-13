@@ -133,3 +133,61 @@ button {
 .ligandEnv-content {
   height: 380px;
 }
+
+#interaction-section {
+  padding-bottom: 60px;
+}
+
+::ng-deep .mat-mdc-slide-toggle {
+  .mdc-switch {
+    width: 44px !important;
+
+    &__track {
+      border-radius: 12px;
+      height: 24px;
+
+      &::before {
+        background: #d0debb;
+      }
+
+      &::after {
+        background: #007b53;
+      }
+    }
+
+    &__handle-track {
+      height: 20px;
+      width: 20px;
+      top: 2px;
+      left: 2px;
+    }
+
+    &--unselected .mdc-switch__icon,
+    &--selected .mdc-switch__icon {
+      fill: #007b53;
+    }
+  }
+
+  .mdc-switch:enabled:hover:not(:focus, :active) .mdc-switch__track::before,
+  .mdc-switch:enabled:focus:not(:active) .mdc-switch__track::before,
+  .mdc-switch:enabled:active .mdc-switch__track::before {
+    background: #d0debb;
+  }
+
+  .mdc-switch:enabled:hover:not(:focus, :active) .mdc-switch__track::after,
+  .mdc-switch:enabled:focus:not(:active) .mdc-switch__track::after,
+  .mdc-switch:enabled:active .mdc-switch__track::after {
+    background: #007b53;
+  }
+
+  .mdc-switch--selected:enabled .mdc-switch__handle::after,
+  .mdc-switch--selected:enabled:hover:not(:focus, :active) .mdc-switch__handle::after,
+  .mdc-switch--selected:enabled:focus:not(:active) .mdc-switch__handle::after,
+  .mdc-switch--selected:enabled:active .mdc-switch__handle::after,
+  .mdc-switch--unselected:enabled .mdc-switch__handle::after,
+  .mdc-switch--unselected:enabled:hover:not(:focus, :active) .mdc-switch__handle::after,
+  .mdc-switch--unselected:enabled:focus:not(:active) .mdc-switch__handle::after,
+  .mdc-switch--unselected:enabled:active .mdc-switch__handle::after {
+    background: #ffffff;
+  }
+}

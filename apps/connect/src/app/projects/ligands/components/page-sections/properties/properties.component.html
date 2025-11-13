@@ -1,6 +1,5 @@
 <div id="properties-section">
   <header>
-    <h3>Physicochemical properties</h3>
     <button class="vf-button vf-button--link" (click)="downloadJSON()">
       Download properties
       <i class="icon icon-common icon-download"></i>
@@ -9,13 +8,13 @@
   <div class="property-boxes">
     <div class="property-box-end">
       <div class="property-sub-box">
-        <span class="heading-3"> Molecular properties</span>
+        <span class="heading-4"> Molecular properties</span>
         @for(molProperty of molProperties; track molProperty.name){
         <pdbc-name-value [data]="molProperty"></pdbc-name-value>
         }
       </div>
       <div class="property-sub-box">
-        <span class="heading-3"> Conformational properties</span>
+        <span class="heading-4"> Conformational properties</span>
         @for(confProperty of confProperties; track confProperty.name){
         <pdbc-name-value [data]="confProperty"></pdbc-name-value>
         }
@@ -23,7 +22,7 @@
     </div>
     <div class="property-box-end">
       <div class="property-sub-box">
-        <span class="heading-3"> Ring properties</span>
+        <span class="heading-4"> Ring properties</span>
         @for(ringProperty of ringProperties; track ringProperty.name){
         <pdbc-name-value [data]="ringProperty"></pdbc-name-value>
         }
@@ -31,19 +30,19 @@
     </div>
     <div class="property-box-end">
       <div class="property-sub-box">
-        <span class="heading-3"> Surface properties</span>
+        <span class="heading-4"> Surface properties</span>
         @for(surfProperty of surfProperties; track surfProperty.name){
         <pdbc-name-value [data]="surfProperty"></pdbc-name-value>
         }
       </div>
       <div class="property-sub-box">
-        <span class="heading-3"> Functional group properties</span>
+        <span class="heading-4"> Functional group properties</span>
         @for(funProperty of funProperties; track funProperty.name){
         <pdbc-name-value [data]="funProperty"></pdbc-name-value>
         }
       </div>
       <div class="property-sub-box">
-        <span class="heading-3"> Stereochemical properties</span>
+        <span class="heading-4"> Stereochemical properties</span>
         @for(stereoProperty of stereoProperties; track stereoProperty.name){
         <pdbc-name-value [data]="stereoProperty"></pdbc-name-value>
         }

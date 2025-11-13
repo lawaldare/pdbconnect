@@ -14,6 +14,7 @@ import { LigandSelectors } from '../../../store/ligand.selectors';
 import { LigandActions } from '../../../store/ligand.actions';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { InteractionsHeatmapComponent } from '@pdbc/interaction-heatmap';
+import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'pdbc-interaction',
@@ -111,11 +112,6 @@ export class InteractionComponent implements AfterViewInit {
     this.ligandEv = ligand;
   }
 
-  public toggleAtomNames(): void {
-    this.showAtomicNames.update((value) => !value);
-    this.renderer.setProperty(this.ligandEv, 'atomNames', this.showAtomicNames() ? true : false);
-  }
-
   private resetRenderer(): void {
     const imageContainer = this.imageContainer.nativeElement;
 
@@ -136,5 +132,9 @@ export class InteractionComponent implements AfterViewInit {
         this.pdbstructures.set(numberOfProteins);
         this.ligandInstances.set(numberOfLigandInstances);
       });
+  }
+
+  public onToggleChange(event: MatSlideToggleChange): void {
+    this.renderer.setProperty(this.ligandEv, 'atomNames', event.checked);
   }
 }

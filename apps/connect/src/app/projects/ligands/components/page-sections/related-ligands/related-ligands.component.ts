@@ -183,6 +183,7 @@ export class RelatedLigandsComponent implements OnInit {
       )
       .subscribe((data: any) => {
         this.sameScaffoldGrid = data;
+        console.log(this.sameScaffoldGrid);
         this.setUpPagination('samescaffold');
       });
 
