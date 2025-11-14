@@ -38,14 +38,19 @@ export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCov
   const segmentsResidNumber: string[] = [];
   const molstarSelection: QueryParam[] = [];
   const segmentsBoundaries: DomainsBoundaries[] = [];
+  const segmentsInPrefAssembly: boolean[] = [];
 
   // Map PolymerCoverage for quick lookup
   const coverageMap = new Map<string, ObservedSegments[]>();
+  const inPrefAssemblyMap = new Map<string, boolean>();
 
   for (const molecule of polymerCoverage) {
-    for (const chain of molecule.chains) {
+    for (let chainIdx = 0; chainIdx < molecule.chains.length; chainIdx++) {
+      const chain = molecule.chains[chainIdx];
       const key = `${molecule.entity_id}_${chain.chain_id}`;
       coverageMap.set(key, chain.observed);
+      const inPrefAssembly = molecule.in_chains_in_pref_assembly ? molecule.in_chains_in_pref_assembly[chainIdx] : false;
+      inPrefAssemblyMap.set(key, inPrefAssembly);
     }
   }
 
@@ -57,6 +62,9 @@ export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCov
     const observedSegments = coverageMap.get(key) || [];
 
     if (observedSegments.length === 0) continue;
+
+    const isInPrefAssembly = inPrefAssemblyMap.get(key) || false;
+    segmentsInPrefAssembly.push(isInPrefAssembly);
 
     let firstRes = {
       residue_number: mapping.start.residue_number,
@@ -137,6 +145,7 @@ export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCov
     segmentsBoundaries,
     segments,
     segmentsResidNumber,
+    segmentsInPrefAssembly,
   };
 }
 
@@ -188,6 +197,7 @@ export interface DomainUICard {
   index: number;
   domainId: string;
   accessionName: string;
+  inPrefAssembly: boolean;
   resource: string;
   accession: string;
   segmentsAsText: string;
@@ -219,19 +229,24 @@ export function generateDomainsCards(
 
       // ... and use the formatSegments function to get:
       // 1 - molstarSelections to each cath domain (molstarSelection)
-      // 2 - segment data (chain, starting and ending residues) for each cath domain (segmentsBoundaries)
+      // 2 - segment data (chain, label_seq_id start and end residues numbered by ) for each cath domain (segmentsBoundaries)
+      // 3 - text formatted segment data (chain, auth_seq_id start and end residues) for each cath domain (segments)
+      // 4 - text formatted segment data (chain, label_seq_id start and end residues) for each cath domain (segmentsResidNumber)
+      // 5 - true or false list to whether domain segment is part of preferred assembly (segmentsInPrefAssembly)
       const segmentData = formatSegmentsWithCoverage(mappings, polymerCoverage);
 
-      // ... formatSegments also uses molstarResidueInfo (residue data parsed from Molstar)
-      // to filter domains, only keeping domains which are actually exist in the structure
+      // ... if domain contains observed segments we format those as text
       if (segmentData.segments.length === 0) continue;
-
       const segmentsAsText = formatSegmentsAsText(segmentData.segments);
+
+      // ... we also check whether all domain segments are in pref assembly for warning messages
+      const inPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
 
       domainCards.push({
         index,
         domainId,
         accessionName,
+        inPrefAssembly,
         resource: 'CATH',
         accession: cathAccession,
         segmentsAsText,
@@ -252,20 +267,26 @@ export function generateDomainsCards(
       const mappings = data.mappings.filter((mapping) => mapping.scop_id! === domainId);
 
       // ... and use the formatSegments function to get:
-      // 1 - molstarSelections to each SCOP 1.75 domain (molstarSelection)
-      // 2 - segment data (chain, starting and ending residues) for each SCOP 1.75 domain (segmentsBoundaries)
+      // 1 - molstarSelections to each cath domain (molstarSelection)
+      // 2 - segment data (chain, label_seq_id start and end residues numbered by ) for each cath domain (segmentsBoundaries)
+      // 3 - text formatted segment data (chain, auth_seq_id start and end residues) for each cath domain (segments)
+      // 4 - text formatted segment data (chain, label_seq_id start and end residues) for each cath domain (segmentsResidNumber)
+      // 5 - true or false list to whether domain segment is part of preferred assembly (segmentsInPrefAssembly)
       const segmentData = formatSegmentsWithCoverage(mappings, polymerCoverage);
 
-      // ... formatSegments also uses molstarResidueInfo (residue data parsed from Molstar)
-      // to filter domains, only keeping domains which are actually exist in the structure
+      // ... if domain contains observed segments we format those as text
       if (segmentData.segments.length === 0) continue;
 
       const segmentsAsText = formatSegmentsAsText(segmentData.segments);
+
+      // ... we also check whether all domain segments are in pref assembly for warning messages
+      const inPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
 
       domainCards.push({
         index,
         domainId,
         accessionName,
+        inPrefAssembly,
         resource: 'SCOP',
         accession: scopAccession,
         segmentsAsText,
@@ -285,20 +306,25 @@ export function generateDomainsCards(
       const domainId = `${pfamAccession}-${i + 1}`;
 
       // ... and use the formatSegments function to get:
-      // 1 - molstarSelections to each Pfam domain (molstarSelection)
-      // 2 - segment data (chain, starting and ending residues) for each Pfam domain (segmentsBoundaries)
+      // 1 - molstarSelections to each cath domain (molstarSelection)
+      // 2 - segment data (chain, label_seq_id start and end residues numbered by ) for each cath domain (segmentsBoundaries)
+      // 3 - text formatted segment data (chain, auth_seq_id start and end residues) for each cath domain (segments)
+      // 4 - text formatted segment data (chain, label_seq_id start and end residues) for each cath domain (segmentsResidNumber)
+      // 5 - true or false list to whether domain segment is part of preferred assembly (segmentsInPrefAssembly)
       const segmentData = formatSegmentsWithCoverage([mapping], polymerCoverage);
 
-      // ... formatSegments also uses molstarResidueInfo (residue data parsed from Molstar)
-      // to filter domains, only keeping domains which are actually exist in the structure
+      // ... if domain contains observed segments we format those as text
       if (segmentData.segments.length === 0) continue;
-
       const segmentsAsText = formatSegmentsAsText(segmentData.segments);
+
+      // ... we also check whether all domain segments are in pref assembly for warning messages
+      const inPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
 
       domainCards.push({
         index,
         domainId,
         accessionName,
+        inPrefAssembly,
         resource: 'Pfam',
         accession: pfamAccession,
         segmentsAsText,
@@ -307,6 +333,7 @@ export function generateDomainsCards(
     }
   }
 
+  domainCards.sort((a, b) => Number(!a.inPrefAssembly) - Number(!b.inPrefAssembly));
   return domainCards;
 }
 
@@ -426,29 +453,35 @@ export function generateProcessedDomains(
 
       // ... and use the formatSegments function to get:
       // 1 - molstarSelections to each cath domain (molstarSelection)
-      // 2 - segment data (chain, starting and ending residues) for each cath domain (segmentsBoundaries)
+      // 2 - segment data (chain, label_seq_id start and end residues numbered by ) for each cath domain (segmentsBoundaries)
+      // 3 - text formatted segment data (chain, auth_seq_id start and end residues) for each cath domain (segments)
+      // 4 - text formatted segment data (chain, label_seq_id start and end residues) for each cath domain (segmentsResidNumber)
+      // 5 - true or false list to whether domain segment is part of preferred assembly (segmentsInPrefAssembly)
       const segmentData = formatSegmentsWithCoverage(mappings, polymerCoverage);
 
-      // ... formatSegments also uses molstarResidueInfo (residue data parsed from Molstar)
-      // to filter domains, only keeping domains which are actually exist in the structure
+      // ... if domain contains observed segments we format those as text
       if (segmentData.segments.length === 0) continue;
-
       const segmentsAsText = formatSegmentsAsText(segmentData.segments);
+
+      // ... we also check whether all domain segments are in pref assembly for warning messages
+      const allSegmentsInPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
 
       listProcessedDomains.push({
         // domainName: `${domainDesc} (${resourceAcc})`,
         accessionName: domainDesc,
         resource: 'CATH',
         domain: domainName,
-        moleculeNames: moleculeNames,
+        moleculeNames,
         segments: segmentData.segments,
-        segmentsAsText: segmentsAsText,
+        segmentsAsText,
+        allSegmentsInPrefAssembly,
         additionalData: {
           accession: resourceAcc,
           selections: [segmentData.molstarSelection],
           selectionNames: [`Segments of domain`],
           boundaries: segmentData.segmentsBoundaries,
           segmentsResidNumbers: segmentData.segmentsResidNumber,
+          selectionsInPrefAssembly: segmentData.segmentsInPrefAssembly,
         },
       });
     }
@@ -470,30 +503,36 @@ export function generateProcessedDomains(
       const moleculeNames = macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => mol.molecule_name[0]);
 
       // ... and use the formatSegments function to get:
-      // 1 - molstarSelections to each SCOP 1.75 domain (molstarSelection)
-      // 2 - segment data (chain, starting and ending residues) for each SCOP 1.75 domain (segmentsBoundaries)
+      // 1 - molstarSelections to each cath domain (molstarSelection)
+      // 2 - segment data (chain, label_seq_id start and end residues numbered by ) for each cath domain (segmentsBoundaries)
+      // 3 - text formatted segment data (chain, auth_seq_id start and end residues) for each cath domain (segments)
+      // 4 - text formatted segment data (chain, label_seq_id start and end residues) for each cath domain (segmentsResidNumber)
+      // 5 - true or false list to whether domain segment is part of preferred assembly (segmentsInPrefAssembly)
       const segmentData = formatSegmentsWithCoverage(mappings, polymerCoverage);
 
-      // ... formatSegments also uses molstarResidueInfo (residue data parsed from Molstar)
-      // to filter domains, only keeping domains which are actually exist in the structure
+      // ... if domain contains observed segments we format those as text
       if (segmentData.segments.length === 0) continue;
-
       const segmentsAsText = formatSegmentsAsText(segmentData.segments);
+
+      // ... we also check whether all domain segments are in pref assembly for warning messages
+      const allSegmentsInPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
 
       listProcessedDomains.push({
         // domainName: `${domainDesc} (${resourceAcc})`,
         accessionName: domainDesc,
         resource: 'SCOP',
         domain: domainName,
-        moleculeNames: moleculeNames,
+        moleculeNames,
         segments: segmentData.segments,
-        segmentsAsText: segmentsAsText,
+        segmentsAsText,
+        allSegmentsInPrefAssembly,
         additionalData: {
           accession: resourceAcc,
           selections: [segmentData.molstarSelection],
           selectionNames: [`Segments of domain`],
           boundaries: segmentData.segmentsBoundaries,
           segmentsResidNumbers: segmentData.segmentsResidNumber,
+          selectionsInPrefAssembly: segmentData.segmentsInPrefAssembly,
         },
       });
     }
@@ -513,15 +552,19 @@ export function generateProcessedDomains(
       const moleculeNames = macromolecules.filter((mol) => mapping.entity_id === mol.entity_id).map((mol) => mol.molecule_name[0]);
 
       // ... and use the formatSegments function to get:
-      // 1 - molstarSelections to each Pfam domain (molstarSelection)
-      // 2 - segment data (chain, starting and ending residues) for each Pfam domain (segmentsBoundaries)
+      // 1 - molstarSelections to each cath domain (molstarSelection)
+      // 2 - segment data (chain, label_seq_id start and end residues numbered by ) for each cath domain (segmentsBoundaries)
+      // 3 - text formatted segment data (chain, auth_seq_id start and end residues) for each cath domain (segments)
+      // 4 - text formatted segment data (chain, label_seq_id start and end residues) for each cath domain (segmentsResidNumber)
+      // 5 - true or false list to whether domain segment is part of preferred assembly (segmentsInPrefAssembly)
       const segmentData = formatSegmentsWithCoverage([mapping], polymerCoverage);
 
-      // ... formatSegments also uses molstarResidueInfo (residue data parsed from Molstar)
-      // to filter domains, only keeping domains which are actually exist in the structure
+      // ... if domain contains observed segments we format those as text
       if (segmentData.segments.length === 0) continue;
-
       const segmentsAsText = formatSegmentsAsText(segmentData.segments);
+
+      // ... we also check whether all domain segments are in pref assembly for warning messages
+      const allSegmentsInPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
 
       listProcessedDomains.push({
         // domainName: `${domainDesc} (${resourceAcc})`,
@@ -530,13 +573,15 @@ export function generateProcessedDomains(
         domain: domain,
         moleculeNames: moleculeNames,
         segments: segmentData.segments,
-        segmentsAsText: segmentsAsText,
+        segmentsAsText,
+        allSegmentsInPrefAssembly,
         additionalData: {
           accession: resourceAcc,
           selections: [segmentData.molstarSelection],
           selectionNames: [`Segments of domain`],
           boundaries: segmentData.segmentsBoundaries,
           segmentsResidNumbers: segmentData.segmentsResidNumber,
+          selectionsInPrefAssembly: segmentData.segmentsInPrefAssembly,
         },
       });
     }
@@ -550,6 +595,7 @@ export function generateProcessedDomains(
     return domain;
   });
 
+  listProcessedDomains.sort((a, b) => Number(!a.allSegmentsInPrefAssembly) - Number(!b.allSegmentsInPrefAssembly));
   return listProcessedDomains;
 }
 

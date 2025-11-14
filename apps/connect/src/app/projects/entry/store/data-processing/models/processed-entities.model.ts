@@ -14,12 +14,14 @@ export interface ProcessedDomain {
   moleculeNames: string[];
   segments: string[];
   segmentsAsText: string;
+  allSegmentsInPrefAssembly: boolean;
   additionalData: {
     accession: string;
     boundaries: DomainsBoundaries[];
     segmentsResidNumbers: string[];
     selections: QueryParam[][];
     selectionNames: string[];
+    selectionsInPrefAssembly: boolean[];
   };
   mappedboundaries?: string[];
   molstarColorHex?: string;

@@ -81,7 +81,12 @@
   @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card; let i = $index;) {
   <div class="card domain-card" (click)="onCardClick(card, 'idx')" [class.selected-card]="selectedRowCard()?.domainId === card.domainId">
     <p class="domain-card-title">
-      <span style="display: block"><strong>{{card.accessionName}}</strong></span>
+      <span style="display: block">
+        <strong>{{card.accessionName}}</strong>
+        @if (card.inPrefAssembly === false) {
+        <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+        }
+      </span>
       <span>(<strong>{{card.resource}}</strong></span>
       @let id = card.resource === 'SCOP' ? '' : card.accession;
       <a [href]="resourceUrls[card.resource] + id" target="_blank">{{card.accession}}</a>)

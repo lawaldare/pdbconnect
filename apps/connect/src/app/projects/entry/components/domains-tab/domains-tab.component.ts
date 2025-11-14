@@ -239,18 +239,23 @@ export class DomainsTabComponent implements AfterViewInit {
     this.compCommunication.forceLoad.set(!forceLoad);
   }
 
+  public inPrefAssembly = signal(true);
+  public inPrefAssemblyForChain = signal(true);
+
   public readonly configForMolstar = computed(() => {
     const summary = this.summaryData();
     const entryId = this.entryId();
+    const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
 
     if (!summary || !entryId) return undefined;
     const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
     const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
+    const assemblyId = inPrefAssemblyForChain ? preferredAssemblyId : undefined;
 
     const configForMolstar = {
       ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
-      assemblyId: preferredAssemblyId,
+      assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
       landscape: true,
       subscribeEvents: true,
@@ -353,7 +358,7 @@ export class DomainsTabComponent implements AfterViewInit {
     this.updateDropdownOptions(domain);
 
     // get chainId
-    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
     // get macromolecule
     const macromoleculesOfDomain = this.macromolecules()!.filter((eachMacromolecule) => domain.moleculeNames[0] === eachMacromolecule.molecule_name[0]);
@@ -381,6 +386,23 @@ export class DomainsTabComponent implements AfterViewInit {
       };
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+
+    // get chainId
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
+
+    // get macromolecule
+    const chainsOfDomainSegments = domain.additionalData.boundaries.map((bd) => bd.chain);
+
+    // get list of segments for selected chain by idx
+    const chainSegmentsIdx = chainsOfDomainSegments.map((chainStr, chainIdx) => (chainStr === chainId ? chainIdx : -1)).filter((idx) => idx !== -1);
+
+    // check whether all segments in preferred assembly
+    const allInPrefAssembly = chainSegmentsIdx.every((idx) => domain.additionalData.selectionsInPrefAssembly[idx] === true);
+
+    const allDomainInPrefAssembly = domain.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
+
+    this.inPrefAssemblyForChain.set(allInPrefAssembly);
+    this.inPrefAssembly.set(allDomainInPrefAssembly);
   }
 
   private getAuthorNumberingForChain(chainId: string) {
@@ -414,15 +436,23 @@ export class DomainsTabComponent implements AfterViewInit {
     if (!domain) return;
 
     // get chainId
-    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
     // get macromolecule
-    const chainsOfDomain = domain.additionalData.boundaries.map((bd) => bd.chain).filter((v, i, arr) => arr.indexOf(v) === i);
+    const chainsOfDomainSegments = domain.additionalData.boundaries.map((bd) => bd.chain);
+    const chainsOfDomain = chainsOfDomainSegments.filter((v, i, arr) => arr.indexOf(v) === i);
 
     const macromoleculesOfDomain = this.macromolecules()!.filter((eachMacromolecule) => {
       const chainsOfMacromolecule = eachMacromolecule.in_chains;
       return chainsOfDomain.some((ch) => chainsOfMacromolecule.includes(ch));
     });
+
+    // get list of segments for selected chain by idx
+    const chainSegmentsIdx = chainsOfDomainSegments.map((chainStr, chainIdx) => (chainStr === chainId ? chainIdx : -1)).filter((idx) => idx !== -1);
+
+    // check whether all segments in preferred assembly
+    const allInPrefAssembly = chainSegmentsIdx.every((idx) => domain.additionalData.selectionsInPrefAssembly[idx] === true);
+    this.inPrefAssemblyForChain.set(allInPrefAssembly);
 
     // get author numbering for chain
     this.getAuthorNumberingForChain(chainId);

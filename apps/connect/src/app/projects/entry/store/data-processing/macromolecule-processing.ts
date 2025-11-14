@@ -315,7 +315,7 @@ export function mapPolymerCoverageByPreferredAssembly(polymerCoverage: PolymerCo
     const in_chains_in_pref_assembly = polymer.chains.map((chain) => allowedAsyms.includes(chain.struct_asym_id));
     return {
       ...polymer,
-      ...in_chains_in_pref_assembly,
+      in_chains_in_pref_assembly,
     };
   });
 }
