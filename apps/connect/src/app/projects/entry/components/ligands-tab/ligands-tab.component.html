@@ -23,7 +23,7 @@
           <p>
             All ligands listed in this page are from the
             <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
-              >Preferred Assembly</a
+              >preferred assembly/complex</a
             >
             of each entry, reflecting their most probable biological form. All data is sourced from our open and free-to-use
             <a href="https://www.ebi.ac.uk/pdbe/aggregated-api/" target="_blank">PDBe API endpoints</a>.
@@ -37,7 +37,7 @@
           <p>
             Interactions are calculated using <a href="https://github.com/PDBeurope/arpeggio" target="_blank">PDBe Arpeggio</a> for the
             <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
-              >Preferred Assembly</a
+              >preferred assembly/complex</a
             >
             of each entry. The 2D view uses the
             <a href="https://www.jalview.org/help/html/colourSchemes/clustal.html" target="_blank">Clustal X colour scheme.</a> Details for interaction types can be
@@ -151,8 +151,9 @@
                   used to transform the chain.
                 </li>
                 <li>
-                  The structure seen in Mol* (3D view) was protonated using
-                  <a href="https://www.cgl.ucsf.edu/chimerax/docs/user/commands/addh.html" target="_blank">ChimeraX</a>.
+                  The structure used to calculated interactions was protonated using
+                  <a href="https://www.cgl.ucsf.edu/chimerax/docs/user/commands/addh.html" target="_blank">ChimeraX</a>. This structure can be downloaded
+                  <a [href]="'https://www.ebi.ac.uk/pdbe/model-server/v1/' + entryId() + '/full?data_source=pdb-h&encoding=bcif'" target="_blank">here</a>.
                 </li>
                 <li>
                   Interactions were calculated using
