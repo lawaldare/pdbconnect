@@ -22,6 +22,7 @@ export class LigandPageTutorialTourService {
   public hasStructures = signal(true);
   public hasInteractions = signal(true);
   public hasRelatedLigands = signal(true);
+  public hasStereoisomers = signal(true);
 
   public descriptionTabTourSteps: any = [
     {
@@ -228,12 +229,12 @@ export class LigandPageTutorialTourService {
   public interactionsTabTourSteps: any = [
     {
       id: 'interactions',
-      element: '#heatmap-sort-filter-tour',
+      element: '#ligand-2d-image-tour',
       popover: {
-        title: 'Sort and filter interactions',
+        title: 'Ligand 2D image',
         description:
-          'Sort the heatmap by Interactions to highlight the ligand’s key binding atoms, or by Amino Acid Properties to explore the types of amino acids involved in binding. Filter the view by different interaction types to update the heatmap and 2D view accordingly.',
-        side: 'right',
+          'View how frequently each ligand atom interacts across all protein–ligand complexes in the PDB. On the image, larger darker green circles indicate key interaction hotspots of the ligand. Hover or click on atoms to highlight the corresponding cells on the heatmap for a synchronized view.',
+        side: 'left',
         align: 'start',
       },
     },
@@ -250,12 +251,12 @@ export class LigandPageTutorialTourService {
     },
     {
       id: 'interactions',
-      element: '#ligand-2d-image-tour',
+      element: '#heatmap-sort-filter-tour',
       popover: {
-        title: 'Ligand 2D image',
+        title: 'Sort and filter interactions',
         description:
-          'View how frequently each ligand atom interacts across all protein–ligand complexes in the PDB. On the image, larger darker green circles indicate key interaction hotspots of the ligand. Hover or click on atoms to highlight the corresponding cells on the heatmap for a synchronized view.',
-        side: 'left',
+          'Sort the heatmap by Interactions to highlight the ligand’s key binding atoms, or by Amino Acid Properties to explore the types of amino acids involved in binding. Filter the view by different interaction types to update the heatmap and 2D view accordingly.',
+        side: 'right',
         align: 'start',
         doneBtnText: 'Finish',
         onNextClick: (el: any, step: any, options: any) => {
@@ -295,6 +296,36 @@ export class LigandPageTutorialTourService {
       popover: {
         title: 'Stereoisomers',
         description: 'These ligands are stereoisomers.',
+        side: 'top',
+        align: 'start',
+        doneBtnText: 'Finish',
+        onNextClick: (el: any, step: any, options: any) => {
+          this.setCookie(tourIds.ligands, 'true', 365);
+          this.showRelatedLigandsTourBanner.set(false);
+          options.driver.destroy();
+        },
+      },
+    },
+  ];
+
+  public relatedLigandsTabTourStepsWithoutStereoisomers: any = [
+    {
+      id: 'related-ligands',
+      element: '#same-scaffold-tour',
+      popover: {
+        title: 'Same scaffold',
+        description:
+          'These ligands share the same scaffold. Click on ligand image to open its 3D view. Hover over the ligand ID to see its full name, and click the PDB entry link to view all structures this ligand binds to.',
+        side: 'top',
+        align: 'start',
+      },
+    },
+    {
+      id: 'related-ligands',
+      element: '#similar-ligands-tour',
+      popover: {
+        title: 'Similar ligands',
+        description: 'These ligands have ≥60% structural similarity based on the PARITY method.',
         side: 'top',
         align: 'start',
         doneBtnText: 'Finish',
@@ -378,7 +409,7 @@ export class LigandPageTutorialTourService {
         break;
       case 'related-ligands':
         if (this.hasRelatedLigands()) {
-          this.startTour(this.relatedLigandsTabTourSteps);
+          this.startTour(this.hasStereoisomers() ? this.relatedLigandsTabTourSteps : this.relatedLigandsTabTourStepsWithoutStereoisomers);
         }
         break;
       default:

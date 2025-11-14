@@ -291,6 +291,8 @@ export class RelatedLigandsComponent implements OnInit, AfterViewInit {
     setTimeout(() => {
       const hasRelatedLigands = Boolean(this.sameScaffolds().length) || Boolean(this.similarLigands().length);
       this.tutorialTourService.hasProperties.set(hasRelatedLigands);
+      this.tutorialTourService.hasStereoisomers.set(this.stereoisomers().length > 0);
+
       const agreed = this.tutorialTourService.getCookie(tourIds.ligands);
       if (!agreed && hasRelatedLigands) {
         this.isBannerCookies.set(true);
@@ -299,6 +301,8 @@ export class RelatedLigandsComponent implements OnInit, AfterViewInit {
   }
 
   public startRelatedLigandsTabTour(): void {
-    this.tutorialTourService.startTour(this.tutorialTourService.relatedLigandsTabTourSteps);
+    this.tutorialTourService.startTour(
+      this.stereoisomers().length > 0 ? this.tutorialTourService.relatedLigandsTabTourSteps : this.tutorialTourService.relatedLigandsTabTourStepsWithoutStereoisomers
+    );
   }
 }

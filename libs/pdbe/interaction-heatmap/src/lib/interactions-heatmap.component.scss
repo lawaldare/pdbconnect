@@ -235,3 +235,12 @@
 ::ng-deep .pv-protvista .heatmap-tooltip-content {
   line-height: 1 !important;
 }
+
+::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__outer-circle {
+  border-color: #0a5032 !important;
+}
+
+::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
+  border-color: #0a5032 !important;
+  background-color: #0c8950 !important;
+}
