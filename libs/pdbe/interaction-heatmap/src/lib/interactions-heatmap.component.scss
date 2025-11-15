@@ -1,6 +1,4 @@
 .interactions-heatmap-container {
-  // width: 661px;
-  // height: 390px;
   width: 100%;
   display: flex;
 
@@ -10,7 +8,6 @@
 }
 
 .visualisation-column {
-  // width: 581px;
   width: 100%;
 }
 
@@ -113,9 +110,6 @@
   line-height: normal;
   display: flex;
   border-style: groove;
-
-  // width: fit-content;
-  // margin-left: 60px;
   justify-content: space-between;
   padding: 10px 20px;
 
@@ -134,7 +128,6 @@
   }
 
   .legend-row-flex-plots {
-    // margin-left: 120px;
     margin-right: 10px;
     display: flex;
     flex-direction: column;
@@ -176,16 +169,6 @@
 ::ng-deep .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background,
 .mdc-checkbox__native-control:enabled:indeterminate ~ .mdc-checkbox__background {
   background-color: #0075ff !important;
-  border-color: #0075ff !important;
-}
-
-::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__outer-circle {
-  // background-color: #0075ff !important;
-  border-color: #0075ff !important;
-}
-
-::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
-  // background-color: #0075ff !important;
   border-color: #0075ff !important;
 }
 
