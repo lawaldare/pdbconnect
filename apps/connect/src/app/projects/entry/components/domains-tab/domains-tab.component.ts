@@ -5,7 +5,7 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { getDomainChainDropdownOptions, getDomainSequenceDetails } from '../../helpers/processed-data-to-controls';
+import { getCleanSelectionName, getDomainChainDropdownOptions, getDomainSequenceDetails } from '../../helpers/processed-data-to-controls';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -272,6 +272,7 @@ export class DomainsTabComponent implements AfterViewInit {
 
     return configForMolstar;
   });
+  public readonly configForMolstar$ = toObservable(this.configForMolstar);
 
   public sequenceDetails = signal<SequenceDetail[]>([]);
 
@@ -350,6 +351,41 @@ export class DomainsTabComponent implements AfterViewInit {
     }
   }
 
+  private async updateConfigAssemblyAndSyncMolstar(domain: ProcessedDomain, chainId: string) {
+    // check if domain segments are in pref assembly based on chainId
+    const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
+    const chainsOfDomainSegments = domain.additionalData.boundaries.map((bd) => bd.chain);
+    // get list of segments for selected chain by idx
+    const chainSegmentsIdx = chainsOfDomainSegments.map((chainStr, chainIdx) => (chainStr === chainId ? chainIdx : -1)).filter((idx) => idx !== -1);
+    // check whether all segments in preferred assembly
+    const allSegmentsInPrefAssembly = chainSegmentsIdx.every((idx) => domain.additionalData.selectionsInPrefAssembly[idx] === true);
+    const changedDisplayedAssembly = inPrefAssemblyForChain !== allSegmentsInPrefAssembly;
+
+    // setting inPrefAssemblyForChain may trigger update on configForMolstar
+    this.inPrefAssemblyForChain.set(allSegmentsInPrefAssembly);
+
+    // ... if this update is triggered
+    if (changedDisplayedAssembly) {
+      // wait until configForMolstar recomputes with new assembly/moleculeId
+      const oldCfg = await firstValueFrom(this.configForMolstar$.pipe(take(1)));
+
+      const newCfg = await firstValueFrom(
+        this.configForMolstar$.pipe(
+          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
+          take(1)
+        )
+      );
+
+      // 2. Wait for MolstarComponent to APPLY the new config
+      await firstValueFrom(
+        this._molstarComponent!.configUpdated.pipe(
+          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
+          take(1)
+        )
+      );
+    }
+  }
+
   async triggerDomainUpdateSideEffects(domain: ProcessedDomain) {
     // reset alt sequences
     this.altSequences.set([]);
@@ -359,6 +395,12 @@ export class DomainsTabComponent implements AfterViewInit {
 
     // get chainId
     const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
+
+    // check whether chain is in pref assembly, molstar config needs update and wait for it
+    await this.updateConfigAssemblyAndSyncMolstar(domain, chainId);
+    // check whether any segment not in pref assembly for this domain
+    const allDomainInPrefAssembly = domain.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
+    this.inPrefAssembly.set(allDomainInPrefAssembly);
 
     // get macromolecule
     const macromoleculesOfDomain = this.macromolecules()!.filter((eachMacromolecule) => domain.moleculeNames[0] === eachMacromolecule.molecule_name[0]);
@@ -386,23 +428,6 @@ export class DomainsTabComponent implements AfterViewInit {
       };
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
-
-    // get chainId
-    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
-
-    // get macromolecule
-    const chainsOfDomainSegments = domain.additionalData.boundaries.map((bd) => bd.chain);
-
-    // get list of segments for selected chain by idx
-    const chainSegmentsIdx = chainsOfDomainSegments.map((chainStr, chainIdx) => (chainStr === chainId ? chainIdx : -1)).filter((idx) => idx !== -1);
-
-    // check whether all segments in preferred assembly
-    const allInPrefAssembly = chainSegmentsIdx.every((idx) => domain.additionalData.selectionsInPrefAssembly[idx] === true);
-
-    const allDomainInPrefAssembly = domain.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
-
-    this.inPrefAssemblyForChain.set(allInPrefAssembly);
-    this.inPrefAssembly.set(allDomainInPrefAssembly);
   }
 
   private getAuthorNumberingForChain(chainId: string) {
@@ -426,7 +451,7 @@ export class DomainsTabComponent implements AfterViewInit {
     this.sequenceDetails.set(getDomainSequenceDetails(this.entryId() ?? '', macromoleculesOfDomain, domain, chainId));
   }
 
-  public onDropdownSelect(event: string) {
+  public async onDropdownSelect(event: string) {
     this.dropdownSelected = event;
 
     // reset alt sequences
@@ -438,21 +463,16 @@ export class DomainsTabComponent implements AfterViewInit {
     // get chainId
     const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
-    // get macromolecule
+    // check whether chain is in pref assembly, molstar config needs update and wait for it
+    await this.updateConfigAssemblyAndSyncMolstar(domain, chainId);
+
+    // get macromolecules for domain
     const chainsOfDomainSegments = domain.additionalData.boundaries.map((bd) => bd.chain);
     const chainsOfDomain = chainsOfDomainSegments.filter((v, i, arr) => arr.indexOf(v) === i);
-
     const macromoleculesOfDomain = this.macromolecules()!.filter((eachMacromolecule) => {
       const chainsOfMacromolecule = eachMacromolecule.in_chains;
       return chainsOfDomain.some((ch) => chainsOfMacromolecule.includes(ch));
     });
-
-    // get list of segments for selected chain by idx
-    const chainSegmentsIdx = chainsOfDomainSegments.map((chainStr, chainIdx) => (chainStr === chainId ? chainIdx : -1)).filter((idx) => idx !== -1);
-
-    // check whether all segments in preferred assembly
-    const allInPrefAssembly = chainSegmentsIdx.every((idx) => domain.additionalData.selectionsInPrefAssembly[idx] === true);
-    this.inPrefAssemblyForChain.set(allInPrefAssembly);
 
     // get author numbering for chain
     this.getAuthorNumberingForChain(chainId);
@@ -484,6 +504,8 @@ export class DomainsTabComponent implements AfterViewInit {
   }
 
   public selectionData?: QueryParam[];
+
+  public getCleanSelectionName = getCleanSelectionName;
 
   private async renderInMolstar(domain: ProcessedDomain, chainId: string) {
     // Wait until first render is finished

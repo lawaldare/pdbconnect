@@ -430,18 +430,30 @@ export interface MacromoleculeUICard {
   entityId: number;
   moleculeName: string;
   chains: string[];
+  inPrefAssembly: boolean;
 }
 
-export function generateMacromoleculesCards(macromolecules: Molecule[]): MacromoleculeUICard[] {
+export function generateMacromoleculesCards(macromolecules: Molecule[], carbohydrates?: CarbohydrateMolecule[]): MacromoleculeUICard[] {
   const macromoleculeCards: MacromoleculeUICard[] = [];
   let index = 0;
   for (const macromolecule of macromolecules) {
+    let moleculeLength = macromolecule.length;
+    let carbohydrate: CarbohydrateMolecule | undefined = undefined;
+
+    if (macromolecule.molecule_type.includes('carbohydrate')) {
+      carbohydrate = carbohydrates?.filter((carb) => carb.entity_id === macromolecule.entity_id)[0];
+      if (carbohydrate) moleculeLength = carbohydrate?.chains[0].residues.length;
+    }
+    const selectionData = generateMolstarSelectionsForMacromolecule(macromolecule, carbohydrate);
+    const inPrefAssembly = selectionData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
+
     macromoleculeCards.push({
       index,
       molType: macromolecule.molecule_type,
       entityId: macromolecule.entity_id,
       moleculeName: macromolecule.molecule_name[0],
       chains: macromolecule.in_chains,
+      inPrefAssembly,
     });
     index += 1;
   }

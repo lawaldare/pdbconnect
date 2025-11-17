@@ -107,7 +107,7 @@
         </div>
         }@else if(dropdownOptions.length === 1){
         <!-- if single chain just show text -->
-        <p>{{dropdownOptions[0].name}}</p>
+        <p>{{getCleanSelectionName(dropdownOptions)}}</p>
         } @if (dropdownSelected && inPrefAssemblyForChain() === false) { @let chainName = dropdownSelected!.split(' <')![0];
         <section class="info-banner">
           <p>

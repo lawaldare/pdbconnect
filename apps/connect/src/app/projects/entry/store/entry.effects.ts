@@ -937,16 +937,20 @@ export class EntryEffects {
           this.store.select(EntrySelectors.summaryData),
           this.store.select(EntrySelectors.assemblies),
           this.store.select(EntrySelectors.macroMolecules),
+          this.store.select(EntrySelectors.carbohydrates),
         ]).pipe(
-          filter(([summaryData, assemblies, macromolecules]) => summaryData !== undefined && assemblies !== undefined && macromolecules !== undefined)
+          filter(
+            ([summaryData, assemblies, macromolecules, carbohydrates]) =>
+              summaryData !== undefined && assemblies !== undefined && macromolecules !== undefined && carbohydrates !== undefined
+          )
           // take(1)
         )
       ),
-      map(([summaryData, assemblies, macromolecules]) => {
+      map(([summaryData, assemblies, macromolecules, carbohydrates]) => {
         if (summaryData === undefined || assemblies === undefined || macromolecules === undefined) throw 'missing data to process macromolecules';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblies);
         const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
-        const procMacromoleculesCards = generateMacromoleculesCards(macromoleculesWithPrefAssembly);
+        const procMacromoleculesCards = generateMacromoleculesCards(macromoleculesWithPrefAssembly, carbohydrates);
         return EntryActions.getProcMacromoleculesCardsSuccess({ procMacromoleculesCards });
       }),
       catchError(() => of(EntryActions.getProcMacromoleculesCardsFailure()))
