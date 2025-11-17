@@ -45,8 +45,17 @@
 
     @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_name?.length) {
     <h5>{{ currentMacromoleculeDatum()!.additionalData.molecule.molecule_name[0] }}</h5>
+    } @if (inPrefAssembly() === false) {
+    <section class="info-banner">
+      <p>
+        <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+        One or more of this macromolecule's chains are <b>not</b> included in the
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+          >preferred assembly/complex</a
+        >, which represents the most probable biological form identified by the PDBe team for this entry.
+      </p>
+    </section>
     }
-
     <section class="info">
       @if(uniqueOrganisms().length){
       <div class="info-row">
@@ -124,8 +133,19 @@
           </pdbc-entry-dropdown>
         </div>
         }@else if(dropdownOptions.length === 1){
-        <p>{{dropdownOptions[0].name}}</p>
-        } @else {}
+        <p>{{getCleanSelectionName(dropdownOptions)}}</p>
+        } @if (dropdownSelected && inPrefAssemblyForChain() === false) { @let chainName = dropdownSelected!.split(' <')![0];
+        <section class="info-banner">
+          <p>
+            <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+            {{ chainName }} is <b>not</b> included in the
+            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+              >preferred assembly/complex</a
+            >, which represents the most probable biological form identified by the PDBe team for this entry.<br />
+            As a result, the 3D viewer below is now displaying the full entry model file.
+          </p>
+        </section>
+        }
       </div>
       <div class="sequence-container">
         <div class="title">

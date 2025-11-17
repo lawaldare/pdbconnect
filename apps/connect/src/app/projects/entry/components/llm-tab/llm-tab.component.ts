@@ -11,7 +11,7 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { AG_Grid_Theme_Class, MaterialModule, UtilService } from '@pdbc/core';
-import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../helpers/processed-data-to-controls';
+import { getCleanSelectionName, getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../helpers/processed-data-to-controls';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -197,6 +197,8 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
   public altSequences = signal<AlternativeNumbering[] | undefined>(undefined);
   public nonObserved = signal<number[] | undefined>(undefined);
 
+  public getCleanSelectionName = getCleanSelectionName;
+
   public seqViewerReady = computed(() => {
     const hasSequence = this.macromoleculeSequence() !== undefined;
     const hasAltSequences = this.altSequences() !== undefined;
@@ -213,6 +215,9 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
   public numberOfAnnotatedResids = computed(() => {
     return this.llmAnnotations()?.filter((annotation, index, self) => index === self.findIndex((a) => a.pdbResidue === annotation.pdbResidue)).length;
   });
+
+  public inPrefAssembly = signal(true);
+  public inPrefAssemblyForChain = signal(true);
 
   public readonly configForMolstar = computed(() => {
     const summary = this.summaryData();
@@ -244,6 +249,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
 
     return configForMolstar;
   });
+  public readonly configForMolstar$ = toObservable(this.configForMolstar);
 
   private molstarReady = signal(false);
   public _molstarComponent?: MolstarComponent;
@@ -413,7 +419,45 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
   public selectionIdentifier = 'None';
   public selectionTypeText?: string;
 
+  private async updateConfigAssemblyAndSyncMolstar(macromolecule: ProcessedMacromolecule) {
+    // check if ligand instance is in pref assembly based on idx of ligand instance
+    const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
+    const chainIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+    const isSelectionPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly[chainIdx];
+    const changedDisplayedAssembly = inPrefAssemblyForChain !== isSelectionPrefAssembly;
+
+    // setting inPrefAssemblyForInstance may trigger update on configForMolstar
+    this.inPrefAssemblyForChain.set(isSelectionPrefAssembly);
+
+    // ... if this update is triggered
+    if (changedDisplayedAssembly) {
+      // wait until configForMolstar recomputes with new assembly/moleculeId
+      const oldCfg = await firstValueFrom(this.configForMolstar$.pipe(take(1)));
+
+      const newCfg = await firstValueFrom(
+        this.configForMolstar$.pipe(
+          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
+          take(1)
+        )
+      );
+
+      // 2. Wait for MolstarComponent to APPLY the new config
+      await firstValueFrom(
+        this._molstarComponent!.configUpdated.pipe(
+          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
+          take(1)
+        )
+      );
+    }
+  }
+
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
+    // check whether chain is in pref assembly, molstar config needs update and wait for it
+    await this.updateConfigAssemblyAndSyncMolstar(macromolecule);
+    // check whether any chain not in pref assembly for this macromolecule
+    const allChainsInPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
+    this.inPrefAssembly.set(allChainsInPrefAssembly);
+
     await this.updateDropdownOptions(macromolecule);
     const chainId = this.dropdownSelected.split('Chain ')[1];
     const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
@@ -495,6 +539,10 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return;
     const chainId = this.dropdownSelected?.split('Chain ')[1];
+
+    // check whether chain is in pref assembly, molstar config needs update and wait for it
+    await this.updateConfigAssemblyAndSyncMolstar(macromolecule);
+
     const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
 
