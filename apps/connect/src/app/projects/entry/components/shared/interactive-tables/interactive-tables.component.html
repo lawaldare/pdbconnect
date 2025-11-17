@@ -53,7 +53,11 @@
   <div class="card ligand-card" (click)="onCardClick(card, 'id')" [class.selected-card]="selectedRowCard()?.chemCompId === card.chemCompId">
     <img [src]="'https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/' + card.chemCompId +'_100.svg'" alt="" />
     <div class="card-info">
-      <p class="card-title">{{card.countInPrefAssembly}} X {{card.chemCompId}}</p>
+      <p class="card-title">
+        {{card.entryInstancesCount}} X {{card.chemCompId}} @if (card.inPrefAssembly === false) {
+        <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+        }
+      </p>
       @if(card.annotationTypes.length){ @for(annotation of card.annotationTypes; track annotation){
       <p class="annotation" [ngClass]="annotation" [pdbcRichTooltip]="annotationsTooltips[annotation]">{{annotation | titlecase}}</p>
       } } @if(!card.isModified && card.annotationTypes.length === 0){

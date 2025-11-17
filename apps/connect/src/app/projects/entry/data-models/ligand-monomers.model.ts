@@ -24,4 +24,6 @@ export interface LigandMonomer {
   branch_name: string;
   bm_id: string;
   annotations: LigandMonomerAnnotation[];
+  // augmented data from processing not in API
+  in_pref_assembly?: boolean;
 }

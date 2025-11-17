@@ -17,6 +17,17 @@
       </button>
 
       <h5 class="ligands-title">{{ currentLigandDatum()!.codeAndName.name }}</h5>
+      @if (inPrefAssembly() === false) {
+      <section class="info-banner">
+        <p>
+          <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+          At least one of this ligand/modification instances is <b>not</b> included in the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >preferred assembly/complex</a
+          >, which represents the most probable biological form identified by the PDBe team for this entry.
+        </p>
+      </section>
+      }
       <p class="ligand-question">
         <span>Where does this data come from?</span>
         <lib-tool-tip>
@@ -110,8 +121,19 @@
           </pdbc-entry-dropdown>
         </div>
         }@else if(dropdownOptions.length === 1){
-        <p>{{dropdownOptions[0].name}}</p>
-        }@else {}
+        <p>{{getCleanSelectionName(dropdownOptions)}}</p>
+        } @if (dropdownSelected && inPrefAssemblyForInstance() === false) { @let instanceName = dropdownSelected!.split(' <')![0];
+        <section class="info-banner">
+          <p>
+            <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+            {{ instanceName }} is <b>not</b> included in the
+            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+              >preferred assembly/complex</a
+            >, which represents the most probable biological form identified by the PDBe team for this entry.<br />
+            As a result, the 3D viewer below is now displaying the full entry model file.
+          </p>
+        </section>
+        }
       </div>
       <section class="ligand-charts">
         @if (interactionsRowData()) {
@@ -140,7 +162,7 @@
               (cellMouseOver)="onCellMouseOver($event)"
               (cellMouseOut)="onCellMouseOut()"
               [paginationPageSizeSelector]="paginationPageSizeSelector()"
-              overlayNoRowsTemplate="No ligand interactions found"
+              [overlayNoRowsTemplate]="messageNoInteractions()"
             />
             <section class="ligands-info big">
               <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure derived from the PDB entry.</p>

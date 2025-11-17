@@ -7,9 +7,9 @@ import { Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal,
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
+import { getCleanSelectionName, getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
 import { dashboardStatLinks, INTX_NAME_COLORS, tourIds } from '../../entry-constant';
-import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, map, take, tap, timer } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, map, take, skip, timer, lastValueFrom } from 'rxjs';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -109,6 +109,8 @@ export class LigandsTabComponent implements AfterViewInit {
 
   public readonly legendsColor = this.getInteractionLabelColorArray(INTX_NAME_COLORS, INTX_NAME_STANDARDIZER);
 
+  public getCleanSelectionName = getCleanSelectionName;
+
   public initialColorCount = signal<number>(4);
 
   public get isMobile(): boolean {
@@ -120,22 +122,6 @@ export class LigandsTabComponent implements AfterViewInit {
     if (rows === undefined) return [];
     return rows;
   });
-
-  // private previousDatumIdx?: number;
-  // public currentLigandDatum = computed(() => {
-  //   const selectedIdx = this.selectedLigandIdx() ?? 0;
-  //   const rows = this.ligandTableRows();
-  //   const datum = rows[selectedIdx];
-  //   if (!datum) return;
-
-  //   if (selectedIdx === this.previousDatumIdx) return datum;
-  //   this.previousDatumIdx = selectedIdx;
-
-  //   if (datum) {
-  //     this.triggerLigandUpdateSideEffects(datum);
-  //   }
-  //   return datum;
-  // });
 
   public currentLigandDatum = signal<ProcessedLigandOrMod | undefined>(undefined);
 
@@ -180,22 +166,29 @@ export class LigandsTabComponent implements AfterViewInit {
     this.compCommunication.forceLoad.set(!forceLoad);
   }
 
+  public inPrefAssembly = signal(true);
+  public inPrefAssemblyForInstance = signal(true);
+
+  public messageNoInteractions = computed(() => {
+    const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
+    if (inPrefAssemblyForInstance === false) return 'Interactions are only calculated for ligands of the preferred assembly';
+    return 'No ligand interactions found';
+  });
+
   public readonly configForMolstar = computed(() => {
     const summary = this.summaryData();
     const entryId = this.entryId();
+    const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
 
     if (!summary || !entryId) return undefined;
     const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
     const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
+    const assemblyId = inPrefAssemblyForInstance ? preferredAssemblyId : undefined;
 
     const configForMolstar = {
       ...Molstar370DefaultParams,
-      customData: {
-        url: `https://www.ebi.ac.uk/pdbe/model-server/v1/${this.entryId()}/full?data_source=pdb-h&encoding=bcif`,
-        format: 'cif',
-        binary: true,
-      },
-      assemblyId: preferredAssemblyId,
+      moleculeId: this.entryId(),
+      assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
       landscape: true,
       subscribeEvents: true,
@@ -217,9 +210,9 @@ export class LigandsTabComponent implements AfterViewInit {
       loadMaps: true,
       mapSettings: { defaultView: 'selection-box' },
     };
-
     return configForMolstar;
   });
+  public readonly configForMolstar$ = toObservable(this.configForMolstar);
 
   private currentChainId = signal<string | undefined>(undefined);
   private currentResidueId = signal<string | undefined>(undefined);
@@ -291,6 +284,38 @@ export class LigandsTabComponent implements AfterViewInit {
     }));
   }
 
+  private async updateConfigAssemblyAndSyncMolstar(ligand: ProcessedLigandOrMod) {
+    // check if ligand instance is in pref assembly based on idx of ligand instance
+    const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
+    const ligInstanceIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+    const isSelectionPrefAssembly = ligand.additionalData.selectionsInPrefAssembly[ligInstanceIdx];
+    const changedDisplayedAssembly = inPrefAssemblyForInstance !== isSelectionPrefAssembly;
+
+    // setting inPrefAssemblyForInstance may trigger update on configForMolstar
+    this.inPrefAssemblyForInstance.set(isSelectionPrefAssembly);
+
+    // ... if this update is triggered
+    if (changedDisplayedAssembly) {
+      // wait until configForMolstar recomputes with new assembly/moleculeId
+      const oldCfg = await firstValueFrom(this.configForMolstar$.pipe(take(1)));
+
+      const newCfg = await firstValueFrom(
+        this.configForMolstar$.pipe(
+          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
+          take(1)
+        )
+      );
+
+      // 2. Wait for MolstarComponent to APPLY the new config
+      await firstValueFrom(
+        this._molstarComponent!.configUpdated.pipe(
+          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
+          take(1)
+        )
+      );
+    }
+  }
+
   async triggerLigandUpdateSideEffects(ligand: ProcessedLigandOrMod) {
     // update ligand dropdown options
     this.updateDropdownOptions(ligand);
@@ -301,7 +326,11 @@ export class LigandsTabComponent implements AfterViewInit {
     // update whether we show the env viewer or not
     await this.updateVisualsDisplayed(ligand);
 
+    // check if molstar config needs update and wait for it
+    await this.updateConfigAssemblyAndSyncMolstar(ligand);
+
     // update visualisations with data
+    // get interactions data, create ligand selection, zoom in ligand
     this.renderInMolstar(ligand);
 
     // const interactionRawData = this.interactionsRawData();
@@ -490,7 +519,7 @@ export class LigandsTabComponent implements AfterViewInit {
   private async renderInMolstar(ligand: ProcessedLigandOrMod) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
-    const entityId = molstarSelection[0].entity_id;
+    // const entityId = molstarSelection[0].entity_id;
     const chainId = molstarSelection[0].auth_asym_id!;
     const residueId = molstarSelection[0].auth_residue_number!;
 
@@ -502,12 +531,15 @@ export class LigandsTabComponent implements AfterViewInit {
     this.interactionsRawData.set(undefined);
     this.interactionsRowData.set([]);
 
-    this.globalStore.dispatch(
-      EntryActions.getInteractions({
-        chainId: chainId ?? '',
-        residueId: `${residueId}`,
-      })
-    );
+    const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
+    if (inPrefAssemblyForInstance) {
+      this.globalStore.dispatch(
+        EntryActions.getInteractions({
+          chainId: chainId ?? '',
+          residueId: `${residueId}`,
+        })
+      );
+    }
     if (ligand.type === 'modification') {
       this.interactionsRawData.set(undefined);
       this.interactionsRowData.set(undefined);
@@ -556,8 +588,15 @@ export class LigandsTabComponent implements AfterViewInit {
 
     // all possible rendering functions are called for a dashboard
     const ligand = this.currentLigandDatum()!;
+
+    // check if molstar config needs update and wait for it
+    await this.updateConfigAssemblyAndSyncMolstar(ligand);
+
+    // get interactions data, create ligand selection, zoom in ligand
     this.renderInMolstar(ligand);
     const interactionRawData = this.interactionsRawData();
+
+    // refresh data to ligand env viewer
     await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData);
   }
 

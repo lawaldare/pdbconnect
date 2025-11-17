@@ -3,17 +3,28 @@ import { SequenceDetail } from '../store/data-processing/models/other-models';
 import { ProcessedDomain, ProcessedMacromolecule } from '../store/data-processing/models/processed-entities.model';
 import { Molecule } from '../data-models/molecule.model';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+
+export function getCleanSelectionName(options: DownloadOption[]) {
+  return options[0].name.split('<img')[0];
+}
 
 export function getDomainChainDropdownOptions(datum: ProcessedDomain) {
   const dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
-  for (const selection of datum.additionalData.selections) {
+  const selections = datum.additionalData.selections;
+  const selectionsInPrefAssembly = datum.additionalData.selectionsInPrefAssembly;
+  for (let selectionIdx = 0; selectionIdx < selections.length; selectionIdx++) {
+    const selection = selections[selectionIdx];
+    const inPrefAssembly = selectionsInPrefAssembly[selectionIdx];
     for (const segment of selection) {
-      const chainKey = `Chain ${segment.auth_asym_id!}`;
+      const selectionKey = inPrefAssembly
+        ? `Chain ${segment.auth_asym_id!}`
+        : `Chain ${segment.auth_asym_id!} <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px;" />`;
       const allChainsInObj = Object.keys(dropdownOptionsToMolstar);
-      if (allChainsInObj.indexOf(chainKey) > -1) {
-        dropdownOptionsToMolstar[chainKey].push({ ...segment });
+      if (allChainsInObj.indexOf(selectionKey) > -1) {
+        dropdownOptionsToMolstar[selectionKey].push({ ...segment });
       } else {
-        dropdownOptionsToMolstar[chainKey] = [{ ...segment }];
+        dropdownOptionsToMolstar[selectionKey] = [{ ...segment }];
       }
     }
   }
@@ -104,17 +115,24 @@ export function getDomainSequenceDetails(entryId: string, macromoleculesOfDomain
   return sequenceDetails;
 }
 
-function convertLigandDatumToString(id: string, selectedLigandInstance: QueryParam[]) {
+function convertLigandDatumToString(id: string, selectedLigandInstance: QueryParam[], inPrefAssembly: boolean) {
   const resNum = selectedLigandInstance[0].auth_residue_number;
   const insCode = selectedLigandInstance[0].auth_ins_code_id || '';
   const chainId = selectedLigandInstance[0].auth_asym_id;
-  return `${id} ${resNum}${insCode} in chain ${chainId}`;
+  const ligandString = inPrefAssembly
+    ? `${id} ${resNum}${insCode} in chain ${chainId}`
+    : `${id} ${resNum}${insCode} in chain ${chainId} <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px;" />`;
+  return ligandString;
 }
 
 export function getLigandsDropdownOptions(datum: ProcessedLigandOrMod) {
   const dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
-  for (const selection of datum.additionalData.selections) {
-    const name = convertLigandDatumToString(datum.id, selection);
+  const selections = datum.additionalData.selections;
+  const selectionsInPrefAssembly = datum.additionalData.selectionsInPrefAssembly;
+  for (let selectionIdx = 0; selectionIdx < selections.length; selectionIdx++) {
+    const selection = selections[selectionIdx];
+    const inPrefAssembly = selectionsInPrefAssembly[selectionIdx];
+    const name = convertLigandDatumToString(datum.id, selection, inPrefAssembly);
     dropdownOptionsToMolstar[name] = selection;
   }
   return dropdownOptionsToMolstar;

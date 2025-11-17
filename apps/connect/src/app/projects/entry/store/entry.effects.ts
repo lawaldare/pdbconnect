@@ -32,13 +32,13 @@ import {
   processMacromoleculesDescriptions,
 } from './data-processing/macromolecule-processing';
 import {
-  filterLigandMonomersByPreferredAssembly,
-  filterLigandsByPreferredAssembly,
-  filterModificationsByPreferredAssembly,
   generateLigandsAndModsTableFilters,
   generateLigandsCards,
   generateProcessedLigands,
   generateProcessedModifications,
+  mapLigandMonomersForPrefAssemblyAndSymOp,
+  mapLigandsByPreferredAssembly,
+  mapModificationsByPreferredAssembly,
 } from './data-processing/ligand-processing';
 import { generateDomainsCards, generateDomainsTableFilters, generateProcessedDomains, processDomainsWithMacromolecules } from './data-processing/domain-processing';
 
@@ -1018,10 +1018,10 @@ export class EntryEffects {
         )
           throw 'missing data to process ligands';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
-        const ligandsForPrefAssembly = filterLigandsByPreferredAssembly(ligands, preferredAssembly);
-        const ligandMonomersForPrefAssembly = filterLigandMonomersByPreferredAssembly(ligandMonomers, boundMolecules, preferredAssembly);
-        const modificationsForPrefAssembly = filterModificationsByPreferredAssembly(modifications, preferredAssembly);
-        const procLigandsFilters = generateLigandsAndModsTableFilters(ligandsForPrefAssembly, ligandMonomersForPrefAssembly, modificationsForPrefAssembly);
+        const ligandsWithPrefAssembly = mapLigandsByPreferredAssembly(ligands, preferredAssembly);
+        const ligandMonomersMapped = mapLigandMonomersForPrefAssemblyAndSymOp(ligandMonomers, boundMolecules, preferredAssembly);
+        const modificationsWithPrefAssembly = mapModificationsByPreferredAssembly(modifications, preferredAssembly);
+        const procLigandsFilters = generateLigandsAndModsTableFilters(ligandsWithPrefAssembly, ligandMonomersMapped, modificationsWithPrefAssembly);
         return EntryActions.getProcLigandsFiltersSuccess({ procLigandsFilters });
       }),
       catchError(() => of(EntryActions.getProcLigandsFiltersFailure()))
@@ -1063,10 +1063,10 @@ export class EntryEffects {
         )
           throw 'missing data to process ligands';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
-        const ligandsForPrefAssembly = filterLigandsByPreferredAssembly(ligands, preferredAssembly);
-        const ligandMonomersForPrefAssembly = filterLigandMonomersByPreferredAssembly(ligandMonomers, boundMolecules, preferredAssembly);
-        const modificationsForPrefAssembly = filterModificationsByPreferredAssembly(modifications, preferredAssembly);
-        const procLigandsCards = generateLigandsCards(ligandsForPrefAssembly, ligandMonomersForPrefAssembly, modificationsForPrefAssembly);
+        const ligandsWithPrefAssembly = mapLigandsByPreferredAssembly(ligands, preferredAssembly);
+        const ligandMonomersWithSymOp = mapLigandMonomersForPrefAssemblyAndSymOp(ligandMonomers, boundMolecules, preferredAssembly);
+        const modificationsWithPrefAssembly = mapModificationsByPreferredAssembly(modifications, preferredAssembly);
+        const procLigandsCards = generateLigandsCards(ligandsWithPrefAssembly, ligandMonomersWithSymOp, modificationsWithPrefAssembly);
         return EntryActions.getProcLigandsCardsSuccess({ procLigandsCards });
       }),
       catchError(() => of(EntryActions.getProcLigandsCardsFailure()))
@@ -1109,11 +1109,11 @@ export class EntryEffects {
         )
           throw 'missing data to process ligands';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
-        const ligandsForPrefAssembly = filterLigandsByPreferredAssembly(ligands, preferredAssembly);
-        const ligandMonomersForPrefAssembly = filterLigandMonomersByPreferredAssembly(ligandMonomers, boundMolecules, preferredAssembly);
-        const processedLigandsOnly = generateProcessedLigands(ligandsForPrefAssembly, ligandMonomersForPrefAssembly);
-        const modificationsForPrefAssembly = filterModificationsByPreferredAssembly(modifications, preferredAssembly);
-        const processedModifications = generateProcessedModifications(modificationsForPrefAssembly);
+        const ligandsWithPrefAssembly = mapLigandsByPreferredAssembly(ligands, preferredAssembly);
+        const ligandMonomersMapped = mapLigandMonomersForPrefAssemblyAndSymOp(ligandMonomers, boundMolecules, preferredAssembly);
+        const processedLigandsOnly = generateProcessedLigands(ligandsWithPrefAssembly, ligandMonomersMapped);
+        const modificationsWithPrefAssembly = mapModificationsByPreferredAssembly(modifications, preferredAssembly);
+        const processedModifications = generateProcessedModifications(modificationsWithPrefAssembly);
         const processedLigands = [...processedLigandsOnly, ...processedModifications];
         return EntryActions.getProcessedLigandsSuccess({ processedLigands });
       }),

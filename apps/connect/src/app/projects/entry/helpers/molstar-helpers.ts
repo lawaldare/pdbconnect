@@ -123,6 +123,7 @@ export async function removeComponent(instance?: PDBeMolstarPlugin, query?: stri
   let hasRemoved = false;
   const structureData = [plugin.managers.structure.hierarchy.current.structures[0]];
   for await (const s of structureData) {
+    if (s === undefined) continue;
     for (const comp of s.components) {
       if (comp.key!.includes(query)) {
         const builder = plugin.state.data.build();

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MolstarPluginService } from '../extension-for-pages/molstart-plugin.service';
 import type { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
 import { HelpIconForMolstarService } from '../help-icon-for-molstar.service';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'lib-pdbe-molstar',
@@ -19,6 +20,7 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
   private previousMolstarConfig: any = null;
 
   public firstLoadFinished = signal(false);
+  public configUpdated = new BehaviorSubject<any | null>(null);
   private molstarViewInstance!: PDBeMolstarPlugin;
   private readonly molstarPluginService = inject(MolstarPluginService);
   private readonly helpIconForMolstarService = inject(HelpIconForMolstarService);
@@ -66,7 +68,10 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
       const configChanged = !this.deepEqual(this.previousMolstarConfig, newConfig);
       if (!configChanged) return;
       // await this.molstarViewInstance?.visual?.update(this.molstarConfig);
-      this.molstarActionsMutex = this.molstarActionsMutex.then(() => this.molstarViewInstance?.visual?.update(newConfig));
+      this.molstarActionsMutex = this.molstarActionsMutex.then(async () => {
+        await this.molstarViewInstance?.visual?.update(newConfig);
+        this.configUpdated.next(newConfig);
+      });
       this.previousMolstarConfig = this.deepCopy(newConfig);
     }
   }
