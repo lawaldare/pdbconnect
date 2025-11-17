@@ -328,6 +328,8 @@ export class LigandsTabComponent implements AfterViewInit {
 
     // check if molstar config needs update and wait for it
     await this.updateConfigAssemblyAndSyncMolstar(ligand);
+    const allLigandsInPrefAssembly = ligand.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
+    this.inPrefAssembly.set(allLigandsInPrefAssembly);
 
     // update visualisations with data
     // get interactions data, create ligand selection, zoom in ligand

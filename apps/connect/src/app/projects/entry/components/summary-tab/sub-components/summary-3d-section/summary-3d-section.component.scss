@@ -1,4 +1,4 @@
-@import 'libs/core/src/lib/styles/pdb_connect.scss';
+@import 'libs/core/src/lib/styles/pdb_connect';
 
 /* -------------------------------
  *   3D Section Container Layout
@@ -271,7 +271,7 @@ section.info-banner {
   margin-bottom: 16px;
   position: absolute;
   z-index: 2;
-  background: fff;
+  background: #fff;
   top: 44px;
   width: 55%;
   left: 2%;
