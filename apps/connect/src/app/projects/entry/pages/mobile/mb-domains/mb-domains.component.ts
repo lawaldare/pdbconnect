@@ -27,6 +27,8 @@ export class MbDomainsComponent implements OnInit {
   private readonly state = inject(MobileStateService);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
+  public configForMobileMolstar$ = toObservable(this.compCommunication.configForMobileMolstar);
+
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
@@ -141,6 +143,11 @@ export class MbDomainsComponent implements OnInit {
       )
     );
 
+    // check whether chain is in pref assembly, molstar config needs update and wait for it
+    if (domain) {
+      await this.updateConfigAssemblyAndSyncMolstar(domain);
+    }
+
     const durationMs = this.compCommunication.mobileMolstar ? 200 : 0;
     const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
     if (!instance) return;
@@ -175,5 +182,43 @@ export class MbDomainsComponent implements OnInit {
     if (!domain) return '';
     if (domain.resource.includes('SCOP')) return resourceUrls[domain.resource];
     return resourceUrls[domain.resource] + domain.additionalData?.accession;
+  }
+
+  public anyNonPrefAssembly(domain: ProcessedDomain) {
+    return domain.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true) === false;
+  }
+
+  private async updateConfigAssemblyAndSyncMolstar(domain: ProcessedDomain) {
+    // check if ligand instance is in pref assembly based on idx of ligand instance
+    const inPrefAssemblyForChain = this.compCommunication.mobileIsPrefAssembly();
+    const isSelectionPrefAssembly = domain.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
+    const changedDisplayedAssembly = inPrefAssemblyForChain !== isSelectionPrefAssembly;
+
+    if (changedDisplayedAssembly && isSelectionPrefAssembly === false) {
+      this.compCommunication.mobileHasClosedMessage.set(false);
+    }
+    // setting inPrefAssemblyForInstance may trigger update on configForMolstar
+    this.compCommunication.mobileIsPrefAssembly.set(isSelectionPrefAssembly);
+
+    // ... if this update is triggered
+    if (changedDisplayedAssembly) {
+      // wait until configForMolstar recomputes with new assembly/moleculeId
+      const oldCfg = await firstValueFrom(this.configForMobileMolstar$.pipe(take(1)));
+
+      const newCfg = await firstValueFrom(
+        this.configForMobileMolstar$.pipe(
+          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
+          take(1)
+        )
+      );
+
+      // 2. Wait for MolstarComponent to APPLY the new config
+      await firstValueFrom(
+        this.compCommunication.mobileMolstar!.configUpdated.pipe(
+          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
+          take(1)
+        )
+      );
+    }
   }
 }

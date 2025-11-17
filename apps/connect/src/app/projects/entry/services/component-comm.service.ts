@@ -17,7 +17,9 @@ export class ComponentCommunicationService {
   public mobileMolstar?: MolstarComponent;
   public mobileMolstarLoaded$ = new BehaviorSubject<boolean>(false);
   public mobileModelIdx$ = new BehaviorSubject<string>('1');
-  public configForMobileMolstar = signal<InitParams | undefined>(undefined);
+  public configForMobileMolstar = signal<any>(undefined);
+  public mobileIsPrefAssembly = signal(true);
+  public mobileHasClosedMessage = signal(false);
   public mobileMolstarDisplay = 'none';
 
   public assemblySelection$ = new BehaviorSubject<number | undefined>(undefined);

@@ -24,7 +24,11 @@
   @if(currentViewState() === viewStates.List){ @for(row of LigandTableRows(); track row.id){
   <div class="row" (click)="navigateToDetail(row)">
     <div class="row__header">
-      <p class="row__header__name">{{row.codeAndName.count}} X {{row.id}}</p>
+      <p class="row__header__name">
+        {{row.codeAndName.count}} X {{row.id}} @if (anyNonPrefAssembly(row)) {
+        <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+        }
+      </p>
       <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
     </div>
     <p class="row__content">{{row.codeAndName.name | truncate:40}}</p>
