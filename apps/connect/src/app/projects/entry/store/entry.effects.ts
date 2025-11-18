@@ -945,7 +945,8 @@ export class EntryEffects {
         )
       ),
       map(([summaryData, assemblies, macromolecules, carbohydrates]) => {
-        if (summaryData === undefined || assemblies === undefined || macromolecules === undefined) throw 'missing data to process macromolecules';
+        if (summaryData === undefined || assemblies === undefined || macromolecules === undefined || carbohydrates === undefined)
+          throw 'missing data to process macromolecules';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblies);
         const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
         const procMacromoleculesCards = generateMacromoleculesCards(macromoleculesWithPrefAssembly, carbohydrates);
