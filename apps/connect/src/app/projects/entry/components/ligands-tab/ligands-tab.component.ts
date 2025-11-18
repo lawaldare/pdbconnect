@@ -285,6 +285,13 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   private async updateConfigAssemblyAndSyncMolstar(ligand: ProcessedLigandOrMod) {
+    // await until molstar first render is finished
+    await firstValueFrom(
+      this.molstarFirstRenderFinished$.pipe(
+        filter((ready) => ready === true),
+        first()
+      )
+    );
     // check if ligand instance is in pref assembly based on idx of ligand instance
     const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
     const ligInstanceIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
@@ -298,7 +305,6 @@ export class LigandsTabComponent implements AfterViewInit {
     if (changedDisplayedAssembly) {
       // wait until configForMolstar recomputes with new assembly/moleculeId
       const oldCfg = await firstValueFrom(this.configForMolstar$.pipe(take(1)));
-
       const newCfg = await firstValueFrom(
         this.configForMolstar$.pipe(
           filter((cfg) => cfg !== undefined && cfg !== oldCfg),
@@ -335,8 +341,11 @@ export class LigandsTabComponent implements AfterViewInit {
     // get interactions data, create ligand selection, zoom in ligand
     this.renderInMolstar(ligand);
 
-    // const interactionRawData = this.interactionsRawData();
-    // await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData);
+    // if (this.ligandEv === undefined && this.hasLigandEnv) {
+    //   const interactionRawData = this.interactionsRawData();
+    //   // refresh data to ligand env viewer
+    //   await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData);
+    // }
   }
 
   updateDropdownOptions(ligand: ProcessedLigandOrMod) {

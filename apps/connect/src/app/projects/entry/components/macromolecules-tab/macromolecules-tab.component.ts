@@ -24,7 +24,7 @@ import { InteractiveTablesComponent } from '../shared/interactive-tables/interac
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
-import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, of, take, timeout, timer } from 'rxjs';
+import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, first, firstValueFrom, interval, map, of, take, timeout, timer } from 'rxjs';
 import { EntryActions } from '../../store/entry.actions';
 import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
@@ -627,7 +627,14 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   }
 
   private async updateConfigAssemblyAndSyncMolstar(macromolecule: ProcessedMacromolecule) {
-    // check if ligand instance is in pref assembly based on idx of ligand instance
+    // await until molstar first render is finished
+    await firstValueFrom(
+      this.molstarFirstRenderFinished$.pipe(
+        filter((ready) => ready === true),
+        first()
+      )
+    );
+    // check if macromolecule chain is in pref assembly based on idx of chain
     const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
     const chainIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
     const isSelectionPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly[chainIdx];

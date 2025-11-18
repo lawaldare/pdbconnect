@@ -63,17 +63,17 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
     const newConfig = changes['molstarConfig']?.currentValue;
-    if (!changes['molstarConfig']?.firstChange) {
-      if (!newConfig) return;
-      const configChanged = !this.deepEqual(this.previousMolstarConfig, newConfig);
-      if (!configChanged) return;
-      // await this.molstarViewInstance?.visual?.update(this.molstarConfig);
-      this.molstarActionsMutex = this.molstarActionsMutex.then(async () => {
-        await this.molstarViewInstance?.visual?.update(newConfig);
-        this.configUpdated.next(newConfig);
-      });
-      this.previousMolstarConfig = this.deepCopy(newConfig);
-    }
+    // if (!changes['molstarConfig']?.firstChange) {
+    if (!newConfig) return;
+    const configChanged = !this.deepEqual(this.previousMolstarConfig, newConfig);
+    if (!configChanged && this.previousMolstarConfig !== null) return;
+    // await this.molstarViewInstance?.visual?.update(this.molstarConfig);
+    this.molstarActionsMutex = this.molstarActionsMutex.then(async () => {
+      await this.molstarViewInstance?.visual?.update(newConfig);
+      this.configUpdated.next(newConfig);
+    });
+    this.previousMolstarConfig = this.deepCopy(newConfig);
+    // }
   }
 
   public getInstance() {

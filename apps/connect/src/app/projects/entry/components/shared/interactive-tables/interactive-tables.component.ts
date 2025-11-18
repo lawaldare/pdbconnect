@@ -17,10 +17,11 @@ import { LigandOrModUICard } from '../../../store/data-processing/ligand-process
 import { DomainUICard } from '../../../store/data-processing/domain-processing';
 import { AssemblyUICard } from '../../../store/data-processing/assembly-processing';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MaterialModule } from '@pdbc/core';
 @Component({
   selector: 'pdbc-interactive-tables',
   standalone: true,
-  imports: [CommonModule, NgxPaginationModule, RichTooltipDirective, TruncateTextDirective],
+  imports: [CommonModule, NgxPaginationModule, RichTooltipDirective, TruncateTextDirective, MaterialModule],
   templateUrl: './interactive-tables.component.html',
   styleUrl: './interactive-tables.component.scss',
 })

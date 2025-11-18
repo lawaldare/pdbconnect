@@ -17,17 +17,6 @@
       </button>
 
       <h5 class="ligands-title">{{ currentLigandDatum()!.codeAndName.name }}</h5>
-      @if (inPrefAssembly() === false) {
-      <section class="info-banner">
-        <p>
-          <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
-          At least one of this ligand/modification instances is <b>not</b> included in the
-          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
-            >preferred assembly/complex</a
-          >, which represents the most probable biological form identified by the PDBe team for this entry.
-        </p>
-      </section>
-      }
       <p class="ligand-question">
         <span>Where does this data come from?</span>
         <lib-tool-tip>
@@ -57,6 +46,17 @@
           </p>
         </lib-tool-tip>
       </p>
+      @if (inPrefAssembly() === false) {
+      <section class="info-banner">
+        <p>
+          <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+          At least one of the molecules of this ligand/modification is <b>not</b> included in the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >preferred assembly/complex</a
+          >, which represents the most probable biological form identified by the PDBe team for this entry.
+        </p>
+      </section>
+      }
 
       <div class="info">
         <div class="info-grouped left">

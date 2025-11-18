@@ -16,7 +16,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
-import { combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, filter, first, firstValueFrom, take, timer } from 'rxjs';
 import { createAuthAlternateNumbering, generateSeqViewerDomainAnnotation, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import { EntryActions } from '../../store/entry.actions';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
@@ -352,6 +352,13 @@ export class DomainsTabComponent implements AfterViewInit {
   }
 
   private async updateConfigAssemblyAndSyncMolstar(domain: ProcessedDomain, chainId: string) {
+    // await until molstar first render is finished
+    await firstValueFrom(
+      this.molstarFirstRenderFinished$.pipe(
+        filter((ready) => ready === true),
+        first()
+      )
+    );
     // check if domain segments are in pref assembly based on chainId
     const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
     const chainsOfDomainSegments = domain.additionalData.boundaries.map((bd) => bd.chain);
