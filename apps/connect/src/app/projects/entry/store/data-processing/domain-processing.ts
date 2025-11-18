@@ -210,7 +210,7 @@ export function generateDomainsCards(
   polymerCoverage: PolymerCoverageMolecule[]
 ): DomainUICard[] {
   let index = 0;
-  const domainCards: DomainUICard[] = [];
+  let domainCards: DomainUICard[] = [];
   if ((<any>pfamMappings).empty === true) pfamMappings = {};
   if ((<any>cathMappings).empty === true) cathMappings = {};
   if ((<any>scopMappings).empty === true) scopMappings = {};
@@ -334,6 +334,12 @@ export function generateDomainsCards(
   }
 
   domainCards.sort((a, b) => Number(!a.inPrefAssembly) - Number(!b.inPrefAssembly));
+  domainCards = domainCards.map((card, i) => {
+    return {
+      ...card,
+      index: i,
+    };
+  });
   return domainCards;
 }
 
