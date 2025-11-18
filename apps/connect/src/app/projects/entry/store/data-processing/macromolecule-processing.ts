@@ -311,8 +311,8 @@ export function mapPolymerCoverageByPreferredAssembly(polymerCoverage: PolymerCo
   const assemblyEntitiesMap = getEntityToStructAsymsMapOfAssembly(preferredAssembly);
 
   return polymerCoverage.map((polymer) => {
-    const allowedAsyms = assemblyEntitiesMap.get(polymer.entity_id)!;
-    const in_chains_in_pref_assembly = polymer.chains.map((chain) => allowedAsyms.includes(chain.struct_asym_id));
+    const allowedAsyms = assemblyEntitiesMap.get(polymer.entity_id);
+    const in_chains_in_pref_assembly = polymer.chains.map((chain) => allowedAsyms !== undefined && allowedAsyms.includes(chain.struct_asym_id));
     return {
       ...polymer,
       in_chains_in_pref_assembly,
@@ -359,7 +359,7 @@ export function mapMacromoleculesByPreferredAssembly(macromolecules: Molecule[],
   const preferredAssemblyEntitiesMap = getEntityToStructAsymsMapOfAssembly(preferredAssembly);
   return macromolecules.map((molecule) => {
     // Get list of struct_asyms of preferred assembly
-    const allowedAsyms = preferredAssemblyEntitiesMap.get(molecule.entity_id)!;
+    const allowedAsyms = preferredAssemblyEntitiesMap.get(molecule.entity_id);
 
     // Filter the in_struct_asyms and in_chains to only
     // include those present in the preferred assembly entity
@@ -367,7 +367,7 @@ export function mapMacromoleculesByPreferredAssembly(macromolecules: Molecule[],
     const in_chains_in_pref_assembly: boolean[] = [];
 
     molecule.in_struct_asyms.forEach((asymId, idx) => {
-      if (allowedAsyms.includes(asymId)) {
+      if (allowedAsyms && allowedAsyms.includes(asymId)) {
         in_struct_asyms_in_pref_assembly.push(true);
         in_chains_in_pref_assembly.push(true); // Keep corresponding chain
       } else {
