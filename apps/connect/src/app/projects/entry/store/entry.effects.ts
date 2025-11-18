@@ -20,8 +20,6 @@ import {
   processPreferredAssemblyData,
 } from './data-processing/assembly-processing';
 import {
-  filterMacromoleculesByPreferredAssembly,
-  filterPolymerCoverageByPreferredAssembly,
   generateMacromoleculesCards,
   generateMacromoleculesTableFilters,
   generateProcessedMacromolecules,
@@ -1250,7 +1248,6 @@ export class EntryEffects {
         )
           throw 'missing data to process Domains';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
-        // const macromoleculesForPrefAssembly = filterMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
         const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
         const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
         const processedDomains = generateProcessedDomains(cathMappings, scopMappings, pfamMappings, polymerCoverageWithPrefAssembly, macromoleculesWithPrefAssembly);
@@ -1300,10 +1297,11 @@ export class EntryEffects {
         const primaryCitationYes = llmAnnotations.filter((a: any) => a.primaryCitation === 'Y');
         const llmUniProtIds = new Set(primaryCitationYes?.map((a: any) => a.uniprotAccession));
         const chainIds = new Set(primaryCitationYes?.map((a: any) => a.pdbChain));
-        const macromoleculesForPrefAssembly = filterMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
-        const polymerCoverageForPrefAssembly = filterPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
-        const filteredMacromolecules = macromoleculesForPrefAssembly.filter((macromolecule) => {
-          const uniprotData = getUniProtMappingsForMacromolecule(macromolecule, uniprotMappings, polymerCoverageForPrefAssembly);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
+
+        const filteredMacromolecules = macromoleculesWithPrefAssembly.filter((macromolecule) => {
+          const uniprotData = getUniProtMappingsForMacromolecule(macromolecule, uniprotMappings, polymerCoverageWithPrefAssembly);
           const macromoleculeUniProts = uniprotData.uniprotAccsForMacromolecule;
           const hasUniProtInCommon = macromoleculeUniProts.some((unp) => llmUniProtIds.has(unp));
           const hasChainsInCommon = macromolecule.in_chains.some((ch) => chainIds.has(ch));
@@ -1359,10 +1357,12 @@ export class EntryEffects {
         const primaryCitationYes = llmAnnotations.filter((a: any) => a.primaryCitation === 'Y');
         const llmUniProtIds = new Set(primaryCitationYes?.map((a: any) => a.uniprotAccession));
         const chainIds = new Set(primaryCitationYes?.map((a: any) => a.pdbChain));
-        const macromoleculesForPrefAssembly = filterMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
-        const polymerCoverageForPrefAssembly = filterPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
-        const filteredMacromolecules = macromoleculesForPrefAssembly.filter((macromolecule) => {
-          const uniprotData = getUniProtMappingsForMacromolecule(macromolecule, uniprotMappings, polymerCoverageForPrefAssembly);
+
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
+
+        const filteredMacromolecules = macromoleculesWithPrefAssembly.filter((macromolecule) => {
+          const uniprotData = getUniProtMappingsForMacromolecule(macromolecule, uniprotMappings, polymerCoverageWithPrefAssembly);
           const macromoleculeUniProts = uniprotData.uniprotAccsForMacromolecule;
           const hasUniProtInCommon = macromoleculeUniProts.some((unp) => llmUniProtIds.has(unp));
           const hasChainsInCommon = macromolecule.in_chains.some((ch) => chainIds.has(ch));
@@ -1416,7 +1416,6 @@ export class EntryEffects {
           carbohydrates === undefined
         )
           throw 'missing data to process DomainsWithMacromols';
-        // TODO
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
         const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
@@ -1424,11 +1423,6 @@ export class EntryEffects {
         const processedDomains = generateProcessedDomains(cathMappings, scopMappings, pfamMappings, polymerCoverageWithPrefAssembly, macromoleculesWithPrefAssembly);
         const processedDomainsWithMacromols = processDomainsWithMacromolecules(processedMacromolecules, processedDomains);
 
-        // const polymerCoverageForPrefAssembly = filterPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
-        // const macromoleculesForPrefAssembly = filterMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
-        // const processedMacromolecules = generateProcessedMacromolecules(macromoleculesForPrefAssembly, carbohydrates);
-        // const processedDomains = generateProcessedDomains(cathMappings, scopMappings, pfamMappings, polymerCoverageForPrefAssembly, macromoleculesForPrefAssembly);
-        // const processedDomainsWithMacromols = processDomainsWithMacromolecules(processedMacromolecules, processedDomains);
         return EntryActions.getProcessedDomainsWithMacromolsSuccess({ processedDomainsWithMacromols });
       }),
       catchError(() => of(EntryActions.getProcessedDomainsWithMacromolsFailure()))

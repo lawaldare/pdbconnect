@@ -138,10 +138,21 @@
   @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card.index; let i = $index) {
   <div class="card" (click)="onCardClick(card, 'entity')" [class.selected-card]="selectedRowCard().index === card.index">
     <p class="card-title" pdbcTruncateText [maxLines]="4" [tooltip]="true">{{card.moleculeName}}</p>
-    <p class="card-text" pdbcTruncateText [maxLines]="4">
-      <span>Chain{{ card.chains.length > 1 ? 's:' : ':' }} </span>
-      @for(chain of card.chains; track chain; let islast = $last) {
-      <span>{{chain}}</span>{{ islast ? '' : ',' }} }
+    <p class="card-text">
+      <span pdbcTruncateText [maxLines]="4">
+        <span>Chain{{ card.chains.length > 1 ? 's:' : ':' }} </span>
+        @for(chain of card.chains; track chain; let islast = $last) {
+        <span>{{chain}}</span>{{ islast ? '' : ',' }} }
+      </span>
+      @if (card.inPrefAssembly === false) {
+      <img
+        src="assets/icons/warning_icon.webp"
+        style="margin-left: 4px; width: 16px; height: 16px"
+        matTooltipClass="complex-name-tooltip"
+        [matTooltip]="'Contains chains not included in the preferred assembly/complex.'"
+        matTooltipPosition="below"
+      />
+      }
     </p>
   </div>
   } @if(rowCards().length > 10){

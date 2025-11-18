@@ -20,7 +20,7 @@ import { EntryDropdownComponent } from '../entry-page-header/sub-components/entr
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { CitationDetail } from '../../data-models/publication.model';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, of, take, timeout, timer } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, first, firstValueFrom, interval, map, of, take, timeout, timer } from 'rxjs';
 import { AgGridAngular } from 'ag-grid-angular';
 import { LLMAnnotation } from '../../data-models/llm-model';
 import { colDefs, gridOptions } from './ag-grid';
@@ -222,15 +222,17 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
   public readonly configForMolstar = computed(() => {
     const summary = this.summaryData();
     const entryId = this.entryId();
+    const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
 
     if (!summary || !entryId) return undefined;
     const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
     const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
+    const assemblyId = inPrefAssemblyForChain ? preferredAssemblyId : undefined;
 
     const configForMolstar = {
       ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
-      assemblyId: preferredAssemblyId,
+      assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
       landscape: true,
       subscribeEvents: true,
@@ -295,7 +297,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
 
   @HostListener('document:llm-reset-list', ['$event'])
   public resetAnnotationList() {
-    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
     const groupedAnnotations = this.groupedFilteredLLMAnnotations()[chainId];
     this.filteredLLMAnnotations.update(() => groupedAnnotations);
   }
@@ -420,6 +422,14 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
   public selectionTypeText?: string;
 
   private async updateConfigAssemblyAndSyncMolstar(macromolecule: ProcessedMacromolecule) {
+    // await until molstar first render is finished
+    await firstValueFrom(
+      this.molstarFirstRenderFinished$.pipe(
+        filter((ready) => ready === true),
+        first()
+      )
+    );
+
     // check if ligand instance is in pref assembly based on idx of ligand instance
     const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
     const chainIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
@@ -442,7 +452,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
       );
 
       // 2. Wait for MolstarComponent to APPLY the new config
-      await firstValueFrom(
+      const cfg3 = await firstValueFrom(
         this._molstarComponent!.configUpdated.pipe(
           filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
           take(1)
@@ -459,7 +469,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     this.inPrefAssembly.set(allChainsInPrefAssembly);
 
     await this.updateDropdownOptions(macromolecule);
-    const chainId = this.dropdownSelected.split('Chain ')[1];
+    const chainId = this.dropdownSelected.split('Chain ')[1].split(' <img')[0];
     const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
     await this.renderVisualisations(macromolecule);
@@ -477,14 +487,14 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
 
-    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
     const groupedAnnotations = this.groupedFilteredLLMAnnotations()[chainId];
     this.filteredLLMAnnotations.update(() => groupedAnnotations);
     this.groupedAnnotations.update(() => groupedAnnotations);
 
-    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
-    this.sequenceDetails.set(sequenceDetails);
-    await this.updateBackgroundAnnotation();
+    // const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
+    // this.sequenceDetails.set(sequenceDetails);
+    // await this.updateBackgroundAnnotation();
   }
 
   private async updateBackgroundAnnotation() {
@@ -509,7 +519,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     }
 
     const entityId = macromolecule?.additionalData.molecule.entity_id ?? 1;
-    const chainId = this.dropdownSelected.split('Chain ')[1];
+    const chainId = this.dropdownSelected.split('Chain ')[1].split(' <img')[0];
     const modelId = this.currentModelId$.value || '1';
     const annotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
     this.backgroundAnnotation.set(annotation);
@@ -538,7 +548,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return;
-    const chainId = this.dropdownSelected?.split('Chain ')[1];
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
     // check whether chain is in pref assembly, molstar config needs update and wait for it
     await this.updateConfigAssemblyAndSyncMolstar(macromolecule);
@@ -567,7 +577,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
 
   private async setCurrentSelectionData(macromolecule: ProcessedMacromolecule) {
     const entityId = macromolecule.additionalData.molecule.entity_id;
-    const chainId = this.dropdownSelected.split('Chain ')[1];
+    const chainId = this.dropdownSelected.split('Chain ')[1].split(' <img')[0];
 
     this.currentSelectionEntityId.set(`${entityId}`);
     this.currentSelectionChainId.set(chainId);
