@@ -19,6 +19,14 @@ export function formatSegmentsAsText(segments: string[]) {
   return segmentsAsText;
 }
 
+function safeAuthRes(num?: number | null) {
+  return num === undefined || num === null ? undefined : num;
+}
+
+function safeAuthStr(num?: string | null) {
+  return num === undefined || num === null ? undefined : num;
+}
+
 /**
  * This function gets domain mappings in a unified format
  * and processes them so only observed domain segments are taken into account
@@ -69,9 +77,9 @@ export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCov
     let firstRes = {
       residue_number: mapping.start.residue_number,
       // author_residue_number: mapping.start.author_residue_number?.toString() || '',
-      author_residue_number: mapping.start.author_residue_number || undefined,
+      author_residue_number: safeAuthRes(mapping.start.author_residue_number),
       // author_insertion_code: mapping.start.author_insertion_code || '',
-      author_insertion_code: mapping.start.author_insertion_code || undefined,
+      author_insertion_code: safeAuthStr(mapping.start.author_insertion_code),
     };
 
     if (mapping.start.author_residue_number === null) {
@@ -82,18 +90,18 @@ export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCov
       firstRes = {
         residue_number: firstObserved.start.residue_number,
         // author_residue_number: firstObserved.start.author_residue_number.toString(),
-        author_residue_number: firstObserved.start.author_residue_number || undefined,
+        author_residue_number: safeAuthRes(firstObserved.start.author_residue_number),
         // author_insertion_code: firstObserved.start.author_insertion_code || '',
-        author_insertion_code: firstObserved.start.author_insertion_code || undefined,
+        author_insertion_code: safeAuthStr(firstObserved.start.author_insertion_code),
       };
     }
 
     let lastRes = {
       residue_number: mapping.end.residue_number,
       // author_residue_number: mapping.end.author_residue_number?.toString() || '',
-      author_residue_number: mapping.end.author_residue_number || undefined,
+      author_residue_number: safeAuthRes(mapping.end.author_residue_number),
       // author_insertion_code: mapping.end.author_insertion_code || '',
-      author_insertion_code: mapping.end.author_insertion_code || undefined,
+      author_insertion_code: safeAuthStr(mapping.end.author_insertion_code),
     };
 
     if (mapping.end.author_residue_number === null) {
@@ -104,9 +112,9 @@ export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCov
       lastRes = {
         residue_number: lastObserved.end.residue_number,
         // author_residue_number: lastObserved.end.author_residue_number.toString(),
-        author_residue_number: lastObserved.end.author_residue_number || undefined,
+        author_residue_number: safeAuthRes(lastObserved.end.author_residue_number),
         // author_insertion_code: lastObserved.end.author_insertion_code || '',
-        author_insertion_code: lastObserved.end.author_insertion_code || undefined,
+        author_insertion_code: safeAuthStr(lastObserved.end.author_insertion_code),
       };
     }
 
@@ -124,11 +132,13 @@ export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCov
       end_auth_ins_code_id: lastRes.author_insertion_code,
     });
 
-    segments.push(
-      `${chainIdPrefix} ${firstRes.author_residue_number}${firstRes.author_insertion_code || ''} - ${lastRes.author_residue_number}${
-        lastRes.author_insertion_code || ''
-      }`
-    );
+    const firstResAuthStr = firstRes.author_residue_number === undefined ? '?' : String(firstRes.author_residue_number);
+    const lastResAuthStr = lastRes.author_residue_number === undefined ? '?' : String(lastRes.author_residue_number);
+
+    if (firstRes.author_residue_number === undefined) console.warn(`Warn: domain with undefined start auth numbering found`);
+    if (lastRes.author_residue_number === undefined) console.warn(`Warn: domain with undefined end auth numbering found`);
+
+    segments.push(`${chainIdPrefix} ${firstResAuthStr}${firstRes.author_insertion_code || ''} - ${lastResAuthStr}${lastRes.author_insertion_code || ''}`);
     segmentsResidNumber.push(`${chainIdPrefix} ${firstRes.residue_number} - ${lastRes.residue_number}`);
     segmentsBoundaries.push({
       chain: mapping.chain_id,
