@@ -18,7 +18,9 @@
       <li class="nav-link">
         <a [href]="link.path" [target]="link.openInNewTab ? '_blank' : '_self'">{{ link.name }}</a>
       </li>
-      } }
+      } } @if(headerConfig.isPisaApp){
+      <button class="vf-button vf-button--search-pdbe" (click)="onStartButtonClick()">Start</button>
+      }
     </ul>
   </div>
 </section>

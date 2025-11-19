@@ -1,9 +1,9 @@
 import { Route } from '@angular/router';
-import { Upload } from './components/upload/upload';
+import { UploadPageComponent } from './components/upload-page/upload-page';
 
 export const appRoutes: Route[] = [
   {
     path: '',
-    component: Upload,
+    component: UploadPageComponent,
   },
 ];

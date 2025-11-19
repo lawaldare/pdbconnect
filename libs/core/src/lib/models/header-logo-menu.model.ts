@@ -3,6 +3,7 @@ export interface HeaderLogoMenuConfig {
   logoType?: string;
   headerTitle?: string;
   isComplexPage?: boolean;
+  isPisaApp?: boolean;
   isHomePage?: boolean;
   urls?: {
     name: string;

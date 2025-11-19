@@ -77,6 +77,10 @@ section {
         }
       }
 
+      .vf-button--search-pdbe {
+        margin: 0 !important;
+      }
+
       @media only screen and (width <= 540px) {
         display: none;
       }

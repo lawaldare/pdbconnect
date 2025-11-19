@@ -1,0 +1,60 @@
+<h1>Upload your file</h1>
+<main>
+  <section class="upload-section">
+    @if(modelSym()){
+    <p>Your file</p>
+    <div class="row">
+      <p class="row-header">Available components</p>
+      <p class="row-data"></p>
+    </div>
+    <div class="row">
+      <p class="row-header">Process ligands</p>
+      <p class="row-data"></p>
+    </div>
+    } @else {
+    <div class="upload-section-drag-drop" #dropArea (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34" fill="none">
+        <path
+          d="M17.2092 15.2402C17.1843 15.2085 17.1526 15.1828 17.1163 15.1652C17.0801 15.1475 17.0403 15.1383 17 15.1383C16.9597 15.1383 16.9199 15.1475 16.8837 15.1652C16.8474 15.1828 16.8157 15.2085 16.7908 15.2402L13.0721 19.9451C13.0414 19.9843 13.0224 20.0313 13.0172 20.0807C13.012 20.1302 13.0208 20.1801 13.0426 20.2248C13.0644 20.2694 13.0984 20.3071 13.1406 20.3334C13.1828 20.3597 13.2315 20.3735 13.2812 20.3734H15.735V28.4219C15.735 28.568 15.8545 28.6875 16.0006 28.6875H17.9928C18.1389 28.6875 18.2584 28.568 18.2584 28.4219V20.3768H20.7187C20.9412 20.3768 21.0641 20.1211 20.9279 19.9484L17.2092 15.2402Z"
+          fill="black"
+        />
+        <path
+          d="M26.941 12.1756C25.4203 8.16465 21.5455 5.3125 17.0066 5.3125C12.4678 5.3125 8.59297 8.16133 7.07227 12.1723C4.22676 12.9193 2.125 15.5125 2.125 18.5938C2.125 22.2627 5.09668 25.2344 8.7623 25.2344H10.0938C10.2398 25.2344 10.3594 25.1148 10.3594 24.9688V22.9766C10.3594 22.8305 10.2398 22.7109 10.0938 22.7109H8.7623C7.64336 22.7109 6.59082 22.266 5.80723 21.4592C5.02695 20.6557 4.61191 19.5732 4.64844 18.451C4.67832 17.5744 4.97715 16.751 5.51836 16.057C6.07285 15.3498 6.8498 14.8352 7.71309 14.6061L8.97148 14.2773L9.43301 13.0621C9.71855 12.3051 10.117 11.5979 10.6184 10.957C11.1133 10.3219 11.6996 9.76354 12.3582 9.3002C13.7229 8.34063 15.3299 7.83262 17.0066 7.83262C18.6834 7.83262 20.2904 8.34063 21.6551 9.3002C22.3158 9.76504 22.9002 10.3229 23.3949 10.957C23.8963 11.5979 24.2947 12.3084 24.5803 13.0621L25.0385 14.274L26.2936 14.6061C28.0932 15.0908 29.3516 16.7277 29.3516 18.5938C29.3516 19.6928 28.9232 20.7287 28.1463 21.5057C27.7653 21.8889 27.312 22.1928 26.8127 22.3997C26.3135 22.6066 25.7781 22.7124 25.2377 22.7109H23.9062C23.7602 22.7109 23.6406 22.8305 23.6406 22.9766V24.9688C23.6406 25.1148 23.7602 25.2344 23.9062 25.2344H25.2377C28.9033 25.2344 31.875 22.2627 31.875 18.5938C31.875 15.5158 29.7799 12.926 26.941 12.1756Z"
+          fill="black"
+        />
+      </svg>
+      <p>
+        Drag and drop your file here <br />
+        in .cif, .bcif, .pdb, or .ent format
+      </p>
+      <span>or</span>
+
+      <!-- Hidden file input -->
+      <input #fileInput type="file" class="file-input" accept=".cif, .ent, .pdb" (change)="onFileChange($event)" hidden />
+
+      <button class="vf-button vf-button--primary" (click)="onBrowseClick()">Select a file</button>
+    </div>
+    <!-- <span class="error">{{errorMolstarMessage()}}</span> -->
+
+    <!-- Messages -->
+    @if(facade.errorMsg()) {
+    <span class="error">{{ facade.errorMsg() }}</span>
+    }
+
+    <div class="upload-section-input-field">
+      <h3>or use a PDB entry ID</h3>
+      <div class="input-field-form">
+        <input type="text" placeholder="PDB entry ID" [(ngModel)]="pdbEntryId" [class.error]="hasError()" />
+        <button class="vf-button vf-button--search-pdbe" (click)="onSubmit()">Submit</button>
+      </div>
+      <span class="error">{{errorInputMessage()}}</span>
+    </div>
+    }
+  </section>
+  <section class="molstar-section">
+    <!-- <h4>Your structure will appear here</h4> -->
+    <div class="viewer-container">
+      <div #viewer id="molstar-viewer"></div>
+    </div>
+  </section>
+</main>

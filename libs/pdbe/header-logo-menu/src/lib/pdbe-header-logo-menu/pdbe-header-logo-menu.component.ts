@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { HeaderLogoMenuConfig, PDBE_HEADER_LOGO_SRC, PDBE_KB_HEADER_LOGO_SRC } from '@pdbc/core';
@@ -18,6 +18,8 @@ export interface Link {
 })
 export class PdbeHeaderLogoMenuComponent implements OnInit {
   @Input() headerConfig!: HeaderLogoMenuConfig;
+  @Output() startButtonClicked = new EventEmitter<void>();
+
   public headerLogoSrc = '';
   public isMobile = signal(false);
   // public isComplexPage = signal(this.headerConfig.isComplexPage ?? false);
@@ -49,6 +51,10 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
 
   public showMobileMenu(): void {
     this.isMobile.update((value) => !value);
+  }
+
+  public onStartButtonClick(): void {
+    this.startButtonClicked.emit();
   }
 
   public openHomepageNavLinks(link: Link): void {

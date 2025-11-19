@@ -6,6 +6,10 @@
 @import 'libs/core/src/lib/styles/ag-grid';
 @import 'index';
 
+:root {
+  --header-text-color: #1a1c1a;
+}
+
 html,
 body {
   height: 100%;
@@ -49,6 +53,7 @@ a {
 
 p {
   margin: 0 !important;
+  color: #000000;
 }
 
 .container {

@@ -13,4 +13,7 @@ import { pisaLogoConfig } from './pisa-constant';
 })
 export class App {
   public readonly pisaLogoConfig = pisaLogoConfig;
+  public onStartButtonClicked(): void {
+    console.log('Start button clicked in App component');
+  }
 }
