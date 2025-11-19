@@ -262,11 +262,11 @@
         style="margin-left: 16px !important; display: block"
         >{{data}}</a
       >
-      @if(go.names.length > 5){
+      } @if(go.names.length > 5){
       <p role="button" class="content" (click)="toggleGoTermsList(go.names.length)" style="margin-left: 16px !important">
-        {{initialSynonymsCount() > 5 ? 'Show less' : 'Show all'}}
+        {{initialGoTermsCount() > 5 ? 'Show less' : 'Show all'}}
       </p>
-      } } }} @else {
+      } }} @else {
       <p class="content">No functional information available for this macromolecule.</p>
       }
     </mat-tab>
