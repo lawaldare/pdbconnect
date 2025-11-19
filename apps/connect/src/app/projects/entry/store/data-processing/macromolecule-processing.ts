@@ -434,7 +434,7 @@ export interface MacromoleculeUICard {
 }
 
 export function generateMacromoleculesCards(macromolecules: Molecule[], carbohydrates?: CarbohydrateMolecule[]): MacromoleculeUICard[] {
-  const macromoleculeCards: MacromoleculeUICard[] = [];
+  let macromoleculeCards: MacromoleculeUICard[] = [];
   let index = 0;
   for (const macromolecule of macromolecules) {
     let moleculeLength = macromolecule.length;
@@ -457,6 +457,14 @@ export function generateMacromoleculesCards(macromolecules: Molecule[], carbohyd
     });
     index += 1;
   }
+
+  macromoleculeCards.sort((a, b) => Number(!a.inPrefAssembly) - Number(!b.inPrefAssembly));
+  macromoleculeCards = macromoleculeCards.map((card, i) => {
+    return {
+      ...card,
+      index: i,
+    };
+  });
   return macromoleculeCards;
 }
 
@@ -555,6 +563,11 @@ export function generateProcessedMacromolecules(macromolecules: Molecule[], carb
       molstarColorHex: DEFAULT_SET_25[colorEntityIdx % DEFAULT_SET_25.length],
     });
   }
+  processedMacromolecules.sort((a, b) => {
+    const inPrefAssemblyA = a.additionalData.selectionsInPrefAssembly.every((val) => val === true);
+    const inPrefAssemblyB = b.additionalData.selectionsInPrefAssembly.every((val) => val === true);
+    return Number(!inPrefAssemblyA) - Number(!inPrefAssemblyB);
+  });
 
   return processedMacromolecules;
 }

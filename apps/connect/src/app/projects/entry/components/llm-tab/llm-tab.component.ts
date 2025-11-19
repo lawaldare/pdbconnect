@@ -295,11 +295,16 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
 
   public readonly visInteractivity = inject(VisualisationInteractivityService);
 
-  @HostListener('document:llm-reset-list', ['$event'])
-  public resetAnnotationList() {
+  private resetAnnotationListByCurrentChain(resetGroupedList: boolean) {
     const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
     const groupedAnnotations = this.groupedFilteredLLMAnnotations()[chainId];
     this.filteredLLMAnnotations.update(() => groupedAnnotations);
+    if (resetGroupedList) this.groupedAnnotations.update(() => groupedAnnotations);
+  }
+
+  @HostListener('document:llm-reset-list', ['$event'])
+  public resetAnnotationList() {
+    this.resetAnnotationListByCurrentChain(false);
   }
 
   @HostListener('document:llm-filter-list', ['$event'])
@@ -462,13 +467,16 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
   }
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
+    await this.updateDropdownOptions(macromolecule);
+    this.resetAnnotationListByCurrentChain(true);
+
     // check whether chain is in pref assembly, molstar config needs update and wait for it
     await this.updateConfigAssemblyAndSyncMolstar(macromolecule);
+
     // check whether any chain not in pref assembly for this macromolecule
     const allChainsInPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
     this.inPrefAssembly.set(allChainsInPrefAssembly);
 
-    await this.updateDropdownOptions(macromolecule);
     const chainId = this.dropdownSelected.split('Chain ')[1].split(' <img')[0];
     const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
@@ -486,15 +494,6 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
       };
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
-
-    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
-    const groupedAnnotations = this.groupedFilteredLLMAnnotations()[chainId];
-    this.filteredLLMAnnotations.update(() => groupedAnnotations);
-    this.groupedAnnotations.update(() => groupedAnnotations);
-
-    // const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
-    // this.sequenceDetails.set(sequenceDetails);
-    // await this.updateBackgroundAnnotation();
   }
 
   private async updateBackgroundAnnotation() {
