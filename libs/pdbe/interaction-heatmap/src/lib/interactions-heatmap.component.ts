@@ -1,28 +1,9 @@
-import {
-  Component,
-  CUSTOM_ELEMENTS_SCHEMA,
-  inject,
-  ChangeDetectorRef,
-  HostListener,
-  Output,
-  EventEmitter,
-  input,
-  ViewChild,
-  ElementRef,
-  signal,
-  computed,
-  DestroyRef,
-  OnInit,
-  AfterViewInit,
-} from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, HostListener, Output, EventEmitter, input, signal, computed, DestroyRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 
-import * as NightingaleManager from '@nightingale-elements/nightingale-manager';
-import * as NightingaleNavigation from '@nightingale-elements/nightingale-navigation';
-// import "@nightingale-elements/nightingale-sequence-heatmap";
 import { filter, map, switchMap } from 'rxjs';
-import NightingaleSequenceHeatmap from '@nightingale-elements/nightingale-sequence-heatmap';
+import type NightingaleSequenceHeatmap from '@nightingale-elements/nightingale-sequence-heatmap';
 import * as d3 from 'd3';
 import { MatRadioButton } from '@angular/material/radio';
 import { MatCheckbox } from '@angular/material/checkbox';
@@ -32,16 +13,12 @@ import { ViewerData } from './data-models/viewer-data';
 import { INTX_NAME_STANDARDIZER, processInitialData, sortAAsByIntFreq, sortAAsByType, filterRescaleData } from './interactions-heatmap-data-processing';
 import { AMINOACIDSIMAGE, CATEGORIESIMAGE, AminoAcidOneCode, InteractionNames, CategoryNames, AminoAcidCode, AATHREETOONE } from './interactions-heatmap.constant';
 import { PDBIntxData } from './data-models/interaction.model';
-
-// import NightingaleSequenceHeatmap from '@nightingale-elements/nightingale-sequence-heatmap'
-
-// Necessary lines added to avoid tree shaking of Nightingale components
-const _nightingaleRefs = [NightingaleManager, NightingaleNavigation, NightingaleSequenceHeatmap];
+import { ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
 
 @Component({
   selector: 'lib-interactions-heatmap',
   standalone: true,
-  imports: [CommonModule, MatRadioButton, MatCheckbox, ToolTipComponent],
+  imports: [CommonModule, MatRadioButton, MatCheckbox, ToolTipComponent, ProtvistaWrapperComponent],
   templateUrl: './interactions-heatmap.component.html',
   styleUrl: './interactions-heatmap.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -61,13 +38,13 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
 
   public atomNamesList = signal<string[] | undefined>(undefined);
   public atomNamesString = computed(() => this.atomNamesList()?.join(',') ?? '');
+  public protvistaData = signal<any[] | undefined>(undefined);
 
   public aminoAcidsLegend = signal<string[]>([]);
 
   public interactionFilters = computed(() => this.viewerData()?.validFilters ?? []);
 
   private isMouseHovering = false;
-  // nightingaleAtoms: unknown;
   heatmapAtomsElement!: NightingaleSequenceHeatmap;
   heatmapResidsElement!: NightingaleSequenceHeatmap;
 
@@ -75,10 +52,6 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
   atomColorMap!: string[];
   residDomainMap!: number[];
   residColorMap!: string[];
-
-  @ViewChild('ligAtomsSequence', { static: false }) nightingaleAtomsRef!: ElementRef;
-  @ViewChild('heatmapAtoms', { static: false }) heatmapAtomsRef!: ElementRef;
-  @ViewChild('heatmapResids', { static: false }) heatmapResidsRef!: ElementRef;
 
   private aminoAcidsImgs = AMINOACIDSIMAGE;
 
@@ -96,7 +69,7 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
     return this.categoriesImgs[cat as CategoryNames];
   }
 
-  @HostListener('document:PDB.ligand.showAtom', ['$event']) atomMouseOver(e: CustomEvent) {
+  @HostListener('document:PDB.ligand.showAtom', ['$event']) async atomMouseOver(e: CustomEvent) {
     if (e.detail.external !== false && this.isMouseHovering === false) {
       const atomName = e.detail.atomName;
       let toSend, atomDatum;
@@ -109,34 +82,40 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
       }
 
       // On heatmap zoom dispatch event to Nightingale
-      (this.nightingaleAtomsRef.nativeElement as HTMLElement).dispatchEvent(
-        new CustomEvent('change', {
-          detail: {
-            value: toSend,
-            type: 'highlight',
-          },
-          bubbles: true,
-          cancelable: true,
-        })
-      );
-      this.forceShowTooltipAtoms(atomDatum);
+      const heatmapAtoms = document.querySelector('#atoms-hm-heatmap-track') as NightingaleSequenceHeatmap;
+      if (heatmapAtoms) {
+        heatmapAtoms.dispatchEvent(
+          new CustomEvent('change', {
+            detail: {
+              value: toSend,
+              type: 'highlight',
+            },
+            bubbles: true,
+            cancelable: true,
+          })
+        );
+        await this.forceShowTooltipAtoms(atomDatum);
+        await this.adjustTooltipPosition();
+      }
     }
-    this.adjustTooltipPosition();
   }
 
   @HostListener('document:PDB.ligand.hideAtom', ['$event']) atomMouseOut(e: CustomEvent) {
     if (e.detail.external !== false && this.isMouseHovering === false) {
-      (this.nightingaleAtomsRef.nativeElement as HTMLElement).dispatchEvent(
-        new CustomEvent('change', {
-          detail: {
-            value: null,
-            type: 'highlight',
-          },
-          bubbles: true,
-          cancelable: true,
-        })
-      );
-      this.destroyForcedTooltipAtoms();
+      const heatmapAtoms = document.querySelector('#atoms-hm-heatmap-track') as NightingaleSequenceHeatmap;
+      if (heatmapAtoms) {
+        heatmapAtoms.dispatchEvent(
+          new CustomEvent('change', {
+            detail: {
+              value: null,
+              type: 'highlight',
+            },
+            bubbles: true,
+            cancelable: true,
+          })
+        );
+        this.destroyForcedTooltipAtoms();
+      }
     }
   }
 
@@ -161,31 +140,14 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
     });
   }
 
-  async setupHeatmapAtoms(viewerData: ViewerData, atomNamesList: string[]) {
-    // await new Promise((resolve) => setTimeout(resolve, 300));
-    // const methodList = Object.getOwnPropertyNames(Object.getPrototypeOf(this.heatmapAtomsRef.nativeElement));
-    // console.log("has setHeatmapData");
-    // console.log(methodList.indexOf("setHeatmapData") > -1);
-    await customElements.whenDefined('nightingale-sequence-heatmap-new');
+  async setupHeatmapAtoms(atomNamesList: string[]) {
+    await customElements.whenDefined('nightingale-sequence-heatmap');
+    await this.waitForElm('#heatmap-atoms');
 
-    const heatmapAtoms = this.heatmapAtomsRef.nativeElement as NightingaleSequenceHeatmap;
+    const heatmapAtoms = document.querySelector('#atoms-hm-heatmap-track') as NightingaleSequenceHeatmap;
     this.heatmapAtomsElement = heatmapAtoms;
     await this.heatmapAtomsElement.updateComplete;
 
-    this.heatmapAtomsElement.setHeatmapData(
-      viewerData['xDomain'], //xDomain
-      ['ATM'], //yDomain
-      viewerData['averages']
-    );
-    await this.waitForElm('#heatmap-atoms');
-    this.heatmapAtomsElement?.heatmapInstance?.setTooltip((d, x, y, xIndex, yIndex) => {
-      const returnHTML = `
-        Ligand atom: <b>${d['atomName']}</b><br />
-        Atom-wise interactions: <b>${d['score'].toFixed(2)}%</b><br />
-        `;
-      return returnHTML;
-    });
-    this.setAtomsColorScale(viewerData);
     this.heatmapAtomsElement?.heatmapInstance?.events.hover.subscribe((e: any) => {
       if (e.cell !== undefined) {
         if (e.cell.datum === undefined) {
@@ -220,27 +182,14 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
     });
   }
 
-  async setupHeatmapResids(viewerData: ViewerData, atomNamesList: string[]) {
-    await customElements.whenDefined('nightingale-sequence-heatmap-new');
-    const heatmapResids = this.heatmapResidsRef.nativeElement as NightingaleSequenceHeatmap;
+  async setupHeatmapResids(atomNamesList: string[]) {
+    await customElements.whenDefined('nightingale-sequence-heatmap');
+    await this.waitForElm('#heatmap-resids');
+
+    const heatmapResids = document.querySelector('#resids-hm-heatmap-track') as NightingaleSequenceHeatmap;
     this.heatmapResidsElement = heatmapResids;
     await this.heatmapResidsElement.updateComplete;
 
-    this.heatmapResidsElement.setHeatmapData(
-      viewerData['xDomain'], //xDomain
-      viewerData['yDomain'], //yDomain
-      viewerData['heatmap'] // heatmap data
-    );
-    await this.waitForElm('#heatmap-resids');
-    this.heatmapResidsElement?.heatmapInstance?.setTooltip((d, x, y, xIndex, yIndex) => {
-      const returnHTML = `
-        Ligand atom: <b>${d['atomName']}</b><br />
-        Amino acid: <b>${d['residue']}</b><br />
-        Pairwise interactions: <b>${d['score'].toFixed(2)}%</b><br />
-        `;
-      return returnHTML;
-    });
-    this.setResidsColorScale(viewerData);
     this.heatmapResidsElement?.heatmapInstance?.events.hover.subscribe((e: any) => {
       if (e.cell !== undefined) {
         if (e.cell.datum === undefined) return;
@@ -264,34 +213,6 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
         );
       }
     });
-  }
-
-  private async initialZoomOut() {
-    await customElements.whenDefined('nightingale-navigation');
-    await customElements.whenDefined('nightingale-sequence-heatmap-new');
-    const zoomOutEl = document.querySelector('.visualisation-column nightingale-navigation');
-    if (!zoomOutEl) return;
-    console.log('dispatched!!');
-    zoomOutEl.dispatchEvent(
-      new CustomEvent('change', {
-        detail: {
-          value: 1,
-          type: 'display-start',
-        },
-        bubbles: true,
-        cancelable: true,
-      })
-    );
-    zoomOutEl.dispatchEvent(
-      new CustomEvent('change', {
-        detail: {
-          value: this.viewerData.length,
-          type: 'display-end',
-        },
-        bubbles: true,
-        cancelable: true,
-      })
-    );
   }
 
   ngAfterViewInit() {
@@ -319,9 +240,76 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
                 const aas = viewerData.yDomain.map((aa) => AATHREETOONE[aa as AminoAcidCode]);
                 this.aminoAcidsLegend.set(aas);
                 this.viewerData.set(viewerData);
-                await this.setupHeatmapAtoms(viewerData, atoms);
-                await this.setupHeatmapResids(viewerData, atoms);
-                // await this.initialZoomOut();
+
+                const score = viewerData['averages'].map((v: any) => v.score as number);
+                const maxScore = Math.max(...score);
+                this.atomDomainMap = [0, 0.01, maxScore];
+                this.atomColorMap = ['#ffffff', '#a0bb9e', '#505d50'];
+                const atomColorScale = d3.scaleLinear(this.atomDomainMap, this.atomColorMap);
+
+                const residScore = viewerData['heatmap'].map((v: any) => v.score as number);
+                const maxResidScore = Math.max(...residScore);
+                this.residDomainMap = [0, 0.01, maxResidScore];
+                this.residColorMap = ['#FFFFFF', '#B99EBB', '#2b232b'];
+                const residColorScale = d3.scaleLinear(this.residDomainMap, this.residColorMap);
+
+                this.protvistaData.set([
+                  {
+                    id: 'atoms-hm',
+                    type: 'TrackHeatmapSequence',
+                    name: '',
+                    heatmapId: 'heatmap-atoms',
+                    data: viewerData['averages'],
+                    xDomain: viewerData['xDomain'],
+                    yDomain: ['ATM'],
+                    checkpoints: [],
+                    colours: [],
+                    status: 'ready-has-data',
+                    isExpandable: false,
+                    trackHeight: 23,
+                    hasXScale: false,
+                    hasYScale: false,
+                    tooltipContentFn: (d: any, x: number, y: number) => {
+                      if (!d) return '';
+                      let tooltipContent = `
+                        <div class="tooltip-data" data-trackid="atoms-hm" style="display: none"></div>
+                        Ligand atom: <b>${d['atomName']}</b><br>
+                        Atom-wise interactions: <b>${d['score'].toFixed(2)}%</b><br>
+                      `;
+                      return tooltipContent;
+                    },
+                    customColourScale: atomColorScale,
+                  },
+                  {
+                    id: 'resids-hm',
+                    type: 'TrackHeatmapSequence',
+                    name: '',
+                    heatmapId: 'heatmap-resids',
+                    data: viewerData['heatmap'],
+                    xDomain: viewerData['xDomain'],
+                    yDomain: viewerData['yDomain'],
+                    checkpoints: [],
+                    colours: [],
+                    status: 'ready-has-data',
+                    isExpandable: false,
+                    trackHeight: 390,
+                    hasXScale: false,
+                    hasYScale: false,
+                    tooltipContentFn: (d: any, x: number, y: number) => {
+                      if (!d) return '';
+                      let tooltipContent = `
+                        <div class="tooltip-data" data-trackid="resids-hm" style="display: none"></div>
+                        Ligand atom: <b>${d['atomName']}</b><br>
+                        Amino acid: <b>${d['residue']}</b><br>
+                        Pairwise interactions: <b>${d['score'].toFixed(2)}%</b><br>
+                      `;
+                      return tooltipContent;
+                    },
+                    customColourScale: residColorScale,
+                  },
+                ]);
+                await this.setupHeatmapAtoms(atoms);
+                await this.setupHeatmapResids(atoms);
               }
             })
           )
@@ -449,15 +437,16 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
   private async forceShowTooltipAtoms(atomDatum: any) {
     document.getElementById('removable-div')?.remove();
     const whereToPlace = await this.waitForElm('#heatmap-atoms > div > div');
-    const xCoord = (<any>this.heatmapAtomsElement.heatmapInstance).state.scales.worldToCanvas.x(atomDatum.xValue - 1);
 
+    const xCoord = (<any>this.heatmapAtomsElement.heatmapInstance).state.scales.worldToSvg.x(atomDatum.xValue - 1);
     const tooltipDiv = document.createElement('div');
     tooltipDiv.setAttribute('id', 'removable-div');
     tooltipDiv.setAttribute('class', 'heatmap-tooltip-box');
     tooltipDiv.style.position = 'absolute';
     tooltipDiv.style.left = `${xCoord}px`;
-    tooltipDiv.style.bottom = '17px';
+    tooltipDiv.style.bottom = '-57px';
     tooltipDiv.style.display = 'unset';
+    tooltipDiv.style.zIndex = '10';
 
     const contentDiv = document.createElement('div');
     contentDiv.setAttribute('class', 'heatmap-tooltip-content');
@@ -473,44 +462,26 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
   }
 
   private async adjustTooltipPosition() {
-    const insideAtoms = await this.waitForElm('#heatmap-atoms > div > div');
-    const insideResids = await this.waitForElm('#heatmap-resids > div > div');
-    this.adjustTooltipElements(insideAtoms as HTMLElement);
-    this.adjustTooltipElements(insideResids as HTMLElement);
-  }
+    const parent = (await this.waitForElm('#heatmap-atoms > div > div')) as HTMLElement;
 
-  private adjustTooltipElements(parent: HTMLElement) {
     const leftEdgeBoundary = this.heatmapResidsElement.getBoundingClientRect().left;
     const rightEdgeBoundary = this.heatmapResidsElement.getBoundingClientRect().right - 30;
-    // const rightEdgeBoundary = window.innerWidth - 10;
-    const selectors = ['.heatmap-pinned-tooltip-box', '.heatmap-tooltip-box'];
 
-    for (const selector of selectors) {
-      const el1 = parent.querySelector(selector);
-      if (el1 !== null) {
-        const el1Bounds = el1.getBoundingClientRect();
-        const el1xValue = el1Bounds.x + 0;
-        const el1xWidth = el1Bounds.width + 0;
+    const selector = '.heatmap-tooltip-box';
+    const el1 = parent.querySelector(selector);
+    if (el1 !== null) {
+      const el1Bounds = el1.getBoundingClientRect();
+      const el1xValue = el1Bounds.x + 0;
+      const el1xWidth = el1Bounds.width + 0;
 
-        const distanceToLeftBoundary = el1xValue - leftEdgeBoundary;
-        const distanceToRightBoundary = rightEdgeBoundary - (el1xValue + el1xWidth);
+      const distanceToLeftBoundary = el1xValue - leftEdgeBoundary;
+      const distanceToRightBoundary = rightEdgeBoundary - (el1xValue + el1xWidth);
 
-        if (distanceToRightBoundary < 0) {
-          (el1 as HTMLElement).style.translate = '-270px';
-          if (selector === '.heatmap-pinned-tooltip-box') {
-            const pin = el1.querySelector('.heatmap-pinned-tooltip-pin');
-            (pin as HTMLElement).style.translate = '265px';
-            (pin as HTMLElement).style.transform = 'rotateY(180deg)';
-          }
-        }
-        if (distanceToLeftBoundary < 0) {
-          (el1 as HTMLElement).style.translate = '0px';
-          if (selector === '.heatmap-pinned-tooltip-box') {
-            const pin = el1.querySelector('.heatmap-pinned-tooltip-pin');
-            (pin as HTMLElement).style.translate = '0px';
-            (pin as HTMLElement).style.transform = 'rotateY(0deg)';
-          }
-        }
+      if (distanceToRightBoundary < 0) {
+        (el1 as HTMLElement).style.translate = '-247px';
+      }
+      if (distanceToLeftBoundary < 0) {
+        (el1 as HTMLElement).style.translate = '0px';
       }
     }
   }

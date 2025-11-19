@@ -75,7 +75,7 @@
     <div class="list">
       <p class="list-item-left">PDB</p>
       <p class="list-item-right">
-        <a [href]="'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/' + structure.pdb_id" target="_blank">
+        <a [href]="baseUrl + 'entry/pdb/' + structure.pdb_id" target="_blank">
           {{ structure.pdb_id }}
           <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
         </a>

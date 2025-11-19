@@ -12,7 +12,7 @@
 @if(tabName() === 'Assemblies') {
 <section>
   @for(card of rowCards(); track card; let i = $index) {
-  <div class="card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard().assemblyId === card.assemblyId">
+  <div class="card" (click)="onCardClick(card, 'id')" [class.selected-card]="selectedRowCard().assemblyId === card.assemblyId">
     <p class="card-title">{{card.assemblyName}}</p>
     <p class="card-text">{{card.complexName}}</p>
     <p class="card-text">{{card.multimericStates}}</p>
@@ -26,7 +26,7 @@
 @if(tabName() === 'Macromolecules') {
 <section>
   @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card.index; let i = $index) {
-  <div class="card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard().index === card.index">
+  <div class="card" (click)="onCardClick(card, 'entity')" [class.selected-card]="selectedRowCard()?.index === card.index">
     <p class="card-title" pdbcTruncateText [maxLines]="4" [tooltip]="true">{{card.moleculeName}}</p>
     <p class="card-text" pdbcTruncateText [maxLines]="4">
       <span>Chain{{ card.chains.length > 1 ? 's:' : ':' }} </span>
@@ -50,7 +50,7 @@
 @if(tabName() === 'Ligands') {
 <section>
   @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card; let i = $index) {
-  <div class="card ligand-card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard()?.chemCompId === card.chemCompId">
+  <div class="card ligand-card" (click)="onCardClick(card, 'id')" [class.selected-card]="selectedRowCard()?.chemCompId === card.chemCompId">
     <img [src]="'https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/' + card.chemCompId +'_100.svg'" alt="" />
     <div class="card-info">
       <p class="card-title">{{card.countInPrefAssembly}} X {{card.chemCompId}}</p>
@@ -79,7 +79,7 @@
 @if(tabName() === 'Domains') {
 <section>
   @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card; let i = $index;) {
-  <div class="card domain-card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard()?.domainId === card.domainId">
+  <div class="card domain-card" (click)="onCardClick(card, 'idx')" [class.selected-card]="selectedRowCard()?.domainId === card.domainId">
     <p class="domain-card-title">
       <span style="display: block"><strong>{{card.accessionName}}</strong></span>
       <span>(<strong>{{card.resource}}</strong></span>
@@ -104,7 +104,7 @@
 @if(tabName() === 'LLM') {
 <section>
   @for(card of rowCards() | paginate: { itemsPerPage: 10, currentPage: this.startNumber()}; track card.index; let i = $index) {
-  <div class="card" (click)="onCardClick(card)" [class.selected-card]="selectedRowCard().index === card.index">
+  <div class="card" (click)="onCardClick(card, 'entity')" [class.selected-card]="selectedRowCard().index === card.index">
     <p class="card-title" pdbcTruncateText [maxLines]="4" [tooltip]="true">{{card.moleculeName}}</p>
     <p class="card-text" pdbcTruncateText [maxLines]="4">
       <span>Chain{{ card.chains.length > 1 ? 's:' : ':' }} </span>

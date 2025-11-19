@@ -22,4 +22,8 @@ export class MolstarPluginService {
     }
     return new this.PDBeMolstarPluginClass();
   }
+
+  getClass() {
+    return this.PDBeMolstarPluginClass;
+  }
 }

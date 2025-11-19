@@ -10,7 +10,6 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
-import { EntryPgProtvistaComponent, FixedSelectionInput } from '../shared/entry-pv-nightingale/entry-pv-nightingale.component';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
 import { entryDomainsTooltips, resourceUrls, tourIds } from '../../entry-constant';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
@@ -30,19 +29,20 @@ import { VisualisationInteractivityService } from '../../services/vis-interactiv
 import { Molecule } from '../../data-models/molecule.model';
 import { ProcessedDomain } from '../../store/data-processing/models/processed-entities.model';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
-
+import { PvDataProcessingFacade } from '../shared/entry-pv-nightingale/pv-entry-api.facade';
+import { FixedSelectionInput, ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
 @Component({
   selector: 'pdbc-domains-tab',
   standalone: true,
   imports: [
     CommonModule,
     EntryDropdownComponent,
-    EntryPgProtvistaComponent,
     InteractiveTablesComponent,
     NgxSkeletonLoaderModule,
     HelpIconWithTooltipComponent,
     SmartSeqViewerComponent,
     MolstarComponent,
+    ProtvistaWrapperComponent,
   ],
   templateUrl: './domains-tab.component.html',
   styleUrl: './domains-tab.component.scss',
@@ -54,6 +54,134 @@ export class DomainsTabComponent implements AfterViewInit {
   public readonly popService = inject(PopupWindowService);
   private readonly utilService = inject(UtilService);
   private readonly destroyRef = inject(DestroyRef);
+
+  private protvistaDataFacade = inject(PvDataProcessingFacade);
+  public macromolSequence = this.protvistaDataFacade.sequence;
+  public loadingStatus = this.protvistaDataFacade.loadingStatus;
+
+  // TODO this should be signal also
+  public readonly currentDomainsFeatureId = signal<string | undefined>(undefined);
+  public readonly currentDomainsFeature = signal<any[] | undefined>(undefined);
+  public readonly protvistaTooltips = computed(() => this.protvistaDataFacade.tooltips());
+  public readonly protvistaData = computed(() => {
+    const domainsByResource = this.protvistaDataFacade.domainsByResource();
+    const domainResourcesList = this.protvistaDataFacade.domainResourcesList();
+    const mergedDomainsList = domainsByResource.flat();
+
+    const biophysicalResourcesList = this.protvistaDataFacade.biophysicalResourcesList();
+    const biophysicalByResource = this.protvistaDataFacade.biophysicalByResource();
+    const mergedBiophysicalList = biophysicalByResource.flat();
+
+    const currentDomainsFeatureId = this.currentDomainsFeatureId();
+    const currentDomainsFeature = this.currentDomainsFeature();
+
+    return [
+      {
+        id: currentDomainsFeatureId,
+        type: 'TrackCanvas',
+        name: 'Current Domain',
+        data: currentDomainsFeature,
+        status: 'ready-has-data',
+        isSticky: true,
+        isCustomData: true,
+        isExpandable: false,
+        isCustomFixed: true,
+      },
+      {
+        id: 'uniprot',
+        type: 'TrackCanvas',
+        name: 'UniProt',
+        data: this.protvistaDataFacade.uniprotTracks(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['uniprot'],
+        // colourIn3DControl: true,
+      },
+      {
+        id: 'validation',
+        type: 'TrackCanvas',
+        name: 'Validation',
+        data: this.protvistaDataFacade.validationTracks(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['validation'],
+      },
+      {
+        id: 'secondary',
+        type: 'TrackCanvas',
+        name: 'Secondary structure',
+        data: this.protvistaDataFacade.secStrTracks(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['secondary'],
+      },
+      {
+        id: 'binding',
+        type: 'TrackCanvas',
+        name: 'Ligand binding sites',
+        data: this.protvistaDataFacade.ligandBindingTracks(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['binding'],
+      },
+      {
+        id: 'interfaces',
+        type: 'TrackCanvas',
+        name: 'Interaction interfaces',
+        data: this.protvistaDataFacade.interfacesTracks(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['interfaces'],
+      },
+      {
+        id: 'domains',
+        type: 'NestedTrackCanvas',
+        name: 'Domains',
+        data: mergedDomainsList,
+        childData: domainsByResource.map((data, i) => {
+          const rawId = domainResourcesList[i];
+          const sanitizedId = rawId
+            .toLowerCase()
+            .replace(/\s+/g, '') // remove all whitespace
+            .replace(/[^a-z0-9]/g, ''); // remove anything not a–z or 0–9
+
+          return {
+            id: `${sanitizedId}_${i}`,
+            name: domainResourcesList[i],
+            data,
+            status: this.protvistaDataFacade.loadingStatusPerTrack()['domains'],
+            // colourIn3DControl: true,
+          };
+        }),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['domains'],
+      },
+      {
+        id: 'biophysical',
+        type: 'NestedTrackCanvas',
+        name: 'Biophysical parameters',
+        data: mergedBiophysicalList,
+        childData: biophysicalByResource.map((data, i) => {
+          const rawId = biophysicalResourcesList[i];
+          const sanitizedId = rawId
+            .toLowerCase()
+            .replace(/\s+/g, '_') // remove all whitespace
+            .replace(/[^a-z0-9]/g, ''); // remove anything not a–z or 0–9
+
+          return {
+            id: `${sanitizedId}_${i}`,
+            name: biophysicalResourcesList[i],
+            data,
+            status: this.protvistaDataFacade.loadingStatusPerTrack()['secondary'],
+          };
+        }),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['secondary'],
+      },
+      {
+        id: 'conservation',
+        type: 'TrackConservation',
+        name: 'Conservation',
+        data: this.protvistaDataFacade.originalConservationData(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['conservation'],
+      },
+      {
+        id: 'variation',
+        type: 'TrackVariation',
+        name: 'Variation',
+        data: this.protvistaDataFacade.originalVariationData(),
+        status: this.protvistaDataFacade.loadingStatusPerTrack()['variation'],
+      },
+    ];
+  });
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
 
@@ -376,6 +504,32 @@ export class DomainsTabComponent implements AfterViewInit {
       trackName: 'Current Domain',
       trackSegments: segments,
       trackTooltip: 'Current Domain',
+    });
+
+    const fragments = segmentsForChainId.map((boundary) => {
+      return { tooltipContent: `Custom data: ${boundary.start} - ${boundary.end}`, start: boundary.start, end: boundary.end };
+    });
+
+    const segmentsName = segmentsForChainId
+      .map((boundary) => {
+        return `${boundary.start}-${boundary.end}`;
+      })
+      .join('_');
+
+    this.currentDomainsFeatureId.set(`fixed-custom-${entityId}-${chainId}-${segmentsName}`);
+    this.currentDomainsFeature.set([
+      {
+        accession: 'custom-domain',
+        color: '#D0DFBB',
+        locations: [{ fragments }],
+        label: 'Custom data',
+      },
+    ]);
+    this.protvistaDataFacade.processNewData(`${entityId}`, false);
+  }
+  openedAddCustomTrack() {
+    this.gAS.logPageEvents('ep_map_data', {
+      tab: this.compCommunication.currentTabName() ?? '',
     });
   }
 }

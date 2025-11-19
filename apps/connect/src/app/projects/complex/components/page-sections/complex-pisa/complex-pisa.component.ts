@@ -10,7 +10,7 @@ import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
 import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { PARAMS, tourIds } from '../../../complex.constant';
+import { baseUrl, PARAMS, tourIds } from '../../../complex.constant';
 import { drawHistogram } from './histogram';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { PISAAssemblyParam } from '../../../models/pisa-assembly-param.model';
@@ -35,6 +35,7 @@ export class ComplexPISAComponent implements OnInit, AfterViewInit {
   public readonly colDefs = colDefs;
   public readonly initialState = initialState;
   public readonly rowSelection = rowSelection;
+  public baseUrl = baseUrl;
 
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   public readonly tutorialTourService = inject(ComplexPageTutorialTourService);

@@ -26,6 +26,7 @@ import {
   generateMacromoleculesTableFilters,
   generateProcessedMacromolecules,
   getUniProtMappingsForMacromolecule,
+  mapMacromoleculesByPreferredAssembly,
   mapMacromoleculesChainsToEntityId,
   processMacromoleculesDescriptions,
 } from './data-processing/macromolecule-processing';
@@ -919,8 +920,8 @@ export class EntryEffects {
       map(([summaryData, assemblies, macromolecules]) => {
         if (assemblies === undefined || summaryData === undefined || macromolecules === undefined) throw 'missing data to process macromolecules';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblies);
-        const macromoleculesForPrefAssembly = filterMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
-        const procMacromoleculesFilters = generateMacromoleculesTableFilters(macromoleculesForPrefAssembly);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const procMacromoleculesFilters = generateMacromoleculesTableFilters(macromoleculesWithPrefAssembly);
         return EntryActions.getProcMacromoleculesFiltersSuccess({ procMacromoleculesFilters });
       }),
       catchError(() => of(EntryActions.getProcMacromoleculesFiltersFailure()))
@@ -943,8 +944,8 @@ export class EntryEffects {
       map(([summaryData, assemblies, macromolecules]) => {
         if (summaryData === undefined || assemblies === undefined || macromolecules === undefined) throw 'missing data to process macromolecules';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblies);
-        const macromoleculesForPrefAssembly = filterMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
-        const procMacromoleculesCards = generateMacromoleculesCards(macromoleculesForPrefAssembly);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const procMacromoleculesCards = generateMacromoleculesCards(macromoleculesWithPrefAssembly);
         return EntryActions.getProcMacromoleculesCardsSuccess({ procMacromoleculesCards });
       }),
       catchError(() => of(EntryActions.getProcMacromoleculesCardsFailure()))
@@ -973,8 +974,8 @@ export class EntryEffects {
         if (summaryData === undefined || assemblyData === undefined || macromolecules === undefined || carbohydrates === undefined)
           throw 'missing data to process macromolecules';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
-        const macromoleculesForPrefAssembly = filterMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
-        const processedMacromolecules = generateProcessedMacromolecules(macromoleculesForPrefAssembly, carbohydrates);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const processedMacromolecules = generateProcessedMacromolecules(macromoleculesWithPrefAssembly, carbohydrates);
         return EntryActions.getProcessedMacromoleculesSuccess({ processedMacromolecules });
       }),
       catchError(() => of(EntryActions.getProcessedMacromoleculesFailure()))

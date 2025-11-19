@@ -20,8 +20,7 @@ export class MbOverviewAssemblyComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
   public readonly gAS = inject(GoogleAnalyticsService);
-  // public baseUrl = baseUrl;
-  public baseUrl = 'https://wwwdev.ebi.ac.uk/pdbe/';
+  public baseUrl = baseUrl;
 
   public readonly processedAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
 

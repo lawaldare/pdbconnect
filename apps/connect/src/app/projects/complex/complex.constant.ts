@@ -122,3 +122,5 @@ export const superpositionTooltip =
 
 export const idWarningTooltip =
   'The identifier shown on this page is currently part of the beta release. These identifiers are subject to change during the beta phase. Final, stable IDs will be assigned and maintained once the resource enters full production.';
+
+export const baseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';

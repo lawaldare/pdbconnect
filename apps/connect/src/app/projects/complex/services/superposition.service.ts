@@ -49,15 +49,15 @@ export class SuperpositionService {
       this.baseComponents = complexData.participants.map((p: any) => p.accession);
       this.baseRfamMappings = await this.getRfamMappings(pdb_id);
 
-      this.viewerInstance = new PDBeMolstarPlugin();
+      const pluginInstance = this.molstarPluginService.createInstance();
+      this.viewerInstance = pluginInstance;
 
       const defaultOptions = {
-        bgColor: 'white',
+        bgColor: { r: 255, g: 255, b: 255 },
         sequencePanel: false,
         hideStructure: ['water'],
         hideControls: true,
-        hideCanvasControls: ['expand', 'animation', 'controlToggle', 'controlInfo', 'selection', 'trajectory'],
-        landscape: true,
+        hideCanvasControls: ['animation'],
       };
       const options = {
         ...defaultOptions,
@@ -65,6 +65,7 @@ export class SuperpositionService {
         assemblyId: assembly_id,
         customData: undefined,
       };
+      // const layout = [{ target: container, component: this.molstarPluginService.getClass().UIComponents.FullLayoutNoControlsUnlessExpanded }];
       await this.viewerInstance.render(container, options);
       await this.viewerInstance.events.loadComplete.subscribe(() => {
         this.isLoading.set(false);

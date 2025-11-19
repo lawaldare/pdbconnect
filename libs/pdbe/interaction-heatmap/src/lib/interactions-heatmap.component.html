@@ -37,52 +37,21 @@
     </div>
   </div>
   <div class="visualisation-column">
-    <nightingale-manager>
-      @if (atomNumber()) {
-      <nightingale-navigation
-        [display-start]="1"
-        [display-end]="atomNumber()"
-        [length]="atomNumber()"
-        width="581"
-        height="40"
-        margin-left="0"
-        margin-right="10"
-      ></nightingale-navigation>
-      } @if (atomNamesString()) {
-      <pdb-ligand-interactions-sequence
-        id="ligand-atoms-sequence"
-        #ligAtomsSequence
-        [length]="atomNumber()"
-        [sequence]="atomNamesString()"
-        height="40"
-        width="581"
-        margin-left="0"
-        margin-right="10"
-        style="padding-top: 10px"
-      ></pdb-ligand-interactions-sequence>
-      }
-      <nightingale-sequence-heatmap-new
-        id="heatmap-container-atoms"
-        heatmap-id="heatmap-atoms"
-        #heatmapAtoms
-        width="581"
-        height="23"
-        margin-left="0"
-        highlight-event="onmouseover"
-        hm-highlight-width="1"
-      ></nightingale-sequence-heatmap-new>
-      <nightingale-sequence-heatmap-new
-        id="heatmap-container-resids"
-        heatmap-id="heatmap-resids"
-        #heatmapResids
-        width="581"
-        height="390"
-        margin-left="0"
-        highlight-event="onmouseover"
-        highlight-color="#FFFFFF00"
-        hm-highlight-width="1"
-      ></nightingale-sequence-heatmap-new>
-    </nightingale-manager>
+    @if (atomNamesString() && protvistaData()) {
+    <lib-pv-angular-wrapper
+      containerId="ligands-heatmap-pv"
+      [sequence]="atomNamesString()!"
+      [data]="protvistaData()!"
+      entryId="none"
+      entityId="none"
+      chainId="none"
+      [tooltips]="{}"
+      [externalEvents]="true"
+      customTrackControls=""
+      maxHeight="none"
+      [ligandsSeqMode]="true"
+    ></lib-pv-angular-wrapper>
+    }
   </div>
 </div>
 <div class="interactions-heatmap-legend">
