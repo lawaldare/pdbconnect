@@ -168,7 +168,17 @@
               (mouseout)="mouseoutListItem()"
             >
               <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
-              <button class="select-entity-btn">{{ listItem.name.molecule }}</button>
+              <button class="select-entity-btn">
+                {{ listItem.name.molecule }} @if (hasNonPrefAssemblySelection(listItem, 'all')) {
+                <img
+                  src="assets/icons/warning_icon.webp"
+                  style="margin-left: 4px; width: 16px; height: 16px"
+                  matTooltipClass="complex-name-tooltip"
+                  [matTooltip]="'Macromolecule not included in the preferred assembly/complex.'"
+                  matTooltipPosition="below"
+                />
+                }
+              </button>
             </div>
             <!-- @if (isSelected(listItem)) {
                 <div class="more-details-btn">
@@ -223,7 +233,13 @@
               <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
               <button class="select-entity-btn">
                 {{ listItem.codeAndName.name }} - {{ listItem.id }} @if (hasNonPrefAssemblySelection(listItem, 'all')) {
-                <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+                <img
+                  src="assets/icons/warning_icon.webp"
+                  style="margin-left: 4px; width: 16px; height: 16px"
+                  matTooltipClass="complex-name-tooltip"
+                  [matTooltip]="'Ligand not included in the preferred assembly/complex.'"
+                  matTooltipPosition="below"
+                />
                 }
               </button>
             </div>
@@ -305,7 +321,13 @@
                 <span>{{ listItem.resource }} {{ listItem.additionalData.accession }}</span><br />
                 <span>{{ listItem.segmentsAsText }}</span>
                 @if (hasNonPrefAssemblySelection(listItem, 'any')) {
-                <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+                <img
+                  src="assets/icons/warning_icon.webp"
+                  style="margin-left: 4px; width: 16px; height: 16px"
+                  matTooltipClass="complex-name-tooltip"
+                  [matTooltip]="'One or more segments not included in the preferred assembly/complex.'"
+                  matTooltipPosition="below"
+                />
                 }
               </button>
             </div>
@@ -361,7 +383,13 @@
               <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
               <button class="select-entity-btn">
                 {{ listItem.codeAndName.name }} - {{ listItem.id }} @if (hasNonPrefAssemblySelection(listItem, 'all')) {
-                <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+                <img
+                  src="assets/icons/warning_icon.webp"
+                  style="margin-left: 4px; width: 16px; height: 16px"
+                  matTooltipClass="complex-name-tooltip"
+                  [matTooltip]="'Modification not included in the preferred assembly/complex.'"
+                  matTooltipPosition="below"
+                />
                 }
               </button>
             </div>
