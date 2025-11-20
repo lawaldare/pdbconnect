@@ -1,19 +1,25 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { AfterViewInit, Component, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UploadPageFacade } from './uploade-page.facade';
+import { MaterialModule } from '@pdbc/core';
+import { PisaUtilService } from '../../services/pisa-util.service';
 
 @Component({
   selector: 'app-upload',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MaterialModule, ReactiveFormsModule],
   templateUrl: './upload-page.html',
   styleUrl: './upload-page.scss',
 })
 export class UploadPageComponent implements AfterViewInit {
   public facade = inject(UploadPageFacade);
+  public pisaUtilService = inject(PisaUtilService);
 
   private molstarViewer: any = null;
   public currentFile: File | null = null;
+
+  public selectedLigandPosition = new FormControl('auto', { nonNullable: true });
+  public analysisIncluded = 'complexesandinterfaces';
 
   public modelSym = this.facade.modelSym;
   public modelSymParam = this.facade.modelSymParam;
@@ -21,6 +27,12 @@ export class UploadPageComponent implements AfterViewInit {
   public orthoCode = this.facade.orthoCode;
   public analysis = this.facade.analysis;
   public label = this.facade.label;
+  public processLigands = this.facade.processLigands;
+
+  public selectedLigands = linkedSignal({
+    source: this.processLigands,
+    computation: () => this.processLigands().map((ligand) => ligand.title),
+  });
 
   @ViewChild('viewer') container!: ElementRef<HTMLElement>;
 
@@ -33,6 +45,7 @@ export class UploadPageComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.initMolstar();
+    console.log(this.pisaUtilService.loadingView());
   }
 
   public onSubmit(): void {
@@ -52,7 +65,8 @@ export class UploadPageComponent implements AfterViewInit {
   /** Molstar initialization */
   private async initMolstar() {
     try {
-      this.facade.showLoading();
+      // this.facade.showLoading();
+      // this.pisaUtilService.setLoadingView('LOADING');
 
       // Assumes Molstar is loaded globally
       this.molstarViewer = await (window as any).molstar.Viewer.create(this.container.nativeElement, {
@@ -73,12 +87,14 @@ export class UploadPageComponent implements AfterViewInit {
         if (e.type === 'error') {
           this.facade.showError(`Mol* error: ${e.message}`);
           this.molstarViewer.plugin.clear();
-          // this.currentFile = null;
-          this.facade.hideLoading();
+          this.currentFile = null;
+          // this.facade.hideLoading();
+          this.pisaUtilService.setLoadingView('ERROR_LOADING');
         }
       });
 
-      this.facade.hideLoading();
+      // this.facade.hideLoading();
+      this.pisaUtilService.setLoadingView('INITIAL');
     } catch (error) {
       console.error('Error initializing Molstar:', error);
       this.facade.showError('Error initializing Molstar');
@@ -150,7 +166,8 @@ export class UploadPageComponent implements AfterViewInit {
     }
 
     try {
-      this.facade.showLoading();
+      // this.facade.showLoading();
+      this.pisaUtilService.setLoadingView('LOADING');
 
       const fileContent = await this.facade.readFileAsText(file);
 
@@ -170,12 +187,28 @@ export class UploadPageComponent implements AfterViewInit {
 
       const structures = this.molstarViewer.plugin.managers.structure.hierarchy.current.structures;
       this.facade.structures.update(() => structures);
-      console.log(this.facade.ligandCompIds());
-      this.facade.hideLoading();
+      // this.facade.hideLoading();
+      this.pisaUtilService.setLoadingView('LOADED');
     } catch (error) {
       console.error('Error loading CIF file:', error);
       this.facade.showError('Failed to load the CIF file. Please try another file.');
-      this.facade.hideLoading();
+      // this.facade.hideLoading();
+      this.pisaUtilService.setLoadingView('ERROR_LOADING');
     }
+  }
+
+  public selectProcessLigands(selected: boolean, index: number): void {
+    const ligands = this.facade.processLigands();
+    ligands[index].selected = selected;
+    const selectedLigands = ligands.filter((ligand) => ligand.selected).map((ligand) => ligand.title);
+    this.selectedLigands.update(() => [...selectedLigands]);
+    console.log('Selected ligands:', this.selectedLigands());
+  }
+
+  public analyse(): void {
+    console.log('Selected ligands:', this.selectedLigands());
+    console.log('Ligand position:', this.selectedLigandPosition.value);
+    console.log('Analysis included:', this.analysisIncluded);
+    this.pisaUtilService.setPageView('PROCESS');
   }
 }

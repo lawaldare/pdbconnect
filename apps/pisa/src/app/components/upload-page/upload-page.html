@@ -1,16 +1,81 @@
-<h1>Upload your file</h1>
+<h1 [ngStyle]="{'margin-bottom': modelSym() ? '0' : '26px'}">{{label()}}</h1>
+@if(modelSym()){
+<span class="your-file">Your file</span>
+}
 <main>
   <section class="upload-section">
+    @if(pisaUtilService.pageView() === 'INITIAL'){
+    <!-- Initial View -->
     @if(modelSym()){
-    <p>Your file</p>
     <div class="row">
       <p class="row-header">Available components</p>
-      <p class="row-data"></p>
+      <p class="row-data">{{analysis()}}</p>
+    </div>
+    <div class="row parameters-row">
+      <p class="row-header">Cell parameters</p>
+      <p class="row-data parameters">
+        <span class="cell-row">
+          <span class="cell-row-label">A</span>
+          <span class="cell-row-value">{{ modelSym()?.spacegroup?.cell?.size?.[0].toFixed(2) }}</span>
+        </span>
+        <span class="cell-row">
+          <span class="cell-row-label">Alpha</span>
+          <span class="cell-row-value">{{ modelSymParam()?.[0].toFixed(2) }}</span>
+        </span>
+        <span class="cell-row">
+          <span class="cell-row-label">B</span>
+          <span class="cell-row-value">{{ modelSym()?.spacegroup?.cell?.size?.[1].toFixed(2) }}</span>
+        </span>
+        <span class="cell-row">
+          <span class="cell-row-label">Beta</span>
+          <span class="cell-row-value">{{ modelSymParam()?.[1].toFixed(2) }}</span>
+        </span>
+        <span class="cell-row">
+          <span class="cell-row-label">C</span>
+          <span class="cell-row-value">{{ modelSym()?.spacegroup?.cell?.size?.[2].toFixed(2) }}</span>
+        </span>
+        <span class="cell-row">
+          <span class="cell-row-label">Gamma</span>
+          <span class="cell-row-value">{{ modelSymParam()?.[2].toFixed(2) }}</span>
+        </span>
+      </p>
+    </div>
+    <div class="row">
+      <p class="row-header">Space symmetry group</p>
+      <p class="row-data">{{ simplifiedSpacegroup() }}</p>
+    </div>
+    <div class="row">
+      <p class="row-header">Orthogonalisation code</p>
+      <p class="row-data">{{ orthoCode() }}</p>
     </div>
     <div class="row">
       <p class="row-header">Process ligands</p>
-      <p class="row-data"></p>
+      <p class="row-data">
+        @for(ligand of processLigands(); track ligand.title; let index = $index){
+        <mat-checkbox [checked]="ligand.selected" (change)="selectProcessLigands($event.checked, index)">{{ligand.title}}</mat-checkbox>
+        }
+      </p>
     </div>
+    <div class="row">
+      <p class="row-header">Process ligand position</p>
+      <p class="row-data">
+        <mat-select [formControl]="selectedLigandPosition">
+          <mat-option value="auto">Auto</mat-option>
+          <mat-option value="fixed">Fixed</mat-option>
+          <mat-option value="free">Free</mat-option>
+        </mat-select>
+      </p>
+    </div>
+    <div class="row parameters-row">
+      <p class="row-header">Include in analysis</p>
+      <p class="row-data">
+        <mat-radio-group [(ngModel)]="analysisIncluded">
+          <mat-radio-button value="complexesandinterfaces">Complexes and interfaces</mat-radio-button>
+          <mat-radio-button value="interfacesonly">Interfaces only</mat-radio-button>
+        </mat-radio-group>
+      </p>
+    </div>
+    <button class="vf-button vf-button--primary" (click)="analyse()">Analyse</button>
     } @else {
     <div class="upload-section-drag-drop" #dropArea (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">
       <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34" fill="none">
@@ -49,12 +114,46 @@
       </div>
       <span class="error">{{errorInputMessage()}}</span>
     </div>
+    } }@else if (pisaUtilService.pageView() === 'PROCESS') {
+    <!-- Processing View -->
+    <h3>Analysing...</h3>
+    <p class="analysing-text">
+      The analysis may take seconds to minutes, depending on the size and complexity. In case it takes too long, save this link [link to this job] so you can easily
+      return to it later within 7 days.
+    </p>
+    <div class="analysing-footer">
+      <p>
+        <span>Curious fact while you’re waiting:</span><br />
+        The largest protein in the entire PDB archive is still really small.
+      </p>
+    </div>
     }
   </section>
   <section class="molstar-section">
     <!-- <h4>Your structure will appear here</h4> -->
     <div class="viewer-container">
       <div #viewer id="molstar-viewer"></div>
+      <!-- Initial Loading -->
+      @if(pisaUtilService.loadingView() === 'INITIAL') {
+      <div class="loading initial">
+        <p class="loading-text">Your structure will appear here</p>
+        <img src="assets/images/icon-image.svg" alt="icon image" />
+      </div>
+      }
+      <!-- Error Loading -->
+      @if(pisaUtilService.loadingView() === 'ERROR_LOADING') {
+      <div class="loading initial">
+        <p class="loading-text">Unable to load your structure</p>
+        <img src="assets/images/icon-image.svg" alt="icon image" />
+      </div>
+      }
+      <!-- Loading View -->
+      @if(pisaUtilService.loadingView() === 'LOADING') {
+      <div class="loading loading-view">
+        <div class="spinner"></div>
+        <p class="loading-text">Loading structure...</p>
+      </div>
+      }
     </div>
   </section>
 </main>
