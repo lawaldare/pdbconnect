@@ -1,0 +1,12 @@
+@if (configForMolstar() !== undefined) {
+<lib-pdbe-molstar [id]="'pdbe-molstar-page'" [molstarConfig]="configForMolstar()" [height]="'100%'"></lib-pdbe-molstar>
+} @if (showStatusMessage() === true && hasClosedMessage() === false ) {
+<section class="info-banner">
+  <img class="close-btn" (click)="hasClosedMessage.set(true)" src="/assets/images/mobile/mb-close.svg" alt="close icon" />
+  <p>
+    <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+    Warning: Structure for entry id: "{{ entryId() }}" might not be available in this page. <br />
+    Status code for this entry: "{{ entryStatus() }}"
+  </p>
+</section>
+}
