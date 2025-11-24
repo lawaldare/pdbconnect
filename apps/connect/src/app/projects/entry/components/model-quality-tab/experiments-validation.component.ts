@@ -34,8 +34,7 @@ import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { cameraResetInMolstar, drawSelectionInMolstar, Molstar370DefaultParams } from '../../helpers/molstar-helpers';
+import { cameraResetInMolstar, drawSelectionInMolstar, Molstar370DefaultParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { OutlierDict, ValueLabel } from '../../store/data-processing/models/other-models';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
@@ -231,7 +230,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       landscape: true,
       subscribeEvents: true,
       granularity: 'residue',
-      hideControls: true,
+      hideControls: false,
       visualStyle: {
         polymer: {
           type: 'cartoon',
@@ -242,6 +241,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       },
       loadMaps: true,
       mapSettings: { defaultView: 'selection-box' },
+      sequencePanel: true,
       // ...(chainSelection && { 'selection': chainSelection }),
     };
 
@@ -278,7 +278,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       this.renderInMolstar(outliers);
     });
   }
-  private selectionData?: QueryParam[];
+  private selectionData?: QueryParamForHelpers[];
 
   private async renderInMolstar(outliers: OutlierDict) {
     const selectedValidationType = this.selectedValidationType();
@@ -288,7 +288,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
     const colours: string[] = [];
 
-    const outlierList: QueryParam[][] = [];
+    const outlierList: QueryParamForHelpers[][] = [];
     if (selectedValidationType.value === 'issue_count') {
       colours.push(...this.legends.map((legend) => legend.color));
       outlierList.push(...[outliers.residuesWith1Outlier, outliers.residuesWith2Outliers, outliers.residuesWith3OrMoreOutliers]);
@@ -425,6 +425,40 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     if (agreed) {
       this.isBannerCookies.set(true);
     }
+
+    // NEW: footer observer to stop sticky at bottom
+    this.waitForFooter((footerEl) => {
+      const stickyAside = this.elementRef.nativeElement.querySelector('#molstar-side-tour');
+      if (!stickyAside) return;
+
+      const footerObserver = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            footerEl.style.zIndex = '9';
+          } else {
+            footerEl.style.zIndex = ''; // remove inline z-index
+          }
+        },
+        {
+          rootMargin: `0px 0px -${stickyAside.offsetHeight - 120}px 0px`,
+          threshold: 0,
+        }
+      );
+
+      footerObserver.observe(footerEl);
+    });
+  }
+
+  private waitForFooter(callback: (footer: HTMLElement) => void) {
+    const check = () => {
+      const footer = document.querySelector('.vf-footer') as HTMLElement | null;
+      if (footer) {
+        callback(footer);
+      } else {
+        requestAnimationFrame(check);
+      }
+    };
+    requestAnimationFrame(check);
   }
 
   public startMQTabTour(): void {
@@ -467,5 +501,16 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
   public generateExpSearchUrl(term: string): string {
     return this.utilService.generateQueryURL(term, 'organism_scientific_name');
+  }
+
+  public onExpandMolstar(expanded: boolean) {
+    const stickyAside = this.elementRef.nativeElement.querySelector('#molstar-side-tour');
+    if (expanded) {
+      // force disable sticky when Mol* expands
+      this.renderer.addClass(stickyAside, 'force-unsticky');
+    } else {
+      // restore sticky when collapsed
+      this.renderer.removeClass(stickyAside, 'force-unsticky');
+    }
   }
 }

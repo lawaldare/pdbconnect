@@ -39,7 +39,38 @@
   <!-- 2nd Level Overlay -->
   @if(currentViewState() === viewStates.Detail){
   <!-- <p class="sub-header">Chain {{selectedDomain()?.segments?.join(', ')}}</p> -->
-
+  <div class="chains">
+    @if(dropdownOptions.length > 1){
+    <div class="dropdown-container">
+      <pdbc-entry-dropdown
+        [searchable]="false"
+        searchTitle="''"
+        [downloadable]="false"
+        [islink]="false"
+        [options]="dropdownOptions"
+        [title]="dropdownSelected"
+        (optionClickedEvent)="onDropdownSelect($event)"
+      >
+      </pdbc-entry-dropdown>
+    </div>
+    }@else if(dropdownOptions.length === 1){
+    <p class="title" [innerHTML]="dropdownOptions[0].name"></p>
+    } @if (symmetryDropdownSelected && symmetryDropdownOptions.length > 1) {
+    <p class="title">Symmetry Operation Id</p>
+    <pdbc-entry-dropdown
+      [searchable]="false"
+      [searchTitle]="''"
+      [downloadable]="false"
+      [islink]="false"
+      [options]="symmetryDropdownOptions"
+      [title]="symmetryDropdownSelected"
+      (optionClickedEvent)="onSymmetryDropdownSelect($event)"
+    ></pdbc-entry-dropdown>
+    } @else if(symmetryDropdownOptions.length === 1){
+    <p class="title">Symmetry Operation Id</p>
+    <p class="content" [innerHTML]="symmetryDropdownOptions[0].name"></p>
+    }
+  </div>
   <p class="title">Description</p>
   <p class="content">{{selectedDomain()?.accessionName}}</p>
   <p class="title">Source and domain accession</p>

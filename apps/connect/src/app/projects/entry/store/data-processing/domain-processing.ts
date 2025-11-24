@@ -1,10 +1,12 @@
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { CathMappings, DomainMapping, PfamMappings, ScopMappings } from '../../data-models/domains.model';
 import { ObservedSegments, PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
 import { Filter } from './models/other-models';
 import { Molecule } from '../../data-models/molecule.model';
 import { FILTERED_KELLY22_COLORBLIND_SCALE } from '../../entry-constant';
 import { DomainsBoundaries, ProcessedDomain, ProcessedMacromolecule } from './models/processed-entities.model';
+import { AssemblyData } from '../../data-models/assembly.model';
+import { QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { getCleanMoleculeName } from '../../helpers/processed-data-to-controls';
 
 export function formatSegmentsAsText(segments: string[]) {
   const segmentsAsText = segments
@@ -27,6 +29,39 @@ function safeAuthStr(num?: string | null) {
   return num === undefined || num === null ? undefined : num;
 }
 
+function sortByBooleanFlag<T extends Record<string, any[]>>(arrays: T, flagKey: keyof T): T {
+  const keys = Object.keys(arrays) as (keyof T)[];
+  const length = arrays[flagKey].length;
+
+  type Row = { originalIndex: number } & { [P in keyof T]: T[P][number] };
+
+  // Zip into objects
+  const zipped: Row[] = Array.from({ length }, (_, i) => {
+    const row: any = { originalIndex: i };
+    keys.forEach((k) => {
+      row[k] = arrays[k][i];
+    });
+    return row as Row;
+  });
+
+  // Stable sort: true first, preserving order
+  zipped.sort((a, b) => {
+    const flagA = a[flagKey] as boolean;
+    const flagB = b[flagKey] as boolean;
+
+    if (flagA === flagB) return a.originalIndex - b.originalIndex;
+    return flagA ? -1 : 1;
+  });
+
+  // Unzip back
+  const result = {} as T;
+  keys.forEach((k) => {
+    result[k] = zipped.map((z) => z[k]) as T[typeof k];
+  });
+
+  return result;
+}
+
 /**
  * This function gets domain mappings in a unified format
  * and processes them so only observed domain segments are taken into account
@@ -44,9 +79,11 @@ function safeAuthStr(num?: string | null) {
 export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCoverage: PolymerCoverageMolecule[]) {
   const segments: string[] = [];
   const segmentsResidNumber: string[] = [];
-  const molstarSelection: QueryParam[] = [];
+  const molstarSelection: QueryParamForHelpers[] = [];
   const segmentsBoundaries: DomainsBoundaries[] = [];
   const segmentsInPrefAssembly: boolean[] = [];
+  const segmentsEntityIds: number[] = [];
+  const segmentsStructAsymId: string[] = [];
 
   // Map PolymerCoverage for quick lookup
   const coverageMap = new Map<string, ObservedSegments[]>();
@@ -72,7 +109,6 @@ export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCov
     if (observedSegments.length === 0) continue;
 
     const isInPrefAssembly = inPrefAssemblyMap.get(key) || false;
-    segmentsInPrefAssembly.push(isInPrefAssembly);
 
     let firstRes = {
       residue_number: mapping.start.residue_number,
@@ -138,6 +174,7 @@ export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCov
     if (firstRes.author_residue_number === undefined) console.warn(`Warn: domain with undefined start auth numbering found`);
     if (lastRes.author_residue_number === undefined) console.warn(`Warn: domain with undefined end auth numbering found`);
 
+    segmentsInPrefAssembly.push(isInPrefAssembly);
     segments.push(`${chainIdPrefix} ${firstResAuthStr}${firstRes.author_insertion_code || ''} - ${lastResAuthStr}${lastRes.author_insertion_code || ''}`);
     segmentsResidNumber.push(`${chainIdPrefix} ${firstRes.residue_number} - ${lastRes.residue_number}`);
     segmentsBoundaries.push({
@@ -146,17 +183,27 @@ export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCov
       start: firstRes.residue_number,
       end: lastRes.residue_number,
     });
+    segmentsEntityIds.push(mapping.entity_id);
+    segmentsStructAsymId.push(mapping.struct_asym_id);
 
     prevChain = mapping.chain_id;
   }
 
-  return {
-    molstarSelection,
-    segmentsBoundaries,
-    segments,
-    segmentsResidNumber,
-    segmentsInPrefAssembly,
-  };
+  // sort by segmentsInPrefAssembly true
+  const sorted = sortByBooleanFlag(
+    {
+      molstarSelection,
+      segmentsBoundaries,
+      segments,
+      segmentsResidNumber,
+      segmentsInPrefAssembly,
+      segmentsEntityIds,
+      segmentsStructAsymId,
+    },
+    'segmentsInPrefAssembly'
+  );
+
+  return sorted;
 }
 
 function filterMappingObservedWithCoverage(domainMappings: DomainMapping[], polymerCoverage: PolymerCoverageMolecule[]): number[] {
@@ -440,12 +487,62 @@ export function generateDomainsTableFilters(
   return newFilters;
 }
 
+export function generateSymmetryOperatorsDictForDomain(segmentsEntityIds: number[], segmentsStructAsymIds: string[], preferredAssembly: AssemblyData) {
+  const segmentsSymmOperators: string[][] = [];
+  for (let iSeg = 0; iSeg < segmentsEntityIds.length; iSeg++) {
+    const segmentEntityId = segmentsEntityIds[iSeg];
+    const segmentStructAsymId = segmentsStructAsymIds[iSeg];
+    const currentSegmentSymmOperators: string[] = [];
+    const assemblyEntityOfMacromolSearch = preferredAssembly.entities.filter((ent) => ent.entity_id === segmentEntityId);
+    if (assemblyEntityOfMacromolSearch.length === 0) {
+      segmentsSymmOperators.push([]);
+      continue;
+    } else if (assemblyEntityOfMacromolSearch.length > 1) console.warn('Warning: multiple assembly entities found for single macromolecule');
+    const assemblyEntityOfMacromol = assemblyEntityOfMacromolSearch[0];
+
+    const hasSymmetryOp = !assemblyEntityOfMacromol.in_chains.every((chainidWithOp) => chainidWithOp.includes('-') === false);
+    if (hasSymmetryOp === false) {
+      segmentsSymmOperators.push([]);
+      continue;
+    }
+
+    const prefAssemblyStructAsymsForSegment = assemblyEntityOfMacromol.in_chains.filter(
+      (structAsymIdWithOp) => structAsymIdWithOp.split('-')[0] === segmentStructAsymId
+    );
+
+    const noStructAsymsWithOp = prefAssemblyStructAsymsForSegment.length === 0;
+    const onlyCurrentChainId = prefAssemblyStructAsymsForSegment.length === 1 && prefAssemblyStructAsymsForSegment[0] === segmentStructAsymId;
+    const onlyCurrentChainWithOp = prefAssemblyStructAsymsForSegment.length === 1 && prefAssemblyStructAsymsForSegment[0] !== segmentStructAsymId;
+
+    if (noStructAsymsWithOp || onlyCurrentChainId) {
+      segmentsSymmOperators.push([]);
+      continue;
+    }
+    if (onlyCurrentChainWithOp) {
+      const symmetryOperator = prefAssemblyStructAsymsForSegment[0].split('-')[1];
+      segmentsSymmOperators.push([`ASM-${symmetryOperator}`]);
+      continue;
+    }
+    // None for default selection
+    currentSegmentSymmOperators.push('None');
+
+    // add each operator to list
+    for (const structAsymIdWithOp of prefAssemblyStructAsymsForSegment) {
+      const symmetryOperator = structAsymIdWithOp === segmentStructAsymId ? '1' : structAsymIdWithOp.split('-')[1];
+      currentSegmentSymmOperators.push(`ASM-${symmetryOperator}`);
+    }
+    segmentsSymmOperators.push(currentSegmentSymmOperators);
+  }
+  return segmentsSymmOperators;
+}
+
 export function generateProcessedDomains(
   cathMappings: CathMappings,
   scopMappings: ScopMappings,
   pfamMappings: PfamMappings,
   polymerCoverage: PolymerCoverageMolecule[],
-  macromolecules: Molecule[]
+  macromolecules: Molecule[],
+  preferredAssembly: AssemblyData
 ) {
   if ((<any>pfamMappings).empty === true) pfamMappings = {};
   if ((<any>cathMappings).empty === true) cathMappings = {};
@@ -465,7 +562,7 @@ export function generateProcessedDomains(
 
       // we get some data needed to be rendered in the table
       const entityIds = mappings.map((mapping) => mapping.entity_id).filter((entityId, idx, ids) => ids.indexOf(entityId) === idx);
-      const moleculeNames = macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => mol.molecule_name[0]);
+      const moleculeNames = macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => getCleanMoleculeName(mol));
 
       // ... and use the formatSegments function to get:
       // 1 - molstarSelections to each cath domain (molstarSelection)
@@ -479,6 +576,11 @@ export function generateProcessedDomains(
       if (segmentData.segments.length === 0) continue;
       const segmentsAsText = formatSegmentsAsText(segmentData.segments);
 
+      // get list
+      const segmentsEntityIds = segmentData.segmentsEntityIds;
+      const segmentsStructAsymId = segmentData.segmentsStructAsymId;
+      const symmOpListForSegments = generateSymmetryOperatorsDictForDomain(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
+
       // ... we also check whether all domain segments are in pref assembly for warning messages
       const allSegmentsInPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
 
@@ -491,6 +593,7 @@ export function generateProcessedDomains(
         segments: segmentData.segments,
         segmentsAsText,
         allSegmentsInPrefAssembly,
+        symmOpListForSegments,
         additionalData: {
           accession: resourceAcc,
           selections: [segmentData.molstarSelection],
@@ -516,7 +619,7 @@ export function generateProcessedDomains(
 
       // we get some data needed to be rendered in the table
       const entityIds = mappings.map((mapping) => mapping.entity_id).filter((entityId, idx, ids) => ids.indexOf(entityId) === idx);
-      const moleculeNames = macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => mol.molecule_name[0]);
+      const moleculeNames = macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => getCleanMoleculeName(mol));
 
       // ... and use the formatSegments function to get:
       // 1 - molstarSelections to each cath domain (molstarSelection)
@@ -530,6 +633,10 @@ export function generateProcessedDomains(
       if (segmentData.segments.length === 0) continue;
       const segmentsAsText = formatSegmentsAsText(segmentData.segments);
 
+      const segmentsEntityIds = segmentData.segmentsEntityIds;
+      const segmentsStructAsymId = segmentData.segmentsStructAsymId;
+      const symmOpListForSegments = generateSymmetryOperatorsDictForDomain(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
+
       // ... we also check whether all domain segments are in pref assembly for warning messages
       const allSegmentsInPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
 
@@ -542,6 +649,7 @@ export function generateProcessedDomains(
         segments: segmentData.segments,
         segmentsAsText,
         allSegmentsInPrefAssembly,
+        symmOpListForSegments,
         additionalData: {
           accession: resourceAcc,
           selections: [segmentData.molstarSelection],
@@ -565,7 +673,7 @@ export function generateProcessedDomains(
       const domain = `${resourceAcc}-${i + 1}`;
 
       // we get some data needed to be rendered in the table
-      const moleculeNames = macromolecules.filter((mol) => mapping.entity_id === mol.entity_id).map((mol) => mol.molecule_name[0]);
+      const moleculeNames = macromolecules.filter((mol) => mapping.entity_id === mol.entity_id).map((mol) => getCleanMoleculeName(mol));
 
       // ... and use the formatSegments function to get:
       // 1 - molstarSelections to each cath domain (molstarSelection)
@@ -579,6 +687,10 @@ export function generateProcessedDomains(
       if (segmentData.segments.length === 0) continue;
       const segmentsAsText = formatSegmentsAsText(segmentData.segments);
 
+      const segmentsEntityIds = segmentData.segmentsEntityIds;
+      const segmentsStructAsymId = segmentData.segmentsStructAsymId;
+      const symmOpListForSegments = generateSymmetryOperatorsDictForDomain(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
+
       // ... we also check whether all domain segments are in pref assembly for warning messages
       const allSegmentsInPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
 
@@ -591,6 +703,7 @@ export function generateProcessedDomains(
         segments: segmentData.segments,
         segmentsAsText,
         allSegmentsInPrefAssembly,
+        symmOpListForSegments,
         additionalData: {
           accession: resourceAcc,
           selections: [segmentData.molstarSelection],

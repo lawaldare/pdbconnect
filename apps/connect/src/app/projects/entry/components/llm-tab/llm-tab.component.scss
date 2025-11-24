@@ -190,6 +190,10 @@ article {
       line-height: 26.6px; /* 166.25% */
     }
   }
+
+  .symm-op-txt {
+    margin-left: 8px;
+  }
 }
 
 .sequence-container {
@@ -258,7 +262,7 @@ article {
 
   // height: 296px;
   // min-height: 296px;
-  z-index: 1;
+  z-index: 8;
 }
 
 .molstar-container.big {

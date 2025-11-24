@@ -11,9 +11,19 @@
     transition: all 0.3s ease;
 
     .right-side {
+      background: #fff;
+
       &.sticky {
         top: 10px;
         position: fixed;
+        z-index: 1000;
+      }
+
+      &.force-unsticky {
+        top: 0;
+        width: 100% !important;
+        height: 100%;
+        left: 0;
         z-index: 1000;
       }
 

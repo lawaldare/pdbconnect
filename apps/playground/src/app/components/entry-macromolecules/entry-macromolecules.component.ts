@@ -82,7 +82,7 @@ export class EntryMacromoleculesComponent implements OnChanges {
     const filterSelected = event.value;
 
     if (filterSelected === 'proteins') {
-      const proteinMolecules = this.molecules().filter((mol) => mol.molecule_type === 'polypeptide(L)' || mol.molecule_type === 'polypeptide(R)');
+      const proteinMolecules = this.molecules().filter((mol) => mol.molecule_type === 'polypeptide(L)' || mol.molecule_type === 'polypeptide(D)');
       this.moleculesUpdated.update(() => proteinMolecules);
       return;
     }

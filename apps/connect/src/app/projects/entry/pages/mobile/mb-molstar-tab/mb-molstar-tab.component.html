@@ -34,7 +34,15 @@
     </div>
     } @else if (configForMolstar() && isWebGlEnabled() && fastNetworkOrForceLoad()) {
     <div class="molstar-parent">
-      <lib-pdbe-molstar class="molstar-container" #molstarComponent [id]="'mobile-molstar'" [molstarConfig]="configForMolstar()" [height]="'100%'"></lib-pdbe-molstar>
+      <lib-pdbe-molstar
+        class="molstar-container"
+        #molstarComponent
+        [id]="'mobile-molstar'"
+        [molstarConfig]="configForMolstar()"
+        [height]="'100%'"
+        [seqOnExpanded]="true"
+        [isMobile]="true"
+      ></lib-pdbe-molstar>
     </div>
     } @else if (!isWebGlEnabled()) {
     <div class="molstar-not-loaded">

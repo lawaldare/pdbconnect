@@ -121,7 +121,7 @@ export class MbMolstarTabComponent implements AfterViewInit {
       landscape: false,
       subscribeEvents: true,
       granularity: 'residue',
-      hideControls: true,
+      hideControls: false,
       visualStyle: {
         polymer: {
           type: 'cartoon',
@@ -133,6 +133,7 @@ export class MbMolstarTabComponent implements AfterViewInit {
       hideCanvasControls: ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'],
       loadMaps: true,
       mapSettings: { defaultView: 'selection-box' },
+      sequencePanel: true,
     };
     return configForMolstar;
   });

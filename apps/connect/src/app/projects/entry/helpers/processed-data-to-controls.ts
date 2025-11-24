@@ -1,22 +1,30 @@
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { SequenceDetail } from '../store/data-processing/models/other-models';
 import { ProcessedDomain, ProcessedMacromolecule } from '../store/data-processing/models/processed-entities.model';
 import { Molecule } from '../data-models/molecule.model';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+import { QueryParamForHelpers } from './molstar-helpers';
+
+export function getCleanMoleculeName(molecule: Molecule) {
+  if (molecule.molecule_name) return molecule.molecule_name.join(', ');
+  else if (molecule.synonym) return molecule.synonym;
+  return 'Undefined';
+}
 
 export function getCleanSelectionName(options: DownloadOption[]) {
   return options[0].name.split('<img')[0];
 }
 
-export function getDomainChainDropdownOptions(datum: ProcessedDomain) {
-  const dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
+export function getDomainChainDropdownOptions(datum: ProcessedDomain, allChains?: boolean) {
+  const dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
   const selections = datum.additionalData.selections;
   const selectionsInPrefAssembly = datum.additionalData.selectionsInPrefAssembly;
+  if (allChains) dropdownOptionsToMolstar['All chains'] = [];
   for (let selectionIdx = 0; selectionIdx < selections.length; selectionIdx++) {
     const selection = selections[selectionIdx];
     const inPrefAssembly = selectionsInPrefAssembly[selectionIdx];
     for (const segment of selection) {
+      if (allChains) dropdownOptionsToMolstar['All chains'].push({ ...segment });
       const selectionKey = inPrefAssembly
         ? `Chain ${segment.auth_asym_id!}`
         : `Chain ${segment.auth_asym_id!} <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px;" />`;
@@ -28,11 +36,15 @@ export function getDomainChainDropdownOptions(datum: ProcessedDomain) {
       }
     }
   }
+  // Remove "All chains" if it is redundant
+  if (allChains && Object.keys(dropdownOptionsToMolstar).length === 2) {
+    delete dropdownOptionsToMolstar['All chains'];
+  }
   return dropdownOptionsToMolstar;
 }
 
 export function getMacromoleculeChainDropdownOptions(datum: ProcessedMacromolecule) {
-  const dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
+  const dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
   const selections = datum.additionalData.selections;
   const selectionsInPrefAssembly = datum.additionalData.selectionsInPrefAssembly;
   for (let selectionIdx = 0; selectionIdx < selections.length; selectionIdx++) {
@@ -50,7 +62,7 @@ export function getMacromoleculeSequenceDetails(entryId: string, datum: Processe
   const entity = datum.additionalData.molecule;
   const seq = entity.sequence;
   return {
-    title: `>FASTA pdb|${entryId}|${entity.molecule_name[0]}; Chain ${chainId}`,
+    title: `>FASTA pdb|${entryId}|${getCleanMoleculeName(entity)}; Chain ${chainId}`,
     fullSequence: seq,
   };
 }
@@ -65,7 +77,7 @@ export function getDomainSequenceDetails(entryId: string, macromoleculesOfDomain
   }
 
   const macromolecule = macromoleculesOfDomainForChain[0];
-  const moleculeName = macromolecule.molecule_name[0];
+  const moleculeName = getCleanMoleculeName(macromolecule);
 
   const boundariesForDomain = datum.additionalData.boundaries;
   const boundariesForChainId = boundariesForDomain.filter((boundary) => boundary.chain === chainId);
@@ -115,7 +127,7 @@ export function getDomainSequenceDetails(entryId: string, macromoleculesOfDomain
   return sequenceDetails;
 }
 
-function convertLigandDatumToString(id: string, selectedLigandInstance: QueryParam[], inPrefAssembly: boolean) {
+function convertLigandDatumToString(id: string, selectedLigandInstance: QueryParamForHelpers[], inPrefAssembly: boolean) {
   const resNum = selectedLigandInstance[0].auth_residue_number;
   const insCode = selectedLigandInstance[0].auth_ins_code_id || '';
   const chainId = selectedLigandInstance[0].auth_asym_id;
@@ -126,7 +138,7 @@ function convertLigandDatumToString(id: string, selectedLigandInstance: QueryPar
 }
 
 export function getLigandsDropdownOptions(datum: ProcessedLigandOrMod) {
-  const dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
+  const dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
   const selections = datum.additionalData.selections;
   const selectionsInPrefAssembly = datum.additionalData.selectionsInPrefAssembly;
   for (let selectionIdx = 0; selectionIdx < selections.length; selectionIdx++) {

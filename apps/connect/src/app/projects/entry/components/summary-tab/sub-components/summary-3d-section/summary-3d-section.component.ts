@@ -6,16 +6,21 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { EntryStoreState } from '../../../../store/entry-store.model';
 import { EntrySelectors } from '../../../../store/entry.selectors';
 import { ComponentCommunicationService } from '../../../../services/component-comm.service';
-import { componentExistsInMolstar, drawSelectionInMolstar, Molstar370DefaultParams, zoomOutStructureInMolstar } from '../../../../helpers/molstar-helpers';
+import {
+  componentExistsInMolstar,
+  drawSelectionInMolstar,
+  QueryParamForHelpers,
+  Molstar370DefaultParams,
+  zoomOutStructureInMolstar,
+} from '../../../../helpers/molstar-helpers';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
 import { filter, firstValueFrom, map, take, timer } from 'rxjs';
 import { Molecule } from '../../../../data-models/molecule.model';
 import { ProcessedDomain, ProcessedMacromolecule } from '../../../../store/data-processing/models/processed-entities.model';
 import { ProcessedLigandOrMod } from '../../../../store/data-processing/ligand-processing';
 import { GoogleAnalyticsService } from '@pdbc/core';
-import { getLigandsDropdownOptions, getMacromoleculeChainDropdownOptions } from '../../../../helpers/processed-data-to-controls';
+import { getDomainChainDropdownOptions, getLigandsDropdownOptions, getMacromoleculeChainDropdownOptions } from '../../../../helpers/processed-data-to-controls';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { EntryDropdownComponent } from '../../../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { MaterialModule } from '@pdbc/core';
@@ -115,7 +120,7 @@ export class Summary3DSectionComponent {
       landscape: true,
       subscribeEvents: true,
       granularity: 'residue',
-      hideControls: true,
+      hideControls: false,
       visualStyle: {
         polymer: {
           type: 'cartoon',
@@ -124,6 +129,7 @@ export class Summary3DSectionComponent {
       },
       loadMaps: true,
       mapSettings: { defaultView: 'selection-box' },
+      sequencePanel: true,
       // ...(chainSelection && { 'selection': chainSelection }),
     };
 
@@ -135,9 +141,12 @@ export class Summary3DSectionComponent {
 
   public dropdownSelected!: string;
   public dropdownOptions = signal<DownloadOption[]>([]);
-  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
 
-  private selectionData?: QueryParam[];
+  public symmetryDropdownSelected?: string;
+  public symmetryDropdownOptions = signal<DownloadOption[]>([]);
+
+  private selectionData?: QueryParamForHelpers[];
   private nonSelectionColor?: string;
 
   private zoomSelectionMutex = Promise.resolve();
@@ -279,7 +288,7 @@ export class Summary3DSectionComponent {
   });
 
   public allLigandsQueryParam = computed(() => {
-    const ligandsSelectionData: QueryParam[] = [];
+    const ligandsSelectionData: QueryParamForHelpers[] = [];
     const hasLigandsData = this.procLigands();
     if (hasLigandsData === undefined) return ligandsSelectionData;
     const ligands = this.processedLigands();
@@ -287,7 +296,7 @@ export class Summary3DSectionComponent {
       ...ligands.map((ligand) => {
         const entityId = (ligand.additionalData.source as Molecule).entity_id;
         const entityColor = ligand.molstarColorHex;
-        const queryParam: QueryParam = {
+        const queryParam: QueryParamForHelpers = {
           entity_id: `${entityId}`,
           color: entityColor,
           representation: 'spacefill',
@@ -326,7 +335,7 @@ export class Summary3DSectionComponent {
   });
 
   public allModificationsQueryParam = computed(() => {
-    const modsSelectionData: QueryParam[] = [];
+    const modsSelectionData: QueryParamForHelpers[] = [];
     const hasLigandsData = this.procLigands();
     if (hasLigandsData === undefined) return modsSelectionData;
     const modifications = this.processedModifications();
@@ -502,7 +511,7 @@ export class Summary3DSectionComponent {
     const allDomainsInListView = this.currentDomainResource() === 'All';
     if (allDomainsInListView) return [];
 
-    const domainSelectionData: QueryParam[] = [];
+    const domainSelectionData: QueryParamForHelpers[] = [];
     const allDomains = this.processedDomainsAsList();
     const domainsForResource = allDomains.filter((dom) => dom.resource === this.currentDomainResource());
     for (const domain of domainsForResource) {
@@ -588,6 +597,7 @@ export class Summary3DSectionComponent {
       this.lastSelection[selectionType] = undefined;
       this.dropdownOptionsToMolstar = {};
       this.dropdownOptions.set([]);
+      this.symmetryDropdownOptions.set([]);
     } else {
       this.lastSelection[selectionType] = listItem;
     }
@@ -618,19 +628,97 @@ export class Summary3DSectionComponent {
 
   private updateView(tabName: string, resetDropdown: boolean) {
     const listViewItem = this.lastSelection[tabName];
-    if (listViewItem) {
-      this.updateDropdownOptions(listViewItem, tabName, resetDropdown);
-    }
+    // if (listViewItem) {
+    // }
+    this.updateDropdownOptions(listViewItem, tabName, resetDropdown);
+    this.updateSymmetryDropdownOptions(listViewItem, tabName);
     this.updateMolstarAny(listViewItem, tabName);
   }
 
-  private updateDropdownOptions(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain, selectionType: string, resetDropdown: boolean) {
-    if (selectionType === 'Assembly' || selectionType === 'Domains') {
+  private updateSymmetryDropdownOptions(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
+    this.symmetryDropdownSelected = undefined;
+    this.symmetryDropdownOptions.set([]);
+    // update for symmetry operations dropdown
+    if (!listItem) return;
+    if (selectionType === 'Macromolecules') {
+      const macromolecule = listItem as ProcessedMacromolecule;
+      const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+      const chainId = macromolecule.additionalData.selections[idxOfSelection][0]['auth_asym_id'];
+      const chainSymmOperators = chainId ? macromolecule.chainSymmOperators[chainId] : undefined;
+      if (chainSymmOperators) {
+        this.symmetryDropdownOptions.set(
+          chainSymmOperators.map((op, idx) => {
+            return {
+              name: op,
+              url: `macro-${chainId}-symop-${idx + 1}`,
+              downloadable: false,
+            };
+          })
+        );
+        this.symmetryDropdownSelected = this.symmetryDropdownOptions().length > 0 ? this.symmetryDropdownOptions()[0].name : undefined;
+      } else {
+        this.symmetryDropdownSelected = undefined;
+        this.symmetryDropdownOptions.set([]);
+      }
+    }
+    if (selectionType === 'Ligands' || selectionType === 'Modifications') {
+      const ligand = listItem as ProcessedLigandOrMod;
+      const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+      const ligandSymmOperators = idxOfSelection > -1 ? ligand.symmOpListForEachLigOrMod[idxOfSelection] : undefined;
+
+      if (ligandSymmOperators) {
+        this.symmetryDropdownOptions.set(
+          ligandSymmOperators.map((op, idx) => {
+            return {
+              name: op,
+              url: `domain-0-symop-${idx + 1}`,
+              downloadable: false,
+            };
+          })
+        );
+        this.symmetryDropdownSelected = this.symmetryDropdownOptions().length > 0 ? this.symmetryDropdownOptions()[0].name : undefined;
+      } else {
+        this.symmetryDropdownSelected = undefined;
+        this.symmetryDropdownOptions.set([]);
+      }
+    }
+    if (selectionType === 'Domains') {
+      const domain = listItem as ProcessedDomain;
+      const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+      const segmentSymmOperators = idxOfSelection > -1 ? domain.symmOpListForSegments[idxOfSelection] : undefined;
+      if (segmentSymmOperators) {
+        this.symmetryDropdownOptions.set(
+          segmentSymmOperators.map((op: string, idx: number) => {
+            return {
+              name: op,
+              url: `domain-0-symop-${idx + 1}`,
+              downloadable: false,
+            };
+          })
+        );
+        this.symmetryDropdownSelected = this.symmetryDropdownOptions().length > 0 ? this.symmetryDropdownOptions()[0].name : undefined;
+      } else {
+        this.symmetryDropdownSelected = undefined;
+        this.symmetryDropdownOptions.set([]);
+      }
+    }
+  }
+
+  private updateDropdownOptions(
+    listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined,
+    selectionType: string,
+    resetDropdown: boolean
+  ) {
+    this.dropdownOptionsToMolstar = {};
+    this.dropdownOptions.set([]);
+    if (!listItem) return;
+    if (selectionType === 'Assembly') {
       this.dropdownOptionsToMolstar = {};
       this.dropdownOptions.set([]);
     }
     if (selectionType === 'Macromolecules') {
-      this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(listItem as ProcessedMacromolecule);
+      const macromolecule = listItem as ProcessedMacromolecule;
+      this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(macromolecule);
       this.dropdownOptions.set(
         Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
           return {
@@ -674,6 +762,22 @@ export class Summary3DSectionComponent {
       if (resetDropdown) this.lastSubSelection[selectionType] = subSelectionIdx;
       this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx];
     }
+    if (selectionType === 'Domains') {
+      const domain = listItem as ProcessedDomain;
+      this.dropdownOptionsToMolstar = getDomainChainDropdownOptions(domain, true);
+      this.dropdownOptions.set(
+        Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
+          return {
+            name: eachString,
+            url: `domain-${idx + 1}`,
+            downloadable: false,
+          };
+        })
+      );
+      const subSelectionIdx = resetDropdown ? 0 : this.lastSubSelection[selectionType];
+      if (resetDropdown) this.lastSubSelection[selectionType] = subSelectionIdx;
+      this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx];
+    }
   }
 
   public async onDropdownSelect(event: string) {
@@ -684,6 +788,15 @@ export class Summary3DSectionComponent {
     if (subSelectionIdx === -1) return;
     this.lastSubSelection[tabName] = subSelectionIdx;
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx];
+    this.updateSymmetryDropdownOptions(listViewItem, tabName);
+    this.updateMolstarAny(listViewItem, tabName);
+  }
+
+  public async onSymmetryDropdownSelect(event: string) {
+    this.symmetryDropdownSelected = event;
+    const tabName = this.openedAccordionName();
+    if (!tabName) return;
+    const listViewItem = this.lastSelection[tabName];
     this.updateMolstarAny(listViewItem, tabName);
   }
 
@@ -692,11 +805,11 @@ export class Summary3DSectionComponent {
     selectionType: string,
     focusType: boolean,
     useCurrent: boolean
-  ): Promise<QueryParam[] | undefined> {
-    let molstarSelections: QueryParam[] | undefined = undefined;
+  ): Promise<QueryParamForHelpers[] | undefined> {
+    let molstarSelections: QueryParamForHelpers[] | undefined = undefined;
     if (selectionType === 'Macromolecules') {
       const macromolecule = listItem as ProcessedMacromolecule;
-      const allSelections: QueryParam[] = [
+      const allSelections: QueryParamForHelpers[] = [
         {
           entity_id: `${macromolecule.additionalData.molecule.entity_id}`,
         },
@@ -707,7 +820,7 @@ export class Summary3DSectionComponent {
     if (selectionType === 'Ligands') {
       const ligand = listItem as ProcessedLigandOrMod;
       const src = ligand.additionalData.source as Molecule;
-      const allSelections: QueryParam[] = [
+      const allSelections: QueryParamForHelpers[] = [
         {
           entity_id: `${src.entity_id}`,
         },
@@ -717,7 +830,11 @@ export class Summary3DSectionComponent {
     }
     if (selectionType === 'Domains') {
       const domain = listItem as ProcessedDomain;
-      molstarSelections = domain.additionalData.selections[0];
+      const allSelections = domain.additionalData.selections;
+      const flatSelections = allSelections.flat(1);
+      const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+      molstarSelections = useCurrent ? currentMolstarSelection : flatSelections;
+      // molstarSelections = domain.additionalData.selections[0];
     }
     if (selectionType === 'Modifications') {
       const mod = listItem as ProcessedLigandOrMod;
@@ -760,7 +877,7 @@ export class Summary3DSectionComponent {
     );
 
     // check whether selection is in pref assembly, molstar config needs update and wait for it
-    await this.updateConfigAssemblyAndSyncMolstar(listItem, selectionType === 'Domains', selectionType === 'Assembly');
+    await this.updateConfigAssemblyAndSyncMolstar(listItem, selectionType === 'Assembly');
 
     this.nonSelectionColor = undefined;
     if (selectionType === 'Assembly') {
@@ -785,17 +902,13 @@ export class Summary3DSectionComponent {
     else return listItem.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true) === false;
   }
 
-  private async updateConfigAssemblyAndSyncMolstar(
-    listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined,
-    forDomains: boolean,
-    forAssembly: boolean
-  ) {
+  private async updateConfigAssemblyAndSyncMolstar(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, forAssembly: boolean) {
     const inPrefAssemblyForSelection = this.inPrefAssemblyForSelection();
     let isSelectionPrefAssembly = true;
     if (forAssembly) {
       isSelectionPrefAssembly = true;
     } else if (listItem) {
-      const molstarSelectionIdx = forDomains ? 0 : Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+      const molstarSelectionIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
       isSelectionPrefAssembly = listItem.additionalData.selectionsInPrefAssembly[molstarSelectionIdx];
     }
 
@@ -835,10 +948,12 @@ export class Summary3DSectionComponent {
     }
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     // loop over each molstar selection and add color and focus
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'None' ? this.symmetryDropdownSelected : undefined;
     this.selectionData = molstarSelection.map((eachSelection) => {
       return {
         ...eachSelection,
         color: macromolecule.molstarColorHex,
+        instance_id,
         focus: true,
       };
     });
@@ -860,12 +975,14 @@ export class Summary3DSectionComponent {
       this.nonSelectionColor = '#FEFEFE';
     } else {
       const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const instance = this._molstarComponent?.getInstance() ?? undefined;
-      const hasLigands = await componentExistsInMolstar(instance, 'ligand');
+      const molstarInstance = this._molstarComponent?.getInstance() ?? undefined;
+      const hasLigands = await componentExistsInMolstar(molstarInstance, 'ligand');
+      const instance_id = this.symmetryDropdownSelected ? this.symmetryDropdownSelected : undefined;
       this.selectionData = molstarSelection.map((eachSelection) => {
         return {
           ...eachSelection,
           color: ligand.molstarColorHex,
+          instance_id,
           focus: true,
           ...(hasLigands === false && {
             representation: 'ball-and-stick',
@@ -890,10 +1007,13 @@ export class Summary3DSectionComponent {
       const domainsSelectionData = this.allCurrentResourceDomainsQueryParam();
       this.selectionData = domainsSelectionData;
     } else {
-      this.selectionData = domain.additionalData.selections[0].map((eachSegment) => {
+      const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+      const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'None' ? this.symmetryDropdownSelected : undefined;
+      this.selectionData = molstarSelection.map((eachSegment) => {
         return {
           ...eachSegment,
           color: domain.molstarColorHex,
+          instance_id,
           focus: true,
         };
       });

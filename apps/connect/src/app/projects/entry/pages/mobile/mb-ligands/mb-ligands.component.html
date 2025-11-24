@@ -25,7 +25,7 @@
   <div class="row" (click)="navigateToDetail(row)">
     <div class="row__header">
       <p class="row__header__name">
-        {{row.codeAndName.count}} X {{row.id}} @if (anyNonPrefAssembly(row)) {
+        {{row.id}} @if (anyNonPrefAssembly(row)) {
         <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
         }
       </p>
@@ -39,6 +39,8 @@
     } @if(row.type === 'modification'){
     <span class="row__annotation modification">Modification</span>
     }
+    <p class="row__content" style="font-size: 15px"><b>X {{ row.codeAndName.prefAssemblyCount }} </b> in preferred complex</p>
+    <p class="row__content" style="font-size: 15px"><b>X {{ row.codeAndName.entryInstancesCount }} </b> in model file</p>
   </div>
   } }
 
@@ -66,8 +68,22 @@
       </pdbc-entry-dropdown>
     </div>
     }@else if(dropdownOptions.length === 1){
-    <p>{{dropdownOptions[0].name}}</p>
-    }@else {}
+    <p [innerHTML]="dropdownOptions[0].name"></p>
+    } @if (symmetryDropdownSelected && symmetryDropdownOptions.length > 1) {
+    <p class="title">Symmetry Operation Id</p>
+    <pdbc-entry-dropdown
+      [searchable]="false"
+      [searchTitle]="''"
+      [downloadable]="false"
+      [islink]="false"
+      [options]="symmetryDropdownOptions"
+      [title]="symmetryDropdownSelected"
+      (optionClickedEvent)="onSymmetryDropdownSelect($event)"
+    ></pdbc-entry-dropdown>
+    } @else if(symmetryDropdownOptions.length === 1){
+    <p class="title">Symmetry Operation Id</p>
+    <p class="content" [innerHTML]="symmetryDropdownOptions[0].name"></p>
+    }
   </div>
   <p class="title">Ligand name</p>
   <p class="content">{{selectedLigands().codeAndName.name | truncate:40}}</p>
@@ -78,6 +94,11 @@
   <p class="title">Formula</p>
   <p class="content formula">{{ boundDetails[0]?.formula }}</p>
   }
+  <p class="title">Instances</p>
+  <p class="content">
+    {{ selectedLigands().codeAndName.prefAssemblyCount }} in preferred assembly/complex<br />
+    {{ selectedLigands().codeAndName.entryInstancesCount }} in asymmetric unit
+  </p>
   <p class="title">Molecular weight</p>
   <p class="content">{{selectedLigands().additionalData.source.weight}} KDa</p>
   }} @else {

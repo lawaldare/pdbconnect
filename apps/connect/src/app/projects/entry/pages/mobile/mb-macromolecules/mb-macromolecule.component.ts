@@ -13,10 +13,9 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { truncateText } from '../../../helpers/truncate-text';
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
-import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
+import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar, QueryParamForHelpers } from '../../../helpers/molstar-helpers';
 import { MobileStateService } from '../mobile-state.service';
 import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../../helpers/processed-data-to-controls';
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { SequenceDetail } from '../../../store/data-processing/models/other-models';
 import { EntryActions } from '../../../store/entry.actions';
 import { ProcessedMacromolecule } from '../../../store/data-processing/models/processed-entities.model';
@@ -74,7 +73,7 @@ export class MbMacromoleculeComponent implements OnInit {
   public expanded = signal<boolean>(false);
   public readonly util = inject(UtilService);
 
-  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
 
   public dropdownOptions: DownloadOption[] = [];
   public dropdownSelected!: string;

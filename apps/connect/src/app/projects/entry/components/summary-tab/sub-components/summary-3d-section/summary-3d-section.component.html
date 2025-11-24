@@ -7,11 +7,12 @@
   <section class="molstar-details-container">
     <!-- molstar control bar: selection dropdown and zoom controls -->
     <div class="molstar-control-bar">
-      @if (dropdownOptions().length > 0) {
+      @if (dropdownOptions().length > 0 || symmetryDropdownOptions().length > 0) {
       <div>
         <div class="selector">
           <span class="molstar-control-txt">Select:</span>
           <span class="molstar-control-txt-info">
+            @if (dropdownOptions().length > 0) {
             <pdbc-entry-dropdown
               [searchable]="false"
               [searchTitle]="''"
@@ -24,6 +25,19 @@
               (optionClickedEvent)="onDropdownSelect($event)"
             >
             </pdbc-entry-dropdown>
+            } @if (symmetryDropdownSelected && symmetryDropdownOptions().length > 0) {
+            <pdbc-entry-dropdown
+              [searchable]="false"
+              [searchTitle]="''"
+              [downloadable]="false"
+              [islink]="false"
+              [isdark]="true"
+              [issmall]="true"
+              [options]="symmetryDropdownOptions()"
+              [title]="symmetryDropdownSelected"
+              (optionClickedEvent)="onSymmetryDropdownSelect($event)"
+            ></pdbc-entry-dropdown>
+            }
           </span>
         </div>
         <div class="buttons">
@@ -73,7 +87,13 @@
     } @else if (configForMolstar()) {
     <div class="molstar-container">
       <div #popoutWrapper>
-        <lib-pdbe-molstar #molstarComponent [id]="'summary-molstar'" [molstarConfig]="configForMolstar()" [height]="'480px'"></lib-pdbe-molstar>
+        <lib-pdbe-molstar
+          #molstarComponent
+          [id]="'summary-molstar'"
+          [molstarConfig]="configForMolstar()"
+          [height]="'480px'"
+          [seqOnExpanded]="true"
+        ></lib-pdbe-molstar>
       </div>
     </div>
     }

@@ -1,4 +1,3 @@
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Molecule } from '../../data-models/molecule.model';
 import { UniProtMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
@@ -9,6 +8,9 @@ import { PolymerCoverageMolecule } from '../../data-models/polymer-coverage.mode
 import { DEFAULT_SET_25 } from '@pdbe-lib/molstar-for-apps';
 import { ProcessedMacromolecule } from './models/processed-entities.model';
 import { identity } from 'rxjs';
+import { QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { getCleanMoleculeName } from '../../helpers/processed-data-to-controls';
+import { sortByPrefAssembly } from './ligand-processing';
 
 export interface MacromoleculesDescriptions {
   macromoleculesDescription: string;
@@ -17,7 +19,7 @@ export interface MacromoleculesDescriptions {
 export function processMacromoleculesDescriptions(macromolecules: Molecule[]): MacromoleculesDescriptions {
   let moleculeTypeConditions = [
     {
-      moleculeTypes: ['polypeptide(L)', 'polypeptide(R)'],
+      moleculeTypes: ['polypeptide(L)', 'polypeptide(D)'],
       moleculeDescriptionSuffix: 'unique protein',
       entryContentsDescriptionSuffix: 'distinct polypeptide',
     },
@@ -40,6 +42,11 @@ export function processMacromoleculesDescriptions(macromolecules: Molecule[]): M
       moleculeTypes: ['carbohydrate polymer'],
       moleculeDescriptionSuffix: 'carbohydrate',
       entryContentsDescriptionSuffix: 'distinct carbohydrate polymer',
+    },
+    {
+      moleculeTypes: ['peptide nucleic acid'],
+      moleculeDescriptionSuffix: 'peptide nucleic acid',
+      entryContentsDescriptionSuffix: 'distinct peptide nucleic acid',
     },
   ];
 
@@ -386,7 +393,7 @@ export function mapMacromoleculesByPreferredAssembly(macromolecules: Molecule[],
 
 export function generateMolstarSelectionsForMacromolecule(macromolecule: Molecule, carbohydrate?: CarbohydrateMolecule, verbose = false) {
   const selectionNames: string[] = [];
-  const selections: QueryParam[][] = [];
+  const selections: QueryParamForHelpers[][] = [];
   const selectionsInPrefAssembly: boolean[] = [];
   for (let chain_idx = 0; chain_idx < macromolecule.in_chains.length; chain_idx++) {
     const chainId = macromolecule.in_chains[chain_idx];
@@ -395,7 +402,7 @@ export function generateMolstarSelectionsForMacromolecule(macromolecule: Molecul
     if (macromolecule.in_chains_in_pref_assembly?.[chain_idx] === false) selectionsInPrefAssembly.push(false);
     else selectionsInPrefAssembly.push(true);
 
-    const molstarSelection: QueryParam[] = [];
+    const molstarSelection: QueryParamForHelpers[] = [];
     if (macromolecule.molecule_type.includes('carbohydrate') === false) {
       molstarSelection.push({
         entity_id: macromolecule.entity_id + '',
@@ -405,13 +412,15 @@ export function generateMolstarSelectionsForMacromolecule(macromolecule: Molecul
     } else if (macromolecule.molecule_type.includes('carbohydrate') && carbohydrate) {
       const carbohydratesOfChain = carbohydrate.chains.filter((carbch) => carbch.chain_id === chainId);
       for (const carbChain of carbohydratesOfChain) {
+        // const carbStructAsymId = carbChain.struct_asym_id;
         for (const carbResidue of carbChain.residues) {
           molstarSelection.push({
             entity_id: macromolecule.entity_id + '',
             auth_asym_id: chainId,
             auth_residue_number: carbResidue.author_residue_number,
             auth_ins_code_id: carbResidue.author_insertion_code || undefined,
-            residue_number: carbResidue.residue_number,
+            // struct_asym_id: carbStructAsymId,
+            // residue_number: carbResidue.residue_number,
           });
         }
       }
@@ -419,7 +428,7 @@ export function generateMolstarSelectionsForMacromolecule(macromolecule: Molecul
     selections.push(molstarSelection);
   }
   if (selections.length === 0 && verbose) {
-    console.warn(`WARNING: No selections could be generated for macromolecule: ${macromolecule.molecule_name[0]} (${macromolecule.entity_id})`);
+    console.warn(`WARNING: No selections could be generated for macromolecule: ${getCleanMoleculeName(macromolecule)} (${macromolecule.entity_id})`);
   }
   return { selections, selectionNames, selectionsInPrefAssembly };
 }
@@ -451,7 +460,7 @@ export function generateMacromoleculesCards(macromolecules: Molecule[], carbohyd
       index,
       molType: macromolecule.molecule_type,
       entityId: macromolecule.entity_id,
-      moleculeName: macromolecule.molecule_name[0],
+      moleculeName: getCleanMoleculeName(macromolecule),
       chains: macromolecule.in_chains,
       inPrefAssembly,
     });
@@ -473,7 +482,7 @@ export function generateMacromoleculesTableFilters(macromolecules: Molecule[]): 
   // create an all filter for all macromolecular types
   const allTypes = [
     'polypeptide(L)',
-    'polypeptide(R)',
+    'polypeptide(D)',
     'polydeoxyribonucleotide',
     'polyribonucleotide',
     'polydeoxyribonucleotide/polyribonucleotide hybrid',
@@ -489,7 +498,7 @@ export function generateMacromoleculesTableFilters(macromolecules: Molecule[]): 
   // link set of molecule types to their descriptions
   const moleculeTypeConditions = [
     {
-      moleculeTypes: ['polypeptide(L)', 'polypeptide(R)'],
+      moleculeTypes: ['polypeptide(L)', 'polypeptide(D)'],
       filterDescriptionSuffix: 'distinct protein',
     },
     {
@@ -522,7 +531,48 @@ export function generateMacromoleculesTableFilters(macromolecules: Molecule[]): 
   return newFilters;
 }
 
-export function generateProcessedMacromolecules(macromolecules: Molecule[], carbohydrates?: CarbohydrateMolecule[]) {
+export function generateSymmetryOperatorsDict(macromolecule: Molecule, preferredAssembly: AssemblyData) {
+  const chainToSymmOp: { [key: string]: string[] } = {};
+  const assemblyEntityOfMacromolSearch = preferredAssembly.entities.filter((ent) => ent.entity_id === macromolecule.entity_id);
+  if (assemblyEntityOfMacromolSearch.length === 0) return chainToSymmOp;
+  else if (assemblyEntityOfMacromolSearch.length > 1) console.warn('Warning: multiple assembly entities found for single macromolecule');
+  const assemblyEntityOfMacromol = assemblyEntityOfMacromolSearch[0];
+  // has any symmetry op = inverse of has no symmetry op
+  const hasSymmetryOp = !assemblyEntityOfMacromol.in_chains.every((chainidWithOp) => chainidWithOp.includes('-') === false);
+  if (hasSymmetryOp === false) return chainToSymmOp;
+
+  for (let chainIdx = 0; chainIdx < macromolecule.in_chains.length; chainIdx++) {
+    const chainId = macromolecule.in_chains[chainIdx];
+    const structAsymId = macromolecule.in_struct_asyms[chainIdx];
+    const assemblyStructAsymsWithOp = assemblyEntityOfMacromol.in_chains.filter((chainidWithOp) => chainidWithOp.split('-')[0] === structAsymId);
+
+    const noStructAsymsWithOp = assemblyStructAsymsWithOp.length === 0;
+    const onlyCurrentChainId = assemblyStructAsymsWithOp.length === 1 && assemblyStructAsymsWithOp[0] === structAsymId;
+    const onlyCurrentChainWithOp =
+      assemblyStructAsymsWithOp.length === 1 && assemblyStructAsymsWithOp[0] !== structAsymId && assemblyStructAsymsWithOp[0].includes('-');
+
+    if (noStructAsymsWithOp || onlyCurrentChainId) {
+      console.warn(`Warning: no chains with symmetry operator found for chain ${chainId}. Skipping...`);
+      continue;
+    }
+    if (onlyCurrentChainWithOp) {
+      const symmetryOperator = assemblyStructAsymsWithOp[0].split('-')[1];
+      chainToSymmOp[chainId] = [`ASM-${symmetryOperator}`];
+      continue;
+    }
+
+    const operatorsList = ['None'];
+    for (const assemblyStructAsymWithOp of assemblyStructAsymsWithOp) {
+      const symmetryOperator = assemblyStructAsymWithOp === structAsymId ? '1' : assemblyStructAsymWithOp.split('-')[1];
+
+      operatorsList.push(`ASM-${symmetryOperator}`);
+    }
+    chainToSymmOp[chainId] = operatorsList;
+  }
+  return chainToSymmOp;
+}
+
+export function generateProcessedMacromolecules(macromolecules: Molecule[], preferredAssembly: AssemblyData, carbohydrates?: CarbohydrateMolecule[]) {
   if ((<any>carbohydrates).empty === true) carbohydrates = [];
   const processedMacromolecules: ProcessedMacromolecule[] = [];
   for (const molecule of macromolecules) {
@@ -540,23 +590,27 @@ export function generateProcessedMacromolecules(macromolecules: Molecule[], carb
 
     const selectionData = generateMolstarSelectionsForMacromolecule(molecule, carbohydrate);
 
-    const selectionNames = selectionData.selectionNames;
-    const molstarSelections: QueryParam[][] = selectionData.selections;
-    const selectionsInPrefAssembly = selectionData.selectionsInPrefAssembly;
-
     const colorEntityIdx = molecule.entity_id - 1;
+    const chainSymmOperators = generateSymmetryOperatorsDict(molecule, preferredAssembly);
+
+    const { selections, selectionNames, selectionsInPrefAssembly } = sortByPrefAssembly(
+      selectionData.selections,
+      selectionData.selectionNames,
+      selectionData.selectionsInPrefAssembly
+    );
 
     processedMacromolecules.push({
       name: {
-        molecule: molecule.molecule_name[0],
+        molecule: getCleanMoleculeName(molecule),
         chains: molecule.in_chains.map((eachChain) => `Chain ${eachChain}`),
       },
       length: moleculeLength,
       organisms: sourceOrganisms,
       genes: geneNames,
+      chainSymmOperators,
       additionalData: {
         molecule: molecule,
-        selections: molstarSelections,
+        selections,
         selectionNames,
         selectionsInPrefAssembly,
       },

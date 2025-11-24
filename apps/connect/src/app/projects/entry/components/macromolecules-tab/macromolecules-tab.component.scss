@@ -57,6 +57,12 @@ section.info {
     flex-direction: column;
     gap: 0;
 
+    .info-row > span.micro-title.right {
+      max-width: 154px;
+      width: 154px;
+      min-width: 154px;
+    }
+
     // unless change-display is on and more than 900px
     @media (width >= 900px) {
       main.change-display & {
@@ -207,6 +213,10 @@ article {
       font-style: normal;
       font-weight: 500;
       line-height: 26.6px; /* 166.25% */
+    }
+
+    .symm-op-txt {
+      margin-left: 8px;
     }
   }
 }

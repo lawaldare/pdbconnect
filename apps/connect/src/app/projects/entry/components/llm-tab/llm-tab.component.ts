@@ -5,13 +5,18 @@ import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { dashboardStatLinks, entryMacromoleculeTooltips, tourIds } from '../../entry-constant';
+import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, tourIds } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { AG_Grid_Theme_Class, MaterialModule, UtilService } from '@pdbc/core';
-import { getCleanSelectionName, getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../helpers/processed-data-to-controls';
+import {
+  getCleanMoleculeName,
+  getCleanSelectionName,
+  getMacromoleculeChainDropdownOptions,
+  getMacromoleculeSequenceDetails,
+} from '../../helpers/processed-data-to-controls';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -33,9 +38,8 @@ import {
   removeDuplicatesByKey,
 } from '../../helpers/procesing-for-smart-seq-viewer';
 import { EntryActions } from '../../store/entry.actions';
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
-import { drawSelectionInMolstar, Molstar370DefaultParams, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
+import { drawSelectionInMolstar, Molstar370DefaultParams, QueryParamForHelpers, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { SequenceDetail } from '../../store/data-processing/models/other-models';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
@@ -72,7 +76,11 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
+
+  public symmetryDropdownSelected?: string;
+  public symmetryDropdownOptions: DownloadOption[] = [];
+
   public dashboardStatLinks = dashboardStatLinks;
 
   private readonly globalStore = inject(Store<EntryStoreState>);
@@ -89,6 +97,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
   public readonly polymerCoverage = toSignal(this.globalStore.select(EntrySelectors.polymerCoverage));
 
   public readonly entryMacromoleculeTooltips = entryMacromoleculeTooltips;
+  public readonly symmOperatorTooltip = symmOperatorTooltip;
 
   public selectionStats: { [key: string]: any } | undefined;
 
@@ -237,7 +246,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
       landscape: true,
       subscribeEvents: true,
       granularity: 'residue',
-      hideControls: true,
+      hideControls: false,
       visualStyle: {
         polymer: {
           type: 'cartoon',
@@ -247,6 +256,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
       },
       loadMaps: true,
       mapSettings: { defaultView: 'selection-box' },
+      sequencePanel: true,
     };
 
     return configForMolstar;
@@ -280,6 +290,8 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
   public readonly checkedWebGl = computed(() => this.compCommunication.checkedWebGlSupport);
   public readonly isWebGlEnabled = computed(() => this.compCommunication.isWebGlEnabled);
 
+  public getCleanMoleculeName = getCleanMoleculeName;
+
   public readonly fastNetworkOrForceLoad = computed(() => {
     const isSlow = this.slowNetwork();
     const forceLoad = this.compCommunication.forceLoad();
@@ -291,7 +303,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     this.compCommunication.forceLoad.set(!forceLoad);
   }
 
-  public selectionData?: QueryParam[];
+  public selectionData?: QueryParamForHelpers[];
 
   public readonly visInteractivity = inject(VisualisationInteractivityService);
 
@@ -468,6 +480,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
     await this.updateDropdownOptions(macromolecule);
+    await this.updateSymmetryDropdownOptions(macromolecule);
     this.resetAnnotationListByCurrentChain(true);
 
     // check whether chain is in pref assembly, molstar config needs update and wait for it
@@ -494,6 +507,26 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
       };
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+  }
+
+  async updateSymmetryDropdownOptions(macromolecule: ProcessedMacromolecule) {
+    // update for symmetry operations dropdown
+    const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+    const chainId = macromolecule.additionalData.selections[idxOfSelection][0]['auth_asym_id'];
+    const chainSymmOperators = chainId ? macromolecule.chainSymmOperators[chainId] : undefined;
+    if (chainSymmOperators) {
+      this.symmetryDropdownOptions = chainSymmOperators.map((op, idx) => {
+        return {
+          name: op,
+          url: `macro-${chainId}-symop-${idx + 1}`,
+          downloadable: false,
+        };
+      });
+      this.symmetryDropdownSelected = this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined;
+    } else {
+      this.symmetryDropdownSelected = undefined;
+      this.symmetryDropdownOptions = [];
+    }
   }
 
   private async updateBackgroundAnnotation() {
@@ -547,6 +580,8 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return;
+
+    await this.updateSymmetryDropdownOptions(macromolecule);
     const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
     // check whether chain is in pref assembly, molstar config needs update and wait for it
@@ -557,6 +592,14 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
 
     if (macromolecule) await this.renderVisualisations(macromolecule);
     await this.updateBackgroundAnnotation();
+  }
+
+  public async onSymmetryDropdownSelect(event: string) {
+    this.symmetryDropdownSelected = event;
+
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return;
+    await this.renderVisualisations(macromolecule);
   }
 
   public toggleSidebar() {
@@ -600,11 +643,13 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
 
     // because we don't loop over molstarSelections we assume no
     // annotations map to carbohydrates in this tab (proteins only atm)
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'None' ? this.symmetryDropdownSelected : undefined;
     this.selectionData = [
       {
         ...molstarSelection[0],
         color: entityColor,
         focus: true,
+        instance_id,
       },
     ];
     this.visInteractivity.currentSelectionData.set(this.selectionData);

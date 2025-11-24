@@ -5,13 +5,13 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { getCleanSelectionName, getDomainChainDropdownOptions, getDomainSequenceDetails } from '../../helpers/processed-data-to-controls';
+import { getCleanMoleculeName, getCleanSelectionName, getDomainChainDropdownOptions, getDomainSequenceDetails } from '../../helpers/processed-data-to-controls';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
-import { entryDomainsTooltips, resourceUrls, tourIds } from '../../entry-constant';
+import { entryDomainsTooltips, resourceUrls, symmOperatorTooltip, tourIds } from '../../entry-constant';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
@@ -22,8 +22,7 @@ import { EntryActions } from '../../store/entry.actions';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { drawSelectionInMolstar, Molstar370DefaultParams, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
+import { drawSelectionInMolstar, Molstar370DefaultParams, QueryParamForHelpers, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { SequenceDetail } from '../../store/data-processing/models/other-models';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { Molecule } from '../../data-models/molecule.model';
@@ -59,7 +58,6 @@ export class DomainsTabComponent implements AfterViewInit {
   public macromolSequence = this.protvistaDataFacade.sequence;
   public loadingStatus = this.protvistaDataFacade.loadingStatus;
 
-  // TODO this should be signal also
   public readonly currentDomainsFeatureId = signal<string | undefined>(undefined);
   public readonly currentDomainsFeature = signal<any[] | undefined>(undefined);
   public readonly protvistaTooltips = computed(() => this.protvistaDataFacade.tooltips());
@@ -197,7 +195,10 @@ export class DomainsTabComponent implements AfterViewInit {
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
+
+  public symmetryDropdownSelected?: string;
+  public symmetryDropdownOptions: DownloadOption[] = [];
 
   public currentSelectionEntityId = signal<string | undefined>(undefined);
   public currentSelectionChainId = signal<string | undefined>(undefined);
@@ -260,7 +261,7 @@ export class DomainsTabComponent implements AfterViewInit {
       landscape: true,
       subscribeEvents: true,
       granularity: 'residue',
-      hideControls: true,
+      hideControls: false,
       visualStyle: {
         polymer: {
           type: 'cartoon',
@@ -268,6 +269,7 @@ export class DomainsTabComponent implements AfterViewInit {
           colorParams: { value: 0xfefefe },
         },
       },
+      sequencePanel: true,
     };
 
     return configForMolstar;
@@ -278,6 +280,7 @@ export class DomainsTabComponent implements AfterViewInit {
 
   public readonly resourceUrls = resourceUrls;
   public readonly entryDomainsTooltips = entryDomainsTooltips;
+  public readonly symmOperatorTooltip = symmOperatorTooltip;
 
   public readonly selectedDomainIdx = toSignal(this.compCommunication.domainSelection$);
 
@@ -399,6 +402,7 @@ export class DomainsTabComponent implements AfterViewInit {
 
     // refreshes dropdown options on new macromolecule
     this.updateDropdownOptions(domain);
+    this.updateSymmetryDropdownOptions(domain);
 
     // get chainId
     const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
@@ -410,7 +414,7 @@ export class DomainsTabComponent implements AfterViewInit {
     this.inPrefAssembly.set(allDomainInPrefAssembly);
 
     // get macromolecule
-    const macromoleculesOfDomain = this.macromolecules()!.filter((eachMacromolecule) => domain.moleculeNames[0] === eachMacromolecule.molecule_name[0]);
+    const macromoleculesOfDomain = this.macromolecules()!.filter((eachMacromolecule) => domain.moleculeNames[0] === getCleanMoleculeName(eachMacromolecule));
 
     // get author numbering
     this.getAuthorNumberingForChain(chainId);
@@ -435,6 +439,26 @@ export class DomainsTabComponent implements AfterViewInit {
       };
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+  }
+
+  private updateSymmetryDropdownOptions(domain: ProcessedDomain) {
+    // update for symmetry operations dropdown
+    const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+    const segmentSymmOperators = idxOfSelection > -1 ? domain.symmOpListForSegments[idxOfSelection] : undefined;
+
+    if (segmentSymmOperators) {
+      this.symmetryDropdownOptions = segmentSymmOperators.map((op, idx) => {
+        return {
+          name: op,
+          url: `domain-0-symop-${idx + 1}`,
+          downloadable: false,
+        };
+      });
+      this.symmetryDropdownSelected = this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined;
+    } else {
+      this.symmetryDropdownSelected = undefined;
+      this.symmetryDropdownOptions = [];
+    }
   }
 
   private getAuthorNumberingForChain(chainId: string) {
@@ -466,6 +490,7 @@ export class DomainsTabComponent implements AfterViewInit {
 
     const domain = this.currentDomainsDatum();
     if (!domain) return;
+    this.updateSymmetryDropdownOptions(domain);
 
     // get chainId
     const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
@@ -493,6 +518,18 @@ export class DomainsTabComponent implements AfterViewInit {
     this.renderVisualisations(domain, chainId);
   }
 
+  public async onSymmetryDropdownSelect(event: string) {
+    this.symmetryDropdownSelected = event;
+
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'None' ? this.symmetryDropdownSelected : undefined;
+    this.visInteractivity.selectedSymOpInstanceId.set(instance_id);
+
+    const domain = this.currentDomainsDatum();
+    if (!domain) return;
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
+    await this.renderVisualisations(domain, chainId);
+  }
+
   private renderVisualisations(domain: ProcessedDomain, chainId: string) {
     this.renderInMolstar(domain, chainId);
     this.initOrRefreshProtvista(domain, chainId);
@@ -510,7 +547,7 @@ export class DomainsTabComponent implements AfterViewInit {
     });
   }
 
-  public selectionData?: QueryParam[];
+  public selectionData?: QueryParamForHelpers[];
 
   public getCleanSelectionName = getCleanSelectionName;
 
@@ -524,9 +561,12 @@ export class DomainsTabComponent implements AfterViewInit {
     );
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     const domainColor = '#B5CB93'; // domain.molstarColorHex;
+
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'None' ? this.symmetryDropdownSelected : undefined;
     this.selectionData = molstarSelection.map((eachSelection) => {
       return {
         ...eachSelection,
+        instance_id,
         color: domainColor,
         focus: true,
       };

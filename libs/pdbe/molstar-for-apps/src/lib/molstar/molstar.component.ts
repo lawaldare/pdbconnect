@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, inject, Input, input, OnChanges, signal, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, inject, Input, input, OnChanges, Output, signal, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MolstarPluginService } from '../extension-for-pages/molstart-plugin.service';
 import type { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
@@ -16,6 +16,9 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
   @Input() id = '1';
   @Input() height = '400px';
   @Input() width = '100%';
+  @Input() seqOnExpanded = false;
+  @Input() isMobile = false;
+
   @Input({ required: true }) molstarConfig!: any;
   private previousMolstarConfig: any = null;
 
@@ -26,6 +29,7 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
   private readonly helpIconForMolstarService = inject(HelpIconForMolstarService);
 
   public isExpanded = false;
+  @Output() toggledExpansion = new EventEmitter<boolean>();
 
   @ViewChild('viewContainer') viewContainer!: ElementRef;
 
@@ -45,7 +49,16 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
     this.molstarViewInstance = pluginInstance;
 
     const container = this.viewContainer.nativeElement;
-    this.molstarActionsMutex = this.molstarActionsMutex.then(() => this.molstarViewInstance.render(container, this.molstarConfig));
+    if (this.seqOnExpanded === false) {
+      this.molstarActionsMutex = this.molstarActionsMutex.then(() => this.molstarViewInstance.render(container, this.molstarConfig));
+    } else {
+      this.molstarActionsMutex = this.molstarActionsMutex.then(() => {
+        const layout = [{ target: container, component: this.molstarPluginService.getClass().UIComponents.FullLayoutNoControlsUnlessExpanded }];
+        this.molstarViewInstance.render(layout, this.molstarConfig).then(() => {
+          this.adjustMainCanvasStyleForSeq(false);
+        });
+      });
+    }
 
     this.molstarViewInstance.events.loadComplete.subscribe((loaded: boolean) => {
       const eventName = `LibMolstarComponent-${this.id}`;
@@ -56,6 +69,11 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
 
       this.molstarViewInstance.plugin.layout.events.updated.subscribe(() => {
         const expanded = this.molstarViewInstance.plugin.layout.state.isExpanded;
+        if (expanded !== this.isExpanded) {
+          this.isExpanded = expanded;
+          this.toggledExpansion.emit(expanded);
+        }
+        if (this.seqOnExpanded) this.adjustMainCanvasStyleForSeq(expanded);
         this.helpIconForMolstarService.toggleHelpIcon(expanded);
       });
     });
@@ -82,5 +100,16 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
 
   public getContainer() {
     return this.viewContainer.nativeElement;
+  }
+
+  private adjustMainCanvasStyleForSeq(expanded: boolean) {
+    const mainCanvasContainer = (this.getContainer() as HTMLDivElement).querySelector<HTMLDivElement>('div.msp-layout-region.msp-layout-main');
+    if (expanded && mainCanvasContainer) {
+      mainCanvasContainer.style.width = '';
+      mainCanvasContainer.style.marginLeft = '';
+    } else if (!expanded && mainCanvasContainer) {
+      mainCanvasContainer.style.width = '100%';
+      mainCanvasContainer.style.marginLeft = this.isMobile ? '' : '-32px';
+    }
   }
 }

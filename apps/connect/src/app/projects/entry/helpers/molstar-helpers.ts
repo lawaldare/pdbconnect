@@ -1,8 +1,11 @@
 import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import type { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
+import type { AnyColor } from 'pdbe-molstar/lib/spec';
 
 // Check InitParams and DefaultParams at:
 // https://github.com/molstar/pdbe-molstar/blob/v3.7.2/src/app/spec.ts
+
+export type QueryParamForHelpers = QueryParam & { color?: AnyColor; sideChain?: boolean; representation?: string; representationColor?: any; focus?: boolean };
 
 export const Molstar370DefaultParams = {
   moleculeId: undefined,
@@ -53,7 +56,7 @@ export const Molstar370DefaultParams = {
 
 export async function drawSelectionInMolstar(
   instance?: PDBeMolstarPlugin,
-  selectionsToDraw?: QueryParam[],
+  selectionsToDraw?: QueryParamForHelpers[],
   nonSelectionColor?: string | number,
   keepRepresentations?: boolean
 ) {
@@ -81,7 +84,7 @@ export async function zoomOutStructureInMolstar(instance?: PDBeMolstarPlugin, du
   plugin.managers.camera.reset(undefined, durationMs);
 }
 
-export async function showInteractivityFocusInMolstar(instance?: PDBeMolstarPlugin, selectionsToDraw?: QueryParam[]) {
+export async function showInteractivityFocusInMolstar(instance?: PDBeMolstarPlugin, selectionsToDraw?: QueryParamForHelpers[]) {
   if (!instance || !selectionsToDraw) return;
   await instance.visual.interactivityFocus({ data: selectionsToDraw });
 }

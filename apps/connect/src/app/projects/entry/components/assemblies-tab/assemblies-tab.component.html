@@ -135,7 +135,7 @@
         } @else if (configForMolstar() && isWebGlEnabled() && fastNetworkOrForceLoad()) {
         <div class="molstar-container">
           <div #popoutWrapper>
-            <lib-pdbe-molstar #molstarComponent [id]="'assemblies-molstar'" [molstarConfig]="configForMolstar()"></lib-pdbe-molstar>
+            <lib-pdbe-molstar #molstarComponent [id]="'assemblies-molstar'" [molstarConfig]="configForMolstar()" [seqOnExpanded]="true"></lib-pdbe-molstar>
           </div>
         </div>
         } @else if (!isWebGlEnabled()) {

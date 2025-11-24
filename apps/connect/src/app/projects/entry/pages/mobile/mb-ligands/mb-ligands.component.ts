@@ -20,11 +20,11 @@ import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, take
 import {
   componentExistsInMolstar,
   drawSelectionInMolstar,
+  QueryParamForHelpers,
   removeComponent,
   showInteractivityFocusInMolstar,
   zoomOutStructureInMolstar,
 } from '../../../helpers/molstar-helpers';
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import type { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions';
 import { MobileStateService } from '../mobile-state.service';
 import { getLigandsDropdownOptions } from '../../../helpers/processed-data-to-controls';
@@ -56,7 +56,7 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
 
   public readonly annotationsTooltips: any = annotationsTooltips;
 
-  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
 
   public currentViewState = signal<ViewState>(ViewState.List);
   public viewStates = ViewState;
@@ -66,6 +66,11 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
 
   public dropdownOptions: DownloadOption[] = [];
   public dropdownSelected!: string;
+
+  public symmetryDropdownSelected?: string;
+  public symmetryDropdownOptions: DownloadOption[] = [];
+
+  public inPrefAssemblyForInstance = signal(true);
 
   public readonly processedLigandsObs$ = this.globalStore.select(EntrySelectors.processedLigands);
   public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
@@ -95,10 +100,12 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
     const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
     if (!instance) return;
 
-    const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(ligand, molstarSelection, interactions);
+    const instance_id = this.symmetryDropdownSelected ? this.symmetryDropdownSelected : undefined;
+
+    const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(ligand, molstarSelection, interactions, instance_id);
 
     const pdbeInteractions = interactionsMolstarSelections as unknown as PDBeMolstarInteraction[];
-    const residueSelectionData: QueryParam[] = residuesMolstarSelections.map((resid) => {
+    const residueSelectionData: QueryParamForHelpers[] = residuesMolstarSelections.map((resid) => {
       return {
         ...resid,
         representation: 'ball-and-stick',
@@ -121,7 +128,7 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
   }
 
   public allLigandsQueryParam = computed(() => {
-    const ligandsSelectionData: QueryParam[] = [];
+    const ligandsSelectionData: QueryParamForHelpers[] = [];
     const ligands = this.processedLigands();
     if (!ligands) return ligandsSelectionData;
     for (const lig of ligands) {
@@ -166,9 +173,12 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
       this.hasInteractions.set(false);
       const chainId = this.currentChainId();
       const residueId = this.currentResidueId();
+      const symOpForInteractions =
+        this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'ASM-1' ? '_' + this.symmetryDropdownSelected.split('-')[1] : '';
+      const chainForInteractions = `${chainId}${symOpForInteractions}`;
       if (!chainId || !residueId) return;
       if (!allInteractions || Object.keys(allInteractions).length === 0) return;
-      const interactions = allInteractions[chainId][residueId].interactions;
+      const interactions = allInteractions[chainForInteractions][residueId].interactions;
       if (interactions.length > 0) this.hasInteractions.set(true);
       this.triggerLigandInteractionsSideEffects(interactions);
     });
@@ -203,6 +213,15 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
 
   private async updateCurrentLigand() {
     const ligand = this.selectedLigands();
+    this.updateDropdownOptions(ligand);
+    this.updateSymmetryDropdownOptions(ligand);
+    await this.renderInMolstar(this.selectedLigands());
+  }
+  public mapSynonyms(synonyms: any[]): string {
+    return synonyms.map((synonym) => synonym.value).join(', ');
+  }
+
+  private updateDropdownOptions(ligand: ProcessedLigandOrMod) {
     this.dropdownOptionsToMolstar = getLigandsDropdownOptions(ligand);
     this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
       return {
@@ -212,15 +231,31 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
       };
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
-    await this.renderInMolstar(this.selectedLigands());
-  }
-  public mapSynonyms(synonyms: any[]): string {
-    return synonyms.map((synonym) => synonym.value).join(', ');
   }
 
-  private selectionData?: QueryParam[];
-  private ligandSelection?: QueryParam[];
-  private residuesAsSticks?: QueryParam[];
+  private updateSymmetryDropdownOptions(ligand: ProcessedLigandOrMod) {
+    // update for symmetry operations dropdown
+    const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+    const ligandSymmOperators = idxOfSelection > -1 ? ligand.symmOpListForEachLigOrMod[idxOfSelection] : undefined;
+
+    if (ligandSymmOperators) {
+      this.symmetryDropdownOptions = ligandSymmOperators.map((op, idx) => {
+        return {
+          name: op,
+          url: `domain-0-symop-${idx + 1}`,
+          downloadable: false,
+        };
+      });
+      this.symmetryDropdownSelected = this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined;
+    } else {
+      this.symmetryDropdownSelected = undefined;
+      this.symmetryDropdownOptions = [];
+    }
+  }
+
+  private selectionData?: QueryParamForHelpers[];
+  private ligandSelection?: QueryParamForHelpers[];
+  private residuesAsSticks?: QueryParamForHelpers[];
 
   private async renderInMolstar(ligand?: ProcessedLigandOrMod) {
     // Wait until first render is finished
@@ -256,22 +291,29 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
     this.currentChainId.set(chainId);
     this.currentResidueId.set(`${residueId}`);
 
-    this.globalStore.dispatch(
-      EntryActions.getInteractions({
-        chainId: chainId ?? '',
-        residueId: `${residueId}`,
-      })
-    );
+    const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
+    const symOpForInteractions = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'ASM-1' ? '_' + this.symmetryDropdownSelected.split('-')[1] : '';
+    const chainForInteractions = `${chainId}${symOpForInteractions}`;
+    if (inPrefAssemblyForInstance) {
+      this.globalStore.dispatch(
+        EntryActions.getInteractions({
+          chainId: chainForInteractions ?? '',
+          residueId: `${residueId}`,
+        })
+      );
+    }
 
     // Access Molstar instance
     const entityColor = ligand.molstarColorHex;
     const componentQuery = ligand.type === 'modification' ? 'non-standard' : 'ligand';
     const hasLigandsOrMod = await componentExistsInMolstar(instance, componentQuery);
+    const instance_id = this.symmetryDropdownSelected ? this.symmetryDropdownSelected : undefined;
     this.ligandSelection = [
       {
         ...molstarSelection[0],
         color: entityColor,
         focus: true,
+        instance_id,
         ...(hasLigandsOrMod === false && {
           representation: 'ball-and-stick',
           representationColor: ligand.molstarColorHex,
@@ -308,7 +350,7 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
   public navigateToDetail(data: ProcessedLigandOrMod) {
     this.currentViewState.set(ViewState.Detail);
     this.selectedLigands.set(data);
-    const title = `${data.codeAndName.count} X ${data.id}`;
+    const title = `${data.id}`;
     this.state.updateSelectedLigandTitle(title);
     this.updateCurrentLigand();
     this.scrollTabToTop();
@@ -341,6 +383,7 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
 
     // setting inPrefAssemblyForInstance may trigger update on configForMolstar
     this.compCommunication.mobileIsPrefAssembly.set(isSelectionPrefAssembly);
+    this.inPrefAssemblyForInstance.set(isSelectionPrefAssembly);
 
     // ... if this update is triggered
     if (changedDisplayedAssembly) {
@@ -366,6 +409,17 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
 
   public async onDropdownSelect(event: string) {
     this.dropdownSelected = event;
-    await this.renderInMolstar(this.selectedLigands());
+
+    const ligand = this.selectedLigands();
+    if (ligand) this.updateSymmetryDropdownOptions(ligand);
+    await this.renderInMolstar(ligand);
+  }
+
+  public async onSymmetryDropdownSelect(event: string) {
+    this.symmetryDropdownSelected = event;
+
+    const ligand = this.selectedLigands();
+    if (!ligand) return;
+    await this.renderInMolstar(ligand);
   }
 }

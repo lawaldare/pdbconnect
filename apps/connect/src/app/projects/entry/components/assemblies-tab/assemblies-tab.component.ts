@@ -169,13 +169,14 @@ export class AssembliesTabComponent implements AfterViewInit {
       landscape: true,
       subscribeEvents: true,
       granularity: 'chain',
-      hideControls: true,
+      hideControls: false,
       visualStyle: {
         polymer: {
           type: 'cartoon',
           color: 'entity-id',
         },
       },
+      sequencePanel: true,
     };
 
     return configForMolstar;

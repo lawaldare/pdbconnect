@@ -53,7 +53,6 @@ section.info-banner {
   line-height: 26.6px; /* 166.25% */
 
   .dropdown-container {
-    display: flex;
     align-items: baseline;
 
     .dropdown-title {
@@ -64,6 +63,10 @@ section.info-banner {
       font-weight: 500;
       line-height: 26.6px; /* 166.25% */
     }
+  }
+
+  .symm-op-txt {
+    margin-left: 8px;
   }
 }
 

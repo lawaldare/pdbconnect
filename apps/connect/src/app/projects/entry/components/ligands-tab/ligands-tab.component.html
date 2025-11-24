@@ -108,7 +108,7 @@
     <div id="ligand-interaction-tour">
       <div class="chains">
         @if(dropdownOptions.length > 1){
-        <div class="dropdown-container">
+        <span class="dropdown-container">
           <pdbc-entry-dropdown
             [searchable]="false"
             [searchTitle]="''"
@@ -119,22 +119,43 @@
             (optionClickedEvent)="onDropdownSelect($event)"
           >
           </pdbc-entry-dropdown>
-        </div>
+        </span>
         }@else if(dropdownOptions.length === 1){
-        <p>{{getCleanSelectionName(dropdownOptions)}}</p>
-        } @if (dropdownSelected && inPrefAssemblyForInstance() === false) { @let instanceName = dropdownSelected!.split(' <')![0];
-        <section class="info-banner">
-          <p>
-            <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
-            {{ instanceName }} is <b>not</b> included in the
-            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
-              >preferred assembly/complex</a
-            >, which represents the most probable biological form identified by the PDBe team for this entry.<br />
-            As a result, the 3D viewer below is now displaying the full entry model file.
-          </p>
-        </section>
+        <span>{{getCleanSelectionName(dropdownOptions)}}</span>
+        } @if (symmetryDropdownSelected && symmetryDropdownOptions.length > 1) {
+        <span class="symm-op-txt">
+          Symmetry Op.
+          <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
+        </span>
+        <pdbc-entry-dropdown
+          [searchable]="false"
+          [searchTitle]="''"
+          [downloadable]="false"
+          [islink]="false"
+          [options]="symmetryDropdownOptions"
+          [title]="symmetryDropdownSelected"
+          (optionClickedEvent)="onSymmetryDropdownSelect($event)"
+        ></pdbc-entry-dropdown>
+        } @else if (symmetryDropdownOptions.length === 1) {
+        <span class="symm-op-txt">
+          Symmetry Op.
+          <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
+          <span> {{ symmetryDropdownOptions[0].name }}</span>
+        </span>
         }
       </div>
+      @if (dropdownSelected && inPrefAssemblyForInstance() === false) { @let instanceName = dropdownSelected!.split(' <')![0];
+      <section class="info-banner">
+        <p>
+          <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+          {{ instanceName }} is <b>not</b> included in the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >preferred assembly/complex</a
+          >, which represents the most probable biological form identified by the PDBe team for this entry.<br />
+          As a result, the 3D viewer below is now displaying the full entry model file.
+        </p>
+      </section>
+      }
       <section class="ligand-charts">
         @if (interactionsRowData()) {
         <div class="table">
@@ -211,7 +232,13 @@
             </div> -->
             <div class="molstar-container">
               <div #popoutWrapper>
-                <lib-pdbe-molstar #molstarComponent [id]="'ligands-molstar'" [molstarConfig]="configForMolstar()" [height]="'100%'"></lib-pdbe-molstar>
+                <lib-pdbe-molstar
+                  #molstarComponent
+                  [id]="'ligands-molstar'"
+                  [molstarConfig]="configForMolstar()"
+                  [height]="'100%'"
+                  [seqOnExpanded]="true"
+                ></lib-pdbe-molstar>
               </div>
             </div>
             }
