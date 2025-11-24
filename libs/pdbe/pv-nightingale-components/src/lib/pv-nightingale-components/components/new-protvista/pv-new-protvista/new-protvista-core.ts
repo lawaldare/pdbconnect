@@ -79,7 +79,9 @@ export class NewProtvistaVisualisation {
 
   private async processData(data: NewProtvistaTrackDatum[]) {
     for (let i = 0; i < data.length; i++) {
+      // eslint-disable-next-line prefer-const
       let datum = data[i];
+      // eslint-disable-next-line prefer-const
       let plotData = data[i].data;
 
       // Save the old status (if any)
@@ -92,6 +94,7 @@ export class NewProtvistaVisualisation {
       }
       if (datum.type === 'TrackVariation' && datum.status === 'ready-has-data' && plotData && this.processedVar === false) {
         (data[i] as NewProtvistaTrackDatumVarTrack).srcData = JSON.parse(JSON.stringify(plotData));
+        // eslint-disable-next-line prefer-const
         let processedData = filterEntityVariationData(plotData as APIVariationData, this.chainId);
         (data[i] as NewProtvistaTrackDatumVarTrack).data = processEntityVariationDataFromAPI(processedData, []);
         (data[i] as NewProtvistaTrackDatumVarTrack).aggChartData = processEntityVariationLineChartDataFromAPI(plotData as APIVariationData, []);

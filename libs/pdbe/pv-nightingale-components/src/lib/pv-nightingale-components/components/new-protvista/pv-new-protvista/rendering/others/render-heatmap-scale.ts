@@ -7,7 +7,7 @@ function getSvgWidth(trackId: string, hasYScale: boolean, mirrorYScale: boolean)
   // Get parent width for axis range
   const defaultMarginRight = mirrorYScale ? 20 : 10;
   const yScaleWidth = 20;
-  let delta = hasYScale ? yScaleWidth + defaultMarginRight : defaultMarginRight;
+  const delta = hasYScale ? yScaleWidth + defaultMarginRight : defaultMarginRight;
   const width = trackWrapper.getBoundingClientRect().width - delta;
   return width;
 }
@@ -172,7 +172,8 @@ export function renderHeatmapYScale(trackId: string, yDomain: string[], trackHei
       .style('font-size', '14px')
       .text(yScaleText);
 
-    let heatmapYScale: any = {
+    // eslint-disable-next-line prefer-const
+    const heatmapYScale: any = {
       y,
       yAxisLeft,
       yAxisRight: undefined,
