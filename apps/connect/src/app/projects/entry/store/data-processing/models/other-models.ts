@@ -23,7 +23,7 @@ export interface OutlierDict {
 
 export type OutliersByModelId = Record<string, OutlierDict>;
 
-export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains' | 'LLM';
+export type TableNames = 'Complexes' | 'Macromolecules' | 'Ligands' | 'Domains' | 'LLM';
 
 export interface ValueLabel {
   value: string;

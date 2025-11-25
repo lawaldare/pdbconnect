@@ -1,4 +1,4 @@
-@if (tabName() !== 'Assemblies') {
+@if (tabName() !== 'Complexes') {
 <div class="filter-btns-container">
   @for (tableFilter of filters(); track tableFilter) {
   <button class="filter-btn" [class.active]="selectedFilter().description === tableFilter.description" (click)="applyFilter(tableFilter, tabName())">
@@ -7,9 +7,9 @@
   }
 </div>
 }
-<!-- Assemblies -->
+<!-- Complexes -->
 
-@if(tabName() === 'Assemblies') {
+@if(tabName() === 'Complexes') {
 <section>
   @for(card of rowCards(); track card; let i = $index) {
   <div class="card" (click)="onCardClick(card, 'id')" [class.selected-card]="selectedRowCard().assemblyId === card.assemblyId">

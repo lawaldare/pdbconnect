@@ -89,7 +89,7 @@ export class InteractiveTablesComponent implements OnInit {
       this.domainsFiltersObs.subscribe((domainsFilters) => {
         if (domainsFilters !== undefined) this.setFilters(domainsFilters);
       });
-    } else if (this.tabName() === 'Assemblies') {
+    } else if (this.tabName() === 'Complexes') {
       this.globalStore.dispatch(EntryActions.getProcAssembliesCards());
       this.assembliesCardsObs.subscribe((assembliesCards) => {
         if (assembliesCards !== undefined) this.setCards(assembliesCards);
@@ -132,7 +132,7 @@ export class InteractiveTablesComponent implements OnInit {
 
       if (value) {
         switch (this.tabName()) {
-          case 'Assemblies':
+          case 'Complexes':
             activeCard = this.rowCards().find((c: any) => c.assemblyId == value);
             activeIndex = this.rowCards().findIndex((c: any) => c.assemblyId == value);
             break;
@@ -175,7 +175,7 @@ export class InteractiveTablesComponent implements OnInit {
     let queryParamValue = '';
 
     switch (this.tabName()) {
-      case 'Assemblies':
+      case 'Complexes':
         queryParamValue = card.assemblyId;
         break;
       case 'Macromolecules':
@@ -214,7 +214,7 @@ export class InteractiveTablesComponent implements OnInit {
   }
 
   public loadSelectionFromTable(rowIdx: number) {
-    if (this.tabName() === 'Assemblies') this.compCommunication.assemblySelection$.next(rowIdx);
+    if (this.tabName() === 'Complexes') this.compCommunication.assemblySelection$.next(rowIdx);
     if (this.tabName() === 'Macromolecules') this.compCommunication.macromoleculeSelection$.next(rowIdx);
     if (this.tabName() === 'Ligands') this.compCommunication.ligandSelection$.next(rowIdx);
     if (this.tabName() === 'Domains') this.compCommunication.domainSelection$.next(rowIdx);

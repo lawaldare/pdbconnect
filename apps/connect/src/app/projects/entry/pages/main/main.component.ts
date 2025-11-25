@@ -170,9 +170,14 @@ export class EntryMainPageComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       // Check for screen width <= 768px
       if (window.innerWidth <= 768) return;
-      const tabName = params['activeTab'] ?? 'summary';
+      let tabName = params['activeTab'] ?? 'summary';
+      if (tabName === 'assemblies') tabName = 'complexes';
+      let tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
+      if (tabIndex === -1) {
+        tabIndex = 0;
+        tabName = 'summary';
+      }
       this.compCommunication.currentTabName.set(tabName);
-      const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.compCommunication.updateSelectedTabIndex(tabIndex);
       this.gAS.logPageEvents('ep_desktop_tab_access', {
         tab: tabName,
@@ -238,6 +243,7 @@ export class EntryMainPageComponent implements OnInit {
       .pipe(
         map(([entryStatus, isDesktop, tabName]) => {
           if (entryStatus === undefined || isDesktop === undefined || tabName === undefined) return;
+          if (tabName === 'assemblies') tabName = 'complexes';
           if (entryStatus.status_code === 'REL' && isDesktop) {
             // if released and desktop mode dispatch listeners for data status of different tabs
             this.applicationApiDispatcher.dispatchForTab(tabName);

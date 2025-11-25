@@ -413,7 +413,7 @@ export const labelGroups = {
 export const routeTabs = [
   { label: 'Summary', id: 'summary' },
   { label: 'Model Quality', id: 'model-quality' },
-  { label: 'Assemblies', id: 'assemblies' },
+  { label: 'Complexes', id: 'complexes' },
   { label: 'Macromolecules', id: 'macromolecules' },
   { label: 'Ligands and Environments', id: 'ligands' },
   { label: 'Domains', id: 'domains' },
