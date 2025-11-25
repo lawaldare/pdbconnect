@@ -13,7 +13,6 @@ import { EntryActions } from '../../store/entry.actions';
 import { ActivatedRoute } from '@angular/router';
 import { MetaTagService } from '../../services/meta-tag.service';
 import { EntryBioschemasService } from '../../services/entry.bioschemas';
-
 @Component({
   selector: 'pdbc-3d',
   standalone: true,
@@ -24,6 +23,8 @@ import { EntryBioschemasService } from '../../services/entry.bioschemas';
 export class Entry3DPageComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = signal<string>('');
+  public readonly assemblyId = signal<string | undefined>(undefined);
+
   public showStatusMessage = signal<boolean>(false);
   public entryStatus = signal<string>('');
   public hasClosedMessage = signal<boolean>(false);
@@ -38,13 +39,15 @@ export class Entry3DPageComponent implements OnInit {
 
   public readonly configForMolstar = computed(() => {
     const entryId = this.entryId();
+    const assemblyId = this.assemblyId();
     const isDesktop = this.facade.isDesktop();
 
     if (!entryId) return undefined;
 
     const configForMolstar = {
       ...Molstar370DefaultParams,
-      moleculeId: this.entryId(),
+      moleculeId: entryId,
+      assemblyId,
       hideControls: false,
       bgColor: { r: 255, g: 255, b: 255 },
       loadMaps: true,
@@ -70,6 +73,15 @@ export class Entry3DPageComponent implements OnInit {
         switchMap((params) => {
           const entryId = params['entryId'].toLowerCase().replace('pdb_0000', '');
           this.entryId.set(entryId);
+          const rest = params['rest'];
+          if (rest) {
+            const decoded = decodeURIComponent(rest); // "&assembly=1"
+
+            const match = decoded.match(/assembly=([0-9]+)/);
+            if (match) {
+              this.assemblyId.set(match[1]);
+            }
+          }
           this.globalStore.dispatch(EntryActions.setCurrentEntryId({ entryId }));
           this.globalStore.dispatch(EntryActions.getEntryStatus());
           return this.globalStore.select(EntrySelectors.entryStatus).pipe(

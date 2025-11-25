@@ -89,6 +89,16 @@ export const appRoutes: Route[] = [
     title: 'PDBe Entry Pages - Molstar',
   },
   {
+    path: 'view3D/:entryId',
+    loadComponent: () => import('./projects/entry/pages/3d/molstar-3d.component').then((m) => m.Entry3DPageComponent),
+    title: 'PDBe Entry Pages - Molstar',
+  },
+  {
+    path: 'view3D/:entryId/:rest',
+    loadComponent: () => import('./projects/entry/pages/3d/molstar-3d.component').then((m) => m.Entry3DPageComponent),
+    title: 'PDBe Entry Pages - Molstar',
+  },
+  {
     path: 'chemicalCompound/show/:ligandId',
     loadComponent: () => import('./projects/ligands/components/pages/ligand-wrapper/ligand-wrapper.component').then((m) => m.LigandWrapperComponent),
     title: 'PDBe-KB Ligand Pages (PDBeChem)',
