@@ -96,7 +96,7 @@ export class SurveyService {
 
   async getCountry(): Promise<string | null> {
     try {
-      const data: any = await firstValueFrom(this.http.get('http://ip-api.com/json/'));
+      const data: any = await firstValueFrom(this.http.get('https://ipinfo.io/json'));
       return data?.country ?? null;
     } catch {
       return null;
