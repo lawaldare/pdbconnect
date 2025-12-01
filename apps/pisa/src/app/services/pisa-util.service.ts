@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-export type PageView = 'INITIAL' | 'PROCESS';
+export type PageView = 'INITIAL' | 'PROCESS' | 'ERROR';
 export type LoadingView = 'INITIAL' | 'LOADING' | 'LOADED' | 'ERROR_LOADING';
 
 @Injectable({

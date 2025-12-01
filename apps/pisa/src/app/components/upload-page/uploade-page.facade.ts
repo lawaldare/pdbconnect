@@ -259,8 +259,8 @@ export class UploadPageFacade {
     // --- Final ligand list ----------------------------------------------
     const ligands = unique.filter((id) => !polymerBlocks.has(id) && !ignore.has(id));
 
-    console.log('atomCompIds', atomCompIds);
-    console.log('ligands', ligands);
+    // console.log('atomCompIds', atomCompIds);
+    // console.log('ligands', ligands);
 
     const mappedLigands = ligands.sort().map((ligand) => {
       return { title: ligand, selected: true };

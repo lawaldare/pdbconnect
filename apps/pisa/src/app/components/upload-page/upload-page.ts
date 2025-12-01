@@ -4,6 +4,7 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UploadPageFacade } from './uploade-page.facade';
 import { MaterialModule } from '@pdbc/core';
 import { PisaUtilService } from '../../services/pisa-util.service';
+import { PisaApiService } from '../../services/pisa-api.service';
 
 @Component({
   selector: 'app-upload',
@@ -14,12 +15,13 @@ import { PisaUtilService } from '../../services/pisa-util.service';
 export class UploadPageComponent implements AfterViewInit {
   public facade = inject(UploadPageFacade);
   public pisaUtilService = inject(PisaUtilService);
+  public pisaAPIService = inject(PisaApiService);
 
   private molstarViewer: any = null;
   public currentFile: File | null = null;
 
   public selectedLigandPosition = new FormControl('auto', { nonNullable: true });
-  public analysisIncluded = 'complexesandinterfaces';
+  public analysisIncluded = false;
 
   public modelSym = this.facade.modelSym;
   public modelSymParam = this.facade.modelSymParam;
@@ -45,7 +47,7 @@ export class UploadPageComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.initMolstar();
-    console.log(this.pisaUtilService.loadingView());
+    // console.log(this.pisaUtilService.loadingView());
   }
 
   public onSubmit(): void {
@@ -152,6 +154,15 @@ export class UploadPageComponent implements AfterViewInit {
       return;
     }
 
+    // const reader = new FileReader();
+    // reader.onload = () => {
+    //   const base64 = reader.result as string;
+    //   console.log(base64); // this is the base64 string
+    //   this.currentFile = base64;
+    // };
+
+    // reader.readAsDataURL(file);
+
     this.currentFile = file;
     this.facade.hideError();
     this.facade.showSuccess('File selected successfully. Loading structure...');
@@ -181,7 +192,7 @@ export class UploadPageComponent implements AfterViewInit {
       if (!data) return;
 
       const model = data.cell?.obj?.data.models?.[0] || data.cell?.obj?.data;
-      console.log('Loaded model:', model);
+      // console.log('Loaded model:', model);
       this.facade.model.set(model);
       if (!model) return;
 
@@ -200,15 +211,29 @@ export class UploadPageComponent implements AfterViewInit {
   public selectProcessLigands(selected: boolean, index: number): void {
     const ligands = this.facade.processLigands();
     ligands[index].selected = selected;
-    const selectedLigands = ligands.filter((ligand) => ligand.selected).map((ligand) => ligand.title);
-    this.selectedLigands.update(() => [...selectedLigands]);
-    console.log('Selected ligands:', this.selectedLigands());
+    const unSelectedLigands = ligands.filter((ligand) => !ligand.selected).map((ligand) => ligand.title);
+    this.selectedLigands.update(() => [...unSelectedLigands]);
+    // console.log('Selected ligands:', this.selectedLigands());
   }
 
   public analyse(): void {
-    console.log('Selected ligands:', this.selectedLigands());
-    console.log('Ligand position:', this.selectedLigandPosition.value);
-    console.log('Analysis included:', this.analysisIncluded);
     this.pisaUtilService.setPageView('PROCESS');
+    const payload: any = {};
+    payload.exclude_ligands = this.selectedLigands();
+    payload.ligand_position = this.selectedLigandPosition.value;
+    payload.asis = this.analysisIncluded;
+    payload.file = this.currentFile;
+    console.log('Analyse payload:', payload);
+    this.pisaAPIService.submitJob(payload).subscribe({
+      next: (response) => {
+        console.log('PISA analysis submitted successfully:', response);
+        // Handle successful submission, e.g., navigate to results page
+      },
+      error: (error) => {
+        console.error('Error submitting PISA analysis:', error);
+        this.facade.showError('Failed to submit PISA analysis. Please try again.');
+        this.pisaUtilService.setPageView('ERROR');
+      },
+    });
   }
 }
