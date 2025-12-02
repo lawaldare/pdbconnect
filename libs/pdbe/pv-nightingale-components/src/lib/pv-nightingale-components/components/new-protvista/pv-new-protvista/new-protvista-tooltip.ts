@@ -258,7 +258,7 @@ export class NewProtvistaTooltip {
   }
 
   hideHeatmapTooltip(container: HTMLElement, trackId?: string) {
-    var closeBtns = container.querySelectorAll('.heatmap-pinned-tooltip-close');
+    const closeBtns = container.querySelectorAll('.heatmap-pinned-tooltip-close');
     for (const closeBtn of Array.from(closeBtns)) {
       const btnEl = closeBtn as HTMLElement;
 

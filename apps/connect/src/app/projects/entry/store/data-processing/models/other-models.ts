@@ -1,5 +1,5 @@
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { OutlierResidues } from '../../../data-models/residuewise-outliers.model';
+import { QueryParamForHelpers } from '../../../helpers/molstar-helpers';
 
 export interface PreferredAssemblyData {
   name: string;
@@ -15,15 +15,15 @@ export interface EntryDescription {
 
 export interface OutlierDict {
   uniqueOutlierTypes: Set<string>;
-  molstarSelectionsByOutlierType: Record<string, QueryParam[]>;
-  residuesWith1Outlier: QueryParam[];
-  residuesWith2Outliers: QueryParam[];
-  residuesWith3OrMoreOutliers: QueryParam[];
+  molstarSelectionsByOutlierType: Record<string, QueryParamForHelpers[]>;
+  residuesWith1Outlier: QueryParamForHelpers[];
+  residuesWith2Outliers: QueryParamForHelpers[];
+  residuesWith3OrMoreOutliers: QueryParamForHelpers[];
 }
 
 export type OutliersByModelId = Record<string, OutlierDict>;
 
-export type TableNames = 'Assemblies' | 'Macromolecules' | 'Ligands' | 'Domains' | 'LLM';
+export type TableNames = 'Complexes' | 'Macromolecules' | 'Ligands' | 'Domains' | 'LLM';
 
 export interface ValueLabel {
   value: string;

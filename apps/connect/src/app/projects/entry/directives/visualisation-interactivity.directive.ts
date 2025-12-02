@@ -1,6 +1,5 @@
 import { Directive, HostListener, inject, Input } from '@angular/core';
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { clearInteractivityFocusInMolstar, drawSelectionInMolstar, showInteractivityFocusInMolstar } from '../helpers/molstar-helpers';
+import { clearInteractivityFocusInMolstar, drawSelectionInMolstar, showInteractivityFocusInMolstar, QueryParamForHelpers } from '../helpers/molstar-helpers';
 import { timer } from 'rxjs';
 import { protToMolBuildHighlightQuery, protToMolExtractColor, protToMolShouldShowInteraction } from '../helpers/protvista-interactivity';
 import { VisualisationInteractivityService } from '../services/vis-interactivity-service';
@@ -25,7 +24,7 @@ export class VisualisationInteractivityDirective {
     residue_number: number;
   } = undefined;
 
-  private applyFocus(selectionData: QueryParam[], toFocus: boolean) {
+  private applyFocus(selectionData: QueryParamForHelpers[], toFocus: boolean) {
     if (!selectionData) return;
     return selectionData.map((datum) => {
       // Create a new object with the updated focus
@@ -132,12 +131,16 @@ export class VisualisationInteractivityDirective {
   }
 
   private async handleSelectionOnMolstarResClick(
-    clickData: { entity_id: string; auth_asym_id: string; residue_number: number },
+    clickData: { entity_id: string; auth_asym_id: string; residue_number: number; instance_id?: string },
     doNotPropagate?: boolean,
     doNotCheckOrUpdState?: boolean
   ) {
     const selection = this.visInteractivity.currentSelectionData();
     const instance = this.visInteractivity.currentMolstarComponent?.getInstance() ?? null;
+    const symOpInstanceId = this.visInteractivity.selectedSymOpInstanceId();
+    if (symOpInstanceId) {
+      clickData.instance_id = symOpInstanceId;
+    }
 
     if (!instance) return;
     // 50 ms to let molstar update components before overriding slection
@@ -149,6 +152,7 @@ export class VisualisationInteractivityDirective {
             entity_id: string;
             auth_asym_id: string;
             residue_number: number;
+            instance_id?: string;
           } = clickData;
 
       // if switching between selection and deselection is on (!this.hasLLMTable)
@@ -165,7 +169,7 @@ export class VisualisationInteractivityDirective {
 
       const toFocus = currentResidue ? false : true;
       const dataToFocus = selection ? [...selection] : [];
-      const selectionData: QueryParam[] = this.applyFocus(dataToFocus, toFocus)!;
+      const selectionData: QueryParamForHelpers[] = this.applyFocus(dataToFocus, toFocus)!;
 
       // if residue is to be selected (exists)
       if (currentResidue) {
@@ -242,8 +246,10 @@ export class VisualisationInteractivityDirective {
     const instance = this.visInteractivity.currentMolstarComponent?.getInstance() ?? null;
     if (!instance) return;
 
+    const symOpInstanceId = this.visInteractivity.selectedSymOpInstanceId();
+
     // Build highlight query
-    const highlightQuery: any = protToMolBuildHighlightQuery(detail);
+    const highlightQuery: any = protToMolBuildHighlightQuery(detail, symOpInstanceId);
     if (!highlightQuery) return;
 
     // Determine whether to show side-chain interaction

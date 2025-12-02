@@ -166,16 +166,16 @@ export class AssembliesTabComponent implements AfterViewInit {
       moleculeId: this.entryId(),
       assemblyId: assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
-      landscape: true,
       subscribeEvents: true,
       granularity: 'chain',
-      hideControls: true,
+      hideControls: false,
       visualStyle: {
         polymer: {
           type: 'cartoon',
           color: 'entity-id',
         },
       },
+      sequencePanel: true,
     };
 
     return configForMolstar;

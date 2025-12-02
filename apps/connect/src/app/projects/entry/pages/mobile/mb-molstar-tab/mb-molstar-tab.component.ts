@@ -100,23 +100,28 @@ export class MbMolstarTabComponent implements AfterViewInit {
     this.compCommunication.forceLoad.set(!forceLoad);
   }
 
+  public inPrefAssembly = this.compCommunication.mobileIsPrefAssembly;
+  public hasClosedMessage = this.compCommunication.mobileHasClosedMessage;
+
   public readonly configForMolstar = computed(() => {
     const summary = this.summary();
     const entryId = this.entryId();
+    const inPrefAssembly = this.inPrefAssembly();
 
     if (!summary || !entryId) return undefined;
     const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
     const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
+    const assemblyId = inPrefAssembly ? preferredAssemblyId : undefined;
 
     const configForMolstar = {
       ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
-      assemblyId: preferredAssemblyId,
+      assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
       landscape: false,
       subscribeEvents: true,
       granularity: 'residue',
-      hideControls: true,
+      hideControls: false,
       visualStyle: {
         polymer: {
           type: 'cartoon',
@@ -128,10 +133,11 @@ export class MbMolstarTabComponent implements AfterViewInit {
       hideCanvasControls: ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'],
       loadMaps: true,
       mapSettings: { defaultView: 'selection-box' },
+      sequencePanel: true,
     };
-
     return configForMolstar;
   });
+  public readonly configForMolstar$ = toObservable(this.configForMolstar);
 
   private modelIdObserver?: MutationObserver;
   constructor() {
@@ -141,6 +147,9 @@ export class MbMolstarTabComponent implements AfterViewInit {
         this.compCommunication.mobileMolstarLoaded$.next(true);
         this.modelIdObserver = await initializeModelIdTracking(this.compCommunication.mobileModelIdx$, this._molstarComponent?.getContainer());
       }
+    });
+    this.configForMolstar$.subscribe((cfg) => {
+      this.compCommunication.configForMobileMolstar.set(cfg);
     });
   }
 

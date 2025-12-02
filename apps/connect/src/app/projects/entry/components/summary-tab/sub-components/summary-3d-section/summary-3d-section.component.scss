@@ -1,0 +1,405 @@
+@import 'libs/core/src/lib/styles/pdb_connect';
+
+/* -------------------------------
+ *   3D Section Container Layout
+ * ------------------------------- */
+
+.explore-3d-tabs {
+  width: 100%;
+  height: 550px;
+  max-height: 550px;
+  display: flex;
+  background-color: #fff;
+  position: relative;
+}
+
+/* When this component is placed in the 7/12 column pane */
+:host {
+  display: block;
+  width: 100%;
+}
+
+/* -------------------------------
+ *   Molstar – Not Loaded State
+ * ------------------------------- */
+
+.molstar-not-loaded {
+  width: 100%;
+  height: 480px;
+  display: flex;
+  padding: 24px 36px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  align-self: stretch;
+
+  img {
+    width: 200px;
+    height: 160px;
+  }
+
+  div {
+    text-align: center;
+  }
+
+  button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 44px;
+    padding: 8px 16px;
+    box-shadow: 4px 4px 0 0 #0a5032;
+    margin: 0;
+  }
+
+  button:hover {
+    box-shadow: 1px 1px 0 0 #0a5032;
+    transform: translate(6px, 6px);
+  }
+}
+
+/* -------------------------------
+ *     Molstar Viewer Container
+ * ------------------------------- */
+
+.molstar-details-container {
+  width: 480px;
+}
+
+.molstar-container {
+  position: relative;
+  width: 480px;
+  z-index: 8;
+}
+
+/* -------------------------------
+ *      Right-Side List Panels
+ * ------------------------------- */
+
+.listview-accordions {
+  width: calc(100% - 480px);
+  max-width: 360px;
+  height: 550px;
+  max-height: 550px;
+
+  p {
+    font-size: 16px;
+  }
+
+  h5 {
+    margin-bottom: 16px;
+  }
+
+  h6 {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 27.2px; /* 170% */
+    margin-bottom: 0;
+  }
+}
+
+/* -------------------------------
+ *        Assembly Panel
+ * ------------------------------- */
+
+.assembly-panel {
+  //  For assembly tab selected
+  .info-row {
+    display: flex;
+    gap: 0;
+    margin-bottom: 8px;
+    flex-direction: column;
+    position: relative;
+
+    &-header {
+      display: flex;
+      align-items: center;
+
+      img {
+        height: 15px;
+        cursor: pointer;
+        margin-left: 2px;
+      }
+    }
+
+    & > span {
+      // width: 100%;
+      color: #1a1c1a;
+      font-size: 16px;
+      font-weight: 500;
+      display: block;
+    }
+  }
+
+  //  For assembly tab selected
+  article {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 27.2px;
+
+    i {
+      // margin-left: 5px;
+      margin-left: 2px;
+      display: inline-block;
+    }
+
+    i::before {
+      --icon-search-color: #193f90;
+
+      width: 12px;
+      height: 12px;
+      mask-size: auto 12px;
+      position: absolute;
+      z-index: -1;
+      top: 4px;
+    }
+  }
+}
+
+/* -------------------------------
+ *    Gallery Item (All Lists)
+ * ------------------------------- */
+
+.select-gallery-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-bottom: 1px solid rgb(206 201 185 / 50%);
+  position: relative;
+  cursor: pointer;
+
+  &:hover {
+    background: #f3f3f3;
+  }
+
+  &.active {
+    background: #f3f3f3;
+
+    .color-code-bars {
+      background: #f3f3f3;
+    }
+
+    .select-entity-btn {
+      background: #f3f3f3;
+      text-shadow: 0.5px 0 0.5px #007b53;
+      color: var(--Brand-700, #007b53);
+    }
+  }
+
+  &.invalid .select-entity-btn {
+    cursor: default;
+  }
+
+  button {
+    margin-left: 9px;
+  }
+
+  .color-code-bar {
+    height: 100%;
+    position: absolute;
+    width: 8px;
+    background-color: #007b53;
+  }
+
+  .color-code-bars {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    gap: 3px;
+    min-height: 100%;
+
+    .color-code-sqr {
+      height: 12px;
+      width: 12px;
+      background-color: #007b53;
+    }
+  }
+
+  .select-entity-btn {
+    cursor: pointer;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 8px;
+    font-size: 16px;
+    font-style: normal;
+    line-height: 27.2px; /* 170% */
+    text-align: left;
+    width: 100%;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+}
+
+.select-gallery-container.nested-1 {
+  padding-left: 12px;
+  width: calc(100% - 12px);
+}
+
+/* -------------------------------
+ *         Dropdown Styling
+ * ------------------------------- */
+
+.domain-dropdown {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+mat-form-field {
+  margin-top: 8px;
+  width: 100%;
+}
+
+/* needed to control dropdown button size */
+::ng-deep pdbc-entry-dropdown.domain-dropdown button {
+  height: 25px !important;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+/* -------------------------------
+ *  Info Banner when not Pref. Assembly
+ * ------------------------------- */
+
+section.info-banner {
+  border-left: 4px solid #e58c17;
+  margin-top: 12px;
+  margin-bottom: 16px;
+  position: absolute;
+  z-index: 2;
+  background: #fff;
+  top: 44px;
+  width: 55%;
+  left: 2%;
+  padding: 2px 6px;
+
+  .close-btn {
+    top: 4px;
+    right: 4px;
+    position: absolute;
+    cursor: pointer;
+  }
+
+  p {
+    width: 98%;
+    color: #1a1c1a;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22.4px;
+  }
+
+  a {
+    font-size: 14px;
+  }
+}
+
+/* -------------------------------
+ *     Molstar Control Toolbar
+ * ------------------------------- */
+
+.molstar-control-bar {
+  margin-bottom: 4px;
+
+  div {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    display: flex;
+    background: #f6f5f3;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-shrink: 0;
+    align-self: stretch;
+
+    .selector {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      padding-top: 0;
+      padding-bottom: 0;
+      font-size: 14px;
+      font-weight: 500;
+
+      .molstar-control-txt {
+        margin-left: 8px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+    }
+
+    .buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 0;
+      padding-bottom: 0;
+
+      .small-flat-btn {
+        display: inline-flex;
+        padding: 4px;
+        justify-content: center;
+        align-items: center;
+        gap: 4px;
+        height: 31px;
+        cursor: pointer;
+        color: #1a1c1a;
+        background: transparent;
+        border: 1px solid #d0d0ce;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 22.4px;
+
+        &:hover {
+          background: #e4e4e4;
+        }
+      }
+    }
+  }
+}
+
+.link-btn {
+  color: #3b6fb6;
+  font-weight: 400;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 4px;
+}
+
+/* -------------------------------
+ *      Panel Body Utility
+ * ------------------------------- */
+
+.custom-panel-body {
+  max-height: 250px;
+
+  .scrollable-content {
+    max-height: 234px;
+    overflow-y: auto;
+
+    &.big {
+      max-height: 250px;
+    }
+  }
+
+  .pagination-buttons {
+    height: 16px;
+  }
+}
+
+::ng-deep .mat-expansion-panel-body {
+  max-height: 290px;
+  overflow-y: initial;
+}
+
+::ng-deep mat-panel-title {
+  min-height: 36px;
+}
+
+.count-box {
+  min-height: 36px;
+  align-content: center;
+}

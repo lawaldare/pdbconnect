@@ -10,16 +10,17 @@ import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
-import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar } from '../../../helpers/molstar-helpers';
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
+import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar, QueryParamForHelpers } from '../../../helpers/molstar-helpers';
 import { MobileStateService } from '../mobile-state.service';
 import { EntryActions } from '../../../store/entry.actions';
 import { ProcessedDomain } from '../../../store/data-processing/models/processed-entities.model';
 import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
+import { getDomainChainDropdownOptions } from '../../../helpers/processed-data-to-controls';
+import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 
 @Component({
   selector: 'pdbc-mb-domains',
-  imports: [CommonModule],
+  imports: [CommonModule, EntryDropdownComponent],
   templateUrl: './mb-domains.component.html',
   styleUrls: ['../common-mb-header.scss', './mb-domains.component.scss'],
 })
@@ -27,6 +28,8 @@ export class MbDomainsComponent implements OnInit {
   private readonly state = inject(MobileStateService);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
+  public configForMobileMolstar$ = toObservable(this.compCommunication.configForMobileMolstar);
+
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
@@ -41,8 +44,13 @@ export class MbDomainsComponent implements OnInit {
   public expanded = signal<boolean>(false);
   public title = this.state.domainTitle;
 
+  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
+
   public dropdownOptions: DownloadOption[] = [];
   public dropdownSelected!: string;
+
+  public symmetryDropdownSelected?: string;
+  public symmetryDropdownOptions: DownloadOption[] = [];
 
   public readonly domainTableRows = computed(() => {
     const rows = this.processedDomains();
@@ -113,8 +121,42 @@ export class MbDomainsComponent implements OnInit {
   }
 
   private async updateCurrentDomain(): Promise<void> {
-    const selection = this.selectedDomain().additionalData.selections[0];
-    this.renderInMolstar(this.selectedDomain());
+    const domain = this.selectedDomain();
+    if (domain) this.updateDropdownOptions(domain);
+    if (domain) this.updateSymmetryDropdownOptions(domain);
+    this.renderInMolstar(domain);
+  }
+
+  private updateDropdownOptions(domain: ProcessedDomain) {
+    this.dropdownOptionsToMolstar = getDomainChainDropdownOptions(domain, true);
+    this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
+      return {
+        name: eachString,
+        url: `domain-${idx + 1}`,
+        downloadable: false,
+      };
+    });
+    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+  }
+
+  private updateSymmetryDropdownOptions(domain: ProcessedDomain) {
+    // update for symmetry operations dropdown
+    const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+    const segmentSymmOperators = idxOfSelection > -1 ? domain.symmOpListForSegments[idxOfSelection] : undefined;
+
+    if (segmentSymmOperators) {
+      this.symmetryDropdownOptions = segmentSymmOperators.map((op, idx) => {
+        return {
+          name: op,
+          url: `domain-0-symop-${idx + 1}`,
+          downloadable: false,
+        };
+      });
+      this.symmetryDropdownSelected = this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined;
+    } else {
+      this.symmetryDropdownSelected = undefined;
+      this.symmetryDropdownOptions = [];
+    }
   }
 
   public async goBackToList() {
@@ -131,7 +173,7 @@ export class MbDomainsComponent implements OnInit {
     }
   }
 
-  private selectionData?: QueryParam[];
+  private selectionData?: QueryParamForHelpers[];
 
   private async renderInMolstar(domain?: ProcessedDomain) {
     await firstValueFrom(
@@ -140,6 +182,12 @@ export class MbDomainsComponent implements OnInit {
         take(1)
       )
     );
+
+    // check whether chain is in pref assembly, molstar config needs update and wait for it
+    if (domain) {
+      const chainId = this.dropdownSelected?.includes('Chain ') ? this.dropdownSelected?.split('Chain ')[1].split(' <img')[0] : undefined;
+      await this.updateConfigAssemblyAndSyncMolstar(domain, chainId);
+    }
 
     const durationMs = this.compCommunication.mobileMolstar ? 200 : 0;
     const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
@@ -152,12 +200,13 @@ export class MbDomainsComponent implements OnInit {
       return;
     }
 
-    // TODO: Add domain dropdown to mobile domains too
-    const molstarSelection = domain.additionalData.selections[0];
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     const domainColor = '#B5CB93'; // domain.molstarColorHex;
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
     this.selectionData = molstarSelection.map((eachSelection) => {
       return {
         ...eachSelection,
+        instance_id,
         color: domainColor,
         focus: true,
       };
@@ -175,5 +224,74 @@ export class MbDomainsComponent implements OnInit {
     if (!domain) return '';
     if (domain.resource.includes('SCOP')) return resourceUrls[domain.resource];
     return resourceUrls[domain.resource] + domain.additionalData?.accession;
+  }
+
+  public anyNonPrefAssembly(domain: ProcessedDomain) {
+    return domain.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true) === false;
+  }
+
+  private async updateConfigAssemblyAndSyncMolstar(domain: ProcessedDomain, chainId?: string) {
+    // check if ligand instance is in pref assembly based on idx of ligand instance
+    const inPrefAssemblyForChain = this.compCommunication.mobileIsPrefAssembly();
+
+    let isSelectionPrefAssembly = false;
+    let changedDisplayedAssembly = false;
+
+    // with chain and symop selection
+    if (chainId !== undefined) {
+      const chainsOfDomainSegments = domain.additionalData.boundaries.map((bd) => bd.chain);
+      // get list of segments for selected chain by idx
+      const chainSegmentsIdx = chainsOfDomainSegments.map((chainStr, chainIdx) => (chainStr === chainId ? chainIdx : -1)).filter((idx) => idx !== -1);
+      // check whether all segments in preferred assembly
+      isSelectionPrefAssembly = chainSegmentsIdx.every((idx) => domain.additionalData.selectionsInPrefAssembly[idx] === true);
+      changedDisplayedAssembly = inPrefAssemblyForChain !== isSelectionPrefAssembly;
+    } else {
+      isSelectionPrefAssembly = domain.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
+      changedDisplayedAssembly = inPrefAssemblyForChain !== isSelectionPrefAssembly;
+    }
+
+    if (changedDisplayedAssembly && isSelectionPrefAssembly === false) {
+      this.compCommunication.mobileHasClosedMessage.set(false);
+    }
+    // setting inPrefAssemblyForInstance may trigger update on configForMolstar
+    this.compCommunication.mobileIsPrefAssembly.set(isSelectionPrefAssembly);
+
+    // ... if this update is triggered
+    if (changedDisplayedAssembly) {
+      // wait until configForMolstar recomputes with new assembly/moleculeId
+      const oldCfg = await firstValueFrom(this.configForMobileMolstar$.pipe(take(1)));
+
+      const newCfg = await firstValueFrom(
+        this.configForMobileMolstar$.pipe(
+          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
+          take(1)
+        )
+      );
+
+      // 2. Wait for MolstarComponent to APPLY the new config
+      await firstValueFrom(
+        this.compCommunication.mobileMolstar!.configUpdated.pipe(
+          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
+          take(1)
+        )
+      );
+    }
+  }
+
+  public async onDropdownSelect(event: string) {
+    this.dropdownSelected = event;
+
+    const domain = this.selectedDomain();
+    if (!domain) return;
+    this.updateSymmetryDropdownOptions(domain);
+    await this.renderInMolstar(domain);
+  }
+
+  public async onSymmetryDropdownSelect(event: string) {
+    this.symmetryDropdownSelected = event;
+
+    const domain = this.selectedDomain();
+    if (!domain) return;
+    await this.renderInMolstar(domain);
   }
 }

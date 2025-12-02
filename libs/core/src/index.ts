@@ -27,3 +27,6 @@ export * from './lib/services/popup-window.service';
 export * from './lib/services/scroll-position.service';
 export * from './lib/services/clarity-consent.service';
 export * from './lib/data-privacy-banner.component';
+export * from './lib/models/survey-config';
+export * from './lib/services/survey.service';
+export * from './lib/survey.component';

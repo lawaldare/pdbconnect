@@ -9,7 +9,7 @@ export class ApplicationAPIDispatcher {
   private readonly globalStore = inject(Store<EntryStoreState>);
 
   private dispatched: string[] = [];
-  private desktopTabs = ['summary', 'model-quality', 'assemblies', 'macromolecules', 'ligands', 'domains', 'llm', 'citations'];
+  private desktopTabs = ['summary', 'model-quality', 'complexes', 'macromolecules', 'ligands', 'domains', 'llm', 'citations'];
 
   public dispatchForTab(tabName: string): void {
     const actions: any[] = [];
@@ -79,7 +79,7 @@ export class ApplicationAPIDispatcher {
           EntryActions.getValidationXrayRefine,
         ]
       );
-    } else if (tabName === 'assemblies') {
+    } else if (tabName === 'complexes') {
       actions.push(
         ...[
           // EntryActions.getProcessedAssemblies // called in desktop tabs above
