@@ -1,4 +1,3 @@
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Filter, PreferredAssemblyData } from './models/other-models';
 import { AssemblyData } from '../../data-models/assembly.model';
 import { ComplexDetails } from '../../data-models/complex-details.model';
@@ -195,7 +194,14 @@ export interface ProcessedAssembly {
   };
 }
 
-const ALLOWEDTYPES = ['polypeptide(L)', 'polypeptide(R)', 'polyribonucleotide', 'polydeoxyribonucleotide', 'polydeoxyribonucleotide/polyribonucleotide hybrid'];
+const ALLOWEDTYPES = [
+  'polypeptide(L)',
+  'polypeptide(D)',
+  'polyribonucleotide',
+  'polydeoxyribonucleotide',
+  'polydeoxyribonucleotide/polyribonucleotide hybrid',
+  'peptide nucleic acid',
+];
 
 function formatPisaValue(valueType: 'area' | 'energy' | 'other', value: string | number | undefined | null) {
   if (valueType === 'area') return value != null ? `${Math.round(value as number)} Å²` : 'Not available';

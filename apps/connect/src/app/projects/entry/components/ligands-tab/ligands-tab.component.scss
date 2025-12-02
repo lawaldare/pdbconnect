@@ -1,4 +1,4 @@
-@import url('https://www.ebi.ac.uk/pdbe/pdb-component-library/css/pdb-ligand-env-svg.css');
+@import 'https://www.ebi.ac.uk/pdbe/pdb-component-library/css/pdb-ligand-env-svg.css';
 
 main {
   display: flex;
@@ -18,6 +18,24 @@ main {
 
   .tab-content {
     width: calc(100% - 268px);
+  }
+}
+
+section.info-banner {
+  border-left: 4px solid #e58c17;
+  padding-left: 4px;
+  margin-top: 12px;
+  margin-bottom: 16px;
+
+  p {
+    color: #1a1c1a;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22.4px;
+  }
+
+  a {
+    font-size: 14px;
   }
 }
 
@@ -118,7 +136,6 @@ main {
   line-height: 26.6px; /* 166.25% */
 
   .dropdown-container {
-    display: flex;
     align-items: baseline;
 
     .dropdown-title {
@@ -129,6 +146,10 @@ main {
       font-weight: 500;
       line-height: 26.6px; /* 166.25% */
     }
+  }
+
+  .symm-op-txt {
+    margin-left: 8px;
   }
 }
 
@@ -215,7 +236,7 @@ section.ligand-charts {
         width: 100%;
         height: 100%;
         flex: 1;
-        z-index: 1;
+        z-index: 8;
 
         div {
           height: 100%;

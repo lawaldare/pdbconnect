@@ -236,7 +236,8 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
               const data = interactions[ligandId];
               const atoms = this.atomNamesList();
               if (data && atoms) {
-                const viewerData = processInitialData(data, atoms);
+                // eslint-disable-next-line prefer-const
+                let viewerData = processInitialData(data, atoms);
                 const aas = viewerData.yDomain.map((aa) => AATHREETOONE[aa as AminoAcidCode]);
                 this.aminoAcidsLegend.set(aas);
                 this.viewerData.set(viewerData);
@@ -271,6 +272,7 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
                     hasYScale: false,
                     tooltipContentFn: (d: any, x: number, y: number) => {
                       if (!d) return '';
+                      // eslint-disable-next-line prefer-const
                       let tooltipContent = `
                         <div class="tooltip-data" data-trackid="atoms-hm" style="display: none"></div>
                         Ligand atom: <b>${d['atomName']}</b><br>
@@ -297,6 +299,7 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
                     hasYScale: false,
                     tooltipContentFn: (d: any, x: number, y: number) => {
                       if (!d) return '';
+                      // eslint-disable-next-line prefer-const
                       let tooltipContent = `
                         <div class="tooltip-data" data-trackid="resids-hm" style="display: none"></div>
                         Ligand atom: <b>${d['atomName']}</b><br>

@@ -544,6 +544,8 @@
                 [molstarConfig]="configForMolstar()"
                 [style.display]="processedWidth() ? '' : 'none'"
                 [height]="'100%'"
+                [seqOnExpanded]="true"
+                (toggledExpansion)="onExpandMolstar($event)"
               ></lib-pdbe-molstar>
             </div>
           </div>

@@ -1,6 +1,7 @@
 export interface PolymerCoverageMolecule {
   entity_id: number;
   chains: PolymerCoverageChain[];
+  in_chains_in_pref_assembly?: boolean[]; // added for processing
 }
 
 export interface PolymerCoverageChain {

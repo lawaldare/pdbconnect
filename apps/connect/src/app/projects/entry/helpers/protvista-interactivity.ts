@@ -1,6 +1,6 @@
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
+import { QueryParamForHelpers } from './molstar-helpers';
 
-export function protToMolBuildHighlightQuery(detail: any): QueryParam | null {
+export function protToMolBuildHighlightQuery(detail: any, symOpInstanceId?: string): QueryParamForHelpers | null {
   if (!detail.start || !detail.end) return null;
 
   const query: any = {
@@ -11,6 +11,7 @@ export function protToMolBuildHighlightQuery(detail: any): QueryParam | null {
   if (detail.feature?.entityId) query.entity_id = String(detail.feature.entityId);
   if (detail.feature?.bestChainId) query.auth_asym_id = detail.feature.bestChainId;
   if (detail.feature?.chainId) query.auth_asym_id = detail.feature.chainId;
+  if (symOpInstanceId) query.instance_id = symOpInstanceId;
   return query;
 }
 

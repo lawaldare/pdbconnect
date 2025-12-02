@@ -10,8 +10,7 @@ import { ValidationDataProcessingFacade } from '../../../components/model-qualit
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { StrucQualityGradientsComponent } from '../../../components/shared/struc-quality-gradients/struc-quality-gradients.component';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { cameraResetInMolstar, drawSelectionInMolstar } from '../../../helpers/molstar-helpers';
+import { cameraResetInMolstar, drawSelectionInMolstar, QueryParamForHelpers } from '../../../helpers/molstar-helpers';
 import { MobileStateService } from '../mobile-state.service';
 import { EntryActions } from '../../../store/entry.actions';
 import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
@@ -133,7 +132,7 @@ export class MbModelQualityComponent implements OnInit {
 
     const colours = ['#D4D5D4', '#E5E501', '#DA6E03', '#B2182B'];
     const outlierList = [outliers.residuesWith1Outlier, outliers.residuesWith2Outliers, outliers.residuesWith3OrMoreOutliers];
-    const selectionData: QueryParam[] = [];
+    const selectionData: QueryParamForHelpers[] = [];
 
     for (let i = 0; i < outlierList.length; i++) {
       const outlierResids = outlierList[i];

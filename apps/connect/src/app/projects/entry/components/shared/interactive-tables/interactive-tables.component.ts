@@ -17,10 +17,11 @@ import { LigandOrModUICard } from '../../../store/data-processing/ligand-process
 import { DomainUICard } from '../../../store/data-processing/domain-processing';
 import { AssemblyUICard } from '../../../store/data-processing/assembly-processing';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MaterialModule } from '@pdbc/core';
 @Component({
   selector: 'pdbc-interactive-tables',
   standalone: true,
-  imports: [CommonModule, NgxPaginationModule, RichTooltipDirective, TruncateTextDirective],
+  imports: [CommonModule, NgxPaginationModule, RichTooltipDirective, TruncateTextDirective, MaterialModule],
   templateUrl: './interactive-tables.component.html',
   styleUrl: './interactive-tables.component.scss',
 })
@@ -88,7 +89,7 @@ export class InteractiveTablesComponent implements OnInit {
       this.domainsFiltersObs.subscribe((domainsFilters) => {
         if (domainsFilters !== undefined) this.setFilters(domainsFilters);
       });
-    } else if (this.tabName() === 'Assemblies') {
+    } else if (this.tabName() === 'Complexes') {
       this.globalStore.dispatch(EntryActions.getProcAssembliesCards());
       this.assembliesCardsObs.subscribe((assembliesCards) => {
         if (assembliesCards !== undefined) this.setCards(assembliesCards);
@@ -131,7 +132,7 @@ export class InteractiveTablesComponent implements OnInit {
 
       if (value) {
         switch (this.tabName()) {
-          case 'Assemblies':
+          case 'Complexes':
             activeCard = this.rowCards().find((c: any) => c.assemblyId == value);
             activeIndex = this.rowCards().findIndex((c: any) => c.assemblyId == value);
             break;
@@ -163,8 +164,6 @@ export class InteractiveTablesComponent implements OnInit {
         this.loadSelectionFromTable(0);
       }
     });
-    // this.selectedRowCard.set(this.rowCards()[0]);
-    // this.loadSelectionFromTable(0);
   }
 
   private setFilters(filters: Filter[]) {
@@ -176,7 +175,7 @@ export class InteractiveTablesComponent implements OnInit {
     let queryParamValue = '';
 
     switch (this.tabName()) {
-      case 'Assemblies':
+      case 'Complexes':
         queryParamValue = card.assemblyId;
         break;
       case 'Macromolecules':
@@ -215,7 +214,7 @@ export class InteractiveTablesComponent implements OnInit {
   }
 
   public loadSelectionFromTable(rowIdx: number) {
-    if (this.tabName() === 'Assemblies') this.compCommunication.assemblySelection$.next(rowIdx);
+    if (this.tabName() === 'Complexes') this.compCommunication.assemblySelection$.next(rowIdx);
     if (this.tabName() === 'Macromolecules') this.compCommunication.macromoleculeSelection$.next(rowIdx);
     if (this.tabName() === 'Ligands') this.compCommunication.ligandSelection$.next(rowIdx);
     if (this.tabName() === 'Domains') this.compCommunication.domainSelection$.next(rowIdx);

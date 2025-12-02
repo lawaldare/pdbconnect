@@ -37,7 +37,7 @@ export function renderColouredSeqTrack(
 
   // Update content depending on status
   switch (colourSeqTrackData.status) {
-    case 'ready-has-data':
+    case 'ready-has-data': {
       const trackHeight = colourSeqTrackData.trackHeight !== undefined ? colourSeqTrackData.trackHeight : 40;
       const isExpandable = colourSeqTrackData.isExpandable !== undefined ? colourSeqTrackData.isExpandable : true;
       colourSeqTrackRow.innerHTML = getColouredSeqTrackHTML(
@@ -53,19 +53,20 @@ export function renderColouredSeqTrack(
         colourIn3DControl
       );
       break;
-
-    case 'ready-empty':
+    }
+    case 'ready-empty': {
       colourSeqTrackRow.classList.add('no-data');
       colourSeqTrackRow.innerHTML = getNoDataHTML(colourSeqTrackData.name);
       break;
-
-    case 'not-loaded':
+    }
+    case 'not-loaded': {
       colourSeqTrackRow.classList.add('no-data');
       colourSeqTrackRow.innerHTML = getLoadingDataHTML(colourSeqTrackData.name, extraMarginLeft, extraMarginRight);
       break;
-
-    default:
+    }
+    default: {
       console.warn(`Unknown track status: ${colourSeqTrackData.status}`);
       break;
+    }
   }
 }

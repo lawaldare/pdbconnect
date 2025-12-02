@@ -1,4 +1,4 @@
-@import 'libs/core/src/lib/styles/pdb_connect.scss';
+@import 'libs/core/src/lib/styles/pdb_connect';
 
 ngx-skeleton-loader {
   width: 100%;
@@ -82,5 +82,6 @@ section.container {
     // white-space: nowrap;
     max-width: 400px !important;
     max-height: unset !important;
+    white-space: pre-line;
   }
 }

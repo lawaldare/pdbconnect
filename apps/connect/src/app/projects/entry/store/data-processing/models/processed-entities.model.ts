@@ -1,5 +1,5 @@
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { Molecule } from '../../../data-models/molecule.model';
+import { QueryParamForHelpers } from '../../../helpers/molstar-helpers';
 export interface DomainsBoundaries {
   chain: string;
   entity: number;
@@ -14,12 +14,15 @@ export interface ProcessedDomain {
   moleculeNames: string[];
   segments: string[];
   segmentsAsText: string;
+  allSegmentsInPrefAssembly: boolean;
+  symmOpListForSegments: string[][];
   additionalData: {
     accession: string;
     boundaries: DomainsBoundaries[];
     segmentsResidNumbers: string[];
-    selections: QueryParam[][];
+    selections: QueryParamForHelpers[][];
     selectionNames: string[];
+    selectionsInPrefAssembly: boolean[];
   };
   mappedboundaries?: string[];
   molstarColorHex?: string;
@@ -33,10 +36,12 @@ export interface ProcessedMacromolecule {
   length: number;
   organisms: string[];
   genes: string[];
+  chainSymmOperators: { [key: string]: string[] };
   additionalData: {
     molecule: Molecule;
-    selections: QueryParam[][];
+    selections: QueryParamForHelpers[][];
     selectionNames: string[];
+    selectionsInPrefAssembly: boolean[];
   };
   molstarColorHex?: string;
 }

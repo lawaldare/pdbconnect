@@ -1,0 +1,33 @@
+section.info-banner {
+  border-left: 4px solid #e58c17;
+  margin-top: 12px;
+  margin-bottom: 16px;
+  position: absolute;
+  z-index: 9;
+  background: #fff;
+  top: 2%;
+  left: 4%;
+  padding: 2px 6px;
+  min-height: 60px;
+  min-width: 50%;
+
+  .close-btn {
+    top: 4px;
+    right: 4px;
+    position: absolute;
+    cursor: pointer;
+    margin-left: 10%;
+  }
+
+  p {
+    width: 98%;
+    color: #1a1c1a;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 26.6px;
+  }
+
+  a {
+    font-size: 16px;
+  }
+}

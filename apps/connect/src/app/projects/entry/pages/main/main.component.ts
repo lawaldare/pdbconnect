@@ -6,7 +6,7 @@ import { SearchAppComponent } from '@pdbc/search-app';
 
 import { combineLatest, EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { ClarityConsentService, DataPrivacyBannerComponent, GoogleAnalyticsService, MaterialModule, ScrollPositionService } from '@pdbc/core';
+import { ClarityConsentService, DataPrivacyBannerComponent, GoogleAnalyticsService, MaterialModule, ScrollPositionService, SurveyPopupComponent } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
 import { mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig, routeTabs, tourIds } from '../../entry-constant';
 import { EntryStatus, StatusCode } from '../../data-models/status.model';
@@ -76,6 +76,7 @@ import { HelpIconForMolstarService } from '@pdbe-lib/molstar-for-apps';
     ErrorPageComponent,
     VisualisationInteractivityDirective,
     DataPrivacyBannerComponent,
+    SurveyPopupComponent,
     RouterModule,
   ],
   templateUrl: './main.component.html',
@@ -170,9 +171,14 @@ export class EntryMainPageComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       // Check for screen width <= 768px
       if (window.innerWidth <= 768) return;
-      const tabName = params['activeTab'] ?? 'summary';
+      let tabName = params['activeTab'] ?? 'summary';
+      if (tabName === 'assemblies') tabName = 'complexes';
+      let tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
+      if (tabIndex === -1) {
+        tabIndex = 0;
+        tabName = 'summary';
+      }
       this.compCommunication.currentTabName.set(tabName);
-      const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.compCommunication.updateSelectedTabIndex(tabIndex);
       this.gAS.logPageEvents('ep_desktop_tab_access', {
         tab: tabName,
@@ -224,6 +230,7 @@ export class EntryMainPageComponent implements OnInit {
             // used in citations-tab, llm-tab, summary-tab, mb-citation-tab, mb-overview-tab, entry.bioschemas
             this.globalStore.dispatch(EntryActions.getPrimaryPublication());
             this.entryBioschemasService.buildBioschemasJSON(this.renderer);
+            this.facade.launchSurveyForEntryPage(this.entryId(), this.isDesktop());
           } else if (status !== 'INITIAL') {
             this.util.setPageView('OTHER');
           }
@@ -238,6 +245,7 @@ export class EntryMainPageComponent implements OnInit {
       .pipe(
         map(([entryStatus, isDesktop, tabName]) => {
           if (entryStatus === undefined || isDesktop === undefined || tabName === undefined) return;
+          if (tabName === 'assemblies') tabName = 'complexes';
           if (entryStatus.status_code === 'REL' && isDesktop) {
             // if released and desktop mode dispatch listeners for data status of different tabs
             this.applicationApiDispatcher.dispatchForTab(tabName);
