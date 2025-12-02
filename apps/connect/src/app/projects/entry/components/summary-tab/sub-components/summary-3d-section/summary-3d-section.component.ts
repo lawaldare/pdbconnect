@@ -117,7 +117,6 @@ export class Summary3DSectionComponent {
       moleculeId: this.entryId(),
       assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
-      landscape: true,
       subscribeEvents: true,
       granularity: 'residue',
       hideControls: false,
@@ -948,7 +947,7 @@ export class Summary3DSectionComponent {
     }
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     // loop over each molstar selection and add color and focus
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'None' ? this.symmetryDropdownSelected : undefined;
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
     this.selectionData = molstarSelection.map((eachSelection) => {
       return {
         ...eachSelection,
@@ -1008,7 +1007,7 @@ export class Summary3DSectionComponent {
       this.selectionData = domainsSelectionData;
     } else {
       const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'None' ? this.symmetryDropdownSelected : undefined;
+      const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
       this.selectionData = molstarSelection.map((eachSegment) => {
         return {
           ...eachSegment,

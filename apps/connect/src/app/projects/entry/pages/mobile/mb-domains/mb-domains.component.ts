@@ -202,7 +202,7 @@ export class MbDomainsComponent implements OnInit {
 
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     const domainColor = '#B5CB93'; // domain.molstarColorHex;
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'None' ? this.symmetryDropdownSelected : undefined;
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
     this.selectionData = molstarSelection.map((eachSelection) => {
       return {
         ...eachSelection,

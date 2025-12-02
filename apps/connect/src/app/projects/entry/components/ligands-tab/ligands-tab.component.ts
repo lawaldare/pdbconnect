@@ -199,7 +199,6 @@ export class LigandsTabComponent implements AfterViewInit {
       moleculeId: this.entryId(),
       assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
-      landscape: true,
       subscribeEvents: true,
       granularity: 'element',
       // 'granularity': 'residue',

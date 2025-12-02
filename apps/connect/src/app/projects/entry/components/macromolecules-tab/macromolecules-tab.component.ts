@@ -288,7 +288,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       moleculeId: this.entryId(),
       assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
-      landscape: true,
       subscribeEvents: true,
       granularity: 'residue',
       hideControls: false,
@@ -837,7 +836,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public async onSymmetryDropdownSelect(event: string) {
     this.symmetryDropdownSelected = event;
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'None' ? this.symmetryDropdownSelected : undefined;
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
     this.visInteractivity.selectedSymOpInstanceId.set(instance_id);
 
     const macromolecule = this.currentMacromoleculeDatum();
@@ -908,7 +907,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
     // loop over each molstar selection and add color and focus
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'None' ? this.symmetryDropdownSelected : undefined;
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
     this.selectionData = molstarSelection.map((eachSelection) => {
       return {
         ...eachSelection,

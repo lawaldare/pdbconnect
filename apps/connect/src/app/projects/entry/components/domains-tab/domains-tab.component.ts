@@ -258,7 +258,6 @@ export class DomainsTabComponent implements AfterViewInit {
       moleculeId: this.entryId(),
       assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
-      landscape: true,
       subscribeEvents: true,
       granularity: 'residue',
       hideControls: false,
@@ -521,7 +520,7 @@ export class DomainsTabComponent implements AfterViewInit {
   public async onSymmetryDropdownSelect(event: string) {
     this.symmetryDropdownSelected = event;
 
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'None' ? this.symmetryDropdownSelected : undefined;
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
     this.visInteractivity.selectedSymOpInstanceId.set(instance_id);
 
     const domain = this.currentDomainsDatum();
@@ -562,7 +561,7 @@ export class DomainsTabComponent implements AfterViewInit {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     const domainColor = '#B5CB93'; // domain.molstarColorHex;
 
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'None' ? this.symmetryDropdownSelected : undefined;
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
     this.selectionData = molstarSelection.map((eachSelection) => {
       return {
         ...eachSelection,

@@ -54,9 +54,7 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
     } else {
       this.molstarActionsMutex = this.molstarActionsMutex.then(() => {
         const layout = [{ target: container, component: this.molstarPluginService.getClass().UIComponents.FullLayoutNoControlsUnlessExpanded }];
-        this.molstarViewInstance.render(layout, this.molstarConfig).then(() => {
-          this.adjustMainCanvasStyleForSeq(false);
-        });
+        this.molstarViewInstance.render(layout, this.molstarConfig);
       });
     }
 
@@ -73,7 +71,6 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
           this.isExpanded = expanded;
           this.toggledExpansion.emit(expanded);
         }
-        if (this.seqOnExpanded) this.adjustMainCanvasStyleForSeq(expanded);
         this.helpIconForMolstarService.toggleHelpIcon(expanded);
       });
     });
@@ -100,16 +97,5 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
 
   public getContainer() {
     return this.viewContainer.nativeElement;
-  }
-
-  private adjustMainCanvasStyleForSeq(expanded: boolean) {
-    const mainCanvasContainer = (this.getContainer() as HTMLDivElement).querySelector<HTMLDivElement>('div.msp-layout-region.msp-layout-main');
-    if (expanded && mainCanvasContainer) {
-      mainCanvasContainer.style.width = '';
-      mainCanvasContainer.style.marginLeft = '';
-    } else if (!expanded && mainCanvasContainer) {
-      mainCanvasContainer.style.width = '100%';
-      mainCanvasContainer.style.marginLeft = this.isMobile ? '' : '-32px';
-    }
   }
 }

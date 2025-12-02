@@ -227,7 +227,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
       bgColor: { r: 255, g: 255, b: 255 },
-      landscape: true,
       subscribeEvents: true,
       granularity: 'residue',
       hideControls: false,

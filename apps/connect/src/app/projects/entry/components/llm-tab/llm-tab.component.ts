@@ -243,7 +243,6 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
       moleculeId: this.entryId(),
       assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
-      landscape: true,
       subscribeEvents: true,
       granularity: 'residue',
       hideControls: false,
@@ -643,7 +642,7 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
 
     // because we don't loop over molstarSelections we assume no
     // annotations map to carbohydrates in this tab (proteins only atm)
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'None' ? this.symmetryDropdownSelected : undefined;
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
     this.selectionData = [
       {
         ...molstarSelection[0],

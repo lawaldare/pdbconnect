@@ -561,7 +561,7 @@ export function generateSymmetryOperatorsDict(macromolecule: Molecule, preferred
       continue;
     }
 
-    const operatorsList = ['None'];
+    const operatorsList = ['All'];
     for (const assemblyStructAsymWithOp of assemblyStructAsymsWithOp) {
       const symmetryOperator = assemblyStructAsymWithOp === structAsymId ? '1' : assemblyStructAsymWithOp.split('-')[1];
 

@@ -523,8 +523,8 @@ export function generateSymmetryOperatorsDictForDomain(segmentsEntityIds: number
       segmentsSymmOperators.push([`ASM-${symmetryOperator}`]);
       continue;
     }
-    // None for default selection
-    currentSegmentSymmOperators.push('None');
+    // All for default selection
+    currentSegmentSymmOperators.push('All');
 
     // add each operator to list
     for (const structAsymIdWithOp of prefAssemblyStructAsymsForSegment) {
