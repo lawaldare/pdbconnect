@@ -20,7 +20,12 @@ import { Molecule } from '../../../../data-models/molecule.model';
 import { ProcessedDomain, ProcessedMacromolecule } from '../../../../store/data-processing/models/processed-entities.model';
 import { ProcessedLigandOrMod } from '../../../../store/data-processing/ligand-processing';
 import { GoogleAnalyticsService } from '@pdbc/core';
-import { getDomainChainDropdownOptions, getLigandsDropdownOptions, getMacromoleculeChainDropdownOptions } from '../../../../helpers/processed-data-to-controls';
+import {
+  getCleanMoleculeName,
+  getDomainChainDropdownOptions,
+  getLigandsDropdownOptions,
+  getMacromoleculeChainDropdownOptions,
+} from '../../../../helpers/processed-data-to-controls';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { EntryDropdownComponent } from '../../../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { MaterialModule } from '@pdbc/core';
@@ -149,6 +154,8 @@ export class Summary3DSectionComponent {
   private nonSelectionColor?: string;
 
   private zoomSelectionMutex = Promise.resolve();
+
+  public getCleanMoleculeName = getCleanMoleculeName;
 
   private async resetSelection() {
     const instance = this._molstarComponent?.getInstance() ?? null;

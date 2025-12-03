@@ -6,7 +6,7 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { QueryParamForHelpers } from './molstar-helpers';
 
 export function getCleanMoleculeName(molecule: Molecule) {
-  if (molecule.molecule_name) return molecule.molecule_name.join(', ');
+  if (molecule.molecule_name && molecule.molecule_name.length > 0) return molecule.molecule_name.join(', ');
   else if (molecule.synonym) return molecule.synonym;
   return 'Undefined';
 }
