@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, inject } from '@angular/core';
 import { SurveyService } from './services/survey.service';
+import { SurveyQuestion } from './models/survey-config';
 
 const TEXT_MAX_LENGTH = 400;
 
@@ -31,7 +32,7 @@ const TEXT_MAX_LENGTH = 400;
                 @if (currentQuestion()?.type === 'rating') {
                   <div class="stars">
                     @for (i of [1, 2, 3, 4, 5]; track i) {
-                      <span class="star" [class.filled]="answers()?.[currentId] >= i" (click)="saveAnswer(currentId!, i)">★</span>
+                      <span class="star" [class.filled]="answers()[currentId] >= i" (click)="saveAnswer(currentId!, i)">★</span>
                     }
                   </div>
                 }
@@ -45,7 +46,7 @@ const TEXT_MAX_LENGTH = 400;
                           type="radio"
                           [name]="currentId"
                           [value]="choice"
-                          [checked]="answers()?.[currentId] === choice"
+                          [checked]="answers()[currentId] === choice"
                           (change)="saveAnswer(currentId!, choice)"
                         />
                         {{ choice }}
@@ -58,7 +59,7 @@ const TEXT_MAX_LENGTH = 400;
                 @if (currentQuestion()?.type === 'text') {
                   <textarea class="survey-text-input" [attr.maxLength]="textMax" (input)="onTextInput(currentId!, $any($event.target).value)"></textarea>
 
-                  <div class="char-remaining">{{ textMax - (answers()?.[currentId]?.length ?? 0) }} characters left</div>
+                  <div class="char-remaining">{{ textMax - (answers()[currentId]?.length ?? 0) }} characters left</div>
                 }
               }
             </div>
@@ -283,7 +284,7 @@ export class SurveyPopupComponent {
   }
 
   get currentAnswer(): any {
-    return this.answers()?.[this.currentId];
+    return this.answers()[this.currentId];
   }
 
   get isCurrentRequiredUnanswered(): boolean {
@@ -295,7 +296,7 @@ export class SurveyPopupComponent {
   get allRequiredAnswered(): boolean {
     return this.questions.every((q) => {
       if (q.skip) return true; // optional
-      const val = this.answers()?.[q.id];
+      const val = this.answers()[q.id];
       return val !== undefined && val !== null && val !== '';
     });
   }
@@ -309,7 +310,7 @@ export class SurveyPopupComponent {
 
   textMax = TEXT_MAX_LENGTH;
 
-  currentQuestion() {
+  currentQuestion(): SurveyQuestion | undefined {
     return this.questions[this.currentIndex];
   }
 
