@@ -7,10 +7,9 @@ import { Filter, LabelUniProtMappingRows, UniProtMappingRows } from './models/ot
 import { PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
 import { DEFAULT_SET_25 } from '@pdbe-lib/molstar-for-apps';
 import { ProcessedMacromolecule } from './models/processed-entities.model';
-import { identity } from 'rxjs';
 import { QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { getCleanMoleculeName } from '../../helpers/processed-data-to-controls';
-import { sortByPrefAssembly } from './ligand-processing';
+import { sortByBooleanFlag } from './domain-processing';
 
 export interface MacromoleculesDescriptions {
   macromoleculesDescription: string;
@@ -593,10 +592,13 @@ export function generateProcessedMacromolecules(macromolecules: Molecule[], pref
     const colorEntityIdx = molecule.entity_id - 1;
     const chainSymmOperators = generateSymmetryOperatorsDict(molecule, preferredAssembly);
 
-    const { selections, selectionNames, selectionsInPrefAssembly } = sortByPrefAssembly(
-      selectionData.selections,
-      selectionData.selectionNames,
-      selectionData.selectionsInPrefAssembly
+    const { selections, selectionNames, selectionsInPrefAssembly } = sortByBooleanFlag(
+      {
+        selections: selectionData.selections,
+        selectionNames: selectionData.selectionNames,
+        selectionsInPrefAssembly: selectionData.selectionsInPrefAssembly,
+      },
+      'selectionsInPrefAssembly'
     );
 
     processedMacromolecules.push({
