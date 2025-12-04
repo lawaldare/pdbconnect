@@ -11,6 +11,8 @@ publish:empty:
     stage: publish
     script:
         - echo "No jobs affected by this commit"
+    rules:
+        - if: $PARENT_PIPELINE_ID
 `;
 
 const createBuildJob = (serviceName) => `
@@ -23,6 +25,8 @@ publish:${serviceName}:
       - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
       - docker build --pull --cache-from $CI_REGISTRY_IMAGE --build-arg APP_BASE_HREF=\$${serviceName.toUpperCase()}_BASE_HREF --tag $CI_REGISTRY_IMAGE/connect-${serviceName}:$CI_COMMIT_SHORT_SHA --file apps/${serviceName}/Dockerfile .
       - docker push $CI_REGISTRY_IMAGE/connect-${serviceName}:$CI_COMMIT_SHORT_SHA
+    rules:
+      - if: $PARENT_PIPELINE_ID
     tags:
       - pdbe-shell
 `;
@@ -42,7 +46,9 @@ trigger_deploy:${serviceName}:
       branch: main
       strategy: depend
     needs:
-      - publish:${serviceName}  
+      - publish:${serviceName}
+    rules:
+      - if: $PARENT_PIPELINE_ID
 `;
 
 const createCIFile = (projects) => {
