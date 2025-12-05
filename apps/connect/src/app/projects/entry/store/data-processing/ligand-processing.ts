@@ -8,6 +8,7 @@ import { BANG_WONG_COLORBLIND_SCALE } from '../../entry-constant';
 import { Filter } from './models/other-models';
 import { BoundMolecule } from '../../data-models/bound-molecule.model';
 import { QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { sortByBooleanFlag } from './domain-processing';
 
 export function filterLigandsByPreferredAssembly(ligands: Molecule[], preferredAssembly: AssemblyData): Molecule[] {
   const entityMap = getEntityToStructAsymsMapOfAssembly(preferredAssembly);
@@ -437,29 +438,6 @@ export function generateSymmetryOperatorsListForLigand(entityId: number, ligandM
   return ligandsSymmOperators;
 }
 
-export function sortByPrefAssembly(selections: QueryParamForHelpers[][], selectionNames: string[], selectionsInPrefAssembly: boolean[]) {
-  // zip
-  const zipped = selections.map((sel, idx) => ({
-    selection: sel,
-    name: selectionNames[idx],
-    inPref: selectionsInPrefAssembly[idx],
-    originalIndex: idx, // ensures stable ordering
-  }));
-
-  // stable sort: true first, but preserve original order
-  zipped.sort((a, b) => {
-    if (a.inPref === b.inPref) return a.originalIndex - b.originalIndex;
-    return a.inPref ? -1 : 1; // true first
-  });
-
-  // unzip
-  return {
-    selections: zipped.map((x) => x.selection),
-    selectionNames: zipped.map((x) => x.name),
-    selectionsInPrefAssembly: zipped.map((x) => x.inPref),
-  };
-}
-
 export function generateProcessedLigands(ligands: Molecule[], ligandMonomers: LigandMonomer[], preferredAssembly: AssemblyData, verbose = false) {
   if ((<any>ligands).empty === true) ligands = [];
   if ((<any>ligandMonomers).empty === true) ligandMonomers = [];
@@ -497,11 +475,15 @@ export function generateProcessedLigands(ligands: Molecule[], ligandMonomers: Li
       .filter((v, i, arr) => arr.indexOf(v) === i);
     const annotationsOfLigand = uniqueLigandAnnotationTypes.length > 0 ? uniqueLigandAnnotationTypes : [];
 
-    const symmOpListForEachLigOrMod = generateSymmetryOperatorsListForLigand(ligand.entity_id, ligandMonomersForThisLigand, preferredAssembly);
-    const { selections, selectionNames, selectionsInPrefAssembly } = sortByPrefAssembly(
-      ligandMolstarData.selections,
-      ligandMolstarData.selectionNames,
-      molstarSelectionsInPrefAssembly
+    const unsortedSymmOpListForEachLigOrMod = generateSymmetryOperatorsListForLigand(ligand.entity_id, ligandMonomersForThisLigand, preferredAssembly);
+    const { selections, selectionNames, selectionsInPrefAssembly, symmOpListForEachLigOrMod } = sortByBooleanFlag(
+      {
+        selections: ligandMolstarData.selections,
+        selectionNames: ligandMolstarData.selectionNames,
+        selectionsInPrefAssembly: molstarSelectionsInPrefAssembly,
+        symmOpListForEachLigOrMod: unsortedSymmOpListForEachLigOrMod,
+      },
+      'selectionsInPrefAssembly'
     );
 
     if (entryInstancesCount > 0) {
@@ -594,13 +576,16 @@ export function generateProcessedModifications(modifications: ModifiedResidue[],
     const molstarSelectionsInPrefAssembly = modificationsOfId.map((mod) => mod.in_pref_assembly || false);
     const allInstancesInPrefAssembly = molstarSelectionsInPrefAssembly.every((inPrefAssembly) => inPrefAssembly === true);
 
-    const { selections, selectionNames, selectionsInPrefAssembly } = sortByPrefAssembly(
-      modificationMolstarData.selections,
-      modificationMolstarData.selectionNames,
-      molstarSelectionsInPrefAssembly
+    const unSortedSymmOpListForEachLigOrMod = generateSymmetryOperatorsListForModification(modificationsOfId, preferredAssembly);
+    const { selections, selectionNames, selectionsInPrefAssembly, symmOpListForEachLigOrMod } = sortByBooleanFlag(
+      {
+        selections: modificationMolstarData.selections,
+        selectionNames: modificationMolstarData.selectionNames,
+        selectionsInPrefAssembly: molstarSelectionsInPrefAssembly,
+        symmOpListForEachLigOrMod: unSortedSymmOpListForEachLigOrMod,
+      },
+      'selectionsInPrefAssembly'
     );
-
-    const symmOpListForEachLigOrMod = generateSymmetryOperatorsListForModification(modificationsOfId, preferredAssembly);
 
     const modColor = BANG_WONG_COLORBLIND_SCALE[modIdx % BANG_WONG_COLORBLIND_SCALE.length];
     if (entryInstancesCount > 0) {

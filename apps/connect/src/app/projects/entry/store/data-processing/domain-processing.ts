@@ -29,7 +29,7 @@ function safeAuthStr(num?: string | null) {
   return num === undefined || num === null ? undefined : num;
 }
 
-function sortByBooleanFlag<T extends Record<string, any[]>>(arrays: T, flagKey: keyof T): T {
+export function sortByBooleanFlag<T extends Record<string, any[]>>(arrays: T, flagKey: keyof T): T {
   const keys = Object.keys(arrays) as (keyof T)[];
   const length = arrays[flagKey].length;
 

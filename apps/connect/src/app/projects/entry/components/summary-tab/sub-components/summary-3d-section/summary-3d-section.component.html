@@ -189,7 +189,7 @@
             >
               <div class="color-code-bar" [ngStyle]="{ 'background-color': listItem.molstarColorHex }"></div>
               <button class="select-entity-btn">
-                {{ listItem.name.molecule }} @if (hasNonPrefAssemblySelection(listItem, 'all')) {
+                {{ getCleanMoleculeName(listItem.additionalData.molecule) }} @if (hasNonPrefAssemblySelection(listItem, 'all')) {
                 <img
                   src="assets/icons/warning_icon.webp"
                   style="margin-left: 4px; width: 16px; height: 16px"
@@ -321,7 +321,7 @@
             <div class="select-gallery-container invalid">
               <div class="color-code-bar" [ngStyle]="{ 'background-color': nestedListObj.macromolecule.molstarColorHex }"></div>
               <button class="select-entity-btn">
-                <span>{{ nestedListObj.macromolecule.name.molecule }}</span><br />
+                <span>{{ getCleanMoleculeName(nestedListObj.macromolecule.additionalData.molecule) }}</span><br />
                 <span>({{ nestedListObj.domains.length }} domains)</span>
               </button>
             </div>
