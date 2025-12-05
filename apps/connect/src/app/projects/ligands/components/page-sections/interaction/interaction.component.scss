@@ -50,14 +50,14 @@ button {
 
   lib-interactions-heatmap {
     width: 100%;
-  }
-
-  ::ng-deep pdbe-ligand-interactions .heatmap-container {
-    width: 563px;
 
     @media screen and (width <= 768px) {
       display: none;
     }
+  }
+
+  ::ng-deep pdbe-ligand-interactions .heatmap-container {
+    width: 563px;
 
     .heatmap-main {
       width: 563px;

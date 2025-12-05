@@ -16,6 +16,10 @@
     <i class="icon icon-common icon-download"></i>
   </button>
   <a href="https://github.com/PDBe-KB/pdbe-kb-manual/wiki/Interaction-statistics" target="_blank">See calculation details</a>
+
+  <p class="footer-text">
+    For full interaction statistics, including the heatmap showing ligand atom interaction frequency with different amino acids, please view on a larger screen
+  </p>
   <div class="intx-component-container">
     <lib-interactions-heatmap
       [ligandId]="ligandId()"
@@ -37,9 +41,6 @@
         <span style="font-size: 12px; font-weight: 500; margin-right: 8px">Show atom names</span>
         <mat-slide-toggle (change)="onToggleChange($event)" />
       </div>
-      <p class="footer-text">
-        For full interaction statistics, including the heatmap showing ligand atom interaction frequency with different amino acids, please view on a larger screen
-      </p>
     </div>
   </div>
 </div>
