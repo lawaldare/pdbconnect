@@ -6,4 +6,6 @@ const pisaStoreState = createFeatureSelector<PisaStoreState>(PISA_STORE_STATE_KE
 
 export const PisaSelectors = {
   state: pisaStoreState,
+  jobId: createSelector(pisaStoreState, (state: PisaStoreState) => state.jobId),
+  assemblyResults: createSelector(pisaStoreState, (state: PisaStoreState) => state.assemblyResults),
 };

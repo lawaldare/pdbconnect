@@ -8,7 +8,7 @@ export const appRoutes: Route[] = [
     component: UploadPageComponent,
   },
   {
-    path: 'table',
+    path: 'tables',
     component: Upload,
   },
 ];

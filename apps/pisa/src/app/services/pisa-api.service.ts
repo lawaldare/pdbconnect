@@ -22,4 +22,10 @@ export class PisaApiService {
 
     return this.http.post<any>(`${this.BASE_API}submit`, { file }, { params });
   }
+
+  public getAssemblyResults(jobId: string): Observable<any> {
+    let params = new HttpParams();
+    params = params.set('file_format', 'json');
+    return this.http.get<any>(`${this.BASE_API}results/assembly/${jobId}`, { params });
+  }
 }

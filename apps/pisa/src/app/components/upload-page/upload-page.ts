@@ -5,6 +5,9 @@ import { UploadPageFacade } from './uploade-page.facade';
 import { MaterialModule } from '@pdbc/core';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { PisaApiService } from '../../services/pisa-api.service';
+import { Store } from '@ngrx/store';
+import { PisaActions } from '../../store/pisa.actions';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-upload',
@@ -16,9 +19,11 @@ export class UploadPageComponent implements AfterViewInit {
   public facade = inject(UploadPageFacade);
   public pisaUtilService = inject(PisaUtilService);
   public pisaAPIService = inject(PisaApiService);
+  private pisaStore = inject(Store);
+  private router = inject(Router);
 
   private molstarViewer: any = null;
-  public currentFile: File | null = null;
+  public currentFile: string | null = null;
 
   public selectedLigandPosition = new FormControl('auto', { nonNullable: true });
   public analysisIncluded = false;
@@ -31,10 +36,12 @@ export class UploadPageComponent implements AfterViewInit {
   public label = this.facade.label;
   public processLigands = this.facade.processLigands;
 
-  public selectedLigands = linkedSignal({
-    source: this.processLigands,
-    computation: () => this.processLigands().map((ligand) => ligand.title),
-  });
+  // public selectedLigands = linkedSignal({
+  //   source: this.processLigands,
+  //   computation: () => this.processLigands().map((ligand) => ligand.title),
+  // });
+
+  private selectedLigands = signal<string[]>([]);
 
   @ViewChild('viewer') container!: ElementRef<HTMLElement>;
 
@@ -154,16 +161,16 @@ export class UploadPageComponent implements AfterViewInit {
       return;
     }
 
-    // const reader = new FileReader();
-    // reader.onload = () => {
-    //   const base64 = reader.result as string;
-    //   console.log(base64); // this is the base64 string
-    //   this.currentFile = base64;
-    // };
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      console.log(base64); // this is the base64 string
+      this.currentFile = base64;
+    };
 
-    // reader.readAsDataURL(file);
+    reader.readAsDataURL(file);
 
-    this.currentFile = file;
+    // this.currentFile = file;
     this.facade.hideError();
     this.facade.showSuccess('File selected successfully. Loading structure...');
     this.loadFileToViewer(file);
@@ -224,16 +231,7 @@ export class UploadPageComponent implements AfterViewInit {
     payload.asis = this.analysisIncluded;
     payload.file = this.currentFile;
     console.log('Analyse payload:', payload);
-    this.pisaAPIService.submitJob(payload).subscribe({
-      next: (response) => {
-        console.log('PISA analysis submitted successfully:', response);
-        // Handle successful submission, e.g., navigate to results page
-      },
-      error: (error) => {
-        console.error('Error submitting PISA analysis:', error);
-        this.facade.showError('Failed to submit PISA analysis. Please try again.');
-        this.pisaUtilService.setPageView('ERROR');
-      },
-    });
+    this.pisaUtilService.saveAssemblyPayload(payload);
+    this.pisaStore.dispatch(PisaActions.submitPISAJob({ payload }));
   }
 }
