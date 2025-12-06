@@ -144,7 +144,6 @@ export class LigandsMainPageComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(() => {
-        console.log('Ligand main page initialized');
         this.launchSurveyForLigandsPage(this.ligandId(), this.isDesktop(), document.location.href.includes('dev.') || document.location.href.includes('wwwdev.'));
         this.generateSchemaData();
       });
@@ -226,8 +225,6 @@ export class LigandsMainPageComponent implements OnInit {
 
       feedbackUrl: 'https://www.ebi.ac.uk/about/contact/support/pdbe',
     };
-
-    console.log('Launching survey for Ligands page:', surveyConfig);
 
     this.surveyService.init(surveyConfig);
   }
