@@ -9,13 +9,23 @@ import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-spe
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { mergeMap, switchMap } from 'rxjs/operators';
 import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig, ligandRouteTabs, reactantTooltip } from '../../../ligand.constant';
-import { ClarityConsentService, DataLayerService, DataPrivacyBannerComponent, GoogleAnalyticsService, MaterialModule, ScrollPositionService } from '@pdbc/core';
+import {
+  ClarityConsentService,
+  DataLayerService,
+  DataPrivacyBannerComponent,
+  GoogleAnalyticsService,
+  MaterialModule,
+  ScrollPositionService,
+  SurveyConfig,
+  SurveyPopupComponent,
+  SurveyService,
+} from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
-import { combineLatest, EMPTY } from 'rxjs';
+import { combineLatest, EMPTY, of } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LoadingState } from '../../../enums/loading-state.enum';
@@ -50,6 +60,7 @@ import { LigandPageTutorialTourService } from '../../../services/ligands-page-tu
     PdbeHeaderSearchComponent,
     NotificationComponent,
     DataPrivacyBannerComponent,
+    SurveyPopupComponent,
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
@@ -97,6 +108,9 @@ export class LigandsMainPageComponent implements OnInit {
 
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
+  public surveyService = inject(SurveyService);
+  private isDesktop = signal(window.innerWidth > 768);
+
   constructor() {
     this.showNotification();
     this.route.queryParams.subscribe((params) => {
@@ -125,11 +139,13 @@ export class LigandsMainPageComponent implements OnInit {
         mergeMap(([structures, description]) => {
           this.ligandUtilService.redirectLigandPages(description);
           this.getAnnotations(structures);
-          return EMPTY;
+          return of(null);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(() => {
+        console.log('Ligand main page initialized');
+        this.launchSurveyForLigandsPage(this.ligandId(), this.isDesktop(), document.location.href.includes('dev.') || document.location.href.includes('wwwdev.'));
         this.generateSchemaData();
       });
   }
@@ -188,5 +204,31 @@ export class LigandsMainPageComponent implements OnInit {
 
   public closeHelpGuideModal(): void {
     this.tutorialTourService.showHelpGuideModal.set(false);
+  }
+
+  private launchSurveyForLigandsPage(ccdId: string, isDesktop: boolean, isWWWDev: boolean) {
+    const surveyConfig: SurveyConfig = {
+      identifier: 'ligandspage_satisfaction_v1',
+      title: 'Help us improve the PDBe Ligands Pages',
+      expiresAt: '01/03/2026',
+      webhookUrl: environment.epSurveyWebhookUrl1,
+
+      questions: [
+        { id: 'q1', type: 'rating', title: 'How would you rate this page?', skip: false },
+        { id: 'q2', type: 'text', title: 'What is the reason for your score?', skip: true },
+      ],
+
+      extraParams: {
+        entry: `ccd id: ${ccdId}`,
+        mode: isDesktop ? 'desktop' : 'mobile',
+        isDev: `${isWWWDev}`,
+      },
+
+      feedbackUrl: 'https://www.ebi.ac.uk/about/contact/support/pdbe',
+    };
+
+    console.log('Launching survey for Ligands page:', surveyConfig);
+
+    this.surveyService.init(surveyConfig);
   }
 }
