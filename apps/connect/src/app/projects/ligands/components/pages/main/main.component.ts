@@ -218,7 +218,7 @@ export class LigandsMainPageComponent implements OnInit {
       ],
 
       extraParams: {
-        entry: `ccd id: ${ccdId}`,
+        entry: `ligand id: ${ccdId}`,
         mode: isDesktop ? 'desktop' : 'mobile',
         isDev: `${isWWWDev}`,
       },
