@@ -88,6 +88,10 @@ export class MainComponent implements OnInit {
   public complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
   public loaded = toSignal(this.globalStore.select(ComplexSelectors.loadingState));
 
+  public supercomplexInteractions = toSignal(this.globalStore.select(ComplexSelectors.superComplexInteractions));
+  public subcomplexInteractions = toSignal(this.globalStore.select(ComplexSelectors.subComplexInteractions));
+  public complexLigands = toSignal(this.globalStore.select(ComplexSelectors.complexLigands));
+
   public readonly status = LoadingState;
   public selectedTab = signal<number>(0);
 

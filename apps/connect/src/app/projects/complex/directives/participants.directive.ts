@@ -3,6 +3,7 @@
 
 import { Directive, ElementRef, Renderer2, Input, OnChanges } from '@angular/core';
 import { Participant } from '../models/complex-structure.model';
+import { environment } from '../../../../environments/environment';
 
 @Directive({
   selector: '[pdbcParticipant]',
@@ -55,9 +56,18 @@ export class ParticipantDirective implements OnChanges {
 
         this.renderer.appendChild(orderedList, list);
       } else {
+        const entryId = participant.accession.split('_')[1];
+        const anchorTag = this.renderer.createElement('a');
+        anchorTag.textContent = `${participant.accession}`;
+        const link = `${environment.baseUrl}pdbe/entry/pdb/${entryId}`;
+        this.renderer.setAttribute(anchorTag, 'href', link);
+        this.renderer.setAttribute(anchorTag, 'target', '_blank');
+
         const spanTag = this.renderer.createElement('span');
-        spanTag.textContent = `${participant.accession} (${participant.name}, ${participant.stoichiometry} ${participant.stoichiometry > 1 ? 'copies' : 'copy'}) `;
+        spanTag.textContent = ` (${participant.name}, ${participant.stoichiometry} ${participant.stoichiometry > 1 ? 'copies' : 'copy'}) `;
+
         const list = this.renderer.createElement('li');
+        this.renderer.appendChild(list, anchorTag);
         this.renderer.appendChild(list, spanTag);
         this.renderer.appendChild(orderedList, list);
       }

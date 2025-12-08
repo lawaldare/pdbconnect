@@ -71,6 +71,8 @@ export class PisaFilterComponent implements OnInit {
       tab: 'PISA',
     });
 
+    console.log('Applying PISA filters:', { method, minValue, maxValue });
+
     this.filterChange.emit({ method, minValue, maxValue });
   }
 
@@ -85,7 +87,7 @@ export class PisaFilterComponent implements OnInit {
   }
 
   public onMethodChange(value: string): void {
-    if (value === 'NMR') {
+    if (value === 'Solution NMR') {
       this.minResolutionBoundValue = this.minResolutionBound();
       this.maxResolutionBoundValue = this.maxResolutionBound();
       this.sliderDisabled.set(true);
