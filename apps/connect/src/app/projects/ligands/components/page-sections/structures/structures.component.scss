@@ -59,6 +59,7 @@ section.filter {
 
   ::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
     border-color: #0a5032 !important;
+    background-color: #0c8950 !important;
   }
 }
 
@@ -128,4 +129,8 @@ section.structure-cards {
     top: 12px;
     color: #707372;
   }
+}
+
+#structures-section {
+  padding-bottom: 60px;
 }

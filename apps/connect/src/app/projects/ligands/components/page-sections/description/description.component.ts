@@ -16,7 +16,8 @@ import { combineLatest, map } from 'rxjs';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 
 @Component({
   selector: 'pdbc-description',
@@ -40,6 +41,8 @@ export class DescriptionComponent implements OnInit {
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly globalStore = inject(Store<LigandStoreState>);
+
+  private fragments = toSignal(this.globalStore.select(LigandSelectors.fragments));
 
   ngOnInit(): void {
     combineLatest([
@@ -90,6 +93,18 @@ export class DescriptionComponent implements OnInit {
       panelClass: 'bond-Dialog',
       data: {
         ligandId: this.ligandId(),
+      },
+    });
+  }
+
+  public openMolstarDialog(): void {
+    this.googleAnalyticsService.logClickEvents('view_3d_button_click', 'Interaction', 'view_3d', 'View 3D');
+    this.dialog.open(MolstarDialogComponent, {
+      disableClose: false,
+      panelClass: 'molstarDialog',
+      data: {
+        moleculeId: this.ligandId(),
+        fragments: this.fragments,
       },
     });
   }

@@ -1,11 +1,15 @@
 button {
-  padding: 15px 20px;
+  padding: 4px 12px;
   display: flex;
   align-items: center;
   cursor: pointer;
   font-weight: 500;
   font-size: 16px;
   font-family: 'IBM Plex Sans';
+  border: 1px solid #d0d0ce;
+  background: #fff;
+  line-height: 26.6px;
+  height: 35px;
 
   span {
     margin-right: 10px;

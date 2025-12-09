@@ -1,4 +1,6 @@
-// patch-ligands-sequence.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 import { axisBottom, select, Selection } from 'd3';
 import NightingaleElement, { bindEvents } from '@nightingale-elements/nightingale-new-core';
 

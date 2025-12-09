@@ -1,6 +1,5 @@
 @if (description()) {
 <div id="description-section">
-  <h3 class="title">Description</h3>
   @if (description().synonyms) {
   <div class="info-row">
     <span class="info-row-title">Synonyms</span>
@@ -139,8 +138,9 @@
   </div>
   } @if (isMainLigandId()) {
   <div class="action-buttons">
-    <button class="vf-button vf-button--primary vf-button--sm" (click)="openDialog('atom')">View Atoms</button>
-    <button class="vf-button vf-button--primary vf-button--sm" (click)="openDialog('bond')">View Bonds</button>
+    <button class="vf-button vf-button--primary vf-button--sm" (click)="openMolstarDialog()" id="ligand-molstar-button-tour">View 3D</button>
+    <button class="vf-button vf-button--secondary-pdbe vf-button--sm" (click)="openDialog('atom')">View Atoms</button>
+    <button class="vf-button vf-button--secondary-pdbe vf-button--sm" (click)="openDialog('bond')">View Bonds</button>
   </div>
   }
 </div>

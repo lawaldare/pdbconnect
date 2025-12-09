@@ -1,28 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Component, OnInit, ViewChild, DestroyRef, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, DestroyRef, inject, signal, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RelatedLigand, SimilarLigand, LigandGrid, SameScaffold, StereoIsomer } from '../../../data-models/related-ligands.model';
 import { LigandGridComponent } from '../ligand-grid/ligand-grid.component';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { forkJoin, mergeMap, map, combineLatest, startWith, filter } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LigandUtilService } from '../../../ligand-util.service';
-import { GoogleAnalyticsService } from '@pdbc/core';
+import { AssetPipe, GoogleAnalyticsService } from '@pdbc/core';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
+import { LigandPageTutorialTourService } from '../../../services/ligands-page-tutorial-tour.service';
+import { tourIds } from '../../../ligand.constant';
 
 @Component({
   selector: 'pdbc-related-ligands',
   standalone: true,
-  imports: [CommonModule, FormsModule, LigandGridComponent, MatPaginator, ReactiveFormsModule, NgxSkeletonLoaderModule],
+  imports: [CommonModule, FormsModule, AssetPipe, LigandGridComponent, MatPaginator, ReactiveFormsModule, NgxSkeletonLoaderModule],
   templateUrl: './related-ligands.component.html',
   styleUrl: './related-ligands.component.scss',
 })
-export class RelatedLigandsComponent implements OnInit {
+export class RelatedLigandsComponent implements OnInit, AfterViewInit {
   public stereoisomers = signal<StereoIsomer[]>([]);
   private stereoisomersGrid: any[] = [];
   public similarLigands = signal<SimilarLigand[]>([]);
@@ -65,6 +67,9 @@ export class RelatedLigandsComponent implements OnInit {
   public similarityTo = new FormControl(100);
 
   private relatedLigand!: any;
+
+  public ligandId = toSignal(this.globalStore.select(LigandSelectors.ligandId));
+  public readonly tutorialTourService = inject(LigandPageTutorialTourService);
 
   public readonly skeletonTheme = {
     'border-radius': '0px',
@@ -181,6 +186,7 @@ export class RelatedLigandsComponent implements OnInit {
       )
       .subscribe((data: any) => {
         this.sameScaffoldGrid = data;
+        console.log(this.sameScaffoldGrid);
         this.setUpPagination('samescaffold');
       });
 
@@ -277,5 +283,26 @@ export class RelatedLigandsComponent implements OnInit {
   public downloadJSON(): void {
     this.ligandUtilService.downloadJSON(this.relatedLigand, 'related-ligands');
     this.googleAnalyticsService.logClickEvents('download_related_ligands', 'Related Ligands', 'download_ligands', 'related_ligands');
+  }
+
+  public isBannerCookies = signal(false);
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      const hasRelatedLigands = Boolean(this.sameScaffolds().length) || Boolean(this.similarLigands().length);
+      this.tutorialTourService.hasProperties.set(hasRelatedLigands);
+      this.tutorialTourService.hasStereoisomers.set(this.stereoisomers().length > 0);
+
+      const agreed = this.tutorialTourService.getCookie(tourIds.ligands);
+      if (!agreed && hasRelatedLigands) {
+        this.isBannerCookies.set(true);
+      }
+    }, 500);
+  }
+
+  public startRelatedLigandsTabTour(): void {
+    this.tutorialTourService.startTour(
+      this.stereoisomers().length > 0 ? this.tutorialTourService.relatedLigandsTabTourSteps : this.tutorialTourService.relatedLigandsTabTourStepsWithoutStereoisomers
+    );
   }
 }

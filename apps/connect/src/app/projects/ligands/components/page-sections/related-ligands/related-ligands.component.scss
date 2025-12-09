@@ -94,8 +94,12 @@ h4 {
 
 .paginator-container {
   display: flex;
-  padding: 16px 2px;
+  padding: 16px 2px 0;
   justify-content: flex-end;
   align-items: center;
   align-self: stretch;
+}
+
+#related-ligand-section {
+  padding-bottom: 60px;
 }

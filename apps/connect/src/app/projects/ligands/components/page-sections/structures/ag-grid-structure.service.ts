@@ -36,6 +36,10 @@ export class AgGridStructureService {
 
   public readonly gridOptions = signal<GridOptions>({
     ...agGridOptionsBase,
+    defaultColDef: {
+      ...agGridOptionsBase.defaultColDef,
+      flex: 1,
+    },
     paginationPageSize: 10,
   });
 
@@ -43,13 +47,14 @@ export class AgGridStructureService {
     {
       headerName: 'Protein name',
       field: 'name',
-      width: 300,
+      // width: 300,
     },
     {
       headerName: 'Protein Overview',
       field: 'uniprot_id',
+      headerClass: 'protein-overview-header',
       cellRenderer: ExternalLinkRendererComponent,
-      width: 160,
+      // width: 160,
       sortable: false,
     },
     {
@@ -63,7 +68,7 @@ export class AgGridStructureService {
         return this.transform(params.data.interacting_chains);
       },
       hide: false,
-      width: 150,
+      // width: 150,
       comparator: (a, b): number => a - b,
       filter: false,
       sort: 'desc',
@@ -77,7 +82,7 @@ export class AgGridStructureService {
         ligandId: this.ligandId,
       },
       hide: true,
-      width: 150,
+      // width: 150,
     },
     {
       headerName: 'Organism',
@@ -89,7 +94,7 @@ export class AgGridStructureService {
       filter: 'agTextColumnFilter',
       filterParams: this.organismsFilterParams,
       valueFormatter: (p) => p.data.organism?.scientific_name,
-      minWidth: 160,
+      // minWidth: 160,
     },
     {
       headerName: 'EC number',
@@ -97,19 +102,20 @@ export class AgGridStructureService {
       valueFormatter: (params: any) => {
         return params.data.ec_numbers?.join(', ');
       },
-      width: 150,
+      // width: 150,
       filter: false,
       sortable: false,
     },
     {
       headerName: 'Ligand function',
       field: 'annotations',
+      headerClass: 'ligand-function-header',
       cellRenderer: LigandAnnotationRendererComponent,
       sortable: false,
       filter: 'agTextColumnFilter',
       filterParams: this.ligandFunctionFilterParams,
       valueFormatter: (p) => p.data.annotations?.join(','),
-      width: 170,
+      // width: 170,
     },
   ]);
 
