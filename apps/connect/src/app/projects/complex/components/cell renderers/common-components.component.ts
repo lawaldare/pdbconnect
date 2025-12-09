@@ -25,8 +25,9 @@ import { ComplexInteraction } from '../../models/complex-structure.model';
           <!-- {{ participant.accession }} ({{ participant.name }}, {{ participant.stoichiometry }} {{ participant.stoichiometry > 1 ? 'copies' : 'copy' }}) -->
 
           @let entryId = participant.accession.split('_')[1];
+          @let entity = participant.accession.split('_')[2];
           @let link = this.isDev ? 'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/': 'https://www.ebi.ac.uk/pdbe/entry/pdb/';
-          @let href = link + entryId;
+          @let href = link + entryId + '?activeTab=macromolecules&entityId=' + entity;
 
 
           <a [href]="href" target="_blank" class="pfam-link">{{ participant.accession }}</a> ({{ participant.name }}, {{ participant.stoichiometry }} {{

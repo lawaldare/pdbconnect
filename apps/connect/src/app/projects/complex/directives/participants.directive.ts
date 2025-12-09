@@ -57,9 +57,10 @@ export class ParticipantDirective implements OnChanges {
         this.renderer.appendChild(orderedList, list);
       } else {
         const entryId = participant.accession.split('_')[1];
+        const entity = participant.accession.split('_')[2];
         const anchorTag = this.renderer.createElement('a');
         anchorTag.textContent = `${participant.accession}`;
-        const link = `${environment.baseUrl}pdbe/entry/pdb/${entryId}`;
+        const link = `${environment.baseUrl}pdbe/entry/pdb/${entryId}?activeTab=macromolecules&entityId=${entity}`;
         this.renderer.setAttribute(anchorTag, 'href', link);
         this.renderer.setAttribute(anchorTag, 'target', '_blank');
 
