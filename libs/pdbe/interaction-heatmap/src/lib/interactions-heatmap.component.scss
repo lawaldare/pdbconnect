@@ -1,6 +1,5 @@
 .interactions-heatmap-container {
-  // width: 661px;
-  // height: 390px;
+  width: 100%;
   display: flex;
 
   @media screen and (width <= 768px) {
@@ -9,7 +8,7 @@
 }
 
 .visualisation-column {
-  width: 581px;
+  width: 100%;
 }
 
 .hm-left-column {
@@ -111,9 +110,6 @@
   line-height: normal;
   display: flex;
   border-style: groove;
-
-  // width: fit-content;
-  // margin-left: 60px;
   justify-content: space-between;
   padding: 10px 20px;
 
@@ -132,7 +128,6 @@
   }
 
   .legend-row-flex-plots {
-    // margin-left: 120px;
     margin-right: 10px;
     display: flex;
     flex-direction: column;
@@ -160,9 +155,9 @@
 }
 
 .heatmap-marker-y {
-  color: white;
-  background-color: white;
-  fill: white;
+  color: #fff;
+  background-color: #fff;
+  fill: #fff;
 }
 
 ::ng-deep .mdc-label {
@@ -174,16 +169,6 @@
 ::ng-deep .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background,
 .mdc-checkbox__native-control:enabled:indeterminate ~ .mdc-checkbox__background {
   background-color: #0075ff !important;
-  border-color: #0075ff !important;
-}
-
-::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__outer-circle {
-  // background-color: #0075ff !important;
-  border-color: #0075ff !important;
-}
-
-::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
-  // background-color: #0075ff !important;
   border-color: #0075ff !important;
 }
 
@@ -222,7 +207,7 @@
 
 ::ng-deep .pv-protvista g.highlighted rect {
   fill: none !important;
-  stroke: black !important;
+  stroke: #000 !important;
   stroke-width: 1px !important;
 }
 
@@ -232,4 +217,13 @@
 
 ::ng-deep .pv-protvista .heatmap-tooltip-content {
   line-height: 1 !important;
+}
+
+::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__outer-circle {
+  border-color: #0a5032 !important;
+}
+
+::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
+  border-color: #0a5032 !important;
+  background-color: #0c8950 !important;
 }

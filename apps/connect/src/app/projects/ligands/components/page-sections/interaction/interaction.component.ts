@@ -5,7 +5,7 @@ import { Depiction, LigandStructure } from '../../../data-models/structure.model
 import { PDBIntxData } from '../../../data-models/interaction.model';
 import { catchError, combineLatest, EMPTY, forkJoin, from, map, mergeMap, switchMap, take, throwError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
+import { AssetPipe, GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { LigandStoreState } from '../../../store/ligand-store.model';
@@ -14,11 +14,14 @@ import { LigandSelectors } from '../../../store/ligand.selectors';
 import { LigandActions } from '../../../store/ligand.actions';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { InteractionsHeatmapComponent } from '@pdbc/interaction-heatmap';
+import { MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { LigandPageTutorialTourService } from '../../../services/ligands-page-tutorial-tour.service';
+import { tourIds } from '../../../ligand.constant';
 
 @Component({
   selector: 'pdbc-interaction',
   standalone: true,
-  imports: [CommonModule, MaterialModule, InteractionsHeatmapComponent, ToolTipComponent],
+  imports: [CommonModule, MaterialModule, InteractionsHeatmapComponent, AssetPipe, ToolTipComponent],
   templateUrl: './interaction.component.html',
   styleUrl: './interaction.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -39,6 +42,7 @@ export class InteractionComponent implements AfterViewInit {
   private readonly _snackBar = inject(MatSnackBar);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly globalStore = inject(Store<LigandStoreState>);
+  public readonly tutorialTourService = inject(LigandPageTutorialTourService);
 
   public interaction!: PDBIntxData; // eslint-disable-line @typescript-eslint/no-explicit-any
   public atomNumber!: number;
@@ -57,12 +61,11 @@ export class InteractionComponent implements AfterViewInit {
         switchMap((id) => {
           this.ligandId.set(id);
           this.showLigandHeatmap.set(true);
-          return forkJoin([this.aggregatedApiService.fetchDepiction(this.ligandId()), this.globalStore.select(LigandSelectors.navItems).pipe(take(1))]);
+          return this.aggregatedApiService.fetchDepiction(this.ligandId());
         }),
-        switchMap(([depiction, navItems]) => {
+        switchMap((depiction) => {
           this.atomNumber = depiction.atoms.length;
           this.generateStructureStatistics();
-          this.navItems.update(() => navItems);
           const imageContainer = this.imageContainer.nativeElement;
           this.resetRenderer();
           return from(this.createLigandEnvironment(imageContainer, depiction)).pipe(switchMap(() => this.aggregatedApiService.fetchIntxData(this.ligandId())));
@@ -73,18 +76,24 @@ export class InteractionComponent implements AfterViewInit {
           if (interaction && interaction?.[this.ligandId()]) {
             this.renderer.setProperty(this.ligandEv, 'interaction', interaction[this.ligandId()]);
             this.renderer.setProperty(this.ligandEv, 'contactType', '["TOTAL"]');
-          } else {
-            this.updateWhenNoInteraction();
           }
           return EMPTY;
         }),
         catchError(() => {
-          this.updateWhenNoInteraction();
+          this.showLigandHeatmap.set(false);
           return throwError('Failed to fetch interaction data');
         }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+
+    setTimeout(() => {
+      this.tutorialTourService.hasInteractions.set(this.showLigandHeatmap());
+      const agreed = this.tutorialTourService.getCookie(tourIds.interactions);
+      if (!agreed && this.showLigandHeatmap()) {
+        this.isBannerCookies.set(true);
+      }
+    }, 500);
   }
 
   public async changeLigandEnvironmentFilters(filterString: string) {
@@ -93,17 +102,11 @@ export class InteractionComponent implements AfterViewInit {
     });
   }
 
-  private updateWhenNoInteraction(): void {
-    this.showLigandHeatmap.set(false);
-    const tempNavsections = this.navItems().filter((section) => section.sectionId !== 'interaction-section');
-    this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
-  }
-
   public downloadInteraction(): void {
     if (this.interaction && this.interaction?.[this.ligandId()]) {
       this.ligandUtilService.downloadJSON(this.interaction, `interaction_${this.ligandId()}`);
     } else {
-      this._snackBar.open(`No interaction data for ${this.ligandId}`, 'Dismiss', {
+      this._snackBar.open(`No interaction data for ${this.ligandId()}`, 'Dismiss', {
         duration: 3000,
       });
     }
@@ -118,11 +121,6 @@ export class InteractionComponent implements AfterViewInit {
     this.renderer.setProperty(ligand, 'id', 'ligand-int-env');
     this.renderer.setProperty(ligand, 'depiction', prop);
     this.ligandEv = ligand;
-  }
-
-  public toggleAtomNames(): void {
-    this.showAtomicNames.update((value) => !value);
-    this.renderer.setProperty(this.ligandEv, 'atomNames', this.showAtomicNames() ? true : false);
   }
 
   private resetRenderer(): void {
@@ -145,5 +143,15 @@ export class InteractionComponent implements AfterViewInit {
         this.pdbstructures.set(numberOfProteins);
         this.ligandInstances.set(numberOfLigandInstances);
       });
+  }
+
+  public onToggleChange(event: MatSlideToggleChange): void {
+    this.renderer.setProperty(this.ligandEv, 'atomNames', event.checked);
+  }
+
+  public isBannerCookies = signal(false);
+
+  public startInteractionsTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.interactionsTabTourSteps);
   }
 }

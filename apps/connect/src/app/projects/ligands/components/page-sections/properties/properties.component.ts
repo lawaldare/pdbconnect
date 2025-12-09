@@ -1,23 +1,25 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LigandProperty } from '../../../data-models/description.model';
 import { NameValueComponent } from '../../section-components/name-value/name-value.component';
 import { LigandUtilService } from '../../../ligand-util.service';
-import { GoogleAnalyticsService } from '@pdbc/core';
+import { AssetPipe, GoogleAnalyticsService } from '@pdbc/core';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
 import { map } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { LigandPageTutorialTourService } from '../../../services/ligands-page-tutorial-tour.service';
+import { tourIds } from '../../../ligand.constant';
 
 @Component({
   selector: 'pdbc-properties',
   standalone: true,
-  imports: [CommonModule, NameValueComponent],
+  imports: [CommonModule, NameValueComponent, AssetPipe],
   templateUrl: './properties.component.html',
   styleUrls: ['./properties.component.scss'],
 })
-export class PropertiesComponent implements OnInit {
+export class PropertiesComponent implements OnInit, AfterViewInit {
   public molProperties: LigandProperty[] = [];
   public confProperties: LigandProperty[] = [];
   public ringProperties: LigandProperty[] = [];
@@ -25,12 +27,18 @@ export class PropertiesComponent implements OnInit {
   public funProperties: LigandProperty[] = [];
   public stereoProperties: LigandProperty[] = [];
   private propertiesToJSON!: Record<string, any[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  private readonly globalStore = inject(Store<LigandStoreState>);
 
   private readonly ligandUtilService = inject(LigandUtilService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
-  private readonly destroyRef = inject(DestroyRef);
+  public readonly tutorialTourService = inject(LigandPageTutorialTourService);
+  private description = toSignal(this.globalStore.select(LigandSelectors.description));
+  public hasProperties = computed(() => {
+    const properties = this.description()?.properties;
+    return Object.keys(properties ?? {}).length > 0;
+  });
 
-  private readonly globalStore = inject(Store<LigandStoreState>);
+  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit() {
     this.globalStore
@@ -223,6 +231,22 @@ export class PropertiesComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+  }
+
+  public isBannerCookies = signal(false);
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.tutorialTourService.hasProperties.set(this.hasProperties());
+      const agreed = this.tutorialTourService.getCookie(tourIds.properties);
+      if (!agreed && this.hasProperties()) {
+        this.isBannerCookies.set(true);
+      }
+    }, 500);
+  }
+
+  public startPropertiesTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.propertiesTabTourSteps);
   }
 
   public downloadJSON(): void {

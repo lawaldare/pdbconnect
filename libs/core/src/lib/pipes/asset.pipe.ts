@@ -23,10 +23,10 @@ export class AssetPipe implements PipeTransform {
     //   return `/pdbe/entry/assets/${file}`;
     // }
 
-    // Connect / Ligand Pages
-    // if (pathname.includes('/pdbe/connect/')) {
-    //   return `/pdbe/connect/assets/${file}`;
-    // }
+    // Ligand Pages (pdbechem)
+    if (pathname.includes('/pdbe-srv/pdbechem/')) {
+      return `/pdbe/connect/assets/${file}`;
+    }
 
     // Default fallback
     return `assets/${file}`;

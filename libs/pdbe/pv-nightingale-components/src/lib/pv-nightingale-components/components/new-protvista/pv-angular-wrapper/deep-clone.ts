@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 export function deepClone<T>(obj: T): T {
   if (obj === null || typeof obj !== 'object') return obj;
   if (typeof obj === 'function') return obj;

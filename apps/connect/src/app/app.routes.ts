@@ -100,7 +100,7 @@ export const appRoutes: Route[] = [
   },
   {
     path: 'chemicalCompound/show/:ligandId',
-    loadComponent: () => import('./projects/ligands/components/pages/ligand-wrapper/ligand-wrapper.component').then((m) => m.LigandWrapperComponent),
+    loadComponent: () => import('./projects/ligands/components/pages/main/main.component').then((m) => m.LigandsMainPageComponent),
     title: 'PDBe-KB Ligand Pages (PDBeChem)',
   },
   { path: 'error', component: ErrorPageComponent, title: 'Error Page' },
@@ -110,5 +110,6 @@ export const appRoutes: Route[] = [
     title: 'Complex Pages',
     canActivate: [complexIdGuard],
   },
+
   { path: '**', redirectTo: 'error' },
 ];

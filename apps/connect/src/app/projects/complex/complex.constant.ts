@@ -28,8 +28,6 @@ export const navComplexSections = [
   { sectionId: 'ligands-section', sectionName: 'Ligands', isSubSection: false },
   { sectionId: 'interaction-section', sectionName: 'Subcomplexes and supercomplexes', isSubSection: false },
   { sectionId: 'publications-section', sectionName: 'Publications', isSubSection: false },
-  // { sectionId: 'similar-ligand-section', sectionName: 'Similar ligands', isSubSection: true },
-  // { sectionId: 'ligand-databases-section', sectionName: 'Ligand-specific databases', isSubSection: false },
 ];
 
 export const headerComplexLogoMenuConfig = {
