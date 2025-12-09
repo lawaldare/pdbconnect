@@ -11,4 +11,6 @@ export interface ModifiedResidue {
   description: string;
   weight: number;
   number_of_times?: number;
+  // augmented data from processing not in API
+  in_pref_assembly?: boolean;
 }

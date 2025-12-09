@@ -23,7 +23,7 @@
           <p>
             All ligands listed in this page are from the
             <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
-              >Preferred Assembly</a
+              >preferred assembly/complex</a
             >
             of each entry, reflecting their most probable biological form. All data is sourced from our open and free-to-use
             <a href="https://www.ebi.ac.uk/pdbe/aggregated-api/" target="_blank">PDBe API endpoints</a>.
@@ -37,7 +37,7 @@
           <p>
             Interactions are calculated using <a href="https://github.com/PDBeurope/arpeggio" target="_blank">PDBe Arpeggio</a> for the
             <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
-              >Preferred Assembly</a
+              >preferred assembly/complex</a
             >
             of each entry. The 2D view uses the
             <a href="https://www.jalview.org/help/html/colourSchemes/clustal.html" target="_blank">Clustal X colour scheme.</a> Details for interaction types can be
@@ -46,6 +46,17 @@
           </p>
         </lib-tool-tip>
       </p>
+      @if (inPrefAssembly() === false) {
+      <section class="info-banner">
+        <p>
+          <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+          At least one of the molecules of this ligand/modification is <b>not</b> included in the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >preferred assembly/complex</a
+          >, which represents the most probable biological form identified by the PDBe team for this entry.
+        </p>
+      </section>
+      }
 
       <div class="info">
         <div class="info-grouped left">
@@ -97,7 +108,7 @@
     <div id="ligand-interaction-tour">
       <div class="chains">
         @if(dropdownOptions.length > 1){
-        <div class="dropdown-container">
+        <span class="dropdown-container">
           <pdbc-entry-dropdown
             [searchable]="false"
             [searchTitle]="''"
@@ -108,11 +119,43 @@
             (optionClickedEvent)="onDropdownSelect($event)"
           >
           </pdbc-entry-dropdown>
-        </div>
+        </span>
         }@else if(dropdownOptions.length === 1){
-        <p>{{dropdownOptions[0].name}}</p>
-        }@else {}
+        <span>{{getCleanSelectionName(dropdownOptions)}}</span>
+        } @if (symmetryDropdownSelected && symmetryDropdownOptions.length > 1) {
+        <span class="symm-op-txt">
+          Symmetry Op.
+          <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
+        </span>
+        <pdbc-entry-dropdown
+          [searchable]="false"
+          [searchTitle]="''"
+          [downloadable]="false"
+          [islink]="false"
+          [options]="symmetryDropdownOptions"
+          [title]="symmetryDropdownSelected"
+          (optionClickedEvent)="onSymmetryDropdownSelect($event)"
+        ></pdbc-entry-dropdown>
+        } @else if (symmetryDropdownOptions.length === 1) {
+        <span class="symm-op-txt">
+          Symmetry Op.
+          <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
+          <span> {{ symmetryDropdownOptions[0].name }}</span>
+        </span>
+        }
       </div>
+      @if (dropdownSelected && inPrefAssemblyForInstance() === false) { @let instanceName = dropdownSelected!.split(' <')![0];
+      <section class="info-banner">
+        <p>
+          <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+          {{ instanceName }} is <b>not</b> included in the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >preferred assembly/complex</a
+          >, which represents the most probable biological form identified by the PDBe team for this entry.<br />
+          As a result, the 3D viewer below is now displaying the full entry model file.
+        </p>
+      </section>
+      }
       <section class="ligand-charts">
         @if (interactionsRowData()) {
         <div class="table">
@@ -140,7 +183,7 @@
               (cellMouseOver)="onCellMouseOver($event)"
               (cellMouseOut)="onCellMouseOut()"
               [paginationPageSizeSelector]="paginationPageSizeSelector()"
-              overlayNoRowsTemplate="No ligand interactions found"
+              [overlayNoRowsTemplate]="messageNoInteractions()"
             />
             <section class="ligands-info big">
               <p>The above 2D and 3D (Mol*) views of ligand interactions use quaternary structure derived from the PDB entry.</p>
@@ -151,8 +194,9 @@
                   used to transform the chain.
                 </li>
                 <li>
-                  The structure seen in Mol* (3D view) was protonated using
-                  <a href="https://www.cgl.ucsf.edu/chimerax/docs/user/commands/addh.html" target="_blank">ChimeraX</a>.
+                  The structure used to calculated interactions was protonated using
+                  <a href="https://www.cgl.ucsf.edu/chimerax/docs/user/commands/addh.html" target="_blank">ChimeraX</a>. This structure can be downloaded
+                  <a [href]="'https://www.ebi.ac.uk/pdbe/model-server/v1/' + entryId() + '/full?data_source=pdb-h&encoding=bcif'" target="_blank">here</a>.
                 </li>
                 <li>
                   Interactions were calculated using
@@ -188,7 +232,13 @@
             </div> -->
             <div class="molstar-container">
               <div #popoutWrapper>
-                <lib-pdbe-molstar #molstarComponent [id]="'ligands-molstar'" [molstarConfig]="configForMolstar()" [height]="'100%'"></lib-pdbe-molstar>
+                <lib-pdbe-molstar
+                  #molstarComponent
+                  [id]="'ligands-molstar'"
+                  [molstarConfig]="configForMolstar()"
+                  [height]="'100%'"
+                  [seqOnExpanded]="true"
+                ></lib-pdbe-molstar>
               </div>
             </div>
             }

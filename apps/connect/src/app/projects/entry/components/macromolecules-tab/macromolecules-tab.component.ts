@@ -5,13 +5,18 @@ import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { dashboardStatLinks, entryMacromoleculeTooltips, tourIds } from '../../entry-constant';
+import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, tourIds } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, MaterialModule, ScriptLoaderService, UtilService } from '@pdbc/core';
-import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../helpers/processed-data-to-controls';
+import {
+  getCleanMoleculeName,
+  getCleanSelectionName,
+  getMacromoleculeChainDropdownOptions,
+  getMacromoleculeSequenceDetails,
+} from '../../helpers/processed-data-to-controls';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
@@ -24,11 +29,10 @@ import { InteractiveTablesComponent } from '../shared/interactive-tables/interac
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
-import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, of, take, timeout, timer } from 'rxjs';
+import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, first, firstValueFrom, interval, map, of, take, timeout, timer } from 'rxjs';
 import { EntryActions } from '../../store/entry.actions';
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
-import { drawSelectionInMolstar, Molstar370DefaultParams, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
+import { drawSelectionInMolstar, Molstar370DefaultParams, QueryParamForHelpers, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 import { getUniProtMappingsForMacromolecule } from '../../store/data-processing/macromolecule-processing';
@@ -207,14 +211,21 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public readonly tabDataLoaded = computed(() => this.processedMacromolecules() !== undefined);
 
   public readonly entryMacromoleculeTooltips = entryMacromoleculeTooltips;
+  public readonly symmOperatorTooltip = symmOperatorTooltip;
 
   public dropdownSelected!: string;
   public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: QueryParam[] } = {};
+  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
+
+  public symmetryDropdownSelected?: string;
+  public symmetryDropdownOptions: DownloadOption[] = [];
+
   public dashboardStatLinks = dashboardStatLinks;
 
   public macromoleculeSequence = computed(() => this.sequenceDetails()?.fullSequence);
   public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
+
+  public getCleanSelectionName = getCleanSelectionName;
 
   private molstarReady = signal(false);
   public _molstarComponent?: MolstarComponent;
@@ -244,6 +255,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public readonly checkedWebGl = computed(() => this.compCommunication.checkedWebGlSupport);
   public readonly isWebGlEnabled = computed(() => this.compCommunication.isWebGlEnabled);
 
+  public getCleanMoleculeName = getCleanMoleculeName;
+
   public readonly fastNetworkOrForceLoad = computed(() => {
     const isSlow = this.slowNetwork();
     const forceLoad = this.compCommunication.forceLoad();
@@ -255,24 +268,29 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     this.compCommunication.forceLoad.set(!forceLoad);
   }
 
+  public inPrefAssembly = signal(true);
+  public inPrefAssemblyForChain = signal(true);
+
   public readonly configForMolstar = computed(() => {
     const summary = this.summaryData();
     const entryId = this.entryId();
+    const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
     // const chainSelection = this.chainSelection();
 
     if (!summary || !entryId) return undefined;
+
     const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
     const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
+    const assemblyId = inPrefAssemblyForChain ? preferredAssemblyId : undefined;
 
     const configForMolstar = {
       ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
-      assemblyId: preferredAssemblyId,
+      assemblyId,
       bgColor: { r: 255, g: 255, b: 255 },
-      landscape: true,
       subscribeEvents: true,
       granularity: 'residue',
-      hideControls: true,
+      hideControls: false,
       visualStyle: {
         polymer: {
           type: 'cartoon',
@@ -283,11 +301,13 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       },
       loadMaps: true,
       mapSettings: { defaultView: 'selection-box' },
+      sequencePanel: true,
       // ...(chainSelection && { 'selection': chainSelection }),
     };
-
     return configForMolstar;
   });
+  public configForMolstar$ = toObservable(this.configForMolstar);
+
   public molstarHeight = '100%';
 
   public selectionStats = signal<ProteinSummaryStats | undefined>(undefined);
@@ -395,7 +415,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   private readonly allThereVisuals = ['polypeptide(L)', 'polypeptide(D)'];
   private readonly onlyTwoVisuals = ['polyribonucleotide', 'polydeoxyribonucleotide'];
-  private readonly onlyMolstarVisuals = ['carbohydrate polymer'];
+  private readonly onlyMolstarVisuals = ['carbohydrate polymer', 'peptide nucleic acid'];
 
   public hasProtvista = false;
   public currentSelectionEntityId = signal<string | undefined>(undefined);
@@ -617,14 +637,58 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return stats ? stats[id as keyof ProteinSummaryStats] : undefined;
   }
 
+  private async updateConfigAssemblyAndSyncMolstar(macromolecule: ProcessedMacromolecule) {
+    // await until molstar first render is finished
+    await firstValueFrom(
+      this.molstarFirstRenderFinished$.pipe(
+        filter((ready) => ready === true),
+        first()
+      )
+    );
+    // check if macromolecule chain is in pref assembly based on idx of chain
+    const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
+    const chainIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+    const isSelectionPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly[chainIdx];
+    const changedDisplayedAssembly = inPrefAssemblyForChain !== isSelectionPrefAssembly;
+    // setting inPrefAssemblyForInstance may trigger update on configForMolstar
+    this.inPrefAssemblyForChain.set(isSelectionPrefAssembly);
+
+    // ... if this update is triggered
+    if (changedDisplayedAssembly) {
+      // wait until configForMolstar recomputes with new assembly/moleculeId
+      const oldCfg = await firstValueFrom(this.configForMolstar$.pipe(take(1)));
+
+      const newCfg = await firstValueFrom(
+        this.configForMolstar$.pipe(
+          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
+          take(1)
+        )
+      );
+
+      // 2. Wait for MolstarComponent to APPLY the new config
+      await firstValueFrom(
+        this._molstarComponent!.configUpdated.pipe(
+          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
+          take(1)
+        )
+      );
+    }
+  }
+
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
-    // refreshes dropdown options on new macromolecule
+    // refreshes chain dropdown options on new macromolecule
     await this.updateDropdownOptions(macromolecule);
+    await this.updateSymmetryDropdownOptions(macromolecule);
+
+    // check whether chain is in pref assembly, molstar config needs update and wait for it
+    await this.updateConfigAssemblyAndSyncMolstar(macromolecule);
+    // check whether any chain not in pref assembly for this macromolecule
+    const allChainsInPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
+    this.inPrefAssembly.set(allChainsInPrefAssembly);
 
     // updates shown sequence on new macromolecule
-    const chainId = this.dropdownSelected?.split('Chain ')[1];
-    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
-    this.sequenceDetails.set(sequenceDetails);
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
+    await this.updateSequenceDetailsFromChainId(macromolecule, chainId);
 
     this.altSequences.set(undefined);
     this.nonObserved.set(undefined);
@@ -654,8 +718,30 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       };
     });
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+  }
+
+  async updateSymmetryDropdownOptions(macromolecule: ProcessedMacromolecule) {
+    // update for symmetry operations dropdown
+    const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+    const chainId = macromolecule.additionalData.selections[idxOfSelection][0]['auth_asym_id'];
+    const chainSymmOperators = chainId ? macromolecule.chainSymmOperators[chainId] : undefined;
+    if (chainSymmOperators) {
+      this.symmetryDropdownOptions = chainSymmOperators.map((op, idx) => {
+        return {
+          name: op,
+          url: `macro-${chainId}-symop-${idx + 1}`,
+          downloadable: false,
+        };
+      });
+      this.symmetryDropdownSelected = this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined;
+    } else {
+      this.symmetryDropdownSelected = undefined;
+      this.symmetryDropdownOptions = [];
+    }
+  }
+
+  private async updateSequenceDetailsFromChainId(macromolecule: ProcessedMacromolecule, chainId: string) {
     this.sequenceDetails.set(undefined);
-    const chainId = this.dropdownSelected?.split('Chain ')[1];
     const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
     await this.updateBackgroundAnnotation();
@@ -683,7 +769,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     }
 
     const entityId = macromolecule.additionalData.molecule.entity_id;
-    const chainId = this.dropdownSelected.split('Chain ')[1];
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
     const modelId = this.currentModelId$.value || '1';
     const annotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
     this.backgroundAnnotation.set(annotation);
@@ -736,14 +822,26 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return;
+    await this.updateSymmetryDropdownOptions(macromolecule);
 
-    this.sequenceDetails.set(undefined);
-    const chainId = this.dropdownSelected?.split('Chain ')[1];
-    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
-    this.sequenceDetails.set(sequenceDetails);
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
+    await this.updateSequenceDetailsFromChainId(macromolecule, chainId);
+
+    // check whether chain is in pref assembly, molstar config needs update and wait for it
+    await this.updateConfigAssemblyAndSyncMolstar(macromolecule);
 
     await this.renderVisualisations(macromolecule);
     await this.updateBackgroundAnnotation();
+  }
+
+  public async onSymmetryDropdownSelect(event: string) {
+    this.symmetryDropdownSelected = event;
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
+    this.visInteractivity.selectedSymOpInstanceId.set(instance_id);
+
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return;
+    await this.renderVisualisations(macromolecule);
   }
 
   public openDialog(type: string) {
@@ -795,7 +893,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     }, 500);
   }
 
-  public selectionData?: QueryParam[];
+  public selectionData?: QueryParamForHelpers[];
 
   private async renderInMolstar(macromolecule: ProcessedMacromolecule) {
     // Wait until first render is finished
@@ -809,9 +907,11 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
     // loop over each molstar selection and add color and focus
+    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
     this.selectionData = molstarSelection.map((eachSelection) => {
       return {
         ...eachSelection,
+        instance_id,
         color: macromolecule.molstarColorHex,
         focus: true,
       };
@@ -834,7 +934,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     if (!this.hasProtvista) return;
     // const datum = this.currentMacromoleculeDatum();
     const entityId = macromolecule.additionalData.molecule.entity_id;
-    const chainId = this.dropdownSelected.split('Chain ')[1];
+    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
     this.currentSelectionEntityId.set(`${entityId}`);
     this.currentSelectionChainId.set(chainId);
@@ -858,7 +958,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       // topology viewer is only currently shown for macromolecules
       // const datum = this.currentMacromoleculeDatum();
       const entityId = (macromolecule as ProcessedMacromolecule).additionalData.molecule.entity_id;
-      const chainId = this.dropdownSelected?.split('Chain ')[1];
+      const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
       // topology viewer load or reload in page is simple
       this.topologyViewerInstance = new PdbTopologyViewerPlugin();
@@ -888,7 +988,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       // topology viewer is only currently shown for macromolecules
       // const datum = this.currentMacromoleculeDatum();
       const entityId = (macromolecule as ProcessedMacromolecule).additionalData.molecule.entity_id;
-      const chainId = this.dropdownSelected?.split('Chain ')[1];
+      const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
       // topology viewer load or reload in page is simple
       this.rnaViewerInstance = new PdbRnaViewerPlugin();

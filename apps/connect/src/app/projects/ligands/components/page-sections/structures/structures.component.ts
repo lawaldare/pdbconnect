@@ -1,9 +1,9 @@
-import { Component, inject, DestroyRef, signal, ViewChild, computed } from '@angular/core';
+import { Component, inject, DestroyRef, signal, ViewChild, computed, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Chain, LigandStructure, Polymer } from '../../../data-models/structure.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DownloadFileTypeService, DownloadService, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
+import { AssetPipe, DownloadFileTypeService, DownloadService, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { catchError, map, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { environment } from '../../../../../../environments/environment';
@@ -16,19 +16,20 @@ import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
 import { LigandECNumberPipe } from '../../../pipes/ec-numbers.pipe';
-import { cofactorTooltip, drugTooltip, reactantTooltip, unannotatedTooltip } from '../../../ligand.constant';
+import { cofactorTooltip, drugTooltip, reactantTooltip, tourIds, unannotatedTooltip } from '../../../ligand.constant';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { AgGridStructureService } from './ag-grid-structure.service';
+import { LigandPageTutorialTourService } from '../../../services/ligands-page-tutorial-tour.service';
 
 @Component({
   selector: 'pdbc-structures',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AgGridAngular, MaterialModule, LigandECNumberPipe, MatPaginator],
+  imports: [CommonModule, ReactiveFormsModule, AgGridAngular, AssetPipe, MaterialModule, LigandECNumberPipe, MatPaginator],
   templateUrl: './structures.component.html',
   styleUrls: ['./structures.component.scss'],
   providers: [LigandInteractingChainsNumberPipe],
 })
-export class StructuresComponent {
+export class StructuresComponent implements AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialog = inject(MatDialog);
   private readonly chainPipe = inject(LigandInteractingChainsNumberPipe);
@@ -55,6 +56,7 @@ export class StructuresComponent {
   public showTotalStructureOnMobile = signal<boolean>(true);
 
   public readonly structureColDefs = this.agGridService.structureColDefs;
+  public readonly tutorialTourService = inject(LigandPageTutorialTourService);
 
   public structureRowData = signal<LigandStructure[]>([]);
   public polymerRowData = signal<Polymer[]>([]);
@@ -72,6 +74,8 @@ export class StructuresComponent {
   public structuresPageSize = signal<number>(5);
   public structuresPageSizeOptions = computed(() => [5, 10, 20, 50, 100]);
   public structuresPage: LigandStructure[] = [];
+
+  public hasStructures = computed(() => this.structureRowData().length > 0);
 
   private unfilteredStructures: LigandStructure[] = [];
 
@@ -142,6 +146,16 @@ export class StructuresComponent {
         this.structureRowData.update(() => data);
         this.structuresPage = this.structureRowData().slice(0, this.structuresPageSize());
       });
+
+    const proteinOverviewHeader = document.querySelector('.protein-overview-header') as HTMLElement;
+    if (proteinOverviewHeader) {
+      proteinOverviewHeader.id = 'protein-overview-tour';
+    }
+
+    const ligandFunctionHeader = document.querySelector('.ligand-function-header') as HTMLElement;
+    if (ligandFunctionHeader) {
+      ligandFunctionHeader.id = 'ligand-function-tour';
+    }
   }
 
   onChange(event: MatRadioChange) {
@@ -226,5 +240,21 @@ export class StructuresComponent {
       const searchQueryLower = searchQuery.toLocaleLowerCase();
       return item.name?.toLocaleLowerCase().indexOf(searchQueryLower) !== -1;
     });
+  }
+
+  public isBannerCookies = signal(false);
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.tutorialTourService.hasProperties.set(this.hasStructures());
+      const agreed = this.tutorialTourService.getCookie(tourIds.structures);
+      if (!agreed && this.hasStructures()) {
+        this.isBannerCookies.set(true);
+      }
+    }, 500);
+  }
+
+  public startStructuresTabTour(): void {
+    this.tutorialTourService.startTour(this.tutorialTourService.structuresTabTourSteps);
   }
 }

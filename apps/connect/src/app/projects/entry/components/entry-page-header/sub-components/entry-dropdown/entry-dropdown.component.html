@@ -1,5 +1,5 @@
 <button mat-button [matMenuTriggerFor]="menu" [ngClass]="{ dark: isdark(), small: issmall(), fullwidth: fullwidth() }" (click)="menuOpened()">
-  <span>{{ title() }}</span>
+  <span [innerHTML]="sanitize(title())"></span>
   <!-- <svg viewBox="0 0 24 24" width="24px" height="24px" focusable="false" aria-hidden="true" class="ng-tns-c1154042729-9">
     <path d="M7 10l5 5 5-5z" class="ng-tns-c1154042729-9"></path>
   </svg> -->
@@ -31,7 +31,13 @@
   @for (d of option.items; track d.name) {
   <a class="url-link" mat-menu-item [href]="d.url" target="_blank" (click)="optionViewed(d.name)" (mousedown)="$event.stopPropagation()"> {{ d.name }} </a>
   } } @else {
-  <span [ngClass]="{ small: issmall() }" mat-menu-item (click)="optionClicked(option.name)" (mousedown)="$event.stopPropagation()"> {{ option.name }} </span>
+  <span
+    [ngClass]="{ small: issmall() }"
+    mat-menu-item
+    (click)="optionClicked(option.name)"
+    (mousedown)="$event.stopPropagation()"
+    [innerHTML]="sanitize(option.name)"
+  ></span>
   } } } @else {
   <div class="no-items-found mat-mdc-menu-item" matMenuContent>No items found in dropdown</div>
   }

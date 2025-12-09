@@ -1,22 +1,21 @@
 import { ThemeType } from '@pdbc/core';
 
-export const navSections = [
-  { sectionId: 'description-section', sectionName: 'Description', isSubSection: false },
-  { sectionId: 'properties-section', sectionName: 'Physicochemical properties', isSubSection: false },
-  { sectionId: 'structures-section', sectionName: 'Bound structures', isSubSection: false },
-  { sectionId: 'interaction-section', sectionName: 'Interaction statistics', isSubSection: false },
-  { sectionId: 'related-ligand-section', sectionName: 'Related ligands', isSubSection: false },
-  { sectionId: 'scaffold-section', sectionName: 'Same scaffold', isSubSection: true },
-  { sectionId: 'similar-ligand-section', sectionName: 'Similar ligands', isSubSection: true },
-  { sectionId: 'ligand-databases-section', sectionName: 'Ligand-specific databases', isSubSection: false },
+export const ligandRouteTabs = [
+  { label: 'Description', id: 'description' },
+  { label: 'Physicochemical properties', id: 'properties' },
+  { label: 'Bound structures', id: 'structures' },
+  { label: 'Interactions statistics', id: 'interactions' },
+  { label: 'Related ligands', id: 'related-ligands' },
+  { label: 'Ligand-specific databases', id: 'databases' },
 ];
 
-export const clcNavSections = [
-  { sectionId: 'description-section', sectionName: 'Description', isSubSection: false },
-  { sectionId: 'properties-section', sectionName: 'Physicochemical properties', isSubSection: false },
-  { sectionId: 'structures-section', sectionName: 'Bound structures', isSubSection: false },
-  { sectionId: 'ligand-databases-section', sectionName: 'Ligand-specific databases', isSubSection: false },
-];
+export const tourIds = {
+  description: 'tour-ligands-description',
+  properties: 'tour-ligands-properties',
+  structures: 'tour-ligands-structures',
+  interactions: 'tour-ligands-interactions',
+  ligands: 'tour-ligands-related-ligands',
+};
 
 export const headerSearchConfig = {
   examples: ['STI', 'GLC', 'NAG', 'HEM', 'CLC_000191', 'PRD_000468'],

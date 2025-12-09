@@ -9,6 +9,7 @@
     "font-family-no-missing-generic-family-keyword": null,
     "import-notation": "string",
     "no-empty-source": null,
+    "no-duplicate-selectors": null,
     "color-named": [
       "never",
       {

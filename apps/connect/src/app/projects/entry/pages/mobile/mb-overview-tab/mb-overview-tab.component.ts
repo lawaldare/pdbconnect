@@ -131,6 +131,7 @@ export class MbOverviewTabComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   public openMolstarPage(): void {
+    this.compCommunication.mobileIsPrefAssembly.set(true);
     this.mbFacade.selectPage('molstar');
     this.gAS.logPageEvents('ep_mobile_3d_btn_click', {});
   }

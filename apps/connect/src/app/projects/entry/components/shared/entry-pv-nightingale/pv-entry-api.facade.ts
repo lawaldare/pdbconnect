@@ -379,8 +379,6 @@ export class PvDataProcessingFacade {
   }
 
   processNewData(entityId: string, isNucleic: boolean) {
-    console.log('processNewData');
-    console.log({ entityId, isNucleic });
     // 1 - Reset per-track loading statuses
     this.loadingStatusPerTrack.set({
       uniprot: 'not-loaded',

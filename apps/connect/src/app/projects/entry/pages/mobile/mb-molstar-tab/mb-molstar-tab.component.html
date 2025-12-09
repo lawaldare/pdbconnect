@@ -15,14 +15,34 @@
     <!-- <div class="molstar-parent" id="parent-molstar-container">
       <div class="molstar-container" #molstarContainer id="molstar-mobile-element"></div>
     </div> -->
-
-    @if (!configForMolstar() || slowNetwork() === undefined || checkedWebGl() === undefined) {
+    @if (inPrefAssembly() === false && hasClosedMessage() === false ) {
+    <section class="info-banner">
+      <img class="close-btn" (click)="compCommunication.mobileHasClosedMessage.set(true)" src="/assets/images/mobile/mb-close.svg" alt="close icon" />
+      <p>
+        <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+        Current selection is <b>not</b> included in the
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+          >preferred complex</a
+        >
+        (most probable biological form identified for this entry). <br />
+        3D viewer below now displaying the full entry model file.
+      </p>
+    </section>
+    } @if (!configForMolstar() || slowNetwork() === undefined || checkedWebGl() === undefined) {
     <div [style.width]="'100%'">
       <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '480px', }"></ngx-skeleton-loader>
     </div>
     } @else if (configForMolstar() && isWebGlEnabled() && fastNetworkOrForceLoad()) {
     <div class="molstar-parent">
-      <lib-pdbe-molstar class="molstar-container" #molstarComponent [id]="'mobile-molstar'" [molstarConfig]="configForMolstar()" [height]="'100%'"></lib-pdbe-molstar>
+      <lib-pdbe-molstar
+        class="molstar-container"
+        #molstarComponent
+        [id]="'mobile-molstar'"
+        [molstarConfig]="configForMolstar()"
+        [height]="'100%'"
+        [seqOnExpanded]="true"
+        [isMobile]="true"
+      ></lib-pdbe-molstar>
     </div>
     } @else if (!isWebGlEnabled()) {
     <div class="molstar-not-loaded">

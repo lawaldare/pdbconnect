@@ -180,6 +180,7 @@ export class ProtvistaBindingManager {
         extraMarginRight
       );
     } else if (datum.type === 'NestedTrackCanvas' && datum.data) {
+      // eslint-disable-next-line prefer-const
       let nestedTrackData = datum as NewProtvistaTrackDatumNestedTrack;
       this.setTracksDataBinder.setTrackCanvasData(
         containerElement,
@@ -208,17 +209,21 @@ export class ProtvistaBindingManager {
         );
       }
     } else if (datum.type === 'TrackConservation') {
+      // eslint-disable-next-line prefer-const
       let conservationData = datum as NewProtvistaTrackDatumConsTrack;
       this.setTracksDataBinder.setTrackConservationData(containerElement, conservationData.id, conservationData.data, conservationData.aggChartData);
       this.conservationTrackControllers.bindOrRebind(containerElement);
     } else if (datum.type === 'TrackVariation') {
+      // eslint-disable-next-line prefer-const
       let variationData = datum as NewProtvistaTrackDatumVarTrack;
       this.setTracksDataBinder.setTrackVariationData(containerElement, variationData.id, variationData.data, variationData.aggChartData);
       this.variationTrackControllers.bindOrRebind(containerElement, chainId, variationData.id, variationData.srcData);
     } else if (datum.type === 'TrackColouredSequence') {
+      // eslint-disable-next-line prefer-const
       let colouredSeqData = datum as NewProtvistaTrackDatumColourSeqTrack;
       this.setTracksDataBinder.setTrackColouredSequenceData(containerElement, colouredSeqData.id, colouredSeqData.data);
     } else if (datum.type === 'TrackHeatmapSequence') {
+      // eslint-disable-next-line prefer-const
       let heatmapData = datum as NewProtvistaTrackDatumHeatmapSeqTrack;
       const trackTooltipFn =
         heatmapData.tooltipContentFn !== undefined

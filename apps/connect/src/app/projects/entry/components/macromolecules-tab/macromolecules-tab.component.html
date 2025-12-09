@@ -16,8 +16,18 @@
         <span>{{text}}</span>
       </button>
 
-      @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_name?.length) {
-      <h5>{{ currentMacromoleculeDatum()!.additionalData.molecule.molecule_name[0] }}</h5>
+      @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum()?.additionalData?.molecule) {
+      <h5>{{ getCleanMoleculeName(currentMacromoleculeDatum()!.additionalData.molecule) }}</h5>
+      } @if (inPrefAssembly() === false) {
+      <section class="info-banner">
+        <p>
+          <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+          One or more of this macromolecule's chains are <b>not</b> included in the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >preferred assembly/complex</a
+          >, which represents the most probable biological form identified by the PDBe team for this entry.
+        </p>
+      </section>
       }
       <section class="info">
         <div class="info-grouped left">
@@ -183,8 +193,8 @@
       </div>
       <div id="interactive-sequence-viewer-tour">
         <div class="chains">
-          @if(dropdownOptions.length > 1){
           <div class="dropdown-container">
+            @if(dropdownOptions.length > 1){
             <pdbc-entry-dropdown
               [searchable]="false"
               [searchTitle]="''"
@@ -193,12 +203,43 @@
               [options]="dropdownOptions"
               [title]="dropdownSelected"
               (optionClickedEvent)="onDropdownSelect($event)"
-            >
-            </pdbc-entry-dropdown>
+            ></pdbc-entry-dropdown>
+            } @else if (dropdownOptions.length === 1) {
+            <span>{{ getCleanSelectionName(dropdownOptions) }}</span>
+            } @if (symmetryDropdownSelected && symmetryDropdownOptions.length > 1) {
+            <span class="symm-op-txt">
+              Symmetry Op.
+              <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
+            </span>
+            <pdbc-entry-dropdown
+              [searchable]="false"
+              [searchTitle]="''"
+              [downloadable]="false"
+              [islink]="false"
+              [options]="symmetryDropdownOptions"
+              [title]="symmetryDropdownSelected"
+              (optionClickedEvent)="onSymmetryDropdownSelect($event)"
+            ></pdbc-entry-dropdown>
+            } @else if (symmetryDropdownOptions.length === 1) {
+            <span class="symm-op-txt">
+              Symmetry Op.
+              <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
+              <span> {{ symmetryDropdownOptions[0].name }}</span>
+            </span>
+            }
           </div>
-          }@else if(dropdownOptions.length === 1){
-          <p>{{dropdownOptions[0].name}}</p>
-          } @else {}
+          @if (dropdownSelected && inPrefAssemblyForChain() === false) { @let chainName = dropdownSelected!.split(' <')![0];
+          <section class="info-banner">
+            <p>
+              <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+              {{ chainName }} is <b>not</b> included in the
+              <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+                >preferred assembly/complex</a
+              >, which represents the most probable biological form identified by the PDBe team for this entry.<br />
+              As a result, the 3D viewer below is now displaying the full entry model file.
+            </p>
+          </section>
+          }
         </div>
         @let molType = currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_type; @if(seqViewerReady() && sequenceDetails() && molType) {
         <div class="sequence-container">
@@ -252,7 +293,13 @@
             } @else if (configForMolstar() && isWebGlEnabled()) {
             <div class="molstar-container" [class.collapsed]="!isSidebarDisplayed()">
               <div #popoutWrapper>
-                <lib-pdbe-molstar #molstarComponent [id]="'macromolecules-molstar'" [molstarConfig]="configForMolstar()" [height]="molstarHeight"></lib-pdbe-molstar>
+                <lib-pdbe-molstar
+                  #molstarComponent
+                  [id]="'macromolecules-molstar'"
+                  [molstarConfig]="configForMolstar()"
+                  [height]="molstarHeight"
+                  [seqOnExpanded]="true"
+                ></lib-pdbe-molstar>
               </div>
             </div>
             } @else if (!isWebGlEnabled()) {

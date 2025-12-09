@@ -6,7 +6,7 @@
 } @if (tabDataLoaded()){ @if(assemblyTableRows().length){
 <main>
   @if(isSidebarDisplayed()){
-  <pdbc-interactive-tables tabName="Assemblies" id="complexes-list-tour" />
+  <pdbc-interactive-tables tabName="Complexes" id="complexes-list-tour" />
   }
   <div class="tab-content" [class.change-display]="!isSidebarDisplayed()" id="complexes-content-tour">
     @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Complexes';
@@ -135,7 +135,7 @@
         } @else if (configForMolstar() && isWebGlEnabled() && fastNetworkOrForceLoad()) {
         <div class="molstar-container">
           <div #popoutWrapper>
-            <lib-pdbe-molstar #molstarComponent [id]="'assemblies-molstar'" [molstarConfig]="configForMolstar()"></lib-pdbe-molstar>
+            <lib-pdbe-molstar #molstarComponent [id]="'assemblies-molstar'" [molstarConfig]="configForMolstar()" [seqOnExpanded]="true"></lib-pdbe-molstar>
           </div>
         </div>
         } @else if (!isWebGlEnabled()) {

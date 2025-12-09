@@ -1,0 +1,122 @@
+@import 'libs/core/src/lib/styles/pdb_connect';
+
+/* -------------------------------
+ *   Summary Info Main Wrapper
+ * ------------------------------- */
+
+:host {
+  display: block;
+  width: 100%;
+  background: #fff;
+  line-height: 27.2px;
+}
+
+/* -------------------------------
+ *   Section Title
+ * ------------------------------- */
+
+h4 {
+  margin-bottom: 10px;
+}
+
+/* -------------------------------
+ *   Summary Info Rows
+ * ------------------------------- */
+
+.info-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  > span {
+    min-width: 148px;
+    max-width: 148px;
+    color: #1a1c1a;
+    font-size: 16px;
+    font-weight: 500;
+    display: block;
+  }
+}
+
+/* Slightly tighter spacing at smaller sizes */
+@media (width <= 1340px) {
+  .info-row {
+    margin-bottom: 4px;
+  }
+}
+
+/* -------------------------------
+ *   Related-entry toggle link
+ * ------------------------------- */
+
+.related-entry-toggle {
+  color: #3b6fb6;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 27.2px;
+  display: block;
+  cursor: pointer;
+}
+
+/* -------------------------------
+ *   Icons
+ * ------------------------------- */
+
+i.icon {
+  margin-left: 2px;
+  display: inline-block;
+}
+
+i.icon-link::before {
+  --icon-search-color: #3b6fb6;
+
+  content: '';
+  width: 14px;
+  height: 14px;
+  mask-size: auto 14px;
+  position: absolute;
+  z-index: -1;
+  top: 3px;
+}
+
+i.icon-search::before {
+  --icon-search-color: #3b6fb6;
+
+  content: '';
+  width: 13px;
+  height: 13px;
+  mask-size: auto 13px;
+  position: absolute;
+  z-index: -1;
+  top: 4px;
+}
+
+/* -------------------------------
+ *   Article Block Styles
+ * ------------------------------- */
+
+article {
+  .control {
+    display: flex;
+    align-items: center;
+
+    i.icon {
+      color: #3b6fb6;
+      font-size: 22px;
+    }
+  }
+
+  .qualify-span {
+    color: #54585a;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22.5px;
+    display: block;
+  }
+
+  a {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 22.5px;
+  }
+}

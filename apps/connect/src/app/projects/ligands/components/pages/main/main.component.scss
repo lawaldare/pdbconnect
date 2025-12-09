@@ -1,46 +1,38 @@
-@import url('libs/core/src/lib/styles/pdb_connect.scss');
+@import 'libs/core/src/lib/styles/pdb_connect';
 
 main {
   .container {
-    display: flex;
-    gap: 28px;
     padding-top: 10px;
-
-    @media screen and (width <= 768px) {
-      gap: 0;
-    }
-
-    pdbc-pdbe-nav-menu {
-      width: 220px;
-
-      @media screen and (width <= 768px) {
-        display: none;
-      }
-    }
 
     header {
       display: flex;
-      gap: 16px;
       align-items: center;
+      justify-content: space-between;
 
-      .annotations {
+      .left-aligned {
         display: flex;
-        gap: 16px;
         align-items: center;
+        gap: 16px;
 
-        span {
-          font-size: 14px;
-          line-height: 22.4px;
+        .annotations {
+          display: flex;
+          gap: 16px;
+          align-items: center;
+
+          span {
+            font-size: 14px;
+            line-height: 22.4px;
+          }
         }
       }
     }
 
     article {
-      width: calc(100% - 248px);
+      // width: calc(100% - 248px);
 
-      @media screen and (width <= 768px) {
-        width: 100%;
-      }
+      // @media screen and (width <= 768px) {
+      //   width: 100%;
+      // }
     }
 
     .loader {
@@ -53,7 +45,7 @@ main {
     }
 
     .hero {
-      padding: 12px 0 32px;
+      padding: 12px 0;
 
       h2 {
         font-size: 42px;
@@ -65,7 +57,6 @@ main {
         font-size: 24px;
         font-weight: 500;
         line-height: 31.2px;
-        margin-bottom: 16px;
       }
 
       .action-buttons {

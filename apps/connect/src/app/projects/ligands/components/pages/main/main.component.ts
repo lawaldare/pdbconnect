@@ -1,31 +1,46 @@
-import { Component, OnInit, inject, DestroyRef, signal, Renderer2 } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, signal, Renderer2, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DescriptionComponent } from '../../page-sections/description/description.component';
-import { ImageCarouselComponent } from '../../page-sections/image-carousel/image-carousel.component';
 import { PropertiesComponent } from '../../page-sections/properties/properties.component';
 import { StructuresComponent } from '../../page-sections/structures/structures.component';
 import { InteractionComponent } from '../../page-sections/interaction/interaction.component';
 import { RelatedLigandsComponent } from '../../page-sections/related-ligands/related-ligands.component';
-import { PdbeNavMenuComponent } from '@pdbe-lib/nav-menu';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
-import { mergeMap, take } from 'rxjs/operators';
-import { cofactorTooltip, drugTooltip, navSections, reactantTooltip } from '../../../ligand.constant';
-import { DataLayerService, GoogleAnalyticsService, MaterialModule, NavSection } from '@pdbc/core';
+import { mergeMap, switchMap } from 'rxjs/operators';
+import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig, ligandRouteTabs, reactantTooltip } from '../../../ligand.constant';
+import {
+  ClarityConsentService,
+  DataLayerService,
+  DataPrivacyBannerComponent,
+  GoogleAnalyticsService,
+  MaterialModule,
+  ScrollPositionService,
+  SurveyConfig,
+  SurveyPopupComponent,
+  SurveyService,
+} from '@pdbc/core';
 import { LigandsBioschemasService } from '../../../services/ligands.bioschemas';
 import { LigandUtilService } from '../../../ligand-util.service';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
-import { combineLatest } from 'rxjs';
-import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
+import { combineLatest, EMPTY, of } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LoadingState } from '../../../enums/loading-state.enum';
-import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { LigandStructure } from '../../../data-models/structure.model';
 import { LigandActions } from '../../../store/ligand.actions';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
+import { LigandSummaryComponent } from '../../page-sections/ligand-summary.component';
+import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
+import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
+import { NotificationComponent } from '@pdbc/notification';
+import Clarity from '@microsoft/clarity';
+import { environment } from '../../../../../../environments/environment';
+import { HelpIconForMolstarService } from '@pdbe-lib/molstar-for-apps';
+import { LigandPageTutorialTourService } from '../../../services/ligands-page-tutorial-tour.service';
 
 @Component({
   selector: 'pdbc-main',
@@ -33,9 +48,6 @@ import { LigandActions } from '../../../store/ligand.actions';
   imports: [
     CommonModule,
     NgxSkeletonLoaderModule,
-    PdbeNavMenuComponent,
-    DescriptionComponent,
-    ImageCarouselComponent,
     PropertiesComponent,
     StructuresComponent,
     InteractionComponent,
@@ -43,7 +55,13 @@ import { LigandActions } from '../../../store/ligand.actions';
     LigandSpecificDatabasesComponent,
     DropdownMenuComponent,
     MaterialModule,
-],
+    LigandSummaryComponent,
+    PdbeHeaderLogoMenuComponent,
+    PdbeHeaderSearchComponent,
+    NotificationComponent,
+    DataPrivacyBannerComponent,
+    SurveyPopupComponent,
+  ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
 })
@@ -52,14 +70,19 @@ export class LigandsMainPageComponent implements OnInit {
   public readonly dlService = inject(DataLayerService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly bioschemasService = inject(LigandsBioschemasService);
-  private readonly aggregatedApiService = inject(AggregatedApiService);
+  public readonly helpIconForMolstarService = inject(HelpIconForMolstarService);
+  public readonly tutorialTourService = inject(LigandPageTutorialTourService);
+
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   private readonly renderer = inject(Renderer2);
   public readonly ligandUtilService = inject(LigandUtilService);
   private readonly globalStore = inject(Store<LigandStoreState>);
-  private readonly dialog = inject(MatDialog);
 
   public navSections = toSignal(this.globalStore.select(LigandSelectors.navItems));
+  public readonly scrollService = inject(ScrollPositionService);
+  public readonly clarityConsentService = inject(ClarityConsentService);
 
   public description = toSignal(this.globalStore.select(LigandSelectors.description));
   public downloadOptions = toSignal(this.globalStore.select(LigandSelectors.downloadOptions));
@@ -73,42 +96,66 @@ export class LigandsMainPageComponent implements OnInit {
   public drugTooltip = drugTooltip;
   public reactantTooltip = reactantTooltip;
 
+  public readonly headerLogoMenuConfig = headerLogoMenuConfig;
+  public readonly headerSearchConfig = headerSearchConfig;
+
   public ligandId = signal<string>('');
 
   public readonly status = LoadingState;
 
-  private fragments = toSignal(this.globalStore.select(LigandSelectors.fragments));
+  public selectedTab = signal<number>(0);
+  public showNotificationBanner = signal<boolean>(false);
 
+  @ViewChild('tabs') tabGroup!: MatTabGroup;
+
+  public surveyService = inject(SurveyService);
+  private isDesktop = signal(window.innerWidth > 768);
+
+  constructor() {
+    this.showNotification();
+    this.route.queryParams.subscribe((params) => {
+      const routeTabs = ligandRouteTabs;
+      const tabName = params['activeTab'];
+      this.ligandUtilService.updateLigandTabName(tabName ?? 'description');
+      const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
+      this.selectedTab.set(tabIndex);
+      // this.gAS.logPageEvents('cp_tab_access', {
+      //   tab: tabName,
+      // });
+    });
+  }
   ngOnInit(): void {
-    combineLatest([
-      this.globalStore.select(LigandSelectors.ligandId),
-      this.globalStore.select(LigandSelectors.structures),
-      this.globalStore.select(LigandSelectors.description),
-      this.globalStore.select(LigandSelectors.navItems).pipe(take(1)),
-    ])
+    Clarity.init(environment.clarityProjectIdForLigandPages);
+    this.clarityConsentService.init(environment.clarityProjectIdForLigandPages);
+    this.route.params
       .pipe(
-        mergeMap(([ligandId, structures, description, navItems]) => {
-          this.updateNavItemsWhenNoStructure(navItems, structures);
-          this.ligandUtilService.redirectLigandPages(description);
+        switchMap((params: { [x: string]: string }) => {
+          const ligandId = params['ligandId'].toUpperCase();
           this.ligandId.set(ligandId);
+          this.globalStore.dispatch(LigandActions.setCurrentLigandId({ ligandId }));
+          this.dispatchCoreActions();
+          return combineLatest([this.globalStore.select(LigandSelectors.structures), this.globalStore.select(LigandSelectors.description)]);
+        }),
+        mergeMap(([structures, description]) => {
+          this.ligandUtilService.redirectLigandPages(description);
           this.getAnnotations(structures);
-          return this.aggregatedApiService.fetchDepiction(this.ligandId());
+          return of(null);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(() => {
+        this.launchSurveyForLigandsPage(this.ligandId(), this.isDesktop(), document.location.href.includes('dev.') || document.location.href.includes('wwwdev.'));
         this.generateSchemaData();
       });
   }
 
-  private updateNavItemsWhenNoStructure(navItems: NavSection[], structures: LigandStructure[]): void {
-    let tempNavsections = [];
-    if (structures.length === 0) {
-      tempNavsections = navItems.filter((section) => section.sectionId !== 'structures-section');
-    } else {
-      tempNavsections = navSections;
-    }
-    this.globalStore.dispatch(LigandActions.setNavItems({ navItems: tempNavsections }));
+  private dispatchCoreActions(): void {
+    this.globalStore.dispatch(LigandActions.getStructures());
+    this.globalStore.dispatch(LigandActions.getPolymers());
+    this.globalStore.dispatch(LigandActions.getSummary());
+    this.globalStore.dispatch(LigandActions.setDownloadOptions());
+    this.globalStore.dispatch(LigandActions.getRelatedLigands());
+    this.globalStore.dispatch(LigandActions.getSupercomponents());
   }
 
   private getAnnotations(structures: LigandStructure[]): void {
@@ -124,15 +171,61 @@ export class LigandsMainPageComponent implements OnInit {
     this.bioschemasService.buildBioschemasJSON(this.renderer);
   }
 
-  public openMolstarDialog(): void {
-    this.googleAnalyticsService.logClickEvents('view_3d_button_click', 'Interaction', 'view_3d', 'View 3D');
-    this.dialog.open(MolstarDialogComponent, {
-      disableClose: false,
-      panelClass: 'molstarDialog',
-      data: {
-        moleculeId: this.ligandId(),
-        fragments: this.fragments,
-      },
+  public selectTab(event: MatTabChangeEvent) {
+    const routeTabs = ligandRouteTabs;
+    const tabName = routeTabs[event.index].id;
+    this.ligandUtilService.updateLigandTabName(tabName ?? 'description');
+
+    // this.gAS.logPageEvents('cp_tab_switch', {
+    //   tab: tabName,
+    // });
+
+    this.router.navigate([], {
+      queryParams: { activeTab: tabName },
+      queryParamsHandling: 'merge',
     });
+
+    this.scrollService.handleScrollPosition(this.tabGroup, event.index);
+  }
+
+  private showNotification() {
+    const href = document.location.href;
+    if (href.includes('dev.') || href.includes('wwwdev.')) {
+      this.showNotificationBanner.set(true);
+    } else {
+      this.showNotificationBanner.set(false);
+    }
+  }
+
+  public openHelpModal(): void {
+    this.tutorialTourService.showHelpGuideModal.set(true);
+  }
+
+  public closeHelpGuideModal(): void {
+    this.tutorialTourService.showHelpGuideModal.set(false);
+  }
+
+  private launchSurveyForLigandsPage(ccdId: string, isDesktop: boolean, isWWWDev: boolean) {
+    const surveyConfig: SurveyConfig = {
+      identifier: 'ligandspage_satisfaction_v1',
+      title: 'Help us improve the PDBe Ligands Pages',
+      expiresAt: '01/03/2026',
+      webhookUrl: environment.epSurveyWebhookUrl1,
+
+      questions: [
+        { id: 'q1', type: 'rating', title: 'How would you rate this page?', skip: false },
+        { id: 'q2', type: 'text', title: 'What is the reason for your score?', skip: true },
+      ],
+
+      extraParams: {
+        entry: `ligand id: ${ccdId}`,
+        mode: isDesktop ? 'desktop' : 'mobile',
+        isDev: `${isWWWDev}`,
+      },
+
+      feedbackUrl: 'https://www.ebi.ac.uk/about/contact/support/pdbe',
+    };
+
+    this.surveyService.init(surveyConfig);
   }
 }

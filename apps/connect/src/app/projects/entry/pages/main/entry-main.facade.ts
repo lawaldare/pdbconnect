@@ -3,6 +3,7 @@ import { retry, catchError, of } from 'rxjs';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { SpeedTestServiceCustom } from '../../services/speed-test/speed-test-service.service';
 import { environment } from '../../../../../environments/environment';
+import { SurveyConfig, SurveyService } from '@pdbc/core';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +13,7 @@ export class EntryMainFacade {
   private readonly speedTest = inject(SpeedTestServiceCustom);
   public showNotificationBanner = signal<boolean>(false);
   public isDesktop = signal(false);
+  public surveyService = inject(SurveyService);
 
   public readonly apiSearchConfig = {
     additionalParams: 'rows=20000&json.nl=map&wt=json',
@@ -114,5 +116,28 @@ export class EntryMainFacade {
     } catch {
       return false;
     }
+  }
+
+  public launchSurveyForEntryPage(entryId: string, isDesktop: boolean) {
+    const surveyConfig: SurveyConfig = {
+      identifier: 'entrypage_satisfaction_v1',
+      title: 'Help us improve the PDBe Entry Pages',
+      expiresAt: '01/03/2026',
+      webhookUrl: environment.epSurveyWebhookUrl1,
+
+      questions: [
+        { id: 'q1', type: 'rating', title: 'How would you rate this page?', skip: false },
+        { id: 'q2', type: 'text', title: 'What is the reason for your score?', skip: true },
+      ],
+
+      extraParams: {
+        entry: `pdb id: ${entryId}`,
+        mode: isDesktop ? 'desktop' : 'mobile',
+      },
+
+      feedbackUrl: 'https://www.ebi.ac.uk/about/contact/support/pdbe',
+    };
+
+    this.surveyService.init(surveyConfig);
   }
 }
