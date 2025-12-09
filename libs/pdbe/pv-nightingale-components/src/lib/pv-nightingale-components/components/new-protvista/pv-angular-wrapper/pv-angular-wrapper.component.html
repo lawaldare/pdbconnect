@@ -5,7 +5,12 @@
 @if (isAddDialogOpen && this.seqLength !== undefined) {
 <lib-add-custom-modal [sequenceLength]="seqLength" (closeDialog)="closeAddTrackDialog()" (addAnnotations)="mapYourData($event)"></lib-add-custom-modal>
 } @if (isZoomDialogOpen && this.seqLength !== undefined) {
-<lib-zoom-residues-modal [sequenceLength]="seqLength" (closeDialog)="closeZoomDialog()" (zoomAnnotations)="zoomAndHighlightTrack($event)"></lib-zoom-residues-modal>
+<lib-zoom-residues-modal
+  [sequenceLength]="seqLength"
+  [forLigands]="ligandsSeqMode()"
+  (closeDialog)="closeZoomDialog()"
+  (zoomAnnotations)="zoomAndHighlightTrack($event)"
+></lib-zoom-residues-modal>
 } @if (isEditDialogOpen && this.seqLength !== undefined) {
 <lib-edit-custom-modal
   [sequenceLength]="seqLength"
