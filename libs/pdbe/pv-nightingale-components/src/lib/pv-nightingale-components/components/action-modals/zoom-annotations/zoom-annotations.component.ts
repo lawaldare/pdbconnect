@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { validateResidue } from '../nightingale.helpers';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule, FormsModule],
 })
-export class PvZoomResiduesModalComponent {
+export class PvZoomResiduesModalComponent implements OnInit {
   start = '';
   end = '';
 
@@ -21,8 +21,16 @@ export class PvZoomResiduesModalComponent {
   endErrors: string[] = [];
 
   @Input() sequenceLength = 0;
+  @Input() forLigands = false;
   @Output() closeDialog = new EventEmitter<void>();
   @Output() zoomAnnotations: EventEmitter<any> = new EventEmitter();
+
+  public dialogTitle = 'Find residue or range';
+
+  ngOnInit() {
+    const forLigands = this.forLigands;
+    if (forLigands === true) this.dialogTitle = 'Find ligand atoms by index (CIF file sorting)';
+  }
 
   // Called live when typing residue ranges
   onResidueInput(inputType: 'start' | 'end') {
