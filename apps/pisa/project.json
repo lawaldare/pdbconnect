@@ -56,7 +56,8 @@
           "optimization": true,
           "sourceMap": true,
           "vendorChunk": false,
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "baseHref": "$APP_BASE_HREF"
         },
         "development": {
           "aot": true,
@@ -66,7 +67,8 @@
           "optimization": true,
           "sourceMap": true,
           "vendorChunk": false,
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "baseHref": "$APP_BASE_HREF"
         }
       },
       "defaultConfiguration": "development"
