@@ -12,10 +12,7 @@ COPY apps/pisa/nginx-custom.conf /etc/nginx/conf.d/default.conf
 ARG APP_BASE_HREF
 ENV APP_BASE_HREF=$APP_BASE_HREF
 
-RUN echo "mainFileName=\"\$(ls /usr/share/nginx/html/main*.js)\" && \
-          envsubst '\$PDBE_AUTOCOMPLETE_URL \$PDBE_AGGREGATED_API_URL \$PDBE_API_URL ' < \${mainFileName} > /tmp/main.tmp && \
-          mv /tmp/main.tmp \${mainFileName} && \
-          ASSETS_PATH=$(echo $APP_BASE_HREF | awk '{print substr($0, 2, length($0)-2)}') && \
+RUN echo "ASSETS_PATH=$(echo $APP_BASE_HREF | awk '{print substr($0, 2, length($0)-2)}') && \
           echo \"ASSETS_PATH=\$ASSETS_PATH\" && \
           sed -i \"s|assets/images|\$ASSETS_PATH/assets/images|g\" /usr/share/nginx/html/*.js && \
           indexFileName=\"\$(ls /usr/share/nginx/html/index.html)\" && \
