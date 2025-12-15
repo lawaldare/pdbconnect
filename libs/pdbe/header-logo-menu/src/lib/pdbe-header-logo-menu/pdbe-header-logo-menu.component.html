@@ -4,7 +4,9 @@
       @if(headerConfig.isComplexPage){
       <img [ngClass]="getHeaderLogoClass" src="{{ headerLogoSrc }}" alt="logo" />
       } @else {
-      <a href="https://www.ebi.ac.uk/pdbe/" target="_blank" style="padding: 0"><img [ngClass]="getHeaderLogoClass" src="{{ headerLogoSrc }}" alt="logo" /></a>
+      <a href="https://www.ebi.ac.uk/pdbe/" target="_blank" style="padding: 0">
+        <img [ngClass]="getHeaderLogoClass" src="{{ headerLogoSrc }}" alt="logo" />
+      </a>
       }
       <span class="header-title">{{ headerConfig.headerTitle }}</span>
     </div>
