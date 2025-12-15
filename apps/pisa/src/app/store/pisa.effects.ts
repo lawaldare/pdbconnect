@@ -5,7 +5,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { PisaStoreState } from './pisa-store.model';
 import { PisaActions } from './pisa.actions';
-import { catchError, EMPTY, map, mergeMap, of, switchMap, take } from 'rxjs';
+import { catchError, EMPTY, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
 import { PisaApiService } from '../services/pisa-api.service';
 import { Router } from '@angular/router';
 import { PisaSelectors } from './pisa.selectors';
@@ -30,7 +30,7 @@ export class PisaEffects {
           map((response) => {
             const jobId = response.job_id;
             // PisaActions.submitPISAJobSuccess({ jobId });
-            this.router.navigate(['/tables']);
+            // this.router.navigate(['/tables']);
             return PisaActions.submitPISAJobSuccess({ jobId });
           }),
           catchError(() => {
@@ -38,12 +38,21 @@ export class PisaEffects {
             // this.pisaUtilService.setPageView('ERROR');
 
             this.store.dispatch(PisaActions.submitPISAJobSuccess({ jobId: '60462b075dfef88f8334dfad33b24684' }));
-            this.router.navigate(['/tables']);
+            // this.router.navigate(['/tables']);
             return of(PisaActions.submitPISAJobFailure());
           })
         );
       })
     )
+  );
+
+  navigateOnSuccess$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(PisaActions.submitPISAJobSuccess),
+        tap(() => this.router.navigate(['/tables'], { queryParamsHandling: 'preserve' }))
+      ),
+    { dispatch: false }
   );
 
   getAssemblyResults$ = createEffect(() =>

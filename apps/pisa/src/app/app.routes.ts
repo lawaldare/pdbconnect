@@ -1,6 +1,6 @@
 import { Route } from '@angular/router';
 import { UploadPageComponent } from './components/upload-page/upload-page';
-import { Upload } from './components/upload/upload';
+import { AssemblyTabsPageComponent } from './components/assembly-tabs-page/assembly-tabs';
 
 export const appRoutes: Route[] = [
   {
@@ -9,6 +9,6 @@ export const appRoutes: Route[] = [
   },
   {
     path: 'tables',
-    component: Upload,
+    component: AssemblyTabsPageComponent,
   },
 ];

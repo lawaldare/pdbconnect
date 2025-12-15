@@ -1,0 +1,28 @@
+h1 {
+  color: var(--header-text-color);
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 63px;
+}
+
+div.subtitle {
+  color: var(--header-text-color);
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 26.6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  span {
+    height: 5px;
+    width: 5px;
+    display: block;
+    background-color: #000000;
+    border-radius: 50%;
+  }
+}
+
+main {
+  margin-top: 20px;
+}

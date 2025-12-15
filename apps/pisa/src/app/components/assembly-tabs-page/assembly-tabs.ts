@@ -1,0 +1,94 @@
+/* eslint-disable @angular-eslint/component-selector */
+import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { MaterialModule, ScrollPositionService } from '@pdbc/core';
+import { Store } from '@ngrx/store';
+import { PisaSelectors } from '../../store/pisa.selectors';
+import { filter, mergeMap } from 'rxjs';
+import { PisaUtilService } from '../../services/pisa-util.service';
+import { PisaActions } from '../../store/pisa.actions';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
+import { ComplexesTabComponent } from '../complexes-tab/complexes-tab';
+import { InterfacesTabComponent } from '../interfaces-tab/interfaces-tab';
+
+@Component({
+  selector: 'pisa-assembly-tabs-page',
+  imports: [CommonModule, MaterialModule, ComplexesTabComponent, InterfacesTabComponent],
+  templateUrl: './assembly-tabs.html',
+  styleUrl: './assembly-tabs.scss',
+})
+export class AssemblyTabsPageComponent implements OnInit {
+  private pisaStore = inject(Store);
+  private pisaUtilService = inject(PisaUtilService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  public readonly scrollService = inject(ScrollPositionService);
+
+  @ViewChild('tabs') tabGroup!: MatTabGroup;
+
+  public readonly assemblyResponse = toSignal(this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean)));
+
+  public rowData = signal<any[]>([]);
+
+  public fileDetails = signal<any>(this.pisaUtilService.getDataInSessionStorage('pisa-assembly-details'));
+
+  private readonly pisaRouteTabs = [
+    { label: 'Complexes', id: 'complexes' },
+    { label: 'Interfaces', id: 'interfaces' },
+  ];
+
+  public selectedTab = signal<number>(0);
+
+  constructor() {
+    this.route.queryParams.subscribe((params) => {
+      const routeTabs = this.pisaRouteTabs;
+      const tabName = params['activeTab'];
+      console.log('Active tab from route params:', tabName);
+      this.pisaUtilService.updateCurrentTabName(tabName ?? 'complexes');
+      const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
+      console.log('Selected tab:', tabIndex);
+      this.selectedTab.set(tabIndex);
+    });
+  }
+
+  ngOnInit(): void {
+    const fileDetails = this.pisaUtilService.getDataInSessionStorage('pisa-assembly-details');
+    console.log('File details from session storage:', fileDetails);
+    this.pisaStore
+      .select(PisaSelectors.jobId)
+      .pipe(
+        mergeMap((jobId) => {
+          if (!jobId) {
+            console.warn('No job ID available in store.');
+            const payload = this.pisaUtilService.getDataInSessionStorage('pisa-assembly-payload');
+            if (payload) {
+              this.pisaStore.dispatch(PisaActions.submitPISAJob({ payload }));
+            } else {
+              console.error('No assembly payload found in session storage.');
+              //TODO;
+              //Navigate to upload page
+            }
+          }
+          return this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean));
+        })
+      )
+      .subscribe((assemblyResults) => {
+        console.log('Assembly results received:', assemblyResults);
+      });
+  }
+
+  public selectTab(event: MatTabChangeEvent) {
+    const routeTabs = this.pisaRouteTabs;
+    const tabName = routeTabs[event.index].id;
+    this.pisaUtilService.updateCurrentTabName(tabName ?? 'complexes');
+
+    this.router.navigate([], {
+      queryParams: { activeTab: tabName },
+      queryParamsHandling: 'merge',
+    });
+
+    this.scrollService.handleScrollPosition(this.tabGroup, event.index);
+  }
+}

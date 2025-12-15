@@ -199,8 +199,15 @@ export class UploadPageComponent implements AfterViewInit {
       if (!data) return;
 
       const model = data.cell?.obj?.data.models?.[0] || data.cell?.obj?.data;
-      // console.log('Loaded model:', model);
+      console.log('Loaded model:', model);
       this.facade.model.set(model);
+
+      const detailForAssemblyTabs = {
+        label: this.label(),
+        spacegroup: this.simplifiedSpacegroup(),
+      };
+      this.pisaUtilService.saveDataInSessionStorage(detailForAssemblyTabs, 'pisa-assembly-details');
+
       if (!model) return;
 
       const structures = this.molstarViewer.plugin.managers.structure.hierarchy.current.structures;
@@ -231,7 +238,7 @@ export class UploadPageComponent implements AfterViewInit {
     payload.asis = this.analysisIncluded;
     payload.file = this.currentFile;
     console.log('Analyse payload:', payload);
-    this.pisaUtilService.saveAssemblyPayload(payload);
+    this.pisaUtilService.saveDataInSessionStorage(payload, 'pisa-assembly-payload');
     this.pisaStore.dispatch(PisaActions.submitPISAJob({ payload }));
   }
 }

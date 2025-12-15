@@ -21,16 +21,23 @@ export class PisaUtilService {
     this._loadingView.set(view);
   }
 
-  public saveAssemblyPayload(payload: any): void {
-    sessionStorage.setItem('pisa-assembly-payload', JSON.stringify(payload));
+  public saveDataInSessionStorage(payload: any, storageId: string): void {
+    sessionStorage.setItem(storageId, JSON.stringify(payload));
   }
 
-  public removeAssemblyPayload(): void {
-    sessionStorage.removeItem('pisa-assembly-payload');
+  public removeDataInSessionStorage(storageId: string): void {
+    sessionStorage.removeItem(storageId);
   }
 
-  public getAssemblyPayload(): any | null {
-    const payload = sessionStorage.getItem('pisa-assembly-payload');
+  public getDataInSessionStorage(storageId: string): any | null {
+    const payload = sessionStorage.getItem(storageId);
     return payload ? JSON.parse(payload) : null;
+  }
+
+  private _currentTabName = signal<string>('summary');
+  public currentTabName = this._currentTabName.asReadonly();
+
+  public updateCurrentTabName(tabName: string): void {
+    this._currentTabName.set(tabName);
   }
 }

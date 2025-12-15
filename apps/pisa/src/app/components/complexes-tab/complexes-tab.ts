@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/component-selector */
 import { CommonModule } from '@angular/common';
 import { Component, inject, linkedSignal, OnInit, signal } from '@angular/core';
 import { AG_Grid_Theme_Class } from '@pdbc/core';
@@ -12,12 +13,12 @@ import { PisaActions } from '../../store/pisa.actions';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'app-upload',
+  selector: 'pisa-complexes-tab',
   imports: [CommonModule, AgGridAngular],
-  templateUrl: './upload.html',
-  styleUrl: './upload.scss',
+  templateUrl: './complexes-tab.html',
+  styleUrl: './complexes-tab.scss',
 })
-export class Upload implements OnInit {
+export class ComplexesTabComponent implements OnInit {
   private pisaStore = inject(Store);
   private pisaUtilService = inject(PisaUtilService);
 
