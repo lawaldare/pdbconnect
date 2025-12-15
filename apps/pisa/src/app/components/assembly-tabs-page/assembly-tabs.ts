@@ -1,6 +1,6 @@
 /* eslint-disable @angular-eslint/component-selector */
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { Store } from '@ngrx/store';
 import { PisaSelectors } from '../../store/pisa.selectors';
@@ -29,6 +29,15 @@ export class AssemblyTabsPageComponent implements OnInit {
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
   public readonly assemblyResponse = toSignal(this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean)));
+
+  public numberOfComplexes = linkedSignal({
+    source: this.assemblyResponse,
+    computation: () => {
+      const assemblyResults = this.assemblyResponse();
+      const sum = assemblyResults?.pqs_sets?.reduce((acc: number, curr: any) => acc + curr.complexes.length, 0);
+      return sum;
+    },
+  });
 
   public rowData = signal<any[]>([]);
 

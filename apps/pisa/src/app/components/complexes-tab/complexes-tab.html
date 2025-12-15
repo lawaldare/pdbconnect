@@ -1,16 +1,31 @@
-<div class="table">
-  <ag-grid-angular
-    class="ag-theme-quartz"
-    id="pisa-grid"
-    [rowData]="rowData()"
-    [columnDefs]="colDefs"
-    [gridOptions]="gridOptions"
-    (selectionChanged)="onSelectionChanged($event)"
-    (rowDataUpdated)="onRowDataUpdated($event)"
-    (filterChanged)="onFilterChanged($event)"
-    (gridReady)="onComplexStructureGridReady($event)"
-    [paginationPageSizeSelector]="paginationPageSizeSelector()"
-    [rowSelection]="rowSelection"
-    [initialState]="initialState"
-  />
-</div>
+<h3>{{numberOfComplexes()}} complexes across {{numberOfPQSSets()}} PQS sets</h3>
+
+<main>
+  <div class="table">
+    <ag-grid-angular
+      class="ag-theme-quartz"
+      id="pisa-grid"
+      [rowData]="rowData()"
+      [columnDefs]="colDefs"
+      [gridOptions]="gridOptions"
+      (selectionChanged)="onSelectionChanged($event)"
+      (rowDataUpdated)="onRowDataUpdated($event)"
+      (filterChanged)="onFilterChanged($event)"
+      (gridReady)="onComplexStructureGridReady($event)"
+      [rowSelection]="rowSelection"
+      [initialState]="initialState"
+    />
+  </div>
+
+  <div class="molstar">
+    <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
+  </div>
+</main>
+<footer>
+  <h4>Attribution</h4>
+  <p>
+    Please cite PISA for all results obtained from this service, should these results be published in any form or otherwise presented. PISA should be referenced as:
+    'Protein interfaces, surfaces and assemblies' service PISA at the European Bioinformatics Institute. (http://www.ebi.ac.uk/pdbe/prot_int/pistart.html),  E.
+    Krissinel and K. Henrick (2007). 'Inference of macromolecular assemblies from crystalline state.'. J. Mol. Biol. 372, 774--797.
+  </p>
+</footer>

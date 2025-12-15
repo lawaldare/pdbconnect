@@ -1,17 +1,39 @@
-.table {
+h3 {
+  color: #000;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 31.2px;
+}
+
+main {
+  display: flex;
   width: 100%;
-  margin-top: 5px;
-  height: 500px;
+  gap: 20px;
+
+  .table {
+    width: 70%;
+    margin-top: 5px;
+    height: 500px;
+    border: 2px solid #000;
+  }
+
+  .molstar {
+    width: 30%;
+  }
+}
+
+h4 {
+  color: #000;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 31.2px;
+  margin-top: 20px;
 }
 
 ::ng-deep .group-header-cell {
-  font-weight: 600;
-  font-size: 13.5px;
-  background-color: #e5f0e5; /* subtle green tint */
-  padding: 6px 8px;
-  border-radius: 4px;
-  border: 1px solid #d8e4d8;
-  width: fit-content; /* keeps it visually inside the first column */
-  display: inline-block;
-  margin: 2px 0;
+  color: var(--Neutral-900, #1a1c1a);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 27.2px;
 }

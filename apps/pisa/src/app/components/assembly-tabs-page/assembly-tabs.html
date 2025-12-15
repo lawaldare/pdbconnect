@@ -10,7 +10,7 @@
   <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)" #tabs>
     <mat-tab>
       <ng-template mat-tab-label>
-        <span>Complexes</span>
+        <span>Complexes ({{numberOfComplexes()}})</span>
       </ng-template>
       <ng-template matTabContent> <pisa-complexes-tab /> </ng-template>
     </mat-tab>

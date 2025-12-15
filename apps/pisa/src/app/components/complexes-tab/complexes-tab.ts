@@ -11,65 +11,17 @@ import { EMPTY, filter, mergeMap } from 'rxjs';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { PisaActions } from '../../store/pisa.actions';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 
 @Component({
   selector: 'pisa-complexes-tab',
-  imports: [CommonModule, AgGridAngular],
+  imports: [CommonModule, AgGridAngular, MolstarComponent],
   templateUrl: './complexes-tab.html',
   styleUrl: './complexes-tab.scss',
 })
 export class ComplexesTabComponent implements OnInit {
   private pisaStore = inject(Store);
   private pisaUtilService = inject(PisaUtilService);
-
-  // public readonly rowData = [
-  //   { groupHeader: 'PQS set 1' },
-  //   {
-  //     complex_instance_id: 1,
-  //     formula: 'ABab',
-  //     composition: 'DR[MG][CA]',
-  //     asa: 43738.6,
-  //     bsa: 5814.1,
-  //     int_energy: -55.5,
-  //     diss_energy: 32.139,
-  //     mmsize: 2,
-  //     interfaces: [],
-  //   },
-  //   {
-  //     complex_instance_id: 2,
-  //     formula: 'A2B2a2b2',
-  //     composition: 'DRDR[MG][CA][MG][CA]',
-  //     asa: 87477.2,
-  //     bsa: 11628.2,
-  //     int_energy: -111.0,
-  //     diss_energy: 64.278,
-  //     mmsize: 4,
-  //     interfaces: [],
-  //   },
-  //   { groupHeader: 'PQS set 2' },
-  //   {
-  //     complex_instance_id: 1,
-  //     formula: 'ABab',
-  //     composition: 'DR[MG][CA]',
-  //     asa: 43738.6,
-  //     bsa: 5814.1,
-  //     int_energy: -55.5,
-  //     diss_energy: 32.139,
-  //     mmsize: 2,
-  //     interfaces: [],
-  //   },
-  //   {
-  //     complex_instance_id: 2,
-  //     formula: 'A2B2a2b2',
-  //     composition: 'DRDR[MG][CA][MG][CA]',
-  //     asa: 87477.2,
-  //     bsa: 11628.2,
-  //     int_energy: -111.0,
-  //     diss_energy: 64.278,
-  //     mmsize: 4,
-  //     interfaces: [],
-  //   },
-  // ];
 
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
@@ -81,42 +33,38 @@ export class ComplexesTabComponent implements OnInit {
 
   public readonly assemblyResponse = toSignal(this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean)));
 
-  // public rowData2 = linkedSignal({
-  //   source: this.assemblyResponse,
-  //   computation: () => {
-  //     console.log('Assembly response:', this.assemblyResponse()?.pqs_sets);
-  //     return this.transformPqsSets(this.assemblyResponse()?.pqs_sets ?? []);
-  //   },
-  // });
-  public rowData = signal<any[]>([]);
+  public rowData = linkedSignal({
+    source: this.assemblyResponse,
+    computation: () => {
+      console.log('Assembly response:', this.assemblyResponse()?.pqs_sets);
+      return this.transformPqsSets(this.assemblyResponse()?.pqs_sets ?? []);
+    },
+  });
+  public numberOfPQSSets = linkedSignal({
+    source: this.assemblyResponse,
+    computation: () => this.assemblyResponse()?.pqs_sets?.length || 0,
+  });
+  public numberOfComplexes = linkedSignal({
+    source: this.assemblyResponse,
+    computation: () => {
+      const assemblyResults = this.assemblyResponse();
+      const sum = assemblyResults?.pqs_sets?.reduce((acc: number, curr: any) => acc + curr.complexes.length, 0);
+      return sum;
+    },
+  });
+
+  public config!: any;
+  public height = '400px';
 
   ngOnInit(): void {
-    this.pisaStore
-      .select(PisaSelectors.jobId)
-      .pipe(
-        mergeMap((jobId) => {
-          if (!jobId) {
-            console.warn('No job ID available in store.');
-            const payload = this.pisaUtilService.getDataInSessionStorage('pisa-assembly-payload');
-            if (payload) {
-              this.pisaStore.dispatch(PisaActions.submitPISAJob({ payload }));
-            } else {
-              console.error('No assembly payload found in session storage.');
-              //TODO;
-              //Navigate to upload page
-            }
-          }
-          return this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean));
-        })
-      )
-      .subscribe((assemblyResults) => {
-        console.log('Assembly results received:', assemblyResults);
-        if (assemblyResults) {
-          const transformedData = this.transformPqsSets(assemblyResults.pqs_sets ?? []);
-          this.rowData.set(transformedData);
-          console.log('Transformed row data:', transformedData);
-        }
-      });
+    this.config = {
+      moleculeId: '1a0u',
+      bgColor: { r: 255, g: 255, b: 255 },
+      assemblyId: '1',
+      hideControls: true,
+      hideCanvasControls: ['expand', 'animation', 'controlToggle'],
+      landscape: true,
+    };
   }
 
   public onSelectionChanged(event: SelectionChangedEvent) {

@@ -9,12 +9,15 @@ export const gridOptions: GridOptions = {
   defaultColDef: {
     ...agGridOptionsBase.defaultColDef,
     sortable: false,
+    filter: false,
+    flex: 1,
   },
+  pagination: false,
 
   // getRowClass: (params) => (params.data?.groupHeader ? 'row-group-band' : params.data?.highlight ? 'highlight-row' : ''),
   getRowClass: (params) => {
     const d = params.data;
-    if (d?.groupHeader) return 'row-group-band';
+    // if (d?.groupHeader) return 'row-group-band';
     if (d?.lastInGroup) return 'last-in-group-row';
     return '';
   },
@@ -31,7 +34,7 @@ export const gridOptions: GridOptions = {
 
 export const colDefs: ColDef[] = [
   {
-    headerName: 'Size mm',
+    headerName: 'Complex key',
     field: 'complex_instance_id',
     cellRenderer: (params: any) => {
       if (params.data.groupHeader) {
@@ -46,6 +49,7 @@ export const colDefs: ColDef[] = [
   { headerName: 'Buried area, sq. Å', field: 'bsa' },
   { headerName: 'ΔGint, kcal/mol', field: 'int_energy' },
   { headerName: 'ΔGdiss, kcal/mol', field: 'diss_energy' },
+  { headerName: 'Size mm', field: 'mmsize' },
   { headerName: 'Contains interfaces', field: 'interfaces', cellRenderer: InterfacesCellRenderer },
 ];
 
