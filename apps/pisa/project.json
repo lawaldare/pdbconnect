@@ -33,8 +33,8 @@
         "production": {
           "fileReplacements": [
             {
-              "replace": "apps/connect/src/environments/environment.ts",
-              "with": "apps/connect/src/environments/environment.prod.ts"
+              "replace": "apps/pisa/src/environments/environment.ts",
+              "with": "apps/pisa/src/environments/environment.prod.ts"
             }
           ],
           "budgets": [
@@ -69,6 +69,14 @@
           "vendorChunk": false,
           "outputHashing": "all",
           "baseHref": "$APP_BASE_HREF"
+        },
+        "local": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
         }
       },
       "defaultConfiguration": "development"
@@ -76,16 +84,19 @@
     "serve": {
       "continuous": true,
       "executor": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "buildTarget": "pisa:build:local",
+        "port": 3000
+      },
       "configurations": {
         "production": {
           "buildTarget": "pisa:build:production"
         },
         "development": {
-          "buildTarget": "pisa:build:development",
-          "port": 3000
+          "buildTarget": "pisa:build:development"
         }
       },
-      "defaultConfiguration": "development"
+      "defaultConfiguration": ""
     },
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
