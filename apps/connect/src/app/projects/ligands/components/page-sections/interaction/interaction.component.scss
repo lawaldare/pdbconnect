@@ -93,14 +93,6 @@ button {
     }
   }
 
-  .footer-text {
-    display: none;
-
-    @media screen and (width <= 768px) {
-      display: block;
-    }
-  }
-
   .ligandEnv-header {
     h4 {
       font-size: 16px;
@@ -128,6 +120,14 @@ button {
 .empty-text {
   font-size: 16px;
   font-weight: 400;
+}
+
+.footer-text {
+  display: none;
+
+  @media screen and (width <= 768px) {
+    display: block;
+  }
 }
 
 .ligandEnv-content {
