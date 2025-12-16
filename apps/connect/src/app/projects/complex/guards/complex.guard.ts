@@ -1,4 +1,3 @@
-// complex-id.guard.ts
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { catchError, map, of, tap } from 'rxjs';
