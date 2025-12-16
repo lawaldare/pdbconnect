@@ -19,13 +19,35 @@
 
   <div class="molstar">
     <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
+    <h3>Complex 2</h3>
+    <div class="row">
+      <p class="title">Copies in unit cell</p>
+      <p class="value">6</p>
+    </div>
+    <div class="row">
+      <p class="title">Dissociation pattern</p>
+      <p class="value">6</p>
+    </div>
+    <div class="row">
+      <p class="title">symmetry number</p>
+      <p class="value">6</p>
+    </div>
+    <button class="vf-button vf-button--primary" (click)="downloadComplex()">Download complex</button>
   </div>
 </main>
 <footer>
   <h4>Attribution</h4>
   <p>
     Please cite PISA for all results obtained from this service, should these results be published in any form or otherwise presented. PISA should be referenced as:
-    'Protein interfaces, surfaces and assemblies' service PISA at the European Bioinformatics Institute. (http://www.ebi.ac.uk/pdbe/prot_int/pistart.html),  E.
-    Krissinel and K. Henrick (2007). 'Inference of macromolecular assemblies from crystalline state.'. J. Mol. Biol. 372, 774--797.
+  </p>
+  <p>
+    <a href="http://www.ebi.ac.uk/pdbe/prot_int/pistart.html" target="_blank"
+      >'Protein interfaces, surfaces and assemblies' service PISA at the European Bioinformatics Institute.</a
+    >
+  </p>
+  <p>
+    <a href="http://www.ebi.ac.uk/pdbe/prot_int/pistart.html" target="_blank"
+      >Krissinel and K. Henrick (2007). 'Inference of macromolecular assemblies from crystalline state.'. J. Mol. Biol. 372, 774--797.</a
+    >
   </p>
 </footer>

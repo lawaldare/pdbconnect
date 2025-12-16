@@ -22,14 +22,14 @@ export const gridOptions: GridOptions = {
     return '';
   },
 
-  onCellClicked: (params) => {
-    if (params.data?.groupHeader) {
-      params?.event?.stopPropagation();
-      return;
-    }
-    // handle normal row clicks here if you have them
-    console.log('Clicked data row:', params.data);
-  },
+  // onCellClicked: (params) => {
+  //   if (params.data?.groupHeader) {
+  //     params?.event?.stopPropagation();
+  //     return;
+  //   }
+  //   // handle normal row clicks here if you have them
+  //   console.log('Clicked data row:', params.data);
+  // },
 };
 
 export const colDefs: ColDef[] = [

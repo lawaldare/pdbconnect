@@ -14,12 +14,43 @@ main {
   .table {
     width: 70%;
     margin-top: 5px;
-    height: 500px;
+    height: 600px;
     border: 2px solid #000;
   }
 
   .molstar {
     width: 30%;
+
+    h3 {
+      margin-top: 12px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      p {
+        color: var(--header-text-color);
+        font-size: 16px;
+        line-height: 27.2px;
+      }
+
+      p.title {
+        font-weight: 500;
+        width: 150px;
+        min-width: 150px;
+        max-width: 150px;
+      }
+
+      p.value {
+        font-weight: 400;
+      }
+    }
+
+    button {
+      margin-top: 12px;
+    }
   }
 }
 
@@ -36,4 +67,35 @@ h4 {
   font-size: 16px;
   font-weight: 500;
   line-height: 27.2px;
+}
+
+/* vertical */
+::ng-deep .ag-body-viewport,
+::ng-deep .ag-center-cols-viewport {
+  overflow-y: scroll !important;
+}
+
+/* horizontal */
+::ng-deep .ag-body-horizontal-scroll,
+::ng-deep .ag-body-horizontal-scroll-viewport {
+  overflow-x: scroll !important;
+}
+
+::ng-deep .ag-body-vertical-scroll.ag-apple-scrollbar.ag-scrollbar-invisible {
+  visibility: visible;
+  opacity: 1;
+  overflow-y: scroll !important;
+}
+
+::ng-deep .ag-body-vertical-scroll.ag-apple-scrollbar.ag-scrollbar-invisible,
+::ng-deep .ag-body-horizontal-scroll.ag-apple-scrollbar.ag-scrollbar-invisible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: none !important;
+}
+
+::ng-deep .ag-scrollbar-invisible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: none !important;
 }

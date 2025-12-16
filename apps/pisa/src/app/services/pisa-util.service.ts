@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { GridApi } from 'ag-grid-community';
 
 export type PageView = 'INITIAL' | 'PROCESS' | 'ERROR';
 export type LoadingView = 'INITIAL' | 'LOADING' | 'LOADED' | 'ERROR_LOADING';
@@ -39,5 +40,12 @@ export class PisaUtilService {
 
   public updateCurrentTabName(tabName: string): void {
     this._currentTabName.set(tabName);
+  }
+
+  private _currentGridAPI = signal<GridApi | null>(null);
+  public currentGridAPI = this._currentGridAPI.asReadonly();
+
+  public setCurrentGridAPI(gridApi: GridApi): void {
+    this._currentGridAPI.set(gridApi);
   }
 }

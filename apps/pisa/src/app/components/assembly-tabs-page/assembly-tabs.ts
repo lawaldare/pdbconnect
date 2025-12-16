@@ -1,7 +1,7 @@
 /* eslint-disable @angular-eslint/component-selector */
 import { CommonModule } from '@angular/common';
 import { Component, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
-import { MaterialModule, ScrollPositionService } from '@pdbc/core';
+import { DownloadFileTypeService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { Store } from '@ngrx/store';
 import { PisaSelectors } from '../../store/pisa.selectors';
 import { filter, mergeMap } from 'rxjs';
@@ -25,6 +25,7 @@ export class AssemblyTabsPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   public readonly scrollService = inject(ScrollPositionService);
+  private readonly downloadFileTypeService = inject(DownloadFileTypeService);
 
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
@@ -99,5 +100,26 @@ export class AssemblyTabsPageComponent implements OnInit {
     });
 
     this.scrollService.handleScrollPosition(this.tabGroup, event.index);
+  }
+
+  public downloadComplexesCSV() {
+    const gridApi = this.pisaUtilService.currentGridAPI();
+    const mappedData: any[] = [];
+    gridApi?.forEachNodeAfterFilter((node: any) => {
+      mappedData.push({
+        'Complex key': node.data.complex_instance_id ?? node.data.groupHeader,
+        Formula: node.data.formula,
+        Composition: node.data.composition,
+        'Surface area, sq. Å': node.data.asa,
+        'Buried area, sq. Å': node.data.bsa,
+        'ΔGint, kcal/mol': node.data.int_energy,
+        'ΔGdiss, kcal/mol': node.data.diss_energy,
+        'Contains interfaces': node.data.interfaces?.map((element: any) => element.interface_id).join(', '),
+      });
+    });
+    this.downloadFileTypeService.downloadCSV(mappedData, 'complexes.csv');
+  }
+  public downloadInterfacesCSV() {
+    console.log('Download interfaces CSV coming soon... :)');
   }
 }

@@ -4,7 +4,7 @@ import { Component, inject, linkedSignal, OnInit, signal } from '@angular/core';
 import { AG_Grid_Theme_Class } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { gridOptions, colDefs, initialState, rowSelection } from './ag-grid';
-import { GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
+import { FirstDataRenderedEvent, GridApi, GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { Store } from '@ngrx/store';
 import { PisaSelectors } from '../../store/pisa.selectors';
 import { EMPTY, filter, mergeMap } from 'rxjs';
@@ -23,6 +23,8 @@ export class ComplexesTabComponent implements OnInit {
   private pisaStore = inject(Store);
   private pisaUtilService = inject(PisaUtilService);
 
+  private gridApi?: GridApi;
+
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
@@ -32,6 +34,8 @@ export class ComplexesTabComponent implements OnInit {
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
 
   public readonly assemblyResponse = toSignal(this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean)));
+
+  public selectedRowData = signal<any>({});
 
   public rowData = linkedSignal({
     source: this.assemblyResponse,
@@ -78,6 +82,7 @@ export class ComplexesTabComponent implements OnInit {
 
   private updatedSelectedRow(data: any) {
     console.log('Selected row:', data);
+    this.selectedRowData.set(data);
   }
 
   public onFilterChanged(event: any) {
@@ -86,10 +91,31 @@ export class ComplexesTabComponent implements OnInit {
 
   public onRowDataUpdated(event: any) {
     console.log('Row data updated:', event);
+    this.selectFirstDataRow();
   }
 
   public onComplexStructureGridReady(event: GridReadyEvent<any>) {
+    this.gridApi = event.api;
+    this.pisaUtilService.setCurrentGridAPI(this.gridApi);
     console.log('Complex structure grid ready:', event);
+  }
+
+  private selectFirstDataRow() {
+    if (!this.gridApi) return;
+
+    const rowCount = this.gridApi.getDisplayedRowCount();
+
+    for (let i = 0; i < rowCount; i++) {
+      const row = this.gridApi.getDisplayedRowAtIndex(i);
+      if (!row?.data) continue;
+
+      if (row.data.groupHeader) continue; // skip PQS headers
+
+      row.setSelected(true, true);
+      this.gridApi.ensureIndexVisible(i);
+      this.updatedSelectedRow(row.data); // keep right panel in sync
+      break;
+    }
   }
 
   private transformPqsSets(pqsSets: any[]) {
@@ -114,5 +140,9 @@ export class ComplexesTabComponent implements OnInit {
     }
 
     return out;
+  }
+
+  public downloadComplex() {
+    console.log('Download complex');
   }
 }

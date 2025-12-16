@@ -1,11 +1,25 @@
-<h1>{{fileDetails()?.label}}</h1>
-<div class="subtitle">
-  <p>Your file</p>
-  <span></span>
-  <p>Space symmetry group: {{fileDetails()?.spacegroup}}</p>
-  <span></span>
-  <p>Resolution: 1.25 A</p>
-</div>
+<header>
+  <div>
+    <h1>{{fileDetails()?.label}}</h1>
+    <div class="subtitle">
+      <p>Your file</p>
+      <span></span>
+      <p>Space symmetry group: {{fileDetails()?.spacegroup}}</p>
+      <span></span>
+      <p>Resolution: 1.25 A</p>
+    </div>
+  </div>
+  <button mat-button [matMenuTriggerFor]="menu">
+    <span>Download files</span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M7 10.5L12 15.5L17 10.5H7Z" fill="black" />
+    </svg>
+  </button>
+  <mat-menu #menu="matMenu" class="entry-dropdown-menu" yPosition="below">
+    <span mat-menu-item (click)="downloadComplexesCSV()">Download complexes (csv)</span>
+    <span mat-menu-item (click)="downloadInterfacesCSV()">Download interfaces (csv)</span>
+  </mat-menu>
+</header>
 <main>
   <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)" #tabs>
     <mat-tab>

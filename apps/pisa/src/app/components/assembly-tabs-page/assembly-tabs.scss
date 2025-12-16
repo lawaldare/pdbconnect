@@ -26,3 +26,37 @@ div.subtitle {
 main {
   margin-top: 20px;
 }
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  @media screen and (width <= 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .vf-button {
+    @media screen and (width <= 768px) {
+      align-self: flex-start;
+    }
+  }
+}
+
+button {
+  display: inline-flex;
+  padding: 4px 12px;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--Neutral-300, #d0d0ce);
+  background: var(--Neutral-0, #fff);
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 26.6px;
+  height: 35px;
+  width: 270px;
+}
