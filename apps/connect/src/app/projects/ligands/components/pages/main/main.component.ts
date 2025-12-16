@@ -144,7 +144,7 @@ export class LigandsMainPageComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(() => {
-        this.launchSurveyForLigandsPage(this.ligandId(), this.isDesktop(), document.location.href.includes('dev.') || document.location.href.includes('wwwdev.'));
+        this.launchSurveyForLigandsPage(this.ligandId(), this.isDesktop());
         this.generateSchemaData();
       });
   }
@@ -205,7 +205,7 @@ export class LigandsMainPageComponent implements OnInit {
     this.tutorialTourService.showHelpGuideModal.set(false);
   }
 
-  private launchSurveyForLigandsPage(ccdId: string, isDesktop: boolean, isWWWDev: boolean) {
+  private launchSurveyForLigandsPage(ligandId: string, isDesktop: boolean) {
     const surveyConfig: SurveyConfig = {
       identifier: 'ligandspage_satisfaction_v1',
       title: 'Help us improve the PDBe Ligands Pages',
@@ -218,9 +218,8 @@ export class LigandsMainPageComponent implements OnInit {
       ],
 
       extraParams: {
-        entry: `ligand id: ${ccdId}`,
+        entry: `ligand id: ${ligandId}`,
         mode: isDesktop ? 'desktop' : 'mobile',
-        isDev: `${isWWWDev}`,
       },
 
       feedbackUrl: 'https://www.ebi.ac.uk/about/contact/support/pdbe',
