@@ -31,7 +31,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 100px;
 
   @media screen and (width <= 768px) {
     flex-direction: column;
@@ -58,5 +58,7 @@ button {
   cursor: pointer;
   line-height: 26.6px;
   height: 35px;
-  width: 270px;
+  width: 170px;
+  min-width: 170px;
+  max-width: 170px;
 }
