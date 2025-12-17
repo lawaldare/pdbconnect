@@ -21,7 +21,18 @@ import { ComplexInteraction } from '../../models/complex-structure.model';
           participant.stoichiometry > 1 ? 'copies' : 'copy' }})
         </span>
         }@else {
-        <span>{{ participant.accession }} ({{ participant.name }}, {{ participant.stoichiometry }} {{ participant.stoichiometry > 1 ? 'copies' : 'copy' }})</span>
+        <span>
+          <!-- {{ participant.accession }} ({{ participant.name }}, {{ participant.stoichiometry }} {{ participant.stoichiometry > 1 ? 'copies' : 'copy' }}) -->
+
+          @let entryId = participant.accession.split('_')[1];
+          @let entity = participant.accession.split('_')[2];
+          @let link = this.isDev ? 'https://wwwdev.ebi.ac.uk/pdbe/entry/pdb/': 'https://www.ebi.ac.uk/pdbe/entry/pdb/';
+          @let href = link + entryId + '?activeTab=macromolecules&entityId=' + entity;
+
+
+          <a [href]="href" target="_blank" class="pfam-link">{{ participant.accession }}</a> ({{ participant.name }}, {{ participant.stoichiometry }} {{
+          participant.stoichiometry > 1 ? 'copies' : 'copy' }})
+        </span>
         }
       </div>
       } @if(participants().length > 5){
@@ -38,6 +49,8 @@ import { ComplexInteraction } from '../../models/complex-structure.model';
 export class CommonComponentsRendererComponent implements ICellRendererAngularComp {
   // Init Cell Value
   public data!: ComplexInteraction;
+
+  public isDev = window.location.href.includes('dev') || window.location.href.includes('localhost');
 
   public participants = computed(() => {
     return this.data.relationship_type === 'sub-complex' ? this.data.common_participants : this.data.additional_participants;

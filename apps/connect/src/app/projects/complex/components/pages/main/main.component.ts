@@ -8,7 +8,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EMPTY, filter, map, mergeMap, of, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ComplexStructuresComponent } from '../../page-sections/complex-structures/complex-structures.component';
-import { ClarityConsentService, GoogleAnalyticsService, MaterialModule, ScrollPositionService, TruncateTextDirective } from '@pdbc/core';
+import {
+  ClarityConsentService,
+  GoogleAnalyticsService,
+  MaterialModule,
+  ScrollPositionService,
+  SurveyConfig,
+  SurveyPopupComponent,
+  SurveyService,
+  TruncateTextDirective,
+} from '@pdbc/core';
 import { headerComplexLogoMenuConfig, headerSearchComplexConfig, idWarningTooltip } from '../../../complex.constant';
 import { ComplexPublicationsComponent } from '../../page-sections/complex-publications/complex-publications.component';
 import { ComplexLigandsComponent } from '../../page-sections/complex-ligands/complex-ligands.component';
@@ -59,6 +68,7 @@ enum ComplexIdHistoryStatus {
     SuperComplexesComponent,
     // NotificationComponent,
     DataPrivacyBannerComponent,
+    SurveyPopupComponent,
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',
@@ -88,6 +98,10 @@ export class MainComponent implements OnInit {
   public complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
   public loaded = toSignal(this.globalStore.select(ComplexSelectors.loadingState));
 
+  public supercomplexInteractions = toSignal(this.globalStore.select(ComplexSelectors.superComplexInteractions));
+  public subcomplexInteractions = toSignal(this.globalStore.select(ComplexSelectors.subComplexInteractions));
+  public complexLigands = toSignal(this.globalStore.select(ComplexSelectors.complexLigands));
+
   public readonly status = LoadingState;
   public selectedTab = signal<number>(0);
 
@@ -104,6 +118,9 @@ export class MainComponent implements OnInit {
   public pageView = signal<string>('INITIAL');
 
   @ViewChild('tabs') tabGroup!: MatTabGroup;
+
+  public surveyService = inject(SurveyService);
+  private isDesktop = signal(window.innerWidth > 768);
 
   constructor() {
     this.route.queryParams.subscribe((params) => {
@@ -143,13 +160,14 @@ export class MainComponent implements OnInit {
             this.pageView.set('SUCCESS');
             this.dispatchCoreActions();
           }
-          return EMPTY;
+          return of(null);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(() => {
         this.bioschemasService.buildBioschemasJSON(this.renderer);
         this.complexMetaTagService.buildMetaTags();
+        this.launchSurveyForComplexesPage(this.complexId() ?? '', this.isDesktop());
       });
   }
 
@@ -196,5 +214,28 @@ export class MainComponent implements OnInit {
 
   public closeHelpGuideModal(): void {
     this.tutorialTourService.showHelpGuideModal.set(false);
+  }
+
+  private launchSurveyForComplexesPage(complexId: string, isDesktop: boolean) {
+    const surveyConfig: SurveyConfig = {
+      identifier: 'complexespage_satisfaction_v1',
+      title: 'Help us improve the PDBe Complexes Pages',
+      expiresAt: '01/03/2026',
+      webhookUrl: environment.epSurveyWebhookUrl1,
+
+      questions: [
+        { id: 'q1', type: 'rating', title: 'How would you rate this page?', skip: false },
+        { id: 'q2', type: 'text', title: 'What is the reason for your score?', skip: true },
+      ],
+
+      extraParams: {
+        entry: `complex id: ${complexId}`,
+        mode: isDesktop ? 'desktop' : 'mobile',
+      },
+
+      feedbackUrl: 'https://www.ebi.ac.uk/about/contact/support/pdbe',
+    };
+
+    this.surveyService.init(surveyConfig);
   }
 }

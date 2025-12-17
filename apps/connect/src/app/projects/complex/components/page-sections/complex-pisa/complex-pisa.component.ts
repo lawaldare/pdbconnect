@@ -201,11 +201,21 @@ export class ComplexPISAComponent implements OnInit, AfterViewInit {
   public applyFilters(data: any): void {
     const { method, minValue, maxValue } = data;
 
-    const filteredData = this.pisa()?.filter((entry: any) => {
-      const inRange = entry.resolution >= minValue && entry.resolution <= maxValue;
-      const methodMatch = method === '' || entry.experimental_method === method;
-      return inRange && methodMatch;
-    });
+    let filteredData: PISAAssemblyParam[] | undefined;
+
+    if (method === 'Solution NMR') {
+      filteredData = this.pisa()?.filter((entry: any) => {
+        // const inRange = entry.resolution >= minValue && entry.resolution <= maxValue;
+        const methodMatch = entry.experimental_method === 'Solution NMR';
+        return methodMatch;
+      });
+    } else {
+      filteredData = this.pisa()?.filter((entry: any) => {
+        const inRange = entry.resolution >= minValue && entry.resolution <= maxValue;
+        const methodMatch = method === '' || entry.experimental_method === method;
+        return inRange && methodMatch;
+      });
+    }
 
     if (filteredData?.length === 0) {
       this.filterActionNoData.set(true);

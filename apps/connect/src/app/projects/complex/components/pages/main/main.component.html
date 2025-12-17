@@ -12,7 +12,7 @@
       <section class="hero">
         @if(summaryData()?.name){
         <header>
-          <h1 class="heading-1" libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="30"></h1>
+          <h1 class="heading-1" libTruncateText [truncateText]="summaryData()?.name ?? ''" [limit]="50"></h1>
           <div class="links">
             <a class="vf-button vf-button--link" href="{{environment.baseUrl}}/pdbe/aggregated-api/#/Complex" target="_blank">
               API
@@ -63,18 +63,27 @@
         <mat-tab>
           <ng-template mat-tab-label>
             <span id="ligands-label-tour">Ligands</span>
+            @if ((complexLigands() ?? []).length === 0){
+            <span class="tab-tag na">N/A</span>
+            }
           </ng-template>
           <ng-template matTabContent> <pdbc-complex-ligands /> </ng-template>
         </mat-tab>
         <mat-tab>
           <ng-template mat-tab-label>
             <span id="subcomplexes-label-tour">Subcomplexes</span>
+            @if ((subcomplexInteractions() ?? []).length === 0){
+            <span class="tab-tag na">N/A</span>
+            }
           </ng-template>
           <ng-template matTabContent> <pdbc-subcomplexes /> </ng-template>
         </mat-tab>
         <mat-tab>
           <ng-template mat-tab-label>
             <span id="supercomplexes-label-tour">Supercomplexes</span>
+            @if ((supercomplexInteractions() ?? []).length === 0){
+            <span class="tab-tag na">N/A</span>
+            }
           </ng-template>
           <ng-template matTabContent> <pdbc-supercomplexes /> </ng-template>
         </mat-tab>
@@ -112,6 +121,8 @@
   privacyNoticeUrl="https://www.ebi.ac.uk/data-protection/privacy-notice/embl-ebi-public-website/"
   pageId="dataProtectionAgreedForComplexPages"
 />
+
+<lib-survey-popup />
 
 @if(helpIconForMolstarService.showHelpIcon()){
 <div class="help-button" (click)="openHelpModal()">Help</div>
