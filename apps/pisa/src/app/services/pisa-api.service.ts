@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { Observable } from 'rxjs';
+import { catchError, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -26,6 +26,25 @@ export class PisaApiService {
   public getAssemblyResults(jobId: string): Observable<any> {
     let params = new HttpParams();
     params = params.set('file_format', 'json');
-    return this.http.get<any>(`${this.BASE_API}results/assembly/${jobId}`, { params });
+    const mock$ = this.http.get<any>('assets/mock/assemblies/assemblies.json');
+
+    return this.http.get<any>(`${this.BASE_API}results/assembly/${jobId}`, { params }).pipe(catchError(() => mock$));
+  }
+
+  public getInterfaceResultForInterfaceId(jobId: string, interfaceId: string): Observable<any> {
+    let params = new HttpParams();
+    params = params.set('file_format', 'json');
+    const mock$ = this.http.get<any>(`assets/mock/interfaces/interface_${interfaceId}.json`);
+
+    return this.http.get<any>(`${this.BASE_API}results/interface/${jobId}/${interfaceId}`, { params }).pipe(catchError(() => mock$));
+  }
+
+  public getExtendedInterfaceResultForInterfaceId(jobId: string, interfaceId: string): Observable<any> {
+    // let params = new HttpParams();
+    // params = params.set('file_format', 'json');
+    const mock$ = this.http.get<any>(`assets/mock/assemblies/monomers_extended.json`);
+
+    // return this.http.get<any>(`${this.BASE_API}results/interface/${jobId}/${interfaceId}/extended`, { params }).pipe(catchError(() => mock$));
+    return mock$;
   }
 }

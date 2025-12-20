@@ -8,4 +8,6 @@ export const PisaSelectors = {
   state: pisaStoreState,
   jobId: createSelector(pisaStoreState, (state: PisaStoreState) => state.jobId),
   assemblyResults: createSelector(pisaStoreState, (state: PisaStoreState) => state.assemblyResults),
+  interfaceResultForInterfaceId: createSelector(pisaStoreState, (state: PisaStoreState) => state.interfaceResultForInterfaceId),
+  selectedComplexData: createSelector(pisaStoreState, (state: PisaStoreState) => state.selectedComplexData),
 };

@@ -1,6 +1,9 @@
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community/';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { PisaActions } from '../../store/pisa.actions';
+import { PisaUtilService } from '../../services/pisa-util.service';
 
 @Component({
   standalone: true,
@@ -17,13 +20,18 @@ import { Component } from '@angular/core';
         font-style: normal;
         font-weight: 400;
         line-height: 27.2px; /* 170% */
+        index: 99;
       }
     `,
   ],
 })
 export class InterfacesCellRenderer implements ICellRendererAngularComp {
+  private pisaStore = inject(Store);
+  private pisaUtilService = inject(PisaUtilService);
+
   // Init Cell Value
   public interfaces!: any[];
+  private rowData!: any;
   agInit(params: ICellRendererParams): void {
     this.refresh(params);
   }
@@ -31,10 +39,14 @@ export class InterfacesCellRenderer implements ICellRendererAngularComp {
   // Return Cell Value
   refresh(params: any): boolean {
     this.interfaces = params.value;
+    this.rowData = params.data;
     return true;
   }
 
-  public openInterface(interfaceId: number) {
+  public openInterface(interfaceId: string) {
     console.log(`Opening interface ${interfaceId}`);
+    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceId({ interfaceId }));
+    this.pisaStore.dispatch(PisaActions.setSelectedComplexDataOnComplexesTab({ selectedComplexData: this.rowData }));
+    this.pisaUtilService.setComplexesTabView('SINGLE_INTERFACE');
   }
 }

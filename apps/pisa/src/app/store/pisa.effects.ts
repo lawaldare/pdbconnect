@@ -5,11 +5,11 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { PisaStoreState } from './pisa-store.model';
 import { PisaActions } from './pisa.actions';
-import { catchError, EMPTY, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
+import { catchError, EMPTY, forkJoin, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
 import { PisaApiService } from '../services/pisa-api.service';
 import { Router } from '@angular/router';
 import { PisaSelectors } from './pisa.selectors';
-import { ASSEMBLY_RESPONSE } from '../services/dummy-data';
+import { ASSEMBLY_RESPONSE, SINGLE_INTERFACE_RESPONSE } from '../services/dummy-data';
 import { UploadPageFacade } from '../components/upload-page/uploade-page.facade';
 import { PisaUtilService } from '../services/pisa-util.service';
 
@@ -59,11 +59,39 @@ export class PisaEffects {
     this.actions$.pipe(
       ofType(PisaActions.submitPISAJobSuccess),
       switchMap(() => this.store.select(PisaSelectors.jobId).pipe(take(1))),
-      mergeMap((entryId: string) =>
-        this.pisaAPIService.getAssemblyResults(entryId).pipe(
+      mergeMap((jobId: string) =>
+        this.pisaAPIService.getAssemblyResults(jobId).pipe(
           map((assemblyResults) => PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults })),
           catchError(() => {
-            this.store.dispatch(PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults: ASSEMBLY_RESPONSE }));
+            // this.store.dispatch(PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults: ASSEMBLY_RESPONSE }));
+            return of(PisaActions.getAssemblyResultForJobIdFailure());
+          })
+        )
+      )
+    )
+  );
+
+  getInterfaceResultForInterfaceId$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(PisaActions.getInterfaceResultForInterfaceId),
+      switchMap((action: { interfaceId: string }) => forkJoin([of(action), this.store.select(PisaSelectors.jobId).pipe(take(1))])),
+      mergeMap(([action, jobId]) =>
+        forkJoin([
+          this.pisaAPIService.getInterfaceResultForInterfaceId(jobId, action.interfaceId),
+          this.pisaAPIService.getExtendedInterfaceResultForInterfaceId(jobId, action.interfaceId),
+        ]).pipe(
+          map(([interfaceResult, extended]) => {
+            // console.log('Extended interface result:', extended);
+            // console.log('Interface molecules:', interfaceResult.interface.molecules);
+            const results = interfaceResult.interface.molecules.map((molecule: any) => {
+              const extendedData = extended.components.find((ext: any) => ext.mol_id === molecule.mol_id);
+              return { ...molecule, extendedData };
+            });
+            interfaceResult.interface.molecules = results;
+            return PisaActions.getInterfaceResultForInterfaceIdSuccess({ interfaceResultForInterfaceId: interfaceResult });
+          }),
+          catchError(() => {
+            // this.store.dispatch(PisaActions.getInterfaceResultForInterfaceIdSuccess({ interfaceResultForInterfaceId: SINGLE_INTERFACE_RESPONSE }));
             return of(PisaActions.getAssemblyResultForJobIdFailure());
           })
         )

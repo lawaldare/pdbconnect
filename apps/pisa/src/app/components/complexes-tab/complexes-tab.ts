@@ -12,16 +12,17 @@ import { PisaUtilService } from '../../services/pisa-util.service';
 import { PisaActions } from '../../store/pisa.actions';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { SingleInterfaceComponent } from '../single-interface/single-interface';
 
 @Component({
   selector: 'pisa-complexes-tab',
-  imports: [CommonModule, AgGridAngular, MolstarComponent],
+  imports: [CommonModule, AgGridAngular, MolstarComponent, SingleInterfaceComponent],
   templateUrl: './complexes-tab.html',
   styleUrl: './complexes-tab.scss',
 })
 export class ComplexesTabComponent implements OnInit {
   private pisaStore = inject(Store);
-  private pisaUtilService = inject(PisaUtilService);
+  public pisaUtilService = inject(PisaUtilService);
 
   private gridApi?: GridApi;
 
@@ -40,8 +41,14 @@ export class ComplexesTabComponent implements OnInit {
   public rowData = linkedSignal({
     source: this.assemblyResponse,
     computation: () => {
-      console.log('Assembly response:', this.assemblyResponse()?.pqs_sets);
-      return this.transformPqsSets(this.assemblyResponse()?.pqs_sets ?? []);
+      const response = this.assemblyResponse();
+
+      if (!response) {
+        return null;
+      }
+
+      console.log('Assembly response:', response.pqs_sets);
+      return this.transformPqsSets(response.pqs_sets ?? []);
     },
   });
   public numberOfPQSSets = linkedSignal({
@@ -126,7 +133,7 @@ export class ComplexesTabComponent implements OnInit {
 
       for (const c of set.complexes ?? []) {
         out.push({
-          complex_instance_id: c.complex_instance_id,
+          complex_key: c.complex_key,
           formula: c.formula,
           composition: c.composition,
           asa: c.asa,

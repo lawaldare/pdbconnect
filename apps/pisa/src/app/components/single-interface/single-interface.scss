@@ -1,0 +1,106 @@
+span.back {
+  color: #3b6fb6;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22.4px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+h2 {
+  color: var(--header-text-color);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 31.2px;
+  margin-bottom: 12px;
+}
+
+main {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+
+  aside {
+    width: 10%;
+
+    span {
+      color: var(--header-text-color);
+      font-size: 16px;
+      line-height: 27.2px;
+    }
+
+    .interface-row {
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid #d0d0ce;
+      padding: 4px;
+      cursor: pointer;
+
+      &.selected-interface {
+        background-color: #d0debb;
+      }
+    }
+
+    .interface-label {
+      font-weight: 500;
+    }
+
+    .interface-score {
+      font-weight: 400;
+    }
+  }
+
+  section.interface-details {
+    width: 60%;
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      h3 {
+        color: var(--header-text-color);
+        font-size: 21px;
+        font-weight: 500;
+        line-height: 27.3px;
+      }
+    }
+
+    p.sub-header {
+      color: var(--header-text-color);
+      font-size: 16px;
+      line-height: 27.2px;
+      font-weight: 400;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      p {
+        color: #54585a;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 22.4px;
+      }
+    }
+
+    .chain-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      p {
+        color: #54585a;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 22.4px;
+      }
+    }
+  }
+
+  .molstar {
+    width: 30%;
+  }
+}

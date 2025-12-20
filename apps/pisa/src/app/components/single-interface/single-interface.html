@@ -1,0 +1,27 @@
+<span class="back" (click)="goBackToComplexes()">&#60; Back to all complexes</span>
+
+<h2>Interfaces in Complex {{selectedComplexData().complex_instance_id}}</h2>
+
+<main>
+  <aside>
+    @for(row of selectedComplexData().interfaces | paginate: { itemsPerPage: 10, currentPage: this.startNumber()};; track row; let i = $index) {
+    <div class="interface-row" (click)="onInterfaceRowClick(row)" [class.selected-interface]="selectedInterfaceRow().interface_id === row.interface_id">
+      <span class="interface-label">Interface {{row.interface_id}}</span>
+      <span class="interface-value">Score {{row.css}}</span>
+    </div>
+    } @if(selectedComplexData().interfaces.length > 10){
+    <pagination-controls
+      (pageChange)="onChangePage($event)"
+      (pageBoundsCorrection)="onChangePage($event)"
+      [previousLabel]="'<'"
+      [nextLabel]="'>'"
+    ></pagination-controls>
+    }
+  </aside>
+  <section class="interface-details">
+    <pisa-single-interface-details [interface]="interface()" />
+  </section>
+  <div class="molstar">
+    <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
+  </div>
+</main>

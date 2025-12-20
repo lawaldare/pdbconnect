@@ -1,3 +1,4 @@
+@if(pisaUtilService.complexesTabView() === 'INITIAL'){
 <h3>{{numberOfComplexes()}} complexes across {{numberOfPQSSets()}} PQS sets</h3>
 
 <main>
@@ -14,6 +15,7 @@
       (gridReady)="onComplexStructureGridReady($event)"
       [rowSelection]="rowSelection"
       [initialState]="initialState"
+      [overlayNoRowsTemplate]="'No assemblies found'"
     />
   </div>
 
@@ -51,3 +53,7 @@
     >
   </p>
 </footer>
+
+} @if(pisaUtilService.complexesTabView() === 'SINGLE_INTERFACE'){
+<pisa-single-interface />
+}

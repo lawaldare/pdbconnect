@@ -35,7 +35,7 @@ export const gridOptions: GridOptions = {
 export const colDefs: ColDef[] = [
   {
     headerName: 'Complex key',
-    field: 'complex_instance_id',
+    field: 'complex_key',
     cellRenderer: (params: any) => {
       if (params.data.groupHeader) {
         return `<div class="group-header-cell">${params.data.groupHeader}</div>`;
