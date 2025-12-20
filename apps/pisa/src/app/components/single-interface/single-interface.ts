@@ -74,6 +74,7 @@ export class SingleInterfaceComponent implements OnInit {
     const p = (num - 1) * 10;
     this.startNumber.set(num);
     this.selectedInterfaceRow.set(this.selectedComplexData().interfaces[p]);
+    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceId({ interfaceId: this.selectedComplexData().interfaces[p].interface_id }));
     // this.loadSelectionFromTable(this.selectedComplexData().interfaces[p].index);
   }
 }
