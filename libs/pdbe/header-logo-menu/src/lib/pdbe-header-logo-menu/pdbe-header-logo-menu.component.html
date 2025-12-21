@@ -3,6 +3,10 @@
     <div class="header-logo">
       @if(headerConfig.isComplexPage){
       <img [ngClass]="getHeaderLogoClass" src="{{ headerLogoSrc }}" alt="logo" />
+      } @else if(headerConfig.isPisaApp){
+      <a href="https://www.ebi.ac.uk/pdbe/" target="_blank" style="padding: 0">
+        <img [ngClass]="getHeaderLogoClass" [src]="pisaLogoSrc" alt="logo" />
+      </a>
       } @else {
       <a href="https://www.ebi.ac.uk/pdbe/" target="_blank" style="padding: 0">
         <img [ngClass]="getHeaderLogoClass" src="{{ headerLogoSrc }}" alt="logo" />

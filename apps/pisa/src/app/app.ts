@@ -15,7 +15,6 @@ export class App {
   public readonly pisaLogoConfig = pisaLogoConfig;
   private router = inject(Router);
   public onStartButtonClicked(): void {
-    console.log('Start button clicked in App component');
     const href = window.location.href;
     const hrefLink = href.split('/').slice(0, -1).join('/');
     window.open(hrefLink, '_self');
