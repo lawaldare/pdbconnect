@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { HeaderLogoMenuConfig, PDBE_HEADER_LOGO_SRC, PDBE_KB_HEADER_LOGO_SRC, PISA_LOGO_PATH } from '@pdbc/core';
+import { HeaderLogoMenuConfig, PDBE_HEADER_LOGO_SRC, PDBE_KB_HEADER_LOGO_SRC } from '@pdbc/core';
 
 export interface Link {
   name: string;
@@ -30,14 +30,7 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   ngOnInit() {
     this.headerLogoSrc = this.headerConfig.logoType === 'PDBe' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
     this.links = this.headerConfig.urls || [];
-
-    const raw = 'assets/images/PDBe-letterhead-white-RGB_2013.webp'; // or whatever you use
-    console.log('RAW LOGO PATH:', raw);
-
-    const resolved = this.assetUrl(raw);
-    console.log('RESOLVED LOGO PATH:', resolved);
-
-    this.pisaLogoSrc = resolved;
+    this.pisaLogoSrc = this.assetUrl(PDBE_HEADER_LOGO_SRC);
   }
 
   private assetUrl(path: string): string {
@@ -61,20 +54,6 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
 
     return `${base}/${p}`;
   }
-
-  // ngAfterViewInit(): void {
-  //   const fromOption = {
-  //     y: -100,
-  //   };
-
-  //   const toOption = {
-  //     y: 0,
-  //     duration: 3,
-  //     ease: 'bounce',
-  //   };
-
-  //   gsap.fromTo('img', fromOption, toOption);
-  // }
 
   public get getHeaderLogoClass(): string {
     return this.headerConfig.logoType === 'PDBe' ? 'pdbe-header-logo-img' : 'pdbe-kb-header-logo-img';
