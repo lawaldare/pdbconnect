@@ -22,19 +22,14 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
 
   public headerLogoSrc = '';
   public pisaLogoSrc = '';
-  // public pisaLogoSrc = PISA_LOGO_PATH;
-  // public pisaLogoSrc = `${window.location.origin}/pdbe/pisa/assets/images/PDBe-letterhead-white-RGB_2013.webp`;
 
   public isMobile = signal(false);
-  // public isComplexPage = signal(this.headerConfig.isComplexPage ?? false);
 
   public links!: Link[];
 
   ngOnInit() {
     this.headerLogoSrc = this.headerConfig.logoType === 'PDBe' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
     this.links = this.headerConfig.urls || [];
-
-    // this.pisaLogoSrc = this.assetUrl('assets/images/PDBe-letterhead-white-RGB_2013.webp');
 
     const raw = 'assets/images/PDBe-letterhead-white-RGB_2013.webp'; // or whatever you use
     console.log('RAW LOGO PATH:', raw);
@@ -46,15 +41,21 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   }
 
   private assetUrl(path: string): string {
-    const p = (path ?? '').trim();
+    const raw = (path ?? '').trim();
+    if (!raw) return raw;
 
-    // Already absolute URL (cdn etc.)
-    if (/^https?:\/\//i.test(p)) return p;
+    // Absolute URL
+    if (/^https?:\/\//i.test(raw)) return raw;
 
-    // Already absolute path (starts with /) -> DO NOT prefix base (prevents doubling)
-    if (p.startsWith('/')) return p;
+    // Normalize leading slashes for consistent checks
+    const p = raw.replace(/^\/+/, ''); // removes one or many leading '/'
 
-    // Relative path -> prefix with <base href>
+    // If caller already included the mount, return as absolute (prevents doubling)
+    if (p === 'pdbe/pisa' || p.startsWith('pdbe/pisa/')) {
+      return `/${p}`;
+    }
+
+    // Otherwise prefix with base href
     const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
     const base = baseHref === '/' ? '' : baseHref.replace(/\/$/, '');
 
