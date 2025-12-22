@@ -34,16 +34,31 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
     this.headerLogoSrc = this.headerConfig.logoType === 'PDBe' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
     this.links = this.headerConfig.urls || [];
 
-    this.pisaLogoSrc = this.assetUrl('assets/images/PDBe-letterhead-white-RGB_2013.webp');
+    // this.pisaLogoSrc = this.assetUrl('assets/images/PDBe-letterhead-white-RGB_2013.webp');
+
+    const raw = 'assets/images/PDBe-letterhead-white-RGB_2013.webp'; // or whatever you use
+    console.log('RAW LOGO PATH:', raw);
+
+    const resolved = this.assetUrl(raw);
+    console.log('RESOLVED LOGO PATH:', resolved);
+
+    this.pisaLogoSrc = resolved;
   }
 
   private assetUrl(path: string): string {
+    const p = (path ?? '').trim();
+
+    // Already absolute URL (cdn etc.)
+    if (/^https?:\/\//i.test(p)) return p;
+
+    // Already absolute path (starts with /) -> DO NOT prefix base (prevents doubling)
+    if (p.startsWith('/')) return p;
+
+    // Relative path -> prefix with <base href>
     const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
-
     const base = baseHref === '/' ? '' : baseHref.replace(/\/$/, '');
-    const cleanPath = path.replace(/^\/+/, '');
 
-    return `${base}/${cleanPath}`;
+    return `${base}/${p}`;
   }
 
   // ngAfterViewInit(): void {
