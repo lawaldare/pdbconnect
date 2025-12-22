@@ -12,11 +12,14 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { PisaActions } from '../../store/pisa.actions';
 import { SingleInterfaceDetailsComponent } from './components/single-interface-details/single-interface-details';
 import { NgxPaginationModule } from 'ngx-pagination';
+import { AgGridAngular } from 'ag-grid-angular';
+import { colDefs, gridOptions } from './ag-grid';
+import { GridApi, GridReadyEvent } from 'ag-grid-community';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'pisa-single-interface',
-  imports: [CommonModule, FormsModule, MaterialModule, ReactiveFormsModule, MolstarComponent, SingleInterfaceDetailsComponent, NgxPaginationModule],
+  imports: [CommonModule, FormsModule, MaterialModule, AgGridAngular, ReactiveFormsModule, MolstarComponent, SingleInterfaceDetailsComponent, NgxPaginationModule],
   templateUrl: './single-interface.html',
   styleUrl: './single-interface.scss',
 })
@@ -34,6 +37,24 @@ export class SingleInterfaceComponent implements OnInit {
   public selectedInterfaceRow = signal<any>({});
   public startNumber = signal<number>(1);
 
+  private unFilteredStructure1RowData = signal<any[] | null>(null);
+  private unFilteredStructure2RowData = signal<any[] | null>(null);
+
+  public structure1RowData = signal<any[] | null>(null);
+  public structure2RowData = signal<any[] | null>(null);
+
+  public readonly residueFiters = [
+    { name: 'Interfacing residues', value: 'interfacing', checked: false },
+    { name: 'Solvent-accessible residues', value: 'solvent', checked: false },
+    { name: 'Inaccessible residues', value: 'inaccessible', checked: false },
+  ];
+
+  private gridApiForStructure1?: GridApi;
+  private gridApiForStructure2?: GridApi;
+
+  public readonly gridOptions = gridOptions;
+  public readonly colDefs = colDefs;
+
   ngOnInit(): void {
     this.pisaStore
       .select(PisaSelectors.interfaceResultForInterfaceId)
@@ -49,6 +70,23 @@ export class SingleInterfaceComponent implements OnInit {
         if (selectedinterfaceData) {
           this.selectedInterfaceRow.set(selectedinterfaceData);
         }
+
+        const authAsymIdForStructure1 = response.interface.molecules[0].auth_asym_id;
+        const authAsymIdForStructure2 = response.interface.molecules[1].auth_asym_id;
+
+        const residuesForStructure1 = response.interface.molecules[0]?.residues?.residues || [];
+        const residuesForStructure2 = response.interface.molecules[1]?.residues?.residues || [];
+
+        const structure1Data = residuesForStructure1.map((residue: any) => ({ ...residue, auth_sym_id: authAsymIdForStructure1 }));
+        const structure2Data = residuesForStructure2.map((residue: any) => ({ ...residue, auth_sym_id: authAsymIdForStructure2 }));
+
+        this.unFilteredStructure1RowData.set(structure1Data);
+        this.unFilteredStructure2RowData.set(structure2Data);
+        this.structure1RowData.update(() => structure1Data);
+        this.structure2RowData.update(() => structure2Data);
+
+        console.log('Structure 1:', this.structure1RowData());
+        console.log('Structure 2:', this.structure2RowData());
       });
 
     this.config = {
@@ -61,6 +99,14 @@ export class SingleInterfaceComponent implements OnInit {
     };
   }
 
+  public onStructure1GridReady(event: GridReadyEvent<any>) {
+    this.gridApiForStructure1 = event.api;
+  }
+
+  public onStructure2GridReady(event: GridReadyEvent<any>) {
+    this.gridApiForStructure2 = event.api;
+  }
+
   public goBackToComplexes() {
     this.pisaUtilService.setComplexesTabView('INITIAL');
   }
@@ -68,6 +114,7 @@ export class SingleInterfaceComponent implements OnInit {
   public onInterfaceRowClick(rowData: any) {
     this.selectedInterfaceRow.set(rowData);
     this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceId({ interfaceId: rowData.interface_id }));
+    this.resetFilters();
   }
 
   public onChangePage(num: number): void {
@@ -75,6 +122,42 @@ export class SingleInterfaceComponent implements OnInit {
     this.startNumber.set(num);
     this.selectedInterfaceRow.set(this.selectedComplexData().interfaces[p]);
     this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceId({ interfaceId: this.selectedComplexData().interfaces[p].interface_id }));
-    // this.loadSelectionFromTable(this.selectedComplexData().interfaces[p].index);
+  }
+
+  public filterResidue(checked: boolean, index: number): void {
+    const residues = this.residueFiters;
+    residues[index].checked = checked;
+    const selectedFilters = residues.filter((residue) => residue.checked).map((residue) => residue.value);
+
+    if (selectedFilters.length === 0) {
+      this.structure1RowData.update(() => this.unFilteredStructure1RowData());
+      this.structure2RowData.update(() => this.unFilteredStructure2RowData());
+      return;
+    }
+
+    const rowData1 = this.unFilteredStructure1RowData()?.filter((row) => this.matchesSelectedFilters(row, selectedFilters));
+    const rowData2 = this.unFilteredStructure2RowData()?.filter((row) => this.matchesSelectedFilters(row, selectedFilters));
+
+    this.structure2RowData.update(() => rowData2 || []);
+    this.structure1RowData.update(() => rowData1 || []);
+  }
+
+  private matchesSelectedFilters(row: any, selected: string[]): boolean {
+    const asa = Number(row?.asa ?? 0);
+    const bsa = Number(row?.bsa ?? 0);
+
+    // A row is kept if it matches ANY selected category
+    return selected.some((filter) => {
+      if (filter === 'interfacing') return bsa > 0;
+      if (filter === 'solvent') return bsa === 0 && asa > 0;
+      if (filter === 'inaccessible') return asa === 0 && bsa === 0;
+      return false;
+    });
+  }
+
+  private resetFilters(): void {
+    this.residueFiters.forEach((residue) => (residue.checked = false));
+    this.structure1RowData.update(() => this.unFilteredStructure1RowData());
+    this.structure2RowData.update(() => this.unFilteredStructure2RowData());
   }
 }

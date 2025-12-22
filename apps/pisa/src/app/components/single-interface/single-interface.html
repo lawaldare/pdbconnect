@@ -19,9 +19,46 @@
     }
   </aside>
   <section class="interface-details">
-    <pisa-single-interface-details [interface]="interface()" />
+    <div class="interface-core-details">
+      <pisa-single-interface-details [interface]="interface()" />
+      <div class="molstar">
+        <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
+      </div>
+    </div>
+    <h3>Interfacing residues (not a contact table)</h3>
+    <div class="filter">
+      <span>Filter by:</span>
+      @for(residue of residueFiters; track residue.value; let index = $index){
+      <mat-checkbox [checked]="residue.checked" (change)="filterResidue($event.checked, index)" [ngClass]="residue.value">{{residue.name}}</mat-checkbox>
+      }
+    </div>
+    <div class="residue-tables">
+      <div class="structure-one">
+        <h4>Structure 1</h4>
+        <div class="table">
+          <ag-grid-angular
+            class="ag-theme-quartz"
+            [rowData]="structure1RowData()"
+            [columnDefs]="colDefs"
+            [gridOptions]="gridOptions"
+            (gridReady)="onStructure1GridReady($event)"
+            [overlayNoRowsTemplate]="'No assemblies found'"
+          />
+        </div>
+      </div>
+      <div class="structure-two">
+        <h4>Structure 2</h4>
+        <div class="table">
+          <ag-grid-angular
+            class="ag-theme-quartz"
+            [rowData]="structure2RowData()"
+            [columnDefs]="colDefs"
+            [gridOptions]="gridOptions"
+            (gridReady)="onStructure2GridReady($event)"
+            [overlayNoRowsTemplate]="'No assemblies found'"
+          />
+        </div>
+      </div>
+    </div>
   </section>
-  <div class="molstar">
-    <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
-  </div>
 </main>

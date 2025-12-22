@@ -27,7 +27,6 @@ export class ComplexesTabComponent implements OnInit {
   private gridApi?: GridApi;
 
   public readonly gridOptions = gridOptions;
-  public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
   public readonly initialState = initialState;
   public readonly rowSelection = rowSelection;

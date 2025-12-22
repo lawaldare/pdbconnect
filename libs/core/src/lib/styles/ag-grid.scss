@@ -50,6 +50,18 @@ ag-grid-angular {
     &.last-in-group-row {
       border-bottom: 1px solid #d0d0ce;
     }
+
+    &.interface-residue {
+      background: #fff1da;
+    }
+
+    &.solvent-residue {
+      background: #d1e3f6;
+    }
+
+    &.inaccessible-residue {
+      background: #e4e4e4;
+    }
   }
 
   .ag-sticky-bottom {
