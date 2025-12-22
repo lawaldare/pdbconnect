@@ -1,22 +1,27 @@
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community/';
-import { Component, inject } from '@angular/core';
-import { Store } from '@ngrx/store';
-import { PisaActions } from '../../store/pisa.actions';
-import { PisaUtilService } from '../../services/pisa-util.service';
+import { Component } from '@angular/core';
+import { MaterialModule } from '@pdbc/core';
 
 @Component({
   standalone: true,
-  template: ` <span>{{ rowData }}</span> `,
+  template: `
+    <section>
+      <mat-progress-bar mode="determinate" [value]="value"></mat-progress-bar>
+      <span>{{ rowData }}</span>
+    </section>
+  `,
+  imports: [MaterialModule],
   styles: [
     `
-      span {
-        color: var(--Blue-600, #3b6fb6);
-        font-size: 16px;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 27.2px; /* 170% */
-        index: 99;
+      section {
+        display: flex;
+        align-items: center;
+      }
+
+      mat-progress-bar {
+        width: 30px !important;
+        margin-right: 2px !important;
       }
     `,
   ],
@@ -24,6 +29,7 @@ import { PisaUtilService } from '../../services/pisa-util.service';
 export class BuriedAreaCellRenderer implements ICellRendererAngularComp {
   // Init Cell Value
   public rowData!: any;
+  public value!: number;
   agInit(params: ICellRendererParams): void {
     this.refresh(params);
   }
@@ -31,7 +37,8 @@ export class BuriedAreaCellRenderer implements ICellRendererAngularComp {
   // Return Cell Value
   refresh(params: any): boolean {
     const value = params.data.bsa / params.data.asa;
-    this.rowData = `${(value * 100).toFixed(2)}%`;
+    this.value = Math.round(value * 100);
+    this.rowData = `${this.value}%`;
     return true;
   }
 }

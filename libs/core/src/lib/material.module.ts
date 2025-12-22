@@ -18,6 +18,7 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSliderModule } from '@angular/material/slider';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @NgModule({
   exports: [
@@ -40,6 +41,7 @@ import { MatSliderModule } from '@angular/material/slider';
     MatSlideToggleModule,
     MatIconModule,
     MatSliderModule,
+    MatProgressBarModule,
   ],
 })
 export class MaterialModule {}
