@@ -21,7 +21,10 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   @Output() startButtonClicked = new EventEmitter<void>();
 
   public headerLogoSrc = '';
-  public pisaLogoSrc = PISA_LOGO_PATH;
+  public pisaLogoSrc = '';
+  // public pisaLogoSrc = PISA_LOGO_PATH;
+  // public pisaLogoSrc = `${window.location.origin}/pdbe/pisa/assets/images/PDBe-letterhead-white-RGB_2013.webp`;
+
   public isMobile = signal(false);
   // public isComplexPage = signal(this.headerConfig.isComplexPage ?? false);
 
@@ -30,6 +33,17 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   ngOnInit() {
     this.headerLogoSrc = this.headerConfig.logoType === 'PDBe' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
     this.links = this.headerConfig.urls || [];
+
+    this.pisaLogoSrc = this.assetUrl('assets/images/PDBe-letterhead-white-RGB_2013.webp');
+  }
+
+  private assetUrl(path: string): string {
+    const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
+
+    const base = baseHref === '/' ? '' : baseHref.replace(/\/$/, '');
+    const cleanPath = path.replace(/^\/+/, '');
+
+    return `${base}/${cleanPath}`;
   }
 
   // ngAfterViewInit(): void {
