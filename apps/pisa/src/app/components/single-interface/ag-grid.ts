@@ -38,14 +38,20 @@ export const colDefs: ColDef[] = [
   { headerName: ' ΔiGint', field: 'solv_energy' },
 ];
 
-export const initialState: GridState = {
-  rowSelection: ['1'],
-};
-
-export const rowSelection: any = {
-  mode: 'singleRow',
-  headerCheckbox: false,
-  checkboxes: false,
-  enableClickSelection: true,
-  isRowSelectable: (params: any) => !params.data?.groupHeader, // 👈 disables header rows
-};
+export const bondsColDefs: ColDef[] = [
+  {
+    headerName: 'Chain:RES NN [Name]',
+    field: 'auth_sym_id',
+    cellRenderer: (params: any) => {
+      return `<p>${params.data.auth_asym_id_1}:${params.data.auth_comp_id_1} ${params.data.auth_seq_id_1} [${params.data.auth_atom_id_1}]</p>`;
+    },
+  },
+  { headerName: 'Distance', field: 'dist' },
+  {
+    headerName: 'Chain:RES NN [Name]',
+    field: 'auth_sym_id',
+    cellRenderer: (params: any) => {
+      return `<p>${params.data.auth_asym_id_2}:${params.data.auth_comp_id_2} ${params.data.auth_seq_id_2} [${params.data.auth_atom_id_2}]</p>`;
+    },
+  },
+];

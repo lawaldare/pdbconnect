@@ -13,7 +13,7 @@ import { PisaActions } from '../../store/pisa.actions';
 import { SingleInterfaceDetailsComponent } from './components/single-interface-details/single-interface-details';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { AgGridAngular } from 'ag-grid-angular';
-import { colDefs, gridOptions } from './ag-grid';
+import { bondsColDefs, colDefs, gridOptions } from './ag-grid';
 import { GridApi, GridReadyEvent } from 'ag-grid-community';
 
 @Component({
@@ -43,6 +43,11 @@ export class SingleInterfaceComponent implements OnInit {
   public structure1RowData = signal<any[] | null>(null);
   public structure2RowData = signal<any[] | null>(null);
 
+  public hydrogenBondRowData = signal<any[] | null>(null);
+  public disulphideBondRowData = signal<any[] | null>(null);
+  public saltBridgesRowData = signal<any[] | null>(null);
+  public covalentLinkRowData = signal<any[] | null>(null);
+
   public readonly residueFiters = [
     { name: 'Interfacing residues', value: 'interfacing', checked: false },
     { name: 'Solvent-accessible residues', value: 'solvent', checked: false },
@@ -54,6 +59,7 @@ export class SingleInterfaceComponent implements OnInit {
 
   public readonly gridOptions = gridOptions;
   public readonly colDefs = colDefs;
+  public readonly bondsColDefs = bondsColDefs;
 
   ngOnInit(): void {
     this.pisaStore
@@ -85,8 +91,18 @@ export class SingleInterfaceComponent implements OnInit {
         this.structure1RowData.update(() => structure1Data);
         this.structure2RowData.update(() => structure2Data);
 
-        console.log('Structure 1:', this.structure1RowData());
-        console.log('Structure 2:', this.structure2RowData());
+        this.hydrogenBondRowData.set(response.interface.h_bonds.bonds || []);
+        this.disulphideBondRowData.set(response.interface.ss_bonds.bonds || []);
+        this.saltBridgesRowData.set(response.interface.salt_bridges.bonds || []);
+        this.covalentLinkRowData.set(response.interface.cov_bonds.bonds || []);
+
+        console.log('Hydrogen bonds:', this.hydrogenBondRowData());
+        console.log('Disulphide bonds:', this.disulphideBondRowData());
+        console.log('Salt bridges:', this.saltBridgesRowData());
+        console.log('Covalent links:', this.covalentLinkRowData());
+
+        // console.log('Structure 1:', this.structure1RowData());
+        // console.log('Structure 2:', this.structure2RowData());
       });
 
     this.config = {

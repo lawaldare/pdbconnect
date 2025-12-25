@@ -60,5 +60,58 @@
         </div>
       </div>
     </div>
+    <h3>Interfacing bonds</h3>
+    <div class="interfacing-bonds-row">
+      <div class="interfacing-bonds-row-column">
+        <h5>Hydrogen bonds ({{hydrogenBondRowData()?.length}})</h5>
+        <div class="table">
+          <ag-grid-angular
+            class="ag-theme-quartz"
+            [rowData]="hydrogenBondRowData()"
+            [columnDefs]="bondsColDefs"
+            [gridOptions]="gridOptions"
+            [overlayNoRowsTemplate]="'No data found'"
+          />
+        </div>
+      </div>
+      <div class="interfacing-bonds-row-column">
+        <h5>Disulphide bonds ({{disulphideBondRowData()?.length}})</h5>
+        <div class="table">
+          <ag-grid-angular
+            class="ag-theme-quartz"
+            [rowData]="disulphideBondRowData()"
+            [columnDefs]="bondsColDefs"
+            [gridOptions]="gridOptions"
+            [overlayNoRowsTemplate]="'No data found'"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="interfacing-bonds-row">
+      <div class="interfacing-bonds-row-column">
+        <h5>Salt bridges ({{saltBridgesRowData()?.length}})</h5>
+        <div class="table">
+          <ag-grid-angular
+            class="ag-theme-quartz"
+            [rowData]="saltBridgesRowData()"
+            [columnDefs]="bondsColDefs"
+            [gridOptions]="gridOptions"
+            [overlayNoRowsTemplate]="'No data found'"
+          />
+        </div>
+      </div>
+      <div class="interfacing-bonds-row-column">
+        <h5>Covalent link ({{covalentLinkRowData()?.length}})</h5>
+        <div class="table">
+          <ag-grid-angular
+            class="ag-theme-quartz"
+            [rowData]="covalentLinkRowData()"
+            [columnDefs]="bondsColDefs"
+            [gridOptions]="gridOptions"
+            [overlayNoRowsTemplate]="'No data found'"
+          />
+        </div>
+      </div>
+    </div>
   </section>
 </main>
