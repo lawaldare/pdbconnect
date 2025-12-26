@@ -69,34 +69,3 @@ h4 {
   line-height: 27.2px;
   width: 300px;
 }
-
-/* vertical */
-::ng-deep .ag-body-viewport,
-::ng-deep .ag-center-cols-viewport {
-  overflow-y: scroll !important;
-}
-
-/* horizontal */
-::ng-deep .ag-body-horizontal-scroll,
-::ng-deep .ag-body-horizontal-scroll-viewport {
-  overflow-x: scroll !important;
-}
-
-::ng-deep .ag-body-vertical-scroll.ag-apple-scrollbar.ag-scrollbar-invisible {
-  visibility: visible;
-  opacity: 1;
-  overflow-y: scroll !important;
-}
-
-::ng-deep .ag-body-vertical-scroll.ag-apple-scrollbar.ag-scrollbar-invisible,
-::ng-deep .ag-body-horizontal-scroll.ag-apple-scrollbar.ag-scrollbar-invisible {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transition: none !important;
-}
-
-::ng-deep .ag-scrollbar-invisible {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transition: none !important;
-}

@@ -123,3 +123,34 @@ ag-grid-angular {
     background-color: #fff !important;
   }
 }
+
+.show-agrid-scrollbar {
+  /* FORCE ag-Grid vertical scrollbar to always be visible */
+  .ag-body-vertical-scroll {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  /* Prevent ag-Grid from hiding it when not scrolling */
+  .ag-scrollbar-invisible {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  /* Optional: make it visually obvious */
+  .ag-body-vertical-scroll-viewport {
+    scrollbar-width: auto; /* Firefox */
+  }
+
+  /* WebKit (Chrome, Safari) */
+  .ag-body-vertical-scroll-viewport::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .ag-body-vertical-scroll-viewport::-webkit-scrollbar-thumb {
+    background-color: rgb(120 120 120 / 60%);
+
+    // border-radius: 6px;
+  }
+}

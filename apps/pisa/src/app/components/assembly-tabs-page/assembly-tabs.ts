@@ -77,8 +77,7 @@ export class AssemblyTabsPageComponent implements OnInit {
               this.pisaStore.dispatch(PisaActions.submitPISAJob({ payload }));
             } else {
               console.error('No assembly payload found in session storage.');
-              //TODO;
-              //Navigate to upload page
+              this.onStartButtonClicked();
             }
           }
           return this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean));
@@ -87,6 +86,12 @@ export class AssemblyTabsPageComponent implements OnInit {
       .subscribe((assemblyResults) => {
         console.log('Assembly results received:', assemblyResults);
       });
+  }
+
+  private onStartButtonClicked(): void {
+    const href = window.location.href;
+    const hrefLink = href.split('/').slice(0, -1).join('/');
+    window.open(hrefLink, '_self');
   }
 
   public selectTab(event: MatTabChangeEvent) {

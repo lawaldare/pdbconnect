@@ -1,15 +1,13 @@
 /* eslint-disable @angular-eslint/component-selector */
 import { CommonModule } from '@angular/common';
 import { Component, inject, linkedSignal, OnInit, signal } from '@angular/core';
-import { AG_Grid_Theme_Class } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { gridOptions, colDefs, initialState, rowSelection } from './ag-grid';
-import { FirstDataRenderedEvent, GridApi, GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
+import { GridApi, GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { Store } from '@ngrx/store';
 import { PisaSelectors } from '../../store/pisa.selectors';
-import { EMPTY, filter, mergeMap } from 'rxjs';
+import { filter } from 'rxjs';
 import { PisaUtilService } from '../../services/pisa-util.service';
-import { PisaActions } from '../../store/pisa.actions';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { SingleInterfaceComponent } from '../single-interface/single-interface';

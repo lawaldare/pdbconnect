@@ -5,11 +5,10 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { PisaStoreState } from './pisa-store.model';
 import { PisaActions } from './pisa.actions';
-import { catchError, EMPTY, forkJoin, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
+import { catchError, forkJoin, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
 import { PisaApiService } from '../services/pisa-api.service';
 import { Router } from '@angular/router';
 import { PisaSelectors } from './pisa.selectors';
-import { ASSEMBLY_RESPONSE, SINGLE_INTERFACE_RESPONSE } from '../services/dummy-data';
 import { UploadPageFacade } from '../components/upload-page/uploade-page.facade';
 import { PisaUtilService } from '../services/pisa-util.service';
 
@@ -50,7 +49,7 @@ export class PisaEffects {
     () =>
       this.actions$.pipe(
         ofType(PisaActions.submitPISAJobSuccess),
-        tap(() => this.router.navigate(['/tables'], { queryParamsHandling: 'preserve' }))
+        tap(() => this.router.navigate(['/assemblies'], { queryParamsHandling: 'preserve' }))
       ),
     { dispatch: false }
   );

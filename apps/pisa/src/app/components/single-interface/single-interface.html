@@ -37,7 +37,7 @@
         <h4>Structure 1</h4>
         <div class="table">
           <ag-grid-angular
-            class="ag-theme-quartz"
+            class="ag-theme-quartz show-agrid-scrollbar"
             [rowData]="structure1RowData()"
             [columnDefs]="colDefs"
             [gridOptions]="gridOptions"
@@ -50,7 +50,7 @@
         <h4>Structure 2</h4>
         <div class="table">
           <ag-grid-angular
-            class="ag-theme-quartz"
+            class="ag-theme-quartz show-agrid-scrollbar"
             [rowData]="structure2RowData()"
             [columnDefs]="colDefs"
             [gridOptions]="gridOptions"
@@ -66,7 +66,7 @@
         <h5>Hydrogen bonds ({{hydrogenBondRowData()?.length}})</h5>
         <div class="table">
           <ag-grid-angular
-            class="ag-theme-quartz"
+            class="ag-theme-quartz show-agrid-scrollbar"
             [rowData]="hydrogenBondRowData()"
             [columnDefs]="bondsColDefs"
             [gridOptions]="gridOptions"
@@ -78,7 +78,7 @@
         <h5>Disulphide bonds ({{disulphideBondRowData()?.length}})</h5>
         <div class="table">
           <ag-grid-angular
-            class="ag-theme-quartz"
+            class="ag-theme-quartz show-agrid-scrollbar"
             [rowData]="disulphideBondRowData()"
             [columnDefs]="bondsColDefs"
             [gridOptions]="gridOptions"
@@ -92,7 +92,7 @@
         <h5>Salt bridges ({{saltBridgesRowData()?.length}})</h5>
         <div class="table">
           <ag-grid-angular
-            class="ag-theme-quartz"
+            class="ag-theme-quartz show-agrid-scrollbar"
             [rowData]="saltBridgesRowData()"
             [columnDefs]="bondsColDefs"
             [gridOptions]="gridOptions"
@@ -104,7 +104,7 @@
         <h5>Covalent link ({{covalentLinkRowData()?.length}})</h5>
         <div class="table">
           <ag-grid-angular
-            class="ag-theme-quartz"
+            class="ag-theme-quartz show-agrid-scrollbar"
             [rowData]="covalentLinkRowData()"
             [columnDefs]="bondsColDefs"
             [gridOptions]="gridOptions"
