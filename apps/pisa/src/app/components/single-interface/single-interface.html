@@ -70,7 +70,7 @@
             [rowData]="hydrogenBondRowData()"
             [columnDefs]="bondsColDefs"
             [gridOptions]="gridOptions"
-            [overlayNoRowsTemplate]="'No data found'"
+            [overlayNoRowsTemplate]="'No hydrogen bonds found'"
           />
         </div>
       </div>
@@ -82,7 +82,7 @@
             [rowData]="disulphideBondRowData()"
             [columnDefs]="bondsColDefs"
             [gridOptions]="gridOptions"
-            [overlayNoRowsTemplate]="'No data found'"
+            [overlayNoRowsTemplate]="'No disulphide bonds found'"
           />
         </div>
       </div>
@@ -96,19 +96,19 @@
             [rowData]="saltBridgesRowData()"
             [columnDefs]="bondsColDefs"
             [gridOptions]="gridOptions"
-            [overlayNoRowsTemplate]="'No data found'"
+            [overlayNoRowsTemplate]="'No salt bridges found'"
           />
         </div>
       </div>
       <div class="interfacing-bonds-row-column">
-        <h5>Covalent link ({{covalentLinkRowData()?.length}})</h5>
+        <h5>Covalent bonds ({{covalentLinkRowData()?.length}})</h5>
         <div class="table">
           <ag-grid-angular
             class="ag-theme-quartz show-agrid-scrollbar"
             [rowData]="covalentLinkRowData()"
             [columnDefs]="bondsColDefs"
             [gridOptions]="gridOptions"
-            [overlayNoRowsTemplate]="'No data found'"
+            [overlayNoRowsTemplate]="'No covalent bonds found'"
           />
         </div>
       </div>
