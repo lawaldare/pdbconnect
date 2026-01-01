@@ -27,7 +27,7 @@ import { CommonModule } from '@angular/common';
 
           <aside class="panel" aria-label="Status panel">
             <p class="mini-title">Build status</p>
-            <div class="progress" role="progressbar" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
               <div class="bar"></div>
             </div>
 
@@ -142,46 +142,46 @@ import { CommonModule } from '@angular/common';
         max-width: 60ch;
       }
 
-      .cta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: center;
-      }
+      // .cta {
+      //   display: flex;
+      //   flex-wrap: wrap;
+      //   gap: 12px;
+      //   align-items: center;
+      // }
 
-      .btn {
-        appearance: none;
-        border: 0;
-        cursor: pointer;
-        padding: 12px 16px;
-        border-radius: 12px;
-        font-weight: 650;
-        font-size: 14px;
-        letter-spacing: 0.2px;
-        transition:
-          transform 120ms ease,
-          filter 120ms ease;
-      }
+      // .btn {
+      //   appearance: none;
+      //   border: 0;
+      //   cursor: pointer;
+      //   padding: 12px 16px;
+      //   border-radius: 12px;
+      //   font-weight: 650;
+      //   font-size: 14px;
+      //   letter-spacing: 0.2px;
+      //   transition:
+      //     transform 120ms ease,
+      //     filter 120ms ease;
+      // }
 
-      .btn-primary {
-        color: #06101a;
-        background: linear-gradient(135deg, var(--accent), var(--accent-2));
-        box-shadow: 0 10px 30px rgba(124, 92, 255, 0.22);
-      }
+      // .btn-primary {
+      //   color: #06101a;
+      //   background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      //   box-shadow: 0 10px 30px rgba(124, 92, 255, 0.22);
+      // }
 
-      .btn-secondary {
-        color: var(--text);
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.14);
-      }
+      // .btn-secondary {
+      //   color: var(--text);
+      //   background: rgba(255, 255, 255, 0.06);
+      //   border: 1px solid rgba(255, 255, 255, 0.14);
+      // }
 
-      .btn:hover {
-        transform: translateY(-1px);
-        filter: brightness(1.02);
-      }
-      .btn:active {
-        transform: translateY(0px);
-      }
+      // .btn:hover {
+      //   transform: translateY(-1px);
+      //   filter: brightness(1.02);
+      // }
+      // .btn:active {
+      //   transform: translateY(0px);
+      // }
 
       /* Right side */
       .panel {
@@ -207,7 +207,7 @@ import { CommonModule } from '@angular/common';
 
       .bar {
         height: 100%;
-        width: 62%;
+        width: 50%;
         border-radius: 999px;
         background: linear-gradient(135deg, var(--accent), var(--accent-2));
         animation: load 1.1s ease-out;
@@ -270,7 +270,7 @@ import { CommonModule } from '@angular/common';
           width: 0%;
         }
         to {
-          width: 62%;
+          width: 50%;
         }
       }
 
