@@ -33,8 +33,8 @@ export class MolstarDialogComponent implements AfterViewInit {
   private molstarViewInstance: any;
   private cells: any[] = [];
 
-  public selections: { viewValue: string; value: string }[] = [];
-  public selectedConformer = signal('');
+  public selections: { viewValue: string; value: number }[] = [];
+  public selectedConformer = signal(1);
   public selectedConformerControl = computed(() => new FormControl(this.selectedConformer(), { nonNullable: true }));
 
   public selectedFrament = signal<Fragment>({} as Fragment);
@@ -118,44 +118,37 @@ export class MolstarDialogComponent implements AfterViewInit {
 
     const container = this.viewContainer.nativeElement;
 
-    let entryList = [];
     let selections = [];
 
     if (this.dialogData.moleculeId.startsWith('CLC')) {
-      entryList = [`https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}_model.pdb`];
       selections = [
         {
           viewValue: 'Ideal Coordinates',
-          value: entryList[0],
+          value: 1,
         },
       ];
     } else if (this.dialogData.moleculeId.startsWith('PRD')) {
       const splits = this.dialogData.moleculeId.split('_');
       const id = `${splits[0]}CC_${splits[1]}`;
-      entryList = [`https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${id}_ideal.pdb`, `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${id}_model.pdb`];
       selections = [
         {
           viewValue: 'Ideal Coordinates',
-          value: entryList[0],
+          value: 1,
         },
         {
           viewValue: 'Model Coordinates',
-          value: entryList[1],
+          value: 2,
         },
       ];
     } else {
-      entryList = [
-        `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}_ideal.pdb`,
-        `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}_model.pdb`,
-      ];
       selections = [
         {
           viewValue: 'Ideal Coordinates',
-          value: entryList[0],
+          value: 1,
         },
         {
           viewValue: 'Model Coordinates',
-          value: entryList[1],
+          value: 2,
         },
       ];
     }
@@ -171,17 +164,20 @@ export class MolstarDialogComponent implements AfterViewInit {
       selectInteraction: true,
       visualStyle: 'ball-and-stick',
       bgColor: { r: 255, g: 255, b: 255 },
+      modelId: this.selectedConformer(),
       customData: {
-        url: this.selectedConformer(),
-        format: 'pdb',
+        url: `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}.cif`,
+        format: 'cif',
       },
       landscape: true,
       granularity: 'elementInstances',
       selection: this.selectionConfig,
       hideControls: true,
+      pdbeLink: false,
     };
 
-    this.molstarViewInstance.render(container, molstarParams);
+    const layout = [{ target: container, component: this.molstarPluginService.getClass().UIComponents.FullLayoutNoControlsUnlessExpanded }];
+    this.molstarViewInstance.render(layout, molstarParams);
     this.molstarViewInstance.events.loadComplete.subscribe(() => {
       const label = `Atom-labelled ${this.dialogData.moleculeId.toUpperCase()} (no substructure highlighted)`;
       if (this.count() === 0 || this.selectedFramentObject?.name === label) {
@@ -216,9 +212,10 @@ export class MolstarDialogComponent implements AfterViewInit {
     this.selectedConformer.set(event.value);
     const updateParams = {
       customData: {
-        url: this.selectedConformer(),
-        format: 'pdb',
+        url: `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}.cif`,
+        format: 'cif',
       },
+      modelId: this.selectedConformer(),
       selection: this.selectionConfig,
       bgColor: { r: 255, g: 255, b: 255 },
     };
@@ -243,9 +240,10 @@ export class MolstarDialogComponent implements AfterViewInit {
     };
     const updateParams = {
       customData: {
-        url: this.selectedConformer(),
-        format: 'pdb',
+        url: `https://www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/${this.dialogData.moleculeId}.cif`,
+        format: 'cif',
       },
+      modelId: this.selectedConformer(),
       selection: this.selectionConfig,
       bgColor: { r: 255, g: 255, b: 255 },
     };

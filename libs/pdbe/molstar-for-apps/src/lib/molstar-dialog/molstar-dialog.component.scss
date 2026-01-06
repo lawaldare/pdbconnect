@@ -1,9 +1,13 @@
-@import url('https://cdn.jsdelivr.net/npm/pdbe-molstar@3.7.2/build/pdbe-molstar-light.css');
+@import 'https://cdn.jsdelivr.net/npm/pdbe-molstar@3.7.2/build/pdbe-molstar-light.css';
 
 .container {
   position: relative;
   width: 100%;
   height: 95%;
+}
+
+::ng-deep .msp-traj-controls {
+  display: none;
 }
 
 section {
