@@ -20,20 +20,22 @@
 
   <div class="molstar">
     <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
+    @if(selectedRowData()){
     <h3>Complex 2</h3>
     <div class="row">
       <p class="title">Copies in unit cell</p>
-      <p class="value">6</p>
+      <p class="value">{{selectedRowData().unit_cell}}</p>
     </div>
-    <div class="row">
+    <!-- <div class="row">
       <p class="title">Dissociation pattern</p>
       <p class="value">6</p>
-    </div>
+    </div> -->
     <div class="row">
       <p class="title">symmetry number</p>
-      <p class="value">6</p>
+      <p class="value">{{selectedRowData().symmetry_number}}</p>
     </div>
     <button class="vf-button vf-button--primary" (click)="downloadComplex()">Download complex</button>
+    }
   </div>
 </main>
 <footer>

@@ -44,7 +44,6 @@ export class ComplexesTabComponent implements OnInit {
         return null;
       }
 
-      console.log('Assembly response:', response.pqs_sets);
       return this.transformPqsSets(response.pqs_sets ?? []);
     },
   });
@@ -94,14 +93,12 @@ export class ComplexesTabComponent implements OnInit {
   }
 
   public onRowDataUpdated(event: any) {
-    console.log('Row data updated:', event);
     this.selectFirstDataRow();
   }
 
   public onComplexStructureGridReady(event: GridReadyEvent<any>) {
     this.gridApi = event.api;
     this.pisaUtilService.setCurrentGridAPI(this.gridApi);
-    console.log('Complex structure grid ready:', event);
   }
 
   private selectFirstDataRow() {
@@ -139,6 +136,8 @@ export class ComplexesTabComponent implements OnInit {
           diss_energy: c.diss_energy,
           mmsize: c.mmsize,
           interfaces: c?.interfaces?.interfaces,
+          unit_cell: c.n_uc,
+          symmetry_number: c.symmetry_number,
         });
       }
     }
