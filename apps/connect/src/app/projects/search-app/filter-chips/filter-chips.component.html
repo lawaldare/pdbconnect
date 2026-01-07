@@ -1,0 +1,21 @@
+<mat-chip-set class="mat-chip-list-stacked">
+  @for (filterField of filtercards; track filterField; let fci = $index) {
+  <mat-chip
+    (click)="filterChipClicked()"
+    [ngClass]="{
+        ignoreChip: filterField.condition === 'IGNORE',
+        paddingLeft10: fci === 0
+      }"
+    [title]="getTooltip(filterField)"
+  >
+    @if (filterField.condition === 'AND' && fci > 0) {
+    <span class="chip-condition">AND</span>
+    } @if (filterField.condition === 'OR' && fci > 0) {
+    <span class="chip-condition">&nbsp;OR&nbsp;</span>
+    } @if (filterField.condition === 'NOT' && fci > 0) {
+    <span class="chip-condition">NOT</span>
+    } &nbsp;{{ getFilterText(filterField) }}
+    <i (click)="removeCard(fci)" class="icon icon-functional" data-icon="x" style="font-size: 10px; top: 7px"></i>
+  </mat-chip>
+  }
+</mat-chip-set>

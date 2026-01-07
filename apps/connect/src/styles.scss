@@ -31,7 +31,7 @@ body.driver-active.driver-fade {
   overflow: hidden !important;
 }
 
-a {
+a:not(.search-app-anchor) {
   color: #3b6fb6;
   font-size: 16px;
   font-weight: 400;

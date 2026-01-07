@@ -1,0 +1,34 @@
+<div class="columns no-pad-left no-pad-right">
+  @if (paginationData.totalPages > 1) {
+  <div style="float: left; margin-right: 20px">
+    <button class="paginationButtons" mat-raised-button (click)="paginateTo(-1, 'arrow')"><</button>
+    @for (pgi of paginationData.pages; track pgi) { @if (pgi !== -1) {
+    <button class="paginationButtons" mat-raised-button [color]="pgi === paginationData.currentPage? 'accent' : ''" (click)="paginateTo(pgi, 'btn')">{{pgi}}</button>
+    } @if (pgi === -1) {
+    <span><strong>...</strong></span>
+    } }
+    <button class="paginationButtons" mat-raised-button (click)="paginateTo(1, 'arrow')">></button>
+  </div>
+  }
+
+  <div class="paginationTitle hide-for-small-only" [innerHTML]="getTitle()"></div>
+  <div class="paginationTitleMobile show-for-small-only" [innerHTML]="getTitle()"></div>
+
+  <mat-form-field style="float: right; width: 100px; margin-left: 10px; font-size: 16px">
+    <mat-select [(ngModel)]="paginationData.perPage" (ngModelChange)="sortByFn(1)">
+      @for (perPageOption of perPageOptions; track perPageOption) {
+      <mat-option value="{{perPageOption.value}}" [attr.selected]="perPageOption.value === paginationData.perPage">{{perPageOption.label}}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  @if (showSort && paginationData.sort) {
+  <mat-form-field style="float: right; width: 170px; font-size: 16px">
+    <mat-select [(ngModel)]="paginationData.sort.value" (ngModelChange)="sortByFn(paginationData.sort.value)">
+      @for (sortOption of paginationData.sort.options; track sortOption; let fi = $index) {
+      <mat-option value="{{sortOption.value}}" [attr.selected]="sortOption.value === paginationData.sort.value">{{sortOption.label}}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  }
+</div>

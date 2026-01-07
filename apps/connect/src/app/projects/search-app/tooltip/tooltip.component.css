@@ -1,0 +1,46 @@
+.mainContainer{
+    position:fixed;
+    background:#fff;
+    z-index:999;
+    min-width:200px;
+    overflow: visible;
+    box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+    height:240px;
+}
+.title{
+    font-weight: bold;
+    padding:5px;
+    position:relative;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width:100%;
+    white-space: nowrap; 
+    font-size:12px;
+}
+.imgContainer{
+    position:relative;
+    background:#fff;
+    width:100%;
+    margin:0px;
+}
+.spinnerBox{
+    position:absolute;
+    z-index:1;
+    background:#fff;
+}
+.imgBox{
+    position:absolute;
+    z-index:2;
+    background:#fff;
+}
+.kbBox{
+    float:left;
+    width:40px;
+    text-align:center;
+}
+.kbIcon{
+    font-size:40px;
+}
+.kbSection{
+    font-size:12px;
+}

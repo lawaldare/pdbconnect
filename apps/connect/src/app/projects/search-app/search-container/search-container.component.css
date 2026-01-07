@@ -1,0 +1,98 @@
+.searchboxCard {
+  background-color: rgba(0, 20, 0, 0.1);
+  width: 100%; 
+  padding-top: 15px;
+  padding-bottom: 5px;
+  /*max-height: 150px;*/
+  overflow: auto;
+}
+
+.search-action-stack {
+  text-align:left;
+  clear:both;
+  margin:0 0 10px 0
+}
+
+.result-tab-group {
+  /* border: 1px solid #e0e0e0; */
+  margin-bottom: 40px;
+  flex-grow: 1;
+  background: #fff;
+}
+
+.result-tab-group .mat-tab-header {
+    background: #f9f9f9;
+}
+
+.tab-content {
+  padding: 16px;
+  word-break: break-word;
+  font-size: 13px;
+  position:relative;
+}
+
+.paginationSection{
+  border-bottom: 1px solid #d3d3d3;
+  padding-bottom: 3px;
+  margin-bottom: 10px;
+  overflow: auto;
+  padding-top: 10px;
+}
+
+.paginationSectionBottom{
+    border-top: 1px solid lightgray;
+    padding-top: 23px;
+    overflow: auto;
+}
+
+.noResultText{
+  text-align: center;
+  background: lightgoldenrodyellow;
+  padding: 10px;
+}
+
+.tabOverlay {
+  position: absolute;
+  width:98%;
+  height: 100%;
+  z-index: 9;
+  background-color:rgba(255, 255, 255, 0.7);
+}
+
+.claimBlueHighlight {
+    height: 0;
+    border-bottom: 30px solid lightblue;
+    border-right: 25px solid transparent;
+    padding-left: 10px;
+    border-left: 10px;
+}
+
+.thorClaimCheckBox {
+    float:left;
+    display:block;
+    margin-top:4px;
+}
+.thorClaimText {
+    float:left;
+    height:31px;
+    line-height:31px;
+    font-size: 85%;
+}
+.facetSectionLarge{
+  margin-top: 20px;
+  position:relative;
+  /*background: #fff;*/
+}
+.mat-select{
+  padding-top: 0px!important;
+}
+
+.facetGroupHeading{
+  margin-top: 15px;
+  font-size: 16px;
+  margin-bottom: 5px;
+  /* background-color: #dcdcdc; */
+  padding: 5px 0;
+  font-weight: bold;
+  border-bottom: 1px solid #999;
+}

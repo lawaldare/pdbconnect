@@ -1,0 +1,186 @@
+<pdbc-gallery-modal></pdbc-gallery-modal>
+<mat-sidenav-container>
+  <mat-sidenav #facetMenu style="width: 85%; padding: 0 10px">
+    <!-- Facets Start -->
+    <div style="height: 15px">&nbsp;</div>
+    <h4>Search filters :</h4>
+    @if (menuFacetData !== undefined && (menuFacetData | json) !== '{}') {
+    <div class="small-12">
+      @for (facetManager of facetManagerList; track facetManager; let gi = $index) { @if (menuFacetData && menuFacetData[facetManager]) {
+      <pdbc-list-facet
+        [listHeading]="menuFacetData[facetManager].title"
+        [listHeadingCount]="menuFacetData[facetManager].titleCount"
+        [listData]="menuFacetData[facetManager].list"
+        (itemClicked)="onFacetSelect($event)"
+        [isExpanded]="false"
+      ></pdbc-list-facet>
+      } @if (menuFacetData && menuFacetData[facetManager]) {
+      <div style="height: 5px">&nbsp;</div>
+      } }
+    </div>
+    }
+
+    <!-- Facets End -->
+  </mat-sidenav>
+
+  <pdbc-tooltip-container></pdbc-tooltip-container>
+
+  <header id="masthead-black-bar" class="clearfix masthead-black-bar">
+    <nav class="row">
+      <ul id="global-nav" class="menu">
+        <!-- set active class as appropriate -->
+        <li class="home-mobile"><a href="//www.ebi.ac.uk"></a></li>
+        <li class="home"><a href="//www.ebi.ac.uk">EMBL-EBI</a></li>
+        <li class="services">
+          <a href="//www.ebi.ac.uk/services">Services</a>
+        </li>
+        <li class="research">
+          <a href="//www.ebi.ac.uk/research">Research</a>
+        </li>
+        <li class="training">
+          <a href="//www.ebi.ac.uk/training">Training</a>
+        </li>
+        <li class="about"><a href="//www.ebi.ac.uk/about">About us</a></li>
+        <li class="search">
+          <a href="javascript:void(0);" data-toggle="search-global-dropdown"><span class="show-for-small-only">Search</span></a>
+          <div id="search-global-dropdown" class="dropdown-pane" data-dropdown data-options="closeOnClick:true;">
+            <!-- The dropdown menu will be programatically added by script.js -->
+          </div>
+        </li>
+        <li class="float-right show-for-medium embl-selector">
+          <button class="button float-right" type="button" data-toggle="embl-dropdown">Hinxton</button>
+          <!-- The dropdown menu will be programatically added by script.js -->
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <div id="content">
+    <!-- Banner Section Start Here -->
+    <div data-sticky-container>
+      <header id="masthead" class="masthead" data-sticky data-sticky-on="large" data-top-anchor="main-content-area:top" data-btm-anchor="main-content-area:bottom">
+        <div class="masthead-inner row">
+          <div class="columns small-12" id="local-title">
+            <div class="row">
+              <!-- Logo Area Start Here -->
+              <div class="columns small-12 medium-4">
+                <a href="{{ pdbeUrl }}" title="Back to PDBe homepage" style="border: none; text-decoration: none">
+                  <img
+                    class="small-5 medium-8 large-12"
+                    style="max-width: 200px"
+                    src="https://www.ebi.ac.uk/pdbe/sites/ebi.ac.uk.pdbe/files/images/logos/PDBe-letterhead-charcoal-RGB_2013.png"
+                    alt="PDBe logo"
+                  />
+                </a>
+
+                <img
+                  class="show-for-small-only"
+                  style="max-height: 42px; float: right; background-color: #d8e5d8"
+                  src="https://www.ebi.ac.uk/pdbe/entry/static/c0TdMiSl2Lkl2M0SU9CwdO80f1rYCvrz97KmhZxIAYD.png"
+                  alt="PDB50"
+                />
+              </div>
+              <!-- Logo Area End Here -->
+
+              <!-- Space between logo and autocomplete search input -->
+              <div class="columns small-12 medium-1 large-3 show-for-medium" style="text-align: right">
+                <img style="max-height: 76px" src="https://www.ebi.ac.uk/pdbe/entry/static/c0TdMiSl2Lkl2M0SU9CwdO80f1rYCvrz97KmhZxIAYD.png" alt="PDB50" />
+              </div>
+
+              <div class="columns small-12 medium-7 large-5" style="text-align: right">
+                <div class="columns small-12" style="background-color: rgba(255, 255, 255, 0.6); padding-top: 12px; padding-bottom: 12px">
+                  <div fxLayoutAlign="space-around">
+                    <div class="columns small-9 medium-10 large-10 show-for-medium" style="padding: 0px">
+                      <!-- <pdb-search-autocomplete></pdb-search-autocomplete> -->
+                      <pdbc-new-search-autocomplete />
+                    </div>
+                    <div class="columns small-9 medium-10 large-10 hide-for-medium" style="padding: 0px">
+                      <!-- <pdb-search-autocomplete></pdb-search-autocomplete> -->
+                      <pdbc-new-search-autocomplete />
+                    </div>
+                    <div class="columns small-3 medium-2 large-2 end" class="autocompleteBtnContainer">
+                      <button mat-raised-button color="primary" class="autocompleteBtn" (click)="headerSearchClick()">Search</button>
+                    </div>
+                  </div>
+                  <div class="columns small-12 searchExampleText">
+                    Examples:
+                    <a
+                      href="javascript:void(0);"
+                      (click)="
+                        onAutocompleteSelect({
+                          var_name: 'text',
+                          value: 'hemoglobin'
+                        })
+                      "
+                      >hemoglobin</a
+                    >,
+                    <a
+                      href="javascript:void(0);"
+                      (click)="
+                        onAutocompleteSelect({
+                          var_name: 'text',
+                          value: 'BRCA1_HUMAN'
+                        })
+                      "
+                      >BRCA1_HUMAN</a
+                    >
+                    <a href="javascript:void(0);" (click)="openAdvancedSearch()" style="float: right; outline: none">Advanced search</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- <nav>
+                  <ul class="dropdown menu float-left fixLeftPadding topMenuTab" data-description="navigational">
+                    <li [class.active]="currentPage == '/search'"><a href="javascript:void(0)" (click)="redirect('search')">Search</a></li>
+                    <li [class.active]="currentPage == '/advanced-search'"><a href="javascript:void(0)" (click)="redirect('advanced-search')">Advanced Search</a></li>
+                  </ul>
+                </nav> -->
+          <nav class="columns small-12">
+            <ul class="dropdown menu float-right topMenuTab" data-description="navigational">
+              <li style="background-color: rgba(17, 17, 17, 0.1)">
+                <a href="https://www.ebi.ac.uk/support/PDBe" target="_blank" class="icon icon-generic" data-icon="\">Feedback</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+    </div>
+    <!-- Banner Section Ends Here -->
+
+    <!-- Page Main Content Section Start Here-->
+    <div id="main-content-area" class="row">
+      <!-- Breadcrumb Start Here-->
+      <section class="columns small-12 fixLeftPadding">
+        <nav aria-label="You are here:" role="navigation">
+          <ul class="breadcrumbs" style="margin-top: 10px">
+            <li><a class="search-app-anchor" href="{{ pdbeUrl }}">PDBe</a></li>
+            <li>
+              <span class="show-for-sr">Current: </span>
+              {{ currentPage === "/advanced-search" ? "Advanced search" : "Search" }}
+            </li>
+          </ul>
+        </nav>
+      </section>
+      <!-- Breadcrumb Ends Here-->
+
+      <div class="columns">
+        <!-- <router-outlet></router-outlet> -->
+        <pdbc-search-container></pdbc-search-container>
+      </div>
+    </div>
+    <!-- Page Main Content Section Ends Here-->
+  </div>
+
+  <footer>
+    <div id="global-footer" class="global-footer">
+      <nav id="global-nav-expanded" class="global-nav-expanded row">
+        <!-- Footer will be automatically inserted by footer.js -->
+      </nav>
+      <section id="ebi-footer-meta" class="ebi-footer-meta row">
+        <!-- Footer meta will be automatically inserted by footer.js -->
+      </section>
+    </div>
+  </footer>
+</mat-sidenav-container>

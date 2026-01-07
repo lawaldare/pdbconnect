@@ -1,0 +1,10 @@
+@if (state.images.length > 1) {
+<div class="g-nav">
+  <div class="g-nav-prev" (click)="galleryService.prev()">
+    <i class="prev-arrow-ico"></i>
+  </div>
+  <div class="g-nav-next" (click)="galleryService.next()">
+    <i class="next-arrow-ico"></i>
+  </div>
+</div>
+}

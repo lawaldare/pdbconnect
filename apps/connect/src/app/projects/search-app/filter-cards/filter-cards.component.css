@@ -1,0 +1,69 @@
+.floatLeft {
+  float:left;
+}
+.floatRight {
+  float:right;
+}
+.expandFullWidth {
+  width: 100%;
+  margin-top: 5px;
+}
+.singleWidth1 {
+  width: 45%;
+  margin-right: 5%;
+  margin-top: 5px;
+}
+.numSingleWidth2 {
+  width: 45%;
+  margin-top: 5px;
+  /* display: block !important; */
+}
+
+.filterCardDateField {
+  margin-top: 20px;
+  display: inline-block;
+  width:100%;
+}
+
+.card-autocomplete-space {
+  height: 10px;
+}
+
+textarea {
+  min-height: 16px;
+  height: 16px;
+}
+.cardHeading {
+    margin-bottom: 5px;
+    font-size: 1.1rem;
+}
+
+.headingSpacing{
+    margin-top: 15px;
+}
+
+.filterCardBtnIcon {
+  font-size: 14px;
+  padding: 0px;
+  width: 22px;
+  line-height: 22px;
+}
+
+.marginLeft10 {
+  margin-left: 10px;
+}
+
+.highlightNewCard:last-child{
+  /* box-shadow: 0 3px 1px -2px rgba(116,179,96,1), 0 2px 2px 0 rgba(116,179,96,1), 0 1px 5px 4px rgba(116,179,96,1); */
+  box-shadow: none;
+  border: 4px solid rgb(116,179,96);
+  -webkit-transition : border 400ms ease-in;
+  -moz-transition : border 400ms ease-out;
+  -o-transition : border 400ms ease-out;
+  transition : border 400ms ease-out;
+}
+
+.exampleRow{
+  color:gray;
+  font-size:14px;
+}

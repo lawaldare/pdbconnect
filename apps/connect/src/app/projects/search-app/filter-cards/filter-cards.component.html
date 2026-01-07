@@ -1,0 +1,217 @@
+@for (filterCard of filtercards; track filterCard; let fci = $index) {
+<h6 class="cardHeading headingSpacing">
+  {{ getTitle(filterCard.label)}} @if (filterCard.descText) {
+  <span
+    class="show-for-large icon icon-generic"
+    data-icon="i"
+    style="cursor: pointer; margin-left: 5px; font-size: 14px"
+    title="{{filterCard.descText}}"
+    (click)="openTooltipDialog(filterCard.label, filterCard.descText)"
+    (mouseover)="recordTooltipAction()"
+  ></span>
+  } @if (filterCard.descText) {
+  <span
+    class="hide-for-large icon icon-generic"
+    data-icon="i"
+    style="cursor: pointer; margin-left: 5px"
+    title="{{filterCard.descText}}"
+    (click)="openTooltipDialog(filterCard.label, filterCard.descText)"
+    (mouseover)="recordTooltipAction()"
+  ></span>
+  }
+</h6>
+<mat-card [ngClass]="{'filterCard highlightNewCard': highlightNewCard, 'filterCard': !highlightNewCard }">
+  <div mat-card-title style="font-size: inherit">
+    @if (fci !== 0) {
+    <div class="floatLeft">
+      <mat-form-field class="fcConditionSelect">
+        <mat-select placeholder="condition" [(ngModel)]="filterCard.condition" (change)="recordConditionaction('filter_condition_type_1')">
+          <mat-option value="AND">AND</mat-option>
+          <mat-option value="OR">OR</mat-option>
+          <mat-option value="NOT">NOT</mat-option>
+          <mat-option value="IGNORE">IGNORE</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    }
+    <div [ngClass]="{'floatLeft': fci === 0, 'floatLeft marginLeft10': fci !== 0 }">
+      @if (filterCard.type === 'string') {
+      <mat-form-field class="fcConditionSelect">
+        <mat-select [placeholder]="fci === 0 ? 'condition' : ''" [(ngModel)]="filterCard.relation" (change)="recordConditionaction('filter_condition_type_2')">
+          @if (filterCard.value === undefined) {
+          <mat-option value="Contains">Contains</mat-option>
+          }
+          <mat-option value="Equal to">Equal to</mat-option>
+          @if (filterCard.value === undefined) {
+          <mat-option value="Starts with">Starts with</mat-option>
+          } @if (filterCard.value === undefined) {
+          <mat-option value="Ends with">Ends with</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      } @if (filterCard.submitFilter !== 'processAssemblyType' && (filterCard.type === 'int' || filterCard.type === 'float' || filterCard.type === 'date')) {
+      <mat-form-field class="fcConditionSelect2">
+        <mat-select [(ngModel)]="filterCard.relation" (change)="recordConditionaction('filter_condition_type_2')">
+          <mat-option value="=">Equal To</mat-option>
+          <mat-option value="!=">Not equal To</mat-option>
+          <mat-option value=">=">Greater than equal to</mat-option>
+          <mat-option value="<=">Less than equal to</mat-option>
+          <mat-option value="= range">Equal to range</mat-option>
+          <mat-option value="!= range">Not equal to range</mat-option>
+        </mat-select>
+      </mat-form-field>
+      } @if (filterCard.submitFilter === 'processAssemblyType' && (filterCard.type === 'int' || filterCard.type === 'float' || filterCard.type === 'date')) {
+      <mat-form-field class="fcConditionSelect2">
+        <mat-select [(ngModel)]="filterCard.relation" (change)="recordConditionaction('filter_condition_type_2')">
+          <mat-option value="=">Equal To</mat-option>
+        </mat-select>
+      </mat-form-field>
+      }
+    </div>
+    <div class="floatRight" style="position: absolute; right: 10px; top: 6px">
+      <i
+        class="mat-13 filterCardBtnIcon"
+        style="cursor: pointer"
+        (click)="removeCard(fci)"
+        title="Remove filter"
+        class="icon icon-functional"
+        data-icon="x"
+        style="font-size: 12px; cursor: pointer"
+      ></i>
+    </div>
+  </div>
+  <mat-card-content style="clear: both">
+    @if (filterCard.value === undefined) {
+    <div>
+      @if (filterCard.autocomplete === undefined && filterCard.type !== 'date') {
+      <div>
+        @if (filterCard.type === 'largeString') {
+        <div>
+          <mat-form-field class="expandFullWidth">
+            <textarea
+              matTextareaAutosize
+              matInput
+              placeholder="{{filterCard.exampleText ? 'Example: '+filterCard.exampleText : filterCard.label}}"
+              [(ngModel)]="filterCard.selectedValue"
+            ></textarea>
+          </mat-form-field>
+          @if (filterCard.selectedValue && filterCard.selectedValue.length < 11) {
+          <mat-error> The sequence is too short. Please use sequences with 10 or more residues </mat-error>
+          } @if (filterCard.selectedValue && filterCard.selectedValue.length > 1000) {
+          <mat-error> The sequence is too long. Please use sequences with 1000 or less residues </mat-error>
+          }
+        </div>
+        } @if (filterCard.type === 'int' || filterCard.type === 'float') {
+        <div>
+          <mat-form-field
+            [ngClass]="{'expandFullWidth': (filterCard.relation !== '= range' && filterCard.relation !== '!= range'), 'singleWidth1': (filterCard.relation === '= range' || filterCard.relation === '!= range')}"
+          >
+            <input
+              type="number"
+              min="inptMinVal[filterCard.type]"
+              matInput
+              placeholder="{{(filterCard.relation !== '= range' && filterCard.relation !== '!= range') ? (filterCard.exampleText ? 'Example: '+filterCard.exampleText : filterCard.label) : (filterCard.exampleText ? 'From - example: '+filterCard.exampleText : 'From')}}"
+              [(ngModel)]="filterCard.selectedValue"
+            />
+          </mat-form-field>
+          @if ((filterCard.relation === '= range' || filterCard.relation === '!= range')) {
+          <mat-form-field class="numSingleWidth2">
+            <input
+              type="number"
+              min="inptMinVal[filterCard.type]"
+              matInput
+              placeholder="{{filterCard.exampleText ? 'To - example: '+filterCard.exampleText : 'To'}}"
+              [(ngModel)]="filterCard.rangeValue2"
+            />
+          </mat-form-field>
+          }
+        </div>
+        } @if (filterCard.type !== 'largeString' && filterCard.type !== 'int' && filterCard.type !== 'float') {
+        <div>
+          <mat-form-field
+            [ngClass]="{'expandFullWidth': (filterCard.relation !== '= range' && filterCard.relation !== '!= range'), 'singleWidth1': (filterCard.relation === '= range' || filterCard.relation === '!= range')}"
+          >
+            <input
+              type="text"
+              matInput
+              placeholder="{{(filterCard.relation !== '= range' && filterCard.relation !== '!= range') ? (filterCard.exampleText ? 'Example: '+filterCard.exampleText : filterCard.label) : (filterCard.exampleText ? 'From - example: '+filterCard.exampleText : 'From')}}"
+              [(ngModel)]="filterCard.selectedValue"
+            />
+          </mat-form-field>
+          @if ((filterCard.relation === '= range' || filterCard.relation === '!= range')) {
+          <mat-form-field class="numSingleWidth2">
+            <input
+              type="text"
+              matInput
+              placeholder="{{filterCard.exampleText ? 'To - example: '+filterCard.exampleText : 'To'}}"
+              [(ngModel)]="filterCard.rangeValue2"
+            />
+          </mat-form-field>
+          }
+        </div>
+        }
+      </div>
+      } @if (filterCard.autocomplete && filterCard.type !== 'date') {
+      <div>
+        <div class="card-autocomplete-space">&nbsp;</div>
+        <ng2-completer
+          [(ngModel)]="filterCard.selectedValue"
+          [minSearchLength]="1"
+          [inputClass]="'pdbe-autocomplete'"
+          [datasource]="pdbeUrl+'search/pdb/select?rows=0&wt=json&echoParams=none&group=true&facet=true&group.field=pdb_id&group.facet=true&facet.field='+cleanQueryValue(filterCard.alias[0].substr(0,2) === '_q' ? filterCard.alias[0].substr(2) : filterCard.alias[0])"
+          [placeholder]="filterCard.exampleText ? 'Example: '+filterCard.exampleText : filterCard.label"
+        >
+        </ng2-completer>
+      </div>
+      } @if (filterCard.type === 'date') {
+      <div>
+        <!--<div *ngIf="filterCard.relation !=== '= range' && filterCard.relation !=== '!= range'">-->
+        <mat-form-field
+          [ngClass]="{'expandFullWidth': (filterCard.relation !== '= range' && filterCard.relation !== '!= range'), 'singleWidth1': (filterCard.relation === '= range' || filterCard.relation === '!= range')}"
+        >
+          <input
+            matInput
+            [matDatepicker]="picker"
+            placeholder="{{(filterCard.relation !== '= range' && filterCard.relation !== '!= range') ? (filterCard.exampleText ? 'Example: '+filterCard.exampleText : filterCard.label) : (filterCard.exampleText ? 'From date - example: '+filterCard.exampleText : 'From date')}}"
+            (focus)="picker.open()"
+            [(ngModel)]="filterCard.selectedValue"
+          />
+          <!--<button matSuffix [matDatepickerToggle]="picker"></button>-->
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        </mat-form-field>
+        <mat-datepicker #picker></mat-datepicker>
+        @if (filterCard.relation === '= range' || filterCard.relation === '!= range') {
+        <span>
+          <mat-form-field class="numSingleWidth2">
+            <input
+              matInput
+              [matDatepicker]="picker2"
+              placeholder="{{filterCard.exampleText ? 'To date - example: '+filterCard.exampleText : 'To date'}}"
+              (focus)="picker2.open()"
+              [(ngModel)]="filterCard.rangeValue2"
+            />
+            <!--<button matSuffix [matDatepickerToggle]="picker2"></button>-->
+            <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+          </mat-form-field>
+          <mat-datepicker #picker2></mat-datepicker>
+        </span>
+        }
+      </div>
+      }
+    </div>
+    } @if (filterCard.value !== undefined) {
+    <div>
+      @if (filterCard.value) {
+      <mat-form-field style="margin-top: 30px" class="expandFullWidth">
+        <mat-select placeholder="{{filterCard.label}}" [(value)]="filterCard.selectedValue" [disabled]="filterCard.label === 'Document type'">
+          @for (selectValue of filterCard.value; track selectValue; let fi = $index) {
+          <mat-option [value]="selectValue">{{selectValue}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      }
+    </div>
+    }
+  </mat-card-content>
+</mat-card>
+}
