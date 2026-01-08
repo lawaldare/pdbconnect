@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ValidationSliderService {
   advancedSearchForm: any;
   private http = inject(HttpClient); // Inject HttpClient into the constructor

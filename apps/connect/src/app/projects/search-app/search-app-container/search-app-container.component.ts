@@ -6,11 +6,11 @@ import { SearchService } from '../common/search.service';
 import * as appSettings from '../app.settings';
 import { GalleryModalComponent } from '../gallery/component/gallery-modal/gallery-modal.component';
 import { ListFacetComponent } from '../list-facet/list-facet.component';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { TooltipContainerComponent } from '../tooltip/tooltip.component';
 import { PdbNewAutocompleteComponent } from '../new-search-autocomplete/new-search-autocomplete.component';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { SearchContainerComponent } from '../search-container/search-container.component';
+import { SearchComponent } from '../search/search.component';
 
 declare const gtag: any;
 
@@ -26,7 +26,7 @@ declare const gtag: any;
     GalleryModalComponent,
     PdbNewAutocompleteComponent,
     FlexLayoutModule,
-    SearchContainerComponent,
+    SearchComponent,
   ],
 })
 export class SearchAppContainerComponent implements OnDestroy {

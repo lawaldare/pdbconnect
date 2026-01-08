@@ -142,7 +142,7 @@ export class PdbNewAutocompleteComponent implements OnInit {
       const unpAcc = resultRecord.value.split(' : ')[0];
       url = 'https://www' + appSettings.appEnv + '.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + unpAcc;
     } else {
-      url = window.location.hostname === 'localhost' ? `${window.location.origin}/?` : 'https://www' + appSettings.appEnv + '.ebi.ac.uk/pdbe/entry/search/index?';
+      url = window.location.hostname === 'localhost' ? `${window.location.href}?` : 'https://www' + appSettings.appEnv + '.ebi.ac.uk/pdbe/entry/search/index?';
       // url = 'https://www' + appSettings.appEnv + '.ebi.ac.uk/pdbe/entry/search/index?';
       if (this.defaultConfig.view) url += 'view=' + this.defaultConfig.view + '&';
       url += resultRecord.var_name + ':' + this.utils.escapeValue(resultRecord.value);

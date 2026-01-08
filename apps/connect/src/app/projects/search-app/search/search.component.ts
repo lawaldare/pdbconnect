@@ -28,9 +28,9 @@ declare const PDBe: any;
 declare const gtag: any;
 
 @Component({
-  selector: 'pdbc-search-container',
-  templateUrl: './search-container.component.html',
-  styleUrls: ['./search-container.component.css'],
+  selector: 'pdbc-search',
+  templateUrl: './search.component.html',
+  styleUrls: ['./search.component.scss'],
   imports: [
     CommonModule,
     MaterialModule,
@@ -43,7 +43,7 @@ declare const gtag: any;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SearchContainerComponent implements OnInit, OnDestroy {
+export class SearchComponent implements OnInit, OnDestroy {
   componentDestroyed$: Subject<boolean> = new Subject();
   private autocompleteEventListener!: IEventListener;
   private facetMenuEventListener!: IEventListener;
@@ -197,7 +197,6 @@ export class SearchContainerComponent implements OnInit, OnDestroy {
           this.openSearchForm();
         } else {
           const searchParamObj = this.oldUrlParser.parse(urlParams);
-
           if (Object.keys(searchParamObj).length > 0) {
             this.loadUrlParams(searchParamObj, true);
           }
@@ -219,7 +218,6 @@ export class SearchContainerComponent implements OnInit, OnDestroy {
     //reset search params
     this.searchService.resetFilterCards();
     this.filtercards = this.searchService.getFilterCards().slice();
-
     const urlSearchParams = urlParams;
 
     for (const paramKey in urlSearchParams) {
@@ -953,9 +951,9 @@ export class SearchContainerComponent implements OnInit, OnDestroy {
       }
 
       paramsInUrl['resultState'] = tabParams;
-
-      this.router.navigate([''], {
+      this.router.navigate([], {
         queryParams: { searchParams: JSON.stringify(paramsInUrl) },
+        queryParamsHandling: '',
       });
 
       if (this.activeTabIndex != 0 && this.sequenceParamFlag) {

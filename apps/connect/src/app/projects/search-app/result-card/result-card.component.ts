@@ -23,6 +23,7 @@ declare const gtag: any;
   templateUrl: './result-card.component.html',
   styleUrls: ['./result-card.component.css'],
   imports: [CommonModule, MaterialModule, FormsModule, TooltipDirective, RoundPipe, ValidationSliderComponent, FormatSpacingPipe],
+  providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResultCardComponent implements OnInit, OnChanges, OnDestroy {
