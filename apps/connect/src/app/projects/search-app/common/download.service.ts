@@ -4,7 +4,7 @@ import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { catchError, map, Observable, of } from 'rxjs';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class DownloadService {
   private readonly location = inject(Location);
   private readonly http = inject(HttpClient);
@@ -22,10 +22,6 @@ export class DownloadService {
           return of(resp);
         })
       );
-
-    // .subscribe(res => {
-    //     // this.saveFile(res.blob(), filename);
-    // });
   }
 
   saveFile = (blobContent: Blob, fileName: string) => {

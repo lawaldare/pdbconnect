@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './download-result-dialog.component.html',
   styleUrls: ['./download-result-dialog.component.css'],
   imports: [CommonModule, MaterialModule, FormsModule],
+  providers: [DownloadService],
 })
 export class DownloadResultDialogComponent implements OnInit, OnDestroy {
   ajaxSubscriber: any;
@@ -202,7 +203,7 @@ export class DownloadResultDialogComponent implements OnInit, OnDestroy {
       this.ajaxSubscriber = this.downloadService.downloadFile(downloadUrl).subscribe(
         (res) => {
           this.downloadInProgress = false; //hide loading
-          this.downloadService.saveFile(res.blob(), 'PDBe_search.' + this.downloadFormat);
+          this.downloadService.saveFile(res, 'PDBe_search.' + this.downloadFormat);
         },
         (err) => {
           this.downloadInProgress = false; //hide loading
