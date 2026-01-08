@@ -118,10 +118,10 @@
         </button>
         }
 
-        <button mat-raised-button color="primary" (click)="openSearchForm()">Advanced search</button>
+        <button mat-raised-button color="primary" class="green-button" (click)="openSearchForm()">Advanced search</button>
 
         @if (facetData && (facetData | json) !== '{}') {
-        <button mat-raised-button color="primary" style="margin-left: 0px; float: right" class="hide-for-small-only" (click)="openDownloadDialog()">
+        <button mat-raised-button color="primary" style="margin-left: 0px; float: right" class="hide-for-small-only green-button" (click)="openDownloadDialog()">
           <span class="icon icon-functional" data-icon="=">&nbsp;Download</span>
         </button>
         }

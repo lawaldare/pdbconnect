@@ -12,6 +12,8 @@
 @import './assets/ebi/css/ebi-global.min';
 @import './assets/ebi/css/pdb-rna-viewer-0.3.1-for-ep.min.css';
 
+@import '~@ng-select/ng-select/themes/material.theme.css';
+
 /* @import url('https://molstar.org/pdbe-molstar/build/pdbe-molstar.css'); */
 // @import url('https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/css/ebi-global.min.css');
 
@@ -376,4 +378,37 @@ section.onboarding-tutorial-banner {
       text-decoration: underline;
     }
   }
+}
+
+.green-button {
+  background-color: #4caf50 !important;
+  color: #fff !important;
+}
+
+.searchFormDialog {
+  width: 80vw !important;
+}
+
+.mat-dialog-title {
+  font:
+    500 20px / 32px 'IBM Plex Sans',
+    sans-serif !important;
+}
+
+.mat-mdc-card {
+  padding: 20px !important;
+}
+
+.mat-mdc-card-content {
+  padding: 0 !important;
+}
+
+.mdc-text-field__input {
+  margin-bottom: 0 !important;
+  box-shadow: none !important;
+}
+
+.mdc-text-field__input:focus {
+  background-color: unset !important;
+  box-shadow: none !important;
 }

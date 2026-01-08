@@ -14,7 +14,7 @@
   <div class="paginationTitle hide-for-small-only" [innerHTML]="getTitle()"></div>
   <div class="paginationTitleMobile show-for-small-only" [innerHTML]="getTitle()"></div>
 
-  <mat-form-field style="float: right; width: 100px; margin-left: 10px; font-size: 16px">
+  <mat-form-field style="float: right; width: 150px; margin-left: 10px; font-size: 16px">
     <mat-select [(ngModel)]="paginationData.perPage" (ngModelChange)="sortByFn(1)">
       @for (perPageOption of perPageOptions; track perPageOption) {
       <mat-option value="{{perPageOption.value}}" [attr.selected]="perPageOption.value === paginationData.perPage">{{perPageOption.label}}</mat-option>

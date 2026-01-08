@@ -5,7 +5,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angul
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
 import { FilterCardsComponent } from '../filter-cards/filter-cards.component';
-import { NgSelectModule } from '@ng-select/ng-select';
+import { NgLabelTemplateDirective, NgOptionTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
 
 declare let PDBe: any;
 declare const gtag: any;
@@ -14,7 +14,7 @@ declare const gtag: any;
   selector: 'pdbc-search-form-dialog',
   templateUrl: './search-form-dialog.component.html',
   styleUrls: ['./search-form-dialog.component.css'],
-  imports: [CommonModule, MaterialModule, FormsModule, ReactiveFormsModule, FilterCardsComponent, NgSelectModule],
+  imports: [CommonModule, MaterialModule, FormsModule, ReactiveFormsModule, FilterCardsComponent, NgSelectComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchFormDialogComponent implements OnInit {

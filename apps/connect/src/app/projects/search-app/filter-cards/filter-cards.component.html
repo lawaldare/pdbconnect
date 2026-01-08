@@ -88,12 +88,13 @@
         @if (filterCard.type === 'largeString') {
         <div>
           <mat-form-field class="expandFullWidth">
-            <textarea
+            <input matInput [(ngModel)]="filterCard.selectedValue" />
+            <!-- <textarea
               matTextareaAutosize
               matInput
               placeholder="{{filterCard.exampleText ? 'Example: '+filterCard.exampleText : filterCard.label}}"
               [(ngModel)]="filterCard.selectedValue"
-            ></textarea>
+            ></textarea> -->
           </mat-form-field>
           @if (filterCard.selectedValue && filterCard.selectedValue.length < 11) {
           <mat-error> The sequence is too short. Please use sequences with 10 or more residues </mat-error>
