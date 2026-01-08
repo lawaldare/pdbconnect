@@ -1,17 +1,20 @@
-import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
+import { Component, OnInit, Inject, OnDestroy, inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import * as appSettings from '../app.settings';
 import { Subject } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import { MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 
 declare const PDBeMolstarPlugin: any;
 @Component({
   selector: 'pdbc-molstar-dialog-dialog',
   templateUrl: './molstar-dialog.component.html',
-  styleUrls: ['./molstar-dialog.component.css'],
+  styleUrls: ['./molstar-dialog.component.scss'],
   imports: [CommonModule],
 })
 export class MolstarDialogComponent implements OnInit, OnDestroy {
+  private readonly molstarPluginService = inject(MolstarPluginService);
+
   componentDestroyed$: Subject<boolean> = new Subject();
   downloadApiData: any;
   serviceHook: any;
@@ -27,7 +30,7 @@ export class MolstarDialogComponent implements OnInit, OnDestroy {
     this.pdbeUrl = appSettings.pdbeUrl;
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     let fullscreen = false;
     let horizontal = true;
     if (window.screen.width <= 480) {
@@ -47,14 +50,18 @@ export class MolstarDialogComponent implements OnInit, OnDestroy {
       sequencePanel: true,
       hideQuickControls: ['expand'],
       loadingOverlay: true,
+      bgColor: { r: 255, g: 255, b: 255 },
     };
 
     if (this.dialogData.assemblyId) initParams['assemblyId'] = this.dialogData.assemblyId;
 
     const element = <HTMLInputElement>document.getElementById('app');
 
-    this.pdbeMolstar = new PDBeMolstarPlugin();
-    this.pdbeMolstar.render(element, initParams);
+    await this.molstarPluginService.loadPlugin();
+    const pluginInstance = this.molstarPluginService.createInstance();
+
+    // this.pdbeMolstar = new PDBeMolstarPlugin();
+    pluginInstance.render(element, initParams);
   }
 
   closeDialog() {
