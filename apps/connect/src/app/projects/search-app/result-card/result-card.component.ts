@@ -3,7 +3,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { SearchService } from '../common/search.service';
 import { CommonModule, DatePipe } from '@angular/common';
 import { EventBrokerService, IEventListener } from '../common/EventBroker.service';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { OrcidUserListDialogComponent } from '../orcid-user-list-dialog/orcid-user-list-dialog.component';
 import { DownloadFilesDialogComponent } from '../download-files-dialog/download-files-dialog.component';
 import { MolstarDialogComponent } from '../molstar-dialog/molstar-dialog.component';
@@ -545,7 +545,7 @@ export class ResultCardComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     //if other entries data already exist don't query API again
-    if (typeof this.identicalEntries != 'undefined') return false;
+    if (typeof this.identicalEntries != 'undefined') return;
 
     this.identicalEntries = [];
     this.showLoader = true;

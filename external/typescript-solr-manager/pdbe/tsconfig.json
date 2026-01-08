@@ -1,0 +1,25 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "declaration": false,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "lib": [ "es5", "es2015.collection", "es2015.promise", "dom" ],
+    "target": "es5",
+    "module": "none",
+    "types": [],
+    "skipDefaultLibCheck": true,
+    "out": "../build/solr-pdbe.js"
+  },
+  "files": [
+      "manager-config.ts",
+      "search-fields-config.ts",
+      "app.ts"
+  ]
+}

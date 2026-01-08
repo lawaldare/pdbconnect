@@ -1,22 +1,20 @@
-import { Component, OnInit, Inject } from "@angular/core";
-import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogRef,
-} from "@angular/material/dialog";
-import { ThorService } from "../common/thor.service";
-import * as appSettings from "../app.settings";
+import { Component, OnInit, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { ThorService } from '../common/thor.service';
+import * as appSettings from '../app.settings';
+import { CommonModule } from '@angular/common';
+import { MaterialModule } from '@pdbc/core';
 
 @Component({
-    selector: "app-orcid-user-list-dialog",
-    templateUrl: "./orcid-user-list-dialog.component.html",
-    styleUrls: ["./orcid-user-list-dialog.component.css"],
-    standalone: false
+  selector: 'pdbc-orcid-user-list-dialog',
+  templateUrl: './orcid-user-list-dialog.component.html',
+  styleUrls: ['./orcid-user-list-dialog.component.css'],
+  imports: [CommonModule, MaterialModule],
 })
 export class OrcidUserListDialogComponent implements OnInit {
   thorInfo: any;
-  heading: string;
-  list: any[];
+  heading!: string;
+  list!: any[];
   currentUserClaimLflag = false;
   loadingData = true;
 
@@ -27,11 +25,8 @@ export class OrcidUserListDialogComponent implements OnInit {
     //Initialise Thor
     this.thorInfo = Object.assign({}, thorService.getThorInfo());
     //Retry loading data if undefined
-    if (
-      typeof this.thorInfo.claimingInfoData == "undefined" ||
-      this.thorInfo.thorInitError
-    ) {
-      thorService.loadClaimingInfo("PDB").subscribe(() => {
+    if (typeof this.thorInfo.claimingInfoData == 'undefined' || this.thorInfo.thorInitError) {
+      thorService.loadClaimingInfo('PDB').subscribe(() => {
         this.thorInfo = Object.assign({}, thorService.getThorInfo());
       });
     }
@@ -78,23 +73,14 @@ export class OrcidUserListDialogComponent implements OnInit {
       this.loadingData = false;
 
     }, (err) => this.loadingData = false );*/
-    let totalClaims = this.entryData.claimData.length;
-    for (var uli = 0; uli < totalClaims; uli++) {
-      if (
-        this.thorInfo.userData != null &&
-        this.thorInfo.userData.orcId == this.entryData.claimData[uli].orcId
-      ) {
+    const totalClaims = this.entryData.claimData.length;
+    for (let uli = 0; uli < totalClaims; uli++) {
+      if (this.thorInfo.userData != null && this.thorInfo.userData.orcId == this.entryData.claimData[uli].orcId) {
         this.currentUserClaimLflag = true;
       } else {
         this.list.push({
-          name:
-            this.entryData.claimData[uli].givenName +
-            " " +
-            this.entryData.claimData[uli].familyName,
-          url:
-            appSettings.pdbeUrl +
-            "entry/timeline/" +
-            this.entryData.claimData[uli].orcId,
+          name: this.entryData.claimData[uli].givenName + ' ' + this.entryData.claimData[uli].familyName,
+          url: appSettings.pdbeUrl + 'entry/timeline/' + this.entryData.claimData[uli].orcId,
         });
       }
     }

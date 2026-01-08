@@ -1,0 +1,6 @@
+{
+  "resolution": "..assets/typings/",
+  "globalDependencies": {
+    "jquery": "github:DefinitelyTyped/DefinitelyTyped/jquery/index.d.ts"
+  }
+}

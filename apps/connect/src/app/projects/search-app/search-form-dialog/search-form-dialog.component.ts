@@ -1,37 +1,33 @@
-import {
-  Component,
-  OnInit,
-  ViewChild,
-  ChangeDetectionStrategy,
-  Inject,
-} from "@angular/core";
-import { FilterCardsComponent } from "../filter-cards/filter-cards.component";
-import { SearchService } from "../common/search.service";
-import { MatDialog, MatDialogRef } from "@angular/material/dialog";
-import { FormBuilder, FormGroup } from "@angular/forms";
-import { NgOption } from "@ng-select/ng-select";
+import { Component, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { SearchService } from '../common/search.service';
+import { MatDialogRef } from '@angular/material/dialog';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { MaterialModule } from '@pdbc/core';
+import { FilterCardsComponent } from '../filter-cards/filter-cards.component';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 declare let PDBe: any;
-declare var gtag: any;
+declare const gtag: any;
 
 @Component({
-    selector: "search-form-dialog",
-    templateUrl: "./search-form-dialog.component.html",
-    styleUrls: ["./search-form-dialog.component.css"],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'pdbc-search-form-dialog',
+  templateUrl: './search-form-dialog.component.html',
+  styleUrls: ['./search-form-dialog.component.css'],
+  imports: [CommonModule, MaterialModule, FormsModule, ReactiveFormsModule, FilterCardsComponent, NgSelectModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchFormDialogComponent implements OnInit {
-  @ViewChild("bottom") bottom;
-  @ViewChild("submitBtn") submitBtn;
-  advFiltercards = [];
+  @ViewChild('bottom') bottom: any;
+  @ViewChild('submitBtn') submitBtn: any;
+  advFiltercards: any[] = [];
   solrManagerRef: any;
 
   filterSelectBoxData: any[];
   searchFields: any;
   filterSelectGroups: any[];
 
-  searchForm: FormGroup;
+  searchForm!: FormGroup;
   validForm: boolean;
   sequenceClusteringIndex: number;
 
@@ -48,13 +44,13 @@ export class SearchFormDialogComponent implements OnInit {
     this.validForm = true;
   }
 
-  groupSearchField(obj) {
-    let sortable = [];
-    let sortableNew = [];
-    for (let key in obj) {
+  groupSearchField(obj: any) {
+    const sortable = [];
+    const sortableNew = [];
+    for (const key in obj) {
       // console.log(obj[key]);
       // if(key == 'q_seq_100_cluster_number') continue; //remove sequence clustering option
-      let optionRec = {
+      const optionRec = {
         label: obj[key].label,
         field: key,
         groupName: this.filterSelectGroups[obj[key].groupingIndex],
@@ -78,19 +74,14 @@ export class SearchFormDialogComponent implements OnInit {
 
   ngOnInit() {
     //Get filterCards from service
-    let filterCardsInService = this.advancedSearchService
-      .getFilterCards()
-      .slice(0);
+    const filterCardsInService = this.advancedSearchService.getFilterCards().slice(0);
 
     //Clone filtercards to avoid change by ref
     this.advFiltercards = []; // create empty array to hold copy
-    for (var i = 0, len = filterCardsInService.length; i < len; i++) {
+    for (let i = 0, len = filterCardsInService.length; i < len; i++) {
       this.advFiltercards[i] = {}; // empty object to hold properties added below
-      if (
-        filterCardsInService[i].alias.indexOf("q_seq_100_cluster_number") > -1
-      )
-        this.sequenceClusteringIndex = i;
-      for (var prop in filterCardsInService[i]) {
+      if (filterCardsInService[i].alias.indexOf('q_seq_100_cluster_number') > -1) this.sequenceClusteringIndex = i;
+      for (const prop in filterCardsInService[i]) {
         this.advFiltercards[i][prop] = filterCardsInService[i][prop]; // copy properties from arObj to ar2
       }
     }
@@ -104,43 +95,37 @@ export class SearchFormDialogComponent implements OnInit {
   }
 
   //Function to add new filter card on selectbox filter select
-  addCard(event) {
-    let selectedField = event.field;
+  addCard(event: { field: any }) {
+    const selectedField = event.field;
 
     if (selectedField == null) return;
 
-    let selectedCard = this.searchFields[selectedField];
+    const selectedCard = this.searchFields[selectedField];
 
-    let newCard = Object.assign({}, selectedCard);
+    const newCard = Object.assign({}, selectedCard);
 
-    if (typeof newCard.alias != "undefined") {
+    if (typeof newCard.alias != 'undefined') {
       newCard.alias.unshift(selectedField);
     } else {
       newCard.alias = [selectedField];
     }
 
-    if (typeof newCard["condition"] == "undefined")
-      newCard["condition"] = "AND";
-    if (typeof newCard["relation"] == "undefined")
-      newCard["relation"] = "Contains";
+    if (typeof newCard['condition'] == 'undefined') newCard['condition'] = 'AND';
+    if (typeof newCard['relation'] == 'undefined') newCard['relation'] = 'Contains';
 
-    if (newCard.submitFilter == "processAssemblyType") {
-      newCard["relation"] = "=";
+    if (newCard.submitFilter == 'processAssemblyType') {
+      newCard['relation'] = '=';
     } else {
-      if (
-        newCard.type == "int" ||
-        newCard.type == "float" ||
-        newCard.type == "date"
-      ) {
-        newCard["relation"] = "= range";
+      if (newCard.type == 'int' || newCard.type == 'float' || newCard.type == 'date') {
+        newCard['relation'] = '= range';
       }
     }
 
-    if (typeof newCard.value != "undefined") {
-      newCard["relation"] = "Equal to";
+    if (typeof newCard.value != 'undefined') {
+      newCard['relation'] = 'Equal to';
     }
 
-    if (selectedField == "q_seq_100_cluster_number") {
+    if (selectedField == 'q_seq_100_cluster_number') {
       if (this.sequenceClusteringIndex > -1) {
         this.advFiltercards.splice(this.sequenceClusteringIndex, 1);
       }
@@ -152,7 +137,7 @@ export class SearchFormDialogComponent implements OnInit {
 
     //reset dropdown value
     // this.searchCriteriaField = null;
-    this.searchForm.get("searchCriteriaField").patchValue(null);
+    this.searchForm.get('searchCriteriaField')?.patchValue(null);
 
     //scroll to the button area
     setTimeout((_) => {
@@ -172,11 +157,9 @@ export class SearchFormDialogComponent implements OnInit {
       // }
 
       if (
-        (fieldData.valueType == "fastaSequence" ||
-          fieldData.valueType == "phmmerSequence") &&
-        typeof fieldData.selectedValue != "undefined" &&
-        (fieldData.selectedValue.trim().length < 11 ||
-          fieldData.selectedValue.trim().length > 1000)
+        (fieldData.valueType == 'fastaSequence' || fieldData.valueType == 'phmmerSequence') &&
+        typeof fieldData.selectedValue != 'undefined' &&
+        (fieldData.selectedValue.trim().length < 11 || fieldData.selectedValue.trim().length > 1000)
       ) {
         this.validForm = false;
       }
@@ -190,38 +173,33 @@ export class SearchFormDialogComponent implements OnInit {
       //Iterate filter card fields
       this.advFiltercards.forEach((fieldData, fcCardIndex) => {
         //Ignore card if value not defined or blank
-        if (typeof fieldData.selectedValue == "undefined") return;
+        if (typeof fieldData.selectedValue == 'undefined') return;
 
         //Trim / clean the selected value
-        if (
-          fieldData.type != "date" &&
-          fieldData.type != "int" &&
-          fieldData.type != "float"
-        ) {
+        if (fieldData.type != 'date' && fieldData.type != 'int' && fieldData.type != 'float') {
           fieldData.selectedValue = fieldData.selectedValue.trim();
         }
 
-        if (fieldData.selectedValue.toString() == "") return;
+        if (fieldData.selectedValue.toString() == '') return;
 
         //Add filtercard to service form data
         this.advancedSearchService.addFilterCards(fieldData);
       });
 
-      this.dialogRef.close("submit");
+      this.dialogRef.close('submit');
     }
   }
 
   closeDialog() {
-    gtag("event", "search_form_closed");
+    gtag('event', 'search_form_closed');
 
-    this.dialogRef.close("Close");
+    this.dialogRef.close('Close');
   }
 
-  filtersCardsUpadated(cardIndex) {
+  filtersCardsUpadated(cardIndex: any) {
     if (cardIndex) {
       cardIndex = +cardIndex;
-      if (this.sequenceClusteringIndex == cardIndex)
-        this.sequenceClusteringIndex = -1;
+      if (this.sequenceClusteringIndex == cardIndex) this.sequenceClusteringIndex = -1;
     }
   }
 }

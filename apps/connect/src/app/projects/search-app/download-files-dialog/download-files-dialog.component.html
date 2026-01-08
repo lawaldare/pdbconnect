@@ -1,57 +1,65 @@
-<h1 mat-dialog-title><strong>Download</strong>
-<span class="icon icon-functional" data-icon="x" style="cursor:pointer;float: right;font-size:12px;" (click)="closeDialog()" title="Close"></span>
+<h1 mat-dialog-title>
+  <strong>Download</strong>
+  <span class="icon icon-functional" data-icon="x" style="cursor: pointer; float: right; font-size: 12px" (click)="closeDialog()" title="Close"></span>
 </h1>
 
-<div mat-dialog-content style="font-size: 95%;">
-
+<div mat-dialog-content style="font-size: 95%">
   <!-- Loading message -->
   @if (!downloadApiData) {
-    <div style="text-align:center;">
-      Loading...
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-      <div style="height:30px;clear:both;">&nbsp;</div>
-    </div>
-  }
-
-  @if (downloadApiData) {
+  <div style="text-align: center">
+    Loading...
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <div style="height: 30px; clear: both">&nbsp;</div>
+  </div>
+  } @if (downloadApiData) {
+  <div>
+    <strong>Files for entry {{dialogData.pdbId}}:</strong>
+    <div style="height: 5px; clear: both">&nbsp;</div>
+    @for (field of downloadOrder; track field; let fieldIndex = $index) {
     <div>
-      <strong>Files for entry {{dialogData.pdbId}}:</strong>
-      <div style="height:5px;clear:both;">&nbsp;</div>
-      @for (field of downloadOrder; track field; let fieldIndex = $index) {
-        <div>
-          <!-- Download item heading -->
-          @if (isExpanded[fieldIndex] && downloadApiData[field]) {
-            <div class="dowloadItemHeading activeFacetHeading" (click)="headingClick(fieldIndex)">
-              <span class="icon icon-functional dowloadItemHeadingIcon" data-icon="-"></span>{{field}}
-            </div>
-          }
-          @if (!isExpanded[fieldIndex] && downloadApiData[field]) {
-            <div class="dowloadItemHeading" (click)="headingClick(fieldIndex)">
-              <span class="icon icon-functional dowloadItemHeadingIcon" data-icon="+"></span>{{field}}
-            </div>
-          }
-          <!-- Download item list -->
-          <div class="downloadItemsContainer" [ngClass]="{'expanded' : isExpanded[fieldIndex]}">
-            @for (item of availableLabels[fieldIndex]; track item; let itemIndex = $index) {
-              <ng-template *ngIf="availableLabels[fieldIndex] && availableLabels[fieldIndex].length > 0" let-item [ngForOf]="availableLabels[fieldIndex]" let-itemIndex="index">
-                <div>
-                  <div class="downloadItemRow">
-                    <div class="downloadItemLabel">{{item}}&nbsp;&nbsp;
-                      @if (downloadApiData[field][item]['viewUrl']) {
-                        <span>(<a href="{{downloadApiData[field][item]['viewUrl']}}" target="_blank" (click)="captureUserAction('view_'+item.split(' ').join('_'))">view</a>)</span>
-                      }
-                      @if (downloadApiData[field][item]['downloadUrl']) {
-                        <span>(<a href="{{downloadApiData[field][item]['downloadUrl']}}" target="_blank" (click)="captureUserAction('download_'+item.split(' ').join('_'))">download</a>)</span>
-                      }
-                    </div>
-                  </div>
-                </div>
-              </ng-template>
-            }
-          </div>
-        </div>
+      <!-- Download item heading -->
+      @if (isExpanded[fieldIndex] && downloadApiData[field]) {
+      <div class="dowloadItemHeading activeFacetHeading" (click)="headingClick(fieldIndex)">
+        <span class="icon icon-functional dowloadItemHeadingIcon" data-icon="-"></span>{{field}}
+      </div>
+      } @if (!isExpanded[fieldIndex] && downloadApiData[field]) {
+      <div class="dowloadItemHeading" (click)="headingClick(fieldIndex)">
+        <span class="icon icon-functional dowloadItemHeadingIcon" data-icon="+"></span>{{field}}
+      </div>
       }
+      <!-- Download item list -->
+      <div class="downloadItemsContainer" [ngClass]="{'expanded' : isExpanded[fieldIndex]}">
+        @for (item of availableLabels[fieldIndex]; track item; let itemIndex = $index) {
+        <ng-template
+          *ngIf="availableLabels[fieldIndex] && availableLabels[fieldIndex].length > 0"
+          let-item
+          [ngForOf]="availableLabels[fieldIndex]"
+          let-itemIndex="index"
+        >
+          <div>
+            <div class="downloadItemRow">
+              <div class="downloadItemLabel">
+                {{item}}&nbsp;&nbsp; @if (downloadApiData[field][item]['viewUrl']) {
+                <span
+                  >(<a href="{{downloadApiData[field][item]['viewUrl']}}" target="_blank" (click)="captureUserAction('view_'+item.split(' ').join('_'))">view</a
+                  >)</span
+                >
+                } @if (downloadApiData[field][item]['downloadUrl']) {
+                <span
+                  >(<a href="{{downloadApiData[field][item]['downloadUrl']}}" target="_blank" (click)="captureUserAction('download_'+item.split(' ').join('_'))"
+                    >download</a
+                  >)</span
+                >
+                }
+              </div>
+            </div>
+          </div>
+        </ng-template>
+        }
+      </div>
     </div>
+    }
+  </div>
   }
 </div>
 <!-- <div mat-dialog-actions>

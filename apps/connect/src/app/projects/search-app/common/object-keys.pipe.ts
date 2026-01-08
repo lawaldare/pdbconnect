@@ -1,17 +1,14 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-    name: 'objectKeys',
-    standalone: false
+  name: 'objectKeys',
 })
 export class ObjectKeysPipe implements PipeTransform {
-
-  transform(value: any): string[] {
-    let keys = [];
-    for (let key in value) {
-      keys.push({key: key, value: value[key]});
+  transform(value: any): any {
+    const keys = [];
+    for (const key in value) {
+      keys.push({ key: key, value: value[key] });
     }
     return keys;
   }
-
 }

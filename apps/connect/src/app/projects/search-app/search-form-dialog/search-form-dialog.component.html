@@ -1,20 +1,19 @@
-<h2 mat-dialog-title style="border-bottom: 5px solid rgba(0, 20, 0, 0.2);margin-bottom: 0px !important;color: #222;"><strong>Advanced search form</strong>
-<span class="icon icon-functional" data-icon="x" style="cursor:pointer;float: right;font-size:14px;" (click)="closeDialog()" title="Close"></span>
+<h2 mat-dialog-title style="border-bottom: 5px solid rgba(0, 20, 0, 0.2); margin-bottom: 0px !important; color: #222">
+  <strong>Advanced search form</strong>
+  <span class="icon icon-functional" data-icon="x" style="cursor: pointer; float: right; font-size: 14px" (click)="closeDialog()" title="Close"></span>
 </h2>
 <!-- <h1 mat-dialog-title>Search Form</h1> -->
 <mat-dialog-content>
   <mat-card class="searchboxCard">
     <mat-card-content>
-
       <!-- Filter cards -->
-      <filter-cards [(filtercards)]="advFiltercards" (deletion)="filtersCardsUpadated($event)"></filter-cards>
+      <pdbc-filter-cards [(filtercards)]="advFiltercards" (deletion)="filtersCardsUpadated($event)"></pdbc-filter-cards>
       <!-- Filter cards -->
 
-      <div class="columns small-12 no-pad-left no-pad-right" style="float:left;margin-top: 15px;">
+      <div class="columns small-12 no-pad-left no-pad-right" style="float: left; margin-top: 15px">
         <strong>Select to add a search field : </strong>
       </div>
-      <div class="columns small-12 medium-8 large-5 no-pad-left no-pad-right" style="float:left;">
-
+      <div class="columns small-12 medium-8 large-5 no-pad-left no-pad-right" style="float: left">
         <!-- <select [(ngModel)]="searchCriteriaField" class="searchFieldSelect" (change)="addCard($event)">
         <option [value]="null" hidden="hidden">Select search field</option>
         <ng-template ngFor let-searchFieldList [ngForOf]="filterSelectBoxData" let-ci="index">
@@ -26,37 +25,35 @@
         </ng-template>
       </select> -->
 
-      <form [formGroup]="searchForm" novalidate>
-        <ng-select [items]="filterSelectBoxData"
-          placeholder="Select / type to filter options"
-          appendTo="body"
-          bindLabel="label"
-          bindValue="field"
-          groupBy="groupName"
-          [multiple]="false"
-          formControlName="searchCriteriaField"
-          (change)="addCard($event)"
-          hideSelected="true"
-          notFoundText="No search field found">
-        </ng-select>
-      </form>
+        <form [formGroup]="searchForm" novalidate>
+          <ng-select
+            [items]="filterSelectBoxData"
+            placeholder="Select / type to filter options"
+            appendTo="body"
+            bindLabel="label"
+            bindValue="field"
+            groupBy="groupName"
+            [multiple]="false"
+            formControlName="searchCriteriaField"
+            (change)="addCard($event)"
+            hideSelected="true"
+            notFoundText="No search field found"
+          >
+          </ng-select>
+        </form>
+      </div>
 
-    </div>
-
-    @if (!validForm) {
-      <div class="columns small-12 no-pad-left no-pad-right" #bottom style="margin-top: 10px;">
+      @if (!validForm) {
+      <div class="columns small-12 no-pad-left no-pad-right" #bottom style="margin-top: 10px">
         <mat-error>Please fill valid details to Submit</mat-error>
       </div>
-    }
-
-    @if (validForm) {
-      <div style="height:10px;clear:both;" #bottom>&nbsp;</div>
-    }
-  </mat-card-content>
-</mat-card>
-
+      } @if (validForm) {
+      <div style="height: 10px; clear: both" #bottom>&nbsp;</div>
+      }
+    </mat-card-content>
+  </mat-card>
 </mat-dialog-content>
-<mat-dialog-actions style="border-top: 5px solid rgba(0, 20, 0, 0.2);">
-  <button #submitBtn mat-raised-button color="primary" (click)="submitSearch()" style="margin-bottom:0;">Submit</button>
-  <button mat-button mat-dialog-close="cancel" style="margin-bottom:0;margin-left:10px;">Cancel</button>
+<mat-dialog-actions style="border-top: 5px solid rgba(0, 20, 0, 0.2)">
+  <button #submitBtn mat-raised-button color="primary" (click)="submitSearch()" style="margin-bottom: 0">Submit</button>
+  <button mat-button mat-dialog-close="cancel" style="margin-bottom: 0; margin-left: 10px">Cancel</button>
 </mat-dialog-actions>

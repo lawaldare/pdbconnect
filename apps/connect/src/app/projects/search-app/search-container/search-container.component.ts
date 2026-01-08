@@ -294,7 +294,9 @@ export class SearchContainerComponent implements OnInit, OnDestroy {
   //Function to subscribe app level global events
   subscribeToGlobalEvents() {
     this.autocompleteEventListener = this._eventBroker.listen<boolean>('autocomplete-select', (autoCompleteValue: any) => {
-      if (typeof autoCompleteValue == 'undefined') return false;
+      if (typeof autoCompleteValue == 'undefined') {
+        return;
+      }
 
       this.displayLoading(true);
 
@@ -322,7 +324,9 @@ export class SearchContainerComponent implements OnInit, OnDestroy {
     });
 
     this.facetMenuEventListener = this._eventBroker.listen<boolean>('menu-facet-selected', (selFacetValue: any) => {
-      if (typeof selFacetValue == 'undefined') return false;
+      if (typeof selFacetValue == 'undefined') {
+        return;
+      }
 
       this.displayLoading(true);
       this.cd.detectChanges(); //Trigger change detection
@@ -454,7 +458,9 @@ export class SearchContainerComponent implements OnInit, OnDestroy {
   //Function to add Filter
   addFacetFilterCard(facetKey: string, facetValue: string, condition?: any, relation?: any, invokedFrom?: string) {
     //stop if filter already exist
-    if (this.checkFilterCardExist(facetKey, facetValue)) return false;
+    if (this.checkFilterCardExist(facetKey, facetValue)) {
+      return;
+    }
 
     //Show loader
     this.displayLoading(true);
@@ -1158,7 +1164,7 @@ export class SearchContainerComponent implements OnInit, OnDestroy {
         .querySolr(managerName, this.completeQuery, downloadQueryData)
         .pipe(takeUntil(this.componentDestroyed$))
         .subscribe(
-          (res) => {
+          (res: any) => {
             if (typeof res == 'undefined') return;
 
             //save the query url for download
@@ -1176,7 +1182,7 @@ export class SearchContainerComponent implements OnInit, OnDestroy {
                   this.displayLoading(false);
                 }, this.loaderPauseTime);
               }
-              return false;
+              return;
             }
 
             const managerfacetIndex = this.facetManagerList.indexOf(res['managerName']);
@@ -1738,7 +1744,9 @@ export class SearchContainerComponent implements OnInit, OnDestroy {
     otherDetails: { field: string; isRange: boolean; facetTitle: string };
     label: string;
   }) {
-    if (typeof selectedItem == 'undefined') return false;
+    if (typeof selectedItem == 'undefined') {
+      return;
+    }
     if (typeof selectedItem.action != 'undefined') {
       this.loadMoreFacetData(selectedItem.details.facetManagerName);
       gtag('event', 'filters_more_for_' + selectedItem.details.facetTitle.toLowerCase().split(' ').join('_'));

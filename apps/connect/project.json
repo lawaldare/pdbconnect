@@ -22,10 +22,15 @@
             "glob": "**/*",
             "input": "shared_assets/",
             "output": "./assets/"
+          },
+          {
+            "glob": "**/*",
+            "input": "external/typescript-solr-manager/build",
+            "output": "./assets/typescript-solr-manager"
           }
         ],
         "styles": ["@angular/material/prebuilt-themes/indigo-pink.css", "apps/connect/src/styles.scss"],
-        "scripts": [],
+        "scripts": ["external/typescript-solr-manager/build/solr-core.js", "external/typescript-solr-manager/build/solr-pdbe.js"],
         "stylePreprocessorOptions": {
           "includePaths": ["libs/core/src/lib/styles"]
         }

@@ -1,12 +1,12 @@
-import { Injectable } from "@angular/core";
+import { Injectable } from '@angular/core';
 
-import { CompleterBaseData } from "./completer-base-data";
-import { Observable } from "rxjs";
+import { CompleterBaseData } from './completer-base-data';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class LocalData extends CompleterBaseData {
-  private _data: any[];
-  private savedTerm: string;
+  private _data!: any[];
+  private savedTerm!: any;
 
   constructor() {
     super();
@@ -32,7 +32,7 @@ export class LocalData extends CompleterBaseData {
       this.savedTerm = term;
     } else {
       this.savedTerm = null;
-      let matches: any[] = this.extractMatches(this._data, term);
+      const matches: any[] = this.extractMatches(this._data, term);
       this.next(this.processResults(matches));
     }
   }

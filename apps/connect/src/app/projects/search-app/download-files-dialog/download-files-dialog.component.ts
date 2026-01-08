@@ -1,23 +1,25 @@
-import { Component, OnInit, Inject } from "@angular/core";
-import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
-import { DownloadService } from "../common/download.service";
-import { Subject, takeUntil } from "rxjs";
+import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { DownloadService } from '../common/download.service';
+import { Subject, takeUntil } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { MaterialModule } from '@pdbc/core';
 
-declare var gtag: any;
+declare const gtag: any;
 
 @Component({
-    selector: "download-files-dialog",
-    templateUrl: "./download-files-dialog.component.html",
-    styleUrls: ["./download-files-dialog.component.css"],
-    standalone: false
+  selector: 'pdbc-download-files-dialog',
+  templateUrl: './download-files-dialog.component.html',
+  styleUrls: ['./download-files-dialog.component.css'],
+  imports: [CommonModule, MaterialModule],
 })
-export class DownloadFilesDialogComponent implements OnInit {
+export class DownloadFilesDialogComponent implements OnInit, OnDestroy {
   componentDestroyed$: Subject<boolean> = new Subject();
   downloadApiData: any;
   serviceHook: any;
-  downloadOrder = ["PDB", "map", "assembly", "molecule", "validation", "SIFTS"];
+  downloadOrder = ['PDB', 'map', 'assembly', 'molecule', 'validation', 'SIFTS'];
   isExpanded = [true, false, false, false, false];
-  availableLabels = [];
+  availableLabels: any[] = [];
 
   constructor(
     private downloadService: DownloadService,
@@ -37,38 +39,34 @@ export class DownloadFilesDialogComponent implements OnInit {
       });
   }
 
-  formatDownloadJson(respJson) {
-    let formattedData = {};
+  formatDownloadJson(respJson: any) {
+    const formattedData: any = {};
     this.availableLabels = [];
 
     this.downloadOrder.forEach((category, ci) => {
-      if (typeof respJson[category] != "undefined") {
+      if (typeof respJson[category] != 'undefined') {
         formattedData[category] = {};
         this.availableLabels[ci] = [];
 
         //Assign download url
-        if (typeof respJson[category].downloads != "undefined") {
-          respJson[category].downloads.forEach((downloadRec) => {
+        if (typeof respJson[category].downloads != 'undefined') {
+          respJson[category].downloads.forEach((downloadRec: { label: string | number; url: any }) => {
             formattedData[category][downloadRec.label] = {};
-            formattedData[category][downloadRec.label]["downloadUrl"] =
-              downloadRec.url;
+            formattedData[category][downloadRec.label]['downloadUrl'] = downloadRec.url;
 
             //Add available label
-            if (this.availableLabels[ci].indexOf(downloadRec.label) == -1)
-              this.availableLabels[ci].push(downloadRec.label);
+            if (this.availableLabels[ci].indexOf(downloadRec.label) == -1) this.availableLabels[ci].push(downloadRec.label);
           });
         }
 
         //Assign view url
-        if (typeof respJson[category].views != "undefined") {
-          respJson[category].views.forEach((viewRec) => {
-            if (typeof formattedData[category][viewRec.label] == "undefined")
-              formattedData[category][viewRec.label] = {};
-            formattedData[category][viewRec.label]["viewUrl"] = viewRec.url;
+        if (typeof respJson[category].views != 'undefined') {
+          respJson[category].views.forEach((viewRec: { label: string | number; url: any }) => {
+            if (typeof formattedData[category][viewRec.label] == 'undefined') formattedData[category][viewRec.label] = {};
+            formattedData[category][viewRec.label]['viewUrl'] = viewRec.url;
 
             //Add available label
-            if (this.availableLabels[ci].indexOf(viewRec.label) == -1)
-              this.availableLabels[ci].push(viewRec.label);
+            if (this.availableLabels[ci].indexOf(viewRec.label) == -1) this.availableLabels[ci].push(viewRec.label);
           });
         }
       }
@@ -77,7 +75,7 @@ export class DownloadFilesDialogComponent implements OnInit {
     this.downloadApiData = formattedData;
   }
 
-  headingClick(index) {
+  headingClick(index: any) {
     if (this.isExpanded[index] == true) {
       this.isExpanded[index] = false;
       return;
@@ -87,22 +85,18 @@ export class DownloadFilesDialogComponent implements OnInit {
 
     this.isExpanded[index] = !this.isExpanded[index];
 
-    gtag("event", "download_files_dialog_toggle_section");
+    gtag('event', 'download_files_dialog_toggle_section');
   }
 
   closeDialog() {
-    gtag("event", "download_files_dialog_close");
+    gtag('event', 'download_files_dialog_close');
 
-    this.dialogRef.close("Cancel");
+    this.dialogRef.close('Cancel');
   }
 
-  captureUserAction(action) {
-    const formattedAction = action
-      .toLowerCase()
-      .replace("(", "")
-      .replace(")", "")
-      .replace(";", "");
-    gtag("event", "download_files_" + formattedAction);
+  captureUserAction(action: string) {
+    const formattedAction = action.toLowerCase().replace('(', '').replace(')', '').replace(';', '');
+    gtag('event', 'download_files_' + formattedAction);
   }
 
   ngOnDestroy() {

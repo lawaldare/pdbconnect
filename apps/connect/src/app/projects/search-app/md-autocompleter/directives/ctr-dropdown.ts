@@ -1,135 +1,136 @@
-import { Directive, ElementRef, Host, OnDestroy, OnInit } from "@angular/core";
+/* eslint-disable @angular-eslint/directive-selector */
+import { Directive, ElementRef, Host, OnDestroy, OnInit } from '@angular/core';
 
-import { CompleterItem } from "../components/completer-item";
-import { CtrCompleter, CompleterDropdown } from "./ctr-completer";
-
+import { CompleterItem } from '../components/completer-item';
+import { CtrCompleter, CompleterDropdown } from './ctr-completer';
 
 export interface CtrRowElement {
-    setHighlited(selected: boolean): void;
-    getNativeElement(): any;
-    getDataItem(): CompleterItem;
+  setHighlited(selected: boolean): void;
+  getNativeElement(): any;
+  getDataItem(): CompleterItem;
 }
 
 export class CtrRowItem {
-    constructor(public row: CtrRowElement, public index: number) { }
+  constructor(
+    public row: CtrRowElement,
+    public index: number
+  ) {}
 }
 
 @Directive({
-    selector: "[ctrDropdown]",
-    standalone: false
+  selector: '[ctrDropdown]',
 })
 export class CtrDropdown implements CompleterDropdown, OnDestroy, OnInit {
+  private rows: CtrRowItem[] = [];
+  private currHighlited!: any;
+  private isScrollOn!: any;
 
-    private rows: CtrRowItem[] = [];
-    private currHighlited: CtrRowItem;
-    private isScrollOn: boolean;
+  constructor(
+    @Host() private completer: CtrCompleter,
+    private el: ElementRef
+  ) {
+    this.completer.registerDropdown(this);
+  }
 
-    constructor( @Host() private completer: CtrCompleter, private el: ElementRef) {
-        this.completer.registerDropdown(this);
+  public ngOnInit() {
+    const css = getComputedStyle(this.el.nativeElement);
+    this.isScrollOn = css.maxHeight && css.overflowY === 'auto';
+  }
+
+  public ngOnDestroy() {
+    this.completer.registerDropdown({} as CompleterDropdown);
+  }
+
+  public registerRow(row: CtrRowItem) {
+    this.rows.push(row);
+  }
+
+  public highlightRow(index: number) {
+    const highlited = this.rows.find((row) => row.index === index);
+
+    if (index < 0) {
+      if (this.currHighlited) {
+        this.currHighlited.row.setHighlited(false);
+      }
+      this.currHighlited = undefined;
+      this.completer.onHighlighted({} as CompleterItem);
+      return;
     }
 
-    public ngOnInit() {
-        let css = getComputedStyle(this.el.nativeElement);
-        this.isScrollOn = css.maxHeight && css.overflowY === "auto";
+    if (!highlited) {
+      return;
     }
 
-    public ngOnDestroy() {
-        this.completer.registerDropdown(null);
+    if (this.currHighlited) {
+      this.currHighlited.row.setHighlited(false);
     }
 
-    public registerRow(row: CtrRowItem) {
-        this.rows.push(row);
+    this.currHighlited = highlited;
+    this.currHighlited.row.setHighlited(true);
+    this.completer.onHighlighted(this.currHighlited.row.getDataItem());
+  }
+
+  public clear() {
+    this.rows = [];
+  }
+
+  public onSelected(item: CompleterItem) {
+    this.completer.onSelected(item);
+  }
+
+  public selectCurrent() {
+    if (this.currHighlited) {
+      this.onSelected(this.currHighlited.row.getDataItem());
+    } else if (this.rows.length > 0) {
+      this.onSelected(this.rows[0].row.getDataItem());
     }
+  }
 
-    public highlightRow(index: number) {
-
-        let highlited = this.rows.find(row => row.index === index);
-
-        if (index < 0) {
-            if (this.currHighlited) {
-                this.currHighlited.row.setHighlited(false);
-            }
-            this.currHighlited = undefined;
-            this.completer.onHighlighted(null);
-            return;
-        }
-
-        if (!highlited) {
-            return;
-        }
-
-        if (this.currHighlited) {
-            this.currHighlited.row.setHighlited(false);
-        }
-
-        this.currHighlited = highlited;
-        this.currHighlited.row.setHighlited(true);
-        this.completer.onHighlighted(this.currHighlited.row.getDataItem());
+  public nextRow() {
+    let nextRowIndex = 0;
+    if (this.currHighlited) {
+      nextRowIndex = this.currHighlited.index + 1;
     }
-
-    public clear() {
-        this.rows = [];
+    this.highlightRow(nextRowIndex);
+    if (this.isScrollOn && this.currHighlited) {
+      const row = this.currHighlited.row.getNativeElement();
+      if (this.dropdownHeight() < row.getBoundingClientRect().bottom) {
+        this.dropdownScrollTopTo(this.dropdownRowOffsetHeight(row));
+      }
     }
+  }
 
-    public onSelected(item: CompleterItem) {
-        this.completer.onSelected(item);
+  public prevRow() {
+    let nextRowIndex = -1;
+    if (this.currHighlited) {
+      nextRowIndex = this.currHighlited.index - 1;
     }
-
-    public selectCurrent() {
-        if (this.currHighlited) {
-            this.onSelected(this.currHighlited.row.getDataItem());
-        } else if (this.rows.length > 0) {
-            this.onSelected(this.rows[0].row.getDataItem());
-        }
-
+    this.highlightRow(nextRowIndex);
+    if (this.isScrollOn && this.currHighlited) {
+      const rowTop = this.dropdownRowTop();
+      if (rowTop < 0) {
+        this.dropdownScrollTopTo(rowTop - 1);
+      }
     }
+  }
 
-    public nextRow() {
-        let nextRowIndex = 0;
-        if (this.currHighlited) {
-            nextRowIndex = this.currHighlited.index + 1;
-        }
-        this.highlightRow(nextRowIndex);
-        if (this.isScrollOn && this.currHighlited) {
-            let row = this.currHighlited.row.getNativeElement();
-            if (this.dropdownHeight() < row.getBoundingClientRect().bottom) {
-                this.dropdownScrollTopTo(this.dropdownRowOffsetHeight(row));
-            }
-        }
-    }
+  private dropdownScrollTopTo(offset: any) {
+    this.el.nativeElement.scrollTop = this.el.nativeElement.scrollTop + offset;
+  }
 
-    public prevRow() {
-        let nextRowIndex = -1;
-        if (this.currHighlited) {
-            nextRowIndex = this.currHighlited.index - 1;
-        }
-        this.highlightRow(nextRowIndex);
-        if (this.isScrollOn && this.currHighlited) {
-            let rowTop = this.dropdownRowTop();
-            if (rowTop < 0) {
-                this.dropdownScrollTopTo(rowTop - 1);
-            }
-        }
-    }
+  private dropdownRowTop() {
+    return (
+      this.currHighlited.row.getNativeElement().getBoundingClientRect().top -
+      (this.el.nativeElement.getBoundingClientRect().top + parseInt(getComputedStyle(this.el.nativeElement).paddingTop, 10))
+    );
+  }
 
-    private dropdownScrollTopTo(offset: any) {
-        this.el.nativeElement.scrollTop = this.el.nativeElement.scrollTop + offset;
-    }
+  private dropdownHeight() {
+    return this.el.nativeElement.getBoundingClientRect().top + parseInt(getComputedStyle(this.el.nativeElement).maxHeight, 10);
+  }
 
-    private dropdownRowTop() {
-        return this.currHighlited.row.getNativeElement().getBoundingClientRect().top -
-            (this.el.nativeElement.getBoundingClientRect().top +
-                parseInt(getComputedStyle(this.el.nativeElement).paddingTop, 10));
-    }
-
-    private dropdownHeight() {
-        return this.el.nativeElement.getBoundingClientRect().top +
-            parseInt(getComputedStyle(this.el.nativeElement).maxHeight, 10);
-    }
-
-    private dropdownRowOffsetHeight(row: any) {
-        let css = getComputedStyle(row);
-        return row.offsetHeight +
-            parseInt(css.marginTop, 10) + parseInt(css.marginBottom, 10);
-    }
+  private dropdownRowOffsetHeight(row: any) {
+    const css = getComputedStyle(row);
+    return row.offsetHeight + parseInt(css.marginTop, 10) + parseInt(css.marginBottom, 10);
+  }
 }

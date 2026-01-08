@@ -6,14 +6,14 @@ import { TooltipDialogComponent } from '../tooltip-dialog/tooltip-dialog.compone
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
 import { FormsModule } from '@angular/forms';
-import { Ng2CompleterModule } from '../md-autocompleter';
+import { CompleterCmp } from '../md-autocompleter';
 declare const gtag: any;
 
 @Component({
   selector: 'pdbc-filter-cards',
   templateUrl: './filter-cards.component.html',
   styleUrls: ['./filter-cards.component.css'],
-  imports: [CommonModule, MaterialModule, FormsModule, Ng2CompleterModule],
+  imports: [CommonModule, MaterialModule, FormsModule, CompleterCmp],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FilterCardsComponent implements OnInit, OnChanges {

@@ -1,105 +1,92 @@
 <h1 mat-dialog-title>ORCiD Claim</h1>
-<div mat-dialog-content style="font-size: 95%;">
-
+<div mat-dialog-content style="font-size: 95%">
   @if (!serviceAvailable) {
-    <div>
-      <div class="loginMessage">
-        <strong>Sorry! ORCiD claim service is currently unavailable. Please try later.</strong>
-      </div>
-      <div class="loginButtons">
-        <button mat-raised-button color="accent" mat-dialog-close="Cancel" style="margin-bottom:0">Back</button>
-      </div>
+  <div>
+    <div class="loginMessage">
+      <strong>Sorry! ORCiD claim service is currently unavailable. Please try later.</strong>
     </div>
-  }
-
-  @if (loading) {
-    <div style="height:150px;">
-      <mat-progress-spinner color="primary" mode="indeterminate" style="margin:0 auto"></mat-progress-spinner>
+    <div class="loginButtons">
+      <button mat-raised-button color="accent" mat-dialog-close="Cancel" style="margin-bottom: 0">Back</button>
     </div>
-  }
-
-  @if (serviceAvailable && successMessage && !loading) {
-    <div>
-      <div class="successMessage">
-        <strong>Data-set claimed successfully!</strong>
-      </div>
+  </div>
+  } @if (loading) {
+  <div style="height: 150px">
+    <mat-progress-spinner color="primary" mode="indeterminate" style="margin: 0 auto"></mat-progress-spinner>
+  </div>
+  } @if (serviceAvailable && successMessage && !loading) {
+  <div>
+    <div class="successMessage">
+      <strong>Data-set claimed successfully!</strong>
     </div>
-  }
-
-  @if (serviceAvailable && !loading && !successMessage && thorInfo.entriesToClaim && thorInfo.entriesToClaim.length == 0) {
-    <div>
-      @if (alreadyClaimedEntries.length == 0) {
-        <div class="loginMessage">
-          <strong>Please select PDB entries to claim!</strong>
-        </div>
-      }
-      @if (alreadyClaimedEntries.length > 0) {
-        <div class="claimMessage">
-          <strong>You have already claimed all the seleted PDB entries!</strong>
-        </div>
-      }
-      <div class="loginButtons">
-        <button mat-raised-button color="accent" mat-dialog-close="Cancel" style="margin-bottom:0">Back</button>
-      </div>
+  </div>
+  } @if (serviceAvailable && !loading && !successMessage && thorInfo.entriesToClaim && thorInfo.entriesToClaim.length === 0) {
+  <div>
+    @if (alreadyClaimedEntries.length === 0) {
+    <div class="loginMessage">
+      <strong>Please select PDB entries to claim!</strong>
     </div>
+    } @if (alreadyClaimedEntries.length > 0) {
+    <div class="claimMessage">
+      <strong>You have already claimed all the seleted PDB entries!</strong>
+    </div>
+    }
+    <div class="loginButtons">
+      <button mat-raised-button color="accent" mat-dialog-close="Cancel" style="margin-bottom: 0">Back</button>
+    </div>
+  </div>
   }
 
   <!-- Login box start here-->
-  @if (serviceAvailable && !loading && !successMessage && thorInfo.claimingInfoData && !thorInfo.claimingInfoData.isUserLoggedIn && thorInfo.entriesToClaim.length > 0) {
-    <div>
-      <div class="loginMessage">
-        <strong>Please sign-in with ORCiD to claim your entries.</strong>
-      </div>
-      <div class="loginButtons">
-        <button mat-raised-button color="primary" (click)="loginOrcid()">
-          Sign in with ORCiD
-        </button>
-        <button mat-raised-button color="accent" mat-dialog-close="Cancel" style="margin-bottom:0">Cancel</button>
-      </div>
+  @if (serviceAvailable && !loading && !successMessage && thorInfo.claimingInfoData && !thorInfo.claimingInfoData.isUserLoggedIn && thorInfo.entriesToClaim.length >
+  0) {
+  <div>
+    <div class="loginMessage">
+      <strong>Please sign-in with ORCiD to claim your entries.</strong>
     </div>
+    <div class="loginButtons">
+      <button mat-raised-button color="primary" (click)="loginOrcid()">Sign in with ORCiD</button>
+      <button mat-raised-button color="accent" mat-dialog-close="Cancel" style="margin-bottom: 0">Cancel</button>
+    </div>
+  </div>
   }
   <!-- Login box end here -->
 
   <!-- Confirmation box start here -->
-  @if (serviceAvailable && !loading && !successMessage && thorInfo.claimingInfoData && thorInfo.claimingInfoData.isUserLoggedIn && thorInfo.entriesToClaim.length > 0) {
+  @if (serviceAvailable && !loading && !successMessage && thorInfo.claimingInfoData && thorInfo.claimingInfoData.isUserLoggedIn && thorInfo.entriesToClaim.length > 0)
+  {
+  <div>
+    @if (errorMessage) {
+    <div class="errorMessage">
+      <strong>Error! Please try again!</strong>
+    </div>
+    }
+    <!-- Already claimed entries -->
+    @if (alreadyClaimedEntries.length > 0) {
     <div>
-      @if (errorMessage) {
-        <div class="errorMessage">
-          <strong>Error! Please try again!</strong>
-        </div>
-      }
-      <!-- Already claimed entries -->
-      @if (alreadyClaimedEntries.length > 0) {
-        <div>
-          <div class="claimMessage">
-            <strong>You have already claimed following {{alreadyClaimedEntries.length > 1 ? alreadyClaimedEntries.length + ' entries' : 'entry'}} -</strong>
-          </div>
-          <div class="claimList" style="text-align:left;">
-            @for (pdbId of alreadyClaimedEntries; track pdbId; let gi = $index) {
-              <a target="_blank" href="https://pdbe.org/{{pdbId}}">{{pdbId}}</a>&nbsp;
-            }
-          </div>
-        </div>
-      }
-      <!-- Entries to claim -->
       <div class="claimMessage">
-        <strong>Are you sure you want to claim {{thorInfo.entriesToClaim.length > 1 ? 'these '+ thorInfo.entriesToClaim.length + ' entries' : 'this entry'}} ?</strong>
+        <strong>You have already claimed following {{alreadyClaimedEntries.length > 1 ? alreadyClaimedEntries.length + ' entries' : 'entry'}} -</strong>
       </div>
-      <div class="claimList" style="text-align:left;">
-        @for (pdbId of thorInfo.entriesToClaim; track pdbId; let gi = $index) {
-          <a target="_blank" href="https://pdbe.org/{{pdbId}}">{{pdbId}}</a>&nbsp;
-        }
-      </div>
-      <div class="loginButtons">
-        <button mat-raised-button color="primary" (click)="triggerClaim()">
-          Claim
-        </button>
-        <button mat-raised-button color="accent" mat-dialog-close="Cancel" style="margin-bottom:0" mat-autofocus>Cancel</button>
+      <div class="claimList" style="text-align: left">
+        @for (pdbId of alreadyClaimedEntries; track pdbId; let gi = $index) {
+        <a target="_blank" href="https://pdbe.org/{{pdbId}}">{{pdbId}}</a>&nbsp; }
       </div>
     </div>
+    }
+    <!-- Entries to claim -->
+    <div class="claimMessage">
+      <strong>Are you sure you want to claim {{thorInfo.entriesToClaim.length > 1 ? 'these '+ thorInfo.entriesToClaim.length + ' entries' : 'this entry'}} ?</strong>
+    </div>
+    <div class="claimList" style="text-align: left">
+      @for (pdbId of thorInfo.entriesToClaim; track pdbId; let gi = $index) {
+      <a target="_blank" href="https://pdbe.org/{{pdbId}}">{{pdbId}}</a>&nbsp; }
+    </div>
+    <div class="loginButtons">
+      <button mat-raised-button color="primary" (click)="triggerClaim()">Claim</button>
+      <button mat-raised-button color="accent" mat-dialog-close="Cancel" style="margin-bottom: 0" mat-autofocus>Cancel</button>
+    </div>
+  </div>
   }
   <!-- Confirmation box end here -->
-
 </div>
 <!--<div mat-dialog-actions>
 <button mat-raised-button mat-dialog-close="Cancel" style="margin-bottom:0">Cancel</button>

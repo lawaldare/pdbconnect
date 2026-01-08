@@ -1,22 +1,23 @@
-import { Component, OnInit, Inject } from "@angular/core";
-import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
-import * as appSettings from "../app.settings";
-import { Subject } from "rxjs";
+import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import * as appSettings from '../app.settings';
+import { Subject } from 'rxjs';
+import { CommonModule } from '@angular/common';
 
-declare var PDBeMolstarPlugin: any;
+declare const PDBeMolstarPlugin: any;
 @Component({
-    selector: "molstar-dialog-dialog",
-    templateUrl: "./molstar-dialog.component.html",
-    styleUrls: ["./molstar-dialog.component.css"],
-    standalone: false
+  selector: 'pdbc-molstar-dialog-dialog',
+  templateUrl: './molstar-dialog.component.html',
+  styleUrls: ['./molstar-dialog.component.css'],
+  imports: [CommonModule],
 })
-export class MolstarDialogComponent implements OnInit {
+export class MolstarDialogComponent implements OnInit, OnDestroy {
   componentDestroyed$: Subject<boolean> = new Subject();
   downloadApiData: any;
   serviceHook: any;
-  downloadOrder = ["PDB", "assembly", "molecule", "validation", "SIFTS"];
+  downloadOrder = ['PDB', 'assembly', 'molecule', 'validation', 'SIFTS'];
   isExpanded = [true, false, false, false, false];
-  pdbeUrl = "https://www.ebi.ac.uk/pdbe/";
+  pdbeUrl = 'https://www.ebi.ac.uk/pdbe/';
   pdbeMolstar: any;
 
   constructor(
@@ -34,7 +35,7 @@ export class MolstarDialogComponent implements OnInit {
       horizontal = false;
     }
 
-    const initParams = {
+    const initParams: any = {
       moleculeId: this.dialogData.pdbId,
       pdbeUrl: this.pdbeUrl,
       loadMaps: true,
@@ -44,21 +45,20 @@ export class MolstarDialogComponent implements OnInit {
       expanded: fullscreen,
       landscape: horizontal,
       sequencePanel: true,
-      hideQuickControls: ["expand"],
+      hideQuickControls: ['expand'],
       loadingOverlay: true,
     };
 
-    if (this.dialogData.assemblyId)
-      initParams["assemblyId"] = this.dialogData.assemblyId;
+    if (this.dialogData.assemblyId) initParams['assemblyId'] = this.dialogData.assemblyId;
 
-    let ele = <HTMLInputElement>document.getElementById("app");
+    const element = <HTMLInputElement>document.getElementById('app');
 
     this.pdbeMolstar = new PDBeMolstarPlugin();
-    this.pdbeMolstar.render(ele, initParams);
+    this.pdbeMolstar.render(element, initParams);
   }
 
   closeDialog() {
-    this.dialogRef.close("Close");
+    this.dialogRef.close('Close');
   }
 
   ngOnDestroy() {
