@@ -188,19 +188,25 @@ export class SearchComponent implements OnInit, OnDestroy {
     });
 
     //Subscribe to route observable for param loading from url on page reload
-    this.routeSubscriber = this.route.queryParamMap.subscribe((paramMap) => {
-      const urlParams = paramMap as any;
-      if (this.filtercards && this.filtercards.length == 0 && urlParams.params.searchParams) {
-        this.loadUrlParams(JSON.parse(decodeURIComponent(urlParams.params.searchParams)), true);
-      } else if (urlParams.keys && urlParams.keys.length > 0 && urlParams.keys.indexOf('searchParams') == -1) {
-        if (urlParams.keys.indexOf('advancedSearch:true') > -1) {
-          this.openSearchForm();
-        } else {
-          const searchParamObj = this.oldUrlParser.parse(urlParams);
-          if (Object.keys(searchParamObj).length > 0) {
-            this.loadUrlParams(searchParamObj, true);
-          }
-        }
+    this.routeSubscriber = this.route.queryParamMap.subscribe((paramMap: any) => {
+      const raw = paramMap.get('searchParams');
+      if (this.filtercards && this.filtercards.length == 0 && raw) {
+        const decoded = decodeURIComponent(raw.replace(/\+/g, '%20'));
+        // ✅ remove accidental "?view=..." suffix
+        const jsonOnly = decoded.split('?')[0];
+        this.loadUrlParams(JSON.parse(jsonOnly), true);
+        return;
+      }
+
+      const advanced = paramMap.get('advancedSearch');
+      if (advanced === 'true') {
+        this.openSearchForm();
+        return;
+      }
+
+      const searchParamObj = this.oldUrlParser.parse(paramMap);
+      if (Object.keys(searchParamObj).length > 0) {
+        this.loadUrlParams(searchParamObj, true);
       }
     });
   }
@@ -952,7 +958,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
       paramsInUrl['resultState'] = tabParams;
       this.router.navigate([], {
-        queryParams: { searchParams: JSON.stringify(paramsInUrl) },
+        queryParams: { searchParams: JSON.stringify(paramsInUrl), view: 'macromolecules' },
         queryParamsHandling: '',
       });
 
