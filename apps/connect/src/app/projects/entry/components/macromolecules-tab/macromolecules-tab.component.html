@@ -173,14 +173,14 @@
     </div>
     <div id="annotations-viewer-tour">
       <div class="stats-link-bar" id="deeper-analysis-tour">
-        @if(dashboardStatLinks['Macromolecules'].length > 0 && selectionUniprotId !== 'None') {
+        @if(dashboardStatLinks['Macromolecules'].length > 0 && selectionUniprotId() !== 'None') {
         <span
           ><img src="assets/icons/pdbe-kb_logo.webp" alt="icon" style="width: 16px; height: 16px; margin-right: 2px" />View more about this {{ selectionTypeText
           }}:</span
         >
         @for (displayLink of dashboardStatLinks['Macromolecules']; track displayLink; let islast = $last) {
         <a
-          [href]="displayLink.link + selectionUniprotId + displayLink.linkSuffix"
+          [href]="displayLink.link + selectionUniprotId() + displayLink.linkSuffix"
           target="_blank"
           (click)="gAS.logPageEvents('ep_go_to_kb', {
         kb_website: 'proteins',
