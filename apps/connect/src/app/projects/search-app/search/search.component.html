@@ -156,7 +156,13 @@
         <mat-progress-bar mode="indeterminate" class="hide-for-large"></mat-progress-bar>
         }
       </div>
-      <mat-tab-group class="result-tab-group" dynamicHeight (selectChange)="onTabChange($event)" [selectedIndex]="activeTabIndex" (focusChange)="onTabFocus($event)">
+      <mat-tab-group
+        class="result-tab-group"
+        dynamicHeight
+        (selectedTabChange)="onTabChange($event)"
+        [selectedIndex]="activeTabIndex"
+        (focusChange)="onTabFocus($event)"
+      >
         <mat-tab>
           <ng-template mat-tab-label>Entries</ng-template>
           <div class="tab-content">

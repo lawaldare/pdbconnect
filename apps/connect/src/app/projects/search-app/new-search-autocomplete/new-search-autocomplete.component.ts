@@ -21,6 +21,7 @@ import { ResultGroup } from './search.model';
 export class PdbNewAutocompleteComponent implements OnInit {
   public readonly searchTerm = new FormControl('');
   private readonly destroyRef = inject(DestroyRef);
+  private readonly utilsService = inject(UtilsService);
 
   public readonly categories = [
     'Molecule name',
@@ -126,9 +127,9 @@ export class PdbNewAutocompleteComponent implements OnInit {
 
   public resultItemClick(resultRecord: any, totalResultRecords: any): void {
     if (resultRecord.var_name == 'pdb_id' || (resultRecord.var_name == 'uniprot' && totalResultRecords == 1)) {
-      window.open(this.resultItemLink(resultRecord, totalResultRecords), window.location.hostname === 'localhost' ? '_self' : '');
+      window.open(this.resultItemLink(resultRecord, totalResultRecords), '_self');
     } else if (this.defaultConfig.redirectOnClick) {
-      window.open(this.resultItemLink(resultRecord, totalResultRecords), window.location.hostname === 'localhost' ? '_self' : '');
+      window.open(this.resultItemLink(resultRecord, totalResultRecords), '_self');
     }
 
     // this.hideAllPanels();
@@ -178,8 +179,10 @@ export class PdbNewAutocompleteComponent implements OnInit {
         distinctUntilChanged(),
         mergeMap((term) => {
           if (term) {
+            const cleanedSearchTerm = this.utils.escapeValue(term);
             this.showPrimaryPanel();
-            return this.pdbSolrService.search(this.utils.escapeValue(term), this.defaultConfig);
+            this.utilsService.setSearchText(cleanedSearchTerm);
+            return this.pdbSolrService.search(cleanedSearchTerm, this.defaultConfig);
           } else {
             this.hideAllPanels();
             return of([]);

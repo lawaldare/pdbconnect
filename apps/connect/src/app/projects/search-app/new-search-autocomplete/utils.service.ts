@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-escape */
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
@@ -37,5 +37,12 @@ export class UtilsService {
 
   private sortByArrayOrderComparator(lhs: string, rhs: string, sortOrder: string[]): number {
     return sortOrder.indexOf(lhs) - sortOrder.indexOf(rhs);
+  }
+
+  private _searchText = signal<string>('');
+  public searchText = this._searchText.asReadonly();
+
+  public setSearchText(text: string) {
+    this._searchText.set(text);
   }
 }

@@ -958,7 +958,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
       paramsInUrl['resultState'] = tabParams;
       this.router.navigate([], {
-        queryParams: { searchParams: JSON.stringify(paramsInUrl), view: 'macromolecules' },
+        queryParams: { searchParams: JSON.stringify(paramsInUrl) },
         queryParamsHandling: '',
       });
 

@@ -11,6 +11,7 @@ import { TooltipContainerComponent } from '../tooltip/tooltip.component';
 import { PdbNewAutocompleteComponent } from '../new-search-autocomplete/new-search-autocomplete.component';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { SearchComponent } from '../search/search.component';
+import { UtilsService } from '../new-search-autocomplete/utils.service';
 
 declare const gtag: any;
 
@@ -31,7 +32,8 @@ declare const gtag: any;
 })
 export class SearchAppContainerComponent implements OnDestroy {
   private readonly _eventBroker = inject(EventBrokerService);
-  private searchService = inject(SearchService);
+  private readonly utilsService = inject(UtilsService);
+
   title = 'PDB Search Application';
   facetUpdateListener: IEventListener;
   facetOpenListener: IEventListener;
@@ -125,14 +127,16 @@ export class SearchAppContainerComponent implements OnDestroy {
   };
 
   onAutocompleteSelect(selectedItem: any) {
-    console.log('Autocomplete selected item:', selectedItem);
+    console.log('Autocomplete selected:', selectedItem);
     this._eventBroker.emit('autocomplete-select', selectedItem);
   }
 
   headerSearchClick() {
-    if (typeof this.searchtext == 'undefined' || this.searchtext == '' || this.searchtext == null) return;
-    this.onAutocompleteSelect({ var_name: 'text', value: this.searchtext });
-    this.searchtext = '';
+    const searchText = this.utilsService.searchText();
+    console.log('Header Search Click:', searchText);
+    if (typeof searchText === 'undefined' || searchText === '' || searchText === null) return;
+    this.onAutocompleteSelect({ var_name: 'text', value: this.utilsService.searchText() });
+    this.utilsService.setSearchText('');
   }
 
   openAdvancedSearch() {
