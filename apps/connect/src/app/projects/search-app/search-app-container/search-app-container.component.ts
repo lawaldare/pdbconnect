@@ -127,13 +127,11 @@ export class SearchAppContainerComponent implements OnDestroy {
   };
 
   onAutocompleteSelect(selectedItem: any) {
-    console.log('Autocomplete selected:', selectedItem);
     this._eventBroker.emit('autocomplete-select', selectedItem);
   }
 
   headerSearchClick() {
     const searchText = this.utilsService.searchText();
-    console.log('Header Search Click:', searchText);
     if (typeof searchText === 'undefined' || searchText === '' || searchText === null) return;
     this.onAutocompleteSelect({ var_name: 'text', value: this.utilsService.searchText() });
     this.utilsService.setSearchText('');
