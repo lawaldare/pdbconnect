@@ -98,32 +98,34 @@
                       <pdbc-new-search-autocomplete />
                     </div>
                     <div class="columns small-3 medium-2 large-2 end" class="autocompleteBtnContainer">
-                      <button mat-raised-button color="primary" class="autocompleteBtn" (click)="headerSearchClick()">Search</button>
+                      <button mat-raised-button color="primary" class="autocompleteBtn green-button" (click)="headerSearchClick()">Search</button>
                     </div>
                   </div>
                   <div class="columns small-12 searchExampleText">
-                    Examples:
-                    <a
-                      href="javascript:void(0);"
-                      (click)="
+                    <div class="left">
+                      <span>Examples:</span>
+                      <a
+                        href="javascript:void(0);"
+                        (click)="
                         onAutocompleteSelect({
                           var_name: 'text',
                           value: 'hemoglobin'
                         })
                       "
-                      >hemoglobin</a
-                    >,
-                    <a
-                      href="javascript:void(0);"
-                      (click)="
+                        >hemoglobin</a
+                      >,
+                      <a
+                        href="javascript:void(0);"
+                        (click)="
                         onAutocompleteSelect({
                           var_name: 'text',
                           value: 'BRCA1_HUMAN'
                         })
                       "
-                      >BRCA1_HUMAN</a
-                    >
-                    <a href="javascript:void(0);" (click)="openAdvancedSearch()" style="float: right; outline: none">Advanced search</a>
+                        >BRCA1_HUMAN</a
+                      >
+                    </div>
+                    <a href="javascript:void(0);" (click)="openAdvancedSearch()">Advanced search</a>
                   </div>
                 </div>
               </div>

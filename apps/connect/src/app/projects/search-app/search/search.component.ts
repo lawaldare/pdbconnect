@@ -1568,7 +1568,11 @@ export class SearchComponent implements OnInit, OnDestroy {
       params['searchParams'] = JSON.stringify({ paramKey: tabParams });
     }
 
-    this.router.navigate([''], { queryParams: params });
+    // this.router.navigate([''], { queryParams: params });
+    this.router.navigate([], {
+      queryParams: params,
+      queryParamsHandling: '',
+    });
   }
 
   paginateTo(paginate: { source: string; pageIndex: number }) {

@@ -21,7 +21,7 @@ export class MolstarDialogComponent implements OnInit, OnDestroy {
   downloadOrder = ['PDB', 'assembly', 'molecule', 'validation', 'SIFTS'];
   isExpanded = [true, false, false, false, false];
   pdbeUrl = 'https://www.ebi.ac.uk/pdbe/';
-  pdbeMolstar: any;
+  pluginInstance: any;
 
   constructor(
     public dialogRef: MatDialogRef<MolstarDialogComponent>,
@@ -58,10 +58,10 @@ export class MolstarDialogComponent implements OnInit, OnDestroy {
     const element = <HTMLInputElement>document.getElementById('app');
 
     await this.molstarPluginService.loadPlugin();
-    const pluginInstance = this.molstarPluginService.createInstance();
+    this.pluginInstance = this.molstarPluginService.createInstance();
 
     // this.pdbeMolstar = new PDBeMolstarPlugin();
-    pluginInstance.render(element, initParams);
+    this.pluginInstance.render(element, initParams);
   }
 
   closeDialog() {
@@ -70,6 +70,6 @@ export class MolstarDialogComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     //Exit expand
-    this.pdbeMolstar.canvas.toggleExpanded(false);
+    this.pluginInstance.canvas.toggleExpanded(false);
   }
 }

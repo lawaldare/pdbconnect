@@ -135,6 +135,24 @@ thead {
   }
 }
 
+.result-tab-group {
+  .mdc-tab.mat-mdc-tab {
+    background-color: #dcdedc !important;
+    opacity: 1 !important;
+
+    &.mdc-tab--active {
+      color: rgb(0 0 0) !important;
+      background-color: #c8e6c9 !important;
+      border-bottom: 2px solid #4caf50 !important;
+    }
+  }
+
+  .mdc-tab.mat-mdc-tab span.mdc-tab__content span.mdc-tab__text-label {
+    font-size: 14px !important;
+    color: rgb(0 0 0) !important;
+  }
+}
+
 mat-tab-header {
   margin-bottom: 16px;
 }
