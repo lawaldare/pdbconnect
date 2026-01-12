@@ -1,9 +1,14 @@
-<div id="map"
-     style="width: 100%; height: 450px; position: relative; margin-bottom: 10px;"
-     class="leaflet-container leaflet-touch leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom"
-     leaflet
-     (leafletMapReady)="onMapReady($event)"
-     onclick="gtag('event', 'map_click', {'event_category': 'partners_map_click', 'event_label': 'map', 'value': undefined})">
+<div
+  id="map"
+  style="width: 100%; height: 450px; position: relative; margin-bottom: 10px"
+  class="leaflet-container leaflet-touch leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom"
+  leaflet
+  (leafletMapReady)="onMapReady($event)"
+  onclick="gtag('event', 'map_click', {'event_category': 'partners_map_click', 'event_label': 'map', 'value': undefined})"
+></div>
+@if(country_count){
+<div class="map-count">
+  <span class="map-count-number">{{partner_count}}</span> Data resources contributing annotations to PDBe-KB from
+  <span class="map-count-number">{{country_count}}</span> countries
 </div>
-<div *ngIf="country_count" class="map-count"><span class="map-count-number">{{partner_count}}</span> Data resources contributing annotations to PDBe-KB from <span class="map-count-number">{{country_count}}</span> countries</div>
-
+}

@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, Input, HostListener, input, signal, computed } from '@angular/core';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'pdbc-nav-tabs',
   templateUrl: './nav-tabs.component.html',
   styleUrls: ['./nav-tabs.component.scss'],
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
 })
 export class NavTabsComponent implements OnInit {
   // @Input() activePage: string = "";

@@ -1,26 +1,26 @@
-import { Component, computed, OnInit } from '@angular/core';
+import { Component, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { forkJoin } from 'rxjs';
-import { environment } from 'src/environments/environment';
+import { environment } from '../../../../environments/environment';
+import { ScriptLoaderService } from '@pdbc/core';
 
-declare var Highcharts: any;
+declare const Highcharts: any;
 
 @Component({
-  selector: 'app-partners-plots',
+  selector: 'pdbc-partners-plots',
   templateUrl: './partners-plots.component.html',
-  styleUrls: ['./partners-plots.component.css'],
-  standalone: false,
+  styleUrls: ['./partners-plots.component.scss'],
 })
-export class PartnersPlotsComponent implements OnInit {
-  private _partnersURL = 'assets/data/partners_descriptions.json';
+export class PartnersPlotsComponent {
+  private _partnersURL = 'assets/corporate-page/data/partners_descriptions.json';
 
   resource_protein_count: any = null;
   category_protein_count: any = null;
   last_update_data: any = null;
-  all_loaded: boolean = false;
+  all_loaded = false;
 
-  markers_colors = {
+  markers_colors: any = {
     'Biophysical parameters': '#8495a9',
     'Small-molecule sites': '#00596c',
     'Protein binding sites': '#00897b',
@@ -29,18 +29,15 @@ export class PartnersPlotsComponent implements OnInit {
     'Mutations/variations': '#d9f3ce',
   };
 
-  public readonly plotData = computed(
-    () =>
-      environment.plot_data ??
-      'https://www.ebi.ac.uk/pdbe/static/kb_statistics/plot_data.json'
-  );
+  public readonly plotData = computed(() => environment.plot_data ?? 'https://www.ebi.ac.uk/pdbe/static/kb_statistics/plot_data.json');
   public readonly partnersLastUpdate = computed(
-    () =>
-      environment.partners_last_update ??
-      'https://www.ebi.ac.uk/pdbe/static/kb_statistics/partners_last_update.json'
+    () => environment.partners_last_update ?? 'https://www.ebi.ac.uk/pdbe/static/kb_statistics/partners_last_update.json'
   );
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private scriptLoader: ScriptLoaderService
+  ) {
     this.getDataAndPlot();
   }
 
@@ -57,42 +54,32 @@ export class PartnersPlotsComponent implements OnInit {
         // this.resource_protein_count = resource_protein_count;
         this.resource_protein_count = protein_count;
 
-        const parsed_resource_descriptions: any = Object.values(
-          resource_descriptions
-        ).reduce((arr: any, each_rd: any) => {
+        const parsed_resource_descriptions: any = Object.values(resource_descriptions).reduce((arr: any, each_rd: any) => {
           arr.push(...each_rd);
           return arr;
         }, []);
 
-        this.resource_protein_count = this.resource_protein_count.map(
-          (each_resource) => {
-            let found_resource_description =
-              parsed_resource_descriptions.filter(
-                (each_rd: any) => each_rd['name'] === each_resource['name']
-              );
-            if (found_resource_description.length > 0) {
-              found_resource_description = found_resource_description[0];
-              each_resource['type'] = found_resource_description['type'];
-              each_resource['annotation_type'] =
-                found_resource_description['annotation_type'];
-              each_resource['color'] =
-                this.markers_colors[each_resource['type']];
-            }
-            return each_resource;
+        this.resource_protein_count = this.resource_protein_count.map((each_resource: any) => {
+          let found_resource_description = parsed_resource_descriptions.filter((each_rd: any) => each_rd['name'] === each_resource['name']);
+          if (found_resource_description.length > 0) {
+            found_resource_description = found_resource_description[0];
+            each_resource['type'] = found_resource_description['type'];
+            each_resource['annotation_type'] = found_resource_description['annotation_type'];
+            each_resource['color'] = this.markers_colors[each_resource['type']];
           }
-        );
+          return each_resource;
+        });
 
         this.category_protein_count = this.resource_protein_count.reduce(
-          (obj, each_resource_count) => {
+          (obj: { [x: string]: { [x: string]: any }; hasOwnProperty: (arg0: any) => any }, each_resource_count: { [x: string]: any }) => {
             if (each_resource_count['annotation_type'].length > 1) {
-              if (!obj.hasOwnProperty(each_resource_count['annotation_type'])) {
+              if (!Object.prototype.hasOwnProperty.call(obj, each_resource_count['annotation_type'])) {
                 obj[each_resource_count['annotation_type']] = {
                   name: each_resource_count['annotation_type'],
                   y: 0,
                   type: each_resource_count['type'],
                 };
-                obj[each_resource_count['annotation_type']]['y'] +=
-                  each_resource_count['y'];
+                obj[each_resource_count['annotation_type']]['y'] += each_resource_count['y'];
               }
             }
             return obj;
@@ -100,10 +87,8 @@ export class PartnersPlotsComponent implements OnInit {
           {}
         );
 
-        this.category_protein_count = Object.values(
-          this.category_protein_count
-        ).reduce((obj, each_datum) => {
-          if (!obj.hasOwnProperty(each_datum['type'])) {
+        this.category_protein_count = Object.values(this.category_protein_count).reduce((obj: any, each_datum: any) => {
+          if (!Object.prototype.hasOwnProperty.call(obj, each_datum['type'])) {
             obj[each_datum['type']] = {
               name: each_datum['type'],
               color: this.markers_colors[each_datum['type']],
@@ -116,11 +101,7 @@ export class PartnersPlotsComponent implements OnInit {
 
         this.last_update_data = this.parseUpdateData(last_update_data);
 
-        if (
-          this.resource_protein_count !== null &&
-          this.category_protein_count !== null &&
-          this.last_update_data !== null
-        ) {
+        if (this.resource_protein_count !== null && this.category_protein_count !== null && this.last_update_data !== null) {
           this.all_loaded = true;
           this.generatePlots();
         }
@@ -139,8 +120,6 @@ export class PartnersPlotsComponent implements OnInit {
     return this.http.get(this.partnersLastUpdate());
   }
 
-  ngOnInit(): void {}
-
   parseUpdateData(data: any) {
     return data
       .map((datum: any) => {
@@ -151,27 +130,42 @@ export class PartnersPlotsComponent implements OnInit {
       });
   }
 
-  updateChartVisibility(chart_id: string) {
-    if (chart_id) {
-      document
-        .getElementById(`chart-1`)
-        .classList.remove('chart-holder-div-current');
-      document.getElementById(`chart-1-plot`).classList.add('display-none');
-      document
-        .getElementById(`chart-2`)
-        .classList.remove('chart-holder-div-current');
-      document.getElementById(`chart-2-plot`).classList.add('display-none');
-      document
-        .getElementById(`chart-3`)
-        .classList.remove('chart-holder-div-current');
-      document.getElementById(`chart-3-plot`).classList.add('display-none');
-      document
-        .getElementById(`${chart_id}`)
-        .classList.add('chart-holder-div-current');
-      document
-        .getElementById(`${chart_id}-plot`)
-        .classList.remove('display-none');
-    }
+  // updateChartVisibility(chart_id: string) {
+  //   if (chart_id) {
+  //     document.getElementById(`chart-1`)
+  //       .classList.remove('chart-holder-div-current');
+  //     document.getElementById(`chart-1-plot`).classList.add('display-none');
+  //     document
+  //       .getElementById(`chart-2`)
+  //       .classList.remove('chart-holder-div-current');
+  //     document.getElementById(`chart-2-plot`).classList.add('display-none');
+  //     document
+  //       .getElementById(`chart-3`)
+  //       .classList.remove('chart-holder-div-current');
+  //     document.getElementById(`chart-3-plot`).classList.add('display-none');
+  //     document
+  //       .getElementById(`${chart_id}`)
+  //       .classList.add('chart-holder-div-current');
+  //     document
+  //       .getElementById(`${chart_id}-plot`)
+  //       .classList.remove('display-none');
+  //   }
+  // }
+
+  public updateChartVisibility(chartId: string) {
+    if (!chartId) return;
+
+    document.getElementById('chart-1')?.classList.remove('chart-holder-div-current');
+    document.getElementById('chart-1-plot')?.classList.add('display-none');
+
+    document.getElementById('chart-2')?.classList.remove('chart-holder-div-current');
+    document.getElementById('chart-2-plot')?.classList.add('display-none');
+
+    document.getElementById('chart-3')?.classList.remove('chart-holder-div-current');
+    document.getElementById('chart-3-plot')?.classList.add('display-none');
+
+    document.getElementById(chartId)?.classList.add('chart-holder-div-current');
+    document.getElementById(`${chartId}-plot`)?.classList.remove('display-none');
   }
 
   generatePlots() {
@@ -181,24 +175,19 @@ export class PartnersPlotsComponent implements OnInit {
     const today_day = today.getDate();
     const today_month = today.getMonth();
     const today_year = today.getFullYear();
-    const sorted_category_names = this.last_update_data.map(
-      (each_cat: any) => each_cat[0]
-    );
+    const sorted_category_names = this.last_update_data.map((each_cat: any) => each_cat[0]);
 
-    let all_series_chart_1 = this.resource_protein_count.reduce(
-      (obj, each_datum) => {
-        if (!obj.hasOwnProperty(each_datum['type'])) {
-          obj[each_datum['type']] = {
-            name: each_datum['type'],
-            color: each_datum['color'],
-            data: [],
-          };
-        }
-        obj[each_datum.type]['data'].push(each_datum);
-        return obj;
-      },
-      {}
-    );
+    let all_series_chart_1 = this.resource_protein_count.reduce((obj: any, each_datum: { [x: string]: any; type: string | number }) => {
+      if (!Object.prototype.hasOwnProperty.call(obj, each_datum['type'])) {
+        obj[each_datum['type']] = {
+          name: each_datum['type'],
+          color: each_datum['color'],
+          data: [],
+        };
+      }
+      obj[each_datum.type]['data'].push(each_datum);
+      return obj;
+    }, {});
     all_series_chart_1 = Object.values(all_series_chart_1);
     Highcharts.chart('chart-1-plot', {
       chart: {
@@ -234,8 +223,7 @@ export class PartnersPlotsComponent implements OnInit {
         y: 80,
         floating: true,
         borderWidth: 1,
-        backgroundColor:
-          Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF',
+        backgroundColor: Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF',
         shadow: true,
         itemStyle: {
           fontSize: '12px',
@@ -321,7 +309,7 @@ export class PartnersPlotsComponent implements OnInit {
       //   }
       // ]
     });
-    let all_series_chart_2 = Object.values(this.category_protein_count);
+    const all_series_chart_2 = Object.values(this.category_protein_count);
     Highcharts.chart('chart-2-plot', {
       chart: {
         type: 'column',
@@ -363,8 +351,7 @@ export class PartnersPlotsComponent implements OnInit {
         y: 80,
         floating: true,
         borderWidth: 1,
-        backgroundColor:
-          Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF',
+        backgroundColor: Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF',
         shadow: true,
       },
       responsive: {

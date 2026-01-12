@@ -1,37 +1,32 @@
-import {
-  Component,
-  OnInit,
-  Output,
-  EventEmitter,
-  HostListener,
-} from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, HostListener, AfterViewInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 // import * as L from 'leaflet';
 // import 'leaflet.markercluster';
 
-import L from 'leaflet/dist/leaflet.js'; // Explicit ESM import
-import 'leaflet.markercluster/dist/leaflet.markercluster-src.js'; // ESM-compatible version
+import * as L from 'leaflet'; // Explicit ESM import
+import 'leaflet.markercluster'; // ESM-compatible version
+import { CommonModule } from '@angular/common';
 
-declare var gtag;
+declare const gtag: any;
 
 @Component({
-  selector: 'app-partners-map',
+  selector: 'pdbc-partners-map',
   templateUrl: './partners-map.component.html',
-  styleUrls: ['./partners-map.component.css'],
-  standalone: false,
+  styleUrls: ['./partners-map.component.scss'],
+  imports: [CommonModule],
 })
-export class PartnersMapComponent implements OnInit {
+export class PartnersMapComponent implements AfterViewInit {
   @Output() map$: EventEmitter<L.Map> = new EventEmitter();
   @Output() zoom$: EventEmitter<number> = new EventEmitter();
 
-  private _jsonURL = 'assets/data/partners_descriptions.json';
+  private _jsonURL = 'assets/corporate-page/data/partners_descriptions.json';
 
   /**
    * Constant used to control partners colors on map
    * also used to draw the bottom-left legend
    */
-  markers_colors = {
+  markers_colors: any = {
     'Biophysical parameters': '#8495a9',
     'Small-molecule sites': '#00596c',
     'Protein binding sites': '#00897b',
@@ -40,8 +35,8 @@ export class PartnersMapComponent implements OnInit {
     'Mutations/variations': '#d9f3ce',
   };
 
-  public map: L.Map;
-  public zoom: number;
+  public map!: L.Map;
+  public zoom!: number;
 
   public partner_count = 0;
   public country_count = 0;
@@ -64,29 +59,26 @@ export class PartnersMapComponent implements OnInit {
    */
   getAndPlotData() {
     this.getJSON().subscribe((jsondata) => {
-      this.partners_data = Object.values(jsondata).reduce(
-        (arr: any[], v: any) => {
-          arr.push(...v);
-          return arr;
-        },
-        []
-      );
+      this.partners_data = Object.values(jsondata).reduce((arr: any[], v: any) => {
+        arr.push(...v);
+        return arr;
+      }, []);
       this.partner_count = this.partners_data.length;
       this.createMap();
     });
   }
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient) {}
+
+  ngAfterViewInit(): void {
     this.getAndPlotData();
   }
-
-  ngOnInit(): void {}
 
   /**
    * Function to bind leaflet events when map is ready
    * @param map
    */
-  onMapReady(map: L.Map) {
+  onMapReady(map: any) {
     this.map = map;
     this.map$.emit(map);
     this.zoom = map.getZoom();
@@ -98,21 +90,21 @@ export class PartnersMapComponent implements OnInit {
    * @param c cluster marker
    * @param marker_name "name" of cluster marker (Country names in this case)
    */
-  clusterMouseOver(c, marker_name) {
+  clusterMouseOver(c: any, marker_name: any) {
     // Get and check map existance
-    var map = this.map;
+    let map = this.map;
     if (!map) {
       map = L.map('map', { scrollWheelZoom: false });
       this.map = map;
     }
 
     // Get content from all child markers of a cluster and checks if they are all from the same city
-    var childMarkers = c.layer.getAllChildMarkers();
-    var sameCity = true;
-    var lastCity = null;
-    var childData = childMarkers.map((e_cmarker) => {
-      let pop_data = e_cmarker._popup._content;
-      let city = pop_data.split('<b>')[1].split(',')[0];
+    const childMarkers = c.layer.getAllChildMarkers();
+    let sameCity = true;
+    let lastCity: any = null;
+    const childData = childMarkers.map((e_cmarker: any) => {
+      const pop_data = e_cmarker._popup._content;
+      const city = pop_data.split('<b>')[1].split(',')[0];
       if (!lastCity) {
         lastCity = city;
       } else if (lastCity !== city) {
@@ -128,7 +120,7 @@ export class PartnersMapComponent implements OnInit {
     }
 
     // Pop-up is composed of title and child data (Coloured boxes containing links)
-    var popData = styled_location + childData.join(', ');
+    const popData = styled_location + childData.join(', ');
 
     // Pop-up is triggered
     L.popup().setLatLng(c.layer.getLatLng()).setContent(popData).openOn(map);
@@ -138,7 +130,7 @@ export class PartnersMapComponent implements OnInit {
    * Function that listen to window changes and switches zoom on mouse scroll
    * (fixes scroll issues on small screen sizes)
    */
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   mapResize() {
     if (this.map) {
       if (window.innerWidth < 900) {
@@ -154,22 +146,20 @@ export class PartnersMapComponent implements OnInit {
    */
   createMap() {
     // Partners data is parsed and clustered by country name
-    let unique_countries = this.partners_data
-      .map((ec: any) => ec.country)
-      .filter((coun, i, arr) => arr.indexOf(coun) === i);
+    const unique_countries = this.partners_data.map((ec: any) => ec.country).filter((coun: any, i: any, arr: any) => arr.indexOf(coun) === i);
     this.country_count = unique_countries.length;
-    this.marker_group_dict = unique_countries.reduce((obj, coun) => {
+    this.marker_group_dict = unique_countries.reduce((obj: { [x: string]: any }, coun: string | number) => {
       obj[coun] = L.markerClusterGroup({ singleMarkerMode: true });
       return obj;
     }, {});
 
     // Constants for map initialization (zoom and center coordinates)
-    var initialZoomLevel = 2, // default zoom level
+    const initialZoomLevel = 2, // default zoom level
       initialLat = 30,
       initialLon = -10.5;
 
     // Map initialization
-    var map = this.map;
+    let map = this.map;
     if (!map) {
       map = L.map('map');
       this.map = map;
@@ -191,26 +181,20 @@ export class PartnersMapComponent implements OnInit {
     });
 
     // Defines the map overall style. This is the same of a live EBI map
-    L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-      {
-        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
-        maxZoom: 16,
-      }
-    ).addTo(this.map);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+      maxZoom: 16,
+    }).addTo(this.map);
 
     // Iterates over the data of each partner
     for (let i_p = 0; i_p < this.partners_data.length; i_p++) {
-      let city = this.partners_data[i_p]['city'];
+      const city = this.partners_data[i_p]['city'];
 
       // creates a marker for each partner (aggregated in marker clusters by Country name)
-      let marker = L.marker([
-        this.partners_data[i_p]['coords'][0],
-        this.partners_data[i_p]['coords'][1],
-      ]);
+      const marker = L.marker([this.partners_data[i_p]['coords'][0], this.partners_data[i_p]['coords'][1]]);
 
-      let cname = this.partners_data[i_p]['country'];
-      let current_color = this.markers_colors[this.partners_data[i_p]['type']];
+      const cname = this.partners_data[i_p]['country'];
+      const current_color = this.markers_colors[this.partners_data[i_p]['type']];
 
       // style of marker content is defined based on category of partnert
       let txt_color = 'white';
@@ -223,9 +207,9 @@ export class PartnersMapComponent implements OnInit {
       }
 
       // marker content includes a title of "City, Country Name" followed by a colored anchor link to each partner's page
-      let partners_tag = `<a target="_blank" style='border-radius: 5px; color: ${txt_color}; padding: 2px; line-height:2 ; background: ${current_color}' href="${this.partners_data[i_p]['url']}">${this.partners_data[i_p]['name']}</a>`;
+      const partners_tag = `<a target="_blank" style='border-radius: 5px; color: ${txt_color}; padding: 2px; line-height:2 ; background: ${current_color}' href="${this.partners_data[i_p]['url']}">${this.partners_data[i_p]['name']}</a>`;
       marker.bindPopup('<b>' + city + ', ' + cname + '</b><br>' + partners_tag);
-      marker.on('mouseover', function (ev) {
+      marker.on('mouseover', function (ev: any) {
         ev.target.openPopup();
       });
       this.marker_group_dict[cname].addLayer(marker);
@@ -233,12 +217,10 @@ export class PartnersMapComponent implements OnInit {
 
     // Bind function to open pop-ups when each cluster is hovered (clusterMouseOver)
     // and to close pop-ups when each cluster is clicked after hovering
-    for (const [marker_name, marker_group] of Object.entries(
-      this.marker_group_dict
-    )) {
+    for (const [marker_name, marker_group] of Object.entries(this.marker_group_dict)) {
       (marker_group as L.MarkerClusterGroup)
-        .on('clustermouseover', (c) => this.clusterMouseOver(c, marker_name))
-        .on('clusterclick', function (c) {
+        .on('clustermouseover', (c: any) => this.clusterMouseOver(c, marker_name))
+        .on('clusterclick', function (c: any) {
           map.closePopup();
         });
       // add clusters to map
@@ -247,22 +229,20 @@ export class PartnersMapComponent implements OnInit {
 
     // Generation of coloured legend displayed on bottom left corner of map
     const markers_colors = this.markers_colors;
-    var legend = new L.Control({ position: 'bottomleft' }); // Legend object instantiated
+    const legend = new L.Control({ position: 'bottomleft' }); // Legend object instantiated
 
-    legend.onAdd = function (map) {
+    legend.onAdd = function (map: any) {
       // when legend is added to map, generate HTML content of legend
 
-      var div = L.DomUtil.create('div', 'info legend'); // create a legend div
-      var labels: string[] = [];
+      const div = L.DomUtil.create('div', 'info legend'); // create a legend div
+      const labels: string[] = [];
       // create a array of html tags for each legend category
       // each html tag is a <i> with category color as background followed by category name as text content
       for (const [name, color] of Object.entries(markers_colors)) {
         labels.push('<i style="background:' + color + '"></i> ' + name);
       }
       // define content of legend div: title followed by <br> spaced html tags for legend categories
-      div.innerHTML =
-        '<div id="anno-leg-title-container"><span id="anno-leg-title">Annotations type:</span></div>' +
-        labels.join('<br>');
+      div.innerHTML = '<div id="anno-leg-title-container"><span id="anno-leg-title">Annotations type:</span></div>' + labels.join('<br>');
       return div;
     };
 
