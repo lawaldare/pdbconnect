@@ -1,0 +1,46 @@
+<pdbc-header></pdbc-header>
+<div class="search-box">
+  <!-- <div class="row large-offset-1 medium-offset-1"> -->
+  <div class="row">
+    <pdbc-header-search></pdbc-header-search>
+  </div>
+</div>
+<pdbc-nav-tabs activePageInput="None"></pdbc-nav-tabs>
+<div id="welcome-note" style="visibility: hidden; height: 0px">
+  <p>
+    All the annotations provided by PDBe-KB partners are integrated with core PDBe data in a massive graph database which is implemented in
+    <a target="_blank" href="https://neo4j.com/">Neo4J</a>.
+  </p>
+
+  <p>
+    In this graph each PDB entry is represented as a tree, with the root being the PDB entry, connected to chains and entities, which are then connected to residues.
+    Each of the PDB residues (>150 million) are linked to available annotations (e.g. is the residue part of a catalytic site?, or is it on a macromolecular
+    interaction interface?) and are also directly connected to their corresponding UniProt residues. Storing PDBe-KB data as a graph offers great benefits in
+    particular by allowing straightforward transfer of annotations between PDB entries which map to the same UniProt accession, as well as to highly identical UniProt
+    accession.
+  </p>
+
+  <p>
+    <a target="_blank" href="https://www.ebi.ac.uk/pdbe/graph-api/pdbe_doc/">PDBe API</a>
+    is powered by this graph database which is consumed by different PDBe-KB aggregated views. This database can also be used as a powerful research tool by diving
+    deep into the underlying relationships. Check out the
+    <b>Download</b> section for downloading the database for in-house use.
+  </p>
+
+  <p>To effectively explore the database, it is necessary to refer to the schema of the underlying data.</p>
+</div>
+
+<div class="row">
+  <div id="graph-content" class="content-holder">
+    <div id="graph_database" class="text-holder">
+      <h3 class="heading-style-B">PDBe Graph Database Schema Explorer</h3>
+    </div>
+    <div style="height: 600px">
+      <graph-schema-explorer
+        id="schema-component"
+        data-title="PDBe Graph Schema"
+        data-url="https://www.ebi.ac.uk/pdbe/static/files/graph_schema.json"
+      ></graph-schema-explorer>
+    </div>
+  </div>
+</div>

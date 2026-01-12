@@ -1,0 +1,49 @@
+#services-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+
+    /* Inside auto layout */
+
+    flex: none;
+    order: 5;
+    align-self: stretch;
+}
+
+@media screen and (max-width: 600px) {
+
+    .small-3 {
+        width: 50%;
+    }
+
+}
+@media screen and (max-width: 350px) {
+
+    .small-3 {
+        width: 100%;
+    }
+
+}
+
+.link-unset, .link-unset:visited {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: none;
+}
+
+#aggregated_views {
+  margin-bottom: 0 !important;
+}
+
+#aggregated_views_proteins {
+  margin-top: 30px !important;
+}
+
+#beacons {
+  margin-top: 80px !important;
+}
+
+#graph_database, #api, #pdbekb_component, #other_services, #public_ftp {
+  margin-top: 80px !important;
+}

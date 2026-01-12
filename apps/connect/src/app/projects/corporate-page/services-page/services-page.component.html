@@ -1,0 +1,351 @@
+<app-header></app-header>
+<div class="search-box">
+  <!-- <div class="row large-offset-1 medium-offset-1"> -->
+  <div class="row">
+    <app-header-search></app-header-search>
+  </div>
+</div>
+<app-nav-tabs activePageInput="services"></app-nav-tabs>
+<app-home-bookmarks [showquicklinks]="false"></app-home-bookmarks>
+<div class="row right-padded">
+  <!-- <div class="menu-nav large-10 large-offset-1 medium-offset-1 medium-10 small-12"> -->
+  <div class="menu-nav">
+    <div class="row">
+      <div class="columns small-12">
+        <nav class="alphafold-nav">
+          <ul class="no-bullets">
+            <li
+              id="aggregated_views_menu"
+              class="scroll-menu-item"
+              (click)="scroll('aggregated_views')"
+              onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
+            >
+              <span>Aggregated views</span>
+            </li>
+            <li
+              id="aggregated_views_proteins_menu"
+              style="padding-left: 20px"
+              class="scroll-menu-item"
+              (click)="scroll('aggregated_views_proteins')"
+              onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
+            >
+              <span>Aggregated views of proteins</span>
+            </li>
+            <li
+              id="beacons_menu"
+              class="scroll-menu-item"
+              (click)="scroll('beacons')"
+              onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
+            >
+              <span>3D-Beacons Network</span>
+            </li>
+            <li
+              id="graph_database_menu"
+              class="scroll-menu-item"
+              onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
+            >
+              <a class="link-unset" routerLink="/graph"
+                ><span>Graph database</span></a
+              >
+            </li>
+            <li
+              id="api_menu"
+              class="scroll-menu-item"
+              (click)="scroll('api')"
+              onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
+            >
+              <span>API</span>
+            </li>
+            <li
+              id="pdbekb_component_menu"
+              class="scroll-menu-item"
+              (click)="scroll('pdbekb_component')"
+              onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
+            >
+              <span>PDBe-KB component library</span>
+            </li>
+            <li
+              id="public_ftp_menu"
+              class="scroll-menu-item"
+              (click)="scroll('public_ftp')"
+              onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
+            >
+              <span>Public FTP area</span>
+            </li>
+            <li
+              id="other_services_menu"
+              class="scroll-menu-item"
+              (click)="scroll('other_services')"
+              onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
+            >
+              <span>Other services</span>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+    <section class="after-nav">
+      <div id="aggregated_views" class="content-holder">
+        <div class="text-holder">
+          <h3 class="heading-style-B">Aggregated views</h3>
+          <p class="paragraph-style-B bolder-24">
+            PDBe-KB Aggregated Views are a set of web pages that aggregate all
+            the structural and functional data for a specific molecular entity.
+            There are many possible and valuable ways to aggregate data, for
+            example by proteins, domains, small molecules or macromolecular
+            complexes.
+          </p>
+        </div>
+      </div>
+      <div id="aggregated_views_proteins" class="content-holder">
+        <div class="text-holder">
+          <h3>Aggregated views of proteins</h3>
+          <div
+            class="small-12 columns"
+            style="text-align: center; margin-bottom: 25px"
+          >
+            <div class="small-3 columns">
+              <i
+                class="icon icon-conceptual"
+                data-icon="s"
+                style="font-size: 3em"
+              ></i>
+              <h5>Structures</h5>
+            </div>
+            <div class="small-3 columns">
+              <i
+                class="icon icon-conceptual"
+                data-icon="b"
+                style="font-size: 3em"
+              ></i>
+              <h5>Small-molecules</h5>
+            </div>
+            <div class="small-3 columns">
+              <i
+                class="icon icon-conceptual"
+                data-icon="y"
+                style="font-size: 3em"
+              ></i>
+              <h5>Macromolecular Interactions</h5>
+            </div>
+            <div class="small-3 columns">
+              <i
+                class="icon icon-conceptual"
+                data-icon="c"
+                style="font-size: 3em"
+              ></i>
+              <h5>Functional Annotations</h5>
+            </div>
+          </div>
+
+          <p class="paragraph-style-B">
+            The PDBe-KB Aggregated View of proteins provides a comprehensive
+            overview of structural data available in the PDB for a full-length
+            protein sequence (i.e. UniProt accession). Either PDB identifiers or
+            UniProt accessions can be used to display all the available data for
+            a given protein. The webpages display a list of PDB entries
+            containing the protein, small and macromolecules and their
+            interaction sites with the given protein, and additional functional
+            annotations, such as sequence conservation and druggable sites.
+            <a
+              target="_blank"
+              class="link-style"
+              href="https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/P38398/"
+              onclick="gtag('event', 'link_visit', {'event_category': 'services_href_click', 'event_label': 'services_proteins_example', 'value': undefined})"
+            >
+              See example for breast cancer type 1 susceptibility protein
+              (P38398)
+              <i class="icon icon-common icon-external-link-alt"></i
+            ></a>
+          </p>
+        </div>
+      </div>
+      <div id="beacons" class="content-holder">
+        <div class="text-holder">
+          <h3 class="heading-style-B">3D-Beacons Network</h3>
+          <div class="row">
+            <div class="small-12 medium-6 columns">
+              <p class="paragraph-style-B bolder-24">
+                3D-Beacons Network is an open collaboration between providers of
+                macromolecular structure models. It provides access to model
+                coordinates and meta-information from all the contributing data
+                resources in a standardised data format.
+              </p>
+              <p class="paragraph-style-B">
+                The 3D-Beacons portal allows users to search using UniProt
+                accessions and see all the available experimental and
+                computational models from the member data providers.<br />
+                <a
+                  target="_blank"
+                  class="link-style"
+                  href="https://www.ebi.ac.uk/pdbe/pdbe-kb/3dbeacons/search/P38398"
+                  onclick="gtag('event', 'link_visit', {'event_category': 'services_href_click', 'event_subcategory': '3D_beacons_access', 'event_label': 'services_3dbeacons_example', 'value': undefined})"
+                  >See example for UniProt accession P38398 (BRCA1_HUMAN)
+                  <i class="icon icon-common icon-external-link-alt"></i
+                ></a>
+              </p>
+              <p class="paragraph-style-B">
+                The PDBe-KB Aggregated Views of proteins displays these
+                structures for a protein of interest. <br />
+                <a
+                  target="_blank"
+                  class="link-style"
+                  href="https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/P38398/structures"
+                >
+                  See example for breast cancer type 1 susceptibility protein
+                  (P38398)
+                  <i class="icon icon-common icon-external-link-alt"></i
+                ></a>
+              </p>
+              <p class="paragraph-style-B">
+                <a
+                  target="_blank"
+                  class="link-style"
+                  href="https://www.ebi.ac.uk/pdbe/pdbe-kb/3dbeacons/"
+                  onclick="gtag('event', 'services_access', {'event_category': 'services_href_click',  'event_subcategory': '3D_beacons_access', 'event_label': 'services_3dbeacons', 'value': undefined})"
+                  >Access 3D-Beacons Network
+                  <i class="icon icon-common icon-external-link-alt"></i
+                ></a>
+              </p>
+            </div>
+            <div class="small-12 medium-6 columns">
+              <div class="text-center img-holder">
+                <img
+                  class="img-size"
+                  src="./assets/img/v2-images/3d_beacons_overview.png"
+                  alt=""
+                />
+                <p class="legend-style-B leg-size">
+                  Varadi M, Nair S, <i>et al.</i>,
+                  <a
+                    target="_blank"
+                    class="link-legend-style"
+                    href="https://academic.oup.com/gigascience/article/doi/10.1093/gigascience/giac118/6854872"
+                    onclick="gtag('event', 'link_visit', {'event_category': 'services_img_click', 'event_label': 'services_3dbeacons_img', 'value': undefined})"
+                    >3D-Beacons: Decreasing the gap between protein sequences
+                    and structures through a federated network of protein
+                    structure data resources
+                    <i class="icon icon-common icon-external-link-alt"></i
+                  ></a>
+                  , <i>GigaScience</i>, Volume 11, 2022
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="graph_database" class="content-holder">
+        <div class="text-holder">
+          <h3 class="heading-style-B" style="margin-top: 16px">
+            Graph database
+          </h3>
+          <p class="paragraph-style-B">
+            All the annotations provided by PDBe-KB partners are integrated with
+            the core PDBe data in a knowledge graph using a graph database
+            powered by Neo4j. This graph database can be freely downloaded,
+            installed and queried locally.
+          </p>
+          <p class="paragraph-style-B">
+            <a
+              class="link-style"
+              routerLink="/graph"
+              onclick="gtag('event', 'services_access', {'event_category': 'services_href_click', 'event_label': 'services_graphdb', 'value': undefined})"
+              >Access Graph database
+              <i class="icon icon-common icon-external-link-alt"></i
+            ></a>
+          </p>
+        </div>
+      </div>
+
+      <section id="api" class="content-holder">
+        <div class="text-holder">
+          <h3 class="heading-style-B">API</h3>
+          <p class="paragraph-style-B">
+            The REST API provides programmatic access to PDBe-KB annotations. It
+            provides endpoints specific calls to access aggregated data from
+            across all the relevant PDB entries, for example based on entities,
+            Uniprot IDs, residues and more.
+          </p>
+          <p class="paragraph-style-B">
+            <a
+              target="_blank"
+              class="link-style"
+              href="https://www.ebi.ac.uk/pdbe/graph-api/pdbe_doc/"
+              onclick="gtag('event', 'services_access', {'event_category': 'services_href_click', 'event_label': 'services_api', 'value': undefined})"
+              >Access Aggregated API
+              <i class="icon icon-common icon-external-link-alt"></i
+            ></a>
+          </p>
+        </div>
+      </section>
+
+      <div id="pdbekb_component" class="content-holder">
+        <div class="text-holder">
+          <h3 class="heading-style-B">PDBe-KB component library</h3>
+          <p class="paragraph-style-B">
+            Our reusable data visualisation web components are publicly
+            available from GitHub. These repositories include the 2D sequence
+            feature viewer, PDB ProtVista, and web components used on the
+            various aggregated views. All code is available under Apache 2.0
+            license.
+          </p>
+          <p class="paragraph-style-B">
+            <a
+              target="_blank"
+              class="link-style"
+              href="https://github.com/PDBe-KB?q=component"
+              onclick="gtag('event', 'services_access', {'event_category': 'services_href_click', 'event_label': 'services_complib', 'value': undefined})"
+              >Access PDBe-KB component library
+              <i class="icon icon-common icon-external-link-alt"></i
+            ></a>
+          </p>
+        </div>
+      </div>
+
+      <div id="public_ftp" class="content-holder">
+        <div class="text-holder">
+          <h3 class="heading-style-B">Public FTP area</h3>
+          <p class="paragraph-style-B">
+            FTP access to PDBe-KB data including annotations, benchmarking
+            datasets and superposition data.
+          </p>
+          <p class="paragraph-style-B">
+            <a
+              target="_blank"
+              class="link-style"
+              href="https://ftp.ebi.ac.uk/pub/databases/pdbe-kb/"
+              onclick="gtag('event', 'services_access', {'event_category': 'services_href_click', 'event_label': 'services_ftp', 'value': undefined})"
+              >Access Public FTP area
+              <i class="icon icon-common icon-external-link-alt"></i
+            ></a>
+          </p>
+        </div>
+      </div>
+
+      <div id="other_services" class="content-holder">
+        <div class="text-holder">
+          <h3 class="heading-style-B">Other services</h3>
+          <p class="paragraph-style-B">
+            PDBe and PDBe-KB provide many other services from data analysis to
+            programmatic access and data visualisation.
+          </p>
+          <p class="paragraph-style-B">
+            <a
+              target="_blank"
+              class="link-style"
+              href="https://www.ebi.ac.uk/pdbe/"
+              onclick="gtag('event', 'services_access', {'event_category': 'services_href_click', 'event_label': 'services_other', 'value': undefined})"
+              >Access additional services
+              <i class="icon icon-common icon-external-link-alt"></i
+            ></a>
+          </p>
+        </div>
+      </div>
+
+      <!-- <div class="img-holder">
+          <p style="font-size: 35px"> Find more services <a target="_blank" class="link-style" style="font-size: 35px" href="https://www.ebi.ac.uk/pdbe/">here</a></p>
+      </div> -->
+    </section>
+  </div>
+</div>

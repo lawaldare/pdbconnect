@@ -1,0 +1,112 @@
+#partner-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+
+    /* Inside auto layout */
+
+    flex: none;
+    order: 5;
+}
+
+.smaller {
+  font-size: 2em;
+}
+
+.partner-card {
+    background-color: #d8d3cf38;
+    padding: 5px 5px 2px 5px;
+    margin: 2px 2px 15px 2px;
+    height: 245px !important;
+}
+
+.label-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.partner-anchor {
+    color: #0a0a0a;
+    border-bottom-width: 0px;
+    border-bottom-style: none;
+}
+.partner-anchor:visited, .partner-anchor:hover, .partner-anchor:focus, .partner-anchor:active {
+    color: #0a0a0a;
+    border-bottom-width: 0px;
+    border-bottom-style: none;
+}
+.partner-anchor i {
+    margin-left: 8px;
+}
+.partners-tutorial li {
+    margin-bottom: 10px;
+}
+.partners-tutorial {
+    font-size: 18px;
+    margin-bottom: 50px;
+}
+@media screen and (max-width:53.8em){
+    .partners-tutorial {
+        font-size: 16px;
+        margin-bottom: 40px;
+    }
+    .partner-card {
+        height: 200px !important;
+    }
+}
+@media screen and (max-width:39.9375em){
+    .partners-tutorial {
+        font-size: 13px;
+        margin-bottom: 30px;
+    }
+    .partner-card {
+        height: 180px !important;
+    }
+}
+
+
+
+.label-tooltip .label-tooltip-text, .label-tooltip-alt .label-tooltip-text {
+    visibility: hidden;
+    width: 300px;
+    background-color: white;
+    color: #0a0a0a;
+    text-align: left;
+    border: solid 2px black;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    margin-left: -150px;
+}
+
+.label-tooltip .label-tooltip-text::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    top: -50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent black transparent;
+}
+
+.label-tooltip:hover .label-tooltip-text, .label-tooltip-alt:hover .label-tooltip-text {
+    visibility: visible;
+}
+
+.plot-update {
+    width: 100%;
+    text-align: center;
+}
+/*
+@media screen and (max-width: 768px) {
+    .partner-card {
+        height: 290px;
+    }
+
+} */

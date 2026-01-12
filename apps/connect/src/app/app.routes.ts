@@ -5,11 +5,17 @@ import { TabRedirectComponent } from './projects/entry/redirects/all-redirects.c
 import { SearchPageComponent } from './projects/entry/pages/search/search-page.component';
 import { ExternalRedirectComponent } from './projects/entry/redirects/external-redirect.component';
 import { SearchAppContainerComponent } from './projects/search-app/search-app-container/search-app-container.component';
+import { HomePageComponent } from './projects/corporate-page/home-page/home-page.component';
 
 // const hostname = document.location.hostname;
 // const isLocal = hostname === 'localhost';
 
 export const appRoutes: Route[] = [
+  {
+    path: '',
+    component: HomePageComponent,
+    title: 'PDBe - Knowledge Base',
+  },
   {
     path: 'search/index',
     component: SearchAppContainerComponent,
