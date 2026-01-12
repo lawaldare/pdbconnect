@@ -3,12 +3,13 @@ import { Injectable, Inject } from '@angular/core';
 import { LocalData } from './local-data';
 import { RemoteData } from './remote-data';
 import { Observable } from 'rxjs';
+import { LOCAL_DATA_FACTORY, REMOTE_DATA_FACTORY } from './completer-data-factory';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class CompleterService {
   constructor(
-    @Inject(LocalData) private localDataFactory: any, // Using any instead of () => LocalData because on AoT errors
-    @Inject(RemoteData) private remoteDataFactory: any // Using any instead of () => LocalData because on AoT errors
+    @Inject(LOCAL_DATA_FACTORY) private localDataFactory: () => LocalData,
+    @Inject(REMOTE_DATA_FACTORY) private remoteDataFactory: () => RemoteData
   ) {}
 
   public local(data: any[] | Observable<any>, searchFields = '', titleField = ''): LocalData {

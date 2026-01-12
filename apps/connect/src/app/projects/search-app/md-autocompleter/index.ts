@@ -2,7 +2,7 @@ export { CompleterCmp } from './components/completer-cmp';
 export { CompleterListItemCmp } from './components/completer-list-item-cmp';
 export { CompleterService } from './services/completer-service';
 export { CompleterData } from './services/completer-data';
-export { localDataFactory, LocalDataFactoryProvider, remoteDataFactory, RemoteDataFactoryProvider } from './services/completer-data-factory';
+// export { localDataFactory, LocalDataFactoryProvider, remoteDataFactory, RemoteDataFactoryProvider } from './services/completer-data-factory';
 export { CompleterItem } from './components/completer-item';
 export { LocalData } from './services/local-data';
 export { RemoteData } from './services/remote-data';

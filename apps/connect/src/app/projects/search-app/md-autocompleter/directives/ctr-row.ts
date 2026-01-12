@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/directive-selector */
-import { Directive, ElementRef, Host, HostListener, Input, Renderer2, OnInit } from '@angular/core';
+import { Directive, ElementRef, Host, HostListener, Input, Renderer2, OnInit, Optional, SkipSelf } from '@angular/core';
 
 import { CompleterItem } from '../components/completer-item';
 import { CtrDropdown, CtrRowElement, CtrRowItem } from './ctr-dropdown';
@@ -15,11 +15,15 @@ export class CtrRow implements CtrRowElement, OnInit {
   constructor(
     private el: ElementRef,
     private renderer: Renderer2,
-    @Host() private dropdown: CtrDropdown
-  ) {}
+    @Optional() @SkipSelf() private dropdown: CtrDropdown | null
+  ) {
+    if (!this.dropdown) {
+      throw new Error('ctrRow must be used inside an element with ctrDropdown.');
+    }
+  }
 
   public ngOnInit() {
-    this.dropdown.registerRow(new CtrRowItem(this, this._rowIndex));
+    this.dropdown?.registerRow(new CtrRowItem(this, this._rowIndex));
   }
 
   @Input()
@@ -33,11 +37,11 @@ export class CtrRow implements CtrRowElement, OnInit {
   }
 
   @HostListener('click', ['$event']) public onClick(event: any) {
-    this.dropdown.onSelected(this._item);
+    this.dropdown?.onSelected(this._item);
   }
 
   @HostListener('mouseenter', ['$event']) public onMouseEnter(event: any) {
-    this.dropdown.highlightRow(this._rowIndex);
+    this.dropdown?.highlightRow(this._rowIndex);
   }
 
   public setHighlited(selected: boolean) {

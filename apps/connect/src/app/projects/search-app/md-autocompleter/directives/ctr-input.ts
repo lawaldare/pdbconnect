@@ -1,10 +1,11 @@
 /* eslint-disable @angular-eslint/no-input-rename */
 /* eslint-disable @angular-eslint/directive-selector */
-import { Directive, EventEmitter, Host, HostListener, Input, Output } from '@angular/core';
+import { Directive, EventEmitter, Host, HostListener, Inject, Input, Optional, Output, SkipSelf } from '@angular/core';
 import { NgModel } from '@angular/forms';
 
 import { CompleterItem } from '../components/completer-item';
 import { CtrCompleter } from './ctr-completer';
+import { CTR_COMPLETER } from './ctr-completer.token';
 
 // keyboard events
 const KEY_DW = 40;
@@ -28,9 +29,13 @@ export class CtrInput {
   private _displayStr = '';
 
   constructor(
-    @Host() private completer: CtrCompleter,
+    @Optional() @SkipSelf() @Inject(CTR_COMPLETER) private completer: CtrCompleter | null,
     private ngModel: NgModel
   ) {
+    if (!this.completer) {
+      throw new Error('ctrInput must be inside an element with ctrCompleter.');
+    }
+
     this.completer.selected.subscribe((item: CompleterItem) => {
       if (!item) {
         return;
@@ -72,28 +77,28 @@ export class CtrInput {
     } else if (event.keyCode === KEY_DW) {
       event.preventDefault();
 
-      this.completer.search(this.searchStr);
+      this.completer?.search(this.searchStr);
     } else if (event.keyCode === KEY_ES) {
       this.restoreSearchValue();
-      this.completer.clear();
+      this.completer?.clear();
     } else {
-      this.completer.search(this.searchStr);
+      this.completer?.search(this.searchStr);
     }
   }
 
   @HostListener('keydown', ['$event'])
   public keydownHandler(event: any) {
     if (event.keyCode === KEY_EN) {
-      if (this.completer.hasHighlited()) {
+      if (this.completer?.hasHighlited()) {
         event.preventDefault();
       }
       this.handleSelection();
     } else if (event.keyCode === KEY_DW) {
       event.preventDefault();
-      this.completer.nextRow();
+      this.completer?.nextRow();
     } else if (event.keyCode === KEY_UP) {
       event.preventDefault();
-      this.completer.prevRow();
+      this.completer?.prevRow();
     } else if (event.keyCode === KEY_TAB) {
       this.handleSelection();
     } else if (event.keyCode === KEY_ES) {
@@ -107,11 +112,11 @@ export class CtrInput {
   public onBlur(event: any) {
     setTimeout(() => {
       if (this.overrideSuggested) {
-        this.completer.onSelected({ title: this.searchStr, originalObject: null });
+        this.completer?.onSelected({ title: this.searchStr, originalObject: null });
       } else {
         this.restoreSearchValue();
       }
-      this.completer.clear();
+      this.completer?.clear();
     }, 200);
   }
 
@@ -126,11 +131,11 @@ export class CtrInput {
 
   private handleSelection() {
     if (this.overrideSuggested) {
-      this.completer.onSelected({ title: this.searchStr, originalObject: null });
-    } else if (this.completer.hasHighlited()) {
+      this.completer?.onSelected({ title: this.searchStr, originalObject: null });
+    } else if (this.completer?.hasHighlited()) {
       this.completer.selectCurrent();
     } else {
-      this.completer.clear();
+      this.completer?.clear();
     }
   }
 

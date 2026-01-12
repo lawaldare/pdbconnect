@@ -1,8 +1,9 @@
 /* eslint-disable @angular-eslint/directive-selector */
-import { Directive, EventEmitter, OnInit, Output } from '@angular/core';
+import { Directive, EventEmitter, forwardRef, OnInit, Output } from '@angular/core';
 
 // import { CompleterData } from "../components/ng2-completer/services/completer-data";
 import { CompleterItem } from '../components/completer-item';
+import { CTR_COMPLETER } from './ctr-completer.token';
 
 export interface CompleterList {
   search(term: string): void;
@@ -18,6 +19,7 @@ export interface CompleterDropdown {
 
 @Directive({
   selector: '[ctrCompleter]',
+  providers: [{ provide: CTR_COMPLETER, useExisting: forwardRef(() => CtrCompleter) }],
 })
 export class CtrCompleter {
   @Output() public selected = new EventEmitter<CompleterItem>();

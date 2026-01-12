@@ -17,6 +17,7 @@ import { CompleterListItemCmp } from './completer-list-item-cmp';
 import { CtrInput } from '../directives/ctr-input';
 import { CtrRow } from '../directives/ctr-row';
 import { CtrList } from '../directives/ctr-list';
+import { CtrDropdown } from '../directives/ctr-dropdown';
 
 const noop = () => {};
 
@@ -28,7 +29,7 @@ const COMPLETER_CONTROL_VALUE_ACCESSOR = {
 
 @Component({
   selector: 'ng2-completer',
-  imports: [CommonModule, MaterialModule, FormsModule, CompleterListItemCmp, CtrInput, CtrRow, CtrList],
+  imports: [CommonModule, MaterialModule, FormsModule, CompleterListItemCmp, CtrInput, CtrCompleter, CtrRow, CtrList, CtrDropdown],
   template: `
     <div class="completer-holder" ctrCompleter>
       <mat-form-field class="completer-input">
@@ -264,12 +265,12 @@ export class CompleterCmp implements OnInit, ControlValueAccessor, AfterViewInit
         this.dataService = this.datasource;
       }
     }
-    this.completer.selected.subscribe((item: CompleterItem) => {
+    this.completer?.selected.subscribe((item: CompleterItem) => {
       const title = item ? item.title : '';
       this.selected.emit(item);
       this._onChangeCallback(title);
     });
-    this.completer.highlighted.subscribe((item: CompleterItem) => {
+    this.completer?.highlighted.subscribe((item: CompleterItem) => {
       this.highlighted.emit(item);
     });
 

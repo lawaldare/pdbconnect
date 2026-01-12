@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/directive-selector */
-import { Directive, ElementRef, Host, OnDestroy, OnInit } from '@angular/core';
+import { Directive, ElementRef, Host, OnDestroy, OnInit, Optional, SkipSelf } from '@angular/core';
 
 import { CompleterItem } from '../components/completer-item';
 import { CtrCompleter, CompleterDropdown } from './ctr-completer';
@@ -26,10 +26,13 @@ export class CtrDropdown implements CompleterDropdown, OnDestroy, OnInit {
   private isScrollOn!: any;
 
   constructor(
-    @Host() private completer: CtrCompleter,
+    @Optional() @SkipSelf() private completer: CtrCompleter | null,
     private el: ElementRef
   ) {
-    this.completer.registerDropdown(this);
+    if (!this.completer) {
+      throw new Error('ctrDropdown must be used inside an element with ctrCompleter.');
+    }
+    this.completer?.registerDropdown(this);
   }
 
   public ngOnInit() {
@@ -38,7 +41,7 @@ export class CtrDropdown implements CompleterDropdown, OnDestroy, OnInit {
   }
 
   public ngOnDestroy() {
-    this.completer.registerDropdown({} as CompleterDropdown);
+    this.completer?.registerDropdown({} as CompleterDropdown);
   }
 
   public registerRow(row: CtrRowItem) {
@@ -53,7 +56,7 @@ export class CtrDropdown implements CompleterDropdown, OnDestroy, OnInit {
         this.currHighlited.row.setHighlited(false);
       }
       this.currHighlited = undefined;
-      this.completer.onHighlighted({} as CompleterItem);
+      this.completer?.onHighlighted({} as CompleterItem);
       return;
     }
 
@@ -67,7 +70,7 @@ export class CtrDropdown implements CompleterDropdown, OnDestroy, OnInit {
 
     this.currHighlited = highlited;
     this.currHighlited.row.setHighlited(true);
-    this.completer.onHighlighted(this.currHighlited.row.getDataItem());
+    this.completer?.onHighlighted(this.currHighlited.row.getDataItem());
   }
 
   public clear() {
@@ -75,7 +78,7 @@ export class CtrDropdown implements CompleterDropdown, OnDestroy, OnInit {
   }
 
   public onSelected(item: CompleterItem) {
-    this.completer.onSelected(item);
+    this.completer?.onSelected(item);
   }
 
   public selectCurrent() {

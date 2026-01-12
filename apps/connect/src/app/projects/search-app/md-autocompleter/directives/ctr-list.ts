@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/directive-selector */
-import { ChangeDetectorRef, Directive, Host, Input, OnInit, TemplateRef, ViewContainerRef } from '@angular/core';
+import { ChangeDetectorRef, Directive, Host, Input, OnInit, Optional, SkipSelf, TemplateRef, ViewContainerRef } from '@angular/core';
 
 import { CtrCompleter, CompleterList } from './ctr-completer';
 import { CompleterData } from '../services/completer-data';
@@ -36,14 +36,18 @@ export class CtrList implements OnInit, CompleterList {
   }
 
   constructor(
-    @Host() private completer: CtrCompleter,
+    @Optional() @SkipSelf() private completer: CtrCompleter | null,
     private templateRef: TemplateRef<CtrListContext>,
     private viewContainer: ViewContainerRef,
     private cd: ChangeDetectorRef
-  ) {}
+  ) {
+    if (!this.completer) {
+      throw new Error('ctrList must be used inside an element with ctrCompleter.');
+    }
+  }
 
   public ngOnInit() {
-    this.completer.registerList(this);
+    this.completer?.registerList(this);
     this.viewContainer.createEmbeddedView(this.templateRef, new CtrListContext([], false, false));
   }
 
@@ -63,7 +67,7 @@ export class CtrList implements OnInit, CompleterList {
           results[0].title.toLocaleLowerCase() === this.term.toLocaleLowerCase()
         ) {
           // Do automatch
-          this.completer.onSelected(results[0]);
+          this.completer?.onSelected(results[0]);
         }
         this.refreshTemplate();
       });
