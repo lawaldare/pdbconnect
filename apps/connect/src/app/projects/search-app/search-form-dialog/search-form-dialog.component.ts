@@ -13,7 +13,7 @@ declare const gtag: any;
 @Component({
   selector: 'pdbc-search-form-dialog',
   templateUrl: './search-form-dialog.component.html',
-  styleUrls: ['./search-form-dialog.component.css'],
+  styleUrls: ['./search-form-dialog.component.scss'],
   imports: [CommonModule, MaterialModule, FormsModule, ReactiveFormsModule, FilterCardsComponent, NgSelectComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
