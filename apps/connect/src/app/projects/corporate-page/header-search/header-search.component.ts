@@ -11,8 +11,8 @@ import { FormsModule } from '@angular/forms';
 export class HeaderSearchComponent {
   public uniprot_id = '';
 
-  goToProteinPage() {
-    if (this.uniprot_id && this.uniprot_id != '') {
+  public goToProteinPage(): void {
+    if (this.uniprot_id) {
       window.open('https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + this.uniprot_id);
     }
   }

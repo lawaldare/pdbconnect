@@ -10,7 +10,7 @@ import { Component, OnInit, signal } from '@angular/core';
 export class HeaderComponent {
   public menuOpen = signal(false);
 
-  toggleMenu() {
+  public toggleMenu(): void {
     this.menuOpen.update((state) => !state);
   }
 }

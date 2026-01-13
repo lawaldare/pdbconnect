@@ -1,40 +1,64 @@
 <h3 class="heading-style-B">Key features</h3>
 <div class="slider-keyf">
-    <div class="chevron-cbox" (click)="updateCarousel(-1)" onclick="gtag('event', 'key_features', {'event_category': 'key_ft_nav_click', 'event_label': 'arrow_click', 'value': undefined})">
-        <i class="icon icon-common icon-chevron-left keyf-icon"></i>
+  <div
+    class="chevron-cbox"
+    (click)="updateCarousel(-1)"
+    onclick="gtag('event', 'key_features', {'event_category': 'key_ft_nav_click', 'event_label': 'arrow_click', 'value': undefined})"
+  >
+    <i class="icon icon-common icon-chevron-left keyf-icon"></i>
+  </div>
+  @for(item of currentChunks(); track $index){
+  <div class="image-card-kf">
+    <div class="key-features-title-holder">
+      <h3 class="key-features-title">{{item.title}}</h3>
     </div>
-    <div *ngFor="let each_item of current_chunk; index as i" class="image-card-kf">
-        <div class="key-features-title-holder">
-            <h3 class="key-features-title">{{each_item.title}}</h3>
-        </div>
-        <div class="key-features-img-hold">
-            <a class="link-legend-style-kf" target="_blank" href={{each_item.example_href}} onclick="gtag('event', 'key_features', {'event_category': 'feature_click', 'event_label': each_item.event_label, 'value': undefined})">
-                <img src={{each_item.src}} alt="" class="key-features-img">
-            </a>
-        </div>
-        <div class="kf-legend">
-            <div>
-                {{each_item.div_content}}
-                <a target="_blank" class='link-legend-style-kf' href={{each_item.example_href}} onclick="gtag('event', 'key_features', {'event_category': 'feature_click', 'event_label': each_item.event_label, 'value': undefined})">{{each_item.anchor_content}}</a>
-            </div>
-        </div>
+    <div class="key-features-img-hold">
+      <a
+        class="link-legend-style-kf"
+        target="_blank"
+        [href]="item.example_href"
+        onclick="gtag('event', 'key_features', {'event_category': 'feature_click', 'event_label': each_item.event_label, 'value': undefined})"
+      >
+        <img [src]="item.src" alt="" class="key-features-img" />
+      </a>
     </div>
-    <div class="chevron-cbox" (click)="updateCarousel(1)" onclick="gtag('event', 'key_features', {'event_category': 'key_ft_nav_click', 'event_label': 'arrow_click', 'value': undefined})">
-        <i class="icon icon-common icon-chevron-right keyf-icon"></i>
+    <div class="kf-legend">
+      <div>
+        {{item.div_content}}
+        <a
+          target="_blank"
+          class="link-legend-style-kf"
+          [href]="item.example_href"
+          onclick="gtag('event', 'key_features', {'event_category': 'feature_click', 'event_label': each_item.event_label, 'value': undefined})"
+          >{{item.anchor_content}}</a
+        >
+      </div>
     </div>
+  </div>
+  }
+
+  <div
+    class="chevron-cbox"
+    (click)="updateCarousel(1)"
+    onclick="gtag('event', 'key_features', {'event_category': 'key_ft_nav_click', 'event_label': 'arrow_click', 'value': undefined})"
+  >
+    <i class="icon icon-common icon-chevron-right keyf-icon"></i>
+  </div>
 </div>
 <div class="navigation-circles">
-    <svg>
-        <circle *ngFor="let chunk of chunks index as j"
-            class="kf-navs"
-            [attr.cx]="calculateCircleX(j)"
-            cy="0.6em"
-            r="0.5em"
-            stroke="#B6D1D0"
-            stroke-width="0.15em"
-            [attr.fill]="calculateFill(j)"
-            (click)="updateCarousel(j-chunk_index)"
-            onclick="gtag('event', 'key_features', {'event_category': 'key_ft_nav_click', 'event_label': 'circle_click', 'value': undefined})">
-        </circle>
-    </svg>
+  <svg>
+    @for(chunk of chunks(); track $index; let index = $index) {
+    <circle
+      class="kf-navs"
+      [attr.cx]="calculateCircleX(index)"
+      cy="0.6em"
+      r="0.5em"
+      stroke="#B6D1D0"
+      stroke-width="0.15em"
+      [attr.fill]="calculateFill(index)"
+      (click)="updateCarousel(index-chunkIndex())"
+      onclick="gtag('event', 'key_features', {'event_category': 'key_ft_nav_click', 'event_label': 'circle_click', 'value': undefined})"
+    ></circle>
+    }
+  </svg>
 </div>

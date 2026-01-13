@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, HostListener, AfterViewChecked } from '@angular/core';
+import { Component, OnInit, HostListener, AfterViewChecked, signal } from '@angular/core';
 declare const d3: any;
 declare const gtag: any;
 
@@ -116,33 +116,33 @@ export class KeyFeaturesListComponent implements OnInit {
       example_href: 'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/P00439/structures',
     },
   ];
-  chunks: any[] = [];
 
-  chunk_size = 3;
-  chunk_index = 0;
-  max_chunk_n = 0;
-  current_chunk: any[] = [];
-  current_chunk_idx: any[] = [];
+  private chunkSize = signal(3);
+  public chunkIndex = signal(0);
+  private maxChunk = signal(0);
+  public currentChunks = signal<any[]>([]);
+  private currentChunkIndex = signal<any[]>([]);
+  public chunks = signal<any[]>([]);
 
   ngOnInit(): void {
     // window.addEventListener('resize', this.wrapper);
     if (window.innerWidth < 900) {
-      this.chunk_size = 2;
+      this.chunkSize.set(2);
     }
     if (window.innerWidth < 540) {
-      this.chunk_size = 1;
+      this.chunkSize.set(1);
     }
     this.buildCarousel();
   }
 
   @HostListener('window:resize', ['$event'])
   calcChunks(event: any) {
-    this.chunk_size = 3;
+    this.chunkSize.set(3);
     if (window.innerWidth < 900) {
-      this.chunk_size = 2;
+      this.chunkSize.set(2);
     }
     if (window.innerWidth < 540) {
-      this.chunk_size = 1;
+      this.chunkSize.set(1);
     }
     this.buildCarousel();
   }
@@ -152,15 +152,15 @@ export class KeyFeaturesListComponent implements OnInit {
   // }
 
   buildChunks(to_chunk_array: any) {
-    this.chunks = [];
-    for (let i = 0; i < to_chunk_array.length; i += this.chunk_size) {
-      const chunk: any = to_chunk_array.slice(i, i + this.chunk_size);
-      this.chunks.push(chunk);
+    this.chunks.update(() => []);
+    for (let i = 0; i < to_chunk_array.length; i += this.chunkSize()) {
+      const chunk: any = to_chunk_array.slice(i, i + this.chunkSize());
+      this.chunks().push(chunk);
     }
   }
 
   calculateFill(j: number) {
-    if (j === this.chunk_index) {
+    if (j === this.chunkIndex()) {
       return '#085F5C';
     }
     return 'transparent';
@@ -171,39 +171,41 @@ export class KeyFeaturesListComponent implements OnInit {
   }
 
   getCurrentChunk() {
-    this.current_chunk = [];
-    for (const idx of this.current_chunk_idx) {
-      this.current_chunk.push(this.slides[idx]);
+    this.currentChunks.update(() => []);
+    for (const idx of this.currentChunkIndex()) {
+      this.currentChunks().push(this.slides[idx]);
     }
   }
 
   buildCarousel() {
     this.buildChunks(this.slides);
-    this.current_chunk_idx = Array.from(Array(this.chunk_size).keys());
-    this.max_chunk_n = Math.ceil(this.slides.length / this.chunk_size);
+    this.currentChunkIndex.update(() => Array.from(Array(this.chunkSize()).keys()));
+    this.maxChunk.set(Math.ceil(this.slides.length / this.chunkSize()));
     this.getCurrentChunk();
   }
 
   updateCarousel(idx: number) {
-    this.chunk_index = this.chunk_index + idx;
+    this.chunkIndex.update((index) => index + idx);
 
-    if (this.chunk_index < 0) {
-      this.chunk_index = this.chunks.length - 1;
+    if (this.chunkIndex() < 0) {
+      this.chunkIndex.set(this.chunks().length - 1);
     }
-    if (this.chunk_index > this.chunks.length - 1) {
-      this.chunk_index = 0;
+    if (this.chunkIndex() > this.chunks().length - 1) {
+      this.chunkIndex.set(0);
     }
 
-    const slides_to_get = idx * this.chunk_size;
-    this.current_chunk_idx = this.current_chunk_idx.map((each_id) => {
-      each_id += slides_to_get;
-      if (each_id < 0) {
-        each_id += this.slides.length;
-      } else if (each_id > this.slides.length - 1) {
-        each_id -= this.slides.length;
-      }
-      return each_id;
-    });
+    const slides_to_get = idx * this.chunkSize();
+    this.currentChunkIndex.update((currentChunkIndex) =>
+      currentChunkIndex.map((each_id) => {
+        each_id += slides_to_get;
+        if (each_id < 0) {
+          each_id += this.slides.length;
+        } else if (each_id > this.slides.length - 1) {
+          each_id -= this.slides.length;
+        }
+        return each_id;
+      })
+    );
     this.getCurrentChunk();
   }
 }

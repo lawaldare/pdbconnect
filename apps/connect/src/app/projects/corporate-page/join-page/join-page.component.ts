@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { HeaderSearchComponent } from '../header-search/header-search.component';
 import { HeaderComponent } from '../header/header.component';
 import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
@@ -12,7 +12,7 @@ import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.compone
   imports: [CommonModule, HeaderComponent, HeaderSearchComponent, NavTabsComponent, HomeBookmarksComponent],
 })
 export class JoinPageComponent {
-  scroll(el: HTMLElement) {
+  public scroll(el: HTMLElement): void {
     el.scrollIntoView({ behavior: 'smooth' });
   }
 }

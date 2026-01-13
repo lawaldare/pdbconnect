@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class AggregatedViewSearchComponent {
   public uniprot_id = '';
-  goToProteinPage() {
+  public goToProteinPage(): void {
     window.open('https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + this.uniprot_id);
   }
 }

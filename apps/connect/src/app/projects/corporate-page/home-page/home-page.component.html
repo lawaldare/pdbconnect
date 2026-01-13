@@ -288,11 +288,16 @@
         <li>{{ description }}</li>
         }
       </ul>
-      <p *ngIf="releaseLink" class="paragraph-style-B">
+      @if(releaseLink()){
+      <p class="paragraph-style-B">
+        <a target="_blank" [href]="releaseLink()" class="link-style" style="font-size: 14px">Learn more <i class="icon icon-common icon-external-link-alt"></i></a>
+      </p>
+      }
+      <!-- <p *ngIf="releaseLink" class="paragraph-style-B">
         <a target="_blank" href="{{ releaseLink() }}" class="link-style" style="font-size: 14px"
           >Learn more <i class="icon icon-common icon-external-link-alt"></i
         ></a>
-      </p>
+      </p> -->
     </div>
   </div>
   <div id="license" class="content-holder">
