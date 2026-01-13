@@ -1,18 +1,17 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
-declare var gtag
+import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component } from '@angular/core';
+import { HeaderComponent } from '../header/header.component';
+import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
+declare const gtag: any;
 
 @Component({
-    selector: 'app-error-page',
-    templateUrl: './error-page.component.html',
-    styleUrls: ['./error-page.component.css'],
-    standalone: false
+  selector: 'pdbc-error-page',
+  templateUrl: './error-page.component.html',
+  styleUrls: ['./error-page.component.scss'],
+  imports: [CommonModule, HeaderComponent, NavTabsComponent],
 })
 export class ErrorPageComponent implements AfterViewInit {
-
-  constructor() { }
-
   ngAfterViewInit(): void {
-    gtag('event', 'missing_page', {'event_category': 'missing_page', 'event_label': 'missing_page', 'value': undefined})
+    gtag('event', 'missing_page', { event_category: 'missing_page', event_label: 'missing_page', value: undefined });
   }
-
 }

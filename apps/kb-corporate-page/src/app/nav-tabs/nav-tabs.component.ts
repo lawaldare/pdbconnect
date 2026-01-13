@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Input, HostListener, input, signal, computed } from '@angular/core';
+import { Component, OnInit, HostListener, input, signal, computed } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 @Component({

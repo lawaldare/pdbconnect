@@ -1,9 +1,10 @@
+/* eslint-disable @angular-eslint/prefer-inject */
 import { Component, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { forkJoin } from 'rxjs';
-import { environment } from '../../../../environments/environment';
 import { ScriptLoaderService } from '@pdbc/core';
+import { environment } from '../../environments/environment';
 
 declare const Highcharts: any;
 
@@ -13,7 +14,7 @@ declare const Highcharts: any;
   styleUrls: ['./partners-plots.component.scss'],
 })
 export class PartnersPlotsComponent {
-  private _partnersURL = 'assets/corporate-page/data/partners_descriptions.json';
+  private _partnersURL = 'assets/data/partners_descriptions.json';
 
   resource_protein_count: any = null;
   category_protein_count: any = null;
