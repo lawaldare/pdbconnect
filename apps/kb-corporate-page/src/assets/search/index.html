@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>PdbSearchAutocomplete</title>
+    <base href="/">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script>PdbeAutocompleteSearchConfig = {
+      resultBoxAlign: 'right',
+      redirectOnClick: true,
+      view: 'macromolecules', //'entry' | 'macromolecules' | 'compounds' | 'sequencefam';
+      searchUrl: 'https://www.ebi.ac.uk/pdbe/search/pdb-autocomplete/select',
+      fields: 'value,num_pdb_entries,var_name',
+      group: 'group=true&group.field=category',
+      groupLimit: '25',
+      sort: 'category+asc,num_pdb_entries+desc',
+      searchParams: 'rows=20000&json.nl=map&wt=json'
+    }
+
+    // For customising redirection on click
+    // Set the above 'redirectOnClick' param to false
+    // And bind to PDBe.autocomplete.click' as shown below
+    // document.addEventListener('PDBe.autocomplete.click', function(e){ console.log(e.eventData) })
+    </script>
+    <link href="styles.bundle.css" rel="stylesheet"/>
+</head>
+<body>
+<div style="width: 30%; float: right; margin-right: 30px;">
+    <pdb-search-autocomplete></pdb-search-autocomplete>
+</div>
+<script type="text/javascript" src="inline.bundle.js"></script>
+<script type="text/javascript" src="polyfills.bundle.js"></script>
+<script type="text/javascript" src="main.bundle.js"></script>
+</body>
+</html>

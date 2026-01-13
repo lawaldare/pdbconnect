@@ -1,0 +1,35 @@
+.masthead {
+  background-color: #085f5c !important;
+}
+
+.masthead nav{
+    background-color: rgba(17, 17, 17, 0.4)
+}
+
+h2{
+    margin-bottom: 25px;
+}
+
+.partner-table td:first-child {
+    font-weight: bold;
+}
+
+#main-content-area .row{
+    margin-bottom: 40px;
+}
+
+.table-responsive a{
+    font-weight: bold;
+}
+
+#partner-details div p{
+    text-align: justify;
+}
+
+.partner-info{
+    padding: 0px 20px 0px 20px;
+}
+
+a, a:hover, a:visited{
+    border-bottom: none;
+}

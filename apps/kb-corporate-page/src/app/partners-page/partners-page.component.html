@@ -1,0 +1,120 @@
+<pdbc-header></pdbc-header>
+<div class="search-box">
+  <!-- <div class="row large-offset-1 medium-offset-1"> -->
+  <div class="row">
+    <pdbc-header-search></pdbc-header-search>
+  </div>
+</div>
+<pdbc-nav-tabs activePageInput="partners"></pdbc-nav-tabs>
+<pdbc-home-bookmarks [showquicklinks]="false"></pdbc-home-bookmarks>
+<div class="row" style="height: fit-content">
+  <!-- <div class="menu-nav large-10 large-offset-1 medium-offset-1 medium-10 small-12"> -->
+  <div class="menu-nav">
+    <div class="row">
+      <div class="columns small-12">
+        <nav class="alphafold-nav">
+          <ul class="no-bullets">
+            <li
+              id="pdbe_data_menu"
+              class="scroll-menu-item"
+              (click)="scroll(data)"
+              onclick="gtag('event', 'scroll_menu', {'event_category': 'partners_menu_click', 'event_label': 'partners_menu', 'value': undefined})"
+            >
+              <span>PDBe-KB data</span>
+            </li>
+            <li
+              id="partners_data"
+              class="scroll-menu-item"
+              (click)="scroll(partners)"
+              onclick="gtag('event', 'scroll_menu', {'event_category': 'partners_menu_click', 'event_label': 'partners_menu', 'value': undefined})"
+            >
+              <span>PDBe-KB partners</span>
+            </li>
+            @for(category of partnersCategories(); track $index; let i = $index){
+            <li
+              id="item-{{ category }}"
+              class="scroll-menu-item"
+              style="padding-left: 20px"
+              (click)="scrollById(partnersCategoriesId()[i])"
+              onclick="gtag('event', 'scroll_menu', {'event_category': 'partners_menu_click', 'event_label': 'partners_menu', 'value': undefined})"
+            >
+              <span>{{ category }}</span>
+            </li>
+            }
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    <section class="after-nav content-holder">
+      <div id="pdbe_data" #data class="text-holder">
+        <h3 class="heading-style-B">PDBe-KB data</h3>
+        <div class="text-holder">
+          <p class="paragraph-style-B bolder-24">Here you can find PDBe-KB resource statistics on data deposited.</p>
+          <ul class="partners-tutorial">
+            <li>
+              Click on “Number of protein by resource” to view a barchart showing the total number of proteins with annotations from all the PDBe-KB resources. These
+              resources are further grouped based on type of annotations.
+            </li>
+            <li>Click on “Number of proteins by annotation type” to view a barchart showing the total number of proteins with annotations in these groups.</li>
+            <li>Click on “Last update for each resource” to view when each PDBe-KB resource data was last updated.</li>
+          </ul>
+        </div>
+        <!-- <p class="plot-update">Last plot update: 11/10/2022</p> -->
+        <pdbc-partners-plots></pdbc-partners-plots>
+      </div>
+      <div id="pdbe_partners" #partners class="content-holder">
+        <div class="text-holder">
+          <h3 class="heading-style-B smaller">PDBe-KB partners</h3>
+          <pdbc-partners-map></pdbc-partners-map>
+        </div>
+        @if(partnersCategories().length){
+        <div>
+          <div class="text-holder">
+            @for(category of partnersCategories(); track $index; let i = $index){
+            <div [id]="category" class="content-holder">
+              <h3 class="heading-style-B smaller">{{ partnersCategories()[i] }}</h3>
+              <div class="row">
+                @for(partner of partnersData()[partnersCategories()[i]]; track $index){
+                <div class="small-12 medium-4 large-3 columns forced-left-float box">
+                  <div class="partner-card">
+                    <div class="small-12 columns">
+                      <!-- Anchor tag with Partner name -->
+                      <a
+                        target="_blank"
+                        [href]="partner.url"
+                        class="partner-anchor"
+                        onclick="gtag('event', 'link_visit', {'event_category': 'partners_resource_click', 'event_label': 'partners_resources', 'value': undefined})"
+                      >
+                        <span style="font-size: 1.3em; font-weight: bold"> {{ partner.name }}</span>
+                        <i class="icon icon-common icon-external-link-alt" style="font-size: 0.8em"></i>
+                      </a>
+
+                      <!-- Authors name -->
+                      <p style="font-weight: bold; font-size: 0.8em">{{ partner.authors }}</p>
+                    </div>
+
+                    <!-- Partner logo (necessary?) -->
+                    <!-- <div class="small-12 medium-4 columns"></div> -->
+                    <div class="small-12 columns label-tooltip">
+                      <!-- Short Textual description -->
+                      <p style="font-size: 16px">{{ partner.short }}</p>
+
+                      <!-- Full tooltip Long Textual description -->
+                      <span class="label-tooltip-text">
+                        <p><strong>Description: </strong>{{ partner.long }}</p>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                }
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </section>
+  </div>
+</div>
