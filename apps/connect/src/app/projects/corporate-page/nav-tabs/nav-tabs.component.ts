@@ -9,11 +9,7 @@ import { RouterModule } from '@angular/router';
   imports: [CommonModule, RouterModule],
 })
 export class NavTabsComponent implements OnInit {
-  // @Input() activePage: string = "";
-
   public activePageInput = input<string>();
-
-  // public activePage = signal<string>(this.activePageInput() ?? 'home');
 
   public activePage = computed(() => this.activePageInput() ?? 'home');
 

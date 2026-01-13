@@ -1,12 +1,10 @@
-import { Component, OnInit, Output, EventEmitter, HostListener, AfterViewInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-// import * as L from 'leaflet';
-// import 'leaflet.markercluster';
-
-import * as L from 'leaflet'; // Explicit ESM import
-import 'leaflet.markercluster'; // ESM-compatible version
+import { Component, Output, EventEmitter, HostListener, inject, computed, effect, signal } from '@angular/core';
+import * as L from 'leaflet';
+import 'leaflet.markercluster';
 import { CommonModule } from '@angular/common';
+import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { markersColors } from '../corporate-page.constant';
 
 declare const gtag: any;
 
@@ -16,62 +14,47 @@ declare const gtag: any;
   styleUrls: ['./partners-map.component.scss'],
   imports: [CommonModule],
 })
-export class PartnersMapComponent implements AfterViewInit {
+export class PartnersMapComponent {
+  private readonly cpApiService = inject(CorporatePagesApiService);
+  public readonly partnersDescriptionData = toSignal(this.cpApiService.getPartnersDescriptionData(), { initialValue: {} });
+  private mapInitialized = signal(false);
+
+  public partnersData = computed(() => {
+    const data = this.partnersDescriptionData();
+    if (data) {
+      return Object.values(data).reduce((arr: any[], v: any) => {
+        arr.push(...v);
+        return arr;
+      }, []);
+    }
+    return [];
+  });
+
+  public partnersCount = computed(() => {
+    const data = this.partnersData();
+    return data ? data.length : 0;
+  });
+
   @Output() map$: EventEmitter<L.Map> = new EventEmitter();
   @Output() zoom$: EventEmitter<number> = new EventEmitter();
 
-  private _jsonURL = 'assets/corporate-page/data/partners_descriptions.json';
-
-  /**
-   * Constant used to control partners colors on map
-   * also used to draw the bottom-left legend
-   */
-  markers_colors: any = {
-    'Biophysical parameters': '#8495a9',
-    'Small-molecule sites': '#00596c',
-    'Protein binding sites': '#00897b',
-    'Proteins/domains': '#13c66d',
-    'Evolutionary conserved sites': '#84e18f',
-    'Mutations/variations': '#d9f3ce',
-  };
+  private readonly markerColors: any = markersColors;
 
   public map!: L.Map;
   public zoom!: number;
 
-  public partner_count = 0;
   public country_count = 0;
-
-  public partners_data: any;
   public country_data = null;
-
   public marker_group_dict: any[] = [];
 
-  /**
-   * Function to retrieve JSON data describing each partner resource
-   * @returns JSON data as Observable from descriptions json
-   */
-  public getJSON(): Observable<any> {
-    return this.http.get(this._jsonURL);
-  }
-
-  /**
-   * Function to retrieve and count partner resource data and to call map generation
-   */
-  getAndPlotData() {
-    this.getJSON().subscribe((jsondata) => {
-      this.partners_data = Object.values(jsondata).reduce((arr: any[], v: any) => {
-        arr.push(...v);
-        return arr;
-      }, []);
-      this.partner_count = this.partners_data.length;
-      this.createMap();
+  constructor() {
+    effect(() => {
+      const partners = this.partnersData();
+      if (!this.mapInitialized() && partners.length) {
+        this.mapInitialized.set(true);
+        this.createMap();
+      }
     });
-  }
-
-  constructor(private http: HttpClient) {}
-
-  ngAfterViewInit(): void {
-    this.getAndPlotData();
   }
 
   /**
@@ -146,7 +129,9 @@ export class PartnersMapComponent implements AfterViewInit {
    */
   createMap() {
     // Partners data is parsed and clustered by country name
-    const unique_countries = this.partners_data.map((ec: any) => ec.country).filter((coun: any, i: any, arr: any) => arr.indexOf(coun) === i);
+    const unique_countries = this.partnersData()
+      .map((ec: any) => ec.country)
+      .filter((coun: any, i: any, arr: any) => arr.indexOf(coun) === i);
     this.country_count = unique_countries.length;
     this.marker_group_dict = unique_countries.reduce((obj: { [x: string]: any }, coun: string | number) => {
       obj[coun] = L.markerClusterGroup({ singleMarkerMode: true });
@@ -187,27 +172,29 @@ export class PartnersMapComponent implements AfterViewInit {
     }).addTo(this.map);
 
     // Iterates over the data of each partner
-    for (let i_p = 0; i_p < this.partners_data.length; i_p++) {
-      const city = this.partners_data[i_p]['city'];
+    for (let i_p = 0; i_p < this.partnersData().length; i_p++) {
+      const city = this.partnersData()[i_p]['city'];
 
       // creates a marker for each partner (aggregated in marker clusters by Country name)
-      const marker = L.marker([this.partners_data[i_p]['coords'][0], this.partners_data[i_p]['coords'][1]]);
+      const marker = L.marker([this.partnersData()[i_p]['coords'][0], this.partnersData()[i_p]['coords'][1]]);
 
-      const cname = this.partners_data[i_p]['country'];
-      const current_color = this.markers_colors[this.partners_data[i_p]['type']];
+      const cname = this.partnersData()[i_p]['country'];
+      const current_color = this.markerColors[this.partnersData()[i_p]['type']];
 
       // style of marker content is defined based on category of partnert
       let txt_color = 'white';
       if (
-        this.partners_data[i_p]['type'] === 'Small-molecule sites' ||
-        this.partners_data[i_p]['type'] === 'Protein binding sites' ||
-        this.partners_data[i_p]['type'] === 'Mutations/variations'
+        this.partnersData()[i_p]['type'] === 'Small-molecule sites' ||
+        this.partnersData()[i_p]['type'] === 'Protein binding sites' ||
+        this.partnersData()[i_p]['type'] === 'Mutations/variations'
       ) {
         txt_color = 'black';
       }
 
       // marker content includes a title of "City, Country Name" followed by a colored anchor link to each partner's page
-      const partners_tag = `<a target="_blank" style='border-radius: 5px; color: ${txt_color}; padding: 2px; line-height:2 ; background: ${current_color}' href="${this.partners_data[i_p]['url']}">${this.partners_data[i_p]['name']}</a>`;
+      const partners_tag = `<a target="_blank" style='border-radius: 5px; color: ${txt_color}; padding: 2px; line-height:2 ; background: ${current_color}' href="${
+        this.partnersData()[i_p]['url']
+      }">${this.partnersData()[i_p]['name']}</a>`;
       marker.bindPopup('<b>' + city + ', ' + cname + '</b><br>' + partners_tag);
       marker.on('mouseover', function (ev: any) {
         ev.target.openPopup();
@@ -228,7 +215,7 @@ export class PartnersMapComponent implements AfterViewInit {
     }
 
     // Generation of coloured legend displayed on bottom left corner of map
-    const markers_colors = this.markers_colors;
+    const markers_colors = this.markerColors;
     const legend = new L.Control({ position: 'bottomleft' }); // Legend object instantiated
 
     legend.onAdd = function (map: any) {

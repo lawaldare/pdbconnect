@@ -30,16 +30,17 @@
             >
               <span>PDBe-KB partners</span>
             </li>
+            @for(category of partnersCategories(); track $index; let i = $index){
             <li
-              *ngFor="let category of partners_categories; index as i"
               id="item-{{ category }}"
               class="scroll-menu-item"
               style="padding-left: 20px"
-              (click)="scrollById(partners_categories_ids[i])"
+              (click)="scrollById(partnersCategoriesId()[i])"
               onclick="gtag('event', 'scroll_menu', {'event_category': 'partners_menu_click', 'event_label': 'partners_menu', 'value': undefined})"
             >
               <span>{{ category }}</span>
             </li>
+            }
           </ul>
         </nav>
       </div>
@@ -67,20 +68,21 @@
           <h3 class="heading-style-B smaller">PDBe-KB partners</h3>
           <pdbc-partners-map></pdbc-partners-map>
         </div>
-        <div *ngIf="partners_categories">
+        @if(partnersCategories().length){
+        <div>
           <div class="text-holder">
-            <!-- For each Partner Category -->
-            <div *ngFor="let category of partners_categories_ids; index as i" id="{{ category }}" class="content-holder">
-              <h3 class="heading-style-B smaller">{{ partners_categories[i] }}</h3>
+            @for(category of partnersCategories(); track $index; let i = $index){
+            <div [id]="category" class="content-holder">
+              <h3 class="heading-style-B smaller">{{ partnersCategories()[i] }}</h3>
               <div class="row">
-                <!-- For each Partner inside Partner Category -->
-                <div *ngFor="let partner of partners_data[partners_categories[i]]" class="small-12 medium-4 large-3 columns forced-left-float box">
+                @for(partner of partnersData()[partnersCategories()[i]]; track $index){
+                <div class="small-12 medium-4 large-3 columns forced-left-float box">
                   <div class="partner-card">
                     <div class="small-12 columns">
                       <!-- Anchor tag with Partner name -->
                       <a
                         target="_blank"
-                        href="{{ partner.url }}"
+                        [href]="partner.url"
                         class="partner-anchor"
                         onclick="gtag('event', 'link_visit', {'event_category': 'partners_resource_click', 'event_label': 'partners_resources', 'value': undefined})"
                       >
@@ -105,10 +107,13 @@
                     </div>
                   </div>
                 </div>
+                }
               </div>
             </div>
+            }
           </div>
         </div>
+        }
       </div>
     </section>
   </div>

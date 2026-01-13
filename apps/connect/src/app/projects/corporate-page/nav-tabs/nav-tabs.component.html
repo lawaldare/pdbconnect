@@ -7,32 +7,40 @@
     <!-- <div class="large-10 large-offset-1 medium-offset-1 medium-10 small-12"> -->
     <nav style="width: 100%">
       <ul id="local-nav" class="dropdown menu float-left" data-description="navigational" role="menubar" data-dropdown-menu="1xnjtv-dropdown-menu">
-        <li *ngIf="activePage() === 'home' || showExtra() === false" role="menuitem" [ngClass]="{ active: activePage() === 'home' }">
+        @if(activePage() === 'home' || showExtra() === false ){
+        <li role="menuitem" [ngClass]="{ active: activePage() === 'home' }">
           <a routerLink="/" onclick="gtag('event', 'page_route', {'event_category': 'nav_click', 'event_label': 'nav_home', 'value': undefined})">Home</a>
         </li>
-        <li *ngIf="activePage() === 'services' || showExtra() === false" role="menuitem" [ngClass]="{ active: activePage() === 'services' }">
+        } @if(activePage() === 'services' || showExtra() === false ){
+        <li role="menuitem" [ngClass]="{ active: activePage() === 'services' }">
           <a routerLink="/services" onclick="gtag('event', 'page_route', {'event_category': 'nav_click', 'event_label': 'nav_services', 'value': undefined})"
             >Services</a
           >
         </li>
-        <li *ngIf="activePage() === 'partners' || showExtra() === false" role="menuitem" [ngClass]="{ active: activePage() === 'partners' }">
+        } @if(activePage() === 'partners' || showExtra() === false){
+        <li role="menuitem" [ngClass]="{ active: activePage() === 'partners' }">
           <a routerLink="/partners" onclick="gtag('event', 'page_route', {'event_category': 'nav_click', 'event_label': 'nav_partners', 'value': undefined})"
             >Partners and data</a
           >
         </li>
-        <li *ngIf="activePage() === 'join' || showExtra() === false" role="menuitem" [ngClass]="{ active: activePage() === 'join' }">
+        } @if(activePage() === 'join' || showExtra() === false){
+        <li role="menuitem" [ngClass]="{ active: activePage() === 'join' }">
           <a routerLink="/join" onclick="gtag('event', 'page_route', {'event_category': 'nav_click', 'event_label': 'nav_join', 'value': undefined})">Join PDBe-KB</a>
         </li>
-        <li *ngIf="activePage() === 'graph' || showExtra() === false" role="menuitem" [ngClass]="{ active: activePage() === 'graph' }">
+        } @if(activePage() === 'graph' || showExtra() === false){
+        <li role="menuitem" [ngClass]="{ active: activePage() === 'graph' }">
           <a routerLink="/graph" onclick="gtag('event', 'page_route', {'event_category': 'nav_click', 'event_label': 'nav_graph', 'value': undefined})"
             >PDBe Graph Database</a
           >
         </li>
-        <li *ngIf="activePage() === 'schema' || showExtra() === false" role="menuitem" [ngClass]="{ active: activePage() === 'schema' }">
+        } @if(activePage() === 'schema' || showExtra() === false){
+        <li role="menuitem" [ngClass]="{ active: activePage() === 'schema' }">
           <a routerLink="/schema" onclick="gtag('event', 'page_route', {'event_category': 'nav_click', 'event_label': 'nav_schema', 'value': undefined})"
             >PDBe Graph Docs</a
           >
         </li>
+        }
+
         <li *ngIf="showExtra()" class="extra-items-menu is-dropdown-submenu-parent opens-right" role="none" aria-haspopup="true" aria-label="Also in this section">
           <a role="menuitem">Also in this section</a>
           <ul class="menu submenu is-dropdown-submenu first-sub vertical" data-submenu="" role="menubar">
