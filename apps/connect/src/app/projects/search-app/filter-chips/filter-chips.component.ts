@@ -7,7 +7,7 @@ import { MaterialModule } from '@pdbc/core';
 @Component({
   selector: 'pdbc-filter-chips',
   templateUrl: './filter-chips.component.html',
-  styleUrls: ['./filter-chips.component.css'],
+  styleUrls: ['./filter-chips.component.scss'],
   imports: [CommonModule, MaterialModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

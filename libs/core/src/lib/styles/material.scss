@@ -293,3 +293,30 @@ mat-tab-header {
     }
   }
 }
+
+.mat-mdc-card.mdc-card.row.resCard {
+  display: inline-block !important;
+  padding: 0 !important;
+  padding-top: 24px !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.mat-mdc-button:not(:disabled).green-text-button {
+  color: #4caf50 !important;
+}
+
+.mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background,
+.mdc-checkbox__native-control:enabled:indeterminate ~ .mdc-checkbox__background {
+  background-color: #4caf50 !important;
+  border-color: #4caf50 !important;
+}
+
+.mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background > .mdc-radio__outer-circle {
+  border-color: #4caf50 !important;
+}
+
+.mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background > .mdc-radio__inner-circle {
+  background-color: #4caf50 !important;
+}

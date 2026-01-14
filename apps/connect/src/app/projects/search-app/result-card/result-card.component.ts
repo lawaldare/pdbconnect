@@ -21,7 +21,7 @@ declare const gtag: any;
 @Component({
   selector: 'pdbc-result-card',
   templateUrl: './result-card.component.html',
-  styleUrls: ['./result-card.component.css'],
+  styleUrls: ['./result-card.component.scss'],
   imports: [CommonModule, MaterialModule, FormsModule, TooltipDirective, RoundPipe, ValidationSliderComponent, FormatSpacingPipe],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,

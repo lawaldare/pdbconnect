@@ -46,7 +46,12 @@ export class CtrRow implements CtrRowElement, OnInit {
 
   public setHighlited(selected: boolean) {
     this.selected = selected;
-    this.renderer.addClass(this.el.nativeElement, 'completer-selected-row');
+    // this.renderer.addClass(this.el.nativeElement, 'completer-selected-row');
+    if (selected) {
+      this.renderer.addClass(this.el.nativeElement, 'completer-selected-row');
+    } else {
+      this.renderer.removeClass(this.el.nativeElement, 'completer-selected-row');
+    }
   }
 
   public getNativeElement() {

@@ -14,7 +14,9 @@
     <span class="chip-condition">&nbsp;OR&nbsp;</span>
     } @if (filterField.condition === 'NOT' && fci > 0) {
     <span class="chip-condition">NOT</span>
-    } &nbsp;{{ getFilterText(filterField) }}
+    }
+    <span class="chip-text">&nbsp;{{ getFilterText(filterField) }}</span>
+
     <i (click)="removeCard(fci)" class="icon icon-functional" data-icon="x" style="font-size: 10px; top: 7px"></i>
   </mat-chip>
   }

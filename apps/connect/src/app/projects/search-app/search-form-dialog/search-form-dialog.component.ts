@@ -5,7 +5,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angul
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
 import { FilterCardsComponent } from '../filter-cards/filter-cards.component';
-import { NgLabelTemplateDirective, NgOptionTemplateDirective, NgSelectComponent } from '@ng-select/ng-select';
+import { NgSelectComponent } from '@ng-select/ng-select';
 
 declare let PDBe: any;
 declare const gtag: any;

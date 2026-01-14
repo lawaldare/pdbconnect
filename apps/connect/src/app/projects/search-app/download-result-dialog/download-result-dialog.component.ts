@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'pdbc-download-result-dialog',
   templateUrl: './download-result-dialog.component.html',
-  styleUrls: ['./download-result-dialog.component.css'],
+  styleUrls: ['./download-result-dialog.component.scss'],
   imports: [CommonModule, MaterialModule, FormsModule],
   providers: [DownloadService],
 })

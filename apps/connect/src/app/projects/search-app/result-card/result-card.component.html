@@ -147,9 +147,10 @@
         } @if (shortComplexName) {
         <a href="javascript:void(0)" (click)="showFull = !showFull">{{showFull ? 'hide full assembly name' : 'show full assembly name'}}</a>
         } &nbsp;&nbsp;<a
+          style="font-size: 13px"
           href="?preferred_complex_name:{{resultData.doclist.docs[0].preferred_complex_name[0]}}"
           (click)="searchComplex($event, {var_name: 'preferred_complex_name', value: this.resultData.doclist.docs[0].preferred_complex_name[0]})"
-          >search this complex <i class="icon icon-common icon-search"></i
+          >search this complex <i style="margin-left: 4px" class="icon icon-common icon-search"></i
         ></a>
       </div>
       }
@@ -159,9 +160,10 @@
       <div class="columns small-12 marginTop10">
         <strong>PDBe complex ID: </strong>
         {{resultData.doclist.docs[0].preferred_complex_id[0]}} (Preferred) &nbsp;&nbsp;<a
+          style="font-size: 13px"
           href="?preferred_complex_id:{{resultData.doclist.docs[0].preferred_complex_id[0]}}"
           (click)="searchComplex($event, {var_name: 'preferred_complex_id', value: this.resultData.doclist.docs[0].preferred_complex_id[0]})"
-          >search this ID <i class="icon icon-common icon-search"></i
+          >search this ID <i style="margin-left: 4px" class="icon icon-common icon-search"></i
         ></a>
       </div>
       }
@@ -199,10 +201,10 @@
 
       @if (resultData.doclist.docs[0].status === 'REL' && (fastaSequenceData || phmmerSequenceData)) {
       <div class="columns small-12 marginTop10">
-        <button mat-button color="primary" style="margin-left: 0px; margin-bottom: 5px" (click)="openMolstarDialog()">
+        <button mat-button class="green-text-button" style="margin-left: 0px" (click)="openMolstarDialog()">
           <span class="icon icon-functional" data-icon="4"><strong>&nbsp;3D Visualisation</strong></span>
         </button>
-        <button mat-button color="primary" (click)="openDownloadDialog()">
+        <button mat-button class="green-text-button" (click)="openDownloadDialog()">
           <span class="icon icon-functional" data-icon="="><strong>&nbsp;Download files</strong></span>
         </button>
       </div>
@@ -260,10 +262,10 @@
       </div>
       } @if (resultData.doclist.docs[0].status === 'REL' && !fastaSequenceData && !phmmerSequenceData) {
       <div class="columns small-12 marginTop10">
-        <button mat-button color="primary" style="margin-left: 0px; margin-bottom: 5px" (click)="openMolstarDialog()">
+        <button mat-button class="green-text-button" color="primary" style="margin-left: 0px" (click)="openMolstarDialog()">
           <span class="icon icon-functional" data-icon="4"><strong>&nbsp;3D Visualisation</strong></span>
         </button>
-        <button mat-button color="primary" (click)="openDownloadDialog()">
+        <button mat-button class="green-text-button" color="primary" (click)="openDownloadDialog()">
           <span class="icon icon-functional" data-icon="="><strong>&nbsp;Download files</strong></span>
         </button>
       </div>

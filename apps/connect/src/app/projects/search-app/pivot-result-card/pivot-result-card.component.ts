@@ -17,7 +17,7 @@ declare const gtag: any;
 @Component({
   selector: 'pdbc-pivot-result-card',
   templateUrl: './pivot-result-card.component.html',
-  styleUrls: ['./pivot-result-card.component.css'],
+  styleUrls: ['./pivot-result-card.component.scss'],
   imports: [CommonModule, MaterialModule, TooltipDirective, ValidationSliderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

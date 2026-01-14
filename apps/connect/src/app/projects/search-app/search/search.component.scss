@@ -66,12 +66,13 @@
   border-right: 25px solid transparent;
   padding-left: 10px;
   border-left: 10px;
+  display: flex;
 }
 
 .thorClaimCheckBox {
   float: left;
   display: block;
-  margin-top: 4px;
+  margin-top: -4px;
 }
 
 .thorClaimText {

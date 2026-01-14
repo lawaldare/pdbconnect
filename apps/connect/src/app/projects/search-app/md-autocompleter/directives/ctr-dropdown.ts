@@ -74,6 +74,8 @@ export class CtrDropdown implements CompleterDropdown, OnDestroy, OnInit {
   }
 
   public clear() {
+    if (this.currHighlited) this.currHighlited.row.setHighlited(false);
+    this.currHighlited = undefined;
     this.rows = [];
   }
 

@@ -10,7 +10,7 @@ declare const gtag: any;
 @Component({
   selector: 'pdbc-download-files-dialog',
   templateUrl: './download-files-dialog.component.html',
-  styleUrls: ['./download-files-dialog.component.css'],
+  styleUrls: ['./download-files-dialog.component.scss'],
   imports: [CommonModule, MaterialModule],
 })
 export class DownloadFilesDialogComponent implements OnInit, OnDestroy {

@@ -8,7 +8,7 @@ import { MaterialModule } from '@pdbc/core';
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'tab-pagination-section',
   templateUrl: './tab-pagination-section.component.html',
-  styleUrls: ['./tab-pagination-section.component.css'],
+  styleUrls: ['./tab-pagination-section.component.scss'],
   imports: [CommonModule, MaterialModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
