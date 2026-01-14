@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, HostListener, AfterViewChecked, signal } from '@angular/core';
+import { Component, OnInit, HostListener, signal } from '@angular/core';
 import { keyFeatureListslides } from '../corporate-page.constant';
 declare const d3: any;
 declare const gtag: any;

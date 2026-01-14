@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @angular-eslint/component-selector */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { environment } from '../environments/environment';
 import { filter } from 'rxjs';
@@ -13,23 +14,19 @@ declare const gtag: any;
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {
+export class App implements OnInit {
   public readonly gaTag = computed(() => environment.gaTag ?? 'G-6EJJZ57S1H');
   private readonly router = inject(Router);
   constructor() {
-    const navEndEvent$ = this.router.events.pipe(filter((e) => e instanceof NavigationEnd));
-    navEndEvent$.subscribe((e: NavigationEnd) => {
-      gtag(
-        'config',
-        this.gaTag(),
-        // {page_path: e.urlAfterRedirects, debug_mode: true});
-        { page_path: e.urlAfterRedirects }
-      );
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+      window.scrollTo(0, 0);
+      gtag('js', new Date());
+      gtag('config', environment.gaTag, { debug_mode: true });
     });
-    const headerScript = document.createElement('script');
-    headerScript.async = true;
-    headerScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + this.gaTag();
-    document.head.appendChild(headerScript);
+  }
+
+  ngOnInit(): void {
+    this.init();
   }
 
   onActivate(event: any) {
@@ -41,5 +38,22 @@ export class App {
     //  });
     document.body.scrollTop = 0;
     //or document.querySelector('body').scrollTo(0,0)
+  }
+
+  private init(): void {
+    const script = document.createElement('script');
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${environment.gaTag}`;
+    script.async = true;
+    document.getElementsByTagName('head')[0].appendChild(script);
+
+    const gtagEl = document.createElement('script');
+    const gtagBody = document.createTextNode(`
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${environment.gaTag}');
+    `);
+    gtagEl.appendChild(gtagBody);
+    document.body.appendChild(gtagEl);
   }
 }

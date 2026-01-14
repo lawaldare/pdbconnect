@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @angular-eslint/prefer-inject */
 import { Component, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';

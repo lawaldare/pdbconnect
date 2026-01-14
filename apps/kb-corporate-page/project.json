@@ -28,7 +28,11 @@
           "./node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css",
           "@angular/material/prebuilt-themes/indigo-pink.css",
           "apps/kb-corporate-page/src/styles.scss"
-        ]
+        ],
+        "scripts": [],
+        "stylePreprocessorOptions": {
+          "includePaths": ["libs/core/src/lib/styles"]
+        }
       },
       "configurations": {
         "production": {

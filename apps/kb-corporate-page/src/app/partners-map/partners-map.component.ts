@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, Output, EventEmitter, HostListener, inject, computed, effect, signal } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';

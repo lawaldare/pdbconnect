@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, HostListener, input, signal, computed } from '@angular/core';
 import { RouterModule } from '@angular/router';

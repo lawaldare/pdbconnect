@@ -1,6 +1,4 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HeaderSearchComponent } from '../header-search/header-search.component';
 import { HeaderComponent } from '../header/header.component';
@@ -8,7 +6,6 @@ import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.compone
 import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
 import { PartnersMapComponent } from '../partners-map/partners-map.component';
 import { PartnersPlotsComponent } from '../partners-plots/partners-plots.component';
-import { ScriptLoaderService } from '@pdbc/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
 
