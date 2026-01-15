@@ -71,7 +71,7 @@
         @if(partnersCategories().length){
         <div>
           <div class="text-holder">
-            @for(category of partnersCategories(); track $index; let i = $index){
+            @for(category of partnersCategoriesId(); track $index; let i = $index){
             <div [id]="category" class="content-holder">
               <h3 class="heading-style-B smaller">{{ partnersCategories()[i] }}</h3>
               <div class="row">

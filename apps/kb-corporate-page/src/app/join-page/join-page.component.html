@@ -17,7 +17,7 @@
             <li
               id="whyjoin_menu"
               class="scroll-menu-item"
-              (click)="scroll(whyjoin)"
+              (click)="scrollById('whyjoin')"
               onclick="gtag('event', 'scroll_menu', {'event_category': 'join_menu_click', 'event_label': 'join_menu', 'value': undefined})"
             >
               <span>Why join PDBe-KB?</span>
@@ -25,7 +25,7 @@
             <li
               id="howtojoin_menu"
               class="scroll-menu-item"
-              (click)="scroll(howtojoin)"
+              (click)="scrollById('howtojoin')"
               onclick="gtag('event', 'scroll_menu', {'event_category': 'join_menu_click', 'event_label': 'join_menu', 'value': undefined})"
             >
               <span>How to join the consortium?</span>
@@ -33,7 +33,7 @@
             <li
               id="techdetails_menu"
               class="scroll-menu-item"
-              (click)="scroll(techdetails)"
+              (click)="scrollById('techdetails')"
               onclick="gtag('event', 'scroll_menu', {'event_category': 'join_menu_click', 'event_label': 'join_menu', 'value': undefined})"
             >
               <span>Guidelines</span>
@@ -43,7 +43,7 @@
       </div>
     </div>
     <section class="after-nav">
-      <div id="whyjoin" #whyjoin class="content-holder">
+      <div id="whyjoin" class="content-holder">
         <div class="text-holder">
           <h3 class="heading-style-B">Why join PDBe-KB?</h3>
 
@@ -71,7 +71,7 @@
         </div>
       </div>
 
-      <div id="howtojoin" #howtojoin class="content-holder">
+      <div id="howtojoin" class="content-holder">
         <div class="text-holder">
           <h3 class="heading-style-B">How to join the consortium?</h3>
 
@@ -149,7 +149,7 @@
         </div>
       </div>
 
-      <div id="techdetails" #techdetails class="content-holder">
+      <div id="techdetails" class="content-holder">
         <div class="text-holder">
           <h3 class="heading-style-B">Guidelines</h3>
           <p class="paragraph-style-B bolder-24">See the following documents for more details and the consortium guidelines.</p>

@@ -12,7 +12,6 @@ declare const gtag: any;
   imports: [RouterModule],
   selector: 'app-root',
   templateUrl: './app.html',
-  styleUrl: './app.scss',
 })
 export class App implements OnInit {
   public readonly gaTag = computed(() => environment.gaTag ?? 'G-6EJJZ57S1H');
@@ -30,14 +29,7 @@ export class App implements OnInit {
   }
 
   onActivate(event: any) {
-    // window.scroll(0,0);
-    // window.scroll({
-    //         top: 0,
-    //         left: 0,
-    //         behavior: 'smooth'
-    //  });
     document.body.scrollTop = 0;
-    //or document.querySelector('body').scrollTo(0,0)
   }
 
   private init(): void {

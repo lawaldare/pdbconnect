@@ -17,7 +17,7 @@
             <li
               id="aggregated_views_menu"
               class="scroll-menu-item"
-              (click)="scroll('aggregated_views')"
+              (click)="scroll('aggregated-views')"
               onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
             >
               <span>Aggregated views</span>
@@ -26,7 +26,7 @@
               id="aggregated_views_proteins_menu"
               style="padding-left: 20px"
               class="scroll-menu-item"
-              (click)="scroll('aggregated_views_proteins')"
+              (click)="scroll('aggregated-views-proteins')"
               onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
             >
               <span>Aggregated views of proteins</span>
@@ -42,6 +42,7 @@
             <li
               id="graph_database_menu"
               class="scroll-menu-item"
+              (click)="scroll('graph-database')"
               onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
             >
               <a class="link-unset" routerLink="/graph"><span>Graph database</span></a>
@@ -57,7 +58,7 @@
             <li
               id="pdbekb_component_menu"
               class="scroll-menu-item"
-              (click)="scroll('pdbekb_component')"
+              (click)="scroll('pdbekb-component')"
               onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
             >
               <span>PDBe-KB component library</span>
@@ -65,7 +66,7 @@
             <li
               id="public_ftp_menu"
               class="scroll-menu-item"
-              (click)="scroll('public_ftp')"
+              (click)="scroll('public-ftp')"
               onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
             >
               <span>Public FTP area</span>
@@ -73,7 +74,7 @@
             <li
               id="other_services_menu"
               class="scroll-menu-item"
-              (click)="scroll('other_services')"
+              (click)="scroll('other-services')"
               onclick="gtag('event', 'scroll_menu', {'event_category': 'services_menu_click', 'event_label': 'services_menu', 'value': undefined})"
             >
               <span>Other services</span>
@@ -94,7 +95,7 @@
       </div>
       <div id="aggregated-views-proteins" class="content-holder">
         <div class="text-holder">
-          <h3>Aggregated views of proteins</h3>
+          <h3 style="margin-bottom: 20px">Aggregated views of proteins</h3>
           <div class="small-12 columns" style="text-align: center; margin-bottom: 25px">
             <div class="small-3 columns">
               <i class="icon icon-conceptual" data-icon="s" style="font-size: 3em"></i>

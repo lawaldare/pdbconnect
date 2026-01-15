@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @angular-eslint/prefer-inject */
-import { Component, computed } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { forkJoin } from 'rxjs';
 import { ScriptLoaderService } from '@pdbc/core';
 import { environment } from '../../environments/environment';
+import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 declare const Highcharts: any;
 
@@ -14,8 +16,9 @@ declare const Highcharts: any;
   templateUrl: './partners-plots.component.html',
   styleUrls: ['./partners-plots.component.scss'],
 })
-export class PartnersPlotsComponent {
-  private _partnersURL = 'assets/data/partners_descriptions.json';
+export class PartnersPlotsComponent implements OnInit {
+  private readonly cpApiService = inject(CorporatePagesApiService);
+  private readonly destroyRef = inject(DestroyRef);
 
   resource_protein_count: any = null;
   category_protein_count: any = null;
@@ -36,24 +39,14 @@ export class PartnersPlotsComponent {
     () => environment.partners_last_update ?? 'https://www.ebi.ac.uk/pdbe/static/kb_statistics/partners_last_update.json'
   );
 
-  constructor(
-    private http: HttpClient,
-    private scriptLoader: ScriptLoaderService
-  ) {
+  ngOnInit(): void {
     this.getDataAndPlot();
   }
 
-  getDataAndPlot() {
-    forkJoin([
-      // this.getProteinCount(),
-      this.getPartnersJSON(),
-      this.getProteinCountCategory(),
-      this.getLastUpdates(),
-    ])
-      // .subscribe(([resource_protein_count, category_protein_count, last_update_data]) => {
-      // Future: https://stackoverflow.com/a/52610468
+  private getDataAndPlot() {
+    forkJoin([this.cpApiService.getPartnersDescriptionData(), this.cpApiService.getPlotData(), this.cpApiService.getPartnersLastUpdate()])
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(([resource_descriptions, protein_count, last_update_data]) => {
-        // this.resource_protein_count = resource_protein_count;
         this.resource_protein_count = protein_count;
 
         const parsed_resource_descriptions: any = Object.values(resource_descriptions).reduce((arr: any, each_rd: any) => {
@@ -107,19 +100,7 @@ export class PartnersPlotsComponent {
           this.all_loaded = true;
           this.generatePlots();
         }
-        // this.all_loaded = true;
-        // this.generatePlots();
       });
-  }
-
-  public getPartnersJSON(): Observable<any> {
-    return this.http.get(this._partnersURL);
-  }
-  public getProteinCountCategory(): Observable<any> {
-    return this.http.get(this.plotData());
-  }
-  public getLastUpdates(): Observable<any> {
-    return this.http.get(this.partnersLastUpdate());
   }
 
   parseUpdateData(data: any) {
@@ -131,28 +112,6 @@ export class PartnersPlotsComponent {
         return a[1] - b[1];
       });
   }
-
-  // updateChartVisibility(chart_id: string) {
-  //   if (chart_id) {
-  //     document.getElementById(`chart-1`)
-  //       .classList.remove('chart-holder-div-current');
-  //     document.getElementById(`chart-1-plot`).classList.add('display-none');
-  //     document
-  //       .getElementById(`chart-2`)
-  //       .classList.remove('chart-holder-div-current');
-  //     document.getElementById(`chart-2-plot`).classList.add('display-none');
-  //     document
-  //       .getElementById(`chart-3`)
-  //       .classList.remove('chart-holder-div-current');
-  //     document.getElementById(`chart-3-plot`).classList.add('display-none');
-  //     document
-  //       .getElementById(`${chart_id}`)
-  //       .classList.add('chart-holder-div-current');
-  //     document
-  //       .getElementById(`${chart_id}-plot`)
-  //       .classList.remove('display-none');
-  //   }
-  // }
 
   public updateChartVisibility(chartId: string) {
     if (!chartId) return;

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, Output, EventEmitter, HostListener, inject, computed, effect, signal } from '@angular/core';
-import * as L from 'leaflet';
-import 'leaflet.markercluster';
+import { L, loadMarkerCluster } from './leaflet-markercluster';
+
 import { CommonModule } from '@angular/common';
 import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -128,8 +128,8 @@ export class PartnersMapComponent {
   /**
    * Main function to create map from JSON
    */
-  createMap() {
-    // Partners data is parsed and clustered by country name
+  async createMap() {
+    await loadMarkerCluster();
     const unique_countries = this.partnersData()
       .map((ec: any) => ec.country)
       .filter((coun: any, i: any, arr: any) => arr.indexOf(coun) === i);
@@ -206,7 +206,7 @@ export class PartnersMapComponent {
     // Bind function to open pop-ups when each cluster is hovered (clusterMouseOver)
     // and to close pop-ups when each cluster is clicked after hovering
     for (const [marker_name, marker_group] of Object.entries(this.marker_group_dict)) {
-      (marker_group as L.MarkerClusterGroup)
+      (marker_group as any)
         .on('clustermouseover', (c: any) => this.clusterMouseOver(c, marker_name))
         .on('clusterclick', function (c: any) {
           map.closePopup();

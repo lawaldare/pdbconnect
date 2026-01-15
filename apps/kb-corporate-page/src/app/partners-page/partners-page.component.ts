@@ -1,4 +1,5 @@
-import { Component, computed, inject } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { AfterViewInit, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HeaderSearchComponent } from '../header-search/header-search.component';
 import { HeaderComponent } from '../header/header.component';
@@ -9,13 +10,15 @@ import { PartnersPlotsComponent } from '../partners-plots/partners-plots.compone
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
 
+declare const $: any;
+
 @Component({
   selector: 'pdbc-partners-page',
   templateUrl: './partners-page.component.html',
   styleUrls: ['./partners-page.component.scss'],
   imports: [CommonModule, HeaderComponent, HeaderSearchComponent, NavTabsComponent, HomeBookmarksComponent, PartnersMapComponent, PartnersPlotsComponent],
 })
-export class PartnersPageComponent {
+export class PartnersPageComponent implements AfterViewInit {
   private readonly cpApiService = inject(CorporatePagesApiService);
   public readonly partnersData = toSignal(this.cpApiService.getPartnersDescriptionData(), { initialValue: {} });
   public partnersCategories = computed(() => {
@@ -25,17 +28,20 @@ export class PartnersPageComponent {
   public partnersCategoriesId = computed(() => {
     const data = this.partnersData();
     return Object.keys(data).map((each_category) => {
-      return each_category.replace(/ /g, '_').toLowerCase();
+      return each_category.replace(/ /g, '-').toLowerCase();
     });
   });
+
+  ngAfterViewInit() {
+    $(document).foundation();
+    $(document).foundationExtendEBI();
+  }
 
   scroll(el: HTMLElement) {
     el.scrollIntoView({ behavior: 'smooth' });
   }
 
-  scrollById(elId: string) {
-    console.log('elId');
-    console.log(elId);
+  public scrollById(elId: string) {
     const el = document.getElementById(elId);
     if (el != null) {
       el.scrollIntoView({ behavior: 'smooth' });

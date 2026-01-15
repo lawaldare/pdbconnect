@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import { HeaderSearchComponent } from '../header-search/header-search.component';
 import { HeaderComponent } from '../header/header.component';
 import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.component';
 import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
+
+declare const $: any;
 
 @Component({
   selector: 'pdbc-services-page',
@@ -11,11 +14,16 @@ import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
   styleUrls: ['./services-page.component.scss'],
   imports: [CommonModule, HeaderComponent, HeaderSearchComponent, NavTabsComponent, HomeBookmarksComponent],
 })
-export class ServicesPageComponent {
+export class ServicesPageComponent implements AfterViewInit {
   scroll(elId: string) {
     const el = document.getElementById(elId);
     if (el != null) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
+  }
+
+  ngAfterViewInit() {
+    $(document).foundation();
+    $(document).foundationExtendEBI();
   }
 }
