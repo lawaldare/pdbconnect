@@ -1,12 +1,10 @@
 import { inject, Injectable } from '@angular/core';
-import { Location } from '@angular/common';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { catchError, map, Observable, of } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class DownloadService {
-  private readonly location = inject(Location);
   private readonly http = inject(HttpClient);
 
   downloadFile(url: string): Observable<any> {

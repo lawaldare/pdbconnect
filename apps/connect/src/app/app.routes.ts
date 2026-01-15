@@ -5,27 +5,11 @@ import { TabRedirectComponent } from './projects/entry/redirects/all-redirects.c
 import { SearchPageComponent } from './projects/entry/pages/search/search-page.component';
 import { ExternalRedirectComponent } from './projects/entry/redirects/external-redirect.component';
 import { SearchAppContainerComponent } from './projects/search-app/search-app-container/search-app-container.component';
-import { HomePageComponent } from './projects/corporate-page/home-page/home-page.component';
-import { ServicesPageComponent } from './projects/corporate-page/services-page/services-page.component';
-import { JoinPageComponent } from './projects/corporate-page/join-page/join-page.component';
-import { GraphDownloadComponent } from './projects/corporate-page/graph-download/graph-download.component';
-import { GraphSchemaComponent } from './projects/corporate-page/graph-schema/graph-schema.component';
-import { PartnersPageComponent } from './projects/corporate-page/partners-page/partners-page.component';
 
 // const hostname = document.location.hostname;
 // const isLocal = hostname === 'localhost';
 
 export const appRoutes: Route[] = [
-  {
-    path: '',
-    component: HomePageComponent,
-    title: 'PDBe - Knowledge Base',
-  },
-  { path: 'services', component: ServicesPageComponent, title: 'PDBe - Knowledge Base' },
-  { path: 'join', component: JoinPageComponent, title: 'PDBe - Knowledge Base' },
-  { path: 'graph', component: GraphDownloadComponent, title: 'PDBe - Knowledge Base' },
-  { path: 'partners', component: PartnersPageComponent, title: 'PDBe - Knowledge Base' },
-  { path: 'schema', component: GraphSchemaComponent, title: 'PDBe - Knowledge Base' },
   {
     path: 'search/index',
     component: SearchAppContainerComponent,
