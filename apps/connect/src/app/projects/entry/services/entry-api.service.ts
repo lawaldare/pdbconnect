@@ -315,6 +315,7 @@ export class EntryApiService {
     return this.http.get<Record<string, PisaAssembly>>(`https://www.ebi.ac.uk/pdbe/api/pisa/assembly/${entryId}/${assemblyId}`).pipe(
       map((data) => data[entryId]),
       catchError((error) => {
+        return of({ empty: true } as unknown as PisaAssembly); // temporary fix because PISA API throws CORS errors, TODO: @adam revert
         if (error?.status === 404) {
           return of({ empty: true } as unknown as PisaAssembly);
         }

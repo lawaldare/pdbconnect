@@ -1,13 +1,13 @@
 import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import type { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
-import type { AnyColor } from 'pdbe-molstar/lib/spec';
+import type { AnyColor, InitParams } from 'pdbe-molstar/lib/spec';
 
 // Check InitParams and DefaultParams at:
 // https://github.com/molstar/pdbe-molstar/blob/v3.7.2/src/app/spec.ts
 
 export type QueryParamForHelpers = QueryParam & { color?: AnyColor; sideChain?: boolean; representation?: string; representationColor?: any; focus?: boolean };
 
-export const Molstar370DefaultParams = {
+export const Molstar370DefaultParams: InitParams = {
   moleculeId: undefined,
   customData: undefined,
   assemblyId: undefined,

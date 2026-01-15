@@ -10,7 +10,8 @@ export class MolstarPluginService {
   async loadPlugin(): Promise<void> {
     if (!this.PDBeMolstarPluginClass) {
       this.PDBeMolstarPluginClass = await this.scriptLoader.loadGlobal(
-        `https://cdn.jsdelivr.net/npm/pdbe-molstar@${this.molstarVersion}/build/pdbe-molstar-plugin.js`,
+        // `https://cdn.jsdelivr.net/npm/pdbe-molstar@${this.molstarVersion}/build/pdbe-molstar-plugin.js`,
+        `https://molstar.org/pdbe-molstar/build/pdbe-molstar-plugin.js`, // TODO: @adam Release pdbe-molstar version and revert URL to the above
         'PDBeMolstarPlugin'
       );
     }

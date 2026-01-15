@@ -47,6 +47,7 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
     await this.molstarPluginService.loadPlugin();
     const pluginInstance = this.molstarPluginService.createInstance();
     this.molstarViewInstance = pluginInstance;
+    // TODO: @adam check with Marcelo/Dare if it makes sense to set .molstarViewInstance before awaiting render
 
     const container = this.viewContainer.nativeElement;
     if (this.seqOnExpanded === false) {
@@ -54,15 +55,17 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
     } else {
       this.molstarActionsMutex = this.molstarActionsMutex.then(() => {
         const layout = [{ target: container, component: this.molstarPluginService.getClass().UIComponents.FullLayoutNoControlsUnlessExpanded }];
-        this.molstarViewInstance.render(layout, this.molstarConfig);
+        return this.molstarViewInstance.render(layout, this.molstarConfig);
       });
     }
-
-    this.molstarViewInstance.events.loadComplete.subscribe((loaded: boolean) => {
+    // this.molstarViewInstance.events.loadComplete.subscribe((loaded: boolean) => {
+    this.molstarActionsMutex.then(() => {
+      const loaded = true;
+      console.log('render finished');
       const eventName = `LibMolstarComponent-${this.id}`;
       if (loaded && !this.firstLoadFinished()) this.firstLoadFinished.set(true);
       if (loaded) {
-        window.dispatchEvent(new CustomEvent(eventName, { detail: { id: this.id, loaded } }));
+        window.dispatchEvent(new CustomEvent(eventName, { detail: { id: this.id, loaded } })); // TODO this is probably dead code, try to remove?
       }
 
       this.molstarViewInstance.plugin.layout.events.updated.subscribe(() => {
@@ -93,6 +96,10 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
 
   public getInstance() {
     return this.molstarViewInstance;
+  }
+
+  public getPDBeMolstarPluginClass(): typeof PDBeMolstarPlugin | undefined {
+    return this.molstarPluginService.getClass();
   }
 
   public getContainer() {

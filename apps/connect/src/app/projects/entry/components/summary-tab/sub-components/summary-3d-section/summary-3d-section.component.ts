@@ -2,33 +2,36 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { EntryStoreState } from '../../../../store/entry-store.model';
-import { EntrySelectors } from '../../../../store/entry.selectors';
-import { ComponentCommunicationService } from '../../../../services/component-comm.service';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import type { InitParams } from 'pdbe-molstar/lib/spec';
+import { filter, firstValueFrom, map, take, timer } from 'rxjs';
+import { Molecule } from '../../../../data-models/molecule.model';
+import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
 import {
   componentExistsInMolstar,
   drawSelectionInMolstar,
-  QueryParamForHelpers,
   Molstar370DefaultParams,
+  QueryParamForHelpers,
   zoomOutStructureInMolstar,
 } from '../../../../helpers/molstar-helpers';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
-import { filter, firstValueFrom, map, take, timer } from 'rxjs';
-import { Molecule } from '../../../../data-models/molecule.model';
-import { ProcessedDomain, ProcessedMacromolecule } from '../../../../store/data-processing/models/processed-entities.model';
-import { ProcessedLigandOrMod } from '../../../../store/data-processing/ligand-processing';
-import { GoogleAnalyticsService } from '@pdbc/core';
+import { ApiDataProvider, PdbeApiClient } from '../../../../helpers/mvs-views/data-provider';
+import { MVSSnapshotProvider } from '../../../../helpers/mvs-views/mvs-snapshot-provider';
+import { SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
 import {
   getCleanMoleculeName,
   getDomainChainDropdownOptions,
   getLigandsDropdownOptions,
   getMacromoleculeChainDropdownOptions,
 } from '../../../../helpers/processed-data-to-controls';
-import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { ComponentCommunicationService } from '../../../../services/component-comm.service';
+import { ProcessedLigandOrMod } from '../../../../store/data-processing/ligand-processing';
+import { ProcessedDomain, ProcessedMacromolecule } from '../../../../store/data-processing/models/processed-entities.model';
+import { EntryStoreState } from '../../../../store/entry-store.model';
+import { EntrySelectors } from '../../../../store/entry.selectors';
 import { EntryDropdownComponent } from '../../../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { MaterialModule } from '@pdbc/core';
 
 type NestedDomainsData = Array<{
   macromolecule: ProcessedMacromolecule;
@@ -108,29 +111,29 @@ export class Summary3DSectionComponent {
 
   public readonly configForMolstar = computed(() => {
     const summary = this.summary();
-    const entryId = this.entryId();
     // const chainSelection = this.chainSelection();
     const inPrefAssemblyForSelection = this.inPrefAssemblyForSelection();
 
-    if (!summary || !entryId) return undefined;
+    if (!summary || !this.entryId()) return undefined;
     const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
     const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
     const assemblyId = inPrefAssemblyForSelection ? preferredAssemblyId : undefined;
 
-    const configForMolstar = {
+    const configForMolstar: InitParams = {
       ...Molstar370DefaultParams,
-      moleculeId: this.entryId(),
+      // moleculeId: this.entryId(),
+      moleculeId: undefined,
       assemblyId,
-      bgColor: { r: 255, g: 255, b: 255 },
+      bgColor: 'white',
       subscribeEvents: true,
       granularity: 'residue',
       hideControls: false,
-      visualStyle: {
-        polymer: {
-          type: 'cartoon',
-          color: 'entity-id',
-        },
-      },
+      // visualStyle: {
+      //   polymer: {
+      //     type: 'cartoon',
+      //     color: 'entity-id',
+      //   },
+      // },
       loadMaps: true,
       mapSettings: { defaultView: 'selection-box' },
       sequencePanel: true,
@@ -874,6 +877,8 @@ export class Summary3DSectionComponent {
   }
 
   private async updateMolstarAny(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
+    console.log('updateMolstarAny', selectionType, listItem);
+
     // Wait until first render is finished
     await firstValueFrom(
       this.molstarFirstRenderFinished$.pipe(
@@ -881,25 +886,94 @@ export class Summary3DSectionComponent {
         take(1)
       )
     );
+    // TODO: @adam call this function on init (or after Molstar initialized) reflecting initial (or current UI state)
+    // TODO: @adam consider using mutex or SingleQueue for loading MVS states
+    const PDBeMolstarPlugin = this._molstarComponent?.getPDBeMolstarPluginClass();
+    const instance = this._molstarComponent?.getInstance();
 
-    // check whether selection is in pref assembly, molstar config needs update and wait for it
-    await this.updateConfigAssemblyAndSyncMolstar(listItem, selectionType === 'Assembly');
+    if (PDBeMolstarPlugin && instance?.plugin) {
+      const baseUrl = this.baseUrl;
+      const prov = new MVSSnapshotProvider(PDBeMolstarPlugin.extensions.MVS.MVSData, new ApiDataProvider(new PdbeApiClient(`${baseUrl}api/v2`)), {
+        PdbStructureFormat: 'bcif',
+        PdbStructureUrlTemplate: `${baseUrl}entry-files/{pdb}.bcif`,
+      }); // TODO: singleton (in molstar.component.ts), TODO: use existing API service
 
-    this.nonSelectionColor = undefined;
-    if (selectionType === 'Assembly') {
-      this.resetSelection();
+      const snapshotSpec = this.getMvsSnapshotSpec(listItem, selectionType);
+      if (snapshotSpec) {
+        let mvs = await prov.getSnapshot(snapshotSpec);
+        mvs.metadata.description = undefined;
+        if (mvs.kind === 'multiple') mvs.snapshots.forEach((s) => (s.metadata.description = undefined));
+        // TODO: @adam hide snapshot name and description from Molstar UI
+        mvs = PDBeMolstarPlugin.extensions.MVS.MVSData.fromMVSJ(PDBeMolstarPlugin.extensions.MVS.MVSData.toMVSJ(mvs)); // TODO remove this once MVS validation in Molstar handles undefineds correctly (PR#1733) - Molstar >=5.5.1
+        await PDBeMolstarPlugin.extensions.MVS.loadMVS(instance.plugin, mvs);
+      }
+    } else {
+      console.warn('PdbeMolstar has not rendered yet');
     }
-    if (selectionType === 'Macromolecules') {
-      this.updateMolstarMacromolecules(listItem as ProcessedMacromolecule | undefined);
-    }
-    if (selectionType === 'Ligands') {
-      this.updateMolstarLigands(listItem as ProcessedLigandOrMod | undefined);
-    }
-    if (selectionType === 'Domains') {
-      this.updateMolstarDomains(listItem as ProcessedDomain | undefined);
-    }
-    if (selectionType === 'Modifications') {
-      this.updateMolstarModifications(listItem as ProcessedLigandOrMod | undefined);
+
+    // // check whether selection is in pref assembly, molstar config needs update and wait for it
+    // await this.updateConfigAssemblyAndSyncMolstar(listItem, selectionType === 'Assembly');
+
+    // this.nonSelectionColor = undefined;
+    // if (selectionType === 'Assembly') {
+    //   this.resetSelection();
+    // }
+    // if (selectionType === 'Macromolecules') {
+    //   this.updateMolstarMacromolecules(listItem as ProcessedMacromolecule | undefined);
+    // }
+    // if (selectionType === 'Ligands') {
+    //   this.updateMolstarLigands(listItem as ProcessedLigandOrMod | undefined);
+    // }
+    // if (selectionType === 'Domains') {
+    //   this.updateMolstarDomains(listItem as ProcessedDomain | undefined);
+    // }
+    // if (selectionType === 'Modifications') {
+    //   this.updateMolstarModifications(listItem as ProcessedLigandOrMod | undefined);
+    // }
+  }
+
+  private getMvsSnapshotSpec(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string): SnapshotSpec | undefined {
+    const entryId = this.entryId();
+    if (!entryId) return undefined;
+
+    switch (selectionType) {
+      case 'Assembly':
+        return {
+          name: 'Preferred complex',
+          kind: 'pdbconnect_complex',
+          params: { entry: entryId, assemblyId: 'preferred' },
+        }; // TODO set assemblyId (or not?)
+      case 'Macromolecules':
+        if (!listItem) {
+          // Same as "Preferred complex", TODO create separate view (low prio)
+          return {
+            name: 'All macromolecules',
+            kind: 'pdbconnect_complex',
+            params: { entry: entryId, assemblyId: 'preferred' },
+          };
+        } else {
+          const entityData = (listItem as ProcessedMacromolecule).additionalData;
+          const entityId = entityData.molecule.entity_id;
+          const iOption = entityData.selectionNames.indexOf(this.dropdownSelected);
+          const labelAsymId = entityData.molecule.in_struct_asyms[iOption] ?? entityData.molecule.in_struct_asyms[0]; // TODO: @adam find a proper solution (current one is incorrect as in_struct_asyms may have different ordering)
+          const instanceId = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
+          console.log('labelAsymId', labelAsymId, 'instanceId', instanceId);
+          return {
+            name: 'Macromolecule',
+            kind: 'pdbconnect_macromolecule',
+            params: { entry: entryId, assemblyId: 'preferred', entityId: `${entityId}`, labelAsymId, instanceId },
+          };
+        }
+      case 'Ligands':
+        return undefined;
+      case 'Domains':
+        return undefined;
+      case 'Modifications':
+        return undefined;
+      default: {
+        console.warn('unknown selectionType:', selectionType);
+        return undefined;
+      }
     }
   }
 
