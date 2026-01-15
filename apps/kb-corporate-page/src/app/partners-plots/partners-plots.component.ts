@@ -1,10 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @angular-eslint/prefer-inject */
 import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
 import { forkJoin } from 'rxjs';
-import { ScriptLoaderService } from '@pdbc/core';
 import { environment } from '../../environments/environment';
 import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
