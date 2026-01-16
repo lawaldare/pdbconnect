@@ -19,6 +19,7 @@ import {
   DownloadFileTypeService,
   GoogleAnalyticsService,
   MaterialModule,
+  Mutex,
   PopupWindowService,
   ScriptLoaderService,
   TruncateTextDirective,
@@ -456,16 +457,18 @@ export class LigandsTabComponent implements AfterViewInit {
     this.selectionData.push(...residueSelectionData);
     await this.onDrawSelectionInMolstar();
 
-    this.molstarSelectionMutex = this.molstarSelectionMutex.then(async () => {
+    this.molstarSelectionMutex.run(async () => {
       await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
       await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.loadInteractions(instance, { interactions: pdbeInteractions, structureId: 1 });
     });
   }
 
-  private ligandEnvMutex = Promise.resolve();
+  private readonly ligandEnvMutex = Mutex('ligandEnvMutex');
+  private readonly tableHoverMutex = Mutex('tableHoverMutex');
+  private readonly molstarSelectionMutex = Mutex('molstarSelectionMutex');
 
   constructor() {
-    this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+    this.ligandEnvMutex.run(async () => {
       // await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js', true);
       await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-3.0.0-min.js', true);
     });
@@ -631,7 +634,7 @@ export class LigandsTabComponent implements AfterViewInit {
     this.selectionData = [...this.ligandSelection];
 
     const durationMs = this._molstarComponent ? 1200 : 0;
-    this.molstarSelectionMutex = this.molstarSelectionMutex.then(async () => {
+    this.molstarSelectionMutex.run(async () => {
       await zoomOutStructureInMolstar(instance, durationMs);
     });
 
@@ -689,7 +692,7 @@ export class LigandsTabComponent implements AfterViewInit {
     }
     const imageContainer = this.ligandEnvContainer.nativeElement;
 
-    this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+    this.ligandEnvMutex.run(async () => {
       const depiction = await firstValueFrom(this.aggregatedApiService.fetchDepiction(ligandId).pipe(takeUntilDestroyed(this.destroyRef)));
 
       if (this.ligandEv) {
@@ -717,7 +720,7 @@ export class LigandsTabComponent implements AfterViewInit {
       this.ligandEv.display.resId = resId;
     });
     if (interactionsRawData) {
-      this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+      this.ligandEnvMutex.run(async () => {
         const dataToLigEnv: { [key: string]: InteractionFromAPI[] } = {};
         const copiedInteractions = JSON.parse(JSON.stringify(interactionsRawData));
         dataToLigEnv[`${this.entryId()}`] = [copiedInteractions];
@@ -750,7 +753,7 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   private async destroyLigandEnv() {
-    this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+    this.ligandEnvMutex.run(async () => {
       // to destroy ligand env we use removeChild and reset all variables related to it's loading status
       if (this.ligandEnvContainer && this.ligandEnvContainer.nativeElement) {
         const imageContainer = this.ligandEnvContainer.nativeElement;
@@ -785,31 +788,25 @@ export class LigandsTabComponent implements AfterViewInit {
     const data = event.api.getSelectedNodes()[0].data;
   }
 
-  private tableHoverMutex = Promise.resolve();
-  private molstarSelectionMutex = Promise.resolve();
-
   async onDrawSelectionInMolstar() {
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
 
-    this.molstarSelectionMutex = this.molstarSelectionMutex.then(async () => {
+    await this.molstarSelectionMutex.run(async () => {
       await drawSelectionInMolstar(instance, this.residuesAsSticks);
       await drawSelectionInMolstar(instance, this.ligandSelection, undefined, true);
       await showInteractivityFocusInMolstar(instance, this.ligandSelection);
       await removeComponent(instance, 'structure-focus-target-sel');
       await removeComponent(instance, 'structure-focus-surr-sel');
     });
-    await this.molstarSelectionMutex;
   }
 
   async onCellMouseOver(event: CellMouseOverEvent<Interaction>) {
-    this.tableHoverMutex = this.tableHoverMutex.then(() => this._handleCellMouseOver(event));
-    await this.tableHoverMutex;
+    await this.tableHoverMutex.run(() => this._handleCellMouseOver(event));
   }
 
   async onCellMouseOut() {
-    this.tableHoverMutex = this.tableHoverMutex.then(() => this._handleCellMouseOut());
-    await this.tableHoverMutex;
+    await this.tableHoverMutex.run(() => this._handleCellMouseOut());
   }
 
   private async _handleCellMouseOver(event: CellMouseOverEvent<Interaction>) {

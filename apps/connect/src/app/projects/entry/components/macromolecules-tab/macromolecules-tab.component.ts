@@ -10,7 +10,7 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
-import { GoogleAnalyticsService, MaterialModule, ScriptLoaderService, UtilService } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule, Mutex, ScriptLoaderService, UtilService } from '@pdbc/core';
 import {
   getCleanMoleculeName,
   getCleanSelectionName,
@@ -527,8 +527,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public currentModelId$ = new BehaviorSubject<string>('1');
   private modelIdObserver?: MutationObserver;
 
-  private topolViewerMutex = Promise.resolve();
-  private rnaViewerMutex = Promise.resolve();
+  private topolViewerMutex = Mutex('topolViewerMutex');
+  private rnaViewerMutex = Mutex('rnaViewerMutex');
 
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);
   public hasLoadedMacromolecules = computed(() => this.processedMacromolecules() !== undefined);
@@ -567,12 +567,12 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     /* 1. Fetch tab data*/
 
     /* 2. Fetch topol viewer mutex inside Promise */
-    this.topolViewerMutex = this.topolViewerMutex.then(async () => {
+    this.topolViewerMutex.run(async () => {
       // await this.scriptLoader.loadScript('https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdb-topology-viewer-plugin-2.0.0.js');
       await this.scriptLoader.loadScript('./assets/pdb-topology-viewer-component-3.0.1.js');
     });
 
-    this.rnaViewerMutex = this.rnaViewerMutex.then(async () => {
+    this.rnaViewerMutex.run(async () => {
       await this.scriptLoader.loadScript('./assets/pdb-rna-viewer-plugin-0.3.1.js');
     });
 
@@ -948,7 +948,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   }
 
   private async initOrRefreshTopologyViewer(macromolecule: ProcessedMacromolecule) {
-    this.topolViewerMutex = this.topolViewerMutex.then(() => {
+    this.topolViewerMutex.run(async () => {
       const topologyContainer = this.topologyViewerContainer?.nativeElement;
 
       // stop if this dashboard does not have topology viewer (initially false and then set in onTableRowSelection according to tabName input)
@@ -978,7 +978,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   }
 
   private async initOrRNATopologyViewer(macromolecule: ProcessedMacromolecule) {
-    this.rnaViewerMutex = this.rnaViewerMutex.then(() => {
+    this.rnaViewerMutex.run(async () => {
       const rnaContainer = this.rnaViewerContainer?.nativeElement;
 
       // stop if this dashboard does not have topology viewer (initially false and then set in onTableRowSelection according to tabName input)

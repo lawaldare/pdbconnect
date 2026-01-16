@@ -19,7 +19,6 @@ export class PdbeApiClient implements IPdbeApiClient {
 
   private async getWithoutCache<T>(relativeUrl: string): Promise<T | undefined> {
     const url = `${this.apiBaseUrl}/${relativeUrl}`;
-    console.log('GET', url);
     const response = await fetch(url);
     if (response.status === 404) return undefined; // PDBe API returns 404 in some cases (e.g. when there are no modified residues)
     if (!response.ok) throw new Error(`API call failed with code ${response.status} (${url})`);

@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule, Mutex } from '@pdbc/core';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import type { InitParams } from 'pdbe-molstar/lib/spec';
 import { filter, firstValueFrom, map, take, timer } from 'rxjs';
+import { environment } from '../../../../../../../environments/environment';
 import { Molecule } from '../../../../data-models/molecule.model';
 import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
 import {
@@ -46,7 +47,7 @@ type NestedDomainsData = Array<{
   imports: [CommonModule, MolstarComponent, NgxSkeletonLoaderModule, EntryDropdownComponent, MaterialModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Summary3DSectionComponent {
+export class Summary3DSectionComponent implements AfterViewInit {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
   public baseUrl = baseUrl;
 
@@ -94,6 +95,17 @@ export class Summary3DSectionComponent {
     if (isSlow === undefined) return false;
     return isSlow === false || forceLoad === true;
   });
+
+  ngAfterViewInit(): void {
+    console.log('ngAfterViewInit');
+    this.updateMolstarAny(undefined, 'Assembly'); // TODO: @adam call directly in ngAfterViewInit
+    // const sub = this.molstarFirstRenderFinished$.subscribe(finished => {
+    //   if (!finished) return;
+    //   console.log('uuuu', finished)
+    //   this.updateMolstarAny(undefined, 'Assembly'); // TODO: @adam call directly in ngAfterViewInit
+    //   sub.unsubscribe();
+    // });
+  }
 
   public toggleMolstar() {
     const forceLoad = this.compCommunication.forceLoad();
@@ -156,7 +168,7 @@ export class Summary3DSectionComponent {
   private selectionData?: QueryParamForHelpers[];
   private nonSelectionColor?: string;
 
-  private zoomSelectionMutex = Promise.resolve();
+  private readonly zoomSelectionMutex = Mutex('zoomSelectionMutex');
 
   public getCleanMoleculeName = getCleanMoleculeName;
 
@@ -170,15 +182,13 @@ export class Summary3DSectionComponent {
   async onZoomOut(durationMs: number) {
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
-    this.zoomSelectionMutex = this.zoomSelectionMutex.then(() => zoomOutStructureInMolstar(instance, durationMs));
-    await this.zoomSelectionMutex;
+    await this.zoomSelectionMutex.run(() => zoomOutStructureInMolstar(instance, durationMs));
   }
 
   async onZoomInAndSelect() {
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
-    this.zoomSelectionMutex = this.zoomSelectionMutex.then(() => drawSelectionInMolstar(instance, this.selectionData, this.nonSelectionColor));
-    await this.zoomSelectionMutex;
+    await this.zoomSelectionMutex.run(() => drawSelectionInMolstar(instance, this.selectionData, this.nonSelectionColor));
   }
 
   //  data used in template for assembly accordion
@@ -876,6 +886,24 @@ export class Summary3DSectionComponent {
     await instance.visual.focus(selectionToZoom);
   }
 
+  private _mvsSnapshotProvider?: MVSSnapshotProvider;
+  private getMvsSnapshotProvider(): MVSSnapshotProvider | undefined {
+    if (!this._mvsSnapshotProvider) {
+      const PDBeMolstarPlugin = this._molstarComponent?.getPDBeMolstarPluginClass();
+      if (!PDBeMolstarPlugin) return undefined;
+
+      console.log('creating MVSSnapshotProvider');
+      const baseUrl = environment.baseUrl;
+      this._mvsSnapshotProvider = new MVSSnapshotProvider(PDBeMolstarPlugin.extensions.MVS.MVSData, new ApiDataProvider(new PdbeApiClient(`${baseUrl}pdbe/api/v2`)), {
+        PdbStructureFormat: 'bcif',
+        // PdbStructureUrlTemplate: `${baseUrl}pdbe/entry-files/{pdb}.bcif`,
+        PdbStructureUrlTemplate: `https://www.ebi.ac.uk/pdbe/entry-files/{pdb}.bcif`, // TODO: @adam revert
+      }); // TODO: use existing API service
+    }
+    return this._mvsSnapshotProvider;
+  }
+  private readonly mvsMutex = Mutex('mvsMutex');
+
   private async updateMolstarAny(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
     console.log('updateMolstarAny', selectionType, listItem);
 
@@ -886,26 +914,20 @@ export class Summary3DSectionComponent {
         take(1)
       )
     );
-    // TODO: @adam call this function on init (or after Molstar initialized) reflecting initial (or current UI state)
-    // TODO: @adam consider using mutex or SingleQueue for loading MVS states
+
+    // TODO: @adam consider SingleQueue for loading MVS states
     const PDBeMolstarPlugin = this._molstarComponent?.getPDBeMolstarPluginClass();
     const instance = this._molstarComponent?.getInstance();
+    const mvsSnapshotProvider = this.getMvsSnapshotProvider();
 
-    if (PDBeMolstarPlugin && instance?.plugin) {
-      const baseUrl = this.baseUrl;
-      const prov = new MVSSnapshotProvider(PDBeMolstarPlugin.extensions.MVS.MVSData, new ApiDataProvider(new PdbeApiClient(`${baseUrl}api/v2`)), {
-        PdbStructureFormat: 'bcif',
-        PdbStructureUrlTemplate: `${baseUrl}entry-files/{pdb}.bcif`,
-      }); // TODO: singleton (in molstar.component.ts), TODO: use existing API service
-
+    if (PDBeMolstarPlugin && mvsSnapshotProvider && instance?.plugin) {
       const snapshotSpec = this.getMvsSnapshotSpec(listItem, selectionType);
       if (snapshotSpec) {
-        let mvs = await prov.getSnapshot(snapshotSpec);
+        let mvs = await this.mvsMutex.run(() => mvsSnapshotProvider.getSnapshot(snapshotSpec)); // mutex ensures order of requested state changes
         mvs.metadata.description = undefined;
-        if (mvs.kind === 'multiple') mvs.snapshots.forEach((s) => (s.metadata.description = undefined));
-        // TODO: @adam hide snapshot name and description from Molstar UI
+        if (mvs.kind === 'multiple') mvs.snapshots.forEach((s) => (s.metadata.description = undefined)); // TODO: @adam hide snapshot name and description from Molstar UI
         mvs = PDBeMolstarPlugin.extensions.MVS.MVSData.fromMVSJ(PDBeMolstarPlugin.extensions.MVS.MVSData.toMVSJ(mvs)); // TODO remove this once MVS validation in Molstar handles undefineds correctly (PR#1733) - Molstar >=5.5.1
-        await PDBeMolstarPlugin.extensions.MVS.loadMVS(instance.plugin, mvs);
+        await this._molstarComponent?.mutex.run(() => PDBeMolstarPlugin.extensions.MVS.loadMVS(instance.plugin, mvs));
       }
     } else {
       console.warn('PdbeMolstar has not rendered yet');
@@ -966,6 +988,26 @@ export class Summary3DSectionComponent {
         }
       case 'Ligands':
         return undefined;
+      // if (!listItem) {
+      //   return {
+      //     name: 'All ligands',
+      //     kind: 'pdbconnect_all_ligands',
+      //     params: { entry: entryId, assemblyId: 'preferred' },
+      //   };
+      // } else {
+      //   // TODO: @adam continue here
+      //   const entityData = (listItem as ProcessedMacromolecule).additionalData;
+      //   const entityId = entityData.molecule.entity_id;
+      //   const iOption = entityData.selectionNames.indexOf(this.dropdownSelected);
+      //   const labelAsymId = entityData.molecule.in_struct_asyms[iOption] ?? entityData.molecule.in_struct_asyms[0]; // TODO: @adam find a proper solution (current one is incorrect as in_struct_asyms may have different ordering)
+      //   const instanceId = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
+      //   console.log('labelAsymId', labelAsymId, 'instanceId', instanceId);
+      //   return {
+      //     name: 'Ligand',
+      //     kind: 'pdbconnect_ligand',
+      //     params: { entry: entryId, assemblyId: 'preferred', entityId: `${entityId}`, labelAsymId, instanceId },
+      //   };
+      // }
       case 'Domains':
         return undefined;
       case 'Modifications':

@@ -1,7 +1,9 @@
 export const environment = {
   production: false,
   debug: true,
-  baseUrl: 'https://wwwdev.ebi.ac.uk/',
+  // baseUrl: 'https://corsproxy.io/?https://wwwdev.ebi.ac.uk/',
+  // baseUrl: 'https://wwwdev.ebi.ac.uk/',
+  baseUrl: 'http://localhost:5000/',
   googleAnalyticsTag: 'G-V1BCXVELRY',
   clarityProjectIdForEntryPages: 'rig9276nz7',
   clarityProjectIdForLigandPages: 'tx7303fj1j',
