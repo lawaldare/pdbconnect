@@ -80,7 +80,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
 
-  public readonly proteinsStatsObservable = this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds);
+  public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
   public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
   public readonly goMapping = toSignal(this.globalStore.select(EntrySelectors.goMapping));
   public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
@@ -310,7 +310,15 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public molstarHeight = '100%';
 
-  public selectionStats = signal<ProteinSummaryStats | undefined>(undefined);
+  public readonly selectionStats = computed(() => {
+    const stats = this.proteinsStats();
+    const uniprotId = this.selectionUniprotId();
+
+    if (!stats || !uniprotId || uniprotId === 'None') return undefined;
+
+    return stats[uniprotId];
+  });
+
   // public goMappings = computed(() => Object.keys(this.goMapping() ?? {}));
 
   public goMappingsForMacromolecule = computed(() => {
@@ -437,7 +445,12 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     | undefined
   >(undefined);
 
-  public selectionUniprotId = 'None';
+  public readonly selectionUniprotId = computed(() => {
+    const allowed = this.uniprotsAllowed();
+    if (!allowed || allowed.length !== 1) return 'None';
+    return allowed[0];
+  });
+
   public selectionTypeText?: string;
 
   public readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()));
@@ -593,25 +606,15 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       .subscribe((unpsList) => {
         // if protein is not chimeric (single uniprotAccession), set this as selectionUniprotId
         if (unpsList.length === 1) {
-          this.selectionUniprotId = unpsList[0];
-          // reset previous selection stats
-          this.selectionStats.set(undefined);
           // dispatch call to API endpoint and when finished triggers
           // constructor this.proteinsStatsObservable.pipe(...)
           this.globalStore.dispatch(
             EntryActions.getUniprotSummary({
-              uniprotId: this.selectionUniprotId ?? '',
+              uniprotId: unpsList[0] ?? '',
             })
           );
         }
       });
-    // when uniprot summary API call has finished
-    this.proteinsStatsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((proteinSummary) => {
-      if (proteinSummary) {
-        const datum = proteinSummary[this.selectionUniprotId];
-        if (datum) this.selectionStats.set(datum);
-      }
-    });
 
     this.residueListingObservable
       .pipe(
@@ -777,7 +780,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   updateVisualsDisplayed(macromolecule: ProcessedMacromolecule) {
     this.hasTopologyViewer = false;
-    this.selectionUniprotId = 'None';
     if (this.allThereVisuals.includes(macromolecule.additionalData.molecule.molecule_type)) {
       this.selectionTypeText = 'protein';
       this.hasTopologyViewer = true;
