@@ -2,71 +2,41 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { UploadPageFacade } from './uploade-page.facade';
 import { MaterialModule } from '@pdbc/core';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { PisaApiService } from '../../services/pisa-api.service';
 import { Store } from '@ngrx/store';
 import { PisaActions } from '../../store/pisa.actions';
 import { PisaFileStoreService } from '../../services/pisa-file-store.service';
-import { Router } from '@angular/router';
+import { UploadPageFacade } from '../upload-page/uploade-page.facade';
 
 const FILE_KEY = 'pisa-upload-file';
 @Component({
-  selector: 'app-upload',
+  selector: 'app-processing',
   imports: [CommonModule, FormsModule, MaterialModule, ReactiveFormsModule],
-  templateUrl: './upload-page.html',
-  styleUrl: './upload-page.scss',
+  templateUrl: './processing-page.html',
+  styleUrl: './processing-page.scss',
 })
-export class UploadPageComponent implements AfterViewInit {
+export class ProcessingPageComponent implements AfterViewInit {
   public facade = inject(UploadPageFacade);
   public pisaUtilService = inject(PisaUtilService);
   public pisaAPIService = inject(PisaApiService);
   private pisaStore = inject(Store);
   public fileStore = inject(PisaFileStoreService);
-  private router = inject(Router);
-
-  private selectedFile: File | null = null;
 
   private molstarViewer: any = null;
 
-  public selectedLigandPosition = new FormControl('auto', { nonNullable: true });
-  public analysisIncluded = false;
-
   public modelSym = this.facade.modelSym;
-  public modelSymParam = this.facade.modelSymParam;
-  public simplifiedSpacegroup = this.facade.simplifiedSpacegroup;
-  public orthoCode = this.facade.orthoCode;
-  public analysis = this.facade.analysis;
   public label = this.facade.label;
-  public processLigands = this.facade.processLigands;
-
-  private selectedLigands = signal<string[]>([]);
 
   @ViewChild('viewer') container!: ElementRef<HTMLElement>;
 
-  @ViewChild('dropArea') dropArea!: ElementRef<HTMLElement>;
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
-
-  public pdbEntryId = '';
-  public hasError = signal(false);
-  public errorInputMessage = signal('');
-
   ngAfterViewInit(): void {
     this.initMolstar();
-  }
-
-  public onSubmit(): void {
-    if (this.pdbEntryId) {
-      console.log('PDB Entry ID submitted:', this.pdbEntryId);
+    if (localStorage['job']) {
+      localStorage.removeItem('job');
     } else {
-      this.hasError.set(true);
-      this.errorInputMessage.set('Please enter a valid PDB entry ID.');
-
-      setTimeout(() => {
-        this.hasError.set(false);
-        this.errorInputMessage.set('');
-      }, 2000);
+      this.reAnalyse();
     }
   }
 
@@ -92,65 +62,24 @@ export class UploadPageComponent implements AfterViewInit {
         if (e.type === 'error') {
           this.facade.showError(`Mol* error: ${e.message}`);
           this.molstarViewer.plugin.clear();
-          this.selectedFile = null;
           this.pisaUtilService.setLoadingView('ERROR_LOADING');
         }
       });
-
-      // if (localStorage['jobState'] === 'running') {
-      //   this.pisaUtilService.setPageView('PROCESS');
-      // }
 
       this.pisaUtilService.setLoadingView('INITIAL');
     } catch (error) {
       console.error('Error initializing Molstar:', error);
       this.facade.showError('Error initializing Molstar');
     }
-  }
 
-  /** Browse file button */
-  public onBrowseClick(): void {
-    this.fileInput.nativeElement.click();
-  }
-
-  /** File input change */
-  public onFileChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files?.length) {
-      this.processFile(input.files[0]);
+    const file = await this.fileStore.get(FILE_KEY);
+    if (file) {
+      this.processFile(file);
     }
-  }
-
-  /** Drag & drop events */
-  public onDragOver(event: DragEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this.dropArea.nativeElement.style.borderColor = '#2196f3';
-    this.dropArea.nativeElement.style.backgroundColor = 'rgba(33, 150, 243, 0.1)';
-  }
-
-  public onDragLeave(): void {
-    this.resetDropAreaStyle();
-  }
-
-  public onDrop(event: DragEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (event.dataTransfer?.files.length) {
-      this.processFile(event.dataTransfer.files[0]);
-    }
-
-    this.resetDropAreaStyle();
-  }
-
-  private resetDropAreaStyle(): void {
-    this.dropArea.nativeElement.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-    this.dropArea.nativeElement.style.backgroundColor = 'transparent';
   }
 
   /** File processing */
-  private processFile(file: File): void {
+  private processFile(file: any): void {
     const lowerName = file.name.toLowerCase();
     const isCif = lowerName.endsWith('.cif');
     const isEnt = lowerName.endsWith('.ent') || lowerName.endsWith('.pdb');
@@ -159,7 +88,6 @@ export class UploadPageComponent implements AfterViewInit {
       return;
     }
 
-    this.selectedFile = file;
     this.fileStore.put(FILE_KEY, file).catch(() => {});
     this.pisaUtilService.saveDataInSessionStorage({ fileName: file.name }, 'pisa-upload-meta');
 
@@ -192,16 +120,10 @@ export class UploadPageComponent implements AfterViewInit {
       const model = data.cell?.obj?.data.models?.[0] || data.cell?.obj?.data;
       this.facade.model.set(model);
 
-      const detailForAssemblyTabs = {
-        label: this.label(),
-        spacegroup: this.simplifiedSpacegroup(),
-      };
-      this.pisaUtilService.saveDataInSessionStorage(detailForAssemblyTabs, 'pisa-assembly-details');
-
       if (!model) return;
 
-      const structures = this.molstarViewer.plugin.managers.structure.hierarchy.current.structures;
-      this.facade.structures.update(() => structures);
+      // const structures = this.molstarViewer.plugin.managers.structure.hierarchy.current.structures;
+      // this.facade.structures.update(() => structures);
       this.pisaUtilService.setLoadingView('LOADED');
     } catch (error) {
       console.error('Error loading CIF file:', error);
@@ -210,34 +132,15 @@ export class UploadPageComponent implements AfterViewInit {
     }
   }
 
-  public selectProcessLigands(selected: boolean, index: number): void {
-    const ligands = this.facade.processLigands();
-    ligands[index].selected = selected;
-    const unSelectedLigands = ligands.filter((ligand) => !ligand.selected).map((ligand) => ligand.title);
-    this.selectedLigands.update(() => [...unSelectedLigands]);
-  }
-
-  public async analyse(): Promise<void> {
-    // this.pisaUtilService.setPageView('PROCESS');
-
-    this.router.navigate(['/processing'], { queryParamsHandling: 'preserve' });
-    localStorage.setItem('job', 'called');
-
-    const file = this.selectedFile ?? (await this.fileStore.get(FILE_KEY));
-    if (!file) {
-      this.facade.showError('No file found. Please re-upload.');
-      return;
-    }
-
-    const meta = this.pisaUtilService.getDataInSessionStorage('pisa-upload-meta');
+  public async reAnalyse(): Promise<void> {
+    const payloadSaved = this.pisaUtilService.getDataInSessionStorage('pisa-assembly-payload');
 
     const payload: any = {};
-    payload.exclude_ligands = this.selectedLigands();
-    payload.ligand_position = this.selectedLigandPosition.value;
-    payload.asis = this.analysisIncluded;
-    payload.fileKey = FILE_KEY;
-    payload.fileName = meta.fileName;
-    this.pisaUtilService.saveDataInSessionStorage(payload, 'pisa-assembly-payload');
+    payload.exclude_ligands = payloadSaved.exclude_ligands;
+    payload.ligand_position = payloadSaved.ligand_position;
+    payload.asis = payloadSaved.asis;
+    payload.fileKey = payloadSaved.fileKey;
+    payload.fileName = payloadSaved.fileName;
     this.pisaStore.dispatch(PisaActions.submitPISAJob({ payload }));
   }
 }

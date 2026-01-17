@@ -4,7 +4,7 @@ import { Component, inject, linkedSignal, OnInit, signal, ViewChild } from '@ang
 import { DownloadFileTypeService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { Store } from '@ngrx/store';
 import { PisaSelectors } from '../../store/pisa.selectors';
-import { filter, mergeMap } from 'rxjs';
+import { catchError, filter, mergeMap, of } from 'rxjs';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { PisaActions } from '../../store/pisa.actions';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -58,20 +58,17 @@ export class AssemblyTabsPageComponent implements OnInit {
       console.log('Active tab from route params:', tabName);
       this.pisaUtilService.updateCurrentTabName(tabName ?? 'complexes');
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
-      console.log('Selected tab:', tabIndex);
       this.selectedTab.set(tabIndex);
     });
   }
 
   ngOnInit(): void {
-    const fileDetails = this.pisaUtilService.getDataInSessionStorage('pisa-assembly-details');
-    console.log('File details from session storage:', fileDetails);
     this.pisaStore
       .select(PisaSelectors.jobId)
       .pipe(
         mergeMap((jobId) => {
           if (!jobId) {
-            console.warn('No job ID available in store.');
+            console.error('No job ID available in store.');
             const payload = this.pisaUtilService.getDataInSessionStorage('pisa-assembly-payload');
             if (payload) {
               this.pisaStore.dispatch(PisaActions.submitPISAJob({ payload }));
@@ -81,6 +78,10 @@ export class AssemblyTabsPageComponent implements OnInit {
             }
           }
           return this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean));
+        }),
+        catchError((error) => {
+          console.error('Error fetching assembly results:', error);
+          return of(null);
         })
       )
       .subscribe((assemblyResults) => {

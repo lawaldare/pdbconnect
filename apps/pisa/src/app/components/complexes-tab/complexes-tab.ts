@@ -39,6 +39,7 @@ export class ComplexesTabComponent implements OnInit {
     source: this.assemblyResponse,
     computation: () => {
       const response = this.assemblyResponse();
+      console.log('Assembly response:', response);
 
       if (!response) {
         return null;

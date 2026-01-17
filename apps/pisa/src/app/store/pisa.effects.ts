@@ -5,12 +5,13 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { PisaStoreState } from './pisa-store.model';
 import { PisaActions } from './pisa.actions';
-import { catchError, forkJoin, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
+import { catchError, forkJoin, from, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
 import { PisaApiService } from '../services/pisa-api.service';
 import { Router } from '@angular/router';
 import { PisaSelectors } from './pisa.selectors';
 import { UploadPageFacade } from '../components/upload-page/uploade-page.facade';
 import { PisaUtilService } from '../services/pisa-util.service';
+import { PisaFileStoreService } from '../services/pisa-file-store.service';
 
 @Injectable()
 export class PisaEffects {
@@ -20,39 +21,48 @@ export class PisaEffects {
   private readonly router = inject(Router);
   private facade = inject(UploadPageFacade);
   private pisaUtilService = inject(PisaUtilService);
+  private pisaFileStoreService = inject(PisaFileStoreService);
 
   submitJob$ = createEffect(() =>
     this.actions$.pipe(
       ofType(PisaActions.submitPISAJob),
-      mergeMap((action) => {
-        return this.pisaAPIService.submitJob(action.payload).pipe(
-          map((response) => {
-            const jobId = response.job_id;
-            // PisaActions.submitPISAJobSuccess({ jobId });
-            // this.router.navigate(['/tables']);
-            return PisaActions.submitPISAJobSuccess({ jobId });
-          }),
-          catchError(() => {
-            // this.facade.showError('Failed to submit PISA analysis. Please try again.');
-            // this.pisaUtilService.setPageView('ERROR');
+      switchMap((action) =>
+        from(this.pisaFileStoreService.get(action.payload.fileKey)).pipe(
+          switchMap((file) => {
+            if (!file) {
+              return of(PisaActions.submitPISAJobFailure());
+            }
 
-            this.store.dispatch(PisaActions.submitPISAJobSuccess({ jobId: '60462b075dfef88f8334dfad33b24684' }));
-            // this.router.navigate(['/tables']);
-            return of(PisaActions.submitPISAJobFailure());
+            return this.pisaAPIService
+              .submitJobFile(file, {
+                exclude_ligands: action.payload.exclude_ligands,
+                ligand_position: action.payload.ligand_position,
+                asis: action.payload.asis,
+                fileName: action.payload.fileName,
+              })
+              .pipe(
+                map((response) => PisaActions.submitPISAJobSuccess({ jobId: response.job_id })),
+                catchError(() => {
+                  this.pisaUtilService.setPageView('ERROR');
+                  // this.router.navigate(['/processing'], { queryParamsHandling: 'preserve' });
+                  // this.store.dispatch(PisaActions.submitPISAJobSuccess({ jobId: '60462b075dfef88f8334dfad33b24684' }));
+                  return of(PisaActions.submitPISAJobFailure());
+                })
+              );
           })
-        );
-      })
+        )
+      )
     )
   );
 
-  navigateOnSuccess$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(PisaActions.submitPISAJobSuccess),
-        tap(() => this.router.navigate(['/assemblies'], { queryParamsHandling: 'preserve' }))
-      ),
-    { dispatch: false }
-  );
+  // navigateOnSuccess$ = createEffect(
+  //   () =>
+  //     this.actions$.pipe(
+  //       ofType(PisaActions.submitPISAJobSuccess),
+  //       tap(() => this.router.navigate(['/processing'], { queryParamsHandling: 'preserve' }))
+  //     ),
+  //   { dispatch: false }
+  // );
 
   getAssemblyResults$ = createEffect(() =>
     this.actions$.pipe(
@@ -60,9 +70,16 @@ export class PisaEffects {
       switchMap(() => this.store.select(PisaSelectors.jobId).pipe(take(1))),
       mergeMap((jobId: string) =>
         this.pisaAPIService.getAssemblyResults(jobId).pipe(
-          map((assemblyResults) => PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults })),
-          catchError(() => {
-            // this.store.dispatch(PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults: ASSEMBLY_RESPONSE }));
+          map((assemblyResults) => {
+            console.log('Assembly results:', assemblyResults);
+
+            this.router.navigate(['/assemblies'], { queryParamsHandling: 'preserve' });
+            return PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults });
+          }),
+          catchError((err) => {
+            console.error('getAssemblyResults failed:', err);
+            this.router.navigate(['/processing'], { queryParamsHandling: 'preserve' });
+            this.pisaUtilService.setPageView('ERROR');
             return of(PisaActions.getAssemblyResultForJobIdFailure());
           })
         )
