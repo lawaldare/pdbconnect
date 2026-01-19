@@ -21,7 +21,7 @@
   <div class="molstar">
     <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
     @if(selectedRowData()){
-    <h3>Complex 2</h3>
+    <h3>Complex {{selectedRowData().complex_key}}</h3>
     <div class="row">
       <p class="title">Copies in unit cell</p>
       <p class="value">{{selectedRowData().unit_cell}}</p>

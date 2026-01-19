@@ -97,16 +97,15 @@
 
       <button class="vf-button vf-button--primary" (click)="onBrowseClick()">Select a file</button>
     </div>
+    <!-- Messages -->
+    @if(facade.errorMsg()) {
+    <span class="error">{{ facade.errorMsg() }}</span>
+    }
     <p class="info">
       PISA provides calculated estimates rather than curated data, and its results depend on the accuracy and completeness of the submitted coordinate files,
       including the use of standard atom and residue names. <a href="">Learn more...</a>
     </p>
     <!-- <span class="error">{{errorMolstarMessage()}}</span> -->
-
-    <!-- Messages -->
-    @if(facade.errorMsg()) {
-    <span class="error">{{ facade.errorMsg() }}</span>
-    }
 
     <div class="upload-section-input-field">
       <h3 class="title">or use a PDB entry ID</h3>
@@ -120,32 +119,6 @@
     <h3 class="title">Programmatic access</h3>
     <p class="prog">Access PISA via our REST API. <a href="">See API documentation page</a></p>
     } }
-    <!-- Processing View -->
-
-    <!-- @if (pisaUtilService.pageView() === 'PROCESS') {
-    <h3>Analysing...</h3>
-    <p class="analysing-text">
-      The analysis may take seconds to minutes, depending on the size and complexity. In case it takes too long, save this link [link to this job] so you can easily
-      return to it later within 7 days.
-    </p>
-    <p class="analysing-text">
-      NOTE: Only share your job ID with trusted parties. Once your structure file is uploaded, it will be accessible via the PDBePISA results page to anyone with the
-      job ID link.
-    </p>
-    <div class="analysing-footer">
-      <p>
-        <span>Curious fact while you’re waiting:</span><br />
-        The largest protein in the entire PDB archive is still really small.
-      </p>
-    </div>
-    } -->
-
-    <!-- Error View -->
-    @if (pisaUtilService.pageView() === 'ERROR') {
-    <h3>PISA failed</h3>
-    <p class="analysing-text">Your file was uploaded, but PISA couldn’t complete the analysis. Please try again later or verify that your structure is valid.</p>
-    <!-- <a href="">Try again</a> -->
-    }
   </section>
   <section class="molstar-section">
     <!-- <h4>Your structure will appear here</h4> -->

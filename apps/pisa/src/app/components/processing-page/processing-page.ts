@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AfterViewInit, Component, ElementRef, inject, ViewChild } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from '@pdbc/core';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { PisaApiService } from '../../services/pisa-api.service';
