@@ -222,7 +222,8 @@ export function generateMolstarSelectionsForLigand(ligand: Molecule, ligandMonom
         auth_asym_id: ligandMonomer.chain_id,
         auth_residue_number: ligandMonomer.author_residue_number,
         auth_ins_code_id: ligandMonomer.author_insertion_code ? ligandMonomer.author_insertion_code : undefined,
-      },
+        struct_asym_id: ligandMonomer.struct_asym_id,
+      } satisfies QueryParamForHelpers,
     ];
   });
 

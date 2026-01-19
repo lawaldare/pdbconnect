@@ -164,6 +164,10 @@ export class Summary3DSectionComponent implements AfterViewInit {
 
   public symmetryDropdownSelected?: string;
   public symmetryDropdownOptions = signal<DownloadOption[]>([]);
+  private getSelectedInstanceId() {
+    if (this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All') return this.symmetryDropdownSelected;
+    else return undefined;
+  }
 
   private selectionData?: QueryParamForHelpers[];
   private nonSelectionColor?: string;
@@ -927,7 +931,7 @@ export class Summary3DSectionComponent implements AfterViewInit {
         mvs.metadata.description = undefined;
         if (mvs.kind === 'multiple') mvs.snapshots.forEach((s) => (s.metadata.description = undefined)); // TODO: @adam hide snapshot name and description from Molstar UI
         mvs = PDBeMolstarPlugin.extensions.MVS.MVSData.fromMVSJ(PDBeMolstarPlugin.extensions.MVS.MVSData.toMVSJ(mvs)); // TODO remove this once MVS validation in Molstar handles undefineds correctly (PR#1733) - Molstar >=5.5.1
-        await this._molstarComponent?.mutex.run(() => PDBeMolstarPlugin.extensions.MVS.loadMVS(instance.plugin, mvs));
+        await this._molstarComponent?.mutex.run(() => PDBeMolstarPlugin.extensions.MVS.loadMVS(instance.plugin, mvs, {})); // TODO add keepCameraOrientation option once Molstar >= 5.5.1
       }
     } else {
       console.warn('PdbeMolstar has not rendered yet');
@@ -975,40 +979,53 @@ export class Summary3DSectionComponent implements AfterViewInit {
           };
         } else {
           const entityData = (listItem as ProcessedMacromolecule).additionalData;
-          const entityId = entityData.molecule.entity_id;
+          const entityId = `${entityData.molecule.entity_id}`;
           const iOption = entityData.selectionNames.indexOf(this.dropdownSelected);
-          const labelAsymId = entityData.molecule.in_struct_asyms[iOption] ?? entityData.molecule.in_struct_asyms[0]; // TODO: @adam find a proper solution (current one is incorrect as in_struct_asyms may have different ordering)
-          const instanceId = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
+          const labelAsymId = entityData.molecule.in_struct_asyms[iOption] ?? entityData.molecule.in_struct_asyms[0];
+          // TODO: @adam find a proper solution for (current one is incorrect as in_struct_asyms may have different ordering)
+          const instanceId = this.getSelectedInstanceId();
           console.log('labelAsymId', labelAsymId, 'instanceId', instanceId);
           return {
             name: 'Macromolecule',
             kind: 'pdbconnect_macromolecule',
-            params: { entry: entryId, assemblyId: 'preferred', entityId: `${entityId}`, labelAsymId, instanceId },
+            params: { entry: entryId, assemblyId: 'preferred', entityId, labelAsymId, instanceId },
           };
         }
       case 'Ligands':
-        return undefined;
-      // if (!listItem) {
-      //   return {
-      //     name: 'All ligands',
-      //     kind: 'pdbconnect_all_ligands',
-      //     params: { entry: entryId, assemblyId: 'preferred' },
-      //   };
-      // } else {
-      //   // TODO: @adam continue here
-      //   const entityData = (listItem as ProcessedMacromolecule).additionalData;
-      //   const entityId = entityData.molecule.entity_id;
-      //   const iOption = entityData.selectionNames.indexOf(this.dropdownSelected);
-      //   const labelAsymId = entityData.molecule.in_struct_asyms[iOption] ?? entityData.molecule.in_struct_asyms[0]; // TODO: @adam find a proper solution (current one is incorrect as in_struct_asyms may have different ordering)
-      //   const instanceId = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
-      //   console.log('labelAsymId', labelAsymId, 'instanceId', instanceId);
-      //   return {
-      //     name: 'Ligand',
-      //     kind: 'pdbconnect_ligand',
-      //     params: { entry: entryId, assemblyId: 'preferred', entityId: `${entityId}`, labelAsymId, instanceId },
-      //   };
-      // }
+        if (!listItem) {
+          return {
+            name: 'All ligands',
+            kind: 'pdbconnect_all_ligands',
+            params: { entry: entryId, assemblyId: 'preferred' },
+          };
+        } else {
+          const ligandData = (listItem as ProcessedLigandOrMod).additionalData;
+          const moleculeData = ligandData.source as Molecule;
+          const entityId = `${moleculeData.entity_id}`;
+          const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+          const labelAsymId = molstarSelection[0].struct_asym_id;
+          if (!labelAsymId) throw new Error('struct_asym_id for ligand instance not set');
+          const instanceId = this.getSelectedInstanceId();
+          return {
+            name: 'Ligand',
+            kind: 'pdbconnect_ligand',
+            params: { entry: entryId, assemblyId: 'preferred', entityId, labelAsymId, instanceId },
+          };
+        }
       case 'Domains':
+        if (!listItem) {
+          if (this.currentDomainResource() === 'All') {
+            return {
+              name: 'Domains',
+              kind: 'pdbconnect_domains_default',
+              params: { entry: entryId, assemblyId: 'preferred' },
+            };
+          }
+          const domainsSelectionData = this.allCurrentResourceDomainsQueryParam();
+          console.log('domainsSelectionData', domainsSelectionData);
+        } else {
+          const domainData = (listItem as ProcessedDomain).additionalData;
+        }
         return undefined;
       case 'Modifications':
         return undefined;

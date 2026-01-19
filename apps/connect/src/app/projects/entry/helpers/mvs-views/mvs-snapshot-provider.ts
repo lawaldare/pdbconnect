@@ -149,6 +149,7 @@ export class MVSSnapshotProvider {
 
     const structure = displayedAssembly === MODEL ? ctx.model.modelStructure() : ctx.model.assemblyStructure({ assembly_id: displayedAssembly });
     const modifiedResidues = await this.dataProvider.modifiedResidues(params.entry);
+    // TODO show modified residues via component_from_source and mon_nstd_flag?
     const components = applyStandardComponents(structure, { modifiedResidues });
     const representations = applyStandardRepresentations(components, { opacityFactor: 1 });
     // TODO Molstar: ball_and_stick size theme physical?
