@@ -14,14 +14,10 @@ export type StandardRepresentationType =
   | 'nonstandardSticks'
   | 'waterSticks';
 
-export interface StandardComponentsOptions {
-  modifiedResidues: ResidueRecord[];
-}
-
 export type StandardComponentCollection = { [type in StandardComponentType]?: Builder.Component };
 
 export const StardardComponents: {
-  [type in StandardComponentType]?: (struct: Builder.Structure, options: StandardComponentsOptions) => Builder.Component | undefined;
+  [type in StandardComponentType]?: (struct: Builder.Structure) => Builder.Component | undefined;
 } = {
   polymer(structure: Builder.Structure) {
     return structure.component({ selector: 'polymer', ref: 'component_polymer' });
@@ -36,9 +32,13 @@ export const StardardComponents: {
   ion(structure: Builder.Structure) {
     return structure.component({ selector: 'ion', ref: 'component_ion' });
   },
-  nonstandard(structure: Builder.Structure, options: StandardComponentsOptions) {
-    return structure.component({
-      selector: options.modifiedResidues.map((r) => ({ label_asym_id: r.labelAsymId, label_seq_id: r.labelSeqId })),
+  nonstandard(structure: Builder.Structure) {
+    return structure.componentFromSource({
+      schema: 'all_atomic',
+      category_name: 'chem_comp',
+      field_name: 'mon_nstd_flag',
+      field_values: ['n', 'no'],
+      field_remapping: { label_comp_id: 'id' },
       ref: 'component_nonstandard',
     });
   },
@@ -160,11 +160,11 @@ function makeRef(prefix: string | undefined, suffix: string | undefined) {
   return `${prefix}_${suffix}`;
 }
 
-export function applyStandardComponents(struct: Builder.Structure, options: StandardComponentsOptions): StandardComponentCollection {
+export function applyStandardComponents(struct: Builder.Structure): StandardComponentCollection {
   const out: StandardComponentCollection = {};
   let compType: StandardComponentType;
   for (compType in StardardComponents) {
-    const component = StardardComponents[compType]?.(struct, options);
+    const component = StardardComponents[compType]?.(struct);
     if (component) out[compType] = component;
   }
   return out;

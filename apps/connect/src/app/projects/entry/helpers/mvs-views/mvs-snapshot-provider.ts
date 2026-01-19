@@ -148,9 +148,7 @@ export class MVSSnapshotProvider {
     }
 
     const structure = displayedAssembly === MODEL ? ctx.model.modelStructure() : ctx.model.assemblyStructure({ assembly_id: displayedAssembly });
-    const modifiedResidues = await this.dataProvider.modifiedResidues(params.entry);
-    // TODO show modified residues via component_from_source and mon_nstd_flag?
-    const components = applyStandardComponents(structure, { modifiedResidues });
+    const components = applyStandardComponents(structure);
     const representations = applyStandardRepresentations(components, { opacityFactor: 1 });
     // TODO Molstar: ball_and_stick size theme physical?
     // TODO compute PCA to orient camera?
@@ -160,7 +158,7 @@ export class MVSSnapshotProvider {
       structure,
       components,
       representations,
-      metadata: { displayedAssembly, modifiedResidues },
+      metadata: { displayedAssembly },
     };
   }
 
@@ -398,7 +396,8 @@ export class MVSSnapshotProvider {
     const { displayedAssembly } = ctx.metadata;
 
     if (ctx.components.nonstandard) {
-      const modresColors = getModresColors(ctx.metadata.modifiedResidues);
+      const modifiedResidues = await this.dataProvider.modifiedResidues(params.entry);
+      const modresColors = getModresColors(modifiedResidues);
       const modresSpacefill = ctx.components.nonstandard.representation({ type: 'spacefill' });
       for (const compId in modresColors) {
         modresSpacefill.color({ selector: { label_comp_id: compId }, color: modresColors[compId] });
@@ -421,7 +420,8 @@ export class MVSSnapshotProvider {
     const { displayedAssembly } = ctx.metadata;
     const entities = await this.dataProvider.entities(params.entry);
     const entityColors = getEntityColors(entities);
-    const modresColors = getModresColors(ctx.metadata.modifiedResidues);
+    const modifiedResidues = await this.dataProvider.modifiedResidues(params.entry);
+    const modresColors = getModresColors(modifiedResidues);
     for (const [reprName, repr] of Object.entries(ctx.representations)) {
       if ((reprName as StandardRepresentationType) === 'nonstandardSticks') {
         for (const compId in modresColors) {
