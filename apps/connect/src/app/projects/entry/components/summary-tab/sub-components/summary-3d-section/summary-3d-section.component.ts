@@ -20,7 +20,7 @@ import {
 } from '../../../../helpers/molstar-helpers';
 import { ApiDataProvider, PdbeApiClient } from '../../../../helpers/mvs-views/data-provider';
 import { MVSSnapshotProvider } from '../../../../helpers/mvs-views/mvs-snapshot-provider';
-import { SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
+import { MODEL, SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
 import {
   getCleanMoleculeName,
   getDomainChainDropdownOptions,
@@ -121,14 +121,19 @@ export class Summary3DSectionComponent implements AfterViewInit {
   public inPrefAssemblyForSelection = signal(true);
   public hasClosedMessage = signal(false);
 
+  private getPreferredAssemblyId(): string | undefined {
+    return this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id;
+  }
+
   public readonly configForMolstar = computed(() => {
     const summary = this.summary();
     // const chainSelection = this.chainSelection();
     const inPrefAssemblyForSelection = this.inPrefAssemblyForSelection();
 
     if (!summary || !this.entryId()) return undefined;
-    const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
-    const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
+    // const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
+    // const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
+    const preferredAssemblyId = this.getPreferredAssemblyId();
     const assemblyId = inPrefAssemblyForSelection ? preferredAssemblyId : undefined;
 
     const configForMolstar: InitParams = {
@@ -962,20 +967,27 @@ export class Summary3DSectionComponent implements AfterViewInit {
     const entryId = this.entryId();
     if (!entryId) return undefined;
 
+    const preferredAssemblyId = this.getPreferredAssemblyId() ?? MODEL;
+    const molstarSelectionIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+    const isSelectionInPrefAssembly = listItem ? listItem.additionalData.selectionsInPrefAssembly[molstarSelectionIdx] : true;
+    const assemblyId = isSelectionInPrefAssembly ? preferredAssemblyId : MODEL;
+    console.log('preferredAssemblyId:', preferredAssemblyId);
+    console.log('assemblyId:', assemblyId);
+
     switch (selectionType) {
       case 'Assembly':
         return {
           name: 'Preferred complex',
           kind: 'pdbconnect_complex',
-          params: { entry: entryId, assemblyId: 'preferred' },
-        }; // TODO set assemblyId (or not?)
+          params: { entry: entryId, assemblyId },
+        };
       case 'Macromolecules':
         if (!listItem) {
           // Same as "Preferred complex", TODO create separate view (low prio)
           return {
             name: 'All macromolecules',
             kind: 'pdbconnect_complex',
-            params: { entry: entryId, assemblyId: 'preferred' },
+            params: { entry: entryId, assemblyId },
           };
         } else {
           const entityData = (listItem as ProcessedMacromolecule).additionalData;
@@ -988,7 +1000,7 @@ export class Summary3DSectionComponent implements AfterViewInit {
           return {
             name: 'Macromolecule',
             kind: 'pdbconnect_macromolecule',
-            params: { entry: entryId, assemblyId: 'preferred', entityId, labelAsymId, instanceId },
+            params: { entry: entryId, assemblyId, entityId, labelAsymId, instanceId },
           };
         }
       case 'Ligands':
@@ -996,7 +1008,7 @@ export class Summary3DSectionComponent implements AfterViewInit {
           return {
             name: 'All ligands',
             kind: 'pdbconnect_all_ligands',
-            params: { entry: entryId, assemblyId: 'preferred' },
+            params: { entry: entryId, assemblyId },
           };
         } else {
           const ligandData = (listItem as ProcessedLigandOrMod).additionalData;
@@ -1009,7 +1021,7 @@ export class Summary3DSectionComponent implements AfterViewInit {
           return {
             name: 'Ligand',
             kind: 'pdbconnect_ligand',
-            params: { entry: entryId, assemblyId: 'preferred', entityId, labelAsymId, instanceId },
+            params: { entry: entryId, assemblyId, entityId, labelAsymId, instanceId },
           };
         }
       case 'Domains':
@@ -1018,7 +1030,7 @@ export class Summary3DSectionComponent implements AfterViewInit {
             return {
               name: 'Domains',
               kind: 'pdbconnect_domains_default',
-              params: { entry: entryId, assemblyId: 'preferred' },
+              params: { entry: entryId, assemblyId },
             };
           }
           const domainsSelectionData = this.allCurrentResourceDomainsQueryParam();
