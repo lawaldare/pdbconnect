@@ -1,3 +1,5 @@
+import type { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
+
 export type SnapshotSpecParams = {
   /** PDBconnect Summary tab > Preferred complex (default view), Complexes tab */
   pdbconnect_complex: {
@@ -14,8 +16,10 @@ export type SnapshotSpecParams = {
     assemblyId: string | undefined;
     /** Entity ID of the macromolecule (polymer or branched) entity */
     entityId: string;
-    /** Chain identifier (label_asym_id) */
-    labelAsymId: string;
+    /** Optional chain identifier (label_asym_id) (if `undefined`, all chains will be highlighted) */
+    labelAsymId?: string;
+    /** Optional chain identifier (auth_asym_id) (if `undefined`, all chains will be highlighted) */
+    authAsymId?: string;
     /** Symmetry instance identifier (e.g. 'ASM-1'), `undefined` for showing all instances */
     instanceId: string | undefined;
   };
@@ -71,6 +75,16 @@ export type SnapshotSpecParams = {
     domainId: string;
     /** Symmetry instance identifier (e.g. 'ASM-1'), `undefined` for showing all instances */
     instanceId: string | undefined;
+  };
+  /** PDBconnect Summary tab > Domains (domain selected), Domains tab */
+  pdbconnect_domains: {
+    /** PDB ID */
+    entry: string;
+    /** Assembly ID (or `undefined` for deposited model) */
+    assemblyId: string | undefined;
+    /** List of domains to highlight, (`name` to show in tooltip) */
+    domains: { selector: ComponentExpressionT[]; color: string; name: string | undefined }[];
+    focus: boolean;
   };
   /** PDBconnect Summary tab > Modifications (nothing selected) */
   pdbconnect_all_modifications: {

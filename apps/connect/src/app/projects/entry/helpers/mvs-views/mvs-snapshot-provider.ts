@@ -1,6 +1,6 @@
 import type { MVSData } from 'molstar/lib/extensions/mvs/mvs-data';
 import type * as Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
-import type { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
+import type { ColorT, ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { ATOM_INTERACTION_COLORS, CHAIN_ANNOTATED_COLOR, RESIDUE_ANNOTATED_COLOR, RESIDUE_HIGHLIGHT_COLOR, VALIDATION_COLORS } from './colors';
 import type { IDataProvider } from './data-provider';
 import {
@@ -102,6 +102,8 @@ export class MVSSnapshotProvider {
         return await this.loadPdbconnectDomainsInSource(spec.params);
       case 'pdbconnect_domain':
         return await this.loadPdbconnectDomain(spec.params);
+      case 'pdbconnect_domains':
+        return await this.loadPdbconnectDomains(spec.params);
       case 'pdbconnect_all_modifications':
         return await this.loadPdbconnectAllModifications(spec.params);
       case 'pdbconnect_modification':
@@ -181,24 +183,23 @@ export class MVSSnapshotProvider {
   private async loadPdbconnectMacromolecule(params: SnapshotSpecParams['pdbconnect_macromolecule']) {
     const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
 
-    // const modelData = await this.modelProvider.getModel(params.entry);
-    // const bgOpacity = smartFadedOpacity(structurePolymerResidueCount(modelData, base.metadata.displayedAssembly));
-    // for (const repr of Object.values(base.representations)) {
-    //     repr.color({ color: 'gray' }).opacity({ opacity:bgOpacity });
-    // }
-
     const entities = await this.dataProvider.entities(params.entry);
     const entityColors = getEntityColors(entities);
-    const entityInstanceSelector: ComponentExpressionT = { label_entity_id: params.entityId, label_asym_id: params.labelAsymId, instance_id: params.instanceId };
+    const entitySelector: ComponentExpressionT = {
+      label_entity_id: params.entityId,
+      label_asym_id: params.labelAsymId,
+      auth_asym_id: params.authAsymId,
+      instance_id: params.instanceId,
+    };
 
     for (const repr of Object.values(ctx.representations)) {
-      repr.color({ selector: entityInstanceSelector, color: entityColors[params.entityId] });
+      repr.color({ selector: entitySelector, color: entityColors[params.entityId] });
     }
     // TODO use coloring by element within selection (entity) (once Molstar >=5.5.1 available)
     // for (const repr of atomicRepresentations(base.representations)) {
     //     applyElementColors(repr);
     // }
-    ctx.structure.component({ selector: entityInstanceSelector }).focus();
+    ctx.structure.component({ selector: entitySelector }).focus();
 
     // const entityType = decideEntityType(entities[params.entityId]);
     // const entityComponents = applyStandardComponentsForChain(base.structure, params.labelAsymId, params.instanceId, entityType, { modifiedResidues });
@@ -219,9 +220,7 @@ export class MVSSnapshotProvider {
     const description: string[] = [];
     description.push(`## Macromolecule ${params.entityId}`);
     const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
-    description.push(
-      `This is macromolecule ${params.entityId} **${entities[params.entityId].name}** in chain ${params.labelAsymId} (label_asym_id) in ${assemblyText}.`
-    );
+    description.push(`This is macromolecule ${params.entityId} in ${assemblyText}.`);
     return {
       ...ctx,
       description,
@@ -352,6 +351,30 @@ export class MVSSnapshotProvider {
     description.push(`## Domain ${params.domainId}`);
     const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
     description.push(`Showing ${params.source} ${params.familyId} domain ${params.domainId} in ${assemblyText}.`);
+    return {
+      ...ctx,
+      description,
+    };
+  }
+  /** Create MVS view for PDBconnect Summary tab > Domains (domain selected), Domains tab */
+  private async loadPdbconnectDomains(params: SnapshotSpecParams['pdbconnect_domains']) {
+    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
+
+    for (const domain of params.domains) {
+      const selector = domain.selector;
+      const color = domain.color as ColorT;
+      ctx.representations.polymerCartoon?.color({ selector, color });
+      ctx.representations.nonstandardSticks?.color({ selector, color });
+      const domainComponent = ctx.structure.component({ selector });
+      if (domain.name !== undefined) domainComponent.tooltip({ text: `Domain: ${domain.name}` });
+      if (params.focus && params.domains.length > 0) domainComponent.focus();
+    }
+    for (const repr of atomicRepresentations(ctx.representations)) {
+      applyElementColors(repr); // TODO: @adam apply color only to nonstandardSticks, within domains
+    }
+
+    const description: string[] = [];
+    description.push(`## Domains`);
     return {
       ...ctx,
       description,

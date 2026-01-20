@@ -5,6 +5,7 @@ import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, MaterialModule, Mutex } from '@pdbc/core';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import type { InitParams } from 'pdbe-molstar/lib/spec';
 import { filter, firstValueFrom, map, take, timer } from 'rxjs';
@@ -968,8 +969,10 @@ export class Summary3DSectionComponent implements AfterViewInit {
     if (!entryId) return undefined;
 
     const preferredAssemblyId = this.getPreferredAssemblyId();
-    const molstarSelectionIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-    const isSelectionInPrefAssembly = listItem ? listItem.additionalData.selectionsInPrefAssembly[molstarSelectionIdx] : true;
+    const molstarSelectionIndex = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    console.log('this.dropdownSelected', this.dropdownSelected);
+    const isSelectionInPrefAssembly = listItem ? listItem.additionalData.selectionsInPrefAssembly[molstarSelectionIndex] : true;
     const assemblyId = isSelectionInPrefAssembly ? preferredAssemblyId : undefined; // undefined = deposited model
     console.log('preferredAssemblyId:', preferredAssemblyId);
     console.log('assemblyId:', assemblyId);
@@ -992,17 +995,13 @@ export class Summary3DSectionComponent implements AfterViewInit {
         } else {
           const entityData = (listItem as ProcessedMacromolecule).additionalData;
           const entityId = `${entityData.molecule.entity_id}`;
-          const iOption = entityData.selectionNames.indexOf(this.dropdownSelected);
-          // TODO: @adam fix iOption when warning displayed in dropdown
-          const labelAsymId = entityData.molecule.in_struct_asyms[iOption] ?? entityData.molecule.in_struct_asyms[0];
-          console.log(entityData.selectionNames, this.dropdownSelected, iOption, entityData.molecule.in_struct_asyms, labelAsymId);
-          // TODO: @adam find a proper solution for (current one is incorrect as in_struct_asyms may have different ordering)
+          const labelAsymId = molstarSelection[0].struct_asym_id;
+          const authAsymId = molstarSelection[0].auth_asym_id;
           const instanceId = this.getSelectedInstanceId();
-          console.log('labelAsymId', labelAsymId, 'instanceId', instanceId);
           return {
             name: 'Macromolecule',
             kind: 'pdbconnect_macromolecule',
-            params: { entry: entryId, assemblyId, entityId, labelAsymId, instanceId },
+            params: { entry: entryId, assemblyId, entityId, labelAsymId, authAsymId, instanceId },
           };
         }
       case 'Ligands':
@@ -1016,7 +1015,6 @@ export class Summary3DSectionComponent implements AfterViewInit {
           const ligandData = (listItem as ProcessedLigandOrMod).additionalData;
           const moleculeData = ligandData.source as Molecule;
           const entityId = `${moleculeData.entity_id}`;
-          const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
           const labelAsymId = molstarSelection[0].struct_asym_id;
           if (!labelAsymId) throw new Error('struct_asym_id for ligand instance not set');
           const instanceId = this.getSelectedInstanceId();
@@ -1026,21 +1024,34 @@ export class Summary3DSectionComponent implements AfterViewInit {
             params: { entry: entryId, assemblyId, entityId, labelAsymId, instanceId },
           };
         }
-      case 'Domains':
-        if (!listItem) {
-          if (this.currentDomainResource() === 'All') {
-            return {
-              name: 'Domains',
-              kind: 'pdbconnect_domains_default',
-              params: { entry: entryId, assemblyId },
-            };
-          }
-          const domainsSelectionData = this.allCurrentResourceDomainsQueryParam();
-          console.log('domainsSelectionData', domainsSelectionData);
-        } else {
-          const domainData = (listItem as ProcessedDomain).additionalData;
-        }
-        return undefined;
+      case 'Domains': {
+        const selectedResource = this.currentDomainResource();
+        const domains: ProcessedDomain[] = listItem ? [listItem as ProcessedDomain] : this.procDomains()?.filter((dom) => dom.resource === selectedResource) ?? []; // empty list when selectedResource==='All'
+        const instanceId = this.getSelectedInstanceId();
+        return {
+          name: 'Domains',
+          kind: 'pdbconnect_domains',
+          params: {
+            entry: entryId,
+            assemblyId,
+            domains: domains.map((dom) => ({
+              name: dom.additionalData.accession,
+              color: dom.molstarColorHex ?? 'gray',
+              selector: dom.additionalData.boundaries.map(
+                (segment) =>
+                  ({
+                    auth_asym_id: segment.chain,
+                    beg_label_seq_id: segment.start,
+                    end_label_seq_id: segment.end,
+                    instance_id: instanceId,
+                  }) satisfies ComponentExpressionT
+              ),
+            })),
+            focus: true,
+          },
+        };
+      }
+      // TODO fix every domain appearing twice in the list (entry 1bvy)
       case 'Modifications':
         return undefined;
       default: {
