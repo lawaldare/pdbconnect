@@ -20,7 +20,7 @@ import {
 } from '../../../../helpers/molstar-helpers';
 import { ApiDataProvider, PdbeApiClient } from '../../../../helpers/mvs-views/data-provider';
 import { MVSSnapshotProvider } from '../../../../helpers/mvs-views/mvs-snapshot-provider';
-import { MODEL, SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
+import type { SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
 import {
   getCleanMoleculeName,
   getDomainChainDropdownOptions,
@@ -967,10 +967,10 @@ export class Summary3DSectionComponent implements AfterViewInit {
     const entryId = this.entryId();
     if (!entryId) return undefined;
 
-    const preferredAssemblyId = this.getPreferredAssemblyId() ?? MODEL;
+    const preferredAssemblyId = this.getPreferredAssemblyId();
     const molstarSelectionIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
     const isSelectionInPrefAssembly = listItem ? listItem.additionalData.selectionsInPrefAssembly[molstarSelectionIdx] : true;
-    const assemblyId = isSelectionInPrefAssembly ? preferredAssemblyId : MODEL;
+    const assemblyId = isSelectionInPrefAssembly ? preferredAssemblyId : undefined; // undefined = deposited model
     console.log('preferredAssemblyId:', preferredAssemblyId);
     console.log('assemblyId:', assemblyId);
 
@@ -993,7 +993,9 @@ export class Summary3DSectionComponent implements AfterViewInit {
           const entityData = (listItem as ProcessedMacromolecule).additionalData;
           const entityId = `${entityData.molecule.entity_id}`;
           const iOption = entityData.selectionNames.indexOf(this.dropdownSelected);
+          // TODO: @adam fix iOption when warning displayed in dropdown
           const labelAsymId = entityData.molecule.in_struct_asyms[iOption] ?? entityData.molecule.in_struct_asyms[0];
+          console.log(entityData.selectionNames, this.dropdownSelected, iOption, entityData.molecule.in_struct_asyms, labelAsymId);
           // TODO: @adam find a proper solution for (current one is incorrect as in_struct_asyms may have different ordering)
           const instanceId = this.getSelectedInstanceId();
           console.log('labelAsymId', labelAsymId, 'instanceId', instanceId);

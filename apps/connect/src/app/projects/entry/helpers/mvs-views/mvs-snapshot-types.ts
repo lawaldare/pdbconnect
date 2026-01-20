@@ -3,15 +3,15 @@ export type SnapshotSpecParams = {
   pdbconnect_complex: {
     /** PDB ID */
     entry: string;
-    /** Assembly ID (or 'preferred' for preferred assembly) */
-    assemblyId: string;
+    /** Assembly ID*/
+    assemblyId: string | undefined;
   };
   /** PDBconnect Summary tab > Macromolecules (macromolecule selected), Macromolecules tab */
   pdbconnect_macromolecule: {
     /** PDB ID */
     entry: string;
-    /** Assembly ID (or 'preferred' for preferred assembly, or 'model' for deposited model) */
-    assemblyId: string;
+    /** Assembly ID (or `undefined` for deposited model) */
+    assemblyId: string | undefined;
     /** Entity ID of the macromolecule (polymer or branched) entity */
     entityId: string;
     /** Chain identifier (label_asym_id) */
@@ -23,15 +23,15 @@ export type SnapshotSpecParams = {
   pdbconnect_all_ligands: {
     /** PDB ID */
     entry: string;
-    /** Assembly ID (or 'preferred' for preferred assembly, or 'model' for deposited model) */
-    assemblyId: string;
+    /** Assembly ID (or `undefined` for deposited model) */
+    assemblyId: string | undefined;
   };
   /** PDBconnect Summary tab > Ligands (ligand selected) */
   pdbconnect_ligand: {
     /** PDB ID */
     entry: string;
-    /** Assembly ID (or 'preferred' for preferred assembly, or 'model' for deposited model) */
-    assemblyId: string;
+    /** Assembly ID (or `undefined` for deposited model) */
+    assemblyId: string | undefined;
     /** Entity ID of the ligand entity */
     entityId: string;
     /** Chain identifier (label_asym_id) */
@@ -43,15 +43,15 @@ export type SnapshotSpecParams = {
   pdbconnect_domains_default: {
     /** PDB ID */
     entry: string;
-    /** Assembly ID (or 'preferred' for preferred assembly, or 'model' for deposited model) */
-    assemblyId: string;
+    /** Assembly ID (or `undefined` for deposited model) */
+    assemblyId: string | undefined;
   };
   /** PDBconnect Summary tab > Domains > CATH/Pfam/SCOP (nothing selected) */
   pdbconnect_domains_in_source: {
     /** PDB ID */
     entry: string;
-    /** Assembly ID (or 'preferred' for preferred assembly, or 'model' for deposited model) */
-    assemblyId: string;
+    /** Assembly ID (or `undefined` for deposited model) */
+    assemblyId: string | undefined;
     /** Source database (CATH | SCOP | Pfam) */
     source: string;
   };
@@ -59,8 +59,8 @@ export type SnapshotSpecParams = {
   pdbconnect_domain: {
     /** PDB ID */
     entry: string;
-    /** Assembly ID (or 'preferred' for preferred assembly, or 'model' for deposited model) */
-    assemblyId: string;
+    /** Assembly ID (or `undefined` for deposited model) */
+    assemblyId: string | undefined;
     /** Source database (CATH | SCOP | Pfam) */
     source: string;
     /** Domain family ID (e.g. '1.10.630.10') */
@@ -76,15 +76,15 @@ export type SnapshotSpecParams = {
   pdbconnect_all_modifications: {
     /** PDB ID */
     entry: string;
-    /** Assembly ID (or 'preferred' for preferred assembly, or 'model' for deposited model) */
-    assemblyId: string;
+    /** Assembly ID (or `undefined` for deposited model) */
+    assemblyId: string | undefined;
   };
   /** PDBconnect Summary tab > Modifications (modification selected) */
   pdbconnect_modification: {
     /** PDB ID */
     entry: string;
-    /** Assembly ID (or 'preferred' for preferred assembly, or 'model' for deposited model) */
-    assemblyId: string;
+    /** Assembly ID (or `undefined` for deposited model) */
+    assemblyId: string | undefined;
     /** Modified residue CCD code (e.g. 'MSE') */
     compId: string;
     /** Chain identifier (label_asym_id) */
@@ -98,8 +98,8 @@ export type SnapshotSpecParams = {
   pdbconnect_quality: {
     /** PDB ID */
     entry: string;
-    /** Assembly ID (or 'preferred' for preferred assembly, or 'model' for deposited model) */
-    assemblyId: string;
+    /** Assembly ID (or `undefined` for deposited model) */
+    assemblyId: string | undefined;
     /** Validation view type (either 'issue_count' for number of outlier types on a residue, or name of a specific outlier type) */
     validation_type: ValidationType;
   };
@@ -107,8 +107,8 @@ export type SnapshotSpecParams = {
   pdbconnect_environment: {
     /** PDB ID */
     entry: string;
-    /** Assembly ID (or 'preferred' for preferred assembly, or 'model' for deposited model) */
-    assemblyId: string;
+    /** Assembly ID (or `undefined` for deposited model) */
+    assemblyId: string | undefined;
     /** Chain identifier (label_asym_id) */
     labelAsymId: string;
     /** Author chain identifier (auth_asym_id) */
@@ -126,8 +126,8 @@ export type SnapshotSpecParams = {
   pdbconnect_text_annotation: {
     /** PDB ID */
     entry: string;
-    /** Assembly ID (or 'preferred' for preferred assembly, or 'model' for deposited model) */
-    assemblyId: string;
+    /** Assembly ID (or `undefined` for deposited model) */
+    assemblyId: string | undefined;
     /** Entity identifier (label_entity_id) */
     entityId: string;
     /** Chain identifier (label_asym_id) */
@@ -162,9 +162,3 @@ export type SnapshotSpec<TKind extends SnapshotKind = SnapshotKind> = TKind exte
 /** Validation view type ('issue_count' for number of outlier types, or specific outlier type (this list might not be complete)) */
 export const ValidationTypes = ['issue_count', 'bond_angles', 'clashes', 'sidechain_outliers', 'symm_clashes', 'planes', 'RSRZ'] as const;
 export type ValidationType = (typeof ValidationTypes)[number];
-
-/** Special value for `assemblyId` meaning that the preferred assembly should be used. */
-export const PREFERRED = 'preferred';
-
-/** Special value for `assemblyId` meaning that the deposited model should be used instead of any assembly. */
-export const MODEL = 'model';
