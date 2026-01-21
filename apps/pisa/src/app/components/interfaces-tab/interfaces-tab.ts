@@ -11,65 +11,19 @@ import { EMPTY, filter, mergeMap } from 'rxjs';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { PisaActions } from '../../store/pisa.actions';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { SingleInterfaceComponent } from '../single-interface/single-interface';
 
 @Component({
   selector: 'pisa-interfaces-tab',
-  imports: [CommonModule, AgGridAngular],
+  imports: [CommonModule, AgGridAngular, NgxSkeletonLoaderModule, MolstarComponent, SingleInterfaceComponent, MolstarComponent],
   templateUrl: './interfaces-tab.html',
-  styleUrl: './interfaces-tab.scss',
+  styleUrls: ['../complexes-tab/complexes-tab.scss', './interfaces-tab.scss'],
 })
 export class InterfacesTabComponent implements OnInit {
   private pisaStore = inject(Store);
-  private pisaUtilService = inject(PisaUtilService);
-
-  // public readonly rowData = [
-  //   { groupHeader: 'PQS set 1' },
-  //   {
-  //     complex_instance_id: 1,
-  //     formula: 'ABab',
-  //     composition: 'DR[MG][CA]',
-  //     asa: 43738.6,
-  //     bsa: 5814.1,
-  //     int_energy: -55.5,
-  //     diss_energy: 32.139,
-  //     mmsize: 2,
-  //     interfaces: [],
-  //   },
-  //   {
-  //     complex_instance_id: 2,
-  //     formula: 'A2B2a2b2',
-  //     composition: 'DRDR[MG][CA][MG][CA]',
-  //     asa: 87477.2,
-  //     bsa: 11628.2,
-  //     int_energy: -111.0,
-  //     diss_energy: 64.278,
-  //     mmsize: 4,
-  //     interfaces: [],
-  //   },
-  //   { groupHeader: 'PQS set 2' },
-  //   {
-  //     complex_instance_id: 1,
-  //     formula: 'ABab',
-  //     composition: 'DR[MG][CA]',
-  //     asa: 43738.6,
-  //     bsa: 5814.1,
-  //     int_energy: -55.5,
-  //     diss_energy: 32.139,
-  //     mmsize: 2,
-  //     interfaces: [],
-  //   },
-  //   {
-  //     complex_instance_id: 2,
-  //     formula: 'A2B2a2b2',
-  //     composition: 'DRDR[MG][CA][MG][CA]',
-  //     asa: 87477.2,
-  //     bsa: 11628.2,
-  //     int_energy: -111.0,
-  //     diss_energy: 64.278,
-  //     mmsize: 4,
-  //     interfaces: [],
-  //   },
-  // ];
+  public pisaUtilService = inject(PisaUtilService);
 
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
@@ -79,44 +33,51 @@ export class InterfacesTabComponent implements OnInit {
 
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
 
-  public readonly assemblyResponse = toSignal(this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean)));
+  public readonly interfaceResponse = toSignal(this.pisaStore.select(PisaSelectors.interfaceResults).pipe(filter(Boolean)));
 
-  // public rowData2 = linkedSignal({
-  //   source: this.assemblyResponse,
-  //   computation: () => {
-  //     console.log('Assembly response:', this.assemblyResponse()?.pqs_sets);
-  //     return this.transformPqsSets(this.assemblyResponse()?.pqs_sets ?? []);
-  //   },
-  // });
-  public rowData = signal<any[]>([]);
+  public selectedRowData = signal<any>({});
+
+  public rowData = linkedSignal({
+    source: this.interfaceResponse,
+    computation: () => {
+      const response = this.interfaceResponse();
+      console.log('Interface response:', response);
+
+      if (!response) {
+        return null;
+      }
+
+      return this.transformInterfaceData(response.interface_types ?? []);
+    },
+  });
+
+  public numberOfInterfaceTypes = linkedSignal({
+    source: this.interfaceResponse,
+    computation: () => this.interfaceResponse()?.interface_types?.length || 0,
+  });
+
+  public numberOfInterfaces = linkedSignal({
+    source: this.interfaceResponse,
+    computation: () => {
+      const interfaceResults = this.interfaceResponse();
+      if (!interfaceResults) return null;
+      const sum = interfaceResults?.interface_types?.reduce((acc: number, curr: any) => acc + curr.interfaces.length, 0);
+      return sum;
+    },
+  });
+
+  public config!: any;
+  public height = '400px';
 
   ngOnInit(): void {
-    this.pisaStore
-      .select(PisaSelectors.jobId)
-      .pipe(
-        mergeMap((jobId) => {
-          if (!jobId) {
-            console.warn('No job ID available in store.');
-            const payload = this.pisaUtilService.getDataInSessionStorage('pisa-assembly-payload');
-            if (payload) {
-              this.pisaStore.dispatch(PisaActions.submitPISAJob({ payload }));
-            } else {
-              console.error('No assembly payload found in session storage.');
-              //TODO;
-              //Navigate to upload page
-            }
-          }
-          return this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean));
-        })
-      )
-      .subscribe((assemblyResults) => {
-        console.log('Assembly results received:', assemblyResults);
-        if (assemblyResults) {
-          const transformedData = this.transformPqsSets(assemblyResults.pqs_sets ?? []);
-          this.rowData.set(transformedData);
-          console.log('Transformed row data:', transformedData);
-        }
-      });
+    this.config = {
+      moleculeId: '1a0u',
+      bgColor: { r: 255, g: 255, b: 255 },
+      assemblyId: '1',
+      hideControls: true,
+      hideCanvasControls: ['expand', 'animation', 'controlToggle'],
+      landscape: true,
+    };
   }
 
   public onSelectionChanged(event: SelectionChangedEvent) {
@@ -144,26 +105,31 @@ export class InterfacesTabComponent implements OnInit {
     console.log('Complex structure grid ready:', event);
   }
 
-  private transformPqsSets(pqsSets: any[]) {
+  private transformInterfaceData(interfaces: any[]) {
     const out = [];
 
-    for (const set of pqsSets ?? []) {
-      out.push({ groupHeader: `PQS set ${set.pqs_set_id}` });
+    for (const set of interfaces ?? []) {
+      out.push({ groupHeader: `Interface type ${set.int_type}` });
 
-      for (const c of set.complexes ?? []) {
+      for (const c of set.interfaces ?? []) {
         out.push({
-          complex_instance_id: c.complex_instance_id,
-          formula: c.formula,
-          composition: c.composition,
-          asa: c.asa,
-          bsa: c.bsa,
-          int_energy: c.int_energy,
-          diss_energy: c.diss_energy,
-          mmsize: c.mmsize,
-          interfaces: c?.interfaces?.interfaces,
+          interfaceKey: c.interface_id,
+          structureOneChain: c.auth_asym_id_1,
+          structureTwoChain: c.auth_asym_id_2,
+          structureOneNAtoms: c.int_natoms_1,
+          structureTwoNAtoms: c.int_natoms_2,
+          structureOneNResidues: c.int_nres_1,
+          structureTwoNResidues: c.int_nres_2,
+          interfaceArea: c.int_area,
+          interfaceEnergy: c.int_solv_energy,
+          pValue: c.pvalue,
+          css: c.css,
+          complexes: c.complex_keys_with_interface.join(', '),
         });
       }
     }
+
+    console.log('out:', out);
 
     return out;
   }

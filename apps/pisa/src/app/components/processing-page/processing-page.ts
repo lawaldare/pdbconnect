@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, inject, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from '@pdbc/core';
 import { PisaUtilService } from '../../services/pisa-util.service';
@@ -9,6 +9,11 @@ import { Store } from '@ngrx/store';
 import { PisaActions } from '../../store/pisa.actions';
 import { PisaFileStoreService } from '../../services/pisa-file-store.service';
 import { UploadPageFacade } from '../upload-page/uploade-page.facade';
+import { ActivatedRoute } from '@angular/router';
+import { EMPTY, filter, switchMap } from 'rxjs';
+import { PisaSelectors } from '../../store/pisa.selectors';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { environment } from '../../../environments/environment';
 
 const FILE_KEY = 'pisa-upload-file';
 @Component({
@@ -18,11 +23,19 @@ const FILE_KEY = 'pisa-upload-file';
   styleUrl: './processing-page.scss',
 })
 export class ProcessingPageComponent implements AfterViewInit {
+  private readonly route = inject(ActivatedRoute);
   public facade = inject(UploadPageFacade);
   public pisaUtilService = inject(PisaUtilService);
   public pisaAPIService = inject(PisaApiService);
   private pisaStore = inject(Store);
   public fileStore = inject(PisaFileStoreService);
+  private jobId = toSignal(this.pisaStore.select(PisaSelectors.jobId).pipe(filter(Boolean)));
+
+  public savedLink = computed(() => {
+    const jobId = this.jobId();
+    if (!jobId) return '';
+    return `${environment.baseUrl}pdbe/pisa/processing/${jobId}`;
+  });
 
   private molstarViewer: any = null;
 
@@ -31,12 +44,81 @@ export class ProcessingPageComponent implements AfterViewInit {
 
   @ViewChild('viewer') container!: ElementRef<HTMLElement>;
 
+  private paramsAvailable = signal(false);
+
+  constructor() {
+    this.route.params
+      .pipe(
+        switchMap((params) => {
+          const jobId = params['jobId'];
+          if (jobId) {
+            this.paramsAvailable.set(true);
+            this.loadDownloadedModelIntoMolstar(jobId);
+            this.pisaStore.dispatch(PisaActions.getResultsFromJobId({ jobId }));
+            return EMPTY;
+          } else {
+            return EMPTY;
+          }
+        })
+      )
+      .subscribe(() => {});
+  }
+
   ngAfterViewInit(): void {
     this.initMolstar();
-    if (localStorage['job']) {
-      localStorage.removeItem('job');
-    } else {
-      this.reAnalyse();
+    if (!this.paramsAvailable()) {
+      if (localStorage['job']) {
+        localStorage.removeItem('job');
+      } else {
+        this.reAnalyse();
+      }
+    }
+  }
+
+  private getFilenameFromDisposition(disposition: string | null, fallback: string): string {
+    if (!disposition) return fallback;
+
+    // filename*=UTF-8''...
+    const star = disposition.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+    if (star?.[1]) return decodeURIComponent(star[1].replace(/"/g, ''));
+
+    // filename="..."
+    const normal = disposition.match(/filename\s*=\s*("?)([^";]+)\1/i);
+    return normal?.[2] ?? fallback;
+  }
+
+  public async loadDownloadedModelIntoMolstar(jobId: string): Promise<void> {
+    const url = `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${jobId}`;
+
+    try {
+      // this.pisaUtilService.setLoadingView('LOADING');
+
+      const res = await fetch(url, { method: 'GET' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const disposition = res.headers.get('content-disposition');
+      const contentType = res.headers.get('content-type') ?? '';
+
+      const blob = await res.blob();
+      if (!blob.size) throw new Error('Empty response');
+
+      // Pick filename + infer format
+      const fallbackName = contentType.includes('cif') ? `${jobId}.cif` : contentType.includes('pdb') ? `${jobId}.pdb` : `${jobId}.cif`;
+
+      const fileName = this.getFilenameFromDisposition(disposition, fallbackName);
+      const file = new File([blob], fileName, { type: contentType || blob.type });
+
+      // ✅ Reuse your existing viewer loader if you want:
+      await this.loadFileToViewer(file);
+
+      // If you also want analyse() to work later, store it like upload flow:
+      // this.selectedFile = file;
+      this.fileStore.put(FILE_KEY, file).catch(() => {});
+      this.pisaUtilService.saveDataInSessionStorage({ fileName }, 'pisa-upload-meta');
+    } catch (e) {
+      console.error(e);
+      this.facade.showError('Could not download/load model file.');
+      this.pisaUtilService.setLoadingView('ERROR_LOADING');
     }
   }
 

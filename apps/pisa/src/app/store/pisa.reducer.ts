@@ -7,6 +7,7 @@ export const PISA_STORE_STATE_KEY = 'pisa';
 const initialState: PisaStoreState = {
   jobId: '',
   assemblyResults: null,
+  interfaceResults: null,
   interfaceResultForInterfaceId: null,
   selectedComplexData: null,
 };
@@ -28,6 +29,10 @@ export const pisaReducer = createReducer(
   on(PisaActions.getAssemblyResultForJobIdSuccess, (state, action) => ({
     ...state,
     assemblyResults: action.assemblyResults,
+  })),
+  on(PisaActions.getInterfaceResultForJobIdSuccess, (state, action) => ({
+    ...state,
+    interfaceResults: action.interfaceResults,
   })),
   on(PisaActions.getInterfaceResultForInterfaceIdSuccess, (state, action) => ({
     ...state,

@@ -2,14 +2,16 @@
 
 import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions, GridState } from 'ag-grid-community';
-import { InterfacesCellRenderer } from '../cell-renderers/interfaces-cell-render';
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
   defaultColDef: {
     ...agGridOptionsBase.defaultColDef,
     sortable: false,
+    filter: false,
+    flex: 1,
   },
+  pagination: false,
 
   // getRowClass: (params) => (params.data?.groupHeader ? 'row-group-band' : params.data?.highlight ? 'highlight-row' : ''),
   getRowClass: (params) => {
@@ -31,22 +33,27 @@ export const gridOptions: GridOptions = {
 
 export const colDefs: ColDef[] = [
   {
-    headerName: 'Size mm',
-    field: 'complex_instance_id',
+    headerName: 'Interface Key',
+    field: 'interfaceKey',
     cellRenderer: (params: any) => {
       if (params.data.groupHeader) {
-        return `<div class="group-header-cell">${params.data.groupHeader}</div>`;
+        return `<div class="interface-group-header-cell">${params.data.groupHeader}</div>`;
       }
       return params.value ?? '';
     },
   },
-  { headerName: 'Formula', field: 'formula' },
-  { headerName: 'Composition', field: 'composition' },
-  { headerName: 'Surface area, sq. Å', field: 'asa' },
-  { headerName: 'Buried area, sq. Å', field: 'bsa' },
-  { headerName: 'ΔGint, kcal/mol', field: 'int_energy' },
-  { headerName: 'ΔGdiss, kcal/mol', field: 'diss_energy' },
-  { headerName: 'Contains interfaces', field: 'interfaces', cellRenderer: InterfacesCellRenderer },
+  { headerName: 'Chain', field: 'structureOneChain' },
+  { headerName: 'Natoms', field: 'structureOneNAtoms' },
+  { headerName: 'Nresidues', field: 'structureOneNResidues' },
+  { headerName: 'Chain', field: 'structureTwoChain' },
+  { headerName: 'Natoms', field: 'structureTwoNAtoms' },
+  { headerName: 'Nresidues', field: 'structureTwoNResidues' },
+  { headerName: 'Interfc. area, Å2', field: 'interfaceArea' },
+  { headerName: 'ΔGint kcal/mol', field: 'interfaceEnergy' },
+  { headerName: 'ΔGint P-value', field: 'pValue' },
+  { headerName: 'CSS', field: 'css' },
+  { headerName: 'Found in complex', field: 'complexes' },
+  { headerName: 'Actions', field: '' },
 ];
 
 export const initialState: GridState = {

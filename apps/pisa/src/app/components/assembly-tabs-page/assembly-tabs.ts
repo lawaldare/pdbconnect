@@ -4,7 +4,7 @@ import { Component, inject, linkedSignal, OnInit, signal, ViewChild } from '@ang
 import { DownloadFileTypeService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { Store } from '@ngrx/store';
 import { PisaSelectors } from '../../store/pisa.selectors';
-import { catchError, filter, mergeMap, of } from 'rxjs';
+import { catchError, EMPTY, filter, mergeMap, of } from 'rxjs';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { PisaActions } from '../../store/pisa.actions';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -30,12 +30,22 @@ export class AssemblyTabsPageComponent implements OnInit {
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
   public readonly assemblyResponse = toSignal(this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean)));
+  public readonly interfaceResponse = toSignal(this.pisaStore.select(PisaSelectors.interfaceResults).pipe(filter(Boolean)));
 
   public numberOfComplexes = linkedSignal({
     source: this.assemblyResponse,
     computation: () => {
       const assemblyResults = this.assemblyResponse();
       const sum = assemblyResults?.pqs_sets?.reduce((acc: number, curr: any) => acc + curr.complexes.length, 0);
+      return sum;
+    },
+  });
+
+  public numberOfInterfaces = linkedSignal({
+    source: this.interfaceResponse,
+    computation: () => {
+      const interfaceResults = this.interfaceResponse();
+      const sum = interfaceResults?.interface_types?.reduce((acc: number, curr: any) => acc + curr.interfaces.length, 0);
       return sum;
     },
   });
@@ -74,10 +84,11 @@ export class AssemblyTabsPageComponent implements OnInit {
               this.pisaStore.dispatch(PisaActions.submitPISAJob({ payload }));
             } else {
               console.error('No assembly payload found in session storage.');
-              this.onStartButtonClicked();
+              // this.onStartButtonClicked();
             }
           }
-          return this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean));
+          // return this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean));
+          return EMPTY;
         }),
         catchError((error) => {
           console.error('Error fetching assembly results:', error);

@@ -60,19 +60,24 @@ export class PisaApiService {
   }
 
   public getInterfaceResultForInterfaceId(jobId: string, interfaceId: string): Observable<any> {
-    let params = new HttpParams();
-    params = params.set('file_format', 'json');
+    const params = new HttpParams().set('file_format', 'json');
     const mock$ = this.http.get<any>(`assets/mock/interfaces/interface_${interfaceId}.json`);
 
     return this.http.get<any>(`${this.BASE_API}results/interface/${jobId}/${interfaceId}`, { params }).pipe(catchError(() => mock$));
   }
 
-  public getExtendedInterfaceResultForInterfaceId(jobId: string, interfaceId: string): Observable<any> {
-    // let params = new HttpParams();
-    // params = params.set('file_format', 'json');
+  public getExtendedInterfaceResultForInterfaceId(jobId: string): Observable<any> {
+    const params = new HttpParams().set('file_format', 'json');
     const mock$ = this.http.get<any>(`assets/mock/assemblies/monomers_extended.json`);
 
-    // return this.http.get<any>(`${this.BASE_API}results/interface/${jobId}/${interfaceId}/extended`, { params }).pipe(catchError(() => mock$));
+    return this.http.get<any>(`${this.BASE_API}results/ancillary/components/${jobId}`, { params }).pipe(catchError(() => mock$));
+  }
+
+  public getInterfaceResults(jobId: string): Observable<any> {
+    // const params = new HttpParams().set('file_format', 'json');
+    const mock$ = this.http.get<any>(`assets/mock/interfaces/interface_summary.json`);
+
+    // return this.http.get<any>(`${this.BASE_API}results/ancillary/components/${jobId}`, { params }).pipe(catchError(() => mock$));
     return mock$;
   }
 }

@@ -1,4 +1,8 @@
 @if(pisaUtilService.complexesTabView() === 'INITIAL'){
+
+<!-- When there are complexes -->
+
+@if(numberOfComplexes() > 0){
 <h3>{{numberOfComplexes()}} complexes across {{numberOfPQSSets()}} PQS sets</h3>
 
 <main>
@@ -54,7 +58,19 @@
     >
   </p>
 </footer>
-
-} @if(pisaUtilService.complexesTabView() === 'SINGLE_INTERFACE'){
+} @else if(numberOfComplexes() === null){
+<div class="loader">
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '450px' }"></ngx-skeleton-loader>
+</div>
+} @else if(numberOfComplexes() === 0){
+<section class="empty-state">
+  <h3>No complexes found</h3>
+  <p>
+    This structure has no detectable complexes. <br />
+    If you expected results for an X-ray diffraction structure file, please try again and check that you selected
+    <em>Include in analysis: Complexes and Interfaces </em> when running the analysis.
+  </p>
+</section>
+} } @if(pisaUtilService.complexesTabView() === 'SINGLE_INTERFACE'){
 <pisa-single-interface />
 }

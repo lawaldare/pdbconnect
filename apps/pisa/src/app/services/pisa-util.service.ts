@@ -3,7 +3,7 @@ import { GridApi } from 'ag-grid-community';
 
 export type PageView = 'INITIAL' | 'PROCESS' | 'ERROR';
 export type LoadingView = 'INITIAL' | 'LOADING' | 'LOADED' | 'ERROR_LOADING';
-export type ComplexesTabView = 'INITIAL' | 'SINGLE_INTERFACE' | 'ERROR';
+export type TabView = 'INITIAL' | 'SINGLE_INTERFACE' | 'ERROR';
 
 @Injectable({
   providedIn: 'root',
@@ -15,15 +15,22 @@ export class PisaUtilService {
   private _loadingView = signal<LoadingView>('INITIAL');
   public loadingView = this._loadingView.asReadonly();
 
-  private _complexesTabView = signal<ComplexesTabView>('INITIAL');
+  private _complexesTabView = signal<TabView>('INITIAL');
   public complexesTabView = this._complexesTabView.asReadonly();
+
+  private _interfacesTabView = signal<TabView>('INITIAL');
+  public interfacesTabView = this._interfacesTabView.asReadonly();
 
   public setPageView(view: PageView) {
     this._pageView.set(view);
   }
 
-  public setComplexesTabView(view: ComplexesTabView) {
+  public setComplexesTabView(view: TabView) {
     this._complexesTabView.set(view);
+  }
+
+  public setInterfacesTabView(view: TabView) {
+    this._interfacesTabView.set(view);
   }
   public setLoadingView(view: LoadingView) {
     this._loadingView.set(view);

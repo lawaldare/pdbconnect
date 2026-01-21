@@ -5,7 +5,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { PisaStoreState } from './pisa-store.model';
 import { PisaActions } from './pisa.actions';
-import { catchError, forkJoin, from, map, mergeMap, of, switchMap, take, tap } from 'rxjs';
+import { catchError, EMPTY, forkJoin, from, map, mergeMap, of, switchMap, take, tap, withLatestFrom } from 'rxjs';
 import { PisaApiService } from '../services/pisa-api.service';
 import { Router } from '@angular/router';
 import { PisaSelectors } from './pisa.selectors';
@@ -42,8 +42,10 @@ export class PisaEffects {
               })
               .pipe(
                 map((response) => PisaActions.submitPISAJobSuccess({ jobId: response.job_id })),
-                catchError(() => {
+                catchError((error) => {
                   this.pisaUtilService.setPageView('ERROR');
+                  console.error('submitJob failed:', error);
+
                   // this.router.navigate(['/processing'], { queryParamsHandling: 'preserve' });
                   // this.store.dispatch(PisaActions.submitPISAJobSuccess({ jobId: '60462b075dfef88f8334dfad33b24684' }));
                   return of(PisaActions.submitPISAJobFailure());
@@ -64,28 +66,103 @@ export class PisaEffects {
   //   { dispatch: false }
   // );
 
-  getAssemblyResults$ = createEffect(() =>
+  getResultsFromJobId$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(PisaActions.submitPISAJobSuccess),
-      switchMap(() => this.store.select(PisaSelectors.jobId).pipe(take(1))),
-      mergeMap((jobId: string) =>
-        this.pisaAPIService.getAssemblyResults(jobId).pipe(
-          map((assemblyResults) => {
+      ofType(PisaActions.getResultsFromJobId),
+      switchMap(({ jobId }) => {
+        return forkJoin({
+          assemblyResults: this.pisaAPIService.getAssemblyResults(jobId),
+          interfaceResults: this.pisaAPIService.getInterfaceResults(jobId),
+        }).pipe(
+          tap(({ assemblyResults, interfaceResults }) => {
             console.log('Assembly results:', assemblyResults);
-
-            this.router.navigate(['/assemblies'], { queryParamsHandling: 'preserve' });
-            return PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults });
+            console.log('Interface results:', interfaceResults);
           }),
+          switchMap(({ assemblyResults, interfaceResults }) => [
+            PisaActions.getInterfaceResultForJobIdSuccess({ interfaceResults }),
+            PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults }),
+            PisaActions.assemblyAndInterfaceResultsCollectedForJobId(),
+          ]),
           catchError((err) => {
             console.error('getAssemblyResults failed:', err);
-            this.router.navigate(['/processing'], { queryParamsHandling: 'preserve' });
-            this.pisaUtilService.setPageView('ERROR');
-            return of(PisaActions.getAssemblyResultForJobIdFailure());
+            return of(PisaActions.assemblyAndInterfaceResultsCollectedForJobIdFailure());
           })
-        )
-      )
+        );
+      })
     )
   );
+
+  getResults$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(PisaActions.submitPISAJobSuccess),
+      switchMap(({ jobId }) => {
+        return forkJoin({
+          assemblyResults: this.pisaAPIService.getAssemblyResults(jobId),
+          interfaceResults: this.pisaAPIService.getInterfaceResults(jobId),
+        }).pipe(
+          tap(({ assemblyResults, interfaceResults }) => {
+            console.log('Assembly results:', assemblyResults);
+            console.log('Interface results:', interfaceResults);
+          }),
+          switchMap(({ assemblyResults, interfaceResults }) => [
+            PisaActions.getInterfaceResultForJobIdSuccess({ interfaceResults }),
+            PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults }),
+            PisaActions.assemblyAndInterfaceResultsCollectedForJobId(),
+          ]),
+          catchError((err) => {
+            console.error('getAssemblyResults failed:', err);
+            return of(PisaActions.assemblyAndInterfaceResultsCollectedForJobIdFailure());
+          })
+        );
+      })
+    )
+  );
+
+  navigateOnResultsFailure$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(PisaActions.assemblyAndInterfaceResultsCollectedForJobIdFailure),
+        tap(() => {
+          this.router.navigate(['/processing'], { queryParamsHandling: 'preserve' });
+          this.pisaUtilService.setPageView('ERROR');
+        })
+      ),
+    { dispatch: false }
+  );
+
+  navigateAfterResultsSaved$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(PisaActions.assemblyAndInterfaceResultsCollectedForJobId),
+        tap(() => {
+          this.router.navigate(['/assemblies'], { queryParamsHandling: 'preserve' });
+        })
+      ),
+    { dispatch: false }
+  );
+
+  // getAssemblyResults$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(PisaActions.submitPISAJobSuccess),
+  //     switchMap(() => this.store.select(PisaSelectors.jobId).pipe(take(1))),
+  //     mergeMap((jobId: string) =>
+  //       this.pisaAPIService.getAssemblyResults(jobId).pipe(
+  //         map((assemblyResults) => {
+  //           console.log('Assembly results:', assemblyResults);
+
+  //           this.router.navigate(['/assemblies'], { queryParamsHandling: 'preserve' });
+  //           return PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults });
+  //         }),
+  //         catchError((err) => {
+  //           console.error('getAssemblyResults failed:', err);
+  //           this.router.navigate(['/processing'], { queryParamsHandling: 'preserve' });
+  //           this.pisaUtilService.setPageView('ERROR');
+  //           return of(PisaActions.getAssemblyResultForJobIdFailure());
+  //         })
+  //       )
+  //     )
+  //   )
+  // );
 
   getInterfaceResultForInterfaceId$ = createEffect(() =>
     this.actions$.pipe(
@@ -94,7 +171,7 @@ export class PisaEffects {
       mergeMap(([action, jobId]) =>
         forkJoin([
           this.pisaAPIService.getInterfaceResultForInterfaceId(jobId, action.interfaceId),
-          this.pisaAPIService.getExtendedInterfaceResultForInterfaceId(jobId, action.interfaceId),
+          this.pisaAPIService.getExtendedInterfaceResultForInterfaceId(jobId),
         ]).pipe(
           map(([interfaceResult, extended]) => {
             // console.log('Extended interface result:', extended);

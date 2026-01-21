@@ -11,10 +11,11 @@ import { PisaUtilService } from '../../services/pisa-util.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { SingleInterfaceComponent } from '../single-interface/single-interface';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
   selector: 'pisa-complexes-tab',
-  imports: [CommonModule, AgGridAngular, MolstarComponent, SingleInterfaceComponent],
+  imports: [CommonModule, AgGridAngular, MolstarComponent, SingleInterfaceComponent, NgxSkeletonLoaderModule],
   templateUrl: './complexes-tab.html',
   styleUrl: './complexes-tab.scss',
 })
@@ -56,6 +57,7 @@ export class ComplexesTabComponent implements OnInit {
     source: this.assemblyResponse,
     computation: () => {
       const assemblyResults = this.assemblyResponse();
+      if (!assemblyResults) return null;
       const sum = assemblyResults?.pqs_sets?.reduce((acc: number, curr: any) => acc + curr.complexes.length, 0);
       return sum;
     },

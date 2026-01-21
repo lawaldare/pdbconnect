@@ -7,8 +7,11 @@
     @if(pisaUtilService.pageView() === 'INITIAL'){
     <h3>Analysing...</h3>
     <p class="analysing-text">
-      The analysis may take seconds to minutes, depending on the size and complexity. In case it takes too long, save this link [link to this job] so you can easily
-      return to it later within 7 days.
+      The analysis may take seconds to minutes, depending on the size and complexity.
+      <!-- for the link -->
+      @if(savedLink()){ In case it takes too long, save this link <br />
+      <a [href]="savedLink()">{{savedLink()}}</a> <br />
+      so you can easily return to it later within 7 days. }
     </p>
     <p class="analysing-text">
       NOTE: Only share your job ID with trusted parties. Once your structure file is uploaded, it will be accessible via the PDBePISA results page to anyone with the
@@ -24,9 +27,10 @@
 
     <!-- Error View -->
     @if (pisaUtilService.pageView() === 'ERROR') {
-    <h3>PISA failed</h3>
-    <p class="analysing-text">Your file was uploaded, but PISA couldn’t complete the analysis. Please try again later or verify that your structure is valid.</p>
-    <!-- <a href="">Try again</a> -->
+    <section>
+      <h3>PISA failed</h3>
+      <p class="analysing-text">Your file was uploaded, but PISA couldn’t complete the analysis. Please try again later or verify that your structure is valid.</p>
+    </section>
     }
   </section>
   <section class="molstar-section">

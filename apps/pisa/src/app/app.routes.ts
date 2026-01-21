@@ -13,6 +13,10 @@ export const appRoutes: Route[] = [
     component: ProcessingPageComponent,
   },
   {
+    path: 'processing/:jobId',
+    component: ProcessingPageComponent,
+  },
+  {
     path: 'assemblies',
     component: AssemblyTabsPageComponent,
   },

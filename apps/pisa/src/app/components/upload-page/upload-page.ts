@@ -56,9 +56,24 @@ export class UploadPageComponent implements AfterViewInit {
     this.initMolstar();
   }
 
-  public onSubmit(): void {
-    if (this.pdbEntryId) {
+  public async onSubmit(): Promise<void> {
+    if (this.pdbEntryId && /^[0-9a-z]{4}$/.test(this.pdbEntryId)) {
       console.log('PDB Entry ID submitted:', this.pdbEntryId);
+      try {
+        const file = await this.fetchCifAsFile(this.pdbEntryId);
+
+        // store it so analyse() also works later
+        this.selectedFile = file;
+        this.fileStore.put(FILE_KEY, file).catch(() => {});
+        this.pisaUtilService.saveDataInSessionStorage({ fileName: file.name }, 'pisa-upload-meta');
+
+        // reuse your existing viewer loader
+        await this.loadFileToViewer(file);
+      } catch (e) {
+        console.error(e);
+        this.facade.showError('Unable to fetch CIF for this entry ID. Please check the ID.');
+        this.pisaUtilService.setLoadingView('ERROR_LOADING');
+      }
     } else {
       this.hasError.set(true);
       this.errorInputMessage.set('Please enter a valid PDB entry ID.');
@@ -68,6 +83,28 @@ export class UploadPageComponent implements AfterViewInit {
         this.errorInputMessage.set('');
       }, 2000);
     }
+  }
+
+  private async fetchCifAsFile(entryId: string): Promise<File> {
+    const id = (entryId ?? '').trim().toLowerCase();
+
+    // Optional validation (safe)
+    if (!/^[0-9a-z]{4}$/.test(id)) {
+      throw new Error('Invalid PDB entry id');
+    }
+
+    const url = `https://www.ebi.ac.uk/pdbe/entry-files/download/${id}.cif`;
+
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch CIF: HTTP ${res.status}`);
+    }
+
+    // get the raw bytes
+    const blob = await res.blob();
+
+    // convert to File so your existing flow works unchanged
+    return new File([blob], `${id}.cif`, { type: 'chemical/x-mmcif' });
   }
 
   /** Molstar initialization */
@@ -221,7 +258,7 @@ export class UploadPageComponent implements AfterViewInit {
     // this.pisaUtilService.setPageView('PROCESS');
 
     this.router.navigate(['/processing'], { queryParamsHandling: 'preserve' });
-    localStorage.setItem('job', 'called');
+    // localStorage.setItem('job', 'called');
 
     const file = this.selectedFile ?? (await this.fileStore.get(FILE_KEY));
     if (!file) {

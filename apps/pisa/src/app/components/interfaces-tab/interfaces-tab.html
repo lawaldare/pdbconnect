@@ -1,4 +1,4 @@
-<div class="table">
+<!-- <div class="table">
   <ag-grid-angular
     class="ag-theme-quartz"
     id="pisa-grid"
@@ -13,4 +13,77 @@
     [rowSelection]="rowSelection"
     [initialState]="initialState"
   />
+</div> -->
+
+@if(pisaUtilService.interfacesTabView() === 'INITIAL'){
+
+<!-- When there are complexes -->
+
+@if(numberOfInterfaces() > 0){
+<h3>{{numberOfInterfaces()}} interfaces across {{numberOfInterfaceTypes()}} complexes</h3>
+
+<main>
+  <div class="table">
+    <ag-grid-angular
+      class="ag-theme-quartz show-agrid-scrollbar"
+      [rowData]="rowData()"
+      [columnDefs]="colDefs"
+      [gridOptions]="gridOptions"
+      (selectionChanged)="onSelectionChanged($event)"
+      (rowDataUpdated)="onRowDataUpdated($event)"
+      (filterChanged)="onFilterChanged($event)"
+      (gridReady)="onComplexStructureGridReady($event)"
+      [rowSelection]="rowSelection"
+      [initialState]="initialState"
+      [overlayNoRowsTemplate]="'No assemblies found'"
+    />
+  </div>
+
+  <div class="molstar">
+    <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
+    <!-- @if(selectedRowData()){
+    <h3>Complex {{selectedRowData().complex_key}}</h3>
+    <div class="row">
+      <p class="title">Copies in unit cell</p>
+      <p class="value">{{selectedRowData().unit_cell}}</p>
+    </div>
+    <div class="row">
+      <p class="title">symmetry number</p>
+      <p class="value">{{selectedRowData().symmetry_number}}</p>
+    </div>
+    <button class="vf-button vf-button--primary" (click)="downloadComplex()">Download complex</button>
+    } -->
+  </div>
+</main>
+<footer>
+  <h4>Attribution</h4>
+  <p>
+    Please cite PISA for all results obtained from this service, should these results be published in any form or otherwise presented. PISA should be referenced as:
+  </p>
+  <p>
+    <a href="http://www.ebi.ac.uk/pdbe/prot_int/pistart.html" target="_blank"
+      >'Protein interfaces, surfaces and assemblies' service PISA at the European Bioinformatics Institute.</a
+    >
+  </p>
+  <p>
+    <a href="http://www.ebi.ac.uk/pdbe/prot_int/pistart.html" target="_blank"
+      >Krissinel and K. Henrick (2007). 'Inference of macromolecular assemblies from crystalline state.'. J. Mol. Biol. 372, 774--797.</a
+    >
+  </p>
+</footer>
+} @else if(numberOfInterfaces() === null){
+<div class="loader">
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '450px' }"></ngx-skeleton-loader>
 </div>
+} @else if(numberOfInterfaces() === 0){
+<section class="empty-state">
+  <h3>No complexes found</h3>
+  <p>
+    This structure has no detectable complexes. <br />
+    If you expected results for an X-ray diffraction structure file, please try again and check that you selected
+    <em>Include in analysis: Complexes and Interfaces </em> when running the analysis.
+  </p>
+</section>
+} } @if(pisaUtilService.interfacesTabView() === 'SINGLE_INTERFACE'){
+<pisa-single-interface />
+}

@@ -69,3 +69,24 @@ h4 {
   line-height: 27.2px;
   width: 300px;
 }
+
+section.empty-state {
+  height: 30vh;
+
+  h3 {
+    color: #000;
+    font-size: 19px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 28.5px;
+    margin-bottom: 12px;
+  }
+
+  p {
+    color: #000;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 27.2px;
+  }
+}
