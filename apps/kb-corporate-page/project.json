@@ -54,7 +54,8 @@
               "maximumError": "400kb"
             }
           ],
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "baseHref": "$APP_BASE_HREF"
         },
         "development": {
           "aot": true,
@@ -62,7 +63,8 @@
           "namedChunks": false,
           "optimization": true,
           "sourceMap": true,
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "baseHref": "$APP_BASE_HREF"
         },
         "local": {
           "optimization": false,
