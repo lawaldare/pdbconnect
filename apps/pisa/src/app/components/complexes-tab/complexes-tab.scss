@@ -62,6 +62,12 @@ h4 {
   margin-top: 20px;
 }
 
+:host ::ng-deep .ag-theme-quartz {
+  .ag-row-odd {
+    background-color: transparent;
+  }
+}
+
 ::ng-deep .group-header-cell {
   color: var(--Neutral-900, #1a1c1a);
   font-size: 16px;

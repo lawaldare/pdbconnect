@@ -1,7 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { agGridOptionsBase } from '@pdbc/core';
-import { ColDef, GridOptions, GridState } from 'ag-grid-community';
+import {
+  ColDef,
+  ColGroupDef,
+  FirstDataRenderedEvent,
+  GridOptions,
+  GridReadyEvent,
+  GridState,
+  ICellRendererParams,
+  IsFullWidthRowParams,
+  RowHeightParams,
+} from 'ag-grid-community';
+
+const isGroupRow = (p: any) => !!p.data?.groupHeader;
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
@@ -9,17 +21,27 @@ export const gridOptions: GridOptions = {
     ...agGridOptionsBase.defaultColDef,
     sortable: false,
     filter: false,
-    flex: 1,
+    resizable: false, // optional: prevents user causing scroll by resize
+    flex: 1, // ✅ makes columns share available width
+    wrapHeaderText: true, // ✅ header wraps instead of forcing width
+    autoHeaderHeight: true,
+    wrapText: true, //
   },
   pagination: false,
 
-  // getRowClass: (params) => (params.data?.groupHeader ? 'row-group-band' : params.data?.highlight ? 'highlight-row' : ''),
-  getRowClass: (params) => {
-    const d = params.data;
-    if (d?.groupHeader) return 'row-group-band';
-    if (d?.lastInGroup) return 'last-in-group-row';
-    return '';
+  // ✅ make { groupHeader: "Interface type X" } rows span the whole grid
+  isFullWidthRow: (p: any) => !!p.data?.groupHeader,
+
+  fullWidthCellRenderer: (p: ICellRendererParams) => {
+    const label = p.data?.groupHeader ?? '';
+    return `<div class="iface-type-row">${label}</div>`;
   },
+
+  // ✅ nicer spacing like Figma
+  getRowHeight: (p: RowHeightParams) => (p.data?.groupHeader ? 44 : 40),
+
+  // ✅ styling hooks
+  getRowClass: (p) => (p.data?.groupHeader ? 'row-iface-type' : ''),
 
   onCellClicked: (params) => {
     if (params.data?.groupHeader) {
@@ -29,31 +51,71 @@ export const gridOptions: GridOptions = {
     // handle normal row clicks here if you have them
     console.log('Clicked data row:', params.data);
   },
+
+  onFirstDataRendered: (e: FirstDataRenderedEvent) => {
+    requestAnimationFrame(() => e.api.sizeColumnsToFit());
+  },
+  onGridSizeChanged: (e) => e.api.sizeColumnsToFit(),
 };
 
-export const colDefs: ColDef[] = [
+export const colDefs: (ColDef | ColGroupDef)[] = [
   {
-    headerName: 'Interface Key',
+    headerName: 'Interfc.\nkey',
     field: 'interfaceKey',
-    cellRenderer: (params: any) => {
-      if (params.data.groupHeader) {
-        return `<div class="interface-group-header-cell">${params.data.groupHeader}</div>`;
-      }
-      return params.value ?? '';
+    flex: 0.6, // ✅ smaller share
+    headerClass: 'h-plain',
+    // ✅ Make "Interface type X" row span across all columns
+    colSpan: (p) => (isGroupRow(p) ? 100 : 1),
+
+    // ✅ Render group header label in the spanning cell
+    cellRenderer: (p: ICellRendererParams) => {
+      if (isGroupRow(p)) return `<div class="iface-type-row">${p.data.groupHeader}</div>`;
+      return p.value ?? '';
     },
+
+    cellClass: (p) => (isGroupRow(p) ? 'iface-type-cell' : ''),
   },
-  { headerName: 'Chain', field: 'structureOneChain' },
-  { headerName: 'Natoms', field: 'structureOneNAtoms' },
-  { headerName: 'Nresidues', field: 'structureOneNResidues' },
-  { headerName: 'Chain', field: 'structureTwoChain' },
-  { headerName: 'Natoms', field: 'structureTwoNAtoms' },
-  { headerName: 'Nresidues', field: 'structureTwoNResidues' },
-  { headerName: 'Interfc. area, Å2', field: 'interfaceArea' },
-  { headerName: 'ΔGint kcal/mol', field: 'interfaceEnergy' },
-  { headerName: 'ΔGint P-value', field: 'pValue' },
-  { headerName: 'CSS', field: 'css' },
-  { headerName: 'Found in complex', field: 'complexes' },
-  { headerName: 'Actions', field: '' },
+
+  {
+    headerName: 'Structure 1',
+    headerClass: 'hg-structure-one',
+    children: [
+      { headerName: 'Chain', field: 'structureOneChain', flex: 0.6, headerClass: 'h-structure-one', cellClass: 'c-structure-one' },
+      { headerName: 'N_atoms', field: 'structureOneNAtoms', flex: 0.9, headerClass: 'h-structure-one', cellClass: 'c-structure-one' },
+      { headerName: 'N_residues', field: 'structureOneNResidues', flex: 1, headerClass: 'h-structure-one', cellClass: 'c-structure-one' },
+    ],
+  },
+
+  {
+    headerName: 'Structure 2',
+    headerClass: 'hg-structure-two',
+    children: [
+      { headerName: 'Chain', field: 'structureTwoChain', flex: 0.6, headerClass: 'h-structure-two', cellClass: 'c-structure-two' },
+      { headerName: 'N_atoms', field: 'structureTwoNAtoms', flex: 0.9, headerClass: 'h-structure-two', cellClass: 'c-structure-two' },
+      { headerName: 'N_residues', field: 'structureTwoNResidues', flex: 1, headerClass: 'h-structure-two', cellClass: 'c-structure-two' },
+    ],
+  },
+
+  { headerName: 'Interfc.\narea, Å²', field: 'interfaceArea', flex: 1, headerClass: 'h-plain' },
+  { headerName: 'ΔG\nkcal/mol', field: 'interfaceEnergy', flex: 1, headerClass: 'h-plain' },
+  { headerName: 'ΔG\nP-value', field: 'pValue', flex: 1, headerClass: 'h-plain' },
+  { headerName: 'CSS', field: 'css', flex: 0.7, headerClass: 'h-plain' },
+
+  // this is the one that usually causes horizontal scroll
+  {
+    headerName: 'Found in\ncomplex',
+    field: 'complexes',
+    headerClass: 'h-plain',
+    wrapText: true,
+    autoHeight: true, // ✅ row grows instead of grid scrolling
+  },
+
+  {
+    headerName: 'Actions',
+    colId: 'actions',
+    headerClass: 'h-plain',
+    cellRenderer: (p: any) => (p.data?.groupHeader ? '' : `<a class="action-link">See details</a>`),
+  },
 ];
 
 export const initialState: GridState = {

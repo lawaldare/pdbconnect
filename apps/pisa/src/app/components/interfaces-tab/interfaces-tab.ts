@@ -102,6 +102,7 @@ export class InterfacesTabComponent implements OnInit {
   }
 
   public onComplexStructureGridReady(event: GridReadyEvent<any>) {
+    requestAnimationFrame(() => event.api.sizeColumnsToFit());
     console.log('Complex structure grid ready:', event);
   }
 
