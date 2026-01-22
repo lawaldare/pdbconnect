@@ -1,29 +1,30 @@
 /* eslint-disable @angular-eslint/component-selector */
 import { CommonModule } from '@angular/common';
-import { Component, inject, linkedSignal, OnInit, signal } from '@angular/core';
-import { AG_Grid_Theme_Class } from '@pdbc/core';
+import { Component, computed, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { AG_Grid_Theme_Class, pisaInterfaceView } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { gridOptions, colDefs, initialState, rowSelection } from './ag-grid';
 import { GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { Store } from '@ngrx/store';
 import { PisaSelectors } from '../../store/pisa.selectors';
-import { EMPTY, filter, mergeMap } from 'rxjs';
+import { filter } from 'rxjs';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { PisaActions } from '../../store/pisa.actions';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { SingleInterfaceComponent } from '../single-interface/single-interface';
+import { InterfaceTabSingleInterfaceComponent } from '../interface-tab-single-interface/interface-tab-single-interface';
 
 @Component({
   selector: 'pisa-interfaces-tab',
-  imports: [CommonModule, AgGridAngular, NgxSkeletonLoaderModule, MolstarComponent, SingleInterfaceComponent, MolstarComponent],
+  imports: [CommonModule, AgGridAngular, NgxSkeletonLoaderModule, MolstarComponent, InterfaceTabSingleInterfaceComponent, MolstarComponent],
   templateUrl: './interfaces-tab.html',
   styleUrls: ['../complexes-tab/complexes-tab.scss', './interfaces-tab.scss'],
 })
 export class InterfacesTabComponent implements OnInit {
   private pisaStore = inject(Store);
   public pisaUtilService = inject(PisaUtilService);
+  private molstarPluginService = inject(MolstarPluginService);
 
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
@@ -35,13 +36,24 @@ export class InterfacesTabComponent implements OnInit {
 
   public readonly interfaceResponse = toSignal(this.pisaStore.select(PisaSelectors.interfaceResults).pipe(filter(Boolean)));
 
+  public readonly jobId = toSignal(this.pisaStore.select(PisaSelectors.jobId).pipe(filter(Boolean)));
+
+  public readonly selectedInterface = toSignal(this.pisaStore.select(PisaSelectors.interfaceResultForInterfaceId).pipe(filter(Boolean)));
+  public readonly assemblyResponse = toSignal(this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean)));
+  private complexesData = computed(() => {
+    const response = this.assemblyResponse();
+    const allComplexes = response?.pqs_sets.flatMap((set: any) => set.complexes);
+    return allComplexes;
+  });
+
+  @ViewChild('molstar') molstar!: MolstarComponent;
+
   public selectedRowData = signal<any>({});
 
   public rowData = linkedSignal({
     source: this.interfaceResponse,
     computation: () => {
       const response = this.interfaceResponse();
-      console.log('Interface response:', response);
 
       if (!response) {
         return null;
@@ -89,21 +101,40 @@ export class InterfacesTabComponent implements OnInit {
     this.updatedSelectedRow(data);
   }
 
-  private updatedSelectedRow(data: any) {
+  private async updatedSelectedRow(data: any) {
     console.log('Selected row:', data);
+    const interfaceId = data.interfaceKey;
+    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceId({ interfaceId }));
+
+    const MVS = this.molstarPluginService.getClass()?.extensions.MVS;
+    const complexesData = this.complexesData();
+
+    if (!MVS) return;
+    if (!complexesData) return;
+
+    const snapshot = pisaInterfaceView(MVS?.MVSData.createBuilder(), {
+      structureUrl: `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${this.jobId()}`,
+      structureFormat: 'mmcif',
+      complexesData: complexesData,
+      interfaceData: this.selectedInterface(),
+    });
+
+    const mvs = MVS.MVSData.createMultistate([snapshot]);
+    const plugin = this.molstar.getInstance().plugin;
+    await MVS.loadMVS(plugin, mvs);
   }
 
   public onFilterChanged(event: any) {
-    console.log('Filter changed:', event);
+    // console.log('Filter changed:', event);
   }
 
   public onRowDataUpdated(event: any) {
-    console.log('Row data updated:', event);
+    // console.log('Row data updated:', event);
   }
 
   public onComplexStructureGridReady(event: GridReadyEvent<any>) {
     requestAnimationFrame(() => event.api.sizeColumnsToFit());
-    console.log('Complex structure grid ready:', event);
+    // console.log('Complex structure grid ready:', event);
   }
 
   private transformInterfaceData(interfaces: any[]) {
@@ -129,8 +160,6 @@ export class InterfacesTabComponent implements OnInit {
         });
       }
     }
-
-    console.log('out:', out);
 
     return out;
   }

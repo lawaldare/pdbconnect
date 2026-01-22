@@ -1,0 +1,117 @@
+<span class="back" (click)="goBackToComplexes()">&#60; Back to all complexes</span>
+
+<h2>Interfaces in Complex {{selectedComplexData().complex_instance_id}}</h2>
+
+<main>
+  <aside>
+    @for(row of selectedComplexData().interfaces | paginate: { itemsPerPage: 10, currentPage: this.startNumber()};; track row; let i = $index) {
+    <div class="interface-row" (click)="onInterfaceRowClick(row)" [class.selected-interface]="selectedInterfaceRow().interface_id === row.interface_id">
+      <span class="interface-label">Interface {{row.interface_id}}</span>
+      <span class="interface-value">Score {{row.css}}</span>
+    </div>
+    } @if(selectedComplexData().interfaces.length > 10){
+    <pagination-controls
+      (pageChange)="onChangePage($event)"
+      (pageBoundsCorrection)="onChangePage($event)"
+      [previousLabel]="'<'"
+      [nextLabel]="'>'"
+    ></pagination-controls>
+    }
+  </aside>
+  <section class="interface-details">
+    <div class="interface-core-details">
+      <pisa-single-interface-details [interface]="interface()" />
+      <div class="molstar">
+        <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
+      </div>
+    </div>
+    <h3>Interfacing residues (not a contact table)</h3>
+    <div class="filter">
+      <span>Filter by:</span>
+      @for(residue of residueFiters; track residue.value; let index = $index){
+      <mat-checkbox [checked]="residue.checked" (change)="filterResidue($event.checked, index)" [ngClass]="residue.value">{{residue.name}}</mat-checkbox>
+      }
+    </div>
+    <div class="residue-tables">
+      <div class="structure-one">
+        <h4>Structure 1</h4>
+        <div class="table">
+          <ag-grid-angular
+            class="ag-theme-quartz show-agrid-scrollbar"
+            [rowData]="structure1RowData()"
+            [columnDefs]="colDefs"
+            [gridOptions]="gridOptions"
+            (gridReady)="onStructure1GridReady($event)"
+            [overlayNoRowsTemplate]="'No data found'"
+          />
+        </div>
+      </div>
+      <div class="structure-two">
+        <h4>Structure 2</h4>
+        <div class="table">
+          <ag-grid-angular
+            class="ag-theme-quartz show-agrid-scrollbar"
+            [rowData]="structure2RowData()"
+            [columnDefs]="colDefs"
+            [gridOptions]="gridOptions"
+            (gridReady)="onStructure2GridReady($event)"
+            [overlayNoRowsTemplate]="'No data found'"
+          />
+        </div>
+      </div>
+    </div>
+    <h3>Interfacing bonds</h3>
+    <div class="interfacing-bonds-row">
+      <div class="interfacing-bonds-row-column">
+        <h5>Hydrogen bonds ({{hydrogenBondRowData()?.length}})</h5>
+        <div class="table">
+          <ag-grid-angular
+            class="ag-theme-quartz show-agrid-scrollbar"
+            [rowData]="hydrogenBondRowData()"
+            [columnDefs]="bondsColDefs"
+            [gridOptions]="gridOptions"
+            [overlayNoRowsTemplate]="'No hydrogen bonds found'"
+          />
+        </div>
+      </div>
+      <div class="interfacing-bonds-row-column">
+        <h5>Disulphide bonds ({{disulphideBondRowData()?.length}})</h5>
+        <div class="table">
+          <ag-grid-angular
+            class="ag-theme-quartz show-agrid-scrollbar"
+            [rowData]="disulphideBondRowData()"
+            [columnDefs]="bondsColDefs"
+            [gridOptions]="gridOptions"
+            [overlayNoRowsTemplate]="'No disulphide bonds found'"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="interfacing-bonds-row">
+      <div class="interfacing-bonds-row-column">
+        <h5>Salt bridges ({{saltBridgesRowData()?.length}})</h5>
+        <div class="table">
+          <ag-grid-angular
+            class="ag-theme-quartz show-agrid-scrollbar"
+            [rowData]="saltBridgesRowData()"
+            [columnDefs]="bondsColDefs"
+            [gridOptions]="gridOptions"
+            [overlayNoRowsTemplate]="'No salt bridges found'"
+          />
+        </div>
+      </div>
+      <div class="interfacing-bonds-row-column">
+        <h5>Covalent bonds ({{covalentLinkRowData()?.length}})</h5>
+        <div class="table">
+          <ag-grid-angular
+            class="ag-theme-quartz show-agrid-scrollbar"
+            [rowData]="covalentLinkRowData()"
+            [columnDefs]="bondsColDefs"
+            [gridOptions]="gridOptions"
+            [overlayNoRowsTemplate]="'No covalent bonds found'"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+</main>

@@ -12,6 +12,7 @@ import {
   IsFullWidthRowParams,
   RowHeightParams,
 } from 'ag-grid-community';
+import { InterfaceTabelActionCellRenderer } from '../cell-renderers/interface-table-action-cell-render';
 
 const isGroupRow = (p: any) => !!p.data?.groupHeader;
 
@@ -48,8 +49,6 @@ export const gridOptions: GridOptions = {
       params?.event?.stopPropagation();
       return;
     }
-    // handle normal row clicks here if you have them
-    console.log('Clicked data row:', params.data);
   },
 
   onFirstDataRendered: (e: FirstDataRenderedEvent) => {
@@ -114,7 +113,7 @@ export const colDefs: (ColDef | ColGroupDef)[] = [
     headerName: 'Actions',
     colId: 'actions',
     headerClass: 'h-plain',
-    cellRenderer: (p: any) => (p.data?.groupHeader ? '' : `<a class="action-link">See details</a>`),
+    cellRenderer: InterfaceTabelActionCellRenderer,
   },
 ];
 

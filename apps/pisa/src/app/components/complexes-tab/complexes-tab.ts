@@ -1,6 +1,6 @@
 /* eslint-disable @angular-eslint/component-selector */
 import { CommonModule } from '@angular/common';
-import { Component, inject, linkedSignal, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { gridOptions, colDefs, initialState, rowSelection } from './ag-grid';
 import { GridApi, GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
@@ -9,19 +9,21 @@ import { PisaSelectors } from '../../store/pisa.selectors';
 import { filter } from 'rxjs';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { SingleInterfaceComponent } from '../single-interface/single-interface';
+import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
+import { ComplexTabSingleInterfaceComponent } from '../complex-tab-single-interface/complex-tab-single-interface';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { pisaComplexView } from '@pdbc/core';
 
 @Component({
   selector: 'pisa-complexes-tab',
-  imports: [CommonModule, AgGridAngular, MolstarComponent, SingleInterfaceComponent, NgxSkeletonLoaderModule],
+  imports: [CommonModule, AgGridAngular, MolstarComponent, ComplexTabSingleInterfaceComponent, NgxSkeletonLoaderModule],
   templateUrl: './complexes-tab.html',
   styleUrl: './complexes-tab.scss',
 })
 export class ComplexesTabComponent implements OnInit {
   private pisaStore = inject(Store);
   public pisaUtilService = inject(PisaUtilService);
+  private molstarPluginService = inject(MolstarPluginService);
 
   private gridApi?: GridApi;
 
@@ -33,14 +35,22 @@ export class ComplexesTabComponent implements OnInit {
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
 
   public readonly assemblyResponse = toSignal(this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean)));
+  public readonly jobId = toSignal(this.pisaStore.select(PisaSelectors.jobId).pipe(filter(Boolean)));
 
   public selectedRowData = signal<any>({});
+
+  private complexesData = computed(() => {
+    const response = this.assemblyResponse();
+    const allComplexes = response?.pqs_sets.flatMap((set: any) => set.complexes);
+    return allComplexes;
+  });
+
+  @ViewChild('molstar') molstar!: MolstarComponent;
 
   public rowData = linkedSignal({
     source: this.assemblyResponse,
     computation: () => {
       const response = this.assemblyResponse();
-      console.log('Assembly response:', response);
 
       if (!response) {
         return null;
@@ -86,13 +96,31 @@ export class ComplexesTabComponent implements OnInit {
     this.updatedSelectedRow(data);
   }
 
-  private updatedSelectedRow(data: any) {
+  private async updatedSelectedRow(data: any) {
     console.log('Selected row:', data);
     this.selectedRowData.set(data);
+
+    const MVS = this.molstarPluginService.getClass()?.extensions.MVS;
+    const complexesData = this.complexesData();
+
+    if (!MVS) return;
+    if (!complexesData) return;
+
+    const snapshot = pisaComplexView(MVS?.MVSData.createBuilder(), {
+      structureUrl: `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${this.jobId()}`,
+      structureFormat: 'mmcif',
+      complexesData: complexesData,
+      complexKey: data.complex_key,
+      interfacesData: [],
+    });
+
+    const mvs = MVS.MVSData.createMultistate([snapshot]);
+    const plugin = this.molstar.getInstance().plugin;
+    await MVS.loadMVS(plugin, mvs);
   }
 
   public onFilterChanged(event: any) {
-    console.log('Filter changed:', event);
+    // console.log('Filter changed:', event);
   }
 
   public onRowDataUpdated(event: any) {

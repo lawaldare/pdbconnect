@@ -10,7 +10,7 @@ import { PisaSelectors } from '../../store/pisa.selectors';
 import { filter } from 'rxjs';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { PisaActions } from '../../store/pisa.actions';
-import { SingleInterfaceDetailsComponent } from './components/single-interface-details/single-interface-details';
+import { SingleInterfaceDetailsComponent } from '../single-interface-details/single-interface-details';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { AgGridAngular } from 'ag-grid-angular';
 import { bondsColDefs, colDefs, gridOptions } from './ag-grid';
@@ -18,12 +18,12 @@ import { GridApi, GridReadyEvent } from 'ag-grid-community';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
-  selector: 'pisa-single-interface',
+  selector: 'pisa-interface-tab-single-interface',
   imports: [CommonModule, FormsModule, MaterialModule, AgGridAngular, ReactiveFormsModule, MolstarComponent, SingleInterfaceDetailsComponent, NgxPaginationModule],
-  templateUrl: './single-interface.html',
-  styleUrl: './single-interface.scss',
+  templateUrl: './interface-tab-single-interface.html',
+  styleUrl: './interface-tab-single-interface.scss',
 })
-export class SingleInterfaceComponent implements OnInit {
+export class InterfaceTabSingleInterfaceComponent implements OnInit {
   public pisaUtilService = inject(PisaUtilService);
   public pisaAPIService = inject(PisaApiService);
   private pisaStore = inject(Store);

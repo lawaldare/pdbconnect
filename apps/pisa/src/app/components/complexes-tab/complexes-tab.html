@@ -2,7 +2,7 @@
 
 <!-- When there are complexes -->
 
-@if(numberOfComplexes() > 0){
+@if(numberOfComplexes()){
 <h3>{{numberOfComplexes()}} complexes across {{numberOfPQSSets()}} PQS sets</h3>
 
 <main>
@@ -23,7 +23,7 @@
   </div>
 
   <div class="molstar">
-    <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
+    <lib-pdbe-molstar #molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
     @if(selectedRowData()){
     <h3>Complex {{selectedRowData().complex_key}}</h3>
     <div class="row">
@@ -72,5 +72,5 @@
   </p>
 </section>
 } } @if(pisaUtilService.complexesTabView() === 'SINGLE_INTERFACE'){
-<pisa-single-interface />
+<pisa-complex-tab-single-interface />
 }
