@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { catchError, EMPTY, expand, filter, map, Observable, switchMap, take, throwIfEmpty, timer } from 'rxjs';
+import { EMPTY, expand, filter, map, Observable, switchMap, take, throwIfEmpty, timer } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -31,14 +31,6 @@ export class PisaApiService {
     return this.http.post<any>(`${this.BASE_API}submit`, form, { params });
   }
 
-  // public getAssemblyResults(jobId: string): Observable<any> {
-  //   const params = new HttpParams().set('file_format', 'json').set('_ts', Date.now().toString()); // <-- cache buster
-
-  //   const mock$ = this.http.get<any>('assets/mock/assemblies/assemblies.json');
-
-  //   return this.http.get<any>(`${this.BASE_API}results/assembly/${jobId}`, { params }).pipe(catchError(() => mock$));
-  // }
-
   public getAssemblyResults(jobId: string): Observable<any> {
     const request$ = () => {
       const params = new HttpParams().set('file_format', 'json').set('_ts', Date.now().toString()); // prevent cached 202/400
@@ -59,25 +51,33 @@ export class PisaApiService {
     );
   }
 
+  public getInterfaceResults(jobId: string): Observable<any> {
+    const request$ = () => {
+      const params = new HttpParams().set('file_format', 'json').set('_ts', Date.now().toString()); // prevent cached 202/400
+
+      return this.http.get<any>(`${this.BASE_API}results/interface_summary/${jobId}`, {
+        params,
+        observe: 'response',
+      });
+    };
+
+    return request$().pipe(
+      expand((res: HttpResponse<any>) => (res.status === 202 ? timer(this.POLL_MS).pipe(switchMap(() => request$())) : EMPTY)),
+      take(this.MAX_POLLS),
+      filter((res) => res.status === 200),
+      take(1),
+      map((res) => res.body),
+      throwIfEmpty(() => new Error('Timed out waiting for interface results'))
+    );
+  }
+
   public getInterfaceResultForInterfaceId(jobId: string, interfaceId: string): Observable<any> {
     const params = new HttpParams().set('file_format', 'json');
-    const mock$ = this.http.get<any>(`assets/mock/interfaces/interface_${interfaceId}.json`);
-
-    return this.http.get<any>(`${this.BASE_API}results/interface/${jobId}/${interfaceId}`, { params }).pipe(catchError(() => mock$));
+    return this.http.get<any>(`${this.BASE_API}results/interface/${jobId}/${interfaceId}`, { params });
   }
 
   public getExtendedInterfaceResultForInterfaceId(jobId: string): Observable<any> {
     const params = new HttpParams().set('file_format', 'json');
-    const mock$ = this.http.get<any>(`assets/mock/assemblies/monomers_extended.json`);
-
-    return this.http.get<any>(`${this.BASE_API}results/ancillary/components/${jobId}`, { params }).pipe(catchError(() => mock$));
-  }
-
-  public getInterfaceResults(jobId: string): Observable<any> {
-    // const params = new HttpParams().set('file_format', 'json');
-    const mock$ = this.http.get<any>(`assets/mock/interfaces/interface_summary.json`);
-
-    // return this.http.get<any>(`${this.BASE_API}results/ancillary/components/${jobId}`, { params }).pipe(catchError(() => mock$));
-    return mock$;
+    return this.http.get<any>(`${this.BASE_API}results/ancillary/components/${jobId}`, { params });
   }
 }

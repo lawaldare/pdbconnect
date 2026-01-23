@@ -1,11 +1,11 @@
-@if(isLocal){
+<!-- @if(isLocal){ -->
 <pdbc-vf-ebi-header></pdbc-vf-ebi-header>
 <pdbc-pdbe-header-logo-menu class="entry-page-logo" [headerConfig]="pisaLogoConfig" (startButtonClicked)="onStartButtonClicked()"></pdbc-pdbe-header-logo-menu>
 <div class="container">
   <router-outlet></router-outlet>
 </div>
 <pdbc-vf-ebi-footer></pdbc-vf-ebi-footer>
-} @else {
+<!-- } @else {
 <pdbc-pisa-comming-soon />
 
-}
+} -->

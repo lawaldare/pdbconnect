@@ -122,8 +122,8 @@ export class InterfaceTabSingleInterfaceComponent implements OnInit {
     this.gridApiForStructure2 = event.api;
   }
 
-  public goBackToComplexes() {
-    this.pisaUtilService.setComplexesTabView('INITIAL');
+  public goBackToInterfaces() {
+    this.pisaUtilService.setInterfacesTabView('INITIAL');
   }
 
   public async onInterfaceRowClick(rowData: any) {
