@@ -1,6 +1,6 @@
 <span class="back" (click)="goBackToComplexes()">&#60; Back to all complexes</span>
 
-<h2>Interfaces in Complex {{selectedComplexData().complex_instance_id}}</h2>
+<h2>Interfaces in Complex {{selectedComplexData().complex_key}}</h2>
 
 <main>
   <aside>
@@ -22,7 +22,7 @@
     <div class="interface-core-details">
       <pisa-single-interface-details [interface]="interface()" />
       <div class="molstar">
-        <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
+        <lib-pdbe-molstar #molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
       </div>
     </div>
     <h3>Interfacing residues (not a contact table)</h3>

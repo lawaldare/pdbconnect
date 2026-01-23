@@ -6,4 +6,5 @@ export interface PisaStoreState {
   interfaceResults: any | null;
   interfaceResultForInterfaceId: any | null;
   selectedComplexData: any | null;
+  interfaceTypeData: any | null;
 }

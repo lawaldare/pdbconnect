@@ -10,6 +10,7 @@ const initialState: PisaStoreState = {
   interfaceResults: null,
   interfaceResultForInterfaceId: null,
   selectedComplexData: null,
+  interfaceTypeData: null,
 };
 
 export const pisaReducer = createReducer(
@@ -37,5 +38,9 @@ export const pisaReducer = createReducer(
   on(PisaActions.getInterfaceResultForInterfaceIdSuccess, (state, action) => ({
     ...state,
     interfaceResultForInterfaceId: action.interfaceResultForInterfaceId,
+  })),
+  on(PisaActions.setInterfaceTypeDataForSelectedInterface, (state, action) => ({
+    ...state,
+    interfaceTypeData: action.interfaceTypeData,
   }))
 );

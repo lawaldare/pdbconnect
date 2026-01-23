@@ -21,6 +21,8 @@ export const PisaActions = createActionGroup({
     'Get Interface Result For JobId Success': props<{ interfaceResults: any }>(),
     'Get Interface Result For JobId Failure': emptyProps(),
     'Get Interface Result For InterfaceId': props<{ interfaceId: string }>(),
+    'Set InterfaceType ID For Selected Interface': props<{ interfaceTypeId: string }>(),
+    'Set InterfaceType Data For Selected Interface': props<{ interfaceTypeData: any }>(),
     'Get Interface Result For InterfaceId Success': props<{ interfaceResultForInterfaceId: any }>(),
     'Get Interface Result For InterfaceId Failure': emptyProps(),
   },

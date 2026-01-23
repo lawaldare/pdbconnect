@@ -5,7 +5,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { PisaStoreState } from './pisa-store.model';
 import { PisaActions } from './pisa.actions';
-import { catchError, EMPTY, forkJoin, from, map, mergeMap, of, switchMap, take, tap, withLatestFrom } from 'rxjs';
+import { catchError, filter, forkJoin, from, map, mergeMap, of, switchMap, take, tap, withLatestFrom } from 'rxjs';
 import { PisaApiService } from '../services/pisa-api.service';
 import { Router } from '@angular/router';
 import { PisaSelectors } from './pisa.selectors';
@@ -57,15 +57,6 @@ export class PisaEffects {
     )
   );
 
-  // navigateOnSuccess$ = createEffect(
-  //   () =>
-  //     this.actions$.pipe(
-  //       ofType(PisaActions.submitPISAJobSuccess),
-  //       tap(() => this.router.navigate(['/processing'], { queryParamsHandling: 'preserve' }))
-  //     ),
-  //   { dispatch: false }
-  // );
-
   getResultsFromJobId$ = createEffect(() =>
     this.actions$.pipe(
       ofType(PisaActions.getResultsFromJobId),
@@ -74,10 +65,6 @@ export class PisaEffects {
           assemblyResults: this.pisaAPIService.getAssemblyResults(jobId),
           interfaceResults: this.pisaAPIService.getInterfaceResults(jobId),
         }).pipe(
-          tap(({ assemblyResults, interfaceResults }) => {
-            console.log('Assembly results:', assemblyResults);
-            console.log('Interface results:', interfaceResults);
-          }),
           switchMap(({ assemblyResults, interfaceResults }) => [
             PisaActions.getInterfaceResultForJobIdSuccess({ interfaceResults }),
             PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults }),
@@ -100,10 +87,6 @@ export class PisaEffects {
           assemblyResults: this.pisaAPIService.getAssemblyResults(jobId),
           interfaceResults: this.pisaAPIService.getInterfaceResults(jobId),
         }).pipe(
-          tap(({ assemblyResults, interfaceResults }) => {
-            console.log('Assembly results:', assemblyResults);
-            console.log('Interface results:', interfaceResults);
-          }),
           switchMap(({ assemblyResults, interfaceResults }) => [
             PisaActions.getInterfaceResultForJobIdSuccess({ interfaceResults }),
             PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults }),
@@ -141,28 +124,16 @@ export class PisaEffects {
     { dispatch: false }
   );
 
-  // getAssemblyResults$ = createEffect(() =>
-  //   this.actions$.pipe(
-  //     ofType(PisaActions.submitPISAJobSuccess),
-  //     switchMap(() => this.store.select(PisaSelectors.jobId).pipe(take(1))),
-  //     mergeMap((jobId: string) =>
-  //       this.pisaAPIService.getAssemblyResults(jobId).pipe(
-  //         map((assemblyResults) => {
-  //           console.log('Assembly results:', assemblyResults);
-
-  //           this.router.navigate(['/assemblies'], { queryParamsHandling: 'preserve' });
-  //           return PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults });
-  //         }),
-  //         catchError((err) => {
-  //           console.error('getAssemblyResults failed:', err);
-  //           this.router.navigate(['/processing'], { queryParamsHandling: 'preserve' });
-  //           this.pisaUtilService.setPageView('ERROR');
-  //           return of(PisaActions.getAssemblyResultForJobIdFailure());
-  //         })
-  //       )
-  //     )
-  //   )
-  // );
+  getInterfaceTypeData$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(PisaActions.setInterfaceTypeIDForSelectedInterface),
+      withLatestFrom(this.store.select(PisaSelectors.interfaceResults).pipe(filter(Boolean))),
+      switchMap(([action, interfaceResults]) => {
+        const interfaceTypeData = interfaceResults.interface_types.find((type: any) => type.int_type === action.interfaceTypeId);
+        return of(PisaActions.setInterfaceTypeDataForSelectedInterface({ interfaceTypeData }));
+      })
+    )
+  );
 
   getInterfaceResultForInterfaceId$ = createEffect(() =>
     this.actions$.pipe(
@@ -174,8 +145,6 @@ export class PisaEffects {
           this.pisaAPIService.getExtendedInterfaceResultForInterfaceId(jobId),
         ]).pipe(
           map(([interfaceResult, extended]) => {
-            // console.log('Extended interface result:', extended);
-            // console.log('Interface molecules:', interfaceResult.interface.molecules);
             const results = interfaceResult.interface.molecules.map((molecule: any) => {
               const extendedData = extended.components.find((ext: any) => ext.mol_id === molecule.mol_id);
               return { ...molecule, extendedData };

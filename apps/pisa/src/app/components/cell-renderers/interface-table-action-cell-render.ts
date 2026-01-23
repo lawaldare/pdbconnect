@@ -3,6 +3,8 @@ import { ICellRendererParams } from 'ag-grid-community/';
 import { Component, inject } from '@angular/core';
 import { MaterialModule } from '@pdbc/core';
 import { PisaUtilService } from '../../services/pisa-util.service';
+import { Store } from '@ngrx/store';
+import { PisaActions } from '../../store/pisa.actions';
 
 @Component({
   standalone: true,
@@ -22,6 +24,8 @@ import { PisaUtilService } from '../../services/pisa-util.service';
   ],
 })
 export class InterfaceTabelActionCellRenderer implements ICellRendererAngularComp {
+  private pisaStore = inject(Store);
+
   private pisaUtilService = inject(PisaUtilService);
 
   public rowData!: any;
@@ -35,7 +39,10 @@ export class InterfaceTabelActionCellRenderer implements ICellRendererAngularCom
   }
 
   public onClickSeeDetails() {
-    console.log('See details clicked for row:', this.rowData);
-    // this.pisaUtilService.setInterfacesTabView('SINGLE_INTERFACE');
+    const interfaceId = this.rowData.interfaceKey;
+    const interfaceTypeId = this.rowData.interfaceTypeId;
+    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceId({ interfaceId }));
+    this.pisaStore.dispatch(PisaActions.setInterfaceTypeIDForSelectedInterface({ interfaceTypeId }));
+    this.pisaUtilService.setInterfacesTabView('SINGLE_INTERFACE');
   }
 }

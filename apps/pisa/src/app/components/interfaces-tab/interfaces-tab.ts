@@ -102,7 +102,6 @@ export class InterfacesTabComponent implements OnInit {
   }
 
   private async updatedSelectedRow(data: any) {
-    console.log('Selected row:', data);
     const interfaceId = data.interfaceKey;
     this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceId({ interfaceId }));
 
@@ -157,6 +156,7 @@ export class InterfacesTabComponent implements OnInit {
           pValue: c.pvalue,
           css: c.css,
           complexes: c.complex_keys_with_interface.join(', '),
+          interfaceTypeId: set.int_type,
         });
       }
     }

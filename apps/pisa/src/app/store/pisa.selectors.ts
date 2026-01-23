@@ -11,4 +11,5 @@ export const PisaSelectors = {
   interfaceResults: createSelector(pisaStoreState, (state: PisaStoreState) => state.interfaceResults),
   interfaceResultForInterfaceId: createSelector(pisaStoreState, (state: PisaStoreState) => state.interfaceResultForInterfaceId),
   selectedComplexData: createSelector(pisaStoreState, (state: PisaStoreState) => state.selectedComplexData),
+  interfaceTypeData: createSelector(pisaStoreState, (state: PisaStoreState) => state.interfaceTypeData),
 };

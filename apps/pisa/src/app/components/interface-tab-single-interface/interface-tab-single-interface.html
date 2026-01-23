@@ -1,15 +1,15 @@
-<span class="back" (click)="goBackToComplexes()">&#60; Back to all complexes</span>
+<span class="back" (click)="goBackToComplexes()">&#60; Back to all interfaces</span>
 
-<h2>Interfaces in Complex {{selectedComplexData().complex_instance_id}}</h2>
+<h2>Interfaces type {{interfaceTypeData().int_type}}</h2>
 
 <main>
   <aside>
-    @for(row of selectedComplexData().interfaces | paginate: { itemsPerPage: 10, currentPage: this.startNumber()};; track row; let i = $index) {
+    @for(row of interfaceTypeData().interfaces | paginate: { itemsPerPage: 10, currentPage: this.startNumber()};; track row; let i = $index) {
     <div class="interface-row" (click)="onInterfaceRowClick(row)" [class.selected-interface]="selectedInterfaceRow().interface_id === row.interface_id">
       <span class="interface-label">Interface {{row.interface_id}}</span>
       <span class="interface-value">Score {{row.css}}</span>
     </div>
-    } @if(selectedComplexData().interfaces.length > 10){
+    } @if(interfaceTypeData().interfaces.length > 10){
     <pagination-controls
       (pageChange)="onChangePage($event)"
       (pageBoundsCorrection)="onChangePage($event)"
@@ -22,7 +22,7 @@
     <div class="interface-core-details">
       <pisa-single-interface-details [interface]="interface()" />
       <div class="molstar">
-        <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
+        <lib-pdbe-molstar #molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
       </div>
     </div>
     <h3>Interfacing residues (not a contact table)</h3>
