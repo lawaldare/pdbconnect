@@ -97,7 +97,6 @@ export class ComplexesTabComponent implements OnInit {
   }
 
   private async updatedSelectedRow(data: any) {
-    console.log('Selected row:', data);
     this.selectedRowData.set(data);
 
     const MVS = this.molstarPluginService.getClass()?.extensions.MVS;

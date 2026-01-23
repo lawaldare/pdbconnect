@@ -1,18 +1,9 @@
-// import type { loadMVS } from 'molstar/lib/extensions/mvs/load';
-// import type { MVSData, Snapshot } from 'molstar/lib/extensions/mvs/mvs-data';
-import type Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
+// import type Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
 import type { MVSNodeParams } from 'molstar/lib/extensions/mvs/tree/mvs/mvs-tree';
 import type { ComponentExpressionT, ParseFormatT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
-// import type { PluginContext } from 'molstar/lib/mol-plugin/context';
-import type {
-  PisaBondRecord,
-  PisaComplexesData,
-  PisaComplexMoleculeRecord,
-  PisaComplexRecord,
-  PisaInterfaceData,
-  PisaInterfaceMoleculeRecord,
-  PisaTransform,
-} from './api-typing';
+import type { PisaBondRecord, PisaComplexMoleculeRecord, PisaComplexRecord, PisaInterfaceData, PisaInterfaceMoleculeRecord, PisaTransform } from './api-typing';
+
+import type { Root, Structure, Representation, Component, Animation, Primitives } from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
 
 export type HexColorT = `#${string}`;
 
@@ -78,7 +69,7 @@ function interfaceColorFn(baseColor: HexColorT): HexColorT {
 }
 
 export function pisaComplexView(
-  builder: Builder.Root,
+  builder: Root,
   params: {
     structureUrl: string;
     structureFormat: ParseFormatT;
@@ -148,7 +139,7 @@ export function pisaComplexView(
 }
 
 export function pisaInterfaceView(
-  builder: Builder.Root,
+  builder: Root,
   params: {
     structureUrl: string;
     structureFormat: ParseFormatT;
@@ -238,9 +229,9 @@ function getInterfaceSelector(molecule: PisaInterfaceMoleculeRecord) {
 }
 
 interface ComponentState {
-  struct: Builder.Structure;
-  repr: Builder.Representation;
-  anim?: Builder.Animation;
+  struct: Structure;
+  repr: Representation;
+  anim?: Animation;
   color: HexColorT;
 }
 function markInterface(
@@ -289,7 +280,7 @@ function markInterface(
   }
 }
 
-function addOutlineEffect(component: Builder.Component, params: MVSNodeParams<'representation'>) {
+function addOutlineEffect(component: Component, params: MVSNodeParams<'representation'>) {
   component
     .representation({
       ...params,
@@ -299,11 +290,11 @@ function addOutlineEffect(component: Builder.Component, params: MVSNodeParams<'r
     .color({ color: 'black' });
 }
 
-function applyElementColors(repr: Builder.Representation) {
+function applyElementColors(repr: Representation) {
   repr.colorFromSource({ schema: 'all_atomic', category_name: 'atom_site', field_name: 'type_symbol', palette: { kind: 'categorical', colors: 'ElementSymbol' } });
 }
 
-function addInteractions(builder: Builder.Root, interfaceData: PisaInterfaceData): Builder.Primitives {
+function addInteractions(builder: Root, interfaceData: PisaInterfaceData): Primitives {
   const primitives = builder.primitives();
   let bondType: BondType;
   for (bondType in INTERACTION_TYPE_COLORS) {
@@ -343,7 +334,7 @@ function addInteractions(builder: Builder.Root, interfaceData: PisaInterfaceData
   // TODO disable Molstar's default show-interaction behavior (collides with this and only works within structure)
 }
 
-function addResidueTooltips(struct: Builder.Structure, molecule: PisaInterfaceMoleculeRecord): void {
+function addResidueTooltips(struct: Structure, molecule: PisaInterfaceMoleculeRecord): void {
   const tooltipAnnotation = [
     'data:text/plain,',
     'data_tooltips',
