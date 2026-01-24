@@ -44,7 +44,7 @@ export class InterfacesCellRenderer implements ICellRendererAngularComp {
   }
 
   public openInterface(interfaceId: string) {
-    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceId({ interfaceId }));
+    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceIdForComplexesTab({ interfaceId }));
     this.pisaStore.dispatch(PisaActions.setSelectedComplexDataOnComplexesTab({ selectedComplexData: this.rowData }));
     this.pisaUtilService.setComplexesTabView('SINGLE_INTERFACE');
   }

@@ -1,6 +1,5 @@
 import { inject, Injectable } from '@angular/core';
 import { ScriptLoaderService } from '@pdbc/core';
-import { PDBeMolstarPlugin } from 'pdbe-molstar/lib';
 
 @Injectable({ providedIn: 'root' })
 export class MolstarPluginService {
@@ -24,7 +23,7 @@ export class MolstarPluginService {
     return new this.PDBeMolstarPluginClass();
   }
 
-  getClass(): typeof PDBeMolstarPlugin {
+  getClass(): any {
     return this.PDBeMolstarPluginClass;
   }
 }

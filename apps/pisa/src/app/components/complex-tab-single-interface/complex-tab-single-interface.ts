@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MaterialModule, pisaComplexView, pisaInterfaceView } from '@pdbc/core';
+import { MaterialModule, pisaInterfaceView } from '@pdbc/core';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { PisaApiService } from '../../services/pisa-api.service';
 import { Store } from '@ngrx/store';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PisaSelectors } from '../../store/pisa.selectors';
-import { filter } from 'rxjs';
+import { filter, firstValueFrom, take } from 'rxjs';
 import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 import { PisaActions } from '../../store/pisa.actions';
 import { SingleInterfaceDetailsComponent } from '../single-interface-details/single-interface-details';
@@ -42,7 +42,6 @@ export class ComplexTabSingleInterfaceComponent implements OnInit {
     const allComplexes = response?.pqs_sets.flatMap((set: any) => set.complexes);
     return allComplexes;
   });
-  public readonly selectedInterface = toSignal(this.pisaStore.select(PisaSelectors.interfaceResultForInterfaceId).pipe(filter(Boolean)));
 
   public selectedInterfaceRow = signal<any>({});
   public startNumber = signal<number>(1);
@@ -71,12 +70,20 @@ export class ComplexTabSingleInterfaceComponent implements OnInit {
   public readonly colDefs = colDefs;
   public readonly bondsColDefs = bondsColDefs;
 
+  private onLoaded = signal<boolean>(false);
+
   ngOnInit(): void {
     this.pisaStore
-      .select(PisaSelectors.interfaceResultForInterfaceId)
+      .select(PisaSelectors.interfaceResultForInterfaceIdComplexesTab)
       .pipe(filter(Boolean))
       .subscribe((response) => {
         this.interface.set(response);
+        if (!this.onLoaded()) {
+          setTimeout(async () => {
+            await this.loadMVS(response.interface_id);
+          }, 500);
+          this.onLoaded.set(true);
+        }
         const selectedInterfaceId = response.interface_id;
 
         const selectedinterfaceData = this.selectedComplexData()?.interfaces.find((row: any) => row.interface_id === selectedInterfaceId);
@@ -128,32 +135,49 @@ export class ComplexTabSingleInterfaceComponent implements OnInit {
 
   public async onInterfaceRowClick(rowData: any) {
     this.selectedInterfaceRow.set(rowData);
-    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceId({ interfaceId: rowData.interface_id }));
+    const interfaceId = rowData.interface_id;
+    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceIdForComplexesTab({ interfaceId }));
     this.resetFilters();
+    await this.loadMVS(interfaceId);
+  }
+
+  private async loadMVS(interfaceId: string) {
+    await this.molstarPluginService.loadPlugin();
+
+    const latestInterface = await firstValueFrom(
+      this.pisaStore.select(PisaSelectors.interfaceResultForInterfaceIdComplexesTab).pipe(
+        filter(Boolean),
+        filter((r: any) => r.interface_id === interfaceId),
+        take(1)
+      )
+    );
 
     const MVS = this.molstarPluginService.getClass()?.extensions.MVS;
     const complexesData = this.complexesData();
 
     if (!MVS) return;
     if (!complexesData) return;
+    if (!this.molstar) return;
 
-    const snapshot = pisaInterfaceView(MVS?.MVSData.createBuilder(), {
-      structureUrl: `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${this.jobId()}`,
-      structureFormat: 'mmcif',
-      complexesData: complexesData,
-      interfaceData: this.selectedInterface(),
-    });
+    setTimeout(async () => {
+      const snapshot = pisaInterfaceView(MVS?.MVSData.createBuilder(), {
+        structureUrl: `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${this.jobId()}`,
+        structureFormat: 'mmcif',
+        complexesData: complexesData,
+        interfaceData: latestInterface,
+      });
 
-    const mvs = MVS.MVSData.createMultistate([snapshot]);
-    const plugin = this.molstar.getInstance().plugin;
-    await MVS.loadMVS(plugin, mvs);
+      const mvs = MVS.MVSData.createMultistate([snapshot]);
+      const plugin = this.molstar?.getInstance().plugin;
+      await MVS.loadMVS(plugin, mvs);
+    }, 500);
   }
 
   public onChangePage(num: number): void {
     const p = (num - 1) * 10;
     this.startNumber.set(num);
     this.selectedInterfaceRow.set(this.selectedComplexData().interfaces[p]);
-    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceId({ interfaceId: this.selectedComplexData().interfaces[p].interface_id }));
+    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceIdForComplexesTab({ interfaceId: this.selectedComplexData().interfaces[p].interface_id }));
   }
 
   public filterResidue(checked: boolean, index: number): void {

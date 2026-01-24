@@ -135,9 +135,9 @@ export class PisaEffects {
     )
   );
 
-  getInterfaceResultForInterfaceId$ = createEffect(() =>
+  getInterfaceResultForInterfaceIdForComplexesTab$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(PisaActions.getInterfaceResultForInterfaceId),
+      ofType(PisaActions.getInterfaceResultForInterfaceIdForComplexesTab),
       switchMap((action: { interfaceId: string }) => forkJoin([of(action), this.store.select(PisaSelectors.jobId).pipe(take(1))])),
       mergeMap(([action, jobId]) =>
         forkJoin([
@@ -150,11 +150,35 @@ export class PisaEffects {
               return { ...molecule, extendedData };
             });
             interfaceResult.interface.molecules = results;
-            return PisaActions.getInterfaceResultForInterfaceIdSuccess({ interfaceResultForInterfaceId: interfaceResult });
+            return PisaActions.getInterfaceResultForInterfaceIdForComplexesTabSuccess({ interfaceResultForInterfaceIdComplexesTab: interfaceResult });
           }),
           catchError(() => {
-            // this.store.dispatch(PisaActions.getInterfaceResultForInterfaceIdSuccess({ interfaceResultForInterfaceId: SINGLE_INTERFACE_RESPONSE }));
-            return of(PisaActions.getAssemblyResultForJobIdFailure());
+            return of(PisaActions.getInterfaceResultForInterfaceIdForComplexesTabFailure());
+          })
+        )
+      )
+    )
+  );
+
+  getInterfaceResultForInterfaceIdForInterfacesTab$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(PisaActions.getInterfaceResultForInterfaceIdForInterfacesTab),
+      switchMap((action: { interfaceId: string }) => forkJoin([of(action), this.store.select(PisaSelectors.jobId).pipe(take(1))])),
+      mergeMap(([action, jobId]) =>
+        forkJoin([
+          this.pisaAPIService.getInterfaceResultForInterfaceId(jobId, action.interfaceId),
+          this.pisaAPIService.getExtendedInterfaceResultForInterfaceId(jobId),
+        ]).pipe(
+          map(([interfaceResult, extended]) => {
+            const results = interfaceResult.interface.molecules.map((molecule: any) => {
+              const extendedData = extended.components.find((ext: any) => ext.mol_id === molecule.mol_id);
+              return { ...molecule, extendedData };
+            });
+            interfaceResult.interface.molecules = results;
+            return PisaActions.getInterfaceResultForInterfaceIdForInterfacesTabSuccess({ interfaceResultForInterfaceIdInterfacesTab: interfaceResult });
+          }),
+          catchError(() => {
+            return of(PisaActions.getInterfaceResultForInterfaceIdForInterfacesTabFailure());
           })
         )
       )

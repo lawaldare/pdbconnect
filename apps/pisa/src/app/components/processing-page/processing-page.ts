@@ -87,7 +87,7 @@ export class ProcessingPageComponent implements AfterViewInit {
     return normal?.[2] ?? fallback;
   }
 
-  public async loadDownloadedModelIntoMolstar(jobId: string): Promise<void> {
+  private async loadDownloadedModelIntoMolstar(jobId: string): Promise<void> {
     const url = `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${jobId}`;
 
     try {

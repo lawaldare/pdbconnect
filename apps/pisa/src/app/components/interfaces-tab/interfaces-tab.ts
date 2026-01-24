@@ -7,7 +7,7 @@ import { gridOptions, colDefs, initialState, rowSelection } from './ag-grid';
 import { GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { Store } from '@ngrx/store';
 import { PisaSelectors } from '../../store/pisa.selectors';
-import { filter } from 'rxjs';
+import { filter, firstValueFrom, take } from 'rxjs';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { PisaActions } from '../../store/pisa.actions';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -38,7 +38,7 @@ export class InterfacesTabComponent implements OnInit {
 
   public readonly jobId = toSignal(this.pisaStore.select(PisaSelectors.jobId).pipe(filter(Boolean)));
 
-  public readonly selectedInterface = toSignal(this.pisaStore.select(PisaSelectors.interfaceResultForInterfaceId).pipe(filter(Boolean)));
+  public readonly selectedInterface = toSignal(this.pisaStore.select(PisaSelectors.interfaceResultForInterfaceIdInterfacesTab).pipe(filter(Boolean)));
   public readonly assemblyResponse = toSignal(this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean)));
   private complexesData = computed(() => {
     const response = this.assemblyResponse();
@@ -103,26 +103,41 @@ export class InterfacesTabComponent implements OnInit {
 
   private async updatedSelectedRow(data: any) {
     const interfaceId = data.interfaceKey;
-    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceId({ interfaceId }));
+    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceIdForInterfacesTab({ interfaceId }));
+    await this.loadMVS(interfaceId);
+  }
+
+  private async loadMVS(interfaceId: string) {
+    await this.molstarPluginService.loadPlugin();
+
+    const latestInterface = await firstValueFrom(
+      this.pisaStore.select(PisaSelectors.interfaceResultForInterfaceIdInterfacesTab).pipe(
+        filter(Boolean),
+        filter((r: any) => r.interface_id === interfaceId),
+        take(1)
+      )
+    );
 
     const MVS = this.molstarPluginService.getClass()?.extensions.MVS;
     const complexesData = this.complexesData();
 
     if (!MVS) return;
     if (!complexesData) return;
+    if (!this.molstar) return;
 
-    const snapshot = pisaInterfaceView(MVS?.MVSData.createBuilder(), {
-      structureUrl: `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${this.jobId()}`,
-      structureFormat: 'mmcif',
-      complexesData: complexesData,
-      interfaceData: this.selectedInterface(),
-    });
+    setTimeout(async () => {
+      const snapshot = pisaInterfaceView(MVS?.MVSData.createBuilder(), {
+        structureUrl: `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${this.jobId()}`,
+        structureFormat: 'mmcif',
+        complexesData: complexesData,
+        interfaceData: latestInterface,
+      });
 
-    const mvs = MVS.MVSData.createMultistate([snapshot]);
-    const plugin = this.molstar.getInstance().plugin;
-    await MVS.loadMVS(plugin, mvs);
+      const mvs = MVS.MVSData.createMultistate([snapshot]);
+      const plugin = this.molstar?.getInstance().plugin;
+      await MVS.loadMVS(plugin, mvs);
+    }, 500);
   }
-
   public onFilterChanged(event: any) {
     // console.log('Filter changed:', event);
   }

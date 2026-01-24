@@ -41,7 +41,7 @@ export class InterfaceTabelActionCellRenderer implements ICellRendererAngularCom
   public onClickSeeDetails() {
     const interfaceId = this.rowData.interfaceKey;
     const interfaceTypeId = this.rowData.interfaceTypeId;
-    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceId({ interfaceId }));
+    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceIdForInterfacesTab({ interfaceId }));
     this.pisaStore.dispatch(PisaActions.setInterfaceTypeIDForSelectedInterface({ interfaceTypeId }));
     this.pisaUtilService.setInterfacesTabView('SINGLE_INTERFACE');
   }

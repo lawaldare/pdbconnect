@@ -9,7 +9,8 @@ export const PisaSelectors = {
   jobId: createSelector(pisaStoreState, (state: PisaStoreState) => state.jobId),
   assemblyResults: createSelector(pisaStoreState, (state: PisaStoreState) => state.assemblyResults),
   interfaceResults: createSelector(pisaStoreState, (state: PisaStoreState) => state.interfaceResults),
-  interfaceResultForInterfaceId: createSelector(pisaStoreState, (state: PisaStoreState) => state.interfaceResultForInterfaceId),
+  interfaceResultForInterfaceIdComplexesTab: createSelector(pisaStoreState, (state: PisaStoreState) => state.interfaceResultForInterfaceIdComplexesTab),
+  interfaceResultForInterfaceIdInterfacesTab: createSelector(pisaStoreState, (state: PisaStoreState) => state.interfaceResultForInterfaceIdInterfacesTab),
   selectedComplexData: createSelector(pisaStoreState, (state: PisaStoreState) => state.selectedComplexData),
   interfaceTypeData: createSelector(pisaStoreState, (state: PisaStoreState) => state.interfaceTypeData),
 };

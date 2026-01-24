@@ -8,7 +8,8 @@ const initialState: PisaStoreState = {
   jobId: '',
   assemblyResults: null,
   interfaceResults: null,
-  interfaceResultForInterfaceId: null,
+  interfaceResultForInterfaceIdComplexesTab: null,
+  interfaceResultForInterfaceIdInterfacesTab: null,
   selectedComplexData: null,
   interfaceTypeData: null,
 };
@@ -35,9 +36,13 @@ export const pisaReducer = createReducer(
     ...state,
     interfaceResults: action.interfaceResults,
   })),
-  on(PisaActions.getInterfaceResultForInterfaceIdSuccess, (state, action) => ({
+  on(PisaActions.getInterfaceResultForInterfaceIdForComplexesTabSuccess, (state, action) => ({
     ...state,
-    interfaceResultForInterfaceId: action.interfaceResultForInterfaceId,
+    interfaceResultForInterfaceIdComplexesTab: action.interfaceResultForInterfaceIdComplexesTab,
+  })),
+  on(PisaActions.getInterfaceResultForInterfaceIdForInterfacesTabSuccess, (state, action) => ({
+    ...state,
+    interfaceResultForInterfaceIdInterfacesTab: action.interfaceResultForInterfaceIdInterfacesTab,
   })),
   on(PisaActions.setInterfaceTypeDataForSelectedInterface, (state, action) => ({
     ...state,

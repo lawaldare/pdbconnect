@@ -4,7 +4,8 @@ export interface PisaStoreState {
   jobId: string;
   assemblyResults: any | null;
   interfaceResults: any | null;
-  interfaceResultForInterfaceId: any | null;
+  interfaceResultForInterfaceIdComplexesTab: any | null;
+  interfaceResultForInterfaceIdInterfacesTab: any | null;
   selectedComplexData: any | null;
   interfaceTypeData: any | null;
 }

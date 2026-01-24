@@ -6,7 +6,7 @@ import { gridOptions, colDefs, initialState, rowSelection } from './ag-grid';
 import { GridApi, GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { Store } from '@ngrx/store';
 import { PisaSelectors } from '../../store/pisa.selectors';
-import { filter } from 'rxjs';
+import { filter, firstValueFrom, take } from 'rxjs';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
@@ -98,6 +98,11 @@ export class ComplexesTabComponent implements OnInit {
 
   private async updatedSelectedRow(data: any) {
     this.selectedRowData.set(data);
+    await this.loadMVS(data);
+  }
+
+  private async loadMVS(data: any) {
+    await this.molstarPluginService.loadPlugin();
 
     const MVS = this.molstarPluginService.getClass()?.extensions.MVS;
     const complexesData = this.complexesData();
@@ -105,17 +110,19 @@ export class ComplexesTabComponent implements OnInit {
     if (!MVS) return;
     if (!complexesData) return;
 
-    const snapshot = pisaComplexView(MVS?.MVSData.createBuilder(), {
-      structureUrl: `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${this.jobId()}`,
-      structureFormat: 'mmcif',
-      complexesData: complexesData,
-      complexKey: data.complex_key,
-      interfacesData: [],
-    });
+    setTimeout(async () => {
+      const snapshot = pisaComplexView(MVS?.MVSData.createBuilder(), {
+        structureUrl: `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${this.jobId()}`,
+        structureFormat: 'mmcif',
+        complexesData: complexesData,
+        complexKey: data.complex_key,
+        interfacesData: [],
+      });
 
-    const mvs = MVS.MVSData.createMultistate([snapshot]);
-    const plugin = this.molstar.getInstance().plugin;
-    await MVS.loadMVS(plugin, mvs);
+      const mvs = MVS.MVSData.createMultistate([snapshot]);
+      const plugin = this.molstar.getInstance().plugin;
+      await MVS.loadMVS(plugin, mvs);
+    }, 500);
   }
 
   public onFilterChanged(event: any) {
