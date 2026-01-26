@@ -174,8 +174,16 @@ export class PisaEffects {
               const extendedData = extended.components.find((ext: any) => ext.mol_id === molecule.mol_id);
               return { ...molecule, extendedData };
             });
-            interfaceResult.interface.molecules = results;
-            return PisaActions.getInterfaceResultForInterfaceIdForInterfacesTabSuccess({ interfaceResultForInterfaceIdInterfacesTab: interfaceResult });
+            // interfaceResult.interface.molecules = results;
+            const enrichedInterfaceResult = {
+              ...interfaceResult,
+              interface: {
+                ...interfaceResult.interface,
+                molecules: results,
+              },
+            };
+
+            return PisaActions.getInterfaceResultForInterfaceIdForInterfacesTabSuccess({ interfaceResultForInterfaceIdInterfacesTab: enrichedInterfaceResult });
           }),
           catchError(() => {
             return of(PisaActions.getInterfaceResultForInterfaceIdForInterfacesTabFailure());

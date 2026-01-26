@@ -72,10 +72,15 @@ export class InterfaceTabSingleInterfaceComponent implements OnInit {
 
   private onLoaded = signal<boolean>(false);
 
+  private currentInterfaceId = computed(() => this.pisaUtilService.currentInterfaceIdOnInterfacesTab());
+
   ngOnInit(): void {
     this.pisaStore
       .select(PisaSelectors.interfaceResultForInterfaceIdInterfacesTab)
-      .pipe(filter(Boolean))
+      .pipe(
+        filter(Boolean),
+        filter((r: any) => r.interface_id === this.currentInterfaceId())
+      )
       .subscribe((response) => {
         this.interface.set(response);
         if (!this.onLoaded()) {

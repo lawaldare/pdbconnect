@@ -21,6 +21,20 @@ export class PisaUtilService {
   private _interfacesTabView = signal<TabView>('INITIAL');
   public interfacesTabView = this._interfacesTabView.asReadonly();
 
+  private _currentInterfaceIdOnComplexesTab = signal<number>(1);
+  public currentInterfaceIdOnComplexesTab = this._currentInterfaceIdOnComplexesTab.asReadonly();
+
+  private _currentInterfaceIdOnInterfacesTab = signal<number>(1);
+  public currentInterfaceIdOnInterfacesTab = this._currentInterfaceIdOnInterfacesTab.asReadonly();
+
+  public setCurrentInterfaceIdOnComplexesTab(interfaceId: number) {
+    this._currentInterfaceIdOnComplexesTab.set(interfaceId);
+  }
+
+  public setCurrentInterfaceIdOnInterfacesTab(interfaceId: number) {
+    this._currentInterfaceIdOnInterfacesTab.set(interfaceId);
+  }
+
   public setPageView(view: PageView) {
     this._pageView.set(view);
   }

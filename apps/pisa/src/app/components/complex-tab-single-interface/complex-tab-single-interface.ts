@@ -7,7 +7,7 @@ import { PisaApiService } from '../../services/pisa-api.service';
 import { Store } from '@ngrx/store';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PisaSelectors } from '../../store/pisa.selectors';
-import { filter, firstValueFrom, take } from 'rxjs';
+import { distinctUntilChanged, filter, firstValueFrom, take } from 'rxjs';
 import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 import { PisaActions } from '../../store/pisa.actions';
 import { SingleInterfaceDetailsComponent } from '../single-interface-details/single-interface-details';
@@ -72,10 +72,15 @@ export class ComplexTabSingleInterfaceComponent implements OnInit {
 
   private onLoaded = signal<boolean>(false);
 
+  private currentInterfaceId = computed(() => this.pisaUtilService.currentInterfaceIdOnComplexesTab());
+
   ngOnInit(): void {
     this.pisaStore
       .select(PisaSelectors.interfaceResultForInterfaceIdComplexesTab)
-      .pipe(filter(Boolean))
+      .pipe(
+        filter(Boolean),
+        filter((r: any) => r.interface_id === this.currentInterfaceId())
+      )
       .subscribe((response) => {
         this.interface.set(response);
         if (!this.onLoaded()) {
