@@ -10,16 +10,25 @@ import { PisaSelectors } from '../../store/pisa.selectors';
 import { filter, firstValueFrom, take } from 'rxjs';
 import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 import { PisaActions } from '../../store/pisa.actions';
-import { SingleInterfaceDetailsComponent } from '../single-interface-details/single-interface-details';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { AgGridAngular } from 'ag-grid-angular';
 import { bondsColDefs, colDefs, gridOptions } from './ag-grid';
 import { GridApi, GridReadyEvent } from 'ag-grid-community';
+import { SingleInterfaceDetailsInterfaceTabComponent } from '../single-interface-details-interface-tab/single-interface-details-interface-tab';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'pisa-interface-tab-single-interface',
-  imports: [CommonModule, FormsModule, MaterialModule, AgGridAngular, ReactiveFormsModule, MolstarComponent, SingleInterfaceDetailsComponent, NgxPaginationModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MaterialModule,
+    AgGridAngular,
+    ReactiveFormsModule,
+    MolstarComponent,
+    SingleInterfaceDetailsInterfaceTabComponent,
+    NgxPaginationModule,
+  ],
   templateUrl: './interface-tab-single-interface.html',
   styleUrl: './interface-tab-single-interface.scss',
 })
@@ -29,7 +38,6 @@ export class InterfaceTabSingleInterfaceComponent implements OnInit {
   private pisaStore = inject(Store);
   private molstarPluginService = inject(MolstarPluginService);
 
-  public readonly interface = signal<any | null>(null);
   public readonly interfaceTypeData = toSignal(this.pisaStore.select(PisaSelectors.interfaceTypeData));
 
   public config!: any;
@@ -82,7 +90,6 @@ export class InterfaceTabSingleInterfaceComponent implements OnInit {
         filter((r: any) => r.interface_id === this.currentInterfaceId())
       )
       .subscribe((response) => {
-        this.interface.set(response);
         if (!this.onLoaded()) {
           setTimeout(async () => {
             await this.loadMVS(response.interface_id);

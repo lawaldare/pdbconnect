@@ -58,7 +58,6 @@ export class UploadPageComponent implements AfterViewInit {
 
   public async onSubmit(): Promise<void> {
     if (this.pdbEntryId && /^[0-9a-z]{4}$/.test(this.pdbEntryId)) {
-      console.log('PDB Entry ID submitted:', this.pdbEntryId);
       try {
         const file = await this.fetchCifAsFile(this.pdbEntryId);
 

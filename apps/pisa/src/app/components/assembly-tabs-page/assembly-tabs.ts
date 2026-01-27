@@ -65,7 +65,6 @@ export class AssemblyTabsPageComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       const routeTabs = this.pisaRouteTabs;
       const tabName = params['activeTab'];
-      console.log('Active tab from route params:', tabName);
       this.pisaUtilService.updateCurrentTabName(tabName ?? 'complexes');
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.selectedTab.set(tabIndex);
@@ -96,7 +95,7 @@ export class AssemblyTabsPageComponent implements OnInit {
         })
       )
       .subscribe((assemblyResults) => {
-        console.log('Assembly results received:', assemblyResults);
+        // console.log('Assembly results received:', assemblyResults);
       });
   }
 

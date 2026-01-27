@@ -7,19 +7,28 @@ import { PisaApiService } from '../../services/pisa-api.service';
 import { Store } from '@ngrx/store';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PisaSelectors } from '../../store/pisa.selectors';
-import { distinctUntilChanged, filter, firstValueFrom, take } from 'rxjs';
+import { filter, firstValueFrom, take } from 'rxjs';
 import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 import { PisaActions } from '../../store/pisa.actions';
-import { SingleInterfaceDetailsComponent } from '../single-interface-details/single-interface-details';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { AgGridAngular } from 'ag-grid-angular';
 import { bondsColDefs, colDefs, gridOptions } from './ag-grid';
 import { GridApi, GridReadyEvent } from 'ag-grid-community';
+import { SingleInterfaceDetailsComplexTabComponent } from '../single-interface-details-complex-tab/single-interface-details-complex-tab';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'pisa-complex-tab-single-interface',
-  imports: [CommonModule, FormsModule, MaterialModule, AgGridAngular, ReactiveFormsModule, MolstarComponent, SingleInterfaceDetailsComponent, NgxPaginationModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MaterialModule,
+    AgGridAngular,
+    ReactiveFormsModule,
+    MolstarComponent,
+    SingleInterfaceDetailsComplexTabComponent,
+    NgxPaginationModule,
+  ],
   templateUrl: './complex-tab-single-interface.html',
   styleUrl: './complex-tab-single-interface.scss',
 })
