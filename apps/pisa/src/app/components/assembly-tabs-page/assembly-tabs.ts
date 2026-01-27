@@ -137,6 +137,24 @@ export class AssemblyTabsPageComponent implements OnInit {
     this.downloadFileTypeService.downloadCSV(mappedData, 'complexes.csv');
   }
   public downloadInterfacesCSV() {
-    console.log('Download interfaces CSV coming soon... :)');
+    const gridApi = this.pisaUtilService.currentGridAPI();
+    const mappedData: any[] = [];
+    gridApi?.forEachNodeAfterFilter((node: any) => {
+      mappedData.push({
+        'Interface key': node.data.interfaceKey ?? node.data.groupHeader,
+        'Structure 1\nchain': node.data.structureOneChain,
+        'Structure 1\nN_atoms': node.data.structureOneNAtoms,
+        'Structure 1\nN_residues': node.data.structureOneNResidues,
+        'Structure 2\nchain': node.data.structureTwoChain,
+        'Structure 2\nN_atoms': node.data.structureTwoNAtoms,
+        'Structure 2\nN_residues': node.data.structureTwoNResidues,
+        'Interfc.\narea': node.data.interfaceArea,
+        'ΔG\nkcal/mol': node.data.interfaceEnergy,
+        'ΔG\nP-value': node.data.pValue,
+        CSS: node.data.css,
+        'Found in\ncomplex': node.data.complexes,
+      });
+    });
+    this.downloadFileTypeService.downloadCSV(mappedData, 'interfaces.csv');
   }
 }

@@ -151,6 +151,8 @@ export class InterfaceTabSingleInterfaceComponent implements OnInit {
   private async loadMVS(interfaceId: string) {
     await this.molstarPluginService.loadPlugin();
 
+    await this.pisaUtilService.loadFileToGetContentType(this.jobId() ?? '');
+
     const latestInterface = await firstValueFrom(
       this.pisaStore.select(PisaSelectors.interfaceResultForInterfaceIdInterfacesTab).pipe(
         filter(Boolean),
@@ -169,7 +171,7 @@ export class InterfaceTabSingleInterfaceComponent implements OnInit {
     setTimeout(async () => {
       const snapshot = pisaInterfaceView(MVS?.MVSData.createBuilder(), {
         structureUrl: `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${this.jobId()}`,
-        structureFormat: 'mmcif',
+        structureFormat: this.pisaUtilService.currentFileType(),
         complexesData: complexesData,
         interfaceData: latestInterface,
       });

@@ -4,7 +4,7 @@ import { Component, computed, inject, linkedSignal, OnInit, signal, ViewChild } 
 import { AG_Grid_Theme_Class, pisaInterfaceView } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { gridOptions, colDefs, initialState, rowSelection } from './ag-grid';
-import { GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
+import { GridApi, GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { Store } from '@ngrx/store';
 import { PisaSelectors } from '../../store/pisa.selectors';
 import { filter, firstValueFrom, take } from 'rxjs';
@@ -25,6 +25,8 @@ export class InterfacesTabComponent implements OnInit {
   private pisaStore = inject(Store);
   public pisaUtilService = inject(PisaUtilService);
   private molstarPluginService = inject(MolstarPluginService);
+
+  private gridApi?: GridApi;
 
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
@@ -110,6 +112,8 @@ export class InterfacesTabComponent implements OnInit {
   private async loadMVS(interfaceId: string) {
     await this.molstarPluginService.loadPlugin();
 
+    await this.pisaUtilService.loadFileToGetContentType(this.jobId() ?? '');
+
     const latestInterface = await firstValueFrom(
       this.pisaStore.select(PisaSelectors.interfaceResultForInterfaceIdInterfacesTab).pipe(
         filter(Boolean),
@@ -128,7 +132,7 @@ export class InterfacesTabComponent implements OnInit {
     setTimeout(async () => {
       const snapshot = pisaInterfaceView(MVS?.MVSData.createBuilder(), {
         structureUrl: `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${this.jobId()}`,
-        structureFormat: 'mmcif',
+        structureFormat: this.pisaUtilService.currentFileType(),
         complexesData: complexesData,
         interfaceData: latestInterface,
       });
@@ -148,6 +152,8 @@ export class InterfacesTabComponent implements OnInit {
 
   public onComplexStructureGridReady(event: GridReadyEvent<any>) {
     requestAnimationFrame(() => event.api.sizeColumnsToFit());
+    this.gridApi = event.api;
+    this.pisaUtilService.setCurrentGridAPI(this.gridApi);
     // console.log('Complex structure grid ready:', event);
   }
 

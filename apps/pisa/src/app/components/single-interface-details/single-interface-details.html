@@ -1,7 +1,7 @@
 @if(interface()){
 <header>
   <h3>Interface {{interface().interface_id}}</h3>
-  <button class="vf-button vf-button--link">Download files <i class="icon icon-common icon-download"></i></button>
+  <button class="vf-button vf-button--link" (click)="downloadFiles()">Download files <i class="icon icon-common icon-download"></i></button>
 </header>
 <p class="sub-header"><span style="font-weight: 500">{{interface().interface.css}}</span> Complex Formation Significance Score (CSS)</p>
 

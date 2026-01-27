@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { agGridOptionsBase } from '@pdbc/core';
-import { ColDef, GridOptions, GridState } from 'ag-grid-community';
+import { ColDef, GridOptions, GridState, ICellRendererParams, RowHeightParams } from 'ag-grid-community';
 import { InterfacesCellRenderer } from '../cell-renderers/interfaces-cell-render';
+
+const isGroupRow = (p: any) => !!p.data?.groupHeader;
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
@@ -14,31 +16,34 @@ export const gridOptions: GridOptions = {
   },
   pagination: false,
 
-  // getRowClass: (params) => (params.data?.groupHeader ? 'row-group-band' : params.data?.highlight ? 'highlight-row' : ''),
-  getRowClass: (params) => {
-    const d = params.data;
-    // if (d?.groupHeader) return 'row-group-band';
-    if (d?.lastInGroup) return 'last-in-group-row';
-    return '';
+  fullWidthCellRenderer: (p: ICellRendererParams) => {
+    const label = p.data?.groupHeader ?? '';
+    return `<div class="complex-type-row">${label}</div>`;
   },
 
-  // onCellClicked: (params) => {
-  //   if (params.data?.groupHeader) {
-  //     params?.event?.stopPropagation();
-  //     return;
-  //   }
-  //   // handle normal row clicks here if you have them
-  //   console.log('Clicked data row:', params.data);
-  // },
+  // ✅ nicer spacing like Figma
+  getRowHeight: (p: RowHeightParams) => (p.data?.groupHeader ? 44 : 40),
+
+  // ✅ styling hooks
+  getRowClass: (p) => (p.data?.groupHeader ? 'row-complex-type' : ''),
+
+  onCellClicked: (params) => {
+    if (params.data?.groupHeader) {
+      params?.event?.stopPropagation();
+      return;
+    }
+  },
 };
 
 export const colDefs: ColDef[] = [
   {
     headerName: 'Complex key',
     field: 'complex_key',
+    colSpan: (p) => (isGroupRow(p) ? 100 : 1),
     cellRenderer: (params: any) => {
       if (params.data.groupHeader) {
-        return `<div class="group-header-cell">${params.data.groupHeader}</div>`;
+        // return `<div class="group-header-cell">${params.data.groupHeader}</div>`;
+        return `<div class="complex-type-row">${params.data.groupHeader}</div>`;
       }
       return params.value ?? '';
     },

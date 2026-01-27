@@ -104,6 +104,8 @@ export class ComplexesTabComponent implements OnInit {
   private async loadMVS(data: any) {
     await this.molstarPluginService.loadPlugin();
 
+    await this.pisaUtilService.loadFileToGetContentType(this.jobId() ?? '');
+
     const MVS = this.molstarPluginService.getClass()?.extensions.MVS;
     const complexesData = this.complexesData();
 
@@ -113,7 +115,7 @@ export class ComplexesTabComponent implements OnInit {
     setTimeout(async () => {
       const snapshot = pisaComplexView(MVS?.MVSData.createBuilder(), {
         structureUrl: `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${this.jobId()}`,
-        structureFormat: 'mmcif',
+        structureFormat: this.pisaUtilService.currentFileType(),
         complexesData: complexesData,
         complexKey: data.complex_key,
         interfacesData: [],

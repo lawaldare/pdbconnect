@@ -98,12 +98,17 @@ export class ProcessingPageComponent implements AfterViewInit {
 
       const disposition = res.headers.get('content-disposition');
       const contentType = res.headers.get('content-type') ?? '';
-
       const blob = await res.blob();
       if (!blob.size) throw new Error('Empty response');
 
       // Pick filename + infer format
-      const fallbackName = contentType.includes('cif') ? `${jobId}.cif` : contentType.includes('pdb') ? `${jobId}.pdb` : `${jobId}.cif`;
+      const fallbackName = contentType.includes('cif')
+        ? `${jobId}.cif`
+        : contentType.includes('pdb')
+          ? `${jobId}.pdb`
+          : contentType.includes('ent')
+            ? `${jobId}.ent`
+            : `${jobId}.cif`;
 
       const fileName = this.getFilenameFromDisposition(disposition, fallbackName);
       const file = new File([blob], fileName, { type: contentType || blob.type });

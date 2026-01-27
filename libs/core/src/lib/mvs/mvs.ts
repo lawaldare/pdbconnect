@@ -149,9 +149,10 @@ export function pisaInterfaceView(
     detailMolecules?: (0 | 1)[];
     showInteractions?: boolean;
     flash?: boolean;
+    focus?: boolean;
   }
 ) {
-  const { structureUrl, structureFormat, complexesData, interfaceData, ghostMolecules, detailMolecules, showInteractions, flash } = params;
+  const { structureUrl, structureFormat, complexesData, interfaceData, ghostMolecules, detailMolecules, showInteractions, flash, focus } = params;
   const componentColors = assignComponentColors(complexesData);
   const interfaceTooltip = `<br>Interface <b>${moleculeTitle(interfaceData.interface.molecules[0], true)}</b> &ndash; <b>${moleculeTitle(
     interfaceData.interface.molecules[1],
@@ -172,7 +173,7 @@ export function pisaInterfaceView(
       beg_auth_seq_id: molecule.auth_seq_id_start,
       end_auth_seq_id: molecule.auth_seq_id_end,
     };
-    struct.component({ selector: interfaceSelector }).focus();
+    struct.component({ selector: focus ? interfaceSelector : componentSelector }).focus();
     const showGhost = ghostMolecules?.includes(i as 0 | 1);
     const showDetails = detailMolecules?.includes(i as 0 | 1);
     if (showGhost) {

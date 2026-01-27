@@ -35,7 +35,7 @@ export class PisaApiService {
     const request$ = () => {
       const params = new HttpParams().set('file_format', 'json').set('_ts', Date.now().toString()); // prevent cached 202/400
 
-      return this.http.get<any>(`${this.BASE_API}results/assembly/${jobId}`, {
+      return this.http.get<any>(`${this.BASE_API}results/complexes/${jobId}`, {
         params,
         observe: 'response',
       });
