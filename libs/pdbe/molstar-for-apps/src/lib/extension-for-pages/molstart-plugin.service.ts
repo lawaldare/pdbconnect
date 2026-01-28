@@ -5,7 +5,7 @@ import { ScriptLoaderService } from '@pdbc/core';
 export class MolstarPluginService {
   private readonly scriptLoader = inject(ScriptLoaderService);
   public PDBeMolstarPluginClass: any;
-  private molstarVersion = '3.9.0'; // TODO: Should be Env var
+  private molstarVersion = '3.10.0'; // TODO: Should be Env var
 
   async loadPlugin(): Promise<void> {
     if (!this.PDBeMolstarPluginClass) {

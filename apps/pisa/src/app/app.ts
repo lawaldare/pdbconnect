@@ -4,10 +4,9 @@ import { VfEbiHeaderComponent } from '@vf-lib/ebi-header';
 import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { pisaLogoConfig } from './pisa-constant';
-import { PisaCommingSoonComponent } from './components/coming-soon';
 
 @Component({
-  imports: [VfEbiHeaderComponent, VfEbiFooterComponent, RouterModule, PdbeHeaderLogoMenuComponent, PisaCommingSoonComponent],
+  imports: [VfEbiHeaderComponent, VfEbiFooterComponent, RouterModule, PdbeHeaderLogoMenuComponent],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -20,6 +19,4 @@ export class App {
     const hrefLink = href.split('/').slice(0, -1).join('/');
     window.open(hrefLink, '_self');
   }
-
-  public readonly isLocal = window.location.hostname === 'localhost';
 }
