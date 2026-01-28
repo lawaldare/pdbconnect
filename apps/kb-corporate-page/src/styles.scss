@@ -19,10 +19,19 @@ body {
   overflow-x: hidden;
 }
 
+ul#global-nav {
+  li {
+    a {
+      font-size: 14px;
+      line-height: 14px;
+    }
+  }
+}
+
 a:not(.search-app-anchor) {
-  color: #3b6fb6;
-  font-size: 16px;
-  font-weight: 400;
+  color: #74b360;
+  font-size: 20px;
+  font-weight: 500;
   line-height: 27.2px;
   text-decoration: none;
   border: none;
@@ -35,15 +44,15 @@ a:not(.search-app-anchor) {
   }
 
   &:visited {
-    color: #3b6fb6;
+    color: #74b360;
 
     i {
-      color: #3b6fb6;
+      color: #74b360;
     }
   }
 
   &:hover {
-    color: #193f90;
+    color: #286561 !important;
     text-decoration: underline;
     border: none !important;
   }

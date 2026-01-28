@@ -2,7 +2,6 @@
 import { AfterViewInit, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HeaderSearchComponent } from '../header-search/header-search.component';
-import { HeaderComponent } from '../header/header.component';
 import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.component';
 import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
 import { PartnersMapComponent } from '../partners-map/partners-map.component';
@@ -16,7 +15,7 @@ declare const $: any;
   selector: 'pdbc-partners-page',
   templateUrl: './partners-page.component.html',
   styleUrls: ['./partners-page.component.scss'],
-  imports: [CommonModule, HeaderComponent, HeaderSearchComponent, NavTabsComponent, HomeBookmarksComponent, PartnersMapComponent, PartnersPlotsComponent],
+  imports: [CommonModule, HeaderSearchComponent, NavTabsComponent, HomeBookmarksComponent, PartnersMapComponent, PartnersPlotsComponent],
 })
 export class PartnersPageComponent implements AfterViewInit {
   private readonly cpApiService = inject(CorporatePagesApiService);

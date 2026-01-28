@@ -5,11 +5,12 @@ import { Component, computed, inject, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { environment } from '../environments/environment';
 import { filter } from 'rxjs';
+import { HeaderComponent } from './header/header.component';
 
 declare const gtag: any;
 
 @Component({
-  imports: [RouterModule],
+  imports: [RouterModule, HeaderComponent],
   selector: 'app-root',
   templateUrl: './app.html',
 })

@@ -54,6 +54,13 @@
               "maximumError": "400kb"
             }
           ],
+          "aot": true,
+          "buildOptimizer": true,
+          "extractLicenses": true,
+          "namedChunks": false,
+          "optimization": true,
+          "sourceMap": true,
+          "vendorChunk": false,
           "outputHashing": "all",
           "baseHref": "$APP_BASE_HREF"
         },
@@ -77,7 +84,7 @@
     },
     "serve": {
       "continuous": true,
-      "executor": "@angular/build:dev-server",
+      "executor": "@angular-devkit/build-angular:dev-server",
       "options": {
         "buildTarget": "kb-corporate-page:build:local",
         "port": 4100
@@ -90,7 +97,7 @@
           "buildTarget": "kb-corporate-page:build:development"
         }
       },
-      "defaultConfiguration": "development"
+      "defaultConfiguration": ""
     },
     "extract-i18n": {
       "executor": "@angular/build:extract-i18n",

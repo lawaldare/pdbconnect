@@ -2,9 +2,9 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component } from '@angular/core';
 import { HeaderSearchComponent } from '../header-search/header-search.component';
-import { HeaderComponent } from '../header/header.component';
 import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.component';
 import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
+import { RouterModule } from '@angular/router';
 
 declare const $: any;
 
@@ -12,7 +12,7 @@ declare const $: any;
   selector: 'pdbc-services-page',
   templateUrl: './services-page.component.html',
   styleUrls: ['./services-page.component.scss'],
-  imports: [CommonModule, HeaderComponent, HeaderSearchComponent, NavTabsComponent, HomeBookmarksComponent],
+  imports: [CommonModule, HeaderSearchComponent, NavTabsComponent, HomeBookmarksComponent, RouterModule],
 })
 export class ServicesPageComponent implements AfterViewInit {
   scroll(elId: string) {
