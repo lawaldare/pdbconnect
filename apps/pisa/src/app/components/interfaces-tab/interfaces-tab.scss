@@ -70,19 +70,35 @@
   .ag-header-group-cell.hg-structure-one {
     background: #fae1b6;
     border-bottom: 1px solid var(--ag-row-border-color);
+
+    &:hover {
+      background-color: #fae1b6 !important;
+    }
   }
 
   .ag-header-cell.h-structure-one {
     background: #fae1b6;
+
+    &:hover {
+      background-color: #fae1b6 !important;
+    }
   }
 
   .ag-header-group-cell.hg-structure-two {
     background: #fff1da;
     border-bottom: 1px solid var(--ag-row-border-color);
+
+    &:hover {
+      background-color: #fff1da !important;
+    }
   }
 
   .ag-header-cell.h-structure-two {
     background: #fff1da;
+
+    &:hover {
+      background-color: #fff1da !important;
+    }
   }
 
   /* keep other header cells white */
