@@ -5,6 +5,12 @@
   --ag-row-hover-color: #e7efdd;
   --ag-row-border-color: rgb(0 0 0 / 8%);
 
+  &.interfaces-tab-table-grid {
+    .ag-row-odd {
+      background-color: transparent;
+    }
+  }
+
   /* allow \n headers */
   .ag-header-cell-label {
     white-space: pre-line;
