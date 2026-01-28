@@ -271,18 +271,15 @@
       </div>
     </div>
   </div>
-  <div id="last-release" class="content-holder">
+  <!-- <div id="last-release" class="content-holder">
     <div class="text-holder">
       <h3 class="heading-style-B">Latest release</h3>
-      <!-- <p class="last-release-txt">06 Oct 2022</p> -->
       <p class="last-release-txt">{{ releaseDate() }}</p>
-      <!-- <p class="paragraph-style-B last-release-txt"><b>PDBe-KB Aggregated views of Proteins: version 6</b></p> -->
       <p class="paragraph-style-B last-release-txt">
         <b>{{ releaseHeader() }}</b>
       </p>
 
       <ul class="paragraph-style-B last-release-txt">
-        <!-- <li>The aggregated views of proteins now displays the observed secondary structure variance per amino acid residue</li> -->
         @for(description of releaseDescriptions(); track description){
         <li>{{ description }}</li>
         }
@@ -292,13 +289,9 @@
         <a target="_blank" [href]="releaseLink()" class="link-style" style="font-size: 14px">Learn more <i class="icon icon-common icon-external-link-alt"></i></a>
       </p>
       }
-      <!-- <p *ngIf="releaseLink" class="paragraph-style-B">
-        <a target="_blank" href="{{ releaseLink() }}" class="link-style" style="font-size: 14px"
-          >Learn more <i class="icon icon-common icon-external-link-alt"></i
-        ></a>
-      </p> -->
+
     </div>
-  </div>
+  </div> -->
   <div id="license" class="content-holder">
     <div class="text-holder">
       <h3 class="heading-style-B">License and citation</h3>
