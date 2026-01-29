@@ -992,10 +992,11 @@ export class Summary3DSectionComponent implements AfterViewInit {
           return {
             name: 'Macromolecule',
             kind: 'pdbconnect_macromolecule',
-            params: { entry: entryId, assemblyId, entityId, labelAsymId, authAsymId, instanceId },
+            params: { entry: entryId, assemblyId, entityId, labelAsymId, authAsymId, instanceId, focus: true },
           };
         }
       case 'Ligands':
+        // TODO sync colors (entity colors)
         if (!listItem) {
           return {
             name: 'All ligands',
@@ -1012,7 +1013,7 @@ export class Summary3DSectionComponent implements AfterViewInit {
           return {
             name: 'Ligand',
             kind: 'pdbconnect_ligand',
-            params: { entry: entryId, assemblyId, entityId, labelAsymId, instanceId },
+            params: { entry: entryId, assemblyId, entityId, labelAsymId, instanceId, focus: true },
           };
         }
       case 'Domains': {

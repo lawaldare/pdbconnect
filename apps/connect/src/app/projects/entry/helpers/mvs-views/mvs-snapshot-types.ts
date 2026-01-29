@@ -22,6 +22,8 @@ export type SnapshotSpecParams = {
     authAsymId?: string;
     /** Symmetry instance identifier (e.g. 'ASM-1'), `undefined` for showing all instances */
     instanceId: string | undefined;
+    /** Apply camera focus on selected macromolecule */
+    focus: boolean;
   };
   /** PDBconnect Summary tab > Ligands (nothing selected) */
   pdbconnect_all_ligands: {
@@ -42,6 +44,8 @@ export type SnapshotSpecParams = {
     labelAsymId: string;
     /** Symmetry instance identifier (e.g. 'ASM-1'), `undefined` for showing all instances */
     instanceId: string | undefined;
+    /** Apply camera focus on selected ligand */
+    focus: boolean;
   };
   /** PDBconnect Summary tab > Domains (domain selected), Domains tab */
   pdbconnect_domains: {
@@ -51,6 +55,7 @@ export type SnapshotSpecParams = {
     assemblyId: string | undefined;
     /** List of domains to highlight, (`name` to show in tooltip) */
     domains: { selector: ComponentExpressionT[]; color: string; name: string | undefined }[];
+    /** Apply camera focus on selected domains */
     focus: boolean;
   };
   /** PDBconnect Summary tab > Modifications */
@@ -63,6 +68,7 @@ export type SnapshotSpecParams = {
     modifications: { labelCompId: string; color: string; name: string | undefined }[];
     /** If provided, only show ball-and-stick and optionally focus this; if undefined, show spacefill for all. */
     selected: ComponentExpressionT[] | undefined;
+    /** Apply camera focus on selected modification */
     focus: boolean;
   };
   /** PDBconnect Model Quality tab */

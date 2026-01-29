@@ -10,10 +10,7 @@ import {
   applyStandardRepresentations,
   atomicRepresentations,
   entityIsLigand,
-  getDomainFamilyColors,
   getEntityColors,
-  getModresColors,
-  getPreferredAssembly,
   max,
   normalizeInsertionCode,
   StandardRepresentationType,
@@ -155,7 +152,6 @@ export class MVSSnapshotProvider {
     for (const repr of atomicRepresentations(ctx.representations)) {
       applyElementColors(repr);
     }
-    // TODO ensure default Molstar show-environment behavior uses either entity colors or all-gray -> PDBeMolstar does it somehow but now idea how (+ ideally increase bubble size)
 
     const description: string[] = [];
 
@@ -187,11 +183,12 @@ export class MVSSnapshotProvider {
     for (const repr of Object.values(ctx.representations)) {
       repr.color({ selector: entitySelector, color: entityColors[params.entityId] });
     }
-    // TODO use coloring by element within selection (entity) (once Molstar >=5.5.1 available)
-    // for (const repr of atomicRepresentations(base.representations)) {
-    //     applyElementColors(repr);
-    // }
-    ctx.structure.component({ selector: entitySelector }).focus();
+    for (const repr of atomicRepresentations(ctx.representations)) {
+      applyElementColors(repr, entitySelector);
+    }
+    if (params.focus) {
+      ctx.structure.component({ selector: entitySelector }).focus();
+    }
 
     // const entityType = decideEntityType(entities[params.entityId]);
     // const entityComponents = applyStandardComponentsForChain(base.structure, params.labelAsymId, params.instanceId, entityType, { modifiedResidues });
@@ -251,9 +248,11 @@ export class MVSSnapshotProvider {
     const ctx = await this.loadPdbconnectComplex({ entry: params.entry, assemblyId: params.assemblyId });
     const { entities } = ctx.metadata;
 
-    ctx.structure
-      .component({ selector: { label_asym_id: params.labelAsymId, instance_id: params.instanceId } })
-      .focus({ radius_factor: FOCUS_RADIUS_FACTOR, radius_extent: FOCUS_RADIUS_EXTENT });
+    if (params.focus) {
+      ctx.structure
+        .component({ selector: { label_asym_id: params.labelAsymId, instance_id: params.instanceId } })
+        .focus({ radius_factor: FOCUS_RADIUS_FACTOR, radius_extent: FOCUS_RADIUS_EXTENT });
+    }
 
     const description: string[] = [];
     description.push(`## Ligand entity ${params.entityId}`);
@@ -271,6 +270,7 @@ export class MVSSnapshotProvider {
   private async loadPdbconnectDomains(params: SnapshotSpecParams['pdbconnect_domains']) {
     const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
 
+    const allDomainsSelector: ComponentExpressionT[] = [];
     for (const domain of params.domains) {
       const selector = domain.selector;
       const color = domain.color as ColorT;
@@ -279,9 +279,10 @@ export class MVSSnapshotProvider {
       const domainComponent = ctx.structure.component({ selector });
       if (domain.name !== undefined) domainComponent.tooltip({ text: `Domain: ${domain.name}` });
       if (params.focus && params.domains.length > 0) domainComponent.focus();
+      allDomainsSelector.push(...selector);
     }
-    for (const repr of atomicRepresentations(ctx.representations)) {
-      applyElementColors(repr); // TODO: @adam apply color only to nonstandardSticks, within domains
+    if (ctx.representations.nonstandardSticks) {
+      applyElementColors(ctx.representations.nonstandardSticks, allDomainsSelector);
     }
 
     const description: string[] = [];
@@ -427,7 +428,7 @@ export class MVSSnapshotProvider {
         for (const int of interactions) {
           const details = int.interaction_details;
           const color = details.length === 1 ? ATOM_INTERACTION_COLORS[details[0]] ?? ATOM_INTERACTION_COLORS['_DEFAULT_'] : ATOM_INTERACTION_COLORS['_MIXED_'];
-          // TODO pass colors from frontend (also for entities, domains etc)
+          // TODO: @adam pass colors from frontend (also for entities, domains etc)
           const formatInteractionType = (type: string) => INTERACTION_NICE_NAMES[type] ?? type;
           const tooltipHeader =
             details.length === 1
@@ -476,8 +477,8 @@ export class MVSSnapshotProvider {
       applyEntityColors(partnerResiduesRepr, entityColors);
       applyElementColors(partnerResiduesRepr);
     }
-    // TODO volumes
-    // TODO we don't have data for non-preferred-assembly ligands (e.g. 1og5 chain B) - decide what to do (current PDBconnect falls back to builtin, but that's confusing IMHO)
+    // TODO: @adam volumes
+    // TODO: @adam we don't have data for non-preferred-assembly ligands (e.g. 1og5 chain B) - decide what to do (current PDBconnect falls back to builtin, but that's confusing IMHO)
 
     const description: string[] = [];
     description.push(`## Residue environment for auth ${params.authAsymId} ${params.authSeqId}${params.authInsCode} `);
@@ -529,7 +530,7 @@ export class MVSSnapshotProvider {
       applyElementColors(repr);
     }
     ctx.structure.component({ selector: residueSelector }).focus({ radius_factor: FOCUS_RADIUS_FACTOR, radius_extent: FOCUS_RADIUS_EXTENT });
-    // TODO volumes
+    // TODO: @adam volumes
 
     const description: string[] = [];
     const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;

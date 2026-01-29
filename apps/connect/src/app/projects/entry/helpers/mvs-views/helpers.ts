@@ -1,5 +1,5 @@
 import type * as Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
-import type { ColorT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
+import type { ColorT, ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { ANNOTATION_COLORS, cycleIterator, ENTITY_COLORS, LIGAND_COLORS, MODRES_COLORS, WATER_COLOR } from './colors';
 import type { AssemblyRecord, DomainRecord, EntityRecord, ResidueRecord } from './data-provider';
 
@@ -204,8 +204,14 @@ export function applyEntityColors(repr: Builder.Representation, colors: { [entit
   });
 }
 
-export function applyElementColors(repr: Builder.Representation) {
-  repr.colorFromSource({ schema: 'all_atomic', category_name: 'atom_site', field_name: 'type_symbol', palette: { kind: 'categorical', colors: 'ElementSymbol' } });
+export function applyElementColors(repr: Builder.Representation, selector?: ComponentExpressionT | ComponentExpressionT[]) {
+  repr.colorFromSource({
+    schema: 'all_atomic',
+    category_name: 'atom_site',
+    field_name: 'type_symbol',
+    palette: { kind: 'categorical', colors: 'ElementSymbol' },
+    selector: selector,
+  });
 }
 
 export function applyOpacity(repr: Builder.Representation, opacity: number | undefined) {
