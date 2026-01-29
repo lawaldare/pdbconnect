@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild, OnDestroy } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, MaterialModule, Mutex } from '@pdbc/core';
@@ -8,18 +8,12 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import type { InitParams } from 'pdbe-molstar/lib/spec';
-import { filter, firstValueFrom, map, take, timer } from 'rxjs';
+import { BehaviorSubject, filter, firstValueFrom, map, take } from 'rxjs';
 import { environment } from '../../../../../../../environments/environment';
 import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
 import { Molecule } from '../../../../data-models/molecule.model';
 import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
-import {
-  componentExistsInMolstar,
-  drawSelectionInMolstar,
-  Molstar370DefaultParams,
-  QueryParamForHelpers,
-  zoomOutStructureInMolstar,
-} from '../../../../helpers/molstar-helpers';
+import { Molstar370DefaultParams, QueryParamForHelpers } from '../../../../helpers/molstar-helpers';
 import { ApiDataProvider, PdbeApiClient } from '../../../../helpers/mvs-views/data-provider';
 import { MVSSnapshotProvider } from '../../../../helpers/mvs-views/mvs-snapshot-provider';
 import type { SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
@@ -49,7 +43,7 @@ type NestedDomainsData = Array<{
   imports: [CommonModule, MolstarComponent, NgxSkeletonLoaderModule, EntryDropdownComponent, MaterialModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Summary3DSectionComponent implements AfterViewInit {
+export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
   public baseUrl = baseUrl;
 
@@ -98,8 +92,24 @@ export class Summary3DSectionComponent implements AfterViewInit {
     return isSlow === false || forceLoad === true;
   });
 
+  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
   ngAfterViewInit(): void {
+    this.mvsSnapshotSpec.subscribe(async (snapshotSpec) => {
+      if (!snapshotSpec) return;
+
+      // TODO: @adam consider SingleQueue for loading MVS states
+      const PDBeMolstarPlugin = this._molstarComponent?.getPDBeMolstarPluginClass();
+      const instance = this._molstarComponent?.getInstance();
+      const mvsSnapshotProvider = this.getMvsSnapshotProvider();
+      if (!PDBeMolstarPlugin || !mvsSnapshotProvider || !instance?.plugin) return;
+
+      const mvs = await this.mvsMutex.run(() => mvsSnapshotProvider.getSnapshot(snapshotSpec, this.mvsTransitionDurationMs)); // mutex ensures order of requested state changes
+      await this._molstarComponent?.mutex.run(() => PDBeMolstarPlugin.extensions.MVS.loadMVS(instance.plugin, mvs, { keepCameraOrientation: true }));
+    });
     this.updateMolstarAny(undefined, 'Assembly');
+  }
+  ngOnDestroy(): void {
+    this.mvsSnapshotSpec.unsubscribe();
   }
 
   public toggleMolstar() {
@@ -157,7 +167,7 @@ export class Summary3DSectionComponent implements AfterViewInit {
   });
   public readonly configForMolstar$ = toObservable(this.configForMolstar);
 
-  public zoomOutDuration = 600;
+  private mvsTransitionDurationMs = 600;
 
   public dropdownSelected!: string;
   public dropdownOptions = signal<DownloadOption[]>([]);
@@ -170,30 +180,15 @@ export class Summary3DSectionComponent implements AfterViewInit {
     else return undefined;
   }
 
-  private selectionData?: QueryParamForHelpers[];
-  private nonSelectionColor?: string;
-
-  private readonly zoomSelectionMutex = Mutex('zoomSelectionMutex');
-
   public getCleanMoleculeName = getCleanMoleculeName;
 
-  private async resetSelection() {
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance || !this.selectionData) return;
-    await instance.visual.clearSelection();
-    await this.onZoomOut(this.zoomOutDuration);
-  }
-
-  async onZoomOut(durationMs: number) {
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-    await this.zoomSelectionMutex.run(() => zoomOutStructureInMolstar(instance, durationMs));
-  }
-
-  async onZoomInAndSelect() {
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-    await this.zoomSelectionMutex.run(() => drawSelectionInMolstar(instance, this.selectionData, this.nonSelectionColor));
+  /** Zoom in or out currently selected substructure */
+  async zoomCurrentSelection(zoomed: boolean) {
+    const currentSnapshotSpec = this.mvsSnapshotSpec.value;
+    if (currentSnapshotSpec && 'focus' in currentSnapshotSpec.params) {
+      currentSnapshotSpec.params.focus = zoomed;
+      this.mvsSnapshotSpec.next(currentSnapshotSpec);
+    }
   }
 
   //  data used in template for assembly accordion
@@ -311,29 +306,6 @@ export class Summary3DSectionComponent implements AfterViewInit {
     return ligands.slice(start, end);
   });
 
-  public allLigandsQueryParam = computed(() => {
-    const ligandsSelectionData: QueryParamForHelpers[] = [];
-    const hasLigandsData = this.procLigands();
-    if (hasLigandsData === undefined) return ligandsSelectionData;
-    const ligands = this.processedLigands();
-    ligandsSelectionData.push(
-      ...ligands.map((ligand) => {
-        const entityId = (ligand.additionalData.source as Molecule).entity_id;
-        const entityColor = ligand.molstarColorHex;
-        const queryParam: QueryParamForHelpers = {
-          entity_id: `${entityId}`,
-          color: entityColor,
-          representation: 'spacefill',
-          representationColor: entityColor,
-          focus: false,
-        };
-        this.nonSelectionColor = '#FEFEFE';
-        return queryParam;
-      })
-    );
-    return ligandsSelectionData;
-  });
-
   public processedModifications = computed(() => {
     const rows = this.procLigands();
     if (rows === undefined) return [];
@@ -356,28 +328,6 @@ export class Summary3DSectionComponent implements AfterViewInit {
     const start = page * this.maxPerPage;
     const end = start + this.maxPerPage;
     return modifications.slice(start, end);
-  });
-
-  public allModificationsQueryParam = computed(() => {
-    const modsSelectionData: QueryParamForHelpers[] = [];
-    const hasLigandsData = this.procLigands();
-    if (hasLigandsData === undefined) return modsSelectionData;
-    const modifications = this.processedModifications();
-    for (const mod of modifications) {
-      for (const sel of mod.additionalData.selections) {
-        const modSel = sel[0];
-        const entityColor = mod.molstarColorHex;
-        modsSelectionData.push({
-          ...modSel,
-          color: entityColor,
-          representation: 'spacefill',
-          representationColor: entityColor,
-          focus: false,
-        });
-        this.nonSelectionColor = '#FEFEFE';
-      }
-    }
-    return modsSelectionData;
   });
 
   public processedDomainsAsList = computed(() => {
@@ -880,17 +830,6 @@ export class Summary3DSectionComponent implements AfterViewInit {
     return selectionToHighlight;
   }
 
-  public async zoomInCurrentSelection() {
-    const tabName = this.openedAccordionName();
-    if (!tabName) return;
-    const listViewItem = this.lastSelection[tabName];
-    if (!listViewItem) return;
-    const selectionToZoom = await this.getSelectionObjForSelectionType(listViewItem, tabName, true, true);
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance || !selectionToZoom) return;
-    await instance.visual.focus(selectionToZoom);
-  }
-
   private _mvsSnapshotProvider?: MVSSnapshotProvider;
   private getMvsSnapshotProvider(): MVSSnapshotProvider | undefined {
     if (!this._mvsSnapshotProvider) {
@@ -919,40 +858,13 @@ export class Summary3DSectionComponent implements AfterViewInit {
       )
     );
 
-    // TODO: @adam consider SingleQueue for loading MVS states
     const PDBeMolstarPlugin = this._molstarComponent?.getPDBeMolstarPluginClass();
-    const instance = this._molstarComponent?.getInstance();
-    const mvsSnapshotProvider = this.getMvsSnapshotProvider();
-
-    if (PDBeMolstarPlugin && mvsSnapshotProvider && instance?.plugin) {
+    if (PDBeMolstarPlugin) {
       const snapshotSpec = this.getMvsSnapshotSpec(listItem, selectionType);
-      if (snapshotSpec) {
-        const mvs = await this.mvsMutex.run(() => mvsSnapshotProvider.getSnapshot(snapshotSpec)); // mutex ensures order of requested state changes
-        await this._molstarComponent?.mutex.run(() => PDBeMolstarPlugin.extensions.MVS.loadMVS(instance.plugin, mvs, { keepCameraOrientation: true }));
-      }
+      this.mvsSnapshotSpec.next(snapshotSpec);
     } else {
       console.warn('PdbeMolstar has not rendered yet');
     }
-
-    // // check whether selection is in pref assembly, molstar config needs update and wait for it
-    // await this.updateConfigAssemblyAndSyncMolstar(listItem, selectionType === 'Assembly');
-
-    // this.nonSelectionColor = undefined;
-    // if (selectionType === 'Assembly') {
-    //   this.resetSelection();
-    // }
-    // if (selectionType === 'Macromolecules') {
-    //   this.updateMolstarMacromolecules(listItem as ProcessedMacromolecule | undefined);
-    // }
-    // if (selectionType === 'Ligands') {
-    //   this.updateMolstarLigands(listItem as ProcessedLigandOrMod | undefined);
-    // }
-    // if (selectionType === 'Domains') {
-    //   this.updateMolstarDomains(listItem as ProcessedDomain | undefined);
-    // }
-    // if (selectionType === 'Modifications') {
-    //   this.updateMolstarModifications(listItem as ProcessedLigandOrMod | undefined);
-    // }
   }
 
   private getMvsSnapshotSpec(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string): SnapshotSpec | undefined {
@@ -1088,161 +1000,5 @@ export class Summary3DSectionComponent implements AfterViewInit {
   public hasNonPrefAssemblySelection(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain, mode: 'all' | 'any') {
     if (mode === 'all') return listItem.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === false);
     else return listItem.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true) === false;
-  }
-
-  private async updateConfigAssemblyAndSyncMolstar(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, forAssembly: boolean) {
-    const inPrefAssemblyForSelection = this.inPrefAssemblyForSelection();
-    let isSelectionPrefAssembly = true;
-    if (forAssembly) {
-      isSelectionPrefAssembly = true;
-    } else if (listItem) {
-      const molstarSelectionIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-      isSelectionPrefAssembly = listItem.additionalData.selectionsInPrefAssembly[molstarSelectionIdx];
-    }
-
-    const changedDisplayedAssembly = inPrefAssemblyForSelection !== isSelectionPrefAssembly;
-    if (changedDisplayedAssembly && isSelectionPrefAssembly === false) {
-      this.hasClosedMessage.set(false);
-    }
-    // setting inPrefAssemblyForInstance may trigger update on configForMolstar
-    this.inPrefAssemblyForSelection.set(isSelectionPrefAssembly);
-
-    // ... if this update is triggered
-    if (changedDisplayedAssembly) {
-      // wait until configForMolstar recomputes with new assembly/moleculeId
-      const oldCfg = await firstValueFrom(this.configForMolstar$.pipe(take(1)));
-
-      const newCfg = await firstValueFrom(
-        this.configForMolstar$.pipe(
-          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
-          take(1)
-        )
-      );
-
-      // 2. Wait for MolstarComponent to APPLY the new config
-      await firstValueFrom(
-        this._molstarComponent!.configUpdated.pipe(
-          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
-          take(1)
-        )
-      );
-    }
-  }
-
-  private async updateMolstarMacromolecules(macromolecule: ProcessedMacromolecule | undefined) {
-    if (!macromolecule) {
-      await this.resetSelection();
-      return;
-    }
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    // loop over each molstar selection and add color and focus
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
-    this.selectionData = molstarSelection.map((eachSelection) => {
-      return {
-        ...eachSelection,
-        color: macromolecule.molstarColorHex,
-        instance_id,
-        focus: true,
-      };
-    });
-    this.nonSelectionColor = '#FEFEFE';
-
-    const durationMs = this._molstarComponent ? this.zoomOutDuration : 0;
-    await this.onZoomOut(durationMs);
-
-    timer(durationMs + 100).subscribe(async () => {
-      await this.onZoomInAndSelect();
-    });
-  }
-
-  private async updateMolstarLigands(ligand: ProcessedLigandOrMod | undefined) {
-    if (!ligand) {
-      this.selectionData = [];
-      const ligandsSelectionData = this.allLigandsQueryParam();
-      this.selectionData = ligandsSelectionData;
-      this.nonSelectionColor = '#FEFEFE';
-    } else {
-      const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const molstarInstance = this._molstarComponent?.getInstance() ?? undefined;
-      const hasLigands = await componentExistsInMolstar(molstarInstance, 'ligand');
-      const instance_id = this.symmetryDropdownSelected ? this.symmetryDropdownSelected : undefined;
-      this.selectionData = molstarSelection.map((eachSelection) => {
-        return {
-          ...eachSelection,
-          color: ligand.molstarColorHex,
-          instance_id,
-          focus: true,
-          ...(hasLigands === false && {
-            representation: 'ball-and-stick',
-            representationColor: ligand.molstarColorHex,
-          }),
-        };
-      });
-    }
-
-    const durationMs = this._molstarComponent ? this.zoomOutDuration : 0;
-    await this.onZoomOut(durationMs);
-
-    timer(durationMs + 100).subscribe(async () => {
-      await this.onZoomInAndSelect();
-    });
-  }
-
-  private async updateMolstarDomains(domain: ProcessedDomain | undefined) {
-    this.nonSelectionColor = '#FEFEFE';
-    if (!domain) {
-      this.selectionData = [];
-      const domainsSelectionData = this.allCurrentResourceDomainsQueryParam();
-      this.selectionData = domainsSelectionData;
-    } else {
-      const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
-      this.selectionData = molstarSelection.map((eachSegment) => {
-        return {
-          ...eachSegment,
-          color: domain.molstarColorHex,
-          instance_id,
-          focus: true,
-        };
-      });
-    }
-
-    const durationMs = this._molstarComponent ? this.zoomOutDuration : 0;
-    await this.onZoomOut(durationMs);
-
-    timer(durationMs + 100).subscribe(async () => {
-      await this.onZoomInAndSelect();
-    });
-  }
-
-  private async updateMolstarModifications(mod: ProcessedLigandOrMod | undefined) {
-    if (!mod) {
-      this.selectionData = [];
-      const ligandsSelectionData = this.allModificationsQueryParam();
-      this.selectionData = ligandsSelectionData;
-      this.nonSelectionColor = '#FEFEFE';
-    } else {
-      const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const instance = this._molstarComponent?.getInstance() ?? undefined;
-      const hasModifications = await componentExistsInMolstar(instance, 'non-standard');
-      this.selectionData = molstarSelection.map((eachSelection) => {
-        return {
-          ...eachSelection,
-          color: mod.molstarColorHex,
-          focus: true,
-          ...(hasModifications === false && {
-            representation: 'ball-and-stick',
-            representationColor: mod.molstarColorHex,
-          }),
-        };
-      });
-    }
-
-    const durationMs = this._molstarComponent ? this.zoomOutDuration : 0;
-    await this.onZoomOut(durationMs);
-
-    timer(durationMs + 100).subscribe(async () => {
-      await this.onZoomInAndSelect();
-    });
   }
 }

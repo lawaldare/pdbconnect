@@ -73,13 +73,18 @@ export class MVSSnapshotProvider {
     public readonly config: MVSSnapshotProviderConfig
   ) {}
 
-  async getSnapshot(spec: SnapshotSpec): Promise<MVSData> {
+  async getSnapshot(spec: SnapshotSpec, transitionDurationMs?: number): Promise<MVSData> {
     const ctx = await this.loadSnapshotSpec(spec);
     const description = ctx.description;
     description.push('---');
     description.push(`- **View kind:** ${spec.kind}`);
     description.push(`- **View params:** ${JSON.stringify(spec.params, undefined, 1)}`);
-    const snapshot = ctx.root.getSnapshot({ title: spec.name, description: description.join('\n\n'), linger_duration_ms: 10_000, transition_duration_ms: 500 });
+    const snapshot = ctx.root.getSnapshot({
+      title: spec.name,
+      description: description.join('\n\n'),
+      linger_duration_ms: 10_000,
+      transition_duration_ms: transitionDurationMs,
+    });
     return this.MVSDataLib.createMultistate([snapshot], { title: spec.name, description: description.join('\n\n') });
   }
 
