@@ -96,18 +96,8 @@ export class MVSSnapshotProvider {
         return await this.loadPdbconnectAllLigands(spec.params);
       case 'pdbconnect_ligand':
         return await this.loadPdbconnectLigand(spec.params);
-      case 'pdbconnect_domains_default':
-        return await this.loadPdbconnectDomainsDefault(spec.params);
-      case 'pdbconnect_domains_in_source':
-        return await this.loadPdbconnectDomainsInSource(spec.params);
-      case 'pdbconnect_domain':
-        return await this.loadPdbconnectDomain(spec.params);
       case 'pdbconnect_domains':
         return await this.loadPdbconnectDomains(spec.params);
-      case 'pdbconnect_all_modifications':
-        return await this.loadPdbconnectAllModifications(spec.params);
-      case 'pdbconnect_modification':
-        return await this.loadPdbconnectModification(spec.params);
       case 'pdbconnect_modifications':
         return await this.loadPdbconnectModifications(spec.params);
       case 'pdbconnect_quality':
@@ -277,87 +267,6 @@ export class MVSSnapshotProvider {
     };
   }
 
-  /** Create MVS view for PDBconnect Summary tab > Domains > All (nothing selected) */
-  private async loadPdbconnectDomainsDefault(params: SnapshotSpecParams['pdbconnect_domains_default']) {
-    const ctx = await this._loadPdbconnectBase(params);
-    const description: string[] = [];
-    description.push(`## Domains - default view`);
-    const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
-    description.push(`Showing ${assemblyText} (nothing highlighted here, select domain source or specific domain to see highlights).`);
-    return {
-      ...ctx,
-      description,
-    };
-  }
-
-  /** Create MVS view for PDBconnect Summary tab > Domains > CATH/Pfam/SCOP (nothing selected) */
-  private async loadPdbconnectDomainsInSource(params: SnapshotSpecParams['pdbconnect_domains_in_source']) {
-    const ctx = await this._loadPdbconnectBase(params);
-
-    const domainInfo = await this.dataProvider.siftsMappingsByEntity(params.entry);
-    const domainFamilyColors = getDomainFamilyColors(domainInfo); // TODO cache?
-
-    const srcDomains = domainInfo[params.source];
-    for (const familyId in srcDomains) {
-      const famDomains = srcDomains[familyId];
-      const color = domainFamilyColors[familyId];
-      for (const entityId in famDomains) {
-        const entDomains = famDomains[entityId];
-        for (const domain of entDomains) {
-          const selector: ComponentExpressionT[] = domain.chunks.map((chunk) => ({
-            label_asym_id: chunk.chainId,
-            beg_label_seq_id: chunk.startResidue,
-            end_label_seq_id: chunk.endResidue,
-          }));
-          ctx.representations.polymerCartoon?.color({ selector, color });
-          ctx.representations.nonstandardSticks?.color({ selector, color });
-        }
-      }
-    }
-
-    const description: string[] = [];
-    description.push(`## Domains in ${params.source}`);
-    const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
-    description.push(`Showing all domains from source ${params.source} in ${assemblyText}.`);
-    return {
-      ...ctx,
-      description,
-    };
-  }
-
-  /** Create MVS view for PDBconnect Summary tab > Domains (domain selected), Domains tab */
-  private async loadPdbconnectDomain(params: SnapshotSpecParams['pdbconnect_domain']) {
-    const domainInfo = await this.dataProvider.siftsMappingsByEntity(params.entry);
-    const domainFamilyColors = getDomainFamilyColors(domainInfo);
-    const domain = domainInfo[params.source][params.familyId][params.entityId].find((dom) => dom.id === params.domainId);
-
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
-
-    if (domain) {
-      const color = domainFamilyColors[domain.family];
-      const selector: ComponentExpressionT[] = domain.chunks.map((chunk) => ({
-        label_asym_id: chunk.chainId,
-        beg_label_seq_id: chunk.startResidue,
-        end_label_seq_id: chunk.endResidue,
-        instance_id: params.instanceId,
-      }));
-      ctx.representations.polymerCartoon?.color({ selector, color });
-      ctx.representations.nonstandardSticks?.color({ selector, color });
-      ctx.structure.component({ selector }).focus();
-    }
-    for (const repr of atomicRepresentations(ctx.representations)) {
-      applyElementColors(repr);
-    }
-
-    const description: string[] = [];
-    description.push(`## Domain ${params.domainId}`);
-    const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
-    description.push(`Showing ${params.source} ${params.familyId} domain ${params.domainId} in ${assemblyText}.`);
-    return {
-      ...ctx,
-      description,
-    };
-  }
   /** Create MVS view for PDBconnect Summary tab > Domains (domain selected), Domains tab */
   private async loadPdbconnectDomains(params: SnapshotSpecParams['pdbconnect_domains']) {
     const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
@@ -377,64 +286,6 @@ export class MVSSnapshotProvider {
 
     const description: string[] = [];
     description.push(`## Domains`);
-    return {
-      ...ctx,
-      description,
-    };
-  }
-
-  /** Create MVS view for PDBconnect Summary tab > Modifications (nothing selected) */
-  private async loadPdbconnectAllModifications(params: SnapshotSpecParams['pdbconnect_all_modifications']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
-
-    if (ctx.components.nonstandard) {
-      const modifiedResidues = await this.dataProvider.modifiedResidues(params.entry);
-      const modresColors = getModresColors(modifiedResidues);
-      const modresSpacefill = ctx.components.nonstandard.representation({ type: 'spacefill' });
-      for (const compId in modresColors) {
-        modresSpacefill.color({ selector: { label_comp_id: compId }, color: modresColors[compId] });
-      }
-    }
-
-    const description: string[] = [];
-    description.push(`## All modified residues`);
-    const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
-    description.push(`Overview of all modified residues in ${assemblyText}.`);
-    return {
-      ...ctx,
-      description,
-    };
-  }
-
-  /** Create MVS view for PDBconnect Summary tab > Modifications (modification selected) */
-  private async loadPdbconnectModification(params: SnapshotSpecParams['pdbconnect_modification']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
-    const entities = await this.dataProvider.entities(params.entry);
-    const entityColors = getEntityColors(entities);
-    const modifiedResidues = await this.dataProvider.modifiedResidues(params.entry);
-    const modresColors = getModresColors(modifiedResidues);
-    for (const [reprName, repr] of Object.entries(ctx.representations)) {
-      if ((reprName as StandardRepresentationType) === 'nonstandardSticks') {
-        for (const compId in modresColors) {
-          repr.color({ selector: { label_comp_id: compId }, color: modresColors[compId] });
-        }
-      } else {
-        applyEntityColors(repr, entityColors);
-      }
-    }
-    for (const repr of atomicRepresentations(ctx.representations)) {
-      applyElementColors(repr);
-    }
-    ctx.structure
-      .component({ selector: { label_asym_id: params.labelAsymId, label_seq_id: params.labelSeqId, instance_id: params.instanceId } })
-      .focus({ radius_factor: FOCUS_RADIUS_FACTOR, radius_extent: FOCUS_RADIUS_EXTENT });
-
-    const description: string[] = [];
-    description.push(`## Modified residue ${params.compId}`);
-    const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
-    description.push(
-      `This is modified residue **${params.compId}** ${params.labelSeqId} (label_seq_id) in chain ${params.labelAsymId} (label_asym_id) in ${assemblyText}.`
-    );
     return {
       ...ctx,
       description,

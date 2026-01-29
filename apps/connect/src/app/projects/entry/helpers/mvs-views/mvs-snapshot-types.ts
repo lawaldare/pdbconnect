@@ -43,39 +43,6 @@ export type SnapshotSpecParams = {
     /** Symmetry instance identifier (e.g. 'ASM-1'), `undefined` for showing all instances */
     instanceId: string | undefined;
   };
-  /** PDBconnect Summary tab > Domains > All (nothing selected) */
-  pdbconnect_domains_default: {
-    /** PDB ID */
-    entry: string;
-    /** Assembly ID (or `undefined` for deposited model) */
-    assemblyId: string | undefined;
-  };
-  /** PDBconnect Summary tab > Domains > CATH/Pfam/SCOP (nothing selected) */
-  pdbconnect_domains_in_source: {
-    /** PDB ID */
-    entry: string;
-    /** Assembly ID (or `undefined` for deposited model) */
-    assemblyId: string | undefined;
-    /** Source database (CATH | SCOP | Pfam) */
-    source: string;
-  };
-  /** PDBconnect Summary tab > Domains (domain selected), Domains tab */
-  pdbconnect_domain: {
-    /** PDB ID */
-    entry: string;
-    /** Assembly ID (or `undefined` for deposited model) */
-    assemblyId: string | undefined;
-    /** Source database (CATH | SCOP | Pfam) */
-    source: string;
-    /** Domain family ID (e.g. '1.10.630.10') */
-    familyId: string;
-    /** Entity identifier (label_entity_id) */
-    entityId: string;
-    /** Domain identifier (e.g. '1n26A01') */
-    domainId: string;
-    /** Symmetry instance identifier (e.g. 'ASM-1'), `undefined` for showing all instances */
-    instanceId: string | undefined;
-  };
   /** PDBconnect Summary tab > Domains (domain selected), Domains tab */
   pdbconnect_domains: {
     /** PDB ID */
@@ -85,28 +52,6 @@ export type SnapshotSpecParams = {
     /** List of domains to highlight, (`name` to show in tooltip) */
     domains: { selector: ComponentExpressionT[]; color: string; name: string | undefined }[];
     focus: boolean;
-  };
-  /** PDBconnect Summary tab > Modifications (nothing selected) */
-  pdbconnect_all_modifications: {
-    /** PDB ID */
-    entry: string;
-    /** Assembly ID (or `undefined` for deposited model) */
-    assemblyId: string | undefined;
-  };
-  /** PDBconnect Summary tab > Modifications (modification selected) */
-  pdbconnect_modification: {
-    /** PDB ID */
-    entry: string;
-    /** Assembly ID (or `undefined` for deposited model) */
-    assemblyId: string | undefined;
-    /** Modified residue CCD code (e.g. 'MSE') */
-    compId: string;
-    /** Chain identifier (label_asym_id) */
-    labelAsymId: string;
-    /** Residue identifier (label_seq_id) */
-    labelSeqId: number;
-    /** Symmetry instance identifier (e.g. 'ASM-1'), `undefined` for showing all instances */
-    instanceId: string | undefined;
   };
   /** PDBconnect Summary tab > Modifications */
   pdbconnect_modifications: {
@@ -171,12 +116,7 @@ export const SnapshotKinds = [
   'pdbconnect_macromolecule',
   'pdbconnect_all_ligands',
   'pdbconnect_ligand',
-  'pdbconnect_domains_default',
-  'pdbconnect_domains_in_source',
-  'pdbconnect_domain',
   'pdbconnect_domains',
-  'pdbconnect_all_modifications',
-  'pdbconnect_modification',
   'pdbconnect_modifications',
   'pdbconnect_quality',
   'pdbconnect_environment',
