@@ -33,6 +33,10 @@ export const StardardComponents: {
     return structure.component({ selector: 'ion', ref: 'component_ion' });
   },
   nonstandard(structure: Builder.Structure) {
+    // return structure.component({
+    //   selector: [{ label_comp_id: 'GYS' }, { label_comp_id: 'ABA' }],
+    //   ref: 'component_nonstandard',
+    // });
     return structure.componentFromSource({
       schema: 'all_atomic',
       category_name: 'chem_comp',

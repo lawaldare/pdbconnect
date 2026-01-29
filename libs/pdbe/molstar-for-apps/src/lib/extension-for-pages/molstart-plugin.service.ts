@@ -5,13 +5,12 @@ import { ScriptLoaderService } from '@pdbc/core';
 export class MolstarPluginService {
   private readonly scriptLoader = inject(ScriptLoaderService);
   public PDBeMolstarPluginClass: any;
-  private molstarVersion = '3.9.0'; // TODO: Should be Env var
+  private molstarVersion = '3.10.0'; // TODO: Should be Env var
 
   async loadPlugin(): Promise<void> {
     if (!this.PDBeMolstarPluginClass) {
       this.PDBeMolstarPluginClass = await this.scriptLoader.loadGlobal(
-        // `https://cdn.jsdelivr.net/npm/pdbe-molstar@${this.molstarVersion}/build/pdbe-molstar-plugin.js`,
-        `https://molstar.org/pdbe-molstar/build/pdbe-molstar-plugin.js`, // TODO: @adam Release pdbe-molstar version and revert URL to the above
+        `https://cdn.jsdelivr.net/npm/pdbe-molstar@${this.molstarVersion}/build/pdbe-molstar-plugin.js`,
         'PDBeMolstarPlugin'
       );
     }

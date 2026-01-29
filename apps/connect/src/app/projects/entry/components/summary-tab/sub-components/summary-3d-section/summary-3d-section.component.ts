@@ -10,6 +10,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import type { InitParams } from 'pdbe-molstar/lib/spec';
 import { filter, firstValueFrom, map, take, timer } from 'rxjs';
 import { environment } from '../../../../../../../environments/environment';
+import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
 import { Molecule } from '../../../../data-models/molecule.model';
 import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
 import {
@@ -98,14 +99,7 @@ export class Summary3DSectionComponent implements AfterViewInit {
   });
 
   ngAfterViewInit(): void {
-    console.log('ngAfterViewInit');
-    this.updateMolstarAny(undefined, 'Assembly'); // TODO: @adam call directly in ngAfterViewInit
-    // const sub = this.molstarFirstRenderFinished$.subscribe(finished => {
-    //   if (!finished) return;
-    //   console.log('uuuu', finished)
-    //   this.updateMolstarAny(undefined, 'Assembly'); // TODO: @adam call directly in ngAfterViewInit
-    //   sub.unsubscribe();
-    // });
+    this.updateMolstarAny(undefined, 'Assembly');
   }
 
   public toggleMolstar() {
@@ -146,6 +140,7 @@ export class Summary3DSectionComponent implements AfterViewInit {
       subscribeEvents: true,
       granularity: 'residue',
       hideControls: false,
+      hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
       // visualStyle: {
       //   polymer: {
       //     type: 'cartoon',
@@ -906,8 +901,7 @@ export class Summary3DSectionComponent implements AfterViewInit {
       const baseUrl = environment.baseUrl;
       this._mvsSnapshotProvider = new MVSSnapshotProvider(PDBeMolstarPlugin.extensions.MVS.MVSData, new ApiDataProvider(new PdbeApiClient(`${baseUrl}pdbe/api/v2`)), {
         PdbStructureFormat: 'bcif',
-        // PdbStructureUrlTemplate: `${baseUrl}pdbe/entry-files/{pdb}.bcif`,
-        PdbStructureUrlTemplate: `https://www.ebi.ac.uk/pdbe/entry-files/{pdb}.bcif`, // TODO: @adam revert
+        PdbStructureUrlTemplate: `${baseUrl}pdbe/entry-files/{pdb}.bcif`,
       }); // TODO: use existing API service
     }
     return this._mvsSnapshotProvider;
@@ -933,11 +927,8 @@ export class Summary3DSectionComponent implements AfterViewInit {
     if (PDBeMolstarPlugin && mvsSnapshotProvider && instance?.plugin) {
       const snapshotSpec = this.getMvsSnapshotSpec(listItem, selectionType);
       if (snapshotSpec) {
-        let mvs = await this.mvsMutex.run(() => mvsSnapshotProvider.getSnapshot(snapshotSpec)); // mutex ensures order of requested state changes
-        mvs.metadata.description = undefined;
-        if (mvs.kind === 'multiple') mvs.snapshots.forEach((s) => (s.metadata.description = undefined)); // TODO: @adam hide snapshot name and description from Molstar UI
-        mvs = PDBeMolstarPlugin.extensions.MVS.MVSData.fromMVSJ(PDBeMolstarPlugin.extensions.MVS.MVSData.toMVSJ(mvs)); // TODO remove this once MVS validation in Molstar handles undefineds correctly (PR#1733) - Molstar >=5.5.1
-        await this._molstarComponent?.mutex.run(() => PDBeMolstarPlugin.extensions.MVS.loadMVS(instance.plugin, mvs, {})); // TODO add keepCameraOrientation option once Molstar >= 5.5.1
+        const mvs = await this.mvsMutex.run(() => mvsSnapshotProvider.getSnapshot(snapshotSpec)); // mutex ensures order of requested state changes
+        await this._molstarComponent?.mutex.run(() => PDBeMolstarPlugin.extensions.MVS.loadMVS(instance.plugin, mvs, { keepCameraOrientation: true }));
       }
     } else {
       console.warn('PdbeMolstar has not rendered yet');
@@ -1050,10 +1041,42 @@ export class Summary3DSectionComponent implements AfterViewInit {
             focus: true,
           },
         };
+        // TODO fix every domain appearing twice in the list (entry 1bvy)
       }
-      // TODO fix every domain appearing twice in the list (entry 1bvy)
-      case 'Modifications':
-        return undefined;
+      case 'Modifications': {
+        const allModres = this.processedModifications();
+        const spec: SnapshotSpec<'pdbconnect_modifications'> = {
+          name: 'Modifications',
+          kind: 'pdbconnect_modifications',
+          params: {
+            entry: entryId,
+            assemblyId,
+            modifications: allModres.map((mod) => ({
+              labelCompId: mod.id,
+              name: mod.codeAndName.name,
+              color: mod.molstarColorHex ?? 'gray',
+            })),
+            selected: undefined,
+            focus: false,
+          },
+        };
+        if (listItem) {
+          const modresData = (listItem as ProcessedLigandOrMod).additionalData;
+          const labelCompId = (listItem as ProcessedLigandOrMod).id;
+          const modres = (modresData.source as ModifiedResidue[])[molstarSelectionIndex];
+          const instanceId = this.getSelectedInstanceId();
+          spec.name = `Selected modification ${labelCompId}`;
+          spec.params.selected = [
+            {
+              label_asym_id: modres.struct_asym_id,
+              label_seq_id: modres.residue_number,
+              instance_id: instanceId,
+            },
+          ];
+          spec.params.focus = true;
+        }
+        return spec;
+      }
       default: {
         console.warn('unknown selectionType:', selectionType);
         return undefined;

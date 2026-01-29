@@ -108,6 +108,18 @@ export type SnapshotSpecParams = {
     /** Symmetry instance identifier (e.g. 'ASM-1'), `undefined` for showing all instances */
     instanceId: string | undefined;
   };
+  /** PDBconnect Summary tab > Modifications */
+  pdbconnect_modifications: {
+    /** PDB ID */
+    entry: string;
+    /** Assembly ID (or `undefined` for deposited model) */
+    assemblyId: string | undefined;
+    /** List of modifications to highlight, (`name` to show in tooltip) */
+    modifications: { labelCompId: string; color: string; name: string | undefined }[];
+    /** If provided, only show ball-and-stick and optionally focus this; if undefined, show spacefill for all. */
+    selected: ComponentExpressionT[] | undefined;
+    focus: boolean;
+  };
   /** PDBconnect Model Quality tab */
   pdbconnect_quality: {
     /** PDB ID */
@@ -162,8 +174,10 @@ export const SnapshotKinds = [
   'pdbconnect_domains_default',
   'pdbconnect_domains_in_source',
   'pdbconnect_domain',
+  'pdbconnect_domains',
   'pdbconnect_all_modifications',
   'pdbconnect_modification',
+  'pdbconnect_modifications',
   'pdbconnect_quality',
   'pdbconnect_environment',
   'pdbconnect_text_annotation',

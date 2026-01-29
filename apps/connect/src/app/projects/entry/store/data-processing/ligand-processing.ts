@@ -578,12 +578,13 @@ export function generateProcessedModifications(modifications: ModifiedResidue[],
     const allInstancesInPrefAssembly = molstarSelectionsInPrefAssembly.every((inPrefAssembly) => inPrefAssembly === true);
 
     const unSortedSymmOpListForEachLigOrMod = generateSymmetryOperatorsListForModification(modificationsOfId, preferredAssembly);
-    const { selections, selectionNames, selectionsInPrefAssembly, symmOpListForEachLigOrMod } = sortByBooleanFlag(
+    const { selections, selectionNames, selectionsInPrefAssembly, symmOpListForEachLigOrMod, source } = sortByBooleanFlag(
       {
         selections: modificationMolstarData.selections,
         selectionNames: modificationMolstarData.selectionNames,
         selectionsInPrefAssembly: molstarSelectionsInPrefAssembly,
         symmOpListForEachLigOrMod: unSortedSymmOpListForEachLigOrMod,
+        source: modificationsOfId,
       },
       'selectionsInPrefAssembly'
     );
@@ -596,13 +597,13 @@ export function generateProcessedModifications(modifications: ModifiedResidue[],
         codeAndName: {
           entryInstancesCount,
           prefAssemblyCount,
-          name: modificationsOfId[0].chem_comp_name,
+          name: source[0].chem_comp_name,
         },
         annotations: [],
         symmOpListForEachLigOrMod,
         allInstancesInPrefAssembly,
         additionalData: {
-          source: modificationsOfId,
+          source,
           selections,
           selectionNames,
           selectionsInPrefAssembly,

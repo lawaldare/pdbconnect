@@ -108,6 +108,8 @@ export class MVSSnapshotProvider {
         return await this.loadPdbconnectAllModifications(spec.params);
       case 'pdbconnect_modification':
         return await this.loadPdbconnectModification(spec.params);
+      case 'pdbconnect_modifications':
+        return await this.loadPdbconnectModifications(spec.params);
       case 'pdbconnect_quality':
         return await this.loadPdbconnectQuality(spec.params);
       case 'pdbconnect_environment':
@@ -433,6 +435,47 @@ export class MVSSnapshotProvider {
     description.push(
       `This is modified residue **${params.compId}** ${params.labelSeqId} (label_seq_id) in chain ${params.labelAsymId} (label_asym_id) in ${assemblyText}.`
     );
+    return {
+      ...ctx,
+      description,
+    };
+  }
+
+  /** Create MVS view for PDBconnect Summary tab > Modifications (whether modification selected or not) */
+  private async loadPdbconnectModifications(params: SnapshotSpecParams['pdbconnect_modifications']) {
+    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
+
+    for (const mod of params.modifications) {
+      ctx.structure.component({ selector: { label_comp_id: mod.labelCompId } }).tooltip({ text: `<hr><b>Modified residue ${mod.labelCompId}:</b><br>${mod.name}` });
+    }
+
+    if (params.selected) {
+      const entities = await this.dataProvider.entities(params.entry);
+      const entityColors = getEntityColors(entities);
+      for (const [reprName, repr] of Object.entries(ctx.representations)) {
+        applyEntityColors(repr, entityColors);
+        if ((reprName as StandardRepresentationType) === 'nonstandardSticks') {
+          for (const mod of params.modifications) {
+            repr.color({ selector: { label_comp_id: mod.labelCompId }, color: mod.color as ColorT });
+          }
+        }
+      }
+      for (const repr of atomicRepresentations(ctx.representations)) {
+        applyElementColors(repr);
+      }
+      if (params.focus) {
+        ctx.structure.component({ selector: params.selected }).focus({ radius_factor: FOCUS_RADIUS_FACTOR, radius_extent: FOCUS_RADIUS_EXTENT });
+      }
+    }
+
+    if (!params.selected && ctx.components.nonstandard) {
+      const modresSpacefill = ctx.components.nonstandard.representation({ type: 'spacefill' });
+      for (const mod of params.modifications) {
+        modresSpacefill.color({ selector: { label_comp_id: mod.labelCompId }, color: mod.color as ColorT });
+      }
+    }
+
+    const description: string[] = [`## Modified residues`];
     return {
       ...ctx,
       description,

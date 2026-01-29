@@ -1,12 +1,12 @@
-import { CathMappings, DomainMapping, PfamMappings, ScopMappings } from '../../data-models/domains.model';
-import { ObservedSegments, PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
-import { Filter } from './models/other-models';
-import { Molecule } from '../../data-models/molecule.model';
-import { FILTERED_KELLY22_COLORBLIND_SCALE } from '../../entry-constant';
-import { DomainsBoundaries, ProcessedDomain, ProcessedMacromolecule } from './models/processed-entities.model';
 import { AssemblyData } from '../../data-models/assembly.model';
+import { CathMappings, DomainMapping, PfamMappings, ScopMappings } from '../../data-models/domains.model';
+import { Molecule } from '../../data-models/molecule.model';
+import { ObservedSegments, PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
+import { FILTERED_KELLY22_COLORBLIND_SCALE } from '../../entry-constant';
 import { QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { getCleanMoleculeName } from '../../helpers/processed-data-to-controls';
+import { Filter } from './models/other-models';
+import { DomainsBoundaries, ProcessedDomain, ProcessedMacromolecule } from './models/processed-entities.model';
 
 export function formatSegmentsAsText(segments: string[]) {
   const segmentsAsText = segments
@@ -29,37 +29,17 @@ function safeAuthStr(num?: string | null) {
   return num === undefined || num === null ? undefined : num;
 }
 
+/** Sort arrays according to boolean array `arrays[flagKey]` (first all true, then false), stable sort */
 export function sortByBooleanFlag<T extends Record<string, any[]>>(arrays: T, flagKey: keyof T): T {
-  const keys = Object.keys(arrays) as (keyof T)[];
-  const length = arrays[flagKey].length;
-
-  type Row = { originalIndex: number } & { [P in keyof T]: T[P][number] };
-
-  // Zip into objects
-  const zipped: Row[] = Array.from({ length }, (_, i) => {
-    const row: any = { originalIndex: i };
-    keys.forEach((k) => {
-      row[k] = arrays[k][i];
-    });
-    return row as Row;
-  });
-
-  // Stable sort: true first, preserving order
-  zipped.sort((a, b) => {
-    const flagA = a[flagKey] as boolean;
-    const flagB = b[flagKey] as boolean;
-
-    if (flagA === flagB) return a.originalIndex - b.originalIndex;
-    return flagA ? -1 : 1;
-  });
-
-  // Unzip back
-  const result = {} as T;
-  keys.forEach((k) => {
-    result[k] = zipped.map((z) => z[k]) as T[typeof k];
-  });
-
-  return result;
+  const compareBool = (a: boolean, b: boolean) => (a === b ? 0 : a ? -1 : 1); // true < false
+  const flagArray = arrays[flagKey];
+  const sortedIndices = flagArray.map((_, i) => i).sort((i, j) => compareBool(flagArray[i], flagArray[j]) || i - j);
+  const out = {} as T;
+  for (const key in arrays) {
+    const array = arrays[key];
+    out[key] = sortedIndices.map((i) => array[i]) as T[typeof key];
+  }
+  return out;
 }
 
 /**
