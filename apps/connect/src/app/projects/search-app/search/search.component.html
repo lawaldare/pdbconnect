@@ -202,7 +202,7 @@
               </div>
               <!-- Entry selectbox End Here -->
               <!-- Result cards -->
-              @for (group of tabAttributes[0].resultCardData.grouped['pdb_id'].groups ; track group; let grayBgFlag = $odd; let resIndex = $index) {
+              @for (group of tabAttributes[0].resultCardData.grouped['pdb_id'].groups ; track $index; let grayBgFlag = $odd; let resIndex = $index) {
               <pdbc-result-card
                 [resultData]="group"
                 [grayBackground]="grayBgFlag"
@@ -270,7 +270,7 @@
               </div>
               }
               <!-- Result cards -->
-              @for (group of tabAttributes[1].resultCardData.entriesData; track group; let grayBgFlag = $odd) {
+              @for (group of tabAttributes[1].resultCardData.entriesData; track $index; let grayBgFlag = $odd) {
               <pdbc-pivot-result-card [resultData]="group" [grayBackground]="grayBgFlag" pivotType="macromolecules"></pdbc-pivot-result-card>
               }
               <!-- Pagination row -->
@@ -321,7 +321,7 @@
               </div>
               }
               <!-- Result cards -->
-              @for (group of tabAttributes[2].resultCardData.entriesData; track group; let grayBgFlag = $odd) {
+              @for (group of tabAttributes[2].resultCardData.entriesData; track $index; let grayBgFlag = $odd) {
               <pdbc-pivot-result-card [resultData]="group" [grayBackground]="grayBgFlag" pivotType="compounds"></pdbc-pivot-result-card>
               }
               <!-- Pagination row -->
@@ -372,7 +372,7 @@
               </div>
               }
               <!-- Result cards -->
-              @for (group of tabAttributes[3].resultCardData.entriesData; track group; let grayBgFlag = $odd) {
+              @for (group of tabAttributes[3].resultCardData.entriesData; track $index; let grayBgFlag = $odd) {
               <pdbc-pivot-result-card [resultData]="group" [grayBackground]="grayBgFlag" pivotType="proteinFamilies"></pdbc-pivot-result-card>
               }
               <!-- Pagination row -->
