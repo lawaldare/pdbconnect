@@ -1,7 +1,7 @@
 /* eslint-disable no-useless-escape */
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { SearchService } from '../common/search.service';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DownloadFilesDialogComponent } from '../download-files-dialog/download-files-dialog.component';
 import { MolstarDialogComponent } from '../molstar-dialog/molstar-dialog.component';
@@ -63,9 +63,9 @@ export class PivotResultCardComponent implements OnInit {
   validationSliderData: any;
   assemblyComposition: any;
   orgSciName: any;
-  image1Src: any;
-  image2Src: any;
-  image3Src: any;
+  // image1Src: any;
+  // image2Src: any;
+  // image3Src: any;
   image1Index: any = 0;
   image2Index: any;
   image3Index: any;
@@ -74,6 +74,12 @@ export class PivotResultCardComponent implements OnInit {
   uniprotAccessions: any[] = [];
   displayUnpAccessions: any[] = [];
   otherEntrieIds: string[] = [];
+
+  image1Src!: SafeUrl;
+  image2Src!: SafeUrl;
+  image3Src!: SafeUrl;
+  ligandEntityId?: string;
+  inChainsId?: string;
 
   constructor(
     private cd: ChangeDetectorRef,
@@ -129,6 +135,29 @@ export class PivotResultCardComponent implements OnInit {
     this.image1Src = this.getImageSource(1);
     this.image2Src = this.getImageSource(2);
     this.image3Src = this.getImageSource(3);
+
+    if (this.pivotType === 'compounds') {
+      this.searchService.getLigandEntity(this.resultData.pdb_id, this.compoundId).subscribe((id) => {
+        this.ligandEntityId = id;
+
+        // recompute images AFTER entity arrives
+        this.image2Src = this.getImageSource(2);
+        this.image3Src = this.getImageSource(3);
+
+        this.cd.markForCheck();
+      });
+    }
+
+    if (this.pivotType === 'proteinFamilies') {
+      const entityId = this.resultData.bestEntry.split('_')[1];
+      this.searchService.getMoleculeInChains(this.resultData.pdb_id, entityId).subscribe((id) => {
+        this.inChainsId = id;
+        // recompute images AFTER entity arrives
+        this.image1Src = this.getImageSource(1);
+
+        this.cd.markForCheck();
+      });
+    }
   }
 
   sortImageJson(jsonImagesArr: any[], pdbId: string) {
@@ -460,57 +489,55 @@ export class PivotResultCardComponent implements OnInit {
     return validationData;
   }
 
-  getImageSource(imageNumber: number) {
-    let imgElement = '';
-    let imgSrc: any;
+  private notFoundUrl(): SafeUrl {
+    return this._sanitizer.bypassSecurityTrustUrl(`${this.pdbeUrl}entry/static/images/notFound.jpg`);
+  }
+
+  getImageSource(imageNumber: number): SafeUrl {
+    let imgSrc: Record<number, string> = {};
     const entityId = this.resultData.bestEntry.split('_')[1];
+
     if (this.pivotType === 'macromolecules') {
       imgSrc = {
-        1: this.pdbeUrl + 'static/entry/' + this.resultData.pdb_id + '_entity_' + entityId + '_front_image-200x200.png',
-        2: this.pdbeUrl + 'static/entry/' + this.resultData.pdb_id + '_entity_' + entityId + '_side_image-200x200.png',
-        3: this.pdbeUrl + 'static/entry/' + this.resultData.pdb_id + '_entity_' + entityId + '_top_image-200x200.png',
+        1: `${this.pdbeUrl}static/entry/${this.resultData.pdb_id}_entity_${entityId}_front_image-200x200.png`,
+        2: `${this.pdbeUrl}static/entry/${this.resultData.pdb_id}_entity_${entityId}_side_image-200x200.png`,
+        3: `${this.pdbeUrl}static/entry/${this.resultData.pdb_id}_entity_${entityId}_top_image-200x200.png`,
       };
       this.image2Index = 2;
       this.image3Index = 1;
-    } else if (this.pivotType === 'compounds') {
-      imgSrc = {
-        1: this.pdbeUrl + 'static/files/pdbechem_v2/' + this.compoundId + '_200.svg',
-      };
-      this.searchService.getLigandEntity(this.resultData.pdb_id, this.compoundId).subscribe((res: string) => {
-        imgSrc['2'] = this.pdbeUrl + 'static/entry/' + this.resultData.pdb_id + '_entity_' + res + '_side_image-200x200.png';
-        imgSrc['3'] = this.pdbeUrl + 'static/entry/' + this.resultData.pdb_id + '_entity_' + res + '_top_image-200x200.png';
-      });
-      if (this.resultData.bound_compound_id && this.resultData.bound_compound_id.indexOf(this.compoundId) == -1) {
-        imgSrc['2'] = 'https://www.ebi.ac.uk/pdbe/static/entry/' + this.resultData.pdb_id + '_modres_' + this.compoundId + '_side_image-200x200.png';
-        imgSrc['3'] = 'https://www.ebi.ac.uk/pdbe/static/entry/' + this.resultData.pdb_id + '_modres_' + this.compoundId + '_top_image-200x200.png';
-      }
-      this.image2Index = 3;
-      this.image3Index = 2;
-    } else if (this.pivotType === 'proteinFamilies') {
-      console.log('resultData: ', this.resultData);
+    }
 
+    if (this.pivotType === 'proteinFamilies') {
+      const pfamId = this.resultData.pfam_accession[this.resultData.pfam_name.indexOf(this.resultData.compoundTitle)];
       imgSrc = {
-        1:
-          this.pdbeUrl +
-          'entry/pdb/' +
-          this.resultData.pdb_id +
-          '/pfamimage?pfam_id=' +
-          this.resultData.pfam_accession[this.resultData.pfam_name.indexOf(this.resultData.compoundTitle)] +
-          '&entity_id=' +
-          entityId +
-          '&size=200',
-        2: this.pdbeUrl + 'static/entry/' + this.resultData.pdb_id + '_entity_' + entityId + '_front_image-200x200.png',
-        3: this.pdbeUrl + 'static/entry/' + this.resultData.pdb_id + '_entity_' + entityId + '_side_image-200x200.png',
+        1: `${this.pdbeUrl}static/entry/${this.resultData.pdb_id}_${entityId}_${this.inChainsId}_Pfam_${pfamId}_image-200x200.png`,
+        2: `${this.pdbeUrl}static/entry/${this.resultData.pdb_id}_entity_${entityId}_front_image-200x200.png`,
+        3: `${this.pdbeUrl}static/entry/${this.resultData.pdb_id}_entity_${entityId}_side_image-200x200.png`,
       };
-      console.log('imgSrc[1]: ' + imgSrc[1]);
-
       this.image2Index = 1;
       this.image3Index = 3;
     }
 
-    console.log(this._sanitizer.bypassSecurityTrustResourceUrl((imgElement = imgSrc[imageNumber])));
+    if (this.pivotType === 'compounds') {
+      imgSrc = {
+        1: `${this.pdbeUrl}static/files/pdbechem_v2/${this.compoundId}_200.svg`,
+      };
+      this.image2Index = 3;
+      this.image3Index = 2;
 
-    return this._sanitizer.bypassSecurityTrustResourceUrl((imgElement = imgSrc[imageNumber]));
+      const isModified = this.resultData.bound_compound_id && this.resultData.bound_compound_id.indexOf(this.compoundId) === -1;
+
+      if (isModified) {
+        imgSrc[2] = `https://www.ebi.ac.uk/pdbe/static/entry/${this.resultData.pdb_id}_modres_${this.compoundId}_side_image-200x200.png`;
+        imgSrc[3] = `https://www.ebi.ac.uk/pdbe/static/entry/${this.resultData.pdb_id}_modres_${this.compoundId}_top_image-200x200.png`;
+      } else if (this.ligandEntityId) {
+        imgSrc[2] = `${this.pdbeUrl}static/entry/${this.resultData.pdb_id}_entity_${this.ligandEntityId}_side_image-200x200.png`;
+        imgSrc[3] = `${this.pdbeUrl}static/entry/${this.resultData.pdb_id}_entity_${this.ligandEntityId}_top_image-200x200.png`;
+      }
+    }
+
+    const url = imgSrc?.[imageNumber];
+    return url ? this._sanitizer.bypassSecurityTrustUrl(url) : this.notFoundUrl();
   }
 
   openDownloadDialog() {
@@ -533,21 +560,13 @@ export class PivotResultCardComponent implements OnInit {
     });
   }
 
-  imageError(imgIndex: any) {
-    switch (imgIndex) {
-      case 1:
-        this.image1Src = this.pdbeUrl + 'entry/static/images/notFound.jpg';
-        this.image1Index = undefined;
-        break;
-      case 2:
-        this.image2Src = this.pdbeUrl + 'entry/static/images/notFound.jpg';
-        this.image2Index = undefined;
-        break;
-      case 3:
-        this.image3Src = this.pdbeUrl + 'entry/static/images/notFound.jpg';
-        this.image3Index = undefined;
-        break;
-    }
+  onImgError(event: Event) {
+    const img = event.target as HTMLImageElement;
+
+    if (img.dataset['handled']) return;
+
+    img.dataset['handled'] = 'true';
+    img.src = `${this.pdbeUrl}entry/static/images/notFound.jpg`;
   }
 
   recordUserInteraction(type: string) {

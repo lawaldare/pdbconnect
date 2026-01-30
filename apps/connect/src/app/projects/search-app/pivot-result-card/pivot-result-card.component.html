@@ -243,7 +243,7 @@
           <!-- left Image Section Start Here -->
           <div class="leftSection">
             <div class="image-x" (click)="openImageGallery(pivotType, resultData.pdb_id, image1Index); recordUserInteraction('gallery_image_0')">
-              <img style="border: none" [src]="image1Src" alt="{{resultData.pdb_id}}" (error)="imageError(1)" />
+              <img style="border: none" [src]="image1Src" alt="{{resultData.pdb_id}}" (error)="onImgError($event)" />
             </div>
           </div>
           <!-- left Image Section End Here -->
@@ -251,11 +251,11 @@
           <!-- Right Image Section Start Here -->
           <div class="rightSection">
             <div class="image-y" (click)="openImageGallery(pivotType, resultData.pdb_id, image2Index); recordUserInteraction('gallery_image_1')">
-              <img style="border: none" [src]="image2Src" alt="{{resultData.pdb_id}}" (error)="imageError(2)" />
+              <img style="border: none" [src]="image2Src" alt="{{resultData.pdb_id}}" (error)="onImgError($event)" />
             </div>
 
             <div class="image-z" (click)="openImageGallery(pivotType, resultData.pdb_id, image3Index); recordUserInteraction('gallery_image_2')">
-              <img style="border: none" [src]="image3Src" alt="{{resultData.pdb_id}}" (error)="imageError(3)" />
+              <img style="border: none" [src]="image3Src" alt="{{resultData.pdb_id}}" (error)="onImgError($event)" />
             </div>
           </div>
           <!-- Right Image Section Start Here -->

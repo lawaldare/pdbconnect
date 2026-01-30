@@ -84,7 +84,7 @@
       @if (resultData.doclist.docs[0].bound_compound_id && resultData.doclist.docs[0].bound_compound_id.length > 0) {
       <div class="columns small-12 marginTop10">
         <strong>Bound ligands: </strong>
-        @for (comp of resultData.doclist.docs[0].bound_compound_id; track comp; let ci = $index) {
+        @for (comp of resultData.doclist.docs[0].bound_compound_id; track $index; let ci = $index) {
         <a
           my-tooltip
           tooltipImage="{{pdbeUrl}}static/files/pdbechem_v2/{{comp}}_200.svg"
@@ -99,7 +99,7 @@
       } @if (resultData.doclist.docs[0].modified_compound_id && resultData.doclist.docs[0].modified_compound_id.length > 0) {
       <div class="columns small-12 marginTop10">
         <strong>Modified residues: </strong>
-        @for (comp of resultData.doclist.docs[0].modified_compound_id; track comp; let ci = $index) {
+        @for (comp of resultData.doclist.docs[0].modified_compound_id; track $index; let ci = $index) {
         <a
           my-tooltip
           tooltipImage="{{pdbeUrl}}static/files/pdbechem_v2/{{comp}}_200.svg"
@@ -114,7 +114,7 @@
       } @if (carbPolmerEntities && carbPolmerEntities.length > 0) {
       <div class="columns small-12 marginTop10">
         <strong>Carbohydrate polymer components: </strong>
-        @for (carbentity of carbPolmerEntities; track carbentity; let ci = $index) {
+        @for (carbentity of carbPolmerEntities; track $index; let ci = $index) {
         <div style="margin-bottom: 5px">
           Molecule {{ci + 1}}&nbsp;-
           <a
@@ -176,7 +176,7 @@
           title="Protein Data Bank in Europe - Knowledge Base"
           style="border: 0; height: 15px; width: 15px"
         /><strong style="margin-left: 2px">PDBe-KB: </strong>
-        @for (unpAccession of displayUnpAccessions; track unpAccession; let ui = $index) {
+        @for (unpAccession of displayUnpAccessions; track $index; let ui = $index) {
         <a
           style="color: #0932d6"
           target="_blank"
@@ -417,7 +417,7 @@
   </div>
   } @if (otherEntriesShow) {
   <div class="columns small-12" style="margin-bottom: 10px">
-    @for (otherEntryData of identicalEntries; track otherEntryData; let oei = $index) {
+    @for (otherEntryData of identicalEntries; track $index; let oei = $index) {
     <div class="columns small-12" style="margin-top: 15px">
       <!-- PDB ID -->
       <div class="columns small-12 medium-1 result_link no-pad-left no-pad-right" style="font-size: 110%">
@@ -432,7 +432,7 @@
           } @if (otherEntryData.boundLingands) {
           <div class="truncateString">
             <strong>Bound Ligands:</strong>
-            @for (comp of otherEntryData.boundLingands; track comp; let ci = $index) {
+            @for (comp of otherEntryData.boundLingands; track $index; let ci = $index) {
 
             <a
               my-tooltip

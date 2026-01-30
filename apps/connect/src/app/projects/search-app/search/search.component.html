@@ -66,10 +66,10 @@
             </ng-template>
           } -->
 
-        @if (facetData && (facetData | json) !== '{}') { @for (facetManagerListInGrouping of facetManagerGrouping; track facetManagerListInGrouping; let fgi = $index)
-        { @if (getFacetGroupHeading(fgi, facetManagerGrouping)) {
+        @if (facetData && (facetData | json) !== '{}') { @for (facetManagerListInGrouping of facetManagerGrouping; track $index; let fgi = $index) { @if
+        (getFacetGroupHeading(fgi, facetManagerGrouping)) {
         <div class="facetGroupHeading">{{ getFacetGroupHeading(fgi, facetManagerGrouping) }}</div>
-        } @for (facetManager of facetManagerListInGrouping; track facetManager; let gi = $index) { @if (facetData && facetData[facetManager]) {
+        } @for (facetManager of facetManagerListInGrouping; track $index; let gi = $index) { @if (facetData && facetData[facetManager]) {
         <pdbc-list-facet
           [listHeading]="facetData[facetManager].title"
           [listHeadingCount]="facetData[facetManager].titleCount"
@@ -270,7 +270,7 @@
               </div>
               }
               <!-- Result cards -->
-              @for (group of tabAttributes[1].resultCardData.entriesData; track $index; let grayBgFlag = $odd) {
+              @for (group of tabAttributes[1].resultCardData.entriesData; track (group.pdb_id + '|' + group.bestEntry); let grayBgFlag = $odd) {
               <pdbc-pivot-result-card [resultData]="group" [grayBackground]="grayBgFlag" pivotType="macromolecules"></pdbc-pivot-result-card>
               }
               <!-- Pagination row -->
@@ -321,7 +321,8 @@
               </div>
               }
               <!-- Result cards -->
-              @for (group of tabAttributes[2].resultCardData.entriesData; track $index; let grayBgFlag = $odd) {
+              @for (group of tabAttributes[2].resultCardData.entriesData; track (group.pdb_id + '|' + group.bestEntry + '|' + group.compoundTitle); let grayBgFlag =
+              $odd) {
               <pdbc-pivot-result-card [resultData]="group" [grayBackground]="grayBgFlag" pivotType="compounds"></pdbc-pivot-result-card>
               }
               <!-- Pagination row -->
@@ -372,7 +373,8 @@
               </div>
               }
               <!-- Result cards -->
-              @for (group of tabAttributes[3].resultCardData.entriesData; track $index; let grayBgFlag = $odd) {
+              @for (group of tabAttributes[3].resultCardData.entriesData; track (group.pdb_id + '|' + group.bestEntry + '|' + group.compoundTitle); let grayBgFlag =
+              $odd) {
               <pdbc-pivot-result-card [resultData]="group" [grayBackground]="grayBgFlag" pivotType="proteinFamilies"></pdbc-pivot-result-card>
               }
               <!-- Pagination row -->

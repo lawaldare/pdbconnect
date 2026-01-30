@@ -30,6 +30,19 @@ export class SearchService {
     );
   }
 
+  public getMoleculeInChains(pdbId: string, entityId: string): Observable<string> {
+    return this.http.get<string>(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/${pdbId}`).pipe(
+      map((resp: any) => {
+        const molecules = resp[pdbId];
+        for (const molecule of molecules) {
+          if (molecule.entity_id === Number(entityId)) {
+            return molecule.in_chains[0];
+          }
+        }
+      })
+    );
+  }
+
   querySolr(managarName: string, url: string, downloadQueryData?: any): Observable<any> {
     return this.http.get(url).pipe(
       map((resp: any) => {
