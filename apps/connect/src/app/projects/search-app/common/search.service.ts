@@ -17,6 +17,19 @@ export class SearchService {
     this.filterCards = [];
   }
 
+  public getLigandEntity(pdbId: string, compoundId: string): Observable<string> {
+    return this.http.get<string>(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/${pdbId}`).pipe(
+      map((resp: any) => {
+        const molecules = resp[pdbId];
+        for (const molecule of molecules) {
+          if (molecule.chem_comp_ids && molecule.chem_comp_ids.includes(compoundId)) {
+            return molecule.entity_id;
+          }
+        }
+      })
+    );
+  }
+
   querySolr(managarName: string, url: string, downloadQueryData?: any): Observable<any> {
     return this.http.get(url).pipe(
       map((resp: any) => {

@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-escape */
-import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { SearchService } from '../common/search.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -464,7 +464,7 @@ export class PivotResultCardComponent implements OnInit {
     let imgElement = '';
     let imgSrc: any;
     const entityId = this.resultData.bestEntry.split('_')[1];
-    if (this.pivotType == 'macromolecules') {
+    if (this.pivotType === 'macromolecules') {
       imgSrc = {
         1: this.pdbeUrl + 'static/entry/' + this.resultData.pdb_id + '_entity_' + entityId + '_front_image-200x200.png',
         2: this.pdbeUrl + 'static/entry/' + this.resultData.pdb_id + '_entity_' + entityId + '_side_image-200x200.png',
@@ -472,20 +472,23 @@ export class PivotResultCardComponent implements OnInit {
       };
       this.image2Index = 2;
       this.image3Index = 1;
-    } else if (this.pivotType == 'compounds') {
+    } else if (this.pivotType === 'compounds') {
       imgSrc = {
         1: this.pdbeUrl + 'static/files/pdbechem_v2/' + this.compoundId + '_200.svg',
-        2: this.pdbeUrl + 'entry/pdb/' + this.resultData.pdb_id + '/compoundimage?het=' + this.compoundId + '&orient=side&size=200',
-        3: this.pdbeUrl + 'entry/pdb/' + this.resultData.pdb_id + '/compoundimage?het=' + this.compoundId + '&orient=top&size=200',
       };
+      this.searchService.getLigandEntity(this.resultData.pdb_id, this.compoundId).subscribe((res: string) => {
+        imgSrc['2'] = this.pdbeUrl + 'static/entry/' + this.resultData.pdb_id + '_entity_' + res + '_side_image-200x200.png';
+        imgSrc['3'] = this.pdbeUrl + 'static/entry/' + this.resultData.pdb_id + '_entity_' + res + '_top_image-200x200.png';
+      });
       if (this.resultData.bound_compound_id && this.resultData.bound_compound_id.indexOf(this.compoundId) == -1) {
         imgSrc['2'] = 'https://www.ebi.ac.uk/pdbe/static/entry/' + this.resultData.pdb_id + '_modres_' + this.compoundId + '_side_image-200x200.png';
         imgSrc['3'] = 'https://www.ebi.ac.uk/pdbe/static/entry/' + this.resultData.pdb_id + '_modres_' + this.compoundId + '_top_image-200x200.png';
       }
       this.image2Index = 3;
       this.image3Index = 2;
-    } else if (this.pivotType == 'proteinFamilies') {
-      const entityId = this.resultData.bestEntry.split('_')[1];
+    } else if (this.pivotType === 'proteinFamilies') {
+      console.log('resultData: ', this.resultData);
+
       imgSrc = {
         1:
           this.pdbeUrl +
@@ -499,9 +502,13 @@ export class PivotResultCardComponent implements OnInit {
         2: this.pdbeUrl + 'static/entry/' + this.resultData.pdb_id + '_entity_' + entityId + '_front_image-200x200.png',
         3: this.pdbeUrl + 'static/entry/' + this.resultData.pdb_id + '_entity_' + entityId + '_side_image-200x200.png',
       };
+      console.log('imgSrc[1]: ' + imgSrc[1]);
+
       this.image2Index = 1;
       this.image3Index = 3;
     }
+
+    console.log(this._sanitizer.bypassSecurityTrustResourceUrl((imgElement = imgSrc[imageNumber])));
 
     return this._sanitizer.bypassSecurityTrustResourceUrl((imgElement = imgSrc[imageNumber]));
   }
