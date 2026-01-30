@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild, OnDestroy } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, MaterialModule, Mutex } from '@pdbc/core';
@@ -583,10 +583,10 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
   }
 
   public async mouseinListItem(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain, selectionType: string) {
-    const selectionToHighlight = await this.getSelectionObjForSelectionType(listItem, selectionType, false, false);
+    const selectionToHighlight = await this.getSelectionObjForSelectionType(listItem, selectionType);
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance || !selectionToHighlight) return;
-    await instance.visual.highlight({ data: selectionToHighlight });
+    await instance.visual.highlight({ data: selectionToHighlight, structureNumber: 1 }); // (PDBe Molstar numbers structures from 1, *facepalm*)
   }
 
   public async mouseoutListItem() {
@@ -602,8 +602,6 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
 
   private updateView(tabName: string, resetDropdown: boolean) {
     const listViewItem = this.lastSelection[tabName];
-    // if (listViewItem) {
-    // }
     this.updateDropdownOptions(listViewItem, tabName, resetDropdown);
     this.updateSymmetryDropdownOptions(listViewItem, tabName);
     this.updateMolstarAny(listViewItem, tabName);
@@ -776,58 +774,30 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
 
   private async getSelectionObjForSelectionType(
     listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain,
-    selectionType: string,
-    focusType: boolean,
-    useCurrent: boolean
-  ): Promise<QueryParamForHelpers[] | undefined> {
-    let molstarSelections: QueryParamForHelpers[] | undefined = undefined;
+    selectionType: string
+  ): Promise<ComponentExpressionT[] | undefined> {
     if (selectionType === 'Macromolecules') {
       const macromolecule = listItem as ProcessedMacromolecule;
-      const allSelections: QueryParamForHelpers[] = [
-        {
-          entity_id: `${macromolecule.additionalData.molecule.entity_id}`,
-        },
-      ];
-      const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      molstarSelections = useCurrent ? currentMolstarSelection : allSelections;
+      return [{ label_entity_id: `${macromolecule.additionalData.molecule.entity_id}` }];
     }
     if (selectionType === 'Ligands') {
       const ligand = listItem as ProcessedLigandOrMod;
       const src = ligand.additionalData.source as Molecule;
-      const allSelections: QueryParamForHelpers[] = [
-        {
-          entity_id: `${src.entity_id}`,
-        },
-      ];
-      const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      molstarSelections = useCurrent ? currentMolstarSelection : allSelections;
+      return [{ label_entity_id: `${src.entity_id}` }];
     }
     if (selectionType === 'Domains') {
       const domain = listItem as ProcessedDomain;
-      const allSelections = domain.additionalData.selections;
-      const flatSelections = allSelections.flat(1);
-      const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      molstarSelections = useCurrent ? currentMolstarSelection : flatSelections;
-      // molstarSelections = domain.additionalData.selections[0];
+      return domain.additionalData.boundaries.map((segment) => ({
+        auth_asym_id: segment.chain,
+        beg_label_seq_id: segment.start,
+        end_label_seq_id: segment.end,
+      }));
     }
     if (selectionType === 'Modifications') {
       const mod = listItem as ProcessedLigandOrMod;
-      const allSelections = mod.additionalData.selections;
-      const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const flatSelections = allSelections.flat(1);
-      molstarSelections = useCurrent ? currentMolstarSelection : flatSelections;
+      return [{ label_comp_id: `${mod.id}` }];
     }
-    if (!molstarSelections) return molstarSelections;
-
-    // loop over each molstar selection and add color and focus
-    const selectionToHighlight = molstarSelections.map((eachSelection) => {
-      return {
-        ...eachSelection,
-        color: listItem.molstarColorHex,
-        focus: focusType,
-      };
-    });
-    return selectionToHighlight;
+    return undefined;
   }
 
   private _mvsSnapshotProvider?: MVSSnapshotProvider;
