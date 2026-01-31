@@ -19,6 +19,12 @@ import { PisaActions } from '../../store/pisa.actions';
         font-weight: 400;
         line-height: 27.2px;
         cursor: pointer;
+
+        &:hover {
+          color: #193f90;
+          text-decoration: underline;
+          border: none !important;
+        }
       }
     `,
   ],

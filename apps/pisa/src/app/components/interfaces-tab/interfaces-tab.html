@@ -41,18 +41,13 @@
 
   <div class="molstar">
     <lib-pdbe-molstar #molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
-    <!-- @if(selectedRowData()){
-    <h3>Complex {{selectedRowData().complex_key}}</h3>
+    @if(selectedRowData().complexes){
+    <h3>Interface {{selectedRowData().interfaceKey}}</h3>
     <div class="row">
-      <p class="title">Copies in unit cell</p>
-      <p class="value">{{selectedRowData().unit_cell}}</p>
+      <p class="title">Found in complex</p>
+      <p class="value">{{selectedRowData().complexes}}</p>
     </div>
-    <div class="row">
-      <p class="title">symmetry number</p>
-      <p class="value">{{selectedRowData().symmetry_number}}</p>
-    </div>
-    <button class="vf-button vf-button--primary" (click)="downloadComplex()">Download complex</button>
-    } -->
+    }
   </div>
 </main>
 <footer>

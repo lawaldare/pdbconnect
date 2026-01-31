@@ -13,8 +13,10 @@ import {
   RowHeightParams,
 } from 'ag-grid-community';
 import { InterfaceTabelActionCellRenderer } from '../cell-renderers/interface-table-action-cell-render';
+import { SubscriptHeaderComponent } from '../cell-renderers/subscript-header';
 
 const isGroupRow = (p: any) => !!p.data?.groupHeader;
+const sub = (base: string, sub: string) => `${base}<sub>${sub}</sub>`;
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
@@ -29,6 +31,9 @@ export const gridOptions: GridOptions = {
     wrapText: true, //
   },
   pagination: false,
+  components: {
+    subscriptHeader: SubscriptHeaderComponent,
+  },
 
   // ✅ make { groupHeader: "Interface type X" } rows span the whole grid
   isFullWidthRow: (p: any) => !!p.data?.groupHeader,
@@ -80,8 +85,24 @@ export const colDefs: (ColDef | ColGroupDef)[] = [
     headerClass: 'hg-structure-one',
     children: [
       { headerName: 'Chain', field: 'structureOneChain', flex: 0.6, headerClass: 'h-structure-one', cellClass: 'c-structure-one' },
-      { headerName: 'N_atoms', field: 'structureOneNAtoms', flex: 0.9, headerClass: 'h-structure-one', cellClass: 'c-structure-one' },
-      { headerName: 'N_residues', field: 'structureOneNResidues', flex: 1, headerClass: 'h-structure-one', cellClass: 'c-structure-one' },
+      {
+        headerName: 'N_atoms',
+        headerComponent: 'subscriptHeader',
+        headerComponentParams: { html: 'N<sub>atoms</sub>' },
+        field: 'structureOneNAtoms',
+        flex: 0.9,
+        headerClass: 'h-structure-one',
+        cellClass: 'c-structure-one',
+      },
+      {
+        headerName: 'N_residues',
+        headerComponent: 'subscriptHeader',
+        headerComponentParams: { html: 'N<sub>residues</sub>' },
+        field: 'structureOneNResidues',
+        flex: 1,
+        headerClass: 'h-structure-one',
+        cellClass: 'c-structure-one',
+      },
     ],
   },
 
@@ -90,8 +111,24 @@ export const colDefs: (ColDef | ColGroupDef)[] = [
     headerClass: 'hg-structure-two',
     children: [
       { headerName: 'Chain', field: 'structureTwoChain', flex: 0.6, headerClass: 'h-structure-two', cellClass: 'c-structure-two' },
-      { headerName: 'N_atoms', field: 'structureTwoNAtoms', flex: 0.9, headerClass: 'h-structure-two', cellClass: 'c-structure-two' },
-      { headerName: 'N_residues', field: 'structureTwoNResidues', flex: 1, headerClass: 'h-structure-two', cellClass: 'c-structure-two' },
+      {
+        headerName: 'N_atoms',
+        headerComponent: 'subscriptHeader',
+        headerComponentParams: { html: 'N<sub>atoms</sub>' },
+        field: 'structureTwoNAtoms',
+        flex: 0.9,
+        headerClass: 'h-structure-two',
+        cellClass: 'c-structure-two',
+      },
+      {
+        headerName: 'N_residues',
+        headerComponent: 'subscriptHeader',
+        headerComponentParams: { html: 'N<sub>residues</sub>' },
+        field: 'structureTwoNResidues',
+        flex: 1,
+        headerClass: 'h-structure-two',
+        cellClass: 'c-structure-two',
+      },
     ],
   },
 
@@ -101,13 +138,13 @@ export const colDefs: (ColDef | ColGroupDef)[] = [
   { headerName: 'CSS', field: 'css', flex: 0.7, headerClass: 'h-plain' },
 
   // this is the one that usually causes horizontal scroll
-  {
-    headerName: 'Found in\ncomplex',
-    field: 'complexes',
-    headerClass: 'h-plain',
-    wrapText: true,
-    autoHeight: true, // ✅ row grows instead of grid scrolling
-  },
+  // {
+  //   headerName: 'Found in\ncomplex',
+  //   field: 'complexes',
+  //   headerClass: 'h-plain',
+  //   wrapText: true,
+  //   autoHeight: true, // ✅ row grows instead of grid scrolling
+  // },
 
   {
     headerName: 'Actions',

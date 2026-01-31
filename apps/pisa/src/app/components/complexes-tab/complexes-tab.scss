@@ -15,7 +15,7 @@ main {
     width: 70%;
     margin-top: 5px;
     height: 600px;
-    border: 2px solid #000;
+    border-bottom: 1px solid #cec9ba;
   }
 
   .molstar {
@@ -27,7 +27,8 @@ main {
 
     .row {
       display: flex;
-      align-items: center;
+
+      // align-items: center;
       gap: 12px;
 
       p {

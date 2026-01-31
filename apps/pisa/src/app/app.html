@@ -1,6 +1,12 @@
 <pdbc-vf-ebi-header></pdbc-vf-ebi-header>
 <pdbc-pdbe-header-logo-menu class="entry-page-logo" [headerConfig]="pisaLogoConfig" (startButtonClicked)="onStartButtonClicked()"></pdbc-pdbe-header-logo-menu>
-<div class="container">
+<div class="pisa container">
   <router-outlet></router-outlet>
 </div>
+<section class="pisa-footer">
+  <div class="container">
+    <p class="title">Developed in partnership with</p>
+    <img src="assets/images/ccp4.png" alt="CCP4 logo" />
+  </div>
+</section>
 <pdbc-vf-ebi-footer></pdbc-vf-ebi-footer>

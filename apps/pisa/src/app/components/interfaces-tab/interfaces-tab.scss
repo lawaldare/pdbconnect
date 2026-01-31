@@ -9,6 +9,17 @@
     .ag-row-odd {
       background-color: transparent;
     }
+
+    .ag-header-cell,
+    .ag-header-group-cell {
+      padding-left: 2px !important;
+      padding-right: 0 !important;
+    }
+  }
+
+  .ag-header-row:not(:first-child) .ag-header-cell:not(.ag-header-span-height.ag-header-span-total, .ag-header-parent-hidden),
+  .ag-header-row:not(:first-child) .ag-header-group-cell.ag-header-group-cell-with-group {
+    border: none !important;
   }
 
   /* allow \n headers */
@@ -69,7 +80,6 @@
      ========================= */
   .ag-header-group-cell.hg-structure-one {
     background: #fae1b6;
-    border-bottom: 1px solid var(--ag-row-border-color);
 
     &:hover {
       background-color: #fae1b6 !important;
@@ -86,7 +96,6 @@
 
   .ag-header-group-cell.hg-structure-two {
     background: #fff1da;
-    border-bottom: 1px solid var(--ag-row-border-color);
 
     &:hover {
       background-color: #fff1da !important;
