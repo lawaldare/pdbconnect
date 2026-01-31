@@ -106,7 +106,6 @@ export class InterfacesTabComponent implements OnInit {
   private async updatedSelectedRow(data: any) {
     const interfaceId = data.interfaceKey;
     this.selectedRowData.set(data);
-    console.log('Selected interface ID:', data);
     this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceIdForInterfacesTab({ interfaceId }));
     await this.loadMVS(interfaceId);
   }
