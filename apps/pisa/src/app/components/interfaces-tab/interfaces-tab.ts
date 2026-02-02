@@ -48,6 +48,15 @@ export class InterfacesTabComponent implements OnInit {
     return allComplexes;
   });
 
+  public numberOfComplexes = linkedSignal({
+    source: this.assemblyResponse,
+    computation: () => {
+      const assemblyResults = this.assemblyResponse();
+      const sum = assemblyResults?.pqs_sets?.reduce((acc: number, curr: any) => acc + curr.complexes.length, 0);
+      return sum;
+    },
+  });
+
   @ViewChild('molstar') molstar!: MolstarComponent;
 
   public selectedRowData = signal<any>({});
@@ -65,10 +74,10 @@ export class InterfacesTabComponent implements OnInit {
     },
   });
 
-  public numberOfInterfaceTypes = linkedSignal({
-    source: this.interfaceResponse,
-    computation: () => this.interfaceResponse()?.interface_types?.length || 0,
-  });
+  // public numberOfInterfaceTypes = linkedSignal({
+  //   source: this.interfaceResponse,
+  //   computation: () => this.interfaceResponse()?.interface_types?.length || 0,
+  // });
 
   public numberOfInterfaces = linkedSignal({
     source: this.interfaceResponse,

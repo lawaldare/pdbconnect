@@ -62,6 +62,7 @@ export class AssemblyTabsPageComponent implements OnInit {
   ];
 
   public selectedTab = signal<number>(0);
+  public uploadFile = signal<boolean>(true);
 
   constructor() {
     this.route.queryParams.subscribe((params) => {
@@ -71,6 +72,17 @@ export class AssemblyTabsPageComponent implements OnInit {
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.selectedTab.set(tabIndex);
     });
+
+    this.checkUploadStatus();
+  }
+
+  private checkUploadStatus(): void {
+    const status = sessionStorage.getItem('uploadFile');
+    if (status === 'true') {
+      this.uploadFile.set(true);
+    } else {
+      this.uploadFile.set(false);
+    }
   }
 
   async ngOnInit(): Promise<void> {

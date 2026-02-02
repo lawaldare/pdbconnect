@@ -1,5 +1,5 @@
 <h1 [ngStyle]="{'margin-bottom': modelSym() ? '0' : '26px'}">{{label()}}</h1>
-@if(modelSym()){
+@if(modelSym() && uploadFile()){
 <span class="your-file">Your file</span>
 }
 <main>
@@ -16,7 +16,10 @@
       <p class="row-data">{{analysis()}}</p>
     </div>
     <div class="row parameters-row">
-      <p class="row-header">Cell parameters</p>
+      <p class="row-header">
+        <span>Cell parameters</span>
+        <lib-help-icon-with-tooltip [tooltipText]="''" />
+      </p>
       <p class="row-data parameters">
         <span class="cell-row">
           <span class="cell-row-label">A</span>
@@ -45,15 +48,24 @@
       </p>
     </div>
     <div class="row">
-      <p class="row-header">Space symmetry group</p>
+      <p class="row-header">
+        <span>Space symmetry group</span>
+        <lib-help-icon-with-tooltip [tooltipText]="''" />
+      </p>
       <p class="row-data">{{ simplifiedSpacegroup() }}</p>
     </div>
     <div class="row">
-      <p class="row-header">Orthogonalisation code</p>
+      <p class="row-header">
+        <span>Orthogonalisation code</span>
+        <lib-help-icon-with-tooltip [tooltipText]="''" />
+      </p>
       <p class="row-data">{{ orthoCode() }}</p>
     </div>
-    <div class="row">
-      <p class="row-header">Process ligands</p>
+    <div class="row parameters-row">
+      <p class="row-header" style="margin-top: 5px !important">
+        <span>Process ligands</span>
+        <lib-help-icon-with-tooltip [tooltipText]="''" />
+      </p>
       <p class="row-data">
         @for(ligand of processLigands(); track ligand.title; let index = $index){
         <mat-checkbox [checked]="ligand.selected" (change)="selectProcessLigands($event.checked, index)">{{ligand.title}}</mat-checkbox>
@@ -61,7 +73,10 @@
       </p>
     </div>
     <div class="row">
-      <p class="row-header">Process ligand position</p>
+      <p class="row-header">
+        <span>Process ligand position</span>
+        <lib-help-icon-with-tooltip [tooltipText]="''" />
+      </p>
       <p class="row-data">
         <mat-select [formControl]="selectedLigandPosition">
           <mat-option value="auto">Auto</mat-option>
@@ -71,7 +86,10 @@
       </p>
     </div>
     <div class="row parameters-row">
-      <p class="row-header">Include in analysis</p>
+      <p class="row-header">
+        <span>Include in analysis</span>
+        <lib-help-icon-with-tooltip [tooltipText]="''" />
+      </p>
       <p class="row-data">
         <mat-radio-group [(ngModel)]="analysisIncluded">
           <mat-radio-button [value]="false">Complexes and interfaces</mat-radio-button>

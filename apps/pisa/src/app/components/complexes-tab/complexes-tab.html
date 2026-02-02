@@ -30,15 +30,16 @@
       <p class="title">Copies in unit cell</p>
       <p class="value">{{selectedRowData().unit_cell}}</p>
     </div>
-    <!-- <div class="row">
-      <p class="title">Dissociation pattern</p>
-      <p class="value">6</p>
-    </div> -->
     <div class="row">
       <p class="title">symmetry number</p>
       <p class="value">{{selectedRowData().symmetry_number}}</p>
     </div>
-    <!-- <button class="vf-button vf-button--primary" (click)="downloadComplex()">Download complex</button> -->
+    <div class="row">
+      <p class="title">Number of interfaces</p>
+      <p class="value">{{selectedRowData().interfaces?.length}}</p>
+    </div>
+    <button style="display: block" class="vf-button vf-button--primary" (click)="viewInterfaces()">View interfaces</button>
+    <button style="display: block" class="vf-button vf-button--secondary-pdbe" (click)="downloadComplex()">Download complex</button>
     }
   </div>
 </main>

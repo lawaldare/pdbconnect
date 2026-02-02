@@ -75,20 +75,6 @@
         </div>
       </div>
       <div class="interfacing-bonds-row-column">
-        <h5>Disulphide bonds ({{disulphideBondRowData()?.length}})</h5>
-        <div class="table">
-          <ag-grid-angular
-            class="ag-theme-quartz show-agrid-scrollbar"
-            [rowData]="disulphideBondRowData()"
-            [columnDefs]="bondsColDefs"
-            [gridOptions]="gridOptions"
-            [overlayNoRowsTemplate]="'No disulphide bonds found'"
-          />
-        </div>
-      </div>
-    </div>
-    <div class="interfacing-bonds-row">
-      <div class="interfacing-bonds-row-column">
         <h5>Salt bridges ({{saltBridgesRowData()?.length}})</h5>
         <div class="table">
           <ag-grid-angular
@@ -97,6 +83,20 @@
             [columnDefs]="bondsColDefs"
             [gridOptions]="gridOptions"
             [overlayNoRowsTemplate]="'No salt bridges found'"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="interfacing-bonds-row">
+      <div class="interfacing-bonds-row-column">
+        <h5>Disulphide bonds ({{disulphideBondRowData()?.length}})</h5>
+        <div class="table">
+          <ag-grid-angular
+            class="ag-theme-quartz show-agrid-scrollbar"
+            [rowData]="disulphideBondRowData()"
+            [columnDefs]="bondsColDefs"
+            [gridOptions]="gridOptions"
+            [overlayNoRowsTemplate]="'No disulphide bonds found'"
           />
         </div>
       </div>

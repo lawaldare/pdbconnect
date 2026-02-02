@@ -10,11 +10,12 @@ import { Store } from '@ngrx/store';
 import { PisaActions } from '../../store/pisa.actions';
 import { PisaFileStoreService } from '../../services/pisa-file-store.service';
 import { Router } from '@angular/router';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 
 const FILE_KEY = 'pisa-upload-file';
 @Component({
   selector: 'app-upload',
-  imports: [CommonModule, FormsModule, MaterialModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, MaterialModule, ReactiveFormsModule, HelpIconWithTooltipComponent],
   templateUrl: './upload-page.html',
   styleUrl: './upload-page.scss',
 })
@@ -32,6 +33,7 @@ export class UploadPageComponent implements AfterViewInit {
 
   public selectedLigandPosition = new FormControl('auto', { nonNullable: true });
   public analysisIncluded = false;
+  public uploadFile = signal<boolean>(true);
 
   public modelSym = this.facade.modelSym;
   public modelSymParam = this.facade.modelSymParam;
@@ -57,6 +59,8 @@ export class UploadPageComponent implements AfterViewInit {
   }
 
   public async onSubmit(): Promise<void> {
+    sessionStorage.setItem('uploadFile', 'false');
+
     if (this.pdbEntryId && /^[0-9a-z]{4}$/.test(this.pdbEntryId)) {
       try {
         const file = await this.fetchCifAsFile(this.pdbEntryId);
@@ -151,6 +155,7 @@ export class UploadPageComponent implements AfterViewInit {
 
   /** File input change */
   public onFileChange(event: Event): void {
+    sessionStorage.setItem('uploadFile', 'true');
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
       this.processFile(input.files[0]);
@@ -204,12 +209,23 @@ export class UploadPageComponent implements AfterViewInit {
     this.loadFileToViewer(file);
   }
 
+  private checkUploadStatus(): void {
+    const status = sessionStorage.getItem('uploadFile');
+    if (status === 'true') {
+      this.uploadFile.set(true);
+    } else {
+      this.uploadFile.set(false);
+    }
+  }
+
   /** Load CIF file to Molstar */
   private async loadFileToViewer(file: File): Promise<void> {
     if (!this.molstarViewer) {
       this.facade.showError('Viewer not initialized');
       return;
     }
+
+    this.checkUploadStatus();
 
     try {
       this.pisaUtilService.setLoadingView('LOADING');

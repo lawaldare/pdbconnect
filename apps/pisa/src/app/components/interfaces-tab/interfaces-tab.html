@@ -20,7 +20,7 @@
 <!-- When there are complexes -->
 
 @if(numberOfInterfaces() > 0){
-<h3>{{numberOfInterfaces()}} interfaces across {{numberOfInterfaceTypes()}} complexes</h3>
+<h3>{{numberOfInterfaces()}} interfaces @if(numberOfComplexes() > 0){ across {{numberOfComplexes()}} complexes }</h3>
 
 <main>
   <div class="table">

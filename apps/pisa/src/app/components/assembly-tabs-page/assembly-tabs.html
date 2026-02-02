@@ -2,8 +2,11 @@
   <div>
     <h1>{{fileDetails()?.label}}</h1>
     <div class="subtitle">
+      @if(uploadFile()){
       <p>Your file</p>
       <span></span>
+      }
+
       <p>Space symmetry group: {{fileDetails()?.spacegroup}}</p>
       <span></span>
       <p>Resolution: 1.25 Å</p>

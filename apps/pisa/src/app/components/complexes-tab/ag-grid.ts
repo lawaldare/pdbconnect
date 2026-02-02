@@ -49,13 +49,12 @@ export const colDefs: ColDef[] = [
     },
   },
   { headerName: 'Formula', field: 'formula' },
-  { headerName: 'Composition', field: 'composition' },
+  { headerName: 'Composition', field: 'composition', flex: 1.2 },
   { headerName: 'Surface area, sq. Å', field: 'asa' },
   { headerName: 'Buried area, sq. Å', field: 'bsa' },
   { headerName: 'ΔGint, kcal/mol', field: 'int_energy' },
   { headerName: 'ΔGdiss, kcal/mol', field: 'diss_energy' },
-  { headerName: 'Size mm', field: 'mmsize' },
-  { headerName: 'Contains interfaces', field: 'interfaces', cellRenderer: InterfacesCellRenderer },
+  { headerName: 'Size mm', field: 'mmsize', flex: 0.8 },
 ];
 
 export const initialState: GridState = {

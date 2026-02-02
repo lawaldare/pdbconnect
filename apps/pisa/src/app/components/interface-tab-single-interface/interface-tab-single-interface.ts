@@ -86,8 +86,8 @@ export class InterfaceTabSingleInterfaceComponent implements OnInit {
     this.pisaStore
       .select(PisaSelectors.interfaceResultForInterfaceIdInterfacesTab)
       .pipe(
-        filter(Boolean),
-        filter((r: any) => r.interface_id === this.currentInterfaceId())
+        filter(Boolean)
+        // filter((r: any) => r.interface_id === this.currentInterfaceId())
       )
       .subscribe((response) => {
         if (!this.onLoaded()) {

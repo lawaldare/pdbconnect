@@ -87,8 +87,8 @@ export class ComplexTabSingleInterfaceComponent implements OnInit {
     this.pisaStore
       .select(PisaSelectors.interfaceResultForInterfaceIdComplexesTab)
       .pipe(
-        filter(Boolean),
-        filter((r: any) => r.interface_id === this.currentInterfaceId())
+        filter(Boolean)
+        // filter((r: any) => r.interface_id === this.currentInterfaceId())
       )
       .subscribe((response) => {
         this.interface.set(response);

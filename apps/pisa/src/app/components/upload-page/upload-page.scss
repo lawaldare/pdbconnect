@@ -55,9 +55,18 @@ main {
         font-size: 16px;
         font-weight: 500;
         line-height: 27.2px;
-        width: 175px;
-        max-width: 175px;
-        min-width: 175px;
+        width: 200px;
+        max-width: 200px;
+        min-width: 200px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        ::ng-deep lib-help-icon-with-tooltip {
+          img {
+            margin-bottom: -3px !important;
+          }
+        }
       }
 
       &-data {

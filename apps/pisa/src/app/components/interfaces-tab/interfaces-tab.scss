@@ -81,6 +81,15 @@
   .ag-header-group-cell.hg-structure-one {
     background: #fae1b6;
 
+    .ag-header-group-cell-label.ag-sticky-label {
+      width: 100% !important;
+
+      span.ag-header-group-text {
+        width: 100% !important;
+        text-align: center;
+      }
+    }
+
     &:hover {
       background-color: #fae1b6 !important;
     }
@@ -96,6 +105,15 @@
 
   .ag-header-group-cell.hg-structure-two {
     background: #fff1da;
+
+    .ag-header-group-cell-label.ag-sticky-label {
+      width: 100% !important;
+
+      span.ag-header-group-text {
+        width: 100% !important;
+        text-align: center;
+      }
+    }
 
     &:hover {
       background-color: #fff1da !important;

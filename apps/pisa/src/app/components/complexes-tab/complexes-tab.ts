@@ -13,6 +13,7 @@ import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-ap
 import { ComplexTabSingleInterfaceComponent } from '../complex-tab-single-interface/complex-tab-single-interface';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { pisaComplexView } from '@pdbc/core';
+import { PisaActions } from '../../store/pisa.actions';
 
 @Component({
   selector: 'pisa-complexes-tab',
@@ -184,7 +185,27 @@ export class ComplexesTabComponent implements OnInit {
     return out;
   }
 
-  public downloadComplex() {
+  public async downloadComplex() {
     console.log('Download complex');
+    // const MVS = this.molstarPluginService.getClass()?.extensions.MVS;
+    // if (!MVS) return;
+    // const mvsData: MVSData = builderDemo();
+    // const mvsx = await MVS.MVSData.toMVSX(mvsData);
+    // download(mvsx, 'whatever.mvsx');
+
+    // function download(data: Uint8Array<ArrayBuffer>, filename: string) {
+    // const link = document.createElement('a');
+    // link.download = 'complex.mvsx';
+    // link.href = URL.createObjectURL(new Blob([mvsx], { type: 'application/octet-stream' }));
+    // link.click();
+    // }
+  }
+
+  public viewInterfaces() {
+    const interfaceId = this.selectedRowData()?.interfaces?.[0]?.interface_id;
+    this.pisaUtilService.setCurrentInterfaceIdOnComplexesTab(Number(interfaceId));
+    this.pisaStore.dispatch(PisaActions.getInterfaceResultForInterfaceIdForComplexesTab({ interfaceId }));
+    this.pisaStore.dispatch(PisaActions.setSelectedComplexDataOnComplexesTab({ selectedComplexData: this.selectedRowData() }));
+    this.pisaUtilService.setComplexesTabView('SINGLE_INTERFACE');
   }
 }
