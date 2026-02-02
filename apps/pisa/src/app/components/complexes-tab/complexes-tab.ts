@@ -6,7 +6,7 @@ import { gridOptions, colDefs, initialState, rowSelection } from './ag-grid';
 import { GridApi, GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { Store } from '@ngrx/store';
 import { PisaSelectors } from '../../store/pisa.selectors';
-import { filter, firstValueFrom, take } from 'rxjs';
+import { filter } from 'rxjs';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
@@ -102,7 +102,7 @@ export class ComplexesTabComponent implements OnInit {
   }
 
   private async loadMVS(data: any) {
-    await this.molstarPluginService.loadPlugin();
+    // await this.molstarPluginService.loadPlugin();
 
     await this.pisaUtilService.loadFileToGetContentType(this.jobId() ?? '');
 

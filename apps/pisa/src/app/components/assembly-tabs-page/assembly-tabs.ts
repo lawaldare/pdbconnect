@@ -12,6 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { ComplexesTabComponent } from '../complexes-tab/complexes-tab';
 import { InterfacesTabComponent } from '../interfaces-tab/interfaces-tab';
+import { MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 
 @Component({
   selector: 'pisa-assembly-tabs-page',
@@ -26,6 +27,7 @@ export class AssemblyTabsPageComponent implements OnInit {
   private readonly router = inject(Router);
   public readonly scrollService = inject(ScrollPositionService);
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
+  private readonly molstarPluginService = inject(MolstarPluginService);
 
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
@@ -71,7 +73,9 @@ export class AssemblyTabsPageComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.molstarPluginService.loadPlugin();
+
     this.pisaStore
       .select(PisaSelectors.jobId)
       .pipe(

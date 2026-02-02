@@ -111,7 +111,7 @@ export class InterfacesTabComponent implements OnInit {
   }
 
   private async loadMVS(interfaceId: string) {
-    await this.molstarPluginService.loadPlugin();
+    // await this.molstarPluginService.loadPlugin();
 
     await this.pisaUtilService.loadFileToGetContentType(this.jobId() ?? '');
 
