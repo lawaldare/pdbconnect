@@ -26,7 +26,6 @@ span.your-file {
 
 p.info {
   color: #000;
-  font-family: 'IBM Plex Sans';
   font-size: 16px;
   font-weight: 400;
   line-height: 27.2px;
@@ -75,12 +74,20 @@ main {
         font-weight: 400;
         line-height: 27.2px;
 
+        ::ng-deep mat-radio-group {
+          mat-radio-button {
+            .mdc-label {
+              font-size: 16px !important;
+            }
+          }
+        }
+
         &.parameters {
           display: grid;
 
           // grid-template-columns: 1fr 1fr;
           grid-template-columns: auto auto auto auto;
-          gap: 20px;
+          gap: 8px 20px;
 
           span.cell-row {
             // display: flex;

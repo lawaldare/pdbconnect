@@ -61,6 +61,7 @@
       </p>
       <p class="row-data">{{ orthoCode() }}</p>
     </div>
+    @if(processLigands().length){
     <div class="row parameters-row">
       <p class="row-header" style="margin-top: 5px !important">
         <span>Process ligands</span>
@@ -72,6 +73,7 @@
         }
       </p>
     </div>
+    }
     <div class="row">
       <p class="row-header">
         <span>Process ligand position</span>
@@ -111,7 +113,7 @@
       <span>or</span>
 
       <!-- Hidden file input -->
-      <input #fileInput type="file" class="file-input" accept=".cif, .ent, .pdb" (change)="onFileChange($event)" hidden />
+      <input #fileInput type="file" class="file-input" accept=".cif, .ent, .pdb, .bcif" (change)="onFileChange($event)" hidden />
 
       <button class="vf-button vf-button--primary" (click)="onBrowseClick()">Select a file</button>
     </div>
@@ -128,7 +130,7 @@
     <div class="upload-section-input-field">
       <h3 class="title">or use a PDB entry ID</h3>
       <div class="input-field-form">
-        <input type="text" placeholder="PDB entry ID" [(ngModel)]="pdbEntryId" [class.error]="hasError()" />
+        <input type="text" placeholder="PDB entry ID" [(ngModel)]="pdbEntryId" [class.error]="hasError()" (input)="onTyping($event)" />
         <button class="vf-button vf-button--search-pdbe" (click)="onSubmit()">Submit</button>
       </div>
       <span class="error">{{errorInputMessage()}}</span>

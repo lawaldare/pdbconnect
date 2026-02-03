@@ -81,10 +81,17 @@ export class UploadPageComponent implements AfterViewInit {
       this.hasError.set(true);
       this.errorInputMessage.set('Please enter a valid PDB entry ID.');
 
-      setTimeout(() => {
-        this.hasError.set(false);
-        this.errorInputMessage.set('');
-      }, 2000);
+      // setTimeout(() => {
+      //   this.hasError.set(false);
+      //   this.errorInputMessage.set('');
+      // }, 2000);
+    }
+  }
+
+  public onTyping(event: any): void {
+    if (event.target.value === '') {
+      this.hasError.set(false);
+      this.errorInputMessage.set('');
     }
   }
 
@@ -186,17 +193,17 @@ export class UploadPageComponent implements AfterViewInit {
   }
 
   private resetDropAreaStyle(): void {
-    this.dropArea.nativeElement.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+    this.dropArea.nativeElement.style.borderColor = '#454545';
     this.dropArea.nativeElement.style.backgroundColor = 'transparent';
   }
 
   /** File processing */
   private processFile(file: File): void {
     const lowerName = file.name.toLowerCase();
-    const isCif = lowerName.endsWith('.cif');
+    const isCif = lowerName.endsWith('.cif') || lowerName.endsWith('.bcif');
     const isEnt = lowerName.endsWith('.ent') || lowerName.endsWith('.pdb');
     if (!isCif && !isEnt) {
-      this.facade.showError('Please select a valid .cif or .ent file');
+      this.facade.showError('File format is not supported. Please try again with a .cif, .bcif, .pdb or .ent file.');
       return;
     }
 
