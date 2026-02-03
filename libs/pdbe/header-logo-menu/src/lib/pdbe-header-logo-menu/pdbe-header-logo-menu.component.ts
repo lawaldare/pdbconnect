@@ -18,7 +18,6 @@ export interface Link {
 })
 export class PdbeHeaderLogoMenuComponent implements OnInit {
   @Input() headerConfig!: HeaderLogoMenuConfig;
-  @Output() startButtonClicked = new EventEmitter<void>();
 
   public headerLogoSrc = '';
   public pisaLogoSrc = '';
@@ -61,10 +60,6 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
 
   public showMobileMenu(): void {
     this.isMobile.update((value) => !value);
-  }
-
-  public onStartButtonClick(): void {
-    this.startButtonClicked.emit();
   }
 
   public openHomepageNavLinks(link: Link): void {

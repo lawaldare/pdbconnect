@@ -103,7 +103,7 @@ export class UploadPageComponent implements AfterViewInit {
       throw new Error('Invalid PDB entry id');
     }
 
-    const url = `https://www.ebi.ac.uk/pdbe/entry-files/download/${id}.cif`;
+    const url = `https://www.ebi.ac.uk/pdbe/entry-files/download/${id.toLowerCase()}.cif`;
 
     const res = await fetch(url);
     if (!res.ok) {

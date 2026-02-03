@@ -36,8 +36,16 @@ main {
   display: flex;
   gap: 26px;
 
+  @media only screen and (width <= 768px) {
+    flex-direction: column-reverse;
+  }
+
   section.upload-section {
     width: 50%;
+
+    @media only screen and (width <= 768px) {
+      width: 100%;
+    }
 
     .row {
       display: flex;
@@ -228,6 +236,10 @@ main {
 
   section.molstar-section {
     width: 50%;
+
+    @media only screen and (width <= 768px) {
+      width: 100%;
+    }
 
     h4 {
       color: var(--header-text-color);

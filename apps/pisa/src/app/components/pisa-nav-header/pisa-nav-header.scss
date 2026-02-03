@@ -1,0 +1,113 @@
+@import 'libs/core/src/lib/styles/pdb_connect.scss';
+
+section {
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    @media only screen and (width <= 540px) {
+      padding: 22px 24px;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+
+      // @media only screen and (width <= 768px) {
+      //   flex-direction: column;
+      // }
+
+      // .header-title {
+      //   margin-right: 10px;
+
+      //   @media only screen and (width <= 768px) {
+      //     display: none;
+      //   }
+      // }
+
+      img.pdbe-logo {
+        width: 163px;
+        height: 50px;
+      }
+
+      span {
+        display: block;
+        margin-left: 12px;
+        color: #ffffff;
+        font-size: 35px;
+        font-weight: 900;
+        margin-top: -10px;
+      }
+    }
+
+    .icon {
+      font-size: 32px;
+      color: #ffffff;
+      cursor: pointer;
+      display: none;
+
+      @media only screen and (width <= 540px) {
+        display: block;
+      }
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin: 0 !important;
+
+      .nav-link {
+        list-style: none;
+        cursor: pointer;
+
+        a,
+        span {
+          text-decoration: none;
+          color: #ffffff;
+          font-size: 19px;
+          line-height: 26.6px;
+          border: none;
+        }
+      }
+
+      .vf-button--search-pdbe {
+        margin: 0 !important;
+      }
+
+      @media only screen and (width <= 540px) {
+        display: none;
+      }
+    }
+  }
+}
+
+.mobile-menu {
+  .nav-links {
+    margin: 0 !important;
+
+    .nav-link {
+      list-style: none;
+      padding: 16px 8px;
+
+      a {
+        text-decoration: none;
+        color: #ffffff;
+        font-size: 19px;
+        line-height: 26.6px;
+        border: none;
+        cursor: pointer;
+
+        &:focus {
+          text-decoration: underline;
+        }
+      }
+
+      &:hover {
+        background-color: #086c68;
+      }
+    }
+  }
+}
