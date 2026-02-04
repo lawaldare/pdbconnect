@@ -11,6 +11,7 @@ import { PisaActions } from '../../store/pisa.actions';
 import { PisaFileStoreService } from '../../services/pisa-file-store.service';
 import { Router } from '@angular/router';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { pisaUploadpageTooltips } from '../../pisa-app-constant';
 
 const FILE_KEY = 'pisa-upload-file';
 @Component({
@@ -42,6 +43,7 @@ export class UploadPageComponent implements AfterViewInit {
   public analysis = this.facade.analysis;
   public label = this.facade.label;
   public processLigands = this.facade.processLigands;
+  public readonly pisaUploadpageTooltips = pisaUploadpageTooltips;
 
   private selectedLigands = signal<string[]>([]);
 

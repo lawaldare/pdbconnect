@@ -18,7 +18,7 @@
     <div class="row parameters-row">
       <p class="row-header">
         <span>Cell parameters</span>
-        <lib-help-icon-with-tooltip [tooltipText]="''" />
+        <lib-help-icon-with-tooltip [tooltipText]="pisaUploadpageTooltips.cellParameter" />
       </p>
       <p class="row-data parameters">
         <span class="cell-row">
@@ -50,14 +50,14 @@
     <div class="row">
       <p class="row-header">
         <span>Space symmetry group</span>
-        <lib-help-icon-with-tooltip [tooltipText]="''" />
+        <lib-help-icon-with-tooltip [tooltipText]="pisaUploadpageTooltips.spaceSymmetryGroup" />
       </p>
       <p class="row-data">{{ simplifiedSpacegroup() }}</p>
     </div>
     <div class="row">
       <p class="row-header">
         <span>Orthogonalisation code</span>
-        <lib-help-icon-with-tooltip [tooltipText]="''" />
+        <lib-help-icon-with-tooltip [tooltipText]="pisaUploadpageTooltips.othogonalisationCode" />
       </p>
       <p class="row-data">{{ orthoCode() }}</p>
     </div>
@@ -65,7 +65,7 @@
     <div class="row parameters-row">
       <p class="row-header" style="margin-top: 5px !important">
         <span>Process ligands</span>
-        <lib-help-icon-with-tooltip [tooltipText]="''" />
+        <lib-help-icon-with-tooltip [tooltipText]="pisaUploadpageTooltips.processLigands" />
       </p>
       <p class="row-data">
         @for(ligand of processLigands(); track ligand.title; let index = $index){
@@ -77,7 +77,7 @@
     <div class="row">
       <p class="row-header">
         <span>Process ligand position</span>
-        <lib-help-icon-with-tooltip [tooltipText]="''" />
+        <lib-help-icon-with-tooltip [tooltipText]="pisaUploadpageTooltips.processLigandPosition" />
       </p>
       <p class="row-data">
         <mat-select [formControl]="selectedLigandPosition">
@@ -90,7 +90,7 @@
     <div class="row parameters-row">
       <p class="row-header">
         <span>Include in analysis</span>
-        <lib-help-icon-with-tooltip [tooltipText]="''" />
+        <lib-help-icon-with-tooltip [tooltipText]="pisaUploadpageTooltips.includeInAnalysis" />
       </p>
       <p class="row-data">
         <mat-radio-group [(ngModel)]="analysisIncluded">
