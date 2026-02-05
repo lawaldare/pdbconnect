@@ -31,7 +31,7 @@ export class ProcessingPageComponent implements AfterViewInit {
   public fileStore = inject(PisaFileStoreService);
   private jobId = toSignal(this.pisaStore.select(PisaSelectors.jobId).pipe(filter(Boolean)));
 
-  public readonly loader = this.pisaUtilService.getPisaAssetUrl('assets/images/Loader.svg');
+  public readonly loader = this.pisaUtilService.getPisaAssetUrl('assets/images/loader.gif');
 
   public savedLink = computed(() => {
     const jobId = this.jobId();

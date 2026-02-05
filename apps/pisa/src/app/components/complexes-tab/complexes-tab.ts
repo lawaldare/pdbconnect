@@ -33,6 +33,8 @@ export class ComplexesTabComponent implements OnInit {
   public readonly initialState = initialState;
   public readonly rowSelection = rowSelection;
 
+  private mvsData = null;
+
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
 
   public readonly assemblyResponse = toSignal(this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean)));
@@ -99,6 +101,7 @@ export class ComplexesTabComponent implements OnInit {
 
   private async updatedSelectedRow(data: any) {
     this.selectedRowData.set(data);
+    console.log('Selected row:', data);
     await this.loadMVS(data);
   }
 
@@ -123,6 +126,7 @@ export class ComplexesTabComponent implements OnInit {
       });
 
       const mvs = MVS.MVSData.createMultistate([snapshot]);
+      this.mvsData = mvs;
       const plugin = this.molstar.getInstance().plugin;
       await MVS.loadMVS(plugin, mvs);
     }, 500);
@@ -186,19 +190,14 @@ export class ComplexesTabComponent implements OnInit {
   }
 
   public async downloadComplex() {
-    console.log('Download complex');
-    // const MVS = this.molstarPluginService.getClass()?.extensions.MVS;
-    // if (!MVS) return;
-    // const mvsData: MVSData = builderDemo();
-    // const mvsx = await MVS.MVSData.toMVSX(mvsData);
-    // download(mvsx, 'whatever.mvsx');
+    const MVS = this.molstarPluginService.getClass()?.extensions.MVS;
+    if (!MVS) return;
+    const mvsx = await MVS.MVSData.toMVSX(this.mvsData);
 
-    // function download(data: Uint8Array<ArrayBuffer>, filename: string) {
-    // const link = document.createElement('a');
-    // link.download = 'complex.mvsx';
-    // link.href = URL.createObjectURL(new Blob([mvsx], { type: 'application/octet-stream' }));
-    // link.click();
-    // }
+    const link = document.createElement('a');
+    link.download = `${this.jobId()}_complex_key_${this.selectedRowData()?.complex_key}.mvsx`;
+    link.href = URL.createObjectURL(new Blob([mvsx], { type: 'application/octet-stream' }));
+    link.click();
   }
 
   public viewInterfaces() {
