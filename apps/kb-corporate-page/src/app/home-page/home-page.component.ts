@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, computed } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { HeaderComponent } from '../header/header.component';
 import { HeaderJumbotronComponent } from '../header-jumbotron/header-jumbotron.component';
 import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
 import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.component';
@@ -14,7 +13,7 @@ import { CorporatePagesApiService } from '../services/corporate-pages-api.servic
   selector: 'pdbc-app-home-page',
   templateUrl: './home-page.component.html',
   styleUrls: ['./home-page.component.scss'],
-  imports: [CommonModule, HeaderComponent, HeaderJumbotronComponent, NavTabsComponent, HomeBookmarksComponent, KeyFeaturesListComponent, FaqsListComponent],
+  imports: [CommonModule, HeaderJumbotronComponent, NavTabsComponent, HomeBookmarksComponent, KeyFeaturesListComponent, FaqsListComponent],
 })
 export class HomePageComponent implements OnInit {
   private readonly bioschemasService = inject(CorporatePagesBioschemasService);
