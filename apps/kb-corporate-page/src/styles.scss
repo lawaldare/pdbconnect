@@ -17,6 +17,10 @@ body {
   overflow-x: hidden;
 }
 
+#data-protection-banner.data-protection-banner {
+  z-index: 10000 !important;
+}
+
 ul#global-nav {
   li {
     a {
