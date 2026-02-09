@@ -11,6 +11,19 @@ declare const $: any;
   templateUrl: './graph-schema.component.html',
   imports: [CommonModule, HeaderSearchComponent, NavTabsComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  styles: [
+    `
+      ::ng-deep graph-schema-explorer {
+        #search-term.search.form {
+          width: 85% !important;
+        }
+
+        span.reset {
+          top: 6px !important;
+        }
+      }
+    `,
+  ],
 })
 export class GraphSchemaComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
