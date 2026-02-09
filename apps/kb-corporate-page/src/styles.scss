@@ -26,6 +26,30 @@ ul#global-nav {
   }
 }
 
+footer {
+  #global-footer.global-footer {
+    a {
+      color: #fefefe !important;
+    }
+
+    h5 a {
+      font-weight: 800;
+    }
+
+    nav#global-nav-expanded {
+      ul li a {
+        font-size: 14px !important;
+      }
+    }
+
+    section#ebi-footer-meta {
+      p a {
+        font-size: 14px !important;
+      }
+    }
+  }
+}
+
 a:not(.search-app-anchor) {
   color: #0a5032;
   font-size: 20px;
