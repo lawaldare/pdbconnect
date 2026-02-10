@@ -38,7 +38,7 @@ export class TooltipService {
 
 @Component({
   selector: 'pdbc-tooltip-content',
-  styleUrls: ['./tooltip.component.css'],
+  styleUrls: ['./tooltip.component.scss'],
   template: `
     <div class="mainContainer" [style.marginLeft]="left" [style.marginTop]="top" [style.height]="containerHeight">
       <div class="title">{{ tooltipTitle }}</div>

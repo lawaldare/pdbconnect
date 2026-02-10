@@ -12,7 +12,7 @@ declare const gtag: any;
 @Component({
   selector: 'pdbc-filter-cards',
   templateUrl: './filter-cards.component.html',
-  styleUrls: ['./filter-cards.component.css'],
+  styleUrls: ['./filter-cards.component.scss'],
   imports: [CommonModule, MaterialModule, FormsModule, CompleterCmp],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
