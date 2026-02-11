@@ -1,0 +1,83 @@
+import { AfterViewInit, Component, DestroyRef, effect, ElementRef, inject, input, Renderer2, signal, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ComplexUtilService } from '../../../services/complex-util.service';
+import { ComplexLigand } from '../../../models/complex-ligands.model';
+import { ComplexAPIService } from '../../../services/complex-api.service';
+import { Depiction } from '../../../models/structure.model';
+import { cofactorTooltip, drugTooltip, reactantTooltip } from '../../../complex.constant';
+
+@Component({
+  selector: 'pdbc-complex-ligand-grid',
+  standalone: true,
+  imports: [CommonModule, RouterModule, MaterialModule],
+  templateUrl: './complex-ligand-grid.component.html',
+  styleUrl: './complex-ligand-grid.component.scss',
+})
+export class ComplexLigandGridComponent implements AfterViewInit {
+  public ligand = input.required<ComplexLigand>();
+  public complexId = input.required<string>();
+
+  public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  private readonly utilService = inject(ComplexUtilService);
+
+  @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
+  private ligandEv!: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  public ligandId!: string;
+
+  private readonly complexAPIService = inject(ComplexAPIService);
+  private readonly renderer = inject(Renderer2);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly util = inject(UtilService);
+
+  public solrUrl = signal<string>('');
+
+  public cofactorTooltip = cofactorTooltip;
+  public drugTooltip = drugTooltip;
+  public reactantTooltip = reactantTooltip;
+
+  constructor() {
+    effect(() => {
+      const ligand = this.ligand();
+      if (ligand && this.imageContainer) {
+        this.renderLigandImg();
+      }
+    });
+  }
+
+  private renderLigandImg(): void {
+    this.resetRenderer();
+    const imageContainer = this.imageContainer.nativeElement;
+    this.complexAPIService
+      .fetchDepiction(this.ligand().ligandId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(async (depiction: Depiction) => {
+        await customElements.whenDefined('pdb-ligand-env');
+        const ligand = this.renderer.createElement('pdb-ligand-env');
+        ligand.zoomControlsOff = true;
+        this.renderer.appendChild(imageContainer, ligand);
+        this.renderer.setProperty(ligand, 'depiction', depiction);
+        this.renderer.setAttribute(ligand, 'depiction-only', '');
+        this.ligandEv = ligand;
+      });
+  }
+
+  ngAfterViewInit() {
+    this.renderLigandImg();
+    this.solrUrl.set(this.util.generateQueryURLForComplexLigand(this.complexId(), this.ligand().ligandId));
+  }
+
+  private resetRenderer(): void {
+    const imageContainer = this.imageContainer.nativeElement;
+
+    if (this.ligandEv) {
+      this.renderer.removeChild(imageContainer, this.ligandEv);
+    }
+  }
+
+  public openLigandPage(ligandId: string): void {
+    this.utilService.openLigandPage(ligandId);
+  }
+}

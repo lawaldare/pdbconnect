@@ -1,0 +1,28 @@
+@if(ligand()){
+<div class="ligand-container">
+  <div class="image-container" #imageContainer></div>
+  <div class="ligand-description">
+    <a matTooltipClass="complex-name-tooltip" [matTooltip]="ligand().name" matTooltipPosition="above" (click)="openLigandPage(ligand().ligandId)">
+      {{ ligand().ligandId }}
+      <i class="icon icon-link icon-common"></i>
+    </a>
+    <p class="annotations">
+      @for(annotation of ligand().annotations; track annotation){ @if(annotation.toLocaleLowerCase() === 'cofactor-like'){
+      <span class="cofactor-like" matTooltipClass="complex-name-tooltip" [matTooltip]="cofactorTooltip" matTooltipPosition="below">Cofactor-like</span>
+      } @if(annotation.toLocaleLowerCase() === 'drug-like'){
+      <span class="drug-like" matTooltipClass="complex-name-tooltip" [matTooltip]="drugTooltip" matTooltipPosition="below">Drug-like</span>
+      } @if(annotation.toLocaleLowerCase() ==='reactant-like'){
+      <span class="reactant-like" matTooltipClass="complex-name-tooltip" [matTooltip]="reactantTooltip" matTooltipPosition="below">Reactant-like</span>
+      } }
+    </p>
+    <p class="grid-text">
+      @let numOfPDBEntries = ligand().num_pdb_entries; <strong>Bound in</strong>
+      <a [href]="solrUrl()" target="_blank">
+        {{ numOfPDBEntries }} {{ numOfPDBEntries > 1 ? 'PDB entries' : 'PDB entry' }}
+        <i class="icon icon-link icon-common"></i>
+      </a>
+      <strong style="margin-left: 14px">of this complex</strong>
+    </p>
+  </div>
+</div>
+}

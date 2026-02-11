@@ -1,0 +1,45 @@
+<div class="card-container">
+  <div class="image-box">
+    @if(complexImageSrc()){
+    <img [src]="complexImageSrc()" alt="Complex Image" />
+    }@else {
+    <ngx-skeleton-loader count="4" [theme]="{ 'border-radius': '0', height: '128px', width: '148px' }"></ngx-skeleton-loader>
+    }
+  </div>
+  <article>
+    <a
+      matTooltipClass="complex-name-tooltip"
+      [matTooltip]="complexInteraction().name"
+      matTooltipPosition="above"
+      (click)="openComplexPage(complexInteraction().pdb_complex_id)"
+    >
+      {{ complexInteraction().pdb_complex_id }}
+      <i class="icon icon-link icon-common"></i>
+    </a>
+    <div class="participant">
+      <h4>{{ subTitle() }} components</h4>
+      @if(showLess()){ @for(participant of participants().slice(0,4); track participant.accession){
+      <ul style="margin-bottom: 0">
+        @if(participant.accession_type === 'UniProt' || participant.accession_type === 'Rfam'){ @let proteinLink = 'https://www.uniprot.org/uniprotkb/' +
+        participant.accession; @let rfLink = 'https://rfam.org/family/' + participant.accession; @let link = participant.accession.startsWith('RF') ? rfLink :
+        proteinLink;
+        <li>
+          <a [href]="link" target="_blank" class="pfam-link">{{ participant.accession }}</a> ({{ participant.name }}, {{ participant.stoichiometry }} {{
+          participant.stoichiometry > 1 ? 'copies' : 'copy' }})
+        </li>
+        }@else {
+        <li>{{ participant.accession }} ({{ participant.name }}, {{ participant.stoichiometry }} {{ participant.stoichiometry > 1 ? 'copies' : 'copy' }})</li>
+        }
+      </ul>
+      } @if(participants().length > 4){
+      <p role="button" class="view-more" (click)="viewMore()">View more</p>
+      } }@else { @for(participant of participants(); track participant.accession){
+      <ul style="margin-bottom: 0">
+        <li>{{ participant.accession }} ({{ participant.name }}, {{ participant.stoichiometry }} {{ participant.stoichiometry > 1 ? 'copies' : 'copy' }})</li>
+      </ul>
+      }
+      <p role="button" class="view-more" (click)="viewMore()">View less</p>
+      }
+    </div>
+  </article>
+</div>
