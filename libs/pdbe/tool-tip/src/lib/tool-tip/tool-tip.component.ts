@@ -25,7 +25,7 @@ export class ToolTipComponent {
     }
   }
 
-  @HostListener('mouseleave', ['$event'])
+  @HostListener('mouseleave')
   handleMouseLeave() {
     const toolTip = this.toolTip.nativeElement;
     toolTip.style.visibility = 'hidden';

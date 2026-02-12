@@ -1,4 +1,4 @@
-import { ApplicationConfig, isDevMode, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, isDevMode, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
 import { appRoutes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
@@ -9,6 +9,11 @@ import { ligandReducer } from './store/ligand.reducer';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
+import { LigandsBaseHrefService } from './services/ligands-base-href.service';
+
+export function initializeApp(baseHrefService: LigandsBaseHrefService) {
+  return () => baseHrefService.setBaseHref();
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,5 +29,7 @@ export const appConfig: ApplicationConfig = {
       maxAge: 25, // Retains last 25 states
       logOnly: !isDevMode(), // Restrict extension to log-only mode
     }),
+    { provide: APP_INITIALIZER, useFactory: initializeApp, deps: [LigandsBaseHrefService], multi: true },
+    LigandsBaseHrefService,
   ],
 };

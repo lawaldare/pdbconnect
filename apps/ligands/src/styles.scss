@@ -57,6 +57,41 @@ p {
   margin: 0 !important;
 }
 
+.unannotated {
+  background-color: #e4e4e4;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.modification {
+  background-color: #fe9a9a;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.cofactor-like {
+  background-color: #dbbfe3;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.drug-like {
+  background-color: #d2de56;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.reactant-like {
+  background-color: #fee99a;
+  text-decoration: underline dotted;
+  padding: 2px;
+  cursor: pointer;
+}
+
 section.onboarding-tutorial-banner {
   display: flex;
   align-items: center;

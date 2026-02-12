@@ -13,7 +13,7 @@ import { tourIds } from '../../ligand.constant';
   template: `
     @if (tutorialTourService.showDescriptionTourBanner() && !isBannerCookies()) {
       <section class="onboarding-tutorial-banner">
-        <img [src]="'img/light-star.svg' | asset" alt="light start icon" />
+        <img [src]="'images/light-star.svg' | asset" alt="light start icon" />
         <p>We have redesigned this page to enhance your experience. <span (click)="startDescriptionTabTour()">Take an on-page tour.</span></p>
       </section>
     }
