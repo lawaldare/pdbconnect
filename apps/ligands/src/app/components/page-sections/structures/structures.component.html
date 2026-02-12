@@ -1,0 +1,131 @@
+@if (tutorialTourService.showStructuresTourBanner() && isBannerCookies()) {
+<section class="onboarding-tutorial-banner">
+  <img [src]="'img/light-star.svg' | asset" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startStructuresTabTour()">Take an on-page tour.</span></p>
+</section>
+}
+
+<div id="structures-section">
+  <header>
+    <button class="vf-button vf-button--link" (click)="downloadCSV()">
+      Download structures (csv)
+      <i class="icon icon-common icon-download"></i>
+    </button>
+    <button class="vf-button vf-button--link" (click)="downloadMMCIF()">
+      Download coordinates (mmCIF)
+      <i class="icon icon-common icon-download"></i>
+    </button>
+  </header>
+  @if(polymerRowData().length){
+  <section class="polymers">
+    <p>Found as a part of a polymer in {{ polymerRowData().length }} PDB structures. <a [href]="polymersUrl()" target="_blank">See detailed list here.</a></p>
+  </section>
+  }
+  <section class="filter">
+    <div class="group">
+      <p>Found as a bound ligand in {{numberOfProteins()}} distinct proteins and {{numberOfPDBStructures()}} PDB Structures.</p>
+      <div class="filter-tool" id="structures-groupby-tour" style="margin-left: 5px">
+        <span>Group data by:</span>
+        <mat-radio-group id="structure-checkbox" aria-label="Select an option" [formControl]="filter" (change)="onChange($event)">
+          <mat-radio-button value="proteins">Proteins</mat-radio-button>
+          <mat-radio-button value="structures">Structures</mat-radio-button>
+        </mat-radio-group>
+      </div>
+    </div>
+  </section>
+  <section class="table-wrapper">
+    <ag-grid-angular
+      class="ag-theme-quartz"
+      [rowData]="structureRowData()"
+      [columnDefs]="structureColDefs()"
+      [gridOptions]="gridOptions()"
+      (gridReady)="onStructureGridReady($event)"
+      [paginationPageSizeSelector]="paginationPageSizeSelector()"
+      [loading]="true"
+    />
+  </section>
+
+  <section class="structure-cards">
+    <div class="search-box">
+      <input type="search" [formControl]="searchTerm" placeholder="Search by protein name" />
+      <i class="icon icon-common icon-search"></i>
+    </div>
+    @for(structure of structuresPage; track structure){
+    <article>
+      <div class="list">
+        <p class="list-item-left">Protein name</p>
+        <p class="list-item-right">{{ structure.name || '---' }}</p>
+      </div>
+      <div class="list">
+        <p class="list-item-left">PDB-KB Proteins</p>
+        <p class="list-item-right">
+          <a [href]="'https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/' + structure.uniprot_id" target="_blank"
+            >{{ structure.uniprot_id }}
+            <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
+          </a>
+        </p>
+      </div>
+      <div class="list">
+        <p class="list-item-left">EC number</p>
+        <p class="list-item-right">{{ structure.ec_numbers | ligandECNumber }}</p>
+      </div>
+      <div class="list">
+        <p class="list-item-left">Ligand annotation</p>
+        <div class="list-item-right">
+          @if(structure.annotations && structure.annotations.length){
+          <!--  -->
+          @for(type of structure.annotations; track type){
+          <!--  -->
+          @if(type === 'cofactor-like'){
+          <p class="cofactor-like" matTooltipClass="complex-name-tooltip" [matTooltip]="cofactorTooltip" matTooltipPosition="above">Cofactor-like</p>
+          }
+          <!--  -->
+          @if(type === 'drug-like'){
+          <p class="drug-like" matTooltipClass="complex-name-tooltip" [matTooltip]="drugTooltip" matTooltipPosition="above">Drug-like</p>
+          }
+          <!--  -->
+          @if(type === 'reactant-like'){
+          <p class="reactant-like" matTooltipClass="complex-name-tooltip" [matTooltip]="reactantTooltip" matTooltipPosition="above">Reactant-like</p>
+          } }
+          <!--  -->
+          } @else {
+          <p class="unannotated" matTooltipClass="complex-name-tooltip" [matTooltip]="unannotatedTooltip" matTooltipPosition="above">Unannotated</p>
+          }
+        </div>
+      </div>
+      @if(showTotalStructureOnMobile()){
+      <div class="list">
+        <p class="list-item-left">Total structures</p>
+        <p class="list-item-right">{{ structure.interacting_chains.length }}</p>
+      </div>
+      } @else {
+      <div class="list">
+        <p class="list-item-left">Representative PDBe structure</p>
+        <div class="list-item-right">
+          @if(structure.pdb_id){ @if(ligandId().startsWith('CLC') || ligandId().startsWith('PRD')){ @let id = structure.pdb_id.split('_')[0]; @let href =
+          'https://www.ebi.ac.uk/pdbe/entry/pdb/' + id;
+          <a [href]="href" target="_blank"> {{ structure }} </a>
+          } @else { @let id = structure.pdb_id.split('_')[0]; @let href = 'https://www.ebi.ac.uk/pdbe/entry/pdb/' + id + '/bound/' + ligandId();
+          <a [href]="href" target="_blank"> {{ structure.pdb_id }} </a>
+          }
+          <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
+          } @else {
+          <p>Unmapped</p>
+          }
+        </div>
+      </div>
+      }
+    </article>
+    }
+    <mat-paginator
+      class="paginator-container"
+      [length]="structuresLength()"
+      [pageSize]="structuresPageSize()"
+      [pageSizeOptions]="structuresPageSizeOptions()"
+      (page)="handlePageEvent($event)"
+      showFirstLastButtons
+      aria-label="Select page of subcomplexes"
+    >
+    </mat-paginator>
+  </section>
+</div>

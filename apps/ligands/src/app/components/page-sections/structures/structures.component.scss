@@ -1,0 +1,136 @@
+header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  button {
+    align-self: flex-end;
+  }
+
+  @media screen and (width <= 768px) {
+    flex-direction: column;
+
+    button {
+      align-self: flex-start;
+    }
+  }
+}
+
+h3 {
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 39px;
+}
+
+section.filter {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .group {
+    display: flex;
+    align-items: center;
+
+    @media screen and (width <= 768px) {
+      flex-direction: column;
+
+      mat-radio-group {
+        width: 100%;
+      }
+    }
+  }
+
+  mat-radio-button {
+    margin-right: 16px;
+  }
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#structure-checkbox {
+  ::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__outer-circle {
+    border-color: #0a5032 !important;
+  }
+
+  ::ng-deep .mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
+    border-color: #0a5032 !important;
+    background-color: #0c8950 !important;
+  }
+}
+
+section.table-wrapper {
+  margin-top: 5px;
+
+  // min-height: 100px;
+  height: 500px;
+
+  @media screen and (width <= 768px) {
+    display: none;
+  }
+}
+
+section.polymers {
+  margin: 20px 0;
+}
+
+section.structure-cards {
+  display: none;
+
+  article {
+    padding: 8px;
+    box-shadow: 1px 1px 4px 0 rgb(0 0 0 / 25%);
+    margin-bottom: 12px;
+
+    .list {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #d0d0ce;
+      font-size: 14px;
+      line-height: 22.4px;
+      color: #1a1c1a;
+
+      a {
+        font-size: 14px;
+      }
+
+      .list-item-left {
+        width: 142px;
+        min-width: 142px;
+        padding: 8px 4px;
+        font-weight: 500;
+      }
+    }
+  }
+
+  @media screen and (width <= 768px) {
+    display: block;
+  }
+}
+
+.search-box {
+  position: relative;
+  font-size: 16px;
+
+  input {
+    border: none;
+    border-bottom: 1px solid var(--Neutral-600, #707372);
+    box-shadow: none;
+    padding-left: 0;
+  }
+
+  .icon-search {
+    position: absolute;
+    right: 5px;
+    top: 12px;
+    color: #707372;
+  }
+}
+
+#structures-section {
+  padding-bottom: 60px;
+}

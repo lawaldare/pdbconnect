@@ -1,0 +1,24 @@
+<header>
+  <i class="icon icon-common icon-window-close" (click)="dialogRef.close()"></i>
+</header>
+<section>
+  <h2>Chemical Bonds</h2>
+  <p>Bonds between two atoms of the ligand from ideal coordinates</p>
+  <p>Ligand ID: {{ dialogData.ligandId }}</p>
+  <p>Total Number of Bonds: {{ numberOfBonds() }}</p>
+  <button class="vf-button vf-button--link" (click)="downloadCSV()">
+    Download bonds (csv)
+    <i class="icon icon-common icon-download"></i>
+  </button>
+  <div style="margin-top: 5px; height: 566px">
+    <ag-grid-angular
+      class="ag-theme-quartz"
+      [rowData]="rowData"
+      [columnDefs]="colDefs"
+      [gridOptions]="gridOptions"
+      (gridReady)="onGridReady()"
+      [autoSizeStrategy]="autoSizeStrategy"
+      [paginationPageSizeSelector]="paginationPageSizeSelector()"
+    />
+  </div>
+</section>

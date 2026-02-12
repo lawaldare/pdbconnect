@@ -1,0 +1,17 @@
+<section>
+  <header>
+    <i class="icon icon-common icon-window-close" (click)="dialogRef.close()"></i>
+  </header>
+  <div style="margin-top: 5px; height: 360px">
+    <ag-grid-angular
+      style="margin-top: 5px"
+      class="ag-theme-quartz"
+      [rowData]="rowData"
+      [columnDefs]="colDefs"
+      [gridOptions]="gridOptions"
+      (gridReady)="onGridReady()"
+      [autoSizeStrategy]="autoSizeStrategy"
+      [paginationPageSizeSelector]="paginationPageSizeSelector()"
+    />
+  </div>
+</section>

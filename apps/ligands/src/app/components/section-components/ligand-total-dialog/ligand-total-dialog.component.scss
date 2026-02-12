@@ -1,0 +1,20 @@
+section {
+  padding: 20px;
+}
+
+header {
+  padding: 10px;
+  display: flex;
+  justify-content: flex-end;
+
+  i {
+    font-size: 20px;
+    cursor: pointer;
+  }
+}
+
+a {
+  i {
+    margin-left: 5px;
+  }
+}
