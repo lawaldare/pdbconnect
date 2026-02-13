@@ -43,7 +43,7 @@ export class PisaEffects {
               .pipe(
                 map((response) => PisaActions.submitPISAJobSuccess({ jobId: response.job_id })),
                 catchError((error) => {
-                  // this.pisaUtilService.setPageView('ERROR');
+                  this.pisaUtilService.setPageView('ERROR');
                   console.error('submitJob failed:', error);
 
                   // this.router.navigate(['/processing'], { queryParamsHandling: 'preserve' });
