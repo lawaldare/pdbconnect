@@ -1,11 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
-@import 'ag-grid-community/styles/ag-grid.css';
-@import 'ag-grid-community/styles/ag-theme-quartz.css';
-@import 'driver.js/dist/driver.css';
-@import 'https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css';
+@use 'ag-grid-community/styles/ag-grid.css';
+@use 'ag-grid-community/styles/ag-theme-quartz.css';
+@use 'driver.js/dist/driver.css';
 
-@import 'index';
-@import './assets/css/ebi-global.min';
+@use 'index' as *;
+@use './assets/css/ebi-global.min';
+
+@import 'https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css';
 
 html,
 body {
