@@ -32,7 +32,11 @@ export class App implements OnInit {
   async ngOnInit(): Promise<void> {
     this.init();
 
-    await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-3.0.0-min.js', true);
+    const hostname = document.location.hostname;
+
+    const path = hostname === 'localhost' ? './assets/pdb-ligand-env-component-3.0.0-min.js' : 'complexes/assets/pdb-ligand-env-component-3.0.0-min.js';
+
+    await this.scriptLoader.loadScript(path, true);
   }
 
   private init(): void {

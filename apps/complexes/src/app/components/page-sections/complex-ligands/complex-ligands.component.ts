@@ -11,14 +11,14 @@ import { ComplexSelectors } from '../../../store/complex.selectors';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { map } from 'rxjs';
 import { ComplexLigand } from '../../../models/complex-ligands.model';
-import { MaterialModule } from '@pdbc/core';
+import { AssetPipe, MaterialModule } from '@pdbc/core';
 import { ComplexPageTutorialTourService } from '../../../services/complex-page-tutorial-tour.service';
 import { tourIds } from '../../../complex.constant';
 
 @Component({
   selector: 'pdbc-complex-ligands',
   standalone: true,
-  imports: [CommonModule, ComplexLigandGridComponent, MatPaginator, ReactiveFormsModule, MaterialModule],
+  imports: [CommonModule, ComplexLigandGridComponent, MatPaginator, ReactiveFormsModule, AssetPipe, MaterialModule],
   templateUrl: './complex-ligands.component.html',
   styleUrl: './complex-ligands.component.scss',
 })

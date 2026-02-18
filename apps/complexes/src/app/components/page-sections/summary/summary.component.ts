@@ -6,7 +6,7 @@ import { ParticipantDirective } from '../../../directives/participants.directive
 import { ComplexSymmetryPipe } from '../../../pipes/symmetry.pipe';
 import { Assembly, ComplexData, Participant } from '../../../models/complex-structure.model';
 import { OEMCDirective } from '../../../directives/oemc.directive';
-import { MaterialModule } from '@pdbc/core';
+import { AssetPipe, MaterialModule } from '@pdbc/core';
 import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -23,7 +23,7 @@ import { ComplexPageTutorialTourService } from '../../../services/complex-page-t
 @Component({
   selector: 'pdbc-summary',
   standalone: true,
-  imports: [CommonModule, HelpIconWithTooltipComponent, MolstarComponent, MaterialModule, ParticipantDirective, ComplexSymmetryPipe, OEMCDirective],
+  imports: [CommonModule, HelpIconWithTooltipComponent, MolstarComponent, MaterialModule, AssetPipe, ParticipantDirective, ComplexSymmetryPipe, OEMCDirective],
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss'],
 })
@@ -36,6 +36,8 @@ export class SummaryComponent implements OnInit, AfterViewInit {
 
   private readonly utilService = inject(ComplexUtilService);
   private readonly dialog = inject(MatDialog);
+
+  public iconPath = 'complexes/assets/images/help_outline_24px.svg';
 
   public config!: { moleculeId: string; bgColor: { r: number; g: number; b: number }; assemblyId: number; hideControls: boolean };
 

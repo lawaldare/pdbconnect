@@ -1,6 +1,6 @@
 @if(tutorialTourService.showSummaryTourBanner() && !isBannerCookies()){
 <section class="onboarding-tutorial-banner">
-  <img src="assets/images/light-star.svg" alt="light start icon" />
+  <img [src]="'images/light-star.svg' | asset" alt="light start icon" />
   <p>We have redesigned this page to enhance your experience. <span (click)="startSummaryTabTour()">Take an on-page tour.</span></p>
 </section>
 }
@@ -26,7 +26,7 @@
     <div class="info-row">
       <span class="info-row-title">
         Components
-        <lib-help-icon-with-tooltip [tooltipText]="complexSummaryTabTooltips.component" />
+        <lib-help-icon-with-tooltip [iconPath]="iconPath" [tooltipText]="complexSummaryTabTooltips.component" />
       </span>
       <div class="components">
         <div class="info-row-content participants" pdbcParticipant [participants]="participants()"></div>
@@ -43,7 +43,7 @@
     <div class="info-row">
       <span class="info-row-title">
         Polymer composition
-        <lib-help-icon-with-tooltip [tooltipText]="complexSummaryTabTooltips.polymerComposition" />
+        <lib-help-icon-with-tooltip [iconPath]="iconPath" [tooltipText]="complexSummaryTabTooltips.polymerComposition" />
       </span>
       <div class="info-row-content">{{ summaryData()?.polymer_composition }}</div>
     </div>
@@ -51,7 +51,7 @@
     <div class="info-row">
       <span class="info-row-title">
         Global symmetry
-        <lib-help-icon-with-tooltip [tooltipText]="complexSummaryTabTooltips.globalSymmetry" />
+        <lib-help-icon-with-tooltip [iconPath]="iconPath" [tooltipText]="complexSummaryTabTooltips.globalSymmetry" />
       </span>
       <div class="info-row-content">
         {{ summaryData()?.symmetry | symmetry }} @if(diffSymmetries().length){ There are
@@ -63,7 +63,7 @@
     <div class="info-row">
       <span class="info-row-title">
         Observed cofactors
-        <lib-help-icon-with-tooltip [tooltipText]="complexSummaryTabTooltips.observedCofactors" />
+        <lib-help-icon-with-tooltip [iconPath]="iconPath" [tooltipText]="complexSummaryTabTooltips.observedCofactors" />
       </span>
       <div class="info-row-content" style="display: block">
         @for(ligand of mappedLigands(); track ligand.ligandId; let islast = $last){
@@ -82,7 +82,7 @@
     <div class="info-row">
       <span class="info-row-title">
         Unique bound macromolecules
-        <lib-help-icon-with-tooltip [tooltipText]="complexSummaryTabTooltips.uniqueBoundMacromolecules" />
+        <lib-help-icon-with-tooltip [iconPath]="iconPath" [tooltipText]="complexSummaryTabTooltips.uniqueBoundMacromolecules" />
       </span>
       <div class="info-row-content">{{uniqueBoundMacromolecules()}}</div>
     </div>

@@ -1,5 +1,5 @@
 import { Component, ElementRef, signal, ViewChild } from '@angular/core';
-import { MaterialModule } from '@pdbc/core';
+import { AssetPipe, MaterialModule } from '@pdbc/core';
 
 import type { IHeaderAngularComp } from 'ag-grid-angular';
 import type { IHeaderParams } from 'ag-grid-community';
@@ -11,7 +11,7 @@ export interface ICustomHeaderParams {
 
 @Component({
   standalone: true,
-  imports: [MaterialModule],
+  imports: [MaterialModule, AssetPipe],
   template: `
     <div>
       <div data-ref="eHeaderCompWrapper" class="ag-header-cell-comp-wrapper" role="presentation">
@@ -20,7 +20,7 @@ export interface ICustomHeaderParams {
             <span data-ref="eText" class="ag-header-cell-text">{{ params.displayName }}</span>
             @if (params.showHelpIcon) {
               <img
-                src="{{ helpLogoSrc }}"
+                [src]="helpLogoSrc | asset"
                 class="icon"
                 matTooltipClass="complex-name-tooltip"
                 [matTooltip]="params.tooltipText"
@@ -69,7 +69,7 @@ export interface ICustomHeaderParams {
 })
 export class CustomHeaderComponent implements IHeaderAngularComp {
   public params!: IHeaderParams & ICustomHeaderParams;
-  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
+  public readonly helpLogoSrc = 'images/help_outline_24px.svg';
 
   @ViewChild('menuButton', { read: ElementRef }) public menuButton!: ElementRef;
   @ViewChild('sortIconButton', { read: ElementRef }) public sortIconButton!: ElementRef;

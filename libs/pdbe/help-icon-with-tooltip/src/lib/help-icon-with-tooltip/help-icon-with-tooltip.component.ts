@@ -10,4 +10,6 @@ import { MaterialModule } from '@pdbc/core';
 })
 export class HelpIconWithTooltipComponent {
   public tooltipText = input.required<string>();
+  public iconPath = input<string>();
+  public path = this.iconPath() ? this.iconPath() : '/assets/images/help_outline_24px.svg';
 }

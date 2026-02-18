@@ -9,6 +9,7 @@ export interface HeaderLogoMenuConfig {
     path: string;
     openInNewTab: boolean;
   }[];
+  logoPath?: string;
 }
 
 export interface MobileHeaderLogoMenuConfig {

@@ -2,7 +2,7 @@
   <div class="container">
     <div class="header-logo">
       @if(headerConfig.isComplexPage){
-      <img [ngClass]="getHeaderLogoClass" src="{{ headerLogoSrc }}" alt="logo" />
+      <img [ngClass]="getHeaderLogoClass" [src]="headerLogoSrc | asset" alt="logo" />
       } @else {
       <a href="https://www.ebi.ac.uk/pdbe/" target="_blank" style="padding: 0"><img [ngClass]="getHeaderLogoClass" src="{{ headerLogoSrc }}" alt="logo" /></a>
       }

@@ -2,7 +2,7 @@
 
 import { AfterViewInit, Component, computed, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AG_Grid_Theme_Class, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
+import { AG_Grid_Theme_Class, AssetPipe, DownloadFileTypeService, MaterialModule } from '@pdbc/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import { SelectionChangedEvent } from 'ag-grid-community';
 import { Store } from '@ngrx/store';
@@ -23,7 +23,7 @@ import { ComplexPageTutorialTourService } from '../../../services/complex-page-t
 @Component({
   selector: 'pdbc-complex-pisa',
   standalone: true,
-  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, NgxSliderModule, FormsModule, NgxSkeletonLoaderModule, PisaFilterComponent],
+  imports: [CommonModule, AgGridAngular, MaterialModule, ReactiveFormsModule, NgxSliderModule, AssetPipe, FormsModule, NgxSkeletonLoaderModule, PisaFilterComponent],
   templateUrl: './complex-pisa.component.html',
   styleUrls: ['./complex-pisa.component.scss'],
 })

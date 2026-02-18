@@ -39,6 +39,7 @@ export const headerComplexLogoMenuConfig = {
     { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
     { name: 'Documentation', path: 'https://github.com/PDBe-KB/pdbe-kb-manual/wiki', openInNewTab: true },
   ],
+  logoPath: 'images/PDBE-KB_logo_2019_white_text.png',
 };
 
 export const complexRouteTabs = [
