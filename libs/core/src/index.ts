@@ -30,3 +30,4 @@ export * from './lib/data-privacy-banner.component';
 export * from './lib/models/survey-config';
 export * from './lib/services/survey.service';
 export * from './lib/survey.component';
+export * from './lib/services/base-href.service';
