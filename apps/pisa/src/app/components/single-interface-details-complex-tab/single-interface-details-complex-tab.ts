@@ -26,6 +26,7 @@ export class SingleInterfaceDetailsComplexTabComponent implements OnInit {
       .select(PisaSelectors.interfaceResultForInterfaceIdComplexesTab)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((interfaceResult) => {
+        console.log('Received interface result:', interfaceResult);
         this.interface.set(interfaceResult);
       });
   }

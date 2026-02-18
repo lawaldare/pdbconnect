@@ -30,12 +30,13 @@ export const colDefs: ColDef[] = [
     cellRenderer: (params: any) => {
       return `<p>${params.data.auth_sym_id}:${params.data.auth_comp_id} ${params.data.auth_seq_id}</p>`;
     },
+    flex: 1.3,
   },
-  { headerName: 'HSDC', field: 'bonds' },
+  { headerName: 'HSDC', field: 'bonds', flex: 0.9 },
   { headerName: 'ASA, Å²', field: 'asa' },
   { headerName: 'BSA, Å²', field: 'bsa' },
   { headerName: 'Buried ar.', field: 'bsa', cellRenderer: BuriedAreaCellRenderer },
-  { headerName: ' ΔiGint', field: 'solv_energy' },
+  { headerName: ' ΔiGint', field: 'solv_energy', flex: 0.8 },
 ];
 
 export const bondsColDefs: ColDef[] = [
