@@ -29,11 +29,11 @@ import { ComplexPageTutorialTourService } from '../../../services/complex-page-t
 })
 export class SuperComplexesComponent implements AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
   private utilService = inject(ComplexUtilService);
   private readonly superpositionService = inject(SuperpositionService);
   private readonly util = inject(UtilService);
   private readonly gAS = inject(GoogleAnalyticsService);
+  public iconPath = document.location.hostname === 'localhost' ? '' : 'complexes/assets/images/help_outline_24px.svg';
 
   public initialized = false;
 
