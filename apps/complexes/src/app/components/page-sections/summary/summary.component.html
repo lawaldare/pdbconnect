@@ -91,45 +91,6 @@
       <span class="info-row-title">Methods overview</span>
       <div class="info-row-content" pdbcOEMC [data]="summaryData()?.unique_observed_experimental_methods_with_counts ?? {}" [complexId]="complexId() ?? ''"></div>
     </div>
-    <!-- <div class="info-row">
-        <span class="info-row-title">Number of assemblies</span>
-        <div class="info-row-content summary-tooltip">
-          <span
-            matTooltipClass="complex-name-tooltip"
-            matTooltip="Number of assemblies having the same set of components and stoichiometry as the complex of interest."
-            matTooltipPosition="right"
-            >{{ summaryData().assemblies.length }}
-            <img src="{{ helpLogoSrc }}" class="icon" />
-          </span>
-        </div>
-      </div>
-      @let numberOfSubComplexes = summaryData().subcomplexes.length; @if(numberOfSubComplexes){
-      <div class="info-row">
-        <span class="info-row-title">Number of subcomplexes</span>
-        <div class="info-row-content summary-tooltip">
-          <span
-            matTooltipClass="complex-name-tooltip"
-            matTooltip="Number of unique smaller complexes that contain a subset of the components of the complex of interest."
-            matTooltipPosition="right"
-            >{{ numberOfSubComplexes }}
-            <img src="{{ helpLogoSrc }}" class="icon" />
-          </span>
-        </div>
-      </div>
-      } @let numberOfSuperComplexes = summaryData().supercomplexes.length; @if(numberOfSuperComplexes){
-      <div class="info-row">
-        <span class="info-row-title">Number of supercomplexes</span>
-        <div class="info-row-content summary-tooltip">
-          <span
-            matTooltipClass="complex-name-tooltip"
-            matTooltip="Number of unique complexes that contain the components of the complex of interest along with additional members. These supercomplexes represent larger assemblies where the complex interacts with other macromolecules."
-            matTooltipPosition="right"
-            >{{ numberOfSuperComplexes }}
-            <img src="{{ helpLogoSrc }}" class="icon" />
-          </span>
-        </div>
-      </div>
-      } -->
   </section>
   <section class="molstar">
     <header>

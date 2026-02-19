@@ -11,7 +11,7 @@ import { Store } from '@ngrx/store';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ComplexSelectors } from '../../../store/complex.selectors';
-import { filter, map, tap } from 'rxjs';
+import { filter, map } from 'rxjs';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { ComplexUtilService } from '../../../services/complex-util.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -37,7 +37,7 @@ export class SummaryComponent implements OnInit, AfterViewInit {
   private readonly utilService = inject(ComplexUtilService);
   private readonly dialog = inject(MatDialog);
 
-  public iconPath = 'complexes/assets/images/help_outline_24px.svg';
+  public iconPath = document.location.hostname === 'localhost' ? '' : 'complexes/assets/images/help_outline_24px.svg';
 
   public config!: { moleculeId: string; bgColor: { r: number; g: number; b: number }; assemblyId: number; hideControls: boolean };
 
@@ -68,7 +68,6 @@ export class SummaryComponent implements OnInit, AfterViewInit {
       })
     )
   );
-  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
 
   public participants = signal<Participant[]>(this.summaryData()?.participants.slice(0, 4) ?? []);
   public respresentStructure = computed(() => this.summaryData()?.representative_structure);
