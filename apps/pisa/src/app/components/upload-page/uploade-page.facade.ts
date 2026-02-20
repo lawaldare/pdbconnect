@@ -17,13 +17,10 @@ export class UploadPageFacade {
 
   public modelSym = computed(() => {
     const model = this.model();
-    console.log('model:', model);
-    console.log('modelSym', model?._staticPropertyData?.model_symmetry);
     return model?._staticPropertyData?.model_symmetry;
   });
   public modelSymParam = computed(() => {
     const cell = this.modelSym()?.spacegroup?.cell;
-    console.log('cell:', cell);
     return cell?.anglesInRadians?.map((r: any) => r * (180 / Math.PI));
   });
   public simplifiedSpacegroup = computed(() => {
