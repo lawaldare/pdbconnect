@@ -352,8 +352,8 @@ export class ResultCardComponent implements OnInit, OnChanges, OnDestroy {
         if (galleryImagesArr.length == 0) {
           galleryImagesArr = [
             {
-              src: 'https://www.ebi.ac.uk/pdbe/entry/static/images/notFound.jpg',
-              thumbnail: 'https://www.ebi.ac.uk/pdbe/entry/static/images/notFound.jpg',
+              src: 'https://www.ebi.ac.uk/pdbe/static/frontier/images/notFound.jpg',
+              thumbnail: 'https://www.ebi.ac.uk/pdbe/static/frontier/images/notFound.jpg',
               text: 'Image not available',
               description: 'Image not available',
               pdbId: pdbId,

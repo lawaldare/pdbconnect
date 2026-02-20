@@ -13,18 +13,18 @@ export class SearchAppEffects {
   private readonly actions$ = inject(Actions);
   private readonly store = inject(Store<SearchAppStoreState>);
 
-  getMolecules$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(SearchAppActions.getMolecules),
-      switchMap(() => this.store.select(SearchAppSelectors.pdbIds).pipe(filter(Boolean), take(1))),
-      mergeMap((pdbIds: string) =>
-        this.searchService.getLigandEntities(pdbIds).pipe(
-          map((moleculesResponse) => {
-            return SearchAppActions.getMoleculesSuccess({ moleculesResponse });
-          }),
-          catchError(() => of(SearchAppActions.getMoleculesFailure()))
-        )
-      )
-    )
-  );
+  // getMolecules$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(SearchAppActions.getMolecules),
+  //     switchMap(() => this.store.select(SearchAppSelectors.pdbIds).pipe(filter(Boolean), take(1))),
+  //     mergeMap((pdbIds: string) =>
+  //       this.searchService.getLigandEntities(pdbIds).pipe(
+  //         map((moleculesResponse) => {
+  //           return SearchAppActions.getMoleculesSuccess({ moleculesResponse });
+  //         }),
+  //         catchError(() => of(SearchAppActions.getMoleculesFailure()))
+  //       )
+  //     )
+  //   )
+  // );
 }

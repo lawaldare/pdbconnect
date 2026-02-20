@@ -50,7 +50,7 @@ export class TooltipService {
             </div>
           }
           <div class="imgBox">
-            <img src="{{ tooltipImage }}" onerror="this.src='https://www.ebi.ac.uk/pdbe/entry/static/images/notFound.jpg'" [style.imgHeight]="imgHeight" />
+            <img src="{{ tooltipImage }}" onerror="this.src='https://www.ebi.ac.uk/pdbe/static/frontier/images/notFound.jpg'" [style.imgHeight]="imgHeight" />
           </div>
         </div>
       }

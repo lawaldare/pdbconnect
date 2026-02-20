@@ -312,8 +312,8 @@ export class PivotResultCardComponent implements OnInit {
         if (galleryImagesArr.length == 0) {
           galleryImagesArr = [
             {
-              src: this.pdbeUrl + 'entry/static/images/notFound.jpg',
-              thumbnail: this.pdbeUrl + 'entry/static/images/notFound.jpg',
+              src: this.pdbeUrl + 'static/frontier/images/notFound.jpg',
+              thumbnail: this.pdbeUrl + 'static/frontier/images/notFound.jpg',
               text: 'Image not available',
               description: 'Image not available',
               pdbId: pdbId,
@@ -490,7 +490,7 @@ export class PivotResultCardComponent implements OnInit {
   }
 
   private notFoundUrl(): SafeUrl {
-    return this._sanitizer.bypassSecurityTrustUrl(`${this.pdbeUrl}entry/static/images/notFound.jpg`);
+    return this._sanitizer.bypassSecurityTrustUrl(`${this.pdbeUrl}static/frontier/images/notFound.jpg`);
   }
 
   getImageSource(imageNumber: number): SafeUrl {
@@ -566,7 +566,7 @@ export class PivotResultCardComponent implements OnInit {
     if (img.dataset['handled']) return;
 
     img.dataset['handled'] = 'true';
-    img.src = `${this.pdbeUrl}entry/static/images/notFound.jpg`;
+    img.src = `${this.pdbeUrl}static/frontier/images/notFound.jpg`;
   }
 
   recordUserInteraction(type: string) {
