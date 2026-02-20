@@ -42,6 +42,7 @@ export class UploadPageComponent implements AfterViewInit {
   public orthoCode = this.facade.orthoCode;
   public analysis = this.facade.analysis;
   public label = this.facade.label;
+  public allOnes = this.facade.allOnes;
   public processLigands = this.facade.processLigands;
   public readonly pisaUploadpageTooltips = pisaUploadpageTooltips;
 

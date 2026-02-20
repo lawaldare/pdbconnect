@@ -133,8 +133,22 @@ export const colDefs: (ColDef | ColGroupDef)[] = [
   },
 
   { headerName: 'Interfc.\narea, Å²', field: 'interfaceArea', flex: 1, headerClass: 'h-plain' },
-  { headerName: 'ΔG\nkcal/mol', field: 'interfaceEnergy', flex: 1, headerClass: 'h-plain' },
-  { headerName: 'ΔG\nP-value', field: 'pValue', flex: 1, headerClass: 'h-plain' },
+  {
+    headerName: 'ΔGkcal/mol',
+    headerComponent: 'subscriptHeader',
+    headerComponentParams: { html: 'Δ<sup>i</sup>G<br>kcal/mol' },
+    field: 'interfaceEnergy',
+    flex: 1,
+    headerClass: 'h-plain',
+  },
+  {
+    headerName: 'ΔGP-value',
+    headerComponent: 'subscriptHeader',
+    headerComponentParams: { html: 'Δ<sup>i</sup>G<br>P-value' },
+    field: 'pValue',
+    flex: 1,
+    headerClass: 'h-plain',
+  },
   { headerName: 'CSS', field: 'css', flex: 0.7, headerClass: 'h-plain' },
 
   // this is the one that usually causes horizontal scroll

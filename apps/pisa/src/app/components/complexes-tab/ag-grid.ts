@@ -3,6 +3,7 @@
 import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions, GridState, ICellRendererParams, RowHeightParams } from 'ag-grid-community';
 import { InterfacesCellRenderer } from '../cell-renderers/interfaces-cell-render';
+import { SubscriptHeaderComponent } from '../cell-renderers/subscript-header';
 
 const isGroupRow = (p: any) => !!p.data?.groupHeader;
 
@@ -15,6 +16,9 @@ export const gridOptions: GridOptions = {
     flex: 1,
   },
   pagination: false,
+  components: {
+    subscriptHeader: SubscriptHeaderComponent,
+  },
 
   fullWidthCellRenderer: (p: ICellRendererParams) => {
     const label = p.data?.groupHeader ?? '';
@@ -49,11 +53,22 @@ export const colDefs: ColDef[] = [
     },
   },
   { headerName: 'Formula', field: 'formula' },
-  { headerName: 'Composition', field: 'composition', flex: 1.2 },
-  { headerName: 'Surface area, sq. Å', field: 'asa' },
-  { headerName: 'Buried area, sq. Å', field: 'bsa' },
-  { headerName: 'ΔGint, kcal/mol', field: 'int_energy' },
-  { headerName: 'ΔGdiss, kcal/mol', field: 'diss_energy' },
+  { headerName: 'Composition', field: 'composition', flex: 1.4 },
+  { headerName: 'Surface\narea, Å²', field: 'asa' },
+  { headerName: 'Buried\narea, Å²', field: 'bsa', flex: 0.8 },
+  {
+    headerName: 'ΔGint, kcal/mol',
+    headerComponent: 'subscriptHeader',
+    headerComponentParams: { html: 'ΔG<sup>int</sup>,<br>kcal/mol' },
+    field: 'int_energy',
+  },
+  {
+    headerName: 'ΔGdiss, kcal/mol',
+    headerComponent: 'subscriptHeader',
+    headerComponentParams: { html: 'ΔG<sup>diss</sup>,<br>kcal/mol' },
+    field: 'diss_energy',
+  },
+  // { headerName: 'ΔGᵈⁱˢˢ, kcal/mol', field: 'diss_energy' },
   { headerName: 'Size mm', field: 'mmsize', flex: 0.8 },
 ];
 

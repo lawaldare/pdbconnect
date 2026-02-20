@@ -15,6 +15,7 @@
       <p class="row-header">Available components</p>
       <p class="row-data">{{analysis()}}</p>
     </div>
+    @if(!allOnes()){
     <div class="row parameters-row">
       <p class="row-header">
         <span>Cell parameters</span>
@@ -54,6 +55,7 @@
       </p>
       <p class="row-data">{{ simplifiedSpacegroup() }}</p>
     </div>
+    }
     <div class="row">
       <p class="row-header">
         <span>Orthogonalisation code</span>

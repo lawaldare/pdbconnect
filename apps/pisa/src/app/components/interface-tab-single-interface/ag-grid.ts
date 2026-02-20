@@ -3,6 +3,7 @@
 import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions, GridState } from 'ag-grid-community';
 import { BuriedAreaCellRenderer } from '../cell-renderers/buried-area-cell-render';
+import { SubscriptHeaderComponent } from '../cell-renderers/subscript-header';
 
 export const gridOptions: GridOptions = {
   ...agGridOptionsBase,
@@ -13,6 +14,9 @@ export const gridOptions: GridOptions = {
     flex: 1,
   },
   pagination: false,
+  components: {
+    subscriptHeader: SubscriptHeaderComponent,
+  },
 
   rowClassRules: {
     'interface-residue': (params) => params.data?.bsa > 0,
@@ -36,7 +40,13 @@ export const colDefs: ColDef[] = [
   { headerName: 'ASA, Å²', field: 'asa' },
   { headerName: 'BSA, Å²', field: 'bsa' },
   { headerName: 'Buried ar.', field: 'bsa', cellRenderer: BuriedAreaCellRenderer },
-  { headerName: ' ΔiGint', field: 'solv_energy', flex: 0.8 },
+  {
+    headerName: ' ΔiGint',
+    headerComponent: 'subscriptHeader',
+    headerComponentParams: { html: 'Δ<sup>i</sup>Gint' },
+    field: 'solv_energy',
+    flex: 0.8,
+  },
 ];
 
 export const bondsColDefs: ColDef[] = [
