@@ -1,4 +1,4 @@
-import { Component, inject, input, Input, OnInit } from '@angular/core';
+import { Component, inject, input, Input, OnChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
@@ -16,7 +16,7 @@ import { RouterModule } from '@angular/router';
 })
 export class PdbeHeaderSearchComponent implements OnInit {
   @Input() headerSearchConfig!: HeaderSearchConfig;
-  // public isOnComplexPage = input(false);
+  @Input() projectId = '';
   searchTermStream = new Subject<string>();
   private fb = inject(FormBuilder);
 
@@ -52,7 +52,7 @@ export class PdbeHeaderSearchComponent implements OnInit {
   }
 
   public openID(ligandId: string): void {
-    this.utilService.redirectToSearchTerm(ligandId);
+    this.utilService.redirectToSearchTerm(ligandId, this.headerSearchConfig.projectId);
     this.googleAnalyticsService.logClickEvents('example_click', 'Search Examples Links', 'navigate_to_example', ligandId);
   }
 

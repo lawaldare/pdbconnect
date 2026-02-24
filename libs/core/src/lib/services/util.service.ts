@@ -145,13 +145,20 @@ export class UtilService {
     this.currentlyActive.set(activeSection);
   }
 
-  public redirectToSearchTerm(value: string, target = '_self'): void {
+  public redirectToSearchTerm(value: string, projectId?: string, target = '_self'): void {
+    const hostname = document.location.hostname;
+    const pathname = document.location.pathname;
+
     const trimmedValue = value.trim();
     const hrefArray = window.location.href.split('/');
-    const removedString = hrefArray.pop();
-    if (removedString?.includes('?from=complex')) {
-      hrefArray.push('complexes');
+    hrefArray.pop();
+
+    if (projectId && hostname === 'localhost' && pathname.includes('error')) {
+      hrefArray.push(`complexes/${trimmedValue}`);
+      window.open(hrefArray.join('/'), target);
+      return;
     }
+
     hrefArray.push(trimmedValue);
     const href = hrefArray.join('/');
     window.open(href, target);

@@ -20,6 +20,7 @@ export const headerSearchComplexConfig = {
   type: ThemeType.PDBEKB,
   placeholderText: 'View PDBe-KB complex by PDBe complex ID, PDB entry ID, or Complex Portal ID',
   complexPage: true,
+  projectId: 'complexes',
 };
 
 export const navComplexSections = [
