@@ -13,12 +13,14 @@ import { ComplexInteraction } from '../models/complex-structure.model';
 import { PISAAssemblyParam } from '../models/pisa-assembly-param.model';
 import { ComplexLigand } from '../models/complex-ligands.model';
 import { LoadingState } from '../enums/loading-state.enum';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class ComplexEffects {
   private readonly complexAPIService = inject(ComplexAPIService);
   private readonly actions$ = inject(Actions);
   private readonly store = inject(Store<ComplexStoreState>);
+  private readonly router = inject(Router);
 
   private sortWithAnnotationsFirst(data: ComplexLigand[]) {
     return data.sort((a, b) => {
@@ -44,6 +46,7 @@ export class ComplexEffects {
           map((history) => ComplexActions.getComplexIdHistorySuccess({ history })),
           catchError((error) => {
             console.error('Error fetching complexId history:', error);
+            this.router.navigate(['/complexes/error']);
             return of(ComplexActions.getComplexIdHistoryFailure());
           })
         )
