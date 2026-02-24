@@ -175,6 +175,11 @@ export class InterfaceTabSingleInterfaceComponent implements OnInit {
     if (!complexesData) return;
     if (!this.molstar) return;
 
+    // console.log('Latest interface data for MVS:', latestInterface);
+    // console.log('Complexes data:', complexesData);
+    // console.log('Molstar instance:', this.molstar);
+    // console.log('MVS class:', MVS);
+
     setTimeout(async () => {
       const snapshot = pisaInterfaceView(MVS?.MVSData.createBuilder(), {
         structureUrl: `https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/model/${this.jobId()}`,

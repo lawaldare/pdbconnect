@@ -92,6 +92,7 @@ export class UploadPageComponent implements AfterViewInit {
   }
 
   public onTyping(event: any): void {
+    this.pdbEntryId = event.target.value;
     if (event.target.value === '') {
       this.hasError.set(false);
       this.errorInputMessage.set('');

@@ -126,16 +126,19 @@
     }
     <p class="info">
       PISA provides calculated estimates rather than curated data, and its results depend on the accuracy and completeness of the submitted coordinate files,
-      including the use of standard atom and residue names. <a href="">Learn more...</a>
+      including the use of standard atom and residue names. <a href="https://www.ebi.ac.uk/training/online/courses/pdbepisa/" target="_blank">Learn more...</a>
     </p>
+    <p class="info"><strong>Note:</strong> Please submit predicted models in .pdb format.</p>
     <!-- <span class="error">{{errorMolstarMessage()}}</span> -->
 
     <div class="upload-section-input-field">
       <h3 class="title">or use a PDB entry ID</h3>
-      <div class="input-field-form">
-        <input type="text" placeholder="PDB entry ID" [(ngModel)]="pdbEntryId" [class.error]="hasError()" (input)="onTyping($event)" />
-        <button class="vf-button vf-button--search-pdbe" (click)="onSubmit()">Submit</button>
-      </div>
+      <form (ngSubmit)="onSubmit()" #form="ngForm">
+        <div class="input-field-form">
+          <input type="text" placeholder="PDB entry ID" [(ngModel)]="pdbEntryId" [class.error]="hasError()" (input)="onTyping($event)" />
+          <button class="vf-button vf-button--search-pdbe" (click)="onSubmit()">Submit</button>
+        </div>
+      </form>
       <span class="error">{{errorInputMessage()}}</span>
     </div>
 

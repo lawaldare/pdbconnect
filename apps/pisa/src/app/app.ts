@@ -14,4 +14,8 @@ import { PisaNavHeaderComponent } from './components/pisa-nav-header/pisa-nav-he
 export class App {
   public readonly pisaUtilService = inject(PisaUtilService);
   public readonly ccp4LogoSrc = this.pisaUtilService.getPisaAssetUrl('assets/images/ccp4.png');
+
+  public openCCP4(): void {
+    window.open('https://www.ccp4.ac.uk/', '_blank');
+  }
 }

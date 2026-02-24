@@ -74,6 +74,12 @@ section {
           line-height: 26.6px;
           border: none;
         }
+
+        &:hover {
+          text-decoration: underline;
+          text-decoration-color: #ffffff;
+          text-decoration-thickness: 1.5px;
+        }
       }
 
       .vf-button--search-pdbe {
