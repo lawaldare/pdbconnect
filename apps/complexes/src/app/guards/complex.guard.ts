@@ -24,18 +24,12 @@ export const complexIdGuard: CanActivateFn = (route) => {
           return router.createUrlTree([path]);
         } else {
           console.error('No valid complex ID found');
-          return router.createUrlTree(['/error'], {
-            queryParams: { from: 'complex' },
-          });
+          return router.createUrlTree(['/error']);
         }
       }),
       catchError((error) => {
         console.error('API call failed', error);
-        return of(
-          router.createUrlTree(['/error'], {
-            queryParams: { from: 'complex' },
-          })
-        );
+        return of(router.createUrlTree(['/error']));
       })
     );
   }
