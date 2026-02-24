@@ -10,10 +10,6 @@ export const complexIdGuard: CanActivateFn = (route) => {
   const apiService = inject(ComplexAPIService);
   const util = inject(ComplexUtilService);
 
-  if (!complexId || complexId.trim() === 'error') {
-    return router.createUrlTree(['/complexes/error']);
-  }
-
   if (complexId?.toUpperCase().startsWith('PDB-CPX')) {
     return true;
   }
@@ -28,7 +24,7 @@ export const complexIdGuard: CanActivateFn = (route) => {
           return router.createUrlTree([path]);
         } else {
           console.error('No valid complex ID found');
-          return router.createUrlTree(['/complexes/error'], {
+          return router.createUrlTree(['/error'], {
             queryParams: { from: 'complex' },
           });
         }
@@ -36,7 +32,7 @@ export const complexIdGuard: CanActivateFn = (route) => {
       catchError((error) => {
         console.error('API call failed', error);
         return of(
-          router.createUrlTree(['/complexes/error'], {
+          router.createUrlTree(['/error'], {
             queryParams: { from: 'complex' },
           })
         );
@@ -52,13 +48,13 @@ export const complexIdGuard: CanActivateFn = (route) => {
         return router.createUrlTree([path]);
       } else {
         console.error('No valid complex ID found');
-        return router.createUrlTree(['/complexes/error']);
+        return router.createUrlTree(['/error']);
       }
     }),
     catchError((error) => {
       console.error('API call failed', error);
       util.setPageView('ERROR');
-      return of(router.createUrlTree(['/complexes/error']));
+      return of(router.createUrlTree(['/error']));
     })
   );
 };

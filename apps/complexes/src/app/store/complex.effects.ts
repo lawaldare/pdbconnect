@@ -46,7 +46,7 @@ export class ComplexEffects {
           map((history) => ComplexActions.getComplexIdHistorySuccess({ history })),
           catchError((error) => {
             console.error('Error fetching complexId history:', error);
-            this.router.navigate(['/complexes/error']);
+            this.router.navigate(['/error']);
             return of(ComplexActions.getComplexIdHistoryFailure());
           })
         )
