@@ -27,7 +27,7 @@ export const complexIdGuard: CanActivateFn = (route) => {
       map((response: any) => {
         const complexId = response.pdb_complex_id;
         if (complexId) {
-          const path = `/complexes/${complexId}`;
+          const path = `/${complexId}`;
           return router.createUrlTree([path]);
         } else {
           console.error('No valid complex ID found');
@@ -45,7 +45,7 @@ export const complexIdGuard: CanActivateFn = (route) => {
     map((response) => {
       const complexId = util.findComplexId(response);
       if (complexId) {
-        const path = `/complexes/${complexId}`;
+        const path = `/${complexId}`;
         return router.createUrlTree([path]);
       } else {
         console.error('No valid complex ID found');
