@@ -5,6 +5,7 @@ import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 import { ScriptLoaderService, UtilService } from '@pdbc/core';
 import { filter } from 'rxjs';
 import { environment } from '../environments/environment';
+import { LigandsAssetPathService } from './services/assets-path.service';
 
 declare const gtag: any;
 
@@ -18,6 +19,7 @@ export class App implements OnInit {
   private readonly _router = inject(Router);
   private utilService = inject(UtilService);
   private scriptLoader = inject(ScriptLoaderService);
+  private assetPathService = inject(LigandsAssetPathService);
 
   constructor() {
     this._router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
@@ -31,6 +33,12 @@ export class App implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.init();
+
+    const pathName = window.location.pathname;
+    if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
+      this.runAbsolutePath(pathName);
+      return;
+    }
 
     await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-3.0.0-min.js', true);
   }
@@ -50,5 +58,9 @@ export class App implements OnInit {
     `);
     gtagEl.appendChild(gtagBody);
     document.body.appendChild(gtagEl);
+  }
+
+  private async runAbsolutePath(pathName: string) {
+    await this.scriptLoader.loadScript(this.assetPathService.setAbsolutePath('assets/pdb-ligand-env-component-3.0.0-min.js'), true);
   }
 }
