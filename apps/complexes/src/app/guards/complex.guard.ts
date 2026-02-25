@@ -1,6 +1,6 @@
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
-import { catchError, map, of, tap } from 'rxjs';
+import { catchError, map, of } from 'rxjs';
 import { ComplexAPIService } from '../services/complex-api.service';
 import { ComplexUtilService } from '../services/complex-util.service';
 
@@ -9,8 +9,6 @@ export const complexIdGuard: CanActivateFn = (route) => {
   const complexId = route.paramMap.get('complexId');
   const apiService = inject(ComplexAPIService);
   const util = inject(ComplexUtilService);
-
-  console.warn('[GUARD] complexIdGuard', { complexId });
 
   if (!complexId) {
     console.error('No complex ID provided in route');

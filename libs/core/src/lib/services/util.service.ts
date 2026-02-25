@@ -154,7 +154,7 @@ export class UtilService {
     hrefArray.pop();
 
     if (projectId && hostname === 'localhost' && pathname.includes('error')) {
-      hrefArray.push(`complexes/${trimmedValue}`);
+      hrefArray.push(`${trimmedValue}`);
       window.open(hrefArray.join('/'), target);
       return;
     }
