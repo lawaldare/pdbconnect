@@ -4,7 +4,7 @@ import { ErrorPageComponent } from './components/error-page/error-page.component
 
 export const appRoutes: Route[] = [
   {
-    path: 'complexes/:complexId',
+    path: ':complexId',
     loadComponent: () => import('./components/pages/main/main.component').then((m) => m.MainComponent),
     title: 'Complex Pages',
     canActivate: [complexIdGuard],
