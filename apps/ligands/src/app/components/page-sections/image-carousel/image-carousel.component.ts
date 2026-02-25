@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
-import { CapitalizePipe, ClickOutsideDirective, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
+import { AssetPipe, CapitalizePipe, ClickOutsideDirective, GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { ImageCarouselComponentFacade } from './image-carousel.facade';
 import { LigandStoreState } from '../../../store/ligand-store.model';
@@ -13,13 +13,12 @@ import { LigandSelectors } from '../../../store/ligand.selectors';
 @Component({
   selector: 'pdbc-image-carousel',
   standalone: true,
-  imports: [CommonModule, ClickOutsideDirective, ToolTipComponent, MaterialModule, CapitalizePipe],
+  imports: [CommonModule, ClickOutsideDirective, ToolTipComponent, MaterialModule, CapitalizePipe, AssetPipe],
   templateUrl: './image-carousel.component.html',
   styleUrl: './image-carousel.component.scss',
 })
 export class ImageCarouselComponent implements AfterViewInit {
-  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
-  public readonly arrowSrc = '/assets/images/left_arrow.svg';
+  public readonly arrowSrc = 'images/left_arrow.svg';
 
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 

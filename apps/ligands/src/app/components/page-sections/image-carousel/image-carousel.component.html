@@ -16,11 +16,11 @@
 <div class="gallery-container">
   <div class="gallery">
     <button class="control" (click)="onPreviousClick()" aria-label="previous button">
-      <img src="{{ arrowSrc }}" class="arrow" alt="left arrow icon" />
+      <img [src]="arrowSrc | asset" class="arrow" alt="left arrow icon" />
     </button>
     <div class="image-container" #imageContainer></div>
     <button class="control" (click)="onNextClick()" aria-label="next button">
-      <img src="{{ arrowSrc }}" class="arrow right" alt="right arrow icon" />
+      <img [src]="arrowSrc | asset" class="arrow right" alt="right arrow icon" />
     </button>
   </div>
   <p class="display">Displayed: {{ currentSlide() }} / {{ total() }}</p>

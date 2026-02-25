@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { HeaderLogoMenuConfig, PDBE_HEADER_LOGO_SRC, PDBE_KB_HEADER_LOGO_SRC } from '@pdbc/core';
+import { AssetPipe, HeaderLogoMenuConfig, PDBE_HEADER_LOGO_SRC, PDBE_KB_HEADER_LOGO_SRC } from '@pdbc/core';
 
 export interface Link {
   name: string;
@@ -12,7 +12,7 @@ export interface Link {
 @Component({
   selector: 'pdbc-pdbe-header-logo-menu',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AssetPipe],
   templateUrl: './pdbe-header-logo-menu.component.html',
   styleUrls: ['./pdbe-header-logo-menu.component.scss'],
 })
@@ -25,7 +25,11 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   public links!: Link[];
 
   ngOnInit() {
-    this.headerLogoSrc = this.headerConfig.logoType === 'PDBe' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
+    if (this.headerConfig.isLigandPage) {
+      this.headerLogoSrc = this.headerConfig.logoPath ?? '';
+    } else {
+      this.headerLogoSrc = this.headerConfig.logoType === 'PDBe' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
+    }
     this.links = this.headerConfig.urls || [];
   }
 

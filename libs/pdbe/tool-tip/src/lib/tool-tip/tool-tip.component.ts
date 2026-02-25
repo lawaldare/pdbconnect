@@ -1,17 +1,18 @@
 import { Component, ElementRef, HostListener, input, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AssetPipe } from '@pdbc/core';
 
 @Component({
   selector: 'lib-tool-tip',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AssetPipe],
   templateUrl: './tool-tip.component.html',
   styleUrl: './tool-tip.component.scss',
 })
 export class ToolTipComponent {
   public readonly minWidth = input<string>('323px');
   public readonly textIcon = input<string>('');
-  public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
+  public readonly helpLogoSrc = 'images/help_outline_24px.svg';
   public showTooltips = false;
 
   @ViewChild('toolTip', { read: ElementRef }) toolTip!: ElementRef;

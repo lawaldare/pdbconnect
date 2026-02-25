@@ -42,6 +42,7 @@ export const headerLogoMenuConfig = {
     { name: 'Documentation', path: 'https://github.com/PDBe-KB/pdbe-kb-manual/wiki', openInNewTab: true },
     { name: 'Training', path: 'https://github.com/PDBeurope/pdbe-notebooks/tree/main/pdbe_ligands_tutorials', openInNewTab: true },
   ],
+  logoPath: 'images/PDBE-KB_logo_2019_white_text.png',
 };
 
 export const homePageUrls = [

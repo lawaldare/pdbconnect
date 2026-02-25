@@ -96,7 +96,7 @@ export class LigandsMainPageComponent implements OnInit {
   public drugTooltip = drugTooltip;
   public reactantTooltip = reactantTooltip;
 
-  public readonly headerLogoMenuConfig = headerLogoMenuConfig;
+  public readonly headerLogoMenuConfig = { ...headerLogoMenuConfig, isLigandPage: true };
   public readonly headerSearchConfig = headerSearchConfig;
 
   public ligandId = signal<string>('');
