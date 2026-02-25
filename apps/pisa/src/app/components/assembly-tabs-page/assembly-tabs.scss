@@ -46,7 +46,7 @@ header {
   }
 }
 
-button {
+button.download-button {
   display: inline-flex;
   padding: 4px 12px;
   align-items: center;
@@ -61,4 +61,24 @@ button {
   width: 180px;
   min-width: 180px;
   max-width: 180px;
+}
+
+aside {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  gap: 10px;
+
+  button {
+    margin-top: 13px;
+  }
+
+  span {
+    color: #1a1c1a;
+    font-size: 19px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 28.5px;
+    display: block;
+  }
 }

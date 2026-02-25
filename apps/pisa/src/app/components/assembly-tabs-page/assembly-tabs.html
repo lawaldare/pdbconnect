@@ -12,7 +12,7 @@
       <p>Resolution: 1.25 Å</p>
     </div>
   </div>
-  <button mat-button [matMenuTriggerFor]="menu">
+  <button class="download-button" mat-button [matMenuTriggerFor]="menu">
     <span>Download files</span>
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
       <path d="M7 10.5L12 15.5L17 10.5H7Z" fill="black" />
@@ -23,6 +23,10 @@
     <span mat-menu-item (click)="downloadInterfacesCSV()">Download interfaces (csv)</span>
   </mat-menu>
 </header>
+<aside>
+  <span>Tell us what you think of the new PISA pages</span>
+  <button class="vf-button vf-button--search-pdbe" (click)="shareYourFeedBack()">Share your feedback</button>
+</aside>
 <main>
   <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)" #tabs>
     <mat-tab>

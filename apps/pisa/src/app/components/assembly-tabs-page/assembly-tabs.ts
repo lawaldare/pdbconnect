@@ -172,4 +172,8 @@ export class AssemblyTabsPageComponent implements OnInit {
     });
     this.downloadFileTypeService.downloadCSV(mappedData, 'interfaces.csv');
   }
+
+  public shareYourFeedBack(): void {
+    window.open('https://docs.google.com/forms/d/e/1FAIpQLScRBLqVDS_PtMuJgeFGMffsJ3Sovj218IYhjLI3hpI-pStPiA/viewform', '_blank');
+  }
 }
