@@ -18,4 +18,5 @@ RUN echo "ASSETS_PATH=$(echo $APP_BASE_HREF | awk '{print substr($0, 2, length($
           envsubst '\$APP_BASE_HREF' < \${indexFileName} > /tmp/index.tmp && \
           mv /tmp/index.tmp \${indexFileName} && \
           nginx -g 'daemon off;'" > /tmp/run.sh
+
 ENTRYPOINT [ "sh", "/tmp/run.sh" ]
