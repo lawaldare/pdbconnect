@@ -12,9 +12,9 @@ export const defaultState: GalleryState = {
 
 export const defaultConfig: GalleryConfig = {
   style: {
-    background: '#121519',
-    width: '900px',
-    height: '500px',
+    background: '#ffffff',
+    height: '90%',
+    width: '80%',
   },
   animation: 'fade',
   loader: {
@@ -25,22 +25,26 @@ export const defaultConfig: GalleryConfig = {
   },
   description: {
     position: 'bottom',
-    overlay: false,
+    overlay: true,
     text: true,
     counter: true,
     style: {
-      color: 'red',
+      background: 'rgba(0,0,0, 0.7)',
     },
+  },
+  thumbnails: {
+    width: 70,
+    height: 70,
+    position: 'bottom',
+    space: 20,
   },
   // bullets: false,
   player: {
     autoplay: false,
     speed: 3000,
   },
-  thumbnails: {
-    width: 120,
-    height: 90,
-    position: 'left',
-    space: 30,
+  navigation: {
+    nextIcon: '>',
+    prevIcon: '<',
   },
 };

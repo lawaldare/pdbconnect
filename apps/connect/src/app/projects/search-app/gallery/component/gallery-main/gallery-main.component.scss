@@ -1,10 +1,11 @@
-gallery-main {
+pdbc-gallery-main {
   flex: 1;
   width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+
   * {
     box-sizing: border-box;
   }
@@ -19,17 +20,21 @@ gallery-main {
   display: flex;
   flex-direction: column;
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     width: 100% !important;
     flex: 1;
+
     // force horizontal on mobile
     flex-direction: column !important;
   }
 }
-.g-box{
+
+.g-box {
   height: 100%;
 }
-.g-box, .g-image-box {
+
+.g-box,
+.g-image-box {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -40,14 +45,11 @@ gallery-main {
 
 .g-layer {
   position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 250;
 }
 
 .g-pan-reset {
   transition: all linear 0.3s;
-  transform: translate3d(0px, 0px, 0px) !important;
+  transform: translate3d(0, 0, 0) !important;
 }
