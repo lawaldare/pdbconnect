@@ -43,6 +43,20 @@ export class ComplexStructuresComponent implements OnInit, AfterViewInit {
 
   private gridApi!: GridApi;
 
+  public headerSubtext = computed(() => {
+    const value = this.selectedBM();
+
+    if (value === 'all') {
+      return '';
+    }
+
+    if (value === 'all-bound') {
+      return `(filtered by bound)`;
+    }
+
+    return `(filtered by ${value})`;
+  });
+
   public rowData = computed(() => {
     const value = this.selectedBM();
     const assemblies = this.summaryData()?.assemblies as Assembly[];

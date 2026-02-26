@@ -6,7 +6,7 @@
 } @if(rowData().length){
 <div id="structures-section">
   <header>
-    <h5 class="title">{{rowData().length}} assemblies representing this complex in the PDB</h5>
+    <h5 class="title">{{rowData().length}} assemblies representing this complex in the PDB <span>{{headerSubtext()}}</span></h5>
     <button mat-button [matMenuTriggerFor]="menu">
       <span>Download files</span>
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -20,7 +20,7 @@
   </header>
   @if(uniqueBoundMacromolecules()?.length && boundMacromolecules().length){
   <section class="filter" id="structure-bound-filters-tour">
-    <p>{{uniqueBoundMacromolecules()?.length}} unique bound macromolecules found in {{assembliesWithBoundMacromolecules()?.length}} assemblies</p>
+    <!-- <p>{{uniqueBoundMacromolecules()?.length}} unique bound macromolecules found in {{assembliesWithBoundMacromolecules()?.length}} assemblies</p> -->
     <div class="filter-action">
       <p>Filter by bound macromolecule:</p>
       <mat-select [(ngModel)]="selectedBM">
