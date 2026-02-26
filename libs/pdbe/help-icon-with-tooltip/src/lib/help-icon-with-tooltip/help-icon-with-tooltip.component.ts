@@ -1,10 +1,10 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '@pdbc/core';
+import { AssetPipe, MaterialModule } from '@pdbc/core';
 
 @Component({
   selector: 'lib-help-icon-with-tooltip',
-  imports: [CommonModule, MaterialModule],
+  imports: [CommonModule, MaterialModule, AssetPipe],
   templateUrl: './help-icon-with-tooltip.component.html',
   styleUrl: './help-icon-with-tooltip.component.scss',
 })
