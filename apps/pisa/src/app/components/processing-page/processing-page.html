@@ -20,19 +20,20 @@
       NOTE: Only share your job ID with trusted parties. Once your structure file is uploaded, it will be accessible via the PDBePISA results page to anyone with the
       job ID link.
     </p>
-    <div class="analysing-footer">
+    <!-- <div class="analysing-footer">
       <p>
         <span>Curious fact while you’re waiting:</span><br />
         The largest protein in the entire PDB archive is still really small.
       </p>
-    </div>
+    </div> -->
     }
 
     <!-- Error View -->
     @if (pisaUtilService.pageView() === 'ERROR') {
     <section>
       <h3>PISA failed</h3>
-      <p class="analysing-text">Your file was uploaded, but PISA couldn’t complete the analysis. Please try again later or verify that your structure is valid.</p>
+      <p class="analysing-text error-message">{{pisaUtilService.errorMessage()}}</p>
+      <!-- <p class="analysing-text">Your file was uploaded, but PISA couldn’t complete the analysis. Please try again later or verify that your structure is valid.</p> -->
     </section>
     }
   </section>

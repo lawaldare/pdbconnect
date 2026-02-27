@@ -9,7 +9,7 @@ import { EMPTY, expand, filter, map, Observable, switchMap, take, throwIfEmpty, 
 export class PisaApiService {
   private BASE_API = `${environment.baseUrl}pdbe/pdbe-kb/pisa/api/`;
   private readonly POLL_MS = 3000;
-  private readonly MAX_POLLS = 200; // ~90s
+  private readonly MAX_POLLS = 400;
 
   private readonly http = inject(HttpClient);
 

@@ -101,7 +101,6 @@ export class ComplexesTabComponent implements OnInit {
 
   private async updatedSelectedRow(data: any) {
     this.selectedRowData.set(data);
-    console.log('Selected row:', data);
     await this.loadMVS(data);
   }
 

@@ -135,7 +135,7 @@
       <h3 class="title">or use a PDB entry ID</h3>
       <form (ngSubmit)="onSubmit()" #form="ngForm">
         <div class="input-field-form">
-          <input type="text" placeholder="PDB entry ID" [(ngModel)]="pdbEntryId" [class.error]="hasError()" (input)="onTyping($event)" />
+          <input type="text" placeholder="PDB entry ID" name="pdbEntryId" [(ngModel)]="pdbEntryId" [class.error]="hasError()" (input)="onTyping($event)" />
           <button class="vf-button vf-button--search-pdbe" (click)="onSubmit()">Submit</button>
         </div>
       </form>

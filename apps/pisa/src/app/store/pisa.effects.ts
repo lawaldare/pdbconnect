@@ -43,11 +43,9 @@ export class PisaEffects {
               .pipe(
                 map((response) => PisaActions.submitPISAJobSuccess({ jobId: response.job_id })),
                 catchError((error) => {
+                  this.pisaUtilService.errorMessage.set(error.error.message || 'Job submission failed');
                   this.pisaUtilService.setPageView('ERROR');
                   console.error('submitJob failed:', error);
-
-                  // this.router.navigate(['/processing'], { queryParamsHandling: 'preserve' });
-                  // this.store.dispatch(PisaActions.submitPISAJobSuccess({ jobId: '60462b075dfef88f8334dfad33b24684' }));
                   return of(PisaActions.submitPISAJobFailure());
                 })
               );
@@ -57,47 +55,99 @@ export class PisaEffects {
     )
   );
 
+  // getResultsFromJobId$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(PisaActions.getResultsFromJobId),
+  //     switchMap(({ jobId }) => {
+  //       return forkJoin({
+  //         assemblyResults: this.pisaAPIService.getAssemblyResults(jobId),
+  //         interfaceResults: this.pisaAPIService.getInterfaceResults(jobId),
+  //       }).pipe(
+  //         switchMap(({ assemblyResults, interfaceResults }) => [
+  //           PisaActions.getInterfaceResultForJobIdSuccess({ interfaceResults }),
+  //           PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults }),
+  //           PisaActions.assemblyAndInterfaceResultsCollectedForJobId(),
+  //         ]),
+  //         catchError((err) => {
+  //           console.error('getAssemblyResults failed:', err);
+  //           return of(PisaActions.assemblyAndInterfaceResultsCollectedForJobIdFailure());
+  //         })
+  //       );
+  //     })
+  //   )
+  // );
+
   getResultsFromJobId$ = createEffect(() =>
     this.actions$.pipe(
       ofType(PisaActions.getResultsFromJobId),
-      switchMap(({ jobId }) => {
-        return forkJoin({
-          assemblyResults: this.pisaAPIService.getAssemblyResults(jobId),
-          interfaceResults: this.pisaAPIService.getInterfaceResults(jobId),
-        }).pipe(
-          switchMap(({ assemblyResults, interfaceResults }) => [
-            PisaActions.getInterfaceResultForJobIdSuccess({ interfaceResults }),
-            PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults }),
-            PisaActions.assemblyAndInterfaceResultsCollectedForJobId(),
-          ]),
+      switchMap(({ jobId }) =>
+        this.pisaAPIService.getInterfaceResults(jobId).pipe(
+          switchMap((interfaceResults) =>
+            this.pisaAPIService
+              .getAssemblyResults(jobId)
+              .pipe(
+                switchMap((assemblyResults) => [
+                  PisaActions.getInterfaceResultForJobIdSuccess({ interfaceResults }),
+                  PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults }),
+                  PisaActions.assemblyAndInterfaceResultsCollectedForJobId(),
+                ])
+              )
+          ),
           catchError((err) => {
-            console.error('getAssemblyResults failed:', err);
+            console.error('getResults failed:', err);
+            this.pisaUtilService.errorMessage.set(err.error.message || 'Failed to retrieve PISA results');
             return of(PisaActions.assemblyAndInterfaceResultsCollectedForJobIdFailure());
           })
-        );
-      })
+        )
+      )
     )
   );
+
+  // getResults$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(PisaActions.submitPISAJobSuccess),
+  //     switchMap(({ jobId }) => {
+  //       return forkJoin({
+  //         assemblyResults: this.pisaAPIService.getAssemblyResults(jobId),
+  //         interfaceResults: this.pisaAPIService.getInterfaceResults(jobId),
+  //       }).pipe(
+  //         switchMap(({ assemblyResults, interfaceResults }) => [
+  //           PisaActions.getInterfaceResultForJobIdSuccess({ interfaceResults }),
+  //           PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults }),
+  //           PisaActions.assemblyAndInterfaceResultsCollectedForJobId(),
+  //         ]),
+  //         catchError((err) => {
+  //           console.error('getAssemblyResults failed:', err);
+  //           return of(PisaActions.assemblyAndInterfaceResultsCollectedForJobIdFailure());
+  //         })
+  //       );
+  //     })
+  //   )
+  // );
 
   getResults$ = createEffect(() =>
     this.actions$.pipe(
       ofType(PisaActions.submitPISAJobSuccess),
-      switchMap(({ jobId }) => {
-        return forkJoin({
-          assemblyResults: this.pisaAPIService.getAssemblyResults(jobId),
-          interfaceResults: this.pisaAPIService.getInterfaceResults(jobId),
-        }).pipe(
-          switchMap(({ assemblyResults, interfaceResults }) => [
-            PisaActions.getInterfaceResultForJobIdSuccess({ interfaceResults }),
-            PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults }),
-            PisaActions.assemblyAndInterfaceResultsCollectedForJobId(),
-          ]),
+      switchMap(({ jobId }) =>
+        this.pisaAPIService.getInterfaceResults(jobId).pipe(
+          switchMap((interfaceResults) =>
+            this.pisaAPIService
+              .getAssemblyResults(jobId)
+              .pipe(
+                switchMap((assemblyResults) => [
+                  PisaActions.getInterfaceResultForJobIdSuccess({ interfaceResults }),
+                  PisaActions.getAssemblyResultForJobIdSuccess({ assemblyResults }),
+                  PisaActions.assemblyAndInterfaceResultsCollectedForJobId(),
+                ])
+              )
+          ),
           catchError((err) => {
-            console.error('getAssemblyResults failed:', err);
+            console.error('getResults failed:', err);
+            this.pisaUtilService.errorMessage.set(err.error.message || 'Failed to retrieve PISA results');
             return of(PisaActions.assemblyAndInterfaceResultsCollectedForJobIdFailure());
           })
-        );
-      })
+        )
+      )
     )
   );
 

@@ -14,6 +14,8 @@ export class PisaUtilService {
   private _pageView = signal<PageView>('INITIAL');
   public pageView = this._pageView.asReadonly();
 
+  public errorMessage = signal<string>('');
+
   private _loadingView = signal<LoadingView>('INITIAL');
   public loadingView = this._loadingView.asReadonly();
 
