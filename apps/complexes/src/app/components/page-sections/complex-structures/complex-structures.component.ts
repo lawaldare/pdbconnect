@@ -51,7 +51,7 @@ export class ComplexStructuresComponent implements OnInit, AfterViewInit {
     }
 
     if (value === 'all-bound') {
-      return `(filtered by bound)`;
+      return `(filtered by all bound)`;
     }
 
     return `(filtered by ${value})`;
