@@ -99,6 +99,7 @@ export class AssemblyTabsPageComponent implements OnInit {
               this.pisaStore.dispatch(PisaActions.submitPISAJob({ payload }));
             } else {
               console.error('No assembly payload found in session storage.');
+              this.router.navigate(['/']);
               // this.onStartButtonClicked();
             }
           }

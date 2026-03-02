@@ -33,8 +33,10 @@ export class ProcessingPageComponent implements AfterViewInit {
 
   public readonly loader = this.pisaUtilService.getPisaAssetUrl('assets/images/loader.gif');
 
+  private jobIdFromRoute = signal<string>('');
+
   public savedLink = computed(() => {
-    const jobId = this.jobId();
+    const jobId = this.jobId() || this.jobIdFromRoute();
     if (!jobId) return '';
     return `${environment.baseUrl}pdbe/pisa/processing/${jobId}`;
   });
@@ -43,6 +45,7 @@ export class ProcessingPageComponent implements AfterViewInit {
 
   public modelSym = this.facade.modelSym;
   public label = this.facade.label;
+  public simplifiedSpacegroup = this.facade.simplifiedSpacegroup;
 
   @ViewChild('viewer') container!: ElementRef<HTMLElement>;
 
@@ -54,6 +57,8 @@ export class ProcessingPageComponent implements AfterViewInit {
         switchMap((params) => {
           const jobId = params['jobId'];
           if (jobId) {
+            this.pisaStore.dispatch(PisaActions.setJobID({ jobId }));
+            this.jobIdFromRoute.set(jobId);
             this.paramsAvailable.set(true);
             this.loadDownloadedModelIntoMolstar(jobId);
             this.pisaStore.dispatch(PisaActions.getResultsFromJobId({ jobId }));
@@ -208,6 +213,12 @@ export class ProcessingPageComponent implements AfterViewInit {
 
       const model = data.cell?.obj?.data.models?.[0] || data.cell?.obj?.data;
       this.facade.model.set(model);
+
+      const detailForAssemblyTabs = {
+        label: this.label(),
+        spacegroup: this.simplifiedSpacegroup(),
+      };
+      this.pisaUtilService.saveDataInSessionStorage(detailForAssemblyTabs, 'pisa-assembly-details');
 
       if (!model) return;
 
