@@ -125,7 +125,7 @@ p {
   border-left: 3px solid #085f5c;
   padding: 10px 15px;
   gap: 10px;
-  margin-bottom: 30px;
+  margin-bottom: 30px !important;
 }
 
 .heading-style-B {
@@ -139,7 +139,7 @@ p {
   padding: 10px 15px;
 
   /* margin-bottom: 30px; */
-  margin: 0 0 40px;
+  margin: 0 0 40px !important;
 }
 
 .paragraph-style-A {
@@ -160,7 +160,7 @@ p {
 
   // text-align: justify;
   color: #000000;
-  margin-bottom: 20px;
+  margin-bottom: 20px !important;
 }
 
 .small-link-style {
@@ -201,7 +201,7 @@ p {
   .heading-style-B {
     font-weight: 700;
     font-size: 42px;
-    margin: 0 0 40px;
+    margin: 0 0 40px !important;
     padding: 0 15px;
   }
 
@@ -243,7 +243,7 @@ p {
   .heading-style-B {
     font-weight: 500;
     font-size: 30px;
-    margin: 0 0 40px;
+    margin: 0 0 40px !important;
     padding: 0 15px;
   }
 
@@ -435,7 +435,7 @@ p {
 
 .leg-size {
   width: 100%;
-  margin: auto;
+  margin: auto !important;
 }
 
 .img-holder {
@@ -449,8 +449,8 @@ p {
 }
 
 .content-holder-bg {
-  margin-top: 60px;
-  margin-bottom: 80px;
+  margin-top: 60px !important;
+  margin-bottom: 80px !important;
 }
 
 .content-holder {
@@ -458,13 +458,13 @@ p {
   margin-top: 100px;
 
   /* margin-bottom: 32px; */
-  margin-bottom: 80px;
+  margin-bottom: 80px !important;
 }
 
 .text-holder {
-  margin-bottom: 30px;
-  margin-left: 15px;
-  margin-right: 100px;
+  margin-bottom: 30px !important;
+  margin-left: 15px !important;
+  margin-right: 100px !important;
 }
 
 .scroll-menu-item {
@@ -476,7 +476,7 @@ p {
   border-left: 1px solid #085f5c;
   padding: 0 10px;
   cursor: pointer;
-  margin-bottom: 0;
+  margin-bottom: 0 !important;
   padding-bottom: 5px;
 }
 
@@ -486,7 +486,7 @@ p {
 
 ul.no-bullets {
   list-style-type: none;
-  margin: 0;
+  margin: 0 !important;
   padding: 0;
 }
 
@@ -609,7 +609,7 @@ div.mat-expansion-panel-content {
   border-style: solid;
   border-color: #b6d1d0;
   border-width: 3px;
-  margin: 8px;
+  margin: 8px !important;
   height: 275px;
   vertical-align: middle;
 
@@ -730,7 +730,7 @@ html {
 
 .alphafold-nav ul {
   list-style-type: none;
-  margin-left: 15px;
+  margin-left: 15px !important;
 }
 
 .alphafold-nav ul li {
@@ -752,7 +752,7 @@ html {
 }
 
 .after-nav {
-  margin: 80px 0 48px;
+  margin: 80px 0 48px !important;
 }
 
 .beta_test {
@@ -763,7 +763,7 @@ html {
 }
 
 .menu-nav {
-  margin-top: 40px;
+  margin-top: 40px !important;
 }
 
 /* .w3-animate-left {
