@@ -11,19 +11,7 @@ declare const $: any;
   templateUrl: './graph-schema.component.html',
   imports: [CommonModule, HeaderSearchComponent, NavTabsComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  styles: [
-    `
-      ::ng-deep graph-schema-explorer {
-        #search-term.search.form {
-          width: 85% !important;
-        }
-
-        span.reset {
-          top: 6px !important;
-        }
-      }
-    `,
-  ],
+  styles: [],
 })
 export class GraphSchemaComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
@@ -35,6 +23,19 @@ export class GraphSchemaComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    setTimeout(() => {
+      const host = document.querySelector('graph-schema-explorer') as any;
+      const root = host?.shadowRoot;
+      const menu = root?.querySelector('menu-list') as any;
+      const menuRoot = menu?.shadowRoot;
+
+      const input = menuRoot?.querySelector('#search-term') as HTMLInputElement;
+      const reset = menuRoot?.querySelector('.reset') as HTMLElement;
+
+      if (input) input.style.width = '85%';
+      if (reset) reset.style.top = '6px';
+    }, 500);
+
     $(document).foundation();
     $(document).foundationExtendEBI();
   }
