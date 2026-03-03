@@ -307,6 +307,10 @@ mat-tab-header {
   color: #4caf50 !important;
 }
 
+.mat-mdc-button.entry-dropdown-button .mdc-button__label {
+  display: flex !important;
+}
+
 .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background,
 .mdc-checkbox__native-control:enabled:indeterminate ~ .mdc-checkbox__background {
   background-color: #4caf50 !important;
