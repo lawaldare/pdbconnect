@@ -1,0 +1,62 @@
+.header-nav-section {
+  background-color: #b6d1d0;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+nav {
+  ul {
+    li {
+      a {
+        font-size: 16px !important;
+      }
+    }
+  }
+}
+
+#masthead {
+  position: sticky;
+  top: 0;
+  z-index: 1001;
+}
+
+#masthead a {
+  color: #000000;
+}
+
+#masthead a:visited {
+  color: #000000;
+}
+
+.masthead-inner {
+  padding-top: 0 !important;
+}
+
+.padding-15 {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.dropdown.menu > li.is-dropdown-submenu-parent > a::after {
+  border-color: #000000 transparent transparent;
+}
+@media screen and (width <= 400px) {
+  #local-nav {
+    font-size: 90% !important;
+  }
+}
+@media print, screen and (width <= 1320px) {
+  /* .padding-15 {
+        padding-left: 0;
+        padding-right: 0;
+    } */
+  .header-nav-section {
+    background-color: #b6d1d0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  #local-nav {
+    padding-left: 0;
+  }
+}
