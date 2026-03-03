@@ -5,11 +5,11 @@
 export const environment = {
   production: false,
   // gaTag: "UA-142778242-1",
-  gaTag: "G-0F9Z9LKQ19",
+  gaTag: 'G-0F9Z9LKQ19',
   // plot_data: "assets/data/plot_data.json",
-  plot_data: "https://wwwdev.ebi.ac.uk/pdbe/static/kb_statistics/plot_data.json",
+  plot_data: 'https://wwwdev.ebi.ac.uk/pdbe/static/kb_statistics/plot_data.json',
   // partners_last_update: "assets/data/partners_last_update.json"
-  partners_last_update: "https://wwwdev.ebi.ac.uk/pdbe/static/kb_statistics/partners_last_update.json"
+  partners_last_update: 'https://wwwdev.ebi.ac.uk/pdbe/static/kb_statistics/partners_last_update.json',
 };
 
 /*
