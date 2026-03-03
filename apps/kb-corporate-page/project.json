@@ -1,0 +1,130 @@
+{
+  "name": "kb-corporate-page",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/kb-corporate-page/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/kb-corporate-page",
+        "browser": "apps/kb-corporate-page/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/kb-corporate-page/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/kb-corporate-page/src/assets",
+            "output": "assets"
+          }
+        ],
+        "styles": [
+          "./node_modules/leaflet/dist/leaflet.css",
+          "./node_modules/leaflet.markercluster/dist/MarkerCluster.css",
+          "./node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css",
+          "@angular/material/prebuilt-themes/indigo-pink.css",
+          "apps/kb-corporate-page/src/styles.scss"
+        ],
+        "scripts": [],
+        "stylePreprocessorOptions": {
+          "includePaths": ["libs/core/src/lib/styles"]
+        }
+      },
+      "configurations": {
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/kb-corporate-page/src/environments/environment.ts",
+              "with": "apps/kb-corporate-page/src/environments/environment.prod.ts"
+            }
+          ],
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "3mb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "200kb",
+              "maximumError": "400kb"
+            }
+          ],
+          "aot": true,
+          "buildOptimizer": true,
+          "extractLicenses": true,
+          "namedChunks": false,
+          "optimization": true,
+          "sourceMap": true,
+          "vendorChunk": false,
+          "outputHashing": "all",
+          "baseHref": "$APP_BASE_HREF"
+        },
+        "development": {
+          "aot": true,
+          "extractLicenses": true,
+          "namedChunks": false,
+          "optimization": true,
+          "sourceMap": true,
+          "outputHashing": "all",
+          "baseHref": "$APP_BASE_HREF"
+        },
+        "local": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "buildTarget": "kb-corporate-page:build:local",
+        "port": 4100
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "kb-corporate-page:build:production"
+        },
+        "development": {
+          "buildTarget": "kb-corporate-page:build:development"
+        }
+      },
+      "defaultConfiguration": ""
+    },
+    "extract-i18n": {
+      "executor": "@angular/build:extract-i18n",
+      "options": {
+        "buildTarget": "kb-corporate-page:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/kb-corporate-page/jest.config.ts",
+        "tsConfig": "apps/kb-corporate-page/tsconfig.spec.json"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "kb-corporate-page:build",
+        "port": 4200,
+        "staticFilePath": "dist/apps/kb-corporate-page/browser",
+        "spa": true
+      }
+    }
+  }
+}
