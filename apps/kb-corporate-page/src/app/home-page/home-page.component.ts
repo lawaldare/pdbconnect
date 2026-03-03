@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, computed } from '@angular/core';
+import { Component, OnInit, inject, computed, AfterViewInit } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { HeaderJumbotronComponent } from '../header-jumbotron/header-jumbotron.component';
@@ -9,13 +9,15 @@ import { FaqsListComponent } from '../faqs-list/faqs-list.component';
 import { CorporatePagesBioschemasService } from '../services/corporate-pages.bioschemas';
 import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
 
+declare const $: any;
+
 @Component({
   selector: 'pdbc-app-home-page',
   templateUrl: './home-page.component.html',
   styleUrls: ['./home-page.component.scss'],
   imports: [CommonModule, HeaderJumbotronComponent, NavTabsComponent, HomeBookmarksComponent, KeyFeaturesListComponent, FaqsListComponent],
 })
-export class HomePageComponent implements OnInit {
+export class HomePageComponent implements OnInit, AfterViewInit {
   private readonly bioschemasService = inject(CorporatePagesBioschemasService);
   private readonly cpApiService = inject(CorporatePagesApiService);
   public readonly realeaseData = toSignal(this.cpApiService.getReleaseData());
@@ -50,5 +52,10 @@ export class HomePageComponent implements OnInit {
 
   ngOnInit(): void {
     this.bioschemasService.buildBioschemasJSON();
+  }
+
+  ngAfterViewInit() {
+    $(document).foundation();
+    $(document).foundationExtendEBI();
   }
 }
