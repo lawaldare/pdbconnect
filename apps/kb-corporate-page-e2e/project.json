@@ -1,0 +1,26 @@
+{
+  "name": "kb-corporate-page-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/kb-corporate-page-e2e/src",
+  "tags": [],
+  "implicitDependencies": ["kb-corporate-page"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/kb-corporate-page-e2e/cypress.config.ts",
+        "testingType": "e2e",
+        "devServerTarget": "kb-corporate-page:serve"
+      },
+      "configurations": {
+        "production": {
+          "devServerTarget": "kb-corporate-page:serve:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

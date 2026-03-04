@@ -29,4 +29,22 @@ export class BioschemasService {
       renderer.removeChild(this.document.head, script);
     }
   }
+
+  public insertSchema(schema: Record<string, any>): void {
+    const className = 'structured-data';
+    let script: any;
+    let shouldAppend = false;
+    if (this.document.head.getElementsByClassName(className).length) {
+      script = this.document.head.getElementsByClassName(className)[0];
+    } else {
+      script = this.document.createElement('script');
+      shouldAppend = true;
+    }
+    script.setAttribute('class', className);
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(schema);
+    if (shouldAppend) {
+      this.document.head.appendChild(script);
+    }
+  }
 }
