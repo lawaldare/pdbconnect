@@ -1,0 +1,27 @@
+.faq-title {
+  font-weight: 500;
+  font-size: 20px;
+  color: #000000;
+}
+
+.faq-content {
+  margin-top: 10px;
+  margin-right: 20px;
+  font-size: 16px;
+  line-height: 2;
+  height: auto;
+}
+
+.faq-border {
+  border-bottom: 1px solid #e5e8ed;
+}
+
+.mat-expansion-panel-header {
+  padding-left: 0px;
+  height: auto !important;
+}
+
+.mat-expansion-panel {
+  box-shadow: none;
+  padding: 20px 0;
+}

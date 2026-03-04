@@ -1,0 +1,65 @@
+<div class="home-bookmarks">
+  @if(showquicklinks){
+  <div
+    id="home-bookmarks-1"
+    (click)="scroll('quicklinks')"
+    style="margin-left: auto !important; margin-right: auto !important; margin-top: 2rem !important; margin-bottom: 4rem !important"
+    onclick="gtag('event', 'bookmark_scroll', {'event_category': 'bookmark_href_click', 'event_label': 'quick_links', 'value': undefined})"
+  >
+    Quick Links
+  </div>
+  } @else {
+  <div style="visibility: hidden; margin-bottom: 1rem !important"></div>
+  }
+
+  <div id="home-bookmarks-2" style="margin-left: auto !important; margin-right: auto !important; margin-bottom: 2rem !important">
+    <a
+      class="anchor-bookmark"
+      href="https://www.ebi.ac.uk/about/contact/support/PDBe"
+      target="_blank"
+      onclick="gtag('event', 'link_visit', {'event_category': 'bookmark_href_click', 'event_label': 'feedback', 'value': undefined})"
+    >
+      Feedback
+    </a>
+  </div>
+  <div id="home-bookmarks-3" class="icon-bookmark" style="margin-left: auto !important; margin-right: auto !important; margin-bottom: 0.5rem !important">
+    <a
+      class="anchor-bookmark"
+      target="_blank"
+      href="https://www.youtube.com/user/ProteinDataBank"
+      onclick="gtag('event', 'link_visit', {'event_category': 'bookmark_href_click', 'event_label': 'youtube', 'value': undefined})"
+    >
+      <!-- <a class="anchor-bookmark" (click)="openHrefTabWithGA('https://www.youtube.com/user/ProteinDataBank', 'event', 'link_visit', {'event_category': 'bookmark_href_click', 'event_label': 'youtube', 'value': undefined})"> -->
+      <i class="icon icon-common icon-youtube"></i>
+    </a>
+  </div>
+  <div id="home-bookmarks-4" class="icon-bookmark" style="margin-left: auto !important; margin-right: auto !important; margin-bottom: 0.5rem !important">
+    <a
+      class="anchor-bookmark"
+      target="_blank"
+      href="https://twitter.com/PDBeurope"
+      onclick="gtag('event', 'link_visit', {'event_category': 'bookmark_href_click', 'event_label': 'twitter', 'value': undefined})"
+    >
+      <i class="icon icon-common icon-twitter"></i>
+    </a>
+  </div>
+  <div id="home-bookmarks-5" class="icon-bookmark" style="margin-left: auto !important; margin-right: auto !important; margin-bottom: 3rem !important">
+    <a
+      class="anchor-bookmark"
+      target="_blank"
+      href="https://facebook.com/proteindatabank/"
+      onclick="gtag('event', 'link_visit', {'event_category': 'bookmark_href_click', 'event_label': 'facebook', 'value': undefined})"
+    >
+      <i class="icon icon-common icon-facebook"></i>
+    </a>
+  </div>
+  <!-- <div id="home-bookmarks-6" (click)="scroll('content');openHrefTabWithGA(null, 'event', 'bookmark_scroll', {'event_category': 'bookmark_href_click', 'event_label': 'back_to_top', 'value': undefined})" style="margin-left: auto !important; margin-right: auto !important; margin-bottom: 0rem !important" onclick="gtag('event', 'bookmark_scroll', {'event_category': 'bookmark_href_click', 'event_label': 'back_to_top', 'value': undefined})">Back to top</div> -->
+  <div
+    id="home-bookmarks-6"
+    (click)="scroll('content')"
+    style="margin-left: auto !important; margin-right: auto !important; margin-bottom: 0rem !important"
+    onclick="gtag('event', 'bookmark_scroll', {'event_category': 'bookmark_href_click', 'event_label': 'back_to_top', 'value': undefined})"
+  >
+    Back to top
+  </div>
+</div>
