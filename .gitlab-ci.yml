@@ -33,7 +33,7 @@ stages:
 variables:
   GIT_DEPTH: 0
   BUILD_CONF: development
-  NODE_VERSION: 22
+  NODE_VERSION: 22 # Please update .nvmrc when changing this and inform the frontend development team
 
 format-check:
   stage: test
