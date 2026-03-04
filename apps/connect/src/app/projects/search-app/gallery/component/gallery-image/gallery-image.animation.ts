@@ -4,11 +4,11 @@ export const animation: any = [
     state('fade', style({ opacity: 1 })),
     transition('none => fade', [
       style({
-        opacity: 0
+        opacity: 0,
       }),
-      animate('0.5s ease-in')
-    ])
-  ])
+      animate('0.5s ease-in'),
+    ]),
+  ]),
 ];
 // export const animation: AnimationEntryMetadata = [
 //   trigger('imgIn', [

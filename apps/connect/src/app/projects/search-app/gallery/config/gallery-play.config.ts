@@ -1,5 +1,5 @@
 export interface GalleryPlayConfig {
-    progress?: boolean;
-    autoplay?: boolean;
-    speed?: number;
+  progress?: boolean;
+  autoplay?: boolean;
+  speed?: number;
 }

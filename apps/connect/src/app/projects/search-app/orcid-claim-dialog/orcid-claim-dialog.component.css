@@ -6,54 +6,54 @@ h1 {
 }*/
 
 .mat-dialog-content {
-    margin:0px !important;
+  margin: 0px !important;
 }
 
-.loginMessage{
-  text-align:center;
-  margin-bottom:10px;
+.loginMessage {
+  text-align: center;
+  margin-bottom: 10px;
 }
 
 .successMessage {
-  text-align:center;
-  margin-bottom:10px;
+  text-align: center;
+  margin-bottom: 10px;
   background-color: lightgreen;
-  padding:5px;
+  padding: 5px;
 }
 
 .errorMessage {
-  text-align:center;
-  margin-bottom:10px;
+  text-align: center;
+  margin-bottom: 10px;
   background-color: lightcoral;
-  padding:5px;
+  padding: 5px;
 }
 
-.claimMessage{
-  text-align:left;
-  margin-bottom:5px;
+.claimMessage {
+  text-align: left;
+  margin-bottom: 5px;
 }
 
-.claimList{
-  text-align:left;
-  margin-bottom:10px;
+.claimList {
+  text-align: left;
+  margin-bottom: 10px;
   max-width: 70vw;
   max-height: 75px;
   overflow: auto;
 }
 
 .loginButtons {
-    text-align: center;
+  text-align: center;
 }
 
 a {
- color: #0932d6;
- outline: 0;
+  color: #0932d6;
+  outline: 0;
 }
 
-a:active{
-    color: #896b25
+a:active {
+  color: #896b25;
 }
 
 a:visited {
-    color: #58669e;
+  color: #58669e;
 }

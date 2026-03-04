@@ -1,40 +1,34 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
   <head>
     <script src="assets/jquery-3.1.1.min.js"></script>
     <script src="build/solr-core.js"></script>
     <script src="build/solr-pdbe.js"></script>
     <script>
-    var btnClick = function(){
+      var btnClick = function () {
+        var selectedManager = PDBe.SolrApp.appManagers[$('#managerName').val()];
 
-      var selectedManager = PDBe.SolrApp.appManagers[$('#managerName').val()];
+        var searchText = $('#searchText').val();
+        if (typeof searchText != 'undefined' && searchText != '') {
+          var santisedVal = 'text:' + searchText + ' AND {!qf=pdb_id}2*';
 
-      var searchText = $('#searchText').val();
-      if(typeof searchText != 'undefined' && searchText != ''){
+          //Add value to the store
+          selectedManager.store.addByValue('fq', santisedVal);
+        }
 
-        var santisedVal = 'text:'+searchText+' AND {!qf=pdb_id}2*';
+        var solrUrl = selectedManager.solrUrl[$('#type').val()] + 'select?wt=json&' + selectedManager.store.string();
 
-        //Add value to the store
-        selectedManager.store.addByValue('fq', santisedVal);
+        $('#res').html(solrUrl);
 
-      }
-
-      var solrUrl = selectedManager.solrUrl[$('#type').val()] +'select?wt=json&'+selectedManager.store.string(); 
-
-      $('#res').html(solrUrl);
-	  
-	  //Make an ajax request to the SolrUrl to get the search results
-
-    }
-
+        //Make an ajax request to the SolrUrl to get the search results
+      };
     </script>
   </head>
 
   <body>
     <h1>Typescript Solr Demo</h1>
     <input type="text" id="searchText" placeholder="search term" value="hemoglobin" />
-    Manager : 
+    Manager :
     <select id="managerName">
       <option value="entryManager">Entry Manager</option>
       <option value="refineManager">Refine Manager</option>
@@ -43,14 +37,13 @@
       <option value="moleculeManager">Molecule Manager</option>
       <option value="seqFamilyManager">SeqFamily Manager</option>
     </select>
-    Type : 
+    Type :
     <select id="type">
       <option value="normal">Normal</option>
       <option value="latest">Latest</option>
     </select>
     <button onclick="btnClick()">Run query</button>
-  
-    <div id="res" style="word-wrap: break-word;"></div>
-  </body>
 
+    <div id="res" style="word-wrap: break-word"></div>
+  </body>
 </html>
