@@ -353,7 +353,7 @@ export class PivotResultCardComponent implements OnInit {
           if (item.indexOf('|-1') < 0) {
             nameArr[j++] =
               '<span style="white-space: nowrap;">' +
-              '<a class="ext-1" style="color:#0932d6; border-bottom-width: 0px" target="_blank" href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=' +
+              '<a class="ext-1" style="font-size: 13px; border-bottom-width: 0px" target="_blank" href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=' +
               itemArr[1] +
               '">' +
               '<i>' +

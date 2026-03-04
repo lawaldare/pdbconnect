@@ -89,9 +89,9 @@
           my-tooltip
           tooltipImage="{{pdbeUrl}}static/files/pdbechem_v2/{{comp}}_200.svg"
           tooltipTitle="{{comp}}"
-          style="color: #0932d6"
           target="_blank"
           (click)="recordUserInteraction('bound_ligands_link')"
+          style="font-size: 13px"
           href="{{pdbeUrl}}entry/pdb/{{resultData.doclist.docs[0].pdb_id}}/bound/{{comp}}"
           >{{comp}} </a
         >&nbsp;&nbsp; }
@@ -104,8 +104,8 @@
           my-tooltip
           tooltipImage="{{pdbeUrl}}static/files/pdbechem_v2/{{comp}}_200.svg"
           tooltipTitle="{{comp}}"
-          style="color: #0932d6"
           target="_blank"
+          style="font-size: 13px"
           (click)="recordUserInteraction('modified_residues_link')"
           href="{{pdbeUrl}}entry/pdb/{{resultData.doclist.docs[0].pdb_id}}/modified/{{comp}}"
           >{{comp}} </a
@@ -123,8 +123,8 @@
             [isCarbImage]="true"
             tooltipImage="{{pdbeUrl}}static/entry/{{resultData.doclist.docs[0].pdb_id}}_SNFG_{{carbentity}}.png"
             tooltipTitle="Molecule {{ci + 1}}"
-            style="color: #0932d6"
             target="_blank"
+            style="font-size: 13px"
             (click)="recordUserInteraction('carb_polymer_link')"
             href="{{pdbeUrl}}entry/pdb/{{resultData.doclist.docs[0].pdb_id}}/branched/{{carbentity}}"
             >{{carbPolymers[ci].join(', ')}}</a
@@ -171,23 +171,22 @@
       <!-- Uniprot -->
       @if (displayUnpAccessions.length > 0) {
       <div class="columns small-12 marginTop10" style="max-height: 80px; overflow-y: auto">
-        <img
-          src="https://www.ebi.ac.uk/pdbe/pdbe-kb/static/icon/favicon-32x32.png"
-          title="Protein Data Bank in Europe - Knowledge Base"
-          style="border: 0; height: 15px; width: 15px"
-        /><strong style="margin-left: 2px">PDBe-KB: </strong>
+        <img src="assets/icons/pdbe-kb_logo.webp" title="Protein Data Bank in Europe - Knowledge Base" style="border: 0; height: 15px; width: 15px" /><strong
+          style="margin-left: 2px"
+          >PDBe-KB:
+        </strong>
         @for (unpAccession of displayUnpAccessions; track $index; let ui = $index) {
         <a
-          style="color: #0932d6"
           target="_blank"
           my-tooltip
           pdbeKbId="{{(unpAccession.indexOf('-') > -1) ? unpAccession.split('-')[0] : unpAccession}}"
           tooltipTitle="Data available for {{(unpAccession.indexOf('-') > -1) ? unpAccession.split('-')[0] : unpAccession}}"
           href="{{pdbeUrl}}pdbe-kb/proteins/{{(unpAccession.indexOf('-') > -1) ? unpAccession.split('-')[0] : unpAccession}}"
+          style="font-size: 13px"
           (click)="recordUserInteraction('pdbe_kb_link')"
           >{{ (unpAccession.indexOf('-') > -1) ? unpAccession.split('-')[0] : unpAccession }}</a
         >&nbsp;&nbsp;&nbsp; } @if (displayUnpAccessions < uniprotAccessions) {
-        <span style="color: #0932d6; cursor: pointer; font-size: 80%" (click)="displayUnpAccessions = uniprotAccessions; recordUserInteraction('pdbe-kb_more_link');"
+        <span style="cursor: pointer; font-size: 80%" (click)="displayUnpAccessions = uniprotAccessions; recordUserInteraction('pdbe-kb_more_link');"
           >(view {{ uniprotAccessions.length - displayUnpAccessions.length }} more)</span
         >
         }
@@ -297,13 +296,7 @@
       <!-- DOI -->
       <div class="columns small-12 font105">
         <strong property="DOI">DOI: </strong>
-        <a
-          class="ext-1"
-          style="color: #0932d6"
-          target="_blank"
-          href="https://dx.doi.org/10.2210/pdb{{resultData.doclist.docs[0].pdb_id}}/pdb"
-          (click)="recordUserInteraction('doi_link')"
-        >
+        <a class="ext-1" target="_blank" href="https://dx.doi.org/10.2210/pdb{{resultData.doclist.docs[0].pdb_id}}/pdb" (click)="recordUserInteraction('doi_link')">
           10.2210/pdb{{resultData.doclist.docs[0].pdb_id}}&nbsp;<span class="icon icon-generic" data-icon="x" style="font-size: 9px">&nbsp;</span>
         </a>
       </div>
@@ -438,7 +431,6 @@
               my-tooltip
               tooltipImage="{{pdbeUrl}}static/files/pdbechem_v2/{{comp}}_200.svg"
               tooltipTitle="{{comp}}"
-              style="color: #0932d6"
               target="_blank"
               (click)="recordUserInteraction('identical_bound_ligand_link')"
               href="{{pdbeUrl}}entry/pdb/{{otherEntryData.pdbId}}/bound/{{comp}}"

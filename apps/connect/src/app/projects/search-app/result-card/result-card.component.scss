@@ -192,3 +192,14 @@
   font-size: 90%;
   cursor: default;
 }
+
+.ext-1 {
+  font-size: 13px;
+}
+
+.icon-search::before {
+  --icon-search-color: #3b6fb6 height: 13px;
+
+  width: 13px;
+  mask-size: auto 13px;
+}
