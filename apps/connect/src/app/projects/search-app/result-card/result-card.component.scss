@@ -198,8 +198,9 @@
 }
 
 .icon-search::before {
-  --icon-search-color: #3b6fb6 height: 13px;
+  --icon-search-color: #3b6fb6;
 
   width: 13px;
+  height: 13px;
   mask-size: auto 13px;
 }
