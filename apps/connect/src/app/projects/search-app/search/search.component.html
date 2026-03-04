@@ -1,0 +1,406 @@
+<div class="row">
+  <div class="columns small-12">
+    <!-- left Panel for Small and medium screens -->
+    <div class="columns small-12 large-3 no-pad-left">
+      <!-- Filter chips -->
+      @if (filtercards.length > 0) {
+      <mat-card class="searchboxCard">
+        <mat-card-content>
+          <!--<h6 class="formHeading" style="margin: 10px 0 15px 0">Advanced search fields</h6>-->
+          <div style="max-height: 150px; overflow: auto">
+            <pdbc-filter-chips [(filtercards)]="filtercards" (refine)="onFilterCardDelete()" (filterChipsClick)="onFilterChipsClick()"></pdbc-filter-chips>
+          </div>
+          @if (filtercards.length > 1) {
+          <div style="text-align: right; margin: 5px 0">
+            <a href="javascript:void(0);" (click)="removeAllFilters(true)">remove all filters</a>
+          </div>
+          }
+        </mat-card-content>
+      </mat-card>
+      }
+      <div style="height: 20px" class="hide-for-large small-12">&nbsp;</div>
+      <!-- Filter chips -->
+
+      <!-- Facets Start -->
+
+      <div class="show-for-large large-12 facetSectionLarge">
+        <!-- Loading overlay -->
+        <!--<mat-progress-bar mode="indeterminate" *ngIf="showTabLoader"></mat-progress-bar>
+          <div class="tabOverlay" *ngIf="showTabLoader"></div>-->
+        @if (facetData && (facetData | json) !== '{}') {
+        <div>Filter by :</div>
+        }
+
+        <!-- @for (facetManagerListInGrouping of facetManagerGrouping; track facetManagerListInGrouping; let fgi = $index) {
+            <ng-template
+              *ngIf="facetData && (facetData | json) != '{}'"
+              let-facetManagerListInGrouping
+              [ngForOf]="facetManagerGrouping"
+              let-fgi="index"
+              >
+              @if (getFacetGroupHeading(fgi, facetManagerGrouping)) {
+                <div
+                  class="facetGroupHeading"
+                  >
+                  {{ getFacetGroupHeading(fgi, facetManagerGrouping) }}
+                </div>
+              }
+              @for (facetManager of facetManagerListInGrouping; track facetManager; let gi = $index) {
+                @if (facetData && facetData[facetManager]) {
+                  <list-facet
+                    [listHeading]="facetData[facetManager].title"
+                    [listHeadingCount]="facetData[facetManager].titleCount"
+                    [listData]="facetData[facetManager].list"
+                    (itemClicked)="onFacetSelect($event)"
+                    [isExpanded]="facetManager == activeFacetManager ? true : false"
+                  ></list-facet>
+                }
+                @if (facetData && facetData[facetManager]) {
+                  <div
+                    style="height: 5px"
+                    >
+                    &nbsp;
+                  </div>
+                }
+              }
+            </ng-template>
+          } -->
+
+        @if (facetData && (facetData | json) !== '{}') { @for (facetManagerListInGrouping of facetManagerGrouping; track $index; let fgi = $index) { @if
+        (getFacetGroupHeading(fgi, facetManagerGrouping)) {
+        <div class="facetGroupHeading">{{ getFacetGroupHeading(fgi, facetManagerGrouping) }}</div>
+        } @for (facetManager of facetManagerListInGrouping; track $index; let gi = $index) { @if (facetData && facetData[facetManager]) {
+        <pdbc-list-facet
+          [listHeading]="facetData[facetManager].title"
+          [listHeadingCount]="facetData[facetManager].titleCount"
+          [listData]="facetData[facetManager].list"
+          (itemClicked)="onFacetSelect($event)"
+          [isExpanded]="facetManager === activeFacetManager"
+        ></pdbc-list-facet>
+
+        <div style="height: 5px">&nbsp;</div>
+        } } } }
+
+        <!-- Sequence clustering facets -->
+        @if ( activeTabIndex === 0 && tabAttributes[0].resultCardData && tabAttributes[0].resultCardData.grouped &&
+        tabAttributes[0].resultCardData.grouped['pdb_id'].ngroups > 0 ) {
+        <div class="facetGroupHeading">Representative Structures</div>
+        } @if ( activeTabIndex === 0 && tabAttributes[0].resultCardData && tabAttributes[0].resultCardData.grouped &&
+        tabAttributes[0].resultCardData.grouped['pdb_id'].ngroups > 0 ) {
+        <pdbc-list-facet
+          [listHeading]="'Representative Structures'"
+          [listHeadingCount]="0"
+          [listData]="repStructuresFacet.list"
+          (itemClicked)="onFacetSelect($event)"
+          [isExpanded]="true"
+        ></pdbc-list-facet>
+        }
+      </div>
+
+      <!-- Facets End -->
+    </div>
+    <!-- left Panel for Small and medium screens -->
+
+    <!-- Add left panel here -->
+
+    <!-- Right Panel -->
+    <div class="columns small-12 large-9 no-pad-left no-pad-right">
+      <div class="search-action-stack">
+        @if (facetData && (facetData | json) !== '{}') {
+        <button
+          mat-raised-button
+          color="primary"
+          style="margin-left: 0px"
+          (click)="_eventBroker.emit('open-facet-clicked', '')"
+          class="hide-for-small-only hide-for-large"
+        >
+          Show filters
+        </button>
+        }
+
+        <button mat-raised-button color="primary" class="green-button" (click)="openSearchForm()">Advanced search</button>
+
+        @if (facetData && (facetData | json) !== '{}') {
+        <button mat-raised-button color="primary" style="margin-left: 0px; float: right" class="hide-for-small-only green-button" (click)="openDownloadDialog()">
+          <span class="icon icon-functional" data-icon="=">&nbsp;Download</span>
+        </button>
+        }
+
+        <!--<button *ngIf="facetData && (facetData | json) != '{}'" mat-raised-button color="primary" style="margin-left: 0px;float:right;margin-right:10px;"  class="hide-for-small-only"
+        title="Select Entries below and click here to claim them in ORCiD" (click)="openOrcidDialog()">
+          ORCiD claim
+        </button>-->
+
+        @if (facetData && (facetData | json) !== '{}') {
+        <button mat-raised-button color="primary" [matMenuTriggerFor]="menu" style="float: right; min-width: 30px" class="show-for-small-only green-button">
+          <i class="icon icon-functional" data-icon="M"></i>
+        </button>
+        }
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="_eventBroker.emit('open-facet-clicked', '')">
+            <span>Show Filters</span>
+          </button>
+          <!--<button mat-menu-item (click)="openOrcidDialog()">
+          <span>ORCiD claim</span>
+        </button>-->
+          <button mat-menu-item (click)="openDownloadDialog()">
+            <span>Download</span>
+          </button>
+        </mat-menu>
+      </div>
+
+      <div style="height: 5px">
+        @if (showTabLoader) {
+        <mat-progress-bar mode="indeterminate" class="show-for-large" style="width: auto"></mat-progress-bar>
+        } @if (showTabLoader) {
+        <mat-progress-bar mode="indeterminate" class="hide-for-large"></mat-progress-bar>
+        }
+      </div>
+      <mat-tab-group
+        mat-stretch-tabs="false"
+        mat-align-tabs="start"
+        class="result-tab-group"
+        dynamicHeight
+        (selectedTabChange)="onTabChange($event)"
+        [selectedIndex]="activeTabIndex"
+        (focusChange)="onTabFocus($event)"
+      >
+        <mat-tab>
+          <ng-template mat-tab-label>Entries</ng-template>
+          <div class="tab-content">
+            <!-- Loading overlay -->
+            @if (showTabLoader) {
+            <div class="tabOverlay"></div>
+            } @if ( tabAttributes[0].resultCardData && tabAttributes[0].resultCardData.grouped && tabAttributes[0].resultCardData.grouped['pdb_id'].ngroups > 0) {
+            <div>
+              <!-- Pagination row -->
+              @if (tabAttributes[0].pagination.totalRecords > 0) {
+              <div class="row" class="paginationSection">
+                <tab-pagination-section
+                  [(paginationData)]="tabAttributes[0].pagination"
+                  (selectedPage)="paginateTo($event)"
+                  (sortBy)="sortResultsBy($event)"
+                  countLabel="Entries"
+                ></tab-pagination-section>
+              </div>
+              }
+              <!-- Entry selectbox Start Here -->
+              <div class="row columns small-12 medium-5 large-4 claimBlueHighlight" style="margin: 0 0 5px 4px">
+                <div class="claimBlueHighlight">
+                  <mat-checkbox
+                    color="primary"
+                    class="thorClaimCheckBox"
+                    [(ngModel)]="
+                      tabAttributes[0].selectAllEntries[tabAttributes[0].pagination.currentPage]
+                    "
+                    (change)="selectAllEntriesChange()"
+                  ></mat-checkbox>
+                  <div class="thorClaimText">
+                    <strong>&nbsp;Select all entries on this page</strong>
+                  </div>
+                </div>
+              </div>
+              <!-- Entry selectbox End Here -->
+              <!-- Result cards -->
+              @for (group of tabAttributes[0].resultCardData.grouped['pdb_id'].groups ; track $index; let grayBgFlag = $odd; let resIndex = $index) {
+              <pdbc-result-card
+                [resultData]="group"
+                [grayBackground]="grayBgFlag"
+                [(thorInfo)]="thorInfo"
+                [thorClaimInfoById]="thorClaimInfoById[group.doclist.docs[0].pdb_id]"
+                [phmmerSequenceData]="
+                  tabAttributes[0].resultCardData.xjoin_phmmer &&
+                  tabAttributes[0].resultCardData.xjoin_phmmer.external
+                    ? tabAttributes[0].resultCardData.xjoin_phmmer.external[resIndex]
+                    : undefined
+                "
+                [fastaSequenceData]="
+                  tabAttributes[0].resultCardData.xjoin_fasta &&
+                  tabAttributes[0].resultCardData.xjoin_fasta.external
+                    ? tabAttributes[0].resultCardData.xjoin_fasta.external[resIndex]
+                    : undefined
+                "
+              ></pdbc-result-card>
+              }
+              <!-- Pagination row -->
+              @if (tabAttributes[0].pagination.totalRecords > 0) {
+              <div class="row" class="paginationSectionBottom">
+                <!-- <tab-pagination-section [(paginationData)]="tabAttributes[0].pagination" (selectedPage)="paginateTo($event)" (sortBy)="sortResultsBy($event)" countLabel="Entries" [showSort]="false"></tab-pagination-section>   -->
+                <tab-pagination-section
+                  [(paginationData)]="tabAttributes[0].pagination"
+                  (selectedPage)="paginateTo($event)"
+                  (sortBy)="sortResultsBy($event)"
+                  countLabel="Entries"
+                ></tab-pagination-section>
+              </div>
+              }
+            </div>
+            } @else {
+            <div class="noResultText">
+              <strong>{{ tabAttributes[0].currentMessage }}</strong>
+            </div>
+            }
+
+            <!-- No Result Found Message -->
+          </div>
+        </mat-tab>
+        <mat-tab>
+          <ng-template mat-tab-label>Macromolecules</ng-template>
+          <div class="tab-content">
+            <!-- Loading overlay -->
+            @if (showTabLoader) {
+            <div class="tabOverlay"></div>
+            } @if ( tabAttributes[1].resultCardData && tabAttributes[1].resultCardData.entriesData && tabAttributes[1].resultCardData.entriesData.length > 0) {
+            <div>
+              @if (sequenceClustering) {
+              <div class="noResultText">
+                <strong>'Representative Structures' filter is ignored in this section!</strong>
+              </div>
+              }
+              <!-- Pagination row -->
+              @if (tabAttributes[1].pagination.totalRecords > 0) {
+              <div class="row" class="paginationSection">
+                <tab-pagination-section
+                  [(paginationData)]="tabAttributes[1].pagination"
+                  (selectedPage)="paginateTo($event)"
+                  [showSort]="false"
+                  countLabel="Macromolecule"
+                  (sortBy)="sortResultsBy($event)"
+                ></tab-pagination-section>
+              </div>
+              }
+              <!-- Result cards -->
+              @for (group of tabAttributes[1].resultCardData.entriesData; track (group.pdb_id + '|' + group.bestEntry); let grayBgFlag = $odd) {
+              <pdbc-pivot-result-card [resultData]="group" [grayBackground]="grayBgFlag" pivotType="macromolecules"></pdbc-pivot-result-card>
+              }
+              <!-- Pagination row -->
+              @if (tabAttributes[1].pagination.totalRecords > 0) {
+              <div class="row" class="paginationSectionBottom">
+                <tab-pagination-section
+                  [(paginationData)]="tabAttributes[1].pagination"
+                  (selectedPage)="paginateTo($event)"
+                  [showSort]="false"
+                  countLabel="Macromolecule"
+                  (sortBy)="sortResultsBy($event)"
+                ></tab-pagination-section>
+              </div>
+              }
+            </div>
+            } @else {
+            <div class="noResultText">
+              <strong>{{ tabAttributes[activeTabIndex].currentMessage }}</strong>
+            </div>
+            }
+
+            <!-- No Result Found Message -->
+          </div>
+        </mat-tab>
+        <mat-tab>
+          <ng-template mat-tab-label>Compounds</ng-template>
+          <div class="tab-content">
+            <!-- Loading overlay -->
+            @if (showTabLoader) {
+            <div class="tabOverlay"></div>
+            } @if ( tabAttributes[2].resultCardData && tabAttributes[2].resultCardData.entriesData && tabAttributes[2].resultCardData.entriesData.length > 0) {
+            <div>
+              @if (sequenceClustering) {
+              <div class="noResultText">
+                <strong>'Representative Structures' filter is ignored in this section!</strong>
+              </div>
+              }
+              <!-- Pagination row -->
+              @if (tabAttributes[2].pagination.totalRecords > 0) {
+              <div class="row" class="paginationSection">
+                <tab-pagination-section
+                  [(paginationData)]="tabAttributes[2].pagination"
+                  (selectedPage)="paginateTo($event)"
+                  [showSort]="false"
+                  countLabel="Interaction"
+                  (sortBy)="sortResultsBy($event)"
+                ></tab-pagination-section>
+              </div>
+              }
+              <!-- Result cards -->
+              @for (group of tabAttributes[2].resultCardData.entriesData; track (group.pdb_id + '|' + group.bestEntry + '|' + group.compoundTitle); let grayBgFlag =
+              $odd) {
+              <pdbc-pivot-result-card [resultData]="group" [grayBackground]="grayBgFlag" pivotType="compounds"></pdbc-pivot-result-card>
+              }
+              <!-- Pagination row -->
+              @if (tabAttributes[2].pagination.totalRecords > 0) {
+              <div class="row" class="paginationSectionBottom">
+                <tab-pagination-section
+                  [(paginationData)]="tabAttributes[2].pagination"
+                  (selectedPage)="paginateTo($event)"
+                  [showSort]="false"
+                  countLabel="Interaction"
+                  (sortBy)="sortResultsBy($event)"
+                ></tab-pagination-section>
+              </div>
+              }
+            </div>
+            } @else {
+            <div class="noResultText">
+              <strong>{{ tabAttributes[2].currentMessage }}</strong>
+            </div>
+            }
+
+            <!-- No Result Found Message -->
+          </div>
+        </mat-tab>
+        <mat-tab>
+          <ng-template mat-tab-label>Protein families</ng-template>
+          <div class="tab-content">
+            <!-- Loading overlay -->
+            @if (showTabLoader) {
+            <div class="tabOverlay"></div>
+            } @if ( tabAttributes[3].resultCardData && tabAttributes[3].resultCardData.entriesData && tabAttributes[3].resultCardData.entriesData.length > 0) {
+            <div>
+              @if (sequenceClustering) {
+              <div class="noResultText">
+                <strong>'Representative Structures' filter is ignored in this section!</strong>
+              </div>
+              }
+              <!-- Pagination row -->
+              @if (tabAttributes[3].pagination.totalRecords > 0) {
+              <div class="row" class="paginationSection">
+                <tab-pagination-section
+                  [(paginationData)]="tabAttributes[3].pagination"
+                  (selectedPage)="paginateTo($event)"
+                  [showSort]="false"
+                  countLabel="Protein family"
+                  (sortBy)="sortResultsBy($event)"
+                ></tab-pagination-section>
+              </div>
+              }
+              <!-- Result cards -->
+              @for (group of tabAttributes[3].resultCardData.entriesData; track (group.pdb_id + '|' + group.bestEntry + '|' + group.compoundTitle); let grayBgFlag =
+              $odd) {
+              <pdbc-pivot-result-card [resultData]="group" [grayBackground]="grayBgFlag" pivotType="proteinFamilies"></pdbc-pivot-result-card>
+              }
+              <!-- Pagination row -->
+              @if (tabAttributes[3].pagination.totalRecords > 0) {
+              <div class="row" class="paginationSectionBottom">
+                <tab-pagination-section
+                  [(paginationData)]="tabAttributes[3].pagination"
+                  (selectedPage)="paginateTo($event)"
+                  [showSort]="false"
+                  countLabel="Protein family"
+                  (sortBy)="sortResultsBy($event)"
+                ></tab-pagination-section>
+              </div>
+              }
+            </div>
+            } @else {
+            <div class="noResultText">
+              <strong>{{ tabAttributes[3].currentMessage }}</strong>
+            </div>
+            }
+
+            <!-- No Result Found Message -->
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+    <!-- Right Panel -->
+  </div>
+</div>

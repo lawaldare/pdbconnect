@@ -1,0 +1,82 @@
+.masthead {
+  /* background-color: rgb(193, 216, 185); */
+  background-color: #d8e5d8;
+  background-image: url('//www.ebi.ac.uk/pdbe/entry/static/images/banners/pdbe_local_banner.png');
+  background-size: contain;
+  background-position: 100% 0%;
+}
+
+div#local-title {
+  margin-bottom: 1.5rem;
+}
+
+header .masthead-inner {
+  padding-top: 1.5rem;
+}
+
+.embl-selector .button,
+.embl-selector .button.hover,
+.embl-selector .button:focus,
+.embl-selector .button:hover {
+  color: #fff;
+}
+
+.masthead a,
+.masthead a:hover,
+.masthead a:active,
+.masthead a:visited {
+  color: #666;
+}
+
+.topMenuTab li.active a {
+  background-color: #f5f5f5;
+}
+
+.searchExampleText {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0 0;
+  font-size: 11px !important;
+
+  .left {
+    display: flex;
+    align-items: center;
+
+    span {
+      color: #000000;
+      margin-right: 5px;
+    }
+  }
+}
+
+.searchExampleText a {
+  color: #3b6fb6;
+  border-bottom: 1px dotted #3b6fb6 !important;
+  font-size: 11px !important;
+  line-height: 12px;
+}
+
+.searchExampleText a:visited {
+  color: #58669e;
+  border-bottom: 1px dotted #58669e !important;
+}
+
+.autocompleteBtnContainer {
+  padding-right: 0;
+  padding-left: 5px;
+}
+
+.autocompleteBtn {
+  min-width: 100%;
+  height: 31px;
+  line-height: 31px;
+}
+
+.fixLeftPadding {
+  padding-left: 0.5rem;
+}
+
+#content {
+  background: #f5f5f5;
+}

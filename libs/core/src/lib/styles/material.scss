@@ -135,6 +135,24 @@ thead {
   }
 }
 
+.result-tab-group {
+  .mdc-tab.mat-mdc-tab {
+    background-color: #dcdedc !important;
+    opacity: 1 !important;
+
+    &.mdc-tab--active {
+      color: rgb(0 0 0) !important;
+      background-color: #c8e6c9 !important;
+      border-bottom: 2px solid #4caf50 !important;
+    }
+  }
+
+  .mdc-tab.mat-mdc-tab span.mdc-tab__content span.mdc-tab__text-label {
+    font-size: 14px !important;
+    color: rgb(0 0 0) !important;
+  }
+}
+
 mat-tab-header {
   margin-bottom: 16px;
 }
@@ -274,4 +292,39 @@ mat-tab-header {
       }
     }
   }
+}
+
+.mat-mdc-card.mdc-card.row.resCard {
+  display: inline-block !important;
+  padding: 0 !important;
+  padding-top: 24px !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.mat-mdc-button:not(:disabled).green-text-button {
+  color: #4caf50 !important;
+}
+
+.mat-mdc-button.entry-dropdown-button {
+  border-radius: 0 !important;
+
+  .mdc-button__label {
+    display: flex !important;
+  }
+}
+
+.mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background,
+.mdc-checkbox__native-control:enabled:indeterminate ~ .mdc-checkbox__background {
+  background-color: #4caf50 !important;
+  border-color: #4caf50 !important;
+}
+
+.mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background > .mdc-radio__outer-circle {
+  border-color: #4caf50 !important;
+}
+
+.mat-mdc-radio-button .mdc-radio__native-control:enabled:checked + .mdc-radio__background > .mdc-radio__inner-circle {
+  background-color: #4caf50 !important;
 }

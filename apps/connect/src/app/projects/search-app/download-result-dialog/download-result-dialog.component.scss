@@ -1,0 +1,48 @@
+h1 {
+  color: #222;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  font-size: 20px;
+}
+
+/* .mat-dialog-actions:last-child{
+    margin-bottom: 0px !important;
+} */
+
+::ng-deep .mat-mdc-dialog-container-with-actions .mat-mdc-dialog-content {
+  padding: 0 20px 20px !important;
+}
+
+.mat-dialog-content {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+a {
+  outline: 0;
+}
+
+a:active {
+  color: #896b25;
+}
+
+a:visited {
+  color: #58669e;
+}
+
+.loadingArea {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  z-index: 1;
+  opacity: 0.93;
+}
+
+.loadingText {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 20%;
+}

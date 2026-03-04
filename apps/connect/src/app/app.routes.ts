@@ -4,6 +4,7 @@ import { complexIdGuard } from './projects/complex/guards/complex.guard';
 import { TabRedirectComponent } from './projects/entry/redirects/all-redirects.component';
 import { SearchPageComponent } from './projects/entry/pages/search/search-page.component';
 import { ExternalRedirectComponent } from './projects/entry/redirects/external-redirect.component';
+import { SearchAppContainerComponent } from './projects/search-app/search-app-container/search-app-container.component';
 
 // const hostname = document.location.hostname;
 // const isLocal = hostname === 'localhost';
@@ -11,7 +12,7 @@ import { ExternalRedirectComponent } from './projects/entry/redirects/external-r
 export const appRoutes: Route[] = [
   {
     path: 'search/index',
-    component: SearchPageComponent,
+    component: SearchAppContainerComponent,
     title: 'Search the PDB Archive < PDBe < EMBL-EBI',
   },
   {

@@ -1,0 +1,22 @@
+<div>
+  @if (loading) {
+  <div class="sliderLoading">Loading Validation Slider..</div>
+  } @if (!loading && errorMessage === '') {
+  <div>
+    @for (item of sliderData; track item) {
+    <div class="sliderRow">
+      <div class="sliderLabel" title="{{item.label}}">{{item.label}}</div>
+      @if (item.message !== '') {
+      <span class="messageBackground"> {{item.message}} </span>
+      } @if (item.message === '') {
+      <span class="sliderBackground">
+        <span class="sliderPosition" [ngStyle]="getSliderPosition(item.value)"></span>
+      </span>
+      }
+    </div>
+    }
+  </div>
+  } @if (!loading && errorMessage !== '') {
+  <div class="sliderLoading">{{errorMessage}}</div>
+  }
+</div>

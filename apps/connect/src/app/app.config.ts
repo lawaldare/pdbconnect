@@ -14,6 +14,7 @@ import { ComplexEffects } from './projects/complex/store/complex.effects';
 import { complexReducer } from './projects/complex/store/complex.reducer';
 import { EntryEffects } from './projects/entry/store/entry.effects';
 import { entryReducer } from './projects/entry/store/entry.reducer';
+import { provideNativeDateAdapter } from '@angular/material/core';
 
 export function initializeApp(baseHrefService: BaseHrefService) {
   return () => baseHrefService.setBaseHref();
@@ -25,6 +26,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideAnimations(),
     provideAnimationsAsync(),
+    provideNativeDateAdapter(),
     provideEffects([LigandEffects, ComplexEffects, EntryEffects]),
     provideStore({ ligand: ligandReducer, complex: complexReducer, entry: entryReducer }),
     provideStoreDevtools({
