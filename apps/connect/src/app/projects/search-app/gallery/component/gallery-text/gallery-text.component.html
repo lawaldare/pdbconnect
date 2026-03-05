@@ -1,0 +1,9 @@
+<div class="g-text-container" [ngStyle]="config.style">
+  @if (config.text && !showDescription) {
+  <div class="g-text" [innerHtml]="state.images?.[state.currIndex ?? 0]?.text"></div>
+  } @if (config.text && showDescription) {
+  <div class="g-text" [innerHtml]="state.images?.[state.currIndex ?? 0]?.description"></div>
+  } @if (config.counter) {
+  <div class="g-number">{{((state.currIndex ?? 0) + 1) + '/' + state.images?.length}}</div>
+  }
+</div>

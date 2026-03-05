@@ -53,6 +53,10 @@ export class AppComponent implements OnInit {
       return;
     }
 
+    if (pathName.includes(`/search/index`)) {
+      await this.scriptLoader.loadScript('https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/js/script.js');
+    }
+
     // import topology viewer only for localhost and route has `/pdb/`
     // OR outside localhost && route has `pdbe/entry/pdb`
     if ((this.isLocalhost && pathName.includes(`/pdb/`)) || (!this.isLocalhost && pathName.includes(`pdbe/entry/pdb`))) {

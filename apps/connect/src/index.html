@@ -118,6 +118,20 @@
   <body>
     <pdbc-root> </pdbc-root>
 
+    <script>
+      PdbeAutocompleteSearchConfig = {
+        resultBoxAlign: 'right',
+        redirectOnClick: true,
+        view: 'macromolecules', //'entry' | 'macromolecules' | 'compounds' | 'sequencefam';
+        searchUrl: 'https://www.ebi.ac.uk/pdbe/search/pdb-autocomplete/select',
+        fields: 'value,num_pdb_entries,var_name',
+        group: 'group=true&group.field=category',
+        groupLimit: '25',
+        sort: 'category+asc,num_pdb_entries+desc',
+        searchParams: 'rows=20000&json.nl=map&wt=json',
+      };
+    </script>
+
     <!-- JS -->
     <!-- <script type="text/javascript" src="https://molstar.org/pdbe-molstar/build/pdbe-molstar-plugin.js" defer></script> -->
   </body>

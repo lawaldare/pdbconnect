@@ -5,3 +5,7 @@
 k8s-configs/
 
 /.nx/cache
+
+# Ignore minified files
+**/*.min.js
+**/*.min.css

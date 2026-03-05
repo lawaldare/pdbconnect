@@ -1,0 +1,332 @@
+<!-- Result Card COntainer -->
+<mat-card class="row resCard" [ngClass]="{'oddCard': grayBackground}">
+  <!-- Result card left section -->
+  <div class="columns medium-8">
+    <!-- Compound/Family Title -->
+    @if (resultData.compoundTitle !== '') {
+    <div class="columns small-12 no-pad-left">
+      <div>
+        @if (pivotType === 'compounds') {
+        <h6 class="resultTopTitle">
+          Compound :
+          <a href="{{pdbeUrl}}entry/pdb/{{resultData.pdb_id}}/{{compoundType}}/{{compoundId}}" target="_blank" (click)="recordUserInteraction('title_compound_link')"
+            >{{resultData.compoundTitle}}</a
+          >
+        </h6>
+        } @if (pivotType === 'proteinFamilies') {
+        <h6 class="resultTopTitle">
+          Protein family :
+          <a
+            href="{{pdbeUrl}}entry/pdb/{{resultData.pdb_id}}/biology#{{resultData.pfam_accession[resultData.pfam_name.indexOf(resultData.compoundTitle)]}}"
+            target="_blank"
+            (click)="recordUserInteraction('title_pfam_link')"
+            >{{resultData.compoundTitle}}</a
+          >
+        </h6>
+        }
+      </div>
+      <div style="margin: 5px 0 9px 0">
+        <strong>{{pivotType === 'compounds' ? 'Interacting with:' : 'Occurring in macromolecule:'}}</strong>
+      </div>
+    </div>
+    }
+
+    <!-- Protein Title -->
+    @if (resultData.proteinTitle !== '') {
+    <div class="columns small-12 no-pad-left" [class.paddingLeft20]="resultData.compoundTitle !== ''">
+      <div>
+        <!-- <h6 class="resultTopTitle">Protein : <a href="{{pdbeUrl}}entry/pdb/{{resultData.pdb_id}}/protein/{{resultData.bestEntry.split('_')[1]}}" target="_blank">{{resultData.proteinTitle }}</a></h6> -->
+        <h6 class="resultTopTitle">
+          {{resultData.molecule_type}} :
+          <a
+            href="{{pdbeUrl}}entry/pdb/{{resultData.pdb_id}}/{{resultData.molecule_type === 'DNA/RNA hybrid' ? 'dna' : resultData.molecule_type === 'D-Protein' ? 'protein' : resultData.molecule_type.toLowerCase() }}/{{resultData.bestEntry.split('_')[1]}}"
+            target="_blank"
+            (click)="recordUserInteraction('title_protein_link')"
+            >{{resultData.proteinTitle }}</a
+          >
+        </h6>
+      </div>
+      <div style="margin: 5px 0 9px 0">
+        @if (resultData.otherEntries.length === 0) {
+        <strong>Only example found in:</strong>
+        } @if (resultData.otherEntries.length > 0) {
+        <strong>Best example found in:</strong>
+        }
+      </div>
+    </div>
+    }
+
+    <!-- Heading Row -->
+    <div
+      class="row"
+      [class.paddingLeft20]="resultData.compoundTitle === '' && resultData.proteinTitle !== ''"
+      [class.paddingLeft40]="resultData.compoundTitle !== '' && resultData.proteinTitle !== ''"
+    >
+      <div class="columns small-12 medium-2 result_link">
+        <a href="{{pdbeUrl}}entry/pdb/{{resultData.pdb_id}}" target="_blank" (click)="recordUserInteraction('pdb_id_link')">{{resultData.pdb_id}}</a>
+      </div>
+
+      <div class="columns small-12 medium-10">
+        <!-- if status != 'REL'  show status message and move title to next line -->
+        @if (resultData.status !== 'REL') {
+        <h6 property="status" class="warning">Status: {{statusMessages[resultData.status]}}</h6>
+        } @if (resultData.status === 'REL') {
+        <h6>{{ resultData.title }}</h6>
+        }
+      </div>
+
+      <!-- if status != 'REL' title is moved here -->
+      @if (resultData.status !== 'REL') {
+      <div class="columns">
+        <h6>{{ resultData.title }}</h6>
+        <!--{{resultData.title}}-->
+      </div>
+      }
+    </div>
+
+    <!-- Body Row -->
+    <div
+      class="row"
+      [class.paddingLeft20]="resultData.compoundTitle === '' && resultData.proteinTitle !== ''"
+      [class.paddingLeft40]="resultData.compoundTitle !== '' && resultData.proteinTitle !== ''"
+    >
+      <!-- Author list -->
+      @if (pivotType !== 'compounds' && pivotType !== 'proteinFamilies' && resultData.entry_author_list && resultData.entry_author_list.length > 0) {
+      <div class="columns small-12 marginTop10">{{resultData.entry_author_list}}</div>
+      }
+
+      <!-- doc_formatter.format('journal_info_meta') / journal_info_meta_formatter -->
+      @if (pivotType !== 'compounds' && pivotType !== 'proteinFamilies') {
+      <div class="columns small-12 marginTop10">
+        @if (resultData.journal) {
+        <i>{{resultData.journal}}</i>
+        } @if (resultData.citation_year) {
+        <span> ({{resultData.citation_year}}) </span>
+        } @if (resultData.pubmed_id) {
+        <span
+          >[PMID:
+          <a
+            class="ext-1"
+            property="sameAs"
+            href="http://europepmc.org/abstract/MED/{{resultData.pubmed_id}}"
+            target="_blank"
+            (click)="recordUserInteraction('europepmc_link')"
+            >{{resultData.pubmed_id}}&nbsp;<span class="icon icon-generic" data-icon="x" style="font-size: 9px">&nbsp;</span></a
+          >]</span
+        >
+        }
+      </div>
+      }
+
+      <!-- Source organisms -->
+      @if (pivotType !== 'compounds' && pivotType !== 'proteinFamilies') {
+      <div class="columns small-12 marginTop10" [innerHTML]="orgSciName"></div>
+      }
+
+      <!-- doc_formatter.format('assembly_composition_meta') -->
+      @if (pivotType !== 'compounds' && pivotType !== 'proteinFamilies' && assemblyComposition) {
+      <div class="columns small-12 marginTop10" [innerHTML]="assemblyComposition"></div>
+      }
+
+      <!-- Interacting compounds -->
+      @if (interactingCompsIds && interactingCompsIds.length > 0) {
+      <div class="columns small-12 marginTop10">
+        <strong>Interacting compounds: </strong>
+        @for (comp of interactingCompsIds; track comp; let ci = $index) {
+        <a
+          my-tooltip
+          tooltipImage="//www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/{{comp}}_200.svg"
+          tooltipTitle="{{interactingCompsText[ci]}}"
+          style="font-size: 13px"
+          target="_blank"
+          (click)="recordUserInteraction('interacting_comps_link')"
+          href="{{pdbeUrl}}entry/pdb/{{resultData.pdb_id}}/{{(resultData.bound_compound_id && resultData.bound_compound_id.indexOf(comp) > -1) ? 'bound' : 'modified'}}/{{comp}}"
+          >{{comp}} </a
+        >&nbsp;&nbsp; }
+      </div>
+      }
+
+      <!-- Uniprot -->
+      @if (displayUnpAccessions.length > 0) {
+      <div class="columns small-12 marginTop10" style="max-height: 80px; overflow-y: auto">
+        <img src="assets/icons/pdbe-kb_logo.webp" title="Protein Data Bank in Europe - Knowledge Base" style="border: 0; height: 15px; width: 15px" /><strong
+          style="margin-left: 2px"
+          >PDBe-KB:
+        </strong>
+        @for (unpAccession of displayUnpAccessions; track unpAccession; let ui = $index) {
+        <a
+          target="_blank"
+          (click)="recordUserInteraction('pdbe_kb_link')"
+          style="font-size: 13px"
+          my-tooltip
+          pdbeKbId="{{(unpAccession.indexOf('-') > -1) ? unpAccession.split('-')[0] : unpAccession}}"
+          tooltipTitle="Data available for {{(unpAccession.indexOf('-') > -1) ? unpAccession.split('-')[0] : unpAccession}}"
+          href="https://www.ebi.ac.uk/pdbe/pdbe-kb/proteins/{{(unpAccession.indexOf('-') > -1) ? unpAccession.split('-')[0] : unpAccession}}"
+          >{{ (unpAccession.indexOf('-') > -1) ? unpAccession.split('-')[0] : unpAccession }}</a
+        >&nbsp;&nbsp;&nbsp; } @if (displayUnpAccessions < uniprotAccessions) {
+        <span style="cursor: pointer; font-size: 80%" (click)="displayUnpAccessions = uniprotAccessions"
+          >(view {{ uniprotAccessions.length - displayUnpAccessions.length }} more)</span
+        >
+        }
+      </div>
+      }
+
+      <!-- Uniprot coverage
+      <div class="columns small-12 marginTop10" *ngIf="pivotType != 'compounds' && pivotType != 'proteinFamilies' && resultData.uniprot_coverage && resultData.uniprot_coverage.length > 0">
+        <strong>UniProt coverage: </strong> {{(resultData.uniprot_coverage * 100)}}%
+      </div> -->
+
+      @if (resultData.status === 'REL') {
+      <div class="columns small-12 marginTop10">
+        <button mat-button class="green-text-button" color="primary" style="margin-left: 0px" (click)="openMolstarDialog()">
+          <span class="icon icon-functional" data-icon="4"><strong>&nbsp;3D Visualisation</strong></span>
+        </button>
+        <button mat-button class="green-text-button" color="primary" (click)="openDownloadDialog()">
+          <span class="icon icon-functional" data-icon="="><strong>&nbsp;Download files</strong></span>
+        </button>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Result card right section -->
+  <div class="columns medium-4">
+    <div class="row">
+      <!-- Experimental method -->
+      @if (resultData.experimental_method && resultData.experimental_method.length > 0) {
+      <div class="columns small-12 font105">
+        <strong property="experimental-method">{{resultData.experimental_method.join(', ')}}</strong>
+      </div>
+      }
+
+      <!-- Resolution -->
+      @if (resultData.resolution) {
+      <div class="columns small-12 font105">
+        <strong property="resolution">{{resultData.resolution}}&Aring; resolution</strong>
+      </div>
+      }
+
+      <!-- Release Date -->
+      @if (pivotType !== 'compounds' && pivotType !== 'proteinFamilies' && resultData.release_date) {
+      <div class="columns small-12 font105"><strong property="release-date">Released: </strong>{{resultData.release_date | date:'d MMM y' }}</div>
+      }
+
+      <!-- DOI -->
+      <div class="columns small-12 font105">
+        <strong property="DOI">DOI: </strong>
+        <a class="ext-1" target="_blank" href="https://dx.doi.org/10.2210/pdb{{resultData.pdb_id}}/pdb" (click)="recordUserInteraction('doi_link')">
+          10.2210/pdb{{resultData.pdb_id}}&nbsp;<span class="icon icon-generic" data-icon="x" style="font-size: 9px">&nbsp;</span>
+        </a>
+      </div>
+
+      <!-- Validation -->
+      @if (resultData.status === 'REL' && resultData.experimental_method && resultData.experimental_method[0] === 'X-ray diffraction') {
+      <div class="columns small-12">
+        @if (validationSliderData) {
+        <pdbc-validation-slider [sliderData]="validationSliderData"></pdbc-validation-slider>
+        }
+      </div>
+      }
+
+      <!-- Images -->
+      @if (resultData.status === 'REL') {
+      <div class="columns small-12 marginTop10">
+        <!-- Image Gallery Thumbnails Start Here -->
+        <div class="imagesWrapper">
+          <!-- left Image Section Start Here -->
+          <div class="leftSection">
+            <div class="image-x" (click)="openImageGallery(pivotType, resultData.pdb_id, image1Index); recordUserInteraction('gallery_image_0')">
+              <img style="border: none" [src]="image1Src" alt="{{resultData.pdb_id}}" (error)="onImgError($event)" />
+            </div>
+          </div>
+          <!-- left Image Section End Here -->
+
+          <!-- Right Image Section Start Here -->
+          <div class="rightSection">
+            <div class="image-y" (click)="openImageGallery(pivotType, resultData.pdb_id, image2Index); recordUserInteraction('gallery_image_1')">
+              <img style="border: none" [src]="image2Src" alt="{{resultData.pdb_id}}" (error)="onImgError($event)" />
+            </div>
+
+            <div class="image-z" (click)="openImageGallery(pivotType, resultData.pdb_id, image3Index); recordUserInteraction('gallery_image_2')">
+              <img style="border: none" [src]="image3Src" alt="{{resultData.pdb_id}}" (error)="onImgError($event)" />
+            </div>
+          </div>
+          <!-- Right Image Section Start Here -->
+        </div>
+        <!-- Image Gallery Thumbnails End Here -->
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Other Entries Listing -->
+  @if (resultData.otherEntries.length > 0) {
+  <div class="columns small-12" style="margin: 15px 0 0px 0">
+    <span (click)="loadOtherEntriesSummary(); recordUserInteraction('other_entry_expand_link')" style="cursor: pointer">
+      <span class="icon icon-functional" [attr.data-icon]="resultData.otherEntriesShow ? '-' : '+'">
+        <span style="padding-left: 3px"
+          ><strong
+            >{{ pivotType === 'macromolecules' ? 'Other ' : 'Also occurring in '}}{{resultData.otherEntries.length === 1 ? 'entry' : 'entries
+            ('+resultData.otherEntries.length+')'}}</strong
+          ></span
+        >
+      </span>
+    </span>
+  </div>
+  } @if (resultData.otherEntriesShow && otherEntrieIds.length > 0 && resultData.otherEntriesData) {
+  <div class="columns small-12" style="margin-bottom: 10px; max-height: 300px; overflow-y: auto">
+    @for (otherEntryId of otherEntrieIds; track otherEntryId; let oei = $index) {
+    <div class="columns small-12 no-pad-left no-pad-right" style="margin-top: 15px">
+      <div class="columns small-12 medium-1 result_link no-pad-left no-pad-right" style="font-size: 110%">
+        <a
+          (click)="recordUserInteraction('other_entry_link')"
+          href="{{pdbeUrl}}entry/pdb/{{otherEntryId}}/{{resultData.molecule_type === 'DNA/RNA hybrid' ? 'dna' : resultData.molecule_type === 'D-Protein' ? 'protein' : resultData.molecule_type.toLowerCase() }}/{{resultData.otherEntries[oei].split('_')[1]}}"
+          target="_blank"
+          >{{otherEntryId}}</a
+        >
+      </div>
+
+      <!-- Details section for Prints -->
+      <div class="columns small-12 medium-8 no-pad-left no-pad-right">
+        <div class="columns small-12 medium-5 no-pad-left no-pad-right">
+          @if (resultData.otherEntriesData[otherEntryId] && resultData.otherEntriesData[otherEntryId].chainId) {
+          <div class="truncateString"><strong>Chain ID:</strong> {{resultData.otherEntriesData[otherEntryId].chainId}}</div>
+          } @if (resultData.otherEntriesData[otherEntryId] && resultData.otherEntriesData[otherEntryId].interactingLingands) {
+          <div class="truncateString">
+            <strong>Ligands:</strong>
+
+            @for (comp of resultData.otherEntriesData[otherEntryId].interactingLingands; track comp; let ci = $index) {
+
+            <a
+              my-tooltip
+              tooltipImage="//www.ebi.ac.uk/pdbe/static/files/pdbechem_v2/{{comp}}_200.svg"
+              tooltipTitle="{{comp}}"
+              style="font-size: 13px"
+              target="_blank"
+              (click)="recordUserInteraction('other_entry_ligands_link')"
+              href="{{pdbeUrl}}entry/pdb/{{resultData.otherEntriesData[otherEntryId].pdbId}}/{{(resultData.otherEntriesData[otherEntryId].boundLigands && resultData.otherEntriesData[otherEntryId].boundLigands.indexOf(comp) > -1) ? 'bound' : 'modified'}}/{{comp}}"
+              >{{comp}} </a
+            >&nbsp; }@if (resultData.otherEntriesData[otherEntryId].totalInteractingLingands > 3) {
+            <span>..</span>
+            }
+          </div>
+          }
+        </div>
+        <div class="columns small-12 medium-7 no-pad-left no-pad-right">
+          @if (resultData.otherEntriesData[otherEntryId] && resultData.otherEntriesData[otherEntryId].sourceOrg) {
+          <div class="truncateString" [innerHTML]="resultData.otherEntriesData[otherEntryId].sourceOrg"></div>
+          } @if (resultData.otherEntriesData[otherEntryId] && resultData.otherEntriesData[otherEntryId].asmComposition) {
+          <div class="truncateString" [innerHTML]="resultData.otherEntriesData[otherEntryId].asmComposition"></div>
+          }
+        </div>
+      </div>
+      <div class="columns small-12 medium-3 no-pad-right" style="float: left">
+        @if (resultData.otherEntriesData[otherEntryId] && resultData.otherEntriesData[otherEntryId].sliderData) {
+        <pdbc-validation-slider [sliderData]="resultData.otherEntriesData[otherEntryId].sliderData"></pdbc-validation-slider>
+        }
+      </div>
+    </div>
+    }
+  </div>
+  }
+</mat-card>

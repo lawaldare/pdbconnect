@@ -793,6 +793,7 @@ input.mat-input-element {
   width: 100%;
   overflow-y: scroll;
 }
+
 .mat-ripple-element {
   background-color: rgba(0, 0, 0, 0.1);
 }

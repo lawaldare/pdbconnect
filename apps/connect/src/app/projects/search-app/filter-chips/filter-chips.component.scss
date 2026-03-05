@@ -1,0 +1,62 @@
+::ng-deep .mat-chip-list-stacked mat-chip i {
+  top: 9px;
+  position: absolute;
+  right: 9px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: inherit;
+  color: #fff;
+}
+
+::ng-deep .mat-chip-list-stacked .mat-mdc-chip {
+  background-color: rgb(116 179 96 / 50%) !important;
+  padding-left: 32px;
+  padding-right: 30px;
+  margin-bottom: 5px !important;
+  position: relative;
+  outline: none;
+  cursor: pointer;
+  display: inline-block;
+  width: 100%;
+  max-width: 250px; /* your old max width */
+}
+
+::ng-deep .mat-chip-list-stacked mat-chip .chip-condition {
+  background-color: #fff;
+  border-radius: 20px 0 0 20px;
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 7px 2px 7px 4px;
+}
+
+::ng-deep .mat-chip-list-stacked .mat-mdc-chip .mdc-evolution-chip__cell--primary {
+  display: flex;
+}
+
+::ng-deep .mat-chip-list-stacked .mat-mdc-chip .mdc-evolution-chip__action {
+  min-width: 0;
+}
+
+::ng-deep .mat-chip-list-stacked .mat-mdc-chip .mdc-evolution-chip__text-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+::ng-deep .mat-mdc-standard-chip .mdc-evolution-chip__action--primary {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.paddingLeft10 {
+  padding-left: 9px !important;
+}
+
+.ignoreChip {
+  background-color: rgb(255 140 0 / 17%) !important;
+  color: #808080;
+}

@@ -1,0 +1,58 @@
+h1 {
+  color: #222;
+}
+/*.mat-dialog-actions:last-child{
+    margin-bottom: 0px !important;
+}*/
+
+.mat-dialog-content {
+  margin: 0px !important;
+}
+
+.loginMessage {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.successMessage {
+  text-align: center;
+  margin-bottom: 10px;
+  background-color: lightgreen;
+  padding: 5px;
+}
+
+.errorMessage {
+  text-align: center;
+  margin-bottom: 10px;
+  background-color: lightcoral;
+  padding: 5px;
+}
+
+.claimMessage {
+  text-align: left;
+  margin-bottom: 5px;
+}
+
+.claimList {
+  text-align: left;
+  margin-bottom: 10px;
+  max-width: 70vw;
+  max-height: 75px;
+  overflow: auto;
+}
+
+.loginButtons {
+  text-align: center;
+}
+
+a {
+  outline: 0;
+}
+
+a:active {
+  color: #896b25;
+}
+
+a:visited {
+  color: #58669e;
+}
