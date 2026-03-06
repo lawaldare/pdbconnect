@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @angular-eslint/component-selector */
 import { CommonModule } from '@angular/common';
 import { Component, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { DownloadFileTypeService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { Store } from '@ngrx/store';
 import { PisaSelectors } from '../../store/pisa.selectors';
-import { catchError, EMPTY, filter, mergeMap, of } from 'rxjs';
+import { catchError, EMPTY, filter, forkJoin, mergeMap, of, switchMap, take, tap } from 'rxjs';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { PisaActions } from '../../store/pisa.actions';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -56,6 +57,8 @@ export class AssemblyTabsPageComponent implements OnInit {
 
   public fileDetails = signal<any>(this.pisaUtilService.getDataInSessionStorage('pisa-assembly-details'));
 
+  public jobId = signal<string>('');
+
   private readonly pisaRouteTabs = [
     { label: 'Complexes', id: 'complexes' },
     { label: 'Interfaces', id: 'interfaces' },
@@ -73,6 +76,29 @@ export class AssemblyTabsPageComponent implements OnInit {
       this.selectedTab.set(tabIndex);
     });
 
+    this.route.params
+      .pipe(
+        switchMap((params) =>
+          this.pisaStore.select(PisaSelectors.jobId).pipe(
+            take(1),
+            tap((jobId) => {
+              const jobIdFromRoute = params['jobId'];
+
+              if (jobId) {
+                this.jobId.set(jobId);
+                return;
+              }
+
+              console.error('No jobId in store, using route:', jobIdFromRoute);
+              this.jobId.set(jobIdFromRoute);
+              this.pisaStore.dispatch(PisaActions.setJobID({ jobId: jobIdFromRoute }));
+              this.pisaStore.dispatch(PisaActions.getResultsFromJobId({ jobId: jobIdFromRoute }));
+            })
+          )
+        )
+      )
+      .subscribe();
+
     this.checkUploadStatus();
   }
 
@@ -87,39 +113,6 @@ export class AssemblyTabsPageComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.molstarPluginService.loadPlugin();
-
-    this.pisaStore
-      .select(PisaSelectors.jobId)
-      .pipe(
-        mergeMap((jobId) => {
-          if (!jobId) {
-            console.error('No job ID available in store.');
-            const payload = this.pisaUtilService.getDataInSessionStorage('pisa-assembly-payload');
-            if (payload) {
-              this.pisaStore.dispatch(PisaActions.submitPISAJob({ payload }));
-            } else {
-              console.error('No assembly payload found in session storage.');
-              this.router.navigate(['/']);
-              // this.onStartButtonClicked();
-            }
-          }
-          // return this.pisaStore.select(PisaSelectors.assemblyResults).pipe(filter(Boolean));
-          return EMPTY;
-        }),
-        catchError((error) => {
-          console.error('Error fetching assembly results:', error);
-          return of(null);
-        })
-      )
-      .subscribe((assemblyResults) => {
-        // console.log('Assembly results received:', assemblyResults);
-      });
-  }
-
-  private onStartButtonClicked(): void {
-    const href = window.location.href;
-    const hrefLink = href.split('/').slice(0, -1).join('/');
-    window.open(hrefLink, '_self');
   }
 
   public selectTab(event: MatTabChangeEvent) {

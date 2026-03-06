@@ -1,6 +1,6 @@
 <header>
   <div>
-    <h1>{{fileDetails()?.label}}</h1>
+    <h1>{{fileDetails()?.label ?? jobId()}}</h1>
     <div class="subtitle">
       @if(uploadFile()){
       <p>Your file</p>

@@ -74,11 +74,12 @@ export class ProcessingPageComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.initMolstar();
     if (!this.paramsAvailable()) {
-      if (localStorage['job']) {
-        localStorage.removeItem('job');
-      } else {
-        this.reAnalyse();
-      }
+      // if (localStorage['job']) {
+      //   localStorage.removeItem('job');
+      // } else {
+      //   this.reAnalyse();
+      // }
+      // this.reAnalyse();
     }
   }
 
@@ -233,6 +234,7 @@ export class ProcessingPageComponent implements AfterViewInit {
   }
 
   public async reAnalyse(): Promise<void> {
+    console.log('Re-analysing with existing file...');
     const payloadSaved = this.pisaUtilService.getDataInSessionStorage('pisa-assembly-payload');
 
     const payload: any = {};

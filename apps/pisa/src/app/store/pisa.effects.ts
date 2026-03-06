@@ -167,8 +167,9 @@ export class PisaEffects {
     () =>
       this.actions$.pipe(
         ofType(PisaActions.assemblyAndInterfaceResultsCollectedForJobId),
-        tap(() => {
-          this.router.navigate(['/assemblies'], { queryParamsHandling: 'preserve' });
+        withLatestFrom(this.store.select(PisaSelectors.jobId).pipe(filter(Boolean))),
+        tap(([action, jobId]) => {
+          this.router.navigate(['/assemblies', jobId], { queryParamsHandling: 'preserve' });
         })
       ),
     { dispatch: false }
