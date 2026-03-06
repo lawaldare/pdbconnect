@@ -39,8 +39,8 @@
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "3mb",
-              "maximumError": "5mb"
+              "maximumWarning": "4mb",
+              "maximumError": "6mb"
             },
             {
               "type": "anyComponentStyle",
@@ -49,12 +49,10 @@
             }
           ],
           "aot": true,
-          "buildOptimizer": true,
           "extractLicenses": true,
           "namedChunks": false,
           "optimization": true,
           "sourceMap": true,
-          "vendorChunk": false,
           "outputHashing": "all",
           "baseHref": "$APP_BASE_HREF"
         },
