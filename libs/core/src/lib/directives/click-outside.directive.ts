@@ -10,9 +10,7 @@ export class ClickOutsideDirective {
   constructor(private elementRef: ElementRef) {}
 
   @HostListener('document:click', ['$event.target'])
-  public onClick(targetElement: EventTarget | null): void {
-    if (!(targetElement instanceof HTMLElement)) return;
-
+  public onClick(targetElement: any): void {
     const clickedInside = this.elementRef.nativeElement.contains(targetElement);
     const buttonHasClassIdentifier = targetElement.classList.contains('less-identifier');
     if (!clickedInside && !buttonHasClassIdentifier) {

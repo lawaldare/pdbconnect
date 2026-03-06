@@ -1,7 +1,3 @@
-import { APIConservationData } from './pv-api-conservation-track-data.model';
-import { APIVariationData } from './pv-api-variation-track-data.model';
-import { Feature as NightingaleFeature } from '@nightingale-elements/nightingale-track';
-
 export interface PanelResidueDatum {
   resId: string;
   resName: string;

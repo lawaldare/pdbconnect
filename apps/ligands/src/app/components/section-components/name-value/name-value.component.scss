@@ -1,0 +1,14 @@
+:host {
+  width: 100%;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.info-row-title {
+  font-weight: 500;
+}

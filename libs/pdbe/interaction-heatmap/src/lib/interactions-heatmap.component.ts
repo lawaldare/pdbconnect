@@ -69,7 +69,7 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
     return this.categoriesImgs[cat as CategoryNames];
   }
 
-  @HostListener('document:PDB.ligand.showAtom', ['$event']) async atomMouseOver(e: CustomEvent) {
+  @HostListener('document:PDB.ligand.showAtom', ['$event']) async atomMouseOver(e: any) {
     if (e.detail.external !== false && this.isMouseHovering === false) {
       const atomName = e.detail.atomName;
       let toSend, atomDatum;
@@ -100,7 +100,7 @@ export class InteractionsHeatmapComponent implements AfterViewInit {
     }
   }
 
-  @HostListener('document:PDB.ligand.hideAtom', ['$event']) atomMouseOut(e: CustomEvent) {
+  @HostListener('document:PDB.ligand.hideAtom', ['$event']) atomMouseOut(e: any) {
     if (e.detail.external !== false && this.isMouseHovering === false) {
       const heatmapAtoms = document.querySelector('#atoms-hm-heatmap-track') as NightingaleSequenceHeatmap;
       if (heatmapAtoms) {
