@@ -1,0 +1,122 @@
+{
+  "name": "complexes",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/complexes/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/complexes",
+        "browser": "apps/complexes/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/complexes/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/complexes/src/assets",
+            "output": "assets"
+          }
+        ],
+        "styles": ["@angular/material/prebuilt-themes/indigo-pink.css", "apps/complexes/src/styles.scss"],
+        "scripts": [],
+        "stylePreprocessorOptions": {
+          "includePaths": ["libs/core/src/lib/styles"]
+        }
+      },
+      "configurations": {
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/complexes/src/environments/environment.ts",
+              "with": "apps/complexes/src/environments/environment.prod.ts"
+            }
+          ],
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "4mb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "200kb",
+              "maximumError": "400kb"
+            }
+          ],
+          "aot": true,
+          "extractLicenses": true,
+          "namedChunks": false,
+          "optimization": true,
+          "sourceMap": true,
+          "outputHashing": "all",
+          "baseHref": "$APP_BASE_HREF"
+        },
+        "development": {
+          "aot": true,
+          "extractLicenses": true,
+          "namedChunks": false,
+          "optimization": true,
+          "sourceMap": true,
+          "outputHashing": "all",
+          "baseHref": "$APP_BASE_HREF"
+        },
+        "local": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "options": {
+        "buildTarget": "complexes:build:local",
+        "port": 4300
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "complexes:build:production"
+        },
+        "development": {
+          "buildTarget": "complexes:build:development"
+        }
+      },
+      "defaultConfiguration": ""
+    },
+    "extract-i18n": {
+      "executor": "@angular/build:extract-i18n",
+      "options": {
+        "buildTarget": "complexes:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/complexes/jest.config.ts",
+        "tsConfig": "apps/complexes/tsconfig.spec.json"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "complexes:build",
+        "port": 4200,
+        "staticFilePath": "dist/apps/complexes/browser",
+        "spa": true
+      }
+    }
+  }
+}

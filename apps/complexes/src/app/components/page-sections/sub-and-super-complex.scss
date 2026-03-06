@@ -1,0 +1,123 @@
+@import 'https://cdn.jsdelivr.net/npm/pdbe-molstar@3.7.2/build/pdbe-molstar-light.css';
+
+p {
+  margin-bottom: 20px !important;
+  margin-right: 3px;
+}
+
+.search-box {
+  position: relative;
+  width: 350px;
+  font-size: 16px;
+
+  input {
+    border: none;
+    border-bottom: 1px solid var(--Neutral-600, #707372);
+    box-shadow: none;
+    padding-left: 0;
+  }
+
+  .icon-search {
+    position: absolute;
+    right: 5px;
+    top: 12px;
+    color: #707372;
+  }
+}
+
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 80px;
+
+  @media (width <= 767px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+section.table {
+  display: flex;
+  width: 100%;
+
+  @media screen and (width <= 768px) {
+    display: none;
+  }
+
+  // align-items: center;
+  justify-content: space-between;
+
+  .table-section {
+    min-width: 50%;
+    width: 50%;
+    margin-top: 5px;
+    height: 740px;
+  }
+
+  .molstar-section {
+    width: 50%;
+
+    #molstar-container {
+      // width: 685px;
+      width: 100%;
+      height: 500px;
+      position: relative;
+    }
+
+    .legend-info {
+      margin-top: 20px;
+
+      p,
+      li {
+        color: #000;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 27.2px;
+      }
+
+      .title {
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+.spinner {
+  transform-origin: center;
+  animation: spinner 0.75s infinite linear;
+}
+
+@keyframes spinner {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+h3 {
+  margin-bottom: 20px;
+}
+
+section {
+  margin-top: 10px;
+  position: relative;
+
+  .title {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 20px;
+
+    img {
+      cursor: pointer;
+    }
+  }
+}
+
+.onboarding-tutorial-banner {
+  p {
+    margin: 0 !important;
+  }
+}
+
+::ng-deep .msp-plugin .msp-layout-standard {
+  border: none !important;
+}

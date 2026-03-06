@@ -4,7 +4,7 @@ import { appRoutes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { BaseHrefService } from './base-href.service';
+
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { ligandReducer } from './projects/ligands/store/ligand.reducer';
@@ -14,6 +14,7 @@ import { ComplexEffects } from './projects/complex/store/complex.effects';
 import { complexReducer } from './projects/complex/store/complex.reducer';
 import { EntryEffects } from './projects/entry/store/entry.effects';
 import { entryReducer } from './projects/entry/store/entry.reducer';
+import { BaseHrefService } from '@pdbc/core';
 import { provideNativeDateAdapter } from '@angular/material/core';
 
 export function initializeApp(baseHrefService: BaseHrefService) {

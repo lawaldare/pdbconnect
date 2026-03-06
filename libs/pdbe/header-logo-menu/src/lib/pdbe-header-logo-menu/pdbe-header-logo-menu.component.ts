@@ -25,7 +25,7 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
   public links!: Link[];
 
   ngOnInit() {
-    if (this.headerConfig.isLigandPage) {
+    if (this.headerConfig.isLigandPage || this.headerConfig.isComplexPage) {
       this.headerLogoSrc = this.headerConfig.logoPath ?? '';
     } else {
       this.headerLogoSrc = this.headerConfig.logoType === 'PDBe' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;

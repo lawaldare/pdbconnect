@@ -1,0 +1,127 @@
+@if(tutorialTourService.showPISATourBanner() && isBannerCookies()){
+<section class="onboarding-tutorial-banner structures">
+  <img [src]="'images/light-star.svg' | asset" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startPISATabTour()">Take an on-page tour.</span></p>
+</section>
+} @if(rowData().length){
+<div class="pisa-section">
+  @let length = rowData().length;
+  <section class="table" [style.width.%]="length < 10 ? 100 : 65">
+    <p>
+      This table lists the predicted <a href="https://www.ebi.ac.uk/pdbe/pisa/" target="_blank">PISA</a>-derived assembly properties for all instances of this
+      complex. The slider and histogram load values from the first row by default. Select a row to view and compare other assemblies.
+    </p>
+
+    <button class="vf-button vf-button--link" (click)="downloadCSV()">
+      Download table as CSV
+      <i class="icon icon-common icon-download"></i>
+    </button>
+    <div id="pisa-table-tour">
+      @if(pisaSliderReady()){
+      <pdbc-pisa-filter (filterChange)="applyFilters($event)" />
+      }@else {
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+      }
+
+      <div class="pisa-table">
+        <ag-grid-angular
+          class="ag-theme-quartz"
+          [rowData]="rowData()"
+          [columnDefs]="colDefs"
+          [gridOptions]="gridOptions"
+          (selectionChanged)="onSelectionChanged($event)"
+          (rowDataUpdated)="onRowDataUpdated($event)"
+          [paginationPageSizeSelector]="paginationPageSizeSelector()"
+          [rowSelection]="rowSelection"
+          [initialState]="initialState"
+        />
+      </div>
+    </div>
+  </section>
+  @if(length > 10){
+  <div class="charts" id="pisa-charts-tour">
+    <section class="complex-sliders">
+      @if(pisaSliderReady()){ @for(property of pisaProperties; track property.value) {
+      <div class="complex-slider">
+        <span class="title">{{property.label}}</span>
+        <ngx-slider [value]="getPropertyValue(property.value)" [options]="getPropertyOptions(property.value)"></ngx-slider>
+      </div>
+      } } @else {
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+      }
+    </section>
+    <section class="histogram">
+      <div class="toolbar">
+        <span class="title">PISA Assembly Property</span>
+        <mat-select [formControl]="pisaAssemblyProperty" (selectionChange)="selectPisaAssemblyProperty()">
+          @for (option of pisaAssemblyPropertyOptions; track option.value) {
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
+          }
+        </mat-select>
+      </div>
+      <svg id="histogram-svg"></svg>
+    </section>
+  </div>
+  }
+</div>
+<div class="mobile-alternative">
+  <p>This table lists <a href="https://www.ebi.ac.uk/pdbe/pisa/" target="_blank">PISA</a>-derived properties for all assemblies of this complex.</p>
+  <div class="search-box">
+    <input type="search" [(ngModel)]="searchTerm" placeholder="Search..." />
+    <i class="icon icon-common icon-search"> </i>
+  </div>
+  @for(structure of structuresPage(); track structure){
+  <article>
+    <div class="list">
+      <p class="list-item-left">PDB</p>
+      <p class="list-item-right">
+        <a [href]="baseUrl + 'entry/pdb/' + structure.pdb_id" target="_blank">
+          {{ structure.pdb_id }}
+          <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
+        </a>
+      </p>
+    </div>
+    <div class="list">
+      <p class="list-item-left">ID</p>
+      <p class="list-item-right">{{ structure.assembly_id }}</p>
+    </div>
+    <div class="list">
+      <p class="list-item-left">Acc. SA (Å²)</p>
+      <p class="list-item-right">{{ structure.accessible_surface_area }}</p>
+    </div>
+    <div class="list">
+      <p class="list-item-left">Bur. SA (Å²)</p>
+      <p class="list-item-right">{{ structure.buried_surface_area }}</p>
+    </div>
+    <div class="list">
+      <p class="list-item-left">Solv. ΔG (kcal /mol)</p>
+      <p class="list-item-right">{{ structure.solvation_energy_gain }}</p>
+    </div>
+    <div class="list">
+      <p class="list-item-left">Diss. ΔG (kcal /mol)</p>
+      <p class="list-item-right">{{ structure.dissociation_energy }}</p>
+    </div>
+    <div class="list">
+      <p class="list-item-left">Diss. TΔS (kcal /mol)</p>
+      <p class="list-item-right">{{ structure.dissociation_entropy }}</p>
+    </div>
+  </article>
+  }
+  <mat-paginator
+    class="paginator-container"
+    [length]="structuresLength()"
+    [pageSize]="structuresPageSize()"
+    [pageSizeOptions]="structuresPageSizeOptions()"
+    (page)="handlePageEvent($event)"
+    showFirstLastButtons
+    aria-label="Select page of structures"
+  >
+  </mat-paginator>
+</div>
+
+} @else { @if(filterActionNoData()){
+<p>No pisa assemblies match your filters</p>
+<pdbc-pisa-filter (filterChange)="applyFilters($event)" />
+} @else {
+<h4>No pisa assemblies available yet!</h4>
+} }

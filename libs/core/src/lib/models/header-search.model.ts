@@ -14,6 +14,7 @@ export interface HeaderSearchConfig {
   examples?: string[] | ValueLabel[];
   placeholderText?: string;
   isOnComplexPage?: boolean;
+  projectId?: string;
 }
 
 export interface UISearchConfig {

@@ -5,7 +5,8 @@
     "../../libs/pdbe/molstar-for-apps/src/lib/extension-for-pages/molstart-plugin.service.ts",
     "../../libs/core/src/lib/services/script-loader.service.ts",
     "src/app/projects/complex/components/page-sections/complex-pisa/histogram.js",
-    "../../libs/pdbe/pv-nightingale-components/src/lib/pv-nightingale-components/components/new-protvista/pv-angular-wrapper/pv-entry-api.facade-new.ts"
+    "../../libs/pdbe/pv-nightingale-components/src/lib/pv-nightingale-components/components/new-protvista/pv-angular-wrapper/pv-entry-api.facade-new.ts",
+    "../../libs/core/src/lib/services/base-href.service.ts"
   ],
   "compilerOptions": {
     "types": ["jest", "node"]
