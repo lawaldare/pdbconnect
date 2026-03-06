@@ -4,8 +4,8 @@
   }
 
   <div style="margin: 5px">
-    <a mat-button color="accent" style="float: right; width: 142px" href="https://pdbe.org/{{state.images?.[0]?.pdbId}}" target="_blank"
-      >{{state.images?.[0]?.pdbId?.toUpperCase()}} Overview <i class="icon icon-generic small" style="margin-top: -2px; display: inline-block" data-icon="x"></i
+    <a mat-button color="accent" style="float: right; width: 142px" href="https://pdbe.org/{{state.images[0].pdbId}}" target="_blank"
+      >{{state.images[0].pdbId?.toUpperCase()}} Overview <i class="icon icon-generic small" style="margin-top: -2px; display: inline-block" data-icon="x"></i
     ></a>
     <a mat-button color="accent" style="float: right; width: 106px; padding-left: 2px; padding-right: 2px" (click)="showDescription = !showDescription"
       >{{showDescription ? 'Hide' : 'Show' }} Caption</a
