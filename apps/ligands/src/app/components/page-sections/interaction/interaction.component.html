@@ -1,0 +1,49 @@
+@if (tutorialTourService.showStructuresTourBanner() && isBannerCookies()) {
+<section class="onboarding-tutorial-banner">
+  <img [src]="'images/light-star.svg' | asset" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startInteractionsTabTour()">Take an on-page tour.</span></p>
+</section>
+} @if (showLigandHeatmap()) {
+
+<div id="interaction-section">
+  <article>
+    Interaction statistics shows the summary of aggregated protein-ligand interaction data of {{ ligandId() }} from {{ ligandInstances() }} ligand instances in {{
+    pdbstructures() }} distinct proteins and {{ pdbchains() }} PDB Structures. The protein-ligand interactions are computed using
+    <a href="https://github.com/PDBeurope/arpeggio" target="_blank"> PDBe Arpeggio </a>
+  </article>
+  <button class="vf-button vf-button--link" (click)="downloadInteraction()">
+    Download all interactions
+    <i class="icon icon-common icon-download"></i>
+  </button>
+  <a href="https://github.com/PDBe-KB/pdbe-kb-manual/wiki/Interaction-statistics" target="_blank">See calculation details</a>
+
+  <p class="footer-text">
+    For full interaction statistics, including the heatmap showing ligand atom interaction frequency with different amino acids, please view on a larger screen
+  </p>
+  <div class="intx-component-container">
+    <lib-interactions-heatmap
+      [ligandId]="ligandId()"
+      (newFilteringEvent)="changeLigandEnvironmentFilters($event)"
+      [interactions]="interaction"
+      [atomNumber]="atomNumber"
+    />
+    <div class="ligandEnv-container" id="ligand-2d-image-tour">
+      <div class="ligandEnv-header">
+        <h4>
+          Atom-wise interactions of {{ ligandId() }} molecule
+          <lib-tool-tip>
+            <p>Percentage of interactions by ligand atom compared to the total interactions of the ligand</p>
+          </lib-tool-tip>
+        </h4>
+      </div>
+      <div class="ligandEnv-content">
+        <div class="image-container" #imageContainer></div>
+        <span style="font-size: 12px; font-weight: 500; margin-right: 8px">Show atom names</span>
+        <mat-slide-toggle (change)="onToggleChange($event)" />
+      </div>
+    </div>
+  </div>
+</div>
+} @else {
+<h4>No interaction data for {{ligandId()}}</h4>
+}

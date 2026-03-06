@@ -1,0 +1,26 @@
+{
+  "name": "ligands-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/ligands-e2e/src",
+  "tags": [],
+  "implicitDependencies": ["ligands"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/ligands-e2e/cypress.config.ts",
+        "testingType": "e2e",
+        "devServerTarget": "ligands:serve"
+      },
+      "configurations": {
+        "production": {
+          "devServerTarget": "ligands:serve:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}
