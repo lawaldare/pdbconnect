@@ -62,8 +62,7 @@
             </span>
             <article>
               @if (datum?.complexId) {
-              <a [href]="generateComplexSearchUrl(datum!.complexId!)" target="_blank">{{datum?.complexId}}</a>
-              <i class="icon icon-common icon-search"></i>
+              <a [href]="generateComplexPageUrl(datum!.complexId!)" target="_blank">{{datum?.complexId}}</a>
               } @else {
               <span>Not available</span>
               }

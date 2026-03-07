@@ -17,6 +17,7 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { filter, firstValueFrom, take, timer } from 'rxjs';
 import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
@@ -229,7 +230,7 @@ export class AssembliesTabComponent implements AfterViewInit {
     this.isSidebarDisplayed.update((prev) => !prev);
   }
 
-  public generateComplexSearchUrl(term: string): string {
-    return this.util.generateQueryURL(term, 'complex_id');
+  public generateComplexPageUrl(complexId: string): string {
+    return `${environment.baseUrl}pdbe/pdbe-kb/complexes/${complexId}`;
   }
 }
