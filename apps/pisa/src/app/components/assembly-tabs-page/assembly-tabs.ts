@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @angular-eslint/component-selector */
 import { CommonModule } from '@angular/common';
-import { Component, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { DownloadFileTypeService, MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { Store } from '@ngrx/store';
 import { PisaSelectors } from '../../store/pisa.selectors';
-import { catchError, EMPTY, filter, forkJoin, mergeMap, of, switchMap, take, tap } from 'rxjs';
+import { filter, switchMap, take, tap } from 'rxjs';
 import { PisaUtilService } from '../../services/pisa-util.service';
 import { PisaActions } from '../../store/pisa.actions';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -14,14 +14,14 @@ import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { ComplexesTabComponent } from '../complexes-tab/complexes-tab';
 import { InterfacesTabComponent } from '../interfaces-tab/interfaces-tab';
 import { MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
-
+import { AssemblyTabsFacade } from './assembly-tabs.facade';
 @Component({
   selector: 'pisa-assembly-tabs-page',
   imports: [CommonModule, MaterialModule, ComplexesTabComponent, InterfacesTabComponent],
   templateUrl: './assembly-tabs.html',
   styleUrl: './assembly-tabs.scss',
 })
-export class AssemblyTabsPageComponent implements OnInit {
+export class AssemblyTabsPageComponent implements OnInit, AfterViewInit {
   private pisaStore = inject(Store);
   private pisaUtilService = inject(PisaUtilService);
   private readonly route = inject(ActivatedRoute);
@@ -29,6 +29,8 @@ export class AssemblyTabsPageComponent implements OnInit {
   public readonly scrollService = inject(ScrollPositionService);
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   private readonly molstarPluginService = inject(MolstarPluginService);
+
+  public readonly assemblyTabsFacade = inject(AssemblyTabsFacade);
 
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
@@ -67,6 +69,9 @@ export class AssemblyTabsPageComponent implements OnInit {
   public selectedTab = signal<number>(0);
   public uploadFile = signal<boolean>(true);
 
+  @ViewChild('viewer') container!: ElementRef<HTMLElement>;
+  public loadingFromRoute = signal(false);
+
   constructor() {
     this.route.queryParams.subscribe((params) => {
       const routeTabs = this.pisaRouteTabs;
@@ -91,6 +96,7 @@ export class AssemblyTabsPageComponent implements OnInit {
 
               console.error('No jobId in store, using route:', jobIdFromRoute);
               this.jobId.set(jobIdFromRoute);
+              this.loadingFromRoute.set(true);
               this.pisaStore.dispatch(PisaActions.setJobID({ jobId: jobIdFromRoute }));
               this.pisaStore.dispatch(PisaActions.getResultsFromJobId({ jobId: jobIdFromRoute }));
             })
@@ -100,6 +106,12 @@ export class AssemblyTabsPageComponent implements OnInit {
       .subscribe();
 
     this.checkUploadStatus();
+  }
+
+  ngAfterViewInit(): void {
+    if (this.loadingFromRoute() && !this.fileDetails()) {
+      this.assemblyTabsFacade.initMolstar(this.container.nativeElement, this.jobId());
+    }
   }
 
   private checkUploadStatus(): void {
