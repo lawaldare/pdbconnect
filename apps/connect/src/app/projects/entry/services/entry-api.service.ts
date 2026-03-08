@@ -67,6 +67,7 @@ export class EntryApiService {
         return {
           entryTitle: datum.title!,
           entryAuthors: datum.entry_authors!.join(' '),
+          entryAuthorsList: datum.entry_authors!,
           depositionDate: depositionDateObj,
           releaseDate: releasedDateObj,
           revisionDate: revisionDateObj,

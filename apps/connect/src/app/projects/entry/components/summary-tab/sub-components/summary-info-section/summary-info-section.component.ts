@@ -46,8 +46,14 @@ export class SummaryInfoSectionComponent {
   /** ----------------------------------------------
    ** AUTHOR & ENTRIES LIST EXPAND/COLLAPSE LOGIC
    ** ---------------------------------------------- */
+  public readonly initialEntryAuthorCount = signal(5);
   public readonly initialAuthorCount = signal(5);
   public readonly initialEntriesCount = signal(5);
+
+  toggleEntryAuthorList() {
+    const authors = this.summary()?.entryAuthorsList ?? [];
+    this.initialEntryAuthorCount.update((prev) => (prev === 5 ? authors.length : 5));
+  }
 
   toggleAuthorList() {
     const authors = this.primaryPublication()?.author_list ?? [];
@@ -66,6 +72,11 @@ export class SummaryInfoSectionComponent {
 
   public generateOrganismSearchUrl(term: string): string {
     return this.util.generateQueryURL(term, 'q_organism_name');
+  }
+
+  public generateEntryAuthorSearchUrl(term: string): string {
+    term = term.toLowerCase().replace(/[.,]/g, '');
+    return this.util.generateQueryURL(term, 'q_entry_authors');
   }
 
   public generateAuthorSearchUrl(term: string): string {
