@@ -1,7 +1,7 @@
 <header>
   @if (headerReady()) {
   <section class="title-info">
-    <h1 class="heading-1">{{ entryId() }}</h1>
+    <h1 class="heading-1">pdb_0000{{ entryId() }}</h1>
     <div class="information">
       <span>{{ experimentalMethod() }}</span>
       @if (resolutionValues() ?? [].length > 0) { @for (resolutionValue of resolutionValues(); track resolutionValue) { @if (resolutionValue !== undefined) {
