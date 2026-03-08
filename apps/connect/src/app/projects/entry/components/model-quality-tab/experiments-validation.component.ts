@@ -20,7 +20,7 @@ import { ValidationTablesFacade } from './validation-tables.facade';
 import { AgGridAngular } from 'ag-grid-angular';
 
 import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
-import { modelQualityTooltips, OUTLIER_TYPE_LABELS, tourIds } from '../../entry-constant';
+import { modelQualityTooltips, OUTLIER_TYPE_LABELS } from '../../entry-constant';
 import { MaterialModule, UtilService } from '@pdbc/core';
 import { BehaviorSubject, combineLatest, filter, forkJoin, mergeMap, of, take, timer } from 'rxjs';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
@@ -404,8 +404,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     this.selectedSpecificIssueKindValue.set(event.value); // trigger effect
   }
 
-  public isBannerCookies = signal(false);
-
   async ngAfterViewInit() {
     this.updateLeftSideWidth();
     const tabHeaderEl = document.querySelector('.mat-mdc-tab-header');
@@ -419,11 +417,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     );
 
     observer.observe(tabHeaderEl);
-
-    const agreed = this.tutorialTourService.getCookie(tourIds.modelQuality);
-    if (agreed) {
-      this.isBannerCookies.set(true);
-    }
 
     // NEW: footer observer to stop sticky at bottom
     this.waitForFooter((footerEl) => {
@@ -458,10 +451,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       }
     };
     requestAnimationFrame(check);
-  }
-
-  public startMQTabTour(): void {
-    this.tutorialTourService.startTour(this.tutorialTourService.modelQualityTabTourSteps);
   }
 
   /**

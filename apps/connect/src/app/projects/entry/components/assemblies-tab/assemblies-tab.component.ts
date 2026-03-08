@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
@@ -10,7 +10,7 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
-import { dashboardStatLinks, entryAssembliesTooltips, tourIds } from '../../entry-constant';
+import { dashboardStatLinks, entryAssembliesTooltips } from '../../entry-constant';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
@@ -26,7 +26,7 @@ import { environment } from '../../../../../environments/environment';
   templateUrl: './assemblies-tab.component.html',
   styleUrl: './assemblies-tab.component.scss',
 })
-export class AssembliesTabComponent implements AfterViewInit {
+export class AssembliesTabComponent {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly gAS = inject(GoogleAnalyticsService);
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);
@@ -73,22 +73,6 @@ export class AssembliesTabComponent implements AfterViewInit {
     if (rows === undefined) return false;
     return rows.length > 0;
   });
-
-  public isBannerCookies = signal(false);
-
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.tutorialTourService.hasAssemblies.set(this.hasAssemblies());
-      const agreed = this.tutorialTourService.getCookie(tourIds.assemblies);
-      if (!agreed && this.hasAssemblies()) {
-        this.isBannerCookies.set(true);
-      }
-    }, 500);
-  }
-
-  public startAssembliesTabTour(): void {
-    this.tutorialTourService.startTour(this.tutorialTourService.complexesTabTourSteps);
-  }
 
   public toggleMolstar() {
     const forceLoad = this.compCommunication.forceLoad();

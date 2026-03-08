@@ -1,9 +1,3 @@
-@if(tutorialTourService.showMacromoleculesTourBanner() && isBannerCookies()){
-<section class="onboarding-tutorial-banner">
-  <img src="assets/img/light-star.svg" alt="light start icon" />
-  <p>We have redesigned this page to enhance your experience. <span (click)="startMacromoleculesTabTour()">Take an on-page tour.</span></p>
-</section>
-}
 <main [style.display]="!tabDataLoaded() || !macromoleculeTableRows().length ? 'none' : '' " [class.change-display]="!isSidebarDisplayed()">
   @if(isSidebarDisplayed()){
   <pdbc-interactive-tables tabName="Macromolecules" id="macromolecules-list-tour" />

@@ -1,9 +1,4 @@
-@if(tutorialTourService.showAssembliesTourBanner() && isBannerCookies()){
-<section class="onboarding-tutorial-banner">
-  <img src="assets/img/light-star.svg" alt="light start icon" />
-  <p>We have redesigned this page to enhance your experience. <span (click)="startAssembliesTabTour()">Take an on-page tour.</span></p>
-</section>
-} @if (tabDataLoaded()){ @if(assemblyTableRows().length){
+@if (tabDataLoaded()){ @if(assemblyTableRows().length){
 <main>
   @if(isSidebarDisplayed()){
   <pdbc-interactive-tables tabName="Complexes" id="complexes-list-tour" />
