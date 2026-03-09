@@ -1,0 +1,49 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { AfterViewInit, Component, computed, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { HeaderSearchComponent } from '../header-search/header-search.component';
+import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.component';
+import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
+import { PartnersMapComponent } from '../partners-map/partners-map.component';
+import { PartnersPlotsComponent } from '../partners-plots/partners-plots.component';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
+
+declare const $: any;
+
+@Component({
+  selector: 'pdbc-partners-page',
+  templateUrl: './partners-page.component.html',
+  styleUrls: ['./partners-page.component.scss'],
+  imports: [CommonModule, HeaderSearchComponent, NavTabsComponent, HomeBookmarksComponent, PartnersMapComponent, PartnersPlotsComponent],
+})
+export class PartnersPageComponent implements AfterViewInit {
+  private readonly cpApiService = inject(CorporatePagesApiService);
+  public readonly partnersData = toSignal(this.cpApiService.getPartnersDescriptionData(), { initialValue: {} });
+  public partnersCategories = computed(() => {
+    const data = this.partnersData();
+    return Object.keys(data);
+  });
+  public partnersCategoriesId = computed(() => {
+    const data = this.partnersData();
+    return Object.keys(data).map((each_category) => {
+      return each_category.replace(/ /g, '-').toLowerCase();
+    });
+  });
+
+  ngAfterViewInit() {
+    $(document).foundation();
+    $(document).foundationExtendEBI();
+  }
+
+  scroll(el: HTMLElement) {
+    el.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  public scrollById(elId: string) {
+    const el = document.getElementById(elId);
+    if (el != null) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+}

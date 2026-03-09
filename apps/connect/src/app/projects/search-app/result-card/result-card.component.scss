@@ -1,0 +1,206 @@
+.result_link {
+  font-size: 123.1%;
+  vertical-align: top;
+  word-break: initial;
+  display: flex;
+  align-items: center;
+}
+
+.warning {
+  color: #e5a066;
+}
+
+.marginTop10 {
+  margin-top: 10px;
+}
+
+.marginBottom1 {
+  margin-bottom: 1px;
+}
+
+.marginBottom30 {
+  margin-bottom: 30px;
+}
+
+.resCard {
+  margin: 0 5px 20px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-bottom: 10px;
+  background-color: #f6f6f6;
+}
+
+.oddCard {
+  background-color: #e9e9e9;
+}
+
+.font105 {
+  font-size: 105%;
+}
+
+.imagesWrapper {
+  width: 100%;
+  margin: 0 auto;
+  max-width: 302px;
+  background-color: #fff;
+  border: 1px solid #a8a8a8;
+  overflow: auto;
+  cursor: pointer;
+}
+
+.imagesWrapper .leftSection {
+  width: 66.667%;
+  float: left;
+}
+
+.imagesWrapper .rightSection {
+  width: 33.333%;
+  float: right;
+  border-left: 1px solid #a8a8a8;
+}
+
+.imagesWrapper .image-y {
+  border-bottom: 1px solid #a8a8a8;
+}
+
+.claimBlueHighlight {
+  height: 0;
+  border-bottom: 30px solid #add8e6;
+  border-right: 25px solid transparent;
+  padding-left: 10px;
+  border-left: 10px;
+}
+
+.greenContent {
+  background-color: #90ee90;
+  height: 30px;
+  line-height: 30px;
+  font-size: 85%;
+  padding: 0 10px;
+  border-radius: 0 0 10px 10px;
+  display: inline-block;
+}
+
+.grayContent {
+  background-color: rgb(218 218 218);
+  height: 30px;
+  line-height: 30px;
+  font-size: 85%;
+  padding: 0 10px;
+  border-radius: 0 0 10px 10px;
+  display: inline-block;
+}
+
+.claimHighlight {
+  text-align: center;
+  position: absolute;
+  width: 100%;
+  top: 0;
+}
+
+.thorClaimCheckBox {
+  float: left;
+  display: block;
+  margin-top: 4px;
+}
+
+.thorClaimText {
+  float: left;
+  height: 31px;
+  line-height: 31px;
+  font-size: 85%;
+}
+
+.recordSelectBox {
+  position: absolute;
+  bottom: 30px;
+  height: 0;
+}
+
+.resultTopSpacing {
+  height: 15px;
+}
+
+.thorUserLink {
+  color: #58669e !important;
+  border-bottom-width: 1px;
+  border-bottom-style: dotted;
+  border-bottom-color: inherit;
+}
+
+.seqRecRow {
+  margin-bottom: 5px;
+}
+
+.seqAlignmentLabelSection {
+  float: left;
+  background: #ffffff;
+  padding: 10px;
+}
+
+.seqAlignmentLabel {
+  margin-bottom: 10px;
+  text-align: right;
+}
+
+.seqAlignmentLastLabel {
+  margin-bottom: 1px;
+  text-align: right;
+}
+
+.seqAlignmentResultSection {
+  overflow: auto hidden;
+  background: #ffffff;
+  padding: 10px 0;
+}
+
+.seqAlignmentResult {
+  word-break: normal;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  font-family: monospace !important;
+}
+
+.seqAlignmentResultLastRow {
+  word-break: normal;
+  text-transform: uppercase;
+  white-space: nowrap;
+  letter-spacing: 1px;
+  font-family: monospace !important;
+}
+
+.noResultText {
+  text-align: left;
+  background: #fafad2;
+  padding: 5px;
+}
+
+.truncateString {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.newHighlight {
+  background-color: #74b35a;
+  padding: 2px 8px;
+  border-radius: 25px;
+  color: #ffffff;
+  margin-right: 3px;
+  font-size: 90%;
+  cursor: default;
+}
+
+.ext-1 {
+  font-size: 13px;
+}
+
+.icon-search::before {
+  --icon-search-color: #3b6fb6;
+
+  width: 13px;
+  height: 13px;
+  mask-size: auto 13px;
+}

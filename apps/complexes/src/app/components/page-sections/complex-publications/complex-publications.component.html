@@ -1,0 +1,49 @@
+@if(publicationsPage){
+<div id="publications-section">
+  <p style="margin-bottom: 20px !important; font-size: 18px"><strong>Primary publications associated with this complex</strong></p>
+  @if(publicationsPage.length){
+  <section>
+    @for(publication of publicationsPage; track publication){
+    <article>
+      <p><a class="row__right__link" [href]="'https://europepmc.org/article/MED/' + publication.pubmed_id" target="_blank">{{ publication.title }} </a></p>
+      <p>
+        @for(author of publication.author_list; track author.full_name; let islast = $last){
+        <span> {{ author.full_name }}</span> {{ islast ? '' : ',' }} }
+      </p>
+      <p>
+        {{ publication.journal_info.ISO_abbreviation }} <strong>{{ publication.journal_info.volume }}</strong> {{ publication.journal_info.pages }} ({{
+        publication.journal_info.year }})
+      </p>
+      <p>
+        PMID:<a [href]="'https://europepmc.org/article/MED/' + publication.pubmed_id" target="_blank">
+          {{ publication.pubmed_id }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </p>
+      <p>
+        DOI:<a [href]="'https://doi.org/' + publication.doi" target="_blank">
+          {{ publication.doi }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </p>
+      <p></p>
+    </article>
+    }
+    <mat-paginator
+      class="paginator-container"
+      [length]="publicationsLength()"
+      [pageSize]="publicationsPageSize()"
+      [pageSizeOptions]="pageSizeOptions()"
+      (page)="handlePageEvent($event)"
+      showFirstLastButtons
+      aria-label="Select page of subcomplexes"
+    >
+    </mat-paginator>
+  </section>
+  } @else {
+  <p>No publication data available yet!</p>
+  }
+</div>
+} @else {
+<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+}

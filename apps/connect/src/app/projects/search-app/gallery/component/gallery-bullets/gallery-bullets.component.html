@@ -1,0 +1,5 @@
+@for (image of state.images; track image; let i = $index) {
+<div class="g-bullet" [class.g-bullet-curr]="i === state.currIndex" (click)="galleryService.set(i)">
+  <div class="g-bullet-inner" [ngStyle]="config.style"></div>
+</div>
+}

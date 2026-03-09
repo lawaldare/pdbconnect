@@ -1,0 +1,193 @@
+h3 {
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 39px;
+  margin-bottom: 20px;
+}
+
+article {
+  color: #000;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 23px;
+
+  p {
+    margin-top: 7px;
+
+    a {
+      color: var(--Blue-600, #3b6fb6);
+      border: none;
+    }
+  }
+}
+
+button {
+  margin-bottom: 16px;
+  margin-right: 10px;
+}
+
+::ng-deep .intx-component-container .container {
+  width: initial;
+  padding: initial;
+  margin-right: initial;
+  margin-left: initial;
+  max-width: initial;
+}
+
+.intx-component-container {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 37.92px;
+  border: 1px solid var(--Neutral-200, #656363);
+  padding: 20px;
+  padding-top: 16px;
+
+  @media screen and (width <= 768px) {
+    border: none;
+    gap: 0;
+  }
+
+  lib-interactions-heatmap {
+    width: 100%;
+
+    @media screen and (width <= 768px) {
+      display: none;
+    }
+  }
+
+  ::ng-deep pdbe-ligand-interactions .heatmap-container {
+    width: 563px;
+
+    .heatmap-main {
+      width: 563px;
+    }
+  }
+}
+
+.heatmap-container {
+  display: flex;
+  width: 70%;
+  height: auto;
+}
+
+.lig-heat-container {
+  width: calc(100% - 308px);
+}
+
+.ligandEnv-container {
+  display: flex;
+  align-items: stretch;
+  flex-direction: column;
+  width: 270px;
+
+  @media screen and (width <= 767px) {
+    width: 100%;
+  }
+
+  .ligandEnv-content {
+    height: 380px;
+
+    @media screen and (width <= 767px) {
+      height: auto;
+    }
+  }
+
+  .ligandEnv-header {
+    h4 {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 17px;
+
+      img {
+        display: inline;
+      }
+    }
+  }
+}
+
+.image-container {
+  width: 260px;
+  height: 380px;
+  border: 1px solid var(--Neutral-200, #e4e4e4);
+  margin-bottom: 20px;
+
+  @media screen and (width <= 768px) {
+    width: 100%;
+  }
+}
+
+.empty-text {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.footer-text {
+  display: none;
+
+  @media screen and (width <= 768px) {
+    display: block;
+  }
+}
+
+.ligandEnv-content {
+  height: 380px;
+}
+
+#interaction-section {
+  padding-bottom: 60px;
+}
+
+::ng-deep .mat-mdc-slide-toggle {
+  .mdc-switch {
+    width: 44px !important;
+
+    &__track {
+      border-radius: 12px;
+      height: 24px;
+
+      &::before {
+        background: #d0debb;
+      }
+
+      &::after {
+        background: #007b53;
+      }
+    }
+
+    &__handle-track {
+      height: 20px;
+      width: 20px;
+      top: 2px;
+      left: 2px;
+    }
+
+    &--unselected .mdc-switch__icon,
+    &--selected .mdc-switch__icon {
+      fill: #007b53;
+    }
+  }
+
+  .mdc-switch:enabled:hover:not(:focus, :active) .mdc-switch__track::before,
+  .mdc-switch:enabled:focus:not(:active) .mdc-switch__track::before,
+  .mdc-switch:enabled:active .mdc-switch__track::before {
+    background: #d0debb;
+  }
+
+  .mdc-switch:enabled:hover:not(:focus, :active) .mdc-switch__track::after,
+  .mdc-switch:enabled:focus:not(:active) .mdc-switch__track::after,
+  .mdc-switch:enabled:active .mdc-switch__track::after {
+    background: #007b53;
+  }
+
+  .mdc-switch--selected:enabled .mdc-switch__handle::after,
+  .mdc-switch--selected:enabled:hover:not(:focus, :active) .mdc-switch__handle::after,
+  .mdc-switch--selected:enabled:focus:not(:active) .mdc-switch__handle::after,
+  .mdc-switch--selected:enabled:active .mdc-switch__handle::after,
+  .mdc-switch--unselected:enabled .mdc-switch__handle::after,
+  .mdc-switch--unselected:enabled:hover:not(:focus, :active) .mdc-switch__handle::after,
+  .mdc-switch--unselected:enabled:focus:not(:active) .mdc-switch__handle::after,
+  .mdc-switch--unselected:enabled:active .mdc-switch__handle::after {
+    background: #ffffff;
+  }
+}

@@ -1,0 +1,72 @@
+.sliderLabel {
+  width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  cursor: help;
+  float: left;
+}
+.messageBackground {
+  background: #ccc;
+  position: absolute;
+  height: 100%;
+  width: 50%;
+  border: 1px solid #ccc;
+  text-align: center;
+  font-size: 85%;
+  margin-top: 4px;
+  line-height: 100%;
+}
+.sliderBackground {
+  /*  three color gradient on IE
+    box-shadow: rgb(255, 0, 0) 20em 0em 8em -11em inset;
+    background: linear-gradient(to right, rgb(255, 255, 255) 53%, rgb(0, 0, 255) 100%);
+    */
+  background: rgb(255, 0, 0); /* Old browsers */
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+  background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmMDAwMCIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjUxJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwMDAwZmYiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+  background: -moz-linear-gradient(left, rgb(255, 0, 0) 0%, rgb(255, 255, 255) 50%, rgb(255, 255, 255) 51%, rgb(0, 0, 255) 100%); /* FF3.6+ */
+  background: -webkit-gradient(
+    linear,
+    left top,
+    right top,
+    color-stop(0%, rgb(255, 0, 0)),
+    color-stop(50%, rgb(255, 255, 255)),
+    color-stop(51%, rgb(255, 255, 255)),
+    color-stop(100%, rgb(0, 0, 255))
+  ); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(left, rgb(255, 0, 0) 0%, rgb(255, 255, 255) 50%, rgb(255, 255, 255) 51%, rgb(0, 0, 255) 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(left, rgb(255, 0, 0) 0%, rgb(255, 255, 255) 50%, rgb(255, 255, 255) 51%, rgb(0, 0, 255) 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(left, rgb(255, 0, 0) 0%, rgb(255, 255, 255) 50%, rgb(255, 255, 255) 51%, rgb(0, 0, 255) 100%); /* IE10+ */
+  background: linear-gradient(to right, rgb(255, 0, 0) 0%, rgb(255, 255, 255) 50%, rgb(255, 255, 255) 51%, rgb(0, 0, 255) 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ff0000', endColorstr='#0000ff',GradientType=1 ); /* IE6-8 */
+
+  position: absolute;
+  height: 100%;
+  width: 50%;
+  border: 1px solid #ccc;
+  margin-top: 4px;
+}
+.sliderRow {
+  margin-bottom: 7px;
+  position: relative;
+  clear: both;
+  width: 100%;
+  height: 12px;
+}
+.sliderPosition {
+  border: 2px solid #444;
+  position: absolute;
+  width: 20%; /* TUNABLE dependant on the number of divisions */
+  height: 140%;
+  /*left: -2px; /* TUNABLE */
+  margin-top: -2px;
+  margin-left: -2px;
+  /*background-color: rgba(0,0,0,0.3);*/
+  background-color: rgba(255, 255, 255, 0.7);
+}
+.sliderLoading {
+  text-align: center;
+}

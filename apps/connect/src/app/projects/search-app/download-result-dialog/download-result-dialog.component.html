@@ -1,0 +1,75 @@
+<h1>
+  <span><strong>Download</strong></span>
+  <span class="icon icon-functional" data-icon="x" style="cursor: pointer; float: right; font-size: 12px" (click)="closeDialog()" title="Close"></span>
+</h1>
+<div mat-dialog-content style="font-size: 95%; overflow-x: hidden; position: relative; width: 500px">
+  <div>
+    <!-- Downloading message -->
+    @if (downloadInProgress) {
+    <div class="loadingArea">
+      <div class="loadingText">
+        Downloading...
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <div style="height: 30px; clear: both">&nbsp;</div>
+      </div>
+    </div>
+    } @if (dialogData.selectedEntries.length > 0) {
+    <div>
+      <strong>Entries:</strong>
+      <div style="height: 5px; clear: both">&nbsp;</div>
+      <div>
+        <mat-radio-group [(ngModel)]="downloadType">
+          <mat-radio-button color="primary" value="selected">Selected ({{dialogData.selectedEntries.length}})&nbsp;&nbsp;</mat-radio-button>
+          <mat-radio-button color="primary" value="all">All</mat-radio-button>
+        </mat-radio-group>
+      </div>
+      <div style="height: 15px; clear: both">&nbsp;</div>
+    </div>
+    }
+
+    <strong>Select the data you would like to download:</strong>
+    <div style="height: 5px; clear: both; overflow: hidden">&nbsp;</div>
+
+    <div style="margin-bottom: 5px">
+      <mat-checkbox color="primary" [checked]="selectAll" (change)="onSelectAllClick($event)">Select All</mat-checkbox>
+    </div>
+
+    <div>
+      @for (fieldColumn of downloadFieldLabels; track fieldColumn; let columnIndex = $index) {
+      <div style="float: left; width: 50%">
+        @for (field of downloadFieldLabels[columnIndex]; track field; let fieldIndex = $index) {
+        <div>
+          <mat-checkbox
+            color="primary"
+            [checked]="selectedFields.indexOf(downloadFields[columnIndex][fieldIndex]) > -1 ? true : false"
+            (change)="onCheckboxChange($event)"
+            [value]="downloadFields[columnIndex][fieldIndex]"
+            >{{field}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</mat-checkbox
+          >
+        </div>
+        }
+      </div>
+      }
+    </div>
+
+    <div style="height: 15px; clear: both; overflow: hidden">&nbsp;</div>
+    <strong>Download as:</strong>
+    <div style="height: 5px; clear: both; overflow: hidden">&nbsp;</div>
+
+    <div>
+      <mat-radio-group [(ngModel)]="downloadFormat">
+        <mat-radio-button color="primary" value="xml">XML&nbsp;&nbsp;</mat-radio-button>
+        <mat-radio-button color="primary" value="json">JSON&nbsp;&nbsp;</mat-radio-button>
+        <mat-radio-button color="primary" value="csv">CSV&nbsp;&nbsp;</mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <div style="height: 15px; clear: both; overflow: hidden">&nbsp;</div>
+  </div>
+</div>
+<div mat-dialog-actions>
+  <button mat-raised-button color="primary" class="green-button" (click)="triggerDownload()" [disabled]="downloadInProgress">
+    <span class="icon icon-functional" data-icon="=">&nbsp;Download</span>
+  </button>
+  <!-- <button mat-raised-button color="accent" mat-dialog-close="Cancel" style="margin-bottom:0" mat-autofocus>Close</button> -->
+</div>

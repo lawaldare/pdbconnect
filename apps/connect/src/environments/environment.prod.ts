@@ -7,4 +7,6 @@ export const environment = {
   clarityProjectIdForLigandPages: 'tx72ecxs08',
   clarityProjectIdForComplexPages: 'tx74d6kier',
   epSurveyWebhookUrl1: 'https://script.google.com/macros/s/AKfycbyFx_TZ3EbARnbEj9sc0fLQ-cfRBu2h-MLZVuocKQK6-QDuP4xrvHPhBLmxtx8MHRkj/exec',
+  plot_data: 'https://www.ebi.ac.uk/pdbe/static/kb_statistics/plot_data.json',
+  partners_last_update: 'https://www.ebi.ac.uk/pdbe/static/kb_statistics/partners_last_update.json',
 };

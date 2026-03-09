@@ -1,0 +1,40 @@
+<header>
+  <h4 class="heading-4" libClickOutside (clickOutside)="onClickedOutside()">
+    Overall view, and highlighted <br />
+    scaffolds and fragments 
+    <lib-tool-tip>
+      <p>This image gallery displays several views of the ligand structure:</p>
+      <ul>
+        <li><strong>Basic Structural Representation: </strong>Shows the overall structure of the ligand.</li>
+        <li><strong>Detailed Structural Representation: </strong>Highlights individual atoms within the ligand.</li>
+        <li><strong>Murcko Scaffold: </strong>Presents the scaffold of the ligand highlighted in yellow.</li>
+        <li><strong>Highlighted Fragments: </strong>Displays various ligand fragments, highlighted in yellow.</li>
+      </ul>
+    </lib-tool-tip>
+  </h4>
+</header>
+<div class="gallery-container">
+  <div class="gallery">
+    <button class="control" (click)="onPreviousClick()" aria-label="previous button">
+      <img [src]="arrowSrc | asset" class="arrow" alt="left arrow icon" />
+    </button>
+    <div class="image-container" #imageContainer></div>
+    <button class="control" (click)="onNextClick()" aria-label="next button">
+      <img [src]="arrowSrc | asset" class="arrow right" alt="right arrow icon" />
+    </button>
+  </div>
+  <p class="display">Displayed: {{ currentSlide() }} / {{ total() }}</p>
+  <p class="paragraph-3">{{ structureDescription() | capitalize }}</p>
+  @if(showCopyButtons){
+  <section class="copy-section">
+    <p (click)="copySmiles()">
+      SMILES
+      <i class="icon icon-common icon-clone" matTooltipClass="description-tooltip" matTooltip="Copy the substructure smiles" matTooltipPosition="above"></i>
+    </p>
+    <p (click)="copyInchiKeys()">
+      INCHIKEY
+      <i class="icon icon-common icon-clone" matTooltipClass="description-tooltip" matTooltip="Copy the substructure InchiKeys" matTooltipPosition="above"></i>
+    </p>
+  </section>
+  }
+</div>

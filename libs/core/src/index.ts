@@ -32,3 +32,4 @@ export * from './lib/services/survey.service';
 export * from './lib/survey.component';
 export * from './lib/mvs/api-typing';
 export * from './lib/mvs/mvs';
+export * from './lib/services/base-href.service';

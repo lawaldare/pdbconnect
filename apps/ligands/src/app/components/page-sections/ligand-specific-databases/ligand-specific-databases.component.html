@@ -1,0 +1,30 @@
+@if(mappedCrossLinks().length){
+<div id="ligand-databases-section">
+  <header>
+    <button
+      class="vf-button vf-button--link"
+      (click)="
+        facade.downloadJSON(); googleAnalyticsService.logClickEvents('download_databases_ids', 'Ligand-specific databases', 'download_ids', 'ligand_databases_ids')
+      "
+    >
+      Download list of all databases IDs
+      <i class="icon icon-common icon-download"></i>
+    </button>
+  </header>
+  <section class="cross-links">
+    @for(crosslink of mappedCrossLinks(); track crosslink.resource){
+    <div class="cross-link">
+      <p matTooltipClass="complex-name-tooltip" [matTooltip]="crosslink.description" matTooltipPosition="above">{{ crosslink.resource }}</p>
+      <div class="resource-ids" (scroll)="onScroll($event)">
+        @for(id of crosslink.resourceIds; track id){ @let url = crosslink.link + id; @let eventName = 'click_' + crosslink.resource + '_link';
+        <a [href]="url" target="_blank" (click)="googleAnalyticsService.logClickEvents(eventName, 'Ligand-specific databases', 'click_database_link', id)">
+          {{ id }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
+        }
+      </div>
+    </div>
+    }
+  </section>
+</div>
+}
