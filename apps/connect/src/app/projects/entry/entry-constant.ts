@@ -306,6 +306,44 @@ export const annotationsTooltips = {
   modification: `Chemically modified amino acids or nucleotides within protein, DNA, or RNA chains, these may affect the macromolecule’s structure or function.`,
 };
 
+export const otherResourcesTooltips = {
+  'PDBe API Endpoints':
+    'Documentation and interactive explorer for the PDBe REST APIs, covering structural metadata, residues, interactions, sequences, annotations, mappings and much more.',
+  'PDBe GitHub': 'Open-source repositories maintained by PDBe, including web components, data pipelines, visualisation tools, schemas, and community resources.',
+  'PDBe Hugging Face': 'PDBe-hosted machine-learning datasets and models to power AI-driven tooling for structural biology.',
+  MDposit:
+    'Provides molecular dynamics simulations associated with this PDB entry (when available). MDposit standardizes, analyses, and visualizes MD trajectories, allowing users to explore interactions, residue behaviour, and reference-sequence–mapped dynamics relevant to the structure.',
+  'Related entries':
+    'Other PDB entries deposited for the same primary citation, which may represent the same or closely related structures determined under different conditions, by different methods, or with different constructs.',
+  'PDBe-KB Proteins':
+    'PDBe-KB aggregated views of all structural and functional annotations available in the PDB archive for the UniProt-mapped proteins in this entry, including structures, ligands, interactions, citations, and more.',
+  'PDBe-KB Ligands':
+    'PDBe-KB aggregated views of all structural and functional annotations available in the PDB archive for the ligands in this entry, including bound structures, interaction statistics, related ligands, and more.',
+  'PDBe-KB Complexes':
+    'PDBe-KB aggregated views of all structural and functional annotations available in the PDB archive for the complexes in this entry, including structures, ligands, supercomplexes, subcomplexes, and more.',
+  'AlphaFold DB': 'Predicted 3D structures for the UniProt-mapped proteins in this entry, as available in the AlphaFold Protein Structure Database.',
+  wwPDB: ' Worldwide Protein Data Bank entry page.',
+  PDBj: 'Protein Data Bank Japan (PDBj) entry page.',
+  'RCSB PDB': 'RCSB Protein Data Bank (RCSB PDB) entry page.',
+  EMDB: 'Electron Microscopy Data Bank (EMDB) entry page for the related EM structure, if available.',
+  'PDB-REDO': 'Refined and rebuilt crystallographic structure models for this entry, as available in the PDB-REDO database.',
+  UniProt: 'UniProtKB entries mapped to the protein chains in this PDB entry.',
+  BMRB: 'Biological Magnetic Resonance Data Bank (BMRB) entry page for the related NMR structure, if available.',
+  EMPIAR: 'Electron Microscopy Public Image Archive (EMPIAR) entry page for the related EM raw data, if available.',
+  SBGrid: 'SBGrid Data Bank entry page for the related crystallographic raw data, if available.',
+  IRRMC: 'Integrated Resource for Reproducibility in Macromolecular Crystallography (IRRMC) entry page for the related crystallographic structure, if available.',
+  Pfam: 'Pfam Family classifications assigned to the protein chains in this PDB entry, as available in the respective databases.',
+  CATH: 'Class, Architecture, Topology, and Homology domain classifications assigned to the protein chains in this PDB entry, as available in the respective databases.',
+  SCOP: 'Structural Classification of Proteins (version 1.75) domain classifications assigned to the protein chains in this PDB entry, as available in the respective databases.',
+  InterPro: 'InterPro Domain classifications assigned to the protein chains in this PDB entry, as available in the respective databases.',
+  Rfam: 'Rfam Family classifications assigned to the RNA chains in this PDB entry, as available in the respective databases.',
+  'Gene Ontology': 'Gene Ontology terms assigned to the protein chains in this PDB entry, as available in the respective databases.',
+  'Enzyme Commission': 'Enzyme Commission numbers assigned to the protein chains in this PDB entry, as available in the respective databases.',
+  EuropePMC: 'Link to the primary literature associated with this entry in the EuropePMC database.',
+  Proteopedia:
+    'Proteopedia page associated with this entry, if available. Proteopedia is a collaborative wiki resource that provides 3D visualizations and annotations for biomolecular structures.',
+};
+
 export const INTX_NAME_COLORS: Record<string, string> = {
   clash: '#D32B1E',
   covalent: '#1D1D1D',
@@ -411,6 +449,7 @@ export const routeTabs = [
   { label: 'Domains', id: 'domains' },
   { label: 'Text Annotation (LLM)', id: 'llm' },
   { label: 'Citations', id: 'citations' },
+  { label: 'Other Resources', id: 'other-resources' },
 ];
 
 export const tourIds = {

@@ -26,6 +26,7 @@ export const EntrySelectors = {
   summaryQualityScores: createSelector(EntryStoreState, (state: EntryStoreState) => state.summaryQualityScores),
   cathMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.cathMapping),
   scop175Mapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.scop175Mapping),
+  rfamMapping: createSelector(EntryStoreState, (state: EntryStoreState) => state.rfamMapping),
   modifications: createSelector(EntryStoreState, (state: EntryStoreState) => state.modifications),
   validationKeyStats: createSelector(EntryStoreState, (state: EntryStoreState) => state.validationKeyStats),
   modelQualityXray: createSelector(EntryStoreState, (state: EntryStoreState) => state.modelQualityXray),
@@ -83,4 +84,5 @@ export const EntrySelectors = {
   entityPvAnnotations: createSelector(EntryStoreState, (state: EntryStoreState) => state.entityPvAnnotations),
   entityPvConservation: createSelector(EntryStoreState, (state: EntryStoreState) => state.entityPvConservation),
   entityPvVariation: createSelector(EntryStoreState, (state: EntryStoreState) => state.entityPvVariation),
+  hasMDDB: createSelector(EntryStoreState, (state: EntryStoreState) => state.hasMDDB),
 };

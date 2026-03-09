@@ -37,6 +37,7 @@ const initialState: EntryStoreState = {
   goMapping: {},
   ecMapping: {},
   pfamMapping: undefined,
+  rfamMapping: undefined,
   downloadOptions: [],
   viewOptions: [],
   summaryQualityScores: {} as ProcessedQualityScores,
@@ -95,6 +96,7 @@ const initialState: EntryStoreState = {
   entityPvConservation: {},
   entityPvVariation: {},
   llmAnnotations: undefined,
+  hasMDDB: undefined,
 };
 
 export const entryReducer = createReducer(
@@ -137,6 +139,10 @@ export const entryReducer = createReducer(
   on(EntryActions.getPfamMappingSuccess, (state, action) => ({
     ...state,
     pfamMapping: action.pfamMapping,
+  })),
+  on(EntryActions.getRfamMappingSuccess, (state, action) => ({
+    ...state,
+    rfamMapping: action.rfamMapping,
   })),
   on(EntryActions.getGOMappingSuccess, (state, action) => ({
     ...state,
@@ -507,5 +513,13 @@ export const entryReducer = createReducer(
     entityPvAnnotations: {},
     entityPvConservation: {},
     entityPvVariation: {},
+  })),
+  on(EntryActions.getHasMDDBSuccess, (state, { hasMDDB }) => ({
+    ...state,
+    hasMDDB,
+  })),
+  on(EntryActions.getHasMDDBFailure, (state) => ({
+    ...state,
+    hasMDDB: false,
   }))
 );

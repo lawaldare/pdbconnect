@@ -1,5 +1,5 @@
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../data-models/domains.model';
+import { CathMappings, InterProMappings, PfamMappings, RfamMappings, ScopMappings } from '../data-models/domains.model';
 import { AnyExperimentDetail } from '../data-models/experimental-details.model';
 import { Molecule } from '../data-models/molecule.model';
 import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
@@ -64,6 +64,7 @@ export interface EntryStoreState {
   goMapping: GOMapping | undefined;
   ecMapping: ECMapping | undefined;
   pfamMapping: PfamMappings | undefined;
+  rfamMapping: RfamMappings | undefined;
   downloadOptions: { group: string; items: DownloadOption[] }[];
   viewOptions: { group: string; items: DownloadOption[] }[];
   summaryQualityScores: ProcessedQualityScores | undefined;
@@ -144,6 +145,7 @@ export interface EntryStoreState {
     [entityId: string]: APIVariationData;
   };
   llmAnnotations: LLMAnnotation[] | undefined;
+  hasMDDB: boolean | undefined;
 }
 
 export interface EntryMoleculesData {

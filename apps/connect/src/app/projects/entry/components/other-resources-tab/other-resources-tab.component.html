@@ -1,0 +1,46 @@
+<div class="filter-btns-container">
+  @for (resourceCategory of resourceCategories(); track resourceCategory) {
+  <button class="filter-btn" [ngClass]="currentCategory() === resourceCategory ? 'active' : ''" (click)="switchResourceCategory(resourceCategory)">
+    {{ resourceCategory }}
+  </button>
+  }
+</div>
+@for (resourceCategory of currentResourceCategories(); track resourceCategory) {
+<span class="other-rsc-h4">{{resourceCategory }}</span>
+<div class="link-group-container">
+  @let linksAndStatus = resourceCategoriesLinksAndStatus()[resourceCategory]; @if (linksAndStatus.done === false) {
+  <!-- Loading state -->
+  <p>Loading...</p>
+  } @else if (linksAndStatus.done === true && linksAndStatus.links.length === 0) {
+  <!-- Empty state -->
+  <p>No links available for this category in this PDB entry.</p>
+  } @else { @for (linkType of resourceCategoriesLinksAndStatus()[resourceCategory].links; track linkType.name) { @let groupKey = resourceCategory + '::' +
+  linkType.name; @let visibleUrls = isLinkGroupExpanded(groupKey) ? linkType.urls : linkType.urls.slice(0, 4);
+  <!-- Content state -->
+  <div class="info-row">
+    <span class="micro-title left">
+      {{ linkType.name }}
+      <lib-help-icon-with-tooltip [tooltipText]="linkType.tooltip" />
+    </span>
+
+    <article>
+      @for (link of visibleUrls; track link.url) {
+      <p class="each-link">
+        <a class="other-rsc-link" [href]="link.url" target="_blank"> {{ link.urlName }} </a>
+        <i class="icon icon-link icon-common"></i>
+        @if(link.extra){
+        <span class="extra-info">({{ link.extra }})</span>
+        }
+      </p>
+      } @if (linkType.urls.length > 4) {
+      <div class="control">
+        <span role="button" class="show-all-toggle" (click)="toggleLinkGroup(groupKey)">
+          {{ isLinkGroupExpanded(groupKey) ? 'Hide ' + linkType.urls.length + ' links' : 'Show all ' + linkType.urls.length }}
+        </span>
+      </div>
+      }
+    </article>
+  </div>
+  } }
+</div>
+}

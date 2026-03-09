@@ -221,6 +221,22 @@ export class EntryEffects {
     )
   );
 
+  getRfamMapping$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getRfamMapping),
+      switchMap(() => combineLatest([this.store.select(EntrySelectors.entryId).pipe(take(1)), this.store.select(EntrySelectors.rfamMapping).pipe(take(1))])),
+      mergeMap(([entryId, cachedRfamMappings]) => {
+        if (cachedRfamMappings !== undefined) {
+          return of(EntryActions.getRfamMappingSuccess({ rfamMapping: cachedRfamMappings }));
+        }
+        return this.entryAPIService.getRfamMapping(entryId).pipe(
+          map((rfamMapping) => EntryActions.getRfamMappingSuccess({ rfamMapping })),
+          catchError(() => of(EntryActions.getRfamMappingFailure()))
+        );
+      })
+    )
+  );
+
   getSCOP175Mapping$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getScop175Mapping),
@@ -1889,6 +1905,23 @@ export class EntryEffects {
               catchError(() => of(EntryActions.getEntryProtvistaVariationFailure()))
             )
           )
+        );
+      })
+    )
+  );
+
+  getHasMDDB$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getHasMDDB),
+      switchMap(() => combineLatest([this.store.select(EntrySelectors.entryId).pipe(take(1)), this.store.select(EntrySelectors.hasMDDB).pipe(take(1))])),
+      mergeMap(([entryId, cached]) => {
+        if (cached !== undefined) {
+          return of(EntryActions.getHasMDDBSuccess({ hasMDDB: cached }));
+        }
+
+        return this.entryAPIService.getMDDBLinks(entryId).pipe(
+          map((links) => EntryActions.getHasMDDBSuccess({ hasMDDB: links.length > 0 })),
+          catchError(() => of(EntryActions.getHasMDDBFailure()))
         );
       })
     )

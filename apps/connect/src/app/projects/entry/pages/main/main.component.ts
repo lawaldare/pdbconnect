@@ -41,6 +41,7 @@ import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial
 import { MetaTagService } from '../../services/meta-tag.service';
 import { EntryMainFacade } from './entry-main.facade';
 import { HelpIconForMolstarService } from '@pdbe-lib/molstar-for-apps';
+import { OtherResourcesTabComponent } from '../../components/other-resources-tab/other-resources-tab.component';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -72,6 +73,7 @@ import { HelpIconForMolstarService } from '@pdbe-lib/molstar-for-apps';
     LLMTabComponent,
     LigandsTabComponent,
     DomainsTabComponent,
+    OtherResourcesTabComponent,
     NotificationComponent,
     ErrorPageComponent,
     VisualisationInteractivityDirective,
