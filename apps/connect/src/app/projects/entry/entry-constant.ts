@@ -367,18 +367,11 @@ export const ENTRY_PAGES_LINKS = [
 ];
 
 export const labelGroups = {
-  Popular: [
-    'Archive mmCIF file',
-    'Updated mmCIF file',
-    'PDB file',
-    'Compatible PDB file bundle (tar.gz)',
-    'FASTA (Entry)',
-    'Full report (PDF)',
-    'Validation data (XML)',
-  ],
+  Popular: ['mmCIF file', 'PDB file', 'Compatible PDB file bundle (tar.gz)', 'FASTA (Entry)', 'Full report (PDF)', 'Validation data (XML)'],
   'Archive Files': [
-    'Archive mmCIF file',
+    'mmCIF file',
     'PDB file',
+    'Archive mmCIF file',
     'Compatible PDB file bundle (tar.gz)',
     'PDB file (gz)',
     'PDB header',
@@ -386,7 +379,6 @@ export const labelGroups = {
     'PDBML (ATOM lines)',
     'PDBML (no atoms)',
   ],
-  'Enriched data': ['Updated mmCIF file'],
   Mappings: ['SIFTS XML file with residue-level mappings', 'FASTA (Entry)'],
   Validation: [
     'Summary report (PDF)',
