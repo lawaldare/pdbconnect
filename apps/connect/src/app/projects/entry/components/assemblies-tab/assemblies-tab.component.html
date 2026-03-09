@@ -106,15 +106,17 @@
           </div>
         </div>
         <div class="assembly-grouped">
-          @if(preferredSymmetry()?.type){
           <div class="info-row">
             <span>
               Complex symmetry
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.assemblySymmetry" />
             </span>
-            <article>{{preferredSymmetry()?.type}} - {{preferredSymmetry()?.symbol}}</article>
+            @if(currentSymmetry()?.type){
+            <article>{{currentSymmetry()?.type}} - {{currentSymmetry()?.symbol}}</article>
+            } @else {
+            <article>Not available</article>
+            }
           </div>
-          }
           <div class="info-row">
             <span>Number of interfaces</span>
             <article>{{ getAdditionalData('interfaceCount') }}</article>

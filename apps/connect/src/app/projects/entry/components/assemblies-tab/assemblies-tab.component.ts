@@ -127,11 +127,13 @@ export class AssembliesTabComponent {
     return undefined;
   });
 
-  public readonly preferredSymmetry = computed(() => {
+  public readonly currentSymmetry = computed(() => {
     const symmetries = this.symmetry();
-    if (symmetries) {
-      const preferredSymmetry = symmetries.find((symmetry) => symmetry.assembly_id === '1');
-      return preferredSymmetry;
+    const currentAssembly = this.currentAssemblyDatum();
+    const currentAssemblyId = currentAssembly ? currentAssembly.assemblyId : undefined;
+    if (symmetries && currentAssemblyId) {
+      const currentSymmetry = symmetries.find((symmetry) => symmetry.assembly_id === currentAssemblyId);
+      return currentSymmetry;
     }
     return undefined;
   });

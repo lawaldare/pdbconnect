@@ -121,7 +121,7 @@ export class EntryEffects {
       ofType(EntryActions.getSymmetry),
       switchMap(() => combineLatest([this.store.select(EntrySelectors.entryId).pipe(take(1)), this.store.select(EntrySelectors.symmetry).pipe(take(1))])),
       mergeMap(([entryId, cachedSymmetry]) => {
-        if (cachedSymmetry !== undefined) {
+        if (cachedSymmetry !== undefined && cachedSymmetry.length > 0) {
           return of(EntryActions.getSymmetrySuccess({ symmetry: cachedSymmetry }));
         }
         return this.entryAPIService.getSymmetry(entryId).pipe(
