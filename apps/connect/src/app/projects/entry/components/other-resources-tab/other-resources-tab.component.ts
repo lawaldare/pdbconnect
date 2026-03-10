@@ -217,7 +217,7 @@ export class OtherResourcesTabComponent {
         tooltip: this.otherResourcesTooltips['Related entries'],
         urls: relatedEntries.map((entry) => ({
           urlName: `pdb_0000${entry}`,
-          url: `${environment.baseUrl}pdbe/entry/${entry}`,
+          url: `${environment.baseUrl}pdbe/entry/pdb/${entry}`,
         })),
       });
     }
@@ -369,8 +369,6 @@ export class OtherResourcesTabComponent {
       });
     }
 
-    // TODO: BMRB, EMPIAR, IRRMC, SBGrid
-
     /**
      * 4. Sequence databases
      */
@@ -429,7 +427,7 @@ export class OtherResourcesTabComponent {
         tooltip: this.otherResourcesTooltips['SCOP'],
         urls: scop175Keys.map((key) => ({
           urlName: key,
-          url: `https://scop.berkeley.edu/domain/${key}`,
+          url: `https://ftp.ebi.ac.uk/pub/databases/pdbe-kb/scop-legacy/`,
         })),
       });
     }
