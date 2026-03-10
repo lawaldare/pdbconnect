@@ -77,7 +77,7 @@
 
         <article>
           Also associated with: @for(entry of entriesArray.slice(0, initialEntriesCount()); track entry; let islast = $last){
-          <a [href]="baseUrl +  'entry/pdb/' + entry" target="_blank">{{ entry }}</a>{{ islast? '' : ',' }} }
+          <a [href]="baseUrl +  'entry/pdb/' + entry" target="_blank">pdb_0000{{ entry }}</a>{{ islast? '' : ',' }} }
           <div class="control">
             @if(entriesArray.length > 5){
             <span role="button" class="related-entry-toggle" (click)="toggleEntriesList()"

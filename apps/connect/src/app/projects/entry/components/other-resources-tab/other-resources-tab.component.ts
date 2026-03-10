@@ -216,7 +216,7 @@ export class OtherResourcesTabComponent {
         name: 'Related entries',
         tooltip: this.otherResourcesTooltips['Related entries'],
         urls: relatedEntries.map((entry) => ({
-          urlName: entry,
+          urlName: `pdb_0000${entry}`,
           url: `${environment.baseUrl}pdbe/entry/${entry}`,
         })),
       });
@@ -271,7 +271,7 @@ export class OtherResourcesTabComponent {
       tooltip: this.otherResourcesTooltips['wwPDB'],
       urls: [
         {
-          urlName: `${this.entryId()} in wwPDB`,
+          urlName: `pdb_0000${this.entryId()} in wwPDB`,
           url: `https://www.wwpdb.org/pdb?id=pdb_0000${this.entryId()}`,
         },
       ],
@@ -282,7 +282,7 @@ export class OtherResourcesTabComponent {
       tooltip: this.otherResourcesTooltips['PDBj'],
       urls: [
         {
-          urlName: `${this.entryId()} in PDBj`,
+          urlName: `pdb_0000${this.entryId()} in PDBj`,
           url: `https://pdbj.org/mine/summary/${this.entryId()}`,
         },
       ],
@@ -293,7 +293,7 @@ export class OtherResourcesTabComponent {
       tooltip: this.otherResourcesTooltips['RCSB PDB'],
       urls: [
         {
-          urlName: `${this.entryId()} in RCSB`,
+          urlName: `pdb_0000${this.entryId()} in RCSB`,
           url: `https://rcsb.org/structure/${this.entryId()}`,
         },
       ],
@@ -316,7 +316,7 @@ export class OtherResourcesTabComponent {
         tooltip: this.otherResourcesTooltips['PDB-REDO'],
         urls: [
           {
-            urlName: `${this.entryId()} in PDB-REDO`,
+            urlName: `pdb_0000${this.entryId()} in PDB-REDO`,
             url: `https://pdb-redo.eu/db/${this.entryId()}`,
           },
         ],
@@ -497,8 +497,8 @@ export class OtherResourcesTabComponent {
 
     if (ecKeys.length > 0) {
       resourceCategoriesLinksAndStatus['Functional annotation'].links.push({
-        name: 'Enzyme Commission (EC)',
-        tooltip: this.otherResourcesTooltips['Enzyme Commission'],
+        name: 'ENZYME (EC)',
+        tooltip: this.otherResourcesTooltips['ENZYME'],
         urls: ecKeys.map((key) => ({
           urlName: key,
           url: `https://enzyme.expasy.org/EC/${key}`,
@@ -533,7 +533,7 @@ export class OtherResourcesTabComponent {
         tooltip: this.otherResourcesTooltips['Proteopedia'],
         urls: [
           {
-            urlName: `${this.entryId()} in Proteopedia`,
+            urlName: `pdb_0000${this.entryId()} in Proteopedia`,
             url: `https://proteopedia.org/w/${this.entryId()}`,
           },
         ],

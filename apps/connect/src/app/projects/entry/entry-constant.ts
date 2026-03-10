@@ -338,7 +338,7 @@ export const otherResourcesTooltips = {
   InterPro: 'InterPro Domain classifications assigned to the protein chains in this PDB entry, as available in the respective databases.',
   Rfam: 'Rfam Family classifications assigned to the RNA chains in this PDB entry, as available in the respective databases.',
   'Gene Ontology': 'Gene Ontology terms assigned to the protein chains in this PDB entry, as available in the respective databases.',
-  'Enzyme Commission': 'Enzyme Commission numbers assigned to the protein chains in this PDB entry, as available in the respective databases.',
+  ENZYME: 'Enzyme Commission numbers assigned to the protein chains in this PDB entry, as available in the respective databases.',
   EuropePMC: 'Link to the primary literature associated with this entry in the EuropePMC database.',
   Proteopedia:
     'Proteopedia page associated with this entry, if available. Proteopedia is a collaborative wiki resource that provides 3D visualizations and annotations for biomolecular structures.',
