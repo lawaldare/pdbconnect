@@ -38,56 +38,35 @@ main {
     margin-bottom: 12px;
     margin-top: 32px;
   }
+}
 
-  p.publication-title,
-  p.pmid-title,
-  p.journal-info,
-  p.background {
+.info {
+  display: flex;
+  align-items: start;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  &__title {
+    color: #1a1c1a;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 27.2px;
+    width: 129px;
+    min-width: 129px;
+    max-width: 129px;
+  }
+
+  &__content {
     color: #1a1c1a;
     font-size: 16px;
     font-weight: 400;
     line-height: 27.2px;
   }
+}
 
-  p.background {
-    margin-bottom: 12px !important;
-  }
-
-  h4 {
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 27.2px;
-    margin-top: 12px;
-
-    &.figures {
-      margin-bottom: 12px;
-    }
-  }
-
-  p.figure-footer {
-    color: #54585a;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 22.4px;
-  }
-
-  span.related-entry-toggle {
-    color: #3b6fb6;
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 27.2px;
-    display: block;
-    cursor: pointer;
-  }
-
-  figure {
-    display: flex;
-    justify-content: center;
-
-    img {
-      height: 351px;
-      cursor: pointer;
-    }
-  }
+.icon.icon-common.icon-link::before {
+  top: 0;
+  left: 2px;
+  scale: 0.9375;
+  content: '';
 }

@@ -5,19 +5,14 @@
   </header>
   <h2>Citations - pdb_0000{{entryId()}}</h2>
   <p class="entry-title">{{summary().entryTitle}}</p>
-  <nav class="table-of-contents">
-    <div class="container-border">
-      <div class="nav-title">
-        <h5>In this citation page</h5>
-        <img src="/assets/images/mobile/arrow-{{isFullLinksDisplayed() ? 'up':'down'}}.svg" alt="arrow-up" (click)="toggleNavigationLinks()" />
-      </div>
-      @if(isFullLinksDisplayed()){ @for(link of navigationLinks; track link.id){
-      <a (click)="scrollToSection($event, link.id)">{{link.title}}</a>
-      } } @else {
-      <a (click)="scrollToSection($event, currentNavigationLink().id)">{{currentNavigationLink().title}}</a>
-      }
-    </div>
-  </nav>
+
+  <!-- Table of contents navigation -->
+  <pdbc-mb-table-of-contents
+    tableTitle="In this citation page"
+    gasEventToLog=""
+    [navigationLinks]="navigationLinks()"
+    [enableSectionId]="true"
+  ></pdbc-mb-table-of-contents>
 
   <!-- Primary publication -->
 

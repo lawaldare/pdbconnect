@@ -1,0 +1,21 @@
+@if (primaryPublication() && primaryPubMed()) {
+<div class="info">
+  <p class="info__title">EuropePMC</p>
+  <p class="info__content">
+    <a [href]="'https://europepmc.org/article/MED/' + primaryPubMed()" target="_blank">
+      go to page
+      <i class="icon icon-link icon-common"></i>
+    </a>
+  </p>
+</div>
+} @if (entryId()) {
+<div class="info">
+  <p class="info__title">Proteopedia</p>
+  <p class="info__content">
+    <a [href]="'https://proteopedia.org/w/' + entryId()" target="_blank">
+      pdb_0000{{ entryId() }} in Proteopedia
+      <i class="icon icon-link icon-common"></i>
+    </a>
+  </p>
+</div>
+}

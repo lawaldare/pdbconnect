@@ -2,22 +2,14 @@
   <h2>pdb_0000{{entryId()}}</h2>
   <p class="entry-title">{{summary()?.entryTitle}}</p>
 
-  <nav class="table-of-contents">
-    <div class="container-border">
-      <div class="nav-title">
-        <h5>In this overview page</h5>
-        <img src="/assets/images/mobile/arrow-{{isFullLinksDisplayed() ? 'up':'down'}}.svg" alt="arrow-up" (click)="toggleNavigationLinks()" />
-      </div>
-      @if(isFullLinksDisplayed()){ @for(link of navigationLinks; track link.id){
-      <a (click)="scrollToSection($event, link.id)">{{link.title}}</a>
-      } } @else {
-      <a (click)="scrollToSection($event, currentNavigationLink().id)">{{currentNavigationLink().title}}</a>
-      }
-    </div>
-  </nav>
+  <!-- Table of contents navigation -->
+  <pdbc-mb-table-of-contents
+    tableTitle="In this overview page"
+    gasEventToLog="ep_mobile_quick_access_click"
+    [navigationLinks]="navigationLinks"
+  ></pdbc-mb-table-of-contents>
 
   <!-- Structure overview -->
-
   <h3 id="structure-overview">Structure overview</h3>
   @defer (on viewport) {
   <pdbc-mb-structure-overview></pdbc-mb-structure-overview>
@@ -85,9 +77,15 @@
     }
   </section>
 
-  <!-- Related databases and links -->
-  <h3 id="related-databases">Related databases and links</h3>
-  <section class="related-databases">
+  <!-- Other resources -->
+  <h3 id="related-databases">Other resources</h3>
+  @defer (on viewport) {
+  <pdbc-mb-other-resources-preview></pdbc-mb-other-resources-preview>
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
+
+  <!-- <section class="related-databases">
     @if ((summary()?.relatedStructures ?? []).length) {
     <div class="info">
       <p class="info__title">EMDB entry</p>
@@ -102,5 +100,5 @@
         <a [href]="'https://dx.doi.org/10.2210/pdb' + entryId() + '/pdb'" target="_blank">10.2210/pdb{{ entryId() }}/pdb </a>
       </p>
     </div>
-  </section>
+  </section> -->
 </main>
