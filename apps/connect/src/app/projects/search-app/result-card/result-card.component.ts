@@ -125,26 +125,26 @@ export class ResultCardComponent implements OnInit, OnChanges, OnDestroy {
       this.assemblyComposition = this.getAssemblyComposition(this.resultData.doclist.docs[0].assembly_composition);
     }
 
-    //format organism Scientific Name
-    this.orgSciName = this.getOrganismScientificName(this.resultData.doclist.docs[0].entry_organism_scientific_name);
+    // //format organism Scientific Name
+    // this.orgSciName = this.getOrganismScientificName(this.resultData.doclist.docs[0].entry_organism_scientific_name);
 
     if (this.thorInfo && this.thorInfo['entriesToClaim'] && this.thorInfo['entriesToClaim'].indexOf(this.resultData.doclist.docs[0].pdb_id) > -1) {
       this.claimIt = true;
     }
 
-    //combined uniprot accessions
-    if (this.resultData.doclist.docs[0].uniprot_accession_best) {
-      this.uniprotAccessions = this.resultData.doclist.docs[0].uniprot_accession_best;
-    }
-    if (this.resultData.doclist.docs[0].entry_uniprot_accession) {
-      this.resultData.doclist.docs[0].entry_uniprot_accession.forEach((intUnpAcc: any) => {
-        if (this.uniprotAccessions.indexOf(intUnpAcc) === -1) {
-          this.uniprotAccessions.push(intUnpAcc);
-        }
-      });
-    }
-    this.displayUnpAccessions = this.uniprotAccessions;
-    if (this.displayUnpAccessions.length > 6) this.displayUnpAccessions = this.uniprotAccessions.slice(0, 6);
+    // //combined uniprot accessions
+    // if (this.resultData.doclist.docs[0].uniprot_accession_best) {
+    //   this.uniprotAccessions = this.resultData.doclist.docs[0].uniprot_accession_best;
+    // }
+    // if (this.resultData.doclist.docs[0].entry_uniprot_accession) {
+    //   this.resultData.doclist.docs[0].entry_uniprot_accession.forEach((intUnpAcc: any) => {
+    //     if (this.uniprotAccessions.indexOf(intUnpAcc) === -1) {
+    //       this.uniprotAccessions.push(intUnpAcc);
+    //     }
+    //   });
+    // }
+    // this.displayUnpAccessions = this.uniprotAccessions;
+    // if (this.displayUnpAccessions.length > 6) this.displayUnpAccessions = this.uniprotAccessions.slice(0, 6);
 
     this.setCarbPolymers();
 
@@ -157,6 +157,26 @@ export class ResultCardComponent implements OnInit, OnChanges, OnDestroy {
     if (changes['thorClaimInfoById'] || changes['thorInfo']) {
       this.getOrcidClaimMessageDetails();
     }
+
+    const resultData = changes['resultData']?.currentValue;
+
+    //format organism Scientific Name
+    this.orgSciName = this.getOrganismScientificName(resultData?.doclist.docs[0].entry_organism_scientific_name);
+
+    //combined uniprot accessions
+    if (this.resultData.doclist.docs[0].uniprot_accession_best) {
+      this.uniprotAccessions = this.resultData.doclist.docs[0].uniprot_accession_best;
+    }
+    if (this.resultData.doclist.docs[0].entry_uniprot_accession) {
+      this.uniprotAccessions = [];
+      this.resultData.doclist.docs[0].entry_uniprot_accession.forEach((intUnpAcc: any) => {
+        if (this.uniprotAccessions.indexOf(intUnpAcc) === -1) {
+          this.uniprotAccessions.push(intUnpAcc);
+        }
+      });
+    }
+    this.displayUnpAccessions = this.uniprotAccessions;
+    if (this.displayUnpAccessions.length > 6) this.displayUnpAccessions = this.uniprotAccessions.slice(0, 6);
   }
 
   getOrcidClaimMessageDetails() {
@@ -626,5 +646,9 @@ export class ResultCardComponent implements OnInit, OnChanges, OnDestroy {
 
   recordUserInteraction(type: string) {
     gtag('event', 'result_click_' + type);
+  }
+
+  uniquesForList(list: any[]) {
+    return [...new Set(list)];
   }
 }
