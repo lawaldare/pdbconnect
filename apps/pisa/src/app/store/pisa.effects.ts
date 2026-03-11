@@ -197,7 +197,7 @@ export class PisaEffects {
         ]).pipe(
           map(([interfaceResult, extended]) => {
             const results = interfaceResult.interface.molecules.map((molecule: any) => {
-              const extendedData = extended.components.find((ext: any) => ext.mol_id === molecule.mol_id);
+              const extendedData = extended.components.find((ext: any) => ext.component_id === molecule.component_id);
               return { ...molecule, extendedData };
             });
             interfaceResult.interface.molecules = results;
@@ -222,7 +222,7 @@ export class PisaEffects {
         ]).pipe(
           map(([interfaceResult, extended]) => {
             const results = interfaceResult.interface.molecules.map((molecule: any) => {
-              const extendedData = extended.components.find((ext: any) => ext.mol_id === molecule.mol_id);
+              const extendedData = extended.components.find((ext: any) => ext.component_id === molecule.component_id);
               return { ...molecule, extendedData };
             });
             // interfaceResult.interface.molecules = results;

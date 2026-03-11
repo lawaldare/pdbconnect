@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, input, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { MaterialModule } from '@pdbc/core';
@@ -26,7 +26,6 @@ export class SingleInterfaceDetailsComplexTabComponent implements OnInit {
       .select(PisaSelectors.interfaceResultForInterfaceIdComplexesTab)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((interfaceResult) => {
-        console.log('Received interface result:', interfaceResult);
         this.interface.set(interfaceResult);
       });
   }
