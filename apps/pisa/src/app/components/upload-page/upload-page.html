@@ -1,0 +1,193 @@
+<h1 [ngStyle]="{'margin-bottom': modelSym() ? '0' : '26px'}">{{label()}}</h1>
+@if(modelSym() && uploadFile()){
+<span class="your-file">Your file</span>
+}
+<main>
+  <section class="upload-section">
+    <!-- Initial View -->
+
+    @if(pisaUtilService.pageView() === 'INITIAL'){
+
+    <!-- There is ModelSym() -->
+
+    @if(modelSym()){
+    <div class="row">
+      <p class="row-header">Available components</p>
+      <p class="row-data">{{analysis()}}</p>
+    </div>
+    @if(!allOnes()){
+    <div class="row parameters-row">
+      <p class="row-header">
+        <span>Cell parameters</span>
+        <lib-help-icon-with-tooltip [tooltipText]="pisaUploadpageTooltips.cellParameter" />
+      </p>
+      <p class="row-data parameters">
+        <span class="cell-row">
+          <span class="cell-row-label">A</span>
+          <span class="cell-row-value">{{ modelSym()?.spacegroup?.cell?.size?.[0].toFixed(2) }}</span>
+        </span>
+        <span class="cell-row">
+          <span class="cell-row-label">Alpha</span>
+          <span class="cell-row-value">{{ modelSymParam()?.[0].toFixed(2) }}</span>
+        </span>
+        <span class="cell-row">
+          <span class="cell-row-label">B</span>
+          <span class="cell-row-value">{{ modelSym()?.spacegroup?.cell?.size?.[1].toFixed(2) }}</span>
+        </span>
+        <span class="cell-row">
+          <span class="cell-row-label">Beta</span>
+          <span class="cell-row-value">{{ modelSymParam()?.[1].toFixed(2) }}</span>
+        </span>
+        <span class="cell-row">
+          <span class="cell-row-label">C</span>
+          <span class="cell-row-value">{{ modelSym()?.spacegroup?.cell?.size?.[2].toFixed(2) }}</span>
+        </span>
+        <span class="cell-row">
+          <span class="cell-row-label">Gamma</span>
+          <span class="cell-row-value">{{ modelSymParam()?.[2].toFixed(2) }}</span>
+        </span>
+      </p>
+    </div>
+    <div class="row">
+      <p class="row-header">
+        <span>Space symmetry group</span>
+        <lib-help-icon-with-tooltip [tooltipText]="pisaUploadpageTooltips.spaceSymmetryGroup" />
+      </p>
+      <p class="row-data">{{ simplifiedSpacegroup() }}</p>
+    </div>
+    }
+    <div class="row">
+      <p class="row-header">
+        <span>Orthogonalisation code</span>
+        <lib-help-icon-with-tooltip [tooltipText]="pisaUploadpageTooltips.othogonalisationCode" />
+      </p>
+      <p class="row-data">{{ orthoCode() }}</p>
+    </div>
+    @if(processLigands().length){
+    <div class="row parameters-row">
+      <p class="row-header" style="margin-top: 5px !important">
+        <span>Process ligands</span>
+        <lib-help-icon-with-tooltip [tooltipText]="pisaUploadpageTooltips.processLigands" />
+      </p>
+      <p class="row-data">
+        @for(ligand of processLigands(); track ligand.title; let index = $index){
+        <mat-checkbox [checked]="ligand.selected" (change)="selectProcessLigands($event.checked, index)">{{ligand.title}}</mat-checkbox>
+        }
+      </p>
+    </div>
+    <div class="row">
+      <p class="row-header">
+        <span>Process ligand position</span>
+        <lib-help-icon-with-tooltip [tooltipText]="pisaUploadpageTooltips.processLigandPosition" />
+      </p>
+      <p class="row-data">
+        <mat-select [formControl]="selectedLigandPosition">
+          <mat-option value="auto">Auto</mat-option>
+          <mat-option value="fixed">Fixed</mat-option>
+          <mat-option value="free">Free</mat-option>
+        </mat-select>
+      </p>
+    </div>
+    }
+
+    <div class="row parameters-row">
+      <p class="row-header">
+        <span>Include in analysis</span>
+        <lib-help-icon-with-tooltip [tooltipText]="pisaUploadpageTooltips.includeInAnalysis" />
+      </p>
+      <p class="row-data">
+        <mat-radio-group [(ngModel)]="analysisIncluded">
+          <mat-radio-button [value]="false">Complexes and interfaces</mat-radio-button>
+          <mat-radio-button [value]="true">Interfaces only</mat-radio-button>
+        </mat-radio-group>
+      </p>
+    </div>
+    <button class="vf-button vf-button--primary" (click)="analyse()">Analyse</button>
+    }
+    <!-- No ModelSym() -->
+    @else {
+    <div class="upload-section-drag-drop" #dropArea (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">
+      <img src="assets/icons/download.svg" alt="icon image" />
+
+      <p>
+        Drag and drop your file here <br />
+        in .cif, .bcif, .pdb, or .ent format
+      </p>
+      <span>or</span>
+
+      <!-- Hidden file input -->
+      <input #fileInput type="file" class="file-input" accept=".cif, .ent, .pdb, .bcif" (change)="onFileChange($event)" hidden />
+
+      <button class="vf-button vf-button--primary" (click)="onBrowseClick()">Select a file</button>
+    </div>
+    <!-- Messages -->
+    @if(facade.errorMsg()) {
+    <span class="error">{{ facade.errorMsg() }}</span>
+    }
+    <p class="info">
+      PISA provides calculated estimates rather than curated data, and its results depend on the accuracy and completeness of the submitted coordinate files,
+      including the use of standard atom and residue names. <a href="https://www.ebi.ac.uk/training/online/courses/pdbepisa/" target="_blank">Learn more...</a>
+    </p>
+    <p class="info"><strong>Note:</strong> Please submit predicted models in .pdb format.</p>
+    <!-- <span class="error">{{errorMolstarMessage()}}</span> -->
+
+    <div class="upload-section-input-field">
+      <h3 class="title">or use a PDB entry ID</h3>
+      <form (ngSubmit)="onSubmit()" #form="ngForm">
+        <div class="input-field-form">
+          <input type="text" placeholder="PDB entry ID" name="pdbEntryId" [(ngModel)]="pdbEntryId" [class.error]="hasError()" (input)="onTyping($event)" />
+          <button class="vf-button vf-button--search-pdbe" (click)="onSubmit()">Submit</button>
+        </div>
+      </form>
+      <span class="error">{{errorInputMessage()}}</span>
+    </div>
+
+    <h3 class="title">Programmatic access</h3>
+    <p class="prog">Access PISA via our REST API. <a href="https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/#/" target="_blank">See API documentation page</a></p>
+    } }
+  </section>
+  <section class="molstar-section">
+    <!-- <h4>Your structure will appear here</h4> -->
+    <div class="viewer-container">
+      <div #viewer id="molstar-viewer"></div>
+      <!-- Initial Loading -->
+      @if(pisaUtilService.loadingView() === 'INITIAL') {
+      <div class="text-over-molstar">
+        <h3>Attribution</h3>
+        <p>
+          Please cite PISA for all results obtained from this service, should these results be published in any form or otherwise presented. PISA should be referenced
+          as:
+        </p>
+        <p>
+          <a href="http://www.ebi.ac.uk/pdbe/prot_int/pistart.html" target="_blank"
+            >'Protein interfaces, surfaces and assemblies' service PISA at the European Bioinformatics Institute.</a
+          >
+        </p>
+        <p>
+          <a href="http://www.ebi.ac.uk/pdbe/prot_int/pistart.html" target="_blank"
+            >Krissinel and K. Henrick (2007). 'Inference of macromolecular assemblies from crystalline state.'. J. Mol. Biol. 372, 774--797.</a
+          >
+        </p>
+      </div>
+      <!-- <div class="loading initial">
+        <p class="loading-text">Your structure will appear here</p>
+        <img src="assets/icons/no-image.svg" alt="no image icon" />
+      </div> -->
+      }
+      <!-- Error Loading -->
+      @if(pisaUtilService.loadingView() === 'ERROR_LOADING') {
+      <div class="loading initial">
+        <p class="loading-text">Unable to load your structure</p>
+        <img src="assets/icons/no-image.svg" alt="no image icon" />
+      </div>
+      }
+      <!-- Loading View -->
+      @if(pisaUtilService.loadingView() === 'LOADING') {
+      <div class="loading loading-view">
+        <div class="spinner"></div>
+        <p class="loading-text">Loading structure...</p>
+      </div>
+      }
+    </div>
+  </section>
+</main>

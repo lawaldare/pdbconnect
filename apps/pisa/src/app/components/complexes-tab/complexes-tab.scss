@@ -1,0 +1,133 @@
+h3 {
+  color: #000;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 31.2px;
+}
+
+main {
+  display: flex;
+  width: 100%;
+  gap: 20px;
+
+  .table {
+    width: 70%;
+    margin-top: 5px;
+    height: 600px;
+    border-bottom: 1px solid #cec9ba;
+  }
+
+  .molstar {
+    width: 30%;
+
+    h3 {
+      margin-top: 12px;
+    }
+
+    .row {
+      display: flex;
+
+      // align-items: center;
+      gap: 12px;
+
+      p {
+        color: var(--header-text-color);
+        font-size: 16px;
+        line-height: 27.2px;
+      }
+
+      p.title {
+        font-weight: 500;
+        width: 170px;
+        min-width: 170px;
+        max-width: 170px;
+      }
+
+      p.value {
+        font-weight: 400;
+      }
+    }
+
+    button {
+      margin-top: 12px;
+    }
+  }
+}
+
+h4 {
+  color: #000;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 31.2px;
+  margin-top: 20px;
+}
+
+:host ::ng-deep .ag-theme-quartz.complex-tab-table-grid {
+  .ag-row-odd {
+    background-color: transparent;
+  }
+}
+
+::ng-deep .group-header-cell {
+  color: var(--Neutral-900, #1a1c1a);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 27.2px;
+  width: 300px;
+}
+
+section.empty-state {
+  height: 30vh;
+
+  h3 {
+    color: #000;
+    font-size: 19px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 28.5px;
+    margin-bottom: 12px;
+  }
+
+  p {
+    color: #000;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 27.2px;
+  }
+}
+
+:host ::ng-deep .ag-theme-quartz {
+  --ag-selected-row-background-color: #d0debb;
+  --ag-header-background-color: #fff;
+  --ag-border-color: #1a1c1a;
+  --ag-row-hover-color: #e7efdd;
+  --ag-row-border-color: rgb(0 0 0 / 8%);
+
+  /* =========================
+     Complex type full-width rows
+     ========================= */
+  .row-complex-type .ag-cell {
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  .complex-type-row {
+    display: flex;
+    align-items: center;
+    height: 44px;
+    padding: 0 14px;
+    font-weight: 600;
+    background: #fff;
+    border-top: 1px solid var(--ag-row-border-color);
+  }
+
+  /* keep Interface type header rows unaffected */
+  .row-complex-type.ag-row-hover .ag-cell,
+  .row-complex-type.ag-row-selected .ag-cell {
+    background: transparent !important;
+  }
+}

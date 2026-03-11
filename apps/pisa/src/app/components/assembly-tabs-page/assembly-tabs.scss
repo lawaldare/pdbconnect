@@ -1,0 +1,90 @@
+#molstar-viewer {
+  height: 0 !important;
+  width: 0 !important;
+  opacity: 0 !important;
+}
+
+h1 {
+  color: var(--header-text-color);
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 50px;
+}
+
+div.subtitle {
+  color: var(--header-text-color);
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 26.6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  span {
+    height: 5px;
+    width: 5px;
+    display: block;
+    background-color: #000000;
+    border-radius: 50%;
+  }
+}
+
+main {
+  margin-top: 20px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 100px;
+
+  @media screen and (width <= 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .vf-button {
+    @media screen and (width <= 768px) {
+      align-self: flex-start;
+    }
+  }
+}
+
+button.download-button {
+  display: inline-flex;
+  padding: 4px 12px;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--Neutral-300, #d0d0ce);
+  background: var(--Neutral-0, #fff);
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 26.6px;
+  height: 35px;
+  width: 180px;
+  min-width: 180px;
+  max-width: 180px;
+}
+
+aside {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  gap: 10px;
+
+  button {
+    margin-top: 13px;
+  }
+
+  span {
+    color: #1a1c1a;
+    font-size: 19px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 28.5px;
+    display: block;
+  }
+}

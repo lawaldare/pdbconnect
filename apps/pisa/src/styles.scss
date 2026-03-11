@@ -1,0 +1,123 @@
+/* You can add global styles to this file, and also import other style files */
+@import 'ag-grid-community/styles/ag-grid.css';
+@import 'ag-grid-community/styles/ag-theme-quartz.css';
+@import 'https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css';
+@import 'libs/core/src/lib/styles/ag-grid-table-styles/table-exp-val-style';
+@import 'libs/core/src/lib/styles/ag-grid';
+@import 'index';
+
+:root {
+  --header-text-color: #1a1c1a;
+  --bg-1: #0b1020;
+  --bg-2: #111a3a;
+  --card: rgb(255 255 255 / 6%);
+  --card-border: rgb(255 255 255 / 12%);
+  --text: rgb(255 255 255 / 92%);
+  --muted: rgb(255 255 255 / 70%);
+  --accent: #7c5cff;
+  --accent-2: #22d3ee;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  margin: 0;
+  overflow-x: hidden !important;
+  line-height: 27.2px;
+}
+
+a {
+  color: #3b6fb6;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 27.2px;
+  text-decoration: none;
+  border: none;
+
+  &:focus {
+    border: none;
+    outline: none;
+    text-shadow: none;
+  }
+
+  &:visited {
+    color: #3b6fb6;
+
+    i {
+      color: #3b6fb6;
+    }
+  }
+
+  &:hover {
+    color: #193f90;
+    text-decoration: underline;
+    border: none !important;
+  }
+}
+
+p {
+  margin: 0 !important;
+  color: #000000;
+}
+
+.container {
+  width: 100%;
+  padding: 22px 34px;
+  margin-right: auto;
+  margin-left: auto;
+
+  @media (width <= 575px) {
+    padding: 10px;
+  }
+
+  @media (width >= 768px) {
+    max-width: 720px;
+  }
+
+  @media (width >= 992px) {
+    max-width: 960px;
+  }
+
+  @media (width >= 1200px) {
+    max-width: 1440px;
+  }
+}
+
+.ngx-pagination {
+  list-style-type: disc;
+  list-style-position: outside;
+  line-height: 1.5;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 0;
+  padding: 0;
+
+  .current {
+    background: #056643 !important;
+    font-size: 14px;
+  }
+
+  li {
+    word-wrap: break-word;
+    display: inline-block;
+    margin-left: 0;
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  .pagination-previous a::before,
+  .pagination-previous.disabled::before {
+    display: none !important;
+    content: '' !important;
+  }
+
+  .pagination-next a::after,
+  .pagination-next.disabled::after {
+    display: none !important;
+    content: '' !important;
+  }
+}

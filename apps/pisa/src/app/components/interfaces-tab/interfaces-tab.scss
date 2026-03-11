@@ -1,0 +1,152 @@
+:host ::ng-deep .ag-theme-quartz {
+  --ag-selected-row-background-color: #d0debb;
+  --ag-header-background-color: #fff;
+  --ag-border-color: #1a1c1a;
+  --ag-row-hover-color: #e7efdd;
+  --ag-row-border-color: rgb(0 0 0 / 8%);
+
+  &.interfaces-tab-table-grid {
+    .ag-row-odd {
+      background-color: transparent;
+    }
+
+    .ag-header-cell,
+    .ag-header-group-cell {
+      padding-left: 2px !important;
+      padding-right: 0 !important;
+    }
+  }
+
+  .ag-header-row:not(:first-child) .ag-header-cell:not(.ag-header-span-height.ag-header-span-total, .ag-header-parent-hidden),
+  .ag-header-row:not(:first-child) .ag-header-group-cell.ag-header-group-cell-with-group {
+    border: none !important;
+  }
+
+  /* allow \n headers */
+  .ag-header-cell-label {
+    white-space: pre-line;
+    line-height: 1.1;
+  }
+
+  /* =========================
+     Interface type full-width rows
+     ========================= */
+  .row-iface-type .ag-cell {
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  .iface-type-row {
+    display: flex;
+    align-items: center;
+    height: 44px;
+    padding: 0 14px;
+    font-weight: 600;
+    background: #fff;
+    border-top: 1px solid var(--ag-row-border-color);
+  }
+
+  .ag-row-hover .ag-cell {
+    background: var(--ag-row-hover-color) !important;
+  }
+
+  .ag-row-selected .ag-cell {
+    background: var(--ag-selected-row-background-color) !important;
+  }
+
+  /* keep Interface type header rows unaffected */
+  .row-iface-type.ag-row-hover .ag-cell,
+  .row-iface-type.ag-row-selected .ag-cell {
+    background: transparent !important;
+  }
+
+  /* =========================
+     Structure beige band (BODY)
+     ========================= */
+  .c-structure-one {
+    background: #fae1b6;
+  }
+
+  .c-structure-two {
+    background: #fff1da;
+  }
+
+  /* =========================
+     Structure beige band (HEADERS)
+     - group header ("Structure 1/2")
+     - child headers (Chain/N_atoms/N_residues)
+     ========================= */
+  .ag-header-group-cell.hg-structure-one {
+    background: #fae1b6;
+
+    .ag-header-group-cell-label.ag-sticky-label {
+      width: 100% !important;
+
+      span.ag-header-group-text {
+        width: 100% !important;
+        text-align: center;
+      }
+    }
+
+    &:hover {
+      background-color: #fae1b6 !important;
+    }
+  }
+
+  .ag-header-cell.h-structure-one {
+    background: #fae1b6;
+
+    &:hover {
+      background-color: #fae1b6 !important;
+    }
+  }
+
+  .ag-header-group-cell.hg-structure-two {
+    background: #fff1da;
+
+    .ag-header-group-cell-label.ag-sticky-label {
+      width: 100% !important;
+
+      span.ag-header-group-text {
+        width: 100% !important;
+        text-align: center;
+      }
+    }
+
+    &:hover {
+      background-color: #fff1da !important;
+    }
+  }
+
+  .ag-header-cell.h-structure-two {
+    background: #fff1da;
+
+    &:hover {
+      background-color: #fff1da !important;
+    }
+  }
+
+  /* keep other header cells white */
+  .ag-header-cell.h-plain {
+    background: var(--ag-header-background-color);
+  }
+
+  /* keep beige band even on hover/selection */
+  .ag-row-hover .c-structure,
+  .ag-row-selected .c-structure {
+    background: #f5e6c8 !important;
+  }
+
+  .action-link {
+    color: #1a73e8;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .action-link:hover {
+    text-decoration: underline;
+  }
+}

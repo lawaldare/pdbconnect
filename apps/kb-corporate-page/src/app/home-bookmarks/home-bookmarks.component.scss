@@ -1,5 +1,5 @@
 .home-bookmarks {
-  position: -webkit-sticky !important; /* Safari */
+  position: sticky !important; /* Safari */
   position: sticky !important;
   top: 2.5rem;
   z-index: 3;
@@ -16,38 +16,42 @@
   text-align: center;
   background-color: #5e9896;
   border-radius: 5px;
-  color: white !important;
+  color: #ffffff !important;
   max-width: fit-content;
   white-space: nowrap;
   margin-bottom: 4rem !important;
   transform: rotate(-90deg);
   cursor: pointer;
 }
+
 .home-bookmarks div:hover {
   padding: 7px !important;
-  color: black !important;
+  color: #000000 !important;
 }
 
 .icon-bookmark {
   transform: rotate(0deg) !important;
   min-width: 32px;
 }
+
 .anchor-bookmark {
   /* color: white; */
   color: inherit;
-  border-bottom-width: 0px;
+  border-bottom-width: 0;
   border-bottom-style: none;
 }
+
 .anchor-bookmark:visited,
 .anchor-bookmark:focus,
 .anchor-bookmark:active {
   /* color: white; */
   color: inherit;
-  border-bottom-width: 0px;
+  border-bottom-width: 0;
   border-bottom-style: none;
 }
+
 .anchor-bookmark:hover {
-  color: black;
-  border-bottom-width: 0px;
+  color: #000000;
+  border-bottom-width: 0;
   border-bottom-style: none;
 }

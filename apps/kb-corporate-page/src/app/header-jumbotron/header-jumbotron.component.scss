@@ -24,10 +24,11 @@
   background-color: #217976;
   height: 500px;
 }
-@media screen and (max-width: 360px) {
+@media screen and (width <= 360px) {
   .homeBannerTitle {
     font-size: 55px;
   }
+
   .masthead {
     height: auto;
   }
@@ -48,24 +49,26 @@
   color: #fff;
 }
 
-@media (min-width: 40em) and (max-width: 49em) {
+@media (width >= 40em) and (width <= 49em) {
   .homeBannerTitle {
     font-size: 52px;
     line-height: 62.4px;
     margin-top: 88px;
     margin-bottom: 20px;
   }
+
   .masthead {
     height: auto;
   }
 }
-@media screen and (max-width: 39.9375em) {
+@media screen and (width <= 39.9375em) {
   .homeBannerTitle {
     font-size: 36px;
     line-height: 43.2px;
     margin-top: 65px;
     margin-bottom: 20px;
   }
+
   .masthead {
     height: auto;
   }
