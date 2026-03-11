@@ -158,7 +158,7 @@ export class ResultCardComponent implements OnInit, OnChanges, OnDestroy {
       this.getOrcidClaimMessageDetails();
     }
 
-    const resultData = changes['resultData'].currentValue;
+    const resultData = changes['resultData']?.currentValue;
 
     //format organism Scientific Name
     this.orgSciName = this.getOrganismScientificName(resultData.doclist.docs[0].entry_organism_scientific_name);
