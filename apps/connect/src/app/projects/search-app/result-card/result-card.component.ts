@@ -125,8 +125,8 @@ export class ResultCardComponent implements OnInit, OnChanges, OnDestroy {
       this.assemblyComposition = this.getAssemblyComposition(this.resultData.doclist.docs[0].assembly_composition);
     }
 
-    //format organism Scientific Name
-    this.orgSciName = this.getOrganismScientificName(this.resultData.doclist.docs[0].entry_organism_scientific_name);
+    // //format organism Scientific Name
+    // this.orgSciName = this.getOrganismScientificName(this.resultData.doclist.docs[0].entry_organism_scientific_name);
 
     if (this.thorInfo && this.thorInfo['entriesToClaim'] && this.thorInfo['entriesToClaim'].indexOf(this.resultData.doclist.docs[0].pdb_id) > -1) {
       this.claimIt = true;
@@ -157,6 +157,11 @@ export class ResultCardComponent implements OnInit, OnChanges, OnDestroy {
     if (changes['thorClaimInfoById'] || changes['thorInfo']) {
       this.getOrcidClaimMessageDetails();
     }
+
+    const resultData = changes['resultData'].currentValue;
+
+    //format organism Scientific Name
+    this.orgSciName = this.getOrganismScientificName(resultData.doclist.docs[0].entry_organism_scientific_name);
   }
 
   getOrcidClaimMessageDetails() {
