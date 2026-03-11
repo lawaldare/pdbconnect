@@ -81,10 +81,11 @@
       }
 
       <!-- Interacting compounds -->
-      @if (resultData.doclist.docs[0].bound_compound_id && resultData.doclist.docs[0].bound_compound_id.length > 0) {
+      @let uniqueBoundCompIds = uniquesForList(resultData.doclist.docs[0].bound_compound_id || []); @if (resultData.doclist.docs[0].bound_compound_id &&
+      resultData.doclist.docs[0].bound_compound_id.length > 0) {
       <div class="columns small-12 marginTop10">
         <strong>Bound ligands: </strong>
-        @for (comp of resultData.doclist.docs[0].bound_compound_id; track $index; let ci = $index) {
+        @for (comp of uniqueBoundCompIds; track $index; let ci = $index) {
         <a
           my-tooltip
           tooltipImage="{{pdbeUrl}}static/files/pdbechem_v2/{{comp}}_200.svg"
@@ -96,10 +97,11 @@
           >{{comp}} </a
         >&nbsp;&nbsp; }
       </div>
-      } @if (resultData.doclist.docs[0].modified_compound_id && resultData.doclist.docs[0].modified_compound_id.length > 0) {
+      } @let uniqueModifiedCompIds = uniquesForList(resultData.doclist.docs[0].modified_compound_id || []); @if (resultData.doclist.docs[0].modified_compound_id &&
+      resultData.doclist.docs[0].modified_compound_id.length > 0) {
       <div class="columns small-12 marginTop10">
         <strong>Modified residues: </strong>
-        @for (comp of resultData.doclist.docs[0].modified_compound_id; track $index; let ci = $index) {
+        @for (comp of uniqueModifiedCompIds; track $index; let ci = $index) {
         <a
           my-tooltip
           tooltipImage="{{pdbeUrl}}static/files/pdbechem_v2/{{comp}}_200.svg"

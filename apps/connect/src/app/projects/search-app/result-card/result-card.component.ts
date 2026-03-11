@@ -647,4 +647,8 @@ export class ResultCardComponent implements OnInit, OnChanges, OnDestroy {
   recordUserInteraction(type: string) {
     gtag('event', 'result_click_' + type);
   }
+
+  uniquesForList(list: any[]) {
+    return [...new Set(list)];
+  }
 }
