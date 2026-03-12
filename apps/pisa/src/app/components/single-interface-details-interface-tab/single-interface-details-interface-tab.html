@@ -1,0 +1,175 @@
+@if(interface()){
+<header>
+  <h3>Interface {{interface().interface_id}}</h3>
+  <button class="vf-button vf-button--link" (click)="downloadFiles()">Download files <i class="icon icon-common icon-download"></i></button>
+</header>
+<p class="sub-header"><span style="font-weight: 500">{{interface().interface.css}}</span> Complex Formation Significance Score (CSS)</p>
+
+@let structure1 = interface().interface.molecules[0]; @let structure2 = interface().interface.molecules[1];
+
+<section>
+  <table>
+    <colgroup>
+      <col class="c-label" />
+      <col class="c-v1" />
+      <col class="c-v2" />
+    </colgroup>
+    <thead>
+      <tr>
+        <th></th>
+        <th>
+          <span class="title">Structure 1</span>
+          <span class="sub-title">Chain {{structure1.auth_asym_id}} ({{structure1.molecule_class}})</span>
+        </th>
+        <th>
+          <span class="title">Structure 2</span>
+          <span class="sub-title">Chain {{structure2.auth_asym_id}} ({{structure2.molecule_class}})</span>
+        </th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr class="row-section">
+        <td class="label">Symmetry operation</td>
+        <td class="value">{{structure1.symmetry_operation | lowercase}}</td>
+        <td class="value">{{structure2.symmetry_operation | lowercase}}</td>
+      </tr>
+
+      <tr class="row-section">
+        <td class="label">Symmetry ID</td>
+        <td class="value">{{structure1.symmetry_id}}</td>
+        <td class="value">{{structure2.symmetry_id}}</td>
+      </tr>
+
+      <!-- ATOMS -->
+      <tr class="accordion-row">
+        <td colspan="3">
+          <details open>
+            <summary>Atoms<span class="chevron"></span></summary>
+            <div class="accordion-content">
+              <table>
+                <colgroup>
+                  <col class="c-label" />
+                  <col class="c-v1" />
+                  <col class="c-v2" />
+                </colgroup>
+                <tr>
+                  <td>interface</td>
+                  <td>{{structure1.int_natoms}}</td>
+                  <td>{{structure2.int_natoms}}</td>
+                </tr>
+                <tr>
+                  <td>surface</td>
+                  <td>{{structure1.extendedData.n_surface_atoms}}</td>
+                  <td>{{structure2.extendedData.n_surface_atoms}}</td>
+                </tr>
+                <tr>
+                  <td>total</td>
+                  <td>{{structure1.extendedData.total_atoms}}</td>
+                  <td>{{structure2.extendedData.total_atoms}}</td>
+                </tr>
+              </table>
+            </div>
+          </details>
+        </td>
+      </tr>
+
+      <!-- RESIDUES -->
+      <tr class="accordion-row">
+        <td colspan="3">
+          <details open>
+            <summary>Residues<span class="chevron"></span></summary>
+            <div class="accordion-content">
+              <table>
+                <colgroup>
+                  <col class="c-label" />
+                  <col class="c-v1" />
+                  <col class="c-v2" />
+                </colgroup>
+                <tr>
+                  <td>interface</td>
+                  <td>{{structure1.int_nres}}</td>
+                  <td>{{structure2.int_nres}}</td>
+                </tr>
+                <tr>
+                  <td>surface</td>
+                  <td>{{structure1.extendedData.n_surface_residues}}</td>
+                  <td>{{structure2.extendedData.n_surface_residues}}</td>
+                </tr>
+                <tr>
+                  <td>total</td>
+                  <td>{{structure1.extendedData.total_residues}}</td>
+                  <td>{{structure2.extendedData.total_residues}}</td>
+                </tr>
+              </table>
+            </div>
+          </details>
+        </td>
+      </tr>
+
+      <!-- SOLVENT AREA -->
+      <tr class="accordion-row">
+        <td colspan="3">
+          <details open>
+            <summary>Solvent-accessible area<span class="chevron"></span></summary>
+            <div class="accordion-content">
+              <table>
+                <colgroup>
+                  <col class="c-label" />
+                  <col class="c-v1" />
+                  <col class="c-v2" />
+                </colgroup>
+                <tr>
+                  <td>interface</td>
+                  <td>{{structure1.int_area}} Å</td>
+                  <td>{{structure2.int_area}} Å</td>
+                </tr>
+                <tr>
+                  <td>total</td>
+                  <td>{{structure1.extendedData.asa}} Å</td>
+                  <td>{{structure2.extendedData.asa}} Å</td>
+                </tr>
+              </table>
+            </div>
+          </details>
+        </td>
+      </tr>
+
+      <!-- SOLVATION ENERGY -->
+      <tr class="accordion-row">
+        <td colspan="3">
+          <details open>
+            <summary>Solvation energy, kcal/mol<span class="chevron"></span></summary>
+            <div class="accordion-content">
+              <table>
+                <colgroup>
+                  <col class="c-label" />
+                  <col class="c-v1" />
+                  <col class="c-v2" />
+                </colgroup>
+                <tr>
+                  <td>isolated structure</td>
+                  <td>{{structure1.extendedData.solv_energy}}</td>
+                  <td>{{structure2.extendedData.solv_energy}}</td>
+                </tr>
+                <tr>
+                  <td>gain at complexation</td>
+                  <td>-6.3</td>
+                  <td>-4.5</td>
+                </tr>
+                <tr>
+                  <td>p-value</td>
+                  <td>{{structure1.pvalue}}</td>
+                  <td>{{structure2.pvalue}}</td>
+                </tr>
+              </table>
+            </div>
+          </details>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+} @else {
+<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '500px' }"></ngx-skeleton-loader>
+}

@@ -1,0 +1,9 @@
+export const environment = {
+  production: false,
+  debug: true,
+  baseUrl: 'https://wwwdev.ebi.ac.uk/',
+  googleAnalyticsTag: 'G-V1BCXVELRY',
+  clarityProjectIdForEntryPages: 'rig9276nz7',
+  clarityProjectIdForLigandPages: 'tx7303fj1j',
+  clarityProjectIdForComplexPages: 'tx73tvvns4',
+};

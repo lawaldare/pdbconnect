@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-escape */
-import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, inject, OnChanges, SimpleChanges } from '@angular/core';
 import { SearchService } from '../common/search.service';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -21,7 +21,7 @@ declare const gtag: any;
   imports: [CommonModule, MaterialModule, TooltipDirective, ValidationSliderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PivotResultCardComponent implements OnInit {
+export class PivotResultCardComponent implements OnInit, OnChanges {
   @Input() resultData: any;
   @Input() grayBackground: any;
   @Input() pivotType: any;
@@ -91,6 +91,24 @@ export class PivotResultCardComponent implements OnInit {
     this.pdbeUrl = appSettings.pdbeUrl;
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    const resultData = changes['resultData']?.currentValue;
+
+    //format organism Scientific Name
+    this.orgSciName = this.getOrganismScientificName(resultData?.doclist.docs[0].entry_organism_scientific_name);
+
+    //combined uniprot accessions
+    if (this.resultData.uniprot_accession_best) this.uniprotAccessions = this.resultData.uniprot_accession_best;
+    if (this.resultData.entry_uniprot_accession) {
+      this.uniprotAccessions = [];
+      this.resultData.entry_uniprot_accession.forEach((intUnpAcc: any) => {
+        if (this.uniprotAccessions.indexOf(intUnpAcc) === -1) this.uniprotAccessions.push(intUnpAcc);
+      });
+    }
+    this.displayUnpAccessions = this.uniprotAccessions;
+    if (this.displayUnpAccessions.length > 6) this.displayUnpAccessions = this.uniprotAccessions.slice(0, 6);
+  }
+
   ngOnInit() {
     if (this.resultData.otherEntries) {
       this.resultData.otherEntries.forEach((otherEntry: string) => {
@@ -118,18 +136,18 @@ export class PivotResultCardComponent implements OnInit {
       this.getInteractingComps(this.resultData.interacting_ligands, this.resultData.pdb_id);
     }
 
-    //format organism Scientific Name
-    this.orgSciName = this.getOrganismScientificName(this.resultData.entry_organism_scientific_name);
+    // //format organism Scientific Name
+    // this.orgSciName = this.getOrganismScientificName(this.resultData.entry_organism_scientific_name);
 
-    //combined uniprot accessions
-    if (this.resultData.uniprot_accession_best) this.uniprotAccessions = this.resultData.uniprot_accession_best;
-    if (this.resultData.entry_uniprot_accession) {
-      this.resultData.entry_uniprot_accession.forEach((intUnpAcc: any) => {
-        if (this.uniprotAccessions.indexOf(intUnpAcc) === -1) this.uniprotAccessions.push(intUnpAcc);
-      });
-    }
-    this.displayUnpAccessions = this.uniprotAccessions;
-    if (this.displayUnpAccessions.length > 6) this.displayUnpAccessions = this.uniprotAccessions.slice(0, 6);
+    // //combined uniprot accessions
+    // if (this.resultData.uniprot_accession_best) this.uniprotAccessions = this.resultData.uniprot_accession_best;
+    // if (this.resultData.entry_uniprot_accession) {
+    //   this.resultData.entry_uniprot_accession.forEach((intUnpAcc: any) => {
+    //     if (this.uniprotAccessions.indexOf(intUnpAcc) === -1) this.uniprotAccessions.push(intUnpAcc);
+    //   });
+    // }
+    // this.displayUnpAccessions = this.uniprotAccessions;
+    // if (this.displayUnpAccessions.length > 6) this.displayUnpAccessions = this.uniprotAccessions.slice(0, 6);
 
     //Get tumbnail images
     this.image1Src = this.getImageSource(1);

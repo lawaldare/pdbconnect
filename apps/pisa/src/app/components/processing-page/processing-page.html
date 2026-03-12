@@ -1,0 +1,60 @@
+<h1 [ngStyle]="{'margin-bottom': modelSym() ? '0' : '26px'}">{{label()}}</h1>
+@if(modelSym()){
+<span class="your-file">Your file</span>
+}
+<main>
+  <section class="upload-section">
+    @if(pisaUtilService.pageView() === 'INITIAL'){
+    <h3>
+      <img [src]="loader" alt="loader icon" style="height: 24px; width: 24px" />
+      <span>Analysing...</span>
+    </h3>
+    <p class="analysing-text">
+      The analysis may take seconds to minutes, depending on the size and complexity.
+      <!-- for the link -->
+      @if(savedLink()){ In case it takes too long, save this link <br />
+      <a [href]="savedLink()">{{savedLink()}}</a> <br />
+      so you can easily return to it later within 7 days. }
+    </p>
+    <p class="analysing-text">
+      NOTE: Only share your job ID with trusted parties. Once your structure file is uploaded, it will be accessible via the PDBePISA results page to anyone with the
+      job ID link.
+    </p>
+    <!-- <div class="analysing-footer">
+      <p>
+        <span>Curious fact while you’re waiting:</span><br />
+        The largest protein in the entire PDB archive is still really small.
+      </p>
+    </div> -->
+    }
+
+    <!-- Error View -->
+    @if (pisaUtilService.pageView() === 'ERROR') {
+    <section>
+      <h3>PISA failed</h3>
+      <p class="analysing-text error-message">{{pisaUtilService.errorMessage()}}</p>
+      <!-- <p class="analysing-text">Your file was uploaded, but PISA couldn’t complete the analysis. Please try again later or verify that your structure is valid.</p> -->
+    </section>
+    }
+  </section>
+  <section class="molstar-section">
+    <!-- <h4>Your structure will appear here</h4> -->
+    <div class="viewer-container">
+      <div #viewer id="molstar-viewer"></div>
+      <!-- Error Loading -->
+      @if(pisaUtilService.loadingView() === 'ERROR_LOADING') {
+      <div class="loading initial">
+        <p class="loading-text">Unable to load your structure</p>
+        <img src="assets/icons/no-image.svg" alt="no image icon" />
+      </div>
+      }
+      <!-- Loading View -->
+      @if(pisaUtilService.loadingView() === 'LOADING') {
+      <div class="loading loading-view">
+        <div class="spinner"></div>
+        <p class="loading-text">Loading structure...</p>
+      </div>
+      }
+    </div>
+  </section>
+</main>

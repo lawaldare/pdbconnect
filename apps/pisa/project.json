@@ -1,0 +1,126 @@
+{
+  "name": "pisa",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/pisa/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:browser",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/pisa",
+        "index": "apps/pisa/src/index.html",
+        "main": "apps/pisa/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/pisa/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/pisa/src/assets",
+            "output": "assets"
+          }
+        ],
+        "styles": ["@angular/material/prebuilt-themes/indigo-pink.css", "apps/pisa/src/styles.scss"],
+        "scripts": [],
+        "stylePreprocessorOptions": {
+          "includePaths": ["libs/core/src/lib/styles"]
+        }
+      },
+      "configurations": {
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/pisa/src/environments/environment.ts",
+              "with": "apps/pisa/src/environments/environment.prod.ts"
+            }
+          ],
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "3mb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "200kb",
+              "maximumError": "400kb"
+            }
+          ],
+          "aot": true,
+          "extractLicenses": true,
+          "namedChunks": false,
+          "optimization": true,
+          "sourceMap": true,
+          "outputHashing": "all",
+          "baseHref": "$APP_BASE_HREF"
+        },
+        "development": {
+          "aot": true,
+          "buildOptimizer": true,
+          "extractLicenses": true,
+          "namedChunks": false,
+          "optimization": true,
+          "sourceMap": true,
+          "vendorChunk": false,
+          "outputHashing": "all",
+          "baseHref": "$APP_BASE_HREF"
+        },
+        "local": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "buildTarget": "pisa:build:local",
+        "port": 3000
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "pisa:build:production"
+        },
+        "development": {
+          "buildTarget": "pisa:build:development"
+        }
+      },
+      "defaultConfiguration": ""
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "pisa:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/pisa/jest.config.ts",
+        "tsConfig": "apps/pisa/tsconfig.spec.json"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "pisa:build",
+        "port": 4000,
+        "spa": true
+      }
+    }
+  }
+}

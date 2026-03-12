@@ -1,0 +1,25 @@
+.pisa.container {
+  padding: 22px 34px 60px !important;
+}
+
+section.pisa-footer {
+  background: #f3f3f3;
+
+  .container {
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    p.title {
+      color: #000;
+      font-size: 19px;
+      font-weight: 500;
+      line-height: 28.5px;
+    }
+
+    img {
+      cursor: pointer;
+    }
+  }
+}
