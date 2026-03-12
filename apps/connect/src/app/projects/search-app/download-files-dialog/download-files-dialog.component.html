@@ -29,33 +29,25 @@
       }
       <!-- Download item list -->
       <div class="downloadItemsContainer" [ngClass]="{'expanded' : isExpanded[fieldIndex]}">
-        @for (item of availableLabels[fieldIndex]; track item; let itemIndex = $index) {
-        <ng-template
-          *ngIf="availableLabels[fieldIndex] && availableLabels[fieldIndex].length > 0"
-          let-item
-          [ngForOf]="availableLabels[fieldIndex]"
-          let-itemIndex="index"
-        >
-          <div>
-            <div class="downloadItemRow">
-              <div class="downloadItemLabel">
-                {{item}}&nbsp;&nbsp; @if (downloadApiData[field][item]['viewUrl']) {
-                <span
-                  >(<a href="{{downloadApiData[field][item]['viewUrl']}}" target="_blank" (click)="captureUserAction('view_'+item.split(' ').join('_'))">view</a
-                  >)</span
-                >
-                } @if (downloadApiData[field][item]['downloadUrl']) {
-                <span
-                  >(<a href="{{downloadApiData[field][item]['downloadUrl']}}" target="_blank" (click)="captureUserAction('download_'+item.split(' ').join('_'))"
-                    >download</a
-                  >)</span
-                >
-                }
-              </div>
+        @if (availableLabels[fieldIndex] && availableLabels[fieldIndex].length > 0) { @for (item of availableLabels[fieldIndex]; track item; let itemIndex = $index) {
+        <div>
+          <div class="downloadItemRow">
+            <div class="downloadItemLabel">
+              {{item}}&nbsp;&nbsp; @if (downloadApiData[field][item]['viewUrl']) {
+              <span
+                >(<a href="{{downloadApiData[field][item]['viewUrl']}}" target="_blank" (click)="captureUserAction('view_'+item.split(' ').join('_'))">view</a>)</span
+              >
+              } @if (downloadApiData[field][item]['downloadUrl']) {
+              <span
+                >(<a href="{{downloadApiData[field][item]['downloadUrl']}}" target="_blank" (click)="captureUserAction('download_'+item.split(' ').join('_'))"
+                  >download</a
+                >)</span
+              >
+              }
             </div>
           </div>
-        </ng-template>
-        }
+        </div>
+        } }
       </div>
     </div>
     }
