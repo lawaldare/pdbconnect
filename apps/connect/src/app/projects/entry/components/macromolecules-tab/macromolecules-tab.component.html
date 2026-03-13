@@ -48,16 +48,16 @@
             <span class="micro-title left"> Type </span>
             <article>{{type | titlecase}}</article>
           </div>
-          } @if(uniqueOrganisms().length){
+          } @if(uniqueOrganismsWithStrains().length){
           <div class="info-row">
-            <span class="micro-title left"> Source organism{{ uniqueOrganisms().length > 1 ? 's': '' }} </span>
+            <span class="micro-title left"> Source organism{{ uniqueOrganismsWithStrains().length > 1 ? 's': '' }} </span>
             <article class="source-organism">
-              @for (sourceOrganism of uniqueOrganisms(); track sourceOrganism) {
-              <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">
-                <em>{{sourceOrganism}}</em>
+              @for (sourceOrganismWithStrain of uniqueOrganismsWithStrains(); track sourceOrganismWithStrain) {
+              <a [href]="generateOrganismSearchUrl(sourceOrganismWithStrain.name)" target="_blank">
+                <em>{{sourceOrganismWithStrain.name}}</em>
                 <i class="icon icon-common icon-search"></i>
               </a>
-              }
+              @if (sourceOrganismWithStrain.strain) { (strain {{sourceOrganismWithStrain.strain}}) } }
             </article>
           </div>
           } @if(uniqueExpSystems().length > 0) {

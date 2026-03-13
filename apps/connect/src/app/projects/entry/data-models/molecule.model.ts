@@ -28,6 +28,7 @@ export interface MoleculeSource {
   mappings: MoleculeSourceMapping[];
   organism_scientific_name: string;
   tax_id: number;
+  strain?: string;
 }
 
 export interface MoleculeSourceMapping {

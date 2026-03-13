@@ -39,6 +39,7 @@ import {
   mapModificationsByPreferredAssembly,
 } from './data-processing/ligand-processing';
 import { generateDomainsCards, generateDomainsTableFilters, generateProcessedDomains, processDomainsWithMacromolecules } from './data-processing/domain-processing';
+import { MoleculeSource } from '../data-models/molecule.model';
 
 @Injectable()
 export class EntryEffects {
@@ -363,17 +364,17 @@ export class EntryEffects {
           this.store.select(EntrySelectors.entryId).pipe(take(1)),
           this.store.select(EntrySelectors.macroMolecules).pipe(take(1)),
           this.store.select(EntrySelectors.boundLigands).pipe(take(1)),
-          this.store.select(EntrySelectors.organismScientificNames).pipe(take(1)),
+          this.store.select(EntrySelectors.moleculeSources).pipe(take(1)),
           this.store.select(EntrySelectors.hasRNA).pipe(take(1)),
           this.store.select(EntrySelectors.macromolsDescriptions).pipe(take(1)),
           this.store.select(EntrySelectors.macromolsChainsToEntityIds).pipe(take(1)),
         ])
       ),
-      mergeMap(([entryId, cachedMacromols, cachedBLigands, cachedOrgNames, cachedHasRna, cachedMacromolsDesc, cachedChainsToEntityIds]) => {
+      mergeMap(([entryId, cachedMacromols, cachedBLigands, cachedMolSrc, cachedHasRna, cachedMacromolsDesc, cachedChainsToEntityIds]) => {
         if (
           cachedMacromols !== undefined &&
           cachedBLigands !== undefined &&
-          cachedOrgNames !== undefined &&
+          cachedMolSrc !== undefined &&
           cachedHasRna !== undefined &&
           cachedMacromolsDesc !== undefined &&
           cachedChainsToEntityIds !== undefined
@@ -383,7 +384,7 @@ export class EntryEffects {
               data: {
                 macroMolecules: cachedMacromols,
                 boundLigands: cachedBLigands,
-                organismScientificNames: cachedOrgNames,
+                moleculeSources: cachedMolSrc,
                 hasRNA: cachedHasRna,
                 macromolsDescriptions: cachedMacromolsDesc,
                 macromolsChainsToEntityIds: cachedChainsToEntityIds,
@@ -411,15 +412,12 @@ export class EntryEffects {
 
             const boundLigands = molecules.filter((mol) => mol.molecule_type === 'bound');
 
-            const organismScientificNames: string[] = [];
+            const moleculeSources: MoleculeSource[] = [];
 
             for (const entityDetail of molecules) {
               const sources = entityDetail['source'] ?? [];
               for (const eachSource of sources) {
-                const organismName = eachSource['organism_scientific_name'] ?? undefined;
-                if (organismName && organismScientificNames.indexOf(organismName) === -1) {
-                  organismScientificNames.push(organismName);
-                }
+                moleculeSources.push(eachSource);
               }
             }
 
@@ -431,7 +429,7 @@ export class EntryEffects {
               data: {
                 macroMolecules,
                 boundLigands,
-                organismScientificNames,
+                moleculeSources,
                 hasRNA,
                 macromolsDescriptions,
                 macromolsChainsToEntityIds,

@@ -27,8 +27,29 @@ export class SummaryInfoSectionComponent {
   public readonly util = inject(UtilService);
 
   public readonly summary = toSignal(this.store.select(EntrySelectors.summaryData));
+  public readonly moleculeSources = toSignal(this.store.select(EntrySelectors.moleculeSources));
+  public readonly organismScientificNamesWithStrains = computed(() => {
+    const molSrcs = this.moleculeSources();
+    if (!molSrcs || molSrcs.length === 0) return [];
 
-  public readonly organismScientificNames = toSignal(this.store.select(EntrySelectors.organismScientificNames));
+    const seen = new Set<string>();
+    const namesWithStrains = [];
+
+    for (const molSrc of molSrcs) {
+      if (!molSrc.organism_scientific_name) continue;
+
+      const key = `${molSrc.organism_scientific_name}|${molSrc.strain ?? ''}`;
+      if (seen.has(key)) continue;
+
+      seen.add(key);
+      namesWithStrains.push({
+        name: molSrc.organism_scientific_name,
+        strain: molSrc.strain,
+      });
+    }
+
+    return namesWithStrains;
+  });
 
   public readonly primaryPublication = toSignal(this.store.select(EntrySelectors.primaryPublication));
 

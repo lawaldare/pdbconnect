@@ -20,15 +20,16 @@
     <div class="info-row">
       <span>Source organism</span>
       <article>
-        @for (sourceOrganism of organismScientificNames(); track sourceOrganism; let islast = $last) {
+        @for (sourceOrganismWithStrain of organismScientificNamesWithStrains(); track sourceOrganismWithStrain; let islast = $last) {
         <span>
           <i
-            ><a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">
-              {{ sourceOrganism }}
+            ><a [href]="generateOrganismSearchUrl(sourceOrganismWithStrain.name)" target="_blank">
+              {{ sourceOrganismWithStrain.name }}
               <i class="icon icon-common icon-search"></i> </a
           ></i>
+          @if (sourceOrganismWithStrain.strain) { (strain {{ sourceOrganismWithStrain.strain }}) }
         </span>
-        {{ islast ? '' : ',' }} } @if (organismScientificNames()?.length === 0) {
+        {{ islast ? '' : ',' }} } @if (organismScientificNamesWithStrains()?.length === 0) {
         <span>Not available</span>
         }
       </article>

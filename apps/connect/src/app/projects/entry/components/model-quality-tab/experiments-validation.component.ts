@@ -97,7 +97,30 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-  public readonly sourceOrganisms = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames));
+  public readonly moleculeSources = toSignal(this.globalStore.select(EntrySelectors.moleculeSources));
+  public readonly sourceOrganismsWithStrains = computed(() => {
+    const molSrcs = this.moleculeSources();
+    if (!molSrcs || molSrcs.length === 0) return [];
+
+    const seen = new Set<string>();
+    const namesWithStrains = [];
+
+    for (const molSrc of molSrcs) {
+      if (!molSrc.organism_scientific_name) continue;
+
+      const key = `${molSrc.organism_scientific_name}|${molSrc.strain ?? ''}`;
+      if (seen.has(key)) continue;
+
+      seen.add(key);
+      namesWithStrains.push({
+        name: molSrc.organism_scientific_name,
+        strain: molSrc.strain,
+      });
+    }
+
+    return namesWithStrains;
+  });
+
   public readonly pdbRedoData = toSignal(this.globalStore.select(EntrySelectors.pdbRedoQualityScores));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
   public readonly outliersByModelId = toSignal(this.globalStore.select(EntrySelectors.outliersByModelId));
