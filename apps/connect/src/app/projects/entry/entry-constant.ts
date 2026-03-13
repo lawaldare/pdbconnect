@@ -405,9 +405,9 @@ export const ENTRY_PAGES_LINKS = [
 ];
 
 export const labelGroups = {
-  Popular: ['mmCIF file', 'PDB file', 'Compatible PDB file bundle (tar.gz)', 'FASTA (Entry)', 'Full report (PDF)', 'Validation data (XML)'],
+  Popular: ['mmCIF file (Updated)', 'PDB file', 'Compatible PDB file bundle (tar.gz)', 'FASTA (Entry)', 'Full report (PDF)', 'Validation data (mmCIF)'],
   'Archive Files': [
-    'mmCIF file',
+    'mmCIF file (Updated)',
     'PDB file',
     'Archive mmCIF file',
     'Compatible PDB file bundle (tar.gz)',
@@ -423,6 +423,7 @@ export const labelGroups = {
     'Full report (PDF)',
     'Percentile plot (PNG)',
     'Percentile plot (SVG)',
+    'Validation data (mmCIF)',
     'Validation data (XML)',
     'Validation report mmCIF file (gz)',
   ],

@@ -5,10 +5,10 @@ import { FlatOutlierResidue, OutliersByModelId } from './models/other-models';
 
 export function processFilesData(data: any) {
   const rename: { [key: string]: string } = {
-    'Updated mmCIF file': 'mmCIF file',
+    'Updated mmCIF file': 'mmCIF file (Updated)',
   };
   const order = [
-    'mmCIF file',
+    'mmCIF file (Updated)',
     'PDB file',
     'PDB file (gz)',
     'Compatible PDB file bundle (tar.gz)',
