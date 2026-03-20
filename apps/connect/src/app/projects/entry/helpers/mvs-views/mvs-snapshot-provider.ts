@@ -129,10 +129,24 @@ export class MVSSnapshotProvider {
   }
 
   /** Create base for all PDBconnect views */
-  private async _loadPdbconnectBase(params: { entry: string; assemblyId: string | undefined }) {
+  private async _loadPdbconnectBase(params: { entry: string; assemblyId: string | undefined; volumeStreaming: boolean }) {
     const ctx = this._loadModel(params);
 
-    const structure = params.assemblyId !== undefined ? ctx.model.assemblyStructure({ assembly_id: params.assemblyId }) : ctx.model.modelStructure();
+    const structureCustomProps: Record<string, any> = {};
+    if (params.volumeStreaming) {
+      structureCustomProps['molstar_volume_streaming'] = {
+        view: 'selection-box', // ensures selection-box (Around Focus) for X-ray and EM
+        channel_params: {
+          'fo-fc(+ve)': { opacity: 0.49 },
+          'fo-fc(-ve)': { opacity: 0.49 },
+        },
+      };
+    }
+
+    const structure =
+      params.assemblyId !== undefined
+        ? ctx.model.assemblyStructure({ assembly_id: params.assemblyId, custom: structureCustomProps })
+        : ctx.model.modelStructure({ custom: structureCustomProps });
     const components = applyStandardComponents(structure);
     const representations = applyStandardRepresentations(components, { opacityFactor: 1 });
     // TODO Molstar: ball_and_stick size theme physical?
@@ -174,7 +188,7 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Summary tab > Macromolecules (macromolecule selected), Macromolecules tab */
   private async loadPdbconnectMacromolecule(params: SnapshotSpecParams['pdbconnect_macromolecule']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
+    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
     const entities = await this.dataProvider.entities(params.entry);
     const entityColors = getEntityColors(entities);
@@ -223,7 +237,7 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Summary tab > Ligands (nothing selected) */
   private async loadPdbconnectAllLigands(params: SnapshotSpecParams['pdbconnect_all_ligands']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
+    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
     const entities = await this.dataProvider.entities(params.entry);
     const entityColors = getEntityColors(entities);
@@ -250,7 +264,7 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Summary tab > Ligands (ligand selected) */
   private async loadPdbconnectLigand(params: SnapshotSpecParams['pdbconnect_ligand']) {
-    const ctx = await this.loadPdbconnectComplex({ entry: params.entry, assemblyId: params.assemblyId });
+    const ctx = await this.loadPdbconnectComplex({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
     const { entities } = ctx.metadata;
 
     if (params.focus) {
@@ -273,7 +287,7 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Summary tab > Domains (domain selected), Domains tab */
   private async loadPdbconnectDomains(params: SnapshotSpecParams['pdbconnect_domains']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
+    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
     const allDomainsSelector: ComponentExpressionT[] = [];
     for (const domain of params.domains) {
@@ -300,7 +314,7 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Summary tab > Modifications (whether modification selected or not) */
   private async loadPdbconnectModifications(params: SnapshotSpecParams['pdbconnect_modifications']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
+    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
     for (const mod of params.modifications) {
       ctx.structure.component({ selector: { label_comp_id: mod.labelCompId } }).tooltip({ text: `<hr><b>Modified residue ${mod.labelCompId}:</b><br>${mod.name}` });
@@ -341,7 +355,7 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Model Quality tab */
   private async loadPdbconnectQuality(params: SnapshotSpecParams['pdbconnect_quality']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
+    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
     const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
 
     const description: string[] = [];
@@ -415,7 +429,7 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Ligands and Environments tab */
   private async loadPdbconnectEnvironment(params: SnapshotSpecParams['pdbconnect_environment']) {
-    const ctx = await this.loadPdbconnectComplex({ entry: params.entry, assemblyId: params.assemblyId });
+    const ctx = await this.loadPdbconnectComplex({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
     const { entityColors } = ctx.metadata;
 
     ctx.structure
@@ -497,7 +511,7 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Text Annotations tab (residue selected) */
   private async loadPdbconnectTextAnnotation(params: SnapshotSpecParams['pdbconnect_text_annotation']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId });
+    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
     const chainSelector: ComponentExpressionT = { label_asym_id: params.labelAsymId, instance_id: params.instanceId };
     const residueSelector: ComponentExpressionT = { ...chainSelector, label_seq_id: params.labelSeqId };

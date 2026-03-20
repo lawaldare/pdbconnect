@@ -130,41 +130,17 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     return this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id;
   }
 
-  public readonly configForMolstar = computed(() => {
-    const summary = this.summary();
-    // const chainSelection = this.chainSelection();
-    const inPrefAssemblyForSelection = this.inPrefAssemblyForSelection();
-
-    if (!summary || !this.entryId()) return undefined;
-    // const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
-    // const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
-    const preferredAssemblyId = this.getPreferredAssemblyId();
-    const assemblyId = inPrefAssemblyForSelection ? preferredAssemblyId : undefined;
-
-    const configForMolstar: InitParams = {
-      ...Molstar370DefaultParams,
-      // moleculeId: this.entryId(),
-      moleculeId: undefined,
-      assemblyId,
-      bgColor: 'white',
-      subscribeEvents: true,
-      granularity: 'residue',
-      hideControls: false,
-      hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
-      // visualStyle: {
-      //   polymer: {
-      //     type: 'cartoon',
-      //     color: 'entity-id',
-      //   },
-      // },
-      loadMaps: true,
-      mapSettings: { defaultView: 'selection-box' },
-      sequencePanel: true,
-      // ...(chainSelection && { 'selection': chainSelection }),
-    };
-
-    return configForMolstar;
-  });
+  public readonly configForMolstar = computed<InitParams>(() => ({
+    ...Molstar370DefaultParams,
+    moleculeId: undefined,
+    bgColor: 'white',
+    subscribeEvents: true,
+    granularity: 'residue',
+    hideControls: false,
+    hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
+    sequencePanel: true,
+    // tabs: 'all',
+  }));
   public readonly configForMolstar$ = toObservable(this.configForMolstar);
 
   private mvsTransitionDurationMs = 600;
@@ -855,7 +831,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
         return {
           name: 'Preferred complex',
           kind: 'pdbconnect_complex',
-          params: { entry: entryId, assemblyId },
+          params: { entry: entryId, assemblyId, volumeStreaming: true },
         };
       case 'Macromolecules':
         if (!listItem) {
@@ -863,7 +839,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
           return {
             name: 'All macromolecules',
             kind: 'pdbconnect_complex',
-            params: { entry: entryId, assemblyId },
+            params: { entry: entryId, assemblyId, volumeStreaming: true },
           };
         } else {
           const entityData = (listItem as ProcessedMacromolecule).additionalData;
@@ -874,16 +850,17 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
           return {
             name: 'Macromolecule',
             kind: 'pdbconnect_macromolecule',
-            params: { entry: entryId, assemblyId, entityId, labelAsymId, authAsymId, instanceId, focus: true },
+            params: { entry: entryId, assemblyId, entityId, labelAsymId, authAsymId, instanceId, focus: true, volumeStreaming: true },
           };
         }
       case 'Ligands':
-        // TODO sync colors (entity colors)
+        // TODO: @adam continue here synching colors
+        // TODO: @adam sync colors (entity colors)
         if (!listItem) {
           return {
             name: 'All ligands',
             kind: 'pdbconnect_all_ligands',
-            params: { entry: entryId, assemblyId },
+            params: { entry: entryId, assemblyId, volumeStreaming: true },
           };
         } else {
           const ligandData = (listItem as ProcessedLigandOrMod).additionalData;
@@ -895,7 +872,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
           return {
             name: 'Ligand',
             kind: 'pdbconnect_ligand',
-            params: { entry: entryId, assemblyId, entityId, labelAsymId, instanceId, focus: true },
+            params: { entry: entryId, assemblyId, entityId, labelAsymId, instanceId, focus: true, volumeStreaming: true },
           };
         }
       case 'Domains': {
@@ -922,6 +899,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
               ),
             })),
             focus: true,
+            volumeStreaming: true,
           },
         };
         // TODO fix every domain appearing twice in the list (entry 1bvy)
@@ -941,6 +919,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
             })),
             selected: undefined,
             focus: false,
+            volumeStreaming: true,
           },
         };
         if (listItem) {

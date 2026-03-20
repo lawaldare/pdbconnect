@@ -7,6 +7,8 @@ export type SnapshotSpecParams = {
     entry: string;
     /** Assembly ID*/
     assemblyId: string | undefined;
+    /** Turn on Volume Streaming */
+    volumeStreaming: boolean;
   };
   /** PDBconnect Summary tab > Macromolecules (macromolecule selected), Macromolecules tab */
   pdbconnect_macromolecule: {
@@ -24,6 +26,8 @@ export type SnapshotSpecParams = {
     instanceId: string | undefined;
     /** Apply camera focus on selected macromolecule */
     focus: boolean;
+    /** Turn on Volume Streaming */
+    volumeStreaming: boolean;
   };
   /** PDBconnect Summary tab > Ligands (nothing selected) */
   pdbconnect_all_ligands: {
@@ -31,6 +35,8 @@ export type SnapshotSpecParams = {
     entry: string;
     /** Assembly ID (or `undefined` for deposited model) */
     assemblyId: string | undefined;
+    /** Turn on Volume Streaming */
+    volumeStreaming: boolean;
   };
   /** PDBconnect Summary tab > Ligands (ligand selected) */
   pdbconnect_ligand: {
@@ -46,6 +52,8 @@ export type SnapshotSpecParams = {
     instanceId: string | undefined;
     /** Apply camera focus on selected ligand */
     focus: boolean;
+    /** Turn on Volume Streaming */
+    volumeStreaming: boolean;
   };
   /** PDBconnect Summary tab > Domains (domain selected), Domains tab */
   pdbconnect_domains: {
@@ -57,6 +65,8 @@ export type SnapshotSpecParams = {
     domains: { selector: ComponentExpressionT[]; color: string; name: string | undefined }[];
     /** Apply camera focus on selected domains */
     focus: boolean;
+    /** Turn on Volume Streaming */
+    volumeStreaming: boolean;
   };
   /** PDBconnect Summary tab > Modifications */
   pdbconnect_modifications: {
@@ -70,6 +80,8 @@ export type SnapshotSpecParams = {
     selected: ComponentExpressionT[] | undefined;
     /** Apply camera focus on selected modification */
     focus: boolean;
+    /** Turn on Volume Streaming */
+    volumeStreaming: boolean;
   };
   /** PDBconnect Model Quality tab */
   pdbconnect_quality: {
@@ -79,6 +91,8 @@ export type SnapshotSpecParams = {
     assemblyId: string | undefined;
     /** Validation view type (either 'issue_count' for number of outlier types on a residue, or name of a specific outlier type) */
     validation_type: ValidationType;
+    /** Turn on Volume Streaming */
+    volumeStreaming: boolean;
   };
   /** PDBconnect Ligands and Environments tab */
   pdbconnect_environment: {
@@ -98,6 +112,8 @@ export type SnapshotSpecParams = {
     instanceId: string | undefined;
     /** Source of atom interactions to be shown */
     atomInteractions: 'api' | 'builtin' | 'none';
+    /** Turn on Volume Streaming */
+    volumeStreaming: boolean;
   };
   /** PDBconnect Text Annotations tab (residue selected) */
   pdbconnect_text_annotation: {
@@ -113,6 +129,8 @@ export type SnapshotSpecParams = {
     labelSeqId: number | undefined;
     /** Symmetry instance identifier (e.g. 'ASM-1'), `undefined` for showing all instances */
     instanceId: string | undefined;
+    /** Turn on Volume Streaming */
+    volumeStreaming: boolean;
   };
 };
 
