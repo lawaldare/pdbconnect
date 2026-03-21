@@ -35,7 +35,12 @@ app.use(
  */
 app.use((req, res, next) => {
   angularApp
-    .handle(req)
+    .handle(req, {
+      serverContext: {
+        protocol: req.protocol,
+        host: req.get('host'),
+      },
+    })
     .then((response) => (response ? writeResponseToNodeResponse(response, res) : next()))
     .catch(next);
 });

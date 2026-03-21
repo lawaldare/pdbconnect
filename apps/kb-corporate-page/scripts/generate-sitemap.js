@@ -1,12 +1,14 @@
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
-import { resolve, dirname } from 'path';
+/* eslint-disable */
+const { writeFileSync, mkdirSync, existsSync } = require('fs');
+const { resolve, dirname } = require('path');
 
 /** * CONFIGURATION
- * Update these routes as you add more pages to your app
+ * These must match your Angular routes exactly
  */
 const routes = ['', '/about', '/partners', '/join-us', '/services', '/contact'];
 
-const BASE_URL = 'https://www.ebi.ac.uk/pdbe/kb/corporate';
+// ✅ Updated to match your actual EBI sub-directory
+const BASE_URL = 'https://www.ebi.ac.uk/pdbe/pdbe-kb';
 
 function generateSitemap() {
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -15,7 +17,7 @@ function generateSitemap() {
     .map((route) => {
       return `
     <url>
-      <loc>${BASE_URL}${route}</loc>
+      <loc>${BASE_URL}${route}/</loc>
       <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
       <changefreq>monthly</changefreq>
       <priority>${route === '' ? '1.0' : '0.8'}</priority>
