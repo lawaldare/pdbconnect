@@ -1,0 +1,6 @@
+# Allow all crawlers to index the site
+User-agent: *
+Allow: /
+
+# Direct them to your newly generated sitemap
+Sitemap: https://www.ebi.ac.uk/pdbe/kb/corporate/sitemap.xml

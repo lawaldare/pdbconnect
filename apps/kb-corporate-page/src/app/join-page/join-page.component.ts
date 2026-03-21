@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { AfterViewInit, Component, inject, PLATFORM_ID } from '@angular/core';
 import { HeaderSearchComponent } from '../header-search/header-search.component';
 import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
 import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.component';
@@ -14,6 +14,8 @@ declare const $: any;
   imports: [CommonModule, HeaderSearchComponent, NavTabsComponent, HomeBookmarksComponent],
 })
 export class JoinPageComponent implements AfterViewInit {
+  private platformId = inject(PLATFORM_ID);
+
   public scrollById(elId: string) {
     const el = document.getElementById(elId);
     if (el != null) {
@@ -22,7 +24,9 @@ export class JoinPageComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    $(document).foundation();
-    $(document).foundationExtendEBI();
+    if (isPlatformBrowser(this.platformId)) {
+      $(document).foundation();
+      $(document).foundationExtendEBI();
+    }
   }
 }

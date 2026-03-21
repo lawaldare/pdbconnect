@@ -1,6 +1,7 @@
+/* eslint-disable @angular-eslint/prefer-inject */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, HostListener, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, HostListener, signal, Inject, PLATFORM_ID } from '@angular/core';
 import { keyFeatureListslides } from '../corporate-page.constant';
 declare const d3: any;
 declare const gtag: any;
@@ -20,14 +21,21 @@ export class KeyFeaturesListComponent implements OnInit {
   public currentChunks = signal<any[]>([]);
   private currentChunkIndex = signal<any[]>([]);
   public chunks = signal<any[]>([]);
+  private isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) platformId: object) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   ngOnInit(): void {
     // window.addEventListener('resize', this.wrapper);
-    if (window.innerWidth < 900) {
-      this.chunkSize.set(2);
-    }
-    if (window.innerWidth < 540) {
-      this.chunkSize.set(1);
+    if (this.isBrowser) {
+      if (window.innerWidth < 900) {
+        this.chunkSize.set(2);
+      }
+      if (window.innerWidth < 540) {
+        this.chunkSize.set(1);
+      }
     }
     this.buildCarousel();
   }
@@ -35,11 +43,13 @@ export class KeyFeaturesListComponent implements OnInit {
   @HostListener('window:resize', ['$event'])
   calcChunks(event: any) {
     this.chunkSize.set(3);
-    if (window.innerWidth < 900) {
-      this.chunkSize.set(2);
-    }
-    if (window.innerWidth < 540) {
-      this.chunkSize.set(1);
+    if (this.isBrowser) {
+      if (window.innerWidth < 900) {
+        this.chunkSize.set(2);
+      }
+      if (window.innerWidth < 540) {
+        this.chunkSize.set(1);
+      }
     }
     this.buildCarousel();
   }

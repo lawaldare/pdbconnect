@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AfterViewInit, Component, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, computed, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HeaderSearchComponent } from '../header-search/header-search.component';
 import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.component';
 import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
@@ -20,6 +20,8 @@ declare const $: any;
 export class PartnersPageComponent implements AfterViewInit {
   private readonly cpApiService = inject(CorporatePagesApiService);
   public readonly partnersData = toSignal(this.cpApiService.getPartnersDescriptionData(), { initialValue: {} });
+  private platformId = inject(PLATFORM_ID);
+
   public partnersCategories = computed(() => {
     const data = this.partnersData();
     return Object.keys(data);
@@ -32,8 +34,10 @@ export class PartnersPageComponent implements AfterViewInit {
   });
 
   ngAfterViewInit() {
-    $(document).foundation();
-    $(document).foundationExtendEBI();
+    if (isPlatformBrowser(this.platformId)) {
+      $(document).foundation();
+      $(document).foundationExtendEBI();
+    }
   }
 
   scroll(el: HTMLElement) {

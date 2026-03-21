@@ -1,6 +1,6 @@
-import { Component, OnInit, inject, computed, AfterViewInit } from '@angular/core';
+import { Component, OnInit, inject, computed, AfterViewInit, PLATFORM_ID } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HeaderJumbotronComponent } from '../header-jumbotron/header-jumbotron.component';
 import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
 import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.component';
@@ -20,6 +20,7 @@ declare const $: any;
 export class HomePageComponent implements OnInit, AfterViewInit {
   private readonly bioschemasService = inject(CorporatePagesBioschemasService);
   private readonly cpApiService = inject(CorporatePagesApiService);
+  private platformId = inject(PLATFORM_ID);
   public readonly realeaseData = toSignal(this.cpApiService.getReleaseData());
   public releaseDate = computed(() => {
     const data = this.realeaseData();
@@ -55,7 +56,9 @@ export class HomePageComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    $(document).foundation();
-    $(document).foundationExtendEBI();
+    if (isPlatformBrowser(this.platformId)) {
+      $(document).foundation();
+      $(document).foundationExtendEBI();
+    }
   }
 }
