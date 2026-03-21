@@ -26,21 +26,16 @@ app.use(
   '/pdbe/pdbe-kb/', // 👈 Add the base path here!
   express.static(browserDistFolder, {
     maxAge: '1y',
-    index: 'index.html', // 👈 Explicitly tell it to find index.html
+    index: false,
     redirect: false,
   })
 );
 /**
  * Handle all other requests by rendering the Angular application.
  */
-app.use((req, res, next) => {
+app.use('/pdbe/pdbe-kb/**', (req, res, next) => {
   angularApp
-    .handle(req, {
-      serverContext: {
-        protocol: req.protocol,
-        host: req.get('host'),
-      },
-    })
+    .handle(req)
     .then((response) => (response ? writeResponseToNodeResponse(response, res) : next()))
     .catch(next);
 });
