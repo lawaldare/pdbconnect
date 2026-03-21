@@ -72,7 +72,8 @@
           "optimization": true,
           "sourceMap": true,
           "outputHashing": "all",
-          "baseHref": "$APP_BASE_HREF"
+          "baseHref": "/pdbe/pdbe-kb/",
+          "deployUrl": "/pdbe/pdbe-kb/"
         },
         "development": {
           "aot": true,
@@ -81,7 +82,8 @@
           "optimization": true,
           "sourceMap": true,
           "outputHashing": "all",
-          "baseHref": "$APP_BASE_HREF"
+          "baseHref": "/pdbe/pdbe-kb/",
+          "deployUrl": "/pdbe/pdbe-kb/"
         },
         "local": {
           "optimization": false,
