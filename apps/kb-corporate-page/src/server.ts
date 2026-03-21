@@ -23,13 +23,13 @@ const angularApp = new AngularNodeAppEngine();
  * Serve static files from /browser
  */
 app.use(
+  '/pdbe/pdbe-kb/', // 👈 Add the base path here!
   express.static(browserDistFolder, {
     maxAge: '1y',
-    index: false,
+    index: 'index.html', // 👈 Explicitly tell it to find index.html
     redirect: false,
   })
 );
-
 /**
  * Handle all other requests by rendering the Angular application.
  */
