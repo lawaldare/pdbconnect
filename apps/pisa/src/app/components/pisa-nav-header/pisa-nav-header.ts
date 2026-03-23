@@ -18,7 +18,7 @@ export interface Link {
 })
 export class PisaNavHeaderComponent {
   public readonly pisaUtilService = inject(PisaUtilService);
-  public readonly pdbeLogoSrc = this.pisaUtilService.getPisaAssetUrl(PDBE_HEADER_LOGO_SRC);
+  public readonly pdbeLogoSrc = this.pisaUtilService.getPisaAssetUrl('assets/images/PDBe-letterhead-white-RGB_2013.webp');
   public readonly pisaLogoSrc = this.pisaUtilService.getPisaAssetUrl('assets/images/pisa-logo.png');
 
   public readonly headerConfig = {
