@@ -18,6 +18,10 @@ app.use(
 );
 
 app.use((req, res, next) => {
+  console.log('originalUrl:', req.originalUrl);
+  console.log('url:', req.url);
+  console.log('baseUrl:', req.baseUrl);
+
   if (!req.originalUrl.startsWith('/pdbe/pdbe-kb/')) {
     return next();
   }
