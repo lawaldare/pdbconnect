@@ -92,7 +92,7 @@
           "namedChunks": true
         }
       },
-      "defaultConfiguration": "/"
+      "defaultConfiguration": "development"
     },
 
     "generate-sitemap": {
