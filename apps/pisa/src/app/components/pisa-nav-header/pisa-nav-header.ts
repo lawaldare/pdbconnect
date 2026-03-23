@@ -2,7 +2,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PisaUtilService } from '../../services/pisa-util.service';
-import { PDBE_HEADER_LOGO_SRC } from '@pdbc/core';
 
 export interface Link {
   name: string;
@@ -24,11 +23,7 @@ export class PisaNavHeaderComponent {
   public readonly headerConfig = {
     backgroundColor: '#056643',
     logoType: 'PDBe',
-    urls: [
-      // { name: 'Data download', path: 'https://www.ebi.ac.uk/pdbe/', openInNewTab: true },
-      // { name: 'FAQ', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
-      { name: 'API', path: 'https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/#/', openInNewTab: true },
-    ],
+    urls: [{ name: 'API', path: 'https://wwwdev.ebi.ac.uk/pdbe/pdbe-kb/pisa/api/#/', openInNewTab: true }],
     menuHighlightColor: '#0a5032',
   };
 
@@ -39,9 +34,13 @@ export class PisaNavHeaderComponent {
   }
 
   public onStartButtonClick(): void {
-    const href = window.location.href;
-    const hrefLink = href.split('/').slice(0, -2).join('/');
-    console.log('hrefLink', hrefLink);
-    window.open(hrefLink, '_self');
+    const hostname = document.location.hostname;
+    const domain = window.location.origin;
+    if (hostname === 'localhost') {
+      window.open(domain, '_self');
+    } else {
+      const href = domain + '/pdbe/pisa/';
+      window.open(href, '_self');
+    }
   }
 }
