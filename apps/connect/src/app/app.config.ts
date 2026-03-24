@@ -7,11 +7,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
-import { ligandReducer } from './projects/ligands/store/ligand.reducer';
-import { LigandEffects } from './projects/ligands/store/ligand.effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
-import { ComplexEffects } from './projects/complex/store/complex.effects';
-import { complexReducer } from './projects/complex/store/complex.reducer';
 import { EntryEffects } from './projects/entry/store/entry.effects';
 import { entryReducer } from './projects/entry/store/entry.reducer';
 import { BaseHrefService } from '@pdbc/core';
@@ -28,8 +24,8 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideAnimationsAsync(),
     provideNativeDateAdapter(),
-    provideEffects([LigandEffects, ComplexEffects, EntryEffects]),
-    provideStore({ ligand: ligandReducer, complex: complexReducer, entry: entryReducer }),
+    provideEffects([EntryEffects]),
+    provideStore({ entry: entryReducer }),
     provideStoreDevtools({
       maxAge: 25, // Retains last 25 states
       logOnly: !isDevMode(), // Restrict extension to log-only mode

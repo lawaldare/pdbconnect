@@ -1,7 +1,7 @@
 import { agGridOptionsBase } from '@pdbc/core';
 import { ColDef, GridOptions } from 'ag-grid-community';
-import { CustomHeaderComponent } from '../../../complex/components/cell renderers/custom-header.component';
 import { SentenceRendererComponent } from './sentence.component';
+import { CustomHeaderComponent } from './custom-header.component';
 
 const isSmallScreen = window.innerWidth <= 1340;
 
@@ -16,7 +16,7 @@ export const gridOptions: GridOptions = {
   },
   enableCellTextSelection: true,
   paginationPageSize: isSmallScreen ? 3 : 5,
-  suppressDragLeaveHidesColumns: true
+  suppressDragLeaveHidesColumns: true,
 };
 
 export const colDefs: ColDef[] = [

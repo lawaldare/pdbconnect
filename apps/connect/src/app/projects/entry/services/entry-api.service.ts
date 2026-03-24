@@ -3,7 +3,7 @@
 
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, catchError, map, of, switchMap, throwError } from 'rxjs';
+import { Observable, catchError, map, of, shareReplay, switchMap, throwError } from 'rxjs';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
 import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
 import { XRayRefine } from '../data-models/x-ray-refine.model';
@@ -36,6 +36,7 @@ import { ResidueListed, ResidueListing } from '../data-models/residue-listing.mo
 import { LigandSummaryStats } from '../data-models/ligand-summary-stats.model';
 import { ComplexSummaryStats } from '../data-models/complex-summary-stats.model';
 import { BoundMolecule } from '../data-models/bound-molecule.model';
+import { Depiction } from '../data-models/structure.model';
 // import { Router } from '@angular/router';
 
 @Injectable({
@@ -43,7 +44,8 @@ import { BoundMolecule } from '../data-models/bound-molecule.model';
 })
 export class EntryApiService {
   private BASE_API_V1 = `${environment.baseUrl}pdbe/api/`;
-  private BASE_API_V2 = `${environment.baseUrl}pdbe/api/v2/`;
+  private readonly BASE_API_V2 = `${environment.baseUrl}pdbe/api/v2/`;
+  private readonly StaticFilesApiUrl = `${environment.baseUrl}pdbe/static/files/pdbechem_v2/`;
 
   private readonly http = inject(HttpClient);
 
@@ -112,6 +114,11 @@ export class EntryApiService {
         .get<Record<string, any[]>>(`${this.BASE_API_V2}pdb/bound_ligand_interactions/${entryId}/${chainId}/${residueId}?preserve_case=true`)
         .pipe(map((data) => data[entryId][0]))
     );
+  }
+
+  public fetchDepiction(ligandId: string): Observable<Depiction> {
+    const depictionUrl = `${this.StaticFilesApiUrl}${ligandId}/annotation`;
+    return this.http.get<Depiction>(depictionUrl).pipe(shareReplay(1));
   }
 
   public getPrimaryPublicationAbstract(entryId: string): Observable<CitationDetail> {

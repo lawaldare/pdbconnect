@@ -1,5 +1,9 @@
 import { ThemeType } from '@pdbc/core';
-import { cofactorTooltip, drugTooltip, reactantTooltip, unannotatedTooltip } from '../ligands/ligand.constant';
+
+export const cofactorTooltip = `Ligands are annotated as “cofactor-like” if their PARITY (https://www.sciencedirect.com/science/article/pii/S0969212618300492) similarity to one of the 27 cofactor classes defined in the CoFactor (https://www.ebi.ac.uk/thornton-srv/databases/CoFactor/) database is above a set threshold, and the protein binding to the ligand is an enzyme associated with that cofactor class`;
+export const drugTooltip = `Ligands are annotated as “drug-like” if the  protein binding to them is reported as a pharmacologically active target in the DrugBank database (https://go.drugbank.com/).`;
+export const reactantTooltip = `Ligands are annotated as “reactant-like” if the protein binding to them is reported to participate in a reaction in Rhea database (https://www.rhea-db.org/), and the ligand’s PARITY (https://www.sciencedirect.com/science/article/pii/S0969212618300492) similarity to a reaction participant exceeds 0.7. `;
+export const unannotatedTooltip = `No annotation available for the functional role of the ligand.`;
 
 export const pdbeLogoConfig = {
   backgroundColor: '#056643',

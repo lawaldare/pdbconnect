@@ -47,11 +47,10 @@ import {
   showInteractivityFocusInMolstar,
   zoomOutStructureInMolstar,
 } from '../../helpers/molstar-helpers';
-import { AggregatedApiService } from '../../../ligands/services/aggregated-api.service';
-import { Depiction } from '../../../ligands/data-models/structure.model';
 import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { EntryApiService } from '../../services/entry-api.service';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -95,7 +94,7 @@ export class LigandsTabComponent implements AfterViewInit {
 
   public dashboardStatLinks = dashboardStatLinks;
   public readonly gAS = inject(GoogleAnalyticsService);
-  private aggregatedApiService = inject(AggregatedApiService);
+  private entryApiService = inject(EntryApiService);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
 
@@ -690,7 +689,7 @@ export class LigandsTabComponent implements AfterViewInit {
     const imageContainer = this.ligandEnvContainer.nativeElement;
 
     this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
-      const depiction = await firstValueFrom(this.aggregatedApiService.fetchDepiction(ligandId).pipe(takeUntilDestroyed(this.destroyRef)));
+      const depiction = await firstValueFrom(this.entryApiService.fetchDepiction(ligandId).pipe(takeUntilDestroyed(this.destroyRef)));
 
       if (this.ligandEv) {
         this.renderer.removeChild(imageContainer, this.ligandEv);

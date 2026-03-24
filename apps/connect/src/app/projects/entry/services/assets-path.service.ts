@@ -4,7 +4,7 @@ import { environment } from '../../../../environments/environment';
 @Injectable({
   providedIn: 'root',
 })
-export class LigandsAssetPathService {
+export class AssetPathService {
   public setAbsolutePath(partLink: string): string {
     return `${environment.baseUrl}pdbe/connect/${partLink}`;
   }

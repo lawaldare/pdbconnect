@@ -8,7 +8,7 @@ import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 import { filter } from 'rxjs';
 import { environment } from '../environments/environment';
 import { ScriptLoaderService, UtilService } from '@pdbc/core';
-import { LigandsAssetPathService } from './projects/ligands/services/assets-path.service';
+import { AssetPathService } from './projects/entry/services/assets-path.service';
 
 declare const gtag: any;
 @Component({
@@ -23,7 +23,7 @@ export class AppComponent implements OnInit {
     private _router: Router,
     private utilService: UtilService,
     private scriptLoader: ScriptLoaderService,
-    private assetPathService: LigandsAssetPathService
+    private assetPathService: AssetPathService
   ) {
     this._router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
       window.scrollTo(0, 0);
