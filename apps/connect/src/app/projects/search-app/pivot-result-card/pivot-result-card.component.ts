@@ -95,7 +95,7 @@ export class PivotResultCardComponent implements OnInit, OnChanges {
     const resultData = changes['resultData']?.currentValue;
 
     //format organism Scientific Name
-    this.orgSciName = this.getOrganismScientificName(resultData?.doclist.docs[0].entry_organism_scientific_name);
+    this.orgSciName = this.getOrganismScientificName(resultData?.doclist?.docs?.[0].entry_organism_scientific_name);
 
     //combined uniprot accessions
     if (this.resultData.uniprot_accession_best) this.uniprotAccessions = this.resultData.uniprot_accession_best;
