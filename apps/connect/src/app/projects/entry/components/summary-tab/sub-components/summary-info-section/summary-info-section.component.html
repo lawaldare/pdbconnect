@@ -5,17 +5,31 @@
       <article [innerHTML]="summary()?.entryTitle"></article>
     </div>
     <div class="info-row">
+      <span>Entry authors</span>
+      <article>
+        @let authors = summary()?.entryAuthorsList ?? []; @for (authorDatum of authors.slice(0, initialEntryAuthorCount()); track authorDatum; let islast = $last) {
+        <a [href]="generateEntryAuthorSearchUrl(authorDatum ?? '')" target="_blank">{{ authorDatum }}</a>{{ islast ? '' : ',' }} }
+        <div class="control">
+          @if(authors.length > 5){
+          <span role="button" class="related-entry-toggle" (click)="toggleEntryAuthorList()">{{initialEntryAuthorCount() > 5 ? 'Hide' : 'Show all'}} authors</span>
+          <i class="icon icon-common" [ngClass]="initialEntryAuthorCount() > 5 ? 'icon-angle-up' : 'icon-angle-down'"></i>
+          }
+        </div>
+      </article>
+    </div>
+    <div class="info-row">
       <span>Source organism</span>
       <article>
-        @for (sourceOrganism of organismScientificNames(); track sourceOrganism; let islast = $last) {
+        @for (sourceOrganismWithStrain of organismScientificNamesWithStrains(); track sourceOrganismWithStrain; let islast = $last) {
         <span>
           <i
-            ><a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">
-              {{ sourceOrganism }}
+            ><a [href]="generateOrganismSearchUrl(sourceOrganismWithStrain.name)" target="_blank">
+              {{ sourceOrganismWithStrain.name }}
               <i class="icon icon-common icon-search"></i> </a
           ></i>
+          @if (sourceOrganismWithStrain.strain) { (strain {{ sourceOrganismWithStrain.strain }}) }
         </span>
-        {{ islast ? '' : ',' }} } @if (organismScientificNames()?.length === 0) {
+        {{ islast ? '' : ',' }} } @if (organismScientificNamesWithStrains()?.length === 0) {
         <span>Not available</span>
         }
       </article>
@@ -64,7 +78,7 @@
 
         <article>
           Also associated with: @for(entry of entriesArray.slice(0, initialEntriesCount()); track entry; let islast = $last){
-          <a [href]="baseUrl +  'entry/pdb/' + entry" target="_blank">{{ entry }}</a>{{ islast? '' : ',' }} }
+          <a [href]="baseUrl +  'entry/pdb/' + entry" target="_blank">pdb_0000{{ entry }}</a>{{ islast? '' : ',' }} }
           <div class="control">
             @if(entriesArray.length > 5){
             <span role="button" class="related-entry-toggle" (click)="toggleEntriesList()"

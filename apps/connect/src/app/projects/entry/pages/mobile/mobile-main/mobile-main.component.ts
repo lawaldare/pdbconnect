@@ -11,10 +11,19 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ErrorPageComponent } from '../../../../../error-page/error-page.component';
 import { MobileTabNames, MobileTabName } from '../mobile-tab.model';
 import { GoogleAnalyticsService } from '@pdbc/core';
+import { MbOtherResourcesTabComponent } from '../mb-other-resources-tab/mb-other-resources-tab.component';
 
 @Component({
   selector: 'pdbc-mobile-main',
-  imports: [CommonModule, MbOverviewTabComponent, MbMolstarTabComponent, MbCitationTabComponent, NgxSkeletonLoaderModule, ErrorPageComponent],
+  imports: [
+    CommonModule,
+    MbOverviewTabComponent,
+    MbMolstarTabComponent,
+    MbCitationTabComponent,
+    MbOtherResourcesTabComponent,
+    NgxSkeletonLoaderModule,
+    ErrorPageComponent,
+  ],
   templateUrl: './mobile-main.component.html',
   styleUrl: './mobile-main.component.scss',
 })
@@ -47,6 +56,10 @@ export class MobileMainComponent {
     {
       id: MobileTabNames.Citation,
       name: 'Citations',
+    },
+    {
+      id: MobileTabNames.OtherResources,
+      name: 'Other Resources',
     },
   ];
 

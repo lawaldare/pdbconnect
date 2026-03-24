@@ -4,7 +4,11 @@
     <div class="row" style="margin-left: 0; margin-right: 0; gap: 0">
       <div class="row__left">Primary publication</div>
       <div class="row__right">
+        @if (primaryPublication()?.pubmed_id) {
         <a [href]="'https://europepmc.org/article/MED/' + primaryPublication()?.pubmed_id" target="_blank" [innerHTML]="primaryPublication()?.title"> </a>
+        } @else {
+        <span>{{ primaryPublication()?.title }}</span>
+        }
         <div class="row__right__authors">
           <span class="row__right__authors__title">Authors:</span>
           @for (author of primaryPublication()?.author_list; track author.full_name; let islast = $last) {
@@ -54,7 +58,7 @@
         @for (entry of relatedEntries; track entry) {
         <span class="row__right__entry">
           <a [href]="util.baseUrl() + 'entry/pdb/' + entry" target="_blank" class="row__right__link"
-            >{{ entry }}
+            >pdb_0000{{ entry }}
             <i class="icon icon-link icon-common"></i>
           </a>
         </span>

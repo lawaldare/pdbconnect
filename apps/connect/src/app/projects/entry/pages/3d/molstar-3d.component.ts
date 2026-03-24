@@ -32,10 +32,10 @@ export class Entry3DPageComponent implements OnInit {
   private readonly facade = inject(EntryMainFacade);
 
   private readonly route = inject(ActivatedRoute);
-  private readonly metaTagService = inject(MetaTagService);
+  // private readonly metaTagService = inject(MetaTagService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly entryBioschemasService = inject(EntryBioschemasService);
-  private readonly renderer = inject(Renderer2);
+  // private readonly entryBioschemasService = inject(EntryBioschemasService);
+  // private readonly renderer = inject(Renderer2);
 
   public readonly configForMolstar = computed(() => {
     const entryId = this.entryId();
@@ -90,10 +90,7 @@ export class Entry3DPageComponent implements OnInit {
           );
         }),
         mergeMap(async (status: StatusCode) => {
-          if (status === 'REL') {
-            this.metaTagService.buildMetaTags(this.renderer);
-            this.entryBioschemasService.buildBioschemasJSON(this.renderer);
-          } else if (status !== 'INITIAL') {
+          if (status !== 'INITIAL') {
             // redirect to status pages after 5 seconds
             this.showStatusMessage.set(true);
             this.entryStatus.set(status);

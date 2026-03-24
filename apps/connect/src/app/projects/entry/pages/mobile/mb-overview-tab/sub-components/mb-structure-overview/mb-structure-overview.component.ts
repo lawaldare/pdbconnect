@@ -26,7 +26,29 @@ export class MbStructureOverviewComponent implements OnInit {
   public readonly util = inject(UtilService);
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
-  public readonly organismScientificNames = toSignal(this.globalStore.select(EntrySelectors.organismScientificNames)); // molecules
+  public readonly moleculeSources = toSignal(this.globalStore.select(EntrySelectors.moleculeSources));
+  public readonly organismScientificNamesWithStrains = computed(() => {
+    const molSrcs = this.moleculeSources();
+    if (!molSrcs || molSrcs.length === 0) return [];
+
+    const seen = new Set<string>();
+    const namesWithStrains = [];
+
+    for (const molSrc of molSrcs) {
+      if (!molSrc.organism_scientific_name) continue;
+
+      const key = `${molSrc.organism_scientific_name}|${molSrc.strain ?? ''}`;
+      if (seen.has(key)) continue;
+
+      seen.add(key);
+      namesWithStrains.push({
+        name: molSrc.organism_scientific_name,
+        strain: molSrc.strain,
+      });
+    }
+
+    return namesWithStrains;
+  });
 
   public readonly macromoleculesFilters = toSignal(this.globalStore.select(EntrySelectors.procMacromoleculesFilters));
   public readonly ligandsAndModsFilters = toSignal(this.globalStore.select(EntrySelectors.procLigandsFilters));

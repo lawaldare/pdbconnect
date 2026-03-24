@@ -31,7 +31,7 @@
 <div>
   <span class="pmid-title">Also associated with </span>
   @for (entry of relatedEntries().slice(0, initialCount()); track entry; let islast = $last) {
-  <a [href]="baseUrl + '/entry/pdb/' + entry" target="_blank" class="row__right__link">{{ entry }} </a>{{ islast ? '' : ',' }} }
+  <a [href]="baseUrl + '/entry/pdb/' + entry" target="_blank" class="row__right__link">pdb_0000{{ entry }} </a>{{ islast ? '' : ',' }} }
 </div>
 @if(relatedEntries().length > 5){
 <span role="button" class="related-entry-toggle" (click)="toggleRelatedEntriesList()">{{initialCount() > 5 ? 'Hide' : 'Show all'}} associated entries</span>

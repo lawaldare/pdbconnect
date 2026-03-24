@@ -9,7 +9,7 @@ import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validat
 import { XRayRefine } from '../data-models/x-ray-refine.model';
 import { CitationDetail } from '../data-models/publication.model';
 import { RelatedPublication } from '../data-models/related-publications.model';
-import { PfamMappings, CathMappings, ScopMappings, InterProMappings } from '../data-models/domains.model';
+import { PfamMappings, CathMappings, ScopMappings, InterProMappings, RfamMappings } from '../data-models/domains.model';
 import { ComplexDetails } from '../data-models/complex-details.model';
 import { AssemblyData, Symmetry } from '../data-models/assembly.model';
 import { PisaAssembly } from '../data-models/pisa-assembly.model';
@@ -37,6 +37,7 @@ import { LigandSummaryStats } from '../data-models/ligand-summary-stats.model';
 import { ComplexSummaryStats } from '../data-models/complex-summary-stats.model';
 import { BoundMolecule } from '../data-models/bound-molecule.model';
 import { Depiction } from '../data-models/structure.model';
+import { MDDBLink } from '../data-models/mddb.model';
 // import { Router } from '@angular/router';
 
 @Injectable({
@@ -69,6 +70,7 @@ export class EntryApiService {
         return {
           entryTitle: datum.title!,
           entryAuthors: datum.entry_authors!.join(' '),
+          entryAuthorsList: datum.entry_authors!,
           depositionDate: depositionDateObj,
           releaseDate: releasedDateObj,
           revisionDate: revisionDateObj,
@@ -194,6 +196,18 @@ export class EntryApiService {
       catchError((error) => {
         if (error?.status === 404) {
           return of({ empty: true } as unknown as PfamMappings);
+        }
+        return throwError(() => error); // rethrow for anything else
+      })
+    );
+  }
+
+  public getRfamMapping(entryId: string): Observable<RfamMappings> {
+    return this.http.get<Record<string, Record<string, RfamMappings>>>(`${this.BASE_API_V2}nucleic_mappings/rfam/${entryId}`).pipe(
+      map((data) => data[entryId]['Rfam']),
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of({ empty: true } as unknown as RfamMappings);
         }
         return throwError(() => error); // rethrow for anything else
       })
@@ -528,6 +542,18 @@ export class EntryApiService {
           status: 400,
           message: 'No data found for the given entry ID',
         }));
+      })
+    );
+  }
+
+  public getMDDBLinks(entryId: string): Observable<MDDBLink[]> {
+    return this.http.get<MDDBLink[]>(`https://mdposit.mddbr.eu/api/rest/v1/pointers/pdbs/${entryId.toUpperCase()}`).pipe(
+      map((data) => data),
+      catchError((error) => {
+        if (error?.status === 404) {
+          return of<MDDBLink[]>([]);
+        }
+        return throwError(() => error); // rethrow for anything else
       })
     );
   }

@@ -4,7 +4,22 @@ import { ResidueWiseOutliersMolecule } from '../../data-models/residuewise-outli
 import { FlatOutlierResidue, OutliersByModelId } from './models/other-models';
 
 export function processFilesData(data: any) {
-  const order = ['Archive mmCIF file', 'Updated mmCIF file', 'PDB file', 'Compatible PDB file bundle (tar.gz)', 'FASTA (Entry)', 'Full report (PDF)'];
+  const rename: { [key: string]: string } = {
+    'Updated mmCIF file': 'mmCIF file (Updated)',
+  };
+  const order = [
+    'mmCIF file (Updated)',
+    'PDB file',
+    'PDB file (gz)',
+    'Compatible PDB file bundle (tar.gz)',
+    'FASTA (Entry)',
+    'Full report (PDF)',
+    'PDB header',
+    'PDBML',
+    'PDBML (ATOM lines)',
+    'PDBML (no atoms)',
+    'Archive mmCIF file',
+  ];
 
   let downloads: any[] = [];
   let views: any[] = [];
@@ -17,6 +32,18 @@ export function processFilesData(data: any) {
       views = views.concat(data[key].views);
     }
   });
+
+  for (const fileData of downloads) {
+    if (rename[fileData.label]) {
+      fileData.label = rename[fileData.label];
+    }
+  }
+
+  for (const fileData of views) {
+    if (rename[fileData.label]) {
+      fileData.label = rename[fileData.label];
+    }
+  }
 
   downloads.sort((a, b) => {
     const indexA = order.indexOf(a.label);

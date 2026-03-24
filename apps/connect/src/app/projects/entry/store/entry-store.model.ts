@@ -1,7 +1,7 @@
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../data-models/domains.model';
+import { CathMappings, InterProMappings, PfamMappings, RfamMappings, ScopMappings } from '../data-models/domains.model';
 import { AnyExperimentDetail } from '../data-models/experimental-details.model';
-import { Molecule } from '../data-models/molecule.model';
+import { Molecule, MoleculeSource } from '../data-models/molecule.model';
 import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
 import { ProcessedSummary } from '../data-models/summary.model';
 import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
@@ -47,7 +47,7 @@ export interface EntryStoreState {
   macromolsChainsToEntityIds: { [key: string]: string } | undefined;
   boundLigands: Molecule[] | undefined;
   boundMolecules: BoundMolecule[] | undefined;
-  organismScientificNames: string[];
+  moleculeSources: MoleculeSource[];
   hasRNA: boolean;
   experimentalDetails: AnyExperimentDetail[] | undefined;
   resolutionValues: (number | undefined)[];
@@ -64,6 +64,7 @@ export interface EntryStoreState {
   goMapping: GOMapping | undefined;
   ecMapping: ECMapping | undefined;
   pfamMapping: PfamMappings | undefined;
+  rfamMapping: RfamMappings | undefined;
   downloadOptions: { group: string; items: DownloadOption[] }[];
   viewOptions: { group: string; items: DownloadOption[] }[];
   summaryQualityScores: ProcessedQualityScores | undefined;
@@ -144,6 +145,7 @@ export interface EntryStoreState {
     [entityId: string]: APIVariationData;
   };
   llmAnnotations: LLMAnnotation[] | undefined;
+  hasMDDB: boolean | undefined;
 }
 
 export interface EntryMoleculesData {
@@ -151,7 +153,7 @@ export interface EntryMoleculesData {
   macromolsDescriptions: MacromoleculesDescriptions;
   macromolsChainsToEntityIds: { [key: string]: string };
   boundLigands: Molecule[];
-  organismScientificNames: string[];
+  moleculeSources: MoleculeSource[];
   hasRNA: boolean;
 }
 
