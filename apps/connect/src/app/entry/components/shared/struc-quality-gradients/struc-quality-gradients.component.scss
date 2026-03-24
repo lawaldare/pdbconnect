@@ -1,0 +1,83 @@
+@import 'libs/core/src/lib/styles/typography.scss';
+
+.struc-quality-gradient-main {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.struc-quality-gradient-img {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.val-lane {
+  display: flex;
+  width: 348px;
+  align-items: center;
+}
+
+.val-label {
+  width: 142px;
+  line-height: normal;
+}
+
+.val-label.big {
+  width: 151px;
+}
+
+.val-gradient {
+  display: flex;
+  width: 174px;
+  height: 14px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  border: 1px #ccc solid;
+}
+
+.val-bucket {
+  margin-top: -2px;
+  width: 27.38px;
+  height: 14px;
+  border: 2px solid #444;
+  background-color: rgb(255 255 255 / 70%);
+}
+
+.val-gradient-rdtobl {
+  background: #f00;
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #00f 100%);
+  background: -webkit-gradient(linear, left top, right top, color-stop(0%, #f00), color-stop(50%, #fff), color-stop(51%, #fff), color-stop(100%, #00f));
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #00f 100%);
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #00f 100%);
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #00f 100%);
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #00f 100%);
+}
+
+.val-gradient-rdtogr {
+  background: #ff0000;
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #00f 696%);
+  background: -webkit-gradient(linear, left top, right top, color-stop(0, red), color-stop(50%, #fff), color-stop(51%, #fff), color-stop(100%, #696));
+  background: linear-gradient(to right, red 0, #fff 50%, #fff 51%, #696 100%);
+  background: -webkit-gradient(linear, left top, right top, color-stop(0, red), color-stop(50%, #fff), color-stop(51%, #fff), to(#696));
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #696 100%);
+  background: linear-gradient(to right, #f00 0, #fff 50%, #fff 51%, #696 100%);
+  background: linear-gradient(to right, red 0, #fff 50%, #fff 51%, #696 100%);
+}
+
+@media screen and (width <= 540px) {
+  .val-lane {
+    display: flex;
+    width: 100%;
+    max-width: 348px;
+    align-items: center;
+  }
+}
+
+@media screen and (width <= 375px) {
+  .val-lane {
+    display: flex;
+    width: 100%;
+    max-width: 318px;
+    align-items: center;
+  }
+}

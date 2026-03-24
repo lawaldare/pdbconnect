@@ -8,8 +8,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
-import { EntryEffects } from './projects/entry/store/entry.effects';
-import { entryReducer } from './projects/entry/store/entry.reducer';
+import { EntryEffects } from './entry/store/entry.effects';
+import { entryReducer } from './entry/store/entry.reducer';
 import { BaseHrefService } from '@pdbc/core';
 import { provideNativeDateAdapter } from '@angular/material/core';
 

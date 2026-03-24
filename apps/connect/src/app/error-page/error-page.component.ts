@@ -2,9 +2,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
-import { pdbeLogoConfig } from '../projects/entry/entry-constant';
+import { pdbeLogoConfig } from '../entry/entry-constant';
 import { ErrorsList } from './error-list';
-import { EntryUtilService, Error } from '../projects/entry/services/entry-util.service';
+import { EntryUtilService, Error } from '../entry/services/entry-util.service';
 
 @Component({
   selector: 'pdbc-error-page',

@@ -1,0 +1,107 @@
+@import 'libs/core/src/lib/styles/pdb_connect.scss';
+
+.entry-page-container {
+  padding-left: 30px;
+}
+
+main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .left {
+    align-self: flex-start;
+  }
+
+  .right {
+    img {
+      width: 507px;
+    }
+  }
+
+  @media screen and (width <= 990px) {
+    flex-direction: column;
+  }
+}
+
+header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 13px;
+
+  h1 {
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 63px;
+  }
+
+  span {
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 26.6px;
+    align-self: flex-end;
+    margin-bottom: 10px;
+  }
+}
+
+.hero {
+  padding: 8px 12px;
+  background: #fff1da;
+  width: 591px;
+
+  &__title {
+    font-size: 21px;
+    font-weight: 500;
+    line-height: 27.3px;
+    @media screen and (width <= 760px) {
+      font-size: 16px;
+    }
+  }
+
+  &__content {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 27.2px;
+    @media screen and (width <= 760px) {
+      font-size: 14px;
+    }
+  }
+
+  @media screen and (width <= 990px) {
+    width: 100%;
+  }
+}
+
+.summary {
+  margin-top: 20px;
+  width: 591px;
+
+  @media screen and (width <= 760px) {
+    width: 100%;
+  }
+
+  &__content {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+
+    &__title {
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 27.2px;
+      width: 90px;
+      min-width: 90px;
+      align-self: flex-start;
+    }
+
+    &__description {
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 27.2px;
+
+      a:first-child {
+        margin-right: 0 !important;
+      }
+    }
+  }
+}

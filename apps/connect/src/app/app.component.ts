@@ -8,7 +8,7 @@ import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
 import { filter } from 'rxjs';
 import { environment } from '../environments/environment';
 import { ScriptLoaderService, UtilService } from '@pdbc/core';
-import { AssetPathService } from './projects/entry/services/assets-path.service';
+import { AssetPathService } from './entry/services/assets-path.service';
 
 declare const gtag: any;
 @Component({
