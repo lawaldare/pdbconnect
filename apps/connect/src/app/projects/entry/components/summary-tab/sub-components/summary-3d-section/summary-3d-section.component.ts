@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { GoogleAnalyticsService, MaterialModule, Mutex } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule, SingleAsyncQueue } from '@pdbc/core';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
@@ -93,18 +93,21 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
   });
 
   private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
+  private readonly mvsQueue = new SingleAsyncQueue();
+
   ngAfterViewInit(): void {
-    this.mvsSnapshotSpec.subscribe(async (snapshotSpec) => {
+    this.mvsSnapshotSpec.subscribe((snapshotSpec) => {
       if (!snapshotSpec) return;
 
-      // TODO: @adam consider SingleQueue for loading MVS states
-      const PDBeMolstarPlugin = this._molstarComponent?.getPDBeMolstarPluginClass();
-      const instance = this._molstarComponent?.getInstance();
-      const mvsSnapshotProvider = this.getMvsSnapshotProvider();
-      if (!PDBeMolstarPlugin || !mvsSnapshotProvider || !instance?.plugin) return;
-
-      const mvs = await this.mvsMutex.run(() => mvsSnapshotProvider.getSnapshot(snapshotSpec, this.mvsTransitionDurationMs)); // mutex ensures order of requested state changes
-      await this._molstarComponent?.mutex.run(() => PDBeMolstarPlugin.extensions.MVS.loadMVS(instance.plugin, mvs, { keepCameraOrientation: true }));
+      this.mvsQueue.enqueue(async () => {
+        // mvsQueue ensures that 1. order of snapshot processing is kept, 2. intermediate snapshots can be skipped if user clicks too much in a short time
+        const PDBeMolstarPlugin = this._molstarComponent?.getPDBeMolstarPluginClass();
+        const instance = this._molstarComponent?.getInstance();
+        const mvsSnapshotProvider = this.getMvsSnapshotProvider();
+        if (!PDBeMolstarPlugin || !mvsSnapshotProvider || !instance?.plugin) return;
+        const mvs = await mvsSnapshotProvider.getSnapshot(snapshotSpec, this.mvsTransitionDurationMs);
+        await this._molstarComponent?.mutex.run(() => PDBeMolstarPlugin.extensions.MVS.loadMVS(instance.plugin, mvs, { keepCameraOrientation: true }));
+      });
     });
     this.updateMolstarAny(undefined, 'Assembly');
   }
@@ -791,7 +794,6 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     }
     return this._mvsSnapshotProvider;
   }
-  private readonly mvsMutex = Mutex('mvsMutex');
 
   private async updateMolstarAny(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
     console.log('updateMolstarAny', selectionType, listItem);

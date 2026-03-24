@@ -31,3 +31,4 @@ export * from './lib/models/survey-config';
 export * from './lib/services/survey.service';
 export * from './lib/survey.component';
 export * from './lib/utils/mutex';
+export * from './lib/utils/single-async-queue';
