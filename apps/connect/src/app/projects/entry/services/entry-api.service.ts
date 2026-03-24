@@ -540,7 +540,7 @@ export class EntryApiService {
   }
 
   public getMDDBLinks(entryId: string): Observable<MDDBLink[]> {
-    return this.http.get<MDDBLink[]>(`https://mdposit-dev.mddbr.eu/api/rest/v1/pointers/pdbs/${entryId.toUpperCase()}`).pipe(
+    return this.http.get<MDDBLink[]>(`https://mdposit.mddbr.eu/api/rest/v1/pointers/pdbs/${entryId.toUpperCase()}`).pipe(
       map((data) => data),
       catchError((error) => {
         if (error?.status === 404) {

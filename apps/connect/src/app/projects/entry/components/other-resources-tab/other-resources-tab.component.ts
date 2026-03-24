@@ -161,7 +161,7 @@ export class OtherResourcesTabComponent {
               urls: [
                 {
                   urlName: `${this.entryId()?.toUpperCase()}`,
-                  url: `https://mdposit-dev.mddbr.eu/#/pointer?ref=pdbs&id=${this.entryId()?.toUpperCase()}`,
+                  url: `https://mdposit.mddbr.eu/#/pointer?ref=pdbs&id=${this.entryId()?.toUpperCase()}`,
                 },
               ],
             },
