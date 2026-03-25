@@ -1,19 +1,33 @@
 import { APP_INITIALIZER, ApplicationConfig } from '@angular/core';
 import { ConfigService } from '@pdbe-lib/shared-services';
 import { provideHttpClient } from '@angular/common/http';
+import { appRoutes } from './app.routes';
+import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
+import { BaseHrefService } from '@pdbc/core';
 
-export function initConfig(appConfig: ConfigService) {
-  return () => appConfig.loadConfig();
+export function initializeApp(appConfig: ConfigService, baseHrefService: BaseHrefService) {
+  return () => {
+    // set base href
+    baseHrefService.setBaseHref();
+
+    // runtime hostname detection so this works on nx serve and build
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+    // isLocal makes sure appConfig returns openapi.json URLs when testing locally
+    return appConfig.loadConfig(isLocal);
+  };
 }
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),
     provideHttpClient(),
     {
       provide: APP_INITIALIZER,
-      useFactory: initConfig,
-      deps: [ConfigService],
+      useFactory: initializeApp,
+      deps: [ConfigService, BaseHrefService],
       multi: true,
     },
+    BaseHrefService,
   ],
 };

@@ -1,0 +1,256 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PDBe Search API",
+    "version": "1.0.0",
+    "summary": "Search on Solr instance based on polymeric entities in the PDB.",
+    "description": "A document in this Solr instance represents a polymeric entity of type protein, DNA, RNA or sugar.<br>Output from the call depends on the query sent to Solr. Query parameters are well documented in Solr documentation.<br>Each document has a wide range of properties, grouped as follows:<br><br><strong>Query syntax:</strong> Options string allowed by Solr syntax. Details about constructing Solr queries can be found from webpages such as <a href=\"https://lucene.apache.org/solr/guide/common-query-parameters.html\" target=\"_blank\">this</a>."
+  },
+  "servers": [
+    {
+      "url": "https://www.ebi.ac.uk/pdbe"
+    }
+  ],
+  "paths": {
+    "/search/pdb/select": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Search polymeric entities in the PDB",
+        "description": "A document in this Solr instance represents a polymeric entity of type protein, DNA, RNA or sugar.<br>Output from the call depends on the query sent to Solr. Query parameters are well documented in Solr documentation.<br>Each document has a wide range of properties.",
+        "operationId": "searchPdbSelect",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Solr query string.",
+            "schema": {
+              "type": "string",
+              "example": "pfam_name:Lipocalin"
+            }
+          },
+          {
+            "name": "fl",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of fields to return (See docs below).",
+            "schema": {
+              "type": "string",
+              "example": "pdb_id,uniprot_accession,pubmed_id"
+            }
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "required": false,
+            "description": "Number of rows to return.",
+            "schema": {
+              "type": "integer",
+              "example": 10000
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "description": "Offset for paginated results.",
+            "schema": {
+              "type": "integer",
+              "example": 0
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Sort order for results.",
+            "schema": {
+              "type": "string",
+              "example": "pdb_id asc"
+            }
+          },
+          {
+            "name": "fq",
+            "in": "query",
+            "required": false,
+            "description": "Filter query. Can be repeated or combined depending on Solr usage.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "wt",
+            "in": "query",
+            "required": false,
+            "description": "Response writer type.",
+            "schema": {
+              "type": "string",
+              "example": "json",
+              "default": "json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful search response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "responseHeader": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "response": {
+                      "type": "object",
+                      "properties": {
+                        "numFound": {
+                          "type": "integer"
+                        },
+                        "start": {
+                          "type": "integer"
+                        },
+                        "docs": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      },
+                      "additionalProperties": true
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "examples": {
+                  "basicSearch": {
+                    "summary": "Example ligand search",
+                    "value": {
+                      "responseHeader": {
+                        "status": 0,
+                        "QTime": 3
+                      },
+                      "response": {
+                        "numFound": 2,
+                        "start": 0,
+                        "docs": [
+                          {
+                            "new_revised_ligand": ["ABC"],
+                            "pdb_id": "1abc",
+                            "uniprot_accession": ["P12345"],
+                            "pubmed_id": 12345678
+                          },
+                          {
+                            "new_revised_ligand": ["XYZ"],
+                            "pdb_id": "2xyz",
+                            "uniprot_accession": ["Q99999"],
+                            "pubmed_id": 23456789
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search polymeric entities in the PDB using POST",
+        "description": "Send one or more query options in POST data instead of appending them to the URL.",
+        "operationId": "searchPdbSelectPost",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "q": {
+                    "type": "string",
+                    "description": "Solr query string.",
+                    "example": "pfam_name:Lipocalin"
+                  },
+                  "fl": {
+                    "type": "string",
+                    "description": "Comma-separated list of fields to return (See docs below).",
+                    "example": "pdb_id,uniprot_accession,pubmed_id"
+                  },
+                  "rows": {
+                    "type": "integer",
+                    "description": "Number of rows to return.",
+                    "example": 10000
+                  },
+                  "start": {
+                    "type": "integer",
+                    "description": "Offset for paginated results.",
+                    "example": 0
+                  },
+                  "sort": {
+                    "type": "string",
+                    "description": "Sort order for results.",
+                    "example": "pdb_id asc"
+                  },
+                  "fq": {
+                    "type": "string",
+                    "description": "Filter query.",
+                    "example": "entity_poly_type:Protein"
+                  },
+                  "wt": {
+                    "type": "string",
+                    "description": "Response writer type.",
+                    "example": "json",
+                    "default": "json"
+                  }
+                },
+                "required": ["q"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful search response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "responseHeader": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "response": {
+                      "type": "object",
+                      "properties": {
+                        "numFound": {
+                          "type": "integer"
+                        },
+                        "start": {
+                          "type": "integer"
+                        },
+                        "docs": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      },
+                      "additionalProperties": true
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
