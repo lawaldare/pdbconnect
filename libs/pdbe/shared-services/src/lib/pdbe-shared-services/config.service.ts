@@ -27,12 +27,12 @@ export class ConfigService {
   loadConfig(isLocal: boolean): Promise<any> {
     if (isLocal) {
       this.config = {
-        openApiJsonUrl: 'https://www.ebi.ac.uk/pdbe/api/openapi.json',
+        openApiJsonUrl: '/assets/pdbe-openapi.json',
         searchSchemaUrl: 'https://www.ebi.ac.uk/pdbe/static/files/search_schema.json',
       };
       return Promise.resolve(this.config); // ✅
     }
-    return firstValueFrom(this.http.get<AppConfig>('app.config.json')).then((config) => {
+    return firstValueFrom(this.http.get<AppConfig>('v2/doc/app.config.json')).then((config) => {
       this.config = config;
     });
   }
