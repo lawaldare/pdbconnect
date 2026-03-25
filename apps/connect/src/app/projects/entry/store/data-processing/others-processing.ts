@@ -9,16 +9,16 @@ export function processFilesData(data: any) {
   };
   const order = [
     'mmCIF file (Updated)',
-    'PDB file',
-    'PDB file (gz)',
-    'Compatible PDB file bundle (tar.gz)',
-    'FASTA (Entry)',
-    'Full report (PDF)',
-    'PDB header',
+    'Archive mmCIF file',
     'PDBML',
     'PDBML (ATOM lines)',
     'PDBML (no atoms)',
-    'Archive mmCIF file',
+    'FASTA (Entry)',
+    'Full report (PDF)',
+    'PDB file',
+    'PDB file (gz)',
+    'Compatible PDB file bundle (tar.gz)',
+    'PDB header',
   ];
 
   let downloads: any[] = [];
