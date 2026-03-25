@@ -41,7 +41,7 @@
         },
         "server": "apps/kb-corporate-page/src/main.server.ts",
         "externalDependencies": ["xhr2"],
-        "prerender": false,
+        "prerender": true,
         "ssr": {
           "entry": "apps/kb-corporate-page/src/server.ts"
         }
