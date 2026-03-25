@@ -9,6 +9,8 @@ export type SnapshotSpecParams = {
     assemblyId: string | undefined;
     /** Turn on Volume Streaming */
     volumeStreaming: boolean;
+    /** Colors for entities */
+    entityColors: { [entityId: string]: string } | undefined;
   };
   /** PDBconnect Summary tab > Macromolecules (macromolecule selected), Macromolecules tab */
   pdbconnect_macromolecule: {
@@ -28,6 +30,8 @@ export type SnapshotSpecParams = {
     focus: boolean;
     /** Turn on Volume Streaming */
     volumeStreaming: boolean;
+    /** Color for the macromolecule */
+    color: string | undefined;
   };
   /** PDBconnect Summary tab > Ligands (nothing selected) */
   pdbconnect_all_ligands: {
@@ -37,6 +41,10 @@ export type SnapshotSpecParams = {
     assemblyId: string | undefined;
     /** Turn on Volume Streaming */
     volumeStreaming: boolean;
+    /** List of entity IDs of ligand entities */
+    ligandEntityIds: string[];
+    /** Colors for entities */
+    entityColors: { [entityId: string]: string } | undefined;
   };
   /** PDBconnect Summary tab > Ligands (ligand selected) */
   pdbconnect_ligand: {
@@ -54,6 +62,8 @@ export type SnapshotSpecParams = {
     focus: boolean;
     /** Turn on Volume Streaming */
     volumeStreaming: boolean;
+    /** Colors for entities */
+    entityColors: { [entityId: string]: string } | undefined;
   };
   /** PDBconnect Summary tab > Domains (domain selected), Domains tab */
   pdbconnect_domains: {
@@ -82,6 +92,8 @@ export type SnapshotSpecParams = {
     focus: boolean;
     /** Turn on Volume Streaming */
     volumeStreaming: boolean;
+    /** Colors for entities */
+    entityColors: { [entityId: string]: string } | undefined;
   };
   /** PDBconnect Model Quality tab */
   pdbconnect_quality: {
@@ -114,6 +126,8 @@ export type SnapshotSpecParams = {
     atomInteractions: 'api' | 'builtin' | 'none';
     /** Turn on Volume Streaming */
     volumeStreaming: boolean;
+    /** Colors for entities */
+    entityColors: { [entityId: string]: string } | undefined;
   };
   /** PDBconnect Text Annotations tab (residue selected) */
   pdbconnect_text_annotation: {

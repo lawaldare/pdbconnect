@@ -194,13 +194,13 @@ export function atomicRepresentations(reprs: StandardRepresentationCollection): 
   // I think it's better not to color waters by default as they can be distracting
 }
 
-export function applyEntityColors(repr: Builder.Representation, colors: { [entityId: string]: ColorT }) {
+export function applyEntityColors(repr: Builder.Representation, colors: { [entityId: string]: ColorT }, missingColor: ColorT | undefined) {
   repr.colorFromSource({
     schema: 'all_atomic',
     category_name: 'entity',
     field_remapping: { label_entity_id: 'id' },
     field_name: 'id',
-    palette: { kind: 'categorical', colors: colors },
+    palette: { kind: 'categorical', colors: colors, missing_color: missingColor },
   });
 }
 

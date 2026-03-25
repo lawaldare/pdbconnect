@@ -24,6 +24,9 @@ export const MODRES_COLORS = ANNOTATION_COLORS.slice().reverse();
 /** Color for water entity */
 export const WATER_COLOR = '#ff0d0d';
 
+/** Color for entities if not specified otherwise */
+export const DEFAULT_ENTITY_COLOR = '#808080';
+
 export const VALIDATION_COLORS = {
   NOT_APPLICABLE: '#808080', // not applicable
   0: '#ffffff', // 0 issues (PDBconnect currently uses #d4d5d4)

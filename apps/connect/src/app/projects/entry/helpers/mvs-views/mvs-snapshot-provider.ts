@@ -1,7 +1,15 @@
 import type { MVSData } from 'molstar/lib/extensions/mvs/mvs-data';
 import type * as Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
 import type { ColorT, ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
-import { ATOM_INTERACTION_COLORS, CHAIN_ANNOTATED_COLOR, RESIDUE_ANNOTATED_COLOR, RESIDUE_HIGHLIGHT_COLOR, VALIDATION_COLORS } from './colors';
+import {
+  ATOM_INTERACTION_COLORS,
+  CHAIN_ANNOTATED_COLOR,
+  DEFAULT_ENTITY_COLOR,
+  RESIDUE_ANNOTATED_COLOR,
+  RESIDUE_HIGHLIGHT_COLOR,
+  VALIDATION_COLORS,
+  WATER_COLOR,
+} from './colors';
 import type { IDataProvider } from './data-provider';
 import {
   applyElementColors,
@@ -9,8 +17,6 @@ import {
   applyStandardComponents,
   applyStandardRepresentations,
   atomicRepresentations,
-  entityIsLigand,
-  getEntityColors,
   max,
   normalizeInsertionCode,
   StandardRepresentationType,
@@ -163,10 +169,10 @@ export class MVSSnapshotProvider {
   /** Create MVS view for PDBconnect Summary tab > Preferred complex (default view), Complexes tab */
   private async loadPdbconnectComplex(params: SnapshotSpecParams['pdbconnect_complex']) {
     const ctx = await this._loadPdbconnectBase(params);
-    const entities = await this.dataProvider.entities(params.entry);
-    const entityColors = getEntityColors(entities);
-    for (const repr of Object.values(ctx.representations)) {
-      applyEntityColors(repr, entityColors);
+    if (params.entityColors) {
+      for (const repr of Object.values(ctx.representations)) {
+        applyEntityColors(repr, params.entityColors as Record<string, ColorT>, WATER_COLOR);
+      }
     }
     for (const repr of atomicRepresentations(ctx.representations)) {
       applyElementColors(repr);
@@ -178,10 +184,6 @@ export class MVSSnapshotProvider {
     description.push(`This is complex (assembly) ${params.assemblyId}.`);
     return {
       ...ctx,
-      metadata: {
-        entities,
-        entityColors,
-      },
       description,
     };
   }
@@ -190,8 +192,6 @@ export class MVSSnapshotProvider {
   private async loadPdbconnectMacromolecule(params: SnapshotSpecParams['pdbconnect_macromolecule']) {
     const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
-    const entities = await this.dataProvider.entities(params.entry);
-    const entityColors = getEntityColors(entities);
     const entitySelector: ComponentExpressionT = {
       label_entity_id: params.entityId,
       label_asym_id: params.labelAsymId,
@@ -200,7 +200,7 @@ export class MVSSnapshotProvider {
     };
 
     for (const repr of Object.values(ctx.representations)) {
-      repr.color({ selector: entitySelector, color: entityColors[params.entityId] });
+      repr.color({ selector: entitySelector, color: (params.color as ColorT | undefined) ?? DEFAULT_ENTITY_COLOR });
     }
     for (const repr of atomicRepresentations(ctx.representations)) {
       applyElementColors(repr, entitySelector);
@@ -239,17 +239,12 @@ export class MVSSnapshotProvider {
   private async loadPdbconnectAllLigands(params: SnapshotSpecParams['pdbconnect_all_ligands']) {
     const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
-    const entities = await this.dataProvider.entities(params.entry);
-    const entityColors = getEntityColors(entities);
-    for (const entityId in entities) {
-      const entity = entities[entityId];
-      const entityColor = entityColors[entityId];
-      if (entityIsLigand(entity)) {
-        ctx.structure
-          .component({ selector: { label_entity_id: entity.id } })
-          .representation({ type: 'spacefill' })
-          .color({ color: entityColor });
-      }
+    for (const entityId of params.ligandEntityIds) {
+      const entityColor = (params.entityColors?.[entityId] as ColorT | undefined) ?? DEFAULT_ENTITY_COLOR;
+      ctx.structure
+        .component({ selector: { label_entity_id: entityId } })
+        .representation({ type: 'spacefill' })
+        .color({ color: entityColor });
     }
 
     const description: string[] = [];
@@ -264,8 +259,12 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Summary tab > Ligands (ligand selected) */
   private async loadPdbconnectLigand(params: SnapshotSpecParams['pdbconnect_ligand']) {
-    const ctx = await this.loadPdbconnectComplex({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
-    const { entities } = ctx.metadata;
+    const ctx = await this.loadPdbconnectComplex({
+      entry: params.entry,
+      assemblyId: params.assemblyId,
+      volumeStreaming: params.volumeStreaming,
+      entityColors: params.entityColors,
+    });
 
     if (params.focus) {
       ctx.structure
@@ -276,9 +275,7 @@ export class MVSSnapshotProvider {
     const description: string[] = [];
     description.push(`## Ligand entity ${params.entityId}`);
     const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
-    description.push(
-      `This is ligand entity ${params.entityId} **${entities[params.entityId].compIds[0]}** in chain ${params.labelAsymId} (label_asym_id) in ${assemblyText}.`
-    );
+    description.push(`This is ligand entity ${params.entityId} in chain ${params.labelAsymId} (label_asym_id) in ${assemblyText}.`);
     return {
       ...ctx,
       description,
@@ -321,10 +318,10 @@ export class MVSSnapshotProvider {
     }
 
     if (params.selected) {
-      const entities = await this.dataProvider.entities(params.entry);
-      const entityColors = getEntityColors(entities);
       for (const [reprName, repr] of Object.entries(ctx.representations)) {
-        applyEntityColors(repr, entityColors);
+        if (params.entityColors) {
+          applyEntityColors(repr, params.entityColors as Record<string, ColorT>, WATER_COLOR);
+        }
         if ((reprName as StandardRepresentationType) === 'nonstandardSticks') {
           for (const mod of params.modifications) {
             repr.color({ selector: { label_comp_id: mod.labelCompId }, color: mod.color as ColorT });
@@ -429,8 +426,12 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Ligands and Environments tab */
   private async loadPdbconnectEnvironment(params: SnapshotSpecParams['pdbconnect_environment']) {
-    const ctx = await this.loadPdbconnectComplex({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
-    const { entityColors } = ctx.metadata;
+    const ctx = await this.loadPdbconnectComplex({
+      entry: params.entry,
+      assemblyId: params.assemblyId,
+      volumeStreaming: params.volumeStreaming,
+      entityColors: params.entityColors,
+    });
 
     ctx.structure
       .component({
@@ -447,7 +448,6 @@ export class MVSSnapshotProvider {
         for (const int of interactions) {
           const details = int.interaction_details;
           const color = details.length === 1 ? ATOM_INTERACTION_COLORS[details[0]] ?? ATOM_INTERACTION_COLORS['_DEFAULT_'] : ATOM_INTERACTION_COLORS['_MIXED_'];
-          // TODO: @adam pass colors from frontend (also for entities, domains etc)
           const formatInteractionType = (type: string) => INTERACTION_NICE_NAMES[type] ?? type;
           const tooltipHeader =
             details.length === 1
@@ -493,7 +493,9 @@ export class MVSSnapshotProvider {
       const partnerResiduesRepr = ctx.structure
         .component({ selector: unique(partnerResidues, (r) => `${r.auth_asym_id}:${r.auth_seq_id}:${r.pdbx_PDB_ins_code ?? ''}:${r.instance_id ?? ''}`) })
         .representation({ type: 'ball_and_stick', size_factor: 0.5 });
-      applyEntityColors(partnerResiduesRepr, entityColors);
+      if (params.entityColors) {
+        applyEntityColors(partnerResiduesRepr, params.entityColors as Record<string, ColorT>, WATER_COLOR);
+      }
       applyElementColors(partnerResiduesRepr);
     }
     // TODO: @adam volumes

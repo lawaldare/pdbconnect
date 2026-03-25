@@ -267,6 +267,21 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     return rows.filter((lig) => lig.type === 'ligand');
   });
 
+  public entityColors = computed(() => {
+    const DEFAULT_ENTITY_COLOR = 'gray';
+    const macromolecules = this.processedMacromolecules();
+    const ligands = this.processedLigands();
+
+    const colors: { [entityId: string]: string } = {};
+    for (const macromolecule of macromolecules) {
+      colors[macromolecule.additionalData.molecule.entity_id] = macromolecule.molstarColorHex ?? DEFAULT_ENTITY_COLOR;
+    }
+    for (const ligand of ligands) {
+      colors[(ligand.additionalData.source as Molecule).entity_id] = ligand.molstarColorHex ?? DEFAULT_ENTITY_COLOR;
+    }
+    return colors;
+  });
+
   public currentLigandsPage = signal(0);
 
   public maxLigandsPages = computed(() => {
@@ -827,13 +842,14 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     const assemblyId = isSelectionInPrefAssembly ? preferredAssemblyId : undefined; // undefined = deposited model
     console.log('preferredAssemblyId:', preferredAssemblyId);
     console.log('assemblyId:', assemblyId);
+    const entityColors = this.entityColors();
 
     switch (selectionType) {
       case 'Assembly':
         return {
           name: 'Preferred complex',
           kind: 'pdbconnect_complex',
-          params: { entry: entryId, assemblyId, volumeStreaming: true },
+          params: { entry: entryId, assemblyId, volumeStreaming: true, entityColors },
         };
       case 'Macromolecules':
         if (!listItem) {
@@ -841,7 +857,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
           return {
             name: 'All macromolecules',
             kind: 'pdbconnect_complex',
-            params: { entry: entryId, assemblyId, volumeStreaming: true },
+            params: { entry: entryId, assemblyId, volumeStreaming: true, entityColors },
           };
         } else {
           const entityData = (listItem as ProcessedMacromolecule).additionalData;
@@ -852,17 +868,16 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
           return {
             name: 'Macromolecule',
             kind: 'pdbconnect_macromolecule',
-            params: { entry: entryId, assemblyId, entityId, labelAsymId, authAsymId, instanceId, focus: true, volumeStreaming: true },
+            params: { entry: entryId, assemblyId, entityId, labelAsymId, authAsymId, instanceId, focus: true, volumeStreaming: true, color: entityColors[entityId] },
           };
         }
       case 'Ligands':
-        // TODO: @adam continue here synching colors
-        // TODO: @adam sync colors (entity colors)
         if (!listItem) {
+          const ligandEntityIds = this.processedLigands().map((ligand) => (ligand.additionalData.source as Molecule).entity_id.toString());
           return {
             name: 'All ligands',
             kind: 'pdbconnect_all_ligands',
-            params: { entry: entryId, assemblyId, volumeStreaming: true },
+            params: { entry: entryId, assemblyId, volumeStreaming: true, ligandEntityIds, entityColors },
           };
         } else {
           const ligandData = (listItem as ProcessedLigandOrMod).additionalData;
@@ -874,7 +889,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
           return {
             name: 'Ligand',
             kind: 'pdbconnect_ligand',
-            params: { entry: entryId, assemblyId, entityId, labelAsymId, instanceId, focus: true, volumeStreaming: true },
+            params: { entry: entryId, assemblyId, entityId, labelAsymId, instanceId, focus: true, volumeStreaming: true, entityColors },
           };
         }
       case 'Domains': {
@@ -922,6 +937,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
             selected: undefined,
             focus: false,
             volumeStreaming: true,
+            entityColors,
           },
         };
         if (listItem) {
