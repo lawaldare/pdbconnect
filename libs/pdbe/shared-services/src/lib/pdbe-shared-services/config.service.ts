@@ -32,7 +32,7 @@ export class ConfigService {
       };
       return Promise.resolve(this.config); // ✅
     }
-    return firstValueFrom(this.http.get<AppConfig>('v2/doc/app.config.json')).then((config) => {
+    return firstValueFrom(this.http.get<AppConfig>('app.config.json')).then((config) => {
       this.config = config;
     });
   }
