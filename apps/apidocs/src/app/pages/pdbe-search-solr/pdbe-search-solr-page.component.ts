@@ -15,7 +15,7 @@ import { SearchFieldDoc } from '../../models/search-field.model';
 })
 export class PdbeSearchSolrPage implements OnInit {
   title = 'PDBe Search API Documentation';
-  url = '/assets/search-openapi.json';
+  url = 'assets/search-openapi.json';
   fieldDocs: SearchFieldDoc[] = [];
 
   private fetchDocsService = inject(FetchDocsService);
