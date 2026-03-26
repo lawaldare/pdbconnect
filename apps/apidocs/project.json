@@ -29,8 +29,7 @@
         "scripts": [],
         "customWebpackConfig": {
           "path": "apps/apidocs/webpack.config.js"
-        },
-        "baseHref": "$APP_BASE_HREF"
+        }
       },
       "configurations": {
         "production": {

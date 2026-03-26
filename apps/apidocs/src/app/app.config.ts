@@ -3,13 +3,9 @@ import { ConfigService } from '@pdbe-lib/shared-services';
 import { provideHttpClient } from '@angular/common/http';
 import { appRoutes } from './app.routes';
 import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
-import { BaseHrefService } from '@pdbc/core';
 
-export function initializeApp(appConfig: ConfigService, baseHrefService: BaseHrefService) {
+export function initializeApp(appConfig: ConfigService) {
   return () => {
-    // set base href
-    baseHrefService.setBaseHref();
-
     // runtime hostname detection so this works on nx serve and build
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
@@ -25,9 +21,8 @@ export const appConfig: ApplicationConfig = {
     {
       provide: APP_INITIALIZER,
       useFactory: initializeApp,
-      deps: [ConfigService, BaseHrefService],
+      deps: [ConfigService],
       multi: true,
     },
-    BaseHrefService,
   ],
 };
