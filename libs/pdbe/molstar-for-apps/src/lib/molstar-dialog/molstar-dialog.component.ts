@@ -92,9 +92,11 @@ export class MolstarDialogComponent implements AfterViewInit {
           ]
         );
       });
+      console.log(this.fragments());
       this.selectedFrament.set(this.fragments()[0]);
       this.caption.set(this.fragments()[0].caption ?? '');
       this.atoms = this.fragments()[0].atoms.length ? this.fragments()[0].atoms[0] : [];
+      console.log(this.atoms);
     } else {
       this.showFragmentOptions.set(false);
       this.atoms = dialogData.atoms;
@@ -209,6 +211,10 @@ export class MolstarDialogComponent implements AfterViewInit {
   }
 
   public onConformerChange(event: MatSelectChange) {
+    const label = `Atom-labelled ${this.dialogData.moleculeId.toUpperCase()} (no substructure highlighted)`;
+    if (this.selectedFramentObject?.name === label || this.selectedFramentObject?.name === undefined) {
+      this.count.set(0);
+    }
     this.selectedConformer.set(event.value);
     const updateParams = {
       customData: {
