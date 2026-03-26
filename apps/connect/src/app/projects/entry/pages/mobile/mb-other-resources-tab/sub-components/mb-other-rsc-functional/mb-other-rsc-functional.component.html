@@ -1,0 +1,47 @@
+@if (goKeysWithExtra().length > 0) {
+<div class="info">
+  <p class="info__title">Gene Ontology (GO)</p>
+  <div class="info__content">
+    @let items = goKeysWithExtra(); @let groupKey = 'GO'; @let visibleItems = isLinkGroupExpanded(groupKey) ? items : items.slice(0, 4); @for (item of visibleItems;
+    track item) {
+    <p class="each-link">
+      <a class="other-rsc-link" [href]="'https://www.ebi.ac.uk/QuickGO/term/' +item.name" target="_blank"> {{ item.name }} </a>
+      <i class="icon icon-link icon-common"></i>
+      @if(item.extra){
+      <span class="extra-info">({{ item.extra }})</span>
+      }
+    </p>
+    } @if (items.length > 4) {
+    <div class="control">
+      <span role="button" class="show-all-toggle" (click)="toggleLinkGroup(groupKey)">
+        {{ isLinkGroupExpanded(groupKey) ? 'Hide ' + items.length + ' links' : 'Show all ' + items.length }}
+      </span>
+    </div>
+    }
+  </div>
+</div>
+} @if (ecKeys().length > 0) {
+<div class="info">
+  <p class="info__title">ENZYME (EC)</p>
+  <div class="info__content">
+    @let items = ecKeys(); @let groupKey = 'EC'; @let visibleItems = isLinkGroupExpanded(groupKey) ? items : items.slice(0, 4); @for (item of visibleItems; track
+    item) {
+    <p class="each-link">
+      <a class="other-rsc-link" [href]="'https://enzyme.expasy.org/EC/' +item" target="_blank"> {{ item }} </a>
+      <i class="icon icon-link icon-common"></i>
+      <!-- @if(link.extra){
+    <span class="extra-info">({{ link.extra }})</span>
+    } -->
+    </p>
+    } @if (items.length > 4) {
+    <div class="control">
+      <span role="button" class="show-all-toggle" (click)="toggleLinkGroup(groupKey)">
+        {{ isLinkGroupExpanded(groupKey) ? 'Hide ' + items.length + ' links' : 'Show all ' + items.length }}
+      </span>
+    </div>
+    }
+  </div>
+</div>
+} @if (goKeysWithExtra().length === 0 && ecKeys().length === 0 ) {
+<p>No links available for this category in this PDB entry.</p>
+}

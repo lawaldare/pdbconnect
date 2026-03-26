@@ -181,6 +181,12 @@ main {
 button.vf-button {
   width: 97%;
   margin: 16px auto;
+
+  --vf-button-border-color: #056643;
+  --vf-button-background-color: #056643;
+  --vf-button-shadow-border-color: #0a5032;
+  --vf-button-shadow-background-color: #0a5032;
+  --vf-button-border-color--visited: #0a5032;
 }
 
 .row {

@@ -1,4 +1,4 @@
-@import url('libs/core/src/lib/styles/pdb_connect.scss');
+@import 'libs/core/src/lib/styles/pdb_connect.scss';
 
 header {
   display: flex;
@@ -64,7 +64,7 @@ header {
     }
   }
 }
-@media (width <= 1120px) {
+@media (width <= 1340px) {
   header {
     flex-direction: column;
     align-items: flex-start;

@@ -1,0 +1,113 @@
+@if (cathKeys().length > 0) {
+<div class="info">
+  <p class="info__title">CATH</p>
+  <div class="info__content">
+    @let items = cathKeys(); @let groupKey = 'CATH'; @let visibleItems = isLinkGroupExpanded(groupKey) ? items : items.slice(0, 4); @for (item of visibleItems; track
+    item) {
+    <p class="each-link">
+      <a class="other-rsc-link" [href]="'https://www.cathdb.info/version/latest/superfamily/' +item" target="_blank"> {{ item }} </a>
+      <i class="icon icon-link icon-common"></i>
+      <!-- @if(link.extra){
+    <span class="extra-info">({{ link.extra }})</span>
+    } -->
+    </p>
+    } @if (items.length > 4) {
+    <div class="control">
+      <span role="button" class="show-all-toggle" (click)="toggleLinkGroup(groupKey)">
+        {{ isLinkGroupExpanded(groupKey) ? 'Hide ' + items.length + ' links' : 'Show all ' + items.length }}
+      </span>
+    </div>
+    }
+  </div>
+</div>
+} @if (scop175Keys().length > 0) {
+<div class="info">
+  <p class="info__title">SCOP 1.75</p>
+  <div class="info__content">
+    @let items = scop175Keys(); @let groupKey = 'SCOP 1.75'; @let visibleItems = isLinkGroupExpanded(groupKey) ? items : items.slice(0, 4); @for (item of
+    visibleItems; track item) {
+    <p class="each-link">
+      <a class="other-rsc-link" [href]="'https://ftp.ebi.ac.uk/pub/databases/pdbe-kb/scop-legacy/'" target="_blank"> {{ item }} </a>
+      <i class="icon icon-link icon-common"></i>
+      <!-- @if(link.extra){
+    <span class="extra-info">({{ link.extra }})</span>
+    } -->
+    </p>
+    } @if (items.length > 4) {
+    <div class="control">
+      <span role="button" class="show-all-toggle" (click)="toggleLinkGroup(groupKey)">
+        {{ isLinkGroupExpanded(groupKey) ? 'Hide ' + items.length + ' links' : 'Show all ' + items.length }}
+      </span>
+    </div>
+    }
+  </div>
+</div>
+} @if (pfamKeys().length > 0) {
+<div class="info">
+  <p class="info__title">Pfam</p>
+  <div class="info__content">
+    @let items = pfamKeys(); @let groupKey = 'Pfam'; @let visibleItems = isLinkGroupExpanded(groupKey) ? items : items.slice(0, 4); @for (item of visibleItems; track
+    item) {
+    <p class="each-link">
+      <a class="other-rsc-link" [href]="'https://www.ebi.ac.uk/interpro/entry/pfam/' +item" target="_blank"> {{ item }} </a>
+      <i class="icon icon-link icon-common"></i>
+      <!-- @if(link.extra){
+    <span class="extra-info">({{ link.extra }})</span>
+    } -->
+    </p>
+    } @if (items.length > 4) {
+    <div class="control">
+      <span role="button" class="show-all-toggle" (click)="toggleLinkGroup(groupKey)">
+        {{ isLinkGroupExpanded(groupKey) ? 'Hide ' + items.length + ' links' : 'Show all ' + items.length }}
+      </span>
+    </div>
+    }
+  </div>
+</div>
+} @if (interProKeys().length > 0) {
+<div class="info">
+  <p class="info__title">InterPro</p>
+  <div class="info__content">
+    @let items = interProKeys(); @let groupKey = 'InterPro'; @let visibleItems = isLinkGroupExpanded(groupKey) ? items : items.slice(0, 4); @for (item of
+    visibleItems; track item) {
+    <p class="each-link">
+      <a class="other-rsc-link" [href]="'https://www.ebi.ac.uk/interpro/entry/InterPro/' +item" target="_blank"> {{ item }} </a>
+      <i class="icon icon-link icon-common"></i>
+      <!-- @if(link.extra){
+    <span class="extra-info">({{ link.extra }})</span>
+    } -->
+    </p>
+    } @if (items.length > 4) {
+    <div class="control">
+      <span role="button" class="show-all-toggle" (click)="toggleLinkGroup(groupKey)">
+        {{ isLinkGroupExpanded(groupKey) ? 'Hide ' + items.length + ' links' : 'Show all ' + items.length }}
+      </span>
+    </div>
+    }
+  </div>
+</div>
+} @if (rfamKeys().length > 0) {
+<div class="info">
+  <p class="info__title">Rfam</p>
+  <div class="info__content">
+    @let items = rfamKeys(); @let groupKey = 'Rfam'; @let visibleItems = isLinkGroupExpanded(groupKey) ? items : items.slice(0, 4); @for (item of visibleItems; track
+    item) {
+    <p class="each-link">
+      <a class="other-rsc-link" [href]="'https://rfam.org/family/' +item" target="_blank"> {{ item }} </a>
+      <i class="icon icon-link icon-common"></i>
+      <!-- @if(link.extra){
+    <span class="extra-info">({{ link.extra }})</span>
+    } -->
+    </p>
+    } @if (items.length > 4) {
+    <div class="control">
+      <span role="button" class="show-all-toggle" (click)="toggleLinkGroup(groupKey)">
+        {{ isLinkGroupExpanded(groupKey) ? 'Hide ' + items.length + ' links' : 'Show all ' + items.length }}
+      </span>
+    </div>
+    }
+  </div>
+</div>
+} @if (pfamKeys().length === 0 && cathKeys().length === 0 && scop175Keys().length === 0 && interProKeys().length === 0 && rfamKeys().length === 0) {
+<p>No links available for this category in this PDB entry.</p>
+}

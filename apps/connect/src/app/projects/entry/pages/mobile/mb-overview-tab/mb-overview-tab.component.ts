@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
@@ -7,7 +7,6 @@ import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { combineLatest, filter, map } from 'rxjs';
-import { NavigationLink } from '../mb-citation-tab/mb-citation-tab.component';
 import { MolstarGalleryComponent } from '@pdbe-lib/molstar-for-apps';
 import { MobileFacade } from '../mobile.facade';
 import { MbStructureOverviewComponent } from './sub-components/mb-structure-overview/mb-structure-overview.component';
@@ -18,12 +17,15 @@ import { MbOverviewMacromoleculesComponent } from './sub-components/mb-overview-
 import { MbOverviewLigandsAndModsComponent } from './sub-components/mb-overview-ligands-and-mods/mb-overview-ligands-and-mods.component';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MbSlowNetworkImageGalleryComponent } from './sub-components/mb-slow-network-img-gallery/mb-slow-network-img-gallery.component';
+import { MbOtherResourcesPreviewComponent } from './sub-components/mb-other-resources-preview/mb-other-resources-preview.component';
+import { MbTableOfContentsComponent, NavigationLink } from '../mb-table-of-contents/mb-table-of-contents.component';
 
 @Component({
   selector: 'pdbc-mb-overview-tab',
   imports: [
     CommonModule,
     NgxSkeletonLoaderModule,
+    MbTableOfContentsComponent,
     MolstarGalleryComponent,
     MbStructureOverviewComponent,
     MbPrimaryPublicationComponent,
@@ -32,11 +34,12 @@ import { MbSlowNetworkImageGalleryComponent } from './sub-components/mb-slow-net
     MbOverviewMacromoleculesComponent,
     MbOverviewLigandsAndModsComponent,
     MbSlowNetworkImageGalleryComponent,
+    MbOtherResourcesPreviewComponent,
   ],
   templateUrl: './mb-overview-tab.component.html',
   styleUrls: ['../mb-citation-tab/mb-citation-tab.component.scss', './mb-overview-tab.component.scss'],
 })
-export class MbOverviewTabComponent implements OnInit, AfterViewInit, OnDestroy {
+export class MbOverviewTabComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly destroyRef = inject(DestroyRef);
   private readonly mbFacade = inject(MobileFacade);
@@ -69,47 +72,15 @@ export class MbOverviewTabComponent implements OnInit, AfterViewInit, OnDestroy 
   public readonly entryId = signal<string>('');
   public relatedEntries = signal<string[]>([]);
 
-  public isFullLinksDisplayed = signal<boolean>(false);
-  public currentNavigationLink = signal<NavigationLink>({ id: 'structure-overview', title: 'Structure overview' });
-  public readonly navigationLinks = [
+  public readonly navigationLinks: NavigationLink[] = [
     { id: 'structure-overview', title: 'Structure overview' },
     { id: 'primary-publication', title: 'Primary publication' },
     { id: 'model-quality-summary', title: 'PDB model quality summary' },
     { id: 'assembly', title: 'Assembly (preferred)' },
     { id: 'macromolecules', title: 'Macromolecules' },
     { id: 'ligands-and-modifications', title: 'Ligands and modifications' },
-    { id: 'related-databases', title: 'Related databases and links' },
+    { id: 'related-databases', title: 'Other resources' },
   ];
-
-  private bodyScrollHandler = this.onScroll.bind(this);
-
-  private onScroll() {
-    this.navigationLinks.forEach((section) => {
-      const element = document.getElementById(section.id);
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        if (rect.top <= 150 && rect.bottom >= 150) {
-          this.currentNavigationLink.set(section);
-        }
-      }
-    });
-  }
-
-  public toggleNavigationLinks(): void {
-    this.isFullLinksDisplayed.update((value) => !value);
-  }
-
-  public scrollToSection(event: Event, sectionId: string): void {
-    event.preventDefault();
-    this.isFullLinksDisplayed.set(false);
-    const element = document.getElementById(sectionId);
-    const toc = document.querySelector('.table-of-contents') as HTMLElement;
-    if (element && toc) {
-      const offsetTop = element.offsetTop;
-      document.body.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
-    }
-    this.gAS.logPageEvents('ep_mobile_quick_access_click', {});
-  }
 
   ngOnInit(): void {
     combineLatest([this.globalStore.select(EntrySelectors.entryId).pipe(filter(Boolean))])
@@ -120,14 +91,6 @@ export class MbOverviewTabComponent implements OnInit, AfterViewInit, OnDestroy 
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
-  }
-
-  ngAfterViewInit() {
-    document.body.addEventListener('scroll', this.bodyScrollHandler, { passive: true });
-  }
-
-  ngOnDestroy() {
-    document.body.removeEventListener('scroll', this.bodyScrollHandler);
   }
 
   public openMolstarPage(): void {

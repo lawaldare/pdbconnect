@@ -1,10 +1,3 @@
-@if(tutorialTourService.showModelQualityTourBanner() && !isBannerCookies()){
-<section class="onboarding-tutorial-banner">
-  <img src="assets/img/light-star.svg" alt="light start icon" />
-  <p>We have redesigned this page to enhance your experience. <span (click)="startMQTabTour()">Take an on-page tour.</span></p>
-</section>
-}
-
 <div class="experiments-validation">
   <section class="left-side">
     @if (currentData() && processedData() && isHybrid()) {
@@ -29,16 +22,18 @@
       <!-- General Info section -->
       <!-- ------------------- -->
       <section class="general-info">
-        @if (currentData()!.generalInfo.sourceOrganisms) {
+        @if (currentData()!.generalInfo.sourceOrganismsWithStrains) {
         <div class="info-row" [ngClass]="currentData()!.generalInfo.methodName.includes('NMR') ? 'big' : ''">
           <span>Source organism</span>
           <article>
-            @for (sourceOrganism of sourceOrganisms(); track sourceOrganism) {
+            @for (sourceOrganismWithStrain of sourceOrganismsWithStrains(); track sourceOrganismWithStrain) {
             <div>
-              <a [href]="util.generateQueryURL(sourceOrganism, 'q_organism_name')" target="_blank"
-                ><em>{{ sourceOrganism }}</em>
+              <a [href]="util.generateQueryURL(sourceOrganismWithStrain.name, 'q_organism_name')" target="_blank"
+                ><em>{{ sourceOrganismWithStrain.name }}</em>
                 <i class="icon icon-common icon-search"></i>
               </a>
+              @if(sourceOrganismWithStrain.strain) { <br />
+              (strain {{sourceOrganismWithStrain.strain}}) }
             </div>
             }
           </article>
@@ -208,16 +203,18 @@
             </div>
           </article>
         </div>
-        } @if (currentData()!.sampleInfo!.sourceOrganisms) {
+        } @if (currentData()!.sampleInfo!.sourceOrganismsWithStrains) {
         <div class="info-row">
           <span>Source organisms</span>
           <article>
-            @for (sourceOrganism of currentData()!.sampleInfo!.sourceOrganisms; track sourceOrganism) {
+            @for (sourceOrganismWithStrain of currentData()!.sampleInfo!.sourceOrganismsWithStrains; track sourceOrganismWithStrain) {
             <div>
-              <a [href]="generateOrganismSearchUrl(sourceOrganism)">
-                <em>{{ sourceOrganism }}</em>
+              <a [href]="generateOrganismSearchUrl(sourceOrganismWithStrain.name)">
+                <em>{{ sourceOrganismWithStrain.name }}</em>
                 <i class="icon icon-common icon-search"></i>
               </a>
+              @if(sourceOrganismWithStrain.strain) { <br />
+              (strain {{sourceOrganismWithStrain.strain}}) }
             </div>
             }
           </article>

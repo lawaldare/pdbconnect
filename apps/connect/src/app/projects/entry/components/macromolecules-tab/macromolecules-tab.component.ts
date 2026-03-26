@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, tourIds } from '../../entry-constant';
+import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -465,10 +465,23 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public collapsedChains = true;
 
-  public uniqueOrganisms = computed(() => {
+  public uniqueOrganismsWithStrains = computed(() => {
     const macromolecule = this.currentMacromoleculeDatum();
     if (macromolecule === undefined) return [];
-    return [...new Set(macromolecule['organisms'].filter((organism) => organism !== null))];
+
+    const seen = new Set<string>();
+    return (macromolecule.additionalData.molecule['source'] ?? [])
+      .filter((s) => s.organism_scientific_name)
+      .filter((s) => {
+        const key = `${s.organism_scientific_name}|${s.strain ?? ''}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map((s) => ({
+        name: s.organism_scientific_name,
+        strain: s.strain,
+      }));
   });
 
   public uniqueExpSystems = computed(() => {
@@ -538,8 +551,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return rows.length > 0;
   });
 
-  public isBannerCookies = signal(false);
-
   ngAfterViewInit(): void {
     this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
       if (idx === undefined || idx === null) return;
@@ -550,17 +561,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
         await this.triggerMacromoleculeUpdateSideEffects(datum);
       }
     });
-    setTimeout(() => {
-      this.tutorialTourService.hasMacromolecules.set(this.hasMacromolecules());
-      const agreed = this.tutorialTourService.getCookie(tourIds.macromolecules);
-      if (!agreed && this.hasMacromolecules()) {
-        this.isBannerCookies.set(true);
-      }
-    }, 500);
-  }
-
-  public startMacromoleculesTabTour(): void {
-    this.tutorialTourService.startTour(this.tutorialTourService.macromoleculeTabTourSteps);
   }
 
   ngOnInit() {
