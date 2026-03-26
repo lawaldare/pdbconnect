@@ -9,6 +9,12 @@ export function initializeApp(appConfig: ConfigService) {
     // runtime hostname detection so this works on nx serve and build
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
+    // set base href to / on localhost
+    const baseTag = document.querySelector('base');
+    if (baseTag && isLocal) {
+      baseTag.setAttribute('href', '/');
+    }
+
     // isLocal makes sure appConfig returns openapi.json URLs when testing locally
     return appConfig.loadConfig(isLocal);
   };

@@ -12,6 +12,9 @@ COPY apps/apidocs/nginx-custom.conf /etc/nginx/conf.d/default.conf
 ARG APP_BASE_HREF
 ENV APP_BASE_HREF=$APP_BASE_HREF
 
+# Replace $APP_BASE_HREF placeholder in index.html at container startup.
+# This allows dynamic base href per environment (e.g. /pdbe/api/v2/doc/)
+# NOTE: Requires APP_BASE_HREF to be passed as a build arg.
 RUN echo "indexFileName=\"\$(ls /usr/share/nginx/html/index.html)\" && \
           envsubst '\$APP_BASE_HREF' < \${indexFileName} > /tmp/index.tmp && \
           mv /tmp/index.tmp \${indexFileName} && \
