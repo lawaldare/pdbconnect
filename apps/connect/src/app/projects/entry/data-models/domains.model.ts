@@ -58,3 +58,14 @@ export interface InterProMappings {
     identifier: string;
   };
 }
+
+export interface RfamMappings {
+  [key: string]: {
+    identifier: string;
+    family: string;
+    mappings: DomainMapping[];
+    clan: string;
+    clan_identifier: string;
+    clan_description: string;
+  };
+}

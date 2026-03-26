@@ -39,6 +39,31 @@ export class MbOverviewMacromoleculesComponent implements OnInit {
     return mappedDatum;
   });
 
+  public uniqueOrganismsWithStrains = computed(() => {
+    const rows = this.processedMacromolecules();
+    if (rows === undefined) return [];
+
+    const uniqueOrganismsWithStrains = [];
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+      const macromol = rows[rowIndex];
+      const seen = new Set<string>();
+      const organismsWithSources = (macromol.additionalData.molecule['source'] ?? [])
+        .filter((s) => s.organism_scientific_name)
+        .filter((s) => {
+          const key = `${s.organism_scientific_name}|${s.strain ?? ''}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        })
+        .map((s) => ({
+          name: s.organism_scientific_name,
+          strain: s.strain,
+        }));
+      uniqueOrganismsWithStrains.push(organismsWithSources);
+    }
+    return uniqueOrganismsWithStrains;
+  });
+
   public toggleMacromoleculeList(): void {
     this.macromoleculeInitialCount.update((prev) => (prev === 5 ? this.macromoleculeTableRows().length : 5));
   }

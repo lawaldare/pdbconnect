@@ -5,6 +5,7 @@ import { TabRedirectComponent } from './projects/entry/redirects/all-redirects.c
 import { SearchPageComponent } from './projects/entry/pages/search/search-page.component';
 import { ExternalRedirectComponent } from './projects/entry/redirects/external-redirect.component';
 import { SearchAppContainerComponent } from './projects/search-app/search-app-container/search-app-container.component';
+import { entryPageResolver } from './projects/entry/resolvers/entry.resolver';
 
 // const hostname = document.location.hostname;
 // const isLocal = hostname === 'localhost';
@@ -82,6 +83,9 @@ export const appRoutes: Route[] = [
   {
     path: 'pdb/:entryId',
     loadComponent: () => import('./projects/entry/pages/main/main.component').then((m) => m.EntryMainPageComponent),
+    resolve: {
+      initialData: entryPageResolver,
+    },
     title: 'PDBe Entry Pages',
   },
   {

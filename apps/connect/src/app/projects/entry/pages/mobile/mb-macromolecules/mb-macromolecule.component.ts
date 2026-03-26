@@ -129,10 +129,23 @@ export class MbMacromoleculeComponent implements OnInit {
 
   public selectedMacromolecule = signal<ProcessedMacromolecule | undefined>(undefined);
 
-  public uniqueOrganisms = computed(() => {
+  public uniqueOrganismsWithStrains = computed(() => {
     const macromolecule = this.selectedMacromolecule();
     if (macromolecule === undefined) return [];
-    return [...new Set(macromolecule['organisms'].filter((organism) => organism !== null))];
+
+    const seen = new Set<string>();
+    return (macromolecule.additionalData.molecule['source'] ?? [])
+      .filter((s) => s.organism_scientific_name)
+      .filter((s) => {
+        const key = `${s.organism_scientific_name}|${s.strain ?? ''}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map((s) => ({
+        name: s.organism_scientific_name,
+        strain: s.strain,
+      }));
   });
 
   public uniqueExpSystems = computed(() => {

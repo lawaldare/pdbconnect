@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { getCleanMoleculeName, getCleanSelectionName, getDomainChainDropdownOptions, getDomainSequenceDetails } from '../../helpers/processed-data-to-controls';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -11,7 +11,7 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
-import { entryDomainsTooltips, resourceUrls, symmOperatorTooltip, tourIds } from '../../entry-constant';
+import { entryDomainsTooltips, resourceUrls, symmOperatorTooltip } from '../../entry-constant';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
@@ -46,7 +46,7 @@ import { FixedSelectionInput, ProtvistaWrapperComponent } from '@pdbe-lib/pv-nig
   templateUrl: './domains-tab.component.html',
   styleUrl: './domains-tab.component.scss',
 })
-export class DomainsTabComponent implements AfterViewInit {
+export class DomainsTabComponent {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly gAS = inject(GoogleAnalyticsService);
   public readonly visInteractivity = inject(VisualisationInteractivityService);
@@ -329,22 +329,6 @@ export class DomainsTabComponent implements AfterViewInit {
     if (rows === undefined) return false;
     return rows.length > 0;
   });
-
-  public isBannerCookies = signal(false);
-
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.tutorialTourService.hasDomains.set(this.hasDomains());
-      const agreed = this.tutorialTourService.getCookie(tourIds.domains);
-      if (!agreed && this.hasDomains()) {
-        this.isBannerCookies.set(true);
-      }
-    }, 500);
-  }
-
-  public startDomainsTabTour(): void {
-    this.tutorialTourService.startTour(this.tutorialTourService.domainTabTourSteps);
-  }
 
   popupMolstar(): void {
     const fullMode = this.popService.isMaximizedOnMac();

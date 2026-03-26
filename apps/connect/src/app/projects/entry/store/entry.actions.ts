@@ -1,7 +1,7 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import { ProcessedSummary } from '../data-models/summary.model';
 import { AssembliesData, DownloadOptionData, EntryMoleculesData, EntryResidueWiseData, ExperimentData } from './entry-store.model';
-import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../data-models/domains.model';
+import { CathMappings, InterProMappings, PfamMappings, RfamMappings, ScopMappings } from '../data-models/domains.model';
 import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
 import { ModifiedResidue } from '../data-models/modified-residues.model';
 import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
@@ -81,6 +81,9 @@ export const EntryActions = createActionGroup({
     'Get PfamMapping': emptyProps(),
     'Get PfamMapping Success': props<{ pfamMapping: PfamMappings }>(),
     'Get PfamMapping Failure': emptyProps(),
+    'Get RfamMapping': emptyProps(),
+    'Get RfamMapping Success': props<{ rfamMapping: RfamMappings }>(),
+    'Get RfamMapping Failure': emptyProps(),
     'Get Scop175Mapping': emptyProps(),
     'Get Scop175Mapping Success': props<{ scop175Mapping: ScopMappings }>(),
     'Get Scop175Mapping Failure': emptyProps(),
@@ -241,5 +244,8 @@ export const EntryActions = createActionGroup({
     'Get Entry Protvista Variation Success': props<{ entityId: string; entityPvVariation: APIVariationData }>(),
     'Get Entry Protvista Variation Failure': emptyProps(),
     'Clear Entity Protvista Data': emptyProps(),
+    'Get HasMDDB': emptyProps(),
+    'Get HasMDDB Success': props<{ hasMDDB: boolean }>(),
+    'Get HasMDDB Failure': emptyProps(),
   },
 });

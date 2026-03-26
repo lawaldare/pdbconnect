@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, tourIds } from '../../entry-constant';
+import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip } from '../../entry-constant';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -67,7 +67,7 @@ import { UnpMappingListComponent } from '../shared/unp-mapping-list/unp-mapping-
   templateUrl: './llm-tab.component.html',
   styleUrl: './llm-tab.component.scss',
 })
-export class LLMTabComponent implements OnInit, AfterViewInit {
+export class LLMTabComponent implements OnInit {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly dialog = inject(MatDialog);
@@ -163,10 +163,23 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
 
   public currentMacromoleculeDatum = signal<ProcessedMacromolecule | undefined>(undefined);
 
-  public uniqueOrganisms = computed(() => {
+  public uniqueOrganismsWithStrains = computed(() => {
     const macromolecule = this.currentMacromoleculeDatum();
     if (macromolecule === undefined) return [];
-    return [...new Set(macromolecule['organisms'].filter((organism) => organism !== null))];
+
+    const seen = new Set<string>();
+    return (macromolecule.additionalData.molecule['source'] ?? [])
+      .filter((s) => s.organism_scientific_name)
+      .filter((s) => {
+        const key = `${s.organism_scientific_name}|${s.strain ?? ''}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map((s) => ({
+        name: s.organism_scientific_name,
+        strain: s.strain,
+      }));
   });
 
   public isUniprotMappingsClosed = true;
@@ -390,22 +403,6 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     if (rows === undefined) return false;
     return rows.length > 0;
   });
-
-  public isBannerCookies = signal(false);
-
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.tutorialTourService.hasAnnotations.set(this.hasAnnotations());
-      const agreed = this.tutorialTourService.getCookie(tourIds.llm);
-      if (!agreed && this.hasAnnotations()) {
-        this.isBannerCookies.set(true);
-      }
-    }, 500);
-  }
-
-  public startLLMTabTour(): void {
-    this.tutorialTourService.startTour(this.tutorialTourService.annotationsTabTourSteps);
-  }
 
   private groupAnnotationsByPdbChain(data: any) {
     return data.reduce((acc: any, item: any) => {
