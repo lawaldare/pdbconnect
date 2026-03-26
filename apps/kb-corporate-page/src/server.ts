@@ -8,8 +8,9 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+// Serve static files from the browser folder with base path
 app.use(
-  '/pdbe/pdbe-kb/',
+  '/pdbe/pdbe-kb',
   express.static(browserDistFolder, {
     maxAge: '1y',
     index: false,
@@ -17,32 +18,36 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
-  console.log('originalUrl:', req.originalUrl);
-  console.log('url:', req.url);
-  console.log('baseUrl:', req.baseUrl);
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
 
-  if (!req.originalUrl.startsWith('/pdbe/pdbe-kb/')) {
-    return next();
-  }
-
-  const originalReqUrl = req.url;
-
-  // Restore the full mounted URL so Angular SSR sees the real path
-  req.url = req.originalUrl;
+// Handle all requests under the base path
+app.get('/pdbe/pdbe-kb/*', (req, res, next) => {
+  console.log('Handling SSR request:', {
+    originalUrl: req.originalUrl,
+    url: req.url,
+    baseUrl: req.baseUrl,
+  });
 
   angularApp
     .handle(req, {
       providers: [{ provide: APP_BASE_HREF, useValue: '/pdbe/pdbe-kb/' }],
     })
     .then((response) => {
-      req.url = originalReqUrl;
-      return response ? writeResponseToNodeResponse(response, res) : next();
+      if (response) {
+        writeResponseToNodeResponse(response, res);
+      } else {
+        next();
+      }
     })
-    .catch((err) => {
-      req.url = originalReqUrl;
-      next(err);
-    });
+    .catch(next);
+});
+
+// Optional: Handle root redirect
+app.get('/', (req, res) => {
+  res.redirect('/pdbe/pdbe-kb/');
 });
 
 if (isMainModule(import.meta.url)) {
@@ -50,6 +55,7 @@ if (isMainModule(import.meta.url)) {
   app.listen(port, (error) => {
     if (error) throw error;
     console.log(`Node Express server listening on http://localhost:${port}`);
+    console.log(`Serving Angular app with base href: /pdbe/pdbe-kb/`);
   });
 }
 
