@@ -27,7 +27,7 @@ export class ConfigService {
   loadConfig(isLocal: boolean): Promise<any> {
     if (isLocal) {
       this.config = {
-        openApiJsonUrl: '/assets/pdbe-openapi.json',
+        openApiJsonUrl: 'https://www.ebi.ac.uk/pdbe/api/v2/openapi.json',
         searchSchemaUrl: 'https://www.ebi.ac.uk/pdbe/static/files/search_schema.json',
       };
       return Promise.resolve(this.config); // ✅
