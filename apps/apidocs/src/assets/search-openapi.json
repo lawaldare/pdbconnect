@@ -198,7 +198,7 @@
                   "fq": {
                     "type": "string",
                     "description": "Filter query.",
-                    "example": "entity_poly_type:Protein"
+                    "default": ""
                   },
                   "wt": {
                     "type": "string",
