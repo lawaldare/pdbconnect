@@ -27,8 +27,29 @@ export class SummaryInfoSectionComponent {
   public readonly util = inject(UtilService);
 
   public readonly summary = toSignal(this.store.select(EntrySelectors.summaryData));
+  public readonly moleculeSources = toSignal(this.store.select(EntrySelectors.moleculeSources));
+  public readonly organismScientificNamesWithStrains = computed(() => {
+    const molSrcs = this.moleculeSources();
+    if (!molSrcs || molSrcs.length === 0) return [];
 
-  public readonly organismScientificNames = toSignal(this.store.select(EntrySelectors.organismScientificNames));
+    const seen = new Set<string>();
+    const namesWithStrains = [];
+
+    for (const molSrc of molSrcs) {
+      if (!molSrc.organism_scientific_name) continue;
+
+      const key = `${molSrc.organism_scientific_name}|${molSrc.strain ?? ''}`;
+      if (seen.has(key)) continue;
+
+      seen.add(key);
+      namesWithStrains.push({
+        name: molSrc.organism_scientific_name,
+        strain: molSrc.strain,
+      });
+    }
+
+    return namesWithStrains;
+  });
 
   public readonly primaryPublication = toSignal(this.store.select(EntrySelectors.primaryPublication));
 
@@ -46,8 +67,14 @@ export class SummaryInfoSectionComponent {
   /** ----------------------------------------------
    ** AUTHOR & ENTRIES LIST EXPAND/COLLAPSE LOGIC
    ** ---------------------------------------------- */
+  public readonly initialEntryAuthorCount = signal(5);
   public readonly initialAuthorCount = signal(5);
   public readonly initialEntriesCount = signal(5);
+
+  toggleEntryAuthorList() {
+    const authors = this.summary()?.entryAuthorsList ?? [];
+    this.initialEntryAuthorCount.update((prev) => (prev === 5 ? authors.length : 5));
+  }
 
   toggleAuthorList() {
     const authors = this.primaryPublication()?.author_list ?? [];
@@ -66,6 +93,11 @@ export class SummaryInfoSectionComponent {
 
   public generateOrganismSearchUrl(term: string): string {
     return this.util.generateQueryURL(term, 'q_organism_name');
+  }
+
+  public generateEntryAuthorSearchUrl(term: string): string {
+    term = term.toLowerCase().replace(/[.,]/g, '');
+    return this.util.generateQueryURL(term, 'q_entry_authors');
   }
 
   public generateAuthorSearchUrl(term: string): string {

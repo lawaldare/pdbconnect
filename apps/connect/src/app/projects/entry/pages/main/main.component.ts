@@ -41,6 +41,7 @@ import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial
 import { MetaTagService } from '../../services/meta-tag.service';
 import { EntryMainFacade } from './entry-main.facade';
 import { HelpIconForMolstarService } from '@pdbe-lib/molstar-for-apps';
+import { OtherResourcesTabComponent } from '../../components/other-resources-tab/other-resources-tab.component';
 
 // Some interesting entries:
 // 4aqd carbs
@@ -72,6 +73,7 @@ import { HelpIconForMolstarService } from '@pdbe-lib/molstar-for-apps';
     LLMTabComponent,
     LigandsTabComponent,
     DomainsTabComponent,
+    OtherResourcesTabComponent,
     NotificationComponent,
     ErrorPageComponent,
     VisualisationInteractivityDirective,
@@ -203,42 +205,30 @@ export class EntryMainPageComponent implements OnInit {
     this.facade.showNotification();
     this.facade.checkWindowWidth();
 
-    this.route.params
-      .pipe(
-        switchMap((params) => {
-          const entryId = params['entryId'].toLowerCase().replace('pdb_0000', '');
-          this.entryId.set(entryId);
-          this.globalStore.dispatch(EntryActions.setCurrentEntryId({ entryId }));
-          this.globalStore.dispatch(EntryActions.getEntryStatus());
-          return this.globalStore.select(EntrySelectors.entryStatus).pipe(
-            filter(Boolean),
-            tap((status: EntryStatus) => this.entryStatus.set({ ...status, entryId })),
-            map((response: EntryStatus) => response.status_code)
-          );
-        }),
-        mergeMap(async (status: StatusCode) => {
-          if (status === 'REL') {
-            this.util.setPageView('SUCCESS');
-            this.metaTagService.buildMetaTags(this.renderer);
-            const isWebGlEnabled = this.facade.checkWebglEnabled();
+    const resolved = this.route.snapshot.data['initialData'];
 
-            if (isWebGlEnabled) this.facade.testNetworkSpeed();
-            this.facade.testProcessingPower();
+    const entryId = resolved.entryId;
+    const status = resolved.status;
+    const summary = resolved.summaryData;
+    const primaryPublication = resolved.primaryPublication;
 
-            // used in multiple tabs
-            this.globalStore.dispatch(EntryActions.getSummaryData());
-            // used in citations-tab, llm-tab, summary-tab, mb-citation-tab, mb-overview-tab, entry.bioschemas
-            this.globalStore.dispatch(EntryActions.getPrimaryPublication());
-            this.entryBioschemasService.buildBioschemasJSON(this.renderer);
-            this.facade.launchSurveyForEntryPage(this.entryId(), this.isDesktop());
-          } else if (status !== 'INITIAL') {
-            this.util.setPageView('OTHER');
-          }
-          return EMPTY;
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe();
+    this.entryId.set(entryId);
+    this.entryStatus.set({ ...status, entryId });
+
+    if (status.status_code === 'REL') {
+      this.util.setPageView('SUCCESS');
+      this.metaTagService.buildMetaTagsFromSummaryData(this.renderer, summary);
+      this.entryBioschemasService.buildBioschemasJSONFromData(this.renderer, entryId, summary, primaryPublication);
+
+      const isWebGlEnabled = this.facade.checkWebglEnabled();
+      if (isWebGlEnabled) this.facade.testNetworkSpeed();
+      this.facade.testProcessingPower();
+      this.facade.launchSurveyForEntryPage(this.entryId(), this.isDesktop());
+    } else if (status.status_code !== 'INITIAL') {
+      this.util.setPageView('OTHER');
+    } else {
+      this.util.setPageView('LOADING');
+    }
 
     // detects current tab, if entry is released and we are in desktop mode
     combineLatest([this.entryStatusObs$, this.isDesktopObs$, this.currentTabNameObs$])

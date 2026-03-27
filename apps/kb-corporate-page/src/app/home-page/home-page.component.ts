@@ -1,0 +1,61 @@
+import { Component, OnInit, inject, computed, AfterViewInit } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CommonModule } from '@angular/common';
+import { HeaderJumbotronComponent } from '../header-jumbotron/header-jumbotron.component';
+import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
+import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.component';
+import { KeyFeaturesListComponent } from '../key-features-list/key-features-list.component';
+import { FaqsListComponent } from '../faqs-list/faqs-list.component';
+import { CorporatePagesBioschemasService } from '../services/corporate-pages.bioschemas';
+import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
+
+declare const $: any;
+
+@Component({
+  selector: 'pdbc-app-home-page',
+  templateUrl: './home-page.component.html',
+  styleUrls: ['./home-page.component.scss'],
+  imports: [CommonModule, HeaderJumbotronComponent, NavTabsComponent, HomeBookmarksComponent, KeyFeaturesListComponent, FaqsListComponent],
+})
+export class HomePageComponent implements OnInit, AfterViewInit {
+  private readonly bioschemasService = inject(CorporatePagesBioschemasService);
+  private readonly cpApiService = inject(CorporatePagesApiService);
+  public readonly realeaseData = toSignal(this.cpApiService.getReleaseData());
+  public releaseDate = computed(() => {
+    const data = this.realeaseData();
+    if (data) {
+      return data['date'];
+    }
+    return '';
+  });
+  public releaseHeader = computed(() => {
+    const data = this.realeaseData();
+    if (data) {
+      return data['header'];
+    }
+    return '';
+  });
+  public releaseDescriptions = computed(() => {
+    const data = this.realeaseData();
+    if (data) {
+      return data['descriptions'];
+    }
+    return [];
+  });
+  public releaseLink = computed(() => {
+    const data = this.realeaseData();
+    if (data) {
+      return data['link'];
+    }
+    return '';
+  });
+
+  ngOnInit(): void {
+    this.bioschemasService.buildBioschemasJSON();
+  }
+
+  ngAfterViewInit() {
+    $(document).foundation();
+    $(document).foundationExtendEBI();
+  }
+}

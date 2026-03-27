@@ -1,0 +1,288 @@
+/* You can add global styles to this file, and also import other style files */
+@import 'ag-grid-community/styles/ag-grid.css';
+@import 'ag-grid-community/styles/ag-theme-quartz.css';
+@import 'driver.js/dist/driver.css';
+@import 'https://ebi.emblstatic.net/web_guidelines/EBI-Icon-fonts/v1.3/fonts.css';
+
+@import 'index';
+@import './assets/css/ebi-global.min';
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  margin: 0;
+  overflow-x: hidden !important;
+  line-height: 27.2px;
+}
+
+body.driver-active.driver-fade {
+  overflow: hidden !important;
+}
+
+a {
+  color: #3b6fb6;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 27.2px;
+  text-decoration: none;
+  border: none;
+
+  &:focus {
+    // border: 1px solid #193f90;
+    border: none;
+    outline: none;
+    text-shadow: none;
+  }
+
+  &:visited {
+    color: #3b6fb6;
+
+    i {
+      color: #3b6fb6;
+    }
+  }
+
+  &:hover {
+    color: #193f90;
+    text-decoration: underline;
+    border: none !important;
+  }
+}
+
+p {
+  margin: 0 !important;
+}
+
+.ngx-slider .ngx-slider-bubble {
+  bottom: 10px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #000000 !important;
+}
+
+.ngx-slider .ngx-slider-floor,
+.ngx-slider .ngx-slider-ceil {
+  bottom: 0 !important;
+  color: #000 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+.ngx-slider .ngx-slider-bar {
+  height: 10px !important;
+  background: #afe2f2;
+  background: linear-gradient(90deg, #d9e9f6 0%, #4a90e2 100%) !important;
+}
+
+.ngx-slider .ngx-slider-pointer {
+  width: 15px !important;
+  height: 15px !important;
+  top: -3px !important;
+  background: #e94e3c !important;
+  border: 1px solid #ffffff !important;
+}
+
+.ngx-slider .ngx-slider-pointer::after {
+  display: none !important;
+}
+
+.mobile-alternative {
+  display: none;
+
+  article {
+    padding: 8px;
+    box-shadow: 4px 5px 4px 0 rgb(0 0 0 / 25%);
+    border: 2px solid #d3cece;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    width: 99%;
+
+    .list {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      border-bottom: 1px solid #d0d0ce;
+      line-height: 22.4px;
+      color: #1a1c1a;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      a {
+        font-size: 14px;
+      }
+
+      .list-item-left {
+        width: 142px;
+        min-width: 142px;
+        padding: 8px 4px;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .search-box {
+    position: relative;
+    font-size: 16px;
+
+    input {
+      border: none;
+      border-bottom: 1px solid var(--Neutral-600, #707372);
+      box-shadow: none;
+      padding-left: 0;
+    }
+
+    .icon-search {
+      position: absolute;
+      right: 5px;
+      top: 12px;
+      color: #707372;
+    }
+  }
+
+  @media screen and (width <= 768px) {
+    display: block;
+    width: 100%;
+  }
+}
+
+section.onboarding-tutorial-banner {
+  display: flex;
+  align-items: center;
+  padding: 8px 20px;
+  background: #e7efdd;
+  margin-bottom: 12px;
+  gap: 12px;
+
+  span {
+    border-bottom-width: 1px;
+    border-bottom-style: dotted;
+    border-bottom-color: inherit;
+    cursor: pointer;
+  }
+}
+
+.help-button {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  background-color: #055b38; /* Dark green */
+  padding: 8px 2px;
+  color: #fff;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 27.2px;
+  writing-mode: sideways-lr; /* vertical text */
+  text-orientation: mixed;
+  box-shadow: 0 4px 8px rgb(0 0 0 / 20%);
+  cursor: pointer;
+  z-index: 999;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #007a4d;
+  }
+}
+
+.help-panel {
+  position: fixed;
+  top: 47%;
+  right: -320px; /* hidden off-screen */
+  width: 300px;
+  height: 225px;
+  background: #fff;
+  box-shadow: -4px 0 8px rgb(0 0 0 / 20%);
+  transition: right 0.5s ease;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+
+  &.active {
+    right: 0; /* slide in */
+  }
+
+  .help-header {
+    background: #055b38;
+    padding: 12px;
+    color: #fff;
+    font-size: 21px;
+    font-weight: 500;
+    line-height: 27.3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .close-btn {
+      cursor: pointer;
+      font-size: 20px;
+    }
+  }
+
+  .help-body {
+    padding: 16px;
+    flex-grow: 1;
+
+    a,
+    span.action {
+      display: block;
+      margin: 10px 0;
+      color: #3b6fb6;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 27.2px;
+      text-decoration: none;
+      cursor: pointer;
+
+      @media screen and (width <= 768px) {
+        display: none;
+      }
+    }
+
+    p {
+      color: #707372;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 22.4px;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.tab-tag {
+  margin-left: 4px;
+  display: inline-flex;
+  padding: 0 2px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  color: var(--Neutral-0, #fff);
+  text-align: center;
+  font-family: 'IBM Plex Sans', Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 16.5px;
+  cursor: pointer;
+}
+
+.tab-tag.no-chip {
+  display: none;
+}
+
+.tab-tag.na {
+  background: var(--Red-700, #bd103b);
+}
+
+.tab-tag.new {
+  background: var(--Brand-600, #0c8950);
+}

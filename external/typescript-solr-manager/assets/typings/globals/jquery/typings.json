@@ -1,0 +1,8 @@
+{
+  "resolution": "main",
+  "tree": {
+    "src": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/jquery/index.d.ts",
+    "raw": "github:DefinitelyTyped/DefinitelyTyped/jquery/index.d.ts",
+    "typings": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/jquery/index.d.ts"
+  }
+}

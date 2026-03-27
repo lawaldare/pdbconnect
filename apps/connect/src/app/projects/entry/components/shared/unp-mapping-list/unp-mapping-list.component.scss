@@ -30,12 +30,29 @@
     color: #0a5032;
     border: 1px solid var(--Purple-800, #0a5032);
     background: #fff;
-    box-shadow: 2px 2px 0 0 #0a5032;
+    box-shadow: 4px 4px 0 0 #0a5032;
     margin-right: 10px;
     cursor: pointer;
 
     &:hover {
       background: #fff;
+      box-shadow: 2px 2px 0 0 #0a5032;
+      transform: translate(2px, 2px);
+      transition: all linear 125ms;
+    }
+
+    &:focus {
+      background: #fff;
+      box-shadow: 2px 2px 0 0 #0a5032;
+      transform: translate(2px, 2px);
+      transition: all linear 125ms;
+    }
+
+    &:active {
+      background: #fff;
+      box-shadow: 2px 2px 0 0 #0a5032;
+      transform: translate(2px, 2px);
+      transition: all linear 125ms;
     }
   }
 

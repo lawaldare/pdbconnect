@@ -63,7 +63,7 @@ export class ValidationDataProcessingFacade {
 
     return combineLatest({
       experimentalDetails: createSelectorStream(EntrySelectors.experimentalDetails, []),
-      sourceOrganisms: createSelectorStream(EntrySelectors.organismScientificNames, []),
+      moleculeSources: createSelectorStream(EntrySelectors.moleculeSources, []),
       hasRna: createSelectorStream(EntrySelectors.hasRNA, []),
       depositionDate: createSelectorStream(EntrySelectors.summaryData, null).pipe(map((data) => data?.depositionDate)),
       releaseDate: createSelectorStream(EntrySelectors.summaryData, null).pipe(map((data) => data?.releaseDate)),
@@ -108,7 +108,23 @@ export class ValidationDataProcessingFacade {
       // parse general information data
 
       /** All methods */
-      if (data.sourceOrganisms.length > 0) processed.generalInfo.sourceOrganisms = data.sourceOrganisms;
+      const seen = new Set<string>();
+      const namesWithStrains = [];
+      if (data.moleculeSources && data.moleculeSources.length > 0) {
+        for (const molSrc of data.moleculeSources) {
+          if (!molSrc.organism_scientific_name) continue;
+          const key = `${molSrc.organism_scientific_name}|${molSrc.strain ?? ''}`;
+          if (seen.has(key)) continue;
+
+          seen.add(key);
+          namesWithStrains.push({
+            name: molSrc.organism_scientific_name,
+            strain: molSrc.strain,
+          });
+        }
+        processed.generalInfo.sourceOrganismsWithStrains = namesWithStrains;
+      }
+
       if (data.pdbRedoData) processed.generalInfo.pdbRedoData = data.pdbRedoData;
 
       /** X-Ray, SAS, EM, others (maybe) */
@@ -164,7 +180,8 @@ export class ValidationDataProcessingFacade {
 
       // parse sample stats (sourceOrganisms, expressionSystem, authorDesc)
       const sampleInfoData: SampleInfoData = {};
-      if (data.sourceOrganisms.length > 0) sampleInfoData.sourceOrganisms = data.sourceOrganisms;
+      if (namesWithStrains.length > 0) sampleInfoData.sourceOrganismsWithStrains = data.namesWithStrains;
+
       if (experimentalDetail.expression_host_scientific_name) {
         const uniqueHostOrganismNames = experimentalDetail.expression_host_scientific_name
           .filter((eachName: any) => eachName.scientific_name !== null && eachName.scientific_name !== undefined)

@@ -1,0 +1,147 @@
+.regex {
+  display: block;
+}
+
+.pisa-section {
+  display: flex;
+  gap: 10px;
+
+  @media screen and (width <= 768px) {
+    display: none;
+  }
+
+  // height: 700px;
+}
+
+h5 {
+  margin-bottom: 0;
+}
+
+button {
+  margin-bottom: 10px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+section.table {
+  width: 65%;
+
+  // margin-top: 5px;
+}
+
+div.pisa-table {
+  width: 100%;
+  margin-top: 5px;
+  height: 500px;
+}
+
+.charts {
+  width: 35%;
+  margin: 10px 0;
+
+  // height: 300px;
+
+  section.complex-sliders {
+    .complex-slider {
+      display: flex;
+      align-items: center;
+
+      span.title {
+        font-weight: 500;
+        font-size: 12px;
+        display: block;
+        width: 150px;
+        min-width: 150px;
+        max-width: 150px;
+      }
+    }
+  }
+
+  section.histogram {
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      gap: 10px;
+
+      .toolbar-title {
+        font-weight: 500;
+        font-size: 16px;
+        display: block;
+        word-wrap: none;
+      }
+    }
+
+    svg {
+      width: 100%;
+      height: inherit;
+    }
+  }
+}
+
+.mat-mdc-select {
+  width: 40% !important;
+  border: 1px solid #d0d0ce;
+  padding: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22.4px;
+}
+
+::ng-deep #histogram-svg {
+  background: #f8f8f8;
+  padding: 10px 0;
+  height: 300px;
+}
+
+::ng-deep .bin-rect {
+  fill: #4a90e2;
+
+  // opacity: 0.7;
+}
+
+::ng-deep .highlight-line {
+  stroke: #e94e3c;
+  stroke-width: 2;
+}
+
+::ng-deep .slider-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+::ng-deep .text-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 238px;
+  margin-bottom: 10px;
+}
+
+::ng-deep .param-name {
+  width: 160px;
+  text-align: right;
+  margin-right: 16px;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+::ng-deep .slider-circle {
+  fill: #333;
+}
+
+::ng-deep .slider-text {
+  fill: #333;
+  font-size: 12px;
+}
+
+::ng-deep .slider-svg {
+  overflow: visible;
+}

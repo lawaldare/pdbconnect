@@ -1,4 +1,10 @@
-<button mat-button [matMenuTriggerFor]="menu" [ngClass]="{ dark: isdark(), small: issmall(), fullwidth: fullwidth() }" (click)="menuOpened()">
+<button
+  class="entry-dropdown-button"
+  mat-button
+  [matMenuTriggerFor]="menu"
+  [ngClass]="{ dark: isdark(), small: issmall(), fullwidth: fullwidth() }"
+  (click)="menuOpened()"
+>
   <span [innerHTML]="sanitize(title())"></span>
   <!-- <svg viewBox="0 0 24 24" width="24px" height="24px" focusable="false" aria-hidden="true" class="ng-tns-c1154042729-9">
     <path d="M7 10l5 5 5-5z" class="ng-tns-c1154042729-9"></path>

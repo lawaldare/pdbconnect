@@ -15,7 +15,8 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.js",
-    "../../libs/pdbe/pv-nightingale-components/src/lib/pv-nightingale-components/components/new-protvista/pv-angular-wrapper/pv-entry-api.facade-new.ts"
+    "../../libs/pdbe/pv-nightingale-components/src/lib/pv-nightingale-components/components/new-protvista/pv-angular-wrapper/pv-entry-api.facade-new.ts",
+    "../../libs/core/src/lib/services/base-href.service.ts"
   ],
   "references": [
     {

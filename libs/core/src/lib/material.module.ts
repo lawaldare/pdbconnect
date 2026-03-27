@@ -18,9 +18,16 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSliderModule } from '@angular/material/slider';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatCardModule } from '@angular/material/card';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatButtonModule } from '@angular/material/button';
 
 @NgModule({
   exports: [
+    MatButtonModule,
     MatTabsModule,
     MatSidenavModule,
     MatListModule,
@@ -40,6 +47,11 @@ import { MatSliderModule } from '@angular/material/slider';
     MatSlideToggleModule,
     MatIconModule,
     MatSliderModule,
+    MatProgressBarModule,
+    MatCardModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatChipsModule,
   ],
 })
 export class MaterialModule {}

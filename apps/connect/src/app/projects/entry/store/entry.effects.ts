@@ -39,6 +39,7 @@ import {
   mapModificationsByPreferredAssembly,
 } from './data-processing/ligand-processing';
 import { generateDomainsCards, generateDomainsTableFilters, generateProcessedDomains, processDomainsWithMacromolecules } from './data-processing/domain-processing';
+import { MoleculeSource } from '../data-models/molecule.model';
 
 @Injectable()
 export class EntryEffects {
@@ -121,7 +122,7 @@ export class EntryEffects {
       ofType(EntryActions.getSymmetry),
       switchMap(() => combineLatest([this.store.select(EntrySelectors.entryId).pipe(take(1)), this.store.select(EntrySelectors.symmetry).pipe(take(1))])),
       mergeMap(([entryId, cachedSymmetry]) => {
-        if (cachedSymmetry !== undefined) {
+        if (cachedSymmetry !== undefined && cachedSymmetry.length > 0) {
           return of(EntryActions.getSymmetrySuccess({ symmetry: cachedSymmetry }));
         }
         return this.entryAPIService.getSymmetry(entryId).pipe(
@@ -216,6 +217,22 @@ export class EntryEffects {
         return this.entryAPIService.getPfamMapping(entryId).pipe(
           map((pfamMapping) => EntryActions.getPfamMappingSuccess({ pfamMapping })),
           catchError(() => of(EntryActions.getPfamMappingFailure()))
+        );
+      })
+    )
+  );
+
+  getRfamMapping$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getRfamMapping),
+      switchMap(() => combineLatest([this.store.select(EntrySelectors.entryId).pipe(take(1)), this.store.select(EntrySelectors.rfamMapping).pipe(take(1))])),
+      mergeMap(([entryId, cachedRfamMappings]) => {
+        if (cachedRfamMappings !== undefined) {
+          return of(EntryActions.getRfamMappingSuccess({ rfamMapping: cachedRfamMappings }));
+        }
+        return this.entryAPIService.getRfamMapping(entryId).pipe(
+          map((rfamMapping) => EntryActions.getRfamMappingSuccess({ rfamMapping })),
+          catchError(() => of(EntryActions.getRfamMappingFailure()))
         );
       })
     )
@@ -347,17 +364,17 @@ export class EntryEffects {
           this.store.select(EntrySelectors.entryId).pipe(take(1)),
           this.store.select(EntrySelectors.macroMolecules).pipe(take(1)),
           this.store.select(EntrySelectors.boundLigands).pipe(take(1)),
-          this.store.select(EntrySelectors.organismScientificNames).pipe(take(1)),
+          this.store.select(EntrySelectors.moleculeSources).pipe(take(1)),
           this.store.select(EntrySelectors.hasRNA).pipe(take(1)),
           this.store.select(EntrySelectors.macromolsDescriptions).pipe(take(1)),
           this.store.select(EntrySelectors.macromolsChainsToEntityIds).pipe(take(1)),
         ])
       ),
-      mergeMap(([entryId, cachedMacromols, cachedBLigands, cachedOrgNames, cachedHasRna, cachedMacromolsDesc, cachedChainsToEntityIds]) => {
+      mergeMap(([entryId, cachedMacromols, cachedBLigands, cachedMolSrc, cachedHasRna, cachedMacromolsDesc, cachedChainsToEntityIds]) => {
         if (
           cachedMacromols !== undefined &&
           cachedBLigands !== undefined &&
-          cachedOrgNames !== undefined &&
+          cachedMolSrc !== undefined &&
           cachedHasRna !== undefined &&
           cachedMacromolsDesc !== undefined &&
           cachedChainsToEntityIds !== undefined
@@ -367,7 +384,7 @@ export class EntryEffects {
               data: {
                 macroMolecules: cachedMacromols,
                 boundLigands: cachedBLigands,
-                organismScientificNames: cachedOrgNames,
+                moleculeSources: cachedMolSrc,
                 hasRNA: cachedHasRna,
                 macromolsDescriptions: cachedMacromolsDesc,
                 macromolsChainsToEntityIds: cachedChainsToEntityIds,
@@ -395,15 +412,12 @@ export class EntryEffects {
 
             const boundLigands = molecules.filter((mol) => mol.molecule_type === 'bound');
 
-            const organismScientificNames: string[] = [];
+            const moleculeSources: MoleculeSource[] = [];
 
             for (const entityDetail of molecules) {
               const sources = entityDetail['source'] ?? [];
               for (const eachSource of sources) {
-                const organismName = eachSource['organism_scientific_name'] ?? undefined;
-                if (organismName && organismScientificNames.indexOf(organismName) === -1) {
-                  organismScientificNames.push(organismName);
-                }
+                moleculeSources.push(eachSource);
               }
             }
 
@@ -415,7 +429,7 @@ export class EntryEffects {
               data: {
                 macroMolecules,
                 boundLigands,
-                organismScientificNames,
+                moleculeSources,
                 hasRNA,
                 macromolsDescriptions,
                 macromolsChainsToEntityIds,
@@ -1889,6 +1903,23 @@ export class EntryEffects {
               catchError(() => of(EntryActions.getEntryProtvistaVariationFailure()))
             )
           )
+        );
+      })
+    )
+  );
+
+  getHasMDDB$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EntryActions.getHasMDDB),
+      switchMap(() => combineLatest([this.store.select(EntrySelectors.entryId).pipe(take(1)), this.store.select(EntrySelectors.hasMDDB).pipe(take(1))])),
+      mergeMap(([entryId, cached]) => {
+        if (cached !== undefined) {
+          return of(EntryActions.getHasMDDBSuccess({ hasMDDB: cached }));
+        }
+
+        return this.entryAPIService.getMDDBLinks(entryId).pipe(
+          map((links) => EntryActions.getHasMDDBSuccess({ hasMDDB: links.length > 0 })),
+          catchError(() => of(EntryActions.getHasMDDBFailure()))
         );
       })
     )

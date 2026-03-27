@@ -1,0 +1,43 @@
+@if(tutorialTourService.showLigandsTourBanner() && isBannerCookies()){
+<section class="onboarding-tutorial-banner structures">
+  <img [src]="'images/light-star.svg' | asset" alt="light start icon" />
+  <p style="margin: 0 !important">We have redesigned this page to enhance your experience. <span (click)="startLigandsTabTour()">Take an on-page tour.</span></p>
+</section>
+}
+<div id="ligands-section">
+  <h5>{{ligandsLength()}} unique bound ligands</h5>
+  <p>The ligands, if present, are those observed bound directly to the preferred assemblies representing this complex in the PDB.</p>
+  @if (ligands().length) {
+
+  <section class="actions">
+    <div class="search-box" id="ligands-search-tour">
+      <input type="search" [formControl]="searchTerm" placeholder="Search by ligand name or id" />
+      @if (!searchTerm.value) {
+      <i class="icon icon-common icon-search"></i>
+      }
+    </div>
+    <div class="sort-box" id="ligands-sort-tour">
+      <span>Sort by:</span>
+      <mat-select [formControl]="selectedSortBy" (selectionChange)="onSortTypeChange($event.value)">
+        <mat-option value="functional">Functional ligand type</mat-option>
+        <mat-option value="frequency">Frequency (PDB entries)</mat-option>
+      </mat-select>
+    </div>
+  </section>
+  <div class="grid-container" id="ligands-list-tour">
+    @for (ligand of ligandsPage(); track $index) {
+    <pdbc-complex-ligand-grid [ligand]="ligand" [complexId]="complexId() ?? ''" />
+    }
+  </div>
+  <mat-paginator
+    class="paginator-container"
+    [length]="ligandsLength()"
+    [pageSize]="ligandsPageSize()"
+    [pageSizeOptions]="ligandsPageSizeOptions()"
+    (page)="handlePageEvent($event)"
+    showFirstLastButtons
+    aria-label="Select page of ligands"
+  >
+  </mat-paginator>
+  }
+</div>

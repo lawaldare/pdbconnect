@@ -8,6 +8,7 @@ export const downloadParams: any = {
   'validation-report-full': { report_type: 'full' },
   'validation-report-summary': { report_type: 'summary' },
   'validation-data': { data_format: 'xml' },
+  'validation-data-cif': { data_format: 'cif' },
   'compound-mmcif-combined': { combined: true },
   'compound-mmcif-individual': { combined: false },
   'model-conventional': {
@@ -45,6 +46,7 @@ export const fdsTypeDict: any = {
   'validation-report-full': 'validation-report',
   'validation-report-summary': 'validation-report',
   'validation-data': 'validation-data',
+  'validation-data-cif': 'validation-data',
   'map-coefficients': 'map-coefficients',
   'compound-mmcif-combined': 'mmcif',
   'compound-mmcif-individual': 'mmcif',

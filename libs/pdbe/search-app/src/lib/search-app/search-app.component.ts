@@ -138,7 +138,6 @@ export class SearchAppComponent implements OnInit {
       )
       .subscribe(
         (results: ResultGroup[]) => {
-          console.log(results);
           const sortedResults = this.utilService.sortArrayObjectByArrayOrder(results, this.categories, 'groupValue');
           this.resultGroups = sortedResults;
           this.resultPanelOpen.set(true);

@@ -1,7 +1,7 @@
-import { Component, Input, OnInit, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { HeaderLogoMenuConfig, PDBE_HEADER_LOGO_SRC, PDBE_KB_HEADER_LOGO_SRC } from '@pdbc/core';
+import { AssetPipe, HeaderLogoMenuConfig, PDBE_HEADER_LOGO_SRC, PDBE_KB_HEADER_LOGO_SRC } from '@pdbc/core';
 
 export interface Link {
   name: string;
@@ -12,36 +12,51 @@ export interface Link {
 @Component({
   selector: 'pdbc-pdbe-header-logo-menu',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AssetPipe],
   templateUrl: './pdbe-header-logo-menu.component.html',
   styleUrls: ['./pdbe-header-logo-menu.component.scss'],
 })
 export class PdbeHeaderLogoMenuComponent implements OnInit {
   @Input() headerConfig!: HeaderLogoMenuConfig;
+
   public headerLogoSrc = '';
+  public pisaLogoSrc = '';
+
   public isMobile = signal(false);
-  // public isComplexPage = signal(this.headerConfig.isComplexPage ?? false);
 
   public links!: Link[];
 
   ngOnInit() {
-    this.headerLogoSrc = this.headerConfig.logoType === 'PDBe' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
+    if (this.headerConfig.isLigandPage || this.headerConfig.isComplexPage) {
+      this.headerLogoSrc = this.headerConfig.logoPath ?? '';
+    } else {
+      this.headerLogoSrc = this.headerConfig.logoType === 'PDBe' ? PDBE_HEADER_LOGO_SRC : PDBE_KB_HEADER_LOGO_SRC;
+    }
     this.links = this.headerConfig.urls || [];
+    this.pisaLogoSrc = this.assetUrl(PDBE_HEADER_LOGO_SRC);
   }
 
-  // ngAfterViewInit(): void {
-  //   const fromOption = {
-  //     y: -100,
-  //   };
+  private assetUrl(path: string): string {
+    const raw = (path ?? '').trim();
+    if (!raw) return raw;
 
-  //   const toOption = {
-  //     y: 0,
-  //     duration: 3,
-  //     ease: 'bounce',
-  //   };
+    // Absolute URL
+    if (/^https?:\/\//i.test(raw)) return raw;
 
-  //   gsap.fromTo('img', fromOption, toOption);
-  // }
+    // Normalize leading slashes for consistent checks
+    const p = raw.replace(/^\/+/, ''); // removes one or many leading '/'
+
+    // If caller already included the mount, return as absolute (prevents doubling)
+    if (p === 'pdbe/pisa' || p.startsWith('pdbe/pisa/')) {
+      return `/${p}`;
+    }
+
+    // Otherwise prefix with base href
+    const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
+    const base = baseHref === '/' ? '' : baseHref.replace(/\/$/, '');
+
+    return `${base}/${p}`;
+  }
 
   public get getHeaderLogoClass(): string {
     return this.headerConfig.logoType === 'PDBe' ? 'pdbe-header-logo-img' : 'pdbe-kb-header-logo-img';

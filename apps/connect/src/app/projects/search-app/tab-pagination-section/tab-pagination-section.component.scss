@@ -1,0 +1,35 @@
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+button {
+  min-width: auto;
+  line-height: 26px;
+}
+
+.paginationTitle {
+  font-size: 16px;
+  line-height: 32px;
+  float: left;
+  word-break: keep-all;
+}
+
+.paginationTitleMobile {
+  font-size: 16px;
+  line-height: 32px;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.paginationButtons {
+  box-shadow: none !important;
+  border: 1px solid #999;
+  border-radius: 0 !important;
+  margin-right: 3px;
+}
+
+::ng-deep .mat-mdc-raised-button:not(:disabled).mat-accent {
+  background-color: #616161;
+}

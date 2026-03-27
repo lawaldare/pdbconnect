@@ -1,0 +1,7 @@
+<div [@imgAnimate]="animate" class="g-image">
+  <img [lazyImage]="state.images[state.currIndex].src" (lazyLoad)="imageLoad($event)" />
+</div>
+
+@if (loading && config.loader) {
+<pdbc-gallery-loader [config]="config.loader"></pdbc-gallery-loader>
+}

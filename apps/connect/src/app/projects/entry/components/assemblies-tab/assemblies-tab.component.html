@@ -1,9 +1,4 @@
-@if(tutorialTourService.showAssembliesTourBanner() && isBannerCookies()){
-<section class="onboarding-tutorial-banner">
-  <img src="assets/img/light-star.svg" alt="light start icon" />
-  <p>We have redesigned this page to enhance your experience. <span (click)="startAssembliesTabTour()">Take an on-page tour.</span></p>
-</section>
-} @if (tabDataLoaded()){ @if(assemblyTableRows().length){
+@if (tabDataLoaded()){ @if(assemblyTableRows().length){
 <main>
   @if(isSidebarDisplayed()){
   <pdbc-interactive-tables tabName="Complexes" id="complexes-list-tour" />
@@ -62,8 +57,7 @@
             </span>
             <article>
               @if (datum?.complexId) {
-              <a [href]="generateComplexSearchUrl(datum!.complexId!)" target="_blank">{{datum?.complexId}}</a>
-              <i class="icon icon-common icon-search"></i>
+              <a [href]="generateComplexPageUrl(datum!.complexId!)" target="_blank">{{datum?.complexId}}</a>
               } @else {
               <span>Not available</span>
               }
@@ -112,15 +106,17 @@
           </div>
         </div>
         <div class="assembly-grouped">
-          @if(preferredSymmetry()?.type){
           <div class="info-row">
             <span>
-              Complex symmetry
+              Symmetry
               <lib-help-icon-with-tooltip [tooltipText]="entryAssembliesTooltips.assemblySymmetry" />
             </span>
-            <article>{{preferredSymmetry()?.type}} - {{preferredSymmetry()?.symbol}}</article>
+            @if(currentSymmetry()?.type){
+            <article>{{currentSymmetry()?.type}} - {{currentSymmetry()?.symbol}}</article>
+            } @else {
+            <article>Not available</article>
+            }
           </div>
-          }
           <div class="info-row">
             <span>Number of interfaces</span>
             <article>{{ getAdditionalData('interfaceCount') }}</article>

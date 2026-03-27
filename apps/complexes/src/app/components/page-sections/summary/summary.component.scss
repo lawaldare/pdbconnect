@@ -1,0 +1,141 @@
+.info-row {
+  display: flex;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+ul {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 0 !important;
+}
+
+.info-row-title {
+  font-size: 16px;
+  font-weight: 500;
+  width: 179px;
+  min-width: 179px;
+  max-width: 179px;
+  display: block;
+}
+
+.info-row-content {
+  font-size: 16px;
+  font-weight: 400;
+  word-break: normal;
+  flex-wrap: wrap;
+  display: inline;
+
+  span.diff-symbol {
+    font-weight: 500;
+    color: #3b6fb6;
+    cursor: pointer;
+  }
+
+  span.cofactor-link {
+    color: #3b6fb6;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 27.2px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      color: #193f90;
+      text-decoration: underline;
+      border: none !important;
+    }
+  }
+
+  ul {
+    margin-left: 0 !important;
+  }
+
+  &.summary-tooltip {
+    cursor: pointer;
+  }
+
+  &.participants {
+    flex-direction: row;
+    gap: 5px;
+  }
+}
+
+.summary-tooltip {
+  position: relative;
+}
+
+::ng-deep .complex-name-tooltip {
+  .mdc-tooltip__surface {
+    background-color: #fff !important;
+    color: #1a1c1a !important;
+    font-size: 16px !important;
+    line-height: 27px;
+    padding: 10px;
+    box-shadow:
+      0 5px 5px -3px rgb(0 0 0 / 20%),
+      0 8px 10px 1px rgb(0 0 0 / 14%),
+      0 3px 14px 2px rgb(0 0 0 / 12%);
+
+    // white-space: nowrap;
+    max-width: 400px !important;
+    max-height: unset !important;
+  }
+}
+
+p.view-more {
+  color: #3b6fb6;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22.7px;
+  cursor: pointer;
+}
+
+.summary-section {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  @media screen and (width <= 768px) {
+    flex-direction: column-reverse;
+  }
+
+  .details {
+    width: 40%;
+    align-self: flex-start;
+
+    @media screen and (width <= 768px) {
+      width: 100%;
+    }
+  }
+
+  .molstar {
+    width: calc(60% - 10px);
+    align-self: flex-start;
+
+    @media screen and (width <= 768px) {
+      width: 100%;
+    }
+
+    header {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+
+      h5 {
+        margin: 0;
+      }
+
+      .icon {
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+::ng-deep .msp-plugin .msp-layout-standard {
+  border: none !important;
+}

@@ -1,0 +1,14 @@
+<div #container class="g-thumb-container" [ngStyle]="contStyle">
+  <div class="g-thumbs" [style.transform]="translateThumbs()">
+    @for (image of state.images; track image; let i = $index) {
+    <div
+      class="g-thumb"
+      [class.g-thumb-current]="i === state.currIndex"
+      [style.width.px]="galleryService.config.thumbnails?.width"
+      [style.height.px]="galleryService.config.thumbnails?.height"
+    >
+      <div class="g-thumb-image" [style.backgroundImage]="getThumbImage(i)" [tap] (click)="galleryService.set(i)" [title]="getThumbImageTitle(i)"></div>
+    </div>
+    }
+  </div>
+</div>

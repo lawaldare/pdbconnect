@@ -1,0 +1,107 @@
+@if(tutorialTourService.showSummaryTourBanner() && !isBannerCookies()){
+<section class="onboarding-tutorial-banner">
+  <img [src]="'images/light-star.svg' | asset" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startSummaryTabTour()">Take an on-page tour.</span></p>
+</section>
+}
+<div class="summary-section">
+  <section class="details">
+    @if(summaryData()?.complex_portal_id){
+    <div class="info-row">
+      <span class="info-row-title">Complex Portal ID</span>
+      <div class="info-row-content">
+        <a [href]="baseUrl + 'complexportal/complex/' + summaryData()?.complex_portal_id" target="_blank">
+          {{ summaryData()?.complex_portal_id }}
+          <!-- <i class="icon icon-link icon-common" style="margin-left: 5px"></i> -->
+        </a>
+      </div>
+    </div>
+    }
+    <div class="info-row">
+      <span class="info-row-title">Source organism</span>
+      <div class="info-row-content">
+        <em>{{ summaryData()?.source_organism }}</em>
+      </div>
+    </div>
+    <div class="info-row">
+      <span class="info-row-title">
+        Components
+        <lib-help-icon-with-tooltip [iconPath]="iconPath" [tooltipText]="complexSummaryTabTooltips.component" />
+      </span>
+      <div class="components">
+        <div class="info-row-content participants" pdbcParticipant [participants]="participants()"></div>
+        @if((summaryData()?.participants ?? []).length > 4){
+        <p role="button" class="view-more" (click)="viewMore()">View {{ textIcon() }}</p>
+        }
+      </div>
+    </div>
+    <div class="info-row">
+      <span class="info-row-title">Oligomeric state</span>
+      <div class="info-row-content">{{ summaryData()?.oligomeric_state }}</div>
+    </div>
+    @if(summaryData()?.polymer_composition){
+    <div class="info-row">
+      <span class="info-row-title">
+        Polymer composition
+        <lib-help-icon-with-tooltip [iconPath]="iconPath" [tooltipText]="complexSummaryTabTooltips.polymerComposition" />
+      </span>
+      <div class="info-row-content">{{ summaryData()?.polymer_composition }}</div>
+    </div>
+    } @if(summaryData()?.symmetry?.type){
+    <div class="info-row">
+      <span class="info-row-title">
+        Global symmetry
+        <lib-help-icon-with-tooltip [iconPath]="iconPath" [tooltipText]="complexSummaryTabTooltips.globalSymmetry" />
+      </span>
+      <div class="info-row-content">
+        {{ summaryData()?.symmetry | symmetry }} @if(diffSymmetries().length){ There are
+        <span class="diff-symbol" role="button" (click)="openDiffSymmetryDialog()">{{ diffSymmetries().length }}</span> PDB assemblies with missing or different
+        symmetry. }
+      </div>
+    </div>
+    } @if(mappedLigands()?.length){
+    <div class="info-row">
+      <span class="info-row-title">
+        Observed cofactors
+        <lib-help-icon-with-tooltip [iconPath]="iconPath" [tooltipText]="complexSummaryTabTooltips.observedCofactors" />
+      </span>
+      <div class="info-row-content" style="display: block">
+        @for(ligand of mappedLigands(); track ligand.ligandId; let islast = $last){
+        <span
+          class="cofactor-link"
+          matTooltipClass="complex-name-tooltip"
+          [matTooltip]="ligand.name"
+          matTooltipPosition="above"
+          (click)="openLigandPage(ligand.ligandId)"
+          style="display: inline"
+          >{{ ligand.ligandId }}</span
+        >{{ islast ? '' : ', ' }} }
+      </div>
+    </div>
+    } @if(uniqueBoundMacromolecules()){
+    <div class="info-row">
+      <span class="info-row-title">
+        Unique bound macromolecules
+        <lib-help-icon-with-tooltip [iconPath]="iconPath" [tooltipText]="complexSummaryTabTooltips.uniqueBoundMacromolecules" />
+      </span>
+      <div class="info-row-content">{{uniqueBoundMacromolecules()}}</div>
+    </div>
+    }
+    <div class="info-row">
+      <span class="info-row-title">Methods overview</span>
+      <div class="info-row-content" pdbcOEMC [data]="summaryData()?.unique_observed_experimental_methods_with_counts ?? {}" [complexId]="complexId() ?? ''"></div>
+    </div>
+  </section>
+  <section class="molstar">
+    <header>
+      <h5>Representative structure for this complex</h5>
+      <i
+        class="icon icon-common icon-info"
+        matTooltipClass="complex-name-tooltip"
+        [matTooltip]="'The representative structure for this complex is chosen from instances without additional bound macromolecules. X-ray entries are prioritised, selecting the best (lowest) resolution among the top candidates. If no structures have a resolution value, the heaviest available instance is chosen.'"
+        matTooltipPosition="above"
+      ></i>
+    </header>
+    <lib-pdbe-molstar [molstarConfig]="config" [height]="height" [width]="width"></lib-pdbe-molstar>
+  </section>
+</div>

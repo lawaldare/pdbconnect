@@ -1,0 +1,110 @@
+@if(tutorialTourService.showStructuresTourBanner() && isBannerCookies()){
+<section class="onboarding-tutorial-banner structures">
+  <img [src]="'images/light-star.svg' | asset" alt="light start icon" />
+  <p>We have redesigned this page to enhance your experience. <span (click)="startStructuresTabTour()">Take an on-page tour.</span></p>
+</section>
+} @if(rowData().length){
+<div id="structures-section">
+  <header>
+    <h5 class="title">{{rowData().length}} assemblies representing this complex in the PDB <span>{{headerSubtext()}}</span></h5>
+    <button mat-button [matMenuTriggerFor]="menu">
+      <span>Download files</span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M7 10.5L12 15.5L17 10.5H7Z" fill="black" />
+      </svg>
+    </button>
+    <mat-menu #menu="matMenu" class="entry-dropdown-menu" yPosition="below">
+      <span mat-menu-item (click)="downloadCSV()">Download table (csv)</span>
+      <span mat-menu-item (click)="downloadMMCIF()">Download coordinates (mmCIF)</span>
+    </mat-menu>
+  </header>
+  @if(uniqueBoundMacromolecules()?.length && boundMacromolecules().length){
+  <section class="filter" id="structure-bound-filters-tour">
+    <!-- <p>{{uniqueBoundMacromolecules()?.length}} unique bound macromolecules found in {{assembliesWithBoundMacromolecules()?.length}} assemblies</p> -->
+    <div class="filter-action">
+      <p>Filter by bound macromolecule:</p>
+      <mat-select [(ngModel)]="selectedBM">
+        <!-- <mat-option value="">All</mat-option> -->
+        @for (bound of boundMacromolecules(); track bound.value) {
+        <mat-option [value]="bound.value">{{bound.label}}</mat-option>
+        }
+      </mat-select>
+    </div>
+  </section>
+  }
+  <section id="structure-table-tour">
+    <div class="table">
+      <ag-grid-angular
+        class="ag-theme-quartz"
+        [rowData]="rowData()"
+        [columnDefs]="colDefs"
+        [gridOptions]="gridOptions"
+        (selectionChanged)="onSelectionChanged($event)"
+        (rowDataUpdated)="onRowDataUpdated($event)"
+        (filterChanged)="onFilterChanged($event)"
+        (gridReady)="onComplexStructureGridReady($event)"
+        [paginationPageSizeSelector]="paginationPageSizeSelector()"
+        [rowSelection]="rowSelection"
+        [initialState]="initialState"
+      />
+    </div>
+    <div class="molstar">
+      <!-- <div style="padding: 20px 10px">
+        <p><strong>View assembly in 3D</strong></p>
+        <p>Click on any table row to visualise the individual assembly. By default, the first assembly in the table is shown.</p>
+      </div> -->
+      <div #popoutWrapper>
+        <lib-pdbe-molstar [molstarConfig]="config" [height]="height"></lib-pdbe-molstar>
+      </div>
+    </div>
+  </section>
+  <div class="mobile-alternative">
+    <div class="search-box">
+      <input type="search" [(ngModel)]="searchTerm" placeholder="Search..." />
+      <i class="icon icon-common icon-search"> </i>
+    </div>
+    @for(structure of structuresPage(); track structure){
+    <article>
+      <div class="list">
+        <p class="list-item-left">PDB</p>
+        <p class="list-item-right">
+          <a [href]="baseUrl +'entry/pdb/' + structure.pdb_id" target="_blank">
+            {{ structure.pdb_id }}
+            <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
+          </a>
+        </p>
+      </div>
+      <div class="list">
+        <p class="list-item-left">ID</p>
+        <p class="list-item-right">{{ structure.assembly_id }}</p>
+      </div>
+      <div class="list">
+        <p class="list-item-left">Title</p>
+        <p class="list-item-right">{{ structure.title }}</p>
+      </div>
+      <div class="list">
+        <p class="list-item-left">Exp. method</p>
+        <p class="list-item-right">{{ structure.experimental_method }}</p>
+      </div>
+      <div class="list">
+        <p class="list-item-left">Res. (Å)</p>
+        <p class="list-item-right">{{ structure.resolution }}</p>
+      </div>
+    </article>
+    }
+    <mat-paginator
+      class="paginator-container"
+      [length]="structuresLength()"
+      [pageSize]="structuresPageSize()"
+      [pageSizeOptions]="structuresPageSizeOptions()"
+      (page)="handlePageEvent($event)"
+      showFirstLastButtons
+      aria-label="Select page of structures"
+    >
+    </mat-paginator>
+  </div>
+</div>
+
+} @else {
+<h4>No structures data available yet!</h4>
+}

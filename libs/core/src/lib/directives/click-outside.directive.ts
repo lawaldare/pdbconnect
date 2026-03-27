@@ -5,12 +5,14 @@ import { Directive, ElementRef, EventEmitter, HostListener, Output } from '@angu
   standalone: true,
 })
 export class ClickOutsideDirective {
-  @Output() clickOutside = new EventEmitter<void>();
+  @Output() clickOutside = new EventEmitter<HTMLElement>();
 
   constructor(private elementRef: ElementRef) {}
 
-  @HostListener('document:click', ['$event.target'])
-  public onClick(targetElement: HTMLElement): void {
+  @HostListener('document:click', ['$event'])
+  public onClick(event: MouseEvent): void {
+    const targetElement = event.target as HTMLElement | null;
+    if (!targetElement) return;
     const clickedInside = this.elementRef.nativeElement.contains(targetElement);
     const buttonHasClassIdentifier = targetElement.classList.contains('less-identifier');
     if (!clickedInside && !buttonHasClassIdentifier) {

@@ -1,4 +1,4 @@
-@import url('libs/core/src/lib/styles/pdb_connect.scss');
+@import 'libs/core/src/lib/styles/pdb_connect';
 
 section {
   .container {
@@ -39,7 +39,7 @@ section {
       span {
         display: block;
         margin-left: 12px;
-        color: white;
+        color: #fff;
         font-size: 35px;
         font-weight: 900;
         margin-top: -10px;
@@ -48,7 +48,7 @@ section {
 
     .icon {
       font-size: 32px;
-      color: white;
+      color: #fff;
       cursor: pointer;
       display: none;
 
@@ -70,11 +70,15 @@ section {
         a,
         span {
           text-decoration: none;
-          color: white;
+          color: #fff;
           font-size: 19px;
           line-height: 26.6px;
           border: none;
         }
+      }
+
+      .vf-button--search-pdbe {
+        margin: 0 !important;
       }
 
       @media only screen and (width <= 540px) {
@@ -94,7 +98,7 @@ section {
 
       a {
         text-decoration: none;
-        color: white;
+        color: #fff;
         font-size: 19px;
         line-height: 26.6px;
         border: none;

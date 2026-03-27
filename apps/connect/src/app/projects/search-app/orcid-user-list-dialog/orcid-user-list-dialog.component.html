@@ -1,0 +1,27 @@
+<h1 mat-dialog-title>ORCiD Claim</h1>
+<div mat-dialog-content style="font-size: 95%">
+  @if (loadingData) {
+  <div style="height: 150px">
+    <mat-progress-spinner color="primary" mode="indeterminate" style="margin: 0 auto"></mat-progress-spinner>
+  </div>
+  } @if (!loadingData) {
+  <div>
+    @if (!currentUserClaimLflag && list.length === 0) {
+    <h5>{{entryData.pdbId}} is not claimed in Orcid!</h5>
+    } @if (currentUserClaimLflag && list.length === 0) {
+    <h6>You have claimed {{entryData.pdbId}}</h6>
+    } @if (!currentUserClaimLflag && list.length > 0) {
+    <h6>Following ORCiD users have claimed {{entryData.pdbId}}</h6>
+    } @if (currentUserClaimLflag && list.length > 0) {
+    <h6>You and following ORCiD users have claimed {{entryData.pdbId}}</h6>
+    } @if (list.length > 0) {
+    <ul>
+      @for (user of list; track user) {
+      <li><a href="{{user.url}}" target="_blank">{{user.name}}</a></li>
+      }
+    </ul>
+    }
+    <button mat-raised-button color="accent" mat-dialog-close="Close" style="margin-bottom: 0" mat-autofocus>Close</button>
+  </div>
+  }
+</div>

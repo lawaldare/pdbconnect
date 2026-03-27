@@ -3,12 +3,14 @@ export interface HeaderLogoMenuConfig {
   logoType?: string;
   headerTitle?: string;
   isComplexPage?: boolean;
+  isLigandPage?: boolean;
   isHomePage?: boolean;
   urls?: {
     name: string;
     path: string;
     openInNewTab: boolean;
   }[];
+  logoPath?: string;
 }
 
 export interface MobileHeaderLogoMenuConfig {

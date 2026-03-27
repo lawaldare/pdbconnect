@@ -1,0 +1,26 @@
+{
+  "name": "pisa-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/pisa-e2e/src",
+  "tags": [],
+  "implicitDependencies": ["pisa"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/pisa-e2e/cypress.config.ts",
+        "testingType": "e2e",
+        "devServerTarget": "pisa:serve"
+      },
+      "configurations": {
+        "production": {
+          "devServerTarget": "pisa:serve:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

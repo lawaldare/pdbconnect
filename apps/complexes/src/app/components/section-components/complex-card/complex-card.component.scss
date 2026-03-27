@@ -1,0 +1,74 @@
+.card-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+
+  .image-box {
+    min-width: 150px;
+    max-width: 150px;
+    height: 150px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border: 1px solid var(--Neutral-600, #707372);
+    }
+  }
+
+  article {
+    a {
+      color: #3b6fb6;
+      border: none;
+      font-size: 19px;
+      font-weight: 500;
+      line-height: 28.5px;
+
+      .icon-common {
+        margin-left: 5px;
+      }
+    }
+
+    a.pfam-link {
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    p,
+    li {
+      font-size: 13px;
+      line-height: 22.7px;
+    }
+
+    h4 {
+      font-weight: 400;
+      font-size: 18px;
+    }
+
+    p.view-more {
+      color: #3b6fb6;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 22.7px;
+      cursor: pointer;
+    }
+  }
+}
+
+::ng-deep .complex-name-tooltip {
+  .mdc-tooltip__surface {
+    background-color: #fff !important;
+    color: #1a1c1a !important;
+    font-size: 16px !important;
+    line-height: 27px;
+    padding: 10px;
+    box-shadow:
+      0 5px 5px -3px rgb(0 0 0 / 20%),
+      0 8px 10px 1px rgb(0 0 0 / 14%),
+      0 3px 14px 2px rgb(0 0 0 / 12%);
+
+    // white-space: nowrap;
+    max-width: 400px !important;
+    max-height: unset !important;
+  }
+}

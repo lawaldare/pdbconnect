@@ -8,16 +8,12 @@
       <div class="row__right__authors">
         <span class="row__right__authors__title">Authors:</span>
         @for(author of pageData.sectionOne.author_list; track author.full_name){
-        <span>
-          <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a> </span
-        >, }
+        <span> <a [href]="'https://www.ebi.ac.uk/pdbe/entry/search/index?all_authors:' + author.full_name" target="_blank">{{ author.full_name }}</a> </span>, }
       </div>
       <div class="row__right__pmid">
         <span class="row__right__pmid__info">
           <i>{{ pageData.sectionOne.journal_info.pdb_abbreviation }}</i>
-          {{ pageData.sectionOne.journal_info.volume }}
-          {{ pageData.sectionOne.journal_info.pages }}
-          ({{ pageData.sectionOne.journal_info.year }})
+          {{ pageData.sectionOne.journal_info.volume }} {{ pageData.sectionOne.journal_info.pages }} ({{ pageData.sectionOne.journal_info.year }})
         </span>
         <span class="row__right__authors__title">PMID:</span>
         <a [href]="'https://europepmc.org/article/MED/' + pageData.sectionOne.pubmed_id" target="_blank"
@@ -47,7 +43,7 @@
       @for(entry of relatedEntries; track entry){
       <span class="row__right__entry">
         <a [href]="'https://www.ebi.ac.uk/pdbe/entry/pdb/' + entry" target="_blank" class="row__right__link"
-          >{{ entry }}
+          >pdb_0000{{ entry }}
           <i class="icon icon-link icon-common"></i>
         </a>
       </span>

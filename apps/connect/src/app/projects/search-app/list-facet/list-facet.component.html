@@ -1,0 +1,42 @@
+@if (listData) {
+<div class="facetWarpper">
+  <!-- Facet heading -->
+  @if (isExpanded) {
+  <div class="facetHeading activeFacetHeading" (click)="headingClick()">
+    <span class="icon icon-functional facetHeadingIcon" data-icon="-"></span>{{listHeading}} @if (!listData[0].otherDetails.isRange && listHeadingCount > 0) {
+    <span style="font-weight: normal">&nbsp;({{listHeadingCount}})</span>
+    }
+  </div>
+  } @if (!isExpanded) {
+  <div class="facetHeading" (click)="headingClick()">
+    <span class="icon icon-functional facetHeadingIcon" data-icon="+"></span>{{listHeading}} @if (!listData[0].otherDetails.isRange && listHeadingCount > 0) {
+    <span style="font-weight: normal">&nbsp;({{listHeadingCount}})</span>
+    }
+  </div>
+  }
+  <!-- Facet Item list -->
+  <div class="facetItemsContainer" [ngClass]="{'expanded' : isExpanded}">
+    @for (item of listData; track item) {
+    <div class="facetItem">
+      <div class="facetItemRow" (click)="facetClicked(item)">
+        <div class="facetItemLabel">{{item.label}}</div>
+        @if (item.count > 0) {
+        <div class="facetItemCount">({{item.count}})</div>
+        }
+      </div>
+    </div>
+    } @if (listHeadingCount > listData.length && !showLoader && listHeading !== 'Resolution distribution' && listHeading !== 'Release year distribution' &&
+    listHeading !== 'NMR Field Strength') {
+    <div class="facetItem">
+      <div class="facetItemRow" style="cursor: default">
+        <div class="facetItemLabel" style="width: 70%">&nbsp;</div>
+        <div class="facetItemCount" style="cursor: pointer" (click)="facetClicked({action: 'more', details: listData[0].otherDetails})">More...</div>
+      </div>
+    </div>
+    }
+  </div>
+  @if (showLoader) {
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+</div>
+}

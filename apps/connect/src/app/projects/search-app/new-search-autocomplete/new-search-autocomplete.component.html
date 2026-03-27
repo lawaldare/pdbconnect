@@ -1,0 +1,54 @@
+<input class="pdbeAutoCompleteSearchBox" [formControl]="searchTerm" placeholder="Ex. - hemoglobin, BRCA1_HUMAN" />
+
+<div class="result-container" [fxShow]="resultPanelOpen()" [ngStyle]="resultPanelHeight()" clickOutside (clickOutside)="onClickedOutside()">
+  <div fxLayout="row" fxLayout="row wrap" [fxLayoutAlign]="layoutAlign">
+    @for(resultGroup of resultGroups; track resultGroup){
+    <div class="result-card" fxLayout="column" [fxShow]="primaryResultPanel()">
+      <div class="result-card-heading">
+        {{ resultGroup.groupValue }}
+        <span class="result-card-item-count-heading">({{ resultGroup.doclist.numFound }})</span>
+      </div>
+      <div class="result-card-body">
+        @for(doclistRec of resultGroup.doclist.docs | slice : 0 : 10; track doclistRec){
+        <div class="result-card-item" fxLayout="row" fxLayoutAlign="space-between center" (click)="resultItemClick(doclistRec, resultGroup.doclist.numFound)">
+          <span class="result-card-item-label">{{ doclistRec.value }}</span>
+          <span class="result-card-item-count"> ({{ doclistRec.num_pdb_entries }}) </span>
+        </div>
+        }
+      </div>
+      <div class="result-card-footer" [hidden]="resultGroup.doclist.docs.length < 11">
+        <button class="show-more-link" (click)="searchMore(resultGroup.doclist.docs)">More...</button>
+      </div>
+    </div>
+    } @for(moreResultGroup of moreResultGroups; track moreResultGroup.groupValue){
+    <div class="secondary-result-card-warpper" fxLayout="column" style="overflow-y: auto; width: 100%" [fxShow]="secondaryResultPanel()">
+      <div class="result-card-heading" fxFlex="100%" style="box-sizing: content-box">
+        {{ moreResultGroup.groupValue }} ({{ moreResultGroup.doclist.numFound }})
+        <button class="result-card-item-count-heading" (click)="showLess()">Less...</button>
+      </div>
+      <div class="result-card-body" fxFlex="100%" fxLayout="row wrap">
+        @for ( item of utils.getLoopCount(moreResultGroup.doclist.numFound); track item; let cardIndex = $index) {
+        <div>
+          @for(moreDoclistRec of moreResultGroup.doclist.docs | slice : cardIndex * 10 : cardIndex * 10 + 10; track moreDoclistRec){
+          <div
+            class="secondar-result-card-item"
+            fxLayout="row"
+            title="{{ moreDoclistRec.value }}"
+            (click)="
+              resultItemClick(moreDoclistRec, moreResultGroup.doclist.numFound)
+            "
+          >
+            <span class="result-card-item-label">{{ moreDoclistRec.value }}</span>
+            <span class="result-card-item-count"> ({{ moreDoclistRec.num_pdb_entries }}) </span>
+          </div>
+          }
+        </div>
+        }
+      </div>
+      <div class="result-card-footer">
+        <button class="show-more-link" (click)="showLess()">Less...</button>
+      </div>
+    </div>
+    }
+  </div>
+</div>

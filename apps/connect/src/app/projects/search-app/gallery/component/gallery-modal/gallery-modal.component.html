@@ -1,0 +1,15 @@
+@if (gallery.state | async; as state) {
+<div>
+  @if (state.active) {
+  <div class="g-modal">
+    <div class="g-btn-close-container">
+      @if (closeButton) {
+      <div class="g-btn-close" (click)="gallery.close()"></div>
+      }
+    </div>
+    <pdbc-gallery-main [@popup] [state]="state" [config]="gallery.config"></pdbc-gallery-main>
+    <div class="g-overlay" (click)="gallery.close()"></div>
+  </div>
+  }
+</div>
+}
