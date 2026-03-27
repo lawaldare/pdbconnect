@@ -26,7 +26,7 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
 
   public firstLoadFinished = signal(false);
   public configUpdated = new BehaviorSubject<any | null>(null);
-  private molstarViewInstance!: PDBeMolstarPlugin;
+  private molstarViewInstance: PDBeMolstarPlugin | undefined;
   private readonly molstarPluginService = inject(MolstarPluginService);
   private readonly helpIconForMolstarService = inject(HelpIconForMolstarService);
 
@@ -50,22 +50,20 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
     await this.molstarPluginService.loadPlugin();
     const pluginInstance = this.molstarPluginService.createInstance();
     this.molstarViewInstance = pluginInstance;
-    // TODO: @adam check with Marcelo/Dare if it makes sense to set .molstarViewInstance before awaiting render
 
     const container = this.viewContainer.nativeElement;
     const renderLayout: Parameters<PDBeMolstarPlugin['render']>[0] = this.seqOnExpanded
       ? [{ target: container, component: this.getPDBeMolstarPluginClass()!.UIComponents.FullLayoutNoControlsUnlessExpanded }]
       : container;
 
-    this.mutex.run(async () => {
-      await this.molstarViewInstance.render(renderLayout, this.molstarConfig);
+    await this.mutex.run(async () => {
+      await pluginInstance.render(renderLayout, this.molstarConfig);
       console.log('render finished');
 
       if (!this.firstLoadFinished()) this.firstLoadFinished.set(true);
-      window.dispatchEvent(new CustomEvent(`LibMolstarComponent-${this.id}`, { detail: { id: this.id, loaded: true } })); // TODO this is probably dead code, try to remove?
 
-      this.molstarViewInstance.plugin.layout.events.updated.subscribe(() => {
-        const expanded = this.molstarViewInstance.plugin.layout.state.isExpanded;
+      pluginInstance.plugin.layout.events.updated.subscribe(() => {
+        const expanded = pluginInstance.plugin.layout.state.isExpanded;
         if (expanded !== this.isExpanded) {
           this.isExpanded = expanded;
           this.toggledExpansion.emit(expanded);
