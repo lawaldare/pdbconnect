@@ -5,7 +5,7 @@ export interface ProcessedExperimentalDetails {
   generalInfo: {
     methodName: string;
     resolution?: string;
-    sourceOrganisms?: string[];
+    sourceOrganismsWithStrains?: { name: string; strain?: string }[];
     pdbRedoData?: ProcessedQualityScores;
     reportedRValues?: RValues;
     refinementMethod?: string;
@@ -47,7 +47,7 @@ export interface ValidationData {
 }
 
 export interface SampleInfoData {
-  sourceOrganisms?: string[];
+  sourceOrganismsWithStrains?: { name: string; strain?: string }[];
   expressionSystem?: string[];
   authorDesc?: string;
 }

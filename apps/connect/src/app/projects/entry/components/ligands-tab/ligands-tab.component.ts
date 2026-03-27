@@ -8,7 +8,7 @@ import { ComponentCommunicationService } from '../../services/component-comm.ser
 import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getCleanSelectionName, getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
-import { dashboardStatLinks, INTX_NAME_COLORS, symmOperatorTooltip, tourIds } from '../../entry-constant';
+import { dashboardStatLinks, INTX_NAME_COLORS, symmOperatorTooltip } from '../../entry-constant';
 import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, map, take, skip, timer, lastValueFrom } from 'rxjs';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
@@ -485,8 +485,6 @@ export class LigandsTabComponent implements AfterViewInit {
    */
   private viewReady = signal(false);
 
-  public isBannerCookies = signal(false);
-
   ngAfterViewInit(): void {
     this.viewReady.set(true);
 
@@ -549,18 +547,6 @@ export class LigandsTabComponent implements AfterViewInit {
         }
         this.noTermFiltering.set(false);
       });
-
-    setTimeout(() => {
-      const agreed = this.tutorialTourService.getCookie(tourIds.ligands);
-      this.tutorialTourService.hasLigands.set(this.hasLigands());
-      if (!agreed && this.hasLigands()) {
-        this.isBannerCookies.set(true);
-      }
-    }, 500);
-  }
-
-  public startLigandsTabTour(): void {
-    this.tutorialTourService.startTour(this.tutorialTourService.ligandsTabTourSteps);
   }
 
   public toggleColorList(): void {

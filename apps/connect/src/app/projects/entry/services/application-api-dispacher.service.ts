@@ -9,7 +9,7 @@ export class ApplicationAPIDispatcher {
   private readonly globalStore = inject(Store<EntryStoreState>);
 
   private dispatched: string[] = [];
-  private desktopTabs = ['summary', 'model-quality', 'complexes', 'macromolecules', 'ligands', 'domains', 'llm', 'citations'];
+  private desktopTabs = ['summary', 'model-quality', 'complexes', 'macromolecules', 'ligands', 'domains', 'llm', 'citations', 'other-resources'];
 
   public dispatchForTab(tabName: string): void {
     const actions: any[] = [];
@@ -124,6 +124,23 @@ export class ApplicationAPIDispatcher {
         ...[
           // EntryActions.getPrimaryPublication // always dispatched in main.component.ts
           EntryActions.getArticleCitingPDBEntry,
+        ]
+      );
+    } else if (tabName === 'other-resources') {
+      actions.push(
+        ...[
+          EntryActions.getHasMDDB,
+          EntryActions.getInterproMapping,
+          EntryActions.getCathMapping,
+          EntryActions.getRfamMapping,
+          EntryActions.getGOMapping,
+          EntryActions.getECMapping,
+          EntryActions.getPDBRedoQualityScores,
+          EntryActions.getExperimentSBGridRawData,
+          EntryActions.getExperimentIRRMCRawData,
+          EntryActions.getExperimentEMPIARRawData,
+          EntryActions.getExperimentPDBRawData,
+          EntryActions.getExperimentBMRBRawData,
         ]
       );
     }
