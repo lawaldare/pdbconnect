@@ -1,0 +1,51 @@
+<section class="field-docs-section swagger-ui">
+  <div>
+    <div class="wrapper">
+      <h3 class="opblock-tag no-desc">Search fields</h3>
+
+      <div class="category-filters">
+        @for (category of categories(); track category) {
+        <button type="button" class="category-chip" [class.category-chip--active]="selectedCategory() === category" (click)="selectCategory(category)">
+          {{ category }}
+        </button>
+        }
+      </div>
+
+      <input type="text" [value]="searchText()" (input)="onSearchInput($event)" placeholder="Search by field name, description, category..." />
+
+      <p>
+        {{ filteredFields().length }} fields @if (selectedCategory() !== 'All') {
+        <span> in {{ selectedCategory() }}</span>
+        }
+      </p>
+
+      @for (field of filteredFields(); track field.key) {
+      <article class="field-card">
+        <div class="field-card__header">
+          <h4>{{ field.key }}</h4>
+          @if (field.datatype) {
+          <span>{{ field.datatype }}</span>
+          } @if (field.category) {
+          <span>{{ field.category }}</span>
+          }
+        </div>
+        @if (field.description) {
+        <p>{{ field.description }}</p>
+        } @else {
+        <p>No description found for this field</p>
+        } @if (field.examples.length) {
+        <div>
+          <strong>Examples:</strong>
+          <span>{{ field.examples.join(', ') }}</span>
+        </div>
+        } @if (field.possibleValues.length) {
+        <div>
+          <strong>Possible values:</strong>
+          <span>{{ field.possibleValues.join(', ') }}</span>
+        </div>
+        }
+      </article>
+      }
+    </div>
+  </div>
+</section>
