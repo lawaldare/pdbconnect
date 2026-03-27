@@ -44,4 +44,5 @@ export interface OpenApiOperation {
 
 export interface OpenApiDocument {
   paths?: Record<string, Record<string, OpenApiOperation>>;
+  components?: any;
 }
