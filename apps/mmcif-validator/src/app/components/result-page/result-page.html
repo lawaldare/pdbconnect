@@ -1,0 +1,24 @@
+<h2>Validation Result</h2>
+
+<p><strong>Valid:</strong> {{ result.valid }}</p>
+<p><strong>Errors:</strong> {{ result.summary?.errors }}</p>
+<p><strong>Warnings:</strong> {{ result.summary?.warnings }}</p>
+
+<div *ngIf="result.metadata_completeness">
+  <h3>Metadata Completeness</h3>
+  <p><strong>Percentage:</strong> {{ result.metadata_completeness.percentage }}%</p>
+  <p><strong>Filled:</strong> {{ result.metadata_completeness.filled_count }}</p>
+  <p><strong>Total:</strong> {{ result.metadata_completeness.total_count }}</p>
+</div>
+
+<h3>Errors</h3>
+<ul>
+  <li *ngFor="let e of result.errors">{{ e.message || (e.item + ' - ' + e.message) }}</li>
+</ul>
+
+<h3>Warnings</h3>
+<ul>
+  <li *ngFor="let w of result.warnings">{{ w.message || (w.item + ' - ' + w.message) }}</li>
+</ul>
+
+<pre>{{ result | json }}</pre>

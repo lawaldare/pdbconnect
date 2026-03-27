@@ -4,5 +4,6 @@
   "[markdown]": {
     "editor.formatOnSave": false
   },
-  "CodeGPT.apiKey": "CodeGPT Plus Beta"
+  "CodeGPT.apiKey": "CodeGPT Plus Beta",
+  "python.analysis.extraPaths": ["./apps/mmcif-validator/src/assets/py/mmcif_validator"]
 }

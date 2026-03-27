@@ -1,34 +1,32 @@
 {
-  "name": "kb-corporate-page",
+  "name": "mmcif-validator",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "app",
-  "sourceRoot": "apps/kb-corporate-page/src",
+  "sourceRoot": "apps/mmcif-validator/src",
   "tags": [],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/apps/kb-corporate-page",
-        "browser": "apps/kb-corporate-page/src/main.ts",
+        "outputPath": "dist/apps/mmcif-validator",
+        "browser": "apps/mmcif-validator/src/main.ts",
         "polyfills": ["zone.js"],
-        "tsConfig": "apps/kb-corporate-page/tsconfig.app.json",
+        "tsConfig": "apps/mmcif-validator/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
           {
             "glob": "**/*",
-            "input": "apps/kb-corporate-page/src/assets",
+            "input": "apps/mmcif-validator/public"
+          },
+          {
+            "glob": "**/*",
+            "input": "apps/mmcif-validator/src/assets",
             "output": "assets"
           }
         ],
-        "styles": [
-          "./node_modules/leaflet/dist/leaflet.css",
-          "./node_modules/leaflet.markercluster/dist/MarkerCluster.css",
-          "./node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css",
-          "@angular/material/prebuilt-themes/indigo-pink.css",
-          "apps/kb-corporate-page/src/styles.scss"
-        ],
+        "styles": ["@angular/material/prebuilt-themes/indigo-pink.css", "apps/mmcif-validator/src/styles.scss"],
         "scripts": [],
         "stylePreprocessorOptions": {
           "includePaths": ["libs/core/src/lib/styles"]
@@ -38,8 +36,8 @@
         "production": {
           "fileReplacements": [
             {
-              "replace": "apps/kb-corporate-page/src/environments/environment.ts",
-              "with": "apps/kb-corporate-page/src/environments/environment.prod.ts"
+              "replace": "apps/mmcif-validator/src/environments/environment.ts",
+              "with": "apps/mmcif-validator/src/environments/environment.prod.ts"
             }
           ],
           "budgets": [
@@ -84,15 +82,15 @@
       "continuous": true,
       "executor": "@angular/build:dev-server",
       "options": {
-        "buildTarget": "kb-corporate-page:build:local",
-        "port": 4100
+        "buildTarget": "mmcif-validator:build:local",
+        "port": 5000
       },
       "configurations": {
         "production": {
-          "buildTarget": "kb-corporate-page:build:production"
+          "buildTarget": "mmcif-validator:build:production"
         },
         "development": {
-          "buildTarget": "kb-corporate-page:build:development"
+          "buildTarget": "mmcif-validator:build:development"
         }
       },
       "defaultConfiguration": ""
@@ -100,7 +98,7 @@
     "extract-i18n": {
       "executor": "@angular/build:extract-i18n",
       "options": {
-        "buildTarget": "kb-corporate-page:build"
+        "buildTarget": "mmcif-validator:build"
       }
     },
     "lint": {
@@ -110,17 +108,17 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/kb-corporate-page/jest.config.ts",
-        "tsConfig": "apps/kb-corporate-page/tsconfig.spec.json"
+        "jestConfig": "apps/mmcif-validator/jest.config.ts",
+        "tsConfig": "apps/mmcif-validator/tsconfig.spec.json"
       }
     },
     "serve-static": {
       "continuous": true,
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "kb-corporate-page:build",
+        "buildTarget": "mmcif-validator:build",
         "port": 4200,
-        "staticFilePath": "dist/apps/kb-corporate-page/browser",
+        "staticFilePath": "dist/apps/mmcif-validator/browser",
         "spa": true
       }
     }

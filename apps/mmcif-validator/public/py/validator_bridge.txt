@@ -1,0 +1,54 @@
+from metadata_completeness import compute_metadata_completeness
+from protocol import validation_result_from_errors
+from validate_mmcif import ValidatorFactory, _sorted_validation_errors
+import sys
+from pathlib import Path
+
+sys.path.append("../py/mmcif_validator")
+
+
+def validate_text(cif_text: str, dict_path: str, file_name: str = "uploaded.cif"):
+    try:
+        work_dir = Path("/work")
+        work_dir.mkdir(parents=True, exist_ok=True)
+
+        cif_path = work_dir / file_name
+        cif_path.write_text(cif_text, encoding="utf-8")
+
+        dictionary_path = Path(dict_path)
+
+        errors, dictionary, mmcif = ValidatorFactory.validate(
+            dictionary_path, cif_path)
+        errors = _sorted_validation_errors(errors)
+
+        result = validation_result_from_errors(errors)
+
+        try:
+            dep = compute_metadata_completeness(
+                dictionary, mmcif, validation_errors=errors)
+            result["metadata_completeness"] = dep.to_dict()
+        except Exception as e:
+            result["metadata_completeness_error"] = str(e)
+
+        error_count = len([e for e in errors if getattr(
+            e, "severity", "error") == "error"])
+        warning_count = len([e for e in errors if getattr(
+            e, "severity", "error") == "warning"])
+
+        result["valid"] = error_count == 0
+        result["summary"] = {
+            "errors": error_count,
+            "warnings": warning_count
+        }
+
+        return result
+
+    except Exception as e:
+        return {
+            "valid": False,
+            "summary": {
+                "errors": 1,
+                "warnings": 0
+            },
+            "errors": [{"message": str(e)}]
+        }

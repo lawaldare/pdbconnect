@@ -1,0 +1,6 @@
+<h2>Upload CIF File</h2>
+
+<input type="file" accept=".cif" (change)="onFile($event)" />
+
+<p *ngIf="isLoading">Validating...</p>
+<p *ngIf="error">{{ error }}</p>
