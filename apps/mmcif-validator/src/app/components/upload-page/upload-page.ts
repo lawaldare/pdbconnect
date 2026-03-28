@@ -18,37 +18,14 @@ export class UploadPageComponent {
   @ViewChild('dropArea') dropArea!: ElementRef<HTMLElement>;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
-  // async onFile(event: Event) {
-  //   this.error = '';
-
-  //   const input = event.target as HTMLInputElement;
-  //   const file = input.files?.[0];
-  //   if (!file) return;
-
-  //   try {
-  //     this.isLoading = true;
-  //     const text = await file.text();
-  //     const result = await this.cifValidationService.validate(text);
-
-  //     console.log('Validation result:', result);
-
-  //     sessionStorage.setItem('validationResult', JSON.stringify(result));
-  //     this.router.navigate(['/results']);
-  //   } catch (e: any) {
-  //     this.error = e?.message || String(e);
-  //   } finally {
-  //     this.isLoading = false;
-  //   }
-  // }
-
   /** Browse file button */
   public onBrowseClick(): void {
+    this.error.set('');
     this.fileInput.nativeElement.click();
   }
 
   /** File input change */
   public async onFileChange(event: Event): Promise<void> {
-    // sessionStorage.setItem('uploadFile', 'true');
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
       await this.processFile(input.files[0]);
@@ -85,11 +62,13 @@ export class UploadPageComponent {
 
   /** File processing */
   private async processFile(file: File): Promise<void> {
+    this.error.set('');
+
     const lowerName = file.name.toLowerCase();
     const isCif = lowerName.endsWith('.cif') || lowerName.endsWith('.bcif');
     if (!isCif) {
-      // this.facade.showError('File format is not supported. Please try again with a .cif, .bcif, .pdb or .ent file.');
-      // return;
+      this.error.set('File format is not supported. Please try again with a .cif, .bcif, .pdb or .ent file.');
+      return;
     }
 
     try {

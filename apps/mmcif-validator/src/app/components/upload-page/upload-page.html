@@ -1,10 +1,3 @@
-<!-- <h2>Upload CIF File</h2>
-
-<input type="file" accept=".cif" (change)="onFile($event)" />
-
-<p *ngIf="isLoading">Validating...</p>
-<p *ngIf="error">{{ error }}</p> -->
-
 <h1>Validate your file</h1>
 <main>
   <section class="upload-section">
@@ -34,7 +27,10 @@
       </div>
       }
     </div>
-    @if(!isLoading()){
+
+    @if(error()) {
+    <span class="error">{{ error() }}</span>
+    } @if(!isLoading()){
 
     <p class="info">
       The PDBe mmCIF Validator checks mmCIF/CIF files against the PDBx/mmCIF dictionary, ensuring compliance with required definitions and data constraints. <br />
