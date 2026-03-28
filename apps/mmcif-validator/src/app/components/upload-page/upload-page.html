@@ -1,6 +1,70 @@
-<h2>Upload CIF File</h2>
+<!-- <h2>Upload CIF File</h2>
 
 <input type="file" accept=".cif" (change)="onFile($event)" />
 
 <p *ngIf="isLoading">Validating...</p>
-<p *ngIf="error">{{ error }}</p>
+<p *ngIf="error">{{ error }}</p> -->
+
+<h1>Validate your file</h1>
+<main>
+  <section class="upload-section">
+    <div
+      class="upload-section-drag-drop"
+      #dropArea
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+      [ngStyle]="{'border': isLoading() ? 'none' : '2px dashed #454545'}"
+    >
+      <img src="assets/icons/download.svg" alt="icon image" />
+
+      <p>
+        Drag and drop your file here <br />
+        in .cif, .bcif format
+      </p>
+      <span>or</span>
+
+      <!-- Hidden file input -->
+      <input #fileInput type="file" class="file-input" accept=".cif,.bcif" (change)="onFileChange($event)" hidden />
+
+      <button class="vf-button vf-button--primary" (click)="onBrowseClick()">Select a file</button>
+      @if(isLoading()){
+      <div class="loading loading-view">
+        <div class="spinner"></div>
+      </div>
+      }
+    </div>
+    @if(!isLoading()){
+
+    <p class="info">
+      The PDBe mmCIF Validator checks mmCIF/CIF files against the PDBx/mmCIF dictionary, ensuring compliance with required definitions and data constraints. <br />
+      It validates mandatory categories, data types, enumerations, relationships, and more, and provides a metadata completeness score (0–100%) based on experimental
+      method–specific requirements. Missing or invalid items are clearly reported to help you prepare high-quality, deposition-ready data.
+      <a href="https://www.ebi.ac.uk/training/online/courses/pdbepisa/" target="_blank">Learn more...</a>
+    </p>
+    } @else{
+    <section class="upload-section validating">
+      <img src="assets/images/loader.gif" alt="loader icon" style="height: 24px; width: 24px" />
+      <h2>Validating...</h2>
+    </section>
+    }
+  </section>
+
+  <section class="molstar-section">
+    <div class="text-over-molstar">
+      <h3>Attribution</h3>
+      <p>PDBe mmCIF Validator</p>
+      <p>Version 0.1.82</p>
+      <p>Real-time tool for validating mmCIF/CIF files against the PDBx/mmCIF dictionary.</p>
+      <p>Features:</p>
+      <ul>
+        <li>Real-time mmCIF validation</li>
+        <li>Detailed error reporting</li>
+        <li>Metadata completeness scoring</li>
+      </ul>
+      <p>Maintained by:</p>
+      <p>Deborah Harrus, Protein Data Bank in Europe (PDBe), EMBL-EBI</p>
+      <p>License: MIT</p>
+    </div>
+  </section>
+</main>

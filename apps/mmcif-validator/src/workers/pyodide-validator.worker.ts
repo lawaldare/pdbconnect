@@ -5,15 +5,15 @@ import { loadPyodide } from 'pyodide';
 let pyodide: any = null;
 let filesLoaded = false;
 
-async function initPyodide() {
+const initPyodide = async () => {
   if (!pyodide) {
     pyodide = await loadPyodide({
       indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.29.3/full/',
     });
   }
-}
+};
 
-async function loadTextFile(url: string): Promise<string> {
+const loadTextFile = async (url: string): Promise<string> => {
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) {
     throw new Error(`Failed to load ${url}: ${res.status} ${res.statusText}`);
@@ -27,9 +27,9 @@ async function loadTextFile(url: string): Promise<string> {
   }
 
   return text;
-}
+};
 
-async function ensurePythonFilesLoaded() {
+const ensurePythonFilesLoaded = async () => {
   if (filesLoaded) return;
 
   pyodide.FS.mkdirTree('/app/mmcif_validator/completeness');
@@ -75,13 +75,13 @@ async function ensurePythonFilesLoaded() {
   });
 
   await pyodide.runPythonAsync(`
-import sys
-sys.path.append('/app')
-sys.path.append('/app/mmcif_validator')
+      import sys
+      sys.path.append('/app')
+      sys.path.append('/app/mmcif_validator')
 `);
 
   filesLoaded = true;
-}
+};
 
 addEventListener('message', async ({ data }) => {
   if (data.type !== 'VALIDATE') return;
@@ -94,11 +94,11 @@ addEventListener('message', async ({ data }) => {
     pyodide.globals.set('dict_path_js', '/app/mmcif_pdbx.dic');
 
     const result = await pyodide.runPythonAsync(`
-import json
-from validator_bridge import validate_text
+      import json
+      from validator_bridge import validate_text
 
-res = validate_text(cif_text_js, dict_path_js)
-json.dumps(res)
+      res = validate_text(cif_text_js, dict_path_js)
+      json.dumps(res)
 `);
 
     postMessage({

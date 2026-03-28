@@ -1,0 +1,27 @@
+<section [ngStyle]="{ 'background-color': headerConfig.backgroundColor }">
+  <div class="container">
+    <div class="header-logo" (click)="onStartButtonClick()">
+      <img class="pdbe-header-logo-img pdbe-logo" src="/assets/images/PDBe-letterhead-white-RGB_2013.webp" alt="pdbe logo" />
+      <span>mmCIF Validator</span>
+    </div>
+    <i class="icon icon-common icon-align-justify" (click)="showMobileMenu()"></i>
+    <ul class="nav-links">
+      @for(link of headerConfig.urls; track link.name){
+      <li class="nav-link">
+        <a [href]="link.path" [target]="link.openInNewTab ? '_blank' : '_self'">{{ link.name }}</a>
+      </li>
+      }
+    </ul>
+  </div>
+</section>
+@if(isMobile()){
+<section class="mobile-menu" [ngStyle]="{ 'background-color': headerConfig.backgroundColor }">
+  <ul class="nav-links">
+    @for(link of headerConfig.urls; track link.name){
+    <li class="nav-link">
+      <a [href]="link.path" target="_blank">{{ link.name }}</a>
+    </li>
+    }
+  </ul>
+</section>
+}
