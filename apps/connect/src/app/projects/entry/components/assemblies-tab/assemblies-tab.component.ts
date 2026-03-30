@@ -2,26 +2,25 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, ElementRef, inject, signal, ViewChild, AfterViewInit } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { GoogleAnalyticsService, PopupWindowService, SingleAsyncQueue, UtilService } from '@pdbc/core';
+import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { filter, firstValueFrom, take, timer } from 'rxjs';
+import { filter, take } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { dashboardStatLinks, entryAssembliesTooltips } from '../../entry-constant';
 import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-utils';
-import { ApiDataProvider, PdbeApiClient } from '../../helpers/mvs-views/data-provider';
-import { MVSSnapshotProvider } from '../../helpers/mvs-views/mvs-snapshot-provider';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
+import { Molecule } from '../../data-models/molecule.model';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
@@ -99,6 +98,27 @@ export class AssembliesTabComponent implements AfterViewInit {
     const rows = this.processedAssemblies();
     if (!rows) return [];
     return rows;
+  });
+
+  private procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  private processedMacromolecules = computed(() => this.procMacromolecules() ?? []);
+
+  private procLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
+  private processedLigands = computed(() => this.procLigands()?.filter((lig) => lig.type === 'ligand') ?? []);
+
+  private entityColors = computed(() => {
+    const DEFAULT_ENTITY_COLOR = 'gray';
+    const macromolecules = this.processedMacromolecules();
+    const ligands = this.processedLigands();
+
+    const colors: { [entityId: string]: string } = {};
+    for (const macromolecule of macromolecules) {
+      colors[macromolecule.additionalData.molecule.entity_id] = macromolecule.molstarColorHex ?? DEFAULT_ENTITY_COLOR;
+    }
+    for (const ligand of ligands) {
+      colors[(ligand.additionalData.source as Molecule).entity_id] = ligand.molstarColorHex ?? DEFAULT_ENTITY_COLOR;
+    }
+    return colors;
   });
 
   private previousAssemblyDatumIdx?: number;
@@ -179,9 +199,8 @@ export class AssembliesTabComponent implements AfterViewInit {
           const mvsSnapshotSpec: SnapshotSpec = {
             name: `Complex ${assemblyId}`,
             kind: 'pdbconnect_complex',
-            params: { entry: entryId, assemblyId, entityColors: undefined, volumeStreaming: false }, // TODO: @adam Entity colors
+            params: { entry: entryId, assemblyId, entityColors: this.entityColors(), volumeStreaming: false },
           };
-          console.log('SnapshotSpec:', mvsSnapshotSpec);
           mvsHandler.loadMVSSnapshotSpec(mvsSnapshotSpec);
         });
       });

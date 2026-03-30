@@ -22,7 +22,6 @@ export function MVSHandler(molstarComponent: MolstarComponent | undefined) {
 
   return {
     loadMVSSnapshotSpec(mvsSnapshotSpec: SnapshotSpec | undefined) {
-      console.log('loadMVSSnapshotSpec:', mvsSnapshotSpec);
       if (!mvsSnapshotSpec) return;
       mvsQueue.enqueue(async () => {
         const mvs = await mvsSnapshotProvider.getSnapshot(mvsSnapshotSpec, { transitionDurationMs: MVS_TRANSITION_DURATION_MS });
@@ -32,7 +31,7 @@ export function MVSHandler(molstarComponent: MolstarComponent | undefined) {
   };
 }
 
-export function createMVSSnapshotProvider(PDBeMolstarPlugin_: typeof PDBeMolstarPlugin) {
+function createMVSSnapshotProvider(PDBeMolstarPlugin_: typeof PDBeMolstarPlugin) {
   const baseUrl = environment.baseUrl;
   return new MVSSnapshotProvider(PDBeMolstarPlugin_.extensions.MVS.MVSData, new ApiDataProvider(new PdbeApiClient(`${baseUrl}pdbe/api/v2`)), {
     PdbStructureFormat: 'bcif',

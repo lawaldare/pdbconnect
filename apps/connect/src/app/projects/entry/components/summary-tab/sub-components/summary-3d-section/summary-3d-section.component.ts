@@ -2,18 +2,18 @@ import { CommonModule } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { GoogleAnalyticsService, MaterialModule, SingleAsyncQueue } from '@pdbc/core';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import type { InitParams } from 'pdbe-molstar/lib/spec';
-import { BehaviorSubject, filter, firstValueFrom, map, take } from 'rxjs';
+import { BehaviorSubject, filter, map, take } from 'rxjs';
 import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
-import { Molecule } from '../../../../data-models/molecule.model';
+import type { Molecule } from '../../../../data-models/molecule.model';
 import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
 import { Molstar370DefaultParams, QueryParamForHelpers } from '../../../../helpers/molstar-helpers';
-import { MVSSnapshotProvider } from '../../../../helpers/mvs-views/mvs-snapshot-provider';
+import { MVSHandler } from '../../../../helpers/mvs-utils';
 import type { SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
 import {
   getCleanMoleculeName,
@@ -27,7 +27,6 @@ import { ProcessedDomain, ProcessedMacromolecule } from '../../../../store/data-
 import { EntryStoreState } from '../../../../store/entry-store.model';
 import { EntrySelectors } from '../../../../store/entry.selectors';
 import { EntryDropdownComponent } from '../../../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { createMVSSnapshotProvider, MVSHandler } from '../../../../helpers/mvs-utils';
 
 type NestedDomainsData = Array<{
   macromolecule: ProcessedMacromolecule;
@@ -94,8 +93,6 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
   private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   ngAfterViewInit(): void {
-    this.updateMVSSnapshotSpec(undefined, 'Assembly'); // Set default view (Preferred assembly)
-
     this.molstarFirstRenderFinished$
       .pipe(
         filter((ready) => ready),
@@ -105,6 +102,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
         // run after molstar rendered
         const mvsHandler = MVSHandler(this._molstarComponent);
         this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+        this.updateMVSSnapshotSpec(undefined, 'Assembly'); // Set default view (Preferred assembly)
       });
   }
   ngOnDestroy(): void {
@@ -187,11 +185,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
 
   // data processed for all views
   readonly maxPerPage = 80;
-  public processedMacromolecules = computed(() => {
-    const rows = this.procMacromolecules();
-    if (rows === undefined) return [];
-    return rows;
-  });
+  public processedMacromolecules = computed(() => this.procMacromolecules() ?? []);
 
   public currentMacromoleculesPage = signal(0);
 
@@ -253,11 +247,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     return macromolecules.slice(start, end);
   });
 
-  public processedLigands = computed(() => {
-    const rows = this.procLigands();
-    if (rows === undefined) return [];
-    return rows.filter((lig) => lig.type === 'ligand');
-  });
+  public processedLigands = computed(() => this.procLigands()?.filter((lig) => lig.type === 'ligand') ?? []);
 
   public entityColors = computed(() => {
     const DEFAULT_ENTITY_COLOR = 'gray';
@@ -797,11 +787,8 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     const preferredAssemblyId = this.getPreferredAssemblyId();
     const molstarSelectionIndex = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    console.log('this.dropdownSelected', this.dropdownSelected);
     const isSelectionInPrefAssembly = listItem ? listItem.additionalData.selectionsInPrefAssembly[molstarSelectionIndex] : true;
     const assemblyId = isSelectionInPrefAssembly ? preferredAssemblyId : undefined; // undefined = deposited model
-    console.log('preferredAssemblyId:', preferredAssemblyId);
-    console.log('assemblyId:', assemblyId);
     const entityColors = this.entityColors();
 
     switch (selectionType) {
