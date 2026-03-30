@@ -9,12 +9,10 @@ import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import type { InitParams } from 'pdbe-molstar/lib/spec';
 import { BehaviorSubject, filter, firstValueFrom, map, take } from 'rxjs';
-import { environment } from '../../../../../../../environments/environment';
 import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
 import { Molecule } from '../../../../data-models/molecule.model';
 import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
 import { Molstar370DefaultParams, QueryParamForHelpers } from '../../../../helpers/molstar-helpers';
-import { ApiDataProvider, PdbeApiClient } from '../../../../helpers/mvs-views/data-provider';
 import { MVSSnapshotProvider } from '../../../../helpers/mvs-views/mvs-snapshot-provider';
 import type { SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
 import {
@@ -29,6 +27,7 @@ import { ProcessedDomain, ProcessedMacromolecule } from '../../../../store/data-
 import { EntryStoreState } from '../../../../store/entry-store.model';
 import { EntrySelectors } from '../../../../store/entry.selectors';
 import { EntryDropdownComponent } from '../../../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
+import { createMVSSnapshotProvider, MVSHandler } from '../../../../helpers/mvs-utils';
 
 type NestedDomainsData = Array<{
   macromolecule: ProcessedMacromolecule;
@@ -93,23 +92,20 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
   });
 
   private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
-  private readonly mvsQueue = new SingleAsyncQueue();
 
   ngAfterViewInit(): void {
-    this.mvsSnapshotSpec.subscribe((snapshotSpec) => {
-      if (!snapshotSpec) return;
+    this.updateMVSSnapshotSpec(undefined, 'Assembly'); // Set default view (Preferred assembly)
 
-      this.mvsQueue.enqueue(async () => {
-        // mvsQueue ensures that 1. order of snapshot processing is kept, 2. intermediate snapshots can be skipped if user clicks too much in a short time
-        const PDBeMolstarPlugin = this._molstarComponent?.getPDBeMolstarPluginClass();
-        const instance = this._molstarComponent?.getInstance();
-        const mvsSnapshotProvider = this.getMvsSnapshotProvider();
-        if (!PDBeMolstarPlugin || !mvsSnapshotProvider || !instance?.plugin) return;
-        const mvs = await mvsSnapshotProvider.getSnapshot(snapshotSpec, this.mvsTransitionDurationMs);
-        await this._molstarComponent?.mutex.run(() => PDBeMolstarPlugin.extensions.MVS.loadMVS(instance.plugin, mvs, { keepCameraOrientation: true }));
+    this.molstarFirstRenderFinished$
+      .pipe(
+        filter((ready) => ready),
+        take(1)
+      )
+      .subscribe(() => {
+        // run after molstar rendered
+        const mvsHandler = MVSHandler(this._molstarComponent);
+        this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
       });
-    });
-    this.updateMolstarAny(undefined, 'Assembly');
   }
   ngOnDestroy(): void {
     this.mvsSnapshotSpec.unsubscribe();
@@ -135,16 +131,12 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
 
   public readonly configForMolstar = computed<InitParams>(() => ({
     ...Molstar370DefaultParams,
-    moleculeId: undefined,
-    bgColor: 'white',
     subscribeEvents: true,
     granularity: 'residue',
-    hideControls: false,
     hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
     sequencePanel: true,
     // tabs: 'all',
   }));
-  public readonly configForMolstar$ = toObservable(this.configForMolstar);
 
   private mvsTransitionDurationMs = 600;
 
@@ -598,7 +590,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     const listViewItem = this.lastSelection[tabName];
     this.updateDropdownOptions(listViewItem, tabName, resetDropdown);
     this.updateSymmetryDropdownOptions(listViewItem, tabName);
-    this.updateMolstarAny(listViewItem, tabName);
+    this.updateMVSSnapshotSpec(listViewItem, tabName);
   }
 
   private updateSymmetryDropdownOptions(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
@@ -755,7 +747,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     this.lastSubSelection[tabName] = subSelectionIdx;
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx];
     this.updateSymmetryDropdownOptions(listViewItem, tabName);
-    this.updateMolstarAny(listViewItem, tabName);
+    this.updateMVSSnapshotSpec(listViewItem, tabName);
   }
 
   public async onSymmetryDropdownSelect(event: string) {
@@ -763,7 +755,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     const tabName = this.openedAccordionName();
     if (!tabName) return;
     const listViewItem = this.lastSelection[tabName];
-    this.updateMolstarAny(listViewItem, tabName);
+    this.updateMVSSnapshotSpec(listViewItem, tabName);
   }
 
   private async getSelectionObjForSelectionType(
@@ -794,40 +786,8 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     return undefined;
   }
 
-  private _mvsSnapshotProvider?: MVSSnapshotProvider;
-  private getMvsSnapshotProvider(): MVSSnapshotProvider | undefined {
-    if (!this._mvsSnapshotProvider) {
-      const PDBeMolstarPlugin = this._molstarComponent?.getPDBeMolstarPluginClass();
-      if (!PDBeMolstarPlugin) return undefined;
-
-      console.log('creating MVSSnapshotProvider');
-      const baseUrl = environment.baseUrl;
-      this._mvsSnapshotProvider = new MVSSnapshotProvider(PDBeMolstarPlugin.extensions.MVS.MVSData, new ApiDataProvider(new PdbeApiClient(`${baseUrl}pdbe/api/v2`)), {
-        PdbStructureFormat: 'bcif',
-        PdbStructureUrlTemplate: `${baseUrl}pdbe/entry-files/{pdb}.bcif`,
-      }); // TODO: use existing API service
-    }
-    return this._mvsSnapshotProvider;
-  }
-
-  private async updateMolstarAny(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
-    console.log('updateMolstarAny', selectionType, listItem);
-
-    // Wait until first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready), // proceed when true
-        take(1)
-      )
-    );
-
-    const PDBeMolstarPlugin = this._molstarComponent?.getPDBeMolstarPluginClass();
-    if (PDBeMolstarPlugin) {
-      const snapshotSpec = this.getMvsSnapshotSpec(listItem, selectionType);
-      this.mvsSnapshotSpec.next(snapshotSpec);
-    } else {
-      console.warn('PdbeMolstar has not rendered yet');
-    }
+  private updateMVSSnapshotSpec(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
+    this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(listItem, selectionType));
   }
 
   private getMvsSnapshotSpec(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string): SnapshotSpec | undefined {

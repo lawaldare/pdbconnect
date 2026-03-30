@@ -255,10 +255,8 @@ export class LLMTabComponent implements OnInit {
       ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
       assemblyId,
-      bgColor: { r: 255, g: 255, b: 255 },
       subscribeEvents: true,
       granularity: 'residue',
-      hideControls: false,
       visualStyle: {
         polymer: {
           type: 'cartoon',

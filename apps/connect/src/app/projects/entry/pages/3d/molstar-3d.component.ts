@@ -48,8 +48,6 @@ export class Entry3DPageComponent implements OnInit {
       ...Molstar370DefaultParams,
       moleculeId: entryId,
       assemblyId,
-      hideControls: false,
-      bgColor: { r: 255, g: 255, b: 255 },
       loadMaps: true,
       landscape: isDesktop ? true : false,
       sequencePanel: true,

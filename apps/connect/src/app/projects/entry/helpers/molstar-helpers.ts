@@ -23,7 +23,7 @@ export const Molstar370DefaultParams: InitParams = {
   hideStructure: [],
   loadMaps: false,
   mapSettings: undefined,
-  bgColor: { r: 0, g: 0, b: 0 },
+  bgColor: 'white',
   highlightColor: undefined,
   selectColor: undefined,
   lighting: undefined,
