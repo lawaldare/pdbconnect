@@ -1,0 +1,58 @@
+<div class="editor-shell">
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <h2>CIF Editor</h2>
+      <span class="line">{{ lineCount() }} lines</span>
+      <span class="action">Click on CIF items for help</span>
+    </div>
+
+    <div class="toolbar-right">
+      <!-- <button type="button" (click)="applyDemoMarkers()">Show Demo Markers</button>
+      <button type="button" (click)="clearMarkers()">Clear Markers</button>
+      <button type="button" (click)="formatLightly()">Trim Lines</button>
+      <button type="button" (click)="downloadCif()">Download</button> -->
+      <button class="vf-button vf-button--primary" (click)="downloadCif()">
+        <img src="assets/images/download-icon.svg" alt="download icon" />
+        <span>Download</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="editor-pane">
+      <ngx-monaco-editor class="monaco-host" [options]="editorOptions" [(ngModel)]="cifFileText" (onInit)="onEditorInit($event)"> </ngx-monaco-editor>
+    </div>
+
+    <aside class="side-panel">
+      <section class="panel-card">
+        <h3>Clicked Item</h3>
+
+        <ng-container *ngIf="selectedToken(); else noToken">
+          <p><strong>Token:</strong> {{ selectedToken()?.token }}</p>
+          <p><strong>Line:</strong> {{ selectedToken()?.lineNumber }}</p>
+          <p><strong>Column:</strong> {{ selectedToken()?.column }}</p>
+          <pre>{{ selectedToken()?.lineContent }}</pre>
+        </ng-container>
+
+        <ng-template #noToken>
+          <p>Click a CIF item like <code>_cell.length_a</code>.</p>
+        </ng-template>
+      </section>
+
+      <section class="panel-card">
+        <h3>Help</h3>
+
+        <ng-container *ngIf="helpItem(); else noHelp">
+          <p><strong>Name:</strong> {{ helpItem()?.name }}</p>
+          <p><strong>Category:</strong> {{ helpItem()?.category }}</p>
+          <p><strong>Description:</strong> {{ helpItem()?.description }}</p>
+          <p *ngIf="helpItem()?.example"><strong>Example:</strong> {{ helpItem()?.example }}</p>
+        </ng-container>
+
+        <ng-template #noHelp>
+          <p>No help available for this token yet.</p>
+        </ng-template>
+      </section>
+    </aside>
+  </div>
+</div>

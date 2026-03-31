@@ -13,6 +13,8 @@ thead {
 }
 
 .mat-accordion.mmcif-validator {
+  height: 80vh;
+
   .mat-expansion-panel {
     border: 2px solid rgb(0 0 0 / 10%);
     margin-right: 16px;
@@ -27,7 +29,19 @@ thead {
       .mat-content {
         display: block !important;
       }
+
+      &.mat-expanded {
+        background: unset !important;
+      }
     }
+  }
+
+  .mat-expansion-panel:not(.mat-expanded) .mat-expansion-panel-header:not([aria-disabled='true']):hover {
+    background: unset !important;
+  }
+
+  .mat-expansion-panel-spacing {
+    margin: 0 16px 12px 0 !important;
   }
 }
 

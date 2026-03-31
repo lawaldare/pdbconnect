@@ -34,15 +34,17 @@
               <div class="box" (click)="onFilter('errors')" [class.selected-filter]="selectedFilter() === 'errors'">Errors({{numberOfErrors()}})</div>
               <div class="box" (click)="onFilter('warnings')" [class.selected-filter]="selectedFilter() === 'warnings'">Warnings({{numberOfWarnings()}})</div>
             </section>
-            @for(list of filteredLists; track $index){
-            <section class="list-card">
-              <img src="assets/icons/warning-icon.svg" alt="" class="card-icon" />
-              <div class="card-content">
-                <p class="title"><span class="line">Line {{list.line}}</span><span class="line-content">{{list.item}}</span></p>
-                <p class="description">{{list.message}}</p>
-              </div>
+            <section class="lists">
+              @for(list of filteredLists; track $index){
+              <section class="list-card">
+                <img src="assets/icons/warning-icon.svg" alt="" class="card-icon" />
+                <div class="card-content">
+                  <p class="title"><span class="line">Line {{list.line}}</span><span class="line-content">{{list.item}}</span></p>
+                  <p class="description">{{list.message}}</p>
+                </div>
+              </section>
+              }
             </section>
-            }
           </section>
         </ng-template>
       </mat-tab>
@@ -94,5 +96,7 @@
     </mat-tab-group>
   </aside>
 
-  <section class="results"></section>
+  <section class="results">
+    <cif-editor></cif-editor>
+  </section>
 </main>

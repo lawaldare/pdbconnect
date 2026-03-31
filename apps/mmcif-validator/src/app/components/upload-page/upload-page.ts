@@ -2,6 +2,7 @@ import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core'
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CifValidationService } from '../../services/cif-validation.service';
+import { CifFileStoreService } from '../../services/cif-file-store.service';
 
 @Component({
   selector: 'app-upload',
@@ -11,6 +12,7 @@ import { CifValidationService } from '../../services/cif-validation.service';
 })
 export class UploadPageComponent {
   private readonly cifValidationService = inject(CifValidationService);
+  private readonly fileStoreService = inject(CifFileStoreService);
   private readonly router = inject(Router);
   public isLoading = signal(false);
   public error = signal('');
@@ -76,9 +78,13 @@ export class UploadPageComponent {
       const text = await file.text();
       const result = await this.cifValidationService.validate(text);
 
-      console.log('Validation result:', result);
+      await this.fileStoreService.put('current-cif', {
+        fileName: file.name,
+        cifText: text,
+      });
 
       sessionStorage.setItem('validationResult', JSON.stringify(result));
+
       this.router.navigate(['/results']);
     } catch (e: any) {
       this.error.set(e?.message || String(e));

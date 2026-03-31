@@ -85,7 +85,7 @@ main {
   display: flex;
 
   aside {
-    width: 30%;
+    width: 25%;
     border-right: 2px solid rgb(0 0 0 / 10%);
 
     h3 {
@@ -125,46 +125,50 @@ main {
         }
       }
 
-      section.list-card {
-        padding: 14px;
-        border-radius: 4px;
-        border: 2px solid #d0d0ce;
-        margin-right: 16px;
-        display: flex;
-        gap: 8px;
-        align-items: flex-start;
-        margin-bottom: 8px;
+      section.lists {
+        height: 80vh;
 
-        p.title {
-          span.line {
-            border-radius: 4px;
-            background: #f3f3f3;
-            padding: 2px 8px;
-            color: #0a0a0a;
-            font-family: 'IBM Plex Mono';
-            font-size: 12px;
-            font-weight: 500;
-            line-height: 18px;
-            margin-right: 5px;
+        section.list-card {
+          padding: 14px;
+          border-radius: 4px;
+          border: 2px solid #d0d0ce;
+          margin-right: 16px;
+          display: flex;
+          gap: 8px;
+          align-items: flex-start;
+          margin-bottom: 8px;
+
+          p.title {
+            span.line {
+              border-radius: 4px;
+              background: #f3f3f3;
+              padding: 2px 8px;
+              color: #0a0a0a;
+              font-family: 'IBM Plex Mono';
+              font-size: 12px;
+              font-weight: 500;
+              line-height: 18px;
+              margin-right: 5px;
+            }
+
+            span.line-content {
+              color: #3a3a3a;
+              font-family: 'IBM Plex Sans';
+              font-size: 12px;
+              font-style: normal;
+              font-weight: 500;
+              line-height: 18px;
+            }
           }
 
-          span.line-content {
-            color: #3a3a3a;
+          p.description {
+            color: #1a1c1a;
             font-family: 'IBM Plex Sans';
-            font-size: 12px;
+            font-size: 14px;
             font-style: normal;
             font-weight: 500;
-            line-height: 18px;
+            line-height: 21px;
           }
-        }
-
-        p.description {
-          color: #1a1c1a;
-          font-family: 'IBM Plex Sans';
-          font-size: 14px;
-          font-style: normal;
-          font-weight: 500;
-          line-height: 21px;
         }
       }
     }
@@ -261,6 +265,6 @@ main {
   }
 
   section.results {
-    width: 70%;
+    width: 75%;
   }
 }

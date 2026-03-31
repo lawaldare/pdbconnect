@@ -5,6 +5,8 @@ import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { MissingItem, ValidationErrorItem, ValidationResult } from '../../models';
+import { CifFileStoreService } from '../../services/cif-file-store.service';
+import { CifEditorComponent } from '../cif-editor/cif-editor';
 
 type Result = {
   category: string;
@@ -13,7 +15,7 @@ type Result = {
 
 @Component({
   selector: 'app-results',
-  imports: [CommonModule, MaterialModule],
+  imports: [CommonModule, MaterialModule, CifEditorComponent],
   templateUrl: './results-page.html',
   styleUrls: ['./results-page.scss'],
 })
@@ -21,6 +23,7 @@ export class ResultsPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   public readonly scrollService = inject(ScrollPositionService);
+  private readonly fileStoreService = inject(CifFileStoreService);
 
   public result: ValidationResult = JSON.parse(sessionStorage.getItem('validationResult') || '{}');
 
@@ -37,6 +40,9 @@ export class ResultsPageComponent implements OnInit {
   public filteredLists: ValidationErrorItem[] = [];
   public missingCategories: Result[] = [];
 
+  public cifFileName = '';
+  public cifFileText = '';
+
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
   private readonly routeTabs = [
@@ -52,6 +58,10 @@ export class ResultsPageComponent implements OnInit {
       const tabIndex = routeTabs.findIndex((tab) => tab.id === tabName);
       this.selectedTab.set(tabIndex);
     });
+  }
+
+  async ngOnInit(): Promise<void> {
+    console.log(this.result);
 
     this.numberOfErrors.set(this.result?.summary?.errors || 0);
     this.numberOfWarnings.set(this.result?.summary?.warnings || 0);
@@ -63,10 +73,15 @@ export class ResultsPageComponent implements OnInit {
       this.result?.metadata_completeness?.missing_categories || [],
       this.result?.metadata_completeness?.missing_items || []
     );
-  }
 
-  ngOnInit(): void {
-    console.log(this.result);
+    const stored = await this.fileStoreService.get('current-cif');
+
+    if (stored) {
+      this.cifFileName = stored.fileName;
+      this.cifFileText = stored.cifText;
+    }
+
+    console.log(this.cifFileText);
   }
 
   public onFilter(filterText: string): void {

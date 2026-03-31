@@ -47,3 +47,30 @@ export interface GroupedIssue {
   samples: ValidationErrorItem[];
   suggestion?: string;
 }
+
+export interface CifDictionaryHelpItem {
+  name: string;
+  category: string;
+  description: string;
+  example?: string;
+}
+
+export interface CifClickedToken {
+  token: string;
+  lineNumber: number;
+  column: number;
+  lineContent: string;
+}
+
+export interface CifValidationIssue {
+  severity: 'error' | 'warning';
+  message: string;
+  line?: number;
+  startColumn?: number;
+  endColumn?: number;
+}
+
+export interface CifEditorValidationResult {
+  valid: boolean;
+  issues: CifValidationIssue[];
+}
