@@ -1,5 +1,5 @@
 /* eslint-disable @angular-eslint/component-selector */
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, SimpleChanges, OnChanges, output, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
@@ -7,8 +7,9 @@ import * as monaco from 'monaco-editor';
 
 import { CifEditorService } from '../../services/cif-editor.service';
 import { CifMonacoService } from '../../services/cif-monaco.service';
-import { CifClickedToken, CifDictionaryHelpItem } from '../../models';
+import { CifClickedToken, CifDictionaryItem, ValidationError } from '../../models';
 import { CifFileStoreService } from '../../services/cif-file-store.service';
+import { CifDictionaryService } from '../../services/cif-dictionary.service';
 
 @Component({
   selector: 'cif-editor',
@@ -17,35 +18,46 @@ import { CifFileStoreService } from '../../services/cif-file-store.service';
   templateUrl: './cif-editor.html',
   styleUrl: './cif-editor.scss',
 })
-export class CifEditorComponent implements OnInit {
+export class CifEditorComponent implements OnInit, OnChanges {
   private readonly cifEditorService = inject(CifEditorService);
   private readonly cifMonacoService = inject(CifMonacoService);
   private readonly fileStoreService = inject(CifFileStoreService);
+  private readonly cifDictionaryService = inject(CifDictionaryService);
 
   private editorInstance?: monaco.editor.IStandaloneCodeEditor;
   private editorModel?: monaco.editor.ITextModel;
+  private decorations: string[] = [];
 
-  public cifFileName = '';
+  content = input<string>('');
+  errors = input<ValidationError[]>([]);
+  highlightedLine = input<number | null>(null);
+
   public cifFileText = '';
 
-  readonly selectedToken = signal<CifClickedToken | null>(null);
-  readonly helpItem = signal<CifDictionaryHelpItem | null>(null);
-  readonly editorReady = signal(false);
+  public contentChange = output<string>();
+  public itemClick = output<string>();
 
-  readonly lineCount = computed(() => this.cifFileText.split('\n').length);
+  readonly selectedToken = signal<CifClickedToken | null>(null);
+  readonly helpItem = signal<CifDictionaryItem | null>(null);
+  readonly editorReady = signal(false);
 
   public readonly editorOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
     theme: 'cifTheme',
     language: 'cif',
-    automaticLayout: true,
     minimap: { enabled: true },
     scrollBeyondLastLine: false,
-    fontSize: 14,
+    fontSize: 13,
     lineNumbers: 'on',
-    wordWrap: 'off',
-    tabSize: 2,
-    renderWhitespace: 'selection',
     glyphMargin: true,
+    folding: true,
+    lineDecorationsWidth: 10,
+    lineNumbersMinChars: 4,
+    renderLineHighlight: 'all',
+    automaticLayout: true,
+    scrollbar: {
+      verticalScrollbarSize: 10,
+      horizontalScrollbarSize: 10,
+    },
   };
 
   async ngOnInit(): Promise<void> {
@@ -54,9 +66,31 @@ export class CifEditorComponent implements OnInit {
     const stored = await this.fileStoreService.get('current-cif');
 
     if (stored) {
-      this.cifFileName = stored.fileName;
       this.cifFileText = stored.cifText;
     }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.editorInstance || !this.editorModel) return;
+
+    if (changes['content']) {
+      const nextValue = this.content() ?? '';
+      if (this.editorModel.getValue() !== nextValue) {
+        this.editorModel.setValue(nextValue);
+      }
+    }
+
+    if (changes['errors'] || changes['highlightedLine']) {
+      this.applyMarkersAndDecorations();
+    }
+
+    if (changes['highlightedLine'] && this.highlightedLine() !== null) {
+      this.revealHighlightedLine();
+    }
+  }
+
+  get lineCount(): number {
+    return (this.content() || '').split('\n').length;
   }
 
   onEditorInit(editor: monaco.editor.IStandaloneCodeEditor): void {
@@ -64,47 +98,54 @@ export class CifEditorComponent implements OnInit {
     this.editorModel = editor.getModel() ?? undefined;
     this.editorReady.set(true);
 
-    if (this.editorModel) {
-      this.editorModel.setValue(this.cifFileText || '');
-    }
+    if (!this.editorModel) return;
+
+    this.editorModel.setValue(this.content() || '');
+    this.cifMonacoService.applyLanguageAndTheme(editor);
+    this.applyMarkersAndDecorations();
+
+    editor.onDidChangeModelContent(() => {
+      const value = editor.getValue();
+      this.contentChange.emit(value);
+    });
 
     editor.onMouseDown((event) => {
       const position = event.target.position;
       if (!position || !this.editorModel) return;
 
       const clicked = this.cifEditorService.extractClickedToken(this.editorModel, position);
+      const helpItem = this.cifDictionaryService.getItem(clicked?.token || '');
+
+      console.log('Clicked token:', helpItem);
+
+      if (helpItem) this.helpItem.set(helpItem);
 
       this.selectedToken.set(clicked);
-      this.helpItem.set(clicked ? this.cifEditorService.getHelp(clicked.token) : null);
+      console.log('Clicked token:', clicked);
+      if (clicked) {
+        this.itemClick.emit(clicked.token);
+      }
     });
   }
 
-  applyDemoMarkers(): void {
-    if (!this.editorModel) return;
+  private applyMarkersAndDecorations(): void {
+    if (!this.editorModel || !this.editorInstance) return;
 
-    const result = this.cifEditorService.buildDemoValidationResult();
-    this.cifEditorService.applyValidationMarkers(this.editorModel, result);
+    const markers = this.cifEditorService.buildMarkers(this.editorModel, this.errors());
+
+    monaco.editor.setModelMarkers(this.editorModel, 'cif-validator', markers);
+
+    const decorations = this.cifEditorService.buildDecorations(monaco, this.errors(), this.highlightedLine());
+
+    this.decorations = this.editorInstance.deltaDecorations(this.decorations, decorations);
   }
 
-  clearMarkers(): void {
-    if (!this.editorModel) return;
-    this.cifEditorService.clearValidationMarkers(this.editorModel);
-  }
+  private revealHighlightedLine(): void {
+    const line = this.highlightedLine();
+    if (line === null || !this.editorInstance) return;
 
-  formatLightly(): void {
-    if (!this.editorInstance || !this.editorModel) return;
-
-    const lines = this.editorModel.getLinesContent().map((line) => line.trimEnd());
-    const formatted = lines.join('\n');
-
-    this.editorInstance.executeEdits('cif-format', [
-      {
-        range: this.editorModel.getFullModelRange(),
-        text: formatted,
-      },
-    ]);
-
-    this.cifFileText = formatted;
+    this.editorInstance.revealLineInCenter(line);
+    this.editorInstance.setPosition({ lineNumber: line, column: 1 });
   }
 
   downloadCif(): void {
@@ -119,5 +160,30 @@ export class CifEditorComponent implements OnInit {
     a.click();
 
     URL.revokeObjectURL(url);
+  }
+
+  public closeHelp(): void {
+    this.helpItem.set(null);
+  }
+  public viewMMCIFDictionary(): void {
+    const match = this.helpItem()?.name.match(/^_([^.]+)\.(.+)$/);
+    if (match) {
+      const [, category, field] = match;
+      const link = `https://mmcif.wwpdb.org/dictionaries/mmcif_pdbx.dic/Items/_${category}.${field}.html`;
+      window.open(link, '_blank');
+      return;
+    }
+    // Category only
+    const categoryMatch = this.helpItem()?.name.match(/^_([^.]+)$/);
+    if (categoryMatch) {
+      const link = `https://mmcif.wwpdb.org/dictionaries/mmcif_pdbx.dic/Categories/${this.helpItem()?.name}.html`;
+      window.open(link, '_blank');
+      return;
+    }
+    window.open('https://mmcif.wwpdb.org/dictionaries/mmcif_pdbx.dic/', '_blank');
+  }
+
+  public openDictionaryExplorer(): void {
+    window.open('https://deborahharrus.github.io/mmcif-dictionary-explorer/app/', '_blank');
   }
 }

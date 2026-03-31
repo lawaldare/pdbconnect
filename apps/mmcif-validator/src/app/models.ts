@@ -48,11 +48,11 @@ export interface GroupedIssue {
   suggestion?: string;
 }
 
-export interface CifDictionaryHelpItem {
+export interface CifDictionaryItem {
   name: string;
-  category: string;
+  category: string | null;
+  type: string | null;
   description: string;
-  example?: string;
 }
 
 export interface CifClickedToken {
@@ -60,6 +60,13 @@ export interface CifClickedToken {
   lineNumber: number;
   column: number;
   lineContent: string;
+}
+
+export interface ValidationError {
+  line: number;
+  item?: string;
+  message: string;
+  severity: 'error' | 'warning';
 }
 
 export interface CifValidationIssue {

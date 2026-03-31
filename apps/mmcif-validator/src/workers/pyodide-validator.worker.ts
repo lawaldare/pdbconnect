@@ -84,16 +84,17 @@ const ensurePythonFilesLoaded = async () => {
 };
 
 addEventListener('message', async ({ data }) => {
-  if (data.type !== 'VALIDATE') return;
+  // if (data.type !== 'VALIDATE') return;
 
   try {
     await initPyodide();
     await ensurePythonFilesLoaded();
 
-    pyodide.globals.set('cif_text_js', data.payload.cifText);
-    pyodide.globals.set('dict_path_js', '/app/mmcif_pdbx.dic');
+    if (data.type === 'VALIDATE') {
+      pyodide.globals.set('cif_text_js', data.payload.cifText);
+      pyodide.globals.set('dict_path_js', '/app/mmcif_pdbx.dic');
 
-    const result = await pyodide.runPythonAsync(`
+      const result = await pyodide.runPythonAsync(`
       import json
       from validator_bridge import validate_text
 
@@ -101,10 +102,31 @@ addEventListener('message', async ({ data }) => {
       json.dumps(res)
 `);
 
-    postMessage({
-      type: 'RESULT',
-      payload: JSON.parse(result),
-    });
+      postMessage({
+        type: 'RESULT',
+        payload: JSON.parse(result),
+      });
+    }
+
+    if (data.type === 'LOAD_DICTIONARY') {
+      pyodide.globals.set('dict_path_js', '/app/mmcif_pdbx.dic');
+
+      const result = await pyodide.runPythonAsync(`
+        import json
+        from validator_bridge import get_dictionary_map
+
+        res = get_dictionary_map(dict_path_js)
+        json.dumps(res)
+  `);
+
+      console.log('Dictionary loaded'); // 🔥 ADD
+
+      postMessage({
+        type: 'DICTIONARY_READY',
+        payload: JSON.parse(result),
+      });
+      return;
+    }
   } catch (err: any) {
     postMessage({
       type: 'ERROR',

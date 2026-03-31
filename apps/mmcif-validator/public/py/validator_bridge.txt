@@ -2,6 +2,7 @@ from metadata_completeness import compute_metadata_completeness
 from protocol import validation_result_from_errors
 from validate_mmcif import ValidatorFactory, _sorted_validation_errors
 import sys
+import re
 from pathlib import Path
 
 sys.path.append("../py/mmcif_validator")
@@ -52,3 +53,101 @@ def validate_text(cif_text: str, dict_path: str, file_name: str = "uploaded.cif"
             },
             "errors": [{"message": str(e)}]
         }
+def _extract_tag_value(block: str, tag: str):
+    """
+    Extract a tag value from a save_ block.
+
+    Supports:
+    - single-line values
+    - quoted values
+    - semicolon multiline values
+    """
+    # Multiline style:
+    # _item_description.description
+    # ;
+    # text here
+    # ;
+    multi_pattern = rf'(?ms)^{re.escape(tag)}\s*\n;(.*?)\n;'
+    multi_match = re.search(multi_pattern, block)
+    if multi_match:
+        return multi_match.group(1).strip()
+
+    # Single-line quoted / unquoted
+    single_pattern = rf'(?m)^{re.escape(tag)}\s+(.+)$'
+    single_match = re.search(single_pattern, block)
+    if not single_match:
+        return None
+
+    value = single_match.group(1).strip()
+
+    if value.startswith("'") and value.endswith("'"):
+        return value[1:-1]
+    if value.startswith('"') and value.endswith('"'):
+        return value[1:-1]
+
+    return value
+
+
+def _parse_dictionary_save_blocks(dic_text: str):
+    """
+    Parse save_ blocks from mmcif_pdbx.dic.
+
+    Returns dict like:
+    {
+      "_audit_conform.dict_location": {
+        "name": "_audit_conform.dict_location",
+        "category": "audit_conform",
+        "type": "code",
+        "description": "..."
+      }
+    }
+    """
+    items = {}
+
+    # Matches:
+    # save__audit_conform.dict_location
+    # ...
+    # save_
+    block_pattern = re.compile(r'(?ms)^save_([^\n]+)\n(.*?)\nsave_\s*$')
+    blocks = block_pattern.findall(dic_text)
+
+    for save_name, block in blocks:
+        item_name = save_name.strip()
+
+        # Only keep item definitions like _category.item
+        if not item_name.startswith('_'):
+            continue
+        if '.' not in item_name:
+            continue
+
+        category = _extract_tag_value(block, '_item_category.id')
+        item_type = _extract_tag_value(block, '_item_type.code')
+        description = _extract_tag_value(block, '_item_description.description')
+
+        # Fallback category from token if missing
+        if not category:
+            trimmed = item_name[1:]
+            category = trimmed.split('.', 1)[0] if '.' in trimmed else None
+
+        # Fallback description
+        if not description:
+            field = item_name.split('.', 1)[1] if '.' in item_name else item_name
+            description = f'Data item in the {category} category. Field: {field}'
+
+        # Normalize unknown-ish values
+        if item_type in ('.', '?', None):
+            item_type = 'UNKNOWN'
+
+        items[item_name] = {
+            'name': item_name,
+            'category': category,
+            'type': item_type,
+            'description': description,
+        }
+
+    return items
+
+
+def get_dictionary_map(dict_path: str):
+    dic_text = Path(dict_path).read_text(encoding='utf-8')
+    return _parse_dictionary_save_blocks(dic_text)

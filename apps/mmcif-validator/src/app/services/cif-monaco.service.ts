@@ -29,17 +29,23 @@ export class CifMonacoService {
       base: 'vs',
       inherit: true,
       rules: [
+        { token: 'keyword', foreground: '0000FF', fontStyle: 'bold' },
+        { token: 'type', foreground: '008080' },
         { token: 'comment', foreground: '6A9955' },
-        { token: 'keyword', foreground: 'AF00DB', fontStyle: 'bold' },
-        { token: 'variable', foreground: '008080' },
-        { token: 'type.identifier', foreground: '0000FF', fontStyle: 'bold' },
         { token: 'string', foreground: 'A31515' },
         { token: 'number', foreground: '098658' },
-        { token: 'number.float', foreground: '098658' },
       ],
       colors: {},
     });
 
     this.initialized = true;
+  }
+
+  applyLanguageAndTheme(editor: monaco.editor.IStandaloneCodeEditor): void {
+    const model = editor.getModel();
+    if (!model) return;
+
+    monaco.editor.setTheme('cifTheme');
+    monaco.editor.setModelLanguage(model, 'cif');
   }
 }

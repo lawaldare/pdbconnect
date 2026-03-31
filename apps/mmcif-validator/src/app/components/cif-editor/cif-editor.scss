@@ -68,18 +68,171 @@
 
 .content {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 5px;
   flex: 1;
   min-height: 0;
   padding: 12px;
+
+  &.with-help {
+    grid-template-columns: 1fr 320px;
+  }
+
+  .editor-pane {
+    min-width: 0;
+    min-height: 0;
+    background: #fff;
+    border: 1px solid #d9d9d9;
+
+    .monaco-host {
+      display: block;
+      height: 100%;
+      min-height: 600px;
+    }
+  }
+
+  aside.side-panel {
+    background: #fff;
+    border: 1px solid #d9d9d9;
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #d0d0ce;
+      padding: 16px;
+
+      h3 {
+        color: #1a1c1a;
+        font-size: 19px;
+        font-weight: 600;
+        line-height: 28.5px;
+      }
+
+      img {
+        cursor: pointer;
+      }
+    }
+
+    .information {
+      padding: 16px;
+      border-bottom: 1px solid #d0d0ce;
+
+      .row {
+        margin-bottom: 16px;
+
+        .item-name {
+          color: #3a3a3a;
+          font-size: 14px;
+          font-weight: 500;
+          line-height: 21px;
+        }
+
+        .item-value {
+          border-radius: 4px;
+          background: #f3f3f3;
+          padding: 8px;
+          font-family: 'IBM Plex Mono';
+          font-size: 16px;
+          font-style: normal;
+          line-height: 24px;
+          word-wrap: break-word;
+
+          &.c-green {
+            color: #056643;
+            font-weight: 600;
+          }
+        }
+      }
+    }
+
+    .resources {
+      padding: 16px;
+
+      h4 {
+        color: #3a3a3a;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 21px;
+        margin-bottom: 9px;
+      }
+
+      button {
+        width: 100%;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 21px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+      }
+    }
+  }
 }
 
-.editor-pane {
-  min-width: 0;
-  min-height: 0;
+:host {
+  display: block;
+  height: 100%;
+}
+
+.editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   background: #fff;
-  border: 1px solid #d9d9d9;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #d0d0ce;
+  background: #fff;
+  padding: 12px 16px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #1a1c1a;
+}
+
+.meta {
+  font-size: 14px;
+  color: #3a3a3a;
+}
+
+.hint {
+  font-size: 12px;
+  color: #3a3a3a;
+  font-style: italic;
+}
+
+.download-btn {
+  border: 2px solid #056643;
+  background: #056643;
+  color: #fff;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.editor-host {
+  flex: 1;
+  min-height: 0;
 }
 
 .monaco-host {
@@ -88,31 +241,32 @@
   min-height: 600px;
 }
 
-.side-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+:host ::ng-deep .cif-line-error {
+  background: rgb(239 68 68 / 12%);
 }
 
-.panel-card {
-  background: #fff;
-  border: 1px solid #d9d9d9;
-  padding: 16px;
-  border-radius: 12px;
+:host ::ng-deep .cif-line-warning {
+  background: rgb(234 179 8 / 12%);
+}
 
-  h3 {
-    margin-top: 0;
-  }
+:host ::ng-deep .cif-line-highlight {
+  background: rgb(5 102 67 / 12%);
+}
 
-  p {
-    margin: 8px 0;
-  }
+:host ::ng-deep .cif-glyph-error {
+  background: #ef4444;
+  width: 6px !important;
+  margin-left: 3px;
+}
 
-  pre {
-    white-space: pre-wrap;
-    word-break: break-word;
-    background: #f5f5f5;
-    padding: 8px;
-    border-radius: 8px;
-  }
+:host ::ng-deep .cif-glyph-warning {
+  background: #eab308;
+  width: 6px !important;
+  margin-left: 3px;
+}
+
+:host ::ng-deep .cif-glyph-highlight {
+  background: #056643;
+  width: 6px !important;
+  margin-left: 3px;
 }

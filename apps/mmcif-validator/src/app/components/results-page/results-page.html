@@ -97,6 +97,6 @@
   </aside>
 
   <section class="results">
-    <cif-editor></cif-editor>
+    <cif-editor [content]="cifFileText" [errors]="validationErrors" [highlightedLine]="highlightedLine" (contentChange)="onEditorContentChange($event)"> </cif-editor>
   </section>
 </main>

@@ -1,149 +1,77 @@
 import { Injectable } from '@angular/core';
 import * as monaco from 'monaco-editor';
-import { CifClickedToken, CifDictionaryHelpItem, CifEditorValidationResult } from '../models';
+import { CifClickedToken, ValidationError } from '../models';
+// import { CifClickedToken, ValidationError } from '../models/cif-editor.models';
 
 @Injectable({ providedIn: 'root' })
 export class CifEditorService {
-  private readonly helpMap = new Map<string, CifDictionaryHelpItem>([
-    [
-      '_entry.id',
-      {
-        name: '_entry.id',
-        category: 'entry',
-        description: 'Unique identifier for the entry.',
-        example: '7YDZ',
-      },
-    ],
-    [
-      '_audit_conform.dict_name',
-      {
-        name: '_audit_conform.dict_name',
-        category: 'audit_conform',
-        description: 'Name of the dictionary used to describe the data file.',
-        example: 'mmcif_pdbx.dic',
-      },
-    ],
-    [
-      '_cell.length_a',
-      {
-        name: '_cell.length_a',
-        category: 'cell',
-        description: 'Length of unit cell edge a.',
-        example: '105.123',
-      },
-    ],
-    [
-      '_cell.length_b',
-      {
-        name: '_cell.length_b',
-        category: 'cell',
-        description: 'Length of unit cell edge b.',
-        example: '105.123',
-      },
-    ],
-    [
-      '_cell.length_c',
-      {
-        name: '_cell.length_c',
-        category: 'cell',
-        description: 'Length of unit cell edge c.',
-        example: '105.123',
-      },
-    ],
-    [
-      '_cell.angle_alpha',
-      {
-        name: '_cell.angle_alpha',
-        category: 'cell',
-        description: 'Angle alpha of the unit cell.',
-        example: '90.000',
-      },
-    ],
-    [
-      '_cell.angle_beta',
-      {
-        name: '_cell.angle_beta',
-        category: 'cell',
-        description: 'Angle beta of the unit cell.',
-        example: '90.000',
-      },
-    ],
-    [
-      '_cell.angle_gamma',
-      {
-        name: '_cell.angle_gamma',
-        category: 'cell',
-        description: 'Angle gamma of the unit cell.',
-        example: '90.000',
-      },
-    ],
-  ]);
-
   extractClickedToken(model: monaco.editor.ITextModel, position: monaco.Position): CifClickedToken | null {
     const lineContent = model.getLineContent(position.lineNumber);
 
-    const tokenRegex = /_[A-Za-z0-9][A-Za-z0-9_.-]*/g;
-    let match: RegExpExecArray | null;
+    const clickOffset = position.column - 1;
+    const lineUpToClick = lineContent.substring(0, clickOffset);
+    const lineFromClick = lineContent.substring(clickOffset);
 
-    while ((match = tokenRegex.exec(lineContent)) !== null) {
-      const start = match.index + 1;
-      const end = start + match[0].length - 1;
+    const beforeMatch = lineUpToClick.match(/_[a-zA-Z0-9_.]*$/);
+    const afterMatch = lineFromClick.match(/^[a-zA-Z0-9_.]*/);
 
-      if (position.column >= start && position.column <= end) {
-        return {
-          token: match[0],
-          lineNumber: position.lineNumber,
-          column: position.column,
-          lineContent,
-        };
-      }
+    if (!beforeMatch && !afterMatch) {
+      return null;
     }
 
-    return null;
-  }
+    const fullItem = `${beforeMatch?.[0] || ''}${afterMatch?.[0] || ''}`;
 
-  getHelp(token: string): CifDictionaryHelpItem | null {
-    return this.helpMap.get(token) ?? null;
-  }
+    if (!fullItem.startsWith('_')) {
+      return null;
+    }
 
-  applyValidationMarkers(model: monaco.editor.ITextModel, validation: CifEditorValidationResult): void {
-    const markers: monaco.editor.IMarkerData[] = validation.issues
-      .filter((issue: any) => typeof issue.line === 'number')
-      .map((issue: any) => ({
-        startLineNumber: issue.line,
-        endLineNumber: issue.line,
-        startColumn: issue.startColumn ?? 1,
-        endColumn: issue.endColumn ?? model.getLineMaxColumn(issue.line),
-        message: issue.message,
-        severity: issue.severity === 'error' ? monaco.MarkerSeverity.Error : monaco.MarkerSeverity.Warning,
-      }));
-
-    monaco.editor.setModelMarkers(model, 'cif-validator', markers);
-  }
-
-  clearValidationMarkers(model: monaco.editor.ITextModel): void {
-    monaco.editor.setModelMarkers(model, 'cif-validator', []);
-  }
-
-  buildDemoValidationResult(): CifEditorValidationResult {
     return {
-      valid: false,
-      issues: [
-        {
-          severity: 'warning',
-          message: 'Missing recommended metadata item.',
-          line: 25,
-          startColumn: 1,
-          endColumn: 15,
-        },
-        {
-          severity: 'error',
-          message: 'Invalid value format for CIF item.',
-          line: 31,
-          startColumn: 1,
-          endColumn: 20,
-        },
-      ],
+      token: fullItem,
+      lineNumber: position.lineNumber,
+      column: position.column,
+      lineContent,
     };
+  }
+
+  buildMarkers(model: monaco.editor.ITextModel, errors: ValidationError[]): monaco.editor.IMarkerData[] {
+    return errors.map((error) => ({
+      startLineNumber: error.line,
+      endLineNumber: error.line,
+      startColumn: 1,
+      endColumn: model.getLineMaxColumn(error.line),
+      message: error.message,
+      severity: error.severity === 'error' ? monaco.MarkerSeverity.Error : monaco.MarkerSeverity.Warning,
+    }));
+  }
+
+  buildDecorations(monacoNs: typeof monaco, errors: ValidationError[], highlightedLine: number | null): monaco.editor.IModelDeltaDecoration[] {
+    const decorations: monaco.editor.IModelDeltaDecoration[] = errors.map((error) => ({
+      range: new monacoNs.Range(error.line, 1, error.line, 1000),
+      options: {
+        isWholeLine: true,
+        className: error.severity === 'error' ? 'cif-line-error' : 'cif-line-warning',
+        glyphMarginClassName: error.severity === 'error' ? 'cif-glyph-error' : 'cif-glyph-warning',
+        glyphMarginHoverMessage: {
+          value: `**${error.item || 'Validation issue'}**\n\n${error.message}`,
+        },
+        minimap: {
+          color: error.severity === 'error' ? '#ef4444' : '#eab308',
+          position: monacoNs.editor.MinimapPosition.Inline,
+        },
+      },
+    }));
+
+    if (highlightedLine !== null) {
+      decorations.push({
+        range: new monacoNs.Range(highlightedLine, 1, highlightedLine, 1000),
+        options: {
+          isWholeLine: true,
+          className: 'cif-line-highlight',
+          glyphMarginClassName: 'cif-glyph-highlight',
+        },
+      });
+    }
+
+    return decorations;
   }
 }

@@ -4,9 +4,11 @@ import { Component, computed, inject, OnInit, signal, ViewChild } from '@angular
 import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MaterialModule, ScrollPositionService } from '@pdbc/core';
-import { MissingItem, ValidationErrorItem, ValidationResult } from '../../models';
+import { MissingItem, ValidationError, ValidationErrorItem, ValidationResult } from '../../models';
 import { CifFileStoreService } from '../../services/cif-file-store.service';
 import { CifEditorComponent } from '../cif-editor/cif-editor';
+import { CifDictionaryService } from '../../services/cif-dictionary.service';
+import { CifValidationService } from '../../services/cif-validation.service';
 
 type Result = {
   category: string;
@@ -24,6 +26,8 @@ export class ResultsPageComponent implements OnInit {
   private readonly router = inject(Router);
   public readonly scrollService = inject(ScrollPositionService);
   private readonly fileStoreService = inject(CifFileStoreService);
+  private readonly cifDictionaryService = inject(CifDictionaryService);
+  private readonly cifValidationService = inject(CifValidationService);
 
   public result: ValidationResult = JSON.parse(sessionStorage.getItem('validationResult') || '{}');
 
@@ -42,7 +46,10 @@ export class ResultsPageComponent implements OnInit {
 
   public cifFileName = '';
   public cifFileText = '';
-
+  public validationErrors: ValidationError[] = [];
+  public highlightedLine: number | null = null;
+  // public helpItem: CifDictionaryItem | null = null;
+  public clickedToken: string | null = null;
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
   private readonly routeTabs = [
@@ -81,7 +88,11 @@ export class ResultsPageComponent implements OnInit {
       this.cifFileText = stored.cifText;
     }
 
-    console.log(this.cifFileText);
+    if (!this.cifDictionaryService.hasLoaded()) {
+      const dictionary = await this.cifValidationService.loadDictionary();
+      console.log('Loaded CIF dictionary:', dictionary);
+      this.cifDictionaryService.setDictionary(dictionary);
+    }
   }
 
   public onFilter(filterText: string): void {
@@ -144,5 +155,9 @@ export class ResultsPageComponent implements OnInit {
       category,
       items,
     }));
+  }
+
+  onEditorContentChange(value: string): void {
+    this.cifFileText = value;
   }
 }
