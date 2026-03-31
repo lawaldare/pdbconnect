@@ -28,9 +28,9 @@ export class CifEditorComponent implements OnInit, OnChanges {
   private editorModel?: monaco.editor.ITextModel;
   private decorations: string[] = [];
 
-  content = input<string>('');
-  errors = input<ValidationError[]>([]);
-  highlightedLine = input<number | null>(null);
+  public content = input<string>('');
+  public errors = input<ValidationError[]>([]);
+  public highlightedLine = input<number | null>(null);
 
   public cifFileText = '';
 
@@ -62,9 +62,7 @@ export class CifEditorComponent implements OnInit, OnChanges {
 
   async ngOnInit(): Promise<void> {
     this.cifMonacoService.initLanguage();
-
     const stored = await this.fileStoreService.get('current-cif');
-
     if (stored) {
       this.cifFileText = stored.cifText;
     }
@@ -73,12 +71,12 @@ export class CifEditorComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (!this.editorInstance || !this.editorModel) return;
 
-    if (changes['content']) {
-      const nextValue = this.content() ?? '';
-      if (this.editorModel.getValue() !== nextValue) {
-        this.editorModel.setValue(nextValue);
-      }
-    }
+    // if (changes['content']) {
+    //   const nextValue = this.content() ?? '';
+    //   if (this.editorModel.getValue() !== nextValue) {
+    //     this.editorModel.setValue(nextValue);
+    //   }
+    // }
 
     if (changes['errors'] || changes['highlightedLine']) {
       this.applyMarkersAndDecorations();
@@ -95,14 +93,27 @@ export class CifEditorComponent implements OnInit, OnChanges {
 
   onEditorInit(editor: monaco.editor.IStandaloneCodeEditor): void {
     this.editorInstance = editor;
-    this.editorModel = editor.getModel() ?? undefined;
     this.editorReady.set(true);
 
-    if (!this.editorModel) return;
+    const applyModelSetup = () => {
+      const model = editor.getModel();
+      if (!model) return;
 
-    this.editorModel.setValue(this.content() || '');
-    this.cifMonacoService.applyLanguageAndTheme(editor);
-    this.applyMarkersAndDecorations();
+      this.editorModel = model;
+
+      monaco.editor.setModelLanguage(model, 'cif');
+      monaco.editor.setTheme('cifTheme');
+
+      console.log('Monaco language:', model.getLanguageId());
+
+      this.applyMarkersAndDecorations();
+    };
+
+    applyModelSetup();
+
+    editor.onDidChangeModel(() => {
+      applyModelSetup();
+    });
 
     editor.onDidChangeModelContent(() => {
       const value = editor.getValue();
@@ -111,17 +122,15 @@ export class CifEditorComponent implements OnInit, OnChanges {
 
     editor.onMouseDown((event) => {
       const position = event.target.position;
-      if (!position || !this.editorModel) return;
+      const model = editor.getModel();
+      if (!position || !model) return;
 
-      const clicked = this.cifEditorService.extractClickedToken(this.editorModel, position);
+      const clicked = this.cifEditorService.extractClickedToken(model, position);
       const helpItem = this.cifDictionaryService.getItem(clicked?.token || '');
-
-      console.log('Clicked token:', helpItem);
 
       if (helpItem) this.helpItem.set(helpItem);
 
       this.selectedToken.set(clicked);
-      console.log('Clicked token:', clicked);
       if (clicked) {
         this.itemClick.emit(clicked.token);
       }

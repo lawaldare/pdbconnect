@@ -16,7 +16,15 @@
 
   <div class="content" [class.with-help]="helpItem()">
     <div class="editor-pane">
-      <ngx-monaco-editor class="monaco-host" [options]="editorOptions" [(ngModel)]="cifFileText" (onInit)="onEditorInit($event)"> </ngx-monaco-editor>
+      <!-- <ngx-monaco-editor class="monaco-host" [options]="editorOptions" [(ngModel)]="cifFileText" (onInit)="onEditorInit($event)"> </ngx-monaco-editor> -->
+      <ngx-monaco-editor
+        class="monaco-host"
+        [options]="editorOptions"
+        [ngModel]="content()"
+        (ngModelChange)="contentChange.emit($event)"
+        (onInit)="onEditorInit($event)"
+      >
+      </ngx-monaco-editor>
     </div>
 
     @if(helpItem()){
