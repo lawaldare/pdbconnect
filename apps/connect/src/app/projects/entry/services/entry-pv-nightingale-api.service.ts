@@ -11,7 +11,7 @@ export class PvDataApiService {
   private readonly http = inject(HttpClient);
   private readonly isLocalhost = window?.location?.hostname === 'localhost';
 
-  private readonly BaseAPI = `https://www.ebi.ac.uk/pdbe/graph-api/`;
+  private readonly BaseAPI = `https://www.ebi.ac.uk/pdbe/graph-api/`; // TODO remove
   private readonly AggregatedApiUrl = `${environment.baseUrl}pdbe/api/v2/`;
 
   private buildUrl(endpoint: string, entryId: string, entityId: string): string {

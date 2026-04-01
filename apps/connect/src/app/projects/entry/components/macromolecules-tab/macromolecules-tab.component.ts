@@ -1,48 +1,50 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import { ComponentType } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
-import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip } from '../../entry-constant';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild, OnDestroy } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { EntryStoreState } from '../../store/entry-store.model';
-import { EntrySelectors } from '../../store/entry.selectors';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, MaterialModule, Mutex, ScriptLoaderService, UtilService } from '@pdbc/core';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
+import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, of, take, timeout } from 'rxjs';
+import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
+import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
+import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip } from '../../entry-constant';
+import { Molstar370DefaultParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
+import { MVSHandler } from '../../helpers/mvs-utils';
+import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
+import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import {
   getCleanMoleculeName,
   getCleanSelectionName,
   getMacromoleculeChainDropdownOptions,
   getMacromoleculeSequenceDetails,
 } from '../../helpers/processed-data-to-controls';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { ComponentType } from '@angular/cdk/overlay';
-import { EcNumbersComponent } from '../shared/ec-numbers/ec-numbers.component';
-import { GoTermsComponent } from '../shared/go-terms/go-terms.component';
-import { MatDialog } from '@angular/material/dialog';
-import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
-import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
-import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
-import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
-import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, first, firstValueFrom, interval, map, of, take, timeout, timer } from 'rxjs';
-import { EntryActions } from '../../store/entry.actions';
-import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
-import { drawSelectionInMolstar, Molstar370DefaultParams, QueryParamForHelpers, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
+import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
-import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 import { getUniProtMappingsForMacromolecule } from '../../store/data-processing/macromolecule-processing';
 import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
-import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
-import { MacromoleculesTabFacade } from './macromolecules-tab.facade';
-import { UnpMappingListComponent } from '../shared/unp-mapping-list/unp-mapping-list.component';
-import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { EntryActions } from '../../store/entry.actions';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
+import { EcNumbersComponent } from '../shared/ec-numbers/ec-numbers.component';
 import { PvDataProcessingFacade } from '../shared/entry-pv-nightingale/pv-entry-api.facade';
-import { ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
+import { GoTermsComponent } from '../shared/go-terms/go-terms.component';
+import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
+import { UnpMappingListComponent } from '../shared/unp-mapping-list/unp-mapping-list.component';
+import { MacromoleculesTabFacade } from './macromolecules-tab.facade';
 
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
@@ -66,7 +68,7 @@ declare let PdbRnaViewerPlugin: any;
   templateUrl: './macromolecules-tab.component.html',
   styleUrl: './macromolecules-tab.component.scss',
 })
-export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
+export class MacromoleculesTabComponent implements OnInit, AfterViewInit, OnDestroy {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly visInteractivity = inject(VisualisationInteractivityService);
@@ -219,6 +221,10 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public symmetryDropdownSelected?: string;
   public symmetryDropdownOptions: DownloadOption[] = [];
+  private getSelectedInstanceId() {
+    if (this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All') return this.symmetryDropdownSelected;
+    else return undefined;
+  }
 
   public dashboardStatLinks = dashboardStatLinks;
 
@@ -271,40 +277,15 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public inPrefAssembly = signal(true);
   public inPrefAssemblyForChain = signal(true);
 
-  public readonly configForMolstar = computed(() => {
-    const summary = this.summaryData();
-    const entryId = this.entryId();
-    const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
-    // const chainSelection = this.chainSelection();
+  private readonly preferredAssemblyId = computed(() => this.summaryData()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
 
-    if (!summary || !entryId) return undefined;
-
-    const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
-    const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
-    const assemblyId = inPrefAssemblyForChain ? preferredAssemblyId : undefined;
-
-    const configForMolstar = {
-      ...Molstar370DefaultParams,
-      moleculeId: this.entryId(),
-      assemblyId,
-      subscribeEvents: true,
-      granularity: 'residue',
-      visualStyle: {
-        polymer: {
-          type: 'cartoon',
-          // 'color': 'entity-id',
-          color: 'uniform',
-          colorParams: { value: 0xfefefe },
-        },
-      },
-      loadMaps: true,
-      mapSettings: { defaultView: 'selection-box' },
-      sequencePanel: true,
-      // ...(chainSelection && { 'selection': chainSelection }),
-    };
-    return configForMolstar;
-  });
-  public configForMolstar$ = toObservable(this.configForMolstar);
+  public readonly configForMolstar = computed(() => ({
+    ...Molstar370DefaultParams,
+    subscribeEvents: true,
+    granularity: 'residue',
+    hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
+    sequencePanel: true,
+  }));
 
   public molstarHeight = '100%';
 
@@ -435,13 +416,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   @ViewChild('rnaViewerContainer', { static: false }) rnaViewerContainer!: ElementRef;
   private rnaViewerInstance: any;
 
-  public sequenceDetails = signal<
-    | {
-        title: string;
-        fullSequence: string;
-      }
-    | undefined
-  >(undefined);
+  public sequenceDetails = signal<{ title: string; fullSequence: string } | undefined>(undefined);
 
   public readonly selectionUniprotId = computed(() => {
     const allowed = this.uniprotsAllowed();
@@ -549,7 +524,20 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return rows.length > 0;
   });
 
+  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
+
   ngAfterViewInit(): void {
+    this.molstarFirstRenderFinished$
+      .pipe(
+        filter((ready) => ready),
+        take(1)
+      )
+      .subscribe(() => {
+        // run after molstar rendered
+        const mvsHandler = MVSHandler(this._molstarComponent);
+        this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+      });
+
     this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
       if (idx === undefined || idx === null) return;
       const datum = this.macromoleculeTableRows()[idx];
@@ -559,6 +547,10 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
         await this.triggerMacromoleculeUpdateSideEffects(datum);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.mvsSnapshotSpec.unsubscribe();
   }
 
   ngOnInit() {
@@ -638,42 +630,11 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return stats ? stats[id as keyof ProteinSummaryStats] : undefined;
   }
 
-  private async updateConfigAssemblyAndSyncMolstar(macromolecule: ProcessedMacromolecule) {
-    // await until molstar first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready === true),
-        first()
-      )
-    );
+  private updateInPrefAssemblyForChain(macromolecule: ProcessedMacromolecule) {
     // check if macromolecule chain is in pref assembly based on idx of chain
-    const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
     const chainIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
     const isSelectionPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly[chainIdx];
-    const changedDisplayedAssembly = inPrefAssemblyForChain !== isSelectionPrefAssembly;
-    // setting inPrefAssemblyForInstance may trigger update on configForMolstar
     this.inPrefAssemblyForChain.set(isSelectionPrefAssembly);
-
-    // ... if this update is triggered
-    if (changedDisplayedAssembly) {
-      // wait until configForMolstar recomputes with new assembly/moleculeId
-      const oldCfg = await firstValueFrom(this.configForMolstar$.pipe(take(1)));
-
-      const newCfg = await firstValueFrom(
-        this.configForMolstar$.pipe(
-          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
-          take(1)
-        )
-      );
-
-      // 2. Wait for MolstarComponent to APPLY the new config
-      await firstValueFrom(
-        this._molstarComponent!.configUpdated.pipe(
-          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
-          take(1)
-        )
-      );
-    }
   }
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
@@ -681,8 +642,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     await this.updateDropdownOptions(macromolecule);
     await this.updateSymmetryDropdownOptions(macromolecule);
 
-    // check whether chain is in pref assembly, molstar config needs update and wait for it
-    await this.updateConfigAssemblyAndSyncMolstar(macromolecule);
+    // check whether chain is in pref assembly
+    this.updateInPrefAssemblyForChain(macromolecule);
     // check whether any chain not in pref assembly for this macromolecule
     const allChainsInPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
     this.inPrefAssembly.set(allChainsInPrefAssembly);
@@ -827,8 +788,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
     await this.updateSequenceDetailsFromChainId(macromolecule, chainId);
 
-    // check whether chain is in pref assembly, molstar config needs update and wait for it
-    await this.updateConfigAssemblyAndSyncMolstar(macromolecule);
+    // check whether chain is in pref assembly
+    this.updateInPrefAssemblyForChain(macromolecule);
 
     await this.renderVisualisations(macromolecule);
     await this.updateBackgroundAnnotation();
@@ -895,38 +856,36 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public selectionData?: QueryParamForHelpers[];
 
-  private async renderInMolstar(macromolecule: ProcessedMacromolecule) {
-    // Wait until first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready), // proceed when true
-        take(1)
-      )
-    );
+  private renderInMolstar(macromolecule: ProcessedMacromolecule) {
+    const entryId = this.entryId();
+    if (!entryId) return;
 
+    const entityId = `${macromolecule.additionalData.molecule.entity_id}`;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const labelAsymId = molstarSelection[0].struct_asym_id; // TODO: @adam Update used QueryParam field names
+    const authAsymId = molstarSelection[0].auth_asym_id;
 
-    // loop over each molstar selection and add color and focus
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
-    this.selectionData = molstarSelection.map((eachSelection) => {
-      return {
-        ...eachSelection,
-        instance_id,
-        color: macromolecule.molstarColorHex,
+    const chainIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
+    const isSelectionInPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly[chainIdx];
+    const assemblyId = isSelectionInPrefAssembly ? this.preferredAssemblyId() : undefined;
+    const instanceId = this.getSelectedInstanceId();
+
+    const spec: SnapshotSpec = {
+      name: `Macromolecule ${entityId}`,
+      kind: 'pdbconnect_macromolecule',
+      params: {
+        entry: entryId,
+        assemblyId,
+        entityId,
+        labelAsymId,
+        authAsymId,
+        instanceId,
         focus: true,
-      };
-    });
-    this.visInteractivity.currentSelectionData.set(this.selectionData);
-
-    const durationMs = this._molstarComponent ? 1200 : 0;
-
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-    await zoomOutStructureInMolstar(instance, durationMs);
-
-    timer(durationMs + 100).subscribe(async () => {
-      await drawSelectionInMolstar(instance, this.selectionData);
-    });
+        volumeStreaming: true,
+        color: macromolecule.molstarColorHex,
+      },
+    };
+    this.mvsSnapshotSpec.next(spec);
   }
 
   private async initOrRefreshProtvista(macromolecule: ProcessedMacromolecule) {

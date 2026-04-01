@@ -136,8 +136,6 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     // tabs: 'all',
   }));
 
-  private mvsTransitionDurationMs = 600;
-
   public dropdownSelected!: string;
   public dropdownOptions = signal<DownloadOption[]>([]);
   public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
