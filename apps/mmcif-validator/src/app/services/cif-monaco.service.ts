@@ -1,5 +1,4 @@
 import type * as Monaco from 'monaco-editor';
-declare const monaco: typeof import('monaco-editor');
 
 import { Injectable } from '@angular/core';
 // import * as monaco from 'monaco-editor';
@@ -8,12 +7,12 @@ import { Injectable } from '@angular/core';
 export class CifMonacoService {
   private initialized = false;
 
-  initLanguage(): void {
+  public initLanguage(monaco: typeof import('monaco-editor')): void {
     if (this.initialized) return;
 
-    monaco.languages.register({ id: 'cif' });
+    monaco?.languages.register({ id: 'cif' });
 
-    monaco.languages.setMonarchTokensProvider('cif', {
+    monaco?.languages.setMonarchTokensProvider('cif', {
       tokenizer: {
         root: [
           [/^data_.*/, 'keyword'],
@@ -28,7 +27,7 @@ export class CifMonacoService {
       },
     });
 
-    monaco.editor.defineTheme('cifTheme', {
+    monaco?.editor.defineTheme('cifTheme', {
       base: 'vs',
       inherit: true,
       rules: [
@@ -44,7 +43,7 @@ export class CifMonacoService {
     this.initialized = true;
   }
 
-  applyLanguageAndTheme(editor: Monaco.editor.IStandaloneCodeEditor): void {
+  public applyLanguageAndTheme(editor: Monaco.editor.IStandaloneCodeEditor, monaco: typeof import('monaco-editor')): void {
     const model = editor.getModel();
     if (!model) return;
 

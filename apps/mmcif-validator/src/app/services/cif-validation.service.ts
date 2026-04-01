@@ -8,7 +8,7 @@ export class CifValidationService {
     this.worker = new Worker('assets/workers/pyodid-worker.js');
   }
 
-  validate(cifText: string): Promise<any> {
+  public validate(cifText: string): Promise<any> {
     return new Promise((resolve, reject) => {
       const listener = (event: MessageEvent) => {
         const data = event.data;

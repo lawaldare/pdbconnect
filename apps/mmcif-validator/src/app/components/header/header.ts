@@ -34,7 +34,6 @@ export class HeaderComponent {
   public onStartButtonClick(): void {
     const href = window.location.href;
     const hrefLink = href.split('/').slice(0, -2).join('/');
-    console.log('hrefLink', hrefLink);
     window.open(hrefLink, '_self');
   }
 }

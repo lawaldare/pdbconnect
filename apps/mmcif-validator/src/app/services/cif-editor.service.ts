@@ -7,7 +7,7 @@ import { CifClickedToken, ValidationError } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class CifEditorService {
-  extractClickedToken(model: Monaco.editor.ITextModel, position: Monaco.Position): CifClickedToken | null {
+  public extractClickedToken(model: Monaco.editor.ITextModel, position: Monaco.Position): CifClickedToken | null {
     const lineContent = model.getLineContent(position.lineNumber);
 
     const clickOffset = position.column - 1;
@@ -35,7 +35,7 @@ export class CifEditorService {
     };
   }
 
-  buildMarkers(model: Monaco.editor.ITextModel, errors: ValidationError[]): Monaco.editor.IMarkerData[] {
+  public buildMarkers(model: Monaco.editor.ITextModel, errors: ValidationError[]): Monaco.editor.IMarkerData[] {
     return errors.map((error) => ({
       startLineNumber: error.line,
       endLineNumber: error.line,
@@ -46,7 +46,7 @@ export class CifEditorService {
     }));
   }
 
-  buildDecorations(monacoNs: typeof monaco, errors: ValidationError[], highlightedLine: number | null): Monaco.editor.IModelDeltaDecoration[] {
+  public buildDecorations(monacoNs: typeof monaco, errors: ValidationError[], highlightedLine: number | null): Monaco.editor.IModelDeltaDecoration[] {
     const decorations: Monaco.editor.IModelDeltaDecoration[] = errors.map((error) => ({
       range: new monacoNs.Range(error.line, 1, error.line, 1000),
       options: {

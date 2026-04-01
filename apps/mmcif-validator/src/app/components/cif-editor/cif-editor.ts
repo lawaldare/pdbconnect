@@ -36,8 +36,9 @@ export class CifEditorComponent implements OnInit, OnChanges {
   public highlightedLine = input<number | null>(null);
 
   public cifFileText = '';
+  private cifFileName = '';
 
-  public contentChange = output<string>();
+  // public contentChange = output<string>();
   public itemClick = output<string>();
 
   readonly selectedToken = signal<CifClickedToken | null>(null);
@@ -64,25 +65,19 @@ export class CifEditorComponent implements OnInit, OnChanges {
   };
 
   async ngOnInit(): Promise<void> {
-    this.cifMonacoService.initLanguage();
+    // this.cifMonacoService.initLanguage();
     const stored = await this.fileStoreService.get('current-cif');
     if (stored) {
       this.cifFileText = stored.cifText;
+      this.cifFileName = stored.fileName;
     }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!this.editorInstance || !this.editorModel) return;
 
-    // if (changes['content']) {
-    //   const nextValue = this.content() ?? '';
-    //   if (this.editorModel.getValue() !== nextValue) {
-    //     this.editorModel.setValue(nextValue);
-    //   }
-    // }
-
     if (changes['errors'] || changes['highlightedLine']) {
-      this.applyMarkersAndDecorations();
+      // this.applyMarkersAndDecorations();
     }
 
     if (changes['highlightedLine'] && this.highlightedLine() !== null) {
@@ -98,6 +93,9 @@ export class CifEditorComponent implements OnInit, OnChanges {
     this.editorInstance = editor;
     this.editorReady.set(true);
 
+    this.cifMonacoService.initLanguage(monaco);
+    this.cifMonacoService.applyLanguageAndTheme(editor, monaco);
+
     const applyModelSetup = () => {
       const model = editor.getModel();
       if (!model) return;
@@ -107,9 +105,7 @@ export class CifEditorComponent implements OnInit, OnChanges {
       monaco.editor.setModelLanguage(model, 'cif');
       monaco.editor.setTheme('cifTheme');
 
-      console.log('Monaco language:', model.getLanguageId());
-
-      this.applyMarkersAndDecorations();
+      // this.applyMarkersAndDecorations();
     };
 
     applyModelSetup();
@@ -118,10 +114,10 @@ export class CifEditorComponent implements OnInit, OnChanges {
       applyModelSetup();
     });
 
-    editor.onDidChangeModelContent(() => {
-      const value = editor.getValue();
-      this.contentChange.emit(value);
-    });
+    // editor.onDidChangeModelContent(() => {
+    //   const value = editor.getValue();
+    //   this.contentChange.emit(value);
+    // });
 
     editor.onMouseDown((event) => {
       const position = event.target.position;
@@ -168,7 +164,7 @@ export class CifEditorComponent implements OnInit, OnChanges {
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'model.cif';
+    a.download = `${this.cifFileName.split('.')[0]}_edited.cif`;
     a.click();
 
     URL.revokeObjectURL(url);
