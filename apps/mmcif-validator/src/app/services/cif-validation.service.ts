@@ -54,8 +54,6 @@ export class CifValidationService {
       this.worker.postMessage({
         type: 'LOAD_DICTIONARY',
       });
-
-      console.log('Message sent to worker');
     });
   }
 }

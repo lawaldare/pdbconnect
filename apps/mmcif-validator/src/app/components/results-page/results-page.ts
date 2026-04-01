@@ -122,7 +122,7 @@ export class ResultsPageComponent implements OnInit {
   }
 
   public onOpenAccordionPanel(panelName: string): void {
-    console.log(`Accordion panel opened: ${panelName}`);
+    console.warn(`Accordion panel opened: ${panelName}`);
   }
 
   private groupMissingData(missing_categories: string[], missing_items: MissingItem[]): Result[] {
@@ -144,6 +144,5 @@ export class ResultsPageComponent implements OnInit {
 
   public onIssueClick(issue: ValidationErrorItem): void {
     this.selectedIssue.set(issue);
-    console.log('Selected issue:', issue);
   }
 }
