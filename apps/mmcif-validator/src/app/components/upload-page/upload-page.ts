@@ -69,7 +69,7 @@ export class UploadPageComponent {
     const lowerName = file.name.toLowerCase();
     const isCif = lowerName.endsWith('.cif') || lowerName.endsWith('.bcif');
     if (!isCif) {
-      this.error.set('File format is not supported. Please try again with a .cif, .bcif, .pdb or .ent file.');
+      this.error.set('File format is not supported. Please try again with a .cif, .bcif file.');
       return;
     }
 

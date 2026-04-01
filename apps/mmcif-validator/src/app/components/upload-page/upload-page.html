@@ -1,14 +1,9 @@
 <h1>Validate your file</h1>
 <main>
   <section class="upload-section">
-    <div
-      class="upload-section-drag-drop"
-      #dropArea
-      (dragover)="onDragOver($event)"
-      (dragleave)="onDragLeave()"
-      (drop)="onDrop($event)"
-      [ngStyle]="{'border': isLoading() ? 'none' : '2px dashed #454545'}"
-    >
+    @if(!isLoading()){
+
+    <div class="upload-section-drag-drop" #dropArea (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">
       <img src="assets/icons/download.svg" alt="icon image" />
 
       <p>
@@ -21,16 +16,12 @@
       <input #fileInput type="file" class="file-input" accept=".cif,.bcif" (change)="onFileChange($event)" hidden />
 
       <button class="vf-button vf-button--primary" (click)="onBrowseClick()">Select a file</button>
-      @if(isLoading()){
-      <div class="loading loading-view">
-        <div class="spinner"></div>
-      </div>
-      }
     </div>
 
+    <!-- Error message -->
     @if(error()) {
     <span class="error">{{ error() }}</span>
-    } @if(!isLoading()){
+    }
 
     <p class="info">
       The PDBe mmCIF Validator checks mmCIF/CIF files against the PDBx/mmCIF dictionary, ensuring compliance with required definitions and data constraints. <br />
@@ -39,10 +30,20 @@
       <a href="https://www.ebi.ac.uk/training/online/courses/pdbepisa/" target="_blank">Learn more...</a>
     </p>
     } @else{
-    <section class="upload-section validating">
-      <img src="assets/images/loader.gif" alt="loader icon" style="height: 24px; width: 24px" />
-      <h2>Validating...</h2>
-    </section>
+    <div class="validator-loading">
+      <div class="loader">
+        <div class="spinner"></div>
+        <div class="text">
+          <h3>Validating Structure</h3>
+          <div class="dots">
+            <p>Analyzing structure data</p>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+    </div>
     }
   </section>
 
