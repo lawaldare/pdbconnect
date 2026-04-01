@@ -1,5 +1,8 @@
+import type * as Monaco from 'monaco-editor';
+declare const monaco: typeof import('monaco-editor');
+
 import { Injectable } from '@angular/core';
-import * as monaco from 'monaco-editor';
+// import * as monaco from 'monaco-editor';
 
 @Injectable({ providedIn: 'root' })
 export class CifMonacoService {
@@ -41,7 +44,7 @@ export class CifMonacoService {
     this.initialized = true;
   }
 
-  applyLanguageAndTheme(editor: monaco.editor.IStandaloneCodeEditor): void {
+  applyLanguageAndTheme(editor: Monaco.editor.IStandaloneCodeEditor): void {
     const model = editor.getModel();
     if (!model) return;
 

@@ -5,7 +5,7 @@ export class CifValidationService {
   private worker: Worker;
 
   constructor() {
-    this.worker = new Worker(new URL('../../workers/pyodide-validator.worker', import.meta.url), { type: 'module' });
+    this.worker = new Worker('assets/workers/pyodid-worker.js');
   }
 
   validate(cifText: string): Promise<any> {

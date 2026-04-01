@@ -68,7 +68,7 @@ export class ResultsPageComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    console.log(this.result);
+    console.log('result', this.result);
 
     this.numberOfErrors.set(this.result?.summary?.errors || 0);
     this.numberOfWarnings.set(this.result?.summary?.warnings || 0);

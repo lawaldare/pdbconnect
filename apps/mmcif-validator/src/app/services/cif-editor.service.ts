@@ -1,11 +1,13 @@
+import type * as Monaco from 'monaco-editor';
+declare const monaco: typeof import('monaco-editor');
+
 import { Injectable } from '@angular/core';
-import * as monaco from 'monaco-editor';
+// import * as monaco from 'monaco-editor';
 import { CifClickedToken, ValidationError } from '../models';
-// import { CifClickedToken, ValidationError } from '../models/cif-editor.models';
 
 @Injectable({ providedIn: 'root' })
 export class CifEditorService {
-  extractClickedToken(model: monaco.editor.ITextModel, position: monaco.Position): CifClickedToken | null {
+  extractClickedToken(model: Monaco.editor.ITextModel, position: Monaco.Position): CifClickedToken | null {
     const lineContent = model.getLineContent(position.lineNumber);
 
     const clickOffset = position.column - 1;
@@ -33,7 +35,7 @@ export class CifEditorService {
     };
   }
 
-  buildMarkers(model: monaco.editor.ITextModel, errors: ValidationError[]): monaco.editor.IMarkerData[] {
+  buildMarkers(model: Monaco.editor.ITextModel, errors: ValidationError[]): Monaco.editor.IMarkerData[] {
     return errors.map((error) => ({
       startLineNumber: error.line,
       endLineNumber: error.line,
@@ -44,8 +46,8 @@ export class CifEditorService {
     }));
   }
 
-  buildDecorations(monacoNs: typeof monaco, errors: ValidationError[], highlightedLine: number | null): monaco.editor.IModelDeltaDecoration[] {
-    const decorations: monaco.editor.IModelDeltaDecoration[] = errors.map((error) => ({
+  buildDecorations(monacoNs: typeof monaco, errors: ValidationError[], highlightedLine: number | null): Monaco.editor.IModelDeltaDecoration[] {
+    const decorations: Monaco.editor.IModelDeltaDecoration[] = errors.map((error) => ({
       range: new monacoNs.Range(error.line, 1, error.line, 1000),
       options: {
         isWholeLine: true,

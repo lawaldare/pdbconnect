@@ -1,9 +1,12 @@
 /* eslint-disable @angular-eslint/component-selector */
-import { Component, OnInit, signal, computed, inject, SimpleChanges, OnChanges, output, input } from '@angular/core';
+
+import type * as Monaco from 'monaco-editor';
+declare const monaco: typeof import('monaco-editor');
+
+import { Component, OnInit, signal, inject, SimpleChanges, OnChanges, output, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
-import * as monaco from 'monaco-editor';
 
 import { CifEditorService } from '../../services/cif-editor.service';
 import { CifMonacoService } from '../../services/cif-monaco.service';
@@ -24,8 +27,8 @@ export class CifEditorComponent implements OnInit, OnChanges {
   private readonly fileStoreService = inject(CifFileStoreService);
   private readonly cifDictionaryService = inject(CifDictionaryService);
 
-  private editorInstance?: monaco.editor.IStandaloneCodeEditor;
-  private editorModel?: monaco.editor.ITextModel;
+  private editorInstance?: Monaco.editor.IStandaloneCodeEditor;
+  private editorModel?: Monaco.editor.ITextModel;
   private decorations: string[] = [];
 
   public content = input<string>('');
@@ -41,7 +44,7 @@ export class CifEditorComponent implements OnInit, OnChanges {
   readonly helpItem = signal<CifDictionaryItem | null>(null);
   readonly editorReady = signal(false);
 
-  public readonly editorOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
+  public readonly editorOptions: Monaco.editor.IStandaloneEditorConstructionOptions = {
     theme: 'cifTheme',
     language: 'cif',
     minimap: { enabled: true },
@@ -91,7 +94,7 @@ export class CifEditorComponent implements OnInit, OnChanges {
     return (this.content() || '').split('\n').length;
   }
 
-  onEditorInit(editor: monaco.editor.IStandaloneCodeEditor): void {
+  onEditorInit(editor: Monaco.editor.IStandaloneCodeEditor): void {
     this.editorInstance = editor;
     this.editorReady.set(true);
 

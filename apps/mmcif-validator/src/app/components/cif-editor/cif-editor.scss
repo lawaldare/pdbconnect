@@ -240,33 +240,3 @@
   height: 100%;
   min-height: 600px;
 }
-
-:host ::ng-deep .cif-line-error {
-  background: rgb(239 68 68 / 12%);
-}
-
-:host ::ng-deep .cif-line-warning {
-  background: rgb(234 179 8 / 12%);
-}
-
-:host ::ng-deep .cif-line-highlight {
-  background: rgb(5 102 67 / 12%);
-}
-
-:host ::ng-deep .cif-glyph-error {
-  background: #ef4444;
-  width: 6px !important;
-  margin-left: 3px;
-}
-
-:host ::ng-deep .cif-glyph-warning {
-  background: #eab308;
-  width: 6px !important;
-  margin-left: 3px;
-}
-
-:host ::ng-deep .cif-glyph-highlight {
-  background: #056643;
-  width: 6px !important;
-  margin-left: 3px;
-}

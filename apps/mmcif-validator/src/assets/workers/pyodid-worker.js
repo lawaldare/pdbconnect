@@ -1,19 +1,18 @@
-/// <reference lib="webworker" />
-
-import { loadPyodide } from 'pyodide';
-
-let pyodide: any = null;
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-undef */
+let pyodide = null;
 let filesLoaded = false;
 
 const initPyodide = async () => {
   if (!pyodide) {
+    importScripts('https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js');
     pyodide = await loadPyodide({
       indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.29.3/full/',
     });
   }
 };
 
-const loadTextFile = async (url: string): Promise<string> => {
+const loadTextFile = async (url) => {
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) {
     throw new Error(`Failed to load ${url}: ${res.status} ${res.statusText}`);
@@ -83,13 +82,10 @@ const ensurePythonFilesLoaded = async () => {
   filesLoaded = true;
 };
 
-addEventListener('message', async ({ data }) => {
-  // if (data.type !== 'VALIDATE') return;
-
+self.addEventListener('message', async ({ data }) => {
   try {
     await initPyodide();
     await ensurePythonFilesLoaded();
-
     if (data.type === 'VALIDATE') {
       pyodide.globals.set('cif_text_js', data.payload.cifText);
       pyodide.globals.set('dict_path_js', '/app/mmcif_pdbx.dic');
@@ -119,15 +115,13 @@ addEventListener('message', async ({ data }) => {
         json.dumps(res)
   `);
 
-      console.log('Dictionary loaded'); // 🔥 ADD
-
       postMessage({
         type: 'DICTIONARY_READY',
         payload: JSON.parse(result),
       });
       return;
     }
-  } catch (err: any) {
+  } catch (err) {
     postMessage({
       type: 'ERROR',
       payload: err?.message || String(err),
