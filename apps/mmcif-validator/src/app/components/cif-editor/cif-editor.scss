@@ -240,3 +240,48 @@
   height: 100%;
   min-height: 600px;
 }
+
+:host ::ng-deep .cif-line-error {
+  background: rgb(239 68 68 / 10%);
+}
+
+:host ::ng-deep .cif-line-warning {
+  background: rgb(234 179 8 / 10%);
+}
+
+:host ::ng-deep .cif-line-error-selected {
+  background: rgb(239 68 68 / 24%);
+}
+
+:host ::ng-deep .cif-line-warning-selected {
+  background: rgb(234 179 8 / 24%);
+}
+
+:host ::ng-deep .cif-glyph-error {
+  border: 2px solid #fb2c36;
+  background: #ffe2e2;
+  width: 6px !important;
+  margin-left: 3px;
+}
+
+:host ::ng-deep .cif-glyph-warning {
+  border: 2px solid #f0b100;
+  background: #fef9c2;
+  width: 6px !important;
+  margin-left: 3px;
+}
+
+:host ::ng-deep .cif-glyph-error-selected {
+  border: 2px solid #fb2c36;
+  background: #ffe2e2;
+  width: 6px !important;
+  margin-left: 3px;
+}
+
+:host ::ng-deep .cif-glyph-warning-selected {
+  // background: #ca8a04;
+  border: 2px solid #f0b100;
+  background: #fef9c2;
+  width: 6px !important;
+  margin-left: 3px;
+}

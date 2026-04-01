@@ -3,7 +3,7 @@ declare const monaco: typeof import('monaco-editor');
 
 import { Injectable } from '@angular/core';
 // import * as monaco from 'monaco-editor';
-import { CifClickedToken, ValidationError } from '../models';
+import { CifClickedToken, ValidationError, ValidationErrorItem } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class CifEditorService {
@@ -46,7 +46,7 @@ export class CifEditorService {
     }));
   }
 
-  public buildDecorations(monacoNs: typeof monaco, errors: ValidationError[], highlightedLine: number | null): Monaco.editor.IModelDeltaDecoration[] {
+  public buildDecorations(monacoNs: typeof monaco, errors: ValidationError[], selectedIssue: ValidationErrorItem | null): Monaco.editor.IModelDeltaDecoration[] {
     const decorations: Monaco.editor.IModelDeltaDecoration[] = errors.map((error) => ({
       range: new monacoNs.Range(error.line, 1, error.line, 1000),
       options: {
@@ -63,13 +63,24 @@ export class CifEditorService {
       },
     }));
 
-    if (highlightedLine !== null) {
+    // if (highlightedLine !== null) {
+    //   decorations.push({
+    //     range: new monacoNs.Range(highlightedLine, 1, highlightedLine, 1000),
+    //     options: {
+    //       isWholeLine: true,
+    //       className: 'cif-line-highlight',
+    //       glyphMarginClassName: 'cif-glyph-highlight',
+    //     },
+    //   });
+    // }
+
+    if (selectedIssue) {
       decorations.push({
-        range: new monacoNs.Range(highlightedLine, 1, highlightedLine, 1000),
+        range: new monacoNs.Range(selectedIssue.line, 1, selectedIssue.line, 1000),
         options: {
           isWholeLine: true,
-          className: 'cif-line-highlight',
-          glyphMarginClassName: 'cif-glyph-highlight',
+          className: selectedIssue.severity === 'error' ? 'cif-line-error-selected' : 'cif-line-warning-selected',
+          glyphMarginClassName: selectedIssue.severity === 'error' ? 'cif-glyph-error-selected' : 'cif-glyph-warning-selected',
         },
       });
     }

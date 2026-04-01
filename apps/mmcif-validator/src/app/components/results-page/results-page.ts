@@ -43,11 +43,11 @@ export class ResultsPageComponent implements OnInit {
   public warnings: ValidationErrorItem[] = [];
   public filteredLists: ValidationErrorItem[] = [];
   public missingCategories: Result[] = [];
+  public selectedIssue = signal<ValidationErrorItem | null>(null);
 
   public cifFileName = '';
   public cifFileText = '';
   public validationErrors: ValidationError[] = [];
-  public highlightedLine: number | null = null;
   public clickedToken: string | null = null;
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
@@ -140,5 +140,10 @@ export class ResultsPageComponent implements OnInit {
       category,
       items,
     }));
+  }
+
+  public onIssueClick(issue: ValidationErrorItem): void {
+    this.selectedIssue.set(issue);
+    console.log('Selected issue:', issue);
   }
 }

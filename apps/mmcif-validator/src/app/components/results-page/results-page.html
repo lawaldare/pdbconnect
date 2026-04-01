@@ -40,7 +40,7 @@
             </section>
             <section class="lists">
               @for(list of filteredLists; track $index){
-              <section class="list-card">
+              <section class="list-card" (click)="onIssueClick(list)" [class.selected-issue]="selectedIssue()?.line === list.line">
                 <img src="assets/icons/{{list.severity === 'error' ? 'error' : 'warning'}}-icon.svg" alt="" class="card-icon" />
                 <div class="card-content">
                   <p class="title"><span class="line">Line {{list.line}}</span><span class="line-content">{{list.item}}</span></p>
@@ -101,6 +101,6 @@
   </aside>
 
   <section class="results">
-    <cif-editor [content]="cifFileText" [errors]="validationErrors" [highlightedLine]="highlightedLine"> </cif-editor>
+    <cif-editor [content]="cifFileText" [errors]="validationErrors" [selectedIssue]="selectedIssue()"> </cif-editor>
   </section>
 </main>

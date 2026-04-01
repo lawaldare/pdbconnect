@@ -179,6 +179,11 @@ main {
           margin-bottom: 8px;
           cursor: pointer;
 
+          &.selected-issue {
+            border-color: #056643;
+            background: #e6f4ea;
+          }
+
           img {
             margin-top: 6px;
           }

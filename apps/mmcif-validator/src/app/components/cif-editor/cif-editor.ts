@@ -10,7 +10,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 
 import { CifEditorService } from '../../services/cif-editor.service';
 import { CifMonacoService } from '../../services/cif-monaco.service';
-import { CifClickedToken, CifDictionaryItem, ValidationError } from '../../models';
+import { CifClickedToken, CifDictionaryItem, ValidationError, ValidationErrorItem } from '../../models';
 import { CifFileStoreService } from '../../services/cif-file-store.service';
 import { CifDictionaryService } from '../../services/cif-dictionary.service';
 
@@ -34,6 +34,7 @@ export class CifEditorComponent implements OnInit, OnChanges {
   public content = input<string>('');
   public errors = input<ValidationError[]>([]);
   public highlightedLine = input<number | null>(null);
+  public selectedIssue = input<ValidationErrorItem | null>(null);
 
   public cifFileText = '';
   private cifFileName = '';
@@ -65,7 +66,6 @@ export class CifEditorComponent implements OnInit, OnChanges {
   };
 
   async ngOnInit(): Promise<void> {
-    // this.cifMonacoService.initLanguage();
     const stored = await this.fileStoreService.get('current-cif');
     if (stored) {
       this.cifFileText = stored.cifText;
@@ -76,17 +76,29 @@ export class CifEditorComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (!this.editorInstance || !this.editorModel) return;
 
-    if (changes['errors'] || changes['highlightedLine']) {
-      // this.applyMarkersAndDecorations();
+    if (changes['errors'] || changes['selectedIssue']) {
+      this.applyMarkersAndDecorations();
     }
 
     if (changes['highlightedLine'] && this.highlightedLine() !== null) {
       this.revealHighlightedLine();
     }
+
+    if (changes['selectedIssue'] && this.selectedIssue()) {
+      this.revealSelectedIssue();
+    }
   }
 
   get lineCount(): number {
     return (this.content() || '').split('\n').length;
+  }
+
+  private revealSelectedIssue(): void {
+    const issue = this.selectedIssue();
+    if (!issue || !this.editorInstance) return;
+
+    this.editorInstance.revealLineInCenter(issue.line);
+    this.editorInstance.setPosition({ lineNumber: issue.line, column: 1 });
   }
 
   onEditorInit(editor: Monaco.editor.IStandaloneCodeEditor): void {
@@ -105,7 +117,7 @@ export class CifEditorComponent implements OnInit, OnChanges {
       monaco.editor.setModelLanguage(model, 'cif');
       monaco.editor.setTheme('cifTheme');
 
-      // this.applyMarkersAndDecorations();
+      this.applyMarkersAndDecorations();
     };
 
     applyModelSetup();
@@ -143,7 +155,7 @@ export class CifEditorComponent implements OnInit, OnChanges {
 
     monaco.editor.setModelMarkers(this.editorModel, 'cif-validator', markers);
 
-    const decorations = this.cifEditorService.buildDecorations(monaco, this.errors(), this.highlightedLine());
+    const decorations = this.cifEditorService.buildDecorations(monaco, this.errors(), this.selectedIssue());
 
     this.decorations = this.editorInstance.deltaDecorations(this.decorations, decorations);
   }
