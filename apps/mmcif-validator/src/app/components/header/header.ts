@@ -27,8 +27,13 @@ export class HeaderComponent {
   }
 
   public onStartButtonClick(): void {
-    const href = window.location.href;
-    const hrefLink = href.split('/').slice(0, -2).join('/');
-    window.open(hrefLink, '_self');
+    const hostname = document.location.hostname;
+    const domain = window.location.origin;
+    if (hostname === 'localhost') {
+      window.open(domain, '_self');
+    } else {
+      const href = domain + '/pdbe/mmcif-validator/';
+      window.open(href, '_self');
+    }
   }
 }
