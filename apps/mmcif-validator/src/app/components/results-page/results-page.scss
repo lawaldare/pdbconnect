@@ -320,6 +320,9 @@ main {
             font-size: 12px;
             font-weight: 400;
             line-height: 17.143px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            white-space: normal;
           }
         }
       }
