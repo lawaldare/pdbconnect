@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-undef */
+
+const APP_ROOT = new URL('../../', self.location.href);
+const publicUrl = (path) => new URL(path, APP_ROOT).toString();
+
 let pyodide = null;
 let filesLoaded = false;
 
@@ -34,12 +38,10 @@ const ensurePythonFilesLoaded = async () => {
   pyodide.FS.mkdirTree('/app/mmcif_validator/completeness');
   pyodide.FS.mkdirTree('/work');
 
-  const base = '/py/mmcif_validator';
-
   const pythonFiles = ['validate_mmcif', 'validator', 'cif_parser', 'dict_parser', 'mmcif_types', 'protocol', 'download', 'metadata_completeness'];
 
   for (const file of pythonFiles) {
-    const code = await loadTextFile(`${base}/${file}.txt`);
+    const code = await loadTextFile(publicUrl(`py/mmcif_validator/${file}.txt`));
     pyodide.FS.writeFile(`/app/mmcif_validator/${file}.py`, code, {
       encoding: 'utf8',
     });
@@ -48,7 +50,7 @@ const ensurePythonFilesLoaded = async () => {
   const completenessPythonFiles = ['__init__', 'mandatory_categories'];
 
   for (const file of completenessPythonFiles) {
-    const content = await loadTextFile(`${base}/completeness/${file}.txt`);
+    const content = await loadTextFile(publicUrl(`py/mmcif_validator/completeness/${file}.txt`));
     pyodide.FS.writeFile(`/app/mmcif_validator/completeness/${file}.py`, content, {
       encoding: 'utf8',
     });
@@ -57,18 +59,18 @@ const ensurePythonFilesLoaded = async () => {
   const completenessListFiles = ['xray_mandatory_cat.list', 'em_mandatory_cat.list', 'nmr_mandatory_cat.list', 'entity_src_cat.list'];
 
   for (const file of completenessListFiles) {
-    const content = await loadTextFile(`${base}/completeness/${file}`);
+    const content = await loadTextFile(publicUrl(`py/mmcif_validator/completeness/${file}`));
     pyodide.FS.writeFile(`/app/mmcif_validator/completeness/${file}`, content, {
       encoding: 'utf8',
     });
   }
 
-  const bridgeCode = await loadTextFile('/py/validator_bridge.txt');
+  const bridgeCode = await loadTextFile(publicUrl(`py/validator_bridge.txt`));
   pyodide.FS.writeFile('/app/validator_bridge.py', bridgeCode, {
     encoding: 'utf8',
   });
 
-  const dictText = await loadTextFile('/py/mmcif_pdbx.dic');
+  const dictText = await loadTextFile(publicUrl(`py/mmcif_pdbx.dic`));
   pyodide.FS.writeFile('/app/mmcif_pdbx.dic', dictText, {
     encoding: 'utf8',
   });
