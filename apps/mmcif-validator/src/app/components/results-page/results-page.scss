@@ -189,6 +189,10 @@ main {
           }
 
           p.title {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+
             span.line {
               border-radius: 4px;
               background: #f3f3f3;
@@ -203,7 +207,6 @@ main {
 
             span.line-content {
               color: #3a3a3a;
-              font-family: 'IBM Plex Sans';
               font-size: 12px;
               font-style: normal;
               font-weight: 500;
@@ -213,11 +216,13 @@ main {
 
           p.description {
             color: #1a1c1a;
-            font-family: 'IBM Plex Sans';
             font-size: 14px;
             font-style: normal;
             font-weight: 500;
             line-height: 21px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            white-space: normal;
           }
         }
       }
