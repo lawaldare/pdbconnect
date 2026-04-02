@@ -1,6 +1,8 @@
 @use 'pdb_connect' as *;
 
 section {
+  background: #056643;
+
   .container {
     display: flex;
     align-items: center;
@@ -93,7 +95,7 @@ section {
   }
 }
 
-.mobile-menu {
+section.mobile-menu {
   .nav-links {
     margin: 0 !important;
 

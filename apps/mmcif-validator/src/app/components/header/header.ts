@@ -15,15 +15,10 @@ export interface Link {
   styleUrls: ['./header.scss'],
 })
 export class HeaderComponent {
-  public readonly headerConfig = {
-    backgroundColor: '#056643',
-    logoType: 'PDBe',
-    urls: [
-      { name: 'Github', path: 'https://github.com/PDBeurope/mmcif-validator', openInNewTab: true },
-      { name: 'Help', path: 'https://github.com/PDBeurope/mmcif-validator', openInNewTab: true },
-    ],
-    menuHighlightColor: '#0a5032',
-  };
+  public readonly navLinks: Link[] = [
+    { name: 'Github', path: 'https://github.com/PDBeurope/mmcif-validator', openInNewTab: true },
+    { name: 'Help', path: 'https://github.com/PDBeurope/mmcif-validator', openInNewTab: true },
+  ];
 
   public isMobile = signal(false);
 
