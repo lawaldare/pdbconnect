@@ -1,26 +1,23 @@
-import { Component, inject, signal } from '@angular/core';
-import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { Component, inject, OnInit } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { HeaderComponent } from './components/header/header';
 import { VfEbiHeaderComponent } from '@vf-lib/ebi-header';
 import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
-import { filter } from 'rxjs';
+import { ClarityConsentService, DataPrivacyBannerComponent } from '@pdbc/core';
+import { environment } from '../environments/environment';
+import Clarity from '@microsoft/clarity';
 
 @Component({
-  imports: [RouterModule, HeaderComponent, VfEbiHeaderComponent, VfEbiFooterComponent],
+  imports: [RouterModule, HeaderComponent, VfEbiHeaderComponent, VfEbiFooterComponent, DataPrivacyBannerComponent],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {
-  private readonly _router = inject(Router);
-  public isResultsPage = signal(false);
+export class App implements OnInit {
+  public readonly clarityConsentService = inject(ClarityConsentService);
 
-  constructor() {
-    this._router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((event: any) => {
-      if (event.url.includes('/results')) {
-        window.scrollTo(0, 0);
-        this.isResultsPage.set(true);
-      }
-    });
+  ngOnInit(): void {
+    Clarity.init(environment.clarityProjectId);
+    this.clarityConsentService.init(environment.clarityProjectId);
   }
 }

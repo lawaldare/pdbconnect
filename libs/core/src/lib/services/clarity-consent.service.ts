@@ -69,6 +69,7 @@ export class ClarityConsentService {
     const pathname = window.location.pathname;
     if (pathname.includes('complexes')) return 'dataProtectionAgreedForComplexPages';
     if (pathname.includes('chemicalCompound/show')) return 'dataProtectionAgreedForLigandPages';
+    if (pathname.includes('mmcif-validator')) return 'dataProtectionAgreedForMMCIFValidator';
     return 'dataProtectionAgreedForEntryPages';
   }
 }
