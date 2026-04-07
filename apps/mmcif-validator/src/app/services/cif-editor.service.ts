@@ -1,12 +1,18 @@
 import type * as Monaco from 'monaco-editor';
 declare const monaco: typeof import('monaco-editor');
 
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 // import * as monaco from 'monaco-editor';
 import { CifClickedToken, ValidationError, ValidationErrorItem } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class CifEditorService {
+  private _editorInstance = signal<Monaco.editor.IStandaloneCodeEditor | null>(null);
+  public editorInstance = this._editorInstance.asReadonly();
+
+  public setEditorInstance(editor: Monaco.editor.IStandaloneCodeEditor | null): void {
+    this._editorInstance.set(editor);
+  }
   public extractClickedToken(model: Monaco.editor.ITextModel, position: Monaco.Position): CifClickedToken | null {
     const lineContent = model.getLineContent(position.lineNumber);
 

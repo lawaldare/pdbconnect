@@ -11,7 +11,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { CifEditorService } from '../../services/cif-editor.service';
 import { CifMonacoService } from '../../services/cif-monaco.service';
 import { CifClickedToken, CifDictionaryItem, ValidationError, ValidationErrorItem } from '../../models';
-import { CifFileStoreService } from '../../services/cif-file-store.service';
+import { CifFileStoreService, CifStoredData } from '../../services/cif-file-store.service';
 import { CifDictionaryService } from '../../services/cif-dictionary.service';
 
 @Component({
@@ -68,8 +68,8 @@ export class CifEditorComponent implements OnInit, OnChanges {
   async ngOnInit(): Promise<void> {
     const stored = await this.fileStoreService.get('current-cif');
     if (stored) {
-      this.cifFileText = stored.cifText;
-      this.cifFileName = stored.fileName;
+      this.cifFileText = (stored as CifStoredData).cifText;
+      this.cifFileName = (stored as CifStoredData).fileName;
     }
   }
 
@@ -103,6 +103,7 @@ export class CifEditorComponent implements OnInit, OnChanges {
 
   onEditorInit(editor: Monaco.editor.IStandaloneCodeEditor): void {
     this.editorInstance = editor;
+    this.cifEditorService.setEditorInstance(editor);
     this.editorReady.set(true);
 
     this.cifMonacoService.initLanguage(monaco);

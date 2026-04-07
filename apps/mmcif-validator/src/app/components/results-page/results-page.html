@@ -19,8 +19,8 @@
     <p>Completeness: <span>{{result.metadata_completeness.percentage}}%</span><span class="f-14">({{filledCount}}/{{totalCount}})</span></p>
   </div>
   <div class="right">
-    <button class="vf-button vf-button--secondary-pdbe" (click)="openErrorsTab()">Jump to Errors</button>
-    <button class="vf-button vf-button--secondary-pdbe" (click)="openCompletenessTab()">View Missing Metadata</button>
+    <button class="vf-button vf-button--secondary-pdbe" (click)="revalidate()">Revalidate</button>
+    <button class="vf-button vf-button--secondary-pdbe" (click)="loadAnotherFile()">Load another file</button>
   </div>
 </section>
 <main>

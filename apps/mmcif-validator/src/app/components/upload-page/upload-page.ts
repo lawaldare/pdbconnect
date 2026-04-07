@@ -1,4 +1,5 @@
-import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-empty-function */
+import { Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CifValidationService } from '../../services/cif-validation.service';
@@ -10,7 +11,7 @@ import { CifFileStoreService } from '../../services/cif-file-store.service';
   templateUrl: './upload-page.html',
   styleUrl: './upload-page.scss',
 })
-export class UploadPageComponent {
+export class UploadPageComponent implements OnInit {
   private readonly cifValidationService = inject(CifValidationService);
   private readonly fileStoreService = inject(CifFileStoreService);
   private readonly router = inject(Router);
@@ -19,6 +20,10 @@ export class UploadPageComponent {
 
   @ViewChild('dropArea') dropArea!: ElementRef<HTMLElement>;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+
+  async ngOnInit(): Promise<void> {
+    await this.fileStoreService.del('current-cif').catch(() => {});
+  }
 
   /** Browse file button */
   public onBrowseClick(): void {
@@ -73,23 +78,26 @@ export class UploadPageComponent {
       return;
     }
 
-    try {
-      this.isLoading.set(true);
-      const text = await file.text();
-      const result = await this.cifValidationService.validate(text);
+    this.fileStoreService.put('current-file', file).catch(() => {});
+    this.router.navigate(['/validating']);
 
-      await this.fileStoreService.put('current-cif', {
-        fileName: file.name,
-        cifText: text,
-      });
+    // try {
+    //   this.isLoading.set(true);
+    //   const text = await file.text();
+    //   const result = await this.cifValidationService.validate(text);
 
-      sessionStorage.setItem('validationResult', JSON.stringify(result));
+    //   await this.fileStoreService.put('current-cif', {
+    //     fileName: file.name,
+    //     cifText: text,
+    //   });
 
-      this.router.navigate(['/results']);
-    } catch (e: any) {
-      this.error.set(e?.message || String(e));
-    } finally {
-      this.isLoading.set(false);
-    }
+    //   sessionStorage.setItem('validationResult', JSON.stringify(result));
+
+    //   this.router.navigate(['/results']);
+    // } catch (e: any) {
+    //   this.error.set(e?.message || String(e));
+    // } finally {
+    //   this.isLoading.set(false);
+    // }
   }
 }

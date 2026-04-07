@@ -1,14 +1,16 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable no-useless-escape */
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MaterialModule, ScrollPositionService } from '@pdbc/core';
 import { MissingItem, ValidationError, ValidationErrorItem, ValidationResult } from '../../models';
-import { CifFileStoreService } from '../../services/cif-file-store.service';
+import { CifFileStoreService, CifStoredData } from '../../services/cif-file-store.service';
 import { CifEditorComponent } from '../cif-editor/cif-editor';
 import { CifDictionaryService } from '../../services/cif-dictionary.service';
 import { CifValidationService } from '../../services/cif-validation.service';
+import { CifEditorService } from '../../services/cif-editor.service';
 
 type Result = {
   category: string;
@@ -21,13 +23,14 @@ type Result = {
   templateUrl: './results-page.html',
   styleUrls: ['./results-page.scss'],
 })
-export class ResultsPageComponent implements OnInit {
+export class ResultsPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   public readonly scrollService = inject(ScrollPositionService);
   private readonly fileStoreService = inject(CifFileStoreService);
   private readonly cifDictionaryService = inject(CifDictionaryService);
   private readonly cifValidationService = inject(CifValidationService);
+  private readonly cifEditorService = inject(CifEditorService);
 
   public result: ValidationResult = JSON.parse(sessionStorage.getItem('validationResult') || '{}');
 
@@ -66,6 +69,10 @@ export class ResultsPageComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    if (!this.result || !this.result.summary) {
+      this.router.navigate(['/']);
+      return;
+    }
     this.numberOfErrors.set(this.result?.summary?.errors || 0);
     this.numberOfWarnings.set(this.result?.summary?.warnings || 0);
 
@@ -80,8 +87,8 @@ export class ResultsPageComponent implements OnInit {
     const stored = await this.fileStoreService.get('current-cif');
 
     if (stored) {
-      this.cifFileName = stored.fileName;
-      this.cifFileText = stored.cifText;
+      this.cifFileText = (stored as CifStoredData).cifText;
+      this.cifFileName = (stored as CifStoredData).fileName;
     }
 
     if (!this.cifDictionaryService.hasLoaded()) {
@@ -104,7 +111,6 @@ export class ResultsPageComponent implements OnInit {
   public selectTab(event: MatTabChangeEvent) {
     const routeTabs = this.routeTabs;
     const tabName = routeTabs[event.index].id;
-    // this.pisaUtilService.updateCurrentTabName(tabName ?? 'complexes');
 
     this.router.navigate([], {
       queryParams: { activeTab: tabName },
@@ -114,11 +120,22 @@ export class ResultsPageComponent implements OnInit {
     this.scrollService.handleScrollPosition(this.tabGroup, event.index);
   }
 
-  public openErrorsTab(): void {
-    this.selectedTab.set(0);
+  public async revalidate(): Promise<void> {
+    const editorInstance = this.cifEditorService.editorInstance();
+
+    if (editorInstance) {
+      const latestText = editorInstance?.getValue() ?? this.cifFileText;
+      await this.fileStoreService.del('current-cif').catch(() => {});
+      await this.fileStoreService.put('current-cif', {
+        fileName: this.cifFileName,
+        cifText: latestText,
+      });
+    }
+
+    this.router.navigate(['/validating']);
   }
-  public openCompletenessTab(): void {
-    this.selectedTab.set(1);
+  public loadAnotherFile(): void {
+    this.router.navigate(['/']);
   }
 
   public onOpenAccordionPanel(panelName: string): void {
@@ -144,5 +161,8 @@ export class ResultsPageComponent implements OnInit {
 
   public onIssueClick(issue: ValidationErrorItem): void {
     this.selectedIssue.set(issue);
+  }
+  async ngOnDestroy(): Promise<void> {
+    sessionStorage.removeItem('validationResult');
   }
 }
