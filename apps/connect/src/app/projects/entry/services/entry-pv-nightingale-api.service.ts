@@ -10,7 +10,6 @@ import { environment } from '../../../../environments/environment';
 export class PvDataApiService {
   private readonly http = inject(HttpClient);
 
-  private readonly BaseAPI = `https://www.ebi.ac.uk/pdbe/graph-api/`;
   private readonly AggregatedApiUrl = `${environment.baseUrl}pdbe/api/v2/`;
 
   private buildUrl(endpoint: string, entryId: string, entityId: string): string {
@@ -105,8 +104,7 @@ export class PvDataApiService {
   }
 
   public getPdbeVariationTrackData(entryId: string, entityId: string) {
-    const url = `${this.BaseAPI}pdbe_pages/protvista/variation/${entryId}/${entityId}`;
-    // const url = this.buildUrl('variation', entryId, entityId);
+    const url = this.buildUrl('variation', entryId, entityId);
     return this.http.get<APIVariationData>(url).pipe(
       catchError((error) => {
         if (error?.status === 404) {
