@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component } from '@angular/core';
 import { HeaderSearchComponent } from '../header-search/header-search.component';
 import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
+import { RouterModule } from '@angular/router';
 
 declare const $: any;
 
@@ -16,7 +17,7 @@ declare const $: any;
       }
     `,
   ],
-  imports: [CommonModule, HeaderSearchComponent, NavTabsComponent],
+  imports: [CommonModule, RouterModule, HeaderSearchComponent, NavTabsComponent],
 })
 export class GraphDownloadComponent implements AfterViewInit {
   ngAfterViewInit() {
