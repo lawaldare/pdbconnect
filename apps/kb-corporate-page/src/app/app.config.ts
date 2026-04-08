@@ -8,11 +8,11 @@ import { APP_BASE_HREF } from '@angular/common';
 export const appConfig: ApplicationConfig = {
   providers: [
     // Simply provide the static base href
+    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),
     { provide: APP_BASE_HREF, useValue: '/pdbe/pdbe-kb/' },
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),
     provideClientHydration(withEventReplay()),
   ],
 };

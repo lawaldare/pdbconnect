@@ -18,7 +18,7 @@ app.use(
 );
 
 // Important: Handle ALL routes under the base path
-app.get('/pdbe/pdbe-kb/*', (req, res) => {
+app.get('/pdbe/pdbe-kb/*', (req, res, next) => {
   angularApp
     .handle(req, {
       providers: [{ provide: APP_BASE_HREF, useValue: '/pdbe/pdbe-kb/' }],
@@ -27,7 +27,7 @@ app.get('/pdbe/pdbe-kb/*', (req, res) => {
       if (response) {
         writeResponseToNodeResponse(response, res);
       } else {
-        res.status(404).send('Not found');
+        next(); // No response means Angular didn't handle it, so move to next middleware (e.g., 404)
       }
     })
     .catch((err) => {

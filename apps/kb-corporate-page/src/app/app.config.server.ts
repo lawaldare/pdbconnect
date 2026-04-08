@@ -7,7 +7,7 @@ import { serverRoutes } from './app.routes.server';
 const serverConfig: ApplicationConfig = {
   providers: [
     provideServerRendering(withRoutes(serverRoutes)),
-    { provide: APP_BASE_HREF, useValue: '/pdbe/pdbe-kb/' }, // 👈 CRITICAL: Match your EBI sub-path
+    // { provide: APP_BASE_HREF, useValue: '/pdbe/pdbe-kb/' }, // 👈 CRITICAL: Match your EBI sub-path
   ],
 };
 
