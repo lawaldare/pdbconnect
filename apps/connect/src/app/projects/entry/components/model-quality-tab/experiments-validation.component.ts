@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -14,30 +15,31 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AgGridAngular } from 'ag-grid-angular';
 import { ValidationDataProcessingFacade } from './validation-data.facade';
 import { ValidationTablesFacade } from './validation-tables.facade';
-import { AgGridAngular } from 'ag-grid-angular';
 
-import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
-import { modelQualityTooltips, OUTLIER_TYPE_LABELS } from '../../entry-constant';
-import { MaterialModule, UtilService } from '@pdbc/core';
-import { BehaviorSubject, combineLatest, filter, forkJoin, mergeMap, of, take, timer } from 'rxjs';
-import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
-import { EntryStoreState } from '../../store/entry-store.model';
-import { Store } from '@ngrx/store';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { EntrySelectors } from '../../store/entry.selectors';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
+import { Store } from '@ngrx/store';
+import { MaterialModule, UtilService } from '@pdbc/core';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { BehaviorSubject, combineLatest, filter, forkJoin, mergeMap, of, take } from 'rxjs';
+import { modelQualityTooltips, OUTLIER_TYPE_LABELS } from '../../entry-constant';
+import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
-import { cameraResetInMolstar, drawSelectionInMolstar, Molstar370DefaultParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
-import { OutlierDict, ValueLabel } from '../../store/data-processing/models/other-models';
+import { MVSHandler } from '../../helpers/mvs-utils';
+import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
+import { ValueLabel } from '../../store/data-processing/models/other-models';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
+import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
 
 /**
  * Examples that should be tested when looking at this component
@@ -153,7 +155,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly legends = [
     {
       label: '0 outliers',
-      color: '#D4D5D4',
+      color: '#F0F0F0',
     },
     {
       label: '1 outlier',
@@ -176,8 +178,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
   public selectedSpecificIssueKind = new FormControl('', { nonNullable: true });
 
-  // Signal for dynamic model index (default to 1)
-  public modelIdx = signal<string>('1');
+  /** Signal for dynamic model index (default to 1) */
+  public modelId = signal<string>('1');
 
   public molstarModelQualityRendered = signal(false);
 
@@ -196,14 +198,10 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public refinementRowData = signal<ValueLabel[]>([]);
 
   public hasOutliers = computed(() => {
-    const currentModelIdx = this.modelIdx();
+    const currentModelId = this.modelId();
     const allOutliers = this.outliersByModelId();
-    if (!currentModelIdx || !allOutliers) return false;
-
-    const outliers = allOutliers[currentModelIdx];
-    if (!outliers) return false;
-
-    return true;
+    if (!currentModelId || !allOutliers) return false;
+    return !!allOutliers[currentModelId];
   });
 
   private molstarReady = signal(false);
@@ -240,103 +238,52 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     this.compCommunication.forceLoad.set(!forceLoad);
   }
 
-  public readonly configForMolstar = computed(() => {
-    const entryId = this.entryId();
-    // const chainSelection = this.chainSelection();
-
-    if (!entryId) return undefined;
-
-    const configForMolstar = {
-      ...Molstar370DefaultParams,
-      moleculeId: this.entryId(),
-      subscribeEvents: true,
-      granularity: 'residue',
-      visualStyle: {
-        polymer: {
-          type: 'cartoon',
-          // 'color': 'entity-id',
-          color: 'uniform',
-          colorParams: { value: 0xd4d5d4 },
-        },
-      },
-      loadMaps: true,
-      mapSettings: { defaultView: 'selection-box' },
-      sequencePanel: true,
-      // ...(chainSelection && { 'selection': chainSelection }),
-    };
-
-    return configForMolstar;
-  });
+  public readonly configForMolstar = computed(() => ({
+    ...Molstar370DefaultParams,
+    subscribeEvents: true,
+    granularity: 'residue',
+    hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
+    sequencePanel: true,
+  }));
 
   public currentModelId$ = new BehaviorSubject<string>('1');
   private modelIdObserver?: MutationObserver;
 
   constructor() {
     effect(() => {
-      const currentModelIdx = this.modelIdx();
       const allOutliers = this.outliersByModelId();
+      const specificIssueKinds = this.specificIssueKinds();
 
-      if (!currentModelIdx || !allOutliers) return;
-      // if (!allOutliers) return;
-
-      const outliers = allOutliers[currentModelIdx];
-      if (!outliers) return;
-
-      const uniqueOutlierTypes = outliers.uniqueOutlierTypes;
-
-      if (this.specificIssueKinds().length === 0) {
-        this.specificIssueKinds.set(
-          [...uniqueOutlierTypes].map((type) => ({
-            label: OUTLIER_TYPE_LABELS[type],
-            value: type,
-          }))
-        );
-        this.selectedSpecificIssueKind.setValue(this.specificIssueKinds()[0].value);
+      if (allOutliers && specificIssueKinds.length === 0) {
+        const allIssueKinds = Array.from(setUnion(Object.values(allOutliers).map((t) => t.uniqueOutlierTypes)))
+          .map((kind) => ({ label: OUTLIER_TYPE_LABELS[kind] ?? kind, value: kind }))
+          .sort((a, b) => (a.label.toLowerCase() > b.label.toLowerCase() ? 1 : a.label.toLowerCase() === b.label.toLowerCase() ? 0 : -1)); // Thank you JavaScript for making sorting easy
+        this.specificIssueKinds.set(allIssueKinds);
+        this.selectedSpecificIssueKind.setValue(allIssueKinds[0].value);
       }
-
-      if (!this.molstarFirstRenderFinished()) return;
-      this.renderInMolstar(outliers);
     });
-  }
-  private selectionData?: QueryParamForHelpers[];
 
-  private async renderInMolstar(outliers: OutlierDict) {
-    const selectedValidationType = this.selectedValidationType();
-    const selectedSpecificIssueKindValue = this.selectedSpecificIssueKindValue();
+    effect(() => {
+      const entryId = this.entryId();
+      const currentModelId = this.modelId();
+      const validationData = this.residueWiseOutliers();
+      const selectedValidationType = this.selectedValidationType().value;
+      const selectedIssueKind = this.selectedSpecificIssueKindValue()?.value || this.selectedSpecificIssueKind.value;
+      if (!entryId || !currentModelId) return;
 
-    this.selectionData = [];
-
-    const colours: string[] = [];
-
-    const outlierList: QueryParamForHelpers[][] = [];
-    if (selectedValidationType.value === 'issue_count') {
-      colours.push(...this.legends.map((legend) => legend.color));
-      outlierList.push(...[outliers.residuesWith1Outlier, outliers.residuesWith2Outliers, outliers.residuesWith3OrMoreOutliers]);
-    } else {
-      const specificIssue = selectedSpecificIssueKindValue?.value || this.selectedSpecificIssueKind.value;
-      colours.push('');
-      colours.push(this.legends.map((legend) => legend.color)[this.legends.length - 1]);
-      outlierList.push(...[outliers.molstarSelectionsByOutlierType[specificIssue]]);
-    }
-    for (let i = 0; i < outlierList.length; i++) {
-      const outlierResids = outlierList[i];
-      this.selectionData.push(
-        ...outlierResids.map((outlier) => {
-          return {
-            ...outlier,
-            color: colours[i + 1],
-            focus: false,
-          };
-        })
-      );
-    }
-
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-    await drawSelectionInMolstar(instance, this.selectionData);
-
-    timer(500).subscribe(async () => {
-      await cameraResetInMolstar(instance);
+      this.mvsSnapshotSpec.next({
+        name: 'Validation',
+        kind: 'pdbconnect_quality',
+        params: {
+          entry: entryId,
+          assemblyId: undefined,
+          modelId: parseInt(currentModelId),
+          validationData: validationData,
+          validationType: selectedValidationType === 'issue_count' ? { kind: 'issue_count' } : { kind: 'specific_issue', issue: selectedIssueKind },
+          validationColors: this.legends.map((t) => t.color),
+          volumeStreaming: true,
+        },
+      });
     });
   }
 
@@ -347,10 +294,11 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
         this.modelIdObserver = await initializeModelIdTracking(this.currentModelId$, this._molstarComponent?.getContainer());
       }
     });
+    // TODO: do not observe changes from Molstar (dirty), implement external model switcher instead
 
     /* 2b. Every time NMR model Id updates, data for smart seq viewer is refreshed */
     this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
-      this.modelIdx.set(newModelId);
+      this.modelId.set(newModelId);
     });
 
     /* 3. (TODO: Refactor) Data processing for tab */
@@ -403,7 +351,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize() {
+  onResize(_event: Event) {
     this.updateLeftSideWidth();
   }
 
@@ -424,6 +372,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     this.selectedSpecificIssueKind.setValue(event.value);
     this.selectedSpecificIssueKindValue.set(event.value); // trigger effect
   }
+
+  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   async ngAfterViewInit() {
     this.updateLeftSideWidth();
@@ -460,6 +410,17 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
       footerObserver.observe(footerEl);
     });
+
+    this.molstarFirstRenderFinished$
+      .pipe(
+        filter((ready) => ready),
+        take(1)
+      )
+      .subscribe(() => {
+        // run after molstar rendered
+        const mvsHandler = MVSHandler(this._molstarComponent);
+        this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+      });
   }
 
   private waitForFooter(callback: (footer: HTMLElement) => void) {
@@ -522,4 +483,14 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       this.renderer.removeClass(stickyAside, 'force-unsticky');
     }
   }
+}
+
+function setUnion<T>(sets: Set<T>[]): Set<T> {
+  const out = new Set<T>();
+  for (const set of sets) {
+    for (const item of set) {
+      out.add(item);
+    }
+  }
+  return out;
 }

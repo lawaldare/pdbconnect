@@ -1,4 +1,5 @@
 import type { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
+import { ValidationApiData } from './data-provider';
 
 export type SnapshotSpecParams = {
   /** PDBconnect Summary tab > Preferred complex (default view), Complexes tab */
@@ -101,8 +102,16 @@ export type SnapshotSpecParams = {
     entry: string;
     /** Assembly ID (or `undefined` for deposited model) */
     assemblyId: string | undefined;
-    /** Validation view type (either 'issue_count' for number of outlier types on a residue, or name of a specific outlier type) */
-    validation_type: ValidationType;
+    /** Model ID (numbered from 1) */
+    modelId: number;
+    /** Residue-wise structure validation data (same format as served by `validation/residuewise_outlier_summary/entry/${pdbId}` API) */
+    validationData: ValidationApiData[string]['molecules'] | undefined;
+    /** Validation view type (either 'issue_count' for number of outlier types on a residue, or 'specific_issue' with name of a specific outlier type (e.g. 'bond_angles')) */
+    validationType: { kind: 'issue_count' } | { kind: 'specific_issue'; issue: string };
+    /** Colors to use for showing validation data.
+     * - If `validationType` is 'issue_count': first color = 0 issues, second color = 1 issue..., last color = n or more issues).
+     * - If `validationType` is 'specific_issue': first color = issue not present, last color = issue present). */
+    validationColors: string[];
     /** Turn on Volume Streaming */
     volumeStreaming: boolean;
   };

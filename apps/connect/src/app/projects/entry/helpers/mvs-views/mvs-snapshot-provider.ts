@@ -135,7 +135,7 @@ export class MVSSnapshotProvider {
   }
 
   /** Create base for all PDBconnect views */
-  private async _loadPdbconnectBase(params: { entry: string; assemblyId: string | undefined; volumeStreaming: boolean }) {
+  private async _loadPdbconnectBase(params: { entry: string; assemblyId: string | undefined; modelIndex?: number; volumeStreaming: boolean }) {
     const ctx = this._loadModel(params);
 
     const structureCustomProps: Record<string, any> = {};
@@ -151,8 +151,8 @@ export class MVSSnapshotProvider {
 
     const structure =
       params.assemblyId !== undefined
-        ? ctx.model.assemblyStructure({ assembly_id: params.assemblyId, custom: structureCustomProps })
-        : ctx.model.modelStructure({ custom: structureCustomProps });
+        ? ctx.model.assemblyStructure({ assembly_id: params.assemblyId, model_index: params.modelIndex, custom: structureCustomProps })
+        : ctx.model.modelStructure({ model_index: params.modelIndex, custom: structureCustomProps });
     const components = applyStandardComponents(structure);
     const representations = applyStandardRepresentations(components, { opacityFactor: 1 });
     // TODO Molstar: ball_and_stick size theme physical?
@@ -352,40 +352,49 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Model Quality tab */
   private async loadPdbconnectQuality(params: SnapshotSpecParams['pdbconnect_quality']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
+    const ctx = await this._loadPdbconnectBase({
+      entry: params.entry,
+      assemblyId: params.assemblyId,
+      modelIndex: params.modelId - 1,
+      volumeStreaming: params.volumeStreaming,
+    });
     const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
 
     const description: string[] = [];
     description.push(`## Validation`);
-    const validationReport = await this.dataProvider.pdbeStructureQualityReport(params.entry);
-    if (validationReport !== undefined) {
+
+    if (params.validationData !== undefined) {
+      // Validation available
       const annotationCif = [
         'data_validation',
         'loop_',
         '_validation.label_asym_id',
         '_validation.label_seq_id',
-        '_validation.class',
+        '_validation.class', // will contain either number of present issues, or 'y' where a specific issue is present
         '_validation.tooltip',
-        '. . 0 OK',
+        '. . . -',
       ];
-      for (const molecule of validationReport.molecules) {
+      for (const molecule of params.validationData) {
         for (const chain of molecule.chains) {
-          for (const residue of chain.models[0].residues) {
+          const model = chain.models.find((m) => m.model_id === params.modelId);
+          if (!model) continue;
+          for (const residue of model.residues) {
             const class_ =
-              params.validation_type === 'issue_count'
-                ? Math.min(residue.outlier_types.length, 3)
-                : residue.outlier_types.includes(params.validation_type)
+              params.validationType.kind === 'issue_count'
+                ? residue.outlier_types.length
+                : residue.outlier_types.includes(params.validationType.issue)
                   ? 'y'
                   : undefined;
-            if (class_) {
+            if (class_ !== undefined) {
               annotationCif.push(`${chain.struct_asym_id} ${residue.residue_number} ${class_} '${residue.outlier_types.join(', ')}'`);
             }
           }
         }
       }
       const annotationUri = 'data:text/plain, ' + annotationCif.join(' ');
+
       for (const repr of Object.values(ctx.representations)) {
-        repr.color({ color: VALIDATION_COLORS[0] }); // base color for residues without issues (not listed in the report)
+        repr.color({ color: params.validationColors[0] as ColorT }); // base color for residues without issues (not listed in the report)
       }
       ctx.representations.polymerCartoon?.colorFromUri({
         uri: annotationUri,
@@ -395,26 +404,33 @@ export class MVSSnapshotProvider {
         field_name: 'class',
         palette: {
           kind: 'categorical',
-          colors: { '0': VALIDATION_COLORS[0], '1': VALIDATION_COLORS[1], '2': VALIDATION_COLORS[2], '3': VALIDATION_COLORS[3], y: VALIDATION_COLORS.HAS_ISSUE },
+          colors: Object.fromEntries(params.validationColors.map((color, i) => [i, color as ColorT])),
+          missing_color: params.validationColors[params.validationColors.length - 1] as ColorT, // for values higher than number of colors and for value 'y' (specific issue present)
         },
       });
-      ctx.structure.component().tooltip({ text: '<hr>Validation:' });
-      ctx.structure.tooltipFromUri({ uri: annotationUri, format: 'cif', schema: 'all_atomic', category_name: 'validation', field_name: 'tooltip' });
-      if (params.validation_type === 'issue_count') {
+      ctx.structure.tooltipFromUri({
+        uri: annotationUri,
+        format: 'cif',
+        schema: 'all_atomic',
+        category_name: 'validation',
+        text_format: '<b>Validation issues:</b> {tooltip}',
+      });
+      if (params.validationType.kind === 'issue_count') {
         description.push(
           `**PDBe Structure Quality Report:** Residues are coloured by the number of geometry validation issue types. White - no issues, yellow - one issue type, orange - two issue types, red - three or more issue types.`
         );
       } else {
         description.push(
-          `**PDBe Structure Quality Report:** Residues are coloured by presence of "${params.validation_type}" validation issues. White - no issue, red - has issues.`
+          `**PDBe Structure Quality Report:** Residues are coloured by presence of "${params.validationType.issue}" validation issues. White - no issue, red - has issues.`
         );
       }
       description.push(`Displaying ${assemblyText}.`);
     } else {
+      // Validation not available
       for (const repr of Object.values(ctx.representations)) {
-        repr.color({ color: VALIDATION_COLORS.NOT_APPLICABLE });
+        repr.color({ color: '#808080' });
       }
-      ctx.structure.component().tooltip({ text: '<hr>Validation: Not available' });
+      ctx.structure.component().tooltip({ text: '<b>Validation issues:</b> Data not available' });
       description.push(`PDBe Structure Quality Report not available for this entry.`);
       description.push(`Displaying ${assemblyText}.`);
     }
