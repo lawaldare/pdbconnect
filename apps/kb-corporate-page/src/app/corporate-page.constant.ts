@@ -1,6 +1,4 @@
-const isDev = location.hostname.includes('wwwdev');
-
-const base = isDev ? 'https://wwwdev.ebi.ac.uk' : 'https://www.ebi.ac.uk';
+const base = 'https://www.ebi.ac.uk';
 
 export const keyFeatureListslides = [
   {
