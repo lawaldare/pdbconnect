@@ -63,6 +63,7 @@ type PageID =
           border-bottom-style: dotted;
           border-bottom-color: inherit;
           color: #ffffff;
+          cursor: pointer;
         }
       }
     `,
