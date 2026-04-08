@@ -8,6 +8,8 @@ import { PartnersMapComponent } from '../partners-map/partners-map.component';
 import { PartnersPlotsComponent } from '../partners-plots/partners-plots.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
+import { SeoService } from '../services/seo.service';
+import { SEO_CONFIG } from '../corporate-page.constant';
 
 declare const $: any;
 
@@ -21,6 +23,7 @@ export class PartnersPageComponent implements AfterViewInit {
   private readonly cpApiService = inject(CorporatePagesApiService);
   public readonly partnersData = toSignal(this.cpApiService.getPartnersDescriptionData(), { initialValue: {} });
   private platformId = inject(PLATFORM_ID);
+  private seo = inject(SeoService);
 
   public partnersCategories = computed(() => {
     const data = this.partnersData();
@@ -38,6 +41,7 @@ export class PartnersPageComponent implements AfterViewInit {
       $(document).foundation();
       $(document).foundationExtendEBI();
     }
+    this.seo.update(SEO_CONFIG.partners);
   }
 
   scroll(el: HTMLElement) {

@@ -5,6 +5,8 @@ import { HeaderSearchComponent } from '../header-search/header-search.component'
 import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.component';
 import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
 import { RouterModule } from '@angular/router';
+import { SeoService } from '../services/seo.service';
+import { SEO_CONFIG } from '../corporate-page.constant';
 
 declare const $: any;
 
@@ -16,6 +18,7 @@ declare const $: any;
 })
 export class ServicesPageComponent implements AfterViewInit {
   private platformId = inject(PLATFORM_ID);
+  private seo = inject(SeoService);
 
   scroll(elId: string) {
     const el = document.getElementById(elId);
@@ -29,5 +32,6 @@ export class ServicesPageComponent implements AfterViewInit {
       $(document).foundation();
       $(document).foundationExtendEBI();
     }
+    this.seo.update(SEO_CONFIG.services);
   }
 }

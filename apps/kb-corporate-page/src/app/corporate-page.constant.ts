@@ -1,3 +1,7 @@
+const isDev = location.hostname.includes('wwwdev');
+
+const base = isDev ? 'https://wwwdev.ebi.ac.uk' : 'https://www.ebi.ac.uk';
+
 export const keyFeatureListslides = [
   {
     title: 'Experimental and Predicted Protein Structures',
@@ -112,4 +116,42 @@ export const markersColors = {
   'Proteins/domains': '#13c66d',
   'Evolutionary conserved sites': '#84e18f',
   'Mutations/variations': '#d9f3ce',
+};
+
+export const SEO_CONFIG = {
+  home: {
+    title: 'PDBe-KB | Protein Knowledgebase at EMBL-EBI',
+    description:
+      'PDBe-KB integrates structural biology data with functional annotations to provide a comprehensive protein knowledgebase powered by EMBL-EBI and partner resources.',
+    canonicalUrl: `${base}/pdbe/pdbe-kb/`,
+  },
+  services: {
+    title: 'PDBe-KB Services | Aggregated Views, API, Graph Database & Data Access',
+    description:
+      'Explore PDBe-KB services including aggregated protein views, APIs, graph database access, FTP downloads, and data visualisation tools for structural biology.',
+    canonicalUrl: `${base}/pdbe/pdbe-kb/services`,
+  },
+  partners: {
+    title: 'PDBe-KB Data & Partners | Protein Annotation Resources and Collaborations',
+    description:
+      'Discover PDBe-KB partner resources providing protein and domain annotations, structural data, and biological insights across multiple data providers worldwide.',
+    canonicalUrl: `${base}/pdbe/pdbe-kb/partners`,
+  },
+  join: {
+    title: 'Join PDBe-KB | Contribute Data and Become a Partner Resource',
+    description: 'Learn how to join PDBe-KB, contribute functional annotations, and integrate your resource into a global protein knowledgebase powered by EMBL-EBI.',
+    canonicalUrl: `${base}/pdbe/pdbe-kb/join`,
+  },
+  schema: {
+    title: 'PDBe Graph Schema Explorer | Data Model and Neo4j Structure',
+    description:
+      'Explore the PDBe graph database schema, including nodes, relationships, and data structure used to integrate structural and functional protein annotations.',
+    canonicalUrl: `${base}/pdbe/pdbe-kb/schema`,
+  },
+  graph: {
+    title: 'PDBe Graph Database (Neo4j) | Setup Guide, Downloads & Queries',
+    description:
+      'Download and set up the PDBe graph database in Neo4j. Follow step-by-step instructions, explore documentation, and run Cypher queries on protein data.',
+    canonicalUrl: `${base}/pdbe/pdbe-kb/graph`,
+  },
 };

@@ -8,6 +8,8 @@ import { KeyFeaturesListComponent } from '../key-features-list/key-features-list
 import { FaqsListComponent } from '../faqs-list/faqs-list.component';
 import { CorporatePagesBioschemasService } from '../services/corporate-pages.bioschemas';
 import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
+import { SeoService } from '../services/seo.service';
+import { SEO_CONFIG } from '../corporate-page.constant';
 
 declare const $: any;
 
@@ -50,9 +52,11 @@ export class HomePageComponent implements OnInit, AfterViewInit {
     }
     return '';
   });
+  private seo = inject(SeoService);
 
   ngOnInit(): void {
     this.bioschemasService.buildBioschemasJSON();
+    this.seo.update(SEO_CONFIG.home);
   }
 
   ngAfterViewInit() {
