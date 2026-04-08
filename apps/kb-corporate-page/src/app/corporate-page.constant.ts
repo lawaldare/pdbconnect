@@ -120,7 +120,7 @@ export const markersColors = {
 
 export const SEO_CONFIG = {
   home: {
-    title: 'PDBe-KB | Protein Knowledgebase at EMBL-EBI',
+    title: 'PDBe-KB | Protein Knowledge Base',
     description:
       'PDBe-KB integrates structural biology data with functional annotations to provide a comprehensive protein knowledgebase powered by EMBL-EBI and partner resources.',
     canonicalUrl: `${base}/pdbe/pdbe-kb/`,
