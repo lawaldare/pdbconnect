@@ -104,6 +104,7 @@ export interface relatedStructure {
 export interface ProcessedSummary {
   entryTitle: string;
   entryAuthors: string;
+  entryAuthorsList: string[];
   depositionDate: string;
   releaseDate: string;
   revisionDate: string;

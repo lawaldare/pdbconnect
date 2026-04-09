@@ -1,9 +1,4 @@
-@if(tutorialTourService.showAnnotationsTourBanner() && isBannerCookies()){
-<section class="onboarding-tutorial-banner">
-  <img src="assets/img/light-star.svg" alt="light start icon" />
-  <p>We have redesigned this page to enhance your experience. <span (click)="startLLMTabTour()">Take an on-page tour.</span></p>
-</section>
-} @if(tabDataLoaded()){ @if(macromoleculeTableRows().length){
+@if(tabDataLoaded()){ @if(macromoleculeTableRows().length){
 <main [class.change-display]="!isSidebarDisplayed()">
   @if(isSidebarDisplayed()){
   <pdbc-interactive-tables tabName="LLM" id="llm-list-tour" />
@@ -57,16 +52,16 @@
     </section>
     }
     <section class="info">
-      @if(uniqueOrganisms().length){
+      @if(uniqueOrganismsWithStrains().length){
       <div class="info-row">
-        <span class="micro-title"> Source organism{{ uniqueOrganisms().length > 1 ? 's': '' }} </span>
+        <span class="micro-title"> Source organism{{ uniqueOrganismsWithStrains().length > 1 ? 's': '' }} </span>
         <article>
-          @for (sourceOrganism of uniqueOrganisms(); track sourceOrganism) {
-          <a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank">
-            <em>{{sourceOrganism}}</em>
+          @for (sourceOrganismWithStrain of uniqueOrganismsWithStrains(); track sourceOrganismWithStrain) {
+          <a [href]="generateOrganismSearchUrl(sourceOrganismWithStrain.name)" target="_blank">
+            <em>{{sourceOrganismWithStrain.name}}</em>
             <i class="icon icon-common icon-search"></i>
           </a>
-          }
+          @if (sourceOrganismWithStrain.strain) { (strain {{sourceOrganismWithStrain.strain}}) } }
         </article>
       </div>
       } @if(uniprotProcessedMappings()?.length) { @let mappings = uniprotProcessedMappings()!; @let firstMapping = mappings[0];

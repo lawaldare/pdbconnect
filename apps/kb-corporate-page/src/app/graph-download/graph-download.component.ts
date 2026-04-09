@@ -18,7 +18,7 @@ declare const $: any;
       }
     `,
   ],
-  imports: [CommonModule, HeaderSearchComponent, NavTabsComponent],
+  imports: [CommonModule, RouterModule, HeaderSearchComponent, NavTabsComponent],
 })
 export class GraphDownloadComponent implements AfterViewInit {
   private platformId = inject(PLATFORM_ID);

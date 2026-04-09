@@ -107,9 +107,9 @@ export const dataContentStructure = [
       {
         subtitle: 'Validation data',
         subText: 'Validation data for a set of PDB entries.',
-        subContent: ['Validation data (XML)'],
-        values: ['validation-data'],
-        text: ['Validation data for a set of PDB entries.'],
+        subContent: ['Validation data (XML)', 'Validation data (CIF)'],
+        values: ['validation-data', 'validation-data-cif'],
+        text: ['Validation data for a set of PDB entries (XML format).', 'Validation data for a set of PDB entries (CIF format).'],
       },
     ],
   },

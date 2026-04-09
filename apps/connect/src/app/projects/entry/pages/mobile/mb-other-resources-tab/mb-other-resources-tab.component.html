@@ -1,0 +1,91 @@
+<main>
+  <header>
+    <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
+    <span (click)="goBackToOverviewPage()">Back to entry overview </span>
+  </header>
+  <h2>pdb_0000{{entryId()}}</h2>
+  <p class="entry-title">{{summary()?.entryTitle}}</p>
+
+  <!-- Table of contents navigation -->
+  <pdbc-mb-table-of-contents
+    tableTitle="In this Other Resources page"
+    gasEventToLog=""
+    [navigationLinks]="navigationLinks"
+    [enableSectionId]="true"
+  ></pdbc-mb-table-of-contents>
+
+  <h3 id="related-pdbe-resources">Related PDBe resources</h3>
+  @defer (on viewport) {
+  <div class="info">
+    <p class="info__title">PDBe API Endpoints</p>
+    <p class="info__content">
+      <a [href]="baseUrl + 'pdbe/api/v2/doc/'" target="_blank">
+        go to page
+        <i class="icon icon-link icon-common"></i>
+      </a>
+    </p>
+  </div>
+  <div class="info">
+    <p class="info__title">PDBe GitHub</p>
+    <p class="info__content">
+      <a href="https://github.com/PDBeurope/" target="_blank">
+        go to page
+        <i class="icon icon-link icon-common"></i>
+      </a>
+    </p>
+  </div>
+  <div class="info">
+    <p class="info__title">PDBe Hugging Face</p>
+    <p class="info__content">
+      <a href="https://huggingface.co/PDBeurope" target="_blank">
+        go to page
+        <i class="icon icon-link icon-common"></i>
+      </a>
+    </p>
+  </div>
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
+
+  <h3 id="protein-dynamics">Protein dynamics</h3>
+  @defer (on viewport) {
+  <pdbc-mb-other-rsc-dynamics />
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
+
+  <h3 id="3d-structure-dbs">3D structure databases</h3>
+  @defer (on viewport) {
+  <pdbc-mb-other-rsc-structures />
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
+
+  <h3 id="sequence-db">Sequence databases</h3>
+  @defer (on viewport) {
+  <pdbc-mb-other-rsc-sequence />
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
+
+  <h3 id="family-domain-db">Family and domain databases</h3>
+  @defer (on viewport) {
+  <pdbc-mb-other-rsc-domains />
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
+
+  <h3 id="functional">Functional annotation</h3>
+  @defer (on viewport) {
+  <pdbc-mb-other-rsc-functional />
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
+
+  <h3 id="other-resources">Other resources</h3>
+  @defer (on viewport) {
+  <pdbc-mb-other-rsc-others />
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
+</main>

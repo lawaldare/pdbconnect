@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
@@ -10,13 +10,14 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
-import { dashboardStatLinks, entryAssembliesTooltips, tourIds } from '../../entry-constant';
+import { dashboardStatLinks, entryAssembliesTooltips } from '../../entry-constant';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { filter, firstValueFrom, take, timer } from 'rxjs';
 import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
@@ -25,7 +26,7 @@ import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial
   templateUrl: './assemblies-tab.component.html',
   styleUrl: './assemblies-tab.component.scss',
 })
-export class AssembliesTabComponent implements AfterViewInit {
+export class AssembliesTabComponent {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly gAS = inject(GoogleAnalyticsService);
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);
@@ -72,22 +73,6 @@ export class AssembliesTabComponent implements AfterViewInit {
     if (rows === undefined) return false;
     return rows.length > 0;
   });
-
-  public isBannerCookies = signal(false);
-
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.tutorialTourService.hasAssemblies.set(this.hasAssemblies());
-      const agreed = this.tutorialTourService.getCookie(tourIds.assemblies);
-      if (!agreed && this.hasAssemblies()) {
-        this.isBannerCookies.set(true);
-      }
-    }, 500);
-  }
-
-  public startAssembliesTabTour(): void {
-    this.tutorialTourService.startTour(this.tutorialTourService.complexesTabTourSteps);
-  }
 
   public toggleMolstar() {
     const forceLoad = this.compCommunication.forceLoad();
@@ -142,11 +127,13 @@ export class AssembliesTabComponent implements AfterViewInit {
     return undefined;
   });
 
-  public readonly preferredSymmetry = computed(() => {
+  public readonly currentSymmetry = computed(() => {
     const symmetries = this.symmetry();
-    if (symmetries) {
-      const preferredSymmetry = symmetries.find((symmetry) => symmetry.assembly_id === '1');
-      return preferredSymmetry;
+    const currentAssembly = this.currentAssemblyDatum();
+    const currentAssemblyId = currentAssembly ? currentAssembly.assemblyId : undefined;
+    if (symmetries && currentAssemblyId) {
+      const currentSymmetry = symmetries.find((symmetry) => symmetry.assembly_id === currentAssemblyId);
+      return currentSymmetry;
     }
     return undefined;
   });
@@ -229,7 +216,7 @@ export class AssembliesTabComponent implements AfterViewInit {
     this.isSidebarDisplayed.update((prev) => !prev);
   }
 
-  public generateComplexSearchUrl(term: string): string {
-    return this.util.generateQueryURL(term, 'complex_id');
+  public generateComplexPageUrl(complexId: string): string {
+    return `${environment.baseUrl}pdbe/pdbe-kb/complexes/${complexId}`;
   }
 }

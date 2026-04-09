@@ -48,12 +48,13 @@
       } @if(selectedMacromolecule()?.additionalData?.molecule?.molecule_type){
       <p class="title">Type</p>
       <p class="content">{{selectedMacromolecule()?.additionalData?.molecule?.molecule_type}}</p>
-      } @if(uniqueOrganisms().length){
-      <p class="title">Source organism{{ uniqueOrganisms().length > 1 ? 's': '' }}</p>
+      } @if(uniqueOrganismsWithStrains().length){
+      <p class="title">Source organism{{ uniqueOrganismsWithStrains().length > 1 ? 's': '' }}</p>
       <p class="content">
-        @for (sourceOrganism of uniqueOrganisms(); track sourceOrganism) {
+        @for (sourceOrganismWithStrain of uniqueOrganismsWithStrains(); track sourceOrganismWithStrain) {
         <span>
-          <em><a [href]="generateOrganismSearchUrl(sourceOrganism)" target="_blank"> {{ sourceOrganism }} </a></em>
+          <em><a [href]="generateOrganismSearchUrl(sourceOrganismWithStrain.name)" target="_blank"> {{ sourceOrganismWithStrain.name }} </a></em>
+          @if (sourceOrganismWithStrain.strain) { (strain {{sourceOrganismWithStrain.strain}}) }
         </span>
         }
       </p>

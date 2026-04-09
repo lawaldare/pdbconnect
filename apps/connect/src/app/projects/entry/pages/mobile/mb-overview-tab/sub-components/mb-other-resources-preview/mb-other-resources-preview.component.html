@@ -1,0 +1,64 @@
+<span class="m-title">Related PDBe resources</span>
+<div class="info">
+  <p class="info__title">PDBe API Endpoints</p>
+  <p class="info__content">
+    <a [href]="baseUrl + 'pdbe/api/v2/doc/'" target="_blank">
+      go to page
+      <i class="icon icon-link icon-common"></i>
+    </a>
+  </p>
+</div>
+<div class="info">
+  <p class="info__title">PDBe GitHub</p>
+  <p class="info__content">
+    <a href="https://github.com/PDBeurope/" target="_blank">
+      go to page
+      <i class="icon icon-link icon-common"></i>
+    </a>
+  </p>
+</div>
+<div class="info">
+  <p class="info__title">PDBe Hugging Face</p>
+  <p class="info__content">
+    <a href="https://huggingface.co/PDBeurope" target="_blank">
+      go to page
+      <i class="icon icon-link icon-common"></i>
+    </a>
+  </p>
+</div>
+<div class="row" (click)="navigateToPageSection($event, 'protein-dynamics')">
+  <div class="row__header">
+    <p class="row__header__name">Protein dynamics</p>
+    <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+  </div>
+</div>
+<div class="row" (click)="navigateToPageSection($event, '3d-structure-dbs')">
+  <div class="row__header">
+    <p class="row__header__name">3D structure databases</p>
+    <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+  </div>
+</div>
+<div class="row" (click)="navigateToPageSection($event, 'sequence-db')">
+  <div class="row__header">
+    <p class="row__header__name">Sequence databases</p>
+    <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+  </div>
+</div>
+<div class="row" (click)="navigateToPageSection($event, 'family-domain-db')">
+  <div class="row__header">
+    <p class="row__header__name">Family and domain databases</p>
+    <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+  </div>
+</div>
+<div class="row" (click)="navigateToPageSection($event, 'functional')">
+  <div class="row__header">
+    <p class="row__header__name">Functional annotation</p>
+    <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+  </div>
+</div>
+<div class="row" (click)="navigateToPageSection($event, 'other-resources')">
+  <div class="row__header">
+    <p class="row__header__name">Other resources</p>
+    <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+  </div>
+</div>

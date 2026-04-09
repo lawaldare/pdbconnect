@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, DestroyRef, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
@@ -18,20 +18,15 @@ import { MobileFacade } from '../mobile.facade';
 import { MobileTabNames } from '../mobile-tab.model';
 import { EntryActions } from '../../../store/entry.actions';
 import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
-import { ActivatedRoute } from '@angular/router';
-
-export interface NavigationLink {
-  id: string;
-  title: string;
-}
+import { MbTableOfContentsComponent, NavigationLink } from '../mb-table-of-contents/mb-table-of-contents.component';
 
 @Component({
   selector: 'pdbc-mb-citation-tab',
-  imports: [CommonModule, CitationArticleComponent, NgxSkeletonLoaderModule],
+  imports: [CommonModule, MbTableOfContentsComponent, CitationArticleComponent, NgxSkeletonLoaderModule],
   templateUrl: './mb-citation-tab.component.html',
   styleUrl: './mb-citation-tab.component.scss',
 })
-export class MbCitationTabComponent implements OnInit, AfterViewInit, OnDestroy {
+export class MbCitationTabComponent implements OnInit {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly util = inject(UtilService);
   private readonly entryAPIService = inject(EntryApiService);
@@ -39,7 +34,6 @@ export class MbCitationTabComponent implements OnInit, AfterViewInit, OnDestroy 
   private readonly dialog = inject(MatDialog);
   private readonly mbFacade = inject(MobileFacade);
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
-  private readonly route = inject(ActivatedRoute);
 
   public readonly summary = signal<ProcessedSummary>({} as ProcessedSummary);
   public readonly entryId = signal<string>('');
@@ -56,28 +50,12 @@ export class MbCitationTabComponent implements OnInit, AfterViewInit, OnDestroy 
 
   @ViewChild('imageContainer', { read: ElementRef }) imageContainer!: ElementRef;
 
-  public isFullLinksDisplayed = signal<boolean>(false);
-  public currentNavigationLink = signal<NavigationLink>({ id: 'primary-publication', title: 'Primary publication' });
-  public navigationLinks: NavigationLink[] = [];
+  public navigationLinks = signal<NavigationLink[]>([]);
 
   public imageUrl = signal('');
 
   public initialCount = signal<number>(5);
   public initialAuthorCount = signal<number>(5);
-
-  private bodyScrollHandler = this.onScroll.bind(this);
-
-  onScroll() {
-    this.navigationLinks.forEach((section) => {
-      const element = document.getElementById(section.id);
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        if (rect.top <= 150 && rect.bottom >= 150) {
-          this.currentNavigationLink.set(section);
-        }
-      }
-    });
-  }
 
   ngOnInit(): void {
     /* 1. Fetch necessary data */
@@ -113,42 +91,6 @@ export class MbCitationTabComponent implements OnInit, AfterViewInit, OnDestroy 
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
-
-    const sectionId$ = this.route.queryParams.pipe(
-      map((params) => params['sectionId']),
-      filter(Boolean)
-    );
-
-    combineLatest([
-      this.globalStore.select(EntrySelectors.primaryPublication).pipe(filter(Boolean)),
-      this.globalStore.select(EntrySelectors.articlesCiting).pipe(filter(Boolean)),
-      sectionId$,
-    ])
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(([_, __, sectionId]) => {
-        queueMicrotask(() => {
-          requestAnimationFrame(() => {
-            const element = document.getElementById(sectionId);
-            const toc = document.querySelector('.table-of-contents') as HTMLElement;
-            if (element && toc) {
-              const offsetTop = element.offsetTop;
-
-              document.body.scrollTo({
-                top: offsetTop - toc.offsetHeight,
-                behavior: 'instant',
-              });
-            }
-          });
-        });
-      });
-  }
-
-  ngAfterViewInit() {
-    document.body.addEventListener('scroll', this.bodyScrollHandler, { passive: true });
-  }
-
-  ngOnDestroy() {
-    document.body.removeEventListener('scroll', this.bodyScrollHandler);
   }
 
   public toggleRelatedEntriesList(): void {
@@ -161,32 +103,28 @@ export class MbCitationTabComponent implements OnInit, AfterViewInit, OnDestroy 
 
   private setNavigationLinks(): void {
     if (this.primaryPublication().title) {
-      this.navigationLinks.push({ id: 'primary-publication', title: 'Primary publication' });
+      this.navigationLinks.update((value) => [...value, { id: 'primary-publication', title: 'Primary publication' }]);
     }
 
     if (this.articlesCiting().cited_by.Articles.length) {
-      this.navigationLinks.push({ id: 'articles-cited', title: 'Articles citing the PDB entry' });
+      this.navigationLinks.update((value) => [...value, { id: 'articles-cited', title: 'Articles citing the PDB entry' }]);
     }
 
     if (this.articlesCiting().cited_by.Reviews.length) {
-      this.navigationLinks.push({ id: 'reviews-cited', title: 'Reviews citing the publication' });
+      this.navigationLinks.update((value) => [...value, { id: 'reviews-cited', title: 'Reviews citing the publication' }]);
     }
 
     if (this.articlesCiting().appears_without_citation.Articles.length) {
-      this.navigationLinks.push({ id: 'articles-not-cited', title: 'Articles mentioned but not cited' });
+      this.navigationLinks.update((value) => [...value, { id: 'articles-not-cited', title: 'Articles mentioned but not cited' }]);
     }
 
     if (this.articlesCiting().appears_without_citation.Reviews.length) {
-      this.navigationLinks.push({ id: 'reviews-not-cited', title: 'Reviews mentioned but not cited' });
+      this.navigationLinks.update((value) => [...value, { id: 'reviews-not-cited', title: 'Reviews mentioned but not cited' }]);
     }
   }
 
   public toggleArticlesCitingList(): void {
     this.isArticlesCitingMuch.update((value) => !value);
-  }
-
-  public toggleNavigationLinks(): void {
-    this.isFullLinksDisplayed.update((value) => !value);
   }
 
   public toggleReviewsCitingList(): void {
@@ -243,17 +181,6 @@ export class MbCitationTabComponent implements OnInit, AfterViewInit, OnDestroy 
         const link = 'https://europepmc.org' + graphic.getAttribute('href') || '';
         this.imageUrl.set(link);
       }
-    }
-  }
-
-  public scrollToSection(event: Event, sectionId: string): void {
-    event.preventDefault();
-    this.isFullLinksDisplayed.set(false);
-    const element = document.getElementById(sectionId);
-    const toc = document.querySelector('.table-of-contents') as HTMLElement;
-    if (element && toc) {
-      const offsetTop = element.offsetTop;
-      document.body.scrollTo({ top: offsetTop - toc.offsetHeight, behavior: 'smooth' });
     }
   }
 
