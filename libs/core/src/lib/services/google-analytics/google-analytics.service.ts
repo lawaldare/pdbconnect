@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 
 declare const gtag: any;
 
@@ -6,6 +7,8 @@ declare const gtag: any;
   providedIn: 'root',
 })
 export class GoogleAnalyticsService {
+  private readonly platformId = inject(PLATFORM_ID);
+
   public logClickEvents(event: string, category: string, action: string, label: string, value = ''): void {
     gtag('event', event, {
       event_category: category,
@@ -18,6 +21,9 @@ export class GoogleAnalyticsService {
   }
 
   public logPageEvents(event: string, params: Record<string, string>): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     gtag('event', event, params);
   }
 }

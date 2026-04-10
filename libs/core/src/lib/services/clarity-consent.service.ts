@@ -1,10 +1,12 @@
-import { Injectable, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import Clarity from '@microsoft/clarity';
 
 @Injectable({ providedIn: 'root' })
 export class ClarityConsentService {
   private readonly cookieKey = this.getCookieKey;
   private clarityProjectId = signal('');
+  private readonly platformId = inject(PLATFORM_ID);
 
   public init(clarityProjectId: string): void {
     this.clarityProjectId.set(clarityProjectId);
@@ -60,12 +62,18 @@ export class ClarityConsentService {
     window.addEventListener('click', listener);
   }
 
-  private getCookie(name: string): string | null {
+  private getCookie(name: string): any {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? match[2] : null;
   }
 
-  private get getCookieKey(): string {
+  private get getCookieKey(): any {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const pathname = window.location.pathname;
     if (pathname.includes('complexes')) return 'dataProtectionAgreedForComplexPages';
     if (pathname.includes('chemicalCompound/show')) return 'dataProtectionAgreedForLigandPages';

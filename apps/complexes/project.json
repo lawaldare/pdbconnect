@@ -26,6 +26,12 @@
         "scripts": [],
         "stylePreprocessorOptions": {
           "includePaths": ["libs/core/src/lib/styles"]
+        },
+        "server": "apps/complexes/src/main.server.ts",
+        "prerender": false,
+        "externalDependencies": ["xhr2"],
+        "ssr": {
+          "entry": "apps/complexes/src/server.ts"
         }
       },
       "configurations": {
@@ -54,7 +60,8 @@
           "optimization": true,
           "sourceMap": true,
           "outputHashing": "all",
-          "baseHref": "$APP_BASE_HREF"
+          "baseHref": "/pdbe/pdbe-kb/",
+          "deployUrl": "/pdbe/pdbe-kb/"
         },
         "development": {
           "aot": true,
@@ -63,7 +70,8 @@
           "optimization": true,
           "sourceMap": true,
           "outputHashing": "all",
-          "baseHref": "$APP_BASE_HREF"
+          "baseHref": "/pdbe/pdbe-kb/",
+          "deployUrl": "/pdbe/pdbe-kb/"
         },
         "local": {
           "optimization": false,
@@ -79,7 +87,8 @@
       "executor": "@angular/build:dev-server",
       "options": {
         "buildTarget": "complexes:build:local",
-        "port": 4300
+        "port": 4300,
+        "host": "localhost"
       },
       "configurations": {
         "production": {
@@ -87,9 +96,12 @@
         },
         "development": {
           "buildTarget": "complexes:build:development"
+        },
+        "local": {
+          "buildTarget": "complexes:build:local"
         }
       },
-      "defaultConfiguration": ""
+      "defaultConfiguration": "local"
     },
     "extract-i18n": {
       "executor": "@angular/build:extract-i18n",

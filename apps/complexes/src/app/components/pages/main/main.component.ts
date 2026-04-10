@@ -1,5 +1,5 @@
-import { Component, DestroyRef, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, DestroyRef, inject, OnInit, PLATFORM_ID, Renderer2, signal, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 // import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
@@ -120,7 +120,8 @@ export class MainComponent implements OnInit {
   @ViewChild('tabs') tabGroup!: MatTabGroup;
 
   public surveyService = inject(SurveyService);
-  private isDesktop = signal(window.innerWidth > 768);
+  private readonly platformId = inject(PLATFORM_ID);
+  private isDesktop = signal(false);
 
   constructor() {
     this.route.queryParams.subscribe((params) => {
@@ -138,8 +139,11 @@ export class MainComponent implements OnInit {
   ngOnInit(): void {
     // this.showNotification();
 
-    Clarity.init(environment.clarityProjectIdForComplexPages);
-    this.clarityConsentService.init(environment.clarityProjectIdForComplexPages);
+    if (isPlatformBrowser(this.platformId)) {
+      this.isDesktop.set(window.innerWidth > 768);
+      Clarity.init(environment.clarityProjectIdForComplexPages);
+      this.clarityConsentService.init(environment.clarityProjectIdForComplexPages);
+    }
 
     this.route.params
       .pipe(

@@ -1,14 +1,20 @@
-import { Injectable } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class ScriptLoaderService {
   private loadedScripts: Set<string> = new Set();
   private loadedStyles = new Set<string>();
+  private platformId = inject(PLATFORM_ID);
 
   public loadScript(src: string, isModule = false): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.loadedScripts.has(src)) {
         resolve();
+        return;
+      }
+
+      if (!isPlatformBrowser(this.platformId)) {
         return;
       }
 

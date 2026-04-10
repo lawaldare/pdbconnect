@@ -10,6 +10,7 @@ import { ComplexEffects } from './store/complex.effects';
 import { complexReducer } from './store/complex.reducer';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { BaseHrefService } from '@pdbc/core';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 export function initializeApp(baseHrefService: BaseHrefService) {
   return () => baseHrefService.setBaseHref();
@@ -17,9 +18,9 @@ export function initializeApp(baseHrefService: BaseHrefService) {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideRouter(appRoutes),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),
     provideHttpClient(),
     provideAnimations(),
     provideAnimationsAsync(),
@@ -31,5 +32,6 @@ export const appConfig: ApplicationConfig = {
     }),
     { provide: APP_INITIALIZER, useFactory: initializeApp, deps: [BaseHrefService], multi: true },
     BaseHrefService,
+    provideClientHydration(withEventReplay()),
   ],
 };
