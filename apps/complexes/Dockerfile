@@ -4,11 +4,9 @@
 # Tip: Modify "docker-build" options in project.json to change docker build args.
 #
 FROM nginx:1.21.3
-# WORKDIR /app
+WORKDIR /app
 
-RUN mkdir -p /usr/share/nginx/html/pdbe/pdbe-kb/complexes
-
-COPY dist/apps/complexes/browser /usr/share/nginx/html/pdbe/pdbe-kb/complexes/
+COPY dist/apps/complexes/browser /usr/share/nginx/html
 COPY apps/complexes/nginx-custom.conf /etc/nginx/conf.d/default.conf
 
 ARG APP_BASE_HREF
