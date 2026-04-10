@@ -368,7 +368,9 @@ export const INTX_NAME_COLORS: Record<string, string> = {
   AMIDERING: '#C0BD7F',
   weak_polar: '#96CDE6',
   weak_hbond: '#96CDE6',
-  mixed: '#7F7E80',
+  // Special values:
+  mixed: '#808080',
+  default: '#808080',
 };
 
 export const ENTRY_PAGES_LINKS = [

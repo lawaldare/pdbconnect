@@ -1,15 +1,7 @@
 import type { MVSData } from 'molstar/lib/extensions/mvs/mvs-data';
 import type * as Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
 import type { ColorT, ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
-import {
-  ATOM_INTERACTION_COLORS,
-  CHAIN_ANNOTATED_COLOR,
-  DEFAULT_ENTITY_COLOR,
-  RESIDUE_ANNOTATED_COLOR,
-  RESIDUE_HIGHLIGHT_COLOR,
-  VALIDATION_COLORS,
-  WATER_COLOR,
-} from './colors';
+import { ATOM_INTERACTION_COLORS, CHAIN_ANNOTATED_COLOR, DEFAULT_ENTITY_COLOR, RESIDUE_ANNOTATED_COLOR, RESIDUE_HIGHLIGHT_COLOR, WATER_COLOR } from './colors';
 import type { IDataProvider } from './data-provider';
 import {
   applyElementColors,
@@ -32,32 +24,6 @@ const FOCUS_RADIUS_EXTENT = 2.5;
 const INTERACTION_TUBE_RADIUS = 0.075;
 /** Tube dash length for atom interactions */
 const INTERACTION_TUBE_DASH_LENGTH = 0.1;
-/** Nice names for atom interaction types */
-const INTERACTION_NICE_NAMES: Record<string, string> = {
-  clash: 'Covalent clash',
-  covalent: 'Covalent',
-  vdw_clash: 'Van der Waals clash',
-  vdw: 'Van der Waals',
-  hbond: 'Hydrogen bond',
-  xbond: 'Halogen bond',
-  ionic: 'Ionic',
-  metal_complex: 'Metal complex',
-  aromatic: 'Aromatic',
-  FF: 'Plane-Plane',
-  hydrophobic: 'Hydrophobic',
-  carbonyl: 'Carbonyl',
-  polar: 'Polar',
-  CARBONPI: 'Carbon-pi',
-  CATIONPI: 'Cation-pi',
-  DONORPI: 'Hydrogen bond donor-pi',
-  HALOGENPI: 'Halogen-pi',
-  METSULPHURPI: 'Methionine sulphur-pi',
-  plane_plane: 'Plane-Plane',
-  AMIDEAMIDE: 'Amide-Amide',
-  AMIDERING: 'Amide-Ring',
-  weak_polar: 'Weak polar',
-  weak_hbond: 'Weak hydrogen bond',
-};
 
 export interface MVSSnapshotProviderConfig {
   /** URL template for PDB structural data, '{pdb}' will be replaced by actual PDB ID. */
@@ -456,19 +422,22 @@ export class MVSSnapshotProvider {
       })
       .focus({ radius_factor: FOCUS_RADIUS_FACTOR, radius_extent: FOCUS_RADIUS_EXTENT });
 
-    if (params.atomInteractions === 'api') {
-      const atomInteractions = await this.dataProvider.atomInteractions(params.entry, params.authAsymId, params.authSeqId);
+    const colors = params.interactionTypeColors ?? ATOM_INTERACTION_COLORS;
+    const formatInteractionType = (type: string) => params.interactionTypeNiceNames?.[type] ?? type;
+
+    if (params.atomInteractions !== 'builtin' && params.atomInteractions !== 'none') {
+      const atomInteractions = params.atomInteractions;
       const partnerResidues: { auth_asym_id: string; auth_seq_id: number; pdbx_PDB_ins_code?: string; instance_id?: string }[] = [];
       const primitives = ctx.structure.primitives();
       for (const { interactions, ligand } of atomInteractions) {
         for (const int of interactions) {
           const details = int.interaction_details;
-          const color = details.length === 1 ? ATOM_INTERACTION_COLORS[details[0]] ?? ATOM_INTERACTION_COLORS['_DEFAULT_'] : ATOM_INTERACTION_COLORS['_MIXED_'];
-          const formatInteractionType = (type: string) => INTERACTION_NICE_NAMES[type] ?? type;
+          const color = details.length === 1 ? colors[details[0]] ?? colors['default'] : colors['mixed'];
+          const distance = int.distance.toFixed(2);
           const tooltipHeader =
             details.length === 1
-              ? `<strong>${formatInteractionType(details[0])} interaction</strong>`
-              : `<strong>Mixed interaction</strong><br>${details.map(formatInteractionType).join(', ')}`;
+              ? `<strong>${formatInteractionType(details[0])} interaction (${distance} Å)</strong>`
+              : `<strong>Mixed interaction (${distance} Å)</strong><br>${details.map(formatInteractionType).join(', ')}`;
           const tooltipLigand = `<strong>${ligand.chem_comp_id} ${ligand.author_residue_number}${
             ligand.author_insertion_code?.trim() ?? ''
           }</strong> | ${int.ligand_atoms.join(', ')}`;
@@ -495,7 +464,7 @@ export class MVSSnapshotProvider {
             end: { expressions: partnerSelector },
             radius: INTERACTION_TUBE_RADIUS,
             dash_length: INTERACTION_TUBE_DASH_LENGTH,
-            color: color,
+            color: color as ColorT,
             tooltip: tooltip,
           });
           partnerResidues.push({
@@ -514,7 +483,6 @@ export class MVSSnapshotProvider {
       }
       applyElementColors(partnerResiduesRepr);
     }
-    // TODO: @adam volumes
     // TODO: @adam we don't have data for non-preferred-assembly ligands (e.g. 1og5 chain B) - decide what to do (current PDBconnect falls back to builtin, but that's confusing IMHO)
 
     const description: string[] = [];

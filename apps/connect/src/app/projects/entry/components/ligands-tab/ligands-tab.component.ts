@@ -9,7 +9,7 @@ import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-ap
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { getCleanSelectionName, getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
 import { dashboardStatLinks, INTX_NAME_COLORS, symmOperatorTooltip } from '../../entry-constant';
-import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, map, take, skip, timer, lastValueFrom } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, map, take, skip, timer, lastValueFrom, BehaviorSubject } from 'rxjs';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
@@ -53,6 +53,8 @@ import { Depiction } from '../../../ligands/data-models/structure.model';
 import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { makeEntityColors, MVSHandler } from '../../helpers/mvs-utils';
+import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -110,6 +112,10 @@ export class LigandsTabComponent implements AfterViewInit {
   public readonly chainToEntityId = toSignal(this.globalStore.select(EntrySelectors.macromolsChainsToEntityIds));
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
   public readonly ligandSummaryList = toSignal(this.globalStore.select(EntrySelectors.ligandPagesSummary));
+  private readonly procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  private readonly procLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
+  private readonly entityColors = computed(() => makeEntityColors(this.procMacromolecules(), this.procLigands()));
+  private readonly preferredAssemblyId = computed(() => this.summaryData()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
 
   public residToInstanceId: { [key: string]: string | undefined } = {};
 
@@ -185,41 +191,13 @@ export class LigandsTabComponent implements AfterViewInit {
     return 'No ligand interactions found';
   });
 
-  public readonly configForMolstar = computed(() => {
-    const summary = this.summaryData();
-    const entryId = this.entryId();
-    const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
-
-    if (!summary || !entryId) return undefined;
-    const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
-    const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
-    const assemblyId = inPrefAssemblyForInstance ? preferredAssemblyId : undefined;
-
-    const configForMolstar = {
-      ...Molstar370DefaultParams,
-      moleculeId: this.entryId(),
-      assemblyId,
-      subscribeEvents: true,
-      granularity: 'element',
-      hideControls: false,
-      visualStyle: {
-        polymer: {
-          type: 'cartoon',
-          color: 'entity-id',
-          // 'color': 'uniform',
-          // 'colorParams': { value: Color(0xfefefe) },
-        },
-        het: {
-          type: 'ball-and-stick',
-          color: 'entity-id',
-        },
-      },
-      loadMaps: true,
-      mapSettings: { defaultView: 'selection-box' },
-      sequencePanel: true,
-    };
-    return configForMolstar;
-  });
+  public readonly configForMolstar = computed(() => ({
+    ...Molstar370DefaultParams,
+    subscribeEvents: true,
+    granularity: 'element',
+    hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
+    sequencePanel: true,
+  }));
   public readonly configForMolstar$ = toObservable(this.configForMolstar);
 
   private currentChainId = signal<string | undefined>(undefined);
@@ -292,42 +270,12 @@ export class LigandsTabComponent implements AfterViewInit {
     }));
   }
 
-  private async updateConfigAssemblyAndSyncMolstar(ligand: ProcessedLigandOrMod) {
-    // await until molstar first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready === true),
-        first()
-      )
-    );
+  private async updateInPrefAssemblyForInstance(ligand: ProcessedLigandOrMod) {
     // check if ligand instance is in pref assembly based on idx of ligand instance
-    const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
     const ligInstanceIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
     const isSelectionPrefAssembly = ligand.additionalData.selectionsInPrefAssembly[ligInstanceIdx];
-    const changedDisplayedAssembly = inPrefAssemblyForInstance !== isSelectionPrefAssembly;
-
     // setting inPrefAssemblyForInstance may trigger update on configForMolstar
     this.inPrefAssemblyForInstance.set(isSelectionPrefAssembly);
-
-    // ... if this update is triggered
-    if (changedDisplayedAssembly) {
-      // wait until configForMolstar recomputes with new assembly/moleculeId
-      const oldCfg = await firstValueFrom(this.configForMolstar$.pipe(take(1)));
-      const newCfg = await firstValueFrom(
-        this.configForMolstar$.pipe(
-          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
-          take(1)
-        )
-      );
-
-      // 2. Wait for MolstarComponent to APPLY the new config
-      await firstValueFrom(
-        this._molstarComponent!.configUpdated.pipe(
-          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
-          take(1)
-        )
-      );
-    }
   }
 
   async triggerLigandUpdateSideEffects(ligand: ProcessedLigandOrMod) {
@@ -342,7 +290,7 @@ export class LigandsTabComponent implements AfterViewInit {
     await this.updateVisualsDisplayed(ligand);
 
     // check if molstar config needs update and wait for it
-    await this.updateConfigAssemblyAndSyncMolstar(ligand);
+    await this.updateInPrefAssemblyForInstance(ligand);
     const allLigandsInPrefAssembly = ligand.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
     this.inPrefAssembly.set(allLigandsInPrefAssembly);
 
@@ -401,69 +349,61 @@ export class LigandsTabComponent implements AfterViewInit {
     }
   }
 
-  private selectionData?: QueryParamForHelpers[];
-  private ligandSelection?: QueryParamForHelpers[];
-  private residuesAsSticks?: QueryParamForHelpers[];
+  private getMvsSnapshotSpec(rawInteractions: InteractionFromAPI | undefined): SnapshotSpec | undefined {
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    if (!molstarSelection) return undefined;
+
+    const labelAsymId = molstarSelection[0].struct_asym_id; // TODO: @adam Avoid obsoleted names
+    const authAsymId = molstarSelection[0].auth_asym_id;
+    const authSeqId = molstarSelection[0].auth_residue_number; // TODO: @adam Avoid obsoleted names
+    const authInsCode = molstarSelection[0].auth_ins_code_id ?? ''; // TODO: @adam Avoid obsoleted names
+    if (labelAsymId === undefined) throw new Error('labelAsymId is undefined');
+    if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+    if (authSeqId === undefined) throw new Error('authSeqId is undefined');
+
+    return {
+      name: 'Ligand environment',
+      kind: 'pdbconnect_environment',
+      params: {
+        entry: this.entryId()!,
+        assemblyId: this.inPrefAssemblyForInstance() ? this.preferredAssemblyId() : undefined,
+        labelAsymId,
+        authAsymId,
+        authSeqId,
+        authInsCode,
+        instanceId: this.symmetryDropdownSelected || undefined,
+        atomInteractions: rawInteractions ? [rawInteractions] : 'none',
+        // TODO: @adam Show builtin interactions when data not available
+        volumeStreaming: true,
+        entityColors: this.entityColors(),
+        interactionTypeColors: INTX_NAME_COLORS,
+        interactionTypeNiceNames: INTX_NAME_STANDARDIZER,
+      },
+    };
+  }
 
   async triggerLigandInteractionsSideEffects(rawInteractions: InteractionFromAPI | undefined) {
-    const interactions = rawInteractions ? rawInteractions.interactions : undefined;
+    const interactions = rawInteractions?.interactions;
+    if (!interactions) return;
     const ligand = this.currentLigandDatum();
     if (!ligand) return;
-    if (interactions === undefined) return;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     if (!molstarSelection) return;
+
     if (rawInteractions) await this.initOrRefreshLigandEnvViewer(ligand, rawInteractions);
 
-    // await until molstar first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready === true),
-        first()
-      )
-    );
+    this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(rawInteractions));
 
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-
-    if (!this.molstarPluginService.PDBeMolstarPluginClass) return;
-    await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
-
-    const instance_id = this.symmetryDropdownSelected ? this.symmetryDropdownSelected : undefined;
-
-    const { residuesMolstarSelections, interactionsMolstarSelections, residToInstanceId } = interactionsToMolstar(
-      ligand,
-      molstarSelection,
-      interactions,
-      instance_id
-    );
-    this.residToInstanceId = residToInstanceId;
-
-    const pdbeInteractions = interactionsMolstarSelections as unknown as PDBeMolstarInteraction[];
-
-    const residueSelectionData: QueryParamForHelpers[] = residuesMolstarSelections.map((resid) => {
-      // TODO: Once endpoint has entity_id data use it to map colours
-      return {
-        ...resid,
-        // type_symbol: ['C'],
-        representation: 'ball-and-stick',
-        // representationColor: '#d3d3d3',
-        focus: false,
-      };
-    });
-    this.residuesAsSticks = residueSelectionData;
-    this.selectionData = this.ligandSelection ? [...this.ligandSelection] : [];
-    this.selectionData.push(...residueSelectionData);
-    await this.onDrawSelectionInMolstar();
-
-    this.molstarSelectionMutex.run(async () => {
-      await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
-      await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.loadInteractions(instance, { interactions: pdbeInteractions, structureId: 1 });
-    });
+    const instanceId = this.symmetryDropdownSelected || undefined;
+    this.residToInstanceId = interactionsToMolstar(ligand, molstarSelection, interactions, instanceId).residToInstanceId;
+    console.log('this.residToInstanceId', this.residToInstanceId);
+    // TODO: @adam Refactor use of residToInstanceId
+    // TODO: @adam Fix mapping of instance_id vs API chain numbering for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
+    // TODO: @adam Fix mapping of instance_id vs API chain numbering for MVS
   }
 
   private readonly ligandEnvMutex = Mutex('ligandEnvMutex');
   private readonly tableHoverMutex = Mutex('tableHoverMutex');
-  private readonly molstarSelectionMutex = Mutex('molstarSelectionMutex');
 
   constructor() {
     this.ligandEnvMutex.run(async () => {
@@ -485,6 +425,8 @@ export class LigandsTabComponent implements AfterViewInit {
    * For ligand env viewer to always initialise
    */
   private viewReady = signal(false);
+
+  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   ngAfterViewInit(): void {
     this.viewReady.set(true);
@@ -548,6 +490,17 @@ export class LigandsTabComponent implements AfterViewInit {
         }
         this.noTermFiltering.set(false);
       });
+
+    this.molstarFirstRenderFinished$
+      .pipe(
+        filter((ready) => ready),
+        take(1)
+      )
+      .subscribe(() => {
+        // run after molstar rendered
+        const mvsHandler = MVSHandler(this._molstarComponent);
+        this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+      });
   }
 
   public toggleColorList(): void {
@@ -556,6 +509,7 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   private async renderInMolstar(ligand: ProcessedLigandOrMod) {
+    console.log('renderInMolstar');
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
     // const entityId = molstarSelection[0].entity_id;
@@ -586,45 +540,7 @@ export class LigandsTabComponent implements AfterViewInit {
       this.interactionsRowData.set(undefined);
     }
 
-    // Wait until first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready), // proceed when true
-        take(1)
-      )
-    );
-
-    // Access Molstar instance
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-
-    const entityColor = ligand.molstarColorHex;
-    const componentQuery = ligand.type === 'modification' ? 'non-standard' : 'ligand';
-    const hasLigandsOrMod = await componentExistsInMolstar(instance, componentQuery);
-
-    const instance_id = this.symmetryDropdownSelected ? this.symmetryDropdownSelected : undefined;
-    this.ligandSelection = [
-      {
-        ...molstarSelection[0],
-        color: entityColor,
-        focus: true,
-        instance_id,
-        ...(hasLigandsOrMod === false && {
-          representation: 'ball-and-stick',
-          representationColor: ligand.molstarColorHex,
-        }),
-      },
-    ];
-    this.selectionData = [...this.ligandSelection];
-
-    const durationMs = this._molstarComponent ? 1200 : 0;
-    this.molstarSelectionMutex.run(async () => {
-      await zoomOutStructureInMolstar(instance, durationMs);
-    });
-
-    timer(durationMs + 100).subscribe(async () => {
-      await this.onDrawSelectionInMolstar();
-    });
+    this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(undefined));
   }
 
   public async onDropdownSelect(event: string) {
@@ -636,7 +552,7 @@ export class LigandsTabComponent implements AfterViewInit {
     this.updateSymmetryDropdownOptions(ligand);
 
     // check if molstar config needs update and wait for it
-    await this.updateConfigAssemblyAndSyncMolstar(ligand);
+    await this.updateInPrefAssemblyForInstance(ligand);
 
     // get interactions data, create ligand selection, zoom in ligand
     this.renderInMolstar(ligand);
@@ -772,18 +688,19 @@ export class LigandsTabComponent implements AfterViewInit {
     const data = event.api.getSelectedNodes()[0].data;
   }
 
-  async onDrawSelectionInMolstar() {
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
+  // async onDrawSelectionInMolstar() {
+  //   console.log('onDrawSelectionInMolstar')
+  //   const instance = this._molstarComponent?.getInstance() ?? null;
+  //   if (!instance) return;
 
-    await this.molstarSelectionMutex.run(async () => {
-      await drawSelectionInMolstar(instance, this.residuesAsSticks);
-      await drawSelectionInMolstar(instance, this.ligandSelection, undefined, true);
-      await showInteractivityFocusInMolstar(instance, this.ligandSelection);
-      await removeComponent(instance, 'structure-focus-target-sel');
-      await removeComponent(instance, 'structure-focus-surr-sel');
-    });
-  }
+  //   await this.molstarSelectionMutex.run(async () => {
+  //     await drawSelectionInMolstar(instance, this.residuesAsSticks);
+  //     await drawSelectionInMolstar(instance, this.ligandSelection, undefined, true);
+  //     await showInteractivityFocusInMolstar(instance, this.ligandSelection);
+  //     await removeComponent(instance, 'structure-focus-target-sel');
+  //     await removeComponent(instance, 'structure-focus-surr-sel');
+  //   });
+  // }
 
   async onCellMouseOver(event: CellMouseOverEvent<Interaction>) {
     await this.tableHoverMutex.run(() => this._handleCellMouseOver(event));
@@ -823,7 +740,6 @@ export class LigandsTabComponent implements AfterViewInit {
         auth_seq_id: residueId,
         auth_ins_code_id: normalizeInsertionCode(resIns),
         atoms: int.ligand_atoms,
-        focus: true,
         instance_id,
       },
       {
@@ -832,33 +748,18 @@ export class LigandsTabComponent implements AfterViewInit {
         auth_seq_id: residueNum,
         auth_ins_code_id: residueIns,
         atoms: int.end.atom_names,
-        focus: true,
         instance_id: this.residToInstanceId[resIdentifier],
       },
     ];
-
-    await instance.visual.focus(atomSelections);
-    await instance.visual.highlight({ data: atomSelections });
+    await instance.visual.highlight({ data: atomSelections, structureNumber: 1 }); // `structureNumber: 1` is a workaround for structures loaded not via PDBeMolstar API
+    // await instance.visual.focus(atomSelections, 1); // `structureNumber: 1` is a workaround for structures loaded not via PDBeMolstar API
   }
 
   private async _handleCellMouseOut() {
-    const instance = this._molstarComponent?.getInstance() ?? null;
+    const instance = this._molstarComponent?.getInstance();
     if (!instance) return;
-
-    const ligand = this.currentLigandDatum();
-    if (!ligand) return;
-
-    if (!this.ligandSelection) return;
-
-    this.selectionData = [];
-    if (this.ligandSelection) this.selectionData.push(...this.ligandSelection);
-    if (this.residuesAsSticks) this.selectionData.push(...this.residuesAsSticks);
-
-    await instance.visual.focus(this.ligandSelection);
-    await showInteractivityFocusInMolstar(instance, this.ligandSelection);
-    await removeComponent(instance, 'structure-focus-target-sel');
-    await removeComponent(instance, 'structure-focus-surr-sel');
     await instance.visual.clearHighlight();
+    // if (this.ligandSelection) await instance.visual.focus(this.ligandSelection, 1);
   }
 
   public downloadCSV(): void {

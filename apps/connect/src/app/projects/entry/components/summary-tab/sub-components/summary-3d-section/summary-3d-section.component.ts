@@ -13,7 +13,7 @@ import { ModifiedResidue } from '../../../../data-models/modified-residues.model
 import type { Molecule } from '../../../../data-models/molecule.model';
 import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
 import { Molstar370DefaultParams, QueryParamForHelpers } from '../../../../helpers/molstar-helpers';
-import { MVSHandler } from '../../../../helpers/mvs-utils';
+import { makeEntityColors, MVSHandler } from '../../../../helpers/mvs-utils';
 import type { SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
 import {
   getCleanMoleculeName,
@@ -247,20 +247,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
 
   public processedLigands = computed(() => this.procLigands()?.filter((lig) => lig.type === 'ligand') ?? []);
 
-  public entityColors = computed(() => {
-    const DEFAULT_ENTITY_COLOR = 'gray';
-    const macromolecules = this.processedMacromolecules();
-    const ligands = this.processedLigands();
-
-    const colors: { [entityId: string]: string } = {};
-    for (const macromolecule of macromolecules) {
-      colors[macromolecule.additionalData.molecule.entity_id] = macromolecule.molstarColorHex ?? DEFAULT_ENTITY_COLOR;
-    }
-    for (const ligand of ligands) {
-      colors[(ligand.additionalData.source as Molecule).entity_id] = ligand.molstarColorHex ?? DEFAULT_ENTITY_COLOR;
-    }
-    return colors;
-  });
+  private readonly entityColors = computed(() => makeEntityColors(this.procMacromolecules(), this.procLigands()));
 
   public currentLigandsPage = signal(0);
 
@@ -508,13 +495,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     [key: string]: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined;
   } = {};
 
-  public lastSubSelection: {
-    [key: string]: number;
-  } = {
-    Macromolecules: 0,
-    Ligands: 0,
-    Modifications: 0,
-  };
+  public lastSubSelection: { [key: string]: number } = { Macromolecules: 0, Ligands: 0, Modifications: 0 };
 
   public getDomainResourceCountTxt(domainName: string, countByResource: { [key: string]: number }) {
     if (domainName === 'All') {

@@ -1,5 +1,5 @@
 import type { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
-import { ValidationApiData } from './data-provider';
+import { InteractionsApiData, ValidationApiData } from './data-provider';
 
 export type SnapshotSpecParams = {
   /** PDBconnect Summary tab > Preferred complex (default view), Complexes tab */
@@ -132,11 +132,15 @@ export type SnapshotSpecParams = {
     /** Symmetry instance identifier (e.g. 'ASM-1'), `undefined` for showing all instances */
     instanceId: string | undefined;
     /** Source of atom interactions to be shown */
-    atomInteractions: 'api' | 'builtin' | 'none';
+    atomInteractions: InteractionsApiData[string] | 'builtin' | 'none';
     /** Turn on Volume Streaming */
     volumeStreaming: boolean;
     /** Colors for entities */
     entityColors: { [entityId: string]: string } | undefined;
+    /** Colors for interaction types (e.g. 'hbond', 'clash'), with special values for 'mixed' and 'default' */
+    interactionTypeColors: { [interactionType: string]: string } | undefined;
+    /** Human-friendly names for interaction types (e.g. 'hbond' -> 'Hydrogen bond') */
+    interactionTypeNiceNames: { [interactionType: string]: string } | undefined;
   };
   /** PDBconnect Text Annotations tab (residue selected) */
   pdbconnect_text_annotation: {
