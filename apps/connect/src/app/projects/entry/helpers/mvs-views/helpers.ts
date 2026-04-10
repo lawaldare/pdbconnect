@@ -337,3 +337,18 @@ export function max<T, V>(array: T[], key: (elem: T) => V = ((x: T) => x) as any
   }
   return argMax;
 }
+
+export function wholeResidues(selection: ComponentExpressionT[]): ComponentExpressionT[] {
+  const selectionWithoutAtomConstraints: ComponentExpressionT[] = selection.map(
+    (s) =>
+      ({
+        ...s,
+        atom_id: undefined,
+        atom_index: undefined,
+        label_atom_id: undefined,
+        auth_atom_id: undefined,
+        type_symbol: undefined,
+      }) satisfies ComponentExpressionT
+  );
+  return unique(selectionWithoutAtomConstraints, JSON.stringify);
+}

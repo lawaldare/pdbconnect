@@ -370,7 +370,7 @@ export const INTX_NAME_COLORS: Record<string, string> = {
   weak_hbond: '#96CDE6',
   // Special values:
   mixed: '#808080',
-  default: '#808080',
+  default: '#ffffff',
 };
 
 export const ENTRY_PAGES_LINKS = [

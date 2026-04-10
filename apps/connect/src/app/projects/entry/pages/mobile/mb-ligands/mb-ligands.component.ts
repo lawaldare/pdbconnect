@@ -104,7 +104,6 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
 
     const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(ligand, molstarSelection, interactions, instance_id);
 
-    const pdbeInteractions = interactionsMolstarSelections as unknown as PDBeMolstarInteraction[];
     const residueSelectionData: QueryParamForHelpers[] = residuesMolstarSelections.map((resid) => {
       return {
         ...resid,
@@ -124,7 +123,10 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
     });
 
     await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
-    await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.loadInteractions(instance, { interactions: pdbeInteractions, structureId: 1 });
+    await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.loadInteractions(instance, {
+      interactions: interactionsMolstarSelections,
+      structureId: 1,
+    });
   }
 
   public allLigandsQueryParam = computed(() => {

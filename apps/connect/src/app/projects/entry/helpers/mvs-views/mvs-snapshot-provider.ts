@@ -13,6 +13,7 @@ import {
   normalizeInsertionCode,
   StandardRepresentationType,
   unique,
+  wholeResidues,
 } from './helpers';
 import { type SnapshotSpec, type SnapshotSpecParams } from './mvs-snapshot-types';
 
@@ -422,62 +423,21 @@ export class MVSSnapshotProvider {
       })
       .focus({ radius_factor: FOCUS_RADIUS_FACTOR, radius_extent: FOCUS_RADIUS_EXTENT });
 
-    const colors = params.interactionTypeColors ?? ATOM_INTERACTION_COLORS;
-    const formatInteractionType = (type: string) => params.interactionTypeNiceNames?.[type] ?? type;
-
     if (params.atomInteractions !== 'builtin' && params.atomInteractions !== 'none') {
-      const atomInteractions = params.atomInteractions;
-      const partnerResidues: { auth_asym_id: string; auth_seq_id: number; pdbx_PDB_ins_code?: string; instance_id?: string }[] = [];
       const primitives = ctx.structure.primitives();
-      for (const { interactions, ligand } of atomInteractions) {
-        for (const int of interactions) {
-          const details = int.interaction_details;
-          const color = details.length === 1 ? colors[details[0]] ?? colors['default'] : colors['mixed'];
-          const distance = int.distance.toFixed(2);
-          const tooltipHeader =
-            details.length === 1
-              ? `<strong>${formatInteractionType(details[0])} interaction (${distance} Å)</strong>`
-              : `<strong>Mixed interaction (${distance} Å)</strong><br>${details.map(formatInteractionType).join(', ')}`;
-          const tooltipLigand = `<strong>${ligand.chem_comp_id} ${ligand.author_residue_number}${
-            ligand.author_insertion_code?.trim() ?? ''
-          }</strong> | ${int.ligand_atoms.join(', ')}`;
-          const tooltipPartner = `<strong>${int.end.chem_comp_id} ${int.end.author_residue_number}${
-            int.end.author_insertion_code?.trim() ?? ''
-          }</strong> | ${int.end.atom_names.join(', ')}`;
-          const tooltip = `${tooltipHeader}<br>${tooltipLigand} — ${tooltipPartner}`;
-          const ligandSelector: ComponentExpressionT[] = int.ligand_atoms.map((atom) => ({
-            auth_asym_id: ligand.chain_id,
-            auth_seq_id: ligand.author_residue_number,
-            pdbx_PDB_ins_code: normalizeInsertionCode(ligand.author_insertion_code),
-            auth_atom_id: atom,
-            instance_id: params.instanceId,
-          }));
-          const partnerSelector: ComponentExpressionT[] = int.end.atom_names.map((atom) => ({
-            auth_asym_id: int.end.chain_id,
-            auth_seq_id: int.end.author_residue_number,
-            pdbx_PDB_ins_code: normalizeInsertionCode(int.end.author_insertion_code),
-            auth_atom_id: atom,
-            instance_id: params.instanceId,
-          }));
-          primitives.tube({
-            start: { expressions: ligandSelector },
-            end: { expressions: partnerSelector },
-            radius: INTERACTION_TUBE_RADIUS,
-            dash_length: INTERACTION_TUBE_DASH_LENGTH,
-            color: color as ColorT,
-            tooltip: tooltip,
-          });
-          partnerResidues.push({
-            auth_asym_id: int.end.chain_id,
-            auth_seq_id: int.end.author_residue_number,
-            pdbx_PDB_ins_code: normalizeInsertionCode(int.end.author_insertion_code),
-            instance_id: params.instanceId,
-          });
-        }
+      const interactingAtoms: ComponentExpressionT[] = [];
+      for (const interaction of params.atomInteractions) {
+        primitives.tube({
+          start: { expressions: interaction.start },
+          end: { expressions: interaction.end },
+          radius: INTERACTION_TUBE_RADIUS,
+          dash_length: INTERACTION_TUBE_DASH_LENGTH,
+          color: interaction.color as ColorT | undefined,
+          tooltip: interaction.tooltip,
+        });
+        interactingAtoms.push(...interaction.start, ...interaction.end);
       }
-      const partnerResiduesRepr = ctx.structure
-        .component({ selector: unique(partnerResidues, (r) => `${r.auth_asym_id}:${r.auth_seq_id}:${r.pdbx_PDB_ins_code ?? ''}:${r.instance_id ?? ''}`) })
-        .representation({ type: 'ball_and_stick', size_factor: 0.5 });
+      const partnerResiduesRepr = ctx.structure.component({ selector: wholeResidues(interactingAtoms) }).representation({ type: 'ball_and_stick', size_factor: 0.5 });
       if (params.entityColors) {
         applyEntityColors(partnerResiduesRepr, params.entityColors as Record<string, ColorT>, WATER_COLOR);
       }

@@ -35,7 +35,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { EntryActions } from '../../store/entry.actions';
 import { Interaction, InteractionFromAPI } from '../../data-models/interaction.model';
-import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
+import { interactionsToMolstar, MVSAtomInteraction, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
 import { Molecule } from '../../data-models/molecule.model';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import type { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions';
@@ -349,7 +349,7 @@ export class LigandsTabComponent implements AfterViewInit {
     }
   }
 
-  private getMvsSnapshotSpec(rawInteractions: InteractionFromAPI | undefined): SnapshotSpec | undefined {
+  private getMvsSnapshotSpec(mvsAtomInteractions: MVSAtomInteraction[] | undefined): SnapshotSpec | undefined {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     if (!molstarSelection) return undefined;
 
@@ -372,12 +372,10 @@ export class LigandsTabComponent implements AfterViewInit {
         authSeqId,
         authInsCode,
         instanceId: this.symmetryDropdownSelected || undefined,
-        atomInteractions: rawInteractions ? [rawInteractions] : 'none',
+        atomInteractions: mvsAtomInteractions ?? 'none',
         // TODO: @adam Show builtin interactions when data not available
         volumeStreaming: true,
         entityColors: this.entityColors(),
-        interactionTypeColors: INTX_NAME_COLORS,
-        interactionTypeNiceNames: INTX_NAME_STANDARDIZER,
       },
     };
   }
@@ -392,11 +390,13 @@ export class LigandsTabComponent implements AfterViewInit {
 
     if (rawInteractions) await this.initOrRefreshLigandEnvViewer(ligand, rawInteractions);
 
-    this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(rawInteractions));
-
     const instanceId = this.symmetryDropdownSelected || undefined;
-    this.residToInstanceId = interactionsToMolstar(ligand, molstarSelection, interactions, instanceId).residToInstanceId;
-    console.log('this.residToInstanceId', this.residToInstanceId);
+    const mvsInteractions = interactionsToMolstar(ligand, molstarSelection, interactions, instanceId);
+
+    this.residToInstanceId = mvsInteractions.residToInstanceId;
+
+    this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(mvsInteractions.interactionsMolstarSelections));
+
     // TODO: @adam Refactor use of residToInstanceId
     // TODO: @adam Fix mapping of instance_id vs API chain numbering for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
     // TODO: @adam Fix mapping of instance_id vs API chain numbering for MVS
@@ -687,20 +687,6 @@ export class LigandsTabComponent implements AfterViewInit {
   onSelectionChanged(event: SelectionChangedEvent) {
     const data = event.api.getSelectedNodes()[0].data;
   }
-
-  // async onDrawSelectionInMolstar() {
-  //   console.log('onDrawSelectionInMolstar')
-  //   const instance = this._molstarComponent?.getInstance() ?? null;
-  //   if (!instance) return;
-
-  //   await this.molstarSelectionMutex.run(async () => {
-  //     await drawSelectionInMolstar(instance, this.residuesAsSticks);
-  //     await drawSelectionInMolstar(instance, this.ligandSelection, undefined, true);
-  //     await showInteractivityFocusInMolstar(instance, this.ligandSelection);
-  //     await removeComponent(instance, 'structure-focus-target-sel');
-  //     await removeComponent(instance, 'structure-focus-surr-sel');
-  //   });
-  // }
 
   async onCellMouseOver(event: CellMouseOverEvent<Interaction>) {
     await this.tableHoverMutex.run(() => this._handleCellMouseOver(event));
