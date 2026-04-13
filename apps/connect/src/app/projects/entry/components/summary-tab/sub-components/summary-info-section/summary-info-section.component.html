@@ -29,7 +29,7 @@
           ></i>
           @if (sourceOrganismWithStrain.strain) { (strain {{ sourceOrganismWithStrain.strain }}) }
         </span>
-        {{ islast ? '' : ',' }} } @if (organismScientificNamesWithStrains()?.length === 0) {
+        {{ islast ? '' : ',' }} } @if (organismScientificNamesWithStrains().length === 0) {
         <span>Not available</span>
         }
       </article>
