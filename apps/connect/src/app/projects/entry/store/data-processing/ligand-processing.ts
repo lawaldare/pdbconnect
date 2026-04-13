@@ -218,11 +218,11 @@ export function generateMolstarSelectionsForLigand(ligand: Molecule, ligandMonom
     selectionNames.push(`Chain: ${ligandMonomer.chain_id} - Res: ${ligandMonomer.author_residue_number}${ligandMonomer.author_insertion_code}`);
     return [
       {
-        entity_id: ligand.entity_id + '',
+        label_entity_id: String(ligand.entity_id),
         auth_asym_id: ligandMonomer.chain_id,
-        auth_residue_number: ligandMonomer.author_residue_number,
-        auth_ins_code_id: ligandMonomer.author_insertion_code ? ligandMonomer.author_insertion_code : undefined,
-        struct_asym_id: ligandMonomer.struct_asym_id,
+        auth_seq_id: ligandMonomer.author_residue_number,
+        pdbx_PDB_ins_code: ligandMonomer.author_insertion_code || undefined,
+        label_asym_id: ligandMonomer.struct_asym_id,
       } satisfies QueryParamForHelpers,
     ];
   });
@@ -239,10 +239,10 @@ export function generateMolstarSelectionsForModification(modificationResidues: M
   for (const mod of modificationResidues) {
     const newMolstarSelection: QueryParamForHelpers[] = [
       {
-        entity_id: mod.entity_id + '',
+        label_entity_id: String(mod.entity_id),
         auth_asym_id: mod.chain_id,
-        auth_residue_number: mod.author_residue_number,
-        auth_ins_code_id: mod.author_insertion_code ? mod.author_insertion_code : undefined,
+        auth_seq_id: mod.author_residue_number,
+        pdbx_PDB_ins_code: mod.author_insertion_code || undefined,
       },
     ];
     selections.push(newMolstarSelection);

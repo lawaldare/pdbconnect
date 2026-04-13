@@ -128,8 +128,8 @@ export function getDomainSequenceDetails(entryId: string, macromoleculesOfDomain
 }
 
 function convertLigandDatumToString(id: string, selectedLigandInstance: QueryParamForHelpers[], inPrefAssembly: boolean) {
-  const resNum = selectedLigandInstance[0].auth_residue_number;
-  const insCode = selectedLigandInstance[0].auth_ins_code_id || '';
+  const resNum = selectedLigandInstance[0].auth_seq_id;
+  const insCode = selectedLigandInstance[0].pdbx_PDB_ins_code || '';
   const chainId = selectedLigandInstance[0].auth_asym_id;
   const ligandString = inPrefAssembly
     ? `${id} ${resNum}${insCode} in chain ${chainId}`

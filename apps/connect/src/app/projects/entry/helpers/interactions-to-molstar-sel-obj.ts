@@ -19,9 +19,9 @@ export function interactionsToMolstar(
   interactions: Interaction[],
   instance_id: string | undefined
 ) {
-  const chainId = ligandMolstarSelection[0].auth_asym_id!;
-  const residueId = ligandMolstarSelection[0].auth_residue_number!;
-  const resIns = ligandMolstarSelection[0].auth_ins_code_id;
+  const chainId = ligandMolstarSelection[0].auth_asym_id;
+  const residueId = ligandMolstarSelection[0].auth_seq_id;
+  const resIns = ligandMolstarSelection[0].pdbx_PDB_ins_code;
 
   const residuesMolstarSelections: ComponentExpressionT[] = [];
   const interactionsMolstarSelections: MVSAtomInteraction[] = [];

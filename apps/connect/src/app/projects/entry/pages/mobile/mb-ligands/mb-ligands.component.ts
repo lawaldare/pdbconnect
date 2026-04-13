@@ -135,14 +135,14 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
     if (!ligands) return ligandsSelectionData;
     for (const lig of ligands) {
       for (const sel of lig.additionalData.selections) {
-        const entityId = sel[0].entity_id;
+        const entityId = sel[0].label_entity_id;
         const chainId = sel[0].auth_asym_id;
-        const residueId = sel[0].auth_residue_number;
+        const residueId = sel[0].auth_seq_id;
         const entityColor = lig.molstarColorHex;
         ligandsSelectionData.push({
-          entity_id: `${entityId}`,
+          label_entity_id: `${entityId}`,
           auth_asym_id: `${chainId}`,
-          auth_residue_number: residueId,
+          auth_seq_id: residueId,
           color: entityColor,
           representation: 'spacefill',
           representationColor: entityColor,
@@ -288,8 +288,8 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
     }
 
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const chainId = molstarSelection[0].auth_asym_id!;
-    const residueId = molstarSelection[0].auth_residue_number!;
+    const chainId = molstarSelection[0].auth_asym_id;
+    const residueId = molstarSelection[0].auth_seq_id;
     this.currentChainId.set(chainId);
     this.currentResidueId.set(`${residueId}`);
 

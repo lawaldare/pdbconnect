@@ -733,12 +733,12 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
   ): Promise<ComponentExpressionT[] | undefined> {
     if (selectionType === 'Macromolecules') {
       const macromolecule = listItem as ProcessedMacromolecule;
-      return [{ label_entity_id: `${macromolecule.additionalData.molecule.entity_id}` }];
+      return [{ label_entity_id: String(macromolecule.additionalData.molecule.entity_id) }];
     }
     if (selectionType === 'Ligands') {
       const ligand = listItem as ProcessedLigandOrMod;
       const src = ligand.additionalData.source as Molecule;
-      return [{ label_entity_id: `${src.entity_id}` }];
+      return [{ label_entity_id: String(src.entity_id) }];
     }
     if (selectionType === 'Domains') {
       const domain = listItem as ProcessedDomain;
@@ -787,8 +787,8 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
           };
         } else {
           const entityData = (listItem as ProcessedMacromolecule).additionalData;
-          const entityId = `${entityData.molecule.entity_id}`;
-          const labelAsymId = molstarSelection[0].struct_asym_id;
+          const entityId = String(entityData.molecule.entity_id);
+          const labelAsymId = molstarSelection[0].label_asym_id;
           const authAsymId = molstarSelection[0].auth_asym_id;
           const instanceId = this.getSelectedInstanceId();
           return {
@@ -808,9 +808,9 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
         } else {
           const ligandData = (listItem as ProcessedLigandOrMod).additionalData;
           const moleculeData = ligandData.source as Molecule;
-          const entityId = `${moleculeData.entity_id}`;
-          const labelAsymId = molstarSelection[0].struct_asym_id;
-          if (!labelAsymId) throw new Error('struct_asym_id for ligand instance not set');
+          const entityId = String(moleculeData.entity_id);
+          const labelAsymId = molstarSelection[0].label_asym_id;
+          if (!labelAsymId) throw new Error('label_asym_id for ligand instance not set');
           const instanceId = this.getSelectedInstanceId();
           return {
             name: 'Ligand',

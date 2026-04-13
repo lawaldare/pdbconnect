@@ -71,7 +71,7 @@ export class ApiDataProvider implements IDataProvider {
     const result: { [entityId: string]: EntityRecord } = {};
     for (const record of json?.[pdbId] ?? []) {
       result[record.entity_id] = {
-        id: `${record.entity_id}`, // entity ID is string, even though the API may serve it as number
+        id: String(record.entity_id), // entity ID is string, even though the API may serve it as number
         name: record.molecule_name.join(' / '), // concatenating in case of chimeras, e.g. 6hr1
         type: record.molecule_type,
         compIds: record.chem_comp_ids ?? [],
@@ -87,7 +87,7 @@ export class ApiDataProvider implements IDataProvider {
     const result: ResidueRecord[] = [];
     for (const record of json?.[pdbId] ?? []) {
       result.push({
-        entityId: `${record.entity_id}`, // API serves as number, we need string
+        entityId: String(record.entity_id), // API serves as number, we need string
         labelAsymId: record.struct_asym_id,
         labelSeqId: record.residue_number,
         authAsymId: record.chain_id,

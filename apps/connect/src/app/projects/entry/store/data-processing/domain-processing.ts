@@ -138,13 +138,13 @@ export function formatSegmentsWithCoverage(mappings: DomainMapping[], polymerCov
 
     // molstarSelection.residues.push({
     molstarSelection.push({
-      entity_id: mapping.entity_id.toString(),
+      label_entity_id: String(mapping.entity_id),
       auth_asym_id: mapping.chain_id,
-      start_residue_number: firstRes.residue_number,
-      start_auth_residue_number: firstRes.author_residue_number,
+      beg_label_seq_id: firstRes.residue_number,
+      beg_auth_seq_id: firstRes.author_residue_number,
       start_auth_ins_code_id: firstRes.author_insertion_code,
-      end_residue_number: lastRes.residue_number,
-      end_auth_residue_number: lastRes.author_residue_number,
+      end_label_seq_id: lastRes.residue_number,
+      end_auth_seq_id: lastRes.author_residue_number,
       end_auth_ins_code_id: lastRes.author_insertion_code,
     });
 

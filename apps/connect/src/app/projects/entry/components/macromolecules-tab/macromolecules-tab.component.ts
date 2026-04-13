@@ -862,7 +862,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit, OnDest
 
     const entityId = `${macromolecule.additionalData.molecule.entity_id}`;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const labelAsymId = molstarSelection[0].struct_asym_id; // TODO: @adam Update used QueryParam field names
+    const labelAsymId = molstarSelection[0].label_asym_id;
     const authAsymId = molstarSelection[0].auth_asym_id;
 
     const chainIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);

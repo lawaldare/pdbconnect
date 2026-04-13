@@ -353,10 +353,10 @@ export class LigandsTabComponent implements AfterViewInit {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     if (!molstarSelection) return undefined;
 
-    const labelAsymId = molstarSelection[0].struct_asym_id; // TODO: @adam Avoid obsoleted names
+    const labelAsymId = molstarSelection[0].label_asym_id;
     const authAsymId = molstarSelection[0].auth_asym_id;
-    const authSeqId = molstarSelection[0].auth_residue_number; // TODO: @adam Avoid obsoleted names
-    const authInsCode = molstarSelection[0].auth_ins_code_id ?? ''; // TODO: @adam Avoid obsoleted names
+    const authSeqId = molstarSelection[0].auth_seq_id;
+    const authInsCode = molstarSelection[0].pdbx_PDB_ins_code ?? '';
     if (labelAsymId === undefined) throw new Error('labelAsymId is undefined');
     if (authAsymId === undefined) throw new Error('authAsymId is undefined');
     if (authSeqId === undefined) throw new Error('authSeqId is undefined');
@@ -512,9 +512,8 @@ export class LigandsTabComponent implements AfterViewInit {
     console.log('renderInMolstar');
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
-    // const entityId = molstarSelection[0].entity_id;
-    const chainId = molstarSelection[0].auth_asym_id!;
-    const residueId = molstarSelection[0].auth_residue_number!;
+    const chainId = molstarSelection[0].auth_asym_id;
+    const residueId = molstarSelection[0].auth_seq_id;
 
     this.currentChainId.set(chainId);
     this.currentResidueId.set(`${residueId}`);
@@ -578,7 +577,7 @@ export class LigandsTabComponent implements AfterViewInit {
     const ligandId = ligand.id;
     // ligand env viewer is only shown for ligands tab. data is retrieved from dropdown
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const resId = molstarSelection[0].auth_residue_number!;
+    const resId = molstarSelection[0].auth_seq_id;
     const chainId = molstarSelection[0].auth_asym_id!;
 
     // this.resetLigEnvRenderer();
@@ -703,10 +702,10 @@ export class LigandsTabComponent implements AfterViewInit {
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const entityId = molstarSelection[0].entity_id;
+    const entityId = molstarSelection[0].label_entity_id;
     const chainId = molstarSelection[0].auth_asym_id;
-    const residueId = molstarSelection[0].auth_residue_number!;
-    const resIns = molstarSelection[0].auth_ins_code_id;
+    const residueId = molstarSelection[0].auth_seq_id;
+    const resIns = molstarSelection[0].pdbx_PDB_ins_code;
 
     const chainToEntityId = this.chainToEntityId();
     if (!chainToEntityId) return;
@@ -721,18 +720,18 @@ export class LigandsTabComponent implements AfterViewInit {
 
     const atomSelections: QueryParamForHelpers[] = [
       {
-        entity_id: `${entityId}`,
+        label_entity_id: `${entityId}`,
         auth_asym_id: chainId,
         auth_seq_id: residueId,
-        auth_ins_code_id: normalizeInsertionCode(resIns),
+        pdbx_PDB_ins_code: normalizeInsertionCode(resIns),
         atoms: int.ligand_atoms,
         instance_id,
       },
       {
-        entity_id: `${residEntityId}`,
+        label_entity_id: `${residEntityId}`,
         auth_asym_id: residueChain,
         auth_seq_id: residueNum,
-        auth_ins_code_id: residueIns,
+        pdbx_PDB_ins_code: residueIns,
         atoms: int.end.atom_names,
         instance_id: this.residToInstanceId[resIdentifier],
       },

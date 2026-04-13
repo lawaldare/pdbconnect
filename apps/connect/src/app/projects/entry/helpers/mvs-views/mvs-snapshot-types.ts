@@ -1,5 +1,5 @@
 import type { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
-import { InteractionsApiData, ValidationApiData } from './data-provider';
+import { ValidationApiData } from './data-provider';
 
 export type SnapshotSpecParams = {
   /** PDBconnect Summary tab > Preferred complex (default view), Complexes tab */
