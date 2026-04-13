@@ -448,7 +448,7 @@ export interface ValidationApiData {
           residues: Array<{
             residue_number: number;
             author_residue_number: number | string; // this hurts but yes, sometimes it's a string (e.g. 8eiu entity 6 chain F [auth A])
-            author_insertion_code: string;
+            author_insertion_code: string | null;
             alt_code: string;
             outlier_types: string[];
           }>;
