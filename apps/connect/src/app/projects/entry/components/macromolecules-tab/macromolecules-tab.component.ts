@@ -511,7 +511,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit, OnDest
   });
 
   public currentModelId$ = new BehaviorSubject<string>('1');
-  private modelIdObserver?: MutationObserver;
 
   private topolViewerMutex = Mutex('topolViewerMutex');
   private rnaViewerMutex = Mutex('rnaViewerMutex');
@@ -566,21 +565,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit, OnDest
       await this.scriptLoader.loadScript('./assets/pdb-rna-viewer-plugin-0.3.1.js');
     });
 
-    // this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
-    //   if (idx === undefined || idx === null) return;
-    //   const datum = this.macromoleculeTableRows()[idx];
-    //   if (datum) {
-    //     this.sequenceDetails.set(undefined);
-    //     this.currentMacromoleculeDatum.set(datum);
-    //     await this.triggerMacromoleculeUpdateSideEffects(datum);
-    //   }
-    // });
-    // once molstar has rendered, initializes mutation observer for NMR model Id
-    this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (finished) => {
-      if (finished) {
-        this.modelIdObserver = await initializeModelIdTracking(this.currentModelId$, this._molstarComponent?.getContainer());
-      }
-    });
     // every time NMR model Id updates, data for smart seq viewer is refreshed
     this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
       await this.updateBackgroundAnnotation();

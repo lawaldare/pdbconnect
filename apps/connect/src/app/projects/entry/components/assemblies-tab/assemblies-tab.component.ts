@@ -2,14 +2,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, effect, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { filter, take } from 'rxjs';
+import { BehaviorSubject, filter, take } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { dashboardStatLinks, entryAssembliesTooltips } from '../../entry-constant';
 import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
@@ -163,6 +163,23 @@ export class AssembliesTabComponent implements AfterViewInit {
     }
   }
 
+  constructor() {
+    effect(() => {
+      const entryId = this.entryId();
+      const complex = this.currentAssemblyDatum();
+      if (!entryId || !complex) return;
+
+      const assemblyId = complex.assemblyId;
+      this.mvsSnapshotSpec.next({
+        name: `Complex ${assemblyId}`,
+        kind: 'pdbconnect_complex',
+        params: { entry: entryId, assemblyId, entityColors: this.entityColors(), volumeStreaming: false },
+      });
+    });
+  }
+
+  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
+
   ngAfterViewInit(): void {
     this.molstarFirstRenderFinished$
       .pipe(
@@ -172,19 +189,7 @@ export class AssembliesTabComponent implements AfterViewInit {
       .subscribe(() => {
         // run after molstar rendered
         const mvsHandler = MVSHandler(this._molstarComponent);
-        this.currentAssemblyDatum$.subscribe((complex) => {
-          if (!complex) return;
-          const entryId = this.entryId();
-          if (!entryId) return;
-
-          const assemblyId = complex.assemblyId;
-          const mvsSnapshotSpec: SnapshotSpec = {
-            name: `Complex ${assemblyId}`,
-            kind: 'pdbconnect_complex',
-            params: { entry: entryId, assemblyId, entityColors: this.entityColors(), volumeStreaming: false },
-          };
-          mvsHandler.loadMVSSnapshotSpec(mvsSnapshotSpec);
-        });
+        this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
       });
   }
 

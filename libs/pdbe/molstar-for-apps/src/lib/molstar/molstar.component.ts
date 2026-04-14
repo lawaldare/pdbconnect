@@ -58,7 +58,6 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
 
     await this.mutex.run(async () => {
       await pluginInstance.render(renderLayout, this.molstarConfig);
-      console.log('render finished');
 
       if (!this.firstLoadFinished()) this.firstLoadFinished.set(true);
 
