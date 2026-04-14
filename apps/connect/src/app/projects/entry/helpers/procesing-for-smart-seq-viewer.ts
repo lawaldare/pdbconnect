@@ -1,6 +1,6 @@
 import { SmartSequenceAnnotation } from '@pdbe-lib/smart-seq-viewer';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
-import { OUTLIER_TYPE_LABELS } from '../entry-constant';
+import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, OUTLIER_TYPE_LABELS } from '../entry-constant';
 import { ResidueListed } from '../data-models/residue-listing.model';
 import { AlternativeNumbering } from '@pdbe-lib/smart-seq-viewer';
 import { ProcessedDomain } from '../store/data-processing/models/processed-entities.model';
@@ -131,7 +131,7 @@ export function generateSeqViewerDomainAnnotation(entryId: string, datum: Proces
       identifier: `pdbe-domains-${entryId}-${chainId}-${datum.domain}`,
       scaleType: 'ordinal',
       scaleDomain: [`${datum.resource} domain ${datum.domain} (${datum.additionalData.accession} - ${datum.accessionName})`],
-      scaleRange: ['#D0DFBB'],
+      scaleRange: [DEFAULT_DOMAIN_HIGHLIGHT_COLOR],
       rendering: 'Background',
       data,
     };

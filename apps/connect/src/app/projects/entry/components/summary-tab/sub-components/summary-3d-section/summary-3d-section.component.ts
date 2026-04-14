@@ -541,7 +541,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     const selectionToHighlight = await this.getSelectionObjForSelectionType(listItem, selectionType);
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance || !selectionToHighlight) return;
-    await instance.visual.highlight({ data: selectionToHighlight, structureNumber: 1 }); // (PDBe Molstar numbers structures from 1, *facepalm*)
+    await instance.visual.highlight({ data: selectionToHighlight });
   }
 
   public async mouseoutListItem() {

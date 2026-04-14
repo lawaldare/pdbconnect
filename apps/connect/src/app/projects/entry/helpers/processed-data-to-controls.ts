@@ -4,6 +4,7 @@ import { Molecule } from '../data-models/molecule.model';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { QueryParamForHelpers } from './molstar-helpers';
+import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR } from '../entry-constant';
 
 export function getCleanMoleculeName(molecule: Molecule) {
   if (molecule.molecule_name && molecule.molecule_name.length > 0) return molecule.molecule_name.join(', ');
@@ -112,7 +113,7 @@ export function getDomainSequenceDetails(entryId: string, macromoleculesOfDomain
     const boundarySubstring = sequenceDetail.fullSequence.substring(boundary.start - 1, boundary.end);
     sequenceDetail.segments.push({
       // color: '#9DFF94',
-      color: '#D0DFBB',
+      color: DEFAULT_DOMAIN_HIGHLIGHT_COLOR,
       sequence: boundarySubstring,
     });
 

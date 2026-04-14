@@ -57,7 +57,7 @@ export const ATOM_INTERACTION_COLORS: Record<string, ColorT> = {
 } as const;
 
 /** For all the selected chains in Text Annotation view */
-export const CHAIN_ANNOTATED_COLOR = '#d0dfbb';
+export const CHAIN_ANNOTATED_COLOR = '#d0debb';
 
 /** For all annotated residues in Text Annotation view */
 export const RESIDUE_ANNOTATED_COLOR = '#4E81C3';

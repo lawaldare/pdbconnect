@@ -3,16 +3,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild, AfterViewInit } from '@angular/core';
-import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { getCleanSelectionName, getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
-import { dashboardStatLinks, INTX_NAME_COLORS, symmOperatorTooltip } from '../../entry-constant';
-import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, map, take, skip, timer, lastValueFrom, BehaviorSubject } from 'rxjs';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { EntryStoreState } from '../../store/entry-store.model';
-import { EntrySelectors } from '../../store/entry.selectors';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
   AG_Grid_Theme_Class,
@@ -25,36 +18,33 @@ import {
   TruncateTextDirective,
   UtilService,
 } from '@pdbc/core';
-import { CellMouseOverEvent, SelectionChangedEvent } from 'ag-grid-community';
-import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
-import { AgGridAngular } from 'ag-grid-angular';
-import { colDefs, gridOptions } from './ag-grid';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
-import { EntryActions } from '../../store/entry.actions';
-import { Interaction, InteractionFromAPI } from '../../data-models/interaction.model';
-import { interactionsToMolstar, MVSAtomInteraction, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
-import { Molecule } from '../../data-models/molecule.model';
-import { ToolTipComponent } from '@pdbe-lib/tool-tip';
-import type { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions';
-import {
-  componentExistsInMolstar,
-  drawSelectionInMolstar,
-  Molstar370DefaultParams,
-  QueryParamForHelpers,
-  removeComponent,
-  showInteractivityFocusInMolstar,
-  zoomOutStructureInMolstar,
-} from '../../helpers/molstar-helpers';
-import { AggregatedApiService } from '../../../ligands/services/aggregated-api.service';
-import { Depiction } from '../../../ligands/data-models/structure.model';
-import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
-import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
+import { ToolTipComponent } from '@pdbe-lib/tool-tip';
+import { AgGridAngular } from 'ag-grid-angular';
+import { CellMouseOverEvent, SelectionChangedEvent } from 'ag-grid-community';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, take, timer } from 'rxjs';
+import { AggregatedApiService } from '../../../ligands/services/aggregated-api.service';
+import { Interaction, InteractionFromAPI } from '../../data-models/interaction.model';
+import { Molecule } from '../../data-models/molecule.model';
+import { dashboardStatLinks, INTX_NAME_COLORS, symmOperatorTooltip } from '../../entry-constant';
+import { interactionsToMolstar, MVSAtomInteraction, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
+import { Molstar370DefaultParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { makeEntityColors, MVSHandler } from '../../helpers/mvs-utils';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
+import { getCleanSelectionName, getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
+import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
+import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { EntryActions } from '../../store/entry.actions';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
+import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
+import { colDefs, gridOptions } from './ag-grid';
+import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -398,8 +388,7 @@ export class LigandsTabComponent implements AfterViewInit {
     this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(mvsInteractions.interactionsMolstarSelections));
 
     // TODO: @adam Refactor use of residToInstanceId
-    // TODO: @adam Fix mapping of instance_id vs API chain numbering for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
-    // TODO: @adam Fix mapping of instance_id vs API chain numbering for MVS
+    // TODO: @adam Fix mapping of instance_id vs API chain numbering for MVS and for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
   }
 
   private readonly ligandEnvMutex = Mutex('ligandEnvMutex');
@@ -736,15 +725,15 @@ export class LigandsTabComponent implements AfterViewInit {
         instance_id: this.residToInstanceId[resIdentifier],
       },
     ];
-    await instance.visual.highlight({ data: atomSelections, structureNumber: 1 }); // `structureNumber: 1` is a workaround for structures loaded not via PDBeMolstar API
-    // await instance.visual.focus(atomSelections, 1); // `structureNumber: 1` is a workaround for structures loaded not via PDBeMolstar API
+    await instance.visual.highlight({ data: atomSelections });
+    // await instance.visual.focus(atomSelections);
   }
 
   private async _handleCellMouseOut() {
     const instance = this._molstarComponent?.getInstance();
     if (!instance) return;
     await instance.visual.clearHighlight();
-    // if (this.ligandSelection) await instance.visual.focus(this.ligandSelection, 1);
+    // if (this.ligandSelection) await instance.visual.focus(this.ligandSelection);
   }
 
   public downloadCSV(): void {
