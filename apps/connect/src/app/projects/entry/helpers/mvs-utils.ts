@@ -26,7 +26,7 @@ export function MVSHandler(molstarComponent: MolstarComponent | undefined) {
     loadMVSSnapshotSpec(mvsSnapshotSpec: SnapshotSpec | undefined) {
       if (!mvsSnapshotSpec) return;
       mvsQueue.enqueue(async () => {
-        const mvs = await mvsSnapshotProvider.getSnapshot(mvsSnapshotSpec, { transitionDurationMs: MVS_TRANSITION_DURATION_MS });
+        const mvs = mvsSnapshotProvider.getSnapshot(mvsSnapshotSpec, { transitionDurationMs: MVS_TRANSITION_DURATION_MS });
         await molstarComponent.mutex.run(() => PDBeMolstarPlugin.extensions.MVS.loadMVS(instance.plugin, mvs, { keepCameraOrientation: true }));
       });
     },

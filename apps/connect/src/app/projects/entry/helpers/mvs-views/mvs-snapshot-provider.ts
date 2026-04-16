@@ -56,8 +56,8 @@ export class MVSSnapshotProvider {
     public readonly config: MVSSnapshotProviderConfig
   ) {}
 
-  async getSnapshot(spec: SnapshotSpec, options?: { transitionDurationMs?: number }): Promise<MVSData> {
-    const ctx = await this.loadSnapshotSpec(spec);
+  getSnapshot(spec: SnapshotSpec, options?: { transitionDurationMs?: number }): MVSData {
+    const ctx = this.loadSnapshotSpec(spec);
     const description = ctx.description.join('\n\n');
     const snapshot = ctx.root.getSnapshot({
       title: spec.name,
@@ -68,26 +68,26 @@ export class MVSSnapshotProvider {
     return this.MVSDataLib.createMultistate([snapshot], { title: spec.name, description: description });
   }
 
-  private async loadSnapshotSpec(spec: SnapshotSpec) {
+  private loadSnapshotSpec(spec: SnapshotSpec) {
     switch (spec.kind) {
       case 'pdbconnect_complex':
-        return await this.loadPdbconnectComplex(spec.params);
+        return this.loadPdbconnectComplex(spec.params);
       case 'pdbconnect_macromolecule':
-        return await this.loadPdbconnectMacromolecule(spec.params);
+        return this.loadPdbconnectMacromolecule(spec.params);
       case 'pdbconnect_all_ligands':
-        return await this.loadPdbconnectAllLigands(spec.params);
+        return this.loadPdbconnectAllLigands(spec.params);
       case 'pdbconnect_ligand':
-        return await this.loadPdbconnectLigand(spec.params);
+        return this.loadPdbconnectLigand(spec.params);
       case 'pdbconnect_domains':
-        return await this.loadPdbconnectDomains(spec.params);
+        return this.loadPdbconnectDomains(spec.params);
       case 'pdbconnect_modifications':
-        return await this.loadPdbconnectModifications(spec.params);
+        return this.loadPdbconnectModifications(spec.params);
       case 'pdbconnect_quality':
-        return await this.loadPdbconnectQuality(spec.params);
+        return this.loadPdbconnectQuality(spec.params);
       case 'pdbconnect_environment':
-        return await this.loadPdbconnectEnvironment(spec.params);
+        return this.loadPdbconnectEnvironment(spec.params);
       case 'pdbconnect_text_annotation':
-        return await this.loadPdbconnectTextAnnotation(spec.params);
+        return this.loadPdbconnectTextAnnotation(spec.params);
       default:
         throw new Error(`Invalid snapshot kind "${(spec as SnapshotSpec).kind}"`);
     }
@@ -107,7 +107,7 @@ export class MVSSnapshotProvider {
   }
 
   /** Create base for all PDBconnect views */
-  private async _loadPdbconnectBase(params: { entry: string; assemblyId: string | undefined; modelIndex?: number; volumeStreaming: boolean }) {
+  private _loadPdbconnectBase(params: { entry: string; assemblyId: string | undefined; modelIndex?: number; volumeStreaming: boolean }) {
     const ctx = this._loadModel(params);
 
     const structureCustomProps: Record<string, any> = {};
@@ -134,8 +134,8 @@ export class MVSSnapshotProvider {
   }
 
   /** Create MVS view for PDBconnect Summary tab > Preferred complex (default view), Complexes tab */
-  private async loadPdbconnectComplex(params: SnapshotSpecParams['pdbconnect_complex']) {
-    const ctx = await this._loadPdbconnectBase(params);
+  private loadPdbconnectComplex(params: SnapshotSpecParams['pdbconnect_complex']) {
+    const ctx = this._loadPdbconnectBase(params);
 
     // Apply entity colors
     if (params.entityColors) {
@@ -154,8 +154,8 @@ export class MVSSnapshotProvider {
   }
 
   /** Create MVS view for PDBconnect Summary tab > Macromolecules (macromolecule selected), Macromolecules tab */
-  private async loadPdbconnectMacromolecule(params: SnapshotSpecParams['pdbconnect_macromolecule']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
+  private loadPdbconnectMacromolecule(params: SnapshotSpecParams['pdbconnect_macromolecule']) {
+    const ctx = this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
     const entitySelector: ComponentExpressionT = {
       label_entity_id: params.entityId,
@@ -186,8 +186,8 @@ export class MVSSnapshotProvider {
   }
 
   /** Create MVS view for PDBconnect Summary tab > Ligands (nothing selected) */
-  private async loadPdbconnectAllLigands(params: SnapshotSpecParams['pdbconnect_all_ligands']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
+  private loadPdbconnectAllLigands(params: SnapshotSpecParams['pdbconnect_all_ligands']) {
+    const ctx = this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
     // Add and color spacefill representation for ligands
     for (const entityId of params.ligandEntityIds) {
@@ -204,8 +204,8 @@ export class MVSSnapshotProvider {
   }
 
   /** Create MVS view for PDBconnect Summary tab > Ligands (ligand selected) */
-  private async loadPdbconnectLigand(params: SnapshotSpecParams['pdbconnect_ligand']) {
-    const ctx = await this.loadPdbconnectComplex({
+  private loadPdbconnectLigand(params: SnapshotSpecParams['pdbconnect_ligand']) {
+    const ctx = this.loadPdbconnectComplex({
       entry: params.entry,
       assemblyId: params.assemblyId,
       volumeStreaming: params.volumeStreaming,
@@ -226,8 +226,8 @@ export class MVSSnapshotProvider {
   }
 
   /** Create MVS view for PDBconnect Summary tab > Domains (domain selected), Domains tab */
-  private async loadPdbconnectDomains(params: SnapshotSpecParams['pdbconnect_domains']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
+  private loadPdbconnectDomains(params: SnapshotSpecParams['pdbconnect_domains']) {
+    const ctx = this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
     for (const domain of params.domains) {
       const selector = domain.selector;
@@ -258,8 +258,8 @@ export class MVSSnapshotProvider {
   }
 
   /** Create MVS view for PDBconnect Summary tab > Modifications (whether modification selected or not) */
-  private async loadPdbconnectModifications(params: SnapshotSpecParams['pdbconnect_modifications']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
+  private loadPdbconnectModifications(params: SnapshotSpecParams['pdbconnect_modifications']) {
+    const ctx = this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
     // Add tooltips
     for (const mod of params.modifications) {
@@ -303,10 +303,10 @@ export class MVSSnapshotProvider {
   }
 
   /** Create MVS view for PDBconnect Model Quality tab */
-  private async loadPdbconnectQuality(params: SnapshotSpecParams['pdbconnect_quality']) {
+  private loadPdbconnectQuality(params: SnapshotSpecParams['pdbconnect_quality']) {
     // TODO: @adam Fix tooltips for Specific issue
     // TODO: @adam Nice-format and sort issue names in tooltips
-    const ctx = await this._loadPdbconnectBase({
+    const ctx = this._loadPdbconnectBase({
       entry: params.entry,
       assemblyId: params.assemblyId,
       modelIndex: params.modelId - 1,
@@ -396,8 +396,8 @@ export class MVSSnapshotProvider {
   }
 
   /** Create MVS view for PDBconnect Ligands and Environments tab */
-  private async loadPdbconnectEnvironment(params: SnapshotSpecParams['pdbconnect_environment']) {
-    const ctx = await this.loadPdbconnectComplex({
+  private loadPdbconnectEnvironment(params: SnapshotSpecParams['pdbconnect_environment']) {
+    const ctx = this.loadPdbconnectComplex({
       entry: params.entry,
       assemblyId: params.assemblyId,
       volumeStreaming: params.volumeStreaming,
@@ -444,8 +444,8 @@ export class MVSSnapshotProvider {
   }
 
   /** Create MVS view for PDBconnect Text Annotations tab (residue selected) */
-  private async loadPdbconnectTextAnnotation(params: SnapshotSpecParams['pdbconnect_text_annotation']) {
-    const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
+  private loadPdbconnectTextAnnotation(params: SnapshotSpecParams['pdbconnect_text_annotation']) {
+    const ctx = this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
     const annotsInChain = params.annotations.filter((a) => a.pdbChain === params.labelAsymId);
     const annotsByLabelSeqId = groupBy(annotsInChain, (a) => a.pdbResidue);
